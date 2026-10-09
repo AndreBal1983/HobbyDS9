@@ -31,11 +31,11 @@ namespace HobbyDS9.Simulation
             state = CopyState(save.GameState);
             Galaxy = new GalaxyGraph(state.StarSystems!.Select(n => new EntityId(n.SystemId)), this.definitions.GalaxyEdges!);
             if (commandHandlers == null) throw new ArgumentNullException(nameof(commandHandlers));
-            handlers = new Dictionary<CommandKind, ICommandHandler>();
+            handlers = new Dictionary<CommandKind, ICommandHandler> { [CommandKind.SetResearchTarget] = new ResearchTargetHandler(this.definitions) };
             foreach (var pair in commandHandlers)
             {
                 if (!IsKnownKind(pair.Key) || pair.Value == null) throw new ArgumentException("Invalid internal handler registration.");
-                handlers.Add(pair.Key, pair.Value);
+                handlers[pair.Key] = pair.Value;
             }
         }
 
@@ -118,7 +118,7 @@ namespace HobbyDS9.Simulation
                     // Copy again before committing: retained phase references are
                     // never authoritative. Empty phases must preserve all facts.
                     var candidate = CopyState(staging);
-                    RequirePhaseChanges(state, candidate, allowEconomy: true);
+                    RequirePhaseChanges(state, candidate, allowEconomy: true, allowResearch: true);
                     candidate.TurnNumber = checked(attemptedTurn + 1);
                     candidate.StateRevision = checked(state.StateRevision + 1);
                     candidate.AcceptedCommandIds!.Clear();
@@ -134,8 +134,8 @@ namespace HobbyDS9.Simulation
             }
         }
 
-        // Only Economy may change credits and colony population/stocks.
-        internal static void RequirePhaseChanges(GameStateDto state, GameStateDto candidate, bool allowEconomy)
+        // Economy and Research each have a distinct allowed mutation surface.
+        internal static void RequirePhaseChanges(GameStateDto state, GameStateDto candidate, bool allowEconomy, bool allowResearch = false)
         {
             if (candidate.Phase != state.Phase || candidate.TurnNumber != state.TurnNumber
                 || candidate.StateRevision != state.StateRevision || candidate.NextEntitySequence != state.NextEntitySequence
@@ -145,8 +145,12 @@ namespace HobbyDS9.Simulation
                 || !candidate.AcceptedCommandIds!.SequenceEqual(state.AcceptedCommandIds!)
                 || !candidate.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId))
                     .SequenceEqual(state.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId)))
-                || !candidate.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind, allowEconomy ? 0L : c.Credits))
-                    .SequenceEqual(state.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind, allowEconomy ? 0L : c.Credits)))
+                || !candidate.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind, allowEconomy ? 0L : c.Credits,
+                        allowResearch ? 0L : c.ResearchReserve, allowResearch ? null : c.ResearchTargetDefinitionId))
+                    .SequenceEqual(state.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind, allowEconomy ? 0L : c.Credits,
+                        allowResearch ? 0L : c.ResearchReserve, allowResearch ? null : c.ResearchTargetDefinitionId)))
+                || (!allowResearch && candidate.Civilizations!.Zip(state.Civilizations!, (a, b) =>
+                    a.UnlockedResearchDefinitionIds!.SequenceEqual(b.UnlockedResearchDefinitionIds!)).Any(equal => !equal))
                 || !candidate.StarSystems!.Select(n => (n.SystemId, n.DefinitionId, n.OwnerCivilizationId))
                     .SequenceEqual(state.StarSystems!.Select(n => (n.SystemId, n.DefinitionId, n.OwnerCivilizationId)))
                 || !candidate.Colonies!.Select(c => (c.ColonyId, c.SystemId, c.OwnerCivilizationId, c.EconomicProfileDefinitionId,
@@ -168,7 +172,9 @@ namespace HobbyDS9.Simulation
                     definitions.DefinitionIds.Select(d => new DefinitionId(d)).OrderBy(d => d),
                     state.Civilizations!.Select(c => new ActorSnapshot(new EntityId(c.CivilizationId), c.ControllerKind!.Value)),
                     state.AcceptedCommandIds!.Select(c => new EntityId(c)),
-                    state.Civilizations!.Select(c => new CivilizationSnapshot(new EntityId(c.CivilizationId), new DefinitionId(c.DefinitionId), c.ControllerKind!.Value, c.Credits)),
+                    state.Civilizations!.Select(c => new CivilizationSnapshot(new EntityId(c.CivilizationId), new DefinitionId(c.DefinitionId), c.ControllerKind!.Value, c.Credits, c.ResearchReserve,
+                        c.ResearchTargetDefinitionId == null ? (DefinitionId?)null : new DefinitionId(c.ResearchTargetDefinitionId),
+                        c.UnlockedResearchDefinitionIds!.Select(id => new DefinitionId(id)))),
                     state.StarSystems!.Select(n => new StarSystemSnapshot(new EntityId(n.SystemId), new DefinitionId(n.DefinitionId),
                         n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges, state.Phase!.Value, state.Colonies!.Select(c => new ColonySnapshot(new EntityId(c.ColonyId),
                         new EntityId(c.SystemId), c.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(c.OwnerCivilizationId),
@@ -195,6 +201,11 @@ namespace HobbyDS9.Simulation
                 .Select(c => new CivilizationDefinitionDto { DefinitionId = c.DefinitionId, DisplayName = c.DisplayName }).ToList(),
             StarSystems = source.StarSystems!.OrderBy(n => n.DefinitionId, StringComparer.Ordinal)
                 .Select(n => new StarSystemDefinitionDto { DefinitionId = n.DefinitionId, DisplayName = n.DisplayName }).ToList(),
+            ResearchNodes = source.ResearchNodes!.OrderBy(n => n.DefinitionId, StringComparer.Ordinal).Select(n => new ResearchNodeDefinitionDto
+            {
+                DefinitionId = n.DefinitionId, DisplayName = n.DisplayName, ResearchCost = n.ResearchCost,
+                PrerequisiteDefinitionIds = n.PrerequisiteDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal).ToList()
+            }).ToList(),
             EconomicProfiles = source.EconomicProfiles!.OrderBy(p => p.DefinitionId, StringComparer.Ordinal).Select(p => new EconomicProfileDefinitionDto
             {
                 DefinitionId = p.DefinitionId, DisplayName = p.DisplayName, FoodOutput = p.FoodOutput,
@@ -240,7 +251,9 @@ namespace HobbyDS9.Simulation
                 .Select(e => new EntityIdentityDto { EntityId = e.EntityId, DefinitionId = e.DefinitionId }).ToList(),
             AcceptedCommandIds = source.AcceptedCommandIds!.OrderBy(c => c, StringComparer.Ordinal).ToList(),
             Civilizations = source.Civilizations!.OrderBy(c => c.CivilizationId, StringComparer.Ordinal)
-                .Select(c => new CivilizationStateDto { CivilizationId = c.CivilizationId, DefinitionId = c.DefinitionId, ControllerKind = c.ControllerKind, Credits = c.Credits }).ToList(),
+                .Select(c => new CivilizationStateDto { CivilizationId = c.CivilizationId, DefinitionId = c.DefinitionId, ControllerKind = c.ControllerKind, Credits = c.Credits,
+                    ResearchReserve = c.ResearchReserve, ResearchTargetDefinitionId = c.ResearchTargetDefinitionId,
+                    UnlockedResearchDefinitionIds = c.UnlockedResearchDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal).ToList() }).ToList(),
             StarSystems = source.StarSystems!.OrderBy(n => n.SystemId, StringComparer.Ordinal)
                 .Select(n => new StarSystemStateDto { SystemId = n.SystemId, DefinitionId = n.DefinitionId, OwnerCivilizationId = n.OwnerCivilizationId }).ToList(),
             Colonies = source.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal).Select(c => new ColonyStateDto

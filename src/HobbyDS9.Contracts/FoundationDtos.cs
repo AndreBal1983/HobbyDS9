@@ -4,8 +4,8 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 5;
-        public const int ContentFormatVersion = 2;
+        public const int SaveFormatVersion = 6;
+        public const int ContentFormatVersion = 3;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
     }
@@ -37,6 +37,7 @@ namespace HobbyDS9.Contracts
         public List<StarSystemDefinitionDto>? StarSystems { get; set; }
         public List<GalaxyEdgeDto>? GalaxyEdges { get; set; }
         public List<EconomicProfileDefinitionDto>? EconomicProfiles { get; set; }
+        public List<ResearchNodeDefinitionDto>? ResearchNodes { get; set; }
         public List<string> DefinitionIds { get; set; } = new List<string>();
     }
 

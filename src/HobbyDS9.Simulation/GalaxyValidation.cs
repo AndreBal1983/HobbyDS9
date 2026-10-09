@@ -35,6 +35,7 @@ namespace HobbyDS9.Simulation
                 else Definition(item.DefinitionId, item.DisplayName, p);
             }
             ValidateEconomicProfiles(dto, ids, typed, path, issues);
+            ValidateResearchDefinitions(dto, ids, typed, path, issues);
             if (dto.GalaxyEdges == null) Add(issues, ValidationCode.MissingField, path + ".GalaxyEdges");
         }
 
@@ -85,6 +86,7 @@ namespace HobbyDS9.Simulation
                 }
             }
             ValidateColonies(dto, catalog, headers, typedIds, civilizationIds, path, issues);
+            ValidateResearchState(dto, catalog, path, issues);
             var graphReport = GalaxyGraph.Validate(dto.StarSystems?.Select(s => s?.SystemId ?? string.Empty), catalog?.GalaxyEdges);
             foreach (var issue in graphReport.Issues)
                 Add(issues, issue.Code, issue.Path.StartsWith("$.Edges", StringComparison.Ordinal)

@@ -1,8 +1,8 @@
 {
   "ScenarioId": "ds9-strategic-slice-v1",
-  "RulesVersion": "phase-1-4a-v1",
+  "RulesVersion": "phase-1-4b-v1",
   "Definitions": {
-    "ContentFormatVersion": 2,
+    "ContentFormatVersion": 3,
     "DefinitionIds": [
       "civilization.federation",
       "civilization.cardassian",
@@ -13,7 +13,8 @@
       "star-system.bajor",
       "star-system.bajoran-wormhole",
       "star-system.gamma-exit",
-      "economy.baseline"
+      "economy.baseline",
+      "research.advanced-engineering"
     ],
     "Civilizations": [
       {
@@ -96,6 +97,14 @@
         "StarvationLossPerTurn": 50,
         "ResearchOutput": 3
       }
+    ],
+    "ResearchNodes": [
+      {
+        "DefinitionId": "research.advanced-engineering",
+        "DisplayName": "Advanced Starship Engineering",
+        "ResearchCost": 9,
+        "PrerequisiteDefinitionIds": []
+      }
     ]
   },
   "InitialState": {
@@ -168,19 +177,28 @@
         "CivilizationId": "civ.federation",
         "DefinitionId": "civilization.federation",
         "ControllerKind": 1,
-        "Credits": 50
+        "Credits": 50,
+        "ResearchReserve": 0,
+        "ResearchTargetDefinitionId": null,
+        "UnlockedResearchDefinitionIds": []
       },
       {
         "CivilizationId": "civ.cardassian",
         "DefinitionId": "civilization.cardassian",
         "ControllerKind": 2,
-        "Credits": 50
+        "Credits": 50,
+        "ResearchReserve": 0,
+        "ResearchTargetDefinitionId": null,
+        "UnlockedResearchDefinitionIds": []
       },
       {
         "CivilizationId": "civ.dominion",
         "DefinitionId": "civilization.dominion",
         "ControllerKind": 2,
-        "Credits": 50
+        "Credits": 50,
+        "ResearchReserve": 0,
+        "ResearchTargetDefinitionId": null,
+        "UnlockedResearchDefinitionIds": []
       }
     ],
     "StarSystems": [

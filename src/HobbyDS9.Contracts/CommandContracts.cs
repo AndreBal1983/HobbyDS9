@@ -14,7 +14,8 @@ namespace HobbyDS9.Contracts
         None = 0, InvalidEnvelope = 1, InvalidCommandId = 2, InvalidActorId = 3,
         UnknownActor = 4, ActorNotControlled = 5, StaleTurn = 6, DuplicateCommand = 7,
         StaleRevision = 8, UnknownCommandKind = 9, InvalidPayload = 10,
-        UnsupportedCommand = 11, RevisionExhausted = 12, InvalidTarget = 13, CombatPending = 14
+        UnsupportedCommand = 11, RevisionExhausted = 12, InvalidTarget = 13, CombatPending = 14, UnknownResearchNode = 15, ResearchAlreadyUnlocked = 16,
+        ResearchPrerequisiteMissing = 17, ResearchTargetUnchanged = 18
     }
 
     // Closed discriminated union: exactly one payload must match Kind. There

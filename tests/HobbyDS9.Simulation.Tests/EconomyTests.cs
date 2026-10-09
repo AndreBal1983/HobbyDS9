@@ -17,7 +17,7 @@ public sealed class EconomyTests
     };
     private static DefinitionCatalogDto Definitions() => new()
     {
-        ContentFormatVersion = FoundationVersions.ContentFormatVersion,
+        ContentFormatVersion = FoundationVersions.ContentFormatVersion, ResearchNodes = new(),
         DefinitionIds = new() { "civilization.fixture", "system.fixture", "economy.fixture" },
         Civilizations = new() { new() { DefinitionId = "civilization.fixture", DisplayName = "Fixture" } },
         StarSystems = new() { new() { DefinitionId = "system.fixture", DisplayName = "Fixture system" } },
@@ -31,7 +31,7 @@ public sealed class EconomyTests
         {
             Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1,
             RngState = new SplitMix64Random(47).ToDto(), AcceptedCommandIds = new(),
-            Civilizations = new() { new() { CivilizationId = "civ.fixture", DefinitionId = "civilization.fixture", ControllerKind = ControllerKind.Human, Credits = 50 } },
+            Civilizations = new() { new() { CivilizationId = "civ.fixture", DefinitionId = "civilization.fixture", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.Human, Credits = 50 } },
             StarSystems = new() { new() { SystemId = "node.z", DefinitionId = "system.fixture", OwnerCivilizationId = "civ.fixture" } },
             Colonies = new() { new() { ColonyId = "colony.z", SystemId = "node.z", OwnerCivilizationId = "civ.fixture", EconomicProfileDefinitionId = "economy.fixture",
                 Population = 1000, PopulationCapacity = 2000, Food = 20, Materials = 10 } },
@@ -64,7 +64,7 @@ public sealed class EconomyTests
         var scenario = JsonSerializer.Deserialize<ScenarioDto>(bytes)!;
         scenario.ContentHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
         Assert.True(FoundationValidator.ValidateScenario(scenario).IsValid);
-        Assert.Equal(2, scenario.Definitions.ContentFormatVersion);
+        Assert.Equal(3, scenario.Definitions.ContentFormatVersion);
         var profile = Assert.Single(scenario.Definitions.EconomicProfiles!);
         Assert.Equal(new long[] { 12, 100, 4, 100, 4, 250, 50, 50, 3 }, new[] { profile.FoodOutput, profile.PopulationPerFood,
             profile.MaterialOutput, profile.PopulationPerCredit, profile.BaseIndustry, profile.PopulationPerIndustry,
@@ -339,7 +339,7 @@ public sealed class EconomyTests
         Assert.All(typeof(ColonySnapshot).GetProperties(), p => Assert.Null(p.SetMethod));
         var before = StateJson(session); var exported = session.ExportSave(); exported.GameState.Colonies![0].Food = -1; exported.GameState.Colonies.Clear();
         Assert.Equal(before, StateJson(session));
-        Assert.DoesNotContain("Industry", before); Assert.DoesNotContain("Research", before);
+        Assert.DoesNotContain("Industry", before); Assert.DoesNotContain("ResearchOutput", before);
         Assert.Null(JsonSerializer.Deserialize<GameStateDto>("{}")!.Colonies);
         Assert.Null(JsonSerializer.Deserialize<DefinitionCatalogDto>("{}")!.EconomicProfiles);
     }

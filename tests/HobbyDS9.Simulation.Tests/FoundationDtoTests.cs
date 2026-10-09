@@ -10,7 +10,7 @@ public sealed class FoundationDtoTests
     private const string Rules = "foundation-v1";
     private static readonly string ContentHash = new('a', 64);
     private static readonly SaveCompatibility Compatibility = new("scenario.fixture", Rules, ContentHash);
-    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, EconomicProfiles = new(), Civilizations = new(), StarSystems = new(), GalaxyEdges = new(), DefinitionIds = new() { "definition.alpha", "definition.beta" } };
+    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, ResearchNodes = new(), EconomicProfiles = new(), Civilizations = new(), StarSystems = new(), GalaxyEdges = new(), DefinitionIds = new() { "definition.alpha", "definition.beta" } };
 
     private static GameStateDto State() => new()
     {

@@ -18,4 +18,4 @@ var session = new SimulationSession(new SaveEnvelopeDto
 }, scenario.Definitions, new SaveCompatibility(scenario.ScenarioId, scenario.RulesVersion, scenario.ContentHash));
 var snapshot = session.CaptureSnapshot();
 Console.WriteLine($"{scenario.ScenarioId}: {snapshot.Civilizations.Count} civilizations, {session.Galaxy.Nodes.Count} nodes, {session.Galaxy.Edges.Count} edges, {snapshot.Colonies.Count} colonies.");
-Console.WriteLine("Scenario identity/graph skeleton validated. Colony economy is implemented; this host does not advance turns.");
+Console.WriteLine("Scenario identity/graph skeleton validated. Colony economy and civilization research are implemented; this host does not advance turns.");

@@ -31,12 +31,13 @@ namespace HobbyDS9.Simulation
             var before = SimulationSession.CopyState(staging);
             if (probe != null && !probe(phase, staging)) return false;
             Validate(staging, definitions);
-            // Instrumentation must not supply rule behavior, even at Economy.
+            // Instrumentation must not supply rule behavior, even at implemented phases.
             SimulationSession.RequirePhaseChanges(before, SimulationSession.CopyState(staging), allowEconomy: false);
             if (phase == StrategicTurnPhase.Economy) EconomyPhase.Execute(staging, definitions);
+            if (phase == StrategicTurnPhase.Research) ResearchPhase.Execute(staging, definitions);
             // All other built-in boundaries remain no-ops.
             Validate(staging, definitions);
-            SimulationSession.RequirePhaseChanges(before, SimulationSession.CopyState(staging), allowEconomy: phase == StrategicTurnPhase.Economy);
+            SimulationSession.RequirePhaseChanges(before, SimulationSession.CopyState(staging), allowEconomy: phase == StrategicTurnPhase.Economy, allowResearch: phase == StrategicTurnPhase.Research);
             return true;
         }
     }

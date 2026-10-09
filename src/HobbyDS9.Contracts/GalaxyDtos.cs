@@ -24,6 +24,9 @@ namespace HobbyDS9.Contracts
         public string DefinitionId { get; set; } = string.Empty;
         public ControllerKind? ControllerKind { get; set; }
         public long Credits { get; set; }
+        public long ResearchReserve { get; set; }
+        public string? ResearchTargetDefinitionId { get; set; }
+        public List<string>? UnlockedResearchDefinitionIds { get; set; }
     }
 
     public sealed class StarSystemStateDto
@@ -47,8 +50,16 @@ namespace HobbyDS9.Contracts
         public DefinitionId DefinitionId { get; }
         public ControllerKind ControllerKind { get; }
         public long Credits { get; }
-        public CivilizationSnapshot(EntityId id, DefinitionId definitionId, ControllerKind controllerKind, long credits = 0)
-        { CivilizationId = id; DefinitionId = definitionId; ControllerKind = controllerKind; Credits = credits; }
+        public long ResearchReserve { get; }
+        public DefinitionId? ResearchTargetDefinitionId { get; }
+        public IReadOnlyList<DefinitionId> UnlockedResearchDefinitionIds { get; }
+        public CivilizationSnapshot(EntityId id, DefinitionId definitionId, ControllerKind controllerKind, long credits = 0, long researchReserve = 0,
+            DefinitionId? researchTargetDefinitionId = null, IEnumerable<DefinitionId>? unlockedResearchDefinitionIds = null)
+        {
+            CivilizationId = id; DefinitionId = definitionId; ControllerKind = controllerKind; Credits = credits;
+            ResearchReserve = researchReserve; ResearchTargetDefinitionId = researchTargetDefinitionId;
+            UnlockedResearchDefinitionIds = new List<DefinitionId>(unlockedResearchDefinitionIds ?? Array.Empty<DefinitionId>()).AsReadOnly();
+        }
     }
 
     public sealed class StarSystemSnapshot
