@@ -7,7 +7,7 @@ namespace HobbyDS9.Simulation
 {
     // Non-mutating structural/identity validation only; gameplay validation comes
     // with future schemas. Diagnostics retain input paths and stable error codes.
-    public static class FoundationValidator
+    public static partial class FoundationValidator
     {
         public static ValidationReport ValidateRngState(RngStateDto? dto)
         {
@@ -29,6 +29,7 @@ namespace HobbyDS9.Simulation
             var issues = new List<ValidationIssue>();
             var ids = ValidateDefinitions(definitions, "$.Definitions", issues);
             ValidateState(dto, ids, false, "$.GameState", issues);
+            ValidateTypedState(dto, definitions, "$.GameState", issues);
             return new ValidationReport(issues);
         }
 
@@ -41,6 +42,7 @@ namespace HobbyDS9.Simulation
                 ValidateMetadata(dto.ScenarioId, dto.RulesVersion, dto.ContentHash, "$", issues);
                 var ids = ValidateDefinitions(dto.Definitions, "$.Definitions", issues);
                 ValidateState(dto.InitialState, ids, true, "$.InitialState", issues);
+                ValidateTypedState(dto.InitialState, dto.Definitions, "$.InitialState", issues);
                 if (dto.InitialState != null && (dto.InitialState.TurnNumber != 1 || dto.InitialState.StateRevision != 0
                     || dto.InitialState.NextEntitySequence != 1)) Add(issues, ValidationCode.InvalidCounter, "$.InitialState");
                 if (dto.InitialState?.AcceptedCommandIds != null && dto.InitialState.AcceptedCommandIds.Count != 0)
@@ -64,6 +66,7 @@ namespace HobbyDS9.Simulation
                 if (!StringComparer.Ordinal.Equals(dto.ContentHash, expected.ContentHash)) Add(issues, ValidationCode.ContentMismatch, "$.ContentHash");
                 var ids = ValidateDefinitions(definitions, "$.Definitions", issues);
                 ValidateState(dto.GameState, ids, false, "$.GameState", issues);
+                ValidateTypedState(dto.GameState, definitions, "$.GameState", issues);
             }
             return new ValidationReport(issues);
         }
@@ -107,6 +110,7 @@ namespace HobbyDS9.Simulation
                 }
                 else if (!ids.Add(id)) Add(issues, ValidationCode.DuplicateId, itemPath);
             }
+            ValidateTypedDefinitions(dto, ids, path, issues);
             return ids;
         }
 

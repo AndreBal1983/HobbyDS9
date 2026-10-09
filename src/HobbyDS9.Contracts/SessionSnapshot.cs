@@ -18,11 +18,12 @@ namespace HobbyDS9.Contracts
     public sealed class ActorSnapshot
     {
         public EntityId CivilizationId { get; }
-        public bool IsControlled { get; }
-        public ActorSnapshot(EntityId civilizationId, bool isControlled)
+        public ControllerKind ControllerKind { get; }
+        public bool IsControlled => ControllerKind == ControllerKind.Human;
+        public ActorSnapshot(EntityId civilizationId, ControllerKind controllerKind)
         {
             if (!civilizationId.IsValid) throw new ArgumentException("Uninitialized actor identity.");
-            CivilizationId = civilizationId; IsControlled = isControlled;
+            CivilizationId = civilizationId; ControllerKind = controllerKind;
         }
     }
 
@@ -50,10 +51,15 @@ namespace HobbyDS9.Contracts
         public IReadOnlyList<DefinitionId> DefinitionIds { get; }
         public IReadOnlyList<ActorSnapshot> Actors { get; }
         public IReadOnlyList<EntityId> AcceptedCommandIds { get; }
+        public IReadOnlyList<CivilizationSnapshot> Civilizations { get; }
+        public IReadOnlyList<StarSystemSnapshot> StarSystems { get; }
+        public IReadOnlyList<GalaxyEdge> GalaxyEdges { get; }
 
         public SessionSnapshot(string scenarioId, string rulesVersion, string contentHash, int turnNumber, long revision,
             ulong nextEntitySequence, RngSnapshot rng, IEnumerable<EntityIdentitySnapshot> entities,
-            IEnumerable<DefinitionId> definitions, IEnumerable<ActorSnapshot> actors, IEnumerable<EntityId> commands)
+            IEnumerable<DefinitionId> definitions, IEnumerable<ActorSnapshot> actors, IEnumerable<EntityId> commands,
+            IEnumerable<CivilizationSnapshot>? civilizations = null, IEnumerable<StarSystemSnapshot>? systems = null,
+            IEnumerable<GalaxyEdge>? edges = null)
         {
             ScenarioId = scenarioId; RulesVersion = rulesVersion; ContentHash = contentHash;
             TurnNumber = turnNumber; StateRevision = revision; NextEntitySequence = nextEntitySequence;
@@ -62,6 +68,9 @@ namespace HobbyDS9.Contracts
             DefinitionIds = new List<DefinitionId>(definitions).AsReadOnly();
             Actors = new List<ActorSnapshot>(actors).AsReadOnly();
             AcceptedCommandIds = new List<EntityId>(commands).AsReadOnly();
+            Civilizations = new List<CivilizationSnapshot>(civilizations ?? Array.Empty<CivilizationSnapshot>()).AsReadOnly();
+            StarSystems = new List<StarSystemSnapshot>(systems ?? Array.Empty<StarSystemSnapshot>()).AsReadOnly();
+            GalaxyEdges = new List<GalaxyEdge>(edges ?? Array.Empty<GalaxyEdge>()).AsReadOnly();
         }
     }
 }

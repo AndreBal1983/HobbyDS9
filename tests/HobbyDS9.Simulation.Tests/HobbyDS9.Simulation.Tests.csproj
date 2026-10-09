@@ -20,4 +20,7 @@
     <ProjectReference Include="../../src/HobbyDS9.Simulation/HobbyDS9.Simulation.csproj" />
     <ProjectReference Include="../../src/HobbyDS9.Scenarios/HobbyDS9.Scenarios.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="../../scenarios/ds9-slice/scenario.json" Link="scenarios/ds9-slice/scenario.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

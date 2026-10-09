@@ -4,7 +4,8 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 2;
+        public const int SaveFormatVersion = 3;
+        public const int ContentFormatVersion = 1;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
     }
@@ -28,10 +29,13 @@ namespace HobbyDS9.Contracts
         public string? DefinitionId { get; set; }
     }
 
-    // Identity-only catalog/state. No civilization, colony, ship or turn behavior
-    // is implemented by these headers. Future gameplay schemas must be versioned.
+    // Versioned content: labels stay here, while mutable facts stay in GameStateDto.
     public sealed class DefinitionCatalogDto
     {
+        public int ContentFormatVersion { get; set; }
+        public List<CivilizationDefinitionDto>? Civilizations { get; set; }
+        public List<StarSystemDefinitionDto>? StarSystems { get; set; }
+        public List<GalaxyEdgeDto>? GalaxyEdges { get; set; }
         public List<string> DefinitionIds { get; set; } = new List<string>();
     }
 
@@ -42,8 +46,10 @@ namespace HobbyDS9.Contracts
         public ulong NextEntitySequence { get; set; }
         public RngStateDto RngState { get; set; } = new RngStateDto();
         public List<EntityIdentityDto> EntityIdentities { get; set; } = new List<EntityIdentityDto>();
-        // Required in format 2. Missing JSON must not silently erase deduplication.
+        // Required since format 2. Missing JSON must not silently erase deduplication.
         public List<string>? AcceptedCommandIds { get; set; }
+        public List<CivilizationStateDto>? Civilizations { get; set; }
+        public List<StarSystemStateDto>? StarSystems { get; set; }
     }
 
     public sealed class ScenarioDto

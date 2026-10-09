@@ -1,0 +1,183 @@
+{
+  "ScenarioId": "ds9-strategic-slice-v1",
+  "RulesVersion": "phase-1-3a-v1",
+  "Definitions": {
+    "ContentFormatVersion": 1,
+    "DefinitionIds": [
+      "civilization.federation",
+      "civilization.cardassian",
+      "civilization.dominion",
+      "star-system.sol",
+      "star-system.cardassia",
+      "star-system.founders-homeworld",
+      "star-system.bajor",
+      "star-system.bajoran-wormhole",
+      "star-system.gamma-exit"
+    ],
+    "Civilizations": [
+      {
+        "DefinitionId": "civilization.federation",
+        "DisplayName": "Federation"
+      },
+      {
+        "DefinitionId": "civilization.cardassian",
+        "DisplayName": "Cardassian Union"
+      },
+      {
+        "DefinitionId": "civilization.dominion",
+        "DisplayName": "Dominion"
+      }
+    ],
+    "StarSystems": [
+      {
+        "DefinitionId": "star-system.sol",
+        "DisplayName": "Sol"
+      },
+      {
+        "DefinitionId": "star-system.cardassia",
+        "DisplayName": "Cardassia"
+      },
+      {
+        "DefinitionId": "star-system.founders-homeworld",
+        "DisplayName": "Founders' Homeworld"
+      },
+      {
+        "DefinitionId": "star-system.bajor",
+        "DisplayName": "Bajor"
+      },
+      {
+        "DefinitionId": "star-system.bajoran-wormhole",
+        "DisplayName": "Bajoran Wormhole"
+      },
+      {
+        "DefinitionId": "star-system.gamma-exit",
+        "DisplayName": "Gamma Exit"
+      }
+    ],
+    "GalaxyEdges": [
+      {
+        "EndpointA": "system.sol",
+        "EndpointB": "system.bajor",
+        "Kind": 1
+      },
+      {
+        "EndpointA": "system.cardassia",
+        "EndpointB": "system.bajor",
+        "Kind": 1
+      },
+      {
+        "EndpointA": "system.bajor",
+        "EndpointB": "system.bajoran-wormhole",
+        "Kind": 1
+      },
+      {
+        "EndpointA": "system.bajoran-wormhole",
+        "EndpointB": "system.gamma-exit",
+        "Kind": 2
+      },
+      {
+        "EndpointA": "system.gamma-exit",
+        "EndpointB": "system.founders-homeworld",
+        "Kind": 1
+      }
+    ]
+  },
+  "InitialState": {
+    "TurnNumber": 1,
+    "StateRevision": 0,
+    "NextEntitySequence": 1,
+    "RngState": {
+      "AlgorithmId": "splitmix64-rejection-v1",
+      "AlgorithmVersion": 1,
+      "State": 47
+    },
+    "AcceptedCommandIds": [],
+    "EntityIdentities": [
+      {
+        "EntityId": "civ.federation",
+        "DefinitionId": "civilization.federation"
+      },
+      {
+        "EntityId": "civ.cardassian",
+        "DefinitionId": "civilization.cardassian"
+      },
+      {
+        "EntityId": "civ.dominion",
+        "DefinitionId": "civilization.dominion"
+      },
+      {
+        "EntityId": "system.sol",
+        "DefinitionId": "star-system.sol"
+      },
+      {
+        "EntityId": "system.cardassia",
+        "DefinitionId": "star-system.cardassia"
+      },
+      {
+        "EntityId": "system.founders-homeworld",
+        "DefinitionId": "star-system.founders-homeworld"
+      },
+      {
+        "EntityId": "system.bajor",
+        "DefinitionId": "star-system.bajor"
+      },
+      {
+        "EntityId": "system.bajoran-wormhole",
+        "DefinitionId": "star-system.bajoran-wormhole"
+      },
+      {
+        "EntityId": "system.gamma-exit",
+        "DefinitionId": "star-system.gamma-exit"
+      }
+    ],
+    "Civilizations": [
+      {
+        "CivilizationId": "civ.federation",
+        "DefinitionId": "civilization.federation",
+        "ControllerKind": 1
+      },
+      {
+        "CivilizationId": "civ.cardassian",
+        "DefinitionId": "civilization.cardassian",
+        "ControllerKind": 2
+      },
+      {
+        "CivilizationId": "civ.dominion",
+        "DefinitionId": "civilization.dominion",
+        "ControllerKind": 2
+      }
+    ],
+    "StarSystems": [
+      {
+        "SystemId": "system.sol",
+        "DefinitionId": "star-system.sol",
+        "OwnerCivilizationId": "civ.federation"
+      },
+      {
+        "SystemId": "system.cardassia",
+        "DefinitionId": "star-system.cardassia",
+        "OwnerCivilizationId": "civ.cardassian"
+      },
+      {
+        "SystemId": "system.founders-homeworld",
+        "DefinitionId": "star-system.founders-homeworld",
+        "OwnerCivilizationId": "civ.dominion"
+      },
+      {
+        "SystemId": "system.bajor",
+        "DefinitionId": "star-system.bajor",
+        "OwnerCivilizationId": null
+      },
+      {
+        "SystemId": "system.bajoran-wormhole",
+        "DefinitionId": "star-system.bajoran-wormhole",
+        "OwnerCivilizationId": null
+      },
+      {
+        "SystemId": "system.gamma-exit",
+        "DefinitionId": "star-system.gamma-exit",
+        "OwnerCivilizationId": null
+      }
+    ]
+  }
+}

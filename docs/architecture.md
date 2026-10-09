@@ -1,6 +1,6 @@
 # Phase 1 portable strategy simulation
 
-Status: first Phase 1 foundation increment and combat-boundary scaffold. No legacy implementation is copied. The engine and initial scenario are new work based on the requirements in this project. Feature implementation follows this document in small, tested increments.
+Status: Phase 1 identity/session foundations, Phase 3A civilization/scenario identity and galaxy graph, and the separate combat-boundary scaffold. No legacy implementation is copied. The engine and initial scenario are new work based on the requirements in this project. Feature implementation follows this document in small, tested increments.
 
 ## Goal and boundaries
 
@@ -8,7 +8,7 @@ Build a headless strategic vertical slice with reproducible turns, explicit stat
 
 Phase 1 includes seeded randomness, stable IDs, civilizations, systems/ownership, colonies/population, a small economy, production queues, research, ship designs, ships/fleets, graph movement orders, a strategic turn lifecycle and a simple rule-based AI. Combat has an authoritative pending-encounter lifecycle and request/result contracts; Phase 1 will use a deterministic no-loss placeholder resolver. Invasion, diplomacy, espionage, fog of war, faction-specific abilities, real tactical combat, multiplayer, frontend integration and legacy save import are deferred.
 
-The current implementation contains typed stable IDs, persisted global entity allocation, campaign/encounter RNG, identity-only common DTOs and structural validation, plus the existing combat DTOs/interface and narrow combat-boundary helper for request allocation and result buffering. Tests exercise these boundaries. It now includes a planning-only SimulationSession with owned state, command validation/results, persisted deduplication and detached immutable snapshots. It does not implement a turn engine, production resolver or scenario, nor any economy, research, AI or fleet movement gameplay. Full campaign determinism and lifecycle tests will accompany their implementation.
+The current implementation contains typed stable IDs, persisted global entity allocation, campaign/encounter RNG, common identity/civilization/system DTOs and structural validation, plus the existing combat DTOs/interface and narrow combat-boundary helper for request allocation and result buffering. Tests exercise these boundaries. It now includes a planning-only SimulationSession with owned state, command validation/results, persisted deduplication and detached immutable snapshots. It includes the fixed scenario identity/graph skeleton, persisted Human/AI controllers and ownership, and deterministic route queries. It does not implement a turn engine, production resolver, economy, research, AI policy or fleet movement gameplay. Full campaign determinism and lifecycle tests will accompany their implementation.
 
 ## Proposed solution
 
@@ -88,9 +88,9 @@ The initial DS9-themed JSON package is under scenarios/ds9-slice, outside produc
 
 ## Implemented foundation contracts and validation
 
-This increment introduces RngStateDto, EntityAllocationStateDto, EntityIdentityDto, DefinitionCatalogDto, GameStateDto, ScenarioDto and SaveEnvelopeDto. GameStateDto currently stores only the turn/revision stamps, next entity sequence, RNG state, accepted command IDs for the active planning turn and identity headers with optional definition references. DefinitionCatalogDto is an identity-only list, not ship/building/race content. TurnNumber is persisted metadata; no turn execution exists. The existing CombatCheckpointDto remains a separate scaffold rather than being silently omitted from a playable campaign save.
+This increment introduces RngStateDto, EntityAllocationStateDto, EntityIdentityDto, DefinitionCatalogDto, GameStateDto, ScenarioDto and SaveEnvelopeDto. GameStateDto currently stores turn/revision stamps, next entity sequence, RNG state, accepted command IDs for the active planning turn, identity headers, civilization state with persisted ControllerKind, and star-system state with optional civilization ownership. DefinitionCatalogDto stores the identity list plus civilization/system definitions with presentation labels and data-defined undirected galaxy edges; it contains no ship/building/race gameplay content. TurnNumber is persisted metadata; no turn execution exists. The existing CombatCheckpointDto remains a separate scaffold rather than being silently omitted from a playable campaign save.
 
-FoundationVersions.SaveFormatVersion=2 describes this foundation-only save schema, not a complete campaign save. Version 2 requires the accepted-command ledger; version 1 and missing ledgers are rejected rather than silently losing duplicate detection. Expand/version the schema when gameplay facts and the combat checkpoint are integrated; never claim this header-only envelope can resume an implemented campaign. Hosts use their own JSON adapters over these concrete DTOs. There are no serializer attributes, CLR type discriminators, reflection-based factories or runtime dictionaries in the save surface.
+FoundationVersions.SaveFormatVersion=3 and ContentFormatVersion=1 describe this identity/graph skeleton schema, not a complete campaign save. Required lists may be empty but cannot be missing/null. Save versions 1/2 and unknown content versions are rejected without automatic migration. The accepted-command ledger remains required. Expand/version the schema when gameplay facts and the combat checkpoint are integrated; never claim this skeleton envelope can resume an implemented campaign. Hosts use their own JSON adapters over these concrete DTOs. There are no serializer attributes, CLR type discriminators, reflection-based factories or runtime dictionaries in the save surface.
 
 FoundationValidator returns an immutable ValidationReport of stable ValidationCode/path pairs without changing input DTOs. It validates null/missing payloads, canonical/duplicate/reserved IDs, identity-to-definition references, positive turn/allocation counters, nonnegative revisions, well-formed generated IDs, and a counter strictly greater than every allocated sequence present. Global allocated sequence reuse across categories is rejected. Removed/cancelled entities do not require a contiguous live sequence; allocation never rewinds. Authored ScenarioDto state starts at turn 1, revision 0 and next sequence 1, and cannot contain runtime IDs. Future gameplay invariants accompany those schemas.
 
@@ -99,6 +99,16 @@ RngStateDto requires the exact supported algorithm ID/version and a present full
 SplitMix64Random provides the campaign stream and detached RngStateDto capture/restore. EncounterRandomStream wraps an independently owned instance of the same generator; combat requests retain separate streams and outcomes remain order independent. The existing combat allocator now uses EntityIdAllocator and shared canonical-ID validation so there is one allocation/RNG/ID grammar implementation.
 
 GitHub Actions runs locked restore, Release build and the complete test suite on pushes and pull requests, on Linux, Windows and macOS, using the SDK pinned in global.json. Local cloud bootstrap remains optional; CI uses setup-dotnet directly and needs no workspace-specific paths.
+
+## Implemented Phase 3A galaxy model
+
+StarSystemDefinitionDto contains DefinitionId and DisplayName; StarSystemStateDto contains stable SystemId, DefinitionId and nullable OwnerCivilizationId. Traversal-only nodes use the same model. CivilizationDefinitionDto holds labels separately from CivilizationStateDto, whose nullable ControllerKind distinguishes a missing controller from Human/AI. No colony, population, resource, research, ship or fleet facts exist yet.
+
+Catalog GalaxyEdges reference stable system entity IDs, with explicit Normal/Wormhole kinds. The supplied content catalog is pinned by the save's content/rules identity and provided again at reload; immutable topology is not duplicated into mutable campaign state. GalaxyGraph validates duplicate nodes, missing endpoints, self-edges, duplicate/reversed edges (even with different kinds), invalid IDs and missing/unknown kinds. Disconnected graphs and isolated nodes are valid. Runtime edges canonicalize A < B by ordinal ID and sort by endpoints; adjacency is immutable and sorted by neighboring system ID. Neither graph construction nor queries consume RNG, allocation or revisions.
+
+FindRoute uses deterministic breadth-first search, returning the first shortest route according to sorted adjacency. RouteResult.Steps excludes the origin and includes the destination; origin == destination returns an empty route. ValidateRoute accepts an explicit ordered list of typed system IDs, checks origin and each edge, and returns stable route error codes. Empty routes are valid and backtracking is allowed; self steps, missing nodes and nonadjacent steps are rejected. Both edge kinds have unit traversal cost. These helpers are queries only and are not connected to commands, fleets or AdvanceTurn. SimulationSession.Galaxy and snapshot civilization/system/edge projections expose immutable data.
+
+The headless adapter hashes the exact UTF-8 scenario.json bytes with SHA256 and supplies ContentHash after decoding; the file excludes its own hash. This is the implemented version-1 package fingerprint, including labels and whitespace. The canonical rules-only hash described above remains future work and requires deliberate content versioning. Graph results remain independent of labels and DTO/input order.
 
 ## Determinism contract
 
@@ -120,7 +130,7 @@ Use an explicit closed command discriminator and DTO mapping; do not serialize C
 
 Validate actor existence/control, ownership, target references, prerequisites, resource availability, legal route adjacency and expected turn/revision before mutation. Return CommandResult with accepted/rejected status, stable error code and resulting revision. Exceptions are for programming/invariant errors, not ordinary invalid player actions. Commands and outcomes have canonical order matching submission order. AI submits through the same validator, with an internal trusted controller path that still enforces gameplay legality.
 
-The implemented foundation session copies validated save/catalog inputs and host-supplied actor/control ID registries. Actor IDs must exist in the identity headers; this registry is not a civilization or controller gameplay implementation. Public commands use the four concrete payload slots above, but all gameplay handlers remain unsupported. An internal test-only handler registration seam exercises the real transaction pipeline without shipping gameplay behavior.
+The implemented foundation session copies validated save/catalog inputs. Its constructor no longer accepts actor/control registries: actor existence and local Human control derive exclusively from persisted CivilizationStateDto. AI civilizations return ActorNotControlled on the public player-command path; no AI command policy or trusted AI submission path is implemented yet. ActorSnapshot.IsControlled is a convenience projection of ControllerKind == Human, not remote authentication. Typed civilization/system identities must match their global identity header and the correct definition category; system owners must reference existing civilizations. Public commands use the four concrete payload slots above, but all gameplay handlers remain unsupported. An internal test-only handler registration seam exercises the real transaction pipeline without shipping gameplay behavior.
 
 Common validation order is envelope completeness, canonical command/actor IDs, actor existence/control, expected turn, duplicate ID, expected revision, discriminator, payload shape, handler availability, then revision capacity. ExpectedTurn and ExpectedRevision are nullable DTO fields so missing values cannot become valid defaults. Duplicate detection precedes stale revision detection, so replaying an accepted envelope reports DuplicateCommand. Rejections return stable CommandErrorCode values and the current turn/revision, reserve no IDs, and leave state, RNG, allocator and revision unchanged. Rejected IDs may be retried. Accepted transactions increment StateRevision exactly once and persist the command ID; long.MaxValue rejects further mutations without overflow.
 
@@ -208,29 +218,29 @@ Persist the controller kind on each civilization. Human factions are not secretl
 
 ## Fixed DS9-themed scenario
 
-Proposed scenario ID: ds9-strategic-slice-v1. Seed: 47. This is a testing setup, not a historically balanced campaign.
+Implemented skeleton scenario ID: ds9-strategic-slice-v1, in scenarios/ds9-slice/scenario.json. Seed: 47. The host validates the package and constructs a queryable session without advancing turns. This is a testing setup, not a historically balanced campaign.
 
 | ID | Content label | Initial owner / behavior |
 |---|---|---|
 | civ.federation | Federation | Human |
 | civ.cardassian | Cardassian Union | AI |
 | civ.dominion | Dominion | AI |
-| system.sol | Sol | Federation colony |
-| system.cardassia | Cardassia | Cardassian colony |
-| system.founders-home | Founders' Homeworld | Dominion colony |
-| system.bajor | Bajor | Neutral inhabited colony; not claimable in Phase 1 |
-| system.bajoran-wormhole | Bajoran wormhole | Unowned, noncolonizable traversal node |
-| system.gamma-exit | Gamma wormhole exit | Unowned, noncolonizable traversal node |
+| system.sol | Sol | Federation owned; no colony yet |
+| system.cardassia | Cardassia | Cardassian owned; no colony yet |
+| system.founders-homeworld | Founders' Homeworld | Dominion owned; no colony yet |
+| system.bajor | Bajor | Unowned; no colony yet |
+| system.bajoran-wormhole | Bajoran Wormhole | Unowned traversal node |
+| system.gamma-exit | Gamma Exit | Unowned traversal node |
 
 Undirected edges: Sol—Bajor, Cardassia—Bajor, Bajor—Bajoran wormhole, Bajoran wormhole—Gamma exit, Gamma exit—Founders' Homeworld. Every edge has unit traversal cost in this slice. The wormhole edge is tagged in content; engine names/labels do not affect movement. Frontend coordinates are not part of rules.
 
-Three initially owned colonies have population 1,000, capacity 2,000, initial food 20/materials 10, and civilizations start with 50 credits. Baseline profile values: FoodOutput 12, PopulationPerFood 100, MaterialOutput 4, PopulationPerCredit 100, BaseIndustry 4, PopulationPerIndustry 250, GrowthPerTurn 50, StarvationLossPerTurn 50, ResearchOutput 3. Bajor uses the same profile with no owning treasury/research contribution.
+Planned later content, absent from the skeleton: three initially owned colonies have population 1,000, capacity 2,000, initial food 20/materials 10, and civilizations start with 50 credits. Baseline profile values: FoodOutput 12, PopulationPerFood 100, MaterialOutput 4, PopulationPerCredit 100, BaseIndustry 4, PopulationPerIndustry 250, GrowthPerTurn 50, StarvationLossPerTurn 50, ResearchOutput 3. Bajor uses the same profile with no owning treasury/research contribution.
 
-Each faction has one starting scout and fleet at its home system, plus an available new scout design costing 20 industry, 8 materials and 10 credits. A separate generic research node costs 9 research and unlocks a second ship design. A small neutral fixture will include tied AI route candidates to exercise seeded decisions. Content labels can differ while structural IDs/stats remain identical; that must not alter outcomes.
+Planned later content, absent from the skeleton: each faction has one starting scout and fleet at its home system, plus an available new scout design costing 20 industry, 8 materials and 10 credits. A separate generic research node costs 9 research and unlocks a second ship design. A small neutral fixture will include tied AI route candidates to exercise seeded decisions. Content labels can differ while structural IDs/stats remain identical; that must not alter outcomes.
 
 ## Tests and acceptance gates
 
-Add meaningful behavior tests as systems are implemented. Current session tests additionally verify input/staging/export ownership, immutable historical snapshots, expected turn/revision, exact revision increments and overflow, persisted duplicate detection, payload/discriminator round trips, concurrent submission serialization, and rejected-command/fault immutability including RNG/allocation. Current tests verify compiled netstandard2.1 targets/dependencies, identity grammar/equality/ordering/defaults, allocation across categories/overflow/reload, foundation save/scenario validation and RNG continuation, DTO round trips, independently fixed RNG vectors, stable seed/ID allocation under reordered input, all six three-battle resolution permutations, isolation from another battle's draw count, partially resolved save/resume, detached snapshot ownership, duplicate fleet/ship/result rejection, ID ingress validation, the planning guard, and retreat restrictions. These validate the narrow boundary helper, not a campaign engine, strategic combat gameplay or full-turn determinism.
+Add meaningful behavior tests as systems are implemented. Phase 3A tests verify the exact scenario skeleton, controller/ownership persistence, graph validation, known BFS routes, shortest-path tie ordering, all-pair route stability under input permutations, route validation, save/content round trips and detached graph/state projections. Current session tests additionally verify input/staging/export ownership, immutable historical snapshots, expected turn/revision, exact revision increments and overflow, persisted duplicate detection, payload/discriminator round trips, concurrent submission serialization, and rejected-command/fault immutability including RNG/allocation. Current tests verify compiled netstandard2.1 targets/dependencies, identity grammar/equality/ordering/defaults, allocation across categories/overflow/reload, foundation save/scenario validation and RNG continuation, DTO round trips, independently fixed RNG vectors, stable seed/ID allocation under reordered input, all six three-battle resolution permutations, isolation from another battle's draw count, partially resolved save/resume, detached snapshot ownership, duplicate fleet/ship/result rejection, ID ingress validation, the planning guard, and retreat restrictions. These validate the narrow boundary helper, not a campaign engine, strategic combat gameplay or full-turn determinism.
 
 | Test | Required evidence |
 |---|---|
@@ -258,7 +268,7 @@ Headless acceptance: load the fixed JSON scenario, accept a Federation route/pro
 
 1. IDs and concrete DTOs, content/state validation, specified RNG and known-vector tests.
 2. Session state ownership, command envelope/results, deterministic allocation, snapshots and serialization continuation tests (foundation implemented; gameplay handlers pending).
-3. Fixed scenario input, graph movement and exact turn/staging lifecycle.
+3. Phase 3A fixed scenario identity/ownership and graph queries (implemented). Graph movement and exact turn/staging lifecycle remain separate future increments.
 4. Colony economy, research and production with invariants and arithmetic tests.
 5. Ship/fleet creation, movement commands, authoritative pending checkpoints, validated result application, injected no-loss resolver and combat-blocking/save-resume tests.
 6. AI through the same command path, headless scenario runner and multi-turn reproducibility gate.

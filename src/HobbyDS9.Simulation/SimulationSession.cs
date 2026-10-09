@@ -12,28 +12,21 @@ namespace HobbyDS9.Simulation
         private GameStateDto state;
         private readonly DefinitionCatalogDto definitions;
         private readonly SaveCompatibility compatibility;
-        private readonly HashSet<EntityId> actors;
-        private readonly HashSet<EntityId> controlledActors;
+        public GalaxyGraph Galaxy { get; }
         private readonly Dictionary<CommandKind, ICommandHandler> handlers;
 
-        public SimulationSession(SaveEnvelopeDto save, DefinitionCatalogDto definitions, SaveCompatibility compatibility,
-            IEnumerable<EntityId> actorCivilizationIds, IEnumerable<EntityId> controlledActorCivilizationIds)
-            : this(save, definitions, compatibility, actorCivilizationIds, controlledActorCivilizationIds,
+        public SimulationSession(SaveEnvelopeDto save, DefinitionCatalogDto definitions, SaveCompatibility compatibility)
+            : this(save, definitions, compatibility,
                 new Dictionary<CommandKind, ICommandHandler>()) { }
 
         internal SimulationSession(SaveEnvelopeDto save, DefinitionCatalogDto definitions, SaveCompatibility compatibility,
-            IEnumerable<EntityId> actorCivilizationIds, IEnumerable<EntityId> controlledActorCivilizationIds,
             IReadOnlyDictionary<CommandKind, ICommandHandler> commandHandlers)
         {
             FoundationValidator.ValidateSave(save, definitions, compatibility).ThrowIfInvalid(nameof(save));
             this.compatibility = compatibility;
-            this.definitions = new DefinitionCatalogDto { DefinitionIds = new List<string>(definitions.DefinitionIds) };
+            this.definitions = CopyDefinitions(definitions);
             state = CopyState(save.GameState);
-            actors = CopyActors(actorCivilizationIds, nameof(actorCivilizationIds));
-            controlledActors = CopyActors(controlledActorCivilizationIds, nameof(controlledActorCivilizationIds));
-            var entities = new HashSet<EntityId>(state.EntityIdentities.Select(e => new EntityId(e.EntityId)));
-            if (!actors.IsSubsetOf(entities) || !controlledActors.IsSubsetOf(actors))
-                throw new ArgumentException("Actor registry must reference existing identities; control must be a subset.");
+            Galaxy = new GalaxyGraph(state.StarSystems!.Select(n => new EntityId(n.SystemId)), this.definitions.GalaxyEdges!);
             if (commandHandlers == null) throw new ArgumentNullException(nameof(commandHandlers));
             handlers = new Dictionary<CommandKind, ICommandHandler>();
             foreach (var pair in commandHandlers)
@@ -56,8 +49,9 @@ namespace HobbyDS9.Simulation
                     return Reject(CommandErrorCode.InvalidEnvelope);
                 if (!EntityId.TryParse(command.CommandId, out var parsedCommandId)) return Reject(CommandErrorCode.InvalidCommandId);
                 if (!EntityId.TryParse(command.ActorCivilizationId, out var actor)) return Reject(CommandErrorCode.InvalidActorId);
-                if (!actors.Contains(actor)) return Reject(CommandErrorCode.UnknownActor);
-                if (!controlledActors.Contains(actor)) return Reject(CommandErrorCode.ActorNotControlled);
+                var civilization = state.Civilizations!.SingleOrDefault(c => c.CivilizationId == actor.Value);
+                if (civilization == null) return Reject(CommandErrorCode.UnknownActor);
+                if (civilization.ControllerKind != ControllerKind.Human) return Reject(CommandErrorCode.ActorNotControlled);
                 if (command.ExpectedTurn.Value != state.TurnNumber) return Reject(CommandErrorCode.StaleTurn);
                 // A replay of the original envelope reports DuplicateCommand even
                 // though its original revision is now stale. Rejections reserve no IDs.
@@ -80,8 +74,9 @@ namespace HobbyDS9.Simulation
                         throw new InvalidOperationException("Handlers cannot change turn, revision or command deduplication bookkeeping.");
                     var validation = FoundationValidator.ValidateGameState(staging, definitions);
                     if (!validation.IsValid) throw new InvalidOperationException("Handler violated state invariants: " + validation.Issues[0].Code);
-                    var entityIds = new HashSet<EntityId>(staging.EntityIdentities.Select(e => new EntityId(e.EntityId)));
-                    if (!actors.IsSubsetOf(entityIds)) throw new InvalidOperationException("Handler removed a registered actor identity.");
+                    if (!staging.Civilizations!.Select(c => c.CivilizationId).SequenceEqual(state.Civilizations!.Select(c => c.CivilizationId))
+                        || !staging.StarSystems!.Select(c => c.SystemId).SequenceEqual(state.StarSystems!.Select(c => c.SystemId)))
+                        throw new InvalidOperationException("Foundation handlers cannot change civilization or graph node membership.");
                     staging.StateRevision = state.StateRevision + 1;
                     staging.AcceptedCommandIds.Add(parsedCommandId.Value);
                     // Clone again at commit: a retained staging reference cannot mutate
@@ -104,8 +99,11 @@ namespace HobbyDS9.Simulation
                     state.EntityIdentities.Select(e => new EntityIdentitySnapshot(new EntityId(e.EntityId),
                         e.DefinitionId == null ? (DefinitionId?)null : new DefinitionId(e.DefinitionId))),
                     definitions.DefinitionIds.Select(d => new DefinitionId(d)).OrderBy(d => d),
-                    actors.OrderBy(a => a).Select(a => new ActorSnapshot(a, controlledActors.Contains(a))),
-                    state.AcceptedCommandIds!.Select(c => new EntityId(c)));
+                    state.Civilizations!.Select(c => new ActorSnapshot(new EntityId(c.CivilizationId), c.ControllerKind!.Value)),
+                    state.AcceptedCommandIds!.Select(c => new EntityId(c)),
+                    state.Civilizations!.Select(c => new CivilizationSnapshot(new EntityId(c.CivilizationId), new DefinitionId(c.DefinitionId), c.ControllerKind!.Value)),
+                    state.StarSystems!.Select(n => new StarSystemSnapshot(new EntityId(n.SystemId), new DefinitionId(n.DefinitionId),
+                        n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges);
             }
         }
 
@@ -120,14 +118,17 @@ namespace HobbyDS9.Simulation
             }
         }
 
-        private static HashSet<EntityId> CopyActors(IEnumerable<EntityId> source, string parameter)
+        private static DefinitionCatalogDto CopyDefinitions(DefinitionCatalogDto source) => new DefinitionCatalogDto
         {
-            if (source == null) throw new ArgumentNullException(parameter);
-            var result = new HashSet<EntityId>();
-            foreach (var id in source)
-                if (!id.IsValid || !result.Add(id)) throw new ArgumentException("Invalid or duplicate actor ID.", parameter);
-            return result;
-        }
+            ContentFormatVersion = source.ContentFormatVersion,
+            DefinitionIds = source.DefinitionIds.OrderBy(d => d, StringComparer.Ordinal).ToList(),
+            Civilizations = source.Civilizations!.OrderBy(c => c.DefinitionId, StringComparer.Ordinal)
+                .Select(c => new CivilizationDefinitionDto { DefinitionId = c.DefinitionId, DisplayName = c.DisplayName }).ToList(),
+            StarSystems = source.StarSystems!.OrderBy(n => n.DefinitionId, StringComparer.Ordinal)
+                .Select(n => new StarSystemDefinitionDto { DefinitionId = n.DefinitionId, DisplayName = n.DisplayName }).ToList(),
+            GalaxyEdges = source.GalaxyEdges!.Select(GalaxyGraph.CanonicalEdge).OrderBy(e => e.EndpointA).ThenBy(e => e.EndpointB)
+                .Select(e => new GalaxyEdgeDto { EndpointA = e.EndpointA.Value, EndpointB = e.EndpointB.Value, Kind = e.Kind }).ToList()
+        };
 
         private static bool IsKnownKind(CommandKind kind) => kind == CommandKind.EnqueueProduction
             || kind == CommandKind.CancelProduction || kind == CommandKind.SetResearchTarget || kind == CommandKind.SetFleetRoute;
@@ -161,7 +162,11 @@ namespace HobbyDS9.Simulation
                 AlgorithmVersion = source.RngState.AlgorithmVersion, State = source.RngState.State },
             EntityIdentities = source.EntityIdentities.OrderBy(e => e.EntityId, StringComparer.Ordinal)
                 .Select(e => new EntityIdentityDto { EntityId = e.EntityId, DefinitionId = e.DefinitionId }).ToList(),
-            AcceptedCommandIds = source.AcceptedCommandIds!.OrderBy(c => c, StringComparer.Ordinal).ToList()
+            AcceptedCommandIds = source.AcceptedCommandIds!.OrderBy(c => c, StringComparer.Ordinal).ToList(),
+            Civilizations = source.Civilizations!.OrderBy(c => c.CivilizationId, StringComparer.Ordinal)
+                .Select(c => new CivilizationStateDto { CivilizationId = c.CivilizationId, DefinitionId = c.DefinitionId, ControllerKind = c.ControllerKind }).ToList(),
+            StarSystems = source.StarSystems!.OrderBy(n => n.SystemId, StringComparer.Ordinal)
+                .Select(n => new StarSystemStateDto { SystemId = n.SystemId, DefinitionId = n.DefinitionId, OwnerCivilizationId = n.OwnerCivilizationId }).ToList()
         };
 
         private static CommandEnvelope? CopyCommand(CommandEnvelope? source)

@@ -10,7 +10,9 @@ public sealed class SessionFoundationTests
     private static readonly EntityId Alpha = new("civ.alpha");
     private static readonly EntityId Beta = new("civ.beta");
     private static readonly SaveCompatibility Compatibility = new("scenario.session", "foundation-v2", new string('a', 64));
-    private static DefinitionCatalogDto Definitions() => new() { DefinitionIds = new() { "definition.beta", "definition.alpha" } };
+    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, StarSystems = new(), GalaxyEdges = new(),
+        Civilizations = new() { new() { DefinitionId = "definition.alpha", DisplayName = "Alpha" }, new() { DefinitionId = "definition.beta", DisplayName = "Beta" } },
+        DefinitionIds = new() { "definition.beta", "definition.alpha" } };
     private static SaveEnvelopeDto Save(long revision = 0) => new()
     {
         SaveFormatVersion = FoundationVersions.SaveFormatVersion, ScenarioId = Compatibility.ScenarioId,
@@ -18,10 +20,12 @@ public sealed class SessionFoundationTests
         GameState = new()
         {
             TurnNumber = 1, StateRevision = revision, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(),
-            AcceptedCommandIds = new(), EntityIdentities = new()
+            AcceptedCommandIds = new(), StarSystems = new(),
+            Civilizations = new() { new() { CivilizationId = Alpha.Value, DefinitionId = "definition.alpha", ControllerKind = ControllerKind.Human },
+                new() { CivilizationId = Beta.Value, DefinitionId = "definition.beta", ControllerKind = ControllerKind.AI } }, EntityIdentities = new()
             {
                 new() { EntityId = "entity.target", DefinitionId = "definition.alpha" },
-                new() { EntityId = Beta.Value }, new() { EntityId = Alpha.Value }
+                new() { EntityId = Beta.Value, DefinitionId = "definition.beta" }, new() { EntityId = Alpha.Value, DefinitionId = "definition.alpha" }
             }
         }
     };
@@ -36,8 +40,9 @@ public sealed class SessionFoundationTests
     {
         var handlers = new Dictionary<CommandKind, ICommandHandler>();
         if (probe != null) handlers.Add(CommandKind.SetResearchTarget, probe);
-        return new SimulationSession(save ?? Save(), Definitions(), Compatibility, new[] { Alpha, Beta },
-            controlBoth ? new[] { Alpha, Beta } : new[] { Alpha }, handlers);
+        var initial = save ?? Save();
+        if (controlBoth) initial.GameState.Civilizations![1].ControllerKind = ControllerKind.Human;
+        return new SimulationSession(initial, Definitions(), Compatibility, handlers);
     }
 
     private static string StateJson(SimulationSession session) => JsonSerializer.Serialize(session.ExportSave());
@@ -58,13 +63,11 @@ public sealed class SessionFoundationTests
     }
 
     [Fact]
-    public void SessionCopiesAllInputStateDefinitionsAndActorRegistries()
+    public void SessionCopiesAllInputStateDefinitionsAndCivilizations()
     {
         var save = Save();
         var definitions = Definitions();
-        var actors = new List<EntityId> { Alpha, Beta };
-        var controlled = new List<EntityId> { Alpha };
-        var session = new SimulationSession(save, definitions, Compatibility, actors, controlled);
+        var session = new SimulationSession(save, definitions, Compatibility);
         var before = StateJson(session);
         save.GameState.EntityIdentities[0].DefinitionId = "invalid";
         save.GameState.EntityIdentities.Clear();
@@ -76,8 +79,8 @@ public sealed class SessionFoundationTests
         save.GameState = null!;
         save.ScenarioId = "scenario.other";
         definitions.DefinitionIds.Clear();
-        actors.Clear();
-        controlled.Add(Beta);
+        save.GameState = Save().GameState;
+        save.GameState.Civilizations![1].ControllerKind = ControllerKind.Human;
         Assert.Equal(before, StateJson(session));
         Assert.Equal(2, session.CaptureSnapshot().DefinitionIds.Count);
         Assert.Equal(2, session.CaptureSnapshot().Actors.Count);
@@ -131,7 +134,7 @@ public sealed class SessionFoundationTests
     {
         var entities = new List<EntityIdentitySnapshot> { new(new("entity.one"), null) };
         var definitions = new List<DefinitionId> { new("definition.one") };
-        var actors = new List<ActorSnapshot> { new(Alpha, true) };
+        var actors = new List<ActorSnapshot> { new(Alpha, ControllerKind.Human) };
         var commands = new List<EntityId> { new("cmd.one") };
         var snapshot = new SessionSnapshot("scenario.session", "foundation-v2", Compatibility.ContentHash, 1, 1, 1,
             new RngSnapshot(SplitMix64Random.AlgorithmId, SplitMix64Random.AlgorithmVersion, 47), entities, definitions, actors, commands);
@@ -299,6 +302,8 @@ public sealed class SessionFoundationTests
                 state.EntityIdentities.Add(new() { EntityId = allocator.Allocate("token").Value });
                 state.NextEntitySequence = allocator.NextEntitySequence;
                 state.EntityIdentities[0].DefinitionId = "definition.beta";
+                state.Civilizations![0].ControllerKind = ControllerKind.AI; state.Civilizations.Clear();
+                state.StarSystems!.Add(new() { SystemId = "system.fake" });
                 state.AcceptedCommandIds!.Add("cmd.fake"); state.StateRevision = 999; state.TurnNumber = 999;
                 return CommandErrorCode.InvalidTarget;
             }
@@ -383,7 +388,7 @@ public sealed class SessionFoundationTests
     [Fact]
     public void PublicSessionsDoNotPretendToImplementAnyGameplayCommand()
     {
-        var session = new SimulationSession(Save(), Definitions(), Compatibility, new[] { Alpha, Beta }, new[] { Alpha });
+        var session = new SimulationSession(Save(), Definitions(), Compatibility);
         var commands = new[]
         {
             Command(),
@@ -428,7 +433,7 @@ public sealed class SessionFoundationTests
             return CommandErrorCode.None;
         } };
         var handlers = new Dictionary<CommandKind, ICommandHandler> { [CommandKind.SetFleetRoute] = probe };
-        var session = new SimulationSession(Save(), Definitions(), Compatibility, new[] { Alpha }, new[] { Alpha }, handlers);
+        var session = new SimulationSession(Save(), Definitions(), Compatibility, handlers);
         handlers.Clear();
         var command = new CommandEnvelope { CommandId = "cmd.route", ActorCivilizationId = Alpha.Value, ExpectedTurn = 1, ExpectedRevision = 0,
             Kind = CommandKind.SetFleetRoute, SetFleetRoute = new() { FleetId = "fleet.one", RouteSystemIds = new() { "system.one" } } };
@@ -469,12 +474,12 @@ public sealed class SessionFoundationTests
     [Fact]
     public void InvalidInitializationAndCorruptDeduplicationAreRejected()
     {
-        Assert.Throws<ArgumentException>(() => new SimulationSession(Save(), Definitions(), Compatibility,
-            new[] { new EntityId("civ.missing") }, new[] { Alpha }));
-        Assert.Throws<ArgumentException>(() => new SimulationSession(Save(), Definitions(), Compatibility,
-            new[] { Alpha }, new[] { Beta }));
-        Assert.Throws<ArgumentException>(() => new SimulationSession(Save(), Definitions(), Compatibility,
-            new[] { Alpha, Alpha }, new[] { Alpha }));
+        var invalid = Save(); invalid.GameState.Civilizations![0].CivilizationId = "civ.missing";
+        Assert.Throws<ArgumentException>(() => Session(save: invalid));
+        invalid = Save(); invalid.GameState.Civilizations![0].ControllerKind = (ControllerKind)0;
+        Assert.Throws<ArgumentException>(() => Session(save: invalid));
+        invalid = Save(); invalid.GameState.Civilizations!.Add(invalid.GameState.Civilizations[0]);
+        Assert.Throws<ArgumentException>(() => Session(save: invalid));
         var save = Save(2);
         save.GameState.AcceptedCommandIds = new() { "cmd.one", "cmd.one" };
         Assert.Contains(FoundationValidator.ValidateSave(save, Definitions(), Compatibility).Issues, e => e.Code == ValidationCode.DuplicateId);
