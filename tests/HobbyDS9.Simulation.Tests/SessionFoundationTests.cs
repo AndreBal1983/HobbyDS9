@@ -403,7 +403,7 @@ public sealed class SessionFoundationTests
         {
             var loaded = JsonSerializer.Deserialize<CommandEnvelope>(JsonSerializer.Serialize(command))!;
             var result = session.SubmitCommand(loaded);
-            Assert.Equal(command.Kind == CommandKind.SetFleetRoute ? CommandErrorCode.UnsupportedCommand : CommandErrorCode.UnknownColony, result.ErrorCode);
+            Assert.Equal(command.Kind == CommandKind.SetFleetRoute ? CommandErrorCode.UnknownFleet : CommandErrorCode.UnknownColony, result.ErrorCode);
             var loadedResult = JsonSerializer.Deserialize<CommandResult>(JsonSerializer.Serialize(result))!;
             Assert.Equal(result.CommandId, loadedResult.CommandId);
             Assert.Equal(result.ErrorCode, loadedResult.ErrorCode);

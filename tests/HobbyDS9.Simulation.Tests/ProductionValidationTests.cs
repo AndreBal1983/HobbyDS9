@@ -54,7 +54,7 @@ public sealed class ProductionValidationTests
         var s = Session(scenario); Assert.True(Enqueue(s).Accepted); Advance(s); Advance(s); Advance(s);
         Assert.True(Enqueue(s, "cmd.second").Accepted); Assert.True(Enqueue(s, "cmd.third").Accepted);
         var save = s.ExportSave(); var colony = save.GameState.Colonies!.Single(c => c.ColonyId == "colony.sol"); var item = colony.ProductionQueue![0];
-        var ship = save.GameState.Ships![0]; var fleet = save.GameState.Fleets![0]; var design = scenario.Definitions.ShipDesigns![0];
+        var ship = save.GameState.Ships!.Single(x => x.ShipId == "ship.federation-scout"); var fleet = save.GameState.Fleets!.Single(x => x.FleetId == ship.FleetId); var design = scenario.Definitions.ShipDesigns![0];
         switch (error)
         {
             case "missing-designs": scenario.Definitions.ShipDesigns = null; break;

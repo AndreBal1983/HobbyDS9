@@ -8,10 +8,14 @@ namespace HobbyDS9.Simulation.Tests;
 
 public sealed class ProductionTests
 {
+    private static ScenarioDto EmptyScenario()
+    { var s = Scenario(); var ids = s.InitialState.Ships!.Select(x => x.ShipId).Concat(s.InitialState.Fleets!.Select(f => f.FleetId)).ToHashSet();
+      s.InitialState.EntityIdentities.RemoveAll(e => ids.Contains(e.EntityId)); s.InitialState.Ships!.Clear(); s.InitialState.Fleets!.Clear(); return s; }
+    private static SimulationSession EmptySession() => Session(EmptyScenario());
     [Fact]
     public void EnqueuePaysExactlyOnceAllocatesOneIdAndPreservesFifo()
     {
-        var scenario = Scenario(); scenario.InitialState.Colonies!.Single(c => c.ColonyId == "colony.sol").Materials = 30;
+        var scenario = EmptyScenario(); scenario.InitialState.Colonies!.Single(c => c.ColonyId == "colony.sol").Materials = 30;
         var s = Session(scenario); var old = s.CaptureSnapshot();
         Assert.True(Enqueue(s).Accepted); Assert.True(Enqueue(s, "cmd.second").Accepted);
         var state = s.ExportSave().GameState; var colony = Colony(s);
@@ -33,7 +37,7 @@ public sealed class ProductionTests
     [InlineData("materials", CommandErrorCode.InsufficientMaterials)]
     public void OrdinaryRejectionsPayAndAllocateNothing(string error, CommandErrorCode expected)
     {
-        var scenario = Scenario(); if (error == "credits") scenario.InitialState.Civilizations![0].Credits = 9;
+        var scenario = EmptyScenario(); if (error == "credits") scenario.InitialState.Civilizations![0].Credits = 9;
         if (error == "materials") scenario.InitialState.Colonies![0].Materials = 7;
         var s = Session(scenario); var before = Json(s);
         var colony = error == "unknown" ? "colony.absent" : error == "foreign" ? "colony.cardassia" : error == "neutral" ? "colony.bajor" : "colony.sol";
@@ -47,8 +51,8 @@ public sealed class ProductionTests
     [InlineData(19, 0, 0)]
     public void CancellationRefundsUnusedFractionAndNeverRecyclesIds(long progress, long materials, long credits)
     {
-        var s = Session(); Assert.True(Enqueue(s).Accepted); var save = s.ExportSave(); save.GameState.Colonies!.Single(c => c.ColonyId == "colony.sol").ProductionQueue![0].CompletedIndustry = progress;
-        var scenario = Scenario(); s = new(save, scenario.Definitions, Compatibility(scenario)); var before = s.ExportSave().GameState;
+        var s = EmptySession(); Assert.True(Enqueue(s).Accepted); var save = s.ExportSave(); save.GameState.Colonies!.Single(c => c.ColonyId == "colony.sol").ProductionQueue![0].CompletedIndustry = progress;
+        var scenario = EmptyScenario(); s = new(save, scenario.Definitions, Compatibility(scenario)); var before = s.ExportSave().GameState;
         Assert.True(Cancel(s, Colony(s).ProductionQueue![0].QueueItemId).Accepted);
         Assert.Equal(before.Civilizations!.Single(c => c.CivilizationId == "civ.federation").Credits + credits, s.CaptureSnapshot().Civilizations.Single(c => c.CivilizationId.Value == "civ.federation").Credits);
         Assert.Equal(2 + materials, Colony(s).Materials); Assert.Empty(Colony(s).ProductionQueue!); Assert.Equal(2UL, s.CaptureSnapshot().NextEntitySequence);
@@ -67,7 +71,7 @@ public sealed class ProductionTests
     [Fact]
     public void PostGrowthIndustryAppliesOnlyToHeadAndDiscardsExcessAndPersistsMidQueue()
     {
-        var scenario = Scenario(); var sol = scenario.InitialState.Colonies![0]; sol.Materials = 30; sol.Population = 1249;
+        var scenario = EmptyScenario(); var sol = scenario.InitialState.Colonies![0]; sol.Materials = 30; sol.Population = 1249;
         var s = Session(scenario); Assert.True(Enqueue(s).Accepted); Assert.True(Enqueue(s, "cmd.second").Accepted);
         Advance(s); Assert.Equal(1299, Colony(s).Population); Assert.Equal(9, Colony(s).ProductionQueue![0].CompletedIndustry); Assert.Equal(0, Colony(s).ProductionQueue![1].CompletedIndustry);
         s = new(JsonSerializer.Deserialize<SaveEnvelopeDto>(Json(s))!, scenario.Definitions, Compatibility(scenario));
@@ -80,7 +84,7 @@ public sealed class ProductionTests
     [Fact]
     public void ResearchGateOpensAfterUnlockAndNoIndustryStoredWhenQueueEmpty()
     {
-        var s = Session(); var command = Command(s, CommandKind.SetResearchTarget, "cmd.research"); command.SetResearchTarget = new() { TargetDefinitionId = "research.advanced-engineering" };
+        var s = EmptySession(); var command = Command(s, CommandKind.SetResearchTarget, "cmd.research"); command.SetResearchTarget = new() { TargetDefinitionId = "research.advanced-engineering" };
         Assert.True(s.SubmitCommand(command).Accepted); Advance(s); Advance(s); Assert.Equal(CommandErrorCode.DesignResearchPrerequisiteMissing, Enqueue(s, design: "ship-design.advanced-scout").ErrorCode);
         Advance(s); Assert.True(Enqueue(s, design: "ship-design.advanced-scout").Accepted); Advance(s); Assert.Equal(8, Colony(s).ProductionQueue![0].CompletedIndustry);
     }
@@ -91,7 +95,7 @@ public sealed class ProductionTests
     [InlineData("industry")]
     public void ProductionFaultsRollbackEarlierEconomyResearchAndCreatedEntities(string error)
     {
-        var scenario = Scenario(); var failed = true;
+        var scenario = EmptyScenario(); var failed = true;
         if (error == "industry") scenario.Definitions.EconomicProfiles![0].BaseIndustry = long.MaxValue;
         var s = Session(scenario, (phase, _) => !(failed && error == "later" && phase == StrategicTurnPhase.Movement));
         Assert.True(Enqueue(s).Accepted); var save = s.ExportSave();

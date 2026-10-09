@@ -59,3 +59,5 @@ Session ownership and command/snapshot foundations and Phase 3A identity/graph t
 No distribution license is selected yet. Choose one before importing third-party code or distributing the project; do not infer either legacy repository's license applies to these independently authored files.
 
 The production milestone Stage A adds ordered ship queues, paid enqueue/cancel commands, exact large-value refunds and transactional ship/fleet completion. Save/content formats are now 7/4. Movement and autonomous AI follow in the next stages; encounter creation remains deferred.
+
+Stage B adds starting scouts/fleets, explicit validated route commands, and deterministic one-edge movement across normal and wormhole edges. Production joins only stationary owned fleets. No encounters are generated.

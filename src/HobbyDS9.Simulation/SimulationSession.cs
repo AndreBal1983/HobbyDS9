@@ -32,7 +32,8 @@ namespace HobbyDS9.Simulation
             Galaxy = new GalaxyGraph(state.StarSystems!.Select(n => new EntityId(n.SystemId)), this.definitions.GalaxyEdges!);
             if (commandHandlers == null) throw new ArgumentNullException(nameof(commandHandlers));
             handlers = new Dictionary<CommandKind, ICommandHandler> { [CommandKind.SetResearchTarget] = new ResearchTargetHandler(this.definitions),
-                [CommandKind.EnqueueProduction] = new EnqueueProductionHandler(this.definitions), [CommandKind.CancelProduction] = new CancelProductionHandler() };
+                [CommandKind.EnqueueProduction] = new EnqueueProductionHandler(this.definitions), [CommandKind.CancelProduction] = new CancelProductionHandler(),
+                [CommandKind.SetFleetRoute] = new SetFleetRouteHandler(Galaxy) };
             foreach (var pair in commandHandlers)
             {
                 if (!IsKnownKind(pair.Key) || pair.Value == null) throw new ArgumentException("Invalid internal handler registration.");
@@ -119,7 +120,7 @@ namespace HobbyDS9.Simulation
                     // Copy again before committing: retained phase references are
                     // never authoritative. Empty phases must preserve all facts.
                     var candidate = CopyState(staging);
-                    RequirePhaseChanges(state, candidate, allowEconomy: true, allowResearch: true, allowProduction: true);
+                    RequirePhaseChanges(state, candidate, allowEconomy: true, allowResearch: true, allowProduction: true, allowMovement: true);
                     candidate.TurnNumber = checked(attemptedTurn + 1);
                     candidate.StateRevision = checked(state.StateRevision + 1);
                     candidate.AcceptedCommandIds!.Clear();

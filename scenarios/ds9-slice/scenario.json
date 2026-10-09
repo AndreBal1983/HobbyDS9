@@ -1,6 +1,6 @@
 {
   "ScenarioId": "ds9-strategic-slice-v1",
-  "RulesVersion": "phase-1-production-v1",
+  "RulesVersion": "phase-1-movement-v1",
   "Definitions": {
     "ContentFormatVersion": 4,
     "DefinitionIds": [
@@ -194,6 +194,30 @@
       {
         "EntityId": "colony.bajor",
         "DefinitionId": "economy.baseline"
+      },
+      {
+        "EntityId": "ship.federation-scout",
+        "DefinitionId": "ship-design.scout"
+      },
+      {
+        "EntityId": "fleet.federation-scout",
+        "DefinitionId": null
+      },
+      {
+        "EntityId": "ship.cardassian-scout",
+        "DefinitionId": "ship-design.scout"
+      },
+      {
+        "EntityId": "fleet.cardassian-scout",
+        "DefinitionId": null
+      },
+      {
+        "EntityId": "ship.dominion-scout",
+        "DefinitionId": "ship-design.scout"
+      },
+      {
+        "EntityId": "fleet.dominion-scout",
+        "DefinitionId": null
       }
     ],
     "Civilizations": [
@@ -303,7 +327,57 @@
         "ProductionQueue": []
       }
     ],
-    "Ships": [],
-    "Fleets": []
+    "Ships": [
+      {
+        "ShipId": "ship.federation-scout",
+        "ShipDesignDefinitionId": "ship-design.scout",
+        "OwnerCivilizationId": "civ.federation",
+        "FleetId": "fleet.federation-scout",
+        "CurrentHull": 10
+      },
+      {
+        "ShipId": "ship.cardassian-scout",
+        "ShipDesignDefinitionId": "ship-design.scout",
+        "OwnerCivilizationId": "civ.cardassian",
+        "FleetId": "fleet.cardassian-scout",
+        "CurrentHull": 10
+      },
+      {
+        "ShipId": "ship.dominion-scout",
+        "ShipDesignDefinitionId": "ship-design.scout",
+        "OwnerCivilizationId": "civ.dominion",
+        "FleetId": "fleet.dominion-scout",
+        "CurrentHull": 10
+      }
+    ],
+    "Fleets": [
+      {
+        "FleetId": "fleet.federation-scout",
+        "OwnerCivilizationId": "civ.federation",
+        "LocationSystemId": "system.sol",
+        "ShipIds": [
+          "ship.federation-scout"
+        ],
+        "RouteSystemIds": []
+      },
+      {
+        "FleetId": "fleet.cardassian-scout",
+        "OwnerCivilizationId": "civ.cardassian",
+        "LocationSystemId": "system.cardassia",
+        "ShipIds": [
+          "ship.cardassian-scout"
+        ],
+        "RouteSystemIds": []
+      },
+      {
+        "FleetId": "fleet.dominion-scout",
+        "OwnerCivilizationId": "civ.dominion",
+        "LocationSystemId": "system.founders-homeworld",
+        "ShipIds": [
+          "ship.dominion-scout"
+        ],
+        "RouteSystemIds": []
+      }
+    ]
   }
 }

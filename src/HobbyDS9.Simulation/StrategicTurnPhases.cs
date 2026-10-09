@@ -36,9 +36,10 @@ namespace HobbyDS9.Simulation
             if (phase == StrategicTurnPhase.Economy) EconomyPhase.Execute(staging, definitions);
             if (phase == StrategicTurnPhase.Research) ResearchPhase.Execute(staging, definitions);
             if (phase == StrategicTurnPhase.Production) ProductionPhase.Execute(staging, definitions);
-            // Movement and encounter creation remain no-ops in Stage A.
+            if (phase == StrategicTurnPhase.Movement) MovementPhase.Execute(staging);
+            // EncounterCreation remains a strict no-op.
             Validate(staging, definitions);
-            SimulationSession.RequirePhaseChanges(before, SimulationSession.CopyState(staging), allowEconomy: phase == StrategicTurnPhase.Economy, allowResearch: phase == StrategicTurnPhase.Research, allowProduction: phase == StrategicTurnPhase.Production);
+            SimulationSession.RequirePhaseChanges(before, SimulationSession.CopyState(staging), allowEconomy: phase == StrategicTurnPhase.Economy, allowResearch: phase == StrategicTurnPhase.Research, allowProduction: phase == StrategicTurnPhase.Production, allowMovement: phase == StrategicTurnPhase.Movement);
             return true;
         }
     }
