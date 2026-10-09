@@ -17,5 +17,5 @@ var session = new SimulationSession(new SaveEnvelopeDto
     RulesVersion = scenario.RulesVersion, ContentHash = scenario.ContentHash, GameState = scenario.InitialState
 }, scenario.Definitions, new SaveCompatibility(scenario.ScenarioId, scenario.RulesVersion, scenario.ContentHash));
 var snapshot = session.CaptureSnapshot();
-Console.WriteLine($"{scenario.ScenarioId}: {snapshot.Civilizations.Count} civilizations, {session.Galaxy.Nodes.Count} nodes, {session.Galaxy.Edges.Count} edges.");
-Console.WriteLine("Scenario identity/graph skeleton validated. Gameplay remains unimplemented; this host does not advance turns.");
+Console.WriteLine($"{scenario.ScenarioId}: {snapshot.Civilizations.Count} civilizations, {session.Galaxy.Nodes.Count} nodes, {session.Galaxy.Edges.Count} edges, {snapshot.Colonies.Count} colonies.");
+Console.WriteLine("Scenario identity/graph skeleton validated. Colony economy is implemented; this host does not advance turns.");

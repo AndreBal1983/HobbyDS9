@@ -28,7 +28,7 @@ public sealed class GalaxyFoundationTests
     private static string GraphJson(GalaxyGraph g) => JsonSerializer.Serialize(new { g.Nodes, g.Edges });
 
     [Fact]
-    public void FixedSkeletonContainsOnlyRequiredCivilizationsNodesOwnersAndEdges()
+    public void FixedScenarioPreservesRequiredCivilizationsNodesOwnersAndEdges()
     {
         var scenario = Scenario();
         var report = FoundationValidator.ValidateScenario(scenario);
@@ -41,7 +41,7 @@ public sealed class GalaxyFoundationTests
         var state = session.ExportSave().GameState;
         Assert.Equal(3, state.Civilizations!.Count);
         Assert.Equal(6, state.StarSystems!.Count);
-        Assert.Equal(9, state.EntityIdentities.Count);
+        Assert.Equal(13, state.EntityIdentities.Count);
         Assert.Equal(5, session.Galaxy.Edges.Count);
         Assert.Equal(ControllerKind.Human, state.Civilizations.Single(c => c.CivilizationId == "civ.federation").ControllerKind);
         Assert.All(state.Civilizations.Where(c => c.CivilizationId != "civ.federation"), c => Assert.Equal(ControllerKind.AI, c.ControllerKind));

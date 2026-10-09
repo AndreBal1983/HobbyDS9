@@ -4,8 +4,8 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 4;
-        public const int ContentFormatVersion = 1;
+        public const int SaveFormatVersion = 5;
+        public const int ContentFormatVersion = 2;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
     }
@@ -36,12 +36,13 @@ namespace HobbyDS9.Contracts
         public List<CivilizationDefinitionDto>? Civilizations { get; set; }
         public List<StarSystemDefinitionDto>? StarSystems { get; set; }
         public List<GalaxyEdgeDto>? GalaxyEdges { get; set; }
+        public List<EconomicProfileDefinitionDto>? EconomicProfiles { get; set; }
         public List<string> DefinitionIds { get; set; } = new List<string>();
     }
 
     public sealed class GameStateDto
     {
-        // Required in save format 4; missing JSON is not implicitly Planning.
+        // Required since save format 4; missing JSON is not implicitly Planning.
         public SessionPhase? Phase { get; set; }
         public int TurnNumber { get; set; }
         public long StateRevision { get; set; }
@@ -52,6 +53,7 @@ namespace HobbyDS9.Contracts
         public List<string>? AcceptedCommandIds { get; set; }
         public List<CivilizationStateDto>? Civilizations { get; set; }
         public List<StarSystemStateDto>? StarSystems { get; set; }
+        public List<ColonyStateDto>? Colonies { get; set; }
     }
 
     public sealed class ScenarioDto

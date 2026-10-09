@@ -34,6 +34,7 @@ namespace HobbyDS9.Simulation
                 if (item == null) Add(issues, ValidationCode.MissingField, p);
                 else Definition(item.DefinitionId, item.DisplayName, p);
             }
+            ValidateEconomicProfiles(dto, ids, typed, path, issues);
             if (dto.GalaxyEdges == null) Add(issues, ValidationCode.MissingField, path + ".GalaxyEdges");
         }
 
@@ -65,6 +66,7 @@ namespace HobbyDS9.Simulation
                 var civ = dto.Civilizations[i]; var p = path + ".Civilizations[" + i.ToString(System.Globalization.CultureInfo.InvariantCulture) + "]";
                 if (civ == null) { Add(issues, ValidationCode.MissingField, p); continue; }
                 Identity(civ.CivilizationId, civ.DefinitionId, civDefinitions, p);
+                if (civ.Credits < 0) Add(issues, ValidationCode.InvalidEconomicValue, p + ".Credits");
                 if (civ.CivilizationId != null) civilizationIds.Add(civ.CivilizationId);
                 if (!civ.ControllerKind.HasValue) Add(issues, ValidationCode.MissingField, p + ".ControllerKind");
                 else if (civ.ControllerKind != ControllerKind.Human && civ.ControllerKind != ControllerKind.AI)
@@ -82,6 +84,7 @@ namespace HobbyDS9.Simulation
                     else if (!civilizationIds.Contains(system.OwnerCivilizationId)) Add(issues, ValidationCode.MissingCivilization, p + ".OwnerCivilizationId");
                 }
             }
+            ValidateColonies(dto, catalog, headers, typedIds, civilizationIds, path, issues);
             var graphReport = GalaxyGraph.Validate(dto.StarSystems?.Select(s => s?.SystemId ?? string.Empty), catalog?.GalaxyEdges);
             foreach (var issue in graphReport.Issues)
                 Add(issues, issue.Code, issue.Path.StartsWith("$.Edges", StringComparison.Ordinal)

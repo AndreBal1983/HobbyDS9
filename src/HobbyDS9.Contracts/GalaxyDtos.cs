@@ -23,6 +23,7 @@ namespace HobbyDS9.Contracts
         public string CivilizationId { get; set; } = string.Empty;
         public string DefinitionId { get; set; } = string.Empty;
         public ControllerKind? ControllerKind { get; set; }
+        public long Credits { get; set; }
     }
 
     public sealed class StarSystemStateDto
@@ -45,8 +46,9 @@ namespace HobbyDS9.Contracts
         public EntityId CivilizationId { get; }
         public DefinitionId DefinitionId { get; }
         public ControllerKind ControllerKind { get; }
-        public CivilizationSnapshot(EntityId id, DefinitionId definitionId, ControllerKind controllerKind)
-        { CivilizationId = id; DefinitionId = definitionId; ControllerKind = controllerKind; }
+        public long Credits { get; }
+        public CivilizationSnapshot(EntityId id, DefinitionId definitionId, ControllerKind controllerKind, long credits = 0)
+        { CivilizationId = id; DefinitionId = definitionId; ControllerKind = controllerKind; Credits = credits; }
     }
 
     public sealed class StarSystemSnapshot

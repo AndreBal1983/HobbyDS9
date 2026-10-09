@@ -16,7 +16,7 @@ public sealed class TurnLifecycleTests
 
     private static DefinitionCatalogDto Definitions() => new()
     {
-        ContentFormatVersion = FoundationVersions.ContentFormatVersion,
+        ContentFormatVersion = FoundationVersions.ContentFormatVersion, EconomicProfiles = new(),
         DefinitionIds = new() { "system.beta", "civilization.ai", "system.alpha", "civilization.human" },
         Civilizations = new()
         {
@@ -38,7 +38,7 @@ public sealed class TurnLifecycleTests
         {
             Phase = phase, TurnNumber = turn, StateRevision = revision, NextEntitySequence = 17,
             RngState = new SplitMix64Random(47).ToDto(),
-            AcceptedCommandIds = revision >= 2 ? new() { "cmd.z", "cmd.a" } : new(),
+            Colonies = new(), AcceptedCommandIds = revision >= 2 ? new() { "cmd.z", "cmd.a" } : new(),
             Civilizations = new()
             {
                 new() { CivilizationId = "civ.human", DefinitionId = "civilization.human", ControllerKind = ControllerKind.Human },
@@ -228,7 +228,7 @@ public sealed class TurnLifecycleTests
         else if (mode == "exception") Assert.Throws<ApplicationException>(() => session.AdvanceTurn(7, 5));
         else Assert.Throws<InvalidOperationException>(() => session.AdvanceTurn(7, 5));
         Assert.Equal(authoritative, StateJson(session));
-        Assert.Equal(mode == "invariant" ? PhaseOrder : PhaseOrder.Take(phaseNumber + 1), seen);
+        Assert.Equal(PhaseOrder.Take(phaseNumber + 1), seen);
         retained!.RngState.State = 100; retained.AcceptedCommandIds!.Add("cmd.late"); retained.EntityIdentities.Clear();
         Assert.Equal(authoritative, StateJson(session));
         fail = false; seen.Clear();

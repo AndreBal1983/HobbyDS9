@@ -9,22 +9,34 @@ namespace HobbyDS9.Simulation
     // test instrumentation only; production sessions always supply null.
     internal static class StrategicTurnPhases
     {
-        internal static bool Execute(GameStateDto staging, Func<StrategicTurnPhase, GameStateDto, bool>? probe)
+        internal static bool Execute(GameStateDto staging, DefinitionCatalogDto definitions, Func<StrategicTurnPhase, GameStateDto, bool>? probe)
         {
-            if (!ExecutePhase(StrategicTurnPhase.AiPlanning, staging, probe)) return false;
-            if (!ExecutePhase(StrategicTurnPhase.Economy, staging, probe)) return false;
-            if (!ExecutePhase(StrategicTurnPhase.Research, staging, probe)) return false;
-            if (!ExecutePhase(StrategicTurnPhase.Production, staging, probe)) return false;
-            if (!ExecutePhase(StrategicTurnPhase.Movement, staging, probe)) return false;
-            return ExecutePhase(StrategicTurnPhase.EncounterCreation, staging, probe);
+            if (!ExecutePhase(StrategicTurnPhase.AiPlanning, staging, definitions, probe)) return false;
+            if (!ExecutePhase(StrategicTurnPhase.Economy, staging, definitions, probe)) return false;
+            if (!ExecutePhase(StrategicTurnPhase.Research, staging, definitions, probe)) return false;
+            if (!ExecutePhase(StrategicTurnPhase.Production, staging, definitions, probe)) return false;
+            if (!ExecutePhase(StrategicTurnPhase.Movement, staging, definitions, probe)) return false;
+            return ExecutePhase(StrategicTurnPhase.EncounterCreation, staging, definitions, probe);
         }
 
-        private static bool ExecutePhase(StrategicTurnPhase phase, GameStateDto staging,
+        private static void Validate(GameStateDto staging, DefinitionCatalogDto definitions)
+        {
+            var report = FoundationValidator.ValidateGameState(staging, definitions);
+            if (!report.IsValid) throw new InvalidOperationException("Strategic phase violated state invariants: " + report.Issues[0].Code);
+        }
+
+        private static bool ExecutePhase(StrategicTurnPhase phase, GameStateDto staging, DefinitionCatalogDto definitions,
             Func<StrategicTurnPhase, GameStateDto, bool>? probe)
         {
+            var before = SimulationSession.CopyState(staging);
             if (probe != null && !probe(phase, staging)) return false;
-            // Future built-in systems execute here in the fixed order above.
-            // Phase 3B has no phase behavior or encounter creation.
+            Validate(staging, definitions);
+            // Instrumentation must not supply rule behavior, even at Economy.
+            SimulationSession.RequirePhaseChanges(before, SimulationSession.CopyState(staging), allowEconomy: false);
+            if (phase == StrategicTurnPhase.Economy) EconomyPhase.Execute(staging, definitions);
+            // All other built-in boundaries remain no-ops.
+            Validate(staging, definitions);
+            SimulationSession.RequirePhaseChanges(before, SimulationSession.CopyState(staging), allowEconomy: phase == StrategicTurnPhase.Economy);
             return true;
         }
     }

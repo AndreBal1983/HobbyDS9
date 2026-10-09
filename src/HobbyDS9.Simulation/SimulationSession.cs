@@ -112,13 +112,13 @@ namespace HobbyDS9.Simulation
                 try
                 {
                     var staging = CopyState(state);
-                    if (!StrategicTurnPhases.Execute(staging, turnPhaseProbe)) return Reject(TurnErrorCode.PhaseFailed);
+                    if (!StrategicTurnPhases.Execute(staging, definitions, turnPhaseProbe)) return Reject(TurnErrorCode.PhaseFailed);
                     var validation = FoundationValidator.ValidateGameState(staging, definitions);
                     if (!validation.IsValid) throw new InvalidOperationException("Turn phase violated state invariants: " + validation.Issues[0].Code);
                     // Copy again before committing: retained phase references are
                     // never authoritative. Empty phases must preserve all facts.
                     var candidate = CopyState(staging);
-                    RequireEmptyTurnUnchanged(candidate);
+                    RequirePhaseChanges(state, candidate, allowEconomy: true);
                     candidate.TurnNumber = checked(attemptedTurn + 1);
                     candidate.StateRevision = checked(state.StateRevision + 1);
                     candidate.AcceptedCommandIds!.Clear();
@@ -134,9 +134,8 @@ namespace HobbyDS9.Simulation
             }
         }
 
-        // Temporary Phase 3B invariant: until built-in systems exist, no phase
-        // may alter campaign facts, RNG/allocation or lifecycle bookkeeping.
-        private void RequireEmptyTurnUnchanged(GameStateDto candidate)
+        // Only Economy may change credits and colony population/stocks.
+        internal static void RequirePhaseChanges(GameStateDto state, GameStateDto candidate, bool allowEconomy)
         {
             if (candidate.Phase != state.Phase || candidate.TurnNumber != state.TurnNumber
                 || candidate.StateRevision != state.StateRevision || candidate.NextEntitySequence != state.NextEntitySequence
@@ -146,11 +145,15 @@ namespace HobbyDS9.Simulation
                 || !candidate.AcceptedCommandIds!.SequenceEqual(state.AcceptedCommandIds!)
                 || !candidate.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId))
                     .SequenceEqual(state.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId)))
-                || !candidate.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind))
-                    .SequenceEqual(state.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind)))
+                || !candidate.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind, allowEconomy ? 0L : c.Credits))
+                    .SequenceEqual(state.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind, allowEconomy ? 0L : c.Credits)))
                 || !candidate.StarSystems!.Select(n => (n.SystemId, n.DefinitionId, n.OwnerCivilizationId))
-                    .SequenceEqual(state.StarSystems!.Select(n => (n.SystemId, n.DefinitionId, n.OwnerCivilizationId))))
-                throw new InvalidOperationException("Empty strategic phases cannot change campaign facts or bookkeeping.");
+                    .SequenceEqual(state.StarSystems!.Select(n => (n.SystemId, n.DefinitionId, n.OwnerCivilizationId)))
+                || !candidate.Colonies!.Select(c => (c.ColonyId, c.SystemId, c.OwnerCivilizationId, c.EconomicProfileDefinitionId,
+                    c.PopulationCapacity, allowEconomy ? 0L : c.Population, allowEconomy ? 0L : c.Food, allowEconomy ? 0L : c.Materials))
+                    .SequenceEqual(state.Colonies!.Select(c => (c.ColonyId, c.SystemId, c.OwnerCivilizationId, c.EconomicProfileDefinitionId,
+                    c.PopulationCapacity, allowEconomy ? 0L : c.Population, allowEconomy ? 0L : c.Food, allowEconomy ? 0L : c.Materials))))
+                throw new InvalidOperationException("Strategic phase changed protected campaign facts or bookkeeping.");
         }
 
         public SessionSnapshot CaptureSnapshot()
@@ -165,9 +168,11 @@ namespace HobbyDS9.Simulation
                     definitions.DefinitionIds.Select(d => new DefinitionId(d)).OrderBy(d => d),
                     state.Civilizations!.Select(c => new ActorSnapshot(new EntityId(c.CivilizationId), c.ControllerKind!.Value)),
                     state.AcceptedCommandIds!.Select(c => new EntityId(c)),
-                    state.Civilizations!.Select(c => new CivilizationSnapshot(new EntityId(c.CivilizationId), new DefinitionId(c.DefinitionId), c.ControllerKind!.Value)),
+                    state.Civilizations!.Select(c => new CivilizationSnapshot(new EntityId(c.CivilizationId), new DefinitionId(c.DefinitionId), c.ControllerKind!.Value, c.Credits)),
                     state.StarSystems!.Select(n => new StarSystemSnapshot(new EntityId(n.SystemId), new DefinitionId(n.DefinitionId),
-                        n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges, state.Phase!.Value);
+                        n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges, state.Phase!.Value, state.Colonies!.Select(c => new ColonySnapshot(new EntityId(c.ColonyId),
+                        new EntityId(c.SystemId), c.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(c.OwnerCivilizationId),
+                        new DefinitionId(c.EconomicProfileDefinitionId), c.Population, c.PopulationCapacity, c.Food, c.Materials)));
             }
         }
 
@@ -190,6 +195,13 @@ namespace HobbyDS9.Simulation
                 .Select(c => new CivilizationDefinitionDto { DefinitionId = c.DefinitionId, DisplayName = c.DisplayName }).ToList(),
             StarSystems = source.StarSystems!.OrderBy(n => n.DefinitionId, StringComparer.Ordinal)
                 .Select(n => new StarSystemDefinitionDto { DefinitionId = n.DefinitionId, DisplayName = n.DisplayName }).ToList(),
+            EconomicProfiles = source.EconomicProfiles!.OrderBy(p => p.DefinitionId, StringComparer.Ordinal).Select(p => new EconomicProfileDefinitionDto
+            {
+                DefinitionId = p.DefinitionId, DisplayName = p.DisplayName, FoodOutput = p.FoodOutput,
+                PopulationPerFood = p.PopulationPerFood, MaterialOutput = p.MaterialOutput, PopulationPerCredit = p.PopulationPerCredit,
+                BaseIndustry = p.BaseIndustry, PopulationPerIndustry = p.PopulationPerIndustry, GrowthPerTurn = p.GrowthPerTurn,
+                StarvationLossPerTurn = p.StarvationLossPerTurn, ResearchOutput = p.ResearchOutput
+            }).ToList(),
             GalaxyEdges = source.GalaxyEdges!.Select(GalaxyGraph.CanonicalEdge).OrderBy(e => e.EndpointA).ThenBy(e => e.EndpointB)
                 .Select(e => new GalaxyEdgeDto { EndpointA = e.EndpointA.Value, EndpointB = e.EndpointB.Value, Kind = e.Kind }).ToList()
         };
@@ -219,7 +231,7 @@ namespace HobbyDS9.Simulation
             }
         }
 
-        private static GameStateDto CopyState(GameStateDto source) => new GameStateDto
+        internal static GameStateDto CopyState(GameStateDto source) => new GameStateDto
         {
             Phase = source.Phase, TurnNumber = source.TurnNumber, StateRevision = source.StateRevision, NextEntitySequence = source.NextEntitySequence,
             RngState = new RngStateDto { AlgorithmId = source.RngState.AlgorithmId,
@@ -228,9 +240,15 @@ namespace HobbyDS9.Simulation
                 .Select(e => new EntityIdentityDto { EntityId = e.EntityId, DefinitionId = e.DefinitionId }).ToList(),
             AcceptedCommandIds = source.AcceptedCommandIds!.OrderBy(c => c, StringComparer.Ordinal).ToList(),
             Civilizations = source.Civilizations!.OrderBy(c => c.CivilizationId, StringComparer.Ordinal)
-                .Select(c => new CivilizationStateDto { CivilizationId = c.CivilizationId, DefinitionId = c.DefinitionId, ControllerKind = c.ControllerKind }).ToList(),
+                .Select(c => new CivilizationStateDto { CivilizationId = c.CivilizationId, DefinitionId = c.DefinitionId, ControllerKind = c.ControllerKind, Credits = c.Credits }).ToList(),
             StarSystems = source.StarSystems!.OrderBy(n => n.SystemId, StringComparer.Ordinal)
-                .Select(n => new StarSystemStateDto { SystemId = n.SystemId, DefinitionId = n.DefinitionId, OwnerCivilizationId = n.OwnerCivilizationId }).ToList()
+                .Select(n => new StarSystemStateDto { SystemId = n.SystemId, DefinitionId = n.DefinitionId, OwnerCivilizationId = n.OwnerCivilizationId }).ToList(),
+            Colonies = source.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal).Select(c => new ColonyStateDto
+            {
+                ColonyId = c.ColonyId, SystemId = c.SystemId, OwnerCivilizationId = c.OwnerCivilizationId,
+                EconomicProfileDefinitionId = c.EconomicProfileDefinitionId, Population = c.Population,
+                PopulationCapacity = c.PopulationCapacity, Food = c.Food, Materials = c.Materials
+            }).ToList()
         };
 
         private static CommandEnvelope? CopyCommand(CommandEnvelope? source)

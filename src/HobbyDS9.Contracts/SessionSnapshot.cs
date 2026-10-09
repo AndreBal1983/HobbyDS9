@@ -55,12 +55,13 @@ namespace HobbyDS9.Contracts
         public IReadOnlyList<CivilizationSnapshot> Civilizations { get; }
         public IReadOnlyList<StarSystemSnapshot> StarSystems { get; }
         public IReadOnlyList<GalaxyEdge> GalaxyEdges { get; }
+        public IReadOnlyList<ColonySnapshot> Colonies { get; }
 
         public SessionSnapshot(string scenarioId, string rulesVersion, string contentHash, int turnNumber, long revision,
             ulong nextEntitySequence, RngSnapshot rng, IEnumerable<EntityIdentitySnapshot> entities,
             IEnumerable<DefinitionId> definitions, IEnumerable<ActorSnapshot> actors, IEnumerable<EntityId> commands,
             IEnumerable<CivilizationSnapshot>? civilizations = null, IEnumerable<StarSystemSnapshot>? systems = null,
-            IEnumerable<GalaxyEdge>? edges = null, SessionPhase phase = SessionPhase.Planning)
+            IEnumerable<GalaxyEdge>? edges = null, SessionPhase phase = SessionPhase.Planning, IEnumerable<ColonySnapshot>? colonies = null)
         {
             ScenarioId = scenarioId; RulesVersion = rulesVersion; ContentHash = contentHash;
             Phase = phase; TurnNumber = turnNumber; StateRevision = revision; NextEntitySequence = nextEntitySequence;
@@ -72,6 +73,7 @@ namespace HobbyDS9.Contracts
             Civilizations = new List<CivilizationSnapshot>(civilizations ?? Array.Empty<CivilizationSnapshot>()).AsReadOnly();
             StarSystems = new List<StarSystemSnapshot>(systems ?? Array.Empty<StarSystemSnapshot>()).AsReadOnly();
             GalaxyEdges = new List<GalaxyEdge>(edges ?? Array.Empty<GalaxyEdge>()).AsReadOnly();
+            Colonies = new List<ColonySnapshot>(colonies ?? Array.Empty<ColonySnapshot>()).AsReadOnly();
         }
     }
 }

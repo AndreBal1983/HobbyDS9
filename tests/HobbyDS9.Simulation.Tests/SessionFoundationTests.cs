@@ -10,7 +10,7 @@ public sealed class SessionFoundationTests
     private static readonly EntityId Alpha = new("civ.alpha");
     private static readonly EntityId Beta = new("civ.beta");
     private static readonly SaveCompatibility Compatibility = new("scenario.session", "foundation-v2", new string('a', 64));
-    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, StarSystems = new(), GalaxyEdges = new(),
+    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, EconomicProfiles = new(), StarSystems = new(), GalaxyEdges = new(),
         Civilizations = new() { new() { DefinitionId = "definition.alpha", DisplayName = "Alpha" }, new() { DefinitionId = "definition.beta", DisplayName = "Beta" } },
         DefinitionIds = new() { "definition.beta", "definition.alpha" } };
     private static SaveEnvelopeDto Save(long revision = 0) => new()
@@ -20,7 +20,7 @@ public sealed class SessionFoundationTests
         GameState = new()
         {
             Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = revision, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(),
-            AcceptedCommandIds = new(), StarSystems = new(),
+            Colonies = new(), AcceptedCommandIds = new(), StarSystems = new(),
             Civilizations = new() { new() { CivilizationId = Alpha.Value, DefinitionId = "definition.alpha", ControllerKind = ControllerKind.Human },
                 new() { CivilizationId = Beta.Value, DefinitionId = "definition.beta", ControllerKind = ControllerKind.AI } }, EntityIdentities = new()
             {
