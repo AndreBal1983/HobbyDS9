@@ -211,6 +211,14 @@ public sealed class CombatBoundaryTests
     }
 
     [Fact]
+    public void CombatDesignIdsRespectTheSharedDefinitionNamespace()
+    {
+        var templates = Templates();
+        templates[0].Participants[0].Ships[0].DesignId = "design.spawn.0000000000000001";
+        Assert.Throws<ArgumentException>(() => CombatEncounterScaffold.CreateCheckpoint(7, 23, 0, 1, templates));
+    }
+
+    [Fact]
     public void CounterOverflowAndMalformedSaveAreRejected()
     {
         Assert.Throws<ArgumentException>(() => CombatEncounterScaffold.CreateCheckpoint(7, 0, 0, ulong.MaxValue, Templates()));

@@ -19,7 +19,8 @@ namespace HobbyDS9.Simulation
             var requests = templates.ToList();
             foreach (var request in requests) ValidateRequest(request, false);
             requests = requests.Select(CopyRequest).OrderBy(r => r.LocationSystemId, StringComparer.Ordinal).ToList();
-            var random = new EncounterRandomStream(campaignRandomState);
+            var random = new SplitMix64Random(campaignRandomState);
+            var allocator = new EntityIdAllocator(nextEntitySequence);
             var checkpoint = new CombatCheckpointDto
             {
                 Phase = requests.Count == 0 ? SessionPhase.Planning : SessionPhase.AwaitingCombat,
@@ -27,15 +28,15 @@ namespace HobbyDS9.Simulation
             };
             foreach (var request in requests)
             {
-                Require(checkpoint.NextEntitySequence < ulong.MaxValue, "Entity allocation overflow.");
-                request.EncounterId = "encounter.spawn." + checkpoint.NextEntitySequence.ToString("x16", CultureInfo.InvariantCulture);
-                checkpoint.NextEntitySequence++;
+                Require(allocator.NextEntitySequence < ulong.MaxValue, "Entity allocation overflow.");
+                request.EncounterId = allocator.Allocate("encounter").Value;
                 request.TurnNumber = turnNumber;
                 request.RandomAlgorithmId = EncounterRandomStream.AlgorithmId;
                 request.RandomState = random.NextUInt64();
                 checkpoint.PendingCombats.Add(new PendingCombatDto { Request = request });
             }
             checkpoint.CampaignRandomState = random.State;
+            checkpoint.NextEntitySequence = allocator.NextEntitySequence;
             ValidateCheckpoint(checkpoint);
             return checkpoint;
         }
@@ -155,7 +156,7 @@ namespace HobbyDS9.Simulation
                 {
                     Require(ship != null, "Missing ship.");
                     ValidateId(ship!.ShipId);
-                    ValidateId(ship.DesignId);
+                    Require(DefinitionId.TryParse(ship.DesignId, out _), "Invalid canonical definition ID.");
                     Require(ship.Hull > 0, "Nonpositive combat hull.");
                 }
             }
@@ -207,9 +208,7 @@ namespace HobbyDS9.Simulation
 
         private static void ValidateId(string id)
         {
-            Require(id != null && id.Length > 0 && id.Length <= 128 && id[0] >= 'a' && id[0] <= 'z', "Invalid canonical ID.");
-            foreach (var c in id!)
-                Require((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '_' || c == '-', "Invalid canonical ID.");
+            Require(EntityId.TryParse(id, out _), "Invalid canonical ID.");
         }
 
         private static IEnumerable<CombatRequestDto> AllRequests(CombatCheckpointDto checkpoint)
