@@ -1,0 +1,242 @@
+# Phase 1 portable strategy simulation
+
+Status: design and solution scaffold only. No legacy implementation is copied. The engine and initial scenario are new work based on the requirements in this project. Feature implementation follows this document in small, tested increments.
+
+## Goal and boundaries
+
+Build a headless strategic vertical slice with reproducible turns, explicit state and commands, and content separated from rules. The long-term product is a DS9/Dominion War-era BOTF spiritual successor, but the engine must contain no franchise names, UI objects or renderer assumptions.
+
+Phase 1 includes seeded randomness, stable IDs, civilizations, systems/ownership, colonies/population, a small economy, production queues, research, ship designs, ships/fleets, graph movement orders, a strategic turn lifecycle and a simple rule-based AI. Combat has an authoritative pending-encounter lifecycle and request/result contracts; Phase 1 will use a deterministic no-loss placeholder resolver. Invasion, diplomacy, espionage, fog of war, faction-specific abilities, real tactical combat, multiplayer, frontend integration and legacy save import are deferred.
+
+The current scaffold contains project boundaries, combat DTOs/resolver interface, an encounter-local RNG primitive, and a narrow combat-boundary helper for allocation, ingress validation and result buffering. Tests exercise these boundaries. It does not implement a campaign session, turn engine, production resolver or scenario, nor any economy, research, AI or fleet movement gameplay. Full campaign determinism and lifecycle tests will accompany their implementation.
+
+## Proposed solution
+
+Use the pinned .NET 10 SDK to build the solution, with different runtime targets for portable libraries and hosts. SDK/compiler version does not determine a library's runtime requirement. All projects use nullable reference types, deterministic compiler output and warnings as errors. The test project uses xUnit; production projects have no external packages. No dependency on UnityEngine, WPF, networking libraries, BotF2 or 3DBOTF2 is allowed.
+
+| Project | Target | Responsibility | Project references |
+|---|---|---|---|
+| HobbyDS9.Contracts | netstandard2.1 | Stable IDs, command/result contracts, explicit state/definition/save DTOs, combat boundary | None |
+| HobbyDS9.Simulation | netstandard2.1 | State validation, command execution, turn systems, deterministic RNG, AI policies | Contracts |
+| HobbyDS9.Scenarios | netstandard2.1 | Content DTO validation, reference validation, fixed scenario construction | Contracts |
+| HobbyDS9.Headless | net10.0 | Console composition root, JSON/file I/O, scenario input, commands, turns, snapshots | Contracts, Simulation, Scenarios |
+| HobbyDS9.Simulation.Tests | net10.0 | Determinism, lifecycle, boundary, persistence and scenario acceptance tests | Contracts, Simulation, Scenarios |
+
+The three libraries use C# 9 and explicit usings. Avoid records/init-only properties that require an IsExternalInit shim, newer required-member metadata, and runtime APIs absent from .NET Standard 2.1. Use ordinary concrete DTO classes, readonly structs, List<T>/IReadOnlyList<T>, ordinal string comparisons, checked/unchecked integer arithmetic, Encoding.UTF8 and SHA256.Create/ComputeHash rather than newer static HashData APIs. System.Text.Json, file I/O and host services belong in adapters, not the portable contracts. Future APIs must compile against the netstandard2.1 reference surface; do not bypass that check with net10.0 packages or host project references.
+
+The current Contracts implementation uses enums, string/int/long/ulong properties, List<T> and a synchronous interface. Simulation uses only .NET Standard 2.1 APIs: collections/LINQ, ordinal comparisons, invariant formatting/parsing, enum validation and explicit integer arithmetic. Scenarios remains empty except for a source manifest. Build validation checks the reference surface, and tests inspect compiled target/dependency metadata. This confirms the scaffold's API compatibility, not future APIs or Unity execution.
+
+```mermaid
+flowchart TD
+    Host[Headless console or future frontend adapter]
+    Scenarios[Scenario loader and content validation]
+    Simulation[Simulation session, turn systems, AI]
+    Contracts[IDs, commands, state DTOs, combat contracts]
+    Tests[Regression and determinism tests]
+    Host --> Simulation
+    Host --> Scenarios
+    Simulation --> Contracts
+    Scenarios --> Contracts
+    Tests --> Simulation
+    Tests --> Scenarios
+    Tests --> Contracts
+```
+
+This is a modular monolith. Scenarios must not execute turns, and simulation must not load files, consult clocks, read console input, or know a scenario's franchise identity. The host performs I/O. Nothing in the domain depends on the host or tests.
+
+Unity 6 can consume these .NET Standard 2.1 libraries directly through a frontend adapter, using Unity's .NET Standard 2.1 API compatibility setting. The simulation does not require a .NET 10 runtime. The console/test hosts use .NET 10 on Windows, Linux and macOS. Unity compilation, managed stripping and IL2CPP/AOT must still be verified during frontend integration; no Unity runtime is present in this workspace. Avoid reflection-based runtime construction and dynamic code generation in the libraries. Unity selects its own serialization adapter; the headless host's JSON implementation is not a mandatory Unity dependency.
+
+## State, definitions and stable identity
+
+Use a readonly EntityId value type with validated canonical string values, ordinal equality and ordinal ordering. All commands refer to EntityIds, not object references or list indices. Definition IDs use a separate readonly DefinitionId. Reject empty, noncanonical or duplicate IDs. Initial scenario IDs are authored; newly produced entities use a persisted monotonic sequence with category prefixes. Allocation order is part of the rules. Never use Guid.NewGuid, randomized string hashing or process-specific counters for simulation identity.
+
+Canonical IDs match `[a-z][a-z0-9._-]{0,127}`. Runtime IDs use `<category>.spawn.<16-digit-lowercase-hex-sequence>`; reserve the `.spawn.` namespace from authored IDs and refuse allocation overflow. Use one persisted unsigned 64-bit sequence across categories, beginning at 1.
+
+Definitions are immutable input records: civilization traits/capabilities, ship designs, facility upgrades, research nodes, colony economic profiles and map nodes/edges. State contains mutable facts: ownership, population, inventories, queue progress, research progress, ships, fleets, routes and RNG state. State refers to definitions by ID. UI names and descriptions belong in content, not simulation branches.
+
+Runtime indexes may use dictionaries for lookup, but all iteration that affects rules must be explicitly sorted by ordinal IDs. JSON DTOs expose arrays/lists, not runtime dictionaries, controller references, polymorphic CLR type names or engine objects. Query snapshots are copies/read-only projections; consumers must not mutate session state through returned collections.
+
+Proposed state records:
+
+| State | Essential fields |
+|---|---|
+| GameState | TurnNumber, StateRevision, NextEntitySequence, RNG state, content/rules identity, phase, accepted command IDs for the current planning turn, pending encounters, buffered resolved requests/results, accumulated in-progress strategic turn events, all entity lists |
+| CivilizationState | ID, definition ID, controller kind, credit treasury, research progress/unlocks |
+| StarSystemState | ID, map-node kind, optional owner ID, optional colony ID |
+| ColonyState | ID, system ID, population/capacity, economic profile ID, food/material inventory, production queue |
+| QueueItemState | ID, definition ID, kind, required/completed industry, paid/reserved costs |
+| ShipState | ID, design ID, owner ID, fleet ID, hull status |
+| FleetState | ID, owner ID, location system ID, ordered route system IDs |
+| PendingCombat | Detached combat request: encounter/turn/location IDs, canonical participant snapshots, resolver/content/rules identity, encounter-local initial RNG state |
+| ResolvedCombat | Original frozen request plus validated result, buffered until canonical campaign commit |
+
+Ownership is authoritative on StarSystemState; ColonyState must derive its owner through its system. Fleets and ships carry explicit owners with invariants enforcing consistency. A neutral inhabited colony is valid, but receives no civilization commands or research contribution. Map nodes such as wormhole endpoints can have no colony and be noncolonizable. No capture mechanic is included in Phase 1.
+
+## Explicit serialization and content separation
+
+The headless host uses System.Text.Json over concrete DTOs. Contracts defines DTOs without serializer attributes or dependencies; Scenarios validates and constructs content from DTOs already decoded by the host. Define ScenarioDto, DefinitionCatalogDto, GameStateDto and SaveEnvelopeDto. A versioned envelope records SaveFormatVersion, RulesVersion, ScenarioId, ContentHash, TurnNumber/Revision, entity allocation state and RngStateDto. The serialized state includes all mutable simulation facts needed to continue, including SessionPhase, pending encounter requests, persisted encounter RNG inputs, buffered resolved requests/results, and accumulated in-progress strategic turn events. Loading partially resolved combat must never allocate seeds again or re-run a resolver for a buffered result. CombatCheckpointDto is the currently scaffolded combat subset of that future full GameStateDto; it is not a complete campaign save. Campaign resume must validate the supplied content hash/rules version rather than silently using different definitions.
+
+The host converts DTOs through validation into an owned simulation session. Runtime classes are not the save contract. Validate every ID/reference, nonnegative bounded resource/population/queue values, route edge, design/faction association, RNG algorithm/version and sequence counter before accepting a save. Unknown schema/rules versions fail clearly; do not invent an automatic migration in this phase.
+
+Canonical snapshot hashing uses fixed property order, entity arrays sorted by ID, encounter/result arrays normalized by location ID, and semantically ordered arrays preserved in order (routes, queues and events), ordinal strings, explicit UTF-8 encoding and invariant numerical representation. The portable canonical writer uses .NET Standard-compatible byte/string operations; do not make its algorithm depend on the host JSON serializer. Hash normalized logical state, not incidental whitespace or dictionary ordering. Diagnostic timings and trace strings are excluded. System.Text.Json output is not automatically a permanent cross-version canonical format; define/test the canonical writer separately.
+
+ContentHash identifies canonical rules-relevant definitions and scenario structure; cosmetic labels/translations are excluded and may have a separate presentation-package hash. This allows content-label changes without changing simulation outcomes or gameplay identity.
+
+The initial DS9-themed JSON package is under scenarios/ds9-slice, outside production source. It contains only authored names/IDs and numerical definitions, no imported art, sound, text descriptions or legacy data files. Engine tests should also use franchise-neutral fixtures to detect accidental content coupling.
+
+## Determinism contract
+
+For the same validated definitions, rules version, initial state, command sequence and RNG state, the simulation must produce exactly the same ordered outcomes and logical state after every turn. This is an in-process rules contract across supported platforms, not a promise that different future rules versions have the same outcomes.
+
+Use a specified SplitMix64 generator with explicitly unchecked 64-bit unsigned arithmetic. Persist its algorithm ID, algorithm version and full 64-bit state. Draw bounded integers with rejection sampling, not floating-point scaling or modulo bias. Version the exact bounded-draw algorithm too; variable retry draw counts are part of reproducibility. No System.Random, Random.Shared, Unity randomness, clocks or thread-local generator is permitted in rules.
+
+Algorithm ID: splitmix64-rejection-v1. Each raw draw adds `0x9e3779b97f4a7c15` to state modulo 2^64; copy state to z, then apply `z = (z xor (z >> 30)) * 0xbf58476d1ce4e5b9`, `z = (z xor (z >> 27)) * 0x94d049bb133111eb`, and return `z xor (z >> 31)`, with both products modulo 2^64. For an exclusive positive bound b, compute threshold as `(0 - b) modulo 2^64`, then modulo b; reject draws smaller than threshold and return the accepted draw modulo b. A zero bound is rejected before drawing. Seeding sets state to the supplied unsigned 64-bit seed without additional draws.
+
+Use integer units for population, food, materials, credits, industry, research and graph distances. Guard overflow and validate upper bounds. No floating-point physics or frame delta enters movement/economy/combat state. Use a single writer to advance turns; no parallel rule evaluation in Phase 1.
+
+AI factions are processed by ID. Candidate actions are sorted by ID. The simple AI uses RNG only for ties where multiple equally scored legal options remain; deterministic options must not consume unnecessary draws. Rejected commands consume no randomness, IDs or resources. Serialization/reload must preserve the next draw and allocation order.
+
+## Command API and atomicity
+
+The public session entry point accepts a CommandEnvelope with CommandId, ActorCivilizationId, ExpectedTurn, ExpectedRevision, CommandKind and one concrete typed payload. Proposed Phase 1 commands are EnqueueProduction, CancelProduction, SetResearchTarget and SetFleetRoute. AdvanceTurn is a host/session operation, not a faction command.
+
+Use an explicit closed command discriminator and DTO mapping; do not serialize CLR type names or load arbitrary subclasses. Stable command IDs permit duplicate detection within the current planning turn. StateRevision changes on each accepted state mutation; commands must match the current revision. The host can refresh/retry planning explicitly when a previous command changed revision. The complete replay includes rejection outcomes too, though rejection does not change state.
+
+Validate actor existence/control, ownership, target references, prerequisites, resource availability, legal route adjacency and expected turn/revision before mutation. Return CommandResult with accepted/rejected status, stable error code and resulting revision. Exceptions are for programming/invariant errors, not ordinary invalid player actions. Commands and outcomes have canonical order matching submission order. AI submits through the same validator, with an internal trusted controller path that still enforces gameplay legality.
+
+AdvanceTurn works on an owned staging copy. It applies AI decisions and strategic phases there, creates pending encounters, validates invariants, and commits one checkpoint plus ordered events. If there are no encounters, it completes the turn; otherwise it commits AwaitingCombat without incrementing TurnNumber. A strategic-phase fault leaves authoritative state, RNG, IDs and revision unchanged.
+
+ResolveCombat(EncounterId) is a separate host/session operation. The host may choose any pending encounter, supply a detached frozen request to the injected ICombatResolver, and buffer its validated result. Resolving one encounter never changes campaign entities, another request or the campaign RNG. A failed/invalid resolution leaves the checkpoint unchanged, including previously buffered results. The host can resolve/view battles in any order without changing their outcomes. The guarantee assumes the same frozen request, doctrine/orders and resolver version for each battle; deliberately different player battle choices may change that battle's result.
+
+When all results are available, a single campaign transaction applies consequences in canonical location-ID order, appends events in encounter/event order, validates invariants and finalizes the turn. Intermediate resolutions advance revision but do not apply campaign damage or retreat. Finalization is separate from buffering the last result so its failure can be retried without recomputing battles. Turn results distinguish AwaitingCombat from Completed and expose readiness to finalize; no result falsely reports a completed turn while encounters remain. Submission/rejection history can record user order for diagnostics, but canonical authoritative completed-turn events/results do not depend on that order.
+
+This slice has one host-owned planning session. Multiplayer readiness, per-player deadlines, hidden-information filtering and remote authentication are future adapters/policies, not dependencies added now.
+
+## Turn lifecycle
+
+The initial state is Planning turn 1. Human strategic commands are accepted only in Planning. There is no wall-clock advancement.
+
+| Phase | Behavior and ordering |
+|---|---|
+| 1. AI planning | AI civilizations sorted by ID generate legal commands using pre-economy state; execute through command validation |
+| 2. Economy | Colonies sorted by ID produce food/materials/credits, pay food consumption, then change population |
+| 3. Research | Sum controlled-colony research output, apply to one target per civilization, unlock completed node; at most one unlock per turn initially |
+| 4. Production | Apply industry to each colony's queue head; at most one completion per colony per turn; excess industry is discarded for this slice |
+| 5. Movement | Each fleet traverses at most one graph edge; route is consumed in order; wormhole edges use the same deterministic movement cost |
+| 6. Encounter checkpoint | Group opposing fleets by node, create canonical PendingCombat requests and allocate encounter-local RNG inputs; commit AwaitingCombat if any exist |
+| 7. Combat resolution | Resolve any pending encounter using its own frozen RNG input; validate and buffer each result atomically; Deferred keeps the session blocked |
+| 8. Finalize | Only with all results buffered: apply results/events in canonical order, validate, increment turn once, clear deduplication and open Planning |
+
+```mermaid
+stateDiagram-v2
+    [*] --> Planning
+    Planning --> Planning: AdvanceTurn with no encounters / complete T, open T+1
+    Planning --> AwaitingCombat: AdvanceTurn with encounters / checkpoint T
+    AwaitingCombat --> AwaitingCombat: Deferred, failure, or unresolved encounters remain
+    AwaitingCombat --> Planning: All results buffered, canonical commit / complete T, open T+1
+```
+
+AwaitingCombat is authoritative state, not a notification. Strategic commands and AdvanceTurn return a stable CombatPending rejection in this phase, without changes to state, RNG or IDs. Save/load preserves this phase and resumes at resolution, never re-running AI, economy, research, production or movement. No intermediate planning turn exists. Phase 1 needs no general phase cursor: Planning means strategic processing has not run; AwaitingCombat means all strategic phases have committed. Partial strategic processing is never persisted.
+
+Validate the phase/batch invariant on every commit and load: Planning has no pending encounters, buffered results or in-progress strategic turn events. AwaitingCombat has a nonempty encounter batch (the union of pending requests and buffered resolved requests), all stamped with current TurnNumber and matching campaign content/rules identity. No encounter ID, fleet or ship appears more than once across that union. An empty pending list with buffered results is valid AwaitingCombat state ready to finalize; it still blocks strategic commands/AdvanceTurn until the campaign commit succeeds.
+
+With no encounter, AdvanceTurn(T) opens Planning(T+1) in its single commit. With encounters, AdvanceTurn(T) leaves TurnNumber=T in AwaitingCombat. Each accepted resolved result increases revision once; final campaign commit increments revision once more and TurnNumber once. Completed turn events combine strategic and combat events exactly once in phase/location/event order. A host may automatically resolve all pending encounters and finalize, but this convenience is outside AdvanceTurn; callers can save the authoritative checkpoint or a partially resolved batch first. Failed finalization preserves all buffered results for retry.
+
+Movement snapshots the fleet-ID list at the start of the movement phase. Ships completed during production join an existing stationary owned fleet at the colony, chosen by lowest fleet ID, or create a new stationary fleet; a newly created fleet has no route and therefore does not move. Existing stationary fleets have empty routes by definition. A ship must not join a routed departing fleet implicitly.
+
+Production pays credit/material costs atomically when enqueued, recording the paid amount on the queue item. Cancellation refunds the unused proportion of paid costs using documented integer floor division; completed industry is discarded. The first slice does not support queue reordering, rushing, maintenance, stockpiled industry or recurring templates. Research spending cannot also consume production industry; the simple research output is a separate profile value. Future resource allocation must be an intentional rules change.
+
+For each paid cost, cancellation refunds floor(paid × (requiredIndustry − completedIndustry) / requiredIndustry), using checked sufficiently wide intermediates and a strictly positive requiredIndustry. Generated ship/queue IDs are not recycled on cancellation. Accepted command IDs are persisted for the current planning turn and cleared only when that turn finalizes and opens the next planning turn, not when the AwaitingCombat checkpoint commits.
+
+For the baseline economic profile: add FoodOutput and MaterialOutput; compute food demand as ceiling(pre-growth population / PopulationPerFood); consume available food. Sufficient food permits GrowthPerTurn up to capacity. Insufficient food instead reduces population by StarvationLossPerTurn, floored at 1. Credit income is floor(pre-growth population / PopulationPerCredit), credited only to an owner. Industry equals BaseIndustry + floor(post-growth population / PopulationPerIndustry). ResearchOutput is a separate integer value. All profile constants come from content. The DTO validator prohibits zero divisors and invalid capacities.
+
+Research prerequisites are definition-ID lists. EnqueueProduction checks current unlocks; an unlock during turn processing affects new commands in the next planning turn. Research overflow is retained as civilization research reserve, available for a subsequent target, but does not cascade into multiple unlocks in one phase.
+
+## Fleets, movement and combat boundary
+
+The galaxy is a node/edge graph rather than a renderer coordinate system. A route command provides an explicit ordered list of destination system IDs; validate every edge from the current location before accepting. Phase 1 does not need pathfinding: host/AI can use deterministic breadth-first search over ordinal neighbor IDs to choose a route. Traversal is one edge per turn; future variable speed and travel distance require a versioned movement rule.
+
+### Authoritative encounters and resolver contract
+
+Phase 1 treats every distinct civilization as opposing when its fleet shares a node with another civilization. Diplomacy can replace this hostility policy later. Create one multi-participant encounter per contested location, ordered by ordinal location ID. Allocate encounter IDs from the persisted entity sequence as `encounter.spawn.<16-digit-lowercase-hex-sequence>` in that order, keeping IDs within the canonical length limit regardless of location ID length. Turn and location remain explicit request fields. Participant snapshots sort by civilization ID, then fleet ID, then ship ID. A fleet participates in only one encounter in a turn. Snapshot creation occurs after all movement, not during sequential fleet updates.
+
+The scaffold exposes SessionPhase, CombatCheckpointDto, PendingCombatDto, ResolvedCombatDto, CombatRequestDto, CombatResultDto and ICombatResolver in Contracts. Stable IDs are canonical strings only at this DTO boundary. CombatEncounterScaffold validates every encounter/location/civilization/fleet/ship/design/resolver ID at creation, restore, detached request retrieval and result ingress. IDs must match the documented lowercase ASCII grammar and length, without trimming, case folding or Unicode normalization. Allocated encounter IDs must fit the persisted sequence. Participant fleet/ship uniqueness and current turn stamps are also checked. A future session maps validated EntityId/DefinitionId values into its domain immediately and additionally checks existence, ownership and catalog references against authoritative state; canonical syntax alone does not prove those references exist. PendingCombat contains a detached, persisted request. Mutable DTOs are serialization carriers only: the session holds owned copies and supplies a fresh copy to a resolver, never live state or externally writable authoritative collections.
+
+ICombatResolver.Resolve(CombatRequestDto) returns CombatResultDto synchronously. Its output depends only on the request and an immutable injected combat-definition catalog whose content hash matches the request. Inputs identify encounter, turn, location, participants, ship design/hull snapshots, rules/content identity, resolver ID/version, and encounter-local RNG algorithm/state. Ship-design battle statistics can be obtained from that versioned catalog; future battle-specific snapshots and choices can extend the request schema without altering the turn engine's resolution protocol. No Unity objects, callbacks tied to frames, real-time clocks, networking or global mutable RNG are allowed.
+
+During canonical encounter creation, draw exactly one unsigned seed per encounter from the world RNG and persist it as CombatRequestDto.RandomState: the initial state of this encounter's independent stream, not the live campaign state. EncounterRandomStream implements the specified SplitMix64/rejection algorithm. Advance the campaign RNG during creation and checkpoint that advanced state with NextEntitySequence. Each resolver constructs a fresh local stream initialized from its own request state; it has no access to the campaign stream or other battles. Results return its final local state; combat draw counts never consume the world stream. Once generated, an encounter's result is independent of the order battles are resolved or viewed, or the number of draws consumed by another battle. Replaying cinematic events never calls RNG or submits another result. Deferred/failed retries use the same frozen request and RNG input. Resolver ID/version and content hash are pinned in pending saves; a missing or incompatible resolver fails clearly rather than silently substituting a different algorithm.
+
+Results carry encounter/resolver identity, Deferred or Resolved status, final encounter RNG state, ship hull changes, fleet hold/retreat/destruction changes, and concrete ordered events. Events have contiguous zero-based Sequence values; never sort them by entity ID after resolution. Changes are canonical lists sorted by stable ship/fleet IDs. Rules consequences come from explicit changes, not by replaying presentation effects. Events are data for later playback and have no effect on simulation timing.
+
+The combat boundary validates a result before buffering it: it may target any still-pending encounter with the pinned resolver/version, must reference only participant IDs, contain no duplicate changes, satisfy hull bounds, and carry contiguous valid event sequences ending in exactly one EncounterResolved event. Null/malformed DTO fields or unknown enum values are rejected. A future session additionally requires expected turn/revision for host-submitted results, checks event/consequence consistency and full fleet/ship invariants, validates retreat edges and occupancy against the frozen end-of-movement state, and applies changes in the final transaction. Public DTO buffers are serialization carriers; the future session owns them and exports copies. The scaffold only returns new copies and deliberately does not apply campaign consequences.
+
+Phase 1 creates encounters exactly once after movement. A fleet can belong to only one encounter in a turn, including both unresolved and already-buffered resolved encounters. Retreat never triggers a second encounter or additional movement that turn. Reject retreat into any original encounter location (including already-resolved locations), or a location containing an opposing fleet in the frozen end-of-movement snapshot. This rule never depends on which battles have resolved first. Multiple retreats to one node must be validated as a batch against original occupancy and each other; opposing retreating fleets cannot share a destination. A later battle-chaining rules version can relax this deliberately. The scaffold enforces the original-encounter-location restriction; graph and whole-campaign occupancy validation await the strategic engine. At final commit, destruction/retreat clears movement orders and removes destroyed ships/fleets consistently.
+
+Deferred is an explicit unresolved result: no ship/fleet changes or events, unchanged encounter RNG, no revision change, and the pending request remains. It never opens Planning. Duplicate resolution cannot apply twice because a successful Resolved result moves its request from pending to the buffered result list; both original request and result remain persisted until campaign commit. No fleet can escape an unresolved encounter by receiving another strategic movement order.
+
+For the initial implemented slice, inject `no-loss-v1`: emit one EncounterResolved event, return Resolved with unchanged RNG and empty change lists. This explicitly settles an encounter without damage, retreat, capture or victory. Surviving opposing fleets may encounter again on a later turn; they do so only after the previous encounter has been resolved. The placeholder is a test policy, not strategic combat gameplay, and is not implemented in the present scaffold. An Endless Space-style deterministic strategic battle resolver can later produce actual changes/events through the same contract; graphics only consume event playback. Interactive battle choices, if added, require dedicated encounter-ID commands while AwaitingCombat, never reopening strategic planning.
+
+## Simple AI policy
+
+Each AI faction can take a legal turn without a frontend: choose an available research node by lowest cost then ID; if a controlled colony queue is empty and affordable, enqueue a permitted ship design by lowest industry cost then ID; route an idle fleet toward an adjacent interesting neutral/foreign node using deterministic candidate scoring. Break equal scores with the specified RNG. If no legal action exists, emit no command. AI does not colonize/capture or conduct diplomacy/combat in this slice.
+
+Persist the controller kind on each civilization. Human factions are not secretly automated. AI choices depend only on the session snapshot/definitions/RNG, never on UI visibility, real time or thread scheduling. Events may include AI command IDs for repeatable diagnostics.
+
+## Fixed DS9-themed scenario
+
+Proposed scenario ID: ds9-strategic-slice-v1. Seed: 47. This is a testing setup, not a historically balanced campaign.
+
+| ID | Content label | Initial owner / behavior |
+|---|---|---|
+| civ.federation | Federation | Human |
+| civ.cardassian | Cardassian Union | AI |
+| civ.dominion | Dominion | AI |
+| system.sol | Sol | Federation colony |
+| system.cardassia | Cardassia | Cardassian colony |
+| system.founders-home | Founders' Homeworld | Dominion colony |
+| system.bajor | Bajor | Neutral inhabited colony; not claimable in Phase 1 |
+| system.bajoran-wormhole | Bajoran wormhole | Unowned, noncolonizable traversal node |
+| system.gamma-exit | Gamma wormhole exit | Unowned, noncolonizable traversal node |
+
+Undirected edges: Sol—Bajor, Cardassia—Bajor, Bajor—Bajoran wormhole, Bajoran wormhole—Gamma exit, Gamma exit—Founders' Homeworld. Every edge has unit traversal cost in this slice. The wormhole edge is tagged in content; engine names/labels do not affect movement. Frontend coordinates are not part of rules.
+
+Three initially owned colonies have population 1,000, capacity 2,000, initial food 20/materials 10, and civilizations start with 50 credits. Baseline profile values: FoodOutput 12, PopulationPerFood 100, MaterialOutput 4, PopulationPerCredit 100, BaseIndustry 4, PopulationPerIndustry 250, GrowthPerTurn 50, StarvationLossPerTurn 50, ResearchOutput 3. Bajor uses the same profile with no owning treasury/research contribution.
+
+Each faction has one starting scout and fleet at its home system, plus an available new scout design costing 20 industry, 8 materials and 10 credits. A separate generic research node costs 9 research and unlocks a second ship design. A small neutral fixture will include tied AI route candidates to exercise seeded decisions. Content labels can differ while structural IDs/stats remain identical; that must not alter outcomes.
+
+## Tests and acceptance gates
+
+Add meaningful behavior tests as systems are implemented. Current tests verify compiled netstandard2.1 targets/dependencies, DTO round trips, independently fixed RNG vectors, stable seed/ID allocation under reordered input, all six three-battle resolution permutations, isolation from another battle's draw count, partially resolved save/resume, detached snapshot ownership, duplicate fleet/ship/result rejection, ID ingress validation, the planning guard, and retreat restrictions. These validate the narrow boundary helper, not a campaign engine, strategic combat gameplay or full-turn determinism.
+
+| Test | Required evidence |
+|---|---|
+| RNG known vectors and persistence | Specified seed produces independently fixed values; save/reload yields the same next draw; bounded draws respect ranges/rejection behavior |
+| Seeded turn reproducibility | Two sessions with identical inputs/seed match normalized state and ordered events after each of at least 20 turns |
+| Randomness is effective | A controlled tie-case fixture has asserted known outcomes for two selected seeds; do not assume every different seed must change every scenario |
+| Round-trip continuation | Save after several turns, load explicit DTOs, continue with the same commands and match an uninterrupted run including RNG/ID allocation |
+| IDs and iteration order | Duplicate/missing IDs rejected; reordered DTO entity arrays produce identical results after normalization; newly produced IDs remain stable |
+| Turn lifecycle | No-combat turn increments once; encounters checkpoint at T and block commands/AdvanceTurn; only canonical final commit opens T+1; production/research/movement each happen once |
+| Command legality | Wrong owner, nonexistent IDs, illegal route, insufficient resources, duplicate command and stale turn/revision rejected without state/RNG/ID changes |
+| Population/economy | Exact sufficient-food/starvation/capacity arithmetic; bounded nonnegative stocks; neutral colony contributes no faction credits/research |
+| Production | Costs reserved once, ordered queue-head progress, one completion cap, cancellation/refund arithmetic, new ship/fleet reference invariants |
+| Research | Prerequisites and targets checked; one unlock/turn; overflow reserve preserved; unlock applies to subsequent planning commands |
+| Movement | One legal edge/turn, stable route consumption, wormhole traversal, empty route stays put |
+| AI | Each AI faction takes legal useful actions and eventually builds/researches/moves; human remains unautomated; no invalid commands or dead loop |
+| Combat boundary | Multi-faction encounters are canonical; Deferred stays blocked; no-loss resolves without damage; results independent of resolution order and other battle draw counts; canonical event order; invalid/stale/duplicate results rejected atomically |
+| Pending save/resume | Save AwaitingCombat after one of several encounters, reload, resolve the rest in a different order and match uninterrupted state/events without reallocating seeds or repeating strategic phases |
+| Resolver replacement | Inject two independently deterministic resolvers without changing turn code; ordered valid results apply and invalid ones preserve checkpoint state |
+| Failure atomicity | Strategic-phase failure preserves planning state/RNG/IDs; resolver failure preserves its pending checkpoint and buffered results; final campaign commit failure preserves the complete result batch |
+| Architectural boundaries | Production dependency graph contains only permitted projects/.NET libraries; no legacy/UI/network types or references |
+
+Headless acceptance: load the fixed JSON scenario, accept a Federation route/production/research plan by IDs, advance 20 turns with two AI factions, emit structured state/events, and save/resume identically. Until that gate passes, the slice is not called ready.
+
+## Implementation order
+
+1. IDs and concrete DTOs, content/state validation, specified RNG and known-vector tests.
+2. Session state ownership, command envelope/results, deterministic allocation, snapshots and serialization continuation tests.
+3. Fixed scenario input, graph movement and exact turn/staging lifecycle.
+4. Colony economy, research and production with invariants and arithmetic tests.
+5. Ship/fleet creation, movement commands, authoritative pending checkpoints, validated result application, injected no-loss resolver and combat-blocking/save-resume tests.
+6. AI through the same command path, headless scenario runner and multi-turn reproducibility gate.
+
+Resolve discrepancies by changing documented rules and tests together, not by copying legacy implementation to match incidental behavior. Later UI, transport and combat adapters must preserve these contracts or explicitly version them.
