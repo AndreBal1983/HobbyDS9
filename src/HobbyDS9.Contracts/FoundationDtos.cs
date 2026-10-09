@@ -4,7 +4,7 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 1;
+        public const int SaveFormatVersion = 2;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
     }
@@ -42,6 +42,8 @@ namespace HobbyDS9.Contracts
         public ulong NextEntitySequence { get; set; }
         public RngStateDto RngState { get; set; } = new RngStateDto();
         public List<EntityIdentityDto> EntityIdentities { get; set; } = new List<EntityIdentityDto>();
+        // Required in format 2. Missing JSON must not silently erase deduplication.
+        public List<string>? AcceptedCommandIds { get; set; }
     }
 
     public sealed class ScenarioDto

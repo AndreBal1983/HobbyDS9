@@ -43,6 +43,8 @@ namespace HobbyDS9.Simulation
                 ValidateState(dto.InitialState, ids, true, "$.InitialState", issues);
                 if (dto.InitialState != null && (dto.InitialState.TurnNumber != 1 || dto.InitialState.StateRevision != 0
                     || dto.InitialState.NextEntitySequence != 1)) Add(issues, ValidationCode.InvalidCounter, "$.InitialState");
+                if (dto.InitialState?.AcceptedCommandIds != null && dto.InitialState.AcceptedCommandIds.Count != 0)
+                    Add(issues, ValidationCode.InvalidCounter, "$.InitialState.AcceptedCommandIds");
             }
             return new ValidationReport(issues);
         }
@@ -116,6 +118,18 @@ namespace HobbyDS9.Simulation
             if (dto.StateRevision < 0) Add(issues, ValidationCode.InvalidCounter, path + ".StateRevision");
             if (dto.NextEntitySequence == 0) Add(issues, ValidationCode.InvalidCounter, path + ".NextEntitySequence");
             ValidateRng(dto.RngState, path + ".RngState", issues);
+            if (dto.AcceptedCommandIds == null) Add(issues, ValidationCode.MissingField, path + ".AcceptedCommandIds");
+            else
+            {
+                var commands = new HashSet<EntityId>();
+                for (var i = 0; i < dto.AcceptedCommandIds.Count; i++)
+                {
+                    var itemPath = path + ".AcceptedCommandIds[" + i.ToString(CultureInfo.InvariantCulture) + "]";
+                    if (!EntityId.TryParse(dto.AcceptedCommandIds[i], out var commandId)) Add(issues, ValidationCode.InvalidId, itemPath);
+                    else if (!commands.Add(commandId)) Add(issues, ValidationCode.DuplicateId, itemPath);
+                }
+                if (dto.StateRevision >= 0 && dto.AcceptedCommandIds.Count > dto.StateRevision) Add(issues, ValidationCode.InvalidCounter, path + ".AcceptedCommandIds");
+            }
             if (dto.EntityIdentities == null) { Add(issues, ValidationCode.MissingField, path + ".EntityIdentities"); return; }
             var entities = new HashSet<EntityId>();
             var allocatedSequences = new HashSet<ulong>();

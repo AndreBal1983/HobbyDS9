@@ -14,7 +14,7 @@ public sealed class FoundationDtoTests
 
     private static GameStateDto State() => new()
     {
-        TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(),
+        TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(), AcceptedCommandIds = new(),
         EntityIdentities = new()
         {
             new() { EntityId = "entity.initial", DefinitionId = "definition.alpha" },
