@@ -7,7 +7,7 @@ namespace HobbyDS9.Contracts
         UnsupportedSaveFormat, UnsupportedRngAlgorithm, UnsupportedRngVersion,
         RulesMismatch, ScenarioMismatch, ContentMismatch, UnsupportedContentFormat,
         InvalidControllerKind, InvalidEdgeKind, MissingEntity, MissingCivilization,
-        IdentityMismatch, SelfEdge, DuplicateEdge, MissingEndpoint
+        IdentityMismatch, SelfEdge, DuplicateEdge, MissingEndpoint, InvalidSessionPhase
     }
 
     public sealed class ValidationIssue

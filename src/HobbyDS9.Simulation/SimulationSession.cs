@@ -8,7 +8,8 @@ namespace HobbyDS9.Simulation
     public sealed class SimulationSession
     {
         private readonly object gate = new object();
-        private bool executingCommand;
+        private bool executingMutation;
+        private readonly Func<StrategicTurnPhase, GameStateDto, bool>? turnPhaseProbe;
         private GameStateDto state;
         private readonly DefinitionCatalogDto definitions;
         private readonly SaveCompatibility compatibility;
@@ -20,10 +21,12 @@ namespace HobbyDS9.Simulation
                 new Dictionary<CommandKind, ICommandHandler>()) { }
 
         internal SimulationSession(SaveEnvelopeDto save, DefinitionCatalogDto definitions, SaveCompatibility compatibility,
-            IReadOnlyDictionary<CommandKind, ICommandHandler> commandHandlers)
+            IReadOnlyDictionary<CommandKind, ICommandHandler> commandHandlers,
+            Func<StrategicTurnPhase, GameStateDto, bool>? turnPhaseProbe = null)
         {
             FoundationValidator.ValidateSave(save, definitions, compatibility).ThrowIfInvalid(nameof(save));
             this.compatibility = compatibility;
+            this.turnPhaseProbe = turnPhaseProbe;
             this.definitions = CopyDefinitions(definitions);
             state = CopyState(save.GameState);
             Galaxy = new GalaxyGraph(state.StarSystems!.Select(n => new EntityId(n.SystemId)), this.definitions.GalaxyEdges!);
@@ -40,7 +43,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
-                if (executingCommand) throw new InvalidOperationException("Nested command execution is not supported.");
+                if (executingMutation) throw new InvalidOperationException("Nested session mutation is not supported.");
                 var command = CopyCommand(envelope);
                 var commandId = command?.CommandId;
                 CommandResult Reject(CommandErrorCode code) => new CommandResult(commandId, CommandStatus.Rejected,
@@ -52,6 +55,7 @@ namespace HobbyDS9.Simulation
                 var civilization = state.Civilizations!.SingleOrDefault(c => c.CivilizationId == actor.Value);
                 if (civilization == null) return Reject(CommandErrorCode.UnknownActor);
                 if (civilization.ControllerKind != ControllerKind.Human) return Reject(CommandErrorCode.ActorNotControlled);
+                if (state.Phase != SessionPhase.Planning) return Reject(CommandErrorCode.CombatPending);
                 if (command.ExpectedTurn.Value != state.TurnNumber) return Reject(CommandErrorCode.StaleTurn);
                 // A replay of the original envelope reports DuplicateCommand even
                 // though its original revision is now stale. Rejections reserve no IDs.
@@ -62,16 +66,16 @@ namespace HobbyDS9.Simulation
                 if (!handlers.TryGetValue(command.Kind, out var handler)) return Reject(CommandErrorCode.UnsupportedCommand);
                 if (state.StateRevision == long.MaxValue) return Reject(CommandErrorCode.RevisionExhausted);
 
-                executingCommand = true;
+                executingMutation = true;
                 try
                 {
                     var staging = CopyState(state);
                     var error = handler.Execute(staging, command);
                     if (!Enum.IsDefined(typeof(CommandErrorCode), error)) throw new InvalidOperationException("Handler returned an unknown error code.");
                     if (error != CommandErrorCode.None) return Reject(error);
-                    if (staging.TurnNumber != state.TurnNumber || staging.StateRevision != state.StateRevision
+                    if (staging.Phase != state.Phase || staging.TurnNumber != state.TurnNumber || staging.StateRevision != state.StateRevision
                         || staging.AcceptedCommandIds == null || !staging.AcceptedCommandIds.SequenceEqual(state.AcceptedCommandIds!))
-                        throw new InvalidOperationException("Handlers cannot change turn, revision or command deduplication bookkeeping.");
+                        throw new InvalidOperationException("Handlers cannot change phase, turn, revision or command deduplication bookkeeping.");
                     var validation = FoundationValidator.ValidateGameState(staging, definitions);
                     if (!validation.IsValid) throw new InvalidOperationException("Handler violated state invariants: " + validation.Issues[0].Code);
                     if (!staging.Civilizations!.Select(c => c.CivilizationId).SequenceEqual(state.Civilizations!.Select(c => c.CivilizationId))
@@ -85,8 +89,68 @@ namespace HobbyDS9.Simulation
                     return new CommandResult(parsedCommandId.Value, CommandStatus.Accepted, CommandErrorCode.None,
                         state.TurnNumber, state.StateRevision);
                 }
-                finally { executingCommand = false; }
+                finally { executingMutation = false; }
             }
+        }
+
+        public TurnResult AdvanceTurn(int expectedTurn, long expectedRevision)
+        {
+            lock (gate)
+            {
+                if (executingMutation) throw new InvalidOperationException("Nested session mutation is not supported.");
+                var attemptedTurn = state.TurnNumber;
+                TurnResult Reject(TurnErrorCode error) => new TurnResult(TurnStatus.Rejected, error, attemptedTurn,
+                    state.TurnNumber, state.StateRevision, state.Phase!.Value,
+                    Array.Empty<StrategicEvent>(), Array.Empty<CommandResult>());
+                if (state.Phase != SessionPhase.Planning) return Reject(TurnErrorCode.CombatPending);
+                if (expectedTurn != state.TurnNumber) return Reject(TurnErrorCode.StaleTurn);
+                if (expectedRevision != state.StateRevision) return Reject(TurnErrorCode.StaleRevision);
+                if (state.TurnNumber == int.MaxValue) return Reject(TurnErrorCode.TurnNumberExhausted);
+                if (state.StateRevision == long.MaxValue) return Reject(TurnErrorCode.RevisionExhausted);
+
+                executingMutation = true;
+                try
+                {
+                    var staging = CopyState(state);
+                    if (!StrategicTurnPhases.Execute(staging, turnPhaseProbe)) return Reject(TurnErrorCode.PhaseFailed);
+                    var validation = FoundationValidator.ValidateGameState(staging, definitions);
+                    if (!validation.IsValid) throw new InvalidOperationException("Turn phase violated state invariants: " + validation.Issues[0].Code);
+                    // Copy again before committing: retained phase references are
+                    // never authoritative. Empty phases must preserve all facts.
+                    var candidate = CopyState(staging);
+                    RequireEmptyTurnUnchanged(candidate);
+                    candidate.TurnNumber = checked(attemptedTurn + 1);
+                    candidate.StateRevision = checked(state.StateRevision + 1);
+                    candidate.AcceptedCommandIds!.Clear();
+                    candidate.Phase = SessionPhase.Planning;
+                    FoundationValidator.ValidateGameState(candidate, definitions).ThrowIfInvalid(nameof(candidate));
+                    var result = new TurnResult(TurnStatus.Completed, TurnErrorCode.None, attemptedTurn,
+                        candidate.TurnNumber, candidate.StateRevision, candidate.Phase.Value,
+                        Array.Empty<StrategicEvent>(), Array.Empty<CommandResult>());
+                    state = candidate;
+                    return result;
+                }
+                finally { executingMutation = false; }
+            }
+        }
+
+        // Temporary Phase 3B invariant: until built-in systems exist, no phase
+        // may alter campaign facts, RNG/allocation or lifecycle bookkeeping.
+        private void RequireEmptyTurnUnchanged(GameStateDto candidate)
+        {
+            if (candidate.Phase != state.Phase || candidate.TurnNumber != state.TurnNumber
+                || candidate.StateRevision != state.StateRevision || candidate.NextEntitySequence != state.NextEntitySequence
+                || candidate.RngState.AlgorithmId != state.RngState.AlgorithmId
+                || candidate.RngState.AlgorithmVersion != state.RngState.AlgorithmVersion
+                || candidate.RngState.State != state.RngState.State
+                || !candidate.AcceptedCommandIds!.SequenceEqual(state.AcceptedCommandIds!)
+                || !candidate.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId))
+                    .SequenceEqual(state.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId)))
+                || !candidate.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind))
+                    .SequenceEqual(state.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind)))
+                || !candidate.StarSystems!.Select(n => (n.SystemId, n.DefinitionId, n.OwnerCivilizationId))
+                    .SequenceEqual(state.StarSystems!.Select(n => (n.SystemId, n.DefinitionId, n.OwnerCivilizationId))))
+                throw new InvalidOperationException("Empty strategic phases cannot change campaign facts or bookkeeping.");
         }
 
         public SessionSnapshot CaptureSnapshot()
@@ -103,7 +167,7 @@ namespace HobbyDS9.Simulation
                     state.AcceptedCommandIds!.Select(c => new EntityId(c)),
                     state.Civilizations!.Select(c => new CivilizationSnapshot(new EntityId(c.CivilizationId), new DefinitionId(c.DefinitionId), c.ControllerKind!.Value)),
                     state.StarSystems!.Select(n => new StarSystemSnapshot(new EntityId(n.SystemId), new DefinitionId(n.DefinitionId),
-                        n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges);
+                        n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges, state.Phase!.Value);
             }
         }
 
@@ -157,7 +221,7 @@ namespace HobbyDS9.Simulation
 
         private static GameStateDto CopyState(GameStateDto source) => new GameStateDto
         {
-            TurnNumber = source.TurnNumber, StateRevision = source.StateRevision, NextEntitySequence = source.NextEntitySequence,
+            Phase = source.Phase, TurnNumber = source.TurnNumber, StateRevision = source.StateRevision, NextEntitySequence = source.NextEntitySequence,
             RngState = new RngStateDto { AlgorithmId = source.RngState.AlgorithmId,
                 AlgorithmVersion = source.RngState.AlgorithmVersion, State = source.RngState.State },
             EntityIdentities = source.EntityIdentities.OrderBy(e => e.EntityId, StringComparer.Ordinal)

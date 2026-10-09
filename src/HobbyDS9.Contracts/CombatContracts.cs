@@ -2,7 +2,6 @@ using System.Collections.Generic;
 
 namespace HobbyDS9.Contracts
 {
-    public enum SessionPhase { Planning, AwaitingCombat }
     public enum CombatResolutionStatus { Deferred, Resolved }
     public enum CombatEventKind { EncounterResolved, ShipDamaged, ShipDestroyed, FleetRetreated }
     public enum FleetCombatDisposition { Held, Retreated, Destroyed }

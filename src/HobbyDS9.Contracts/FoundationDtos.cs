@@ -4,7 +4,7 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 3;
+        public const int SaveFormatVersion = 4;
         public const int ContentFormatVersion = 1;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
@@ -41,6 +41,8 @@ namespace HobbyDS9.Contracts
 
     public sealed class GameStateDto
     {
+        // Required in save format 4; missing JSON is not implicitly Planning.
+        public SessionPhase? Phase { get; set; }
         public int TurnNumber { get; set; }
         public long StateRevision { get; set; }
         public ulong NextEntitySequence { get; set; }

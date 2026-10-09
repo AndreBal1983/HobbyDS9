@@ -18,4 +18,4 @@ var session = new SimulationSession(new SaveEnvelopeDto
 }, scenario.Definitions, new SaveCompatibility(scenario.ScenarioId, scenario.RulesVersion, scenario.ContentHash));
 var snapshot = session.CaptureSnapshot();
 Console.WriteLine($"{scenario.ScenarioId}: {snapshot.Civilizations.Count} civilizations, {session.Galaxy.Nodes.Count} nodes, {session.Galaxy.Edges.Count} edges.");
-Console.WriteLine("Scenario identity/graph skeleton validated. Gameplay and turn execution remain unimplemented.");
+Console.WriteLine("Scenario identity/graph skeleton validated. Gameplay remains unimplemented; this host does not advance turns.");

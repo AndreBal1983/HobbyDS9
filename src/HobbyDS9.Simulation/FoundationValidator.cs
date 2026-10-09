@@ -118,6 +118,11 @@ namespace HobbyDS9.Simulation
             string path, List<ValidationIssue> issues)
         {
             if (dto == null) { Add(issues, ValidationCode.MissingField, path); return; }
+            if (!dto.Phase.HasValue) Add(issues, ValidationCode.MissingField, path + ".Phase");
+            else if (dto.Phase != SessionPhase.Planning && dto.Phase != SessionPhase.AwaitingCombat)
+                Add(issues, ValidationCode.InvalidSessionPhase, path + ".Phase");
+            else if (authored && dto.Phase != SessionPhase.Planning)
+                Add(issues, ValidationCode.InvalidSessionPhase, path + ".Phase");
             if (dto.TurnNumber <= 0) Add(issues, ValidationCode.InvalidCounter, path + ".TurnNumber");
             if (dto.StateRevision < 0) Add(issues, ValidationCode.InvalidCounter, path + ".StateRevision");
             if (dto.NextEntitySequence == 0) Add(issues, ValidationCode.InvalidCounter, path + ".NextEntitySequence");

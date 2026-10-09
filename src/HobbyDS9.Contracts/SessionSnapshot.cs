@@ -43,6 +43,7 @@ namespace HobbyDS9.Contracts
         public string ScenarioId { get; }
         public string RulesVersion { get; }
         public string ContentHash { get; }
+        public SessionPhase Phase { get; }
         public int TurnNumber { get; }
         public long StateRevision { get; }
         public ulong NextEntitySequence { get; }
@@ -59,10 +60,10 @@ namespace HobbyDS9.Contracts
             ulong nextEntitySequence, RngSnapshot rng, IEnumerable<EntityIdentitySnapshot> entities,
             IEnumerable<DefinitionId> definitions, IEnumerable<ActorSnapshot> actors, IEnumerable<EntityId> commands,
             IEnumerable<CivilizationSnapshot>? civilizations = null, IEnumerable<StarSystemSnapshot>? systems = null,
-            IEnumerable<GalaxyEdge>? edges = null)
+            IEnumerable<GalaxyEdge>? edges = null, SessionPhase phase = SessionPhase.Planning)
         {
             ScenarioId = scenarioId; RulesVersion = rulesVersion; ContentHash = contentHash;
-            TurnNumber = turnNumber; StateRevision = revision; NextEntitySequence = nextEntitySequence;
+            Phase = phase; TurnNumber = turnNumber; StateRevision = revision; NextEntitySequence = nextEntitySequence;
             RngState = rng ?? throw new ArgumentNullException(nameof(rng));
             Entities = new List<EntityIdentitySnapshot>(entities).AsReadOnly();
             DefinitionIds = new List<DefinitionId>(definitions).AsReadOnly();

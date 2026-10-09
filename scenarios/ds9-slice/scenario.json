@@ -1,6 +1,6 @@
 {
   "ScenarioId": "ds9-strategic-slice-v1",
-  "RulesVersion": "phase-1-3a-v1",
+  "RulesVersion": "phase-1-3b-v1",
   "Definitions": {
     "ContentFormatVersion": 1,
     "DefinitionIds": [
@@ -83,6 +83,7 @@
     ]
   },
   "InitialState": {
+    "Phase": 0,
     "TurnNumber": 1,
     "StateRevision": 0,
     "NextEntitySequence": 1,
