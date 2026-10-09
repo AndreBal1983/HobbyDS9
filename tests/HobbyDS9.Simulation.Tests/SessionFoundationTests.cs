@@ -10,7 +10,7 @@ public sealed class SessionFoundationTests
     private static readonly EntityId Alpha = new("civ.alpha");
     private static readonly EntityId Beta = new("civ.beta");
     private static readonly SaveCompatibility Compatibility = new("scenario.session", "foundation-v2", new string('a', 64));
-    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, ResearchNodes = new(), EconomicProfiles = new(), StarSystems = new(), GalaxyEdges = new(),
+    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, ShipDesigns = new(), ResearchNodes = new(), EconomicProfiles = new(), StarSystems = new(), GalaxyEdges = new(),
         Civilizations = new() { new() { DefinitionId = "definition.alpha", DisplayName = "Alpha" }, new() { DefinitionId = "definition.beta", DisplayName = "Beta" } },
         DefinitionIds = new() { "definition.beta", "definition.alpha" } };
     private static SaveEnvelopeDto Save(long revision = 0) => new()
@@ -20,7 +20,7 @@ public sealed class SessionFoundationTests
         GameState = new()
         {
             Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = revision, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(),
-            Colonies = new(), AcceptedCommandIds = new(), StarSystems = new(),
+            Ships = new(), Fleets = new(), Colonies = new(), AcceptedCommandIds = new(), StarSystems = new(),
             Civilizations = new() { new() { CivilizationId = Alpha.Value, DefinitionId = "definition.alpha", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.Human },
                 new() { CivilizationId = Beta.Value, DefinitionId = "definition.beta", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.AI } }, EntityIdentities = new()
             {
@@ -386,7 +386,7 @@ public sealed class SessionFoundationTests
     }
 
     [Fact]
-    public void OtherPublicGameplayCommandsRemainUnsupportedAndRoundTrip()
+    public void GameplayCommandsRejectMissingTargetsAndRoundTrip()
     {
         var session = new SimulationSession(Save(), Definitions(), Compatibility);
         var commands = new[]
@@ -403,7 +403,7 @@ public sealed class SessionFoundationTests
         {
             var loaded = JsonSerializer.Deserialize<CommandEnvelope>(JsonSerializer.Serialize(command))!;
             var result = session.SubmitCommand(loaded);
-            Assert.Equal(CommandErrorCode.UnsupportedCommand, result.ErrorCode);
+            Assert.Equal(command.Kind == CommandKind.SetFleetRoute ? CommandErrorCode.UnsupportedCommand : CommandErrorCode.UnknownColony, result.ErrorCode);
             var loadedResult = JsonSerializer.Deserialize<CommandResult>(JsonSerializer.Serialize(result))!;
             Assert.Equal(result.CommandId, loadedResult.CommandId);
             Assert.Equal(result.ErrorCode, loadedResult.ErrorCode);

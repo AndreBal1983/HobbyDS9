@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace HobbyDS9.Contracts
 {
     public sealed class EconomicProfileDefinitionDto
@@ -25,6 +28,7 @@ namespace HobbyDS9.Contracts
         public long PopulationCapacity { get; set; }
         public long Food { get; set; }
         public long Materials { get; set; }
+        public List<ProductionQueueItemDto>? ProductionQueue { get; set; }
     }
 
     public sealed class ColonySnapshot
@@ -37,12 +41,14 @@ namespace HobbyDS9.Contracts
         public long PopulationCapacity { get; }
         public long Food { get; }
         public long Materials { get; }
+        public IReadOnlyList<ProductionQueueItemSnapshot> ProductionQueue { get; }
         public ColonySnapshot(EntityId colonyId, EntityId systemId, EntityId? ownerCivilizationId,
-            DefinitionId economicProfileDefinitionId, long population, long populationCapacity, long food, long materials)
+            DefinitionId economicProfileDefinitionId, long population, long populationCapacity, long food, long materials, IEnumerable<ProductionQueueItemSnapshot>? productionQueue = null)
         {
             ColonyId = colonyId; SystemId = systemId; OwnerCivilizationId = ownerCivilizationId;
             EconomicProfileDefinitionId = economicProfileDefinitionId; Population = population;
             PopulationCapacity = populationCapacity; Food = food; Materials = materials;
+            ProductionQueue = new List<ProductionQueueItemSnapshot>(productionQueue ?? Array.Empty<ProductionQueueItemSnapshot>()).AsReadOnly();
         }
     }
 }

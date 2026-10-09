@@ -31,7 +31,8 @@ namespace HobbyDS9.Simulation
             state = CopyState(save.GameState);
             Galaxy = new GalaxyGraph(state.StarSystems!.Select(n => new EntityId(n.SystemId)), this.definitions.GalaxyEdges!);
             if (commandHandlers == null) throw new ArgumentNullException(nameof(commandHandlers));
-            handlers = new Dictionary<CommandKind, ICommandHandler> { [CommandKind.SetResearchTarget] = new ResearchTargetHandler(this.definitions) };
+            handlers = new Dictionary<CommandKind, ICommandHandler> { [CommandKind.SetResearchTarget] = new ResearchTargetHandler(this.definitions),
+                [CommandKind.EnqueueProduction] = new EnqueueProductionHandler(this.definitions), [CommandKind.CancelProduction] = new CancelProductionHandler() };
             foreach (var pair in commandHandlers)
             {
                 if (!IsKnownKind(pair.Key) || pair.Value == null) throw new ArgumentException("Invalid internal handler registration.");
@@ -118,7 +119,7 @@ namespace HobbyDS9.Simulation
                     // Copy again before committing: retained phase references are
                     // never authoritative. Empty phases must preserve all facts.
                     var candidate = CopyState(staging);
-                    RequirePhaseChanges(state, candidate, allowEconomy: true, allowResearch: true);
+                    RequirePhaseChanges(state, candidate, allowEconomy: true, allowResearch: true, allowProduction: true);
                     candidate.TurnNumber = checked(attemptedTurn + 1);
                     candidate.StateRevision = checked(state.StateRevision + 1);
                     candidate.AcceptedCommandIds!.Clear();
@@ -135,16 +136,16 @@ namespace HobbyDS9.Simulation
         }
 
         // Economy and Research each have a distinct allowed mutation surface.
-        internal static void RequirePhaseChanges(GameStateDto state, GameStateDto candidate, bool allowEconomy, bool allowResearch = false)
+        internal static void RequirePhaseChanges(GameStateDto state, GameStateDto candidate, bool allowEconomy, bool allowResearch = false, bool allowProduction = false, bool allowMovement = false)
         {
             if (candidate.Phase != state.Phase || candidate.TurnNumber != state.TurnNumber
-                || candidate.StateRevision != state.StateRevision || candidate.NextEntitySequence != state.NextEntitySequence
+                || candidate.StateRevision != state.StateRevision || (!allowProduction && candidate.NextEntitySequence != state.NextEntitySequence)
                 || candidate.RngState.AlgorithmId != state.RngState.AlgorithmId
                 || candidate.RngState.AlgorithmVersion != state.RngState.AlgorithmVersion
                 || candidate.RngState.State != state.RngState.State
                 || !candidate.AcceptedCommandIds!.SequenceEqual(state.AcceptedCommandIds!)
-                || !candidate.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId))
-                    .SequenceEqual(state.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId)))
+                || (!allowProduction && !candidate.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId))
+                    .SequenceEqual(state.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId))))
                 || !candidate.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind, allowEconomy ? 0L : c.Credits,
                         allowResearch ? 0L : c.ResearchReserve, allowResearch ? null : c.ResearchTargetDefinitionId))
                     .SequenceEqual(state.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind, allowEconomy ? 0L : c.Credits,
@@ -158,6 +159,7 @@ namespace HobbyDS9.Simulation
                     .SequenceEqual(state.Colonies!.Select(c => (c.ColonyId, c.SystemId, c.OwnerCivilizationId, c.EconomicProfileDefinitionId,
                     c.PopulationCapacity, allowEconomy ? 0L : c.Population, allowEconomy ? 0L : c.Food, allowEconomy ? 0L : c.Materials))))
                 throw new InvalidOperationException("Strategic phase changed protected campaign facts or bookkeeping.");
+            ProductionFleetGuards.Require(state, candidate, allowProduction, allowMovement);
         }
 
         public SessionSnapshot CaptureSnapshot()
@@ -178,7 +180,8 @@ namespace HobbyDS9.Simulation
                     state.StarSystems!.Select(n => new StarSystemSnapshot(new EntityId(n.SystemId), new DefinitionId(n.DefinitionId),
                         n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges, state.Phase!.Value, state.Colonies!.Select(c => new ColonySnapshot(new EntityId(c.ColonyId),
                         new EntityId(c.SystemId), c.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(c.OwnerCivilizationId),
-                        new DefinitionId(c.EconomicProfileDefinitionId), c.Population, c.PopulationCapacity, c.Food, c.Materials)));
+                        new DefinitionId(c.EconomicProfileDefinitionId), c.Population, c.PopulationCapacity, c.Food, c.Materials, c.ProductionQueue!.Select(q => new ProductionQueueItemSnapshot(q)))),
+                    state.Ships!.Select(s => new ShipSnapshot(s)), state.Fleets!.Select(f => new FleetSnapshot(f)), definitions.ShipDesigns!.Select(d => new ShipDesignSnapshot(d)));
             }
         }
 
@@ -201,6 +204,9 @@ namespace HobbyDS9.Simulation
                 .Select(c => new CivilizationDefinitionDto { DefinitionId = c.DefinitionId, DisplayName = c.DisplayName }).ToList(),
             StarSystems = source.StarSystems!.OrderBy(n => n.DefinitionId, StringComparer.Ordinal)
                 .Select(n => new StarSystemDefinitionDto { DefinitionId = n.DefinitionId, DisplayName = n.DisplayName }).ToList(),
+            ShipDesigns = source.ShipDesigns!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal).Select(d => new ShipDesignDefinitionDto
+            { DefinitionId = d.DefinitionId, DisplayName = d.DisplayName, IndustryCost = d.IndustryCost, MaterialCost = d.MaterialCost,
+                CreditCost = d.CreditCost, MaxHull = d.MaxHull, RequiredResearchDefinitionIds = d.RequiredResearchDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal).ToList() }).ToList(),
             ResearchNodes = source.ResearchNodes!.OrderBy(n => n.DefinitionId, StringComparer.Ordinal).Select(n => new ResearchNodeDefinitionDto
             {
                 DefinitionId = n.DefinitionId, DisplayName = n.DisplayName, ResearchCost = n.ResearchCost,
@@ -260,8 +266,14 @@ namespace HobbyDS9.Simulation
             {
                 ColonyId = c.ColonyId, SystemId = c.SystemId, OwnerCivilizationId = c.OwnerCivilizationId,
                 EconomicProfileDefinitionId = c.EconomicProfileDefinitionId, Population = c.Population,
-                PopulationCapacity = c.PopulationCapacity, Food = c.Food, Materials = c.Materials
-            }).ToList()
+                PopulationCapacity = c.PopulationCapacity, Food = c.Food, Materials = c.Materials,
+                ProductionQueue = c.ProductionQueue!.Select(q => new ProductionQueueItemDto { QueueItemId = q.QueueItemId, ShipDesignDefinitionId = q.ShipDesignDefinitionId,
+                    RequiredIndustry = q.RequiredIndustry, CompletedIndustry = q.CompletedIndustry, PaidMaterials = q.PaidMaterials, PaidCredits = q.PaidCredits }).ToList()
+            }).ToList(),
+            Ships = source.Ships!.OrderBy(s => s.ShipId, StringComparer.Ordinal).Select(s => new ShipStateDto { ShipId = s.ShipId, ShipDesignDefinitionId = s.ShipDesignDefinitionId,
+                OwnerCivilizationId = s.OwnerCivilizationId, FleetId = s.FleetId, CurrentHull = s.CurrentHull }).ToList(),
+            Fleets = source.Fleets!.OrderBy(f => f.FleetId, StringComparer.Ordinal).Select(f => new FleetStateDto { FleetId = f.FleetId, OwnerCivilizationId = f.OwnerCivilizationId,
+                LocationSystemId = f.LocationSystemId, ShipIds = new List<string>(f.ShipIds!), RouteSystemIds = new List<string>(f.RouteSystemIds!) }).ToList()
         };
 
         private static CommandEnvelope? CopyCommand(CommandEnvelope? source)

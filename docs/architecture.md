@@ -311,3 +311,13 @@ Headless acceptance: load the fixed JSON scenario, accept a Federation route/pro
 6. AI through the same command path, headless scenario runner and multi-turn reproducibility gate.
 
 Resolve discrepancies by changing documented rules and tests together, not by copying legacy implementation to match incidental behavior. Later UI, transport and combat adapters must preserve these contracts or explicitly version them.
+
+## Production/fleets/AI milestone — Stage A
+
+Stage A implements ship-design content, ordered colony queues, enqueue/cancel commands and Production after Research. Save format 7 and content format 4 require queues, ship designs, ships, fleets and routes; older formats are rejected without migration. Queues, fleet membership and routes retain semantic order; entity/catalog collections remain ordinal. Costs are pinned to the matching package: required industry and both paid costs must equal the design. Only the head may have progress; neutral colonies cannot have queues.
+
+Enqueue validates ownership, research and both balances before allocating one queue-item ID and paying. Cancellation uses BigInteger intermediate multiplication for the exact floor of the unused fraction, checks refund destination totals, removes the header/item and never reduces the global sequence. BigInteger is part of .NET Standard 2.1 and adds no package dependency. Production uses post-Economy population for industry, touches only the head, completes at most one item per colony, and discards excess.
+
+A completed ship allocates its ID first, then a fleet ID only if needed. It joins the ordinal-lowest owned stationary fleet at the colony system; routed fleets are excluded. New ships start at maximum hull; new fleets start with an empty route. Minimal ship/fleet state is implemented in Stage A because successful production must leave valid membership; movement remains Stage B. Phase guards protect queue costs/order, existing ships, fleet ownership/location/routes, economics/research and bookkeeping outside their owning phase. A production or later fault discards all earlier staged work.
+
+Scenario scout costs are industry 20/materials 8/credits 10/hull 10; advanced scout costs 24/10/12/hull 15 and requires advanced engineering. There are no weapons or different combat rules. Stage B will add starting fleets and movement; Stage C will add autonomous AI. EncounterCreation remains a strict no-op.

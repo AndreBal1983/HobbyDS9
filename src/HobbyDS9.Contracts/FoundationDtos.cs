@@ -4,8 +4,8 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 6;
-        public const int ContentFormatVersion = 3;
+        public const int SaveFormatVersion = 7;
+        public const int ContentFormatVersion = 4;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
     }
@@ -38,6 +38,7 @@ namespace HobbyDS9.Contracts
         public List<GalaxyEdgeDto>? GalaxyEdges { get; set; }
         public List<EconomicProfileDefinitionDto>? EconomicProfiles { get; set; }
         public List<ResearchNodeDefinitionDto>? ResearchNodes { get; set; }
+        public List<ShipDesignDefinitionDto>? ShipDesigns { get; set; }
         public List<string> DefinitionIds { get; set; } = new List<string>();
     }
 
@@ -55,6 +56,8 @@ namespace HobbyDS9.Contracts
         public List<CivilizationStateDto>? Civilizations { get; set; }
         public List<StarSystemStateDto>? StarSystems { get; set; }
         public List<ColonyStateDto>? Colonies { get; set; }
+        public List<ShipStateDto>? Ships { get; set; }
+        public List<FleetStateDto>? Fleets { get; set; }
     }
 
     public sealed class ScenarioDto

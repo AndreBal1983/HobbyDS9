@@ -10,11 +10,11 @@ public sealed class FoundationDtoTests
     private const string Rules = "foundation-v1";
     private static readonly string ContentHash = new('a', 64);
     private static readonly SaveCompatibility Compatibility = new("scenario.fixture", Rules, ContentHash);
-    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, ResearchNodes = new(), EconomicProfiles = new(), Civilizations = new(), StarSystems = new(), GalaxyEdges = new(), DefinitionIds = new() { "definition.alpha", "definition.beta" } };
+    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, ShipDesigns = new(), ResearchNodes = new(), EconomicProfiles = new(), Civilizations = new(), StarSystems = new(), GalaxyEdges = new(), DefinitionIds = new() { "definition.alpha", "definition.beta" } };
 
     private static GameStateDto State() => new()
     {
-        Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(), Colonies = new(), AcceptedCommandIds = new(), Civilizations = new(), StarSystems = new(),
+        Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(), Ships = new(), Fleets = new(), Colonies = new(), AcceptedCommandIds = new(), Civilizations = new(), StarSystems = new(),
         EntityIdentities = new()
         {
             new() { EntityId = "entity.initial", DefinitionId = "definition.alpha" },

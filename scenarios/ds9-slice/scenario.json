@@ -1,8 +1,8 @@
 {
   "ScenarioId": "ds9-strategic-slice-v1",
-  "RulesVersion": "phase-1-4b-v1",
+  "RulesVersion": "phase-1-production-v1",
   "Definitions": {
-    "ContentFormatVersion": 3,
+    "ContentFormatVersion": 4,
     "DefinitionIds": [
       "civilization.federation",
       "civilization.cardassian",
@@ -14,7 +14,9 @@
       "star-system.bajoran-wormhole",
       "star-system.gamma-exit",
       "economy.baseline",
-      "research.advanced-engineering"
+      "research.advanced-engineering",
+      "ship-design.scout",
+      "ship-design.advanced-scout"
     ],
     "Civilizations": [
       {
@@ -104,6 +106,28 @@
         "DisplayName": "Advanced Starship Engineering",
         "ResearchCost": 9,
         "PrerequisiteDefinitionIds": []
+      }
+    ],
+    "ShipDesigns": [
+      {
+        "DefinitionId": "ship-design.scout",
+        "DisplayName": "Scout",
+        "IndustryCost": 20,
+        "MaterialCost": 8,
+        "CreditCost": 10,
+        "MaxHull": 10,
+        "RequiredResearchDefinitionIds": []
+      },
+      {
+        "DefinitionId": "ship-design.advanced-scout",
+        "DisplayName": "Advanced Scout",
+        "IndustryCost": 24,
+        "MaterialCost": 10,
+        "CreditCost": 12,
+        "MaxHull": 15,
+        "RequiredResearchDefinitionIds": [
+          "research.advanced-engineering"
+        ]
       }
     ]
   },
@@ -242,7 +266,8 @@
         "Population": 1000,
         "PopulationCapacity": 2000,
         "Food": 20,
-        "Materials": 10
+        "Materials": 10,
+        "ProductionQueue": []
       },
       {
         "ColonyId": "colony.cardassia",
@@ -252,7 +277,8 @@
         "Population": 1000,
         "PopulationCapacity": 2000,
         "Food": 20,
-        "Materials": 10
+        "Materials": 10,
+        "ProductionQueue": []
       },
       {
         "ColonyId": "colony.founders-homeworld",
@@ -262,7 +288,8 @@
         "Population": 1000,
         "PopulationCapacity": 2000,
         "Food": 20,
-        "Materials": 10
+        "Materials": 10,
+        "ProductionQueue": []
       },
       {
         "ColonyId": "colony.bajor",
@@ -272,8 +299,11 @@
         "Population": 1000,
         "PopulationCapacity": 2000,
         "Food": 20,
-        "Materials": 10
+        "Materials": 10,
+        "ProductionQueue": []
       }
-    ]
+    ],
+    "Ships": [],
+    "Fleets": []
   }
 }

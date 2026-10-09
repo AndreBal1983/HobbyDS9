@@ -20,7 +20,7 @@ public sealed class ResearchTests
         EconomicProfiles = new() { new() { DefinitionId = "economy.fixture", DisplayName = "Fixture economy", FoodOutput = 12,
             PopulationPerFood = 100, MaterialOutput = 4, PopulationPerCredit = 100, BaseIndustry = 4, PopulationPerIndustry = 250,
             GrowthPerTurn = 50, StarvationLossPerTurn = 50, ResearchOutput = 3 } },
-        ResearchNodes = new() { Node("research.gamma", 6, "research.alt", "research.alpha"), Node("research.beta", 4, "research.alpha"),
+        ShipDesigns = new(), ResearchNodes = new() { Node("research.gamma", 6, "research.alt", "research.alpha"), Node("research.beta", 4, "research.alpha"),
             Node("research.alt", 5), Node("research.alpha", 9) }
     };
     private static SaveEnvelopeDto Save() => new()
@@ -37,7 +37,7 @@ public sealed class ResearchTests
                 new() { CivilizationId = "civ.a", DefinitionId = "civilization.fixture", ControllerKind = ControllerKind.AI, Credits = 50, UnlockedResearchDefinitionIds = new() }
             },
             StarSystems = new() { new() { SystemId = "node.z", DefinitionId = "system.fixture", OwnerCivilizationId = "civ.z" } },
-            Colonies = new() { new() { ColonyId = "colony.z", SystemId = "node.z", OwnerCivilizationId = "civ.z", EconomicProfileDefinitionId = "economy.fixture",
+            Ships = new(), Fleets = new(), Colonies = new() { new() { ColonyId = "colony.z", SystemId = "node.z", OwnerCivilizationId = "civ.z", ProductionQueue = new(), EconomicProfileDefinitionId = "economy.fixture",
                 Population = 1000, PopulationCapacity = 2000, Food = 20, Materials = 10 } },
             EntityIdentities = new()
             {
@@ -66,7 +66,7 @@ public sealed class ResearchTests
         save.GameState.EntityIdentities.Add(new() { EntityId = "colony." + key, DefinitionId = "economy.fixture" });
         save.GameState.StarSystems!.Add(new() { SystemId = "node." + key, DefinitionId = "system.fixture", OwnerCivilizationId = owner });
         save.GameState.Colonies!.Add(new() { ColonyId = "colony." + key, SystemId = "node." + key, OwnerCivilizationId = owner,
-            EconomicProfileDefinitionId = "economy.fixture", Population = 1000, PopulationCapacity = 2000, Food = 20, Materials = 10 });
+            ProductionQueue = new(), EconomicProfileDefinitionId = "economy.fixture", Population = 1000, PopulationCapacity = 2000, Food = 20, Materials = 10 });
     }
 
     [Fact]
