@@ -1,6 +1,6 @@
 # HobbyDS9
 
-A portable C# strategy simulation for a future DS9/Dominion War-era BOTF spiritual successor. The strategic vertical slice now connects colony economy, research, ship production, fleets, graph movement and simple deterministic AI. It runs headlessly; the campaign encounter checkpoint is integrated; generic combat consequences, the production no-loss resolver, frontend and networking follow in later stages. No implementation code or assets have been copied from BotF2 or 3DBOTF2.
+A portable C# strategy simulation for a future DS9/Dominion War-era BOTF spiritual successor. The strategic vertical slice now connects colony economy, research, ship production, fleets, graph movement and simple deterministic AI. It runs headlessly; the campaign encounter checkpoint is integrated; generic combat consequences and the production no-loss resolver are implemented; frontend and networking follow in later stages. No implementation code or assets have been copied from BotF2 or 3DBOTF2.
 
 Read [the architecture](docs/architecture.md) for contracts, deterministic rules, scenario definitions and acceptance gates.
 
@@ -58,6 +58,6 @@ AI uses the same gameplay handlers through an internal trusted path. Public subm
 
 The scenario has Federation (Human), Cardassian Union and Dominion (AI), six map nodes, four colonies, a data-defined wormhole, one starting scout/fleet per faction, two scout designs and one research node. Save format **8** and content format **4** deliberately reject older schemas without migration. Saves preserve queue progress, research, ships, fleet membership and routes against the matching content/rules identity.
 
-Tests cover existing foundations, economy/research arithmetic, production/refunds, references and membership, route/movement rules, phase isolation, complete rollback, AI ordering/control/RNG, and 25-turn equality across repeated runs, reordered input and multiple save/reloads. A separate combat-boundary scaffold remains tested but is not connected to campaign turns. AwaitingCombat blocks strategic commands/advancement and supports persisted pending/resolved combat. D1 accepts no-change results and can finalize them; generic consequences are Stage D2.
+Tests cover existing foundations, economy/research arithmetic, production/refunds, references and membership, route/movement rules, phase isolation, complete rollback, AI ordering/control/RNG, and 25-turn equality across repeated runs, reordered input and multiple save/reloads. The combat-boundary scaffold remains tested and supplies shared campaign validation/canonicalization. AwaitingCombat blocks strategic commands/advancement and supports persisted pending/resolved combat. Resolved results buffer without applying consequences. Explicit canonical finalization applies sparse damage/destruction/adjacent retreat, clears the batch/ledger and opens the next turn. NoLossCombatResolver produces one terminal event and unchanged hull/RNG. Tactical combat remains deferred.
 
 No distribution license is selected yet. Choose one before importing third-party code or distributing the project.

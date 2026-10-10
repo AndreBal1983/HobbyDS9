@@ -50,5 +50,17 @@ namespace HobbyDS9.Simulation
                 if (!contested.SequenceEqual(requests.Select(r => r.LocationSystemId).OrderBy(id => id, StringComparer.Ordinal))) Add(issues, ValidationCode.InvalidCombatReference, path + ".Combats");
             }
         }
+        private static void ValidateCombatTopology(GameStateDto? state, DefinitionCatalogDto? definitions, string path, List<ValidationIssue> issues)
+        {
+            if (state?.ResolvedCombats == null || state.PendingCombats == null || state.ResolvedCombats.Count == 0 || state.RngState?.State == null || !state.Phase.HasValue) return;
+            try { CombatEncounterScaffold.ValidateCheckpoint(CampaignCombatState.ToCheckpoint(state)); }
+            catch (ArgumentException) { return; }
+            var nodes = (state.StarSystems ?? new List<StarSystemStateDto>()).Where(n => n != null).Select(n => n.SystemId).ToList();
+            if (!GalaxyGraph.Validate(nodes, definitions?.GalaxyEdges).IsValid || state.Fleets == null || state.Fleets.Any(f => f == null)) return;
+            var graph = new GalaxyGraph(nodes.Select(id => new EntityId(id)), definitions!.GalaxyEdges!);
+            foreach (var resolved in state.ResolvedCombats)
+                if (CampaignCombatConsequences.Validate(state, graph, resolved.Request, resolved.Result) != CombatSubmissionError.None)
+                    Add(issues, ValidationCode.InvalidCombatCheckpoint, path + ".ResolvedCombats");
+        }
     }
 }

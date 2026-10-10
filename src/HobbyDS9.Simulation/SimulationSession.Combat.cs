@@ -32,15 +32,13 @@ namespace HobbyDS9.Simulation
                 var pending = state.PendingCombats!.SingleOrDefault(c => c.Request.EncounterId == result.EncounterId);
                 if (pending == null) return Reject(CombatSubmissionError.UnknownEncounter);
                 if (result.ResolverId != pending.Request.ResolverId || result.ResolverVersion != pending.Request.ResolverVersion) return Reject(CombatSubmissionError.ResolverMismatch);
-                // D1 supports no-change buffers. Generic consequences are connected in D2.
-                if (result.ShipChanges == null || result.FleetChanges == null || result.ShipChanges.Count != 0 || result.FleetChanges.Count != 0) return Reject(CombatSubmissionError.MalformedResult);
+                var validationError = CampaignCombatConsequences.Validate(state, Galaxy, pending.Request, result);
+                if (validationError != CombatSubmissionError.None) return Reject(validationError);
                 if (result.Status != CombatResolutionStatus.Deferred && state.StateRevision == long.MaxValue) return Reject(CombatSubmissionError.RevisionExhausted);
                 executingMutation = true;
                 try
                 {
-                    CombatCheckpointDto checkpoint;
-                    try { checkpoint = CombatEncounterScaffold.RecordResult(CampaignCombatState.ToCheckpoint(state), result); }
-                    catch (ArgumentException) { return Reject(CombatSubmissionError.MalformedResult); }
+                    var checkpoint = CombatEncounterScaffold.RecordResult(CampaignCombatState.ToCheckpoint(state), result);
                     if (result.Status == CombatResolutionStatus.Deferred) return new CombatSubmissionResult(result.EncounterId, CombatSubmissionStatus.Deferred, CombatSubmissionError.None, state.TurnNumber, state.StateRevision);
                     var staging = CopyState(state); CampaignCombatState.SetCheckpoint(staging, checkpoint);
                     FoundationValidator.ValidateSave(ToSave(staging), definitions, compatibility).ThrowIfInvalid(nameof(staging));
@@ -67,11 +65,29 @@ namespace HobbyDS9.Simulation
                 try
                 {
                     var staging = CopyState(state);
-                    foreach (var combat in staging.ResolvedCombats!)
-                        if (combat.Result.ShipChanges.Count != 0 || combat.Result.FleetChanges.Count != 0) throw new InvalidOperationException("Generic consequence application belongs to D2.");
+                    var batch = staging.ResolvedCombats!.ToList();
+                    for (var index = 0; index < batch.Count; index++)
+                    {
+                        var combat = batch[index];
+                        var error = CampaignCombatConsequences.Validate(state, Galaxy, combat.Request, combat.Result);
+                        if (error != CombatSubmissionError.None) return Reject(TurnErrorCode.InvalidCombatBatch);
+                        CampaignCombatConsequences.Apply(staging, combat.Result);
+                        if (combatApplicationProbe != null)
+                        {
+                            var beforeProbe = CopyState(staging); combatApplicationProbe(index, staging);
+                            RequirePhaseChanges(beforeProbe, CopyState(staging), allowEconomy: false);
+                        }
+                    }
+                    CampaignCombatConsequences.RequireOnlyConsequences(state, CopyState(staging));
                     var completedTurn = staging.TurnNumber;
                     staging.PendingCombats!.Clear(); staging.ResolvedCombats!.Clear(); staging.Phase = SessionPhase.Planning;
                     staging.TurnNumber = checked(completedTurn + 1); staging.StateRevision = checked(staging.StateRevision + 1); staging.AcceptedCommandIds!.Clear();
+                    if (combatFinalizationProbe != null)
+                    {
+                        var beforeProbe = CopyState(staging); combatFinalizationProbe(staging);
+                        FoundationValidator.ValidateSave(ToSave(staging), definitions, compatibility).ThrowIfInvalid(nameof(staging));
+                        RequirePhaseChanges(beforeProbe, CopyState(staging), allowEconomy: false);
+                    }
                     FoundationValidator.ValidateSave(ToSave(staging), definitions, compatibility).ThrowIfInvalid(nameof(staging));
                     state = CopyState(staging);
                     return new TurnResult(TurnStatus.Completed, TurnErrorCode.None, completedTurn, state.TurnNumber, state.StateRevision, state.Phase!.Value, Array.Empty<StrategicEvent>(), Array.Empty<CommandResult>());

@@ -11,6 +11,8 @@ namespace HobbyDS9.Simulation
         private bool executingMutation;
         private readonly Func<StrategicTurnPhase, GameStateDto, bool>? turnPhaseProbe;
         private readonly Func<GameStateDto, bool>? combatCheckpointProbe;
+        private readonly Action<int, GameStateDto>? combatApplicationProbe;
+        private readonly Action<GameStateDto>? combatFinalizationProbe;
         private GameStateDto state;
         private readonly DefinitionCatalogDto definitions;
         private readonly SaveCompatibility compatibility;
@@ -23,12 +25,14 @@ namespace HobbyDS9.Simulation
 
         internal SimulationSession(SaveEnvelopeDto save, DefinitionCatalogDto definitions, SaveCompatibility compatibility,
             IReadOnlyDictionary<CommandKind, ICommandHandler> commandHandlers,
-            Func<StrategicTurnPhase, GameStateDto, bool>? turnPhaseProbe = null, Func<GameStateDto, bool>? combatCheckpointProbe = null)
+            Func<StrategicTurnPhase, GameStateDto, bool>? turnPhaseProbe = null, Func<GameStateDto, bool>? combatCheckpointProbe = null, Action<int, GameStateDto>? combatApplicationProbe = null, Action<GameStateDto>? combatFinalizationProbe = null)
         {
             FoundationValidator.ValidateSave(save, definitions, compatibility).ThrowIfInvalid(nameof(save));
             this.compatibility = compatibility;
             this.turnPhaseProbe = turnPhaseProbe;
             this.combatCheckpointProbe = combatCheckpointProbe;
+            this.combatApplicationProbe = combatApplicationProbe;
+            this.combatFinalizationProbe = combatFinalizationProbe;
             this.definitions = CopyDefinitions(definitions);
             state = CopyState(save.GameState);
             Galaxy = new GalaxyGraph(state.StarSystems!.Select(n => new EntityId(n.SystemId)), this.definitions.GalaxyEdges!);

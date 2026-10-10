@@ -36,8 +36,7 @@ for (var i = 0; i < turns; i++)
         foreach (var request in session.GetPendingCombatRequests())
         {
             var p = session.CaptureSnapshot();
-            var noChanges = new CombatResultDto { EncounterId = request.EncounterId, ResolverId = request.ResolverId, ResolverVersion = request.ResolverVersion,
-                Status = CombatResolutionStatus.Resolved, FinalRandomState = request.RandomState, Events = new() { new() { Sequence = 0, Kind = CombatEventKind.EncounterResolved } } };
+            var noChanges = new NoLossCombatResolver().Resolve(request);
             if (session.SubmitCombatResult(noChanges, p.TurnNumber, p.StateRevision).Status != CombatSubmissionStatus.Buffered) throw new InvalidOperationException("Combat buffering failed.");
         }
         var finalStamp = session.CaptureSnapshot(); result = session.FinalizeCombat(finalStamp.TurnNumber, finalStamp.StateRevision);

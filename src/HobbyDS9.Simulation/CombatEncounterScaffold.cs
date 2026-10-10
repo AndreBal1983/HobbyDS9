@@ -131,7 +131,7 @@ namespace HobbyDS9.Simulation
             if (checkpoint.Phase != SessionPhase.Planning) throw new InvalidOperationException("CombatPending");
         }
 
-        private static void ValidateRequest(CombatRequestDto request, bool allocated)
+        internal static void ValidateRequest(CombatRequestDto request, bool allocated)
         {
             Require(request != null, "Missing combat request.");
             ValidateId(request!.LocationSystemId);
@@ -145,17 +145,21 @@ namespace HobbyDS9.Simulation
             }
             Require(request.Participants != null && request.Participants.Count >= 2, "Encounter requires opposing participants.");
             var civilizations = new HashSet<string>(StringComparer.Ordinal);
+            var fleets = new HashSet<string>(StringComparer.Ordinal);
+            var ships = new HashSet<string>(StringComparer.Ordinal);
             foreach (var participant in request.Participants!)
             {
                 Require(participant != null, "Missing participant.");
                 ValidateId(participant!.CivilizationId);
                 ValidateId(participant.FleetId);
                 civilizations.Add(participant.CivilizationId);
+                Require(fleets.Add(participant.FleetId), "Duplicate participant fleet.");
                 Require(participant.Ships != null && participant.Ships.Count > 0, "Empty combat fleet.");
                 foreach (var ship in participant.Ships!)
                 {
                     Require(ship != null, "Missing ship.");
                     ValidateId(ship!.ShipId);
+                    Require(ships.Add(ship.ShipId), "Duplicate participant ship.");
                     Require(DefinitionId.TryParse(ship.DesignId, out _), "Invalid canonical definition ID.");
                     Require(ship.Hull > 0, "Nonpositive combat hull.");
                 }
@@ -165,45 +169,45 @@ namespace HobbyDS9.Simulation
 
         private static void ValidateResult(CombatCheckpointDto checkpoint, CombatRequestDto request, CombatResultDto result)
         {
-            Require(result != null && result.EncounterId == request.EncounterId && result.ResolverId == request.ResolverId
-                && result.ResolverVersion == request.ResolverVersion, "Result identity mismatch.");
-            Require(Enum.IsDefined(typeof(CombatResolutionStatus), result!.Status), "Unknown resolution status.");
-            Require(result.ShipChanges != null && result.FleetChanges != null && result.Events != null, "Missing result lists.");
+            var error = GetResultError(checkpoint, request, result);
+            Require(error == CombatSubmissionError.None, "Invalid combat result: " + error);
+        }
+
+        internal static CombatSubmissionError GetResultError(CombatCheckpointDto checkpoint, CombatRequestDto request, CombatResultDto? result)
+        {
+            if (result == null || result.EncounterId != request.EncounterId || result.ResolverId != request.ResolverId || result.ResolverVersion != request.ResolverVersion) return CombatSubmissionError.ResolverMismatch;
+            if (!Enum.IsDefined(typeof(CombatResolutionStatus), result.Status) || result.ShipChanges == null || result.FleetChanges == null || result.Events == null) return CombatSubmissionError.MalformedResult;
             if (result.Status == CombatResolutionStatus.Deferred)
-            {
-                Require(result.ShipChanges.Count == 0 && result.FleetChanges.Count == 0 && result.Events.Count == 0
-                    && result.FinalRandomState == request.RandomState, "Deferred result must not have consequences.");
-                return;
-            }
+                return result.ShipChanges.Count == 0 && result.FleetChanges.Count == 0 && result.Events.Count == 0 && result.FinalRandomState == request.RandomState ? CombatSubmissionError.None : CombatSubmissionError.MalformedResult;
             var ships = request.Participants.SelectMany(p => p.Ships).ToDictionary(s => s.ShipId, StringComparer.Ordinal);
             var fleets = new HashSet<string>(request.Participants.Select(p => p.FleetId), StringComparer.Ordinal);
             var changedShips = new HashSet<string>(StringComparer.Ordinal);
             foreach (var change in result.ShipChanges)
-                Require(change != null && change.ShipId != null && ships.TryGetValue(change.ShipId, out var ship) && changedShips.Add(change.ShipId)
-                    && change.RemainingHull >= 0 && change.RemainingHull <= ship.Hull, "Invalid ship change.");
+            {
+                if (change == null || !EntityId.TryParse(change.ShipId, out _) || !changedShips.Add(change.ShipId)) return CombatSubmissionError.MalformedResult;
+                if (!ships.TryGetValue(change.ShipId, out var ship)) return CombatSubmissionError.Nonparticipant;
+                if (change.RemainingHull < 0 || change.RemainingHull > ship.Hull) return CombatSubmissionError.InvalidHull;
+            }
             var changedFleets = new HashSet<string>(StringComparer.Ordinal);
             var battleLocations = new HashSet<string>(AllRequests(checkpoint).Select(r => r.LocationSystemId), StringComparer.Ordinal);
             foreach (var change in result.FleetChanges)
             {
-                Require(change != null && fleets.Contains(change.FleetId) && changedFleets.Add(change.FleetId)
-                    && Enum.IsDefined(typeof(FleetCombatDisposition), change.Disposition), "Invalid fleet change.");
-                if (change!.Disposition == FleetCombatDisposition.Retreated)
+                if (change == null || !EntityId.TryParse(change.FleetId, out _) || !changedFleets.Add(change.FleetId) || !Enum.IsDefined(typeof(FleetCombatDisposition), change.Disposition)) return CombatSubmissionError.MalformedResult;
+                if (!fleets.Contains(change.FleetId)) return CombatSubmissionError.Nonparticipant;
+                if (change.Disposition == FleetCombatDisposition.Retreated)
                 {
-                    ValidateId(change.RetreatSystemId!);
-                    Require(!battleLocations.Contains(change.RetreatSystemId!), "Retreat cannot enter any encounter location this turn.");
+                    if (!EntityId.TryParse(change.RetreatSystemId, out _) || battleLocations.Contains(change.RetreatSystemId!)) return CombatSubmissionError.InvalidRetreat;
                 }
-                else Require(change.RetreatSystemId == null, "Non-retreat result has retreat destination.");
+                else if (change.RetreatSystemId != null) return CombatSubmissionError.InvalidRetreat;
             }
             for (var i = 0; i < result.Events.Count; i++)
             {
-                var combatEvent = result.Events[i];
-                Require(combatEvent != null && combatEvent.Sequence == i && Enum.IsDefined(typeof(CombatEventKind), combatEvent.Kind),
-                    "Invalid combat event sequence/kind.");
-                Require((combatEvent!.ShipId == null || ships.ContainsKey(combatEvent.ShipId))
-                    && (combatEvent.FleetId == null || fleets.Contains(combatEvent.FleetId)), "Event references nonparticipant.");
+                var e = result.Events[i];
+                if (e == null || e.Sequence != i || !Enum.IsDefined(typeof(CombatEventKind), e.Kind)) return CombatSubmissionError.InvalidEvents;
+                if ((e.ShipId != null && !ships.ContainsKey(e.ShipId)) || (e.FleetId != null && !fleets.Contains(e.FleetId))) return CombatSubmissionError.Nonparticipant;
             }
-            Require(result.Events.Count > 0 && result.Events[result.Events.Count - 1].Kind == CombatEventKind.EncounterResolved
-                && result.Events.Count(e => e.Kind == CombatEventKind.EncounterResolved) == 1, "Missing/duplicate terminal event.");
+            if (result.Events.Count == 0 || result.Events[result.Events.Count - 1].Kind != CombatEventKind.EncounterResolved || result.Events.Count(e => e.Kind == CombatEventKind.EncounterResolved) != 1) return CombatSubmissionError.InvalidEvents;
+            return CombatSubmissionError.None;
         }
 
         private static void ValidateId(string id)

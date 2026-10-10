@@ -21,9 +21,7 @@ internal static class CampaignCombatFixture
         }
         return scenario;
     }
-    internal static CombatResultDto NoChanges(CombatRequestDto request) => new() { EncounterId = request.EncounterId, ResolverId = request.ResolverId,
-        ResolverVersion = request.ResolverVersion, Status = CombatResolutionStatus.Resolved, FinalRandomState = request.RandomState,
-        Events = new() { new() { Sequence = 0, Kind = CombatEventKind.EncounterResolved } } };
+    internal static CombatResultDto NoChanges(CombatRequestDto request) => new NoLossCombatResolver().Resolve(request);
     internal static TurnResult Complete(SimulationSession s, TurnResult result)
     {
         if (result.Status != TurnStatus.AwaitingCombat) return result;
