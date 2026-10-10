@@ -1,6 +1,6 @@
 # Unity strategic vertical slice
 
-Editor pin: **6000.6.5f1** (Unity 6.6), URP **17.6.0**. Preserve the existing Universal 3D scaffold. This client is a work in progress until the Unity test/build and desktop acceptance gates below pass; a .NET build alone does not verify Unity compilation or display behavior.
+Editor pin: **6000.6.5f1** (Unity 6.6), URP **17.6.0**. Preserve the existing Universal 3D scaffold. Local acceptance on this Editor version passed: compilation, real scenario/map/fleets, selection/pan/zoom, End Turn/AI movement, combat planning/buffering/finalization with persistent damage, 4/4 EditMode tests, and a launched Windows x64 IL2CPP player. These Unity results were reported by the project owner; cloud CI verifies the .NET and static integration gates.
 
 ## Prepare portable libraries
 
@@ -27,7 +27,7 @@ Open the existing SampleScene and press Play. `ClientEntry` bootstraps once at r
 
 Navigation node IDs are never parsed into system IDs. Fleet placement and labels use `AssociatedSystemId`; null associations produce transit-region nodes. Circular node placement is a deterministic placeholder view layout, not new navigation topology. Traversal costs are not movement budgets or turn estimates.
 
-Major layout uses flex growth and a bounded sidebar, with a scrollable details/encounter panel. Panel scaling follows screen height rather than ultrawide aspect ratio. Individual map markers are positioned inside the map viewport. Required manual display checks remain 1920×1080, 2560×1440, 3440×1440 and 5120×1440; verify readable controls, visible fleets, pan/zoom, selection and combat scrolling at each size.
+Major layout uses flex growth and a bounded sidebar, with a scrollable details/encounter panel. Combat controls stack their labels above full-width inputs so tactic and priority values remain readable. Panel scaling follows screen height rather than ultrawide aspect ratio. Individual map markers are positioned inside the map viewport. Required manual display checks remain 1920×1080, 2560×1440, 3440×1440 and 5120×1440; verify readable controls, visible fleets, pan/zoom, selection and combat scrolling at each size.
 
 ## Tests and Windows build
 
@@ -40,13 +40,13 @@ dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program F
 
 The Windows target requires passing, nonempty EditMode results before building. Tests cover real scenario startup, no direct Simulation assembly reference, empty-space association handling, and canonical/reverse 25-turn client-host runs through combat. The pure `GalaxyProjection.cs` is also linked into the existing .NET test project for ordering, detachment, movement refresh and selection tests. Existing CI still runs locked restore, Release build, all .NET tests and both deterministic headless smokes on its three platforms. It also runs PrepareUnity.proj and `python scripts/check-unity-integration.py` to check metadata/GUIDs, explicit assembly references, copied DLLs and scenario bytes. These are static checks, not Unity compilation.
 
-Editor logs, NUnit XML and the Windows player go under ignored `artifacts/unity`. `ClientBuild` enforces the Editor version, .NET Standard API compatibility and a Windows x64 IL2CPP build. The existing link.xml preserves portable DTOs and runtime dependencies; IL2CPP compilation and player execution still require local verification. Launch `artifacts/unity/Windows/HobbyDS9.exe` on Windows. Verify initial galaxy/fleets, all four display sizes, selection, End Turn and an AwaitingCombat → resolve → finalize → Planning cycle. The baseline 25-turn outcome remains turn 26/revision 228, 15 encounters, 8 ships/fleets, RNG `850d3ff45bd6b85e`.
+Editor logs, NUnit XML and the Windows player go under ignored `artifacts/unity`. `ClientBuild` enforces the Editor version, .NET Standard API compatibility and a Windows x64 IL2CPP build. The existing link.xml preserves portable DTOs and runtime dependencies. Windows x64 IL2CPP compilation and player startup passed local acceptance; repeat these checks after engine/client changes. Launch `artifacts/unity/Windows/HobbyDS9.exe` on Windows. Verify initial galaxy/fleets, all four display sizes, selection, End Turn and an AwaitingCombat → resolve → finalize → Planning cycle. The baseline 25-turn outcome remains turn 26/revision 228, 15 encounters, 8 ships/fleets, RNG `850d3ff45bd6b85e`.
 
-Do not mark this milestone complete or merge to main until Editor compilation, EditMode tests, Windows build/launch, display acceptance and existing .NET gates are all green. The implementation branch is intentionally offered for local verification before merging. This cloud environment has no Unity Editor; use your local Windows installation for the remaining gates. No Unity test, visual acceptance or Windows build result is claimed here.
+Unity acceptance is performed locally because the cloud environment has no Unity Editor. Keep local compilation, EditMode tests and Windows build/launch green alongside .NET CI. Verify the four display sizes when making layout changes; the final control-sizing/importer cleanup received static checks in the cloud rather than another Unity run.
 
 ## Local acceptance and reporting
 
-1. Pull `codex/unity-vertical-slice` into your local checkout (preserve any local changes first). Do not merge it into main yet.
+1. Pull the current `main` into your local checkout, preserving any local changes first.
 2. Close Unity and run Prepare. Open `client/HobbyDS9.Unity` with Hub using 6000.6.5f1. Let the official Newtonsoft package resolve and all assets/scripts import. Require zero Console compilation errors.
 3. Run the four cases under **Window → General → Test Runner → EditMode → Run All**, or close the Editor and run the EditMode target above. The XML must report Passed with a nonzero total.
 4. In Play mode, check the four required Game view resolutions. On the initial map, Sol, Bajor and the other scenario systems must have real labels; each faction starts with one fleet. Select nodes/fleets, pan/zoom and use Fit map.

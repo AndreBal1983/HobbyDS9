@@ -91,6 +91,6 @@ The fixed 25-turn acceptance reaches **14 checkpoints / 15 encounters**, execute
 
 The requested scout profiles required no balance adjustment. Existing strategic AI handles destroyed fleets and damaged ships without policy changes. Tests cover explicit-plan outcome changes, exact RNG vectors, 192 bounded neutral compositions, real-result permutations, and save/reload at every combat checkpoint.
 
-## Unity client work in progress
+## Unity client
 
-The Unity 6000.6.5f1 URP scaffold and first client implementation are under [client/HobbyDS9.Unity](client/HobbyDS9.Unity/README.md). Prepare portable DLLs and the scenario with `dotnet msbuild scripts/PrepareUnity.proj`. The client uses Application snapshots and explicit combat checkpoints. Unity compilation, EditMode tests, Windows build/launch and responsive display acceptance remain required before this milestone is complete.
+The Unity 6000.6.5f1 URP scaffold and first client implementation are under [client/HobbyDS9.Unity](client/HobbyDS9.Unity/README.md). Prepare portable DLLs and the scenario with `dotnet msbuild scripts/PrepareUnity.proj`. The client uses Application snapshots and explicit combat checkpoints. Local Unity 6000.6.5f1 acceptance passed compilation, 4/4 EditMode tests, gameplay/combat flow, and a launched Windows x64 IL2CPP build. CI also verifies portable integration; display checks remain part of future UI changes.

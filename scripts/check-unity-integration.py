@@ -27,6 +27,13 @@ for path in assets.rglob("*"):
     else:
         require(Path(str(path) + ".meta").is_file(), f"Missing .meta: {path.relative_to(root)}")
 
+# Stylesheets need their built-in importer serialization, not just a GUID.
+for name, importer in (("HobbyClient.uss", 12385), ("HobbyTheme.tss", 12388)):
+    meta = (assets / "HobbyDS9/Resources" / (name + ".meta")).read_text(encoding="utf-8-sig")
+    require("ScriptedImporter:" in meta and "serializedVersion: 2" in meta, f"Incomplete stylesheet importer: {name}")
+    require(f"script: {{fileID: {importer}, guid: 0000000000000000e000000000000000, type: 0}}" in meta,
+            f"Incorrect built-in stylesheet importer: {name}")
+
 runtime = assets / "HobbyDS9/Runtime"
 asmdef = json.loads((runtime / "HobbyDS9.UnityClient.asmdef").read_text(encoding="utf-8-sig"))
 require(asmdef.get("overrideReferences") is True, "Client must use explicit precompiled references")

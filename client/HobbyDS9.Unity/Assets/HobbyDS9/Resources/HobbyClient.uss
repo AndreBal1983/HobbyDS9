@@ -43,3 +43,24 @@
     padding-left: 12px;
     padding-right: 12px;
 }
+
+/* Stack labels above full-width inputs so long choices fit the bounded sidebar. */
+.combat-plan-field {
+    flex-direction: column;
+    align-items: stretch;
+    min-width: 0;
+    margin-bottom: 8px;
+}
+.combat-plan-field > .unity-base-field__label {
+    min-width: 0;
+    margin-right: 0;
+    margin-bottom: 4px;
+    white-space: normal;
+    flex-shrink: 0;
+}
+.combat-plan-field > .unity-base-field__input {
+    width: 100%;
+    min-width: 0;
+    min-height: 30px;
+    flex-grow: 1;
+}

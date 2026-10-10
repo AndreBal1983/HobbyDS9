@@ -145,9 +145,12 @@ namespace HobbyDS9.UnityClient
                 Tactic("Close range", plan.CloseRangeTactic, value => plan.CloseRangeTactic = value);
                 var priorities = Enum.GetValues(typeof(CombatTargetPriority)).Cast<CombatTargetPriority>().ToList();
                 var priority = new DropdownField("Target priority", priorities.Select(v => v.ToString()).ToList(), priorities.IndexOf(plan.TargetPriority));
+                priority.AddToClassList("combat-plan-field");
                 priority.RegisterValueChangedCallback(_ => plan.TargetPriority = priorities[priority.index]); details.Add(priority);
                 var retreat = new IntegerField("Retreat hull % (0 disables)") { value = 0 };
                 var destination = new DropdownField("Retreat system", destinations.Select(s => SystemName(snapshot, s.SystemId)).ToList(), 0);
+                destination.AddToClassList("combat-plan-field");
+                retreat.AddToClassList("combat-plan-field");
                 destination.SetEnabled(false);
                 void UpdateRetreat()
                 {
@@ -172,6 +175,7 @@ namespace HobbyDS9.UnityClient
         {
             var values = Enum.GetValues(typeof(CombatTactic)).Cast<CombatTactic>().ToList();
             var field = new DropdownField(label, values.Select(v => v.ToString()).ToList(), values.IndexOf(initial));
+            field.AddToClassList("combat-plan-field");
             field.RegisterValueChangedCallback(_ => set(values[field.index])); details.Add(field);
         }
         private void Text(string text, bool heading = false)
