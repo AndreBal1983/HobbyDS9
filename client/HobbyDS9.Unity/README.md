@@ -31,7 +31,7 @@ Major layout uses flex growth and a bounded sidebar, with a scrollable details/e
 
 ## Tests and Windows build
 
-Use an activated **6000.6.5f1** Editor with Windows Mono build support. Run from the repository root (quote the entire property argument if the Editor path contains spaces):
+Use an activated **6000.6.5f1** Editor with **Windows Build Support (IL2CPP)** installed, plus the Visual Studio C++ desktop tools and Windows SDK required by Unity. Run from the repository root (quote the entire property argument if the Editor path contains spaces):
 
 ```sh
 dotnet msbuild scripts/PrepareUnity.proj -t:EditMode "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
@@ -40,7 +40,7 @@ dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program F
 
 The Windows target requires passing, nonempty EditMode results before building. Tests cover real scenario startup, no direct Simulation assembly reference, empty-space association handling, and canonical/reverse 25-turn client-host runs through combat. The pure `GalaxyProjection.cs` is also linked into the existing .NET test project for ordering, detachment, movement refresh and selection tests. Existing CI still runs locked restore, Release build, all .NET tests and both deterministic headless smokes on its three platforms. It also runs PrepareUnity.proj and `python scripts/check-unity-integration.py` to check metadata/GUIDs, explicit assembly references, copied DLLs and scenario bytes. These are static checks, not Unity compilation.
 
-Editor logs, NUnit XML and the Windows player go under ignored `artifacts/unity`. `ClientBuild` enforces the Editor version, .NET Standard API compatibility and a Windows x64 Mono build; IL2CPP is deferred. Launch `artifacts/unity/Windows/HobbyDS9.exe` on Windows. Verify initial galaxy/fleets, all four display sizes, selection, End Turn and an AwaitingCombat → resolve → finalize → Planning cycle. The baseline 25-turn outcome remains turn 26/revision 228, 15 encounters, 8 ships/fleets, RNG `850d3ff45bd6b85e`.
+Editor logs, NUnit XML and the Windows player go under ignored `artifacts/unity`. `ClientBuild` enforces the Editor version, .NET Standard API compatibility and a Windows x64 IL2CPP build. The existing link.xml preserves portable DTOs and runtime dependencies; IL2CPP compilation and player execution still require local verification. Launch `artifacts/unity/Windows/HobbyDS9.exe` on Windows. Verify initial galaxy/fleets, all four display sizes, selection, End Turn and an AwaitingCombat → resolve → finalize → Planning cycle. The baseline 25-turn outcome remains turn 26/revision 228, 15 encounters, 8 ships/fleets, RNG `850d3ff45bd6b85e`.
 
 Do not mark this milestone complete or merge to main until Editor compilation, EditMode tests, Windows build/launch, display acceptance and existing .NET gates are all green. The implementation branch is intentionally offered for local verification before merging. This cloud environment has no Unity Editor; use your local Windows installation for the remaining gates. No Unity test, visual acceptance or Windows build result is claimed here.
 
@@ -54,4 +54,4 @@ Do not mark this milestone complete or merge to main until Editor compilation, E
 6. Close the Editor and run the Windows target above. It reruns EditMode tests before building. Launch the generated EXE and repeat the map/selection/End Turn/combat cycle; verify window resizing and all required aspect ratios.
 7. Return `artifacts/unity/editmode.xml`, relevant Console errors or log excerpts from `editmode.log` / `windows-build.log`, and any runtime/display issues. These logs and builds are ignored artifacts, not source commits. If Unity normalizes tracked `.meta`/package files, retain the changes for review rather than regenerating GUIDs.
 
-Deferred: visual polish/cinematic combat, saving UI, player economy/production/research command UI, fleet route editing UI, procedural geometry, new movement rules and IL2CPP. The current milestone provides the requested selection, End Turn and combat-planning flow; Application retains the broader command/save surface for future UI increments.
+Deferred: visual polish/cinematic combat, saving UI, player economy/production/research command UI, fleet route editing UI, procedural geometry and new movement rules. The current milestone provides the requested selection, End Turn and combat-planning flow; Application retains the broader command/save surface for future UI increments.

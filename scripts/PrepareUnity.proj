@@ -17,7 +17,7 @@
     <Copy SourceFiles="$(RepoRoot)/scenarios/ds9-slice/scenario.json" DestinationFiles="$(UnityProject)/Assets/HobbyDS9/Resources/ds9-slice.json" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="RequireEditor">
-    <Error Condition="'$(UnityEditor)' == '' Or !Exists('$(UnityEditor)')" Text="Pass -p:UnityEditor=PATH to licensed Unity 6000.6.5f1 with Windows Mono build support." />
+    <Error Condition="'$(UnityEditor)' == '' Or !Exists('$(UnityEditor)')" Text="Pass -p:UnityEditor=PATH to licensed Unity 6000.6.5f1 with Windows Build Support (IL2CPP) and the required Windows C++ toolchain." />
   </Target>
   <Target Name="EditMode" DependsOnTargets="Prepare;RequireEditor">
     <Delete Files="$(Artifacts)/editmode.xml" />

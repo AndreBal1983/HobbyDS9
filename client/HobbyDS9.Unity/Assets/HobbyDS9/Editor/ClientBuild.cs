@@ -15,7 +15,7 @@ namespace HobbyDS9.UnityClient.Editor
             if (UnityEngine.Application.unityVersion != "6000.6.5f1") throw new InvalidOperationException("Use the pinned Unity 6000.6.5f1 editor.");
             var target = NamedBuildTarget.Standalone;
             PlayerSettings.SetApiCompatibilityLevel(target, ApiCompatibilityLevel.NET_Standard);
-            PlayerSettings.SetScriptingBackend(target, ScriptingImplementation.Mono);
+            PlayerSettings.SetScriptingBackend(target, ScriptingImplementation.IL2CPP);
             PlayerSettings.companyName = "HobbyDS9"; PlayerSettings.productName = "HobbyDS9";
             PlayerSettings.resizableWindow = true;
             PlayerSettings.defaultScreenWidth = 1920; PlayerSettings.defaultScreenHeight = 1080;
