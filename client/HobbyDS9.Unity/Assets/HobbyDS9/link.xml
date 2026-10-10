@@ -1,0 +1,7 @@
+<linker>
+  <!-- DTO property deserialization uses reflection; Simulation is a runtime dependency. -->
+  <assembly fullname="HobbyDS9.Contracts" preserve="all" />
+  <assembly fullname="HobbyDS9.Application" preserve="all" />
+  <assembly fullname="HobbyDS9.Simulation" preserve="all" />
+  <assembly fullname="HobbyDS9.UnityClient" preserve="all" />
+</linker>

@@ -22,6 +22,7 @@
     <ProjectReference Include="../../src/HobbyDS9.Scenarios/HobbyDS9.Scenarios.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/GalaxyProjection.cs" Link="UnityClient/GalaxyProjection.cs" />
     <None Include="../../scenarios/ds9-slice/scenario.json" Link="scenarios/ds9-slice/scenario.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

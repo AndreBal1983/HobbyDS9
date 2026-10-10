@@ -1,0 +1,12 @@
+{
+  "name": "HobbyDS9.UnityClient.Editor",
+  "references": [
+    "HobbyDS9.UnityClient"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [],
+  "autoReferenced": false
+}

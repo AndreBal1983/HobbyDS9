@@ -1,0 +1,21 @@
+{
+  "name": "HobbyDS9.UnityClient.Tests",
+  "references": [
+    "HobbyDS9.UnityClient",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "HobbyDS9.Application.dll",
+    "HobbyDS9.Contracts.dll",
+    "nunit.framework.dll"
+  ],
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "autoReferenced": false
+}

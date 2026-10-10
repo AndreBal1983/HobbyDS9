@@ -1,0 +1,12 @@
+{
+  "name": "HobbyDS9.UnityClient",
+  "rootNamespace": "HobbyDS9.UnityClient",
+  "references": [],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "HobbyDS9.Application.dll",
+    "HobbyDS9.Contracts.dll",
+    "Newtonsoft.Json.dll"
+  ],
+  "autoReferenced": false
+}

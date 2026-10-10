@@ -29,3 +29,17 @@ client/HobbyDS9.Unity/*.svd
 client/HobbyDS9.Unity/sysinfo.txt
 client/HobbyDS9.Unity/*.pdb
 client/HobbyDS9.Unity/*.mdb
+
+# Additional Unity caches and reproducible integration/build outputs
+/client/HobbyDS9.Unity/.utmp/
+/client/HobbyDS9.Unity/.gradle/
+/client/HobbyDS9.Unity/*.slnx
+/client/HobbyDS9.Unity/*.unityproj
+/client/HobbyDS9.Unity/*.opendb
+/client/HobbyDS9.Unity/*.VC.db
+/client/HobbyDS9.Unity/crashlytics-build.properties
+/client/HobbyDS9.Unity/Assets/Plugins/HobbyDS9/*.dll
+/client/HobbyDS9.Unity/Assets/Plugins/HobbyDS9/*.pdb
+/artifacts/
+
+/client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ds9-slice.json

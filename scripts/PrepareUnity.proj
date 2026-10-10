@@ -1,0 +1,34 @@
+<Project DefaultTargets="Prepare">
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))</RepoRoot>
+    <UnityProject>$(RepoRoot)/client/HobbyDS9.Unity</UnityProject>
+    <PortableOutput>$(RepoRoot)/src/HobbyDS9.Application/bin/Release/netstandard2.1</PortableOutput>
+    <PluginOutput>$(UnityProject)/Assets/Plugins/HobbyDS9</PluginOutput>
+    <Artifacts>$(RepoRoot)/artifacts/unity</Artifacts>
+  </PropertyGroup>
+  <Target Name="Prepare">
+    <Error Condition="!Exists('$(UnityProject)/ProjectSettings/ProjectVersion.txt')" Text="The existing Unity scaffold is required at $(UnityProject)." />
+    <MSBuild Projects="$(RepoRoot)/src/HobbyDS9.Application/HobbyDS9.Application.csproj" Targets="Restore;Build" Properties="Configuration=Release;RestoreLockedMode=true" />
+    <ItemGroup>
+      <PortableAssembly Include="$(PortableOutput)/HobbyDS9.Contracts.dll;$(PortableOutput)/HobbyDS9.Application.dll;$(PortableOutput)/HobbyDS9.Simulation.dll" />
+    </ItemGroup>
+    <MakeDir Directories="$(PluginOutput);$(UnityProject)/Assets/HobbyDS9/Resources;$(Artifacts)" />
+    <Copy SourceFiles="@(PortableAssembly)" DestinationFolder="$(PluginOutput)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(RepoRoot)/scenarios/ds9-slice/scenario.json" DestinationFiles="$(UnityProject)/Assets/HobbyDS9/Resources/ds9-slice.json" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="RequireEditor">
+    <Error Condition="'$(UnityEditor)' == '' Or !Exists('$(UnityEditor)')" Text="Pass -p:UnityEditor=PATH to licensed Unity 6000.6.5f1 with Windows Mono build support." />
+  </Target>
+  <Target Name="EditMode" DependsOnTargets="Prepare;RequireEditor">
+    <Delete Files="$(Artifacts)/editmode.xml" />
+    <Exec Command="&quot;$(UnityEditor)&quot; -batchmode -nographics -projectPath &quot;$(UnityProject)&quot; -runTests -testPlatform EditMode -testResults &quot;$(Artifacts)/editmode.xml&quot; -logFile &quot;$(Artifacts)/editmode.log&quot;" />
+    <Error Condition="!Exists('$(Artifacts)/editmode.xml')" Text="Unity produced no test results; inspect artifacts/unity/editmode.log." />
+    <XmlPeek XmlInputPath="$(Artifacts)/editmode.xml" Query="/test-run/@result"><Output TaskParameter="Result" PropertyName="TestResult" /></XmlPeek>
+    <XmlPeek XmlInputPath="$(Artifacts)/editmode.xml" Query="/test-run/@total"><Output TaskParameter="Result" PropertyName="TestTotal" /></XmlPeek>
+    <Error Condition="'$(TestResult)' != 'Passed' Or '$(TestTotal)' == '' Or '$(TestTotal)' == '0'" Text="Unity EditMode tests did not pass with a nonzero count." />
+  </Target>
+  <Target Name="Windows" DependsOnTargets="EditMode">
+    <Exec Command="&quot;$(UnityEditor)&quot; -batchmode -nographics -quit -projectPath &quot;$(UnityProject)&quot; -executeMethod HobbyDS9.UnityClient.Editor.ClientBuild.BuildWindows -logFile &quot;$(Artifacts)/windows-build.log&quot;" />
+    <Error Condition="!Exists('$(Artifacts)/Windows/HobbyDS9.exe')" Text="Windows executable missing after build." />
+  </Target>
+</Project>

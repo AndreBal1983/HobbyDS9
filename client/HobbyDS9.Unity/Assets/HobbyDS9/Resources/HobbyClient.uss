@@ -1,0 +1,45 @@
+.client-root {
+    flex-grow: 1;
+    background-color: rgb(6, 10, 17);
+    color: rgb(230, 237, 245);
+    font-size: 17px;
+}
+.top-bar {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+}
+.campaign-status {
+    flex-grow: 1;
+    margin-left: 24px;
+}
+.workspace {
+    flex-direction: row;
+    flex-grow: 1;
+    min-height: 0;
+}
+.details-panel {
+    width: 25%;
+    min-width: 320px;
+    max-width: 520px;
+    flex-shrink: 0;
+    padding: 16px;
+    background-color: rgb(15, 23, 33);
+}
+.message-bar {
+    white-space: normal;
+    padding: 8px 16px;
+}
+.details-panel Button {
+    min-height: 32px;
+    margin-top: 6px;
+    margin-bottom: 6px;
+    white-space: normal;
+}
+.top-bar Button {
+    min-height: 32px;
+    margin-left: 8px;
+    padding-left: 12px;
+    padding-right: 12px;
+}
