@@ -65,3 +65,5 @@ No distribution license is selected yet. Choose one before importing third-party
 The fixed 25-turn acceptance reaches 23 combat checkpoints and resolves 44 encounters. It ends at turn 26/revision 374 with 282 AI commands, 21 ships/fleets, 2 queued items, 2 research unlocks, next entity sequence 101 and campaign RNG `82f866ceb4d760e1`. Canonical and reverse resolution produce the same save.
 
 Stage E1 freezes data-driven aggregate shield/attack/accuracy/evasion profiles and MaxHull into requests. Combat plans and richer phase/attack/damage events are explicit detached contracts. Save/content schemas are now 9/5; the campaign remains on no-loss resolution until Stage E3 adopts the tested phased resolver.
+
+Stage E2 adds the independently tested DeterministicPhasedCombatResolver (`combat-resolver.phased`, version 1): Long/Medium/Close simultaneous volleys, explicit fleet tactics/target priorities, battle-local shields, voluntary retreat, and a detailed ordered trace. Only hit rolls use encounter RNG. Campaign adoption and actual-combat headless acceptance follow in E3.
