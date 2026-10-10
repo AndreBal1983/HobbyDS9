@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HobbyDS9.Application;
 using HobbyDS9.Contracts;
+using EntityId = HobbyDS9.Contracts.EntityId;
 
 namespace HobbyDS9.UnityClient
 {
