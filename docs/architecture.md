@@ -1,6 +1,6 @@
 # Phase 1 portable strategy simulation
 
-Status: Phase 1 identity/session foundations, Phase 3A civilization/scenario identity and galaxy graph, Phase 3B turn/staging lifecycle, Phase 4A colony economy, Phase 4B civilization research, Stage A production, Stage B fleets/routes/movement, Stage C deterministic AI/headless acceptance, Stages D1–D3 campaign combat lifecycle integration, and Stages E1–E3 deterministic phased combat using the shared combat-boundary scaffold. No legacy implementation is copied. The engine and initial scenario are new work based on the requirements in this project. Feature implementation follows this document in small, tested increments.
+Status: Phase 1 identity/session foundations, Phase 3A civilization/scenario identity and galaxy graph, Phase 3B turn/staging lifecycle, Phase 4A colony economy, Phase 4B civilization research, Stage A production, Stage B fleets/routes/movement, Stage C deterministic AI/headless acceptance, Stages D1–D3 campaign combat lifecycle integration, and Stages E1–E3 deterministic phased combat using the shared combat-boundary scaffold, and a portable client Application boundary. No legacy implementation is copied. The engine and initial scenario are new work based on the requirements in this project. Feature implementation follows this document in small, tested increments.
 
 ## Goal and boundaries
 
@@ -18,25 +18,30 @@ Use the pinned .NET 10 SDK to build the solution, with different runtime targets
 |---|---|---|---|
 | HobbyDS9.Contracts | netstandard2.1 | Stable IDs, command/result contracts, explicit state/definition/save DTOs, combat boundary | None |
 | HobbyDS9.Simulation | netstandard2.1 | State validation, command execution, turn systems, deterministic RNG, AI policies | Contracts |
-| HobbyDS9.Scenarios | netstandard2.1 | Content DTO validation, reference validation, fixed scenario construction | Contracts |
-| HobbyDS9.Headless | net10.0 | Console composition root, JSON/file I/O, scenario input, commands, turns, snapshots | Contracts, Simulation, Scenarios |
-| HobbyDS9.Simulation.Tests | net10.0 | Determinism, lifecycle, boundary, persistence and scenario acceptance tests | Contracts, Simulation, Scenarios |
+| HobbyDS9.Scenarios | netstandard2.1 | Reserved portable content boundary; current scenario is a host-loaded JSON package | Contracts |
+| HobbyDS9.Application | netstandard2.1 | Client session facade, scenario/save construction, immutable content/navigation projections, detached combat resolution | Contracts, Simulation |
+| HobbyDS9.Headless | net10.0 | Console composition root, JSON/file I/O, scenario input, commands, turns, snapshots | Contracts, Application, Scenarios |
+| HobbyDS9.Simulation.Tests | net10.0 | Determinism, lifecycle, boundary, persistence and scenario acceptance tests | Contracts, Simulation, Scenarios, Application |
 
-The three libraries use C# 9 and explicit usings. Avoid records/init-only properties that require an IsExternalInit shim, newer required-member metadata, and runtime APIs absent from .NET Standard 2.1. Use ordinary concrete DTO classes, readonly structs, List<T>/IReadOnlyList<T>, ordinal string comparisons, checked/unchecked integer arithmetic, Encoding.UTF8 and SHA256.Create/ComputeHash rather than newer static HashData APIs. System.Text.Json, file I/O and host services belong in adapters, not the portable contracts. Future APIs must compile against the netstandard2.1 reference surface; do not bypass that check with net10.0 packages or host project references.
+The four libraries use C# 9 and explicit usings. Avoid records/init-only properties that require an IsExternalInit shim, newer required-member metadata, and runtime APIs absent from .NET Standard 2.1. Use ordinary concrete DTO classes, readonly structs, List<T>/IReadOnlyList<T>, ordinal string comparisons, checked/unchecked integer arithmetic, Encoding.UTF8 and SHA256.Create/ComputeHash rather than newer static HashData APIs. System.Text.Json, file I/O and host services belong in adapters, not the portable contracts. Future APIs must compile against the netstandard2.1 reference surface; do not bypass that check with net10.0 packages or host project references.
 
 The current Contracts implementation uses readonly identity structs, ordinary DTO classes, enums, string/int/long/ulong properties, nullable RNG state, List<T> and a synchronous interface. Simulation uses only .NET Standard 2.1 APIs: collections/LINQ, ordinal comparisons, invariant formatting/parsing, enum validation, explicit integer arithmetic and System.Numerics.BigInteger for safe refund/combat multiplication, aggregation and ratio comparisons. Scenarios remains empty except for a source manifest. Build validation checks the reference surface, and tests inspect compiled target/dependency metadata. This confirms the scaffold's API compatibility, not future APIs or Unity execution.
 
 ```mermaid
 flowchart TD
     Host[Headless console or future frontend adapter]
-    Scenarios[Scenario loader and content validation]
+    Scenarios[Reserved portable content boundary]
     Simulation[Simulation session, turn systems, AI]
     Contracts[IDs, commands, state DTOs, combat contracts]
     Tests[Regression and determinism tests]
-    Host --> Simulation
+    Application[Client application facade]
+    Host --> Application
+    Application --> Simulation
+    Application --> Contracts
     Host --> Scenarios
     Simulation --> Contracts
     Scenarios --> Contracts
+    Tests --> Application
     Tests --> Simulation
     Tests --> Scenarios
     Tests --> Contracts
@@ -45,6 +50,22 @@ flowchart TD
 This is a modular monolith. Scenarios must not execute turns, and simulation must not load files, consult clocks, read console input, or know a scenario's franchise identity. The host performs I/O. Nothing in the domain depends on the host or tests.
 
 Unity 6 can consume these .NET Standard 2.1 libraries directly through a frontend adapter, using Unity's .NET Standard 2.1 API compatibility setting. The simulation does not require a .NET 10 runtime. The console/test hosts use .NET 10 on Windows, Linux and macOS. Unity compilation, managed stripping and IL2CPP/AOT must still be verified during frontend integration; no Unity runtime is present in this workspace. Avoid reflection-based runtime construction and dynamic code generation in the libraries. Unity selects its own serialization adapter; the headless host's JSON implementation is not a mandatory Unity dependency.
+
+## Client/application boundary
+
+`HobbyDS9.Application` is a synchronous, local facade. `ICampaignSession` exposes only Application/Contracts types; no Simulation session, graph implementation, compatibility helper, handler registration or trusted AI path is public through this API. `CampaignApplication` has a private constructor. Its factories validate inputs, construct Simulation compatibility internally, and retain no caller-owned mutable DTOs. Simulation remains the sole authoritative state owner; the facade adds no mutable gameplay state and does not duplicate rules or transactions.
+
+`StartScenario(ScenarioDto)` validates content and initial state. `LoadSave(ScenarioDto, SaveEnvelopeDto)` validates the content package and matching save identity and returns a new session, so failed loads cannot replace a running session. `ExportSave` returns a deep detached DTO. `ValidateScenario` and `ValidateSave` expose immutable lists of Contracts validation issues without exposing Simulation's ValidationReport. Invalid creation/load inputs throw ArgumentException; ordinary live command, turn and combat-submission failures return the existing stable codes. File selection, JSON parsing/writing, exact-byte content hashing and atomic file replacement are host responsibilities, not portable engine services. There is no new save schema or serialization dependency.
+
+`CaptureSnapshot` returns a `CampaignSnapshot` containing the existing immutable `SessionSnapshot`, immutable scenario names/research definitions and an immutable navigation map. Names remain content, never rules. Ship design facts already appear in the campaign snapshot. `AcceptedPlayerCommandIds` projects the current persisted ledger excluding the reserved `ai-command.` namespace; it is not a historical action log and does not retain command payloads. `CommandResult` reports acceptance immediately, and the ledger remains until successful turn completion. All existing campaign facts remain available; this is a local trusted client boundary, not multiplayer authorization or fog-of-war filtering.
+
+`SubmitCommand` delegates the four existing command variants unchanged. `SubmitFleetRoute` translates navigation node steps into the existing fleet-route envelope, then uses the same handler/control/stamp validation. Callers provide stable command IDs and the turn/revision they observed. The facade never generates IDs, silently refreshes revisions, retries commands, automates humans or exposes trusted AI execution. Every mutating operation retains Simulation's staging, rollback and exactly-once revision behavior. Snapshots are atomic observations; separate calls may observe different revisions, so clients must handle stale results. DTOs supplied to calls must not be concurrently modified by the caller.
+
+Combat remains explicit: `AdvanceTurn` runs strategic phases once, requests are frozen at AwaitingCombat, `GetPendingCombatRequests` / `GetResolvedCombats` return detached DTO copies, and `ResolveCombat` performs pure independent phased resolution with default or explicit plans. It neither buffers nor finalizes. `SubmitCombatResult` performs existing stamped validation/buffering; `FinalizeCombat` commits all consequences canonically. Old snapshots and returned DTOs cannot mutate the checkpoint. Invalid plans throw without mutating campaign state. The facade pins the existing phased resolver; it does not add a resolver registry, tactical system, combat-plan persistence or replay history. A client may resolve off its UI thread on detached inputs, but scheduling/cancellation belongs to the host. Campaign RNG/allocation never participates in resolution.
+
+Navigation presentation uses a distinct `NavigationNodeId`, optional `AssociatedSystemId`, explicit link costs, and route steps/cost independent of turn estimates. The compatibility adapter currently maps each existing graph node one-to-one with its system ID and delegates deterministic BFS; all links cost one, including wormholes. Client code should associate nodes with systems through the projection, never by casting/parsing node IDs. A future navigation model can supply transit nodes without systems and change the adapter while retaining this client vocabulary. Current fleet/system DTOs and raw route envelopes retain their existing semantics for compatibility; presentation navigation should use `FindRoute` / `SubmitFleetRoute`. No independent navigation graph, Voronoi geometry, variable costs, movement budgets or weighted route search is implemented. Those require a later versioned gameplay increment.
+
+Headless is the first consumer and references Application instead of Simulation. CI still runs locked restore, Release build, all tests and canonical/reverse 25-turn smoke runs on Linux, Windows and macOS. Application acceptance additionally compares every turn/result and persisted checkpoint with the direct Simulation path, exercises ownership/validation/failed turns, and verifies netstandard2.1 plus a public API free of Simulation types. Save 9, content 5, `phase-1-phased-combat-v1`, resolver version 1 and all balance values remain unchanged.
 
 ## State, definitions and stable identity
 

@@ -11,6 +11,7 @@ HobbyDS9.slnx
 src/
   HobbyDS9.Contracts/        # IDs, explicit DTOs, commands/results, snapshots, combat contracts
   HobbyDS9.Simulation/       # Owned session, validation, turn systems, RNG, AI
+  HobbyDS9.Application/      # Client facade, session creation/load, content/navigation views
   HobbyDS9.Scenarios/        # Portable content boundary
   HobbyDS9.Headless/         # JSON/file/hash adapters and autonomous console runner
 tests/
@@ -19,7 +20,19 @@ scenarios/ds9-slice/         # Separate DS9 content package
 docs/architecture.md
 ```
 
-Contracts, Simulation and Scenarios target `netstandard2.1` with C# 9; Headless and Tests target `net10.0`. Production projects have no external packages, Unity/WPF/network dependencies or legacy references. Unity 6 can consume the portable libraries through an adapter; Unity/IL2CPP execution remains to be verified. JSON/file I/O stays in the host.
+Contracts, Simulation, Scenarios and Application target `netstandard2.1` with C# 9; Headless and Tests target `net10.0`. Production projects have no external packages, Unity/WPF/network dependencies or legacy references. Unity 6 can consume the portable libraries through an adapter; Unity/IL2CPP execution remains to be verified. JSON/file I/O stays in the host.
+
+## Client application boundary
+
+A future client references `HobbyDS9.Application` and Contracts. `CampaignApplication.StartScenario(scenario)` creates an `ICampaignSession`; `LoadSave(scenario, save)` creates a separate validated session. Hosts deserialize scenario/save DTOs, hash the exact scenario bytes and write exported saves. Application constructs compatibility metadata and owns the Simulation session privately. `ValidateScenario` / `ValidateSave` return stable validation issues for host diagnostics.
+
+`CaptureSnapshot()` returns immutable campaign facts, content labels/research definitions, a navigation projection and accepted player command IDs for the current planning turn. `SubmitCommand` accepts the existing closed command envelope with caller-supplied IDs and expected turn/revision. Production, cancellation, research and fleet routing all use the existing human-control validation. Rejections never refresh stamps or retry silently.
+
+`AdvanceTurn` can return `AwaitingCombat`. Read detached requests, call `ResolveCombat(request)` or `ResolveCombat(request, plans)`, submit each result with the observed stamp, then explicitly `FinalizeCombat`. Resolution is pure; submission buffers; finalization applies consequences. Saving is legal at every checkpoint. Invalid load/resolver inputs throw without replacing or mutating a live session; ordinary command/turn/submission rejections use the existing result codes.
+
+Navigation has its own `NavigationNodeId`, optional system association, explicit link/route traversal cost, `FindRoute` and `SubmitFleetRoute`. The current adapter maps existing graph nodes one-to-one and preserves unit costs/BFS. Clients should use node associations rather than infer systems from node ID strings, and must not treat cost as a turn estimate. Voronoi geometry, independent navigation topology, weighted movement and budgets are deferred. No presentation state or new gameplay is added.
+
+Save/content/rules/resolver versions and the 25-turn baseline are unchanged by this boundary. Tests compare Application against direct Simulation through all 25 turns and pending/partial/fully buffered reloads in both result orders.
 
 ## Build and headless acceptance
 
@@ -32,7 +45,7 @@ dotnet test HobbyDS9.slnx -c Release --no-build --no-restore
 dotnet run --project src/HobbyDS9.Headless -c Release --no-build --no-restore -- --turns 25
 ```
 
-The host loads the bundled scenario (or an optional scenario path), hashes its exact UTF-8 bytes, validates it and advances the requested number of turns. When AwaitingCombat is reached, the host resolves detached requests with DeterministicPhasedCombatResolver, buffers each result and explicitly finalizes before continuing. `--combat-order canonical` (default) or `--combat-order reverse` chooses deterministic host order. It prints turn/revision, AI command count, encounters/checkpoints, phases/shots/hits, shield/hull losses, destruction/retreat counts, entities and RNG/allocation state and a diagnostic save hash. With no `--turns` it only validates/reports initial state. The hash is a host diagnostic, not a permanent canonical serialization format.
+The host uses `ICampaignSession` through Application, with no direct Simulation reference. It loads the bundled scenario (or an optional scenario path), hashes its exact UTF-8 bytes, validates it and advances the requested number of turns. When AwaitingCombat is reached, the host resolves detached requests with DeterministicPhasedCombatResolver, buffers each result and explicitly finalizes before continuing. `--combat-order canonical` (default) or `--combat-order reverse` chooses deterministic host order. It prints turn/revision, AI command count, encounters/checkpoints, phases/shots/hits, shield/hull losses, destruction/retreat counts, entities and RNG/allocation state and a diagnostic save hash. With no `--turns` it only validates/reports initial state. The hash is a host diagnostic, not a permanent canonical serialization format.
 
 For this cloud workspace, [scripts/bootstrap-dotnet.sh](scripts/bootstrap-dotnet.sh) installs the pinned Linux x64 SDK outside the checkout and verifies SHA512 before extraction:
 

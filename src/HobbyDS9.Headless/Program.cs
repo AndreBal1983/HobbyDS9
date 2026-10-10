@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Security.Cryptography;
 using System.Text.Json;
 using HobbyDS9.Contracts;
-using HobbyDS9.Simulation;
+using HobbyDS9.Application;
 
 // Only the host handles JSON/files/package hashing and diagnostics.
 var path = Path.Combine(AppContext.BaseDirectory, "scenarios", "ds9-slice", "scenario.json");
@@ -28,20 +28,14 @@ for (var i = 0; i < args.Length; i++)
 var bytes = File.ReadAllBytes(path);
 var scenario = JsonSerializer.Deserialize<ScenarioDto>(bytes) ?? throw new InvalidDataException("Missing scenario.");
 scenario.ContentHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
-FoundationValidator.ValidateScenario(scenario).ThrowIfInvalid(nameof(scenario));
-var session = new SimulationSession(new SaveEnvelopeDto
-{
-    SaveFormatVersion = FoundationVersions.SaveFormatVersion, ScenarioId = scenario.ScenarioId,
-    RulesVersion = scenario.RulesVersion, ContentHash = scenario.ContentHash, GameState = scenario.InitialState
-}, scenario.Definitions, new SaveCompatibility(scenario.ScenarioId, scenario.RulesVersion, scenario.ContentHash));
+var session = CampaignApplication.StartScenario(scenario);
 var commands = 0;
 var generated = 0; var resolved = 0; var checkpoints = 0;
-var resolver = new DeterministicPhasedCombatResolver();
 long phases = 0, shots = 0, hits = 0, destroyedShips = 0, destroyedFleets = 0, retreatedFleets = 0;
 BigInteger shieldDamage = 0, hullDamage = 0;
 for (var i = 0; i < turns; i++)
 {
-    var current = session.CaptureSnapshot(); var result = session.AdvanceTurn(current.TurnNumber, current.StateRevision);
+    var current = session.CaptureSnapshot().Campaign; var result = session.AdvanceTurn(current.TurnNumber, current.StateRevision);
     commands += result.CommandResults.Count;
     if (result.CommandResults.Any(c => !c.Accepted)) throw new InvalidOperationException("Autonomous command failed.");
     if (result.Status == TurnStatus.AwaitingCombat)
@@ -51,8 +45,8 @@ for (var i = 0; i < turns; i++)
         var ordered = combatOrder == "reverse" ? requests.Reverse() : requests;
         foreach (var request in ordered)
         {
-            var p = session.CaptureSnapshot();
-            var combat = resolver.Resolve(request);
+            var p = session.CaptureSnapshot().Campaign;
+            var combat = session.ResolveCombat(request);
             phases += combat.Events.Count(e => e.Kind == CombatEventKind.PhaseStarted);
             shots += combat.Events.Count(e => e.Kind == CombatEventKind.AttackHit || e.Kind == CombatEventKind.AttackMissed);
             hits += combat.Events.Count(e => e.Kind == CombatEventKind.AttackHit);
@@ -64,12 +58,12 @@ for (var i = 0; i < turns; i++)
             if (session.SubmitCombatResult(combat, p.TurnNumber, p.StateRevision).Status != CombatSubmissionStatus.Buffered) throw new InvalidOperationException("Combat buffering failed.");
             resolved++;
         }
-        var finalStamp = session.CaptureSnapshot(); result = session.FinalizeCombat(finalStamp.TurnNumber, finalStamp.StateRevision);
+        var finalStamp = session.CaptureSnapshot().Campaign; result = session.FinalizeCombat(finalStamp.TurnNumber, finalStamp.StateRevision);
     }
     if (result.Status != TurnStatus.Completed) throw new InvalidOperationException("Autonomous turn failed.");
 
 }
-var snapshot = session.CaptureSnapshot();
+var snapshot = session.CaptureSnapshot().Campaign;
 Console.WriteLine(FormattableString.Invariant($"{scenario.ScenarioId}: completed={turns}, turn={snapshot.TurnNumber}, revision={snapshot.StateRevision}, AI commands={commands}, phase={snapshot.Phase}"));
 Console.WriteLine(FormattableString.Invariant($"combats generated={generated}, resolved={resolved}, awaiting checkpoints={checkpoints}, host order={combatOrder}"));
 Console.WriteLine(FormattableString.Invariant($"phases={phases}, shots={shots}, hits={hits}, shield damage={shieldDamage}, hull damage={hullDamage}, ships destroyed={destroyedShips}, fleets destroyed={destroyedFleets}, fleets retreated={retreatedFleets}"));

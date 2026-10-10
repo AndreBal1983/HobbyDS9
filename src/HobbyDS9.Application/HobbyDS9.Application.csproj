@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../HobbyDS9.Contracts/HobbyDS9.Contracts.csproj" />
+    <ProjectReference Include="../HobbyDS9.Simulation/HobbyDS9.Simulation.csproj" />
+  </ItemGroup>
+</Project>

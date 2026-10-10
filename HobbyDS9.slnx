@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/HobbyDS9.Application/HobbyDS9.Application.csproj" />
     <Project Path="src/HobbyDS9.Contracts/HobbyDS9.Contracts.csproj" />
     <Project Path="src/HobbyDS9.Headless/HobbyDS9.Headless.csproj" />
     <Project Path="src/HobbyDS9.Scenarios/HobbyDS9.Scenarios.csproj" />
