@@ -106,7 +106,7 @@ namespace HobbyDS9.Simulation
             copy.ResolvedCombats.Add(new ResolvedCombatDto { Request = entry.Request, Result = CopyResult(result) });
             copy.ResolvedCombats = copy.ResolvedCombats.OrderBy(r => r.Request.LocationSystemId, StringComparer.Ordinal).ToList();
             copy.StateRevision++;
-            // Remain AwaitingCombat even when ready: only the future campaign
+            // Remain AwaitingCombat even when ready: only the campaign
             // transaction may apply all consequences and open the next turn.
             ValidateCheckpoint(copy);
             return copy;

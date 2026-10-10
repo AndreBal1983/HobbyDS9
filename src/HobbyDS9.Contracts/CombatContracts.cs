@@ -6,7 +6,7 @@ namespace HobbyDS9.Contracts
     public enum CombatEventKind { EncounterResolved, ShipDamaged, ShipDestroyed, FleetRetreated }
     public enum FleetCombatDisposition { Held, Retreated, Destroyed }
 
-    // Concrete serialization contracts only. The future session owns and validates
+    // Concrete serialization contracts only. The session owns and validates
     // copies; callers and resolvers never receive mutable authoritative state.
     public sealed class CombatCheckpointDto
     {

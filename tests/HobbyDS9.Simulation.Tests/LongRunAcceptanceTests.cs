@@ -17,18 +17,18 @@ public sealed class LongRunAcceptanceTests
         state.Civilizations!.Reverse(); state.StarSystems!.Reverse(); state.Colonies!.Reverse(); state.Ships!.Reverse(); state.Fleets!.Reverse(); state.EntityIdentities.Reverse();
         defs.DefinitionIds.Reverse(); defs.Civilizations!.Reverse(); defs.StarSystems!.Reverse(); defs.GalaxyEdges!.Reverse(); defs.ResearchNodes!.Reverse(); defs.ShipDesigns!.Reverse(); defs.EconomicProfiles!.Reverse();
         foreach (var d in defs.ShipDesigns) d.RequiredResearchDefinitionIds!.Reverse(); foreach (var r in defs.ResearchNodes) r.PrerequisiteDefinitionIds!.Reverse();
-        var reordered = Session(reorderedScenario); var reloads = new HashSet<int> { 1, 2, 4, 7, 13, 18, 24 }; var partial = false; var orders = new List<string>(); var commandCount = 0;
+        var reordered = Session(reorderedScenario); var reloads = new HashSet<int> { 1, 2, 4, 7, 13, 18, 24 }; var partial = false; var orders = new List<string>(); var commandCount = 0; var generated = 0; var checkpoints = 0;
         for (var i = 1; i <= 25; i++)
         {
             var result = Advance(baseline); Assert.Equal(TurnStatus.Completed, result.Status); Assert.Empty(result.Events); Assert.All(result.CommandResults, c => Assert.True(c.Accepted));
             var resultJson = JsonSerializer.Serialize(result); orders.Add(resultJson); commandCount += result.CommandResults.Count;
-            Assert.Equal(resultJson, JsonSerializer.Serialize(Advance(repeated))); Assert.Equal(resultJson, JsonSerializer.Serialize(Advance(resumed))); Assert.Equal(resultJson, JsonSerializer.Serialize(Advance(reordered)));
+            Assert.Equal(resultJson, JsonSerializer.Serialize(Advance(repeated))); Assert.Equal(resultJson, JsonSerializer.Serialize(AdvanceWithCombatReload(ref resumed, scenario, ref generated, ref checkpoints))); Assert.Equal(resultJson, JsonSerializer.Serialize(Advance(reordered)));
             Assert.Equal(Json(baseline), Json(repeated)); Assert.Equal(Json(baseline), Json(resumed)); Assert.Equal(Json(baseline), Json(reordered));
             var current = baseline.ExportSave().GameState; partial |= current.Colonies!.Any(c => c.ProductionQueue!.Any(q => q.CompletedIndustry > 0));
             Assert.All(current.Civilizations!.Where(c => c.ControllerKind == ControllerKind.AI), c => Assert.Contains(c.CivilizationId, new[] { "civ.cardassian", "civ.dominion" }));
             if (reloads.Contains(i)) resumed = new SimulationSession(Clone(resumed.ExportSave()), Clone(scenario.Definitions), Compatibility(scenario));
         }
-        Assert.True(partial); Assert.Equal(25, orders.Count); var final = baseline.CaptureSnapshot();
+        Assert.True(partial); Assert.Equal(44, generated); Assert.Equal(23, checkpoints); Assert.Empty(baseline.CaptureSnapshot().Combats); Assert.Equal(25, orders.Count); var final = baseline.CaptureSnapshot();
         Assert.Equal(26, final.TurnNumber); Assert.Equal(SessionPhase.Planning, final.Phase);
         Assert.Equal(374, final.StateRevision); Assert.Equal(282, commandCount);
         Assert.Equal(21, final.Ships.Count); Assert.Equal(21, final.Fleets.Count); Assert.Equal(101UL, final.NextEntitySequence); Assert.Equal(0x82f866ceb4d760e1UL, final.RngState.State);
@@ -62,4 +62,26 @@ public sealed class LongRunAcceptanceTests
         }
         Assert.Equal(2, resumed.CaptureSnapshot().Ships.Count(s => s.OwnerCivilizationId.Value == "civ.federation"));
     }
+    private static TurnResult AdvanceWithCombatReload(ref SimulationSession session, ScenarioDto scenario, ref int generated, ref int checkpoints)
+    {
+        SimulationSession Reload(SimulationSession s)
+        {
+            var before = Json(s); var reloaded = new SimulationSession(Clone(s.ExportSave()), Clone(scenario.Definitions), Compatibility(scenario));
+            Assert.Equal(before, Json(reloaded)); return reloaded;
+        }
+        var stamp = session.CaptureSnapshot(); var advanced = session.AdvanceTurn(stamp.TurnNumber, stamp.StateRevision);
+        if (advanced.Status != TurnStatus.AwaitingCombat) return advanced;
+        checkpoints++; generated += session.GetPendingCombatRequests().Count;
+        session = Reload(session); // Pending only; no strategic phase or seed/ID allocation repeats.
+        foreach (var request in session.GetPendingCombatRequests().Reverse())
+        {
+            stamp = session.CaptureSnapshot(); Assert.Equal(CombatSubmissionStatus.Buffered, session.SubmitCombatResult(new NoLossCombatResolver().Resolve(request), stamp.TurnNumber, stamp.StateRevision).Status);
+            session = Reload(session); // Partial batch and fully resolved but not finalized.
+            Assert.DoesNotContain(session.GetPendingCombatRequests(), r => r.EncounterId == request.EncounterId);
+            Assert.Single(session.GetResolvedCombats().Single(r => r.Request.EncounterId == request.EncounterId).Result.Events);
+        }
+        stamp = session.CaptureSnapshot(); var final = session.FinalizeCombat(stamp.TurnNumber, stamp.StateRevision);
+        return new TurnResult(final.Status, final.ErrorCode, final.AttemptedTurnNumber, final.TurnNumber, final.StateRevision, final.Phase, final.Events, advanced.CommandResults);
+    }
+
 }

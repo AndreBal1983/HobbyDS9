@@ -7,6 +7,7 @@ using HobbyDS9.Simulation;
 // Only the host handles JSON/files/package hashing and diagnostics.
 var path = Path.Combine(AppContext.BaseDirectory, "scenarios", "ds9-slice", "scenario.json");
 var turns = 0;
+var combatOrder = "canonical";
 for (var i = 0; i < args.Length; i++)
 {
     if (args[i] == "--turns")
@@ -14,8 +15,14 @@ for (var i = 0; i < args.Length; i++)
         if (++i >= args.Length || !int.TryParse(args[i], NumberStyles.None, CultureInfo.InvariantCulture, out turns))
             throw new ArgumentException("--turns requires a nonnegative integer.");
     }
+    else if (args[i] == "--combat-order")
+    {
+        if (++i >= args.Length || (args[i] != "canonical" && args[i] != "reverse"))
+            throw new ArgumentException("--combat-order requires canonical or reverse.");
+        combatOrder = args[i];
+    }
     else if (!args[i].StartsWith("--", StringComparison.Ordinal)) path = args[i];
-    else throw new ArgumentException("Usage: HobbyDS9.Headless [scenario.json] [--turns nonnegative-count]");
+    else throw new ArgumentException("Usage: HobbyDS9.Headless [scenario.json] [--turns nonnegative-count] [--combat-order canonical|reverse]");
 }
 var bytes = File.ReadAllBytes(path);
 var scenario = JsonSerializer.Deserialize<ScenarioDto>(bytes) ?? throw new InvalidDataException("Missing scenario.");
@@ -27,25 +34,33 @@ var session = new SimulationSession(new SaveEnvelopeDto
     RulesVersion = scenario.RulesVersion, ContentHash = scenario.ContentHash, GameState = scenario.InitialState
 }, scenario.Definitions, new SaveCompatibility(scenario.ScenarioId, scenario.RulesVersion, scenario.ContentHash));
 var commands = 0;
+var generated = 0; var resolved = 0; var checkpoints = 0;
+var resolver = new NoLossCombatResolver();
 for (var i = 0; i < turns; i++)
 {
     var current = session.CaptureSnapshot(); var result = session.AdvanceTurn(current.TurnNumber, current.StateRevision);
     commands += result.CommandResults.Count;
+    if (result.CommandResults.Any(c => !c.Accepted)) throw new InvalidOperationException("Autonomous command failed.");
     if (result.Status == TurnStatus.AwaitingCombat)
     {
-        foreach (var request in session.GetPendingCombatRequests())
+        checkpoints++;
+        var requests = session.GetPendingCombatRequests(); generated += requests.Count;
+        var ordered = combatOrder == "reverse" ? requests.Reverse() : requests;
+        foreach (var request in ordered)
         {
             var p = session.CaptureSnapshot();
-            var noChanges = new NoLossCombatResolver().Resolve(request);
+            var noChanges = resolver.Resolve(request);
             if (session.SubmitCombatResult(noChanges, p.TurnNumber, p.StateRevision).Status != CombatSubmissionStatus.Buffered) throw new InvalidOperationException("Combat buffering failed.");
+            resolved++;
         }
         var finalStamp = session.CaptureSnapshot(); result = session.FinalizeCombat(finalStamp.TurnNumber, finalStamp.StateRevision);
     }
-    if (result.Status != TurnStatus.Completed || result.CommandResults.Any(c => !c.Accepted)) throw new InvalidOperationException("Autonomous turn failed.");
+    if (result.Status != TurnStatus.Completed) throw new InvalidOperationException("Autonomous turn failed.");
 
 }
 var snapshot = session.CaptureSnapshot();
 Console.WriteLine(FormattableString.Invariant($"{scenario.ScenarioId}: completed={turns}, turn={snapshot.TurnNumber}, revision={snapshot.StateRevision}, AI commands={commands}, phase={snapshot.Phase}"));
+Console.WriteLine(FormattableString.Invariant($"combats generated={generated}, resolved={resolved}, awaiting checkpoints={checkpoints}, host order={combatOrder}"));
 Console.WriteLine(FormattableString.Invariant($"ships={snapshot.Ships.Count}, fleets={snapshot.Fleets.Count}, queued={snapshot.Colonies.Sum(c => c.ProductionQueue.Count)}, unlocks={snapshot.Civilizations.Sum(c => c.UnlockedResearchDefinitionIds.Count)}, nextEntity={snapshot.NextEntitySequence}, rng={snapshot.RngState.State:x16}"));
 var stateBytes = JsonSerializer.SerializeToUtf8Bytes(session.ExportSave());
 Console.WriteLine($"save-sha256={Convert.ToHexString(SHA256.HashData(stateBytes)).ToLowerInvariant()}");
