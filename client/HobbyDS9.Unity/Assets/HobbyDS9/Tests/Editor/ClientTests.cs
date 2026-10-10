@@ -29,6 +29,69 @@ namespace HobbyDS9.UnityClient.Tests
             var node = GalaxyProjection.Nodes(new[] { new NavigationNodeSnapshot(new NavigationNodeId("system.sol"), null) }, snapshot.Campaign, snapshot.Content).Single();
             Assert.That(node.SystemId, Is.Null); Assert.That(node.Fleets, Is.Empty);
         }
+        [Test]
+        public void HumanOrdersUseRealApplicationAndNewtonsoftSaveRoundTrip()
+        {
+            var host = Start(); var client = host.Client;
+            var actor = new HobbyDS9.Contracts.EntityId("civ.federation");
+            var colony = new HobbyDS9.Contracts.EntityId("colony.sol");
+            Assert.That(client.Research(host.Snapshot, actor, new DefinitionId("research.advanced-engineering")).Accepted, Is.True);
+            Assert.That(client.Enqueue(host.Snapshot, actor, colony, new DefinitionId("ship-design.scout")).Accepted, Is.True);
+            var json = host.SaveJson(); var saved = host.Snapshot;
+            var item = saved.Campaign.Colonies.Single(c => c.ColonyId == colony).ProductionQueue.Single();
+            Assert.That(client.Cancel(host.Snapshot, actor, colony, item.QueueItemId).Accepted, Is.True);
+            host.LoadJson(json);
+            Assert.That(host.SaveJson(), Is.EqualTo(json));
+            Assert.That(host.Snapshot, Is.Not.SameAs(saved));
+            Assert.That(host.SaveSummary(json), Does.Contain("Turn 1"));
+            Assert.That(host.Snapshot.Campaign.Colonies.Single(c => c.ColonyId == colony).ProductionQueue.Count, Is.EqualTo(1));
+        }
+        [Test]
+        public void FailedJsonAndIncompatibleLoadPreserveLiveHost()
+        {
+            var host = Start(); var snapshot = host.Snapshot; var json = host.SaveJson();
+            Assert.That(() => host.LoadJson("{bad-json"), Throws.Exception);
+            Assert.That(() => host.LoadJson(json.Replace("ds9-strategic-slice-v1", "different-scenario")), Throws.Exception);
+            Assert.That(host.Snapshot, Is.SameAs(snapshot)); Assert.That(host.SaveJson(), Is.EqualTo(json));
+            Assert.That(host.EndTurn().Status, Is.Not.EqualTo(TurnStatus.Rejected));
+        }
+        [Test]
+        public void FleetPreviewStaysLocalUntilConfirmation()
+        {
+            var host = Start(); var before = host.SaveJson();
+            var preview = host.Client.Preview(host.Snapshot, new HobbyDS9.Contracts.EntityId("fleet.federation-scout"), new NavigationNodeId("system.bajor"));
+            Assert.That(preview.Route.TraversalCost, Is.EqualTo(1)); Assert.That(host.SaveJson(), Is.EqualTo(before));
+            var map = new GalaxyMap();
+            map.Present(host.Snapshot, new GalaxySelection(), _ => { }, _ => { }); map.SetRoute(preview);
+            Assert.That(map.Query<Button>().ToList().Count, Is.EqualTo(9));
+            Assert.That(host.Client.SubmitRoute(preview).Accepted, Is.True);
+        }
+        [Test]
+        public void SlotOverwriteUsesTheRealHostSerializer()
+        {
+            var directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "hobby-unity-save-" + System.Guid.NewGuid().ToString("N"));
+            try
+            {
+                var host = Start(); var store = new SaveSlotStore(directory);
+                store.Write(1, host.SaveJson(), false); host.EndTurn(); var changed = host.SaveJson();
+                Assert.That(() => store.Write(1, changed, false), Throws.TypeOf<System.IO.IOException>());
+                store.Write(1, changed, true); host.EndTurn(); host.LoadJson(store.Read(1));
+                Assert.That(host.SaveJson(), Is.EqualTo(changed));
+            }
+            finally { if (System.IO.Directory.Exists(directory)) System.IO.Directory.Delete(directory, true); }
+        }
+        [Test]
+        public void NewtonsoftRoundTripsPendingAndBufferedCombatCheckpoints()
+        {
+            var host = Start();
+            for (var turn = 0; turn < 10 && host.Snapshot.Campaign.Phase == SessionPhase.Planning; turn++) host.EndTurn();
+            Assert.That(host.Snapshot.Campaign.Phase, Is.EqualTo(SessionPhase.AwaitingCombat));
+            var pending = host.SaveJson(); host.LoadJson(pending); Assert.That(host.SaveJson(), Is.EqualTo(pending));
+            foreach (var request in host.Pending()) Assert.That(host.Resolve(request).Status, Is.EqualTo(CombatSubmissionStatus.Buffered));
+            var buffered = host.SaveJson(); host.LoadJson(buffered);
+            Assert.That(host.Pending(), Is.Empty); Assert.That(host.SaveJson(), Is.EqualTo(buffered));
+            Assert.That(host.FinalizeCombats().Status, Is.EqualTo(TurnStatus.Completed));
+        }
         [TestCase(false)] [TestCase(true)]
         public void ClientHostCompletesTwentyFiveTurnsAndCombatCheckpoints(bool reverse)
         {

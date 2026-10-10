@@ -15,6 +15,7 @@ namespace HobbyDS9.UnityClient
         private readonly Dictionary<NavigationNodeId, Vector2> positions = new Dictionary<NavigationNodeId, Vector2>();
         private readonly List<(VisualElement view, NavigationNodeId node, Vector2 offset)> markers = new List<(VisualElement, NavigationNodeId, Vector2)>();
         private IReadOnlyList<NavigationLinkSnapshot> links = Array.Empty<NavigationLinkSnapshot>();
+        private IReadOnlyList<NavigationNodeId> route = Array.Empty<NavigationNodeId>();
         private Vector2 pan;
         private float zoom = 1;
         private int dragPointer = -1;
@@ -47,6 +48,12 @@ namespace HobbyDS9.UnityClient
             { if (dragPointer == e.pointerId) { this.ReleasePointer(e.pointerId); dragPointer = -1; } });
             RegisterCallback<PointerCaptureOutEvent>(_ => dragPointer = -1);
         }
+        public void SetRoute(RoutePreview? preview)
+        {
+            route = preview != null && preview.Route.Success
+                ? new[] { preview.Origin }.Concat(preview.Route.Steps).ToList() : (IReadOnlyList<NavigationNodeId>)Array.Empty<NavigationNodeId>();
+            MarkDirtyRepaint();
+        }
         public void ResetView() { pan = Vector2.zero; zoom = 1; Place(); }
         public void Present(CampaignSnapshot snapshot, GalaxySelection selection, Action<NavigationNodeId> nodeSelected, Action<EntityId> fleetSelected)
         {
@@ -58,6 +65,7 @@ namespace HobbyDS9.UnityClient
                 positions[node.NodeId] = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
                 var wormhole = links.Any(l => l.Kind == GalaxyEdgeKind.Wormhole && (l.EndpointA == node.NodeId || l.EndpointB == node.NodeId));
                 var marker = new Button(() => nodeSelected(node.NodeId)) { text = (node.SystemId.HasValue ? "● " : "◇ ") + node.Label };
+                marker.AddToClassList("map-marker");
                 marker.style.backgroundColor = selection.Node == node.NodeId ? new Color(.25f, .45f, .6f) : wormhole ? new Color(.30f, .14f, .42f) : new Color(.10f, .19f, .28f);
                 marker.style.color = Color.white; marker.style.width = 170; marker.style.height = 30;
                 AddMarker(marker, node.NodeId, new Vector2(-85, -15));
@@ -67,6 +75,7 @@ namespace HobbyDS9.UnityClient
                     var owner = snapshot.Campaign.Civilizations.Single(c => c.CivilizationId == fleet.OwnerCivilizationId);
                     var name = snapshot.Content.Civilizations.Single(c => c.DefinitionId == owner.DefinitionId).DisplayName;
                     var button = new Button(() => fleetSelected(fleet.FleetId)) { text = "▸ " + name + " • " + fleet.ShipIds.Count };
+                    button.AddToClassList("map-marker");
                     button.tooltip = fleet.FleetId.Value;
                     button.style.color = Color.white; button.style.backgroundColor = selection.Fleet == fleet.FleetId ? new Color(.3f, .42f, .24f) : new Color(.12f, .16f, .19f);
                     button.style.width = 180; button.style.height = 25;
@@ -105,7 +114,10 @@ namespace HobbyDS9.UnityClient
             foreach (var edge in links)
             {
                 painter.strokeColor = edge.Kind == GalaxyEdgeKind.Wormhole ? new Color(.8f, .45f, 1f) : new Color(.23f, .36f, .45f);
-                painter.lineWidth = edge.Kind == GalaxyEdgeKind.Wormhole ? 4 : 2;
+                var highlighted = Enumerable.Range(1, Math.Max(0, route.Count - 1)).Any(i =>
+                    (route[i - 1] == edge.EndpointA && route[i] == edge.EndpointB) || (route[i - 1] == edge.EndpointB && route[i] == edge.EndpointA));
+                if (highlighted) painter.strokeColor = new Color(1f, .82f, .28f);
+                painter.lineWidth = highlighted ? 6 : edge.Kind == GalaxyEdgeKind.Wormhole ? 4 : 2;
                 painter.BeginPath(); painter.MoveTo(Screen(edge.EndpointA)); painter.LineTo(Screen(edge.EndpointB)); painter.Stroke();
             }
         }

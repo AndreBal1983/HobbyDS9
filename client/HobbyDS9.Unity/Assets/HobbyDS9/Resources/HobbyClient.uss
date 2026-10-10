@@ -64,3 +64,29 @@
     min-height: 30px;
     flex-grow: 1;
 }
+
+.strategic-tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+    padding: 0 16px 8px;
+}
+.strategic-tabs Button {
+    min-height: 32px;
+    padding: 4px 18px;
+    margin-right: 8px;
+}
+.active-tab {
+    background-color: rgb(35, 76, 105);
+    color: white;
+}
+Button:hover { border-color: rgb(143, 196, 225); }
+Button:disabled { opacity: 0.5; }
+.map-marker:hover { border-width: 2px; }
+.campaign-status { white-space: normal; }
+.confirmation {
+    margin-top: 12px;
+    padding: 12px;
+    border-width: 1px;
+    border-color: rgb(232, 191, 99);
+    background-color: rgb(34, 35, 40);
+}

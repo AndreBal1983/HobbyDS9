@@ -54,4 +54,54 @@ Unity acceptance is performed locally because the cloud environment has no Unity
 6. Close the Editor and run the Windows target above. It reruns EditMode tests before building. Launch the generated EXE and repeat the map/selection/End Turn/combat cycle; verify window resizing and all required aspect ratios.
 7. Return `artifacts/unity/editmode.xml`, relevant Console errors or log excerpts from `editmode.log` / `windows-build.log`, and any runtime/display issues. These logs and builds are ignored artifacts, not source commits. If Unity normalizes tracked `.meta`/package files, retain the changes for review rather than regenerating GUIDs.
 
-Deferred: visual polish/cinematic combat, saving UI, player economy/production/research command UI, fleet route editing UI, procedural geometry and new movement rules. The current milestone provides the requested selection, End Turn and combat-planning flow; Application retains the broader command/save surface for future UI increments.
+The original vertical-slice acceptance above is retained as historical context. The Strategic Gameplay UI v1 work and its separate acceptance gates are described below. Visual polish, cinematic combat, procedural geometry and new gameplay remain deferred.
+
+## Strategic Gameplay UI v1 (awaiting local acceptance)
+
+The new interface keeps one tabbed sidebar beside the galaxy map. The persistent top bar shows the human civilization, credits, research target/reserve, turn, phase and revision. Tabs remain selected during ordinary snapshot refreshes; entering a combat checkpoint opens Combat automatically. The fixed DS9 scenario has one human civilization. The client selects the first ordinal human actor in other content; multi-human hot-seat selection is deferred.
+
+- **Empire** lists owned colonies and fleets with links to their contextual controls.
+- **Research** lists every definition, cost, prerequisites and available/current/completed/locked state. Select an available target to submit the existing command. Reserve is a civilization-wide pool, not separate progress on each technology.
+- **Selection / colony** shows population/capacity, food, materials, owner credits, ordered production queue and ship design costs. Queue an available design; cancelling requires inline confirmation and uses the existing proportional refund of unused costs.
+- **Selection / fleet** shows ownership, hull/design facts and queued route. Choose Set / replace route, click a map node, review the gold route and ordered steps, then Confirm route. Same-node routes clear queued orders. The displayed traversal cost is not an arrival-time estimate. Cancelling a preview changes no campaign state.
+- **Save / Load** offers three fixed slots under `UnityEngine.Application.persistentDataPath/CampaignSaves` (normally `%USERPROFILE%/AppData/LocalLow/<CompanyName>/<ProductName>/CampaignSaves` on Windows). An occupied slot requires overwrite confirmation; loading confirms replacement of unsaved campaign progress. The host writes UTF-8 and flushes it to disk into a same-directory temporary file, then atomically replaces the existing slot or moves a new slot into place. It never deletes a prior valid save as a fallback. Failed replacement leaves that save intact; failed JSON parsing/validation leaves the live campaign intact. No save data is written into the project.
+- **Combat** retains independent resolution, buffering and explicit finalization. Draft combat plans survive tab switches in the running view; they are intentionally not campaign-save data. Saves preserve pending requests and already-buffered results. Loading clears draft plans, route preview, object selection and camera, then shows the loaded phase.
+
+`StrategicClient.cs` is a Unity-independent presentation controller compiled into the client assembly and linked into ordinary .NET tests. It owns an Application session reference and detached snapshots, creates stamped commands, previews routes with `FindRoute`, and replaces the session only after successful load/capture. `CampaignHost` owns Newtonsoft serialization and content hashing; `SaveSlotStore` owns file I/O. `StrategicPanels.cs` holds only UI composition and ephemeral view state. `StrategicOptions` in Application adds immutable advisory research/production availability projections so the UI can explain disabled choices without implementing gameplay validation. Simulation still performs every authoritative validation.
+
+Player IDs use `player-ui.<counter>` and skip `AcceptedPlayerCommandIds`, including after a restart/load. They consume neither campaign allocation nor RNG, and are not replay-deterministic across different UI sessions (only gameplay outcomes for the same commands are deterministic). Each attempted UI action uses a fresh ID. Actions retain the observed turn/revision, route previews retain the original snapshot, and stale rejection never triggers an automatic retry. The refreshed UI shows a readable reason plus the stable error code.
+
+### Verify this milestone locally before merging
+
+The previous milestone's successful local Unity acceptance does **not** cover these new controls. This branch adds five EditMode cases, bringing the expected total to **9**. Cloud verification executes the pure client tests, .NET suite, both baseline smokes and static integration checks; it cannot execute Unity or Windows IL2CPP.
+
+From PowerShell at the repository root, with the Editor closed and local changes preserved:
+
+```powershell
+git fetch origin
+git switch codex/strategic-gameplay-ui-v1
+git pull --ff-only origin codex/strategic-gameplay-ui-v1
+dotnet restore HobbyDS9.slnx --locked-mode
+dotnet build HobbyDS9.slnx -c Release --no-restore
+dotnet test HobbyDS9.slnx -c Release --no-build --no-restore
+dotnet msbuild scripts/PrepareUnity.proj -t:Prepare
+python scripts/check-unity-integration.py
+dotnet msbuild scripts/PrepareUnity.proj -t:EditMode "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
+dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
+& ./artifacts/unity/Windows/HobbyDS9.exe
+```
+
+Windows requires the existing IL2CPP module, Visual Studio C++ desktop tools and Windows SDK. Require zero Editor compilation errors and 9/9 EditMode passes. The new tests exercise real host JSON round-trip, malformed/incompatible load preservation, route preview/map projection, slot replacement and combat checkpoint serialization. Windows target reruns EditMode tests before building.
+
+Manual acceptance in the player:
+
+1. At all four required resolutions (1920×1080, 2560×1440, 3440×1440, 5120×1440), verify status, readable buttons/dropdowns, scrollable panels and a map that occupies most of the screen. Confirm tab persistence and pan/zoom/Fit map.
+2. From Empire, manage Sol. Queue Scout, confirm credits/materials and queue update, cancel once with the keep-current-state button, then confirm cancellation and check the refund. Inspect a foreign colony and verify player orders are disabled.
+3. Select Advanced Starship Engineering in Research, verify Current status/reserve, advance turns and verify Completed state and Advanced Scout availability. Check disabled explanations for insufficient resources or missing research.
+4. Select the Federation fleet. Preview a route, cancel it and confirm the queued route is unchanged. Preview/confirm a new route, replace it, and advance a turn to observe authoritative movement. Inspect the explicit wormhole cost. Same-node confirmation clears the route.
+5. Pass through AwaitingCombat with selected plans/defaults, verify research/production/routes are disabled, buffer results, then finalize. Switch tabs while editing plans and confirm draft selections persist.
+6. Save to an empty slot; test overwrite confirmation. Save while awaiting combat and again after buffering. Load each checkpoint and finish it without rerunning strategic phases or buffered encounters.
+7. Save a campaign, quit the player, launch again, load it and verify exact turn/phase, resources, queue, research, route and damage. Test a malformed copy in a spare slot: it must show an error/disabled Load and keep the current campaign. Restore that test slot afterward.
+8. Return the EditMode XML, Windows build/launch result, and any Console/runtime/display errors. Keep generated logs/builds/saves out of Git. Merge to main only after this acceptance passes.
+
+Limitations: three fixed slots, no rename/delete UI or autosave; no camera/UI preference persistence; no multi-human selector; placeholder map geometry and art. No gameplay, save/content/rules/resolver version or balance changes.

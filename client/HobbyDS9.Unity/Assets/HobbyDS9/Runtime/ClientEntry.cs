@@ -10,10 +10,10 @@ using UnityEngine.UIElements;
 
 namespace HobbyDS9.UnityClient
 {
-    public sealed class ClientEntry : MonoBehaviour
+    public sealed partial class ClientEntry : MonoBehaviour
     {
         private CampaignHost host = null!;
-        private readonly GalaxySelection selection = new GalaxySelection();
+        private GalaxySelection selection = new GalaxySelection();
         private GalaxyMap map = null!;
         private Label status = null!, message = null!;
         private Button endTurn = null!;
@@ -38,16 +38,18 @@ namespace HobbyDS9.UnityClient
             root.AddToClassList("client-root");
             root.styleSheets.Add(Resources.Load<StyleSheet>("HobbyClient"));
             var header = new VisualElement(); header.AddToClassList("top-bar");
-            header.Add(new Label("HobbyDS9 • Strategic prototype"));
+            header.Add(new Label("HobbyDS9"));
             status = new Label(); status.AddToClassList("campaign-status"); header.Add(status);
             endTurn = new Button(() => Run(() =>
             {
+                ClearRoute();
                 var result = host.EndTurn();
                 if (result.Status == TurnStatus.Rejected) throw new InvalidOperationException(result.ErrorCode.ToString());
                 return result.Status == TurnStatus.AwaitingCombat ? "Encounter checkpoint reached. Resolve the pending battles." : "Turn completed.";
             })) { text = "End Turn" };
             header.Add(endTurn);
             var reset = new Button(() => map.ResetView()) { text = "Fit map" }; header.Add(reset); root.Add(header);
+            AddStrategicTabs(root);
             var body = new VisualElement(); body.AddToClassList("workspace");
             map = new GalaxyMap(); body.Add(map);
             details = new ScrollView(); details.AddToClassList("details-panel");
@@ -58,7 +60,9 @@ namespace HobbyDS9.UnityClient
             {
                 var asset = Resources.Load<TextAsset>("ds9-slice");
                 if (asset == null) throw new InvalidOperationException("Scenario missing. Run dotnet msbuild scripts/PrepareUnity.proj before opening Unity.");
-                host = new CampaignHost(asset.bytes); Refresh();
+                host = new CampaignHost(asset.bytes);
+                saves = new SaveSlotStore(System.IO.Path.Combine(UnityEngine.Application.persistentDataPath, "CampaignSaves"));
+                Refresh();
             }
             catch (Exception error) { endTurn.SetEnabled(false); message.text = error.Message; Debug.LogException(error); }
         }
@@ -73,46 +77,31 @@ namespace HobbyDS9.UnityClient
         {
             var snapshot = host.Snapshot; var state = snapshot.Campaign;
             selection.Reconcile(snapshot);
-            status.text = $"Turn {state.TurnNumber}  •  {state.Phase}  •  Revision {state.StateRevision}";
+            var actor = Human(snapshot);
+            var research = actor?.ResearchTargetDefinitionId;
+            var researchName = research.HasValue ? ResearchName(snapshot, research.Value) : "No target";
+            status.text = (actor == null ? "Observer" : OwnerName(snapshot, actor.CivilizationId) + " • Credits " + actor.Credits)
+                + $"  |  Turn {state.TurnNumber} • {state.Phase} • Revision {state.StateRevision}"
+                + "\nResearch: " + researchName + " • Reserve " + (actor?.ResearchReserve ?? 0);
             endTurn.SetEnabled(state.Phase == SessionPhase.Planning);
-            map.Present(snapshot, selection, id => { selection.SelectNode(id); Refresh(); }, id => { selection.SelectFleet(id); Refresh(); });
+            if (lastPhase != state.Phase && state.Phase == SessionPhase.AwaitingCombat) { activeTab = "Combat"; ClearRoute(); }
+            if (lastPhase != state.Phase && state.Phase == SessionPhase.Planning && activeTab == "Combat") activeTab = "Empire";
+            lastPhase = state.Phase;
+            map.Present(snapshot, selection, SelectNode, id => { ClearRoute(); selection.SelectFleet(id); activeTab = "Selection"; Refresh(); });
+            map.SetRoute(routePreview);
+            foreach (var tab in tabs) tab.Value.EnableInClassList("active-tab", tab.Key == activeTab);
             details.Clear();
-            if (state.Phase == SessionPhase.AwaitingCombat) { ShowEncounters(snapshot); return; }
-            if (selection.Fleet.HasValue)
+            switch (activeTab)
             {
-                var fleet = state.Fleets.Single(f => f.FleetId == selection.Fleet.Value);
-                Text("Fleet", true); Text(fleet.FleetId.Value); Text("Owner: " + OwnerName(snapshot, fleet.OwnerCivilizationId));
-                Text("Location: " + SystemName(snapshot, fleet.LocationSystemId));
-                Text("Queued route steps: " + fleet.RouteSystemIds.Count);
-                foreach (var ship in state.Ships.Where(s => s.FleetId == fleet.FleetId))
-                {
-                    var design = state.ShipDesigns.Single(d => d.DefinitionId == ship.ShipDesignDefinitionId);
-                    Text(design.DisplayName + " • Hull " + ship.CurrentHull + "/" + design.MaxHull);
-                    Text(ship.ShipId.Value);
-                }
-                return;
+                case "Research": ShowResearch(snapshot); break;
+                case "Saves": ShowSaves(); break;
+                case "Empire": ShowEmpire(snapshot); break;
+                case "Combat":
+                    if (state.Phase == SessionPhase.AwaitingCombat) ShowEncounters(snapshot);
+                    else Text("No pending encounters.");
+                    break;
+                default: ShowSelection(snapshot); break;
             }
-            if (selection.Node.HasValue)
-            {
-                var node = GalaxyProjection.Nodes(snapshot).Single(n => n.NodeId == selection.Node.Value);
-                Text(node.Label, true); Text("Navigation node: " + node.NodeId.Value);
-                if (node.SystemId.HasValue)
-                {
-                    var system = state.StarSystems.Single(s => s.SystemId == node.SystemId.Value);
-                    Text(system.OwnerCivilizationId.HasValue ? "Owner: " + OwnerName(snapshot, system.OwnerCivilizationId.Value) : "Unowned");
-                    foreach (var colony in state.Colonies.Where(c => c.SystemId == system.SystemId))
-                        Text($"Population {colony.Population} / {colony.PopulationCapacity}\nFood {colony.Food} • Materials {colony.Materials}\nProduction queue: {colony.ProductionQueue.Count}");
-                }
-                else Text("Empty-space navigation region; no associated star system.");
-                foreach (var link in snapshot.Navigation.Links.Where(l => l.EndpointA == node.NodeId || l.EndpointB == node.NodeId))
-                    Text($"{link.Kind} link • traversal cost {link.TraversalCost}");
-                foreach (var fleet in node.Fleets)
-                    details.Add(new Button(() => { selection.SelectFleet(fleet.FleetId); Refresh(); }) { text = "Select " + fleet.FleetId.Value });
-                return;
-            }
-            Text("Galaxy", true); Text("Select a node to inspect its associated system, or select a fleet marker.");
-            Text("Purple links mark wormholes. Costs come from the application snapshot; they are not travel-time estimates.");
-            Text("Federation is human-controlled. Cardassian and Dominion turns are automated by the existing simulation.");
         }
         private void ShowEncounters(CampaignSnapshot snapshot)
         {
@@ -124,22 +113,28 @@ namespace HobbyDS9.UnityClient
             {
                 details.Add(new Button(() => Run(() =>
                 {
-                    var result = host.FinalizeCombats();
+                    var result = host.Client.FinalizeCombats(snapshot);
+                    if (result.Status == TurnStatus.Completed) combatPlans.Clear();
                     if (result.Status != TurnStatus.Completed) throw new InvalidOperationException(result.ErrorCode.ToString());
                     return "Combat finalized. Next planning turn opened.";
                 })) { text = "Finalize combat and complete turn" });
                 return;
             }
             var request = requests[0]; Text(SystemName(snapshot, request.LocationSystemId), true);
-            var plans = new List<FleetCombatPlanDto>();
+            if (!combatPlans.TryGetValue(request.EncounterId, out var plans))
+            { plans = new List<FleetCombatPlanDto>(); combatPlans[request.EncounterId] = plans; }
             var destinations = snapshot.Campaign.StarSystems.OrderBy(s => s.SystemId.Value, StringComparer.Ordinal).ToList();
             foreach (var participant in request.Participants)
             {
                 Text(OwnerName(snapshot, new EntityId(participant.CivilizationId)), true); Text(participant.FleetId);
                 foreach (var ship in participant.Ships) Text($"{ship.ShipId}\nHull {ship.Hull}/{ship.MaxHull} • Shields {ship.CombatProfile!.ShieldCapacity}");
-                var plan = new FleetCombatPlanDto { FleetId = participant.FleetId, LongRangeTactic = CombatTactic.FocusFire,
-                    MediumRangeTactic = CombatTactic.Standard, CloseRangeTactic = CombatTactic.Overcharge, TargetPriority = CombatTargetPriority.LowestHullRatio };
-                plans.Add(plan);
+                var plan = plans.SingleOrDefault(p => p.FleetId == participant.FleetId);
+                if (plan == null)
+                {
+                    plan = new FleetCombatPlanDto { FleetId = participant.FleetId, LongRangeTactic = CombatTactic.FocusFire,
+                        MediumRangeTactic = CombatTactic.Standard, CloseRangeTactic = CombatTactic.Overcharge, TargetPriority = CombatTargetPriority.LowestHullRatio };
+                    plans.Add(plan);
+                }
                 Tactic("Long range", plan.LongRangeTactic, value => plan.LongRangeTactic = value);
                 Tactic("Medium range", plan.MediumRangeTactic, value => plan.MediumRangeTactic = value);
                 Tactic("Close range", plan.CloseRangeTactic, value => plan.CloseRangeTactic = value);
@@ -147,11 +142,11 @@ namespace HobbyDS9.UnityClient
                 var priority = new DropdownField("Target priority", priorities.Select(v => v.ToString()).ToList(), priorities.IndexOf(plan.TargetPriority));
                 priority.AddToClassList("combat-plan-field");
                 priority.RegisterValueChangedCallback(_ => plan.TargetPriority = priorities[priority.index]); details.Add(priority);
-                var retreat = new IntegerField("Retreat hull % (0 disables)") { value = 0 };
-                var destination = new DropdownField("Retreat system", destinations.Select(s => SystemName(snapshot, s.SystemId)).ToList(), 0);
+                var retreat = new IntegerField("Retreat hull % (0 disables)") { value = plan.RetreatHullPercent };
+                var destination = new DropdownField("Retreat system", destinations.Select(s => SystemName(snapshot, s.SystemId)).ToList(), Math.Max(0, destinations.FindIndex(s => s.SystemId.Value == plan.RetreatSystemId)));
                 destination.AddToClassList("combat-plan-field");
                 retreat.AddToClassList("combat-plan-field");
-                destination.SetEnabled(false);
+                destination.SetEnabled(plan.RetreatHullPercent > 0);
                 void UpdateRetreat()
                 {
                     plan.RetreatHullPercent = Mathf.Clamp(retreat.value, 0, 100); retreat.SetValueWithoutNotify(plan.RetreatHullPercent);
@@ -162,12 +157,12 @@ namespace HobbyDS9.UnityClient
                 details.Add(retreat); details.Add(destination);
             }
             Text("Retreat destinations must pass campaign adjacency/occupancy validation. Plan controls apply to this encounter only.");
-            details.Add(new Button(() => Resolve(request, null)) { text = "Resolve with defaults" });
-            details.Add(new Button(() => Resolve(request, plans)) { text = "Resolve with selected plans" });
+            details.Add(new Button(() => Resolve(snapshot, request, null)) { text = "Resolve with defaults" });
+            details.Add(new Button(() => Resolve(snapshot, request, plans)) { text = "Resolve with selected plans" });
         }
-        private void Resolve(CombatRequestDto request, IReadOnlyList<FleetCombatPlanDto>? plans) => Run(() =>
+        private void Resolve(CampaignSnapshot observed, CombatRequestDto request, IReadOnlyList<FleetCombatPlanDto>? plans) => Run(() =>
         {
-            var result = host.Resolve(request, plans);
+            var result = host.Client.Resolve(observed, request, plans);
             if (result.Status != CombatSubmissionStatus.Buffered) throw new InvalidOperationException("Combat rejected: " + result.ErrorCode);
             return "Combat result buffered. Resolve remaining encounters, then finalize.";
         });

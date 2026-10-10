@@ -12,37 +12,32 @@ namespace HobbyDS9.UnityClient
     // Host adapter: JSON/content hashing stay out of the portable libraries.
     public sealed class CampaignHost
     {
-        private readonly ICampaignSession session;
-        public CampaignSnapshot Snapshot { get; private set; }
+        private readonly ScenarioDto scenario;
+        public StrategicClient Client { get; }
+        public CampaignSnapshot Snapshot => Client.Snapshot;
         public CampaignHost(byte[] scenarioBytes)
         {
-            var scenario = JsonConvert.DeserializeObject<ScenarioDto>(System.Text.Encoding.UTF8.GetString(scenarioBytes))
+            scenario = JsonConvert.DeserializeObject<ScenarioDto>(System.Text.Encoding.UTF8.GetString(scenarioBytes))
                 ?? throw new ArgumentException("Scenario is empty.");
             using (var hash = SHA256.Create())
                 scenario.ContentHash = string.Concat(hash.ComputeHash(scenarioBytes).Select(b => b.ToString("x2", System.Globalization.CultureInfo.InvariantCulture)));
-            session = CampaignApplication.StartScenario(scenario);
-            Snapshot = session.CaptureSnapshot();
+            Client = new StrategicClient(CampaignApplication.StartScenario(scenario), save => CampaignApplication.LoadSave(scenario, save));
         }
-        public TurnResult EndTurn()
+        public string SaveJson() => JsonConvert.SerializeObject(Client.ExportSave(), Formatting.Indented);
+        public void LoadJson(string json) => Client.Load(ParseSave(json));
+        public string SaveSummary(string json)
         {
-            var observed = Snapshot.Campaign;
-            var result = session.AdvanceTurn(observed.TurnNumber, observed.StateRevision);
-            Refresh(); return result;
+            var save = ParseSave(json);
+            var issues = CampaignApplication.ValidateSave(scenario, save);
+            if (issues.Count != 0) throw new ArgumentException("Incompatible or invalid save: " + issues[0].Code);
+            return "Turn " + save.GameState.TurnNumber + " • " + save.GameState.Phase;
         }
-        public IReadOnlyList<CombatRequestDto> Pending() => session.GetPendingCombatRequests();
-        public CombatSubmissionResult Resolve(CombatRequestDto request, IReadOnlyList<FleetCombatPlanDto>? plans = null)
-        {
-            var observed = Snapshot.Campaign;
-            var result = plans == null ? session.ResolveCombat(request) : session.ResolveCombat(request, plans);
-            var submitted = session.SubmitCombatResult(result, observed.TurnNumber, observed.StateRevision);
-            Refresh(); return submitted;
-        }
-        public TurnResult FinalizeCombats()
-        {
-            var observed = Snapshot.Campaign;
-            var result = session.FinalizeCombat(observed.TurnNumber, observed.StateRevision);
-            Refresh(); return result;
-        }
-        public void Refresh() => Snapshot = session.CaptureSnapshot();
+        private static SaveEnvelopeDto ParseSave(string json) => JsonConvert.DeserializeObject<SaveEnvelopeDto>(json,
+            new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.None, MaxDepth = 128 }) ?? throw new ArgumentException("Save is empty.");
+        public TurnResult EndTurn() => Client.EndTurn(Snapshot);
+        public IReadOnlyList<CombatRequestDto> Pending() => Client.Pending();
+        public CombatSubmissionResult Resolve(CombatRequestDto request, IReadOnlyList<FleetCombatPlanDto>? plans = null) => Client.Resolve(Snapshot, request, plans);
+        public TurnResult FinalizeCombats() => Client.FinalizeCombats(Snapshot);
+        public void Refresh() => Client.Refresh();
     }
 }
