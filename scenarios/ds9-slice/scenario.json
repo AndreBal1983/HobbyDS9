@@ -1,8 +1,8 @@
 {
   "ScenarioId": "ds9-strategic-slice-v1",
-  "RulesVersion": "phase-1-campaign-combat-v1",
+  "RulesVersion": "phase-1-phased-combat-v1",
   "Definitions": {
-    "ContentFormatVersion": 4,
+    "ContentFormatVersion": 5,
     "DefinitionIds": [
       "civilization.federation",
       "civilization.cardassian",
@@ -116,6 +116,7 @@
         "MaterialCost": 8,
         "CreditCost": 10,
         "MaxHull": 10,
+        "CombatProfile": {"ShieldCapacity": 4, "LongRangeAttack": 3, "MediumRangeAttack": 4, "CloseRangeAttack": 5, "AccuracyBps": 7000, "EvasionBps": 1000},
         "RequiredResearchDefinitionIds": []
       },
       {
@@ -125,6 +126,7 @@
         "MaterialCost": 10,
         "CreditCost": 12,
         "MaxHull": 15,
+        "CombatProfile": {"ShieldCapacity": 6, "LongRangeAttack": 4, "MediumRangeAttack": 5, "CloseRangeAttack": 6, "AccuracyBps": 7500, "EvasionBps": 1500},
         "RequiredResearchDefinitionIds": [
           "research.advanced-engineering"
         ]

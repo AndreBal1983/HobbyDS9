@@ -64,7 +64,7 @@ public sealed class EconomyTests
         var scenario = JsonSerializer.Deserialize<ScenarioDto>(bytes)!;
         scenario.ContentHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
         Assert.True(FoundationValidator.ValidateScenario(scenario).IsValid);
-        Assert.Equal(4, scenario.Definitions.ContentFormatVersion);
+        Assert.Equal(5, scenario.Definitions.ContentFormatVersion);
         var profile = Assert.Single(scenario.Definitions.EconomicProfiles!);
         Assert.Equal(new long[] { 12, 100, 4, 100, 4, 250, 50, 50, 3 }, new[] { profile.FoodOutput, profile.PopulationPerFood,
             profile.MaterialOutput, profile.PopulationPerCredit, profile.BaseIndustry, profile.PopulationPerIndustry,

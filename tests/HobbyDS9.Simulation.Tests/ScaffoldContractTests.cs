@@ -47,9 +47,9 @@ public sealed class ScaffoldContractTests
                     Participants = new()
                     {
                         new() { CivilizationId = "civ.alpha", FleetId = "fleet.alpha",
-                            Ships = new() { new() { ShipId = "ship.alpha", DesignId = "design.scout", Hull = 10 } } },
+                            Ships = new() { new() { ShipId = "ship.alpha", DesignId = "design.scout", Hull = 10, MaxHull = 10, CombatProfile = new() } } },
                         new() { CivilizationId = "civ.beta", FleetId = "fleet.beta",
-                            Ships = new() { new() { ShipId = "ship.beta", DesignId = "design.scout", Hull = 10 } } }
+                            Ships = new() { new() { ShipId = "ship.beta", DesignId = "design.scout", Hull = 10, MaxHull = 10, CombatProfile = new() } } }
                     }
                 } }
             }

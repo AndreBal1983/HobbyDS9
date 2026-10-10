@@ -21,8 +21,9 @@ namespace HobbyDS9.Simulation
         }
         internal static IEnumerable<CombatRequestDto> AllRequests(GameStateDto state) => state.PendingCombats!.Select(c => c.Request)
             .Concat(state.ResolvedCombats!.Select(c => c.Request)).OrderBy(r => r.LocationSystemId, StringComparer.Ordinal).ThenBy(r => r.EncounterId, StringComparer.Ordinal);
-        internal static void Detect(GameStateDto state, SaveCompatibility compatibility)
+        internal static void Detect(GameStateDto state, DefinitionCatalogDto definitions, SaveCompatibility compatibility)
         {
+            var designs = definitions.ShipDesigns!.ToDictionary(d => d.DefinitionId, StringComparer.Ordinal);
             var ships = state.Ships!.ToDictionary(s => s.ShipId, StringComparer.Ordinal);
             var templates = state.Fleets!.GroupBy(f => f.LocationSystemId, StringComparer.Ordinal).Where(g => g.Select(f => f.OwnerCivilizationId).Distinct(StringComparer.Ordinal).Count() >= 2)
                 .OrderBy(g => g.Key, StringComparer.Ordinal).Select(g => new CombatRequestDto
@@ -32,7 +33,7 @@ namespace HobbyDS9.Simulation
                     Participants = g.OrderBy(f => f.OwnerCivilizationId, StringComparer.Ordinal).ThenBy(f => f.FleetId, StringComparer.Ordinal).Select(f => new CombatParticipantDto
                     {
                         CivilizationId = f.OwnerCivilizationId, FleetId = f.FleetId,
-                        Ships = f.ShipIds!.OrderBy(id => id, StringComparer.Ordinal).Select(id => new CombatShipDto { ShipId = id, DesignId = ships[id].ShipDesignDefinitionId, Hull = ships[id].CurrentHull }).ToList()
+                        Ships = f.ShipIds!.OrderBy(id => id, StringComparer.Ordinal).Select(id => new CombatShipDto { ShipId = id, DesignId = ships[id].ShipDesignDefinitionId, Hull = ships[id].CurrentHull, MaxHull = designs[ships[id].ShipDesignDefinitionId].MaxHull, CombatProfile = CombatProfiles.Copy(designs[ships[id].ShipDesignDefinitionId].CombatProfile!) }).ToList()
                     }).ToList()
                 }).ToList();
             SetCheckpoint(state, CombatEncounterScaffold.CreateCheckpoint(state.TurnNumber, state.StateRevision, state.RngState.State!.Value, state.NextEntitySequence, templates));
@@ -54,11 +55,11 @@ namespace HobbyDS9.Simulation
             (a.EncounterId, a.TurnNumber, a.LocationSystemId, a.RulesVersion, a.ContentHash, a.ResolverId, a.ResolverVersion, a.RandomAlgorithmId, a.RandomState)
                 == (b.EncounterId, b.TurnNumber, b.LocationSystemId, b.RulesVersion, b.ContentHash, b.ResolverId, b.ResolverVersion, b.RandomAlgorithmId, b.RandomState)
             && a.Participants.Select(p => (p.CivilizationId, p.FleetId)).SequenceEqual(b.Participants.Select(p => (p.CivilizationId, p.FleetId)))
-            && a.Participants.SelectMany(p => p.Ships).Select(s => (s.ShipId, s.DesignId, s.Hull)).SequenceEqual(b.Participants.SelectMany(p => p.Ships).Select(s => (s.ShipId, s.DesignId, s.Hull)));
+            && a.Participants.SelectMany(p => p.Ships).Select(s => (s.ShipId, s.DesignId, s.Hull, s.MaxHull, CombatProfiles.Values(s.CombatProfile!))).SequenceEqual(b.Participants.SelectMany(p => p.Ships).Select(s => (s.ShipId, s.DesignId, s.Hull, s.MaxHull, CombatProfiles.Values(s.CombatProfile!))));
         private static bool SameResult(CombatResultDto a, CombatResultDto b) =>
             (a.EncounterId, a.ResolverId, a.ResolverVersion, a.Status, a.FinalRandomState) == (b.EncounterId, b.ResolverId, b.ResolverVersion, b.Status, b.FinalRandomState)
             && a.ShipChanges.Select(c => (c.ShipId, c.RemainingHull)).SequenceEqual(b.ShipChanges.Select(c => (c.ShipId, c.RemainingHull)))
             && a.FleetChanges.Select(c => (c.FleetId, c.Disposition, c.RetreatSystemId)).SequenceEqual(b.FleetChanges.Select(c => (c.FleetId, c.Disposition, c.RetreatSystemId)))
-            && a.Events.Select(e => (e.Sequence, e.Kind, e.ShipId, e.FleetId)).SequenceEqual(b.Events.Select(e => (e.Sequence, e.Kind, e.ShipId, e.FleetId)));
+            && a.Events.Select(e => (e.Sequence, e.Kind, e.ShipId, e.FleetId, e.Phase, e.SourceShipId, e.SourceFleetId, e.Amount)).SequenceEqual(b.Events.Select(e => (e.Sequence, e.Kind, e.ShipId, e.FleetId, e.Phase, e.SourceShipId, e.SourceFleetId, e.Amount)));
     }
 }

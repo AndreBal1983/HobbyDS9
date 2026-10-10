@@ -4,8 +4,8 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 8;
-        public const int ContentFormatVersion = 4;
+        public const int SaveFormatVersion = 9;
+        public const int ContentFormatVersion = 5;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
     }

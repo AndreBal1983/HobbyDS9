@@ -134,7 +134,7 @@ namespace HobbyDS9.Simulation
                             command => ExecuteCommand(ref staging, command, trustedAi: true), commandResults);
                         afterAi = CopyState(staging);
                     };
-                    Action encounterCreation = () => CampaignCombatState.Detect(staging, compatibility);
+                    Action encounterCreation = () => CampaignCombatState.Detect(staging, definitions, compatibility);
                     if (!StrategicTurnPhases.Execute(ref staging, definitions, turnPhaseProbe, aiPlanning, encounterCreation)) return Reject(TurnErrorCode.PhaseFailed);
                     if (combatCheckpointProbe != null)
                     {
@@ -239,7 +239,7 @@ namespace HobbyDS9.Simulation
                 .Select(n => new StarSystemDefinitionDto { DefinitionId = n.DefinitionId, DisplayName = n.DisplayName }).ToList(),
             ShipDesigns = source.ShipDesigns!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal).Select(d => new ShipDesignDefinitionDto
             { DefinitionId = d.DefinitionId, DisplayName = d.DisplayName, IndustryCost = d.IndustryCost, MaterialCost = d.MaterialCost,
-                CreditCost = d.CreditCost, MaxHull = d.MaxHull, RequiredResearchDefinitionIds = d.RequiredResearchDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal).ToList() }).ToList(),
+                CreditCost = d.CreditCost, MaxHull = d.MaxHull, CombatProfile = CombatProfiles.Copy(d.CombatProfile!), RequiredResearchDefinitionIds = d.RequiredResearchDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal).ToList() }).ToList(),
             ResearchNodes = source.ResearchNodes!.OrderBy(n => n.DefinitionId, StringComparer.Ordinal).Select(n => new ResearchNodeDefinitionDto
             {
                 DefinitionId = n.DefinitionId, DisplayName = n.DisplayName, ResearchCost = n.ResearchCost,

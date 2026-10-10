@@ -13,7 +13,7 @@ public sealed class AiPlanningTests
     private static void Node(ScenarioDto s, string id, long cost, params string[] prerequisites)
     { s.Definitions.DefinitionIds.Add(id); s.Definitions.ResearchNodes!.Add(new() { DefinitionId = id, DisplayName = id, ResearchCost = cost, PrerequisiteDefinitionIds = prerequisites.ToList() }); }
     private static void Design(ScenarioDto s, string id, long industry, params string[] research)
-    { s.Definitions.DefinitionIds.Add(id); s.Definitions.ShipDesigns!.Add(new() { DefinitionId = id, DisplayName = id, IndustryCost = industry, CreditCost = 7, MaterialCost = 3, MaxHull = 12, RequiredResearchDefinitionIds = research.ToList() }); }
+    { s.Definitions.DefinitionIds.Add(id); s.Definitions.ShipDesigns!.Add(new() { DefinitionId = id, DisplayName = id, IndustryCost = industry, CreditCost = 7, MaterialCost = 3, MaxHull = 12, CombatProfile = new(), RequiredResearchDefinitionIds = research.ToList() }); }
 
     [Fact]
     public void AiUsesLegalSharedCommandsInActorResearchColonyFleetOrderAndHumansAreNeverPlanned()
@@ -86,7 +86,7 @@ public sealed class AiPlanningTests
         // Use authored neutral IDs; this fixture has no franchise definitions, labels or systems.
         var defs = new DefinitionCatalogDto { ContentFormatVersion = FoundationVersions.ContentFormatVersion, DefinitionIds = new() { "civilization.fixture", "system.fixture", "ship-design.fixture" },
             Civilizations = new() { new() { DefinitionId = "civilization.fixture", DisplayName = "Fixture" } }, StarSystems = new() { new() { DefinitionId = "system.fixture", DisplayName = "Fixture" } },
-            EconomicProfiles = new(), ResearchNodes = new(), ShipDesigns = new() { new() { DefinitionId = "ship-design.fixture", DisplayName = "Fixture", IndustryCost = 1, MaxHull = 1, RequiredResearchDefinitionIds = new() } },
+            EconomicProfiles = new(), ResearchNodes = new(), ShipDesigns = new() { new() { DefinitionId = "ship-design.fixture", DisplayName = "Fixture", IndustryCost = 1, MaxHull = 1, CombatProfile = new(), RequiredResearchDefinitionIds = new() } },
             GalaxyEdges = new() { new() { EndpointA = "node.origin", EndpointB = "node.z", Kind = GalaxyEdgeKind.Normal }, new() { EndpointA = "node.origin", EndpointB = "node.a", Kind = GalaxyEdgeKind.Wormhole } } };
         var state = new GameStateDto { PendingCombats = new(), ResolvedCombats = new(), Phase = SessionPhase.Planning, TurnNumber = 1, NextEntitySequence = 1, RngState = new SplitMix64Random(seed).ToDto(), AcceptedCommandIds = new(), Colonies = new(),
             Civilizations = new() { new() { CivilizationId = "civ.fixture", DefinitionId = "civilization.fixture", ControllerKind = ControllerKind.AI, UnlockedResearchDefinitionIds = new() } },

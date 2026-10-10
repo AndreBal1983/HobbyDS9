@@ -7,7 +7,7 @@ namespace HobbyDS9.Simulation
 {
     public static partial class FoundationValidator
     {
-        private static void ValidateCampaignCombat(GameStateDto? state, string? rulesVersion, string? contentHash, string path, List<ValidationIssue> issues)
+        private static void ValidateCampaignCombat(GameStateDto? state, DefinitionCatalogDto? definitions, string? rulesVersion, string? contentHash, string path, List<ValidationIssue> issues)
         {
             if (state == null) return;
             if (state.PendingCombats == null) Add(issues, ValidationCode.MissingField, path + ".PendingCombats");
@@ -18,6 +18,7 @@ namespace HobbyDS9.Simulation
             try { CombatEncounterScaffold.ValidateCheckpoint(CampaignCombatState.ToCheckpoint(state)); }
             catch (ArgumentException) { Add(issues, ValidationCode.InvalidCombatCheckpoint, path + ".Combats"); return; }
             var requests = CampaignCombatState.AllRequests(state).ToList();
+            var designs = (definitions?.ShipDesigns ?? new List<ShipDesignDefinitionDto>()).Where(d => d != null && d.DefinitionId != null).GroupBy(d => d.DefinitionId, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
             var fleets = (state.Fleets ?? new List<FleetStateDto>()).Where(f => f != null && f.FleetId != null).GroupBy(f => f.FleetId, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
             var ships = (state.Ships ?? new List<ShipStateDto>()).Where(s => s != null && s.ShipId != null).GroupBy(s => s.ShipId, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
             var sequences = new HashSet<ulong>();
@@ -40,7 +41,8 @@ namespace HobbyDS9.Simulation
                         Add(issues, ValidationCode.InvalidCombatReference, path + ".Combats");
                     foreach (var snapshot in participant.Ships)
                         if (!ships.TryGetValue(snapshot.ShipId, out var ship) || ship.FleetId != participant.FleetId || ship.OwnerCivilizationId != participant.CivilizationId
-                            || ship.ShipDesignDefinitionId != snapshot.DesignId || ship.CurrentHull != snapshot.Hull)
+                            || ship.ShipDesignDefinitionId != snapshot.DesignId || ship.CurrentHull != snapshot.Hull
+                            || !designs.TryGetValue(snapshot.DesignId, out var design) || design.MaxHull != snapshot.MaxHull || !CombatProfiles.Equal(design.CombatProfile, snapshot.CombatProfile))
                             Add(issues, ValidationCode.InvalidCombatReference, path + ".Combats");
                 }
             }

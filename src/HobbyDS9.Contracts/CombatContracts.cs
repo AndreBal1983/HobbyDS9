@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace HobbyDS9.Contracts
 {
     public enum CombatResolutionStatus { Deferred, Resolved }
-    public enum CombatEventKind { EncounterResolved, ShipDamaged, ShipDestroyed, FleetRetreated }
+    public enum CombatEventKind { EncounterResolved = 0, ShipDamaged = 1, ShipDestroyed = 2, FleetRetreated = 3, PhaseStarted = 4, AttackHit = 5, AttackMissed = 6, ShieldDamaged = 7 }
     public enum FleetCombatDisposition { Held, Retreated, Destroyed }
 
     // Concrete serialization contracts only. The session owns and validates
@@ -60,6 +60,8 @@ namespace HobbyDS9.Contracts
         public string ShipId { get; set; } = string.Empty;
         public string DesignId { get; set; } = string.Empty;
         public long Hull { get; set; }
+        public long MaxHull { get; set; }
+        public ShipCombatProfileDto? CombatProfile { get; set; }
     }
 
     public sealed class CombatResultDto
@@ -91,6 +93,10 @@ namespace HobbyDS9.Contracts
     {
         public int Sequence { get; set; }
         public CombatEventKind Kind { get; set; }
+        public CombatPhaseKind? Phase { get; set; }
+        public string? SourceFleetId { get; set; }
+        public string? SourceShipId { get; set; }
+        public long? Amount { get; set; }
         public string? FleetId { get; set; }
         public string? ShipId { get; set; }
     }

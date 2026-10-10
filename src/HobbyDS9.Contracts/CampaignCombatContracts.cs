@@ -55,6 +55,8 @@ namespace HobbyDS9.Contracts
         public EntityId ShipId { get; }
         public DefinitionId ShipDesignDefinitionId { get; }
         public long CurrentHull { get; }
-        public CombatShipSnapshot(CombatShipDto ship) { ShipId = new EntityId(ship.ShipId); ShipDesignDefinitionId = new DefinitionId(ship.DesignId); CurrentHull = ship.Hull; }
+        public long MaxHull { get; }
+        public ShipCombatProfileSnapshot CombatProfile { get; }
+        public CombatShipSnapshot(CombatShipDto ship) { ShipId = new EntityId(ship.ShipId); ShipDesignDefinitionId = new DefinitionId(ship.DesignId); CurrentHull = ship.Hull; MaxHull = ship.MaxHull; CombatProfile = new ShipCombatProfileSnapshot(ship.CombatProfile!); }
     }
 }

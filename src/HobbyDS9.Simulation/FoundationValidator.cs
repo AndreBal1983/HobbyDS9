@@ -30,7 +30,7 @@ namespace HobbyDS9.Simulation
             var ids = ValidateDefinitions(definitions, "$.Definitions", issues);
             ValidateState(dto, ids, false, "$.GameState", issues);
             ValidateTypedState(dto, definitions, "$.GameState", issues);
-            ValidateCampaignCombat(dto, null, null, "$.GameState", issues);
+            ValidateCampaignCombat(dto, definitions, null, null, "$.GameState", issues);
             ValidateCombatTopology(dto, definitions, "$.GameState", issues);
             return new ValidationReport(issues);
         }
@@ -45,7 +45,7 @@ namespace HobbyDS9.Simulation
                 var ids = ValidateDefinitions(dto.Definitions, "$.Definitions", issues);
                 ValidateState(dto.InitialState, ids, true, "$.InitialState", issues);
                 ValidateTypedState(dto.InitialState, dto.Definitions, "$.InitialState", issues);
-                ValidateCampaignCombat(dto.InitialState, dto.RulesVersion, dto.ContentHash, "$.InitialState", issues);
+                ValidateCampaignCombat(dto.InitialState, dto.Definitions, dto.RulesVersion, dto.ContentHash, "$.InitialState", issues);
                 ValidateCombatTopology(dto.InitialState, dto.Definitions, "$.InitialState", issues);
                 if (dto.InitialState != null && (dto.InitialState.TurnNumber != 1 || dto.InitialState.StateRevision != 0
                     || dto.InitialState.NextEntitySequence != 1)) Add(issues, ValidationCode.InvalidCounter, "$.InitialState");
@@ -71,7 +71,7 @@ namespace HobbyDS9.Simulation
                 var ids = ValidateDefinitions(definitions, "$.Definitions", issues);
                 ValidateState(dto.GameState, ids, false, "$.GameState", issues);
                 ValidateTypedState(dto.GameState, definitions, "$.GameState", issues);
-                ValidateCampaignCombat(dto.GameState, dto.RulesVersion, dto.ContentHash, "$.GameState", issues);
+                ValidateCampaignCombat(dto.GameState, definitions, dto.RulesVersion, dto.ContentHash, "$.GameState", issues);
                 ValidateCombatTopology(dto.GameState, definitions, "$.GameState", issues);
             }
             return new ValidationReport(issues);

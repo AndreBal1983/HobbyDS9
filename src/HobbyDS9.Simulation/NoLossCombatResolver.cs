@@ -6,8 +6,8 @@ namespace HobbyDS9.Simulation
 {
     public sealed class NoLossCombatResolver : ICombatResolver
     {
-        public const string ResolverId = CampaignCombatRules.ResolverId;
-        public const int ResolverVersion = CampaignCombatRules.ResolverVersion;
+        public const string ResolverId = "combat-resolver.no-loss";
+        public const int ResolverVersion = 1;
         public CombatResultDto Resolve(CombatRequestDto request)
         {
             CombatEncounterScaffold.ValidateRequest(request, allocated: true);

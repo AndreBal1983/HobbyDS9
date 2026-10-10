@@ -161,7 +161,7 @@ namespace HobbyDS9.Simulation
                     ValidateId(ship!.ShipId);
                     Require(ships.Add(ship.ShipId), "Duplicate participant ship.");
                     Require(DefinitionId.TryParse(ship.DesignId, out _), "Invalid canonical definition ID.");
-                    Require(ship.Hull > 0, "Nonpositive combat hull.");
+                    Require(ship.Hull > 0 && ship.Hull <= ship.MaxHull && CombatProfiles.IsValid(ship.CombatProfile), "Invalid frozen combat profile/hull.");
                 }
             }
             Require(civilizations.Count >= 2, "Encounter requires opposing civilizations.");
@@ -200,14 +200,7 @@ namespace HobbyDS9.Simulation
                 }
                 else if (change.RetreatSystemId != null) return CombatSubmissionError.InvalidRetreat;
             }
-            for (var i = 0; i < result.Events.Count; i++)
-            {
-                var e = result.Events[i];
-                if (e == null || e.Sequence != i || !Enum.IsDefined(typeof(CombatEventKind), e.Kind)) return CombatSubmissionError.InvalidEvents;
-                if ((e.ShipId != null && !ships.ContainsKey(e.ShipId)) || (e.FleetId != null && !fleets.Contains(e.FleetId))) return CombatSubmissionError.Nonparticipant;
-            }
-            if (result.Events.Count == 0 || result.Events[result.Events.Count - 1].Kind != CombatEventKind.EncounterResolved || result.Events.Count(e => e.Kind == CombatEventKind.EncounterResolved) != 1) return CombatSubmissionError.InvalidEvents;
-            return CombatSubmissionError.None;
+            return CombatEventValidation.Validate(request, result);
         }
 
         private static void ValidateId(string id)
@@ -246,7 +239,7 @@ namespace HobbyDS9.Simulation
             Participants = request.Participants.OrderBy(p => p.CivilizationId, StringComparer.Ordinal).ThenBy(p => p.FleetId, StringComparer.Ordinal)
                 .Select(p => new CombatParticipantDto { CivilizationId = p.CivilizationId, FleetId = p.FleetId,
                     Ships = p.Ships.OrderBy(s => s.ShipId, StringComparer.Ordinal).Select(s => new CombatShipDto
-                        { ShipId = s.ShipId, DesignId = s.DesignId, Hull = s.Hull }).ToList() }).ToList()
+                        { ShipId = s.ShipId, DesignId = s.DesignId, Hull = s.Hull, MaxHull = s.MaxHull, CombatProfile = CombatProfiles.Copy(s.CombatProfile!) }).ToList() }).ToList()
         };
 
         internal static CombatResultDto CopyResult(CombatResultDto result) => new CombatResultDto
@@ -258,7 +251,7 @@ namespace HobbyDS9.Simulation
             FleetChanges = result.FleetChanges.OrderBy(c => c.FleetId, StringComparer.Ordinal).Select(c => new FleetCombatChangeDto
                 { FleetId = c.FleetId, Disposition = c.Disposition, RetreatSystemId = c.RetreatSystemId }).ToList(),
             Events = result.Events.Select(e => new CombatEventDto
-                { Sequence = e.Sequence, Kind = e.Kind, FleetId = e.FleetId, ShipId = e.ShipId }).ToList()
+                { Sequence = e.Sequence, Kind = e.Kind, FleetId = e.FleetId, ShipId = e.ShipId, Phase = e.Phase, SourceShipId = e.SourceShipId, SourceFleetId = e.SourceFleetId, Amount = e.Amount }).ToList()
         };
 
         private static void Require([DoesNotReturnIf(false)] bool condition, string message)

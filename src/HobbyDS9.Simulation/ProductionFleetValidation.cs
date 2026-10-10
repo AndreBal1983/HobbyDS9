@@ -21,6 +21,7 @@ namespace HobbyDS9.Simulation
                 if (d.DefinitionId != null && !typed.Add(d.DefinitionId)) Add(issues, ValidationCode.DuplicateId, p + ".DefinitionId");
                 if (string.IsNullOrWhiteSpace(d.DisplayName)) Add(issues, ValidationCode.MissingField, p + ".DisplayName");
                 if (d.IndustryCost <= 0 || d.MaxHull <= 0 || d.MaterialCost < 0 || d.CreditCost < 0) Add(issues, ValidationCode.InvalidProductionValue, p);
+                if (!CombatProfiles.IsValid(d.CombatProfile)) Add(issues, ValidationCode.InvalidCombatProfile, p + ".CombatProfile");
                 if (d.RequiredResearchDefinitionIds == null) { Add(issues, ValidationCode.MissingField, p + ".RequiredResearchDefinitionIds"); continue; }
                 var unique = new HashSet<string>(StringComparer.Ordinal);
                 foreach (var prerequisite in d.RequiredResearchDefinitionIds)

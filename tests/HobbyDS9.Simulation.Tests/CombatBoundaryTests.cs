@@ -242,7 +242,7 @@ public sealed class CombatBoundaryTests
         Participants = new[] { "alpha", "beta" }.Select(civ => new CombatParticipantDto
         {
             CivilizationId = "civ." + civ, FleetId = "fleet." + location + "." + civ,
-            Ships = new() { new() { ShipId = "ship." + location + "." + civ, DesignId = "design.scout", Hull = 100 } }
+            Ships = new() { new() { ShipId = "ship." + location + "." + civ, DesignId = "design.scout", Hull = 100, MaxHull = 100, CombatProfile = new() } }
         }).ToList()
     }).ToList();
 
@@ -266,7 +266,7 @@ public sealed class CombatBoundaryTests
                 ShipChanges = new() { new() { ShipId = ship.ShipId, RemainingHull = ship.Hull - damage } },
                 Events = new()
                 {
-                    new() { Sequence = 0, Kind = CombatEventKind.ShipDamaged, ShipId = ship.ShipId },
+                    new() { Sequence = 0, Kind = CombatEventKind.ShipDamaged, ShipId = ship.ShipId, Amount = damage },
                     new() { Sequence = 1, Kind = CombatEventKind.EncounterResolved }
                 }
             };

@@ -25,15 +25,6 @@ namespace HobbyDS9.Simulation
                 foreach (var retreat in buffered.Result.FleetChanges.Where(c => c.Disposition == FleetCombatDisposition.Retreated && c.RetreatSystemId == change.RetreatSystemId))
                     if (buffered.Request.Participants.Single(p => p.FleetId == retreat.FleetId).CivilizationId != participant.CivilizationId) return CombatSubmissionError.InvalidRetreat;
             }
-            // Events may omit effects, but any supplied effect event must agree
-            // with explicit consequences; presentation never drives rules.
-            foreach (var e in result.Events)
-            {
-                if (e.Kind == CombatEventKind.EncounterResolved && (e.ShipId != null || e.FleetId != null)) return CombatSubmissionError.InvalidEvents;
-                if (e.Kind == CombatEventKind.ShipDamaged && (e.ShipId == null || !result.ShipChanges.Any(c => c.ShipId == e.ShipId && c.RemainingHull > 0 && c.RemainingHull < request.Participants.SelectMany(p => p.Ships).Single(s => s.ShipId == c.ShipId).Hull))) return CombatSubmissionError.InvalidEvents;
-                if (e.Kind == CombatEventKind.ShipDestroyed && (e.ShipId == null || !result.ShipChanges.Any(c => c.ShipId == e.ShipId && c.RemainingHull == 0))) return CombatSubmissionError.InvalidEvents;
-                if (e.Kind == CombatEventKind.FleetRetreated && (e.FleetId == null || !result.FleetChanges.Any(c => c.FleetId == e.FleetId && c.Disposition == FleetCombatDisposition.Retreated))) return CombatSubmissionError.InvalidEvents;
-            }
             return CombatSubmissionError.None;
         }
         internal static void Apply(GameStateDto staging, CombatResultDto result)

@@ -35,7 +35,7 @@ public sealed class CampaignCombatAcceptanceTests
             r.ShipChanges.Add(new() { ShipId = second.Ships[0].ShipId, RemainingHull = 7 });
             r.FleetChanges.Add(new() { FleetId = first.FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.sol" });
             r.Events.Insert(0, new() { Kind = CombatEventKind.FleetRetreated, FleetId = first.FleetId });
-            r.Events.Insert(1, new() { Kind = CombatEventKind.ShipDamaged, ShipId = second.Ships[0].ShipId });
+            r.Events.Insert(1, new() { Kind = CombatEventKind.ShipDamaged, ShipId = second.Ships[0].ShipId, Amount = 3 });
         }
         else if (request.LocationSystemId == "system.bajoran-wormhole")
             r.FleetChanges.Add(new() { FleetId = first.FleetId, Disposition = FleetCombatDisposition.Destroyed });
