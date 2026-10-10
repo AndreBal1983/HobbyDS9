@@ -36,7 +36,7 @@ public sealed class TurnLifecycleTests
         RulesVersion = Compatibility.RulesVersion, ContentHash = Compatibility.ContentHash,
         GameState = new()
         {
-            Phase = phase, TurnNumber = turn, StateRevision = revision, NextEntitySequence = 17,
+            PendingCombats = new(), ResolvedCombats = new(), Phase = phase, TurnNumber = turn, StateRevision = revision, NextEntitySequence = 17,
             RngState = new SplitMix64Random(47).ToDto(),
             Ships = new(), Fleets = new(), Colonies = new(), AcceptedCommandIds = revision >= 2 ? new() { "cmd.z", "cmd.a" } : new(),
             Civilizations = new()
@@ -170,23 +170,21 @@ public sealed class TurnLifecycleTests
     }
 
     [Fact]
-    public void AwaitingCombatPersistsAsBlockedMarkerAndNeverReopensPlanning()
+    public void AwaitingCombatRequiresRealBatchAndPersistsBlockedWithoutRerunningPhases()
     {
-        var save = Save(phase: SessionPhase.AwaitingCombat); var handler = new CommandProbe(); var calls = 0;
-        var session = Session(save, (_, _) => { calls++; return true; }, handler);
-        var before = StateJson(session);
-        Assert.Equal(SessionPhase.AwaitingCombat, session.CaptureSnapshot().Phase);
-        Assert.Equal(CommandErrorCode.CombatPending, session.SubmitCommand(Command()).ErrorCode);
-        Assert.Equal(CommandErrorCode.CombatPending, session.SubmitCommand(Command(turn: 6, revision: 0)).ErrorCode);
-        var result = session.AdvanceTurn(7, 5);
-        Assert.Equal(TurnStatus.Rejected, result.Status); Assert.Equal(TurnErrorCode.CombatPending, result.ErrorCode);
-        Assert.Equal(SessionPhase.AwaitingCombat, result.Phase); Assert.Null(result.CompletedTurnNumber);
-        Assert.Equal(TurnErrorCode.CombatPending, session.AdvanceTurn(0, 0).ErrorCode);
-        Assert.Equal(0, handler.Calls); Assert.Equal(0, calls); Assert.Equal(before, StateJson(session));
-        var loaded = Session(JsonSerializer.Deserialize<SaveEnvelopeDto>(before));
-        Assert.Equal(before, StateJson(loaded));
-        Assert.Equal(SessionPhase.AwaitingCombat, loaded.CaptureSnapshot().Phase);
-        Assert.Equal(TurnErrorCode.CombatPending, loaded.AdvanceTurn(7, 5).ErrorCode);
+        var invalid = Save(phase: SessionPhase.AwaitingCombat);
+        Assert.Throws<ArgumentException>(() => Session(invalid));
+        var scenario = CampaignCombatFixture.Scenario(); var initial = VerticalSliceFixture.Session(scenario);
+        Assert.Equal(TurnStatus.AwaitingCombat, initial.AdvanceTurn(1, 0).Status);
+        var save = initial.ExportSave(); var calls = 0;
+        var session = new SimulationSession(save, scenario.Definitions, VerticalSliceFixture.Compatibility(scenario), new Dictionary<CommandKind, ICommandHandler>(), (_, _) => { calls++; return true; });
+        var before = StateJson(session); var p = session.CaptureSnapshot();
+        var command = VerticalSliceFixture.Command(session, CommandKind.SetResearchTarget, "cmd.blocked"); command.SetResearchTarget = new() { TargetDefinitionId = "research.advanced-engineering" };
+        Assert.Equal(CommandErrorCode.CombatPending, session.SubmitCommand(command).ErrorCode);
+        Assert.Equal(TurnErrorCode.CombatPending, session.AdvanceTurn(p.TurnNumber, p.StateRevision).ErrorCode);
+        Assert.Equal(0, calls); Assert.Equal(before, StateJson(session));
+        var loaded = new SimulationSession(JsonSerializer.Deserialize<SaveEnvelopeDto>(before)!, scenario.Definitions, VerticalSliceFixture.Compatibility(scenario));
+        Assert.Equal(before, StateJson(loaded)); Assert.Equal(SessionPhase.AwaitingCombat, loaded.CaptureSnapshot().Phase);
     }
 
     public static IEnumerable<object[]> PhaseFailures()
@@ -421,6 +419,6 @@ public sealed class TurnLifecycleTests
         var awaitingJson = JsonSerializer.Serialize(awaiting);
         Assert.Equal(awaitingJson, JsonSerializer.Serialize(JsonSerializer.Deserialize<TurnResult>(awaitingJson)));
         Assert.Null(awaiting.CompletedTurnNumber);
-        Assert.Equal(TurnStatus.AwaitingCombat, awaiting.Status); // Contract only; engine never produces this yet.
+        Assert.Equal(TurnStatus.AwaitingCombat, awaiting.Status); // This status is produced by real campaign checkpoints.
     }
 }

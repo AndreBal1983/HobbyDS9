@@ -59,7 +59,7 @@ namespace HobbyDS9.Contracts
     {
         public string ShipId { get; set; } = string.Empty;
         public string DesignId { get; set; } = string.Empty;
-        public int Hull { get; set; }
+        public long Hull { get; set; }
     }
 
     public sealed class CombatResultDto
@@ -77,7 +77,7 @@ namespace HobbyDS9.Contracts
     public sealed class ShipCombatChangeDto
     {
         public string ShipId { get; set; } = string.Empty;
-        public int RemainingHull { get; set; }
+        public long RemainingHull { get; set; }
     }
 
     public sealed class FleetCombatChangeDto

@@ -30,8 +30,20 @@ var commands = 0;
 for (var i = 0; i < turns; i++)
 {
     var current = session.CaptureSnapshot(); var result = session.AdvanceTurn(current.TurnNumber, current.StateRevision);
-    if (result.Status != TurnStatus.Completed || result.CommandResults.Any(c => !c.Accepted)) throw new InvalidOperationException("Autonomous turn failed.");
     commands += result.CommandResults.Count;
+    if (result.Status == TurnStatus.AwaitingCombat)
+    {
+        foreach (var request in session.GetPendingCombatRequests())
+        {
+            var p = session.CaptureSnapshot();
+            var noChanges = new CombatResultDto { EncounterId = request.EncounterId, ResolverId = request.ResolverId, ResolverVersion = request.ResolverVersion,
+                Status = CombatResolutionStatus.Resolved, FinalRandomState = request.RandomState, Events = new() { new() { Sequence = 0, Kind = CombatEventKind.EncounterResolved } } };
+            if (session.SubmitCombatResult(noChanges, p.TurnNumber, p.StateRevision).Status != CombatSubmissionStatus.Buffered) throw new InvalidOperationException("Combat buffering failed.");
+        }
+        var finalStamp = session.CaptureSnapshot(); result = session.FinalizeCombat(finalStamp.TurnNumber, finalStamp.StateRevision);
+    }
+    if (result.Status != TurnStatus.Completed || result.CommandResults.Any(c => !c.Accepted)) throw new InvalidOperationException("Autonomous turn failed.");
+
 }
 var snapshot = session.CaptureSnapshot();
 Console.WriteLine(FormattableString.Invariant($"{scenario.ScenarioId}: completed={turns}, turn={snapshot.TurnNumber}, revision={snapshot.StateRevision}, AI commands={commands}, phase={snapshot.Phase}"));

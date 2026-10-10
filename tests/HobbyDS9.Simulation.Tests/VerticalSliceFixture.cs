@@ -21,7 +21,7 @@ internal static class VerticalSliceFixture
     internal static SimulationSession Session(ScenarioDto? scenario = null, Func<StrategicTurnPhase, GameStateDto, bool>? probe = null)
     { var s = scenario ?? Scenario(); return new(Save(s), s.Definitions, Compatibility(s), new Dictionary<CommandKind, ICommandHandler>(), probe); }
     internal static string Json(SimulationSession s) => JsonSerializer.Serialize(s.ExportSave());
-    internal static TurnResult Advance(SimulationSession s) { var p = s.CaptureSnapshot(); return s.AdvanceTurn(p.TurnNumber, p.StateRevision); }
+    internal static TurnResult Advance(SimulationSession s) { var p = s.CaptureSnapshot(); return CampaignCombatFixture.Complete(s, s.AdvanceTurn(p.TurnNumber, p.StateRevision)); }
     internal static CommandEnvelope Command(SimulationSession s, CommandKind kind, string id, string actor = "civ.federation")
     { var p = s.CaptureSnapshot(); return new() { CommandId = id, ActorCivilizationId = actor, ExpectedTurn = p.TurnNumber, ExpectedRevision = p.StateRevision, Kind = kind }; }
     internal static CommandResult Enqueue(SimulationSession s, string id = "cmd.enqueue", string design = "ship-design.scout", string colony = "colony.sol", string actor = "civ.federation")

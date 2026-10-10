@@ -14,7 +14,7 @@ public sealed class FoundationDtoTests
 
     private static GameStateDto State() => new()
     {
-        Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(), Ships = new(), Fleets = new(), Colonies = new(), AcceptedCommandIds = new(), Civilizations = new(), StarSystems = new(),
+        PendingCombats = new(), ResolvedCombats = new(), Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(), Ships = new(), Fleets = new(), Colonies = new(), AcceptedCommandIds = new(), Civilizations = new(), StarSystems = new(),
         EntityIdentities = new()
         {
             new() { EntityId = "entity.initial", DefinitionId = "definition.alpha" },

@@ -19,7 +19,7 @@ public sealed class SessionFoundationTests
         RulesVersion = Compatibility.RulesVersion, ContentHash = Compatibility.ContentHash,
         GameState = new()
         {
-            Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = revision, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(),
+            PendingCombats = new(), ResolvedCombats = new(), Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = revision, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(),
             Ships = new(), Fleets = new(), Colonies = new(), AcceptedCommandIds = new(), StarSystems = new(),
             Civilizations = new() { new() { CivilizationId = Alpha.Value, DefinitionId = "definition.alpha", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.Human },
                 new() { CivilizationId = Beta.Value, DefinitionId = "definition.beta", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.AI } }, EntityIdentities = new()

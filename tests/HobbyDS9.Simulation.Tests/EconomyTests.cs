@@ -29,7 +29,7 @@ public sealed class EconomyTests
         RulesVersion = Compatibility.RulesVersion, ContentHash = Compatibility.ContentHash,
         GameState = new()
         {
-            Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1,
+            PendingCombats = new(), ResolvedCombats = new(), Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1,
             RngState = new SplitMix64Random(47).ToDto(), AcceptedCommandIds = new(),
             Civilizations = new() { new() { CivilizationId = "civ.fixture", DefinitionId = "civilization.fixture", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.Human, Credits = 50 } },
             StarSystems = new() { new() { SystemId = "node.z", DefinitionId = "system.fixture", OwnerCivilizationId = "civ.fixture" } },

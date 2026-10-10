@@ -179,7 +179,7 @@ namespace HobbyDS9.Simulation
             var fleets = new HashSet<string>(request.Participants.Select(p => p.FleetId), StringComparer.Ordinal);
             var changedShips = new HashSet<string>(StringComparer.Ordinal);
             foreach (var change in result.ShipChanges)
-                Require(change != null && ships.TryGetValue(change.ShipId, out var ship) && changedShips.Add(change.ShipId)
+                Require(change != null && change.ShipId != null && ships.TryGetValue(change.ShipId, out var ship) && changedShips.Add(change.ShipId)
                     && change.RemainingHull >= 0 && change.RemainingHull <= ship.Hull, "Invalid ship change.");
             var changedFleets = new HashSet<string>(StringComparer.Ordinal);
             var battleLocations = new HashSet<string>(AllRequests(checkpoint).Select(r => r.LocationSystemId), StringComparer.Ordinal);
@@ -225,7 +225,7 @@ namespace HobbyDS9.Simulation
             }
         }
 
-        private static CombatCheckpointDto CopyCheckpoint(CombatCheckpointDto checkpoint) => new CombatCheckpointDto
+        internal static CombatCheckpointDto CopyCheckpoint(CombatCheckpointDto checkpoint) => new CombatCheckpointDto
         {
             Phase = checkpoint.Phase, TurnNumber = checkpoint.TurnNumber, StateRevision = checkpoint.StateRevision,
             CampaignRandomState = checkpoint.CampaignRandomState, NextEntitySequence = checkpoint.NextEntitySequence,
@@ -234,7 +234,7 @@ namespace HobbyDS9.Simulation
                 { Request = CopyRequest(r.Request), Result = CopyResult(r.Result) }).ToList()
         };
 
-        private static CombatRequestDto CopyRequest(CombatRequestDto request) => new CombatRequestDto
+        internal static CombatRequestDto CopyRequest(CombatRequestDto request) => new CombatRequestDto
         {
             EncounterId = request.EncounterId, TurnNumber = request.TurnNumber, LocationSystemId = request.LocationSystemId,
             RulesVersion = request.RulesVersion, ContentHash = request.ContentHash, ResolverId = request.ResolverId,
@@ -245,7 +245,7 @@ namespace HobbyDS9.Simulation
                         { ShipId = s.ShipId, DesignId = s.DesignId, Hull = s.Hull }).ToList() }).ToList()
         };
 
-        private static CombatResultDto CopyResult(CombatResultDto result) => new CombatResultDto
+        internal static CombatResultDto CopyResult(CombatResultDto result) => new CombatResultDto
         {
             EncounterId = result.EncounterId, ResolverId = result.ResolverId, ResolverVersion = result.ResolverVersion,
             Status = result.Status, FinalRandomState = result.FinalRandomState,

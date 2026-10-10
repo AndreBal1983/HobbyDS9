@@ -8,7 +8,7 @@ namespace HobbyDS9.Contracts
     public enum TurnErrorCode
     {
         None = 0, CombatPending = 1, StaleTurn = 2, StaleRevision = 3,
-        TurnNumberExhausted = 4, RevisionExhausted = 5, PhaseFailed = 6
+        TurnNumberExhausted = 4, RevisionExhausted = 5, PhaseFailed = 6, NotAwaitingCombat = 7, UnresolvedCombats = 8, InvalidCombatBatch = 9
     }
 
     // An ordered, immutable event carrier. Phase 3B emits no events; future

@@ -85,11 +85,12 @@ public sealed class FleetMovementTests
         var before = Json(s); Assert.Throws<InvalidOperationException>(() => Advance(s)); Assert.Equal(before, Json(s));
     }
     [Fact]
-    public void OpposingFleetsCanShareLocationWithoutEncounterCreation()
+    public void OpposingFleetsAtTheSameLocationGenerateOneFrozenCampaignEncounter()
     {
         var s = Session(); Assert.True(Route(s, "cmd.route", "system.bajor").Accepted);
         var c = Command(s, CommandKind.SetFleetRoute, "cmd.other", "civ.cardassian"); c.SetFleetRoute = new() { FleetId = "fleet.cardassian-scout", RouteSystemIds = new() { "system.bajor" } }; Assert.True(s.SubmitCommand(c).Accepted);
-        var result = Advance(s); Assert.Equal(SessionPhase.Planning, result.Phase); Assert.Empty(result.Events);
+        var p = s.CaptureSnapshot(); var result = s.AdvanceTurn(p.TurnNumber, p.StateRevision); Assert.Equal(SessionPhase.AwaitingCombat, result.Phase); Assert.Empty(result.Events);
+        Assert.Single(s.GetPendingCombatRequests());
         Assert.Equal(2, s.CaptureSnapshot().Fleets.Count(f => f.LocationSystemId.Value == "system.bajor"));
     }
 }

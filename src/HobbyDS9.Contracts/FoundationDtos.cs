@@ -4,7 +4,7 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 7;
+        public const int SaveFormatVersion = 8;
         public const int ContentFormatVersion = 4;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
@@ -58,6 +58,8 @@ namespace HobbyDS9.Contracts
         public List<ColonyStateDto>? Colonies { get; set; }
         public List<ShipStateDto>? Ships { get; set; }
         public List<FleetStateDto>? Fleets { get; set; }
+        public List<PendingCombatDto>? PendingCombats { get; set; }
+        public List<ResolvedCombatDto>? ResolvedCombats { get; set; }
     }
 
     public sealed class ScenarioDto

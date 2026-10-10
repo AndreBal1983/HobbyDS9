@@ -29,7 +29,7 @@ public sealed class ResearchTests
         RulesVersion = Compatibility.RulesVersion, ContentHash = Compatibility.ContentHash,
         GameState = new()
         {
-            Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1,
+            PendingCombats = new(), ResolvedCombats = new(), Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1,
             RngState = new SplitMix64Random(47).ToDto(), AcceptedCommandIds = new(),
             Civilizations = new()
             {
@@ -385,7 +385,8 @@ public sealed class ResearchTests
     {
         var session = Session(); var before = StateJson(session);
         Assert.Equal(CommandErrorCode.ActorNotControlled, session.SubmitCommand(Command(session, "research.alpha", actor: "civ.a")).ErrorCode);
-        Assert.Equal(before, StateJson(session)); var save = Save(); save.GameState.Phase = SessionPhase.AwaitingCombat; session = Session(save); before = StateJson(session);
-        Assert.Equal(CommandErrorCode.CombatPending, session.SubmitCommand(Command(session, "research.alpha")).ErrorCode); Assert.Equal(before, StateJson(session));
+        Assert.Equal(before, StateJson(session));
+        var combatScenario = CampaignCombatFixture.Scenario(); session = VerticalSliceFixture.Session(combatScenario); session.AdvanceTurn(1, 0); before = StateJson(session);
+        Assert.Equal(CommandErrorCode.CombatPending, session.SubmitCommand(Command(session, "research.advanced-engineering", actor: "civ.federation")).ErrorCode); Assert.Equal(before, StateJson(session));
     }
 }

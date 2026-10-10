@@ -59,13 +59,14 @@ namespace HobbyDS9.Contracts
         public IReadOnlyList<ShipSnapshot> Ships { get; }
         public IReadOnlyList<FleetSnapshot> Fleets { get; }
         public IReadOnlyList<ShipDesignSnapshot> ShipDesigns { get; }
+        public IReadOnlyList<CombatEncounterSnapshot> Combats { get; }
 
         public SessionSnapshot(string scenarioId, string rulesVersion, string contentHash, int turnNumber, long revision,
             ulong nextEntitySequence, RngSnapshot rng, IEnumerable<EntityIdentitySnapshot> entities,
             IEnumerable<DefinitionId> definitions, IEnumerable<ActorSnapshot> actors, IEnumerable<EntityId> commands,
             IEnumerable<CivilizationSnapshot>? civilizations = null, IEnumerable<StarSystemSnapshot>? systems = null,
             IEnumerable<GalaxyEdge>? edges = null, SessionPhase phase = SessionPhase.Planning, IEnumerable<ColonySnapshot>? colonies = null, IEnumerable<ShipSnapshot>? ships = null,
-            IEnumerable<FleetSnapshot>? fleets = null, IEnumerable<ShipDesignSnapshot>? shipDesigns = null)
+            IEnumerable<FleetSnapshot>? fleets = null, IEnumerable<ShipDesignSnapshot>? shipDesigns = null, IEnumerable<CombatEncounterSnapshot>? combats = null)
         {
             ScenarioId = scenarioId; RulesVersion = rulesVersion; ContentHash = contentHash;
             Phase = phase; TurnNumber = turnNumber; StateRevision = revision; NextEntitySequence = nextEntitySequence;
@@ -81,6 +82,7 @@ namespace HobbyDS9.Contracts
             Ships = new List<ShipSnapshot>(ships ?? Array.Empty<ShipSnapshot>()).AsReadOnly();
             Fleets = new List<FleetSnapshot>(fleets ?? Array.Empty<FleetSnapshot>()).AsReadOnly();
             ShipDesigns = new List<ShipDesignSnapshot>(shipDesigns ?? Array.Empty<ShipDesignSnapshot>()).AsReadOnly();
+            Combats = new List<CombatEncounterSnapshot>(combats ?? Array.Empty<CombatEncounterSnapshot>()).AsReadOnly();
         }
     }
 }

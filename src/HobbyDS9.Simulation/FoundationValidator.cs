@@ -30,6 +30,7 @@ namespace HobbyDS9.Simulation
             var ids = ValidateDefinitions(definitions, "$.Definitions", issues);
             ValidateState(dto, ids, false, "$.GameState", issues);
             ValidateTypedState(dto, definitions, "$.GameState", issues);
+            ValidateCampaignCombat(dto, null, null, "$.GameState", issues);
             return new ValidationReport(issues);
         }
 
@@ -43,6 +44,7 @@ namespace HobbyDS9.Simulation
                 var ids = ValidateDefinitions(dto.Definitions, "$.Definitions", issues);
                 ValidateState(dto.InitialState, ids, true, "$.InitialState", issues);
                 ValidateTypedState(dto.InitialState, dto.Definitions, "$.InitialState", issues);
+                ValidateCampaignCombat(dto.InitialState, dto.RulesVersion, dto.ContentHash, "$.InitialState", issues);
                 if (dto.InitialState != null && (dto.InitialState.TurnNumber != 1 || dto.InitialState.StateRevision != 0
                     || dto.InitialState.NextEntitySequence != 1)) Add(issues, ValidationCode.InvalidCounter, "$.InitialState");
                 if (dto.InitialState?.AcceptedCommandIds != null && dto.InitialState.AcceptedCommandIds.Count != 0)
@@ -67,6 +69,7 @@ namespace HobbyDS9.Simulation
                 var ids = ValidateDefinitions(definitions, "$.Definitions", issues);
                 ValidateState(dto.GameState, ids, false, "$.GameState", issues);
                 ValidateTypedState(dto.GameState, definitions, "$.GameState", issues);
+                ValidateCampaignCombat(dto.GameState, dto.RulesVersion, dto.ContentHash, "$.GameState", issues);
             }
             return new ValidationReport(issues);
         }

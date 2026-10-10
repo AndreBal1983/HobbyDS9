@@ -62,6 +62,11 @@ public sealed class AiPlanningTests
     public void ForeignScoreWinsUniqueChoiceUsesNoRngAndNeutralTieUsesOneCampaignDraw(bool tied)
     {
         var scenario = OneAi(); var fleet = scenario.InitialState.Fleets!.Single(f => f.OwnerCivilizationId == "civ.cardassian"); fleet.LocationSystemId = "system.bajor";
+        // Isolate AI routing draws from the new encounter-creation draws.
+        var humanShips = scenario.InitialState.Ships!.Where(ship => ship.OwnerCivilizationId == "civ.federation").Select(ship => ship.ShipId).ToHashSet();
+        var humanFleets = scenario.InitialState.Fleets!.Where(f => f.OwnerCivilizationId == "civ.federation").Select(f => f.FleetId).ToHashSet();
+        scenario.InitialState.Ships!.RemoveAll(ship => humanShips.Contains(ship.ShipId)); scenario.InitialState.Fleets!.RemoveAll(f => humanFleets.Contains(f.FleetId));
+        scenario.InitialState.EntityIdentities.RemoveAll(e => humanShips.Contains(e.EntityId) || humanFleets.Contains(e.EntityId));
         if (tied)
         { scenario.InitialState.StarSystems!.Single(n => n.SystemId == "system.sol").OwnerCivilizationId = null; scenario.InitialState.Colonies!.Single(c => c.ColonyId == "colony.sol").OwnerCivilizationId = null; }
         var s = Session(scenario); Advance(s); var current = s.CaptureSnapshot().Fleets.Single(f => f.FleetId.Value == fleet.FleetId);
@@ -83,7 +88,7 @@ public sealed class AiPlanningTests
             Civilizations = new() { new() { DefinitionId = "civilization.fixture", DisplayName = "Fixture" } }, StarSystems = new() { new() { DefinitionId = "system.fixture", DisplayName = "Fixture" } },
             EconomicProfiles = new(), ResearchNodes = new(), ShipDesigns = new() { new() { DefinitionId = "ship-design.fixture", DisplayName = "Fixture", IndustryCost = 1, MaxHull = 1, RequiredResearchDefinitionIds = new() } },
             GalaxyEdges = new() { new() { EndpointA = "node.origin", EndpointB = "node.z", Kind = GalaxyEdgeKind.Normal }, new() { EndpointA = "node.origin", EndpointB = "node.a", Kind = GalaxyEdgeKind.Wormhole } } };
-        var state = new GameStateDto { Phase = SessionPhase.Planning, TurnNumber = 1, NextEntitySequence = 1, RngState = new SplitMix64Random(seed).ToDto(), AcceptedCommandIds = new(), Colonies = new(),
+        var state = new GameStateDto { PendingCombats = new(), ResolvedCombats = new(), Phase = SessionPhase.Planning, TurnNumber = 1, NextEntitySequence = 1, RngState = new SplitMix64Random(seed).ToDto(), AcceptedCommandIds = new(), Colonies = new(),
             Civilizations = new() { new() { CivilizationId = "civ.fixture", DefinitionId = "civilization.fixture", ControllerKind = ControllerKind.AI, UnlockedResearchDefinitionIds = new() } },
             StarSystems = new() { new() { SystemId = "node.origin", DefinitionId = "system.fixture", OwnerCivilizationId = "civ.fixture" }, new() { SystemId = "node.z", DefinitionId = "system.fixture" }, new() { SystemId = "node.a", DefinitionId = "system.fixture" } },
             Ships = new() { new() { ShipId = "ship.fixture", ShipDesignDefinitionId = "ship-design.fixture", OwnerCivilizationId = "civ.fixture", FleetId = "fleet.fixture", CurrentHull = 1 } },
@@ -174,7 +179,7 @@ public sealed class AiPlanningTests
             if (failed && fault != "allocation" && phase == (fault == "movement" ? StrategicTurnPhase.Movement : StrategicTurnPhase.EncounterCreation))
             {
                 Assert.Equal(4, staging.Ships!.Count); Assert.Equal(4, staging.Fleets!.Count);
-                Assert.Equal(4UL, staging.NextEntitySequence); Assert.Empty(staging.Colonies!.Single(c => c.ColonyId == "colony.cardassia").ProductionQueue!);
+                Assert.Equal(5UL, staging.NextEntitySequence); // One earlier encounter plus this ship/fleet. Assert.Empty(staging.Colonies!.Single(c => c.ColonyId == "colony.cardassia").ProductionQueue!);
                 Assert.Contains("research.advanced-engineering", staging.Civilizations!.Single(c => c.CivilizationId == "civ.cardassian").UnlockedResearchDefinitionIds!);
                 return false;
             }

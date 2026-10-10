@@ -30,8 +30,8 @@ public sealed class LongRunAcceptanceTests
         }
         Assert.True(partial); Assert.Equal(25, orders.Count); var final = baseline.CaptureSnapshot();
         Assert.Equal(26, final.TurnNumber); Assert.Equal(SessionPhase.Planning, final.Phase);
-        Assert.Equal(307, final.StateRevision); Assert.Equal(282, commandCount);
-        Assert.Equal(21, final.Ships.Count); Assert.Equal(21, final.Fleets.Count); Assert.Equal(57UL, final.NextEntitySequence); Assert.Equal(0xefa6f4a65354895aUL, final.RngState.State);
+        Assert.Equal(374, final.StateRevision); Assert.Equal(282, commandCount);
+        Assert.Equal(21, final.Ships.Count); Assert.Equal(21, final.Fleets.Count); Assert.Equal(101UL, final.NextEntitySequence); Assert.Equal(0x82f866ceb4d760e1UL, final.RngState.State);
         foreach (var actor in new[] { "civ.cardassian", "civ.dominion" })
         {
             Assert.Contains(new DefinitionId("research.advanced-engineering"), final.Civilizations.Single(c => c.CivilizationId.Value == actor).UnlockedResearchDefinitionIds);

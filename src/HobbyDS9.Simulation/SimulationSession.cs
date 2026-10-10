@@ -5,11 +5,12 @@ using HobbyDS9.Contracts;
 
 namespace HobbyDS9.Simulation
 {
-    public sealed class SimulationSession
+    public sealed partial class SimulationSession
     {
         private readonly object gate = new object();
         private bool executingMutation;
         private readonly Func<StrategicTurnPhase, GameStateDto, bool>? turnPhaseProbe;
+        private readonly Func<GameStateDto, bool>? combatCheckpointProbe;
         private GameStateDto state;
         private readonly DefinitionCatalogDto definitions;
         private readonly SaveCompatibility compatibility;
@@ -22,11 +23,12 @@ namespace HobbyDS9.Simulation
 
         internal SimulationSession(SaveEnvelopeDto save, DefinitionCatalogDto definitions, SaveCompatibility compatibility,
             IReadOnlyDictionary<CommandKind, ICommandHandler> commandHandlers,
-            Func<StrategicTurnPhase, GameStateDto, bool>? turnPhaseProbe = null)
+            Func<StrategicTurnPhase, GameStateDto, bool>? turnPhaseProbe = null, Func<GameStateDto, bool>? combatCheckpointProbe = null)
         {
             FoundationValidator.ValidateSave(save, definitions, compatibility).ThrowIfInvalid(nameof(save));
             this.compatibility = compatibility;
             this.turnPhaseProbe = turnPhaseProbe;
+            this.combatCheckpointProbe = combatCheckpointProbe;
             this.definitions = CopyDefinitions(definitions);
             state = CopyState(save.GameState);
             Galaxy = new GalaxyGraph(state.StarSystems!.Select(n => new EntityId(n.SystemId)), this.definitions.GalaxyEdges!);
@@ -128,20 +130,30 @@ namespace HobbyDS9.Simulation
                             command => ExecuteCommand(ref staging, command, trustedAi: true), commandResults);
                         afterAi = CopyState(staging);
                     };
-                    if (!StrategicTurnPhases.Execute(ref staging, definitions, turnPhaseProbe, aiPlanning)) return Reject(TurnErrorCode.PhaseFailed);
+                    Action encounterCreation = () => CampaignCombatState.Detect(staging, compatibility);
+                    if (!StrategicTurnPhases.Execute(ref staging, definitions, turnPhaseProbe, aiPlanning, encounterCreation)) return Reject(TurnErrorCode.PhaseFailed);
+                    if (combatCheckpointProbe != null)
+                    {
+                        var beforeProbe = CopyState(staging);
+                        if (!combatCheckpointProbe(staging)) return Reject(TurnErrorCode.PhaseFailed);
+                        RequirePhaseChanges(beforeProbe, CopyState(staging), allowEconomy: false);
+                    }
                     var validation = FoundationValidator.ValidateGameState(staging, definitions);
                     if (!validation.IsValid) throw new InvalidOperationException("Turn phase violated state invariants: " + validation.Issues[0].Code);
                     // Copy again before committing: retained phase references are
                     // never authoritative. Empty phases must preserve all facts.
                     var candidate = CopyState(staging);
-                    RequirePhaseChanges(afterAi!, candidate, allowEconomy: true, allowResearch: true, allowProduction: true, allowMovement: true);
-                    candidate.TurnNumber = checked(attemptedTurn + 1);
+                    var protectedCandidate = CopyState(candidate);
+                    protectedCandidate.Phase = afterAi!.Phase; protectedCandidate.RngState = afterAi.RngState;
+                    protectedCandidate.PendingCombats = afterAi.PendingCombats; protectedCandidate.ResolvedCombats = afterAi.ResolvedCombats;
+                    RequirePhaseChanges(afterAi, protectedCandidate, allowEconomy: true, allowResearch: true, allowProduction: true, allowMovement: true);
+                    var awaiting = candidate.Phase == SessionPhase.AwaitingCombat;
+                    candidate.TurnNumber = awaiting ? attemptedTurn : checked(attemptedTurn + 1);
                     candidate.StateRevision = checked(staging.StateRevision + 1);
-                    candidate.AcceptedCommandIds!.Clear();
-                    candidate.Phase = SessionPhase.Planning;
+                    if (!awaiting) candidate.AcceptedCommandIds!.Clear();
                     FoundationValidator.ValidateGameState(candidate, definitions).ThrowIfInvalid(nameof(candidate));
-                    var result = new TurnResult(TurnStatus.Completed, TurnErrorCode.None, attemptedTurn,
-                        candidate.TurnNumber, candidate.StateRevision, candidate.Phase.Value,
+                    var result = new TurnResult(awaiting ? TurnStatus.AwaitingCombat : TurnStatus.Completed, TurnErrorCode.None, attemptedTurn,
+                        candidate.TurnNumber, candidate.StateRevision, candidate.Phase!.Value,
                         Array.Empty<StrategicEvent>(), commandResults);
                     state = candidate;
                     return result;
@@ -175,6 +187,7 @@ namespace HobbyDS9.Simulation
                     c.PopulationCapacity, allowEconomy ? 0L : c.Population, allowEconomy ? 0L : c.Food, allowEconomy ? 0L : c.Materials))))
                 throw new InvalidOperationException("Strategic phase changed protected campaign facts or bookkeeping.");
             ProductionFleetGuards.Require(state, candidate, allowProduction, allowMovement);
+            if (!CampaignCombatState.SameBatch(state, candidate)) throw new InvalidOperationException("Phase changed protected combat state.");
         }
 
         public SessionSnapshot CaptureSnapshot()
@@ -196,7 +209,8 @@ namespace HobbyDS9.Simulation
                         n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges, state.Phase!.Value, state.Colonies!.Select(c => new ColonySnapshot(new EntityId(c.ColonyId),
                         new EntityId(c.SystemId), c.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(c.OwnerCivilizationId),
                         new DefinitionId(c.EconomicProfileDefinitionId), c.Population, c.PopulationCapacity, c.Food, c.Materials, c.ProductionQueue!.Select(q => new ProductionQueueItemSnapshot(q)))),
-                    state.Ships!.Select(s => new ShipSnapshot(s)), state.Fleets!.Select(f => new FleetSnapshot(f)), definitions.ShipDesigns!.Select(d => new ShipDesignSnapshot(d)));
+                    state.Ships!.Select(s => new ShipSnapshot(s)), state.Fleets!.Select(f => new FleetSnapshot(f)), definitions.ShipDesigns!.Select(d => new ShipDesignSnapshot(d)),
+                    CampaignCombatState.AllRequests(state).Select(r => new CombatEncounterSnapshot(r, state.ResolvedCombats!.Any(c => c.Request.EncounterId == r.EncounterId))));
             }
         }
 
@@ -265,6 +279,10 @@ namespace HobbyDS9.Simulation
 
         internal static GameStateDto CopyState(GameStateDto source) => new GameStateDto
         {
+            PendingCombats = source.PendingCombats!.OrderBy(c => c.Request.LocationSystemId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
+                .Select(c => new PendingCombatDto { Request = CombatEncounterScaffold.CopyRequest(c.Request) }).ToList(),
+            ResolvedCombats = source.ResolvedCombats!.OrderBy(c => c.Request.LocationSystemId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
+                .Select(c => new ResolvedCombatDto { Request = CombatEncounterScaffold.CopyRequest(c.Request), Result = CombatEncounterScaffold.CopyResult(c.Result) }).ToList(),
             Phase = source.Phase, TurnNumber = source.TurnNumber, StateRevision = source.StateRevision, NextEntitySequence = source.NextEntitySequence,
             RngState = new RngStateDto { AlgorithmId = source.RngState.AlgorithmId,
                 AlgorithmVersion = source.RngState.AlgorithmVersion, State = source.RngState.State },
