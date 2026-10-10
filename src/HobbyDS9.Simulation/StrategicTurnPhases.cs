@@ -9,14 +9,14 @@ namespace HobbyDS9.Simulation
     // test instrumentation only; production sessions always supply null.
     internal static class StrategicTurnPhases
     {
-        internal static bool Execute(GameStateDto staging, DefinitionCatalogDto definitions, Func<StrategicTurnPhase, GameStateDto, bool>? probe)
+        internal static bool Execute(ref GameStateDto staging, DefinitionCatalogDto definitions, Func<StrategicTurnPhase, GameStateDto, bool>? probe, Action aiPlanning)
         {
-            if (!ExecutePhase(StrategicTurnPhase.AiPlanning, staging, definitions, probe)) return false;
-            if (!ExecutePhase(StrategicTurnPhase.Economy, staging, definitions, probe)) return false;
-            if (!ExecutePhase(StrategicTurnPhase.Research, staging, definitions, probe)) return false;
-            if (!ExecutePhase(StrategicTurnPhase.Production, staging, definitions, probe)) return false;
-            if (!ExecutePhase(StrategicTurnPhase.Movement, staging, definitions, probe)) return false;
-            return ExecutePhase(StrategicTurnPhase.EncounterCreation, staging, definitions, probe);
+            if (!ExecutePhase(StrategicTurnPhase.AiPlanning, ref staging, definitions, probe, aiPlanning)) return false;
+            if (!ExecutePhase(StrategicTurnPhase.Economy, ref staging, definitions, probe, aiPlanning)) return false;
+            if (!ExecutePhase(StrategicTurnPhase.Research, ref staging, definitions, probe, aiPlanning)) return false;
+            if (!ExecutePhase(StrategicTurnPhase.Production, ref staging, definitions, probe, aiPlanning)) return false;
+            if (!ExecutePhase(StrategicTurnPhase.Movement, ref staging, definitions, probe, aiPlanning)) return false;
+            return ExecutePhase(StrategicTurnPhase.EncounterCreation, ref staging, definitions, probe, aiPlanning);
         }
 
         private static void Validate(GameStateDto staging, DefinitionCatalogDto definitions)
@@ -25,21 +25,22 @@ namespace HobbyDS9.Simulation
             if (!report.IsValid) throw new InvalidOperationException("Strategic phase violated state invariants: " + report.Issues[0].Code);
         }
 
-        private static bool ExecutePhase(StrategicTurnPhase phase, GameStateDto staging, DefinitionCatalogDto definitions,
-            Func<StrategicTurnPhase, GameStateDto, bool>? probe)
+        private static bool ExecutePhase(StrategicTurnPhase phase, ref GameStateDto staging, DefinitionCatalogDto definitions,
+            Func<StrategicTurnPhase, GameStateDto, bool>? probe, Action aiPlanning)
         {
             var before = SimulationSession.CopyState(staging);
             if (probe != null && !probe(phase, staging)) return false;
             Validate(staging, definitions);
             // Instrumentation must not supply rule behavior, even at implemented phases.
             SimulationSession.RequirePhaseChanges(before, SimulationSession.CopyState(staging), allowEconomy: false);
+            if (phase == StrategicTurnPhase.AiPlanning) aiPlanning();
             if (phase == StrategicTurnPhase.Economy) EconomyPhase.Execute(staging, definitions);
             if (phase == StrategicTurnPhase.Research) ResearchPhase.Execute(staging, definitions);
             if (phase == StrategicTurnPhase.Production) ProductionPhase.Execute(staging, definitions);
             if (phase == StrategicTurnPhase.Movement) MovementPhase.Execute(staging);
             // EncounterCreation remains a strict no-op.
             Validate(staging, definitions);
-            SimulationSession.RequirePhaseChanges(before, SimulationSession.CopyState(staging), allowEconomy: phase == StrategicTurnPhase.Economy, allowResearch: phase == StrategicTurnPhase.Research, allowProduction: phase == StrategicTurnPhase.Production, allowMovement: phase == StrategicTurnPhase.Movement);
+            if (phase != StrategicTurnPhase.AiPlanning) SimulationSession.RequirePhaseChanges(before, SimulationSession.CopyState(staging), allowEconomy: phase == StrategicTurnPhase.Economy, allowResearch: phase == StrategicTurnPhase.Research, allowProduction: phase == StrategicTurnPhase.Production, allowMovement: phase == StrategicTurnPhase.Movement);
             return true;
         }
     }

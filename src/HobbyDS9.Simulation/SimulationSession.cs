@@ -46,53 +46,59 @@ namespace HobbyDS9.Simulation
             lock (gate)
             {
                 if (executingMutation) throw new InvalidOperationException("Nested session mutation is not supported.");
-                var command = CopyCommand(envelope);
-                var commandId = command?.CommandId;
-                CommandResult Reject(CommandErrorCode code) => new CommandResult(commandId, CommandStatus.Rejected,
-                    code, state.TurnNumber, state.StateRevision);
-                if (command == null || !command.ExpectedTurn.HasValue || !command.ExpectedRevision.HasValue)
-                    return Reject(CommandErrorCode.InvalidEnvelope);
-                if (!EntityId.TryParse(command.CommandId, out var parsedCommandId)) return Reject(CommandErrorCode.InvalidCommandId);
-                if (!EntityId.TryParse(command.ActorCivilizationId, out var actor)) return Reject(CommandErrorCode.InvalidActorId);
-                var civilization = state.Civilizations!.SingleOrDefault(c => c.CivilizationId == actor.Value);
-                if (civilization == null) return Reject(CommandErrorCode.UnknownActor);
-                if (civilization.ControllerKind != ControllerKind.Human) return Reject(CommandErrorCode.ActorNotControlled);
-                if (state.Phase != SessionPhase.Planning) return Reject(CommandErrorCode.CombatPending);
-                if (command.ExpectedTurn.Value != state.TurnNumber) return Reject(CommandErrorCode.StaleTurn);
-                // A replay of the original envelope reports DuplicateCommand even
-                // though its original revision is now stale. Rejections reserve no IDs.
-                if (state.AcceptedCommandIds!.Contains(parsedCommandId.Value)) return Reject(CommandErrorCode.DuplicateCommand);
-                if (command.ExpectedRevision.Value != state.StateRevision) return Reject(CommandErrorCode.StaleRevision);
-                if (!IsKnownKind(command.Kind)) return Reject(CommandErrorCode.UnknownCommandKind);
-                if (!HasValidPayload(command)) return Reject(CommandErrorCode.InvalidPayload);
-                if (!handlers.TryGetValue(command.Kind, out var handler)) return Reject(CommandErrorCode.UnsupportedCommand);
-                if (state.StateRevision == long.MaxValue) return Reject(CommandErrorCode.RevisionExhausted);
-
                 executingMutation = true;
-                try
-                {
-                    var staging = CopyState(state);
-                    var error = handler.Execute(staging, command);
-                    if (!Enum.IsDefined(typeof(CommandErrorCode), error)) throw new InvalidOperationException("Handler returned an unknown error code.");
-                    if (error != CommandErrorCode.None) return Reject(error);
-                    if (staging.Phase != state.Phase || staging.TurnNumber != state.TurnNumber || staging.StateRevision != state.StateRevision
-                        || staging.AcceptedCommandIds == null || !staging.AcceptedCommandIds.SequenceEqual(state.AcceptedCommandIds!))
-                        throw new InvalidOperationException("Handlers cannot change phase, turn, revision or command deduplication bookkeeping.");
-                    var validation = FoundationValidator.ValidateGameState(staging, definitions);
-                    if (!validation.IsValid) throw new InvalidOperationException("Handler violated state invariants: " + validation.Issues[0].Code);
-                    if (!staging.Civilizations!.Select(c => c.CivilizationId).SequenceEqual(state.Civilizations!.Select(c => c.CivilizationId))
-                        || !staging.StarSystems!.Select(c => c.SystemId).SequenceEqual(state.StarSystems!.Select(c => c.SystemId)))
-                        throw new InvalidOperationException("Foundation handlers cannot change civilization or graph node membership.");
-                    staging.StateRevision = state.StateRevision + 1;
-                    staging.AcceptedCommandIds.Add(parsedCommandId.Value);
-                    // Clone again at commit: a retained staging reference cannot mutate
-                    // authoritative state after the handler returns.
-                    state = CopyState(staging);
-                    return new CommandResult(parsedCommandId.Value, CommandStatus.Accepted, CommandErrorCode.None,
-                        state.TurnNumber, state.StateRevision);
-                }
+                try { return ExecuteCommand(ref state, envelope, trustedAi: false); }
                 finally { executingMutation = false; }
             }
+        }
+
+        // The same staging/validation/payment/allocation path serves humans and
+        // trusted AI. Only the required persisted controller differs.
+        private CommandResult ExecuteCommand(ref GameStateDto target, CommandEnvelope? envelope, bool trustedAi)
+        {
+            var current = target;
+            var command = CopyCommand(envelope);
+            var commandId = command?.CommandId;
+            CommandResult Reject(CommandErrorCode code) => new CommandResult(commandId, CommandStatus.Rejected,
+                code, current.TurnNumber, current.StateRevision);
+            if (command == null || !command.ExpectedTurn.HasValue || !command.ExpectedRevision.HasValue)
+                return Reject(CommandErrorCode.InvalidEnvelope);
+            if (!EntityId.TryParse(command.CommandId, out var parsedCommandId)) return Reject(CommandErrorCode.InvalidCommandId);
+            if (!trustedAi && command.CommandId.StartsWith("ai-command.", StringComparison.Ordinal)) return Reject(CommandErrorCode.ReservedCommandId);
+            if (!EntityId.TryParse(command.ActorCivilizationId, out var actor)) return Reject(CommandErrorCode.InvalidActorId);
+            var civilization = current.Civilizations!.SingleOrDefault(c => c.CivilizationId == actor.Value);
+            if (civilization == null) return Reject(CommandErrorCode.UnknownActor);
+            if (civilization.ControllerKind != (trustedAi ? ControllerKind.AI : ControllerKind.Human)) return Reject(CommandErrorCode.ActorNotControlled);
+            if (current.Phase != SessionPhase.Planning) return Reject(CommandErrorCode.CombatPending);
+            if (command.ExpectedTurn.Value != current.TurnNumber) return Reject(CommandErrorCode.StaleTurn);
+            // A replay of the original envelope reports DuplicateCommand even
+            // though its original revision is now stale. Rejections reserve no IDs.
+            if (current.AcceptedCommandIds!.Contains(parsedCommandId.Value)) return Reject(CommandErrorCode.DuplicateCommand);
+            if (command.ExpectedRevision.Value != current.StateRevision) return Reject(CommandErrorCode.StaleRevision);
+            if (!IsKnownKind(command.Kind)) return Reject(CommandErrorCode.UnknownCommandKind);
+            if (!HasValidPayload(command)) return Reject(CommandErrorCode.InvalidPayload);
+            if (!handlers.TryGetValue(command.Kind, out var handler)) return Reject(CommandErrorCode.UnsupportedCommand);
+            if (current.StateRevision == long.MaxValue) return Reject(CommandErrorCode.RevisionExhausted);
+
+            var staging = CopyState(current);
+            var error = handler.Execute(staging, command);
+            if (!Enum.IsDefined(typeof(CommandErrorCode), error)) throw new InvalidOperationException("Handler returned an unknown error code.");
+            if (error != CommandErrorCode.None) return Reject(error);
+            if (staging.Phase != current.Phase || staging.TurnNumber != current.TurnNumber || staging.StateRevision != current.StateRevision
+                || staging.AcceptedCommandIds == null || !staging.AcceptedCommandIds.SequenceEqual(current.AcceptedCommandIds!))
+                throw new InvalidOperationException("Handlers cannot change phase, turn, revision or command deduplication bookkeeping.");
+            var validation = FoundationValidator.ValidateGameState(staging, definitions);
+            if (!validation.IsValid) throw new InvalidOperationException("Handler violated state invariants: " + validation.Issues[0].Code);
+            if (!staging.Civilizations!.Select(c => c.CivilizationId).SequenceEqual(current.Civilizations!.Select(c => c.CivilizationId))
+                || !staging.StarSystems!.Select(c => c.SystemId).SequenceEqual(current.StarSystems!.Select(c => c.SystemId)))
+                throw new InvalidOperationException("Foundation handlers cannot change civilization or graph node membership.");
+            staging.StateRevision = current.StateRevision + 1;
+            staging.AcceptedCommandIds.Add(parsedCommandId.Value);
+            // Clone again at commit: a retained staging reference cannot mutate
+            // authoritative state after the handler returns.
+            target = CopyState(staging);
+            return new CommandResult(parsedCommandId.Value, CommandStatus.Accepted, CommandErrorCode.None,
+                target.TurnNumber, target.StateRevision);
         }
 
         public TurnResult AdvanceTurn(int expectedTurn, long expectedRevision)
@@ -114,21 +120,29 @@ namespace HobbyDS9.Simulation
                 try
                 {
                     var staging = CopyState(state);
-                    if (!StrategicTurnPhases.Execute(staging, definitions, turnPhaseProbe)) return Reject(TurnErrorCode.PhaseFailed);
+                    var commandResults = new List<CommandResult>();
+                    GameStateDto? afterAi = null;
+                    Action aiPlanning = () =>
+                    {
+                        AiPlanningPhase.Execute(() => staging, definitions, Galaxy,
+                            command => ExecuteCommand(ref staging, command, trustedAi: true), commandResults);
+                        afterAi = CopyState(staging);
+                    };
+                    if (!StrategicTurnPhases.Execute(ref staging, definitions, turnPhaseProbe, aiPlanning)) return Reject(TurnErrorCode.PhaseFailed);
                     var validation = FoundationValidator.ValidateGameState(staging, definitions);
                     if (!validation.IsValid) throw new InvalidOperationException("Turn phase violated state invariants: " + validation.Issues[0].Code);
                     // Copy again before committing: retained phase references are
                     // never authoritative. Empty phases must preserve all facts.
                     var candidate = CopyState(staging);
-                    RequirePhaseChanges(state, candidate, allowEconomy: true, allowResearch: true, allowProduction: true, allowMovement: true);
+                    RequirePhaseChanges(afterAi!, candidate, allowEconomy: true, allowResearch: true, allowProduction: true, allowMovement: true);
                     candidate.TurnNumber = checked(attemptedTurn + 1);
-                    candidate.StateRevision = checked(state.StateRevision + 1);
+                    candidate.StateRevision = checked(staging.StateRevision + 1);
                     candidate.AcceptedCommandIds!.Clear();
                     candidate.Phase = SessionPhase.Planning;
                     FoundationValidator.ValidateGameState(candidate, definitions).ThrowIfInvalid(nameof(candidate));
                     var result = new TurnResult(TurnStatus.Completed, TurnErrorCode.None, attemptedTurn,
                         candidate.TurnNumber, candidate.StateRevision, candidate.Phase.Value,
-                        Array.Empty<StrategicEvent>(), Array.Empty<CommandResult>());
+                        Array.Empty<StrategicEvent>(), commandResults);
                     state = candidate;
                     return result;
                 }

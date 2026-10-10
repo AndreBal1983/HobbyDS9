@@ -132,6 +132,9 @@ public sealed class ResearchTests
         Assert.True(FoundationValidator.ValidateScenario(scenario).IsValid);
         var node = Assert.Single(scenario.Definitions.ResearchNodes!); Assert.Equal(9, node.ResearchCost); Assert.Empty(node.PrerequisiteDefinitionIds!);
         Assert.All(scenario.InitialState.Civilizations!, c => { Assert.Equal(0, c.ResearchReserve); Assert.Null(c.ResearchTargetDefinitionId); Assert.Empty(c.UnlockedResearchDefinitionIds!); });
+        // Keep this arithmetic-only test isolated from the now-implemented AI policy.
+        // Autonomous controllers are covered by AiPlanningTests and LongRunAcceptanceTests.
+        foreach (var c in scenario.InitialState.Civilizations!) c.ControllerKind = ControllerKind.Human;
         var session = new SimulationSession(new SaveEnvelopeDto { SaveFormatVersion = FoundationVersions.SaveFormatVersion, ScenarioId = scenario.ScenarioId,
             RulesVersion = scenario.RulesVersion, ContentHash = scenario.ContentHash, GameState = scenario.InitialState }, scenario.Definitions,
             new SaveCompatibility(scenario.ScenarioId, scenario.RulesVersion, scenario.ContentHash));

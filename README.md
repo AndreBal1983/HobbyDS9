@@ -1,38 +1,40 @@
 # HobbyDS9
 
-A new, portable C# strategy simulation project. This repository contains portable identity/session foundations, the Phase 3A civilization/scenario and galaxy graph model, the Phase 3B turn transaction, the Phase 4A colony economy, Phase 4B civilization research, and tested combat-boundary helpers. It is not an implemented game.
+A portable C# strategy simulation for a future DS9/Dominion War-era BOTF spiritual successor. The strategic vertical slice now connects colony economy, research, ship production, fleets, graph movement and simple deterministic AI. It runs headlessly; campaign combat, frontend and networking remain deferred. No implementation code or assets have been copied from BotF2 or 3DBOTF2.
 
-Read [the Phase 1 architecture](docs/architecture.md) before implementing behavior. It defines state/command contracts, deterministic turn rules, explicit save DTOs, the fixed scenario, and required tests. No implementation or content files have been copied from BotF2 or 3DBOTF2.
+Read [the architecture](docs/architecture.md) for contracts, deterministic rules, scenario definitions and acceptance gates.
 
 ## Solution
 
 ```text
 HobbyDS9.slnx
 src/
-  HobbyDS9.Contracts/        # IDs, commands, DTOs, combat contracts
-  HobbyDS9.Simulation/       # Rules, turn lifecycle, seeded RNG, AI
-  HobbyDS9.Scenarios/        # Content DTO validation/construction
-  HobbyDS9.Headless/         # Console composition root
+  HobbyDS9.Contracts/        # IDs, explicit DTOs, commands/results, snapshots, combat contracts
+  HobbyDS9.Simulation/       # Owned session, validation, turn systems, RNG, AI
+  HobbyDS9.Scenarios/        # Portable content boundary
+  HobbyDS9.Headless/         # JSON/file/hash adapters and autonomous console runner
 tests/
-  HobbyDS9.Simulation.Tests/ # Foundation and combat boundary tests; gameplay tests follow
-scenarios/
-  ds9-slice/                # Separate scenario content package
-docs/
-  architecture.md
+  HobbyDS9.Simulation.Tests/ # Foundation, gameplay, rollback, persistence and acceptance
+scenarios/ds9-slice/         # Separate DS9 content package
+docs/architecture.md
 ```
 
-## Build
+Contracts, Simulation and Scenarios target `netstandard2.1` with C# 9; Headless and Tests target `net10.0`. Production projects have no external packages, Unity/WPF/network dependencies or legacy references. Unity 6 can consume the portable libraries through an adapter; Unity/IL2CPP execution remains to be verified. JSON/file I/O stays in the host.
 
-Install the SDK pinned in `global.json`, then run from this directory:
+## Build and headless acceptance
+
+Install the SDK pinned in `global.json`, then run:
 
 ```sh
 dotnet restore HobbyDS9.slnx --locked-mode
-dotnet build HobbyDS9.slnx --no-restore
-dotnet test HobbyDS9.slnx --no-build --no-restore
-dotnet run --project src/HobbyDS9.Headless --no-build
+dotnet build HobbyDS9.slnx -c Release --no-restore
+dotnet test HobbyDS9.slnx -c Release --no-build --no-restore
+dotnet run --project src/HobbyDS9.Headless -c Release --no-build --no-restore -- --turns 25
 ```
 
-For this cloud workspace, [scripts/bootstrap-dotnet.sh](scripts/bootstrap-dotnet.sh) installs the pinned Linux x64 SDK outside the checkout and verifies its SHA512 before extraction:
+The host loads the bundled scenario (or an optional scenario path), hashes its exact UTF-8 bytes, validates it and advances the requested number of turns. It prints turn/revision, AI command count, entity counts, RNG/allocation state and a diagnostic save hash. With no `--turns` it only validates/reports initial state. The hash is a host diagnostic, not a permanent canonical serialization format.
+
+For this cloud workspace, [scripts/bootstrap-dotnet.sh](scripts/bootstrap-dotnet.sh) installs the pinned Linux x64 SDK outside the checkout and verifies SHA512 before extraction:
 
 ```sh
 bash scripts/bootstrap-dotnet.sh
@@ -42,22 +44,20 @@ export NUGET_PACKAGES=/workspace/.cache/hobbyds9/nuget
 export PATH="$DOTNET_ROOT:$PATH"
 ```
 
-The headless executable loads the bundled ds9-strategic-slice-v1 JSON skeleton (or a path supplied as its first argument), computes its content hash, validates it, and reports civilization/node/edge counts. It does not simulate turns or claim playable scenario readiness. Tests cover library targets/dependencies, typed canonical IDs, persisted global allocation and overflow, campaign RNG known vectors/reload, foundation DTO validation, combat DTO persistence, resolution-order independence, buffered save/resume and retreat restrictions. Common state/catalog DTOs now include civilization controllers, systems/ownership, colonies/population/stocks, civilization credits, economic profiles and graph edges, without a playable campaign save. The narrow combat helper can allocate frozen requests, validate/buffer results and guard planning; it does not apply campaign consequences. The session owns these foundation facts and atomically advances economy/research turns; production, fleets, movement, AI and combat integration remain pending.
+GitHub Actions runs locked restore, Release build and the full test suite on pushes and pull requests across Linux, Windows and macOS.
 
-Contracts, Simulation and Scenarios target `netstandard2.1` with C# 9; Headless and Tests target `net10.0`. Production projects have no external packages or references to UI engines, networking libraries, or legacy repositories. Unity 6 can consume the portable libraries through an adapter; Unity/IL2CPP integration remains to be verified. JSON/file I/O stays in the host.
+## Implemented strategic slice
 
-## Implemented foundation
+SimulationSession owns copied authoritative state. Commands use stable IDs, expected turn/revision and a persisted planning-turn deduplication ledger. All four commands are functional: SetResearchTarget, EnqueueProduction, CancelProduction and SetFleetRoute. Ordinary invalid actions return stable error codes; rejected commands pay, allocate and consume nothing. Snapshots contain detached immutable projections of civilizations, colonies/queues, ship designs, ships, fleets and routes.
 
-Contracts contains EntityId, DefinitionId and explicit identity/state/save DTOs. Simulation contains EntityIdAllocator, SplitMix64Random and FoundationValidator. JSON remains a host concern. SimulationSession owns copied authoritative state, validates command envelopes and expected turn/revision, persists accepted command IDs, and exports detached immutable snapshots and save DTOs. SetResearchTarget is functional; other gameplay commands return UnsupportedCommand. Internal test handlers verify the transaction boundary. Save format 6 adds research reserve/target and required unlocked-node lists; versions 1–5 are rejected. Content format 3 adds research nodes and required prerequisite lists; earlier content formats are rejected. The Economy phase uses data-driven checked integer arithmetic and preserves campaign RNG/allocation state.
+AdvanceTurn runs AI planning, Economy, Research, Production and Movement on deep staging state, then completes the current turn and reopens Planning. Every accepted AI command increments staged revision once, and the turn commit increments it once more and clears the ledger. A failure anywhere discards all staged work, including RNG, IDs and newly built entities. EncounterCreation remains a strict no-op. TurnResult returns ordered AI command results and empty strategic events.
 
-GitHub Actions runs locked restore, Release build and the full test suite on pushes and pull requests across Linux, Windows and macOS, using global.json.
+Production pays materials/credits when enqueued, uses post-Economy industry on the queue head, completes at most one item per colony and discards excess. Cancellation refunds the unused proportion with exact integer arithmetic, without overflowing the intermediate product. Completed ships join the lowest stationary owned fleet or create one; allocation order is ship then fleet when both are needed. Routes preserve caller order and move at most one normal/wormhole edge per turn.
 
-## Next implementation increment
+AI uses the same gameplay handlers through an internal trusted path. Public submissions remain Human-only. AI chooses legal research by cost/ID and affordable designs by industry cost/ID, then routes idle fleets toward adjacent foreign (score 2) or neutral (score 1) systems. Only an actual highest-score tie consumes campaign RNG. Deterministic command IDs use a reserved `ai-command.` prefix and never consume entity allocation.
 
-Session ownership and command/snapshot foundations and Phase 3A identity/graph tests are implemented. Phase 3A adds persisted Human/AI controllers, system ownership, canonical Normal/Wormhole graph edges, deterministic BFS and route validation. Session actor/control identity derives from civilization state rather than host-supplied registries. Tests cover ordering independence, graph errors, known routes, controller persistence and save/reload. The fixed scenario now has four colonies: Sol, Cardassia and the Founders' Homeworld are owned; Bajor is neutral. All start at population 1000/capacity 2000, food 20/materials 10; civilizations start with 50 credits. Phase 3B adds AdvanceTurn(expectedTurn, expectedRevision), which completes the current turn, increments turn/revision once, clears the command ledger and opens Planning. RNG/allocation and protected non-economic/non-research facts remain unchanged. Failures roll back staging completely. TurnResult distinguishes Completed, Rejected and future AwaitingCombat, with empty ordered events/results. Persisted AwaitingCombat blocks commands/advancement; encounter state and resolution remain deferred. Tests cover lifecycle, injected failures, persistence, overflow, retries and input-order determinism. Phase 4A Economy adds food/material output, food demand/consumption, bounded growth/starvation and owner credit income, using pre-growth population for demand/income. Tests cover exact arithmetic, neutral colonies, ordering, continuation, numerical/reference invariants, overflow rollback and no-op phase isolation. Phase 4B adds checked owned-colony research accumulation, civilization reserve/target/unlocks, prerequisite validation and the public SetResearchTarget command. A same-target request returns ResearchTargetUnchanged without changing revision. The generic scenario node costs 9 and completes in three turns at output 3 once selected; AI factions retain reserve without choosing targets. Research surplus persists, and at most one node per civilization unlocks per turn. Tests cover commands, prerequisites/cycles, surplus, ordering, reload, phase isolation and full-turn rollback. Industry remains metadata only; no derived per-turn output is persisted. Production, ship designs, fleets, movement, AI and combat integration remain unimplemented. Follow the ordered implementation plan and acceptance gates in the architecture document.
+The scenario has Federation (Human), Cardassian Union and Dominion (AI), six map nodes, four colonies, a data-defined wormhole, one starting scout/fleet per faction, two scout designs and one research node. Save format **7** and content format **4** deliberately reject older schemas without migration. Saves preserve queue progress, research, ships, fleet membership and routes against the matching content/rules identity.
 
-No distribution license is selected yet. Choose one before importing third-party code or distributing the project; do not infer either legacy repository's license applies to these independently authored files.
+Tests cover existing foundations, economy/research arithmetic, production/refunds, references and membership, route/movement rules, phase isolation, complete rollback, AI ordering/control/RNG, and 25-turn equality across repeated runs, reordered input and multiple save/reloads. A separate combat-boundary scaffold remains tested but is not connected to campaign turns. AwaitingCombat saves remain blocked; this milestone cannot create or resolve campaign encounters.
 
-The production milestone Stage A adds ordered ship queues, paid enqueue/cancel commands, exact large-value refunds and transactional ship/fleet completion. Save/content formats are now 7/4. Movement and autonomous AI follow in the next stages; encounter creation remains deferred.
-
-Stage B adds starting scouts/fleets, explicit validated route commands, and deterministic one-edge movement across normal and wormhole edges. Production joins only stationary owned fleets. No encounters are generated.
+No distribution license is selected yet. Choose one before importing third-party code or distributing the project.

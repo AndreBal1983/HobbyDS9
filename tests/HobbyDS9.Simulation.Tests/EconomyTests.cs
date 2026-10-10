@@ -74,6 +74,9 @@ public sealed class EconomyTests
         Assert.All(scenario.InitialState.Civilizations!, c => Assert.Equal(50, c.Credits));
         Assert.All(scenario.InitialState.Colonies!, c =>
         { Assert.Equal(1000, c.Population); Assert.Equal(2000, c.PopulationCapacity); Assert.Equal(20, c.Food); Assert.Equal(10, c.Materials); });
+        // Keep this arithmetic-only test isolated from the now-implemented AI policy.
+        // Autonomous controllers are covered by AiPlanningTests and LongRunAcceptanceTests.
+        foreach (var c in scenario.InitialState.Civilizations!) c.ControllerKind = ControllerKind.Human;
         var session = new SimulationSession(new SaveEnvelopeDto { SaveFormatVersion = FoundationVersions.SaveFormatVersion,
             ScenarioId = scenario.ScenarioId, RulesVersion = scenario.RulesVersion, ContentHash = scenario.ContentHash, GameState = scenario.InitialState },
             scenario.Definitions, new SaveCompatibility(scenario.ScenarioId, scenario.RulesVersion, scenario.ContentHash));

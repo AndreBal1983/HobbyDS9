@@ -1,6 +1,6 @@
 {
   "ScenarioId": "ds9-strategic-slice-v1",
-  "RulesVersion": "phase-1-movement-v1",
+  "RulesVersion": "phase-1-autonomous-v1",
   "Definitions": {
     "ContentFormatVersion": 4,
     "DefinitionIds": [
