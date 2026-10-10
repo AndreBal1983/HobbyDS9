@@ -6,3 +6,26 @@
 *.user
 *.suo
 *.log
+
+# Unity client generated files
+client/HobbyDS9.Unity/[Ll]ibrary/
+client/HobbyDS9.Unity/[Tt]emp/
+client/HobbyDS9.Unity/[Oo]bj/
+client/HobbyDS9.Unity/[Bb]uild/
+client/HobbyDS9.Unity/[Bb]uilds/
+client/HobbyDS9.Unity/[Ll]ogs/
+client/HobbyDS9.Unity/[Uu]ser[Ss]ettings/
+client/HobbyDS9.Unity/[Mm]emoryCaptures/
+client/HobbyDS9.Unity/[Rr]ecordings/
+client/HobbyDS9.Unity/*.csproj
+client/HobbyDS9.Unity/*.sln
+client/HobbyDS9.Unity/*.suo
+client/HobbyDS9.Unity/*.tmp
+client/HobbyDS9.Unity/*.user
+client/HobbyDS9.Unity/*.userprefs
+client/HobbyDS9.Unity/*.pidb
+client/HobbyDS9.Unity/*.booproj
+client/HobbyDS9.Unity/*.svd
+client/HobbyDS9.Unity/sysinfo.txt
+client/HobbyDS9.Unity/*.pdb
+client/HobbyDS9.Unity/*.mdb
