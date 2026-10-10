@@ -179,7 +179,8 @@ public sealed class AiPlanningTests
             if (failed && fault != "allocation" && phase == (fault == "movement" ? StrategicTurnPhase.Movement : StrategicTurnPhase.EncounterCreation))
             {
                 Assert.Equal(4, staging.Ships!.Count); Assert.Equal(4, staging.Fleets!.Count);
-                Assert.Equal(5UL, staging.NextEntitySequence); // One earlier encounter plus this ship/fleet. Assert.Empty(staging.Colonies!.Single(c => c.ColonyId == "colony.cardassia").ProductionQueue!);
+                Assert.Equal(5UL, staging.NextEntitySequence); // One earlier encounter plus this ship/fleet.
+                Assert.Empty(staging.Colonies!.Single(c => c.ColonyId == "colony.cardassia").ProductionQueue!);
                 Assert.Contains("research.advanced-engineering", staging.Civilizations!.Single(c => c.CivilizationId == "civ.cardassian").UnlockedResearchDefinitionIds!);
                 return false;
             }
