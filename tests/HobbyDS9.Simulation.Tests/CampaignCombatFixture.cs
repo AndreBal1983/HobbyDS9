@@ -21,7 +21,8 @@ internal static class CampaignCombatFixture
         }
         return scenario;
     }
-    internal static CombatResultDto NoChanges(CombatRequestDto request) => new NoLossCombatResolver().Resolve(request);
+    // Scripted generic result for lifecycle isolation; this is not a production resolver.
+    internal static CombatResultDto NoChanges(CombatRequestDto request) => PhasedCombatFixture.EmptyResult(request);
     internal static TurnResult Complete(SimulationSession s, TurnResult result)
     {
         if (result.Status != TurnStatus.AwaitingCombat) return result;

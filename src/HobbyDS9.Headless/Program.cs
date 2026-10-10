@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Numerics;
 using System.Security.Cryptography;
 using System.Text.Json;
 using HobbyDS9.Contracts;
@@ -35,7 +36,9 @@ var session = new SimulationSession(new SaveEnvelopeDto
 }, scenario.Definitions, new SaveCompatibility(scenario.ScenarioId, scenario.RulesVersion, scenario.ContentHash));
 var commands = 0;
 var generated = 0; var resolved = 0; var checkpoints = 0;
-var resolver = new NoLossCombatResolver();
+var resolver = new DeterministicPhasedCombatResolver();
+long phases = 0, shots = 0, hits = 0, destroyedShips = 0, destroyedFleets = 0, retreatedFleets = 0;
+BigInteger shieldDamage = 0, hullDamage = 0;
 for (var i = 0; i < turns; i++)
 {
     var current = session.CaptureSnapshot(); var result = session.AdvanceTurn(current.TurnNumber, current.StateRevision);
@@ -49,8 +52,16 @@ for (var i = 0; i < turns; i++)
         foreach (var request in ordered)
         {
             var p = session.CaptureSnapshot();
-            var noChanges = resolver.Resolve(request);
-            if (session.SubmitCombatResult(noChanges, p.TurnNumber, p.StateRevision).Status != CombatSubmissionStatus.Buffered) throw new InvalidOperationException("Combat buffering failed.");
+            var combat = resolver.Resolve(request);
+            phases += combat.Events.Count(e => e.Kind == CombatEventKind.PhaseStarted);
+            shots += combat.Events.Count(e => e.Kind == CombatEventKind.AttackHit || e.Kind == CombatEventKind.AttackMissed);
+            hits += combat.Events.Count(e => e.Kind == CombatEventKind.AttackHit);
+            shieldDamage += combat.Events.Where(e => e.Kind == CombatEventKind.ShieldDamaged).Aggregate(BigInteger.Zero, (sum, e) => sum + e.Amount!.Value);
+            hullDamage += combat.Events.Where(e => e.Kind == CombatEventKind.ShipDamaged).Aggregate(BigInteger.Zero, (sum, e) => sum + e.Amount!.Value);
+            destroyedShips += combat.Events.Count(e => e.Kind == CombatEventKind.ShipDestroyed);
+            destroyedFleets += combat.FleetChanges.Count(f => f.Disposition == FleetCombatDisposition.Destroyed);
+            retreatedFleets += combat.FleetChanges.Count(f => f.Disposition == FleetCombatDisposition.Retreated);
+            if (session.SubmitCombatResult(combat, p.TurnNumber, p.StateRevision).Status != CombatSubmissionStatus.Buffered) throw new InvalidOperationException("Combat buffering failed.");
             resolved++;
         }
         var finalStamp = session.CaptureSnapshot(); result = session.FinalizeCombat(finalStamp.TurnNumber, finalStamp.StateRevision);
@@ -61,6 +72,7 @@ for (var i = 0; i < turns; i++)
 var snapshot = session.CaptureSnapshot();
 Console.WriteLine(FormattableString.Invariant($"{scenario.ScenarioId}: completed={turns}, turn={snapshot.TurnNumber}, revision={snapshot.StateRevision}, AI commands={commands}, phase={snapshot.Phase}"));
 Console.WriteLine(FormattableString.Invariant($"combats generated={generated}, resolved={resolved}, awaiting checkpoints={checkpoints}, host order={combatOrder}"));
+Console.WriteLine(FormattableString.Invariant($"phases={phases}, shots={shots}, hits={hits}, shield damage={shieldDamage}, hull damage={hullDamage}, ships destroyed={destroyedShips}, fleets destroyed={destroyedFleets}, fleets retreated={retreatedFleets}"));
 Console.WriteLine(FormattableString.Invariant($"ships={snapshot.Ships.Count}, fleets={snapshot.Fleets.Count}, queued={snapshot.Colonies.Sum(c => c.ProductionQueue.Count)}, unlocks={snapshot.Civilizations.Sum(c => c.UnlockedResearchDefinitionIds.Count)}, nextEntity={snapshot.NextEntitySequence}, rng={snapshot.RngState.State:x16}"));
 var stateBytes = JsonSerializer.SerializeToUtf8Bytes(session.ExportSave());
 Console.WriteLine($"save-sha256={Convert.ToHexString(SHA256.HashData(stateBytes)).ToLowerInvariant()}");

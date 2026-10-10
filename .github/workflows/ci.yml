@@ -26,7 +26,7 @@ jobs:
         run: dotnet build HobbyDS9.slnx --configuration Release --no-restore
       - name: Test
         run: dotnet test HobbyDS9.slnx --configuration Release --no-build --no-restore
-      - name: Autonomous headless smoke (25 turns)
+      - name: Phased combat headless smoke (25 turns)
         run: dotnet run --project src/HobbyDS9.Headless --configuration Release --no-build --no-restore -- --turns 25
-      - name: Reverse combat resolution smoke (25 turns)
+      - name: Reverse phased combat resolution smoke (25 turns)
         run: dotnet run --project src/HobbyDS9.Headless --configuration Release --no-build --no-restore -- --turns 25 --combat-order reverse

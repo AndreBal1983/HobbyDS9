@@ -4,7 +4,7 @@ namespace HobbyDS9.Contracts
 {
     public static class CampaignCombatRules
     {
-        public const string ResolverId = "combat-resolver.no-loss";
+        public const string ResolverId = "combat-resolver.phased";
         public const int ResolverVersion = 1;
     }
     public enum CombatSubmissionStatus { Rejected = 0, Deferred = 1, Buffered = 2 }

@@ -18,7 +18,7 @@ public sealed class CampaignCombatResultTests
     [Fact]
     public void NoLossIsPureDeterministicAndConsumesNoLocalOrCampaignRandomness()
     {
-        var s = Awaiting(); var request = s.GetPendingCombatRequests()[0]; var before = JsonSerializer.Serialize(request); var campaign = Json(s); var resolver = new NoLossCombatResolver();
+        var s = Awaiting(); var request = s.GetPendingCombatRequests()[0]; request.ResolverId = NoLossCombatResolver.ResolverId; var before = JsonSerializer.Serialize(request); var campaign = Json(s); var resolver = new NoLossCombatResolver();
         var a = resolver.Resolve(request); var b = resolver.Resolve(JsonSerializer.Deserialize<CombatRequestDto>(before)!);
         Assert.Equal(before, JsonSerializer.Serialize(request)); Assert.Equal(JsonSerializer.Serialize(a), JsonSerializer.Serialize(b)); Assert.Equal(campaign, Json(s));
         Assert.Empty(a.ShipChanges); Assert.Empty(a.FleetChanges); Assert.Equal(request.RandomState, a.FinalRandomState); Assert.Equal(CombatResolutionStatus.Resolved, a.Status);

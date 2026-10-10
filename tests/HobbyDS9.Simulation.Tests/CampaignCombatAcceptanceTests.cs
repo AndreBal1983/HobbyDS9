@@ -27,7 +27,7 @@ public sealed class CampaignCombatAcceptanceTests
     }
     private static CombatResultDto Scripted(CombatRequestDto request)
     {
-        var r = new NoLossCombatResolver().Resolve(request); var first = request.Participants[0]; var second = request.Participants[1];
+        var r = CampaignCombatFixture.NoChanges(request); var first = request.Participants[0]; var second = request.Participants[1];
         // Deliberately sparse effects and several local RNG draws; presentation events remain ordered data.
         var rng = new EncounterRandomStream(request.RandomState); for (var i = 0; i < request.LocationSystemId.Length; i++) rng.NextUInt64(); r.FinalRandomState = rng.State;
         if (request.LocationSystemId == "system.bajor")
@@ -120,7 +120,7 @@ public sealed class CampaignCombatAcceptanceTests
         Assert.Equal(SessionPhase.Planning, s.CaptureSnapshot().Phase);
     }
     [Fact]
-    public void NoLossOpponentsCanMeetAgainOnlyInTheNextStrategicTurn()
+    public void ScriptedHeldOpponentsCanMeetAgainOnlyInTheNextStrategicTurn()
     {
         var s = Awaiting(CampaignCombatFixture.Scenario()); var first = s.GetPendingCombatRequests()[0]; var stamp = s.CaptureSnapshot();
         Submit(s, CampaignCombatFixture.NoChanges(first)); Finish(s);
