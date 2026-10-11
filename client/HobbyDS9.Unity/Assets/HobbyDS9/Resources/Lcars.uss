@@ -1,0 +1,35 @@
+/* Reusable console components. Palette/type/spacing are defined in LcarsTokens. */
+.client-root { background-color: var(--lcars-canvas); color: var(--lcars-text); font-size: var(--lcars-text-size); }
+.lcars-pill {
+    min-height: var(--lcars-button); border-radius: 22px;
+    padding: 8px 18px; background-color: var(--lcars-blue); color: var(--lcars-canvas);
+    border-width: 2px; border-color: var(--lcars-blue); -unity-font-style: bold;
+    white-space: normal;
+}
+.lcars-pill:hover, .lcars-nav-segment:hover { background-color: var(--lcars-sand); }
+.lcars-pill:focus, .lcars-nav-segment:focus { border-color: var(--lcars-text); }
+.lcars-pill:disabled, .lcars-nav-segment:disabled {
+    opacity: 1; background-color: var(--lcars-slate); border-color: var(--lcars-slate); color: var(--lcars-text);
+}
+.lcars-primary-action { background-color: var(--lcars-sand); border-color: var(--lcars-sand); }
+.lcars-section-heading {
+    font-size: var(--lcars-heading-size); -unity-font-style: bold; color: var(--lcars-sand);
+    white-space: normal; margin-top: var(--lcars-inner-gap); margin-bottom: var(--lcars-inner-gap);
+}
+.lcars-readout { white-space: normal; }
+.lcars-diagnostic { color: var(--lcars-muted); font-size: 16px; }
+.lcars-panel-frame { background-color: var(--lcars-panel); min-height: 0; flex-shrink: 0; }
+.lcars-panel-title {
+    color: var(--lcars-canvas); background-color: var(--lcars-lavender); font-size: var(--lcars-text-size);
+    padding: 6px 16px; margin: 0 0 8px 0; min-height: var(--lcars-bar);
+    border-top-right-radius: 24px;
+}
+.lcars-nav-segment {
+    min-height: var(--lcars-nav-height); flex-shrink: 0; margin: 0 0 var(--lcars-gap) 0;
+    background-color: var(--lcars-amber); color: var(--lcars-canvas); border-width: 2px; border-color: var(--lcars-amber);
+    border-top-left-radius: 24px; border-bottom-left-radius: 24px;
+    padding: 8px; white-space: normal; -unity-font-style: bold;
+}
+.lcars-nav-segment.active-tab { background-color: var(--lcars-lavender); border-color: var(--lcars-text); }
+.lcars-nav-segment.production-open { background-color: var(--lcars-sand); }
+.lcars-elbow { color: var(--lcars-amber); flex-shrink: 0; }

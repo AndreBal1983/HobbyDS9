@@ -1,0 +1,23 @@
+/* Original HobbyDS9 console tokens. All sizes are reference-panel logical units. */
+.client-root {
+    --lcars-canvas: #05070A;
+    --lcars-panel: #0B1018;
+    --lcars-amber: #D99552;
+    --lcars-sand: #E2BC7C;
+    --lcars-peach: #C98872;
+    --lcars-lavender: #A58BC4;
+    --lcars-blue: #6997B8;
+    --lcars-slate: #496979;
+    --lcars-alert: #C7605B;
+    --lcars-ready: #7FAF9B;
+    --lcars-text: #F1E8D8;
+    --lcars-muted: #A9B0BA;
+    --lcars-bar: 30px;
+    --lcars-button: 44px;
+    --lcars-nav-height: 50px;
+    --lcars-gap: 8px;
+    --lcars-padding: 16px;
+    --lcars-inner-gap: 12px;
+    --lcars-text-size: 18px;
+    --lcars-heading-size: 24px;
+}
