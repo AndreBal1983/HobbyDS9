@@ -91,8 +91,12 @@ require("GetComponent<UIDocument>" in entry, "Client re-enable must reuse UIDocu
 client_entry=(runtime / "ClientEntry.cs").read_text(encoding="utf-8-sig")
 require("QualitySettings.vSyncCount = 1;" in client_entry and "UnityEngine.Application.targetFrameRate = -1;" in client_entry,"Client VSync defaults missing")
 research_view=(runtime / "ResearchPanelView.cs").read_text(encoding="utf-8-sig")
-require("ResearchOverviewSnapshot.For" in research_view and "client.AllocateResearch" in research_view and "client.FocusScience" in research_view and "client.Engineering" in research_view,"Research panel must use Application projections and stamped client commands")
+require("ResearchOverviewSnapshot.For" in research_view and "client.AllocateResearch" in research_view and "client.AllocateScience" in research_view and "client.Engineering" in research_view,"Research panel must use Application projections and stamped client commands")
 require(all(token not in research_view for token in ("ScienceRules", "EngineeringRules", "SplitMix64", "ExportSave")),"Research view must not calculate or mutate research authority")
+require(all(token in research_view for token in ("ScienceAllocationDraft", "equalize-science", "apply-science-allocation", "decrease-science-", "increase-science-", "definition.Kind", "definition.EffectSummary")), "Missing six-way Research controls or Engineering kind/result display")
+for folder in (root / "src", root / "tests", runtime, assets / "HobbyDS9/Tests"):
+    for source in folder.rglob("*.cs"):
+        require(all(token not in source.read_text(encoding="utf-8-sig") for token in ("SetScienceFocus", "ScienceFocus", "FocusScience", "IsFocus")), f"Obsolete Science focus path: {source.relative_to(root)}")
 # Audio source integrity/import/reference checks. Never an audible-playback claim.
 music = assets / "HobbyDS9/Audio/Music"
 music_catalog = (assets / "HobbyDS9/Resources/MusicCatalog.asset").read_text(encoding="utf-8-sig")

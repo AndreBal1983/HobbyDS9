@@ -23,4 +23,27 @@ public sealed class ResearchClientTests
     [Theory][InlineData(CommandKind.SetResearchAllocation)][InlineData(CommandKind.SetScienceAllocation)][InlineData(CommandKind.SetEngineeringTarget)]
     public void ResearchCommandsRejectDuringCombatWithoutChangingCheckpoint(CommandKind kind){var scenario=VerticalSliceFixture.Scenario(humans:true,weighted:true);foreach(var f in scenario.InitialState.Fleets!)f.LocationNodeId="nav.bajor";var session=CampaignApplication.StartScenario(scenario);var stamp=session.CaptureSnapshot().Campaign;Assert.Equal(TurnStatus.AwaitingCombat,session.AdvanceTurn(stamp.TurnNumber,stamp.StateRevision).Status);var command=ScienceEngineeringIntegrationTests.Command(session,kind);if(kind==CommandKind.SetResearchAllocation)command.SetResearchAllocation=new(){ScienceAllocationUnits=300};if(kind==CommandKind.SetScienceAllocation)command.SetScienceAllocation=new(){Allocations=ScienceCoreTests.Equal()};if(kind==CommandKind.SetEngineeringTarget)command.SetEngineeringTarget=new(){TargetDefinitionId=null};var before=JsonSerializer.Serialize(session.ExportSave());Assert.Equal(CommandErrorCode.CombatPending,session.SubmitCommand(command).ErrorCode);Assert.Equal(before,JsonSerializer.Serialize(session.ExportSave()));}
     [Fact] public void StructuralScienceCrossingReevaluatesAvailabilityImmediately(){var scenario=VerticalSliceFixture.Scenario(humans:true,weighted:true);var h=ScienceEngineeringIntegrationTests.Human(scenario);h.Disciplines!.Single(d=>d.Discipline==ScienceDiscipline.Construction).Level=2;var threshold=ScienceRules.Schedule(h.ResearchDiscoverySeed!.Value,ScienceDiscipline.Propulsion,1,10000).Single(p=>p.Ordinal==2).Threshold;h.Disciplines!.Single(d=>d.Discipline==ScienceDiscipline.Propulsion).ProgressTowardNextLevel=threshold-1;var client=Start(scenario);Assert.False(ResearchOverviewSnapshot.For(client.Snapshot,Human).Engineering.Single().CanTarget);Assert.Equal(TurnStatus.Completed,client.EndTurn(client.Snapshot).Status);Assert.True(ResearchOverviewSnapshot.For(client.Snapshot,Human).Engineering.Single().CanTarget);Assert.Equal(0,ResearchOverviewSnapshot.For(client.Snapshot,Human).Engineering.Single().Progress);}
+    [Theory]
+    [InlineData("missing")][InlineData("duplicate")][InlineData("negative")][InlineData("sum599")][InlineData("sum601")][InlineData("null")][InlineData("undefined")][InlineData("null-entry")]
+    public void MalformedSavedWeightsRejectWithoutReplacingLiveClient(string error)
+    {
+        var client=Start(VerticalSliceFixture.Scenario(false,weighted:true));var before=Json(client);var save=client.ExportSave();var a=save.GameState.Civilizations!.Single(c=>c.CivilizationId==Human.Value).ScienceAllocations!;
+        switch(error){case "missing":a.RemoveAt(0);break;case "duplicate":a[0].Discipline=a[1].Discipline;break;case "negative":a[0].Weight=-1;a[1].Weight=201;break;case "sum599":a[0].Weight=99;break;case "sum601":a[0].Weight=101;break;case "undefined":a[0].Discipline=0;break;case "null-entry":a[0]=null!;break;case "null":save.GameState.Civilizations!.Single(c=>c.CivilizationId==Human.Value).ScienceAllocations=null;break;}
+        Assert.Throws<ArgumentException>(()=>client.Load(save));Assert.Equal(before,Json(client));Assert.Equal(0,client.SessionGeneration);
+    }
+    [Fact] public void IntermediateUnacceptedCandidateSaveRejectsMissingRequiredLists()
+    {
+        var client=Start(VerticalSliceFixture.Scenario(false,weighted:true));var before=Json(client);var save=client.ExportSave();var actor=save.GameState.Civilizations!.Single(c=>c.CivilizationId==Human.Value);actor.EngineeringParameters=null;
+        Assert.Throws<ArgumentException>(()=>client.Load(save));Assert.Equal(before,Json(client));actor.EngineeringParameters=new();actor.ScienceAllocations=null;Assert.Throws<ArgumentException>(()=>client.Load(save));Assert.Equal(before,Json(client));
+    }
+    [Fact] public void ReadOnlyAllocationKindAndResultFactsRemainDetachedFromContentAndExports()
+    {
+        var scenario=VerticalSliceFixture.Scenario(false,weighted:true);var client=Start(scenario);var old=client.Snapshot;var view=ResearchOverviewSnapshot.For(old,Human);var definition=Assert.Single(view.Engineering).Definition;
+        Assert.Equal(EngineeringProjectKind.NewCapability,definition.Kind);Assert.Equal("Unlocks Advanced Scout production.",definition.EffectSummary);
+        Assert.Throws<NotSupportedException>(()=>((IList<ScienceAllocationSnapshot>)old.Campaign.Civilizations.Single(c=>c.CivilizationId==Human).Research!.ScienceAllocations).Clear());
+        scenario.Definitions.EngineeringApplications!.Single().Kind=EngineeringProjectKind.CivilApplication;scenario.Definitions.EngineeringApplications!.Single().EffectSummary="Caller edit";
+        var save=client.ExportSave();save.GameState.Civilizations!.Single(c=>c.CivilizationId==Human.Value).ScienceAllocations![0].Weight=0;
+        Assert.Equal(100,old.Campaign.Civilizations.Single(c=>c.CivilizationId==Human).Research!.ScienceAllocations[0].Weight);Assert.Equal(EngineeringProjectKind.NewCapability,definition.Kind);Assert.Equal("Unlocks Advanced Scout production.",definition.EffectSummary);client.Refresh();Assert.Equal(100,client.Snapshot.Campaign.Civilizations.Single(c=>c.CivilizationId==Human).Research!.ScienceAllocations[0].Weight);
+    }
+
 }

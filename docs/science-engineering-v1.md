@@ -1,6 +1,6 @@
 # Science & Engineering foundation v1
 
-This revises the unaccepted `242247de4331e5b62896cac631848024940e26af` candidate on `codex/science-engineering-foundation-v1`. Main remains at accepted `a0f750681438d26ded17fff38cb3df37c3da9eb0`. R1 implements authoritative fixed-point arithmetic, six-way Science and Engineering kinds. R2 completes client presentation and local Unity acceptance instructions.
+This revises the unaccepted `242247de4331e5b62896cac631848024940e26af` candidate on `codex/science-engineering-foundation-v1`. Main remains at accepted `a0f750681438d26ded17fff38cb3df37c3da9eb0`. R1 implements authoritative fixed-point arithmetic, six-way Science and Engineering kinds. R2 implements detached Application projections, local allocation drafts, percentage/conceptual UI and local Unity acceptance instructions.
 
 ## Authoritative units and allocations
 
@@ -30,6 +30,8 @@ DS9 authors one project: Advanced Starship Engineering, NewCapability, cost 36,0
 
 Save **13**, content **9**, rules **science-engineering-v1**. Resolver **combat-resolver.phased v1** and RNG identity/version unchanged. Save 12/content 8 are rejected. Intermediate saves from the previous unaccepted 13/9 candidate are not migrated; required new fields reject them rather than repairing/normalizing them.
 
+Scenario content SHA256: `d2dc4ec92b535cdcb5b4eab79f46b99617b19e1b048272d46b63721d28438653`.
+
 Canonical 25-turn save SHA256:
 `83bdb9013db7ac7b2b33ef77c4b591a4bca065544a01912eb48c48161688f5c4`.
 
@@ -40,3 +42,33 @@ Each civilization: 100 conceptual = 60,000 internal generated; Science allocated
 ## Deferred
 
 Modular ships, a real Phaser subsystem, >100 maturity, broad effect scripts, diplomacy, espionage, black-box/traded tech, leaders/scientists, faction/species bonuses, procedural tech text, automatic human allocation and multiple concurrent Engineering targets remain out of scope. Economy, politics, movement, combat, production and audio rules are unchanged. VSync remains 1 with targetFrameRate −1 and no graphics settings UI.
+
+## Application and Unity presentation
+
+Readonly detached projections expose R&D capacity, 70/30 percentages, reserves, six weights/share percentages, level/progress, structural breakthrough markers, maxed-bank warnings, Engineering kind/result summary and current/completed eligibility. Internal costs/counters remain diagnostic facts; normal UI uses conceptual units, percentages and qualitative stages. Collections cannot mutate session authority.
+
+Unity keeps the existing responsive Research LCARS section. Top-level dropdown offers 5% steps with explicit Apply. Each Science card shows level/progress/markers and exact equal label 16⅔%, plus +/− 5% controls. A presentation-local draft transfers one unit at a time evenly among other disciplines in enum order, skipping empty/full shares, preserving 600. This edits desired weights only; it neither calculates spending nor normalizes incoming commands. Equalize Science resets the draft to 100 each; **Apply Science allocation** submits the complete desired list through StrategicClient/Application with the observed stamp. Drafts reset to the next detached snapshot on refresh, so stale state is never retried. Combat phase disables plan editing. Engineering displays kind, Locked/Available/Current/Completed, prerequisites, result, conceptual cost and bounded progress; target/clear use stamped commands. Rendering and receipt inspection spend nothing.
+
+## Cloud verification and local acceptance
+
+R1: `b4217eff6f1c0ece892e5c1cbf5878386eba0c2a`, 906 .NET tests. R2 passes 930 .NET tests and includes 61 authored Unity EditMode cases (not executed in cloud). All four portable projects remain netstandard2.1; hosts/tests use net10. Cloud gates are locked restore, warning-free Release build, full .NET suite, PrepareUnity, static assets/reference checks, canonical/reverse/repeated 25-turn smoke, and tests for reordered content/state and repeated save/reload through pending/partial/full combat checkpoints. No Unity execution is claimed in cloud.
+
+On Windows, pull the final candidate (do not merge), close any open Editor instance and run from repository root:
+
+```powershell
+$unity = "C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
+dotnet msbuild scripts/PrepareUnity.proj -t:EditMode "-p:UnityEditor=$unity"
+dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=$unity"
+.\artifacts\unity\Windows\HobbyDS9.exe
+```
+
+The Windows target reruns EditMode before x64 IL2CPP. Use an active Unity license, Windows Build Support (IL2CPP), Visual Studio Desktop Development with C++ and Windows SDK. Inspect `artifacts/unity/editmode.xml` (nonzero all passed), `editmode.log`, `windows-build.log` and the standalone player. These generated files are ignored.
+
+Manual checklist:
+
+- Start DS9 at 70/30; all six shares show 16⅔% and no single-discipline selection concept remains.
+- Adjust several shares; preview is local, total remains 100%, Apply commits once. Equalize restores all six exact shares through Apply. Old/stale snapshots reject without mutation.
+- End Turn progresses multiple disciplines simultaneously. Review percentage breakthrough markers and conceptual receipts/reserves; maxed allocated shares warn/bank.
+- Cross Construction and Propulsion requirements; develop Advanced Starship Engineering. One current project, retained progress on clear/retarget, kind/result/status visible, no Advanced Scout unlock before completion.
+- Save/load preserves all six allocations/progress states, banks, Engineering target/progress/completion and combat checkpoints. Old/incomplete saves reject without replacing live session.
+- Verify existing production, politics, navigation/movement, combat buffering/finalization/reports, music/SFX and LCARS at 1920×1080, 2560×1440, 3440×1440 and 5120×1440. VSync remains enabled; no graphics menu added.

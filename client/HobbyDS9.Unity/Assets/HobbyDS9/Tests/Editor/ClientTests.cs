@@ -34,6 +34,11 @@ namespace HobbyDS9.UnityClient.Tests
             foreach (var actor in save.GameState.Civilizations) actor.ControllerKind = actor.CivilizationId == "civ.federation" ? ControllerKind.Human : ControllerKind.AI;
             host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save)); return host;
         }
+        private static System.Collections.Generic.IReadOnlyList<ScienceAllocationDto> DesiredScience(CampaignSnapshot snapshot)
+        {
+            var research=snapshot.Campaign.Civilizations.Single(c=>c.CivilizationId.Value=="civ.federation").Research;
+            var draft=new ScienceAllocationDraft(research.ScienceAllocations);draft.SetWeight(ScienceDiscipline.Propulsion,200);return draft.Export();
+        }
         private static ResearchPanelView ResearchView(CampaignHost host)
         {
             var view=new ResearchPanelView();view.Present(host.Snapshot,host.Client,operation=>operation());return view;
@@ -45,7 +50,7 @@ namespace HobbyDS9.UnityClient.Tests
             foreach(ScienceDiscipline discipline in System.Enum.GetValues(typeof(ScienceDiscipline)))
             {
                 Assert.That(view.Q<VisualElement>("science-"+discipline),Is.Not.Null);
-                Assert.That(view.Q<Button>("focus-"+discipline),Is.Not.Null);
+                Assert.That(view.Q<Button>("increase-science-"+discipline),Is.Not.Null);
             }
             var application=view.Q<VisualElement>("engineering-engineering.advanced-starship-engineering");
             Assert.That(application,Is.Not.Null);Assert.That(application.Query<Label>().ToList().Any(l=>l.text.Contains("Propulsion interval 1→2, breakthrough 2")),Is.True);
@@ -57,32 +62,32 @@ namespace HobbyDS9.UnityClient.Tests
         {
             var host=Start();var before=host.SaveJson();var observed=host.Snapshot;var view=ResearchView(host);var field=view.Q<DropdownField>("research-split");
             field.index=10;Assert.That(host.SaveJson(),Is.EqualTo(before));Assert.That(view.Q<Button>("apply-research-split").enabledSelf,Is.True);
-            var actor=new HobbyDS9.Contracts.EntityId("civ.federation");Assert.That(host.Client.AllocateResearch(observed,actor,5000).Accepted,Is.True);
+            var actor=new HobbyDS9.Contracts.EntityId("civ.federation");Assert.That(host.Client.AllocateResearch(observed,actor,300).Accepted,Is.True);
             Assert.That(host.Snapshot.Campaign.StateRevision,Is.EqualTo(observed.Campaign.StateRevision+1));
-            Assert.That(host.Client.FocusScience(observed,actor,ScienceDiscipline.Propulsion).ErrorCode,Is.EqualTo(CommandErrorCode.StaleRevision));
-            var save=host.SaveJson();host.LoadJson(save);Assert.That(host.Snapshot.Campaign.Civilizations.Single(c=>c.CivilizationId==actor).Research.ScienceAllocationBps,Is.EqualTo(5000));
+            Assert.That(host.Client.AllocateScience(observed,actor,DesiredScience(host.Snapshot)).ErrorCode,Is.EqualTo(CommandErrorCode.StaleRevision));
+            var save=host.SaveJson();host.LoadJson(save);Assert.That(host.Snapshot.Campaign.Civilizations.Single(c=>c.CivilizationId==actor).Research.ScienceAllocationUnits,Is.EqualTo(300));
         }
         [Test]
-        public void FocusControlsUseApplicationAndLatestReceiptsRenderWithoutSpending()
+        public void AllocationControlsUseApplicationAndLatestReceiptsRenderWithoutSpending()
         {
             var host=Start();var actor=new HobbyDS9.Contracts.EntityId("civ.federation");
-            Assert.That(host.Client.FocusScience(host.Snapshot,actor,ScienceDiscipline.Propulsion).Accepted,Is.True);
+            Assert.That(host.Client.AllocateScience(host.Snapshot,actor,DesiredScience(host.Snapshot)).Accepted,Is.True);
             Assert.That(host.EndTurn().Status,Is.EqualTo(TurnStatus.Completed));var before=host.SaveJson();var view=ResearchView(host);
             Assert.That(view.Q<Foldout>("research-receipts").Query<Label>().ToList().Any(l=>l.text.Contains("Science spent")),Is.True);
-            Assert.That(view.Q<Button>("focus-Propulsion").enabledSelf,Is.False);Assert.That(host.SaveJson(),Is.EqualTo(before));
+            Assert.That(view.Q<Button>("apply-science-allocation").enabledSelf,Is.False);Assert.That(host.SaveJson(),Is.EqualTo(before));
         }
         [Test]
         public void EngineeringOperationalProgressClearsReloadsAndMaturesThroughRealHost()
         {
             var host=Start();var save=host.Client.ExportSave();
-            var human=save.GameState.Civilizations.Single(c=>c.CivilizationId=="civ.federation");foreach(var d in human.Disciplines)d.Level=2;human.EngineeringReserve=30;
+            var human=save.GameState.Civilizations.Single(c=>c.CivilizationId=="civ.federation");foreach(var d in human.Disciplines)d.Level=2;human.EngineeringReserve=30*ResearchUnits.Scale;
             host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save));var actor=new HobbyDS9.Contracts.EntityId("civ.federation");var app=new DefinitionId("engineering.advanced-starship-engineering");
             Assert.That(ResearchView(host).Q<Button>("target-"+app.Value).enabledSelf,Is.True);
             Assert.That(host.Client.Engineering(host.Snapshot,actor,app).Accepted,Is.True);Assert.That(host.EndTurn().Status,Is.EqualTo(TurnStatus.Completed));
             var progress=ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single();Assert.That(progress.Band,Is.EqualTo(EngineeringMaturityBand.Operational));
             Assert.That(host.Client.Engineering(host.Snapshot,actor,null).Accepted,Is.True);var json=host.SaveJson();host.LoadJson(json);
             Assert.That(ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single().Progress,Is.EqualTo(progress.Progress));
-            Assert.That(host.Client.Engineering(host.Snapshot,actor,app).Accepted,Is.True);for(int i=0;i<20;i++)
+            Assert.That(host.Client.Engineering(host.Snapshot,actor,app).Accepted,Is.True);for(int i=0;i<30;i++)
             {
                 var turn=host.EndTurn();Assert.That(turn.Status,Is.Not.EqualTo(TurnStatus.Rejected));
                 if(turn.Status==TurnStatus.AwaitingCombat)
@@ -100,6 +105,47 @@ namespace HobbyDS9.UnityClient.Tests
             var host=ThreePartyCombat();var before=host.SaveJson();var view=ResearchView(host);
             Assert.That(view.Q<Button>("apply-research-split").enabledSelf,Is.False);
             foreach(var button in view.Query<Button>().ToList())Assert.That(button.enabledSelf,Is.False);
+            Assert.That(host.SaveJson(),Is.EqualTo(before));
+        }
+        [Test]
+        public void SixAllocationPreviewsAndEqualizationRemainLocalUntilStampedConfirmation()
+        {
+            var host=Start();var before=host.SaveJson();var actor=new HobbyDS9.Contracts.EntityId("civ.federation");
+            var original=host.Snapshot;var draft=new ScienceAllocationDraft(original.Campaign.Civilizations.Single(c=>c.CivilizationId==actor).Research.ScienceAllocations);
+            draft.SetWeight(ScienceDiscipline.Propulsion,200);Assert.That(draft.Export().Sum(a=>a.Weight),Is.EqualTo(600));Assert.That(draft.Changed,Is.True);
+            Assert.That(host.SaveJson(),Is.EqualTo(before));Assert.That(host.Client.AllocateScience(original,actor,draft.Export()).Accepted,Is.True);
+            var view=ResearchView(host);Assert.That(view.Q<Button>("equalize-science").enabledSelf,Is.True);
+            var current=host.Snapshot;draft.Equalize();Assert.That(draft.Export().All(a=>a.Weight==100),Is.True);
+            Assert.That(host.Client.AllocateScience(current,actor,draft.Export()).Accepted,Is.True);
+            var json=host.SaveJson();host.LoadJson(json);view=ResearchView(host);
+            foreach(ScienceDiscipline discipline in System.Enum.GetValues(typeof(ScienceDiscipline)))
+            {
+                Assert.That(view.Q<Label>("science-share-"+discipline).text,Does.Contain("16⅔%"));
+                Assert.That(view.Q<Button>("decrease-science-"+discipline),Is.Not.Null);
+                Assert.That(view.Q<Button>("increase-science-"+discipline),Is.Not.Null);
+            }
+            Assert.That(view.Q<Button>("equalize-science").enabledSelf,Is.False);Assert.That(host.SaveJson(),Is.EqualTo(json));
+        }
+        [Test]
+        public void EqualScienceProgressesAllSixAndReportsConceptualAmountsAndProjectKind()
+        {
+            var host=Start();Assert.That(host.EndTurn().Status,Is.EqualTo(TurnStatus.Completed));var actor=new HobbyDS9.Contracts.EntityId("civ.federation");
+            var research=ResearchOverviewSnapshot.For(host.Snapshot,actor);Assert.That(research.Science.All(d=>d.Progress==280),Is.True);
+            Assert.That(research.SciencePercent,Is.EqualTo(70m));Assert.That(research.EngineeringReserveConceptual,Is.EqualTo(1.2m));
+            var before=host.SaveJson();var view=ResearchView(host);var labels=view.Query<Label>().ToList();
+            Assert.That(labels.Any(l=>l.text.Contains("New capability")&&l.text.Contains("Locked")),Is.True);
+            Assert.That(labels.Any(l=>l.text.Contains("Unlocks Advanced Scout")),Is.True);
+            Assert.That(labels.Any(l=>l.text.Contains("R&D generated: 4")),Is.True);
+            Assert.That(labels.Any(l=>l.text.Contains("R&D generated: 2400")),Is.False);
+            Assert.That(host.SaveJson(),Is.EqualTo(before));
+        }
+        [Test]
+        public void MaxedAllocatedScienceShowsBankWarningAndZeroProgressWithoutMutation()
+        {
+            var host=Start();var save=host.Client.ExportSave();var human=save.GameState.Civilizations.Single(c=>c.CivilizationId=="civ.federation");
+            human.Disciplines.Single(d=>d.Discipline==ScienceDiscipline.Biotech).Level=10;
+            host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save));var before=host.SaveJson();var view=ResearchView(host);
+            Assert.That(view.Q<VisualElement>("science-Biotech").Query<Label>().ToList().Any(l=>l.text.Contains("remains in Science reserve")),Is.True);
             Assert.That(host.SaveJson(),Is.EqualTo(before));
         }
         private static CombatPanelView CombatView(CampaignHost host)
@@ -335,7 +381,7 @@ namespace HobbyDS9.UnityClient.Tests
             var host = Start(); var client = host.Client;
             var actor = new HobbyDS9.Contracts.EntityId("civ.federation");
             var colony = new HobbyDS9.Contracts.EntityId("colony.sol");
-            Assert.That(client.FocusScience(host.Snapshot, actor, ScienceDiscipline.Propulsion).Accepted, Is.True);
+            Assert.That(client.AllocateScience(host.Snapshot, actor, DesiredScience(host.Snapshot)).Accepted, Is.True);
             Assert.That(client.Enqueue(host.Snapshot, actor, colony, new DefinitionId("ship-design.scout")).Accepted, Is.True);
             var json = host.SaveJson(); var saved = host.Snapshot;
             var item = saved.Campaign.Colonies.Single(c => c.ColonyId == colony).ProductionQueue.Single();

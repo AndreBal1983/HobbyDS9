@@ -70,10 +70,10 @@ namespace HobbyDS9.UnityClient
             command.SetEngineeringTarget = new SetEngineeringTargetPayload { TargetDefinitionId = target?.Value };
             return Submit(command);
         }
-        public CommandResult AllocateResearch(CampaignSnapshot observed, EntityId actor, int scienceBps)
+        public CommandResult AllocateResearch(CampaignSnapshot observed, EntityId actor, int scienceUnits)
         {
             var command=Envelope(observed,actor,CommandKind.SetResearchAllocation);
-            command.SetResearchAllocation=new SetResearchAllocationPayload{ScienceAllocationUnits=scienceBps};return Submit(command);
+            command.SetResearchAllocation=new SetResearchAllocationPayload{ScienceAllocationUnits=scienceUnits};return Submit(command);
         }
         public CommandResult AllocateScience(CampaignSnapshot observed, EntityId actor, IReadOnlyList<ScienceAllocationDto>? allocations)
         {
