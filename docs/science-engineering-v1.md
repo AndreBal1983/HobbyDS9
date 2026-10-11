@@ -64,6 +64,10 @@ dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=$unity"
 
 The Windows target reruns EditMode before x64 IL2CPP. Use an active Unity license, Windows Build Support (IL2CPP), Visual Studio Desktop Development with C++ and Windows SDK. Inspect `artifacts/unity/editmode.xml` (nonzero all passed), `editmode.log`, `windows-build.log` and the standalone player. These generated files are ignored.
 
+EditMode runs with graphics enabled in batch mode: the dropdown interaction test attaches its view to an editor window so Unity dispatches value-change events. `-nographics` cannot initialize that window. The Windows build itself continues to use `-nographics`.
+
+Local acceptance on 2026-10-11: all 61 EditMode cases passed and the Windows x64 IL2CPP target succeeded with Unity 6000.6.5f1. Windows player allocation, persistence, production, navigation, partial movement and combat checks passed; the user confirmed substantial resizing, audio and reduced GPU power/coil whine. Engineering progression beyond the locked presentation remains covered by automated tests rather than manual grinding. See [local acceptance evidence](science-engineering-v1-local-acceptance.md).
+
 Manual checklist:
 
 - Start DS9 at 70/30; all six shares show 16⅔% and no single-discipline selection concept remains.

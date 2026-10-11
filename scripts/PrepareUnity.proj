@@ -21,7 +21,7 @@
   </Target>
   <Target Name="EditMode" DependsOnTargets="Prepare;RequireEditor">
     <Delete Files="$(Artifacts)/editmode.xml" />
-    <Exec Command="&quot;$(UnityEditor)&quot; -batchmode -nographics -projectPath &quot;$(UnityProject)&quot; -runTests -testPlatform EditMode -testResults &quot;$(Artifacts)/editmode.xml&quot; -logFile &quot;$(Artifacts)/editmode.log&quot;" />
+    <Exec Command="&quot;$(UnityEditor)&quot; -batchmode -projectPath &quot;$(UnityProject)&quot; -runTests -testPlatform EditMode -testResults &quot;$(Artifacts)/editmode.xml&quot; -logFile &quot;$(Artifacts)/editmode.log&quot;" />
     <Error Condition="!Exists('$(Artifacts)/editmode.xml')" Text="Unity produced no test results; inspect artifacts/unity/editmode.log." />
     <XmlPeek XmlInputPath="$(Artifacts)/editmode.xml" Query="/test-run/@result"><Output TaskParameter="Result" PropertyName="TestResult" /></XmlPeek>
     <XmlPeek XmlInputPath="$(Artifacts)/editmode.xml" Query="/test-run/@total"><Output TaskParameter="Result" PropertyName="TestTotal" /></XmlPeek>

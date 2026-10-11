@@ -61,7 +61,14 @@ namespace HobbyDS9.UnityClient.Tests
         public void ResearchSplitPreviewIsLocalAndSubmissionUsesRealStampedBoundary()
         {
             var host=Start();var before=host.SaveJson();var observed=host.Snapshot;var view=ResearchView(host);var field=view.Q<DropdownField>("research-split");
-            field.index=10;Assert.That(host.SaveJson(),Is.EqualTo(before));Assert.That(view.Q<Button>("apply-research-split").enabledSelf,Is.True);
+            // Unity dispatches value-change events only for controls attached to a panel.
+            var window=ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();
+            try
+            {
+                window.Show();window.rootVisualElement.Add(view);
+                field.index=10;Assert.That(host.SaveJson(),Is.EqualTo(before));Assert.That(view.Q<Button>("apply-research-split").enabledSelf,Is.True);
+            }
+            finally { window.Close(); }
             var actor=new HobbyDS9.Contracts.EntityId("civ.federation");Assert.That(host.Client.AllocateResearch(observed,actor,300).Accepted,Is.True);
             Assert.That(host.Snapshot.Campaign.StateRevision,Is.EqualTo(observed.Campaign.StateRevision+1));
             Assert.That(host.Client.AllocateScience(observed,actor,DesiredScience(host.Snapshot)).ErrorCode,Is.EqualTo(CommandErrorCode.StaleRevision));
