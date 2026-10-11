@@ -30,7 +30,7 @@ namespace HobbyDS9.UnityClient
             if (routeFleet.HasValue)
             {
                 try { routePreview = host.Client.Preview(host.Snapshot, routeFleet.Value, id); SfxDirector.Cue(routePreview.Route.Success ? LcarsSfx.Search : LcarsSfx.Error); }
-                catch (Exception error) { SfxDirector.Cue(LcarsSfx.Error); message.text = "Route preview unavailable: " + error.Message; ClearRoute(); }
+                catch (Exception error) { SfxDirector.Cue(LcarsSfx.Error); message.text = "Route preview unavailable: " + StrategicScreenPresentation.PlayerMessage(error.Message); ClearRoute(); }
             }
             else selection.SelectNode(id);
             SfxDirector.TryGetOrCreate()?.OpenSection("Selection"); activeTab = "Selection"; Refresh();
@@ -82,10 +82,10 @@ namespace HobbyDS9.UnityClient
             }
             if (!selection.Node.HasValue) { Text("Select a system or fleet on the map.", true); return; }
             var node = GalaxyProjection.Nodes(snapshot).Single(n => n.NodeId == selection.Node.Value);
-            Text(node.Label, true); Text("Navigation: " + node.NodeId.Value);
+            Text(node.Label + " / SYSTEM", true);
             var region=snapshot.Navigation.Nodes.Single(n=>n.NodeId==node.NodeId);
             var knowledge=snapshot.NavigationKnowledge?.Nodes.FirstOrDefault(n=>n.Id==node.NodeId.Value);
-            if(knowledge!=null) Text("Navigation knowledge: "+knowledge.Level);
+            if(knowledge!=null) details.Add(new LcarsDataRow("Navigation", knowledge.Level.ToString()));
             foreach(var id in region.PhenomenonDefinitionIds)
             {
                 var phenomenon=snapshot.Navigation.Phenomena.Single(p=>p.DefinitionId==id);
@@ -114,24 +114,27 @@ namespace HobbyDS9.UnityClient
         }
         private void ShowColony(CampaignSnapshot snapshot, ColonySnapshot colony)
         {
-            ShowWorld(snapshot, colony);
+            ShowStrategicWorld(snapshot, colony);
             if (colony.OwnerCivilizationId == Human(snapshot)?.CivilizationId)
                 ActionButton("Open Production overview", () => { shell.OpenProduction(); });
         }
         private void ShowFleet(CampaignSnapshot snapshot, FleetSnapshot fleet)
         {
-            Text("Fleet", true); Text(fleet.FleetId.Value); Text("Owner: " + OwnerName(snapshot, fleet.OwnerCivilizationId));
+            Text("FLEET / ORDERS", true);
+            details.Add(new LcarsDataRow("Fleet", fleet.FleetId.Value));
+            details.Add(new LcarsDataRow("Owner", OwnerName(snapshot, fleet.OwnerCivilizationId)));
             var node = snapshot.Navigation.Nodes.FirstOrDefault(n => n.NodeId.Value == fleet.LocationNodeId.Value);
-            Text("Location: " + NodeName(snapshot, new NavigationNodeId(fleet.LocationNodeId.Value)) + (node == null ? "" : "\nNavigation: " + node.NodeId.Value));
-            Text("Queued route: " + (fleet.RouteNodeIds.Count == 0 ? "None" : string.Join(" → ", fleet.RouteNodeIds.Select(id => NodeName(snapshot, new NavigationNodeId(id.Value))))));
+            details.Add(new LcarsDataRow("Location", NodeName(snapshot, new NavigationNodeId(fleet.LocationNodeId.Value))));
+            details.Add(new LcarsDataRow("Queued route", fleet.RouteNodeIds.Count == 0 ? "None" : string.Join(" → ", fleet.RouteNodeIds.Select(id => NodeName(snapshot, new NavigationNodeId(id.Value))))));
             var travel=snapshot.FleetTravel.Single(f=>f.FleetId==fleet.FleetId.Value);
-            Text($"Movement budget {travel.MovementBudget} • Remaining cost {travel.RemainingCost} • ETA {travel.EstimatedTurns} turns");
-            Text("Limiting ship: " + travel.LimitingShipId);
+            details.Add(new LcarsDataRow("Movement / cost", travel.MovementBudget + " / " + travel.RemainingCost));
+            details.Add(new LcarsDataRow("Arrival estimate", travel.EstimatedTurns + " turns"));
+            details.Add(new LcarsDataRow("Limiting ship", travel.LimitingShipId));
             if(travel.TransitTotalCost>0) Text($"In transit: {travel.TransitProgress}/{travel.TransitTotalCost} cost paid toward {NodeName(snapshot,new NavigationNodeId(fleet.RouteNodeIds[0].Value))}");
             Text("ETA assumes no combat delay or subsequent orders/ship changes.");
             var actor = Human(snapshot);
             var controlled = actor != null && actor.CivilizationId == fleet.OwnerCivilizationId && StrategicOptions.PlanningAccess(snapshot, actor.CivilizationId) == CommandErrorCode.None;
-            ActionButton(routeFleet.HasValue ? "Choose another destination on the map" : "Set / replace route", () =>
+            ActionButton(routeFleet.HasValue ? "Choose destination" : "Set / replace route", () =>
             { routeFleet = fleet.FleetId; routePreview = null; Refresh(); }, controlled && node != null && fleet.TransitTotalCost==0);
             if (routeFleet == fleet.FleetId)
             {
@@ -140,7 +143,7 @@ namespace HobbyDS9.UnityClient
                 {
                     var preview = routePreview;
                     Text("Destination: " + NodeName(snapshot, preview.Destination), true);
-                    if (!preview.Route.Success) Text("Route unavailable: " + preview.Route.ErrorCode);
+                    if (!preview.Route.Success) Text("Route unavailable. Choose a reachable destination or review navigation access.");
                     else
                     {
                         Text("Traversal cost: " + preview.Route.TraversalCost);
@@ -161,7 +164,10 @@ namespace HobbyDS9.UnityClient
             foreach (var ship in snapshot.Campaign.Ships.Where(s => s.FleetId == fleet.FleetId))
             {
                 var design = snapshot.Campaign.ShipDesigns.Single(d => d.DefinitionId == ship.ShipDesignDefinitionId);
-                Text($"{design.DisplayName}\n{ship.ShipId.Value}\nHull {ship.CurrentHull}/{design.MaxHull} • Shield capacity {design.CombatProfile.ShieldCapacity}");
+                var block = new LcarsInspectorBlock(design.DisplayName); details.Add(block);
+                block.Row("Hull / capacity", ship.CurrentHull + " / " + design.MaxHull);
+                block.Row("Shields", design.CombatProfile.ShieldCapacity.ToString());
+                block.tooltip = ship.ShipId.Value;
             }
         }
         private static string Resources(CampaignSnapshot snapshot, IReadOnlyList<ResourceAmountSnapshot> values) => values.Count == 0 ? "No strategic resources"

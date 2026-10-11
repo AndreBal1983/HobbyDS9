@@ -54,7 +54,7 @@ namespace HobbyDS9.UnityClient
                     row.Add(new Label($"Hull {design.MaxHull} • Shields {design.CombatProfile.ShieldCapacity}"));
                     row.Add(new Label("Required Mature Engineering: " + (design.RequiredEngineeringApplicationDefinitionIds.Count == 0 ? "None" : string.Join(", ", design.RequiredEngineeringApplicationDefinitionIds.Select(id => model.Observed.Content.Engineering.Single(r => r.DefinitionId == id).DisplayName)))));
                     var reason = CommandFeedback.Explain(option.UnavailableReason);
-                    if (!option.CanEnqueue) row.Add(new Label(reason + " [" + option.UnavailableReason + "]"));
+                    if (!option.CanEnqueue) row.Add(new Label(reason));
                     var queue = new LcarsPillButton("", () => run(() => SfxFeedback.Describe(model.Enqueue(world.ColonyId, design.DefinitionId))))
                         { text = "Queue " + design.DisplayName, tooltip = reason };
                     queue.SetEnabled(option.CanEnqueue); row.Add(queue);

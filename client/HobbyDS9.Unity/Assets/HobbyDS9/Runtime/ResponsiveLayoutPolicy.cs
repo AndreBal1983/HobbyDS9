@@ -16,13 +16,15 @@ namespace HobbyDS9.UnityClient
         public const double CompactHeightBelow = 850;
         public const double ContextDrawerBelow = 1100;
         public const double Bar = 30;
+        public const double MapNodeHeight = 36;
+        public const double MapFleetHeight = 36;
         public const double CompactRail = 104;
-        public const double Rail = 136;
+        public const double Rail = 180;
         public const double Details = 420;
         public const double CompactDetails = 380;
         public const double Production = 360;
         public const double MinimumMap = 640;
-        public const double ElbowWidth = 104;
+        public const double ElbowWidth = Rail + 8;
         public const double ElbowHeight = 64;
     }
     public sealed class LayoutPlan

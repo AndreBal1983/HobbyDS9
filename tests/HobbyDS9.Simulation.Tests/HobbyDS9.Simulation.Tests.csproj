@@ -23,6 +23,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ScienceAllocationDraft.cs" Link="UnityClient/ScienceAllocationDraft.cs" />
+    <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/StrategicScreenPresentation.cs" Link="UnityClient/StrategicScreenPresentation.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ResponsiveLayoutPolicy.cs" Link="UnityClient/ResponsiveLayoutPolicy.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/CombatOrchestrator.cs" Link="UnityClient/CombatOrchestrator.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/SfxActionFeedback.cs" Link="UnityClient/SfxActionFeedback.cs" />

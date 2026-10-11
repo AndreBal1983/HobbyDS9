@@ -2,6 +2,7 @@
 .client-root {
     --lcars-canvas: #05070A;
     --lcars-panel: #0B1018;
+    --lcars-map: #070B10;
     --lcars-amber: #D99552;
     --lcars-sand: #E2BC7C;
     --lcars-peach: #C98872;
@@ -15,9 +16,17 @@
     --lcars-bar: 30px;
     --lcars-button: 44px;
     --lcars-nav-height: 50px;
+    --lcars-rail-width: 180px;
     --lcars-gap: 8px;
     --lcars-padding: 16px;
-    --lcars-inner-gap: 12px;
+    --lcars-inner-gap: 8px;
     --lcars-text-size: 18px;
     --lcars-heading-size: 24px;
+    --lcars-small-size: 14px;
+    --lcars-row-height: 28px;
+    --lcars-radius: 22px;
+    --lcars-header-height: 96px;
+    --lcars-map-inset: 16px;
+    --lcars-frame-height: 48px;
+    --lcars-activity-height: 44px;
 }

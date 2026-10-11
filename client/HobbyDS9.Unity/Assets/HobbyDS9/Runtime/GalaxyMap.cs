@@ -23,7 +23,7 @@ namespace HobbyDS9.UnityClient
         public GalaxyMap()
         {
             style.flexGrow = 1; style.minWidth = 0; style.overflow = Overflow.Hidden;
-            style.backgroundColor = new Color(.025f, .04f, .065f);
+            AddToClassList("galaxy-map");
             generateVisualContent += DrawLinks;
             RegisterCallback<GeometryChangedEvent>(_ => Place());
             RegisterCallback<WheelEvent>(e =>
@@ -67,23 +67,23 @@ namespace HobbyDS9.UnityClient
                 var hazard=region.PhenomenonDefinitionIds.Count>0;
                 var wormhole = links.Any(l => l.Kind == GalaxyEdgeKind.Wormhole && (l.EndpointA == node.NodeId || l.EndpointB == node.NodeId));
                 var marker = new Button(() => nodeSelected(node.NodeId)) { text = (node.SystemId.HasValue ? "● " : "◇ ") + node.Label };
-                marker.AddToClassList("map-marker");
+                marker.AddToClassList("map-marker"); marker.EnableInClassList("map-selected", selection.Node == node.NodeId);
                 marker.style.backgroundColor = selection.Node == node.NodeId ? new Color(.25f, .45f, .6f) : wormhole ? new Color(.30f, .14f, .42f) : new Color(.10f, .19f, .28f);
                 marker.tooltip=string.Join(", ",region.PhenomenonDefinitionIds);
                 if(hazard) marker.style.backgroundColor=new Color(.45f,.23f,.1f);
-                marker.style.color = Color.white; marker.style.width = 170; marker.style.height = 30;
-                AddMarker(marker, node.NodeId, new Vector2(-85, -15));
+                marker.style.color = Color.white; marker.style.width = 170; marker.style.height = (float)LcarsMetrics.MapNodeHeight;
+                AddMarker(marker, node.NodeId, new Vector2(-85, -(float)LcarsMetrics.MapNodeHeight / 2));
                 for (var j = 0; j < node.Fleets.Count; j++)
                 {
                     var fleet = node.Fleets[j];
                     var owner = snapshot.Campaign.Civilizations.Single(c => c.CivilizationId == fleet.OwnerCivilizationId);
                     var name = snapshot.Content.Civilizations.Single(c => c.DefinitionId == owner.DefinitionId).DisplayName;
                     var button = new Button(() => fleetSelected(fleet.FleetId)) { text = "▸ " + name + " • " + fleet.ShipIds.Count + (fleet.TransitTotalCost>0?" ⇢ "+fleet.TransitProgress+"/"+fleet.TransitTotalCost:"") };
-                    button.AddToClassList("map-marker");
-                    button.tooltip = fleet.FleetId.Value;
+                    button.AddToClassList("map-marker"); button.EnableInClassList("map-selected", selection.Fleet == fleet.FleetId);
+                    button.tooltip = name + " • " + fleet.ShipIds.Count + " ships • " + fleet.FleetId.Value;
                     button.style.color = Color.white; button.style.backgroundColor = selection.Fleet == fleet.FleetId ? new Color(.3f, .42f, .24f) : new Color(.12f, .16f, .19f);
-                    button.style.width = 180; button.style.height = 25;
-                    AddMarker(button, node.NodeId, new Vector2(-90, 19 + j * 27));
+                    button.style.width = 220; button.style.height = (float)LcarsMetrics.MapFleetHeight;
+                    AddMarker(button, node.NodeId, new Vector2(-110, (float)LcarsMetrics.MapNodeHeight / 2 + 6 + j * ((float)LcarsMetrics.MapFleetHeight + 4)));
                 }
             }
             foreach (var edge in links)
@@ -100,8 +100,12 @@ namespace HobbyDS9.UnityClient
         { view.style.position = Position.Absolute; Add(view); markers.Add((view, node, offset)); }
         private Vector2 Screen(NavigationNodeId id)
         {
-            var radius = Mathf.Max(30, Mathf.Min(contentRect.width * .32f, contentRect.height * .30f));
-            return contentRect.center + pan + positions[id] * radius * zoom;
+            // View-only ellipse gives wide maps breathing room. Topology, orders,
+            // pan and pointer-centred zoom remain exactly the existing interfaces.
+            var radiusX = Mathf.Max(30, contentRect.width * .30f);
+            var radiusY = Mathf.Max(30, contentRect.height * .30f);
+            var point = positions[id];
+            return contentRect.center + pan + new Vector2(point.x * radiusX, point.y * radiusY) * zoom;
         }
         private void Place()
         {

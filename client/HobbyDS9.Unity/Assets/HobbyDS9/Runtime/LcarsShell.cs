@@ -24,7 +24,7 @@ namespace HobbyDS9.UnityClient
         private double previousWidth = -1, previousHeight = -1;
         public LcarsShell(VisualElement map, VisualElement production, Action<string> select, Action endTurn, Action fitMap)
         {
-            name = "lcars-shell"; AddToClassList("lcars-shell");
+            name = "lcars-shell"; AddToClassList("lcars-shell"); AddToClassList("strategic-prototype");
             Header = new LcarsTopBar(endTurn, fitMap); Add(Header);
             contextToggle = new LcarsPillButton("DETAILS −", ToggleDetails) { name = "toggle-details" };
             Header.Add(contextToggle);
@@ -36,11 +36,16 @@ namespace HobbyDS9.UnityClient
             var bar = new Label("STRATEGIC OPERATIONS") { pickingMode = PickingMode.Ignore }; bar.AddToClassList("lcars-structural-bar"); frameBar.Add(bar); Add(frameBar);
             var body = new VisualElement { name = "lcars-body" }; body.AddToClassList("lcars-body"); Add(body);
             Navigation = new LcarsNavigationRail(select, ToggleProduction); body.Add(Navigation);
+            var railTail = new Label("01 / OPERATIONS") { pickingMode = PickingMode.Ignore }; railTail.AddToClassList("lcars-rail-tail"); Navigation.Add(railTail);
             workspace = new VisualElement { name = "lcars-workspace" }; workspace.AddToClassList("lcars-workspace"); body.Add(workspace);
             ProductionFrame = new LcarsPanelFrame("PRODUCTION / WORLDS", production) { name = "production-frame" }; workspace.Add(ProductionFrame);
             mapFrame = new VisualElement { name = "galaxy-map-frame" }; mapFrame.AddToClassList("lcars-map-frame"); mapFrame.Add(map); workspace.Add(mapFrame);
+            var mapLegend = new Label("NAVIGATION / LIVE    •    AMBER ROUTE    •    LAVENDER WORMHOLE") { name = "map-legend", pickingMode = PickingMode.Ignore };
+            mapLegend.AddToClassList("lcars-map-legend"); mapFrame.Add(mapLegend);
             Details.AddToClassList("details-panel"); DetailsFrame = new LcarsPanelFrame("EMPIRE / CONTEXT", Details) { name = "details-frame" }; workspace.Add(DetailsFrame);
-            Message.AddToClassList("message-bar"); Add(Message);
+            var activity = new VisualElement { name = "lcars-activity" }; activity.AddToClassList("lcars-activity");
+            var activityTitle = new Label("ACTIVITY") { pickingMode = PickingMode.Ignore }; activityTitle.AddToClassList("lcars-activity-title"); activity.Add(activityTitle);
+            Message.AddToClassList("message-bar"); activity.Add(Message); Add(activity);
             RegisterCallback<GeometryChangedEvent>(e => ApplyLogicalSize(e.newRect.width,e.newRect.height));
             Navigation.Select("Empire"); ApplyLogicalSize(1920,1080);
         }
