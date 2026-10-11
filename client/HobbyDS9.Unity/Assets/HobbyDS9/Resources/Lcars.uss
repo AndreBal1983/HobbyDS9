@@ -82,3 +82,7 @@
 .lcars-pill, .lcars-nav-segment { font-size: var(--lcars-text-size); }
 .lcars-pill:focus, .lcars-nav-segment:focus { border-width: 3px; border-color: var(--lcars-text); }
 .lcars-nav-segment.active-tab:hover { background-color: var(--lcars-sand); }
+
+.research-card { margin-top: 8px; margin-bottom: 8px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgb(92, 84, 122); }
+.research-card Label { white-space: normal; }
+.research-panel ProgressBar { min-height: 24px; margin-top: 4px; margin-bottom: 4px; }

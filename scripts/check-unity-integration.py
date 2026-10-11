@@ -87,6 +87,12 @@ require(len(re.findall(r'AddComponent<ClientEntry>\s*\(',entry)) == 1,
         "Client bootstrap must create exactly one entry point")
 require("GetComponent<UIDocument>" in entry, "Client re-enable must reuse UIDocument")
 
+# Client-only frame defaults and snapshot-driven research presentation.
+client_entry=(runtime / "ClientEntry.cs").read_text(encoding="utf-8-sig")
+require("QualitySettings.vSyncCount = 1;" in client_entry and "UnityEngine.Application.targetFrameRate = -1;" in client_entry,"Client VSync defaults missing")
+research_view=(runtime / "ResearchPanelView.cs").read_text(encoding="utf-8-sig")
+require("ResearchOverviewSnapshot.For" in research_view and "client.AllocateResearch" in research_view and "client.FocusScience" in research_view and "client.Engineering" in research_view,"Research panel must use Application projections and stamped client commands")
+require(all(token not in research_view for token in ("ScienceRules", "EngineeringRules", "SplitMix64", "ExportSave")),"Research view must not calculate or mutate research authority")
 # Audio source integrity/import/reference checks. Never an audible-playback claim.
 music = assets / "HobbyDS9/Audio/Music"
 music_catalog = (assets / "HobbyDS9/Resources/MusicCatalog.asset").read_text(encoding="utf-8-sig")

@@ -64,11 +64,21 @@ namespace HobbyDS9.UnityClient
                 report.Fleets.Any(f => snapshot.Campaign.Civilizations.Any(c => c.CivilizationId.Value == f.CivilizationId && c.ControllerKind == ControllerKind.Human)))).ToList();
             session = replacement; Snapshot = snapshot; SessionGeneration++; recent.Clear(); recent.AddRange(restored); TrimHistory();
         }
-        public CommandResult Research(CampaignSnapshot observed, EntityId actor, DefinitionId target)
+        public CommandResult Engineering(CampaignSnapshot observed, EntityId actor, DefinitionId? target)
         {
             var command = Envelope(observed, actor, CommandKind.SetEngineeringTarget);
-            command.SetEngineeringTarget = new SetEngineeringTargetPayload { TargetDefinitionId = target.Value };
+            command.SetEngineeringTarget = new SetEngineeringTargetPayload { TargetDefinitionId = target?.Value };
             return Submit(command);
+        }
+        public CommandResult AllocateResearch(CampaignSnapshot observed, EntityId actor, int scienceBps)
+        {
+            var command=Envelope(observed,actor,CommandKind.SetResearchAllocation);
+            command.SetResearchAllocation=new SetResearchAllocationPayload{ScienceAllocationBps=scienceBps};return Submit(command);
+        }
+        public CommandResult FocusScience(CampaignSnapshot observed, EntityId actor, ScienceDiscipline discipline)
+        {
+            var command=Envelope(observed,actor,CommandKind.SetScienceFocus);
+            command.SetScienceFocus=new SetScienceFocusPayload{Discipline=discipline};return Submit(command);
         }
         public CommandResult Enqueue(CampaignSnapshot observed, EntityId actor, EntityId colony, DefinitionId design)
         {
@@ -206,9 +216,15 @@ namespace HobbyDS9.UnityClient
                 case CommandErrorCode.None: return "Available";
                 case CommandErrorCode.StaleRevision: case CommandErrorCode.StaleTurn: return "The campaign changed. Review the refreshed state and issue the order again.";
                 case CommandErrorCode.CombatPending: return "Complete the pending battles before issuing strategic orders.";
-                case CommandErrorCode.EngineeringAlreadyMature: return "Research already completed.";
-                case CommandErrorCode.EngineeringTargetUnchanged: return "Already the current research target.";
-                case CommandErrorCode.EngineeringPrerequisiteMissing: case CommandErrorCode.DesignEngineeringPrerequisiteMissing: return "Required research has not been completed.";
+                case CommandErrorCode.EngineeringAlreadyMature: return "Engineering application is already Mature.";
+                case CommandErrorCode.EngineeringTargetUnchanged: return "Already the current Engineering target.";
+                case CommandErrorCode.EngineeringPrerequisiteMissing: case CommandErrorCode.DesignEngineeringPrerequisiteMissing: return "Required Engineering applications must be Mature.";
+                case CommandErrorCode.EngineeringScienceRequirementMissing: return "Required Science breakthroughs have not been achieved.";
+                case CommandErrorCode.ResearchAllocationUnchanged: return "This allocation is already active.";
+                case CommandErrorCode.InvalidResearchAllocation: return "Science allocation must be between 0 and 10000 BPS.";
+                case CommandErrorCode.ScienceFocusUnchanged: return "Already the Science focus.";
+                case CommandErrorCode.ScienceFocusMaxed: return "This discipline is already level 10.";
+                case CommandErrorCode.InvalidScienceDiscipline: return "Unknown Science discipline.";
                 case CommandErrorCode.InsufficientCredits: return "Not enough civilization credits.";
                 case CommandErrorCode.InsufficientStrategicResource: return "A required strategic resource is unavailable locally. Check the delivery report.";
                 case CommandErrorCode.ShipbuildingUnavailable: return "This world has no shipbuilding infrastructure.";

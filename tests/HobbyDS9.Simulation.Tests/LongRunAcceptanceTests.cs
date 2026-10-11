@@ -24,7 +24,8 @@ public sealed class LongRunAcceptanceTests
         foreach(var k in state.NavigationKnowledge){k.Nodes!.Reverse();k.Connections!.Reverse();}
         foreach(var region in defs.NavigationRegions) region.PhenomenonDefinitionIds!.Reverse();
         foreach(var world in state.Colonies){world.Cohorts!.Reverse();foreach(var cohort in world.Cohorts){cohort.Memories!.Reverse();cohort.ExternalAffinities!.Reverse();}}
-        foreach (var d in defs.ShipDesigns) d.RequiredEngineeringApplicationDefinitionIds!.Reverse(); foreach (var r in defs.EngineeringApplications) r.PrerequisiteDefinitionIds!.Reverse();
+        foreach (var d in defs.ShipDesigns) d.RequiredEngineeringApplicationDefinitionIds!.Reverse(); foreach (var r in defs.EngineeringApplications) { r.PrerequisiteDefinitionIds!.Reverse();r.ScienceRequirements!.Reverse(); }
+        foreach(var actor in state.Civilizations){actor.Disciplines!.Reverse();actor.EngineeringProgress!.Reverse();actor.MatureEngineeringApplicationDefinitionIds!.Reverse();}
         var reordered = Session(reorderedScenario); var reloads = new HashSet<int> { 1, 2, 4, 7, 13, 18, 24 }; var partial = false; var orders = new List<string>(); var commandCount = 0; var generated = 0; var checkpoints = 0;
         for (var i = 1; i <= 25; i++)
         {

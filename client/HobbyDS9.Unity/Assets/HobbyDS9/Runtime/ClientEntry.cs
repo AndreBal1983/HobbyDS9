@@ -44,6 +44,8 @@ namespace HobbyDS9.UnityClient
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
         {
+            QualitySettings.vSyncCount = 1;
+            UnityEngine.Application.targetFrameRate = -1;
             if (UnityEngine.Object.FindAnyObjectByType<ClientEntry>(FindObjectsInactive.Include) != null) return;
             var go = new GameObject("HobbyDS9 Client");
             DontDestroyOnLoad(go); go.AddComponent<ClientEntry>();

@@ -34,6 +34,74 @@ namespace HobbyDS9.UnityClient.Tests
             foreach (var actor in save.GameState.Civilizations) actor.ControllerKind = actor.CivilizationId == "civ.federation" ? ControllerKind.Human : ControllerKind.AI;
             host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save)); return host;
         }
+        private static ResearchPanelView ResearchView(CampaignHost host)
+        {
+            var view=new ResearchPanelView();view.Present(host.Snapshot,host.Client,operation=>operation());return view;
+        }
+        [Test]
+        public void ScienceEngineeringPanelProjectsSixDisciplinesAndLockedApplicationWithoutMutation()
+        {
+            var host=Start();var before=host.SaveJson();var view=ResearchView(host);
+            foreach(ScienceDiscipline discipline in System.Enum.GetValues(typeof(ScienceDiscipline)))
+            {
+                Assert.That(view.Q<VisualElement>("science-"+discipline),Is.Not.Null);
+                Assert.That(view.Q<Button>("focus-"+discipline),Is.Not.Null);
+            }
+            var application=view.Q<VisualElement>("engineering-engineering.advanced-starship-engineering");
+            Assert.That(application,Is.Not.Null);Assert.That(application.Query<Label>().ToList().Any(l=>l.text.Contains("Propulsion interval 1→2, breakthrough 2")),Is.True);
+            Assert.That(view.Q<Button>("target-engineering.advanced-starship-engineering").enabledSelf,Is.False);
+            Assert.That(view.Query<ProgressBar>().ToList().Count,Is.EqualTo(7));Assert.That(host.SaveJson(),Is.EqualTo(before));
+        }
+        [Test]
+        public void ResearchSplitPreviewIsLocalAndSubmissionUsesRealStampedBoundary()
+        {
+            var host=Start();var before=host.SaveJson();var observed=host.Snapshot;var view=ResearchView(host);var field=view.Q<DropdownField>("research-split");
+            field.index=10;Assert.That(host.SaveJson(),Is.EqualTo(before));Assert.That(view.Q<Button>("apply-research-split").enabledSelf,Is.True);
+            var actor=new HobbyDS9.Contracts.EntityId("civ.federation");Assert.That(host.Client.AllocateResearch(observed,actor,5000).Accepted,Is.True);
+            Assert.That(host.Snapshot.Campaign.StateRevision,Is.EqualTo(observed.Campaign.StateRevision+1));
+            Assert.That(host.Client.FocusScience(observed,actor,ScienceDiscipline.Propulsion).ErrorCode,Is.EqualTo(CommandErrorCode.StaleRevision));
+            var save=host.SaveJson();host.LoadJson(save);Assert.That(host.Snapshot.Campaign.Civilizations.Single(c=>c.CivilizationId==actor).Research.ScienceAllocationBps,Is.EqualTo(5000));
+        }
+        [Test]
+        public void FocusControlsUseApplicationAndLatestReceiptsRenderWithoutSpending()
+        {
+            var host=Start();var actor=new HobbyDS9.Contracts.EntityId("civ.federation");
+            Assert.That(host.Client.FocusScience(host.Snapshot,actor,ScienceDiscipline.Propulsion).Accepted,Is.True);
+            Assert.That(host.EndTurn().Status,Is.EqualTo(TurnStatus.Completed));var before=host.SaveJson();var view=ResearchView(host);
+            Assert.That(view.Q<Foldout>("research-receipts").Query<Label>().ToList().Any(l=>l.text.Contains("Science spent")),Is.True);
+            Assert.That(view.Q<Button>("focus-Propulsion").enabledSelf,Is.False);Assert.That(host.SaveJson(),Is.EqualTo(before));
+        }
+        [Test]
+        public void EngineeringOperationalProgressClearsReloadsAndMaturesThroughRealHost()
+        {
+            var host=Start();var save=host.Client.ExportSave();
+            var human=save.GameState.Civilizations.Single(c=>c.CivilizationId=="civ.federation");foreach(var d in human.Disciplines)d.Level=2;human.EngineeringReserve=30;
+            host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save));var actor=new HobbyDS9.Contracts.EntityId("civ.federation");var app=new DefinitionId("engineering.advanced-starship-engineering");
+            Assert.That(ResearchView(host).Q<Button>("target-"+app.Value).enabledSelf,Is.True);
+            Assert.That(host.Client.Engineering(host.Snapshot,actor,app).Accepted,Is.True);Assert.That(host.EndTurn().Status,Is.EqualTo(TurnStatus.Completed));
+            var progress=ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single();Assert.That(progress.Band,Is.EqualTo(EngineeringMaturityBand.Operational));
+            Assert.That(host.Client.Engineering(host.Snapshot,actor,null).Accepted,Is.True);var json=host.SaveJson();host.LoadJson(json);
+            Assert.That(ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single().Progress,Is.EqualTo(progress.Progress));
+            Assert.That(host.Client.Engineering(host.Snapshot,actor,app).Accepted,Is.True);for(int i=0;i<20;i++)
+            {
+                var turn=host.EndTurn();Assert.That(turn.Status,Is.Not.EqualTo(TurnStatus.Rejected));
+                if(turn.Status==TurnStatus.AwaitingCombat)
+                {
+                    foreach(var encounter in host.Pending())Assert.That(host.Resolve(encounter).Status,Is.EqualTo(CombatSubmissionStatus.Buffered));
+                    Assert.That(host.FinalizeCombats().Status,Is.EqualTo(TurnStatus.Completed));
+                }
+            }
+            var mature=ResearchOverviewSnapshot.For(host.Snapshot,actor);Assert.That(mature.Engineering.Single().MaturityPercent,Is.EqualTo(100));Assert.That(mature.Target,Is.Null);
+            var before=host.SaveJson();Assert.That(ResearchView(host).Q<Button>("target-"+app.Value).enabledSelf,Is.False);Assert.That(host.SaveJson(),Is.EqualTo(before));
+        }
+        [Test]
+        public void AwaitingCombatBlocksAllResearchPlanControls()
+        {
+            var host=ThreePartyCombat();var before=host.SaveJson();var view=ResearchView(host);
+            Assert.That(view.Q<Button>("apply-research-split").enabledSelf,Is.False);
+            foreach(var button in view.Query<Button>().ToList())Assert.That(button.enabledSelf,Is.False);
+            Assert.That(host.SaveJson(),Is.EqualTo(before));
+        }
         private static CombatPanelView CombatView(CampaignHost host)
         {
             var view = new CombatPanelView();
@@ -179,7 +247,7 @@ namespace HobbyDS9.UnityClient.Tests
                 }
             }
             Assert.That(automatic, Is.True); Assert.That(host.Snapshot.Campaign.TurnNumber, Is.EqualTo(26));
-            Assert.That(host.Snapshot.Campaign.StateRevision, Is.EqualTo(187));
+            Assert.That(host.Snapshot.Campaign.StateRevision, Is.EqualTo(185));
             Assert.That(host.Client.RecentReports.Count, Is.EqualTo(17));
         }
         [Test]
@@ -267,7 +335,7 @@ namespace HobbyDS9.UnityClient.Tests
             var host = Start(); var client = host.Client;
             var actor = new HobbyDS9.Contracts.EntityId("civ.federation");
             var colony = new HobbyDS9.Contracts.EntityId("colony.sol");
-            Assert.That(client.Research(host.Snapshot, actor, new DefinitionId("engineering.advanced-starship-engineering")).Accepted, Is.True);
+            Assert.That(client.FocusScience(host.Snapshot, actor, ScienceDiscipline.Propulsion).Accepted, Is.True);
             Assert.That(client.Enqueue(host.Snapshot, actor, colony, new DefinitionId("ship-design.scout")).Accepted, Is.True);
             var json = host.SaveJson(); var saved = host.Snapshot;
             var item = saved.Campaign.Colonies.Single(c => c.ColonyId == colony).ProductionQueue.Single();
@@ -346,7 +414,7 @@ namespace HobbyDS9.UnityClient.Tests
             }
             var state = host.Snapshot.Campaign;
             Assert.That(encounters, Is.EqualTo(17)); Assert.That(state.TurnNumber, Is.EqualTo(26));
-            Assert.That(state.StateRevision, Is.EqualTo(187)); Assert.That(state.Ships.Count, Is.EqualTo(9));
+            Assert.That(state.StateRevision, Is.EqualTo(185)); Assert.That(state.Ships.Count, Is.EqualTo(9));
             Assert.That(state.NextEntitySequence, Is.EqualTo(97UL)); Assert.That(state.RngState.State, Is.EqualTo(0xd8919406d6e01cf1UL));
         }
 

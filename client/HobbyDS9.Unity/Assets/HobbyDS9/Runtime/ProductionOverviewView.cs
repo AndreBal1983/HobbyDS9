@@ -52,7 +52,7 @@ namespace HobbyDS9.UnityClient
                     var row = new VisualElement { name = design.DefinitionId.Value }; options.Add(row);
                     row.Add(new Label(design.DisplayName + $"\n{design.CreditCost} credits • " + Resources(model.Observed, design.ResourceCosts) + $" • {design.IndustryCost} Industry"));
                     row.Add(new Label($"Hull {design.MaxHull} • Shields {design.CombatProfile.ShieldCapacity}"));
-                    row.Add(new Label("Required research: " + (design.RequiredEngineeringApplicationDefinitionIds.Count == 0 ? "None" : string.Join(", ", design.RequiredEngineeringApplicationDefinitionIds.Select(id => model.Observed.Content.Engineering.Single(r => r.DefinitionId == id).DisplayName)))));
+                    row.Add(new Label("Required Mature Engineering: " + (design.RequiredEngineeringApplicationDefinitionIds.Count == 0 ? "None" : string.Join(", ", design.RequiredEngineeringApplicationDefinitionIds.Select(id => model.Observed.Content.Engineering.Single(r => r.DefinitionId == id).DisplayName)))));
                     var reason = CommandFeedback.Explain(option.UnavailableReason);
                     if (!option.CanEnqueue) row.Add(new Label(reason + " [" + option.UnavailableReason + "]"));
                     var queue = new LcarsPillButton("", () => run(() => SfxFeedback.Describe(model.Enqueue(world.ColonyId, design.DefinitionId))))

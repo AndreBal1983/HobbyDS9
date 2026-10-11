@@ -64,6 +64,7 @@ public sealed class ScienceEngineeringIntegrationTests
         for(int i=0;i<20;i++)Advance(s);
         view=ResearchOverviewSnapshot.For(s.CaptureSnapshot(),new EntityId("civ.federation"));app=Assert.Single(view.Engineering);Assert.Equal(60,app.Progress);Assert.Equal(100,app.MaturityPercent);Assert.Null(view.Target);Assert.True(view.EngineeringReserve>0);
         Assert.Single(s.CaptureSnapshot().Campaign.Civilizations.Single(c=>c.CivilizationId.Value=="civ.federation").MatureEngineeringApplicationDefinitionIds);
+        Assert.True(StrategicOptions.Production(s.CaptureSnapshot(),new EntityId("civ.federation"),new EntityId("colony.sol")).Single(d=>d.Design.DefinitionId.Value=="ship-design.advanced-scout").CanEnqueue);
     }
     [Fact]
     public void RequirementUsesStructuralOrdinalAndHigherLevelsSatisfyPreviousIntervals()
@@ -142,7 +143,34 @@ public sealed class ScienceEngineeringIntegrationTests
         if(kind==CommandKind.SetEngineeringTarget)command.SetEngineeringTarget=new(){TargetDefinitionId="engineering.advanced-starship-engineering"};
         Assert.True(s.SubmitCommand(command).Accepted);var before=Json(s);Assert.Equal(CommandErrorCode.DuplicateCommand,s.SubmitCommand(command).ErrorCode);
         command.CommandId="cmd.stale";Assert.Equal(CommandErrorCode.StaleRevision,s.SubmitCommand(command).ErrorCode);Assert.Equal(before,Json(s));
-        command.ExpectedRevision=s.CaptureSnapshot().Campaign.StateRevision;command.ActorCivilizationId="civ.cardassian";Assert.Equal(CommandErrorCode.ActorNotControlled,s.SubmitCommand(command).ErrorCode);Assert.Equal(before,Json(s));
+        command.ExpectedRevision=s.CaptureSnapshot().Campaign.StateRevision;command.ExpectedTurn=0;Assert.Equal(CommandErrorCode.StaleTurn,s.SubmitCommand(command).ErrorCode);Assert.Equal(before,Json(s));command.ExpectedTurn=s.CaptureSnapshot().Campaign.TurnNumber;command.ActorCivilizationId="civ.cardassian";Assert.Equal(CommandErrorCode.ActorNotControlled,s.SubmitCommand(command).ErrorCode);Assert.Equal(before,Json(s));
+    }
+
+    [Theory]
+    [InlineData(0,EngineeringMaturityBand.Development)][InlineData(24,EngineeringMaturityBand.Development)]
+    [InlineData(25,EngineeringMaturityBand.Prototype)][InlineData(49,EngineeringMaturityBand.Prototype)]
+    [InlineData(50,EngineeringMaturityBand.Operational)][InlineData(99,EngineeringMaturityBand.Operational)][InlineData(100,EngineeringMaturityBand.Mature)]
+    public void ExactPercentBandsArePinned(int percent,EngineeringMaturityBand band)
+    {Assert.Equal(percent,EngineeringRules.Maturity(percent,100));Assert.Equal(band,EngineeringRules.Band(percent));}
+    [Theory]
+    [InlineData("seed")][InlineData("allocation")][InlineData("focus")][InlineData("progress")][InlineData("statistics")][InlineData("receipts")]
+    public void OtherPhasesCannotMutateResearch(string field)
+    {
+        var scenario=Scenario();var s=new SimulationSession(VerticalSliceFixture.Session(scenario).ExportSave(),scenario.Definitions,VerticalSliceFixture.Compatibility(scenario),new Dictionary<CommandKind,ICommandHandler>(),(phase,state)=>
+        {
+            if(phase!=StrategicTurnPhase.Economy)return true;var h=state.Civilizations!.Single(c=>c.CivilizationId=="civ.federation");
+            if(field=="seed")h.ResearchDiscoverySeed=42;if(field=="allocation")h.ScienceAllocationBps=5000;if(field=="focus")h.ScienceFocus=ScienceDiscipline.Propulsion;
+            if(field=="progress")h.Disciplines![0].ProgressTowardNextLevel=1;if(field=="statistics")h.Statistics!.TotalBreakthroughs=1;
+            if(field=="receipts")state.LastResearchReceipts!.Add(new(){CivilizationId="civ.federation",Category="allocation",Amount=1});return true;
+        });var before=JsonSerializer.Serialize(s.ExportSave());var stamp=s.CaptureSnapshot();Assert.Throws<InvalidOperationException>(()=>s.AdvanceTurn(stamp.TurnNumber,stamp.StateRevision));Assert.Equal(before,JsonSerializer.Serialize(s.ExportSave()));
+    }
+    [Theory]
+    [InlineData("science-reserve")][InlineData("engineering-reserve")][InlineData("generated")]
+    public void ResearchOverflowRollsBackEarlierEconomyAndAllSessionFacts(string field)
+    {
+        var scenario=Scenario();var h=Human(scenario);if(field=="science-reserve")h.ScienceReserve=long.MaxValue;if(field=="engineering-reserve")h.EngineeringReserve=long.MaxValue;
+        if(field=="generated"){h.Statistics!.TotalResearchGenerated=long.MaxValue;h.Statistics.TotalScienceAllocated=long.MaxValue;}
+        var s=CampaignApplication.StartScenario(scenario);var before=Json(s);var stamp=s.CaptureSnapshot().Campaign;Assert.Throws<OverflowException>(()=>s.AdvanceTurn(stamp.TurnNumber,stamp.StateRevision));Assert.Equal(before,Json(s));
     }
 
 }

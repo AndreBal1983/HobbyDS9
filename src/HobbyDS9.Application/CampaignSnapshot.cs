@@ -39,7 +39,7 @@ namespace HobbyDS9.Application
         internal EngineeringDefinitionSnapshot(EngineeringApplicationDefinitionDto dto)
         {
             DefinitionId = new DefinitionId(dto.DefinitionId); DisplayName = dto.DisplayName; BaseEngineeringCost = dto.BaseEngineeringCost;
-            ScienceRequirements=dto.ScienceRequirements!.Select(q=>new EngineeringRequirementSnapshot(q)).ToList().AsReadOnly();
+            ScienceRequirements=dto.ScienceRequirements!.OrderBy(q=>q.Discipline).ThenBy(q=>q.IntervalStartLevel).ThenBy(q=>q.RequiredBreakthroughOrdinal).Select(q=>new EngineeringRequirementSnapshot(q)).ToList().AsReadOnly();
             Prerequisites = dto.PrerequisiteDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal)
                 .Select(id => new DefinitionId(id)).ToList().AsReadOnly();
         }

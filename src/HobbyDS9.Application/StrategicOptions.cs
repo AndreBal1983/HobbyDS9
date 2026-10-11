@@ -53,6 +53,7 @@ namespace HobbyDS9.Application
 
         public static IReadOnlyList<EngineeringOption> Research(CampaignSnapshot snapshot, EntityId actorId)
         {
+            if(!snapshot.Campaign.Civilizations.Any(c=>c.CivilizationId==actorId))return snapshot.Content.Engineering.Select(d=>new EngineeringOption(d,EngineeringDisplayState.Locked,CommandErrorCode.UnknownActor)).ToList().AsReadOnly();
             return ResearchOverviewSnapshot.For(snapshot,actorId).Engineering.Select(card=>new EngineeringOption(card.Definition,
                 card.Band==EngineeringMaturityBand.Mature?EngineeringDisplayState.Completed:card.IsTarget?EngineeringDisplayState.Current
                 :card.ScienceSatisfied.Any(s=>!s)||card.PrerequisitesSatisfied.Any(s=>!s)?EngineeringDisplayState.Locked:EngineeringDisplayState.Available,card.UnavailableReason)).ToList().AsReadOnly();

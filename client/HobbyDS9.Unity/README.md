@@ -14,7 +14,7 @@ Run this before opening Unity and after changing portable sources. It restores w
 
 `HobbyDS9.UnityClient.asmdef` uses explicit precompiled references to **Application** and **Contracts** only, plus Unity's Newtonsoft JSON adapter. It has no Simulation reference. Simulation is distributed as Application's runtime dependency and is not auto-referenced by client scripts. Plugin `.meta` files set `isExplicitlyReferenced: 1`. All authoritative operations go through `ICampaignSession`, via the client `CampaignHost`. No portable source depends on Unity, Newtonsoft or UI state. No engine code is duplicated in Assets.
 
-The pinned official `com.unity.nuget.newtonsoft-json` package is used because the DTOs have properties and Unity JsonUtility does not support that contract. Content hashing uses the exact resource bytes and SHA256; the current politics/geography candidate uses save 12/content 8/rules `population-politics-geography-v1`, rejecting older packages/saves.
+The pinned official `com.unity.nuget.newtonsoft-json` package is used because the DTOs have properties and Unity JsonUtility does not support that contract. Content hashing uses the exact resource bytes and SHA256; the current Science/Engineering candidate uses save 13/content 9/rules `science-engineering-v1`, rejecting older packages/saves.
 
 ## Run the prototype
 
@@ -231,4 +231,10 @@ in cloud.
 
 The user-supplied Federation WAVs and six populated catalog references are now retained from accepted handoff `34c2c6660d2901de2257d808e1b852504bd38b50`. [Provenance](../../docs/audio-sources.md) records exact filenames, SHA256 and accepted importer settings. Cloud source downloads had returned HTTP 403; no substitutes were used.
 
-User-reported acceptance: Unity 6000.6.5f1 EditMode 50/50 passed, Windows x64 IL2CPP build succeeded, music and soundtrack crossfade sounded correct, LCARS SFX and independent audio controls passed, responsive Windows-player UI and AI-only/human combat/report flows were exercised. Consolidation restores three accidentally removed headless-safe elbow cases, giving 53 authored cases; no cloud Unity execution is claimed. [Verification guide](../../docs/lcars-sfx-foundation.md) records exact commands and distinguishes local reports from cloud gates. VSync/graphics options remain deferred.
+User-reported acceptance: Unity 6000.6.5f1 EditMode 50/50 passed, Windows x64 IL2CPP build succeeded, music and soundtrack crossfade sounded correct, LCARS SFX and independent audio controls passed, responsive Windows-player UI and AI-only/human combat/report flows were exercised. Consolidation restores three accidentally removed headless-safe elbow cases, giving 53 authored cases; no cloud Unity execution is claimed. [Verification guide](../../docs/lcars-sfx-foundation.md) records exact commands and distinguishes local reports from cloud gates. This describes the accepted base; the new research candidate enables client-only VSync defaults, while graphics options remain deferred.
+
+## Science & Engineering candidate
+
+`codex/science-engineering-foundation-v1` builds on accepted main `a0f7506`. The existing Research section now contains a snapshot-driven Science & Engineering panel, explicit 5% allocation Apply, six focus/progress cards, structural breakthroughs, Engineering requirements/maturity/target clear and bounded latest-turn receipts. New fields use save 13/content 9/rules `science-engineering-v1`; old save 12/content 8 is rejected without automatic migration. Combat resolver and campaign RNG identities remain unchanged.
+
+Bootstrap uses VSync count 1 and target frame rate -1; no project settings/preferences/graphics menu change. Five new EditMode cases cover rendering purity, allocation preview/stamps, focus/receipts, Engineering progress/reload/Mature and AwaitingCombat guards, for 58 authored cases total. These require local Unity 6000.6.5f1 execution. Windows x64 IL2CPP still requires Windows Build Support (IL2CPP), Visual Studio's Desktop Development with C++ workload and Windows SDK. See [exact commands/checklist and deterministic baseline](../../docs/science-engineering-v1.md). Main remains unchanged pending local acceptance.

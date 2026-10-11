@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 namespace HobbyDS9.Contracts
 {
-    public static class ScienceEngineeringVersions { public const int Save = 13; public const int Content = 9; public const string Rules = "science-engineering-v1"; }
+    public static class ScienceEngineeringVersions { public const int Save = FoundationVersions.SaveFormatVersion; public const int Content = FoundationVersions.ContentFormatVersion; public const string Rules = "science-engineering-v1"; }
     public enum ScienceDiscipline { Biotech = 1, Computing = 2, Construction = 3, Energy = 4, Propulsion = 5, Weapons = 6 }
     public enum EngineeringMaturityBand { Development = 0, Prototype = 1, Operational = 2, Mature = 3 }
     public sealed class ScienceDisciplineStateDto

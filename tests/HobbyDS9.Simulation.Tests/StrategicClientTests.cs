@@ -35,7 +35,7 @@ public sealed class StrategicClientTests
         var initial = StrategicOptions.Research(client.Snapshot, Human);
         Assert.Equal(EngineeringDisplayState.Available, initial.Single(r => r.Definition.DefinitionId == Research).State);
         Assert.Equal(CommandErrorCode.EngineeringPrerequisiteMissing, initial.Single(r => r.Definition.DefinitionId.Value == "engineering.follow-up").UnavailableReason);
-        Assert.True(client.Research(client.Snapshot, Human, Research).Accepted);
+        Assert.True(client.Engineering(client.Snapshot, Human, Research).Accepted);
         Assert.Equal(EngineeringDisplayState.Current, StrategicOptions.Research(client.Snapshot, Human).Single(r => r.Definition.DefinitionId == Research).State);
         for (var i = 0; i < 3; i++) Assert.Equal(TurnStatus.Completed, client.EndTurn(client.Snapshot).Status);
         var complete = StrategicOptions.Research(client.Snapshot, Human);
@@ -48,11 +48,11 @@ public sealed class StrategicClientTests
     public void ResearchCommandsRefreshOnAcceptanceAndRejectUnchangedWithoutMutation()
     {
         var client = Start(); var before = client.Snapshot;
-        var accepted = client.Research(before, Human, Research);
+        var accepted = client.Engineering(before, Human, Research);
         Assert.True(accepted.Accepted); Assert.Equal(1, client.Snapshot.Campaign.StateRevision);
         Assert.Null(before.Campaign.Civilizations.Single(c => c.CivilizationId == Human).EngineeringTargetDefinitionId);
         Assert.Equal(Research, Actor(client).EngineeringTargetDefinitionId);
-        var save = Save(client); var rejected = client.Research(client.Snapshot, Human, Research);
+        var save = Save(client); var rejected = client.Engineering(client.Snapshot, Human, Research);
         Assert.Equal(CommandErrorCode.EngineeringTargetUnchanged, rejected.ErrorCode); Assert.Equal(save, Save(client));
         Assert.Contains("EngineeringTargetUnchanged", CommandFeedback.Describe(rejected));
         Assert.NotEqual(accepted.CommandId, rejected.CommandId);
@@ -94,7 +94,7 @@ public sealed class StrategicClientTests
     public void OldObservedStampIsSubmittedUnchangedAndNeverRetried()
     {
         var client = Start(); var observed = client.Snapshot;
-        Assert.True(client.Research(observed, Human, Research).Accepted);
+        Assert.True(client.Engineering(observed, Human, Research).Accepted);
         var before = Save(client);
         var rejected = client.Enqueue(observed, Human, Colony, Scout);
         Assert.Equal(CommandErrorCode.StaleRevision, rejected.ErrorCode); Assert.Equal(before, Save(client));
@@ -106,11 +106,11 @@ public sealed class StrategicClientTests
     {
         var client = Start(); var old = client.Snapshot;
         client.EndTurn(old); var before = Save(client);
-        Assert.Equal(CommandErrorCode.StaleTurn, client.Research(old, Human, Research).ErrorCode);
+        Assert.Equal(CommandErrorCode.StaleTurn, client.Engineering(old, Human, Research).ErrorCode);
         Assert.Equal(before, Save(client));
         var ai = new EntityId("civ.cardassian");
         Assert.All(StrategicOptions.Research(client.Snapshot, ai), option => Assert.False(option.CanSelect));
-        Assert.Equal(CommandErrorCode.ActorNotControlled, client.Research(client.Snapshot, ai, Research).ErrorCode);
+        Assert.Equal(CommandErrorCode.ActorNotControlled, client.Engineering(client.Snapshot, ai, Research).ErrorCode);
         Assert.Equal(before, Save(client));
     }
     [Fact]
@@ -141,7 +141,7 @@ public sealed class StrategicClientTests
     public void StalePreviewCannotOverwriteAnOrder()
     {
         var client = Start(); var preview = client.Preview(client.Snapshot, Fleet, new("system.bajor"));
-        client.Research(client.Snapshot, Human, Research); var before = Save(client);
+        client.Engineering(client.Snapshot, Human, Research); var before = Save(client);
         Assert.Equal(CommandErrorCode.StaleRevision, client.SubmitRoute(preview).ErrorCode);
         Assert.Equal(before, Save(client));
     }
@@ -156,7 +156,7 @@ public sealed class StrategicClientTests
     [Fact]
     public void CommandIdsSkipAcceptedIdsAfterReloadAndDoNotUseAllocationOrRng()
     {
-        var client = Start(); Assert.True(client.Research(client.Snapshot, Human, Research).Accepted);
+        var client = Start(); Assert.True(client.Engineering(client.Snapshot, Human, Research).Accepted);
         var save = client.ExportSave();
         var ids = new ClientCommandIds(); var next = ids.Next(client.Snapshot);
         Assert.Equal("player-ui.1", next.Value); Assert.True(next.IsValid);
@@ -170,7 +170,7 @@ public sealed class StrategicClientTests
     [Fact]
     public void SerializationReloadReplacesSessionAndDetachedSnapshotsRemainUnchanged()
     {
-        var client = Start(); client.Research(client.Snapshot, Human, Research);
+        var client = Start(); client.Engineering(client.Snapshot, Human, Research);
         var json = Save(client); var old = client.Snapshot;
         client.Enqueue(client.Snapshot, Human, Colony, Scout);
         client.Load(JsonSerializer.Deserialize<SaveEnvelopeDto>(json)!);
@@ -181,7 +181,7 @@ public sealed class StrategicClientTests
     [Fact]
     public void IncompatibleLoadLeavesLiveSessionAndObservedSnapshotIntact()
     {
-        var client = Start(); client.Research(client.Snapshot, Human, Research); var before = Save(client); var old = client.Snapshot;
+        var client = Start(); client.Engineering(client.Snapshot, Human, Research); var before = Save(client); var old = client.Snapshot;
         var bad = client.ExportSave(); bad.ContentHash = "wrong";
         Assert.Throws<ArgumentException>(() => client.Load(bad));
         Assert.Same(old, client.Snapshot); Assert.Equal(before, Save(client));
@@ -202,7 +202,7 @@ public sealed class StrategicClientTests
         {
             var store = new SaveSlotStore(path); var client = Start(); var first = Save(client);
             store.Write(1, first, false); Assert.True(store.Exists(1)); Assert.Equal(first, store.Read(1));
-            client.Research(client.Snapshot, Human, Research); var second = Save(client);
+            client.Engineering(client.Snapshot, Human, Research); var second = Save(client);
             Assert.Throws<IOException>(() => store.Write(1, second, false)); Assert.Equal(first, store.Read(1));
             store.Write(1, second, true); Assert.Equal(second, store.Read(1)); Assert.Single(Directory.GetFiles(path));
             var restored = Start(); restored.Load(JsonSerializer.Deserialize<SaveEnvelopeDto>(store.Read(1))!); Assert.Equal(second, Save(restored));
@@ -218,7 +218,7 @@ public sealed class StrategicClientTests
         while (client.Snapshot.Campaign.Phase == SessionPhase.Planning && client.Snapshot.Campaign.TurnNumber < 10) client.EndTurn(client.Snapshot);
         Assert.Equal(SessionPhase.AwaitingCombat, client.Snapshot.Campaign.Phase);
         var before = Save(client);
-        Assert.Equal(CommandErrorCode.CombatPending, client.Research(client.Snapshot, Human, Research).ErrorCode);
+        Assert.Equal(CommandErrorCode.CombatPending, client.Engineering(client.Snapshot, Human, Research).ErrorCode);
         Assert.All(StrategicOptions.Research(client.Snapshot, Human), o => Assert.Equal(CommandErrorCode.CombatPending, o.UnavailableReason));
         Assert.All(StrategicOptions.Production(client.Snapshot, Human, Colony), o => Assert.Equal(CommandErrorCode.CombatPending, o.UnavailableReason));
         Assert.Equal(before, Save(client));
@@ -240,9 +240,9 @@ public sealed class StrategicClientTests
     public void InvalidResearchDoesNotBlockTheNextValidCommandOrReuseItsId()
     {
         var client = Start(); var before = Save(client);
-        var invalid = client.Research(client.Snapshot, Human, new("engineering.unknown"));
+        var invalid = client.Engineering(client.Snapshot, Human, new("engineering.unknown"));
         Assert.Equal(CommandErrorCode.UnknownEngineeringApplication, invalid.ErrorCode); Assert.Equal(before, Save(client));
-        var valid = client.Research(client.Snapshot, Human, Research);
+        var valid = client.Engineering(client.Snapshot, Human, Research);
         Assert.True(valid.Accepted); Assert.NotEqual(valid.CommandId, invalid.CommandId);
     }
     [Fact]

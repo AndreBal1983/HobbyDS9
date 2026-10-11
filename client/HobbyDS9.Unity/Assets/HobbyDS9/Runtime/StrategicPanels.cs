@@ -72,19 +72,7 @@ namespace HobbyDS9.UnityClient
         }
         private void ShowResearch(CampaignSnapshot snapshot)
         {
-            Text("Research", true); var actor = Human(snapshot);
-            if (actor == null) { Text("No human civilization selected."); return; }
-            Text("Research reserve: " + actor.EngineeringReserve + ". The reserve is spent by turn processing when the target can complete.");
-            foreach (var option in StrategicOptions.Research(snapshot, actor.CivilizationId))
-            {
-                var definition = option.Definition;
-                Text(definition.DisplayName + " • " + option.State, true);
-                Text("Cost: " + definition.BaseEngineeringCost);
-                Text("Prerequisites: " + (definition.Prerequisites.Count == 0 ? "None" : string.Join(", ", definition.Prerequisites.Select(id => ResearchName(snapshot, id)))));
-                var explanation = CommandFeedback.Explain(option.UnavailableReason);
-                if (!option.CanSelect) Text(explanation);
-                ActionButton("Research " + definition.DisplayName, () => Run(() => SfxFeedback.Describe(host.Client.Research(snapshot, actor.CivilizationId, definition.DefinitionId))), option.CanSelect, explanation);
-            }
+            var view=new ResearchPanelView();view.Present(snapshot,host.Client,operation=>Run(operation));details.Add(view);
         }
         private void ShowSelection(CampaignSnapshot snapshot)
         {
