@@ -56,6 +56,12 @@ public sealed class SfxPolicyTests
         foreach(var width in new[]{1280,1600,1920,2560,3440,5120}) { ResponsiveLayoutPolicy.ForLogicalSize(width,1080); Assert.False(p.OpenSection("Audio")); }
         Assert.True(p.OpenSection("Combat"));
     }
+    [Fact] public void PassiveFocusChangesAreSilentButNextDeliberateOpeningStillCues()
+    {
+        var p=new SfxPolicy();p.Arm();Assert.True(p.OpenSection("Combat"));
+        p.ObserveSection("Empire");Assert.False(p.OpenSection("Empire"));Assert.True(p.OpenSection("Combat"));
+        Assert.False(p.OpenSection("Combat"));
+    }
     [Fact] public void MasterAndIndependentMutesPersistWithoutTouchingMusicSettings()
     {
         var store=new Store();var music=new MusicPreferences(store);music.SetMaster(.5f);music.SetMusic(.8f);

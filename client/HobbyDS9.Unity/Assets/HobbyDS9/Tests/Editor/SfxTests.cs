@@ -60,6 +60,8 @@ namespace HobbyDS9.UnityClient.Tests
                 events.Clear();
                 foreach(var width in new[]{1422,1920,2580,3840}) { shell.SelectSection("Research");shell.ApplyLogicalSize(width,1080);sfx.OpenSection("Research"); }
                 Assert.That(events,Is.Empty);
+                SfxDirector.ObserveSection("Empire");Assert.That(events,Is.Empty);
+                sfx.OpenSection("Research");Assert.That(events,Is.EqualTo(new[]{LcarsSfx.ScreenOpen}));
             } finally { window.Close();Object.DestroyImmediate(sfx.gameObject); }
         }
         [Test] public void RenderingRealProductionDoesNotArmAudioOrChangeSave()

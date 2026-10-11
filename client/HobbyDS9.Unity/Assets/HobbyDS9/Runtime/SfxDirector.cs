@@ -62,6 +62,7 @@ namespace HobbyDS9.UnityClient
                 var source = sources[slot]; source.Stop(); source.clip = clip; source.Play();
             } catch (Exception) { /* Audio must never interrupt a command. */ }
         }
+        public static void ObserveSection(string section) { if (instance != null) instance.Policy.ObserveSection(section); }
         public void OpenSection(string section)
         { if (Policy.OpenSection(section)) Play(LcarsSfx.ScreenOpen); }
         public void StartProcessing()

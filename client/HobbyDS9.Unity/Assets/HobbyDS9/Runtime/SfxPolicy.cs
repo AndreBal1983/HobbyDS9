@@ -40,6 +40,7 @@ namespace HobbyDS9.UnityClient
                 default: throw new ArgumentOutOfRangeException(nameof(effect));
             }
         }
+        public void ObserveSection(string next) => section = next;
         public bool OpenSection(string next)
         { if (section == next) return false; section = next; return Armed; }
         public int Reserve(LcarsSfx effect, bool hasClip, int frame, double now, double duration)

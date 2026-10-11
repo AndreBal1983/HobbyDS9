@@ -129,6 +129,8 @@ namespace HobbyDS9.UnityClient
             map.Present(snapshot, selection, SelectNode, id => { ClearRoute(); selection.SelectFleet(id); SfxDirector.TryGetOrCreate()?.OpenSection("Selection"); activeTab = "Selection"; Refresh(); });
             map.SetRoute(routePreview);
             shell.SelectSection(activeTab);
+            // Synchronize passive focus changes without playing or arming audio.
+            SfxDirector.ObserveSection(activeTab);
             production.Present(new ProductionOverview(host.Client, snapshot), Run);
             details.Clear();
             switch (activeTab)
