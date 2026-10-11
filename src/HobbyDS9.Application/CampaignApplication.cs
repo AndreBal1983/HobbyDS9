@@ -106,6 +106,43 @@ namespace HobbyDS9.Application
         // Invalid resolver inputs throw, without changing campaign state.
         public CombatResultDto ResolveCombat(CombatRequestDto request) => resolver.Resolve(request);
         public CombatResultDto ResolveCombat(CombatRequestDto request, IReadOnlyList<FleetCombatPlanDto> plans) => resolver.Resolve(request, plans);
+        private CombatRequestDto PlayerRequest(string encounterId, EntityId actorId)
+        {
+            var actor = session.CaptureSnapshot().Actors.SingleOrDefault(c => c.CivilizationId == actorId);
+            if (actor == null || actor.ControllerKind != ControllerKind.Human)
+                throw new ArgumentException("Only a persisted human actor can supply player combat plans.", nameof(actorId));
+            return session.GetPendingCombatRequests().SingleOrDefault(r => r.EncounterId == encounterId)
+                ?? throw new ArgumentException("Encounter is not pending.", nameof(encounterId));
+        }
+        public IReadOnlyList<FleetCombatPlanDto> GetPlayerCombatPlans(string encounterId, EntityId actorId)
+        {
+            var request = PlayerRequest(encounterId, actorId);
+            var owned = request.Participants.Where(p => p.CivilizationId == actorId.Value).Select(p => p.FleetId).ToList();
+            return DeterministicPhasedCombatResolver.CreateDefaultPlans(request).Where(p => owned.Contains(p.FleetId))
+                .OrderBy(p => p.FleetId, StringComparer.Ordinal).ToList().AsReadOnly();
+        }
+        public CombatResultDto ResolvePlayerCombat(string encounterId, EntityId actorId, IReadOnlyList<FleetCombatPlanDto>? humanPlans = null)
+        {
+            // Always resolve the frozen authoritative request, never a client-edited DTO.
+            var request = PlayerRequest(encounterId, actorId);
+            var owned = new HashSet<string>(request.Participants.Where(p => p.CivilizationId == actorId.Value).Select(p => p.FleetId), StringComparer.Ordinal);
+            var overrides = new Dictionary<string, FleetCombatPlanDto>(StringComparer.Ordinal);
+            if (humanPlans != null)
+                foreach (var plan in humanPlans)
+                {
+                    if (plan == null || !owned.Contains(plan.FleetId) || overrides.ContainsKey(plan.FleetId))
+                        throw new ArgumentException("Player plans must uniquely identify fleets owned by the human actor.", nameof(humanPlans));
+                    overrides.Add(plan.FleetId, new FleetCombatPlanDto { FleetId = plan.FleetId,
+                        LongRangeTactic = plan.LongRangeTactic, MediumRangeTactic = plan.MediumRangeTactic,
+                        CloseRangeTactic = plan.CloseRangeTactic, TargetPriority = plan.TargetPriority,
+                        RetreatHullPercent = plan.RetreatHullPercent, RetreatNodeId = plan.RetreatNodeId });
+                }
+            var composed = DeterministicPhasedCombatResolver.CreateDefaultPlans(request)
+                .Select(plan => overrides.TryGetValue(plan.FleetId, out var selected) ? selected : plan).ToList();
+            return resolver.Resolve(request, composed);
+        }
+        public IReadOnlyList<BattleReportSnapshot> GetBattleReports() => session.GetResolvedCombats()
+            .OrderBy(c => c.Request.EncounterId, StringComparer.Ordinal).Select(c => new BattleReportSnapshot(c)).ToList().AsReadOnly();
         public CombatSubmissionResult SubmitCombatResult(CombatResultDto? result, int expectedTurn, long expectedRevision) => session.SubmitCombatResult(result, expectedTurn, expectedRevision);
         public TurnResult FinalizeCombat(int expectedTurn, long expectedRevision) => session.FinalizeCombat(expectedTurn, expectedRevision);
         public SaveEnvelopeDto ExportSave() => session.ExportSave();

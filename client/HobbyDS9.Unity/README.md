@@ -146,7 +146,7 @@ dotnet msbuild scripts/PrepareUnity.proj -t:EditMode "-p:UnityEditor=C:/Program 
 dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
 ```
 
-For the current production-layout candidate, require zero Editor compilation errors, 21/21 EditMode passes, Windows x64 IL2CPP build success, and a launched `artifacts/unity/Windows/HobbyDS9.exe`. Windows Build Support (IL2CPP), Visual Studio Desktop development with C++ and a compatible Windows SDK remain required. See [the exact manual acceptance checklist](../../docs/population-politics-geography-v1.md#local-unity-acceptance) for governance, partial travel, combat and all four display sizes. Main remains unchanged until these new checks are accepted.
+For the current combat-control/reporting candidate, require zero Editor compilation errors, 24/24 EditMode passes, Windows x64 IL2CPP build success, and a launched `artifacts/unity/Windows/HobbyDS9.exe`. Windows Build Support (IL2CPP), Visual Studio Desktop development with C++ and a compatible Windows SDK remain required. See [the exact manual acceptance checklist](../../docs/population-politics-geography-v1.md#local-unity-acceptance) for governance, partial travel, combat and all four display sizes. Main remains unchanged until these new checks are accepted.
 
 
 ## Production overview layout (current candidate)
@@ -201,3 +201,49 @@ audio). Gameplay versions and the deterministic hash are unchanged. Unity/audio
 runtime and Windows IL2CPP acceptance remain local. See the [complete audio guide](../../docs/audio-foundation-v1.md)
 for original-byte hashes, import settings, architecture, exact Windows commands and
 the listening/duplicate-source/save-isolation checklist.
+
+## Combat control and battle reports (current candidate)
+
+Only Federation/human-owned fleet plans are editable in the fixed scenario. The
+Application accepts only the persisted human actor's fleet overrides and composes
+all other fleets with the existing deterministic resolver-v1 defaults. Unity
+contains no combat AI policy. Different civilizations currently fight **free-for-all**;
+3-way headings do not imply an alliance. Explicit combat sides/hostility remain
+future authoritative work.
+
+After Resolve, each buffered battle has a report showing location, participants,
+fleet dispositions, ship initial → remaining hull, damage totals and destroyed
+ships. Expand Long/Medium/Close phase sections for ordered hit/miss, damage,
+destruction and retreat events. Reports stay accessible while other encounters
+remain pending and survive save/reload of buffered checkpoints. Once all results
+are buffered, review the reports and explicitly **Finalize combat and complete
+turn**. Finalization clears the batch/reports; persistent battle history is deferred.
+
+Expected current Unity EditMode total: **24** (three new combat cases). Cloud
+verification cannot execute Unity; run locally with Unity 6000.6.5f1:
+
+```powershell
+dotnet msbuild scripts/PrepareUnity.proj -t:EditMode "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
+dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
+```
+
+Require zero compilation errors, 24/24 EditMode passes and a successful Windows
+x64 IL2CPP build/launch (Windows IL2CPP module, Visual Studio C++ desktop tools and
+Windows SDK). For the next local acceptance pass:
+
+- At a combat checkpoint, confirm only human fleets expose tactics, target priority
+  and retreat inputs; other fleets display read-only summaries. Resolve defaults
+  and selected human plans in separate save/reload runs.
+- Inspect the explicit free-for-all notice and participant heading, including the
+  three-civilization fixture covered by EditMode.
+- Resolve one encounter; inspect its hull/damage/disposition summary and expanded
+  phase events while another remains pending (EditMode supplies a two-encounter
+  fixture). Finalize must be absent until every result is buffered.
+- Save/load a partially/fully buffered checkpoint, confirm reports return unchanged,
+  resolve remaining requests, then explicitly finalize. Confirm strategic damage
+  persists and the next Planning turn opens. No resolution or finalization should
+  happen merely by opening/rendering the panel.
+- Repeat the combat/report view at all four required display sizes. The production
+  dock, selection details and existing strategic controls should remain operational.
+
+No save/content/rules/resolver version or deterministic baseline changed.

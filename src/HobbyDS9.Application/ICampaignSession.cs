@@ -19,6 +19,10 @@ namespace HobbyDS9.Application
         IReadOnlyList<ResolvedCombatDto> GetResolvedCombats();
         CombatResultDto ResolveCombat(CombatRequestDto request);
         CombatResultDto ResolveCombat(CombatRequestDto request, IReadOnlyList<FleetCombatPlanDto> plans);
+        // Player path: only this persisted Human actor's fleet overrides are allowed.
+        IReadOnlyList<FleetCombatPlanDto> GetPlayerCombatPlans(string encounterId, EntityId actorId);
+        CombatResultDto ResolvePlayerCombat(string encounterId, EntityId actorId, IReadOnlyList<FleetCombatPlanDto>? humanPlans = null);
+        IReadOnlyList<BattleReportSnapshot> GetBattleReports();
         CombatSubmissionResult SubmitCombatResult(CombatResultDto? result, int expectedTurn, long expectedRevision);
         TurnResult FinalizeCombat(int expectedTurn, long expectedRevision);
         SaveEnvelopeDto ExportSave();

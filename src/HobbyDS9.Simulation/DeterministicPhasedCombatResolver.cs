@@ -14,14 +14,16 @@ namespace HobbyDS9.Simulation
         public CombatResultDto Resolve(CombatRequestDto request)
         {
             ValidateRequest(request);
-            var plans = request.Participants.Select(p => new FleetCombatPlanDto
-            {
-                FleetId = p.FleetId, LongRangeTactic = CombatTactic.FocusFire,
-                MediumRangeTactic = CombatTactic.Standard, CloseRangeTactic = CombatTactic.Overcharge,
-                TargetPriority = CombatTargetPriority.LowestHullRatio
-            }).ToList();
-            return Resolve(request, plans);
+            return Resolve(request, CreateDefaultPlans(request));
         }
+        // Shared v1 policy for automatic resolution and player/AI composition.
+        // Returned plans are detached; this consumes no random stream.
+        public static List<FleetCombatPlanDto> CreateDefaultPlans(CombatRequestDto request) => request.Participants.Select(p => new FleetCombatPlanDto
+        {
+            FleetId = p.FleetId, LongRangeTactic = CombatTactic.FocusFire,
+            MediumRangeTactic = CombatTactic.Standard, CloseRangeTactic = CombatTactic.Overcharge,
+            TargetPriority = CombatTargetPriority.LowestHullRatio
+        }).ToList();
         public CombatResultDto Resolve(CombatRequestDto request, IReadOnlyList<FleetCombatPlanDto> plans)
         {
             ValidateRequest(request); CombatPlanValidation.Validate(request, plans);

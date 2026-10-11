@@ -124,73 +124,8 @@ namespace HobbyDS9.UnityClient
         }
         private void ShowEncounters(CampaignSnapshot snapshot)
         {
-            var requests = host.Pending();
-            Text("Awaiting combat", true);
-            Text("Strategic processing is paused. Each result is buffered before the turn can be finalized.");
-            Text($"Pending: {requests.Count} • Buffered: {snapshot.Campaign.Combats.Count(c => c.IsResolved)}");
-            if (requests.Count == 0)
-            {
-                details.Add(new Button(() => Run(() =>
-                {
-                    var result = host.Client.FinalizeCombats(snapshot);
-                    if (result.Status == TurnStatus.Completed) combatPlans.Clear();
-                    if (result.Status != TurnStatus.Completed) throw new InvalidOperationException(result.ErrorCode.ToString());
-                    return "Combat finalized. Next planning turn opened.";
-                })) { text = "Finalize combat and complete turn" });
-                return;
-            }
-            var request = requests[0]; Text(NodeName(snapshot,new NavigationNodeId(request.LocationNodeId)), true);
-            if (!combatPlans.TryGetValue(request.EncounterId, out var plans))
-            { plans = new List<FleetCombatPlanDto>(); combatPlans[request.EncounterId] = plans; }
-            var destinations = snapshot.Navigation.Nodes.OrderBy(s => s.NodeId.Value, StringComparer.Ordinal).ToList();
-            foreach (var participant in request.Participants)
-            {
-                Text(OwnerName(snapshot, new EntityId(participant.CivilizationId)), true); Text(participant.FleetId);
-                foreach (var ship in participant.Ships) Text($"{ship.ShipId}\nHull {ship.Hull}/{ship.MaxHull} • Shields {ship.CombatProfile!.ShieldCapacity}");
-                var plan = plans.SingleOrDefault(p => p.FleetId == participant.FleetId);
-                if (plan == null)
-                {
-                    plan = new FleetCombatPlanDto { FleetId = participant.FleetId, LongRangeTactic = CombatTactic.FocusFire,
-                        MediumRangeTactic = CombatTactic.Standard, CloseRangeTactic = CombatTactic.Overcharge, TargetPriority = CombatTargetPriority.LowestHullRatio };
-                    plans.Add(plan);
-                }
-                Tactic("Long range", plan.LongRangeTactic, value => plan.LongRangeTactic = value);
-                Tactic("Medium range", plan.MediumRangeTactic, value => plan.MediumRangeTactic = value);
-                Tactic("Close range", plan.CloseRangeTactic, value => plan.CloseRangeTactic = value);
-                var priorities = Enum.GetValues(typeof(CombatTargetPriority)).Cast<CombatTargetPriority>().ToList();
-                var priority = new DropdownField("Target priority", priorities.Select(v => v.ToString()).ToList(), priorities.IndexOf(plan.TargetPriority));
-                priority.AddToClassList("combat-plan-field");
-                priority.RegisterValueChangedCallback(_ => plan.TargetPriority = priorities[priority.index]); details.Add(priority);
-                var retreat = new IntegerField("Retreat hull % (0 disables)") { value = plan.RetreatHullPercent };
-                var destination = new DropdownField("Retreat region", destinations.Select(s => NodeName(snapshot,s.NodeId)).ToList(), Math.Max(0, destinations.FindIndex(s => s.NodeId.Value == plan.RetreatNodeId)));
-                destination.AddToClassList("combat-plan-field");
-                retreat.AddToClassList("combat-plan-field");
-                destination.SetEnabled(plan.RetreatHullPercent > 0);
-                void UpdateRetreat()
-                {
-                    plan.RetreatHullPercent = Mathf.Clamp(retreat.value, 0, 100); retreat.SetValueWithoutNotify(plan.RetreatHullPercent);
-                    destination.SetEnabled(plan.RetreatHullPercent > 0);
-                    plan.RetreatNodeId = plan.RetreatHullPercent == 0 ? null : destinations[destination.index].NodeId.Value;
-                }
-                retreat.RegisterValueChangedCallback(_ => UpdateRetreat()); destination.RegisterValueChangedCallback(_ => UpdateRetreat());
-                details.Add(retreat); details.Add(destination);
-            }
-            Text("Retreat destinations must pass campaign adjacency/occupancy validation. Plan controls apply to this encounter only.");
-            details.Add(new Button(() => Resolve(snapshot, request, null)) { text = "Resolve with defaults" });
-            details.Add(new Button(() => Resolve(snapshot, request, plans)) { text = "Resolve with selected plans" });
-        }
-        private void Resolve(CampaignSnapshot observed, CombatRequestDto request, IReadOnlyList<FleetCombatPlanDto>? plans) => Run(() =>
-        {
-            var result = host.Client.Resolve(observed, request, plans);
-            if (result.Status != CombatSubmissionStatus.Buffered) throw new InvalidOperationException("Combat rejected: " + result.ErrorCode);
-            return "Combat result buffered. Resolve remaining encounters, then finalize.";
-        });
-        private void Tactic(string label, CombatTactic initial, Action<CombatTactic> set)
-        {
-            var values = Enum.GetValues(typeof(CombatTactic)).Cast<CombatTactic>().ToList();
-            var field = new DropdownField(label, values.Select(v => v.ToString()).ToList(), values.IndexOf(initial));
-            field.AddToClassList("combat-plan-field");
-            field.RegisterValueChangedCallback(_ => set(values[field.index])); details.Add(field);
+            var view = new CombatPanelView();
+            view.Present(snapshot, host.Client, combatPlans, Run); details.Add(view);
         }
         private void Text(string text, bool heading = false)
         {

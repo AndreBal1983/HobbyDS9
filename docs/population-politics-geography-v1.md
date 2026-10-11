@@ -101,7 +101,7 @@ Application captures campaign, knowledge-filtered map and fleet travel projectio
 
 ### Deterministic acceptance baseline
 
-Cloud verification passes locked restore, Release build with zero warnings/errors, **732 .NET tests**, portable Unity preparation and metadata/reference/copy checks. There are **21 authored Unity EditMode cases**, not executed in this cloud environment. The acceptance tests compare continuous/repeated runs, canonical/reverse submissions, reloads at pending/partially buffered/fully buffered checkpoints, and reordered content/state including navigation, knowledge, policies, memories and cohorts.
+Cloud verification passes locked restore, Release build with zero warnings/errors, **742 .NET tests**, portable Unity preparation and metadata/reference/copy checks. There are **24 authored Unity EditMode cases**, not executed in this cloud environment. The acceptance tests compare continuous/repeated runs, canonical/reverse submissions, reloads at pending/partially buffered/fully buffered checkpoints, and reordered content/state including navigation, knowledge, policies, memories and cohorts.
 
 Canonical/reverse/repeated 25-turn final save SHA256:
 
@@ -148,7 +148,7 @@ dotnet msbuild scripts/PrepareUnity.proj -t:EditMode "-p:UnityEditor=C:/Program 
 dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
 ```
 
-Require zero Editor compilation errors and **21/21** EditMode passes. `Windows` reruns EditMode before the x64 IL2CPP build. Results/logs/player are ignored under `artifacts/unity`; launch `artifacts/unity/Windows/HobbyDS9.exe`.
+Require zero Editor compilation errors and **24/24** EditMode passes. `Windows` reruns EditMode before the x64 IL2CPP build. Results/logs/player are ignored under `artifacts/unity`; launch `artifacts/unity/Windows/HobbyDS9.exe`.
 
 1. Inspect Earth/Bajor/Mars: policy, Stability versus target, pressure/resistance, cohort reasons/memories/affinities and inclusion thresholds. Change an owned-world policy, advance, and confirm authoritative ratings/effective outputs change. Mars under extractive policy is an optional sustained-treatment resistance demonstration; no species automatically rebels.
 2. Preview Federation Sol–Bajor: cost 7, budget 3, ETA 3. Confirm route, advance one turn, and inspect 3/7 paid progress. Save/load and verify exact progress and policy restoration. Route replacement is disabled during partial travel.
@@ -173,3 +173,21 @@ for all four target resolutions. The three new EditMode cases cover owned-world
 rendering without mutation, real command/stale-revision handling and independence
 from map selection. This presentation-only follow-up changes no versions or
 canonical/reverse/reload/reordered deterministic baselines.
+
+
+### Combat-control/reporting acceptance follow-up
+
+The candidate now limits editable encounter plans to the persisted human player's
+fleets. Application composes those overrides with the unchanged resolver-v1
+non-player defaults and resolves the frozen pending request. Unknown, duplicated
+or foreign/AI fleet overrides are rejected without mutation. Current multi-party
+combat remains explicitly free-for-all between different civilizations, without
+alliances or implicit sides.
+
+Buffered reports project persisted requests/results and ordered events into
+immutable fleet/ship hull/disposition summaries and expandable Long/Medium/Close
+phase traces. Reports survive checkpoint reload and remain visible while other
+encounters are pending, until explicit finalization clears the batch. Versions
+and the canonical/reverse/reload/reordered baseline above are unchanged. The
+[combat acceptance checklist](../client/HobbyDS9.Unity/README.md#combat-control-and-battle-reports-current-candidate)
+requires 24/24 local EditMode passes and a Windows x64 IL2CPP build/launch.

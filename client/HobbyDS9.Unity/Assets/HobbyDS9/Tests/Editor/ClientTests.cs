@@ -10,6 +10,90 @@ namespace HobbyDS9.UnityClient.Tests
     public sealed class ClientTests
     {
         private static CampaignHost Start() => new CampaignHost(Resources.Load<TextAsset>("ds9-slice").bytes);
+        private static CampaignHost ThreePartyCombat(int battles = 1)
+        {
+            var host = Start(); var save = host.Client.ExportSave();
+            foreach (var actor in save.GameState.Civilizations) actor.ControllerKind = ControllerKind.Human;
+            foreach (var fleet in save.GameState.Fleets)
+            { fleet.LocationNodeId = "nav.bajor"; fleet.RouteNodeIds.Clear(); fleet.TransitTotalCost = 0; fleet.TransitProgress = 0; }
+            if (battles == 2)
+                foreach (var original in save.GameState.Fleets.ToArray())
+                {
+                    var source = save.GameState.Ships.Single(s => s.FleetId == original.FleetId);
+                    var fleetId = original.FleetId + "-second"; var shipId = source.ShipId + "-second";
+                    save.GameState.Fleets.Add(new FleetStateDto { FleetId = fleetId, OwnerCivilizationId = original.OwnerCivilizationId,
+                        LocationNodeId = "nav.gamma-exit", ShipIds = new System.Collections.Generic.List<string> { shipId }, RouteNodeIds = new System.Collections.Generic.List<string>() });
+                    save.GameState.Ships.Add(new ShipStateDto { ShipId = shipId, FleetId = fleetId, OwnerCivilizationId = original.OwnerCivilizationId,
+                        ShipDesignDefinitionId = source.ShipDesignDefinitionId, CurrentHull = source.CurrentHull });
+                    save.GameState.EntityIdentities.Add(new EntityIdentityDto { EntityId = fleetId });
+                    save.GameState.EntityIdentities.Add(new EntityIdentityDto { EntityId = shipId, DefinitionId = source.ShipDesignDefinitionId });
+                }
+            host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save));
+            Assert.That(host.EndTurn().Status, Is.EqualTo(TurnStatus.AwaitingCombat));
+            save = host.Client.ExportSave();
+            foreach (var actor in save.GameState.Civilizations) actor.ControllerKind = actor.CivilizationId == "civ.federation" ? ControllerKind.Human : ControllerKind.AI;
+            host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save)); return host;
+        }
+        private static CombatPanelView CombatView(CampaignHost host)
+        {
+            var view = new CombatPanelView();
+            view.Present(host.Snapshot, host.Client, new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<FleetCombatPlanDto>>(), operation => operation());
+            return view;
+        }
+        [Test]
+        public void ThreePartyCombatExposesOnlyHumanControlsAndRejectsAiPlanOverrides()
+        {
+            var host = ThreePartyCombat(); var request = host.Pending().Single(); var before = host.SaveJson();
+            var view = CombatView(host);
+            Assert.That(view.Query<Label>().ToList().Any(l => l.text == "3-way engagement: Federation vs Cardassian Union vs Dominion"), Is.True);
+            Assert.That(view.Query<Label>().ToList().Any(l => l.text.Contains("Free-for-all")), Is.True);
+            foreach (var participant in request.Participants)
+            {
+                var section = view.Q<VisualElement>("fleet-plan-" + participant.FleetId);
+                Assert.That(section.Query<DropdownField>().ToList().Count, Is.EqualTo(participant.CivilizationId == "civ.federation" ? 5 : 0));
+                Assert.That(section.Query<IntegerField>().ToList().Count, Is.EqualTo(participant.CivilizationId == "civ.federation" ? 1 : 0));
+            }
+            var own = host.Client.PlayerPlans(host.Snapshot, request).Single();
+            own.FleetId = request.Participants.First(p => p.CivilizationId != "civ.federation").FleetId;
+            Assert.That(() => host.Resolve(request, new[] { own }), Throws.TypeOf<System.ArgumentException>());
+            Assert.That(host.SaveJson(), Is.EqualTo(before));
+        }
+        [Test]
+        public void BufferedBattleReportRendersHullDamageAndPhaseEventsAfterReload()
+        {
+            var host = ThreePartyCombat(); var request = host.Pending().Single();
+            Assert.That(host.Resolve(request).Status, Is.EqualTo(CombatSubmissionStatus.Buffered));
+            var saved = host.SaveJson(); host.LoadJson(saved); var view = CombatView(host);
+            var report = host.Client.Reports().Single(); var section = view.Q<Foldout>("battle-report-" + request.EncounterId);
+            Assert.That(section, Is.Not.Null);
+            Assert.That(section.Query<Label>().ToList().Any(l => l.text.Contains("Shield damage: " + report.ShieldDamage) && l.text.Contains("Hull damage: " + report.HullDamage)), Is.True);
+            foreach (var ship in report.Fleets.SelectMany(f => f.Ships))
+                Assert.That(section.Query<Label>().ToList().Any(l => l.text.Contains(ship.ShipId + ": hull " + ship.StartingHull + " → " + ship.RemainingHull)), Is.True);
+            foreach (var phase in report.Phases)
+            {
+                var events = section.Q<Foldout>("events-" + phase.Phase);
+                Assert.That(events, Is.Not.Null); Assert.That(events.value, Is.False);
+                foreach (var e in phase.Events) Assert.That(events.Query<Label>().ToList().Any(l => l.text.StartsWith("#" + e.Sequence + " " + e.Kind)), Is.True);
+            }
+            Assert.That(view.Q<Button>("finalize-combat"), Is.Not.Null);
+            Assert.That(host.Snapshot.Campaign.Phase, Is.EqualTo(SessionPhase.AwaitingCombat));
+            Assert.That(host.SaveJson(), Is.EqualTo(saved));
+        }
+        [Test]
+        public void BufferedReportsRemainAccessibleWhileOtherEncountersArePending()
+        {
+            var host = ThreePartyCombat(2); Assert.That(host.Pending().Count, Is.EqualTo(2));
+            var first = host.Pending()[0]; Assert.That(host.Resolve(first).Status, Is.EqualTo(CombatSubmissionStatus.Buffered));
+            var before = host.SaveJson(); var view = CombatView(host);
+            Assert.That(view.Q<Foldout>("battle-report-" + first.EncounterId), Is.Not.Null);
+            Assert.That(view.Q<Button>("resolve-defaults"), Is.Not.Null); Assert.That(view.Q<Button>("finalize-combat"), Is.Null);
+            Assert.That(host.SaveJson(), Is.EqualTo(before));
+            Assert.That(host.Resolve(host.Pending().Single()).Status, Is.EqualTo(CombatSubmissionStatus.Buffered));
+            view = CombatView(host);
+            Assert.That(view.Query<Foldout>().ToList().Count(f => f.name.StartsWith("battle-report-")), Is.EqualTo(2));
+            Assert.That(view.Q<Button>("finalize-combat"), Is.Not.Null);
+            Assert.That(host.FinalizeCombats().Status, Is.EqualTo(TurnStatus.Completed));
+        }
         [Test]
         public void ProductionOverviewRendersAllOwnedWorldsWithoutCampaignMutation()
         {
