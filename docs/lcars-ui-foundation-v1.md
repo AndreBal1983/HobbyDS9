@@ -1,11 +1,13 @@
 # Responsive LCARS-inspired UI foundation v1
 
-Branch `codex/lcars-ui-foundation-v1` starts exactly from combat/audio candidate
+Historical implementation record: branch `codex/lcars-ui-foundation-v1` starts exactly from combat/audio candidate
 `795b485542b52bfb3c096db02643ca40fdf01b9e`. This is presentation only. Existing
 acceptance branches and main are untouched. L1 adds tokens/components/policy;
 L2 connects the shell/rail/header/production drawer; L3 restyles existing views,
 adds integration/static coverage and completes the documentation. Each green
 checkpoint is pushed separately. Local acceptance is required before any merge.
+
+The integrated handoff subsequently passed user-reported local Windows-player acceptance; see [consolidation audit](integrated-acceptance-consolidation-v2.md). The final authored suite includes the three restored headless-safe elbow cases. Historical checkpoint counts below describe that earlier branch, not the consolidated suite.
 
 ## Components and ownership
 

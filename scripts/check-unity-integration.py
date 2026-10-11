@@ -112,7 +112,7 @@ for name in ("MusicPolicy.cs", "MusicCatalog.cs", "AudioDirector.cs"):
     code = (runtime / name).read_text(encoding="utf-8-sig")
     require(all(term not in code for term in ("HobbyDS9.Application", "HobbyDS9.Contracts", "HobbyDS9.Simulation", "SplitMix64")),
             f"Audio must remain independent of campaign APIs/RNG: {name}")
-# SFX assets may deliberately be absent when source sites block retrieval.
+# Validate the populated, locally accepted SFX catalog and original bytes.
 sfx_catalog = (assets / "HobbyDS9/Resources/LcarsSfxCatalog.asset").read_text(encoding="utf-8-sig")
 sfx_ids = {"buttonPress", "success", "error", "processing", "screenOpen", "search"}
 require(set(re.findall(r"semanticId: (\w+)", sfx_catalog)) == sfx_ids, "Incomplete semantic SFX catalog")
@@ -130,11 +130,47 @@ for name in ("SfxDirector.cs", "SfxPolicy.cs", "LcarsSfxCatalog.cs", "SfxFeedbac
 sfx_service = (runtime / "SfxDirector.cs").read_text()
 require(len(re.findall(r"AddComponent<AudioSource>",sfx_service)) == 1 and "SfxPolicy.PoolSize" in sfx_service, "SFX must centralize bounded AudioSource creation")
 require("source.loop = false" in sfx_service and "source.spatialBlend = 0" in sfx_service, "SFX must remain non-looping and 2D")
-for audio in (assets / "HobbyDS9/Audio/SFX/LCARS").iterdir():
+sfx_folder = assets / "HobbyDS9/Audio/SFX/LCARS"
+require(not (sfx_folder / "New Lcars Sfx Catalog.asset").exists(), "Accidental duplicate SFX catalog must be removed")
+expected_sfx = {
+    "buttonPress": (0, "federation-key-beep-1.wav", "2a1dedbe17e3d2a51ca33e7e3f90c4ff0eed62fdb4d4a9563cb4ff874b564bb6"),
+    "success": (1, "federation-input-successful-1.wav", "1663cb5681034096ca2bed9a51e4fe834d40677a150406f519a915dd3873f77e"),
+    "error": (2, "federation-access-denied.wav", "95d8d7468eeff8937318308bb8a09b9afa7367cbc492898c9d4637f382ddcddb"),
+    "processing": (3, "federation-processing-1.wav", "8608639986663f2d33e27b58e39de809ab0199cc284cc2b645a55577131d7c51"),
+    "screenOpen": (4, "federation-screen-display-1.wav", "0f09b73814439ba383a15c5831a1a5a7d65f1a31a418c7fd8969ae207d98c5f8"),
+    "search": (5, "federation-lcars-search.wav", "538dd9a507f6a278d37b8cc0d9ef013d4039288e9f43a4a332b1fc4ec4584331"),
+}
+entries = re.findall(r"(?ms)^  - effect: (\d+)\n(.*?)(?=^  - effect: |\Z)", sfx_catalog)
+require(len(entries) == 6, "Canonical SFX catalog must contain exactly six entries")
+for semantic, (effect, filename, digest) in expected_sfx.items():
+    matching = [body for number, body in entries if int(number) == effect]
+    require(len(matching) == 1, "Missing/duplicate SFX effect: " + semantic)
+    audio = sfx_folder / filename
+    require(audio.is_file(), "Missing accepted SFX: " + filename)
+    if not audio.is_file(): continue
+    require(hashlib.sha256(audio.read_bytes()).hexdigest() == digest, "Accepted SFX bytes changed: " + filename)
+    meta = Path(str(audio) + ".meta").read_text()
+    guid = re.search(r"^guid: ([0-9a-f]{32})$", meta, re.MULTILINE)
+    if matching:
+        body = matching[0]
+        require("    semanticId: " + semantic in body.splitlines() and "    intendedFilename: " + filename in body.splitlines(), "Wrong SFX semantic mapping: " + semantic)
+        require(guid is not None and "clip: {fileID: 8300000, guid: " + guid.group(1) + ", type: 3}" in body, "Null/mismatched canonical SFX clip reference: " + semantic)
+    for setting in ("    loadType: 0", "    preloadAudioData: 0", "    compressionFormat: 1", "  forceToMono: 0", "  normalize: 1", "  loadInBackground: 0"):
+        require(setting in meta.splitlines(), "Accepted SFX import setting changed: " + filename + " " + setting.strip())
+    require(digest in provenance.read_text(), "SFX hash missing from provenance: " + filename)
+for audio in sfx_folder.iterdir():
     if audio.suffix.lower() in {".wav", ".mp3", ".ogg", ".aiff"}:
-        require(audio.name in re.findall(r"intendedFilename: ([^\n]+)",sfx_catalog), "Uncatalogued SFX/possible voice file: " + audio.name)
-        meta = Path(str(audio)+".meta").read_text()
-        require("loadType: 0" in meta and "preloadAudioData: 1" in meta, "Short SFX should decompress on load and preload: " + audio.name)
+        require(audio.name in {v[1] for v in expected_sfx.values()}, "Uncatalogued SFX/possible voice file: " + audio.name)
+# Tracked files only: generated local outputs may exist but must stay ignored.
+import subprocess
+tracked = subprocess.check_output(["git", "ls-files", "-z"], cwd=root).decode().split("\0")
+for name in filter(None, tracked):
+    require(not re.search(r"(?:^|/)(?:Library|Temp|Logs|obj|bin|artifacts|Backup)/|\.(?:exe|user|suo)$|(?:^|/)(?:UpgradeLog\.htm|\.vsconfig)$", name), "Generated/environment-specific file is tracked: " + name)
+for filename in ("LcarsTests.cs", "SfxTests.cs"):
+    code = (assets / "HobbyDS9/Tests/Editor" / filename).read_text()
+    require("window.Show()" not in code and ".SendEvent(" not in code, "Headless EditMode tests must not require attached graphics panels: " + filename)
+elbow_tests = (assets / "HobbyDS9/Tests/Editor/LcarsTests.cs").read_text()
+require("VectorElbowAcceptsContentSizesWithoutFrameDrivenGeometry" in elbow_tests and all(re.search(r"\[TestCase\(\s*" + str(w) + r"\s*,\s*" + str(h) + r"\s*\)\]", elbow_tests) for w,h in ((20,20),(104,64),(180,90))), "Missing restored headless-safe vector-elbow cases")
 
 scenario = root / "scenarios/ds9-slice/scenario.json"
 resource = assets / "HobbyDS9/Resources/ds9-slice.json"

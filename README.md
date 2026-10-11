@@ -22,7 +22,7 @@ scenarios/ds9-slice/         # Separate DS9 content package
 docs/architecture.md
 ```
 
-Contracts, Simulation, Scenarios and Application target `netstandard2.1` with C# 9; Headless and Tests target `net10.0`. Production projects have no external packages, Unity/WPF/network dependencies or legacy references. Unity 6 can consume the portable libraries through an adapter; the previous Unity/IL2CPP milestone passed local acceptance; this population milestone requires a new local pass. JSON/file I/O stays in the host.
+Contracts, Simulation, Scenarios and Application target `netstandard2.1` with C# 9; Headless and Tests target `net10.0`. Production projects have no external packages, Unity/WPF/network dependencies or legacy references. Unity 6 can consume the portable libraries through an adapter; the integrated Unity/IL2CPP client passed user-reported local acceptance (see below). JSON/file I/O stays in the host.
 
 ## Client application boundary
 
@@ -97,22 +97,8 @@ The new economy includes explicit planets, mixed cohorts, automatic habitat allo
 
 The Unity 6000.6.5f1 URP scaffold and first client implementation are under [client/HobbyDS9.Unity](client/HobbyDS9.Unity/README.md). Prepare portable DLLs and the scenario with `dotnet msbuild scripts/PrepareUnity.proj`. The client uses Application snapshots and explicit combat checkpoints. Local Unity 6000.6.5f1 acceptance passed compilation, 4/4 EditMode tests, gameplay/combat flow, and a launched Windows x64 IL2CPP build. CI also verifies portable integration; display checks remain part of future UI changes.
 
-Strategic Gameplay UI v1 passed local acceptance. The current economy/population candidate adds a world selector, cohort/environment/infrastructure/resource inspection and delivery explanations to those screens. It stays on `codex/economy-population-foundation-v1` until the [new local Unity acceptance](client/HobbyDS9.Unity/README.md#populationeconomy-v1-local-acceptance) passes. Cloud checks do not execute Unity or produce a Windows player.
+The integrated client retains research, empire-wide production enqueue/cancel, weighted route preview/submission and partial travel, population/economy inspection, politics/governance and save/load. Its combat UI auto-resolves AI-only encounters without interruption, exposes only human fleet plans, and retains recent reports. The responsive LCARS shell and music/SFX services remain presentation-only.
 
-## Population politics / geography milestone in progress
+The accepted source handoff is `34c2c6660d2901de2257d808e1b852504bd38b50`. User-reported local checks on Unity 6000.6.5f1: **50/50 EditMode passed**, Windows x64 IL2CPP build succeeded, music/crossfade and LCARS SFX playback passed, independent audio controls passed, responsive Windows-player UI and AI-only/human combat/report flow were exercised. Consolidation restores three accidentally deleted headless-safe elbow cases, for **53 authored cases**; cloud has no Editor and does not claim a new Unity execution.
 
-Stage P1 adds data-defined governance policies, stamped policy commands, bounded political updates with ordered causes, active memories, conditional legal inclusion, population-weighted pressure and resistance inertia. Its intermediate schema is save 11/content 7/rules `population-politics-v1`; combat remains v1. Weighted navigation and client integration follow on the feature branch. See [the milestone rules/checkpoints](docs/population-politics-geography-v1.md). Main remains at the accepted economy milestone until new local Unity acceptance.
-
-Population-politics/geography G1 checkpoint: independent weighted regions, optional star associations, fleet budgets and partial-edge travel, knowledge-filtered routing, scheduled modifiers, and detached cost/ETA projections are implemented on the candidate branch. Saves/content are 12/8. Unity acceptance remains pending for this milestone; see [milestone details](docs/population-politics-geography-v1.md).
-
-
-The stacked [combat UX/report correction](docs/combat-ux-report-fix-v1.md) adds
-non-interrupting AI-only resolution, Human-only combat controls and client-session
-recent battle reports. It retains the audio candidate and deterministic baseline;
-local Unity/Windows acceptance is required before merging.
-
-
-The next stacked [responsive LCARS UI foundation](docs/lcars-ui-foundation-v1.md)
-adds reusable presentation components and logical Compact/Standard/Wide layouts
-while retaining the combat/audio stack. Gameplay versions and baseline stay fixed;
-Unity/Windows visual and functional acceptance is required before merging.
+See [consolidation audit](docs/integrated-acceptance-consolidation-v2.md), [LCARS/SFX verification](docs/lcars-sfx-foundation.md) and [audio provenance/hashes](docs/audio-sources.md). Save/content remain 12/8, rules `population-politics-geography-v1`, phased combat resolver v1. VSync, graphics options and new gameplay are deferred.

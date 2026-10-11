@@ -98,7 +98,7 @@ namespace HobbyDS9.UnityClient.Tests
             Assert.That(host.SaveJson(),Is.EqualTo(before));Assert.That(shell.ProductionFrame.Body,Is.SameAs(production));
         }
         [Test]
-        public void RepeatedAttachedGeometryEventsDoNotDuplicateControls()
+        public void RepeatedLogicalLayoutChangesDoNotDuplicateControls()
         {
             var shell = new LcarsShell(
                 new VisualElement(),
@@ -126,6 +126,14 @@ namespace HobbyDS9.UnityClient.Tests
 
             Assert.That(shell.Query<Button>().ToList().Count, Is.EqualTo(count));
             Assert.That(shell.Details, Is.InstanceOf<ScrollView>());
+        }
+        [TestCase(20,20)] [TestCase(104,64)] [TestCase(180,90)]
+        public void VectorElbowAcceptsContentSizesWithoutFrameDrivenGeometry(float width,float height)
+        {
+            var elbow=new LcarsElbow();elbow.style.width=width;elbow.style.height=height;
+            Assert.That(elbow.pickingMode,Is.EqualTo(PickingMode.Ignore));
+            Assert.That(new ElbowMetrics(width,height).CanDraw,Is.True);
+            Assert.DoesNotThrow(() => elbow.MarkDirtyRepaint());
         }
     }
 

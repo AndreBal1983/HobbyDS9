@@ -109,7 +109,7 @@ Limitations: three fixed slots, no rename/delete UI or autosave; no camera/UI pr
 
 ## Population/economy v1 local acceptance
 
-This candidate has **14 Unity EditMode cases** (the previous 9 plus mixed-world/resource/round-trip and strict incomplete/obsolete-save tests). They require local execution; cloud checks do not establish Unity compilation or IL2CPP acceptance.
+Historical economy milestone instructions (the integrated acceptance is recorded below): this candidate had **14 Unity EditMode cases** (the previous 9 plus mixed-world/resource/round-trip and strict incomplete/obsolete-save tests). They require local execution; cloud checks do not establish Unity compilation or IL2CPP acceptance.
 
 Close Unity, pull `codex/economy-population-foundation-v1`, then from the repository root run:
 
@@ -227,6 +227,8 @@ breakpoints/readability scaling, exact local IL2CPP commands and the full six-si
 visual/functional acceptance matrix. Unity compilation/rendering remains unverified
 in cloud.
 
-### LCARS interface effects candidate
+### Integrated LCARS audio acceptance
 
-The SFX service, controls and action hooks are implemented, but the six original clips are **missing** because source-site downloads returned HTTP 403. They safely remain silent. See [source provenance](../../docs/audio-sources.md) for the exact items to supply and [SFX verification](../../docs/lcars-sfx-foundation.md) for source assignment/import settings, policy, Unity 6000.6.5f1 EditMode and Windows x64 IL2CPP commands, and integrated acceptance checklist. Music assets/import settings are unchanged. This branch requires local Unity and audible acceptance; cloud checks are static/.NET only.
+The user-supplied Federation WAVs and six populated catalog references are now retained from accepted handoff `34c2c6660d2901de2257d808e1b852504bd38b50`. [Provenance](../../docs/audio-sources.md) records exact filenames, SHA256 and accepted importer settings. Cloud source downloads had returned HTTP 403; no substitutes were used.
+
+User-reported acceptance: Unity 6000.6.5f1 EditMode 50/50 passed, Windows x64 IL2CPP build succeeded, music and soundtrack crossfade sounded correct, LCARS SFX and independent audio controls passed, responsive Windows-player UI and AI-only/human combat/report flows were exercised. Consolidation restores three accidentally removed headless-safe elbow cases, giving 53 authored cases; no cloud Unity execution is claimed. [Verification guide](../../docs/lcars-sfx-foundation.md) records exact commands and distinguishes local reports from cloud gates. VSync/graphics options remain deferred.

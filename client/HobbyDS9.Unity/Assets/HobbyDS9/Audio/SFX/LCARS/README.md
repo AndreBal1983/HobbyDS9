@@ -1,5 +1,3 @@
-# Missing LCARS source clips
+# Accepted Federation LCARS clips
 
-Both authorized sites returned proxy HTTP 403 on 2026-10-11. No sound bytes were imported or synthesized. See `docs/audio-sources.md` for the six requested Federation items. The catalog intentionally has null references and playback is silent.
-
-Supply original files, preserving their actual codec/extension, in this folder. Assign each AudioClip to its semantic entry in Resources/LcarsSfxCatalog. Import as Decompress On Load, preload enabled, background loading disabled, preserve channels, normalization disabled; do not stream these short clips. Commit Unity-generated metadata and record actual filenames, direct URLs and SHA256 in the provenance document. Intended WAV filenames are provisional until original formats are verified.
+The user supplied these six WAVs in handoff `34c2c6660d2901de2257d808e1b852504bd38b50` after cloud source access returned HTTP 403. Preserve original bytes and metadata GUIDs. `Resources/LcarsSfxCatalog.asset` contains the six populated canonical references; no runtime downloads occur. See `docs/audio-sources.md` for exact hashes, source/provenance limitations and accepted import settings, and `docs/lcars-sfx-foundation.md` for reported local acceptance and cloud verification boundaries.

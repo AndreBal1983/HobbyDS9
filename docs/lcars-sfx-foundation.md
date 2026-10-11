@@ -1,12 +1,10 @@
 # LCARS SFX foundation v1 candidate
 
-Stacked on responsive LCARS commit `85c4b9311ef31ff0b6856a1e1d39470244bb7c8b` on `codex/lcars-sfx-foundation-v1`. Main and earlier candidate branches remain unchanged. Presentation only: save 12, content 8, rules `population-politics-geography-v1`, phased combat resolver v1 and campaign RNG remain unchanged.
+The integrated acceptance consolidation uses only handoff `34c2c6660d2901de2257d808e1b852504bd38b50`, descended from SFX candidate `e439b9b0e64c7705bc694107e826bb25375eace1`. Presentation only: save 12, content 8, rules `population-politics-geography-v1`, phased combat resolver v1 and campaign RNG are unchanged.
 
 ## Clips and import
 
-**No SFX bytes could be downloaded:** both authorized sites failed with proxy HTTP 403. [Source manifest](audio-sources.md) lists all six requested Federation items, intended filenames and unavailable URL/hash status. `Resources/LcarsSfxCatalog.asset` contains explicit semantic entries with null AudioClip references. Missing catalog or clips produce silence. No generated or unrelated effects were substituted. There are no nonexistent-file metadata or runtime downloads.
-
-Supply the original non-voice files in `Assets/HobbyDS9/Audio/SFX/LCARS`, preserving bytes and actual codec/extension. Assign references in LcarsSfxCatalog. Provisional `.wav` filenames should be updated to match originals. Set short clips to Decompress On Load, preload enabled, background loading disabled, normalization disabled, preserve channels; no streaming. Record actual paths, retrieval dates, direct URLs and SHA256 in audio-sources.md, and commit generated import metadata. Music bytes/settings are unchanged. Audible acceptance requires these clips first.
+Cloud downloads were blocked by HTTP 403. The user supplied all six Federation WAVs locally; they are now tracked with stable metadata and populated references in `Resources/LcarsSfxCatalog.asset`. [Provenance](audio-sources.md) records exact filenames, SHA256, source-page attribution limitations and actual accepted import settings. WAV and music bytes/import metadata are preserved. No runtime downloads or substitute effects were added.
 
 ## Service and integration
 
@@ -39,15 +37,17 @@ dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=$unity"
 .\artifacts\unity\Windows\HobbyDS9.exe
 ```
 
-Windows target reruns EditMode before building x64 IL2CPP. Inspect `artifacts/unity/editmode.xml`, `editmode.log` and `windows-build.log`. Expected authored Unity suite: **54 cases**, including 9 SFX cases; these are not executed in cloud.
+Windows target reruns EditMode before building x64 IL2CPP. Inspect `artifacts/unity/editmode.xml`, `editmode.log` and `windows-build.log`. The user reported Unity **6000.6.5f1** local EditMode **50/50 passed** on the handoff after headless compatibility fixes, and a successful Windows x64 IL2CPP build. Music playback, soundtrack transition/crossfade by listening, LCARS SFX playback and Music/SFX volume/mute independence passed locally. Responsive LCARS UI was exercised in the Windows player; AI-only combat non-interruption and human combat/report flow were part of that accepted build.
+
+Consolidation restores three accidentally deleted, headless-safe vector-elbow cases (20×20, 104×64, 180×90). Final authored count is **53**, including 8 SFX cases. The 50/50 report applies to the handoff before those cases were restored; no 53/53 Unity execution is claimed in cloud, which has no Editor. Headless tests do not use EditorWindow.Show or synthetic detached UI event dispatch. Runtime first-pointer/keyboard arming remains a local/manual check.
 
 Manual integrated checklist:
 
-- Supply/assign the six originals, verify provenance/hash and import settings; then check all six cues through catalog/service (Processing explicitly, since no current operation needs it).
+- For future local reruns, verify all six catalog references and cues (Processing explicitly, since no current operation needs it).
 - Startup silent until genuine pointer/keyboard input; first click works; rapid clicks remain bounded, processing cannot overlap and Stop ends it.
 - Major navigation/Production opening cue once; repeated refresh, hover, resizing and AI-only combat silent. Successful commands/save/load/human combat acknowledge; rejected stale/invalid actions and failures use Error.
 - Master affects music/SFX; both volumes and mutes independent; restart preserves preferences; music continues and crossfades without duplicate sources across saves/loads.
 - Verify 1280×720, 1600×900, 1920×1080, 2560×1440, 3440×1440, 5120×1440 and live resize: map usable, no overlap, elbows and Production dock/drawer intact.
 - Verify research, enqueue/cancel, governance, route preview/submit/partial movement, save/load, non-interrupting AI-only combat, human-only plans, buffered reports/history and explicit finalization.
 
-Do not merge this candidate to main before local integrated acceptance.
+Local integrated acceptance has been supplied by the user. Consolidation permits only a verified fast-forward to main after cloud gates and exact candidate CI pass. VSync, frame-rate caps and graphics options are deferred; none are implemented or claimed tested here.
