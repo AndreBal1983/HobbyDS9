@@ -58,7 +58,7 @@ public sealed class ApplicationBoundaryTests
         var scenario = V.Scenario(); var app = CampaignApplication.StartScenario(scenario); var old = app.CaptureSnapshot();
         var initial = Save(app); var view = Json(old);
         scenario.InitialState.Civilizations![0].Credits = 0;
-        scenario.InitialState.Fleets![0].RouteSystemIds!.Add("system.sol");
+        scenario.InitialState.Fleets![0].RouteNodeIds!.Add("system.sol");
         scenario.Definitions.Civilizations![0].DisplayName = "changed";
         scenario.Definitions.StarSystems!.Clear(); scenario.Definitions.ResearchNodes![0].PrerequisiteDefinitionIds!.Add("research.missing");
         scenario.Definitions.ShipDesigns![0].CombatProfile!.AccuracyBps = 0;
@@ -93,7 +93,7 @@ public sealed class ApplicationBoundaryTests
         var route = app.FindRoute(from, to); var stamp = State(app);
         Assert.True(app.SubmitFleetRoute(new("cmd.route"), new("civ.federation"), stamp.TurnNumber, stamp.StateRevision, new("fleet.federation-scout"), route.Steps).Accepted);
         Assert.Equal(4, State(app).StateRevision); Assert.Equal(4, app.CaptureSnapshot().AcceptedPlayerCommandIds.Count);
-        Assert.Equal(new[] { "system.bajor", "system.bajoran-wormhole", "system.gamma-exit" }, State(app).Fleets.Single(f => f.FleetId.Value == "fleet.federation-scout").RouteSystemIds.Select(i => i.Value));
+        Assert.Equal(new[] { "system.bajor", "system.bajoran-wormhole", "system.gamma-exit" }, State(app).Fleets.Single(f => f.FleetId.Value == "fleet.federation-scout").RouteNodeIds.Select(i => i.Value));
         Assert.Empty(State(app).Colonies.Single(c => c.ColonyId.Value == "colony.sol").ProductionQueue);
     }
 
@@ -177,7 +177,7 @@ public sealed class ApplicationBoundaryTests
         Assert.Equal(before, Save(app));
         // Client model represents non-system nodes even though this adapter does not create them yet.
         Assert.Null(new NavigationNodeSnapshot(new("node.interstellar"), null).AssociatedSystemId);
-        Assert.Equal(CommandErrorCode.InvalidPayload, app.SubmitFleetRoute(new("cmd.bad-route"), new("civ.federation"), 1, 0, new("fleet.federation-scout"), new[] { new NavigationNodeId("node.unknown") }).ErrorCode);
+        Assert.Equal(CommandErrorCode.InvalidRoute, app.SubmitFleetRoute(new("cmd.bad-route"), new("civ.federation"), 1, 0, new("fleet.federation-scout"), new[] { new NavigationNodeId("node.unknown") }).ErrorCode);
         Assert.Equal(CommandErrorCode.InvalidRoute, app.SubmitFleetRoute(new("cmd.disconnected"), new("civ.federation"), 1, 0, new("fleet.federation-scout"), new[] { new NavigationNodeId("system.gamma-exit") }).ErrorCode);
         Assert.Equal(before, Save(app));
     }
@@ -196,7 +196,8 @@ public sealed class ApplicationBoundaryTests
     [Fact]
     public void DisconnectedNavigationHasNoRouteCostAndNoMutation()
     {
-        var scenario = V.Scenario(); scenario.Definitions.GalaxyEdges!.Clear();
+        var scenario = V.Scenario(); scenario.Definitions.NavigationConnections!.Clear();
+        foreach(var k in scenario.InitialState.NavigationKnowledge!) k.Connections!.Clear();
         var app = CampaignApplication.StartScenario(scenario); var before = Save(app);
         var route = app.FindRoute(new("system.sol"), new("system.bajor"));
         Assert.Equal(NavigationRouteError.Unreachable, route.ErrorCode); Assert.Empty(route.Steps); Assert.Null(route.TraversalCost);
@@ -246,11 +247,11 @@ public sealed class ApplicationBoundaryTests
         Assert.Throws<ArgumentException>(() => app.ResolveCombat(request, plans)); Assert.Equal(before, Save(app));
         var result = app.ResolveCombat(request); result.ResolverVersion++; var stamp = State(app);
         Assert.Equal(CombatSubmissionError.ResolverMismatch, app.SubmitCombatResult(result, stamp.TurnNumber, stamp.StateRevision).ErrorCode); Assert.Equal(before, Save(app));
-        plans = Plans(request); plans[0].RetreatHullPercent = 100; plans[0].RetreatSystemId = "system.sol";
+        plans = Plans(request); plans[0].RetreatHullPercent = 100; plans[0].RetreatNodeId = "system.sol";
         result = app.ResolveCombat(request, plans); Assert.Contains(result.FleetChanges, c => c.Disposition == FleetCombatDisposition.Retreated);
         Assert.Equal(CombatSubmissionStatus.Buffered, app.SubmitCombatResult(result, stamp.TurnNumber, stamp.StateRevision).Status);
         stamp = State(app); Assert.Equal(TurnStatus.Completed, app.FinalizeCombat(stamp.TurnNumber, stamp.StateRevision).Status);
-        Assert.Contains(State(app).Fleets, f => f.FleetId.Value == plans[0].FleetId && f.LocationSystemId.Value == "system.sol");
+        Assert.Contains(State(app).Fleets, f => f.FleetId.Value == plans[0].FleetId && f.LocationNodeId.Value == "system.sol");
     }
 
     [Fact]
@@ -290,7 +291,7 @@ public sealed class ApplicationBoundaryTests
             }
             Assert.Equal(V.Json(direct), Save(app)); app = Reload(app, scenario);
         }
-        Assert.Equal(18, encounters); Assert.Equal(13, destroyed); Assert.Equal(26, State(app).TurnNumber);
-        Assert.Equal(6, State(app).Ships.Count); Assert.Equal(187, State(app).StateRevision);
+        Assert.Equal(15, encounters); Assert.Equal(12, destroyed); Assert.Equal(26, State(app).TurnNumber);
+        Assert.Equal(7, State(app).Ships.Count); Assert.Equal(173, State(app).StateRevision);
     }
 }

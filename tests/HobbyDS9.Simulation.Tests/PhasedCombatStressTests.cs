@@ -25,7 +25,7 @@ public sealed class PhasedCombatStressTests
             foreach (var plan in plans)
             {
                 plan.LongRangeTactic = (CombatTactic)(1 + generator.NextBelow(4)); plan.MediumRangeTactic = (CombatTactic)(1 + generator.NextBelow(4)); plan.CloseRangeTactic = (CombatTactic)(1 + generator.NextBelow(4));
-                plan.TargetPriority = (CombatTargetPriority)(1 + generator.NextBelow(3)); plan.RetreatHullPercent = seed % 3 == 0 ? 25 : 0; plan.RetreatSystemId = plan.RetreatHullPercent == 0 ? null : "node.exit-" + plan.FleetId;
+                plan.TargetPriority = (CombatTargetPriority)(1 + generator.NextBelow(3)); plan.RetreatHullPercent = seed % 3 == 0 ? 25 : 0; plan.RetreatNodeId = plan.RetreatHullPercent == 0 ? null : "node.exit-" + plan.FleetId;
             }
             var before = Json(request); var plansBefore = Json(plans); var resolver = new DeterministicPhasedCombatResolver(); var result = resolver.Resolve(request, plans);
             Assert.Equal(before, Json(request)); Assert.Equal(plansBefore, Json(plans)); Assert.Equal(Json(result), Json(resolver.Resolve(request, plans)));

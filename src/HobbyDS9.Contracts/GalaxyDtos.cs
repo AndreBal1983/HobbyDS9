@@ -87,7 +87,7 @@ namespace HobbyDS9.Contracts
         }
     }
 
-    public enum RouteErrorCode { None = 0, InvalidSystemId = 1, UnknownSystem = 2, Unreachable = 3, InvalidRoute = 4, NonAdjacent = 5 }
+    public enum RouteErrorCode { None = 0, InvalidSystemId = 1, UnknownSystem = 2, Unreachable = 3, InvalidRoute = 4, NonAdjacent = 5, CostOverflow = 6 }
     public sealed class RouteResult
     {
         public RouteErrorCode ErrorCode { get; }

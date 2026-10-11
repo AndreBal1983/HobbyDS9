@@ -36,7 +36,7 @@ namespace HobbyDS9.Contracts
     {
         public string EncounterId { get; set; } = string.Empty;
         public int TurnNumber { get; set; }
-        public string LocationSystemId { get; set; } = string.Empty;
+        public string LocationNodeId { get; set; } = string.Empty;
         public string RulesVersion { get; set; } = string.Empty;
         public string ContentHash { get; set; } = string.Empty;
         public string ResolverId { get; set; } = string.Empty;
@@ -86,7 +86,7 @@ namespace HobbyDS9.Contracts
     {
         public string FleetId { get; set; } = string.Empty;
         public FleetCombatDisposition Disposition { get; set; }
-        public string? RetreatSystemId { get; set; }
+        public string? RetreatNodeId { get; set; }
     }
 
     public sealed class CombatEventDto

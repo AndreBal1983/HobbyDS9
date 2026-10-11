@@ -20,15 +20,15 @@ namespace HobbyDS9.Simulation
             state.PendingCombats = checkpoint.PendingCombats; state.ResolvedCombats = checkpoint.ResolvedCombats;
         }
         internal static IEnumerable<CombatRequestDto> AllRequests(GameStateDto state) => state.PendingCombats!.Select(c => c.Request)
-            .Concat(state.ResolvedCombats!.Select(c => c.Request)).OrderBy(r => r.LocationSystemId, StringComparer.Ordinal).ThenBy(r => r.EncounterId, StringComparer.Ordinal);
+            .Concat(state.ResolvedCombats!.Select(c => c.Request)).OrderBy(r => r.LocationNodeId, StringComparer.Ordinal).ThenBy(r => r.EncounterId, StringComparer.Ordinal);
         internal static void Detect(GameStateDto state, DefinitionCatalogDto definitions, SaveCompatibility compatibility)
         {
             var designs = definitions.ShipDesigns!.ToDictionary(d => d.DefinitionId, StringComparer.Ordinal);
             var ships = state.Ships!.ToDictionary(s => s.ShipId, StringComparer.Ordinal);
-            var templates = state.Fleets!.GroupBy(f => f.LocationSystemId, StringComparer.Ordinal).Where(g => g.Select(f => f.OwnerCivilizationId).Distinct(StringComparer.Ordinal).Count() >= 2)
+            var templates = state.Fleets!.Where(f=>f.TransitTotalCost==0).GroupBy(f => f.LocationNodeId, StringComparer.Ordinal).Where(g => g.Select(f => f.OwnerCivilizationId).Distinct(StringComparer.Ordinal).Count() >= 2)
                 .OrderBy(g => g.Key, StringComparer.Ordinal).Select(g => new CombatRequestDto
                 {
-                    LocationSystemId = g.Key, RulesVersion = compatibility.RulesVersion, ContentHash = compatibility.ContentHash,
+                    LocationNodeId = g.Key, RulesVersion = compatibility.RulesVersion, ContentHash = compatibility.ContentHash,
                     ResolverId = CampaignCombatRules.ResolverId, ResolverVersion = CampaignCombatRules.ResolverVersion,
                     Participants = g.OrderBy(f => f.OwnerCivilizationId, StringComparer.Ordinal).ThenBy(f => f.FleetId, StringComparer.Ordinal).Select(f => new CombatParticipantDto
                     {
@@ -52,14 +52,14 @@ namespace HobbyDS9.Simulation
                 && a.ResolvedCombats.Zip(b.ResolvedCombats, (x, y) => SameRequest(x.Request, y.Request) && SameResult(x.Result, y.Result)).All(v => v);
         }
         private static bool SameRequest(CombatRequestDto a, CombatRequestDto b) =>
-            (a.EncounterId, a.TurnNumber, a.LocationSystemId, a.RulesVersion, a.ContentHash, a.ResolverId, a.ResolverVersion, a.RandomAlgorithmId, a.RandomState)
-                == (b.EncounterId, b.TurnNumber, b.LocationSystemId, b.RulesVersion, b.ContentHash, b.ResolverId, b.ResolverVersion, b.RandomAlgorithmId, b.RandomState)
+            (a.EncounterId, a.TurnNumber, a.LocationNodeId, a.RulesVersion, a.ContentHash, a.ResolverId, a.ResolverVersion, a.RandomAlgorithmId, a.RandomState)
+                == (b.EncounterId, b.TurnNumber, b.LocationNodeId, b.RulesVersion, b.ContentHash, b.ResolverId, b.ResolverVersion, b.RandomAlgorithmId, b.RandomState)
             && a.Participants.Select(p => (p.CivilizationId, p.FleetId)).SequenceEqual(b.Participants.Select(p => (p.CivilizationId, p.FleetId)))
             && a.Participants.SelectMany(p => p.Ships).Select(s => (s.ShipId, s.DesignId, s.Hull, s.MaxHull, CombatProfiles.Values(s.CombatProfile!))).SequenceEqual(b.Participants.SelectMany(p => p.Ships).Select(s => (s.ShipId, s.DesignId, s.Hull, s.MaxHull, CombatProfiles.Values(s.CombatProfile!))));
         private static bool SameResult(CombatResultDto a, CombatResultDto b) =>
             (a.EncounterId, a.ResolverId, a.ResolverVersion, a.Status, a.FinalRandomState) == (b.EncounterId, b.ResolverId, b.ResolverVersion, b.Status, b.FinalRandomState)
             && a.ShipChanges.Select(c => (c.ShipId, c.RemainingHull)).SequenceEqual(b.ShipChanges.Select(c => (c.ShipId, c.RemainingHull)))
-            && a.FleetChanges.Select(c => (c.FleetId, c.Disposition, c.RetreatSystemId)).SequenceEqual(b.FleetChanges.Select(c => (c.FleetId, c.Disposition, c.RetreatSystemId)))
+            && a.FleetChanges.Select(c => (c.FleetId, c.Disposition, c.RetreatNodeId)).SequenceEqual(b.FleetChanges.Select(c => (c.FleetId, c.Disposition, c.RetreatNodeId)))
             && a.Events.Select(e => (e.Sequence, e.Kind, e.ShipId, e.FleetId, e.Phase, e.SourceShipId, e.SourceFleetId, e.Amount)).SequenceEqual(b.Events.Select(e => (e.Sequence, e.Kind, e.ShipId, e.FleetId, e.Phase, e.SourceShipId, e.SourceFleetId, e.Amount)));
     }
 }

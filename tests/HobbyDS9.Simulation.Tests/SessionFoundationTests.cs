@@ -10,7 +10,7 @@ public sealed class SessionFoundationTests
     private static readonly EntityId Alpha = new("civ.alpha");
     private static readonly EntityId Beta = new("civ.beta");
     private static readonly SaveCompatibility Compatibility = new("scenario.session", "foundation-v2", new string('a', 64));
-    private static DefinitionCatalogDto Definitions() => new()
+    private static DefinitionCatalogDto Definitions() => NavigationFixture.Definitions(new()
     {
         ContentFormatVersion = FoundationVersions.ContentFormatVersion,
         ShipDesigns = new(),
@@ -23,8 +23,8 @@ public sealed class SessionFoundationTests
         GalaxyEdges = new(),
         Civilizations = new() { new() { DefinitionId = "definition.alpha", DisplayName = "Alpha" }, new() { DefinitionId = "definition.beta", DisplayName = "Beta" } },
         DefinitionIds = new() { "definition.beta", "definition.alpha" }
-    };
-    private static SaveEnvelopeDto Save(long revision = 0) => new()
+    });
+    private static SaveEnvelopeDto Save(long revision = 0) => NavigationFixture.Save(new()
     {
         SaveFormatVersion = FoundationVersions.SaveFormatVersion,
         ScenarioId = Compatibility.ScenarioId,
@@ -56,7 +56,7 @@ public sealed class SessionFoundationTests
                 new() { EntityId = Beta.Value, DefinitionId = "definition.beta" }, new() { EntityId = Alpha.Value, DefinitionId = "definition.alpha" }
             }
         }
-    };
+    }, Definitions());
 
     private static CommandEnvelope Command(string id = "cmd.one", long revision = 0, string? actor = null) => new()
     {
@@ -280,7 +280,7 @@ public sealed class SessionFoundationTests
             case "null-route":
             case "bad-route":
                 command.Kind = CommandKind.SetFleetRoute; command.SetResearchTarget = null;
-                command.SetFleetRoute = new() { FleetId = "fleet.one", RouteSystemIds = example == "null-route" ? null : new() { "Bad" } };
+                command.SetFleetRoute = new() { FleetId = "fleet.one", RouteNodeIds = example == "null-route" ? null : new() { "Bad" } };
                 break;
         }
         var before = StateJson(session);
@@ -431,7 +431,7 @@ public sealed class SessionFoundationTests
             new CommandEnvelope { CommandId = "cmd.cancel", ActorCivilizationId = Alpha.Value, ExpectedTurn = 1, ExpectedRevision = 0,
                 Kind = CommandKind.CancelProduction, CancelProduction = new() { ColonyId = "colony.one", QueueItemId = "queue.one" } },
             new CommandEnvelope { CommandId = "cmd.route", ActorCivilizationId = Alpha.Value, ExpectedTurn = 1, ExpectedRevision = 0,
-                Kind = CommandKind.SetFleetRoute, SetFleetRoute = new() { FleetId = "fleet.one", RouteSystemIds = new() } }
+                Kind = CommandKind.SetFleetRoute, SetFleetRoute = new() { FleetId = "fleet.one", RouteNodeIds = new() } }
         };
         var before = StateJson(session);
         foreach (var command in commands)
@@ -464,7 +464,7 @@ public sealed class SessionFoundationTests
         {
             Action = (_, command) =>
         {
-            command.SetFleetRoute!.RouteSystemIds!.Add("system.changed");
+            command.SetFleetRoute!.RouteNodeIds!.Add("system.changed");
             command.CommandId = "cmd.changed";
             return CommandErrorCode.None;
         }
@@ -479,7 +479,7 @@ public sealed class SessionFoundationTests
             ExpectedTurn = 1,
             ExpectedRevision = 0,
             Kind = CommandKind.SetFleetRoute,
-            SetFleetRoute = new() { FleetId = "fleet.one", RouteSystemIds = new() { "system.one" } }
+            SetFleetRoute = new() { FleetId = "fleet.one", RouteNodeIds = new() { "system.one" } }
         };
         var original = JsonSerializer.Serialize(command);
         var result = session.SubmitCommand(command);

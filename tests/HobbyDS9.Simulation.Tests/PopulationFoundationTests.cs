@@ -178,7 +178,7 @@ public sealed class PopulationFoundationTests
         foreach (var c in to.Cohorts!) c.Population = 500; to.Stability = stability;
         var before = s.InitialState.Colonies!.Sum(c => c.Food); PopulationLogistics.Execute(s.InitialState, s.Definitions);
         var receipt = Assert.Single(s.InitialState.LastDeliveries!, r => r.ResourceDefinitionId == "resource.food");
-        Assert.Equal(delivered, receipt.Delivered); Assert.Equal("planet.sol", receipt.OriginPlanetId); Assert.Equal("planet.mars", receipt.DestinationPlanetId); Assert.Equal(new[] { "system.sol" }, receipt.RouteSystemIds);
+        Assert.Equal(delivered, receipt.Delivered); Assert.Equal("planet.sol", receipt.OriginPlanetId); Assert.Equal("planet.mars", receipt.DestinationPlanetId); Assert.Equal(new[] { "system.sol" }, receipt.RouteNodeIds);
         Assert.Equal(before, s.InitialState.Colonies!.Sum(c => c.Food)); Assert.Equal(delivered, to.Food);
     }
     [Theory]
@@ -189,8 +189,8 @@ public sealed class PopulationFoundationTests
     public void LogisticsPathIntegrityExplainsHostileInterferenceAndDisconnectedGraph(string mode, int expected)
     {
         var s = Scenario(); var fleet = s.InitialState.Fleets!.Single(f => f.OwnerCivilizationId == "civ.cardassian");
-        fleet.LocationSystemId = mode == "blockade" ? "system.sol" : mode == "near" ? "system.bajor" : "system.cardassia";
-        if (mode == "disconnected") s.Definitions.GalaxyEdges!.RemoveAll(e => e.EndpointA == "system.sol" || e.EndpointB == "system.sol");
+        fleet.LocationNodeId = mode == "blockade" ? "system.sol" : mode == "near" ? "system.bajor" : "system.cardassia";
+        if (mode == "disconnected") s.Definitions.NavigationConnections!.RemoveAll(e => e.EndpointA == "system.sol" || e.EndpointB == "system.sol");
         var route = PopulationLogistics.Path(s.InitialState, PopulationLogistics.Graph(s.InitialState, s.Definitions), "system.sol", mode == "disconnected" ? "system.gamma-exit" : "system.sol", "civ.federation");
         Assert.Equal(expected, route.integrity); if (mode == "disconnected") Assert.Empty(route.path);
     }
@@ -218,7 +218,7 @@ public sealed class PopulationFoundationTests
         var s = Scenario(); NoFleets(s); var before = Total(s); Earth(s).Stability = 1000; Earth(s).Prosperity = 1000; Mars(s).Stability = 10000; Mars(s).Prosperity = 10000;
         PopulationMigration.Execute(s.InitialState, s.Definitions); Assert.Equal(before, Total(s)); Assert.True(s.InitialState.PopulationStatistics!.Migrated > 0); Assert.True(s.InitialState.PopulationStatistics.Migrated <= 12);
         var blocked = Scenario(); Earth(blocked).Stability = 1000; Earth(blocked).Prosperity = 1000; Mars(blocked).Stability = 10000; Mars(blocked).Prosperity = 10000;
-        blocked.InitialState.Fleets!.Single(f => f.OwnerCivilizationId == "civ.cardassian").LocationSystemId = "system.sol";
+        blocked.InitialState.Fleets!.Single(f => f.OwnerCivilizationId == "civ.cardassian").LocationNodeId = "system.sol";
         PopulationMigration.Execute(blocked.InitialState, blocked.Definitions); Assert.Equal(0, blocked.InitialState.PopulationStatistics!.Migrated);
     }
     [Fact]
@@ -311,7 +311,7 @@ public sealed class PopulationFoundationTests
             case "amount": receipt.Delivered++; break;
             case "duplicate": scenario.InitialState.LastDeliveries.Add(PopulationData.Copy(receipt)); break;
             case "endpoint": receipt.DestinationPlanetId = receipt.OriginPlanetId; break;
-            case "path": receipt.RouteSystemIds = new() { "system.cardassia" }; break;
+            case "path": receipt.RouteNodeIds = new() { "system.cardassia" }; break;
             case "factor": receipt.StabilityFactor = 10001; break;
             case "resource": receipt.ResourceDefinitionId = "resource.absent"; break;
         }

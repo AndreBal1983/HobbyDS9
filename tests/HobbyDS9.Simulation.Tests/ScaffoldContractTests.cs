@@ -37,7 +37,7 @@ public sealed class ScaffoldContractTests
                 {
                     EncounterId = "encounter.7.system.border",
                     TurnNumber = 7,
-                    LocationSystemId = "system.border",
+                    LocationNodeId = "system.border",
                     RulesVersion = "slice-v1",
                     ContentHash = "fixture-content-hash",
                     ResolverId = "no-loss-v1",
@@ -79,7 +79,7 @@ public sealed class ScaffoldContractTests
             FinalRandomState = 47,
             ShipChanges = new() { new() { ShipId = "ship.alpha", RemainingHull = 6 } },
             FleetChanges = new() { new() { FleetId = "fleet.beta", Disposition = FleetCombatDisposition.Retreated,
-                RetreatSystemId = "system.home" } },
+                RetreatNodeId = "system.home" } },
             Events = new()
             {
                 new() { Sequence = 0, Kind = CombatEventKind.ShipDamaged, ShipId = "ship.alpha" },
@@ -94,7 +94,7 @@ public sealed class ScaffoldContractTests
         Assert.Equal(new[] { CombatEventKind.ShipDamaged, CombatEventKind.FleetRetreated, CombatEventKind.EncounterResolved },
             loaded.Events.Select(e => e.Kind));
         Assert.Equal(6, Assert.Single(loaded.ShipChanges).RemainingHull);
-        Assert.Equal("system.home", Assert.Single(loaded.FleetChanges).RetreatSystemId);
+        Assert.Equal("system.home", Assert.Single(loaded.FleetChanges).RetreatNodeId);
         Assert.Equal(47UL, loaded.FinalRandomState);
     }
 }

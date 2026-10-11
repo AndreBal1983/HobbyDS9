@@ -112,7 +112,7 @@ public sealed class CampaignEncounterTests
             case "resolver": request.ResolverId = "resolver.other"; break;
             case "rng": request.RandomAlgorithmId = "other"; break;
             case "duplicate": state.PendingCombats.Add(state.PendingCombats[0]); break;
-            case "location": request.LocationSystemId = "system.sol"; break;
+            case "location": request.LocationNodeId = "system.sol"; break;
             case "owner": request.Participants[0].CivilizationId = "civ.dominion"; break;
             case "hull": request.Participants[0].Ships[0].Hull--; break;
             case "design": request.Participants[0].Ships[0].DesignId = "ship-design.advanced-scout"; break;

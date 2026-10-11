@@ -6,7 +6,7 @@ namespace HobbyDS9.Simulation
 {
     internal static class CampaignCombatConsequences
     {
-        internal static CombatSubmissionError Validate(GameStateDto state, GalaxyGraph graph, CombatRequestDto request, CombatResultDto result)
+        internal static CombatSubmissionError Validate(GameStateDto state, WeightedNavigationGraph graph, CombatRequestDto request, CombatResultDto result)
         {
             var error = CombatEncounterScaffold.GetResultError(CampaignCombatState.ToCheckpoint(state), request, result);
             if (error != CombatSubmissionError.None || result.Status == CombatResolutionStatus.Deferred) return error;
@@ -17,12 +17,12 @@ namespace HobbyDS9.Simulation
                 var participant = request.Participants.Single(p => p.FleetId == change.FleetId);
                 if (change.Disposition != FleetCombatDisposition.Destroyed && participant.Ships.All(s => hulls[s.ShipId] == 0)) return CombatSubmissionError.MalformedResult;
                 if (change.Disposition != FleetCombatDisposition.Retreated) continue;
-                if (!graph.GetNeighbors(new EntityId(request.LocationSystemId)).Contains(new EntityId(change.RetreatSystemId!))) return CombatSubmissionError.InvalidRetreat;
-                if (state.Fleets!.Any(f => f.LocationSystemId == change.RetreatSystemId && f.OwnerCivilizationId != participant.CivilizationId)) return CombatSubmissionError.InvalidRetreat;
-                if (result.FleetChanges.Any(other => other.FleetId != change.FleetId && other.Disposition == FleetCombatDisposition.Retreated && other.RetreatSystemId == change.RetreatSystemId
+                if (!graph.Neighbors(request.LocationNodeId).Contains(change.RetreatNodeId!)) return CombatSubmissionError.InvalidRetreat;
+                if (state.Fleets!.Any(f => f.TransitTotalCost==0 && f.LocationNodeId == change.RetreatNodeId && f.OwnerCivilizationId != participant.CivilizationId)) return CombatSubmissionError.InvalidRetreat;
+                if (result.FleetChanges.Any(other => other.FleetId != change.FleetId && other.Disposition == FleetCombatDisposition.Retreated && other.RetreatNodeId == change.RetreatNodeId
                     && request.Participants.Single(p => p.FleetId == other.FleetId).CivilizationId != participant.CivilizationId)) return CombatSubmissionError.InvalidRetreat;
                 foreach (var buffered in state.ResolvedCombats!)
-                foreach (var retreat in buffered.Result.FleetChanges.Where(c => c.Disposition == FleetCombatDisposition.Retreated && c.RetreatSystemId == change.RetreatSystemId))
+                foreach (var retreat in buffered.Result.FleetChanges.Where(c => c.Disposition == FleetCombatDisposition.Retreated && c.RetreatNodeId == change.RetreatNodeId))
                     if (buffered.Request.Participants.Single(p => p.FleetId == retreat.FleetId).CivilizationId != participant.CivilizationId) return CombatSubmissionError.InvalidRetreat;
             }
             return CombatSubmissionError.None;
@@ -42,7 +42,7 @@ namespace HobbyDS9.Simulation
                 {
                     foreach (var ship in staging.Ships!.Where(s => s.FleetId == fleet.FleetId).ToList()) RemoveShip(staging, ship);
                 }
-                else if (change.Disposition == FleetCombatDisposition.Retreated) { fleet.LocationSystemId = change.RetreatSystemId!; fleet.RouteSystemIds!.Clear(); }
+                else if (change.Disposition == FleetCombatDisposition.Retreated) { fleet.TransitTotalCost=0;fleet.TransitProgress=0;fleet.LocationNodeId = change.RetreatNodeId!; fleet.RouteNodeIds!.Clear(); }
                 // Held preserves the remaining strategic route.
             }
             // Sparse results implicitly remove a fleet when its last ship died.

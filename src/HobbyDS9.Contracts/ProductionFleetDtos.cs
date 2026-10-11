@@ -6,6 +6,7 @@ namespace HobbyDS9.Contracts
     {
         public string DefinitionId { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
+        public long MovementBudget { get; set; }
         public long IndustryCost { get; set; }
         public List<ResourceAmountDto>? ResourceCosts { get; set; }
         public long CreditCost { get; set; }
@@ -32,11 +33,13 @@ namespace HobbyDS9.Contracts
     }
     public sealed class FleetStateDto
     {
+        public long TransitTotalCost { get; set; }
+        public long TransitProgress { get; set; }
         public string FleetId { get; set; } = string.Empty;
         public string OwnerCivilizationId { get; set; } = string.Empty;
-        public string LocationSystemId { get; set; } = string.Empty;
+        public string LocationNodeId { get; set; } = string.Empty;
         public List<string>? ShipIds { get; set; }
-        public List<string>? RouteSystemIds { get; set; }
+        public List<string>? RouteNodeIds { get; set; }
     }
     public sealed class ProductionQueueItemSnapshot
     {
@@ -70,21 +73,24 @@ namespace HobbyDS9.Contracts
     {
         public EntityId FleetId { get; }
         public EntityId OwnerCivilizationId { get; }
-        public EntityId LocationSystemId { get; }
+        public long TransitTotalCost { get; }
+        public long TransitProgress { get; }
+        public EntityId LocationNodeId { get; }
         public IReadOnlyList<EntityId> ShipIds { get; }
-        public IReadOnlyList<EntityId> RouteSystemIds { get; }
+        public IReadOnlyList<EntityId> RouteNodeIds { get; }
         public FleetSnapshot(FleetStateDto fleet)
         {
             FleetId = new EntityId(fleet.FleetId); OwnerCivilizationId = new EntityId(fleet.OwnerCivilizationId);
-            LocationSystemId = new EntityId(fleet.LocationSystemId);
+            TransitTotalCost=fleet.TransitTotalCost;TransitProgress=fleet.TransitProgress;LocationNodeId = new EntityId(fleet.LocationNodeId);
             ShipIds = fleet.ShipIds!.ConvertAll(id => new EntityId(id)).AsReadOnly();
-            RouteSystemIds = fleet.RouteSystemIds!.ConvertAll(id => new EntityId(id)).AsReadOnly();
+            RouteNodeIds = fleet.RouteNodeIds!.ConvertAll(id => new EntityId(id)).AsReadOnly();
         }
     }
     public sealed class ShipDesignSnapshot
     {
         public DefinitionId DefinitionId { get; }
         public string DisplayName { get; }
+        public long MovementBudget { get; }
         public long IndustryCost { get; }
         public IReadOnlyList<ResourceAmountSnapshot> ResourceCosts { get; }
         public long CreditCost { get; }
@@ -94,7 +100,7 @@ namespace HobbyDS9.Contracts
         public ShipDesignSnapshot(ShipDesignDefinitionDto design)
         {
             DefinitionId = new DefinitionId(design.DefinitionId); DisplayName = design.DisplayName;
-            IndustryCost = design.IndustryCost; ResourceCosts = ResourceAmountSnapshot.Copy(design.ResourceCosts!); CreditCost = design.CreditCost; MaxHull = design.MaxHull; CombatProfile = new ShipCombatProfileSnapshot(design.CombatProfile!);
+            MovementBudget=design.MovementBudget;IndustryCost = design.IndustryCost; ResourceCosts = ResourceAmountSnapshot.Copy(design.ResourceCosts!); CreditCost = design.CreditCost; MaxHull = design.MaxHull; CombatProfile = new ShipCombatProfileSnapshot(design.CombatProfile!);
             RequiredResearchDefinitionIds = design.RequiredResearchDefinitionIds!.ConvertAll(id => new DefinitionId(id)).AsReadOnly();
         }
     }

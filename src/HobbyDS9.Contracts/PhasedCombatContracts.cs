@@ -37,7 +37,7 @@ namespace HobbyDS9.Contracts
         public CombatTactic CloseRangeTactic { get; set; }
         public CombatTargetPriority TargetPriority { get; set; }
         public int RetreatHullPercent { get; set; }
-        public string? RetreatSystemId { get; set; }
+        public string? RetreatNodeId { get; set; }
     }
     public interface IPlannedCombatResolver : ICombatResolver
     {

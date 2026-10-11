@@ -10,12 +10,12 @@ namespace HobbyDS9.Simulation
         // Outer lists are immutable; DTOs and their nested lists are detached copies.
         public IReadOnlyList<CombatRequestDto> GetPendingCombatRequests()
         {
-            lock (gate) return state.PendingCombats!.OrderBy(c => c.Request.LocationSystemId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
+            lock (gate) return state.PendingCombats!.OrderBy(c => c.Request.LocationNodeId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
                 .Select(c => CombatEncounterScaffold.CopyRequest(c.Request)).ToList().AsReadOnly();
         }
         public IReadOnlyList<ResolvedCombatDto> GetResolvedCombats()
         {
-            lock (gate) return state.ResolvedCombats!.OrderBy(c => c.Request.LocationSystemId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
+            lock (gate) return state.ResolvedCombats!.OrderBy(c => c.Request.LocationNodeId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
                 .Select(c => new ResolvedCombatDto { Request = CombatEncounterScaffold.CopyRequest(c.Request), Result = CombatEncounterScaffold.CopyResult(c.Result) }).ToList().AsReadOnly();
         }
         public CombatSubmissionResult SubmitCombatResult(CombatResultDto? result, int expectedTurn, long expectedRevision)
@@ -32,7 +32,7 @@ namespace HobbyDS9.Simulation
                 var pending = state.PendingCombats!.SingleOrDefault(c => c.Request.EncounterId == result.EncounterId);
                 if (pending == null) return Reject(CombatSubmissionError.UnknownEncounter);
                 if (result.ResolverId != pending.Request.ResolverId || result.ResolverVersion != pending.Request.ResolverVersion) return Reject(CombatSubmissionError.ResolverMismatch);
-                var validationError = CampaignCombatConsequences.Validate(state, Galaxy, pending.Request, result);
+                var validationError = CampaignCombatConsequences.Validate(state, Navigation, pending.Request, result);
                 if (validationError != CombatSubmissionError.None) return Reject(validationError);
                 if (result.Status != CombatResolutionStatus.Deferred && state.StateRevision == long.MaxValue) return Reject(CombatSubmissionError.RevisionExhausted);
                 executingMutation = true;
@@ -69,7 +69,7 @@ namespace HobbyDS9.Simulation
                     for (var index = 0; index < batch.Count; index++)
                     {
                         var combat = batch[index];
-                        var error = CampaignCombatConsequences.Validate(state, Galaxy, combat.Request, combat.Result);
+                        var error = CampaignCombatConsequences.Validate(state, Navigation, combat.Request, combat.Result);
                         if (error != CombatSubmissionError.None) return Reject(TurnErrorCode.InvalidCombatBatch);
                         CampaignCombatConsequences.Apply(staging, combat.Result);
                         if (combatApplicationProbe != null)

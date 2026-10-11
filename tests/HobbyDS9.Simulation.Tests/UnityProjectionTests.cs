@@ -16,9 +16,9 @@ public sealed class UnityProjectionTests
             new NavigationNodeSnapshot(new("system.sol"), null) };
         var projection = GalaxyProjection.Nodes(nodes, snapshot.Campaign, snapshot.Content);
         var sol = projection.Single(n => n.NodeId.Value == "node.unrelated-to-sol");
-        Assert.Equal("Sol", sol.Label); Assert.Single(sol.Fleets); Assert.Equal("fleet.federation-scout", sol.Fleets[0].FleetId.Value);
+        Assert.Equal("Sol", sol.Label); Assert.Empty(sol.Fleets);
         var empty = projection.Single(n => n.NodeId.Value == "system.sol");
-        Assert.Null(empty.SystemId); Assert.Equal("Transit region", empty.Label); Assert.Empty(empty.Fleets);
+        Assert.Null(empty.SystemId); Assert.Equal("Transit region", empty.Label); Assert.Single(empty.Fleets); Assert.Equal("fleet.federation-scout", empty.Fleets[0].FleetId.Value);
     }
     [Fact]
     public void ProjectionIsOrderedAndCannotChangeAuthoritativeSnapshot()

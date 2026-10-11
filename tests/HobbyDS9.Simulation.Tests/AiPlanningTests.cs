@@ -13,7 +13,7 @@ public sealed class AiPlanningTests
     private static void Node(ScenarioDto s, string id, long cost, params string[] prerequisites)
     { s.Definitions.DefinitionIds.Add(id); s.Definitions.ResearchNodes!.Add(new() { DefinitionId = id, DisplayName = id, ResearchCost = cost, PrerequisiteDefinitionIds = prerequisites.ToList() }); }
     private static void Design(ScenarioDto s, string id, long industry, params string[] research)
-    { s.Definitions.DefinitionIds.Add(id); s.Definitions.ShipDesigns!.Add(new() { DefinitionId = id, DisplayName = id, IndustryCost = industry, CreditCost = 7, ResourceCosts = new() { new() { ResourceDefinitionId = "resource.dilithium", Amount = 1 } }, MaxHull = 12, CombatProfile = new(), RequiredResearchDefinitionIds = research.ToList() }); }
+    { s.Definitions.DefinitionIds.Add(id); s.Definitions.ShipDesigns!.Add(new() { DefinitionId = id, DisplayName = id, MovementBudget = 1, IndustryCost = industry, CreditCost = 7, ResourceCosts = new() { new() { ResourceDefinitionId = "resource.dilithium", Amount = 1 } }, MaxHull = 12, CombatProfile = new(), RequiredResearchDefinitionIds = research.ToList() }); }
 
     [Fact]
     public void AiUsesLegalSharedCommandsInActorResearchColonyFleetOrderAndHumansAreNeverPlanned()
@@ -25,7 +25,7 @@ public sealed class AiPlanningTests
         Assert.Equal(new long[] { 1, 2, 3, 4, 5, 6 }, result.CommandResults.Select(c => c.StateRevision)); Assert.Equal(7, result.StateRevision); Assert.Empty(s.CaptureSnapshot().AcceptedCommandIds);
         var state = s.ExportSave().GameState; var human = state.Civilizations!.Single(c => c.CivilizationId == "civ.federation");
         Assert.Null(human.ResearchTargetDefinitionId); Assert.Empty(human.UnlockedResearchDefinitionIds!); Assert.All(state.Colonies!.Where(c => c.OwnerCivilizationId == human.CivilizationId), c => Assert.Empty(c.ProductionQueue!));
-        Assert.Equal("system.sol", state.Fleets!.Single(f => f.OwnerCivilizationId == human.CivilizationId).LocationSystemId);
+        Assert.Equal("system.sol", state.Fleets!.Single(f => f.OwnerCivilizationId == human.CivilizationId).LocationNodeId);
         var before = Json(s); Assert.Equal(CommandErrorCode.ActorNotControlled, Enqueue(s, actor: "civ.cardassian", colony: "colony.cardassia").ErrorCode); Assert.Equal(before, Json(s));
         var command = Command(s, CommandKind.SetResearchTarget, "ai-command.t0000000002.a00000002.k3.n00000000"); command.SetResearchTarget = new() { TargetDefinitionId = "research.advanced-engineering" };
         Assert.Equal(CommandErrorCode.ReservedCommandId, s.SubmitCommand(command).ErrorCode); Assert.Equal(before, Json(s));
@@ -49,12 +49,12 @@ public sealed class AiPlanningTests
     public void AiPlansBeforeEconomyAndOnlyForEmptyQueuesAndIdleFleets()
     {
         var scenario = OneAi(); PopulationFixture.SetDilithium(scenario.InitialState.Colonies!.Single(c => c.ColonyId == "colony.cardassia"), 1);
-        scenario.InitialState.Fleets!.Single(f => f.OwnerCivilizationId == "civ.cardassian").RouteSystemIds = new() { "system.bajor", "system.sol" };
+        scenario.InitialState.Fleets!.Single(f => f.OwnerCivilizationId == "civ.cardassian").RouteNodeIds = new() { "system.bajor", "system.sol" };
         var s = Session(scenario); var first = Advance(s); Assert.Single(first.CommandResults); Assert.Contains(".k3.", first.CommandResults[0].CommandId);
         Assert.Equal(4, PopulationFixture.Dilithium(s.ExportSave().GameState.Colonies!.Single(c => c.ColonyId == "colony.cardassia")));
         var second = Advance(s); Assert.Single(second.CommandResults); Assert.Contains(".k1.", second.CommandResults[0].CommandId);
         var third = Advance(s); Assert.DoesNotContain(third.CommandResults, r => r.CommandId!.Contains(".k1.", StringComparison.Ordinal));
-        Assert.Equal("system.bajor", s.CaptureSnapshot().Fleets.Single(f => f.FleetId.Value == "fleet.cardassian-scout").LocationSystemId.Value);
+        Assert.Equal("system.sol", s.CaptureSnapshot().Fleets.Single(f => f.FleetId.Value == "fleet.cardassian-scout").LocationNodeId.Value); // Contested regions freeze departure.
     }
 
     [Theory]
@@ -62,7 +62,7 @@ public sealed class AiPlanningTests
     [InlineData(true)]
     public void ForeignScoreWinsUniqueChoiceUsesNoRngAndNeutralTieUsesOneCampaignDraw(bool tied)
     {
-        var scenario = OneAi(); var fleet = scenario.InitialState.Fleets!.Single(f => f.OwnerCivilizationId == "civ.cardassian"); fleet.LocationSystemId = "system.bajor";
+        var scenario = OneAi(); var fleet = scenario.InitialState.Fleets!.Single(f => f.OwnerCivilizationId == "civ.cardassian"); fleet.LocationNodeId = "system.bajor";
         // Isolate AI routing draws from the new encounter-creation draws.
         var humanShips = scenario.InitialState.Ships!.Where(ship => ship.OwnerCivilizationId == "civ.federation").Select(ship => ship.ShipId).ToHashSet();
         var humanFleets = scenario.InitialState.Fleets!.Where(f => f.OwnerCivilizationId == "civ.federation").Select(f => f.FleetId).ToHashSet();
@@ -71,11 +71,11 @@ public sealed class AiPlanningTests
         if (tied)
         { scenario.InitialState.StarSystems!.Single(n => n.SystemId == "system.sol").OwnerCivilizationId = null; scenario.InitialState.Colonies!.Single(c => c.ColonyId == "colony.sol").OwnerCivilizationId = null; }
         var s = Session(scenario); Advance(s); var current = s.CaptureSnapshot().Fleets.Single(f => f.FleetId.Value == fleet.FleetId);
-        if (!tied) { Assert.Equal("system.sol", current.LocationSystemId.Value); Assert.Equal(47UL, s.CaptureSnapshot().RngState.State); }
+        if (!tied) { Assert.Equal("system.sol", current.LocationNodeId.Value); Assert.Equal(47UL, s.CaptureSnapshot().RngState.State); }
         else
         {
             Assert.Equal(11400714819323198532UL, s.CaptureSnapshot().RngState.State);
-            Assert.Contains(current.LocationSystemId.Value, new[] { "system.bajoran-wormhole", "system.sol" });
+            Assert.Contains(current.LocationNodeId.Value, new[] { "system.bajoran-wormhole", "system.sol" });
         }
     }
 
@@ -96,7 +96,7 @@ public sealed class AiPlanningTests
             Resources = new(), GovernancePolicies = new(), PoliticalMemoryEffects = new(),
             Infrastructure = new(),
             ResearchNodes = new(),
-            ShipDesigns = new() { new() { DefinitionId = "ship-design.fixture", DisplayName = "Fixture", IndustryCost = 1, MaxHull = 1, CombatProfile = new(), ResourceCosts = new(), RequiredResearchDefinitionIds = new() } },
+            ShipDesigns = new() { new() { DefinitionId = "ship-design.fixture", DisplayName = "Fixture", MovementBudget = 1, IndustryCost = 1, MaxHull = 1, CombatProfile = new(), ResourceCosts = new(), RequiredResearchDefinitionIds = new() } },
             GalaxyEdges = new() { new() { EndpointA = "node.origin", EndpointB = "node.z", Kind = GalaxyEdgeKind.Normal }, new() { EndpointA = "node.origin", EndpointB = "node.a", Kind = GalaxyEdgeKind.Wormhole } }
         };
         var state = new GameStateDto
@@ -116,14 +116,15 @@ public sealed class AiPlanningTests
             Civilizations = new() { new() { CivilizationId = "civ.fixture", DefinitionId = "civilization.fixture", ControllerKind = ControllerKind.AI, UnlockedResearchDefinitionIds = new() } },
             StarSystems = new() { new() { SystemId = "node.origin", DefinitionId = "system.fixture", OwnerCivilizationId = "civ.fixture" }, new() { SystemId = "node.z", DefinitionId = "system.fixture" }, new() { SystemId = "node.a", DefinitionId = "system.fixture" } },
             Ships = new() { new() { ShipId = "ship.fixture", ShipDesignDefinitionId = "ship-design.fixture", OwnerCivilizationId = "civ.fixture", FleetId = "fleet.fixture", CurrentHull = 1 } },
-            Fleets = new() { new() { FleetId = "fleet.fixture", OwnerCivilizationId = "civ.fixture", LocationSystemId = "node.origin", ShipIds = new() { "ship.fixture" }, RouteSystemIds = new() } }
+            Fleets = new() { new() { FleetId = "fleet.fixture", OwnerCivilizationId = "civ.fixture", LocationNodeId = "node.origin", ShipIds = new() { "ship.fixture" }, RouteNodeIds = new() } }
         };
         state.EntityIdentities = state.StarSystems.Select(n => new EntityIdentityDto { EntityId = n.SystemId, DefinitionId = n.DefinitionId }).Concat(new[] { new EntityIdentityDto { EntityId = "civ.fixture", DefinitionId = "civilization.fixture" },
             new EntityIdentityDto { EntityId = "ship.fixture", DefinitionId = "ship-design.fixture" }, new EntityIdentityDto { EntityId = "fleet.fixture" } }).ToList();
+        NavigationFixture.Definitions(defs,state.StarSystems.Select(n=>n.SystemId).ToArray()); NavigationFixture.State(state,defs);
         var fixture = new ScenarioDto { ScenarioId = "scenario.ai-tie", RulesVersion = "fixture-v1", ContentHash = new string('b', 64), Definitions = defs, InitialState = state };
         var a = Session(fixture); state.StarSystems.Reverse(); state.EntityIdentities.Reverse(); defs.GalaxyEdges.Reverse(); var b = Session(fixture);
         Assert.Equal(JsonSerializer.Serialize(Advance(a)), JsonSerializer.Serialize(Advance(b))); Assert.Equal(Json(a), Json(b));
-        Assert.Equal(expectedState, a.CaptureSnapshot().RngState.State); Assert.Equal(destination, Assert.Single(a.CaptureSnapshot().Fleets).LocationSystemId.Value); Assert.Equal(1UL, a.CaptureSnapshot().NextEntitySequence); Assert.Equal(2, a.CaptureSnapshot().StateRevision);
+        Assert.Equal(expectedState, a.CaptureSnapshot().RngState.State); Assert.Equal(destination, Assert.Single(a.CaptureSnapshot().Fleets).LocationNodeId.Value); Assert.Equal(1UL, a.CaptureSnapshot().NextEntitySequence); Assert.Equal(2, a.CaptureSnapshot().StateRevision);
     }
 
     private sealed class FailingEnqueue : ICommandHandler
@@ -156,7 +157,7 @@ public sealed class AiPlanningTests
             {
                 Assert.Single(staging.Colonies!.Single(c => c.ColonyId == "colony.cardassia").ProductionQueue!);
                 Assert.True(staging.NextEntitySequence > 1); Assert.NotEmpty(staging.AcceptedCommandIds!);
-                if (fault == "false") return false; if (fault == "throw") throw new ApplicationException("Injected after AI."); staging.Fleets![0].LocationSystemId = "system.absent";
+                if (fault == "false") return false; if (fault == "throw") throw new ApplicationException("Injected after AI."); staging.Fleets![0].LocationNodeId = "system.absent";
             }
             return true;
         });
@@ -170,6 +171,8 @@ public sealed class AiPlanningTests
         scenario.InitialState.Civilizations!.Single(c => c.CivilizationId == "civ.cardassian").Credits = 10;
         scenario.InitialState.Colonies!.Single(c => c.ColonyId == "colony.bajor").OwnerCivilizationId = "civ.cardassian";
         scenario.InitialState.StarSystems!.Single(n => n.SystemId == "system.bajor").OwnerCivilizationId = "civ.cardassian";
+        // Isolate stationary production from the new reachable-target route search.
+        foreach(var edge in scenario.InitialState.NavigationKnowledge!.Single(k=>k.CivilizationId=="civ.cardassian").Connections!) edge.Level=NavigationKnowledgeLevel.Unknown;
         scenario.InitialState.Colonies!.Reverse(); var s = Session(scenario); var result = Advance(s);
         Assert.Equal(2, result.CommandResults.Count); Assert.Contains(".k1.n00000000", result.CommandResults[1].CommandId);
         Assert.Single(s.ExportSave().GameState.Colonies!.Single(c => c.ColonyId == "colony.bajor").ProductionQueue!);
@@ -181,17 +184,17 @@ public sealed class AiPlanningTests
     private sealed class FailingRoute : ICommandHandler
     {
         public CommandErrorCode Execute(GameStateDto state, CommandEnvelope command)
-        { state.Fleets![0].RouteSystemIds!.Clear(); state.RngState.State = 999; return CommandErrorCode.InvalidRoute; }
+        { state.Fleets![0].RouteNodeIds!.Clear(); state.RngState.State = 999; return CommandErrorCode.InvalidRoute; }
     }
     [Fact]
     public void RejectedTiedRouteDoesNotConsumeTheProposedCampaignDraw()
     {
-        var scenario = OneAi(); var fleet = scenario.InitialState.Fleets!.Single(f => f.OwnerCivilizationId == "civ.cardassian"); fleet.LocationSystemId = "system.bajor";
+        var scenario = OneAi(); var fleet = scenario.InitialState.Fleets!.Single(f => f.OwnerCivilizationId == "civ.cardassian"); fleet.LocationNodeId = "system.bajor";
         scenario.InitialState.StarSystems!.Single(n => n.SystemId == "system.sol").OwnerCivilizationId = null;
         scenario.InitialState.Colonies!.Single(c => c.ColonyId == "colony.sol").OwnerCivilizationId = null;
         var s = new SimulationSession(Save(scenario), scenario.Definitions, Compatibility(scenario), new Dictionary<CommandKind, ICommandHandler> { [CommandKind.SetFleetRoute] = new FailingRoute() });
         var result = Advance(s); Assert.Equal(CommandErrorCode.InvalidRoute, Assert.Single(result.CommandResults, c => !c.Accepted).ErrorCode);
-        Assert.Equal(47UL, s.CaptureSnapshot().RngState.State); Assert.Equal("system.bajor", s.CaptureSnapshot().Fleets.Single(f => f.FleetId.Value == fleet.FleetId).LocationSystemId.Value);
+        Assert.Equal(47UL, s.CaptureSnapshot().RngState.State); Assert.Equal("system.bajor", s.CaptureSnapshot().Fleets.Single(f => f.FleetId.Value == fleet.FleetId).LocationNodeId.Value);
     }
 
     [Theory]
@@ -236,10 +239,12 @@ public sealed class AiPlanningTests
         var scenario = OneAi();
         scenario.InitialState.StarSystems!.Single(n => n.SystemId == "system.bajor").OwnerCivilizationId = "civ.cardassian";
         scenario.InitialState.Colonies!.Single(c => c.ColonyId == "colony.bajor").OwnerCivilizationId = "civ.cardassian";
+        // Isolate stationary production from the new reachable-target route search.
+        foreach(var edge in scenario.InitialState.NavigationKnowledge!.Single(k=>k.CivilizationId=="civ.cardassian").Connections!) edge.Level=NavigationKnowledgeLevel.Unknown;
         var s = Session(scenario);
         for (var turn = 0; turn < 25; turn++) Assert.Equal(TurnStatus.Completed, Advance(s).Status);
         var home = s.CaptureSnapshot().Fleets.Single(f => f.FleetId.Value == "fleet.cardassian-scout");
-        Assert.Equal("system.cardassia", home.LocationSystemId.Value); Assert.Empty(home.RouteSystemIds); Assert.True(home.ShipIds.Count > 1);
+        Assert.Equal("system.cardassia", home.LocationNodeId.Value); Assert.Empty(home.RouteNodeIds); Assert.True(home.ShipIds.Count > 1);
         Assert.All(s.CaptureSnapshot().Ships.Where(ship => home.ShipIds.Contains(ship.ShipId)), ship => Assert.Equal(home.FleetId, ship.FleetId));
     }
 

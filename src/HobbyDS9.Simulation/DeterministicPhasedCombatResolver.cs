@@ -43,7 +43,7 @@ namespace HobbyDS9.Simulation
             foreach (var fleet in fleets)
             {
                 if (fleet.Ships.All(s => s.Hull == 0)) result.FleetChanges.Add(new FleetCombatChangeDto { FleetId = fleet.Id, Disposition = FleetCombatDisposition.Destroyed });
-                else if (fleet.Retreated) result.FleetChanges.Add(new FleetCombatChangeDto { FleetId = fleet.Id, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = fleet.RetreatSystemId });
+                else if (fleet.Retreated) result.FleetChanges.Add(new FleetCombatChangeDto { FleetId = fleet.Id, Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = fleet.RetreatNodeId });
             }
             result.FinalRandomState = random.State;
             Emit(result, new CombatEventDto { Kind = CombatEventKind.EncounterResolved });
@@ -143,14 +143,14 @@ namespace HobbyDS9.Simulation
             internal readonly string CivilizationId;
             internal readonly CombatTargetPriority Priority;
             internal readonly int Threshold;
-            internal readonly string? RetreatSystemId;
+            internal readonly string? RetreatNodeId;
             private readonly CombatTactic longRange, mediumRange, closeRange;
             internal readonly List<BattleShip> Ships;
             internal bool Retreated;
             internal BattleFleet(CombatParticipantDto participant, FleetCombatPlanDto plan)
             {
                 Id = participant.FleetId; CivilizationId = participant.CivilizationId; Priority = plan.TargetPriority;
-                Threshold = plan.RetreatHullPercent; RetreatSystemId = plan.RetreatSystemId;
+                Threshold = plan.RetreatHullPercent; RetreatNodeId = plan.RetreatNodeId;
                 longRange = plan.LongRangeTactic; mediumRange = plan.MediumRangeTactic; closeRange = plan.CloseRangeTactic;
                 Ships = participant.Ships.Select(s => new BattleShip(s, this)).ToList();
             }

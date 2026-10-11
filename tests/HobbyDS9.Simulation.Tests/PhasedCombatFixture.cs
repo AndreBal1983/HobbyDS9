@@ -9,7 +9,7 @@ internal static class PhasedCombatFixture
     internal static string Json<T>(T value) => JsonSerializer.Serialize(value);
     internal static CombatRequestDto Request(int civilizations = 2, int fleetsPerCivilization = 1, int shipsPerFleet = 1, ulong seed = 47)
     {
-        var r = new CombatRequestDto { EncounterId = "encounter.spawn.0000000000000001", LocationSystemId = "node.battle", TurnNumber = 1,
+        var r = new CombatRequestDto { EncounterId = "encounter.spawn.0000000000000001", LocationNodeId = "node.battle", TurnNumber = 1,
             RulesVersion = "fixture.phased-v1", ContentHash = new string('a', 64), ResolverId = "combat-resolver.phased", ResolverVersion = 1, RandomAlgorithmId = FoundationVersions.RandomAlgorithmId, RandomState = seed };
         for (var c = 0; c < civilizations; c++)
         for (var f = 0; f < fleetsPerCivilization; f++)

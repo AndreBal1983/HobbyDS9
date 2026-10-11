@@ -14,7 +14,7 @@ public sealed class TurnLifecycleTests
         StrategicTurnPhase.Production, StrategicTurnPhase.Movement, StrategicTurnPhase.EncounterCreation
     };
 
-    private static DefinitionCatalogDto Definitions() => new()
+    private static DefinitionCatalogDto Definitions() => NavigationFixture.Definitions(new()
     {
         ContentFormatVersion = FoundationVersions.ContentFormatVersion,
         ShipDesigns = new(),
@@ -35,8 +35,8 @@ public sealed class TurnLifecycleTests
             new() { DefinitionId = "system.alpha", DisplayName = "Alpha" }
         },
         GalaxyEdges = new() { new() { EndpointA = "node.beta", EndpointB = "node.alpha", Kind = GalaxyEdgeKind.Wormhole } }
-    };
-    private static SaveEnvelopeDto Save(int turn = 7, long revision = 5, SessionPhase phase = SessionPhase.Planning) => new()
+    }, "node.alpha", "node.beta");
+    private static SaveEnvelopeDto Save(int turn = 7, long revision = 5, SessionPhase phase = SessionPhase.Planning) => NavigationFixture.Save(new()
     {
         SaveFormatVersion = FoundationVersions.SaveFormatVersion,
         ScenarioId = Compatibility.ScenarioId,
@@ -78,7 +78,7 @@ public sealed class TurnLifecycleTests
                 new() { EntityId = "node.alpha", DefinitionId = "system.alpha" }
             }
         }
-    };
+    }, Definitions());
     private static SimulationSession Session(SaveEnvelopeDto? save = null, Func<StrategicTurnPhase, GameStateDto, bool>? probe = null,
         ICommandHandler? handler = null)
     {

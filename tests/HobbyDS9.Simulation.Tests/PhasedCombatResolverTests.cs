@@ -125,15 +125,15 @@ public sealed class PhasedCombatResolverTests
     [InlineData(0, false)] [InlineData(89, false)] [InlineData(90, true)] [InlineData(100, true)]
     public void RetreatUsesPostVolleyHullAndInclusiveThreshold(int threshold, bool retreats)
     {
-        var r = Request(); Attacks(Ship(r), 10, 0, 0); Attacks(Ship(r, 1)); var p = Plans(r); p[1].RetreatHullPercent = threshold; p[1].RetreatSystemId = threshold == 0 ? null : "node.exit";
+        var r = Request(); Attacks(Ship(r), 10, 0, 0); Attacks(Ship(r, 1)); var p = Plans(r); p[1].RetreatHullPercent = threshold; p[1].RetreatNodeId = threshold == 0 ? null : "node.exit";
         var result = Resolve(r, p); Assert.Equal(retreats ? 1 : 0, result.FleetChanges.Count); Assert.Equal(retreats ? 1 : 3, result.Events.Count(e => e.Kind == CombatEventKind.PhaseStarted));
-        if (retreats) { var f = Assert.Single(result.FleetChanges); Assert.Equal(FleetCombatDisposition.Retreated, f.Disposition); Assert.Equal("node.exit", f.RetreatSystemId); Assert.True(result.Events.FindIndex(e => e.Kind == CombatEventKind.ShipDamaged) < result.Events.FindIndex(e => e.Kind == CombatEventKind.FleetRetreated)); }
+        if (retreats) { var f = Assert.Single(result.FleetChanges); Assert.Equal(FleetCombatDisposition.Retreated, f.Disposition); Assert.Equal("node.exit", f.RetreatNodeId); Assert.True(result.Events.FindIndex(e => e.Kind == CombatEventKind.ShipDamaged) < result.Events.FindIndex(e => e.Kind == CombatEventKind.FleetRetreated)); }
     }
     [Fact]
     public void RetreatDenominatorIncludesDestroyedShipsAndUsesFullPrecision()
     {
         var r = Request(2, 1, 2); foreach (var s in r.Participants.SelectMany(p => p.Ships)) { s.Hull = s.MaxHull = long.MaxValue; Attacks(s); }
-        Attacks(Ship(r), long.MaxValue); var p = Plans(r); p[1].RetreatHullPercent = 50; p[1].RetreatSystemId = "node.exit";
+        Attacks(Ship(r), long.MaxValue); var p = Plans(r); p[1].RetreatHullPercent = 50; p[1].RetreatNodeId = "node.exit";
         var result = Resolve(r, p); Assert.Equal(0, Assert.Single(result.ShipChanges).RemainingHull); Assert.Equal(FleetCombatDisposition.Retreated, Assert.Single(result.FleetChanges).Disposition);
         Assert.Single(result.Events, e => e.Kind == CombatEventKind.PhaseStarted);
     }
@@ -141,7 +141,7 @@ public sealed class PhasedCombatResolverTests
     public void DestroyedFleetDoesNotRetreatAndRetreatedShipsHaveNoLaterTargetsOrShots()
     {
         var r = Request(3); Attacks(Ship(r), 100); Attacks(Ship(r, 1), 1); Attacks(Ship(r, 2), 1);
-        var p = Plans(r); p[1].RetreatHullPercent = 100; p[1].RetreatSystemId = "node.exit"; p[2].RetreatHullPercent = 100; p[2].RetreatSystemId = "node.other";
+        var p = Plans(r); p[1].RetreatHullPercent = 100; p[1].RetreatNodeId = "node.exit"; p[2].RetreatHullPercent = 100; p[2].RetreatNodeId = "node.other";
         var result = Resolve(r, p); Assert.Contains(result.FleetChanges, f => f.FleetId == p[1].FleetId && f.Disposition == FleetCombatDisposition.Destroyed);
         Assert.DoesNotContain(result.Events, e => e.Kind == CombatEventKind.FleetRetreated && e.FleetId == p[1].FleetId); Assert.Contains(result.FleetChanges, f => f.FleetId == p[2].FleetId && f.Disposition == FleetCombatDisposition.Retreated);
         Assert.Single(result.Events, e => e.Kind == CombatEventKind.PhaseStarted);
@@ -183,7 +183,7 @@ public sealed class PhasedCombatResolverTests
     {
         var r = Request(3); Attacks(Ship(r), 100, 1, 1); Attacks(Ship(r, 1), 1, 1, 1); Attacks(Ship(r, 2), 1, 1, 1);
         var result = Resolve(r); Assert.Equal(1, Shots(result).Count(e => e.SourceShipId == Ship(r, 1).ShipId)); Assert.Equal(3, result.Events.Count(e => e.Kind == CombatEventKind.PhaseStarted));
-        r = Request(3); var p = Plans(r); p[1].RetreatHullPercent = 100; p[1].RetreatSystemId = "node.exit"; result = Resolve(r, p);
+        r = Request(3); var p = Plans(r); p[1].RetreatHullPercent = 100; p[1].RetreatNodeId = "node.exit"; result = Resolve(r, p);
         Assert.DoesNotContain(Shots(result), e => e.Phase != CombatPhaseKind.LongRange && (e.SourceFleetId == p[1].FleetId || e.FleetId == p[1].FleetId));
         Assert.Equal(3, result.Events.Count(e => e.Kind == CombatEventKind.PhaseStarted));
     }

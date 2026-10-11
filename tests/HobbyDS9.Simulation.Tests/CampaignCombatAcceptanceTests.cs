@@ -29,15 +29,15 @@ public sealed class CampaignCombatAcceptanceTests
     {
         var r = CampaignCombatFixture.NoChanges(request); var first = request.Participants[0]; var second = request.Participants[1];
         // Deliberately sparse effects and several local RNG draws; presentation events remain ordered data.
-        var rng = new EncounterRandomStream(request.RandomState); for (var i = 0; i < request.LocationSystemId.Length; i++) rng.NextUInt64(); r.FinalRandomState = rng.State;
-        if (request.LocationSystemId == "system.bajor")
+        var rng = new EncounterRandomStream(request.RandomState); for (var i = 0; i < request.LocationNodeId.Length; i++) rng.NextUInt64(); r.FinalRandomState = rng.State;
+        if (request.LocationNodeId == "system.bajor")
         {
             r.ShipChanges.Add(new() { ShipId = second.Ships[0].ShipId, RemainingHull = 7 });
-            r.FleetChanges.Add(new() { FleetId = first.FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.sol" });
+            r.FleetChanges.Add(new() { FleetId = first.FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = "system.sol" });
             r.Events.Insert(0, new() { Kind = CombatEventKind.FleetRetreated, FleetId = first.FleetId });
             r.Events.Insert(1, new() { Kind = CombatEventKind.ShipDamaged, ShipId = second.Ships[0].ShipId, Amount = 3 });
         }
-        else if (request.LocationSystemId == "system.bajoran-wormhole")
+        else if (request.LocationNodeId == "system.bajoran-wormhole")
             r.FleetChanges.Add(new() { FleetId = first.FleetId, Disposition = FleetCombatDisposition.Destroyed });
         else
         {
@@ -87,7 +87,7 @@ public sealed class CampaignCombatAcceptanceTests
         }
         var final = baseline.CaptureSnapshot(); Assert.Equal(5, final.StateRevision); Assert.Equal(4, final.Ships.Count); Assert.Equal(4, final.Fleets.Count);
         Assert.Contains(final.Ships, s => s.CurrentHull == 7); Assert.Contains(final.Ships, s => s.CurrentHull == 6);
-        Assert.Contains(final.Fleets, f => f.LocationSystemId.Value == "system.sol");
+        Assert.Contains(final.Fleets, f => f.LocationNodeId.Value == "system.sol");
         Assert.Equal((ulong)frozen.Count + 1UL, final.NextEntitySequence);
     }
     [Fact]
@@ -135,7 +135,7 @@ public sealed class CampaignCombatAcceptanceTests
         var fleet = state.Fleets!.Single(f => f.OwnerCivilizationId == "civ.cardassian");
         state.Ships!.Add(new() { ShipId = "ship.cardassian-extra", FleetId = fleet.FleetId, OwnerCivilizationId = fleet.OwnerCivilizationId, ShipDesignDefinitionId = "ship-design.scout", CurrentHull = 8 });
         fleet.ShipIds!.Add("ship.cardassian-extra"); state.EntityIdentities.Add(new() { EntityId = "ship.cardassian-extra", DefinitionId = "ship-design.scout" });
-        state.Fleets!.Add(new() { FleetId = "fleet.cardassian-extra", OwnerCivilizationId = fleet.OwnerCivilizationId, LocationSystemId = fleet.LocationSystemId, ShipIds = new() { "ship.cardassian-other" }, RouteSystemIds = new() });
+        state.Fleets!.Add(new() { FleetId = "fleet.cardassian-extra", OwnerCivilizationId = fleet.OwnerCivilizationId, LocationNodeId = fleet.LocationNodeId, ShipIds = new() { "ship.cardassian-other" }, RouteNodeIds = new() });
         state.Ships.Add(new() { ShipId = "ship.cardassian-other", FleetId = "fleet.cardassian-extra", OwnerCivilizationId = fleet.OwnerCivilizationId, ShipDesignDefinitionId = "ship-design.scout", CurrentHull = 10 });
         state.EntityIdentities.Add(new() { EntityId = "fleet.cardassian-extra" }); state.EntityIdentities.Add(new() { EntityId = "ship.cardassian-other", DefinitionId = "ship-design.scout" });
         var s = Awaiting(scenario); var request = Assert.Single(s.GetPendingCombatRequests()); Assert.Equal(4, request.Participants.Count);
@@ -152,11 +152,11 @@ public sealed class CampaignCombatAcceptanceTests
     public void FrozenForeignSingleFleetOccupancyRejectsRetreatWithoutAnotherBattle()
     {
         var scenario = CampaignCombatFixture.Scenario(); var state = scenario.InitialState;
-        state.Fleets!.Add(new() { FleetId = "fleet.foreign", OwnerCivilizationId = "civ.dominion", LocationSystemId = "system.sol", ShipIds = new() { "ship.foreign" }, RouteSystemIds = new() });
+        state.Fleets!.Add(new() { FleetId = "fleet.foreign", OwnerCivilizationId = "civ.dominion", LocationNodeId = "system.sol", ShipIds = new() { "ship.foreign" }, RouteNodeIds = new() });
         state.Ships!.Add(new() { ShipId = "ship.foreign", FleetId = "fleet.foreign", OwnerCivilizationId = "civ.dominion", ShipDesignDefinitionId = "ship-design.scout", CurrentHull = 10 });
         state.EntityIdentities.Add(new() { EntityId = "fleet.foreign" }); state.EntityIdentities.Add(new() { EntityId = "ship.foreign", DefinitionId = "ship-design.scout" });
         var s = Awaiting(scenario); var request = Assert.Single(s.GetPendingCombatRequests()); var result = CampaignCombatFixture.NoChanges(request);
-        result.FleetChanges.Add(new() { FleetId = request.Participants[0].FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.sol" });
+        result.FleetChanges.Add(new() { FleetId = request.Participants[0].FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = "system.sol" });
         var before = Json(s); var stamp = s.CaptureSnapshot(); Assert.Equal(CombatSubmissionError.InvalidRetreat, s.SubmitCombatResult(result, stamp.TurnNumber, stamp.StateRevision).ErrorCode); Assert.Equal(before, Json(s));
     }
 

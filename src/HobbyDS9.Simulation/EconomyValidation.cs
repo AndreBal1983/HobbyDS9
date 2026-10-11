@@ -105,20 +105,20 @@ namespace HobbyDS9.Simulation
                 Check(s.Planets.Any(p => p != null && p.PlanetId == r.OriginPlanetId) && s.Planets.Any(p => p != null && p.PlanetId == r.DestinationPlanetId)
                     && (r.ResourceDefinitionId == "resource.food" || d?.Resources?.Any(x => x != null && x.DefinitionId == r.ResourceDefinitionId) == true)
                     && r.ImportNeed >= 0 && r.ReachableSurplus >= 0 && r.RouteCapacity >= 0 && r.StabilityFactor >= 0 && r.StabilityFactor <= 10000 && r.RouteIntegrity >= 0 && r.RouteIntegrity <= 10000
-                    && r.Delivered >= 0 && r.Delivered <= Math.Min(r.ImportNeed, Math.Min(r.ReachableSurplus, r.RouteCapacity)) && r.RouteSystemIds != null && r.RouteSystemIds.All(id => s.StarSystems?.Any(n => n != null && n.SystemId == id) == true), "LastDeliveries");
+                    && r.Delivered >= 0 && r.Delivered <= Math.Min(r.ImportNeed, Math.Min(r.ReachableSurplus, r.RouteCapacity)) && r.RouteNodeIds != null && r.RouteNodeIds.All(id => d?.NavigationRegions?.Any(n => n != null && n.NodeId == id) == true), "LastDeliveries");
             }
             Check(s.LastDeliveries.Where(r => r != null).Select(r => r.OriginPlanetId + "|" + r.DestinationPlanetId + "|" + r.ResourceDefinitionId).Distinct(StringComparer.Ordinal).Count() == s.LastDeliveries.Count, "DuplicateDeliveries");
             foreach (var receipt in s.LastDeliveries.Where(r => r != null))
             {
                 var origin = s.Planets.FirstOrDefault(p => p != null && p.PlanetId == receipt.OriginPlanetId);
                 var destination = s.Planets.FirstOrDefault(p => p != null && p.PlanetId == receipt.DestinationPlanetId);
-                var route = receipt.RouteSystemIds;
+                var route = receipt.RouteNodeIds;
                 Check(origin != null && destination != null && origin.PlanetId != destination.PlanetId, "DeliveryEndpoints");
                 if (route != null && route.Count > 0)
                 {
-                    Check(route[0] == origin?.SystemId && route[route.Count - 1] == destination?.SystemId && route.Distinct(StringComparer.Ordinal).Count() == route.Count, "DeliveryRoute");
+                    Check(d?.NavigationRegions?.Any(n => n != null && n.NodeId == route[0] && n.AssociatedSystemId == origin?.SystemId) == true && d?.NavigationRegions?.Any(n => n != null && n.NodeId == route[route.Count - 1] && n.AssociatedSystemId == destination?.SystemId) == true && route.Distinct(StringComparer.Ordinal).Count() == route.Count, "DeliveryRoute");
                     for (var index = 1; index < route.Count; index++)
-                        Check(d?.GalaxyEdges?.Any(e => e != null && ((e.EndpointA == route[index - 1] && e.EndpointB == route[index]) || (e.EndpointB == route[index - 1] && e.EndpointA == route[index]))) == true, "DeliveryRoute");
+                        Check(d?.NavigationConnections?.Any(e => e != null && ((e.EndpointA == route[index - 1] && e.EndpointB == route[index]) || (e.EndpointB == route[index - 1] && e.EndpointA == route[index]))) == true, "DeliveryRoute");
                 }
                 else Check(receipt.RouteIntegrity == 0 && receipt.RouteCapacity == 0 && receipt.Delivered == 0, "DisconnectedDelivery");
                 if (receipt.ImportNeed >= 0 && receipt.ReachableSurplus >= 0 && receipt.RouteCapacity >= 0 && receipt.StabilityFactor >= 0 && receipt.StabilityFactor <= 10000 && receipt.RouteIntegrity >= 0 && receipt.RouteIntegrity <= 10000)

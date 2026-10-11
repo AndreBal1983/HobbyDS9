@@ -30,7 +30,7 @@ namespace HobbyDS9.UnityClient
                 var label = "Transit region";
                 if (n.AssociatedSystemId.HasValue && systems.TryGetValue(n.AssociatedSystemId.Value, out var system))
                     label = names.TryGetValue(system.DefinitionId, out var name) ? name : "Star system";
-                var fleets = campaign.Fleets.Where(f => n.AssociatedSystemId.HasValue && f.LocationSystemId == n.AssociatedSystemId.Value)
+                var fleets = campaign.Fleets.Where(f => f.LocationNodeId.Value == n.NodeId.Value)
                     .OrderBy(f => f.FleetId.Value, StringComparer.Ordinal);
                 return new GalaxyNodeView(n.NodeId, n.AssociatedSystemId, label, fleets);
             }).ToList().AsReadOnly();

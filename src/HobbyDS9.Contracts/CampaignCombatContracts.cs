@@ -27,7 +27,7 @@ namespace HobbyDS9.Contracts
     public sealed class CombatEncounterSnapshot
     {
         public EntityId EncounterId { get; }
-        public EntityId LocationSystemId { get; }
+        public EntityId LocationNodeId { get; }
         public int TurnNumber { get; }
         public string ResolverId { get; }
         public int ResolverVersion { get; }
@@ -36,7 +36,7 @@ namespace HobbyDS9.Contracts
         public IReadOnlyList<CombatParticipantSnapshot> Participants { get; }
         public CombatEncounterSnapshot(CombatRequestDto request, bool isResolved)
         {
-            EncounterId = new EntityId(request.EncounterId); LocationSystemId = new EntityId(request.LocationSystemId);
+            EncounterId = new EntityId(request.EncounterId); LocationNodeId = new EntityId(request.LocationNodeId);
             TurnNumber = request.TurnNumber; ResolverId = request.ResolverId; ResolverVersion = request.ResolverVersion;
             RandomState = request.RandomState; IsResolved = isResolved;
             Participants = request.Participants.ConvertAll(p => new CombatParticipantSnapshot(p)).AsReadOnly();

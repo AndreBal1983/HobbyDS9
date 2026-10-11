@@ -123,8 +123,8 @@ public sealed class StrategicClientTests
         Assert.Equal(before, Save(client));
         Assert.Throws<NotSupportedException>(() => ((IList<NavigationNodeId>)preview.Route.Steps).Clear());
         Assert.True(client.SubmitRoute(preview).Accepted);
-        Assert.Equal(preview.Route.Steps.Select(n => n.Value), client.Snapshot.Campaign.Fleets.Single(f => f.FleetId == Fleet).RouteSystemIds.Select(n => n.Value));
-        Assert.Empty(preview.Observed.Campaign.Fleets.Single(f => f.FleetId == Fleet).RouteSystemIds);
+        Assert.Equal(preview.Route.Steps.Select(n => n.Value), client.Snapshot.Campaign.Fleets.Single(f => f.FleetId == Fleet).RouteNodeIds.Select(n => n.Value));
+        Assert.Empty(preview.Observed.Campaign.Fleets.Single(f => f.FleetId == Fleet).RouteNodeIds);
     }
     [Fact]
     public void RouteCanBeReplacedAndClearedAtTheCurrentNode()
@@ -135,7 +135,7 @@ public sealed class StrategicClientTests
         var cleared = client.Preview(client.Snapshot, Fleet, new("system.sol"));
         Assert.Empty(cleared.Route.Steps); Assert.Equal(0, cleared.Route.TraversalCost);
         Assert.True(client.SubmitRoute(cleared).Accepted);
-        Assert.Empty(client.Snapshot.Campaign.Fleets.Single(f => f.FleetId == Fleet).RouteSystemIds);
+        Assert.Empty(client.Snapshot.Campaign.Fleets.Single(f => f.FleetId == Fleet).RouteNodeIds);
     }
     [Fact]
     public void StalePreviewCannotOverwriteAnOrder()
@@ -249,7 +249,8 @@ public sealed class StrategicClientTests
     public void DisconnectedRouteReportsUnreachableWithoutStateChanges()
     {
         var scenario = VerticalSliceFixture.Scenario();
-        scenario.Definitions.GalaxyEdges!.RemoveAll(e => e.EndpointA == "system.gamma-exit" || e.EndpointB == "system.gamma-exit");
+        scenario.Definitions.NavigationConnections!.RemoveAll(e => e.EndpointA == "system.gamma-exit" || e.EndpointB == "system.gamma-exit");
+        foreach(var k in scenario.InitialState.NavigationKnowledge!) k.Connections!.RemoveAll(e=>!scenario.Definitions.NavigationConnections.Any(c=>c.ConnectionId==e.Id));
         var client = Start(scenario); var before = Save(client);
         var preview = client.Preview(client.Snapshot, Fleet, new("system.founders-homeworld"));
         Assert.Equal(NavigationRouteError.Unreachable, preview.Route.ErrorCode);
@@ -290,7 +291,7 @@ public sealed class StrategicClientTests
             Assert.Equal(JsonSerializer.Serialize(direct.ExportSave()), Save(client));
         }
         Assert.Equal(26, client.Snapshot.Campaign.TurnNumber);
-        Assert.Equal(187, client.Snapshot.Campaign.StateRevision);
+        Assert.Equal(173, client.Snapshot.Campaign.StateRevision);
     }
 
 }

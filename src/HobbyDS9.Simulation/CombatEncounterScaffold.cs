@@ -18,7 +18,7 @@ namespace HobbyDS9.Simulation
             if (templates == null) throw new ArgumentNullException(nameof(templates));
             var requests = templates.ToList();
             foreach (var request in requests) ValidateRequest(request, false);
-            requests = requests.Select(CopyRequest).OrderBy(r => r.LocationSystemId, StringComparer.Ordinal).ToList();
+            requests = requests.Select(CopyRequest).OrderBy(r => r.LocationNodeId, StringComparer.Ordinal).ToList();
             var random = new SplitMix64Random(campaignRandomState);
             var allocator = new EntityIdAllocator(nextEntitySequence);
             var checkpoint = new CombatCheckpointDto
@@ -65,7 +65,7 @@ namespace HobbyDS9.Simulation
                 Require(ulong.TryParse(request.EncounterId.Substring(prefix.Length), NumberStyles.HexNumber,
                     CultureInfo.InvariantCulture, out var sequence) && sequence > 0 && sequence < checkpoint.NextEntitySequence,
                     "Encounter ID exceeds allocation state.");
-                Require(encounters.Add(request.EncounterId) && locations.Add(request.LocationSystemId), "Duplicate encounter/location.");
+                Require(encounters.Add(request.EncounterId) && locations.Add(request.LocationNodeId), "Duplicate encounter/location.");
                 Require(request.RulesVersion == requests[0].RulesVersion && request.ContentHash == requests[0].ContentHash,
                     "Inconsistent campaign rules/content identity.");
                 foreach (var participant in request.Participants)
@@ -104,7 +104,7 @@ namespace HobbyDS9.Simulation
             var entry = copy.PendingCombats.Single(p => p.Request.EncounterId == result.EncounterId);
             copy.PendingCombats.Remove(entry);
             copy.ResolvedCombats.Add(new ResolvedCombatDto { Request = entry.Request, Result = CopyResult(result) });
-            copy.ResolvedCombats = copy.ResolvedCombats.OrderBy(r => r.Request.LocationSystemId, StringComparer.Ordinal).ToList();
+            copy.ResolvedCombats = copy.ResolvedCombats.OrderBy(r => r.Request.LocationNodeId, StringComparer.Ordinal).ToList();
             copy.StateRevision++;
             // Remain AwaitingCombat even when ready: only the campaign
             // transaction may apply all consequences and open the next turn.
@@ -121,7 +121,7 @@ namespace HobbyDS9.Simulation
         public static IReadOnlyList<CombatResultDto> GetCanonicalResults(CombatCheckpointDto checkpoint)
         {
             Require(IsReadyToFinalize(checkpoint), "Unresolved encounters block finalization.");
-            return checkpoint.ResolvedCombats.OrderBy(r => r.Request.LocationSystemId, StringComparer.Ordinal)
+            return checkpoint.ResolvedCombats.OrderBy(r => r.Request.LocationNodeId, StringComparer.Ordinal)
                 .Select(r => CopyResult(r.Result)).ToList().AsReadOnly();
         }
 
@@ -134,7 +134,7 @@ namespace HobbyDS9.Simulation
         internal static void ValidateRequest(CombatRequestDto request, bool allocated)
         {
             Require(request != null, "Missing combat request.");
-            ValidateId(request!.LocationSystemId);
+            ValidateId(request!.LocationNodeId);
             ValidateId(request.ResolverId);
             Require(!string.IsNullOrWhiteSpace(request.RulesVersion) && !string.IsNullOrWhiteSpace(request.ContentHash)
                 && request.ResolverVersion > 0, "Missing resolver/rules/content identity.");
@@ -189,16 +189,16 @@ namespace HobbyDS9.Simulation
                 if (change.RemainingHull < 0 || change.RemainingHull > ship.Hull) return CombatSubmissionError.InvalidHull;
             }
             var changedFleets = new HashSet<string>(StringComparer.Ordinal);
-            var battleLocations = new HashSet<string>(AllRequests(checkpoint).Select(r => r.LocationSystemId), StringComparer.Ordinal);
+            var battleLocations = new HashSet<string>(AllRequests(checkpoint).Select(r => r.LocationNodeId), StringComparer.Ordinal);
             foreach (var change in result.FleetChanges)
             {
                 if (change == null || !EntityId.TryParse(change.FleetId, out _) || !changedFleets.Add(change.FleetId) || !Enum.IsDefined(typeof(FleetCombatDisposition), change.Disposition)) return CombatSubmissionError.MalformedResult;
                 if (!fleets.Contains(change.FleetId)) return CombatSubmissionError.Nonparticipant;
                 if (change.Disposition == FleetCombatDisposition.Retreated)
                 {
-                    if (!EntityId.TryParse(change.RetreatSystemId, out _) || battleLocations.Contains(change.RetreatSystemId!)) return CombatSubmissionError.InvalidRetreat;
+                    if (!EntityId.TryParse(change.RetreatNodeId, out _) || battleLocations.Contains(change.RetreatNodeId!)) return CombatSubmissionError.InvalidRetreat;
                 }
-                else if (change.RetreatSystemId != null) return CombatSubmissionError.InvalidRetreat;
+                else if (change.RetreatNodeId != null) return CombatSubmissionError.InvalidRetreat;
             }
             return CombatEventValidation.Validate(request, result);
         }
@@ -233,7 +233,7 @@ namespace HobbyDS9.Simulation
 
         internal static CombatRequestDto CopyRequest(CombatRequestDto request) => new CombatRequestDto
         {
-            EncounterId = request.EncounterId, TurnNumber = request.TurnNumber, LocationSystemId = request.LocationSystemId,
+            EncounterId = request.EncounterId, TurnNumber = request.TurnNumber, LocationNodeId = request.LocationNodeId,
             RulesVersion = request.RulesVersion, ContentHash = request.ContentHash, ResolverId = request.ResolverId,
             ResolverVersion = request.ResolverVersion, RandomAlgorithmId = request.RandomAlgorithmId, RandomState = request.RandomState,
             Participants = request.Participants.OrderBy(p => p.CivilizationId, StringComparer.Ordinal).ThenBy(p => p.FleetId, StringComparer.Ordinal)
@@ -249,7 +249,7 @@ namespace HobbyDS9.Simulation
             ShipChanges = result.ShipChanges.OrderBy(c => c.ShipId, StringComparer.Ordinal).Select(c => new ShipCombatChangeDto
                 { ShipId = c.ShipId, RemainingHull = c.RemainingHull }).ToList(),
             FleetChanges = result.FleetChanges.OrderBy(c => c.FleetId, StringComparer.Ordinal).Select(c => new FleetCombatChangeDto
-                { FleetId = c.FleetId, Disposition = c.Disposition, RetreatSystemId = c.RetreatSystemId }).ToList(),
+                { FleetId = c.FleetId, Disposition = c.Disposition, RetreatNodeId = c.RetreatNodeId }).ToList(),
             Events = result.Events.Select(e => new CombatEventDto
                 { Sequence = e.Sequence, Kind = e.Kind, FleetId = e.FleetId, ShipId = e.ShipId, Phase = e.Phase, SourceShipId = e.SourceShipId, SourceFleetId = e.SourceFleetId, Amount = e.Amount }).ToList()
         };

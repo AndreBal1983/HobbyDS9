@@ -148,7 +148,7 @@ namespace HobbyDS9.Contracts
         public string OriginPlanetId { get; }
         public string DestinationPlanetId { get; }
         public string ResourceDefinitionId { get; }
-        public IReadOnlyList<string> RouteSystemIds { get; }
+        public IReadOnlyList<string> RouteNodeIds { get; }
         public long ImportNeed { get; }
         public long ReachableSurplus { get; }
         public long RouteCapacity { get; }
@@ -156,7 +156,7 @@ namespace HobbyDS9.Contracts
         public int RouteIntegrity { get; }
         public long Delivered { get; }
         public LogisticsDeliverySnapshot(LogisticsDeliveryDto x)
-        { OriginPlanetId = x.OriginPlanetId; DestinationPlanetId = x.DestinationPlanetId; ResourceDefinitionId = x.ResourceDefinitionId; RouteSystemIds = x.RouteSystemIds!.ToList().AsReadOnly(); ImportNeed = x.ImportNeed; ReachableSurplus = x.ReachableSurplus; RouteCapacity = x.RouteCapacity; StabilityFactor = x.StabilityFactor; RouteIntegrity = x.RouteIntegrity; Delivered = x.Delivered; }
+        { OriginPlanetId = x.OriginPlanetId; DestinationPlanetId = x.DestinationPlanetId; ResourceDefinitionId = x.ResourceDefinitionId; RouteNodeIds = x.RouteNodeIds!.ToList().AsReadOnly(); ImportNeed = x.ImportNeed; ReachableSurplus = x.ReachableSurplus; RouteCapacity = x.RouteCapacity; StabilityFactor = x.StabilityFactor; RouteIntegrity = x.RouteIntegrity; Delivered = x.Delivered; }
     }
     public sealed class PopulationStatisticsSnapshot
     {

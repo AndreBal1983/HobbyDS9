@@ -98,10 +98,10 @@ public sealed class CampaignCombatResultTests
             case "event-inconsistent": result.Events.Insert(0, new() { Sequence = 0, Kind = CombatEventKind.ShipDestroyed, ShipId = ship }); result.Events[1].Sequence = 1; break;
             case "terminal-missing": result.Events.Clear(); break;
             case "terminal-duplicate": result.Events.Add(new() { Sequence = 1, Kind = CombatEventKind.EncounterResolved }); break;
-            case "retreat-unknown": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.absent" }); break;
-            case "retreat-self": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = request.LocationSystemId }); break;
-            case "retreat-not-adjacent": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.gamma-exit" }); break;
-            case "held-destination": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Held, RetreatSystemId = "system.sol" }); break;
+            case "retreat-unknown": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = "system.absent" }); break;
+            case "retreat-self": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = request.LocationNodeId }); break;
+            case "retreat-not-adjacent": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = "system.gamma-exit" }); break;
+            case "held-destination": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Held, RetreatNodeId = "system.sol" }); break;
             case "empty-held": result.ShipChanges.Add(new() { ShipId = ship, RemainingHull = 0 }); result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Held }); break;
         }
         var before = Json(s); Assert.Equal(expected, Submit(s, result).ErrorCode); Assert.Equal(before, Json(s));
@@ -133,12 +133,12 @@ public sealed class CampaignCombatResultTests
     [Fact]
     public void RetreatClearsRouteHeldKeepsRouteAndFinalizationDoesNotCreateAnotherEncounter()
     {
-        var scenario = CampaignCombatFixture.Scenario(); foreach (var f in scenario.InitialState.Fleets!) f.RouteSystemIds = new() { "system.bajoran-wormhole", "system.gamma-exit" };
-        var s = Session(scenario); s.AdvanceTurn(1, 0); var request = s.GetPendingCombatRequests()[0]; Assert.Equal("system.bajoran-wormhole", request.LocationSystemId);
-        var result = CampaignCombatFixture.NoChanges(request); result.FleetChanges.Add(new() { FleetId = request.Participants[0].FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.bajor" });
+        var scenario = CampaignCombatFixture.Scenario(); foreach (var f in scenario.InitialState.Fleets!) f.RouteNodeIds = new() { "system.bajoran-wormhole", "system.gamma-exit" };
+        var s = Session(scenario); s.AdvanceTurn(1, 0); var request = s.GetPendingCombatRequests()[0]; Assert.Equal("system.bajor", request.LocationNodeId);
+        var result = CampaignCombatFixture.NoChanges(request); result.FleetChanges.Add(new() { FleetId = request.Participants[0].FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = "system.sol" });
         result.FleetChanges.Add(new() { FleetId = request.Participants[1].FleetId, Disposition = FleetCombatDisposition.Held }); Assert.Equal(CombatSubmissionStatus.Buffered, Submit(s, result).Status); Finalize(s);
-        var fleets = s.CaptureSnapshot().Fleets; var retreat = fleets.Single(f => f.FleetId.Value == request.Participants[0].FleetId); Assert.Equal("system.bajor", retreat.LocationSystemId.Value); Assert.Empty(retreat.RouteSystemIds);
-        var held = fleets.Single(f => f.FleetId.Value == request.Participants[1].FleetId); Assert.Equal("system.bajoran-wormhole", held.LocationSystemId.Value); Assert.Equal(new[] { new EntityId("system.gamma-exit") }, held.RouteSystemIds);
+        var fleets = s.CaptureSnapshot().Fleets; var retreat = fleets.Single(f => f.FleetId.Value == request.Participants[0].FleetId); Assert.Equal("system.sol", retreat.LocationNodeId.Value); Assert.Empty(retreat.RouteNodeIds);
+        var held = fleets.Single(f => f.FleetId.Value == request.Participants[1].FleetId); Assert.Equal("system.bajor", held.LocationNodeId.Value); Assert.Equal(new[] { new EntityId("system.bajoran-wormhole"), new EntityId("system.gamma-exit") }, held.RouteNodeIds);
         Assert.Empty(s.GetPendingCombatRequests()); Assert.Equal(SessionPhase.Planning, s.CaptureSnapshot().Phase);
     }
     [Theory]
@@ -162,12 +162,12 @@ public sealed class CampaignCombatResultTests
     public void RetreatIntoAnotherEncounterOrForeignOccupiedSnapshotIsRejected()
     {
         var s = Awaiting(3); var request = s.GetPendingCombatRequests()[0]; var result = CampaignCombatFixture.NoChanges(request);
-        result.FleetChanges.Add(new() { FleetId = request.Participants[0].FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.bajoran-wormhole" });
+        result.FleetChanges.Add(new() { FleetId = request.Participants[0].FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = "system.bajoran-wormhole" });
         var before = Json(s); Assert.Equal(CombatSubmissionError.InvalidRetreat, Submit(s, result).ErrorCode); Assert.Equal(before, Json(s));
-        var scenario = CampaignCombatFixture.Scenario(2); scenario.InitialState.Fleets!.Where(f => f.LocationSystemId == "system.bajoran-wormhole").ToList().ForEach(f => f.LocationSystemId = "system.sol");
+        var scenario = CampaignCombatFixture.Scenario(2); scenario.InitialState.Fleets!.Where(f => f.LocationNodeId == "system.bajoran-wormhole").ToList().ForEach(f => f.LocationNodeId = "system.sol");
         // Both foreign fleets at Sol form another frozen battle; the retreat is still invalid.
-        s = Session(scenario); s.AdvanceTurn(1, 0); request = s.GetPendingCombatRequests().Single(r => r.LocationSystemId == "system.bajor"); result = CampaignCombatFixture.NoChanges(request);
-        result.FleetChanges.Add(new() { FleetId = request.Participants[0].FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.sol" });
+        s = Session(scenario); s.AdvanceTurn(1, 0); request = s.GetPendingCombatRequests().Single(r => r.LocationNodeId == "system.bajor"); result = CampaignCombatFixture.NoChanges(request);
+        result.FleetChanges.Add(new() { FleetId = request.Participants[0].FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = "system.sol" });
         before = Json(s); Assert.Equal(CombatSubmissionError.InvalidRetreat, Submit(s, result).ErrorCode); Assert.Equal(before, Json(s));
     }
     [Fact]
@@ -185,7 +185,7 @@ public sealed class CampaignCombatResultTests
     public void ReloadRejectsBufferedRetreatThatDoesNotMatchGalaxyTopology()
     {
         var s = Awaiting(); var r = CampaignCombatFixture.NoChanges(s.GetPendingCombatRequests()[0]); Assert.Equal(CombatSubmissionStatus.Buffered, Submit(s, r).Status);
-        var save = s.ExportSave(); save.GameState.ResolvedCombats![0].Result.FleetChanges.Add(new() { FleetId = save.GameState.ResolvedCombats[0].Request.Participants[0].FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.founders-homeworld" });
+        var save = s.ExportSave(); save.GameState.ResolvedCombats![0].Result.FleetChanges.Add(new() { FleetId = save.GameState.ResolvedCombats[0].Request.Participants[0].FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = "system.founders-homeworld" });
         var scenario = CampaignCombatFixture.Scenario(); Assert.Throws<ArgumentException>(() => new SimulationSession(save, scenario.Definitions, Compatibility(scenario)));
     }
 
@@ -193,7 +193,7 @@ public sealed class CampaignCombatResultTests
     public void OpposingFleetsCannotRetreatIntoTheSameDestinationWithinOneResult()
     {
         var s = Awaiting(); var request = s.GetPendingCombatRequests()[0]; var result = CampaignCombatFixture.NoChanges(request);
-        foreach (var participant in request.Participants) result.FleetChanges.Add(new() { FleetId = participant.FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.sol" });
+        foreach (var participant in request.Participants) result.FleetChanges.Add(new() { FleetId = participant.FleetId, Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = "system.sol" });
         var before = Json(s); Assert.Equal(CombatSubmissionError.InvalidRetreat, Submit(s, result).ErrorCode); Assert.Equal(before, Json(s));
     }
 

@@ -198,7 +198,7 @@ namespace HobbyDS9.Simulation
             OriginPlanetId = x.OriginPlanetId,
             DestinationPlanetId = x.DestinationPlanetId,
             ResourceDefinitionId = x.ResourceDefinitionId,
-            RouteSystemIds = x.RouteSystemIds!.ToList(),
+            RouteNodeIds = x.RouteNodeIds!.ToList(),
             ImportNeed = x.ImportNeed,
             ReachableSurplus = x.ReachableSurplus,
             RouteCapacity = x.RouteCapacity,
@@ -209,7 +209,7 @@ namespace HobbyDS9.Simulation
         internal static bool Same(LogisticsDeliveryDto? a, LogisticsDeliveryDto? b) => a == null ? b == null : b != null && a.OriginPlanetId == b.OriginPlanetId
             && a.DestinationPlanetId == b.DestinationPlanetId
             && a.ResourceDefinitionId == b.ResourceDefinitionId
-            && (a.RouteSystemIds == null ? b.RouteSystemIds == null : b.RouteSystemIds != null && a.RouteSystemIds.Count == b.RouteSystemIds.Count && a.RouteSystemIds.SequenceEqual(b.RouteSystemIds))
+            && (a.RouteNodeIds == null ? b.RouteNodeIds == null : b.RouteNodeIds != null && a.RouteNodeIds.Count == b.RouteNodeIds.Count && a.RouteNodeIds.SequenceEqual(b.RouteNodeIds))
             && a.ImportNeed == b.ImportNeed
             && a.ReachableSurplus == b.ReachableSurplus
             && a.RouteCapacity == b.RouteCapacity

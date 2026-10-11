@@ -16,6 +16,7 @@ namespace HobbyDS9.Simulation
         private GameStateDto state;
         private readonly DefinitionCatalogDto definitions;
         private readonly SaveCompatibility compatibility;
+        public WeightedNavigationGraph Navigation { get; }
         public GalaxyGraph Galaxy { get; }
         private readonly Dictionary<CommandKind, ICommandHandler> handlers;
 
@@ -37,13 +38,14 @@ namespace HobbyDS9.Simulation
             this.definitions = CopyDefinitions(definitions);
             state = CopyState(save.GameState);
             Galaxy = new GalaxyGraph(state.StarSystems!.Select(n => new EntityId(n.SystemId)), this.definitions.GalaxyEdges!);
+            Navigation = new WeightedNavigationGraph(this.definitions);
             if (commandHandlers == null) throw new ArgumentNullException(nameof(commandHandlers));
             handlers = new Dictionary<CommandKind, ICommandHandler>
             {
                 [CommandKind.SetResearchTarget] = new ResearchTargetHandler(this.definitions),
                 [CommandKind.EnqueueProduction] = new EnqueueProductionHandler(this.definitions),
                 [CommandKind.CancelProduction] = new CancelProductionHandler(),
-                [CommandKind.SetFleetRoute] = new SetFleetRouteHandler(Galaxy),
+                [CommandKind.SetFleetRoute] = new SetFleetRouteHandler(Navigation),
                 [CommandKind.SetWorldGovernancePolicy] = new GovernancePolicyHandler(this.definitions)
             };
             foreach (var pair in commandHandlers)
@@ -136,7 +138,7 @@ namespace HobbyDS9.Simulation
                     GameStateDto? afterAi = null;
                     Action aiPlanning = () =>
                     {
-                        AiPlanningPhase.Execute(() => staging, definitions, Galaxy,
+                        AiPlanningPhase.Execute(() => staging, definitions, Navigation,
                             command => ExecuteCommand(ref staging, command, trustedAi: true), commandResults);
                         afterAi = CopyState(staging);
                     };
@@ -191,7 +193,8 @@ namespace HobbyDS9.Simulation
                     a.UnlockedResearchDefinitionIds!.SequenceEqual(b.UnlockedResearchDefinitionIds!)).Any(equal => !equal))
                 || !candidate.StarSystems!.Select(n => (n.SystemId, n.DefinitionId, n.OwnerCivilizationId))
                     .SequenceEqual(state.StarSystems!.Select(n => (n.SystemId, n.DefinitionId, n.OwnerCivilizationId)))
-                || !PopulationGuards.Same(state, candidate, allowEconomy, allowProduction))
+                || !PopulationGuards.Same(state, candidate, allowEconomy, allowProduction)
+                || !NavigationStateGuards.Same(state,candidate,allowMovement))
                 throw new InvalidOperationException("Strategic phase changed protected campaign facts or bookkeeping.");
             ProductionFleetGuards.Require(state, candidate, allowProduction, allowMovement, allowEconomy);
             if (!CampaignCombatState.SameBatch(state, candidate)) throw new InvalidOperationException("Phase changed protected combat state.");
@@ -249,6 +252,7 @@ namespace HobbyDS9.Simulation
             {
                 DefinitionId = d.DefinitionId,
                 DisplayName = d.DisplayName,
+                MovementBudget=d.MovementBudget,
                 IndustryCost = d.IndustryCost,
                 ResourceCosts = d.ResourceCosts!.OrderBy(r => r.ResourceDefinitionId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
                 CreditCost = d.CreditCost,
@@ -265,6 +269,9 @@ namespace HobbyDS9.Simulation
             }).ToList(),
             GovernancePolicies = source.GovernancePolicies!.OrderBy(p=>p.DefinitionId,StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
             PoliticalMemoryEffects = source.PoliticalMemoryEffects!.OrderBy(p=>p.DefinitionId,StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
+            NavigationRegions=source.NavigationRegions!.OrderBy(n=>n.NodeId,StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
+            NavigationConnections=source.NavigationConnections!.OrderBy(e=>e.ConnectionId,StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
+            Phenomena=source.Phenomena!.OrderBy(p=>p.DefinitionId,StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
             Species = source.Species!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
             Planets = source.Planets!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
             Resources = source.Resources!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
@@ -295,16 +302,16 @@ namespace HobbyDS9.Simulation
                     return command.SetWorldGovernancePolicy != null && EntityId.TryParse(command.SetWorldGovernancePolicy.ColonyId,out _) && DefinitionId.TryParse(command.SetWorldGovernancePolicy.PolicyDefinitionId,out _);
                 case CommandKind.SetFleetRoute:
                     return command.SetFleetRoute != null && EntityId.TryParse(command.SetFleetRoute.FleetId, out _)
-                        && command.SetFleetRoute.RouteSystemIds != null && command.SetFleetRoute.RouteSystemIds.All(id => EntityId.TryParse(id, out _));
+                        && command.SetFleetRoute.RouteNodeIds != null && command.SetFleetRoute.RouteNodeIds.All(id => EntityId.TryParse(id, out _));
                 default: return false;
             }
         }
 
         internal static GameStateDto CopyState(GameStateDto source) => new GameStateDto
         {
-            PendingCombats = source.PendingCombats!.OrderBy(c => c.Request.LocationSystemId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
+            PendingCombats = source.PendingCombats!.OrderBy(c => c.Request.LocationNodeId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
                 .Select(c => new PendingCombatDto { Request = CombatEncounterScaffold.CopyRequest(c.Request) }).ToList(),
-            ResolvedCombats = source.ResolvedCombats!.OrderBy(c => c.Request.LocationSystemId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
+            ResolvedCombats = source.ResolvedCombats!.OrderBy(c => c.Request.LocationNodeId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
                 .Select(c => new ResolvedCombatDto { Request = CombatEncounterScaffold.CopyRequest(c.Request), Result = CombatEncounterScaffold.CopyResult(c.Result) }).ToList(),
             Phase = source.Phase,
             TurnNumber = source.TurnNumber,
@@ -333,6 +340,9 @@ namespace HobbyDS9.Simulation
             StarSystems = source.StarSystems!.OrderBy(n => n.SystemId, StringComparer.Ordinal)
                 .Select(n => new StarSystemStateDto { SystemId = n.SystemId, DefinitionId = n.DefinitionId, OwnerCivilizationId = n.OwnerCivilizationId }).ToList(),
             Colonies = source.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
+            NavigationKnowledge=source.NavigationKnowledge!.OrderBy(k=>k.CivilizationId,StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
+            TraversalEffects=source.TraversalEffects!.OrderBy(e=>e.EffectId,StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
+            NavigationStatistics=PopulationData.Copy(source.NavigationStatistics!),
             Planets = source.Planets!.OrderBy(p => p.PlanetId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
             Displacements = source.Displacements!.OrderBy(r => r.DisplacementId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
             LastDeliveries = source.LastDeliveries!.OrderBy(r => r.DestinationPlanetId, StringComparer.Ordinal).ThenBy(r => r.ResourceDefinitionId, StringComparer.Ordinal).ThenBy(r => r.OriginPlanetId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
@@ -349,9 +359,10 @@ namespace HobbyDS9.Simulation
             {
                 FleetId = f.FleetId,
                 OwnerCivilizationId = f.OwnerCivilizationId,
-                LocationSystemId = f.LocationSystemId,
+                TransitTotalCost=f.TransitTotalCost,TransitProgress=f.TransitProgress,
+                LocationNodeId = f.LocationNodeId,
                 ShipIds = new List<string>(f.ShipIds!),
-                RouteSystemIds = new List<string>(f.RouteSystemIds!)
+                RouteNodeIds = new List<string>(f.RouteNodeIds!)
             }).ToList()
         };
 
@@ -375,8 +386,8 @@ namespace HobbyDS9.Simulation
                 SetFleetRoute = source.SetFleetRoute == null ? null : new SetFleetRoutePayload
                 {
                     FleetId = source.SetFleetRoute.FleetId,
-                    RouteSystemIds = source.SetFleetRoute.RouteSystemIds == null
-                        ? null : new List<string>(source.SetFleetRoute.RouteSystemIds)
+                    RouteNodeIds = source.SetFleetRoute.RouteNodeIds == null
+                        ? null : new List<string>(source.SetFleetRoute.RouteNodeIds)
                 }
             };
         }

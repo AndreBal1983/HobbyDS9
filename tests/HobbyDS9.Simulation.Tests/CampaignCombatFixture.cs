@@ -16,7 +16,7 @@ internal static class CampaignCombatFixture
             {
                 var suffix = actor.Substring(4) + "-" + i.ToString(System.Globalization.CultureInfo.InvariantCulture); var shipId = "ship." + suffix; var fleetId = "fleet." + suffix;
                 state.Ships.Add(new() { ShipId = shipId, FleetId = fleetId, OwnerCivilizationId = actor, ShipDesignDefinitionId = "ship-design.scout", CurrentHull = 10 });
-                state.Fleets.Add(new() { FleetId = fleetId, OwnerCivilizationId = actor, LocationSystemId = locations[i], ShipIds = new() { shipId }, RouteSystemIds = new() });
+                state.Fleets.Add(new() { FleetId = fleetId, OwnerCivilizationId = actor, LocationNodeId = locations[i], ShipIds = new() { shipId }, RouteNodeIds = new() });
                 state.EntityIdentities.Add(new() { EntityId = shipId, DefinitionId = "ship-design.scout" }); state.EntityIdentities.Add(new() { EntityId = fleetId });
             }
         return scenario;

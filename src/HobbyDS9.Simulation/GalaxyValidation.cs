@@ -34,6 +34,7 @@ namespace HobbyDS9.Simulation
                 if (item == null) Add(issues, ValidationCode.MissingField, p);
                 else Definition(item.DefinitionId, item.DisplayName, p);
             }
+            ValidateNavigationDefinitions(dto,ids,typed,path,issues);
             ValidatePoliticsDefinitions(dto,ids,typed,path,issues);
             ValidatePopulationDefinitions(dto, ids, typed, path, issues);
             ValidateResearchDefinitions(dto, ids, typed, path, issues);
@@ -87,6 +88,7 @@ namespace HobbyDS9.Simulation
                     else if (!civilizationIds.Contains(system.OwnerCivilizationId)) Add(issues, ValidationCode.MissingCivilization, p + ".OwnerCivilizationId");
                 }
             }
+            ValidateNavigationState(dto,catalog,path,issues);
             ValidateColonies(dto, catalog, headers, typedIds, civilizationIds, path, issues);
             ValidateResearchState(dto, catalog, path, issues);
             ValidateProductionFleets(dto, catalog, headers, typedIds, civilizationIds, path, issues);

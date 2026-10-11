@@ -90,9 +90,9 @@ public sealed class ProductionValidationTests
             case "wrong-backlink": ship.FleetId = "fleet.absent"; break;
             case "hull-overflow": ship.CurrentHull = 11; break;
             case "zero-hull": ship.CurrentHull = 0; break;
-            case "unknown-location": fleet.LocationSystemId = "system.absent"; break;
-            case "bad-route": fleet.RouteSystemIds!.Add("system.gamma-exit"); break;
-            case "missing-route": fleet.RouteSystemIds = null; break;
+            case "unknown-location": fleet.LocationNodeId = "system.absent"; break;
+            case "bad-route": fleet.RouteNodeIds!.Add("system.gamma-exit"); break;
+            case "missing-route": fleet.RouteNodeIds = null; break;
             case "missing-members": fleet.ShipIds = null; break;
             case "old-save": save.SaveFormatVersion = 6; break;
             case "old-content": scenario.Definitions.ContentFormatVersion = 3; break;

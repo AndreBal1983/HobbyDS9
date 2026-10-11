@@ -36,9 +36,14 @@ namespace HobbyDS9.Simulation
                 var next = after.Fleets!.Single(f => f.FleetId == fleet.FleetId);
                 Check(fleet.OwnerCivilizationId == next.OwnerCivilizationId);
                 Check(production ? next.ShipIds!.Take(fleet.ShipIds!.Count).SequenceEqual(fleet.ShipIds) : fleet.ShipIds!.SequenceEqual(next.ShipIds!));
-                if (!movement) Check(fleet.LocationSystemId == next.LocationSystemId && fleet.RouteSystemIds!.SequenceEqual(next.RouteSystemIds!));
-                else if (fleet.RouteSystemIds!.Count == 0) Check(fleet.LocationSystemId == next.LocationSystemId && next.RouteSystemIds!.Count == 0);
-                else Check(next.LocationSystemId == fleet.RouteSystemIds[0] && fleet.RouteSystemIds.Skip(1).SequenceEqual(next.RouteSystemIds!));
+                if(!movement) Check(fleet.LocationNodeId==next.LocationNodeId&&fleet.RouteNodeIds!.SequenceEqual(next.RouteNodeIds!)&&fleet.TransitTotalCost==next.TransitTotalCost&&fleet.TransitProgress==next.TransitProgress);
+                else
+                {
+                    var consumed=fleet.RouteNodeIds!.Count-next.RouteNodeIds!.Count;
+                    Check(consumed>=0&&fleet.RouteNodeIds.Skip(consumed).SequenceEqual(next.RouteNodeIds));
+                    Check(next.LocationNodeId==(consumed==0?fleet.LocationNodeId:fleet.RouteNodeIds[consumed-1]));
+                    Check(consumed!=0||next.TransitProgress>=fleet.TransitProgress);
+                }
             }
             if (production)
             {

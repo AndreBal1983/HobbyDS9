@@ -99,7 +99,7 @@ public sealed class CombatProfileContractTests
             case "low": p.RetreatHullPercent = -1; break;
             case "high": p.RetreatHullPercent = 101; break;
             case "destination-missing": p.RetreatHullPercent = 10; break;
-            case "destination-disabled": p.RetreatSystemId = "node.retreat"; break;
+            case "destination-disabled": p.RetreatNodeId = "node.retreat"; break;
             case "null": plans[0] = null!; break;
         }
         var before = Json(plans); Assert.Throws<ArgumentException>(() => CombatPlanValidation.Validate(r, plans)); Assert.Equal(before, Json(plans));
@@ -107,9 +107,9 @@ public sealed class CombatProfileContractTests
     [Fact]
     public void PlanOrderAndValidThresholdBoundariesAreAccepted()
     {
-        var r = Request(); var plans = Plans(r); plans[1].RetreatHullPercent = 100; plans[1].RetreatSystemId = "node.exit"; CombatPlanValidation.Validate(r, plans); plans.Reverse(); CombatPlanValidation.Validate(r, plans);
+        var r = Request(); var plans = Plans(r); plans[1].RetreatHullPercent = 100; plans[1].RetreatNodeId = "node.exit"; CombatPlanValidation.Validate(r, plans); plans.Reverse(); CombatPlanValidation.Validate(r, plans);
         Assert.Equal(0, (int)CombatEventKind.EncounterResolved); Assert.Equal(1, (int)CombatEventKind.ShipDamaged); Assert.Equal(2, (int)CombatEventKind.ShipDestroyed); Assert.Equal(3, (int)CombatEventKind.FleetRetreated);
-        Assert.Equal(11, FoundationVersions.SaveFormatVersion); Assert.Equal(7, FoundationVersions.ContentFormatVersion);
+        Assert.Equal(12, FoundationVersions.SaveFormatVersion); Assert.Equal(8, FoundationVersions.ContentFormatVersion);
     }
     [Theory]
     [InlineData("phase")]

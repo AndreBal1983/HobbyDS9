@@ -85,7 +85,7 @@ public sealed class CombatBoundaryTests
             var request = CombatEncounterScaffold.GetDetachedRequest(checkpoint, pending.Request.EncounterId);
             var a = normal.Resolve(request);
             var b = extra.Resolve(request);
-            if (request.LocationSystemId == "system.alpha") Assert.NotEqual(a.FinalRandomState, b.FinalRandomState);
+            if (request.LocationNodeId == "system.alpha") Assert.NotEqual(a.FinalRandomState, b.FinalRandomState);
             else Assert.Equal(Json(a), Json(b));
         }
         Assert.Equal(0xdaa66d2c7ddf743fUL, checkpoint.CampaignRandomState);
@@ -140,7 +140,7 @@ public sealed class CombatBoundaryTests
         templates[1].Participants[0].Ships[0].ShipId = templates[0].Participants[0].Ships[0].ShipId;
         Assert.Throws<ArgumentException>(() => CombatEncounterScaffold.CreateCheckpoint(7, 23, 0, 1, templates));
         templates = Templates();
-        templates[1].LocationSystemId = templates[0].LocationSystemId;
+        templates[1].LocationNodeId = templates[0].LocationNodeId;
         Assert.Throws<ArgumentException>(() => CombatEncounterScaffold.CreateCheckpoint(7, 23, 0, 1, templates));
     }
 
@@ -199,11 +199,11 @@ public sealed class CombatBoundaryTests
         var betaId = checkpoint.PendingCombats[1].Request.EncounterId;
         var result = new SeededProbeResolver().Resolve(alpha);
         result.FleetChanges.Add(new() { FleetId = alpha.Participants[0].FleetId,
-            Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.beta" });
+            Disposition = FleetCombatDisposition.Retreated, RetreatNodeId = "system.beta" });
         Assert.Throws<ArgumentException>(() => CombatEncounterScaffold.RecordResult(checkpoint, result));
         checkpoint = Resolve(checkpoint, betaId, new SeededProbeResolver());
         Assert.Throws<ArgumentException>(() => CombatEncounterScaffold.RecordResult(checkpoint, result));
-        result.FleetChanges[0].RetreatSystemId = "system.safe";
+        result.FleetChanges[0].RetreatNodeId = "system.safe";
         var resolved = CombatEncounterScaffold.RecordResult(checkpoint, result);
         Assert.Equal(checkpoint.PendingCombats.Count - 1, resolved.PendingCombats.Count);
         Assert.Equal(checkpoint.PendingCombats.Count + checkpoint.ResolvedCombats.Count,
@@ -237,7 +237,7 @@ public sealed class CombatBoundaryTests
 
     private static List<CombatRequestDto> Templates() => new[] { "alpha", "beta", "gamma" }.Select(location => new CombatRequestDto
     {
-        LocationSystemId = "system." + location, RulesVersion = "slice-v1", ContentHash = "fixture-hash",
+        LocationNodeId = "system." + location, RulesVersion = "slice-v1", ContentHash = "fixture-hash",
         ResolverId = "seeded-probe", ResolverVersion = 1,
         Participants = new[] { "alpha", "beta" }.Select(civ => new CombatParticipantDto
         {
@@ -257,7 +257,7 @@ public sealed class CombatBoundaryTests
             var random = new EncounterRandomStream(request.RandomState);
             var ship = request.Participants[0].Ships[0];
             var damage = 1 + (int)random.NextBelow(50);
-            if (request.LocationSystemId == "system.alpha")
+            if (request.LocationNodeId == "system.alpha")
                 for (var i = 0; i < extraDrawsAtAlpha; i++) random.NextUInt64();
             return new CombatResultDto
             {

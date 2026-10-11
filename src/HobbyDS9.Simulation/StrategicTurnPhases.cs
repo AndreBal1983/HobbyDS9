@@ -37,7 +37,7 @@ namespace HobbyDS9.Simulation
             if (phase == StrategicTurnPhase.Economy) EconomyPhase.Execute(staging, definitions);
             if (phase == StrategicTurnPhase.Research) ResearchPhase.Execute(staging, definitions);
             if (phase == StrategicTurnPhase.Production) ProductionPhase.Execute(staging, definitions);
-            if (phase == StrategicTurnPhase.Movement) MovementPhase.Execute(staging);
+            if (phase == StrategicTurnPhase.Movement) MovementPhase.Execute(staging,definitions);
             if (phase == StrategicTurnPhase.EncounterCreation) encounterCreation();
             Validate(staging, definitions);
             if (phase == StrategicTurnPhase.EncounterCreation) CampaignCombatState.RequireDetectionOnly(before, SimulationSession.CopyState(staging));

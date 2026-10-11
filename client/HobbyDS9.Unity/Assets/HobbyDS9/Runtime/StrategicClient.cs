@@ -86,7 +86,7 @@ namespace HobbyDS9.UnityClient
         public RoutePreview Preview(CampaignSnapshot observed, EntityId fleetId, NavigationNodeId destination)
         {
             var fleet = observed.Campaign.Fleets.Single(f => f.FleetId == fleetId);
-            var origin = observed.Navigation.Nodes.Single(n => n.AssociatedSystemId == fleet.LocationSystemId).NodeId;
+            var origin = new NavigationNodeId(fleet.LocationNodeId.Value);
             return new RoutePreview(fleetId, fleet.OwnerCivilizationId, origin, destination, session.FindRoute(origin, destination), observed);
         }
         public CommandResult SubmitRoute(RoutePreview preview)

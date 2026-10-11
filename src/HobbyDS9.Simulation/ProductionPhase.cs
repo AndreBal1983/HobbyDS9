@@ -20,7 +20,8 @@ namespace HobbyDS9.Simulation
                 var design = designs[head.ShipDesignDefinitionId];
                 // Ship first, then fleet (only if none stationary); one global sequence.
                 var shipId = CampaignAllocation.Allocate(state, "ship", design.DefinitionId);
-                var fleet = state.Fleets!.Where(f => f.OwnerCivilizationId == colony.OwnerCivilizationId && f.LocationSystemId == colony.SystemId && f.RouteSystemIds!.Count == 0)
+                var location=new WeightedNavigationGraph(definitions).NodeForSystem(colony.SystemId)!;
+                var fleet = state.Fleets!.Where(f => f.OwnerCivilizationId == colony.OwnerCivilizationId && f.LocationNodeId == location && f.TransitTotalCost==0 && f.RouteNodeIds!.Count == 0)
                     .OrderBy(f => f.FleetId, StringComparer.Ordinal).FirstOrDefault();
                 if (fleet == null)
                 {
@@ -28,9 +29,9 @@ namespace HobbyDS9.Simulation
                     {
                         FleetId = CampaignAllocation.Allocate(state, "fleet", null),
                         OwnerCivilizationId = colony.OwnerCivilizationId!,
-                        LocationSystemId = colony.SystemId,
+                        LocationNodeId = location,
                         ShipIds = new List<string>(),
-                        RouteSystemIds = new List<string>()
+                        RouteNodeIds = new List<string>()
                     };
                     state.Fleets!.Add(fleet);
                 }

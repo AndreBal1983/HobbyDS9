@@ -12,9 +12,6 @@ namespace HobbyDS9.Application
     {
         private readonly SimulationSession session;
         private readonly ScenarioContentSnapshot content;
-        private readonly NavigationMapSnapshot navigation;
-        private readonly IReadOnlyDictionary<NavigationNodeId, EntityId> systemsByNode;
-        private readonly IReadOnlyDictionary<EntityId, NavigationNodeId> nodesBySystem;
         private readonly IPlannedCombatResolver resolver = new DeterministicPhasedCombatResolver();
 
         private CampaignApplication(ScenarioDto scenario, SaveEnvelopeDto save)
@@ -22,11 +19,7 @@ namespace HobbyDS9.Application
             session = new SimulationSession(save, scenario.Definitions,
                 new SaveCompatibility(scenario.ScenarioId, scenario.RulesVersion, scenario.ContentHash));
             content = new ScenarioContentSnapshot(scenario.Definitions);
-            // Compatibility adapter only. No navigation topology or gameplay changes.
-            nodesBySystem = session.Galaxy.Nodes.ToDictionary(id => id, id => new NavigationNodeId(id.Value));
-            systemsByNode = nodesBySystem.ToDictionary(pair => pair.Value, pair => pair.Key);
-            navigation = new NavigationMapSnapshot(session.Galaxy.Nodes.Select(id => new NavigationNodeSnapshot(nodesBySystem[id], id)),
-                session.Galaxy.Edges.Select(e => new NavigationLinkSnapshot(nodesBySystem[e.EndpointA], nodesBySystem[e.EndpointB], e.Kind, e.TraversalCost)));
+
         }
 
         public static ICampaignSession StartScenario(ScenarioDto scenario)
@@ -54,7 +47,32 @@ namespace HobbyDS9.Application
             return FoundationValidator.ValidateSave(save, scenario.Definitions,
                 new SaveCompatibility(scenario.ScenarioId, scenario.RulesVersion, scenario.ContentHash)).Issues;
         }
-        public CampaignSnapshot CaptureSnapshot() => new CampaignSnapshot(session.CaptureSnapshot(), content, navigation);
+        private string Viewer => session.CaptureSnapshot().Actors.FirstOrDefault(a => a.ControllerKind == ControllerKind.Human)?.CivilizationId.Value
+            ?? session.CaptureSnapshot().Actors.First().CivilizationId.Value;
+        public CampaignSnapshot CaptureSnapshot()
+        {
+            var view = session.CaptureNavigation(Viewer);
+            var navigation = new NavigationMapSnapshot(view.Nodes.Select(n => new NavigationNodeSnapshot(new NavigationNodeId(n.NodeId),
+                n.AssociatedSystemId == null ? (EntityId?)null : new EntityId(n.AssociatedSystemId), n.DisplayName, n.PhenomenonDefinitionIds)),
+                view.Connections.Select(e => new NavigationLinkSnapshot(new NavigationNodeId(e.FromNodeId), new NavigationNodeId(e.ToNodeId), e.Kind, e.EffectiveCost,
+                    e.BaseCost, e.PhenomenonCost, e.ArtificialCost)));
+            var campaign = session.CaptureSnapshot();
+            return new CampaignSnapshot(campaign, content, navigation, campaign.Fleets.Select(f => session.CaptureFleetTravel(f.FleetId.Value)));
+        }
+        public FleetTravelSnapshot GetFleetTravel(EntityId fleetId) => session.CaptureFleetTravel(fleetId.Value);
+        public FleetTravelSnapshot? PreviewFleetTravel(EntityId fleetId, IReadOnlyList<NavigationNodeId> steps)
+        {
+            var fleet = session.CaptureSnapshot().Fleets.SingleOrDefault(f => f.FleetId == fleetId);
+            if (fleet == null || fleet.TransitTotalCost > 0) return null;
+            var previous = fleet.LocationNodeId.Value;
+            var knowledge = session.CaptureNavigation(Viewer);
+            foreach (var next in steps)
+            {
+                if (!knowledge.Connections.Any(e => (e.FromNodeId == previous && e.ToNodeId == next.Value) || (e.ToNodeId == previous && e.FromNodeId == next.Value))) return null;
+                previous = next.Value;
+            }
+            return session.CaptureFleetTravel(fleetId.Value, steps.Select(n => n.Value).ToList());
+        }
         public CommandResult SubmitCommand(CommandEnvelope? command) => session.SubmitCommand(command);
         public CommandResult SubmitFleetRoute(EntityId commandId, EntityId actorCivilizationId, int expectedTurn,
             long expectedRevision, EntityId fleetId, IReadOnlyList<NavigationNodeId>? steps)
@@ -66,7 +84,7 @@ namespace HobbyDS9.Application
                 CommandId = commandId.ToString(), ActorCivilizationId = actorCivilizationId.ToString(),
                 ExpectedTurn = expectedTurn, ExpectedRevision = expectedRevision, Kind = CommandKind.SetFleetRoute,
                 SetFleetRoute = new SetFleetRoutePayload { FleetId = fleetId.ToString(),
-                    RouteSystemIds = steps?.Select(n => systemsByNode.TryGetValue(n, out var id) ? id.Value : string.Empty).ToList() }
+                    RouteNodeIds = steps?.Select(n => n.Value).ToList() }
             });
         }
 
@@ -74,12 +92,10 @@ namespace HobbyDS9.Application
         {
             NavigationRoute Fail(NavigationRouteError error) => new NavigationRoute(error, Array.Empty<NavigationNodeId>(), null);
             if (!origin.IsValid || !destination.IsValid) return Fail(NavigationRouteError.InvalidNode);
-            if (!systemsByNode.TryGetValue(origin, out var from) || !systemsByNode.TryGetValue(destination, out var to)) return Fail(NavigationRouteError.UnknownNode);
-            var route = session.Galaxy.FindRoute(from, to);
-            if (!route.Success) return Fail(NavigationRouteError.Unreachable);
-            // Current graph is unit-cost. The boundary explicitly reports cost,
-            // without promising that step count predicts future movement timing.
-            return new NavigationRoute(NavigationRouteError.None, route.Steps.Select(id => nodesBySystem[id]), route.Steps.Count);
+            var route = session.FindNavigationRoute(Viewer, origin.Value, destination.Value);
+            if (!route.Success) return Fail(route.ErrorCode == RouteErrorCode.UnknownSystem ? NavigationRouteError.UnknownNode
+                : route.ErrorCode == RouteErrorCode.CostOverflow ? NavigationRouteError.CostOverflow : NavigationRouteError.Unreachable);
+            return new NavigationRoute(NavigationRouteError.None, route.Steps.Select(id => new NavigationNodeId(id)), route.TotalCost, route.Costs);
         }
 
         public TurnResult AdvanceTurn(int expectedTurn, long expectedRevision) => session.AdvanceTurn(expectedTurn, expectedRevision);

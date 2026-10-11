@@ -100,3 +100,5 @@ Strategic Gameplay UI v1 passed local acceptance. The current economy/population
 ## Population politics / geography milestone in progress
 
 Stage P1 adds data-defined governance policies, stamped policy commands, bounded political updates with ordered causes, active memories, conditional legal inclusion, population-weighted pressure and resistance inertia. Its intermediate schema is save 11/content 7/rules `population-politics-v1`; combat remains v1. Weighted navigation and client integration follow on the feature branch. See [the milestone rules/checkpoints](docs/population-politics-geography-v1.md). Main remains at the accepted economy milestone until new local Unity acceptance.
+
+Population-politics/geography G1 checkpoint: independent weighted regions, optional star associations, fleet budgets and partial-edge travel, knowledge-filtered routing, scheduled modifiers, and detached cost/ETA projections are implemented on the candidate branch. Saves/content are 12/8. Unity acceptance remains pending for this milestone; see [milestone details](docs/population-politics-geography-v1.md).

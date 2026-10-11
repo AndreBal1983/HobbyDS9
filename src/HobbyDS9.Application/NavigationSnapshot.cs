@@ -23,10 +23,12 @@ namespace HobbyDS9.Application
     {
         public NavigationNodeId NodeId { get; }
         public EntityId? AssociatedSystemId { get; }
-        public NavigationNodeSnapshot(NavigationNodeId nodeId, EntityId? associatedSystemId)
+        public string DisplayName { get; }
+        public IReadOnlyList<string> PhenomenonDefinitionIds { get; }
+        public NavigationNodeSnapshot(NavigationNodeId nodeId, EntityId? associatedSystemId, string displayName = "", IEnumerable<string>? phenomena = null)
         {
             if (!nodeId.IsValid || (associatedSystemId.HasValue && !associatedSystemId.Value.IsValid)) throw new ArgumentException("Invalid navigation identity.");
-            NodeId = nodeId; AssociatedSystemId = associatedSystemId;
+            NodeId = nodeId; AssociatedSystemId = associatedSystemId; DisplayName = displayName; PhenomenonDefinitionIds = new List<string>(phenomena ?? Array.Empty<string>()).AsReadOnly();
         }
     }
 
@@ -36,8 +38,11 @@ namespace HobbyDS9.Application
         public NavigationNodeId EndpointB { get; }
         public GalaxyEdgeKind Kind { get; }
         public long TraversalCost { get; }
-        internal NavigationLinkSnapshot(NavigationNodeId a, NavigationNodeId b, GalaxyEdgeKind kind, long cost)
-        { EndpointA = a; EndpointB = b; Kind = kind; TraversalCost = cost; }
+        public long BaseCost { get; }
+        public long PhenomenonCost { get; }
+        public long ArtificialCost { get; }
+        internal NavigationLinkSnapshot(NavigationNodeId a, NavigationNodeId b, GalaxyEdgeKind kind, long cost, long baseCost = 1, long phenomenonCost = 0, long artificialCost = 0)
+        { EndpointA = a; EndpointB = b; Kind = kind; TraversalCost = cost; BaseCost = baseCost; PhenomenonCost = phenomenonCost; ArtificialCost = artificialCost; }
     }
 
     public sealed class NavigationMapSnapshot
@@ -48,7 +53,7 @@ namespace HobbyDS9.Application
         { Nodes = new List<NavigationNodeSnapshot>(nodes).AsReadOnly(); Links = new List<NavigationLinkSnapshot>(links).AsReadOnly(); }
     }
 
-    public enum NavigationRouteError { None = 0, InvalidNode = 1, UnknownNode = 2, Unreachable = 3 }
+    public enum NavigationRouteError { None = 0, InvalidNode = 1, UnknownNode = 2, Unreachable = 3, CostOverflow = 4 }
     public sealed class NavigationRoute
     {
         public NavigationRouteError ErrorCode { get; }
@@ -56,7 +61,8 @@ namespace HobbyDS9.Application
         // Excludes origin. A cost is not a turn estimate or a movement budget.
         public IReadOnlyList<NavigationNodeId> Steps { get; }
         public long? TraversalCost { get; }
-        internal NavigationRoute(NavigationRouteError error, IEnumerable<NavigationNodeId> steps, long? cost)
-        { ErrorCode = error; Steps = new List<NavigationNodeId>(steps).AsReadOnly(); TraversalCost = cost; }
+        public IReadOnlyList<NavigationCostSnapshot> Costs { get; }
+        internal NavigationRoute(NavigationRouteError error, IEnumerable<NavigationNodeId> steps, long? cost, IEnumerable<NavigationCostSnapshot>? costs = null)
+        { ErrorCode = error; Steps = new List<NavigationNodeId>(steps).AsReadOnly(); TraversalCost = cost; Costs = new List<NavigationCostSnapshot>(costs ?? Array.Empty<NavigationCostSnapshot>()).AsReadOnly(); }
     }
 }

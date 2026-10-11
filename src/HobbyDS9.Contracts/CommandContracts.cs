@@ -17,7 +17,7 @@ namespace HobbyDS9.Contracts
         UnsupportedCommand = 11, RevisionExhausted = 12, InvalidTarget = 13, CombatPending = 14, UnknownResearchNode = 15, ResearchAlreadyUnlocked = 16,
         ResearchPrerequisiteMissing = 17, ResearchTargetUnchanged = 18, UnknownColony = 19, ColonyNotOwned = 20, UnknownShipDesign = 21,
         DesignResearchPrerequisiteMissing = 22, InsufficientCredits = 23, InsufficientStrategicResource = 24,
-        UnknownQueueItem = 25, UnknownFleet = 26, FleetNotOwned = 27, InvalidRoute = 28, ReservedCommandId = 29, ShipbuildingUnavailable = 30, UnknownGovernancePolicy = 31, GovernancePolicyUnchanged = 32
+        UnknownQueueItem = 25, UnknownFleet = 26, FleetNotOwned = 27, InvalidRoute = 28, ReservedCommandId = 29, ShipbuildingUnavailable = 30, UnknownGovernancePolicy = 31, GovernancePolicyUnchanged = 32, FleetInTransit = 33, NavigationUnknown = 34
     }
 
     // Closed discriminated union: exactly one payload must match Kind. There
@@ -56,7 +56,7 @@ namespace HobbyDS9.Contracts
     public sealed class SetFleetRoutePayload
     {
         public string FleetId { get; set; } = string.Empty;
-        public List<string>? RouteSystemIds { get; set; }
+        public List<string>? RouteNodeIds { get; set; }
     }
 
     public sealed class CommandResult

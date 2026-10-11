@@ -123,7 +123,7 @@ namespace HobbyDS9.Contracts
         public string OriginPlanetId { get; set; } = string.Empty;
         public string DestinationPlanetId { get; set; } = string.Empty;
         public string ResourceDefinitionId { get; set; } = string.Empty; // resource.food is reserved for local food.
-        public List<string>? RouteSystemIds { get; set; }
+        public List<string>? RouteNodeIds { get; set; }
         public long ImportNeed { get; set; }
         public long ReachableSurplus { get; set; }
         public long RouteCapacity { get; set; }

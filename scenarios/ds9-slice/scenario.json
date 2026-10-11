@@ -1,8 +1,8 @@
 {
   "ScenarioId": "ds9-strategic-slice-v1",
-  "RulesVersion": "population-politics-v1",
+  "RulesVersion": "population-politics-geography-v1",
   "Definitions": {
-    "ContentFormatVersion": 7,
+    "ContentFormatVersion": 8,
     "DefinitionIds": [
       "civilization.cardassian",
       "civilization.dominion",
@@ -151,7 +151,8 @@
             "ResourceDefinitionId": "resource.dilithium",
             "Amount": 2
           }
-        ]
+        ],
+        "MovementBudget": 1
       },
       {
         "DefinitionId": "ship-design.advanced-scout",
@@ -175,7 +176,8 @@
             "ResourceDefinitionId": "resource.dilithium",
             "Amount": 3
           }
-        ]
+        ],
+        "MovementBudget": 1
       }
     ],
     "Species": [
@@ -1296,7 +1298,83 @@
         "AlignmentChange": 125,
         "RadicalisationChange": -100
       }
-    ]
+    ],
+    "NavigationRegions": [
+      {
+        "NodeId": "system.sol",
+        "DisplayName": "Sol",
+        "AssociatedSystemId": "system.sol",
+        "PhenomenonDefinitionIds": []
+      },
+      {
+        "NodeId": "system.cardassia",
+        "DisplayName": "Cardassia",
+        "AssociatedSystemId": "system.cardassia",
+        "PhenomenonDefinitionIds": []
+      },
+      {
+        "NodeId": "system.founders-homeworld",
+        "DisplayName": "Founders' Homeworld",
+        "AssociatedSystemId": "system.founders-homeworld",
+        "PhenomenonDefinitionIds": []
+      },
+      {
+        "NodeId": "system.bajor",
+        "DisplayName": "Bajor",
+        "AssociatedSystemId": "system.bajor",
+        "PhenomenonDefinitionIds": []
+      },
+      {
+        "NodeId": "system.bajoran-wormhole",
+        "DisplayName": "Bajoran Wormhole",
+        "AssociatedSystemId": "system.bajoran-wormhole",
+        "PhenomenonDefinitionIds": []
+      },
+      {
+        "NodeId": "system.gamma-exit",
+        "DisplayName": "Gamma Exit",
+        "AssociatedSystemId": "system.gamma-exit",
+        "PhenomenonDefinitionIds": []
+      }
+    ],
+    "NavigationConnections": [
+      {
+        "ConnectionId": "connection.0",
+        "EndpointA": "system.sol",
+        "EndpointB": "system.bajor",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.1",
+        "EndpointA": "system.cardassia",
+        "EndpointB": "system.bajor",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.2",
+        "EndpointA": "system.bajor",
+        "EndpointB": "system.bajoran-wormhole",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.3",
+        "EndpointA": "system.bajoran-wormhole",
+        "EndpointB": "system.gamma-exit",
+        "Kind": 2,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.4",
+        "EndpointA": "system.gamma-exit",
+        "EndpointB": "system.founders-homeworld",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      }
+    ],
+    "Phenomena": []
   },
   "InitialState": {
     "Phase": 0,
@@ -1984,29 +2062,35 @@
       {
         "FleetId": "fleet.federation-scout",
         "OwnerCivilizationId": "civ.federation",
-        "LocationSystemId": "system.sol",
         "ShipIds": [
           "ship.federation-scout"
         ],
-        "RouteSystemIds": []
+        "LocationNodeId": "system.sol",
+        "RouteNodeIds": [],
+        "TransitTotalCost": 0,
+        "TransitProgress": 0
       },
       {
         "FleetId": "fleet.cardassian-scout",
         "OwnerCivilizationId": "civ.cardassian",
-        "LocationSystemId": "system.cardassia",
         "ShipIds": [
           "ship.cardassian-scout"
         ],
-        "RouteSystemIds": []
+        "LocationNodeId": "system.cardassia",
+        "RouteNodeIds": [],
+        "TransitTotalCost": 0,
+        "TransitProgress": 0
       },
       {
         "FleetId": "fleet.dominion-scout",
         "OwnerCivilizationId": "civ.dominion",
-        "LocationSystemId": "system.founders-homeworld",
         "ShipIds": [
           "ship.dominion-scout"
         ],
-        "RouteSystemIds": []
+        "LocationNodeId": "system.founders-homeworld",
+        "RouteNodeIds": [],
+        "TransitTotalCost": 0,
+        "TransitProgress": 0
       }
     ],
     "PendingCombats": [],
@@ -2080,6 +2164,167 @@
       "ResourceDelivered": 0,
       "ResourceConsumed": 0,
       "ProductionCompleted": 0
+    },
+    "NavigationKnowledge": [
+      {
+        "CivilizationId": "civ.federation",
+        "Nodes": [
+          {
+            "Id": "system.sol",
+            "Level": 2
+          },
+          {
+            "Id": "system.cardassia",
+            "Level": 2
+          },
+          {
+            "Id": "system.founders-homeworld",
+            "Level": 2
+          },
+          {
+            "Id": "system.bajor",
+            "Level": 2
+          },
+          {
+            "Id": "system.bajoran-wormhole",
+            "Level": 2
+          },
+          {
+            "Id": "system.gamma-exit",
+            "Level": 2
+          }
+        ],
+        "Connections": [
+          {
+            "Id": "connection.0",
+            "Level": 2
+          },
+          {
+            "Id": "connection.1",
+            "Level": 2
+          },
+          {
+            "Id": "connection.2",
+            "Level": 2
+          },
+          {
+            "Id": "connection.3",
+            "Level": 2
+          },
+          {
+            "Id": "connection.4",
+            "Level": 2
+          }
+        ]
+      },
+      {
+        "CivilizationId": "civ.cardassian",
+        "Nodes": [
+          {
+            "Id": "system.sol",
+            "Level": 2
+          },
+          {
+            "Id": "system.cardassia",
+            "Level": 2
+          },
+          {
+            "Id": "system.founders-homeworld",
+            "Level": 2
+          },
+          {
+            "Id": "system.bajor",
+            "Level": 2
+          },
+          {
+            "Id": "system.bajoran-wormhole",
+            "Level": 2
+          },
+          {
+            "Id": "system.gamma-exit",
+            "Level": 2
+          }
+        ],
+        "Connections": [
+          {
+            "Id": "connection.0",
+            "Level": 2
+          },
+          {
+            "Id": "connection.1",
+            "Level": 2
+          },
+          {
+            "Id": "connection.2",
+            "Level": 2
+          },
+          {
+            "Id": "connection.3",
+            "Level": 2
+          },
+          {
+            "Id": "connection.4",
+            "Level": 2
+          }
+        ]
+      },
+      {
+        "CivilizationId": "civ.dominion",
+        "Nodes": [
+          {
+            "Id": "system.sol",
+            "Level": 2
+          },
+          {
+            "Id": "system.cardassia",
+            "Level": 2
+          },
+          {
+            "Id": "system.founders-homeworld",
+            "Level": 2
+          },
+          {
+            "Id": "system.bajor",
+            "Level": 2
+          },
+          {
+            "Id": "system.bajoran-wormhole",
+            "Level": 2
+          },
+          {
+            "Id": "system.gamma-exit",
+            "Level": 2
+          }
+        ],
+        "Connections": [
+          {
+            "Id": "connection.0",
+            "Level": 2
+          },
+          {
+            "Id": "connection.1",
+            "Level": 2
+          },
+          {
+            "Id": "connection.2",
+            "Level": 2
+          },
+          {
+            "Id": "connection.3",
+            "Level": 2
+          },
+          {
+            "Id": "connection.4",
+            "Level": 2
+          }
+        ]
+      }
+    ],
+    "TraversalEffects": [],
+    "NavigationStatistics": {
+      "TraversalCostPaid": 0,
+      "EdgesCompleted": 0,
+      "PartialTraversalTurns": 0
     }
   }
 }

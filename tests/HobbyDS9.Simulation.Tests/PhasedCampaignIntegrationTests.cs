@@ -53,11 +53,11 @@ public sealed class PhasedCampaignIntegrationTests
     [InlineData("system.sol", true)] [InlineData("system.gamma-exit", false)] [InlineData("system.bajor", false)] [InlineData("system.missing", false)]
     public void ActualPlannedRetreatStillPassesThroughCampaignTopologyValidation(string destination, bool legal)
     {
-        var s = Awaiting(CampaignCombatFixture.Scenario()); var r = s.GetPendingCombatRequests()[0]; var plans = Plans(r); plans[0].RetreatHullPercent = 100; plans[0].RetreatSystemId = destination;
+        var s = Awaiting(CampaignCombatFixture.Scenario()); var r = s.GetPendingCombatRequests()[0]; var plans = Plans(r); plans[0].RetreatHullPercent = 100; plans[0].RetreatNodeId = destination;
         var result = new DeterministicPhasedCombatResolver().Resolve(r, plans); var retreat = Assert.Single(result.FleetChanges); Assert.Equal(FleetCombatDisposition.Retreated, retreat.Disposition);
         var before = V.Json(s); var p = s.CaptureSnapshot(); var submitted = s.SubmitCombatResult(result, p.TurnNumber, p.StateRevision);
         if (!legal) { Assert.Equal(CombatSubmissionError.InvalidRetreat, submitted.ErrorCode); Assert.Equal(before, V.Json(s)); }
-        else { Assert.Equal(CombatSubmissionStatus.Buffered, submitted.Status); Finish(s); var fleet = s.CaptureSnapshot().Fleets.Single(f => f.FleetId.Value == retreat.FleetId); Assert.Equal(destination, fleet.LocationSystemId.Value); Assert.Empty(fleet.RouteSystemIds); }
+        else { Assert.Equal(CombatSubmissionStatus.Buffered, submitted.Status); Finish(s); var fleet = s.CaptureSnapshot().Fleets.Single(f => f.FleetId.Value == retreat.FleetId); Assert.Equal(destination, fleet.LocationNodeId.Value); Assert.Empty(fleet.RouteNodeIds); }
     }
     [Theory]
     [InlineData(false)] [InlineData(true)]

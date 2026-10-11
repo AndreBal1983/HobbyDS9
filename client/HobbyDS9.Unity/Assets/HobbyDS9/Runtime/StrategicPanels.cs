@@ -78,7 +78,7 @@ namespace HobbyDS9.UnityClient
             }
             Text("Fleets", true);
             foreach (var fleet in snapshot.Campaign.Fleets.Where(f => f.OwnerCivilizationId == actor.CivilizationId))
-                ActionButton(fleet.FleetId.Value + " • " + SystemName(snapshot, fleet.LocationSystemId), () =>
+                ActionButton(fleet.FleetId.Value + " • " + SystemName(snapshot, fleet.LocationNodeId), () =>
                 { ClearRoute(); selection.SelectFleet(fleet.FleetId); activeTab = "Selection"; Refresh(); });
         }
         private void ShowResearch(CampaignSnapshot snapshot)
@@ -161,9 +161,9 @@ namespace HobbyDS9.UnityClient
         private void ShowFleet(CampaignSnapshot snapshot, FleetSnapshot fleet)
         {
             Text("Fleet", true); Text(fleet.FleetId.Value); Text("Owner: " + OwnerName(snapshot, fleet.OwnerCivilizationId));
-            var node = snapshot.Navigation.Nodes.FirstOrDefault(n => n.AssociatedSystemId == fleet.LocationSystemId);
-            Text("Location: " + SystemName(snapshot, fleet.LocationSystemId) + (node == null ? "" : "\nNavigation: " + node.NodeId.Value));
-            Text("Queued route: " + (fleet.RouteSystemIds.Count == 0 ? "None" : string.Join(" → ", fleet.RouteSystemIds.Select(id => SystemName(snapshot, id)))));
+            var node = snapshot.Navigation.Nodes.FirstOrDefault(n => n.AssociatedSystemId == fleet.LocationNodeId);
+            Text("Location: " + SystemName(snapshot, fleet.LocationNodeId) + (node == null ? "" : "\nNavigation: " + node.NodeId.Value));
+            Text("Queued route: " + (fleet.RouteNodeIds.Count == 0 ? "None" : string.Join(" → ", fleet.RouteNodeIds.Select(id => SystemName(snapshot, id)))));
             var actor = Human(snapshot);
             var controlled = actor != null && actor.CivilizationId == fleet.OwnerCivilizationId && StrategicOptions.PlanningAccess(snapshot, actor.CivilizationId) == CommandErrorCode.None;
             ActionButton(routeFleet.HasValue ? "Choose another destination on the map" : "Set / replace route", () =>
@@ -233,7 +233,7 @@ namespace HobbyDS9.UnityClient
             Text("Last turn deliveries", true);
             if (deliveries.Count == 0) Text("No deliveries recorded. Food and strategic resources remain local until delivered.");
             foreach (var r in deliveries)
-                Text($"{r.ResourceDefinitionId}: {r.OriginPlanetId} → {r.DestinationPlanetId}\nNeed {r.ImportNeed} • Reachable surplus {r.ReachableSurplus} • Capacity {r.RouteCapacity}\nReceiving stability {r.StabilityFactor / 100.0:0.#}% • Integrity {r.RouteIntegrity / 100.0:0.#}% • Delivered {r.Delivered}\nRoute: {string.Join(" → ", r.RouteSystemIds.Select(id => SystemName(snapshot, id)))}");
+                Text($"{r.ResourceDefinitionId}: {r.OriginPlanetId} → {r.DestinationPlanetId}\nNeed {r.ImportNeed} • Reachable surplus {r.ReachableSurplus} • Capacity {r.RouteCapacity}\nReceiving stability {r.StabilityFactor / 100.0:0.#}% • Integrity {r.RouteIntegrity / 100.0:0.#}% • Delivered {r.Delivered}\nRoute: {string.Join(" → ", r.RouteNodeIds.Select(id => SystemName(snapshot, id)))}");
         }
         private void ShowSaves()
         {

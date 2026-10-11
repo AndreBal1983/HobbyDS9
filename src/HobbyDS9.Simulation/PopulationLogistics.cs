@@ -7,15 +7,18 @@ namespace HobbyDS9.Simulation
     internal static class PopulationLogistics
     {
         internal const long TransitCapacity = 100;
-        internal static GalaxyGraph Graph(GameStateDto s, DefinitionCatalogDto d) => new GalaxyGraph(s.StarSystems!.Select(n => new EntityId(n.SystemId)), d.GalaxyEdges!);
-        internal static (List<string> path, int integrity) Path(GameStateDto s, GalaxyGraph graph, string from, string to, string? owner)
+        internal static WeightedNavigationGraph Graph(GameStateDto s, DefinitionCatalogDto d) => new WeightedNavigationGraph(d);
+        internal static (List<string> path, int integrity, long cost) Path(GameStateDto s, WeightedNavigationGraph graph, string from, string to, string? owner)
         {
-            var route = graph.FindRoute(new EntityId(from), new EntityId(to));
-            if (!route.Success) return (new List<string>(), 0);
-            var path = new[] { from }.Concat(route.Steps.Select(n => n.Value)).ToList();
-            var hostile = s.Fleets!.Where(f => f.OwnerCivilizationId != owner).Select(f => f.LocationSystemId).ToHashSet(StringComparer.Ordinal);
-            if (path.Any(hostile.Contains)) return (path, 0);
-            return (path, path.Any(n => graph.GetNeighbors(new EntityId(n)).Any(x => hostile.Contains(x.Value))) ? 5000 : 10000);
+            var start = graph.NodeForSystem(from); var end = graph.NodeForSystem(to);
+            if (start == null || end == null) return (new List<string>(), 0, 0);
+            var route = graph.FindRoute(s, owner, start, end);
+            if (!route.Success) return (new List<string>(), 0, 0);
+            var path = new[] { start }.Concat(route.Steps).ToList();
+            var hostile = s.Fleets!.Where(f => f.OwnerCivilizationId != owner && f.TransitTotalCost == 0).Select(f => f.LocationNodeId).ToHashSet(StringComparer.Ordinal);
+            if (path.Any(hostile.Contains)) return (path, 0, route.TotalCost!.Value);
+            var interference = path.Any(n => graph.Neighbors(n).Any(hostile.Contains)) ? 5000 : 10000;
+            return (path, Math.Min(interference, path.Select(graph.LogisticsFactor).Min()), route.TotalCost!.Value);
         }
         private static string Edge(string a, string b) => StringComparer.Ordinal.Compare(a, b) < 0 ? a + "|" + b : b + "|" + a;
         internal static void Execute(GameStateDto s, DefinitionCatalogDto d)
@@ -24,7 +27,7 @@ namespace HobbyDS9.Simulation
             var colonies = s.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal).ToList();
             var facts = colonies.ToDictionary(c => c.ColonyId, c => WorldEconomy.Project(c, s, d), StringComparer.Ordinal);
             var endpoints = colonies.ToDictionary(c => c.ColonyId, c => facts[c.ColonyId].LogisticsCapacity, StringComparer.Ordinal);
-            var edges = graph.Edges.ToDictionary(e => Edge(e.EndpointA.Value, e.EndpointB.Value), e => TransitCapacity, StringComparer.Ordinal);
+            var edges = graph.Connections.ToDictionary(e => Edge(e.EndpointA, e.EndpointB), e => TransitCapacity, StringComparer.Ordinal);
             foreach (var resource in new[] { "resource.food" }.Concat(d.Resources!.Select(r => r.DefinitionId).Where(id => id != "resource.food").OrderBy(id => id, StringComparer.Ordinal)))
             {
                 long Stock(ColonyStateDto c) => resource == "resource.food" ? c.Food : PopulationRules.Stock(c.Stockpiles!, resource);
@@ -47,7 +50,7 @@ namespace HobbyDS9.Simulation
                             OriginPlanetId = origin.PlanetId,
                             DestinationPlanetId = destination.PlanetId,
                             ResourceDefinitionId = resource,
-                            RouteSystemIds = route.path,
+                            RouteNodeIds = route.path,
                             ImportNeed = need,
                             ReachableSurplus = reachable,
                             RouteCapacity = capacity,

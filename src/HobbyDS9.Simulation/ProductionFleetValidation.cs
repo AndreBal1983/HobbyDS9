@@ -22,7 +22,7 @@ namespace HobbyDS9.Simulation
                 else if (!ids.Contains(id)) Add(issues, ValidationCode.MissingDefinition, p + ".DefinitionId");
                 if (d.DefinitionId != null && !typed.Add(d.DefinitionId)) Add(issues, ValidationCode.DuplicateId, p + ".DefinitionId");
                 if (string.IsNullOrWhiteSpace(d.DisplayName)) Add(issues, ValidationCode.MissingField, p + ".DisplayName");
-                if (d.IndustryCost <= 0 || d.MaxHull <= 0 || d.CreditCost < 0) Add(issues, ValidationCode.InvalidProductionValue, p);
+                if (d.MovementBudget<=0 || d.IndustryCost <= 0 || d.MaxHull <= 0 || d.CreditCost < 0) Add(issues, ValidationCode.InvalidProductionValue, p);
                 ValidateResources(d.ResourceCosts, catalog, p + ".ResourceCosts", issues);
                 if (!CombatProfiles.IsValid(d.CombatProfile)) Add(issues, ValidationCode.InvalidCombatProfile, p + ".CombatProfile");
                 if (d.RequiredResearchDefinitionIds == null) { Add(issues, ValidationCode.MissingField, p + ".RequiredResearchDefinitionIds"); continue; }
@@ -87,17 +87,15 @@ namespace HobbyDS9.Simulation
                 .GroupBy(s => s.ShipId, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
             var fleets = (state.Fleets ?? new List<FleetStateDto>()).Where(f => f != null && f.FleetId != null)
                 .GroupBy(f => f.FleetId, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
-            var nodeIds = (state.StarSystems ?? new List<StarSystemStateDto>()).Where(n => n != null).Select(n => n.SystemId).ToList();
-            GalaxyGraph? graph = null;
-            if (GalaxyGraph.Validate(nodeIds, catalog?.GalaxyEdges).IsValid) graph = new GalaxyGraph(nodeIds.Select(id => new EntityId(id)), catalog!.GalaxyEdges!);
+            var nodeIds = (catalog?.NavigationRegions ?? new List<NavigationRegionDefinitionDto>()).Where(n => n != null).Select(n => n.NodeId).ToList();
             var memberships = new HashSet<string>(StringComparer.Ordinal);
             foreach (var fleet in state.Fleets ?? new List<FleetStateDto>())
             {
                 var p = path + ".Fleets";
                 if (fleet == null) { Add(issues, ValidationCode.MissingField, p); continue; }
                 Identity(fleet.FleetId, null, p); Owner(fleet.OwnerCivilizationId, p);
-                if (!EntityId.TryParse(fleet.LocationSystemId, out var location)) Add(issues, ValidationCode.InvalidId, p);
-                else if (!nodeIds.Contains(fleet.LocationSystemId, StringComparer.Ordinal)) Add(issues, ValidationCode.MissingSystem, p);
+                if (!EntityId.TryParse(fleet.LocationNodeId, out var location)) Add(issues, ValidationCode.InvalidId, p);
+                else if (!nodeIds.Contains(fleet.LocationNodeId, StringComparer.Ordinal)) Add(issues, ValidationCode.MissingSystem, p);
                 if (fleet.ShipIds == null) Add(issues, ValidationCode.MissingField, p + ".ShipIds");
                 else
                 {
@@ -110,10 +108,10 @@ namespace HobbyDS9.Simulation
                         else if (ship.FleetId != fleet.FleetId || ship.OwnerCivilizationId != fleet.OwnerCivilizationId) Add(issues, ValidationCode.InvalidFleetMembership, p);
                     }
                 }
-                if (fleet.RouteSystemIds == null) Add(issues, ValidationCode.MissingField, p + ".RouteSystemIds");
-                else if (!location.IsValid || fleet.RouteSystemIds.Any(id => !EntityId.TryParse(id, out _))
-                    || (graph != null && !graph.ValidateRoute(location, fleet.RouteSystemIds.Select(id => new EntityId(id))).Success))
-                    Add(issues, ValidationCode.InvalidFleetRoute, p + ".RouteSystemIds");
+                if (fleet.RouteNodeIds == null) Add(issues, ValidationCode.MissingField, p + ".RouteNodeIds");
+                else if (!location.IsValid || fleet.RouteNodeIds.Any(id => !EntityId.TryParse(id, out _))
+)
+                    Add(issues, ValidationCode.InvalidFleetRoute, p + ".RouteNodeIds");
             }
             foreach (var ship in state.Ships ?? new List<ShipStateDto>())
             {

@@ -11,7 +11,7 @@ public sealed class ResearchTests
     private static readonly SaveCompatibility Compatibility = new("scenario.research", "research-fixture-v1", new string('a', 64));
     private static ResearchNodeDefinitionDto Node(string id, long cost, params string[] prerequisites) =>
         new() { DefinitionId = id, DisplayName = id, ResearchCost = cost, PrerequisiteDefinitionIds = prerequisites.ToList() };
-    private static DefinitionCatalogDto Definitions() => PopulationFixture.Content(new()
+    private static DefinitionCatalogDto Definitions() => PopulationFixture.Content(NavigationFixture.Definitions(new()
     {
         ContentFormatVersion = FoundationVersions.ContentFormatVersion,
         DefinitionIds = new() { "civilization.fixture", "system.fixture", "economy.fixture", "research.gamma", "research.beta", "research.alt", "research.alpha" },
@@ -21,8 +21,8 @@ public sealed class ResearchTests
         ShipDesigns = new(),
         ResearchNodes = new() { Node("research.gamma", 6, "research.alt", "research.alpha"), Node("research.beta", 4, "research.alpha"),
             Node("research.alt", 5), Node("research.alpha", 9) }
-    });
-    private static SaveEnvelopeDto Save() => PopulationFixture.Save(new()
+    }, "node.z"));
+    private static SaveEnvelopeDto Save() => PopulationFixture.Save(NavigationFixture.Save(new()
     {
         SaveFormatVersion = FoundationVersions.SaveFormatVersion,
         ScenarioId = Compatibility.ScenarioId,
@@ -57,12 +57,16 @@ public sealed class ResearchTests
                 new() { EntityId = "node.z", DefinitionId = "system.fixture" }, new() { EntityId = "colony.z", DefinitionId = null }
             }
         }
-    });
+    }, Definitions()));
     private static CivilizationStateDto Human(SaveEnvelopeDto save) => save.GameState.Civilizations!.Single(c => c.CivilizationId == "civ.z");
     private static CivilizationStateDto Human(SimulationSession session) => Human(session.ExportSave());
     private static SimulationSession Session(SaveEnvelopeDto? save = null, DefinitionCatalogDto? definitions = null,
-        Func<StrategicTurnPhase, GameStateDto, bool>? probe = null) => new(save ?? Save(), definitions ?? Definitions(), Compatibility,
-            new Dictionary<CommandKind, ICommandHandler>(), probe);
+        Func<StrategicTurnPhase, GameStateDto, bool>? probe = null)
+    {
+        var s = save ?? Save(); var d = definitions ?? Definitions();
+        NavigationFixture.Definitions(d, s.GameState.StarSystems!.Select(n=>n.SystemId).ToArray()); NavigationFixture.State(s.GameState,d);
+        return new(s,d,Compatibility,new Dictionary<CommandKind,ICommandHandler>(),probe);
+    }
     private static string StateJson(SimulationSession session) => JsonSerializer.Serialize(session.ExportSave());
     private static CommandEnvelope Command(SimulationSession session, string target, string id = "cmd.target", string actor = "civ.z")
     {

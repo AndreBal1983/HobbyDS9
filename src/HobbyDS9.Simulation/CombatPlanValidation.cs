@@ -16,7 +16,7 @@ namespace HobbyDS9.Simulation
                 if (plan == null || !EntityId.TryParse(plan.FleetId, out _) || !fleets.Remove(plan.FleetId)
                     || !Enum.IsDefined(typeof(CombatTactic), plan.LongRangeTactic) || !Enum.IsDefined(typeof(CombatTactic), plan.MediumRangeTactic) || !Enum.IsDefined(typeof(CombatTactic), plan.CloseRangeTactic)
                     || !Enum.IsDefined(typeof(CombatTargetPriority), plan.TargetPriority) || plan.RetreatHullPercent < 0 || plan.RetreatHullPercent > 100
-                    || (plan.RetreatHullPercent == 0 ? plan.RetreatSystemId != null : !EntityId.TryParse(plan.RetreatSystemId, out _)))
+                    || (plan.RetreatHullPercent == 0 ? plan.RetreatNodeId != null : !EntityId.TryParse(plan.RetreatNodeId, out _)))
                     throw new ArgumentException("Invalid, duplicate or unknown fleet plan.", nameof(plans));
         }
     }

@@ -12,6 +12,8 @@ namespace HobbyDS9.Application
         CommandResult SubmitFleetRoute(EntityId commandId, EntityId actorCivilizationId, int expectedTurn,
             long expectedRevision, EntityId fleetId, IReadOnlyList<NavigationNodeId>? steps);
         NavigationRoute FindRoute(NavigationNodeId origin, NavigationNodeId destination);
+        FleetTravelSnapshot GetFleetTravel(EntityId fleetId);
+        FleetTravelSnapshot? PreviewFleetTravel(EntityId fleetId, IReadOnlyList<NavigationNodeId> steps);
         TurnResult AdvanceTurn(int expectedTurn, long expectedRevision);
         IReadOnlyList<CombatRequestDto> GetPendingCombatRequests();
         IReadOnlyList<ResolvedCombatDto> GetResolvedCombats();
