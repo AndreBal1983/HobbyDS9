@@ -77,3 +77,8 @@
     background-color: var(--lcars-panel);
 }
 .message-bar { color: var(--lcars-muted); background-color: var(--lcars-panel); padding: 8px 16px; white-space: normal; min-height: 40px; }
+.lcars-header .lcars-primary-action { background-color: var(--lcars-sand); border-color: var(--lcars-sand); }
+.lcars-header .lcars-primary-action:disabled { background-color: var(--lcars-slate); border-color: var(--lcars-slate); color: var(--lcars-text); }
+.lcars-pill, .lcars-nav-segment { font-size: var(--lcars-text-size); }
+.lcars-pill:focus, .lcars-nav-segment:focus { border-width: 3px; border-color: var(--lcars-text); }
+.lcars-nav-segment.active-tab:hover { background-color: var(--lcars-sand); }

@@ -42,7 +42,7 @@ namespace HobbyDS9.UnityClient
             Details.AddToClassList("details-panel"); DetailsFrame = new LcarsPanelFrame("EMPIRE / CONTEXT", Details) { name = "details-frame" }; workspace.Add(DetailsFrame);
             Message.AddToClassList("message-bar"); Add(Message);
             RegisterCallback<GeometryChangedEvent>(e => ApplyLogicalSize(e.newRect.width,e.newRect.height));
-            ApplyLogicalSize(1920,1080);
+            Navigation.Select("Empire"); ApplyLogicalSize(1920,1080);
         }
         public void SelectSection(string section)
         { Navigation.Select(section); DetailsFrame.Heading.text = section == "Saves" ? "SAVE / LOAD" : section.ToUpperInvariant() + " / CONTEXT"; DetailsOpen = true; ApplyPanels(); }
@@ -87,7 +87,7 @@ namespace HobbyDS9.UnityClient
             contextToggle.text = "DETAILS " + (DetailsOpen ? "−" : "+");
             contextToggle.style.display = Plan.Mode == LayoutMode.Compact ? DisplayStyle.Flex : DisplayStyle.None;
             // Extremely narrow windows can collapse details via the visible toggle.
-            DetailsFrame.EnableInClassList("lcars-context-drawer",Plan.Mode == LayoutMode.Compact && previousWidth < 1100);
+            DetailsFrame.EnableInClassList("lcars-context-drawer",Plan.ContextDrawer);
         }
     }
 }

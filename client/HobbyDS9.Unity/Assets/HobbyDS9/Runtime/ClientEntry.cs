@@ -23,23 +23,41 @@ namespace HobbyDS9.UnityClient
         private PanelSettings panel = null!;
         private ProductionOverviewView production = null!;
         private LcarsShell shell = null!;
+        private VisualElement? uiRoot;
+        private IVisualElementScheduledItem? scaleWatcher;
+        private int previousViewportHeight;
+        private void MatchReadableScale()
+        {
+            var height = Math.Max(1,Screen.height);
+            if (previousViewportHeight == height) return;
+            previousViewportHeight = height;
+            var scale = (float)ResponsiveLayoutPolicy.PanelScaleMultiplier(height);
+            if (!Mathf.Approximately(panel.scale,scale)) panel.scale = scale;
+        }
+        private void OnViewportGeometry(GeometryChangedEvent _) => MatchReadableScale();
+        private void OnDisable()
+        {
+            scaleWatcher?.Pause(); uiRoot?.UnregisterCallback<GeometryChangedEvent>(OnViewportGeometry);
+        }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
         {
-            if (UnityEngine.Object.FindAnyObjectByType<ClientEntry>() != null) return;
+            if (UnityEngine.Object.FindAnyObjectByType<ClientEntry>(FindObjectsInactive.Include) != null) return;
             var go = new GameObject("HobbyDS9 Client");
             DontDestroyOnLoad(go); go.AddComponent<ClientEntry>();
         }
         private void OnEnable()
         {
             AudioDirector.TryGetOrCreate();
+            if (panel != null) Destroy(panel);
             panel = ScriptableObject.CreateInstance<PanelSettings>();
+            previousViewportHeight = 0;
             panel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
             panel.referenceResolution = new Vector2Int(1920, 1080);
             panel.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight; panel.match = 1;
             panel.themeStyleSheet = UnityEngine.Resources.Load<ThemeStyleSheet>("HobbyTheme");
             var document = GetComponent<UIDocument>() ?? gameObject.AddComponent<UIDocument>(); document.panelSettings = panel;
-            var root = document.rootVisualElement; root.Clear();
+            var root = document.rootVisualElement; root.Clear(); root.styleSheets.Clear();
             root.AddToClassList("client-root");
             root.styleSheets.Add(UnityEngine.Resources.Load<StyleSheet>("HobbyClient"));
             root.styleSheets.Add(UnityEngine.Resources.Load<StyleSheet>("LcarsTokens"));
@@ -60,12 +78,12 @@ namespace HobbyDS9.UnityClient
             // Height-based scaling with a readability floor for small windows.
             // Geometry callbacks converge: scale depends only on physical height,
             // layout decisions depend only on panel logical bounds; no Update loop.
-            void MatchScale()
-            {
-                var scale = (float)ResponsiveLayoutPolicy.PanelScaleMultiplier(Math.Max(1, Screen.height));
-                if (!Mathf.Approximately(panel.scale, scale)) panel.scale = scale;
-            }
-            MatchScale(); root.RegisterCallback<GeometryChangedEvent>(_ => MatchScale());
+            uiRoot = root; MatchReadableScale();
+            root.RegisterCallback<GeometryChangedEvent>(OnViewportGeometry);
+            // A same-aspect resize can leave reference-panel bounds unchanged.
+            // Poll only physical height, at 5Hz; a change to the readability scale
+            // then produces the normal logical GeometryChanged layout callback.
+            scaleWatcher = root.schedule.Execute(MatchReadableScale).Every(200);
             try
             {
                 var asset = UnityEngine.Resources.Load<TextAsset>("ds9-slice");
@@ -80,8 +98,8 @@ namespace HobbyDS9.UnityClient
         private void OnDestroy() { if (panel != null) Destroy(panel); }
         private void Run(Func<string> operation)
         {
-            try { message.text = operation(); }
-            catch (Exception error) { message.text = error.Message; Debug.LogException(error); }
+            try { message.text = operation(); message.EnableInClassList("lcars-alert",false); }
+            catch (Exception error) { message.text = error.Message; message.EnableInClassList("lcars-alert",true); Debug.LogException(error); }
             finally { if (host != null) { host.Refresh(); Refresh(); } }
         }
         private void Refresh()
@@ -96,6 +114,7 @@ namespace HobbyDS9.UnityClient
             shell.Header.Secondary.text = "Research: " + researchName + " • Reserve " + (actor?.ResearchReserve ?? 0);
             shell.Header.Diagnostic.text = "Authoritative revision " + state.StateRevision;
             endTurn.SetEnabled(state.Phase == SessionPhase.Planning);
+            shell.Header.EnableInClassList("combat-attention",state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer);
             var combatFocus = combat.ReportToReview ?? combat.PendingHumanEncounter ?? (combat.RequiresPlayer ? "complete-turn" : null);
             if (state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer &&
                 (lastPhase != state.Phase || combatFocus != lastCombatFocus)) { activeTab = "Combat"; ClearRoute(); }
@@ -126,8 +145,8 @@ namespace HobbyDS9.UnityClient
         }
         private void Text(string text, bool heading = false)
         {
-            var label = new Label(text); label.style.whiteSpace = WhiteSpace.Normal; label.style.marginBottom = 12;
-            if (heading) { label.style.fontSize = 23; label.style.unityFontStyleAndWeight = FontStyle.Bold; }
+            var label = heading ? new LcarsSectionHeader(text) : new Label(text);
+            label.style.whiteSpace = WhiteSpace.Normal;
             details.Add(label);
         }
         private static string OwnerName(CampaignSnapshot snapshot, EntityId id)

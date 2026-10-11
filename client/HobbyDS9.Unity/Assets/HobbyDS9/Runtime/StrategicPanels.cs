@@ -37,7 +37,7 @@ namespace HobbyDS9.UnityClient
         }
         private Button ActionButton(string label, Action action, bool enabled = true, string explanation = "")
         {
-            var button = new Button(action) { text = label, tooltip = explanation };
+            var button = new LcarsPillButton(label, action) { tooltip = explanation };
             button.SetEnabled(enabled); details.Add(button); return button;
         }
         private void Confirm(string prompt, Func<string> operation)
@@ -46,8 +46,8 @@ namespace HobbyDS9.UnityClient
             details.Q<VisualElement>("confirmation")?.RemoveFromHierarchy();
             var box = new VisualElement { name = "confirmation" }; box.AddToClassList("confirmation");
             var label = new Label(prompt); label.style.whiteSpace = WhiteSpace.Normal; box.Add(label);
-            box.Add(new Button(() => Run(operation)) { text = "Confirm" });
-            box.Add(new Button(() => box.RemoveFromHierarchy()) { text = "Keep current state" });
+            var confirm = new LcarsPillButton("Confirm", () => Run(operation)); confirm.AddToClassList("lcars-destructive"); box.Add(confirm);
+            box.Add(new LcarsPillButton("Keep current state", () => box.RemoveFromHierarchy()));
             details.Add(box); details.ScrollTo(box);
         }
         private void ShowEmpire(CampaignSnapshot snapshot)

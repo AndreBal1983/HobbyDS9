@@ -215,3 +215,14 @@ Current expected verification: **771 .NET tests**, **32 authored Unity EditMode
 cases**. Unity runtime and Windows x64 IL2CPP acceptance remain local. See
 [combat-ux-report-fix-v1.md](../../docs/combat-ux-report-fix-v1.md) for architecture,
 exact commands, versions/baseline and the complete local acceptance checklist.
+
+## Responsive LCARS-inspired UI stacked candidate
+
+`codex/lcars-ui-foundation-v1` starts exactly at `795b485`. It introduces an original
+console palette, vector elbow, reusable controls/frames and a live responsive shell
+without gameplay/audio/save changes. Expected **797 .NET tests**, **45 authored
+Unity EditMode cases**. Existing acceptance branches/main stay unchanged. See
+[lcars-ui-foundation-v1.md](../../docs/lcars-ui-foundation-v1.md) for tokens, logical
+breakpoints/readability scaling, exact local IL2CPP commands and the full six-size
+visual/functional acceptance matrix. Unity compilation/rendering remains unverified
+in cloud.

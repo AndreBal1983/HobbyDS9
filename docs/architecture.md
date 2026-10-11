@@ -488,3 +488,17 @@ checkpoint's buffered pairs. History is excluded from campaign saves. The immuta
 Application projection itself still reflects only authoritative buffered results.
 See [combat-ux-report-fix-v1.md](combat-ux-report-fix-v1.md) for behavior, testing and
 local acceptance. Save 12/content 8/rules/resolver/RNG and baseline are unchanged.
+
+
+## Responsive console presentation (stacked candidate)
+
+Unity's reusable LCARS-inspired shell/components contain no game APIs. Responsive
+policy uses logical panel dimensions, a 1920×1080 height-matched design and a 0.9
+readability floor for small windows. Resize updates persistent layout classes and
+bounds without recreating controls or executing campaign commands. Production is a
+drawer in Compact/Standard, optionally docked in Wide; user override persists. The
+map owns extra width, details remain scrollable/bounded, and vector elbows repaint
+through UI Toolkit. Existing Application/simulation/combat/audio/save boundaries
+are unchanged. See [lcars-ui-foundation-v1.md](lcars-ui-foundation-v1.md) for tokens,
+implementation/testing limits and local acceptance. Save/content/rules/resolver/RNG
+and the deterministic baseline are unchanged.

@@ -110,3 +110,9 @@ The stacked [combat UX/report correction](docs/combat-ux-report-fix-v1.md) adds
 non-interrupting AI-only resolution, Human-only combat controls and client-session
 recent battle reports. It retains the audio candidate and deterministic baseline;
 local Unity/Windows acceptance is required before merging.
+
+
+The next stacked [responsive LCARS UI foundation](docs/lcars-ui-foundation-v1.md)
+adds reusable presentation components and logical Compact/Standard/Wide layouts
+while retaining the combat/audio stack. Gameplay versions and baseline stay fixed;
+Unity/Windows visual and functional acceptance is required before merging.

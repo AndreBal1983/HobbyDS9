@@ -44,9 +44,11 @@ namespace HobbyDS9.UnityClient
                     var plan = humans.Contains(participant.CivilizationId) ? plans.SingleOrDefault(p => p.FleetId == participant.FleetId) : null;
                     if (plan == null)
                     {
+                        section.AddToClassList("combat-ai-participant");
                         Text(section, "Read-only: this fleet's deterministic plan is supplied by Application, not the player.");
                         continue;
                     }
+                    section.AddToClassList("combat-human-participant");
                     Tactic(section, "Long range", plan.LongRangeTactic, value => plan.LongRangeTactic = value);
                     Tactic(section, "Medium range", plan.MediumRangeTactic, value => plan.MediumRangeTactic = value);
                     Tactic(section, "Close range", plan.CloseRangeTactic, value => plan.CloseRangeTactic = value);
@@ -130,7 +132,7 @@ namespace HobbyDS9.UnityClient
         }
         private static void Text(VisualElement parent, string text, bool heading = false)
         {
-            var label = new Label(text); label.AddToClassList(heading ? "combat-heading" : "combat-text"); parent.Add(label);
+            var label = heading ? new LcarsSectionHeader(text) : new Label(text); label.AddToClassList(heading ? "combat-heading" : "combat-text"); parent.Add(label);
         }
         private static string NodeName(CampaignSnapshot snapshot, string id) => GalaxyProjection.Nodes(snapshot).FirstOrDefault(n => n.NodeId.Value == id)?.Label ?? id;
         private static void Tactic(VisualElement parent, string label, CombatTactic initial, Action<CombatTactic> set)

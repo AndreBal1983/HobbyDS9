@@ -13,6 +13,8 @@ namespace HobbyDS9.UnityClient
         public const double MinimumReadableScale = 0.9;
         public const double CompactBelow = 1700;
         public const double WideFrom = 2300;
+        public const double CompactHeightBelow = 850;
+        public const double ContextDrawerBelow = 1100;
         public const double Bar = 30;
         public const double CompactRail = 104;
         public const double Rail = 136;
@@ -32,7 +34,8 @@ namespace HobbyDS9.UnityClient
         public bool ProductionDrawer => Mode != LayoutMode.Wide;
         public bool HorizontalNavigation => Mode == LayoutMode.Compact;
         public bool CompactHeader => Mode == LayoutMode.Compact;
-        internal LayoutPlan(LayoutMode mode) { Mode = mode; }
+        public bool ContextDrawer { get; }
+        internal LayoutPlan(LayoutMode mode, double width) { Mode = mode; ContextDrawer = mode == LayoutMode.Compact && width < LcarsMetrics.ContextDrawerBelow; }
     }
     public static class ResponsiveLayoutPolicy
     {
@@ -42,8 +45,8 @@ namespace HobbyDS9.UnityClient
         {
             Valid(width, nameof(width)); Valid(height, nameof(height));
             // Short viewport heights also use compact reflow; never shrink fonts.
-            return new LayoutPlan(width < LcarsMetrics.CompactBelow || height < 850 ? LayoutMode.Compact
-                : width >= LcarsMetrics.WideFrom ? LayoutMode.Wide : LayoutMode.Standard);
+            return new LayoutPlan(width < LcarsMetrics.CompactBelow || height < LcarsMetrics.CompactHeightBelow ? LayoutMode.Compact
+                : width >= LcarsMetrics.WideFrom ? LayoutMode.Wide : LayoutMode.Standard, width);
         }
         public static double PanelScaleMultiplier(double viewportHeight)
             => Math.Max(1, LcarsMetrics.ReferenceHeight * LcarsMetrics.MinimumReadableScale / Valid(viewportHeight, nameof(viewportHeight)));

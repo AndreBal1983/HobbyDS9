@@ -58,6 +58,63 @@ namespace HobbyDS9.UnityClient.Tests
             foreach(var width in new[]{1422,1920,2580,3840})shell.ApplyLogicalSize(width,width==1422?800:1080);
             Assert.That(view.Q<Foldout>("battle-report-"+request.EncounterId),Is.Not.Null);Assert.That(host.SaveJson(),Is.EqualTo(before));
         }
+        [TestCase(1422,800,"layout-compact")]
+        [TestCase(1920,1080,"layout-standard")]
+        [TestCase(2580,1080,"layout-wide")]
+        public void ExactlyOneResponsiveClassApplies(float width,float height,string expected)
+        {
+            var shell=new LcarsShell(new VisualElement(),new ProductionOverviewView(),_=>{},()=>{},()=>{});shell.ApplyLogicalSize(width,height);
+            Assert.That(shell.ClassListContains(expected),Is.True);
+            Assert.That(System.Linq.Enumerable.Count(new[]{"layout-compact","layout-standard","layout-wide"},shell.ClassListContains),Is.EqualTo(1));
+            Assert.That(shell.DetailsFrame.Heading,Is.Not.Null);
+        }
+        [Test]
+        public void ShellResizeLeavesAudioDirectorSingleAndItsSourcesUnchanged()
+        {
+            AudioDirector director=null;
+            try
+            {
+                director=AudioDirector.TryGetOrCreate();Assert.That(director,Is.Not.Null);
+                var sources=director.GetComponents<AudioSource>();var shell=new LcarsShell(new VisualElement(),new ProductionOverviewView(),_=>{},()=>{},()=>{});
+                foreach(var width in new[]{1422,1920,2580,3840,1422})shell.ApplyLogicalSize(width,width==1422?800:1080);
+                Assert.That(AudioDirector.TryGetOrCreate(),Is.SameAs(director));
+                Assert.That(director.GetComponents<AudioSource>(),Is.EqualTo(sources));Assert.That(sources.Length,Is.EqualTo(2));
+            }
+            finally{if(director!=null)Object.DestroyImmediate(director.gameObject);}
+        }
+        [Test]
+        public void ProductionWorldsAndRealQueueRemainInSameViewAcrossDrawerAndDockModes()
+        {
+            var host=new CampaignHost(Resources.Load<TextAsset>("ds9-slice").bytes);
+            Assert.That(host.Client.Enqueue(host.Snapshot,new HobbyDS9.Contracts.EntityId("civ.federation"),new HobbyDS9.Contracts.EntityId("colony.sol"),new HobbyDS9.Contracts.DefinitionId("ship-design.scout")).Accepted,Is.True);
+            var model=new ProductionOverview(host.Client,host.Snapshot);var production=new ProductionOverviewView();production.Present(model,operation=>operation());
+            var shell=new LcarsShell(new GalaxyMap(),production,_=>{},()=>{},()=>{});var before=host.SaveJson();shell.OpenProduction();
+            foreach(var width in new[]{1422,1920,2580,3840})
+            {
+                shell.ApplyLogicalSize(width,width==1422?800:1080);
+                foreach(var world in model.Worlds)Assert.That(production.Q<Foldout>(world.ColonyId.Value),Is.Not.Null);
+                foreach(var item in model.Worlds[1].ProductionQueue)Assert.That(production.Q<VisualElement>(item.QueueItemId.Value),Is.Not.Null);
+            }
+            Assert.That(host.SaveJson(),Is.EqualTo(before));Assert.That(shell.ProductionFrame.Body,Is.SameAs(production));
+        }
+        [Test]
+        public void RepeatedAttachedGeometryEventsDoNotDuplicateControls()
+        {
+            var window=ScriptableObject.CreateInstance<LcarsGeometryTestWindow>();
+            try
+            {
+                window.Show();var shell=new LcarsShell(new VisualElement(),new ProductionOverviewView(),_=>{},()=>{},()=>{});window.rootVisualElement.Add(shell);
+                var count=shell.Query<Button>().ToList().Count;var previous=new Rect(0,0,1920,1080);
+                for(var i=0;i<5;i++)foreach(var width in new[]{1422,1920,2580})
+                {
+                    var next=new Rect(0,0,width,width==1422?800:1080);
+                    using(var change=GeometryChangedEvent.GetPooled(previous,next)){change.target=shell;shell.SendEvent(change);}
+                    Assert.That(shell.Plan.Mode,Is.EqualTo(ResponsiveLayoutPolicy.ForLogicalSize(next.width,next.height).Mode));previous=next;
+                }
+                Assert.That(shell.Query<Button>().ToList().Count,Is.EqualTo(count));Assert.That(shell.Details,Is.InstanceOf<ScrollView>());
+            }
+            finally{if(window!=null)window.Close();}
+        }
         [TestCase(20,20)] [TestCase(104,64)] [TestCase(180,90)]
         public void VectorElbowAcceptsContentSizesWithoutFrameDrivenGeometry(float width,float height)
         {
@@ -67,4 +124,5 @@ namespace HobbyDS9.UnityClient.Tests
             elbow.MarkDirtyRepaint();
         }
     }
+    public sealed class LcarsGeometryTestWindow : UnityEditor.EditorWindow { }
 }

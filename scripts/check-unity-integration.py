@@ -57,6 +57,36 @@ require("combat.RequiresPlayer" in entry and 'ShowEncounters(snapshot);' in entr
 client = (runtime / "StrategicClient.cs").read_text(encoding="utf-8-sig")
 require("session.ResolveHumanCombat" in client and "session.SubmitCombatResult" in client,
         "Client combat must use frozen Application resolution plus stamped submission")
+# LCARS presentation resources and boundary. These checks validate assets/tokens,
+# not pixel-perfect rendering or Unity compilation.
+for resource_name in ("LcarsTokens", "Lcars"):
+    style = assets / "HobbyDS9/Resources" / (resource_name + ".uss")
+    require(style.exists(), f"Missing LCARS stylesheet: {resource_name}")
+    meta = Path(str(style) + ".meta").read_text(encoding="utf-8-sig")
+    require("ScriptedImporter:" in meta and "serializedVersion: 2" in meta and
+            "fileID: 12385" in meta, f"Incomplete LCARS stylesheet importer: {resource_name}")
+    require(resource_name in re.findall(r'Resources\.Load<StyleSheet>\("([^"]+)"\)', entry),
+            f"Unreferenced LCARS stylesheet: {resource_name}")
+for file_name in ("ResponsiveLayoutPolicy.cs", "LcarsComponents.cs", "LcarsShell.cs"):
+    code = (runtime / file_name).read_text(encoding="utf-8-sig")
+    require(all(term not in code for term in ("HobbyDS9.Application", "HobbyDS9.Contracts", "SplitMix64")),
+            f"LCARS components must remain presentation-only: {file_name}")
+    require(not re.search(r'\bvoid\s+Update\s*\(', code), f"Frame-driven LCARS layout/geometry: {file_name}")
+    require(not re.search(r'Resources\.Load<(?:Texture2D|Sprite|Font)>',code), f"Raster/font dependency in LCARS core: {file_name}")
+for path in assets.rglob("*"):
+    require(path.suffix.lower() not in {".ttf", ".otf", ".woff", ".woff2"},
+            f"New font needs explicit license/provenance review: {path.relative_to(root)}")
+# Cross-check the vector bar thickness with its stylesheet token to prevent drift.
+tokens = (assets / "HobbyDS9/Resources/LcarsTokens.uss").read_text(encoding="utf-8-sig")
+bar_css = re.search(r'--lcars-bar\s*:\s*([0-9.]+)px\s*;',tokens)
+bar_geometry = re.search(r'const\s+double\s+Bar\s*=\s*([0-9.]+)\s*;', (runtime / "ResponsiveLayoutPolicy.cs").read_text())
+require(bar_css is not None and bar_geometry is not None and float(bar_css.group(1)) == float(bar_geometry.group(1)),
+        "LCARS vector bar thickness differs from the central style token")
+# Bootstrap is singular; OnEnable reuses its document rather than accumulating it.
+require(len(re.findall(r'AddComponent<ClientEntry>\s*\(',entry)) == 1,
+        "Client bootstrap must create exactly one entry point")
+require("GetComponent<UIDocument>" in entry, "Client re-enable must reuse UIDocument")
+
 # Audio source integrity/import/reference checks. Never an audible-playback claim.
 music = assets / "HobbyDS9/Audio/Music"
 music_catalog = (assets / "HobbyDS9/Resources/MusicCatalog.asset").read_text(encoding="utf-8-sig")

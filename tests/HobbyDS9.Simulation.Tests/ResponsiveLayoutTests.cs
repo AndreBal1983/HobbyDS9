@@ -20,6 +20,15 @@ public sealed class ResponsiveLayoutTests
         Assert.True(scale >= LcarsMetrics.MinimumReadableScale);
         if (height >= 972) Assert.Equal(1,ResponsiveLayoutPolicy.PanelScaleMultiplier(height));
     }
+    [Fact]
+    public void SameAspectResizeChangesReadabilityFloorButNormalDisplaysRemainHeightMatched()
+    {
+        Assert.Equal(1.35,ResponsiveLayoutPolicy.PanelScaleMultiplier(720),10);
+        Assert.Equal(1.08,ResponsiveLayoutPolicy.PanelScaleMultiplier(900),10);
+        Assert.Equal(1,ResponsiveLayoutPolicy.PanelScaleMultiplier(1080));Assert.Equal(1,ResponsiveLayoutPolicy.PanelScaleMultiplier(1440));
+        Assert.Equal(LayoutMode.Compact,ResponsiveLayoutPolicy.ForViewport(1280,720).Mode);
+        Assert.Equal(LayoutMode.Standard,ResponsiveLayoutPolicy.ForViewport(1920,1080).Mode);
+    }
     [Theory]
     [InlineData(1699.99,LayoutMode.Compact)] [InlineData(1700,LayoutMode.Standard)]
     [InlineData(2299.99,LayoutMode.Standard)] [InlineData(2300,LayoutMode.Wide)]
@@ -59,9 +68,12 @@ public sealed class ResponsiveLayoutTests
         Assert.InRange(elbow.RadiusX,0,width);Assert.InRange(elbow.RadiusY,0,height);
         if(width>0){Assert.True(elbow.CanDraw);Assert.True(elbow.RadiusX>elbow.Thickness);Assert.True(elbow.RadiusY>elbow.Thickness);}else Assert.False(elbow.CanDraw);
     }
-    [Theory] [InlineData(0)] [InlineData(-1)] [InlineData(double.NaN)]
+    [Theory] [InlineData(0)] [InlineData(-1)] [InlineData(double.NaN)] [InlineData(double.PositiveInfinity)]
     public void UnusableDimensionsFailExplicitlyRatherThanOscillating(double width)
     { Assert.Throws<ArgumentOutOfRangeException>(()=>ResponsiveLayoutPolicy.ForLogicalSize(width,1080));Assert.Throws<ArgumentOutOfRangeException>(()=>ResponsiveLayoutPolicy.PanelScaleMultiplier(width)); }
+    [Theory] [InlineData(1099,true)] [InlineData(1100,false)]
+    public void ExtremelyNarrowContextDrawerBoundaryIsCentralized(double width,bool drawer)
+    { Assert.Equal(drawer,ResponsiveLayoutPolicy.ForLogicalSize(width,1080).ContextDrawer); }
     [Fact]
     public void ResizingAndProductionOverridesHaveNoAuthoritativeSaveEffects()
     {

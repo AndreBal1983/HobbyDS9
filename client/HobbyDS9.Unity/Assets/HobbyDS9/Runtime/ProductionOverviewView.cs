@@ -17,7 +17,7 @@ namespace HobbyDS9.UnityClient
         public void Present(ProductionOverview model, Action<Func<string>> run)
         {
             Clear();
-            Add(new Label("Production") { name = "production-heading" });
+            Add(new LcarsSectionHeader("Empire production") { name = "production-heading" });
             Add(new Label(model.Actor == null ? "No human civilization." : "Empire-wide • Credits " + model.Actor.Credits));
             if (model.Worlds.Count == 0) Add(new Label("No owned worlds."));
             foreach (var world in model.Worlds)
@@ -43,7 +43,7 @@ namespace HobbyDS9.UnityClient
                         confirmation.Add(new Button(() => run(() => CommandFeedback.Describe(model.Cancel(world.ColonyId, item.QueueItemId)))) { text = "Confirm cancellation" });
                         confirmation.Add(new Button(() => confirmation.RemoveFromHierarchy()) { text = "Keep item" }); row.Add(confirmation);
                     }) { text = "Cancel " + design.DisplayName };
-                    cancel.SetEnabled(model.CanCancel); row.Add(cancel);
+                    cancel.AddToClassList("lcars-destructive"); cancel.SetEnabled(model.CanCancel); row.Add(cancel);
                 }
                 var options = new Foldout { text = "Ship designs", value = true }; section.Add(options);
                 foreach (var option in model.Designs(world.ColonyId))
