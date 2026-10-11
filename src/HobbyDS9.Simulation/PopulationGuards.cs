@@ -23,7 +23,7 @@ namespace HobbyDS9.Simulation
                 var a = PopulationData.Copy(before.Colonies[i]); var b = PopulationData.Copy(after.Colonies[i]);
                 // Queues have their own phase guard; colony identities/capabilities never change in economy.
                 a.ProductionQueue!.Clear(); b.ProductionQueue!.Clear();
-                if (economy) { b.Cohorts = a.Cohorts; b.Stockpiles = a.Stockpiles; b.Stability = a.Stability; b.Food = a.Food; b.FoodShortageTurns = a.FoodShortageTurns; }
+                if (economy) { b.Politics = a.Politics; b.Cohorts = a.Cohorts; b.Stockpiles = a.Stockpiles; b.Stability = a.Stability; b.Food = a.Food; b.FoodShortageTurns = a.FoodShortageTurns; }
                 if (!PopulationData.Same(a, b)) return false;
             }
             for (var i = 0; i < before.Planets.Count; i++)

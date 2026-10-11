@@ -69,7 +69,7 @@ namespace HobbyDS9.Simulation
             foreach (var c in s.Colonies)
             {
                 if (c == null) { Check(false, "Colonies"); continue; }
-                Identity(c.ColonyId, null);
+                Identity(c.ColonyId, null); ValidatePolitics(c,s,d,path+"."+c.ColonyId,issues);
                 Check(occupied.Add(c.PlanetId) && s.Planets.Any(p => p != null && p.PlanetId == c.PlanetId && p.SystemId == c.SystemId), c.ColonyId + ".Planet");
                 Check(s.StarSystems != null && s.StarSystems.Any(n => n != null && n.SystemId == c.SystemId && n.OwnerCivilizationId == c.OwnerCivilizationId), c.ColonyId + ".Ownership");
                 Check(c.OwnerCivilizationId == null || civs.Contains(c.OwnerCivilizationId), c.ColonyId + ".Owner");

@@ -93,7 +93,7 @@ public sealed class AiPlanningTests
             StarSystems = new() { new() { DefinitionId = "system.fixture", DisplayName = "Fixture" } },
             Species = new(),
             Planets = new(),
-            Resources = new(),
+            Resources = new(), GovernancePolicies = new(), PoliticalMemoryEffects = new(),
             Infrastructure = new(),
             ResearchNodes = new(),
             ShipDesigns = new() { new() { DefinitionId = "ship-design.fixture", DisplayName = "Fixture", IndustryCost = 1, MaxHull = 1, CombatProfile = new(), ResourceCosts = new(), RequiredResearchDefinitionIds = new() } },

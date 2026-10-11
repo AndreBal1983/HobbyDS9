@@ -5,6 +5,7 @@ namespace HobbyDS9.Contracts
 {
     public sealed class ColonyStateDto
     {
+        public WorldPoliticalStateDto? Politics { get; set; }
         public string ColonyId { get; set; } = string.Empty;
         public string SystemId { get; set; } = string.Empty;
         public string? OwnerCivilizationId { get; set; }

@@ -40,7 +40,7 @@ public sealed class LongRunAcceptanceTests
         Assert.Equal((49, 113, 75, 128L, 133L, 13, 13, 0), (totals.Phases, totals.Shots, totals.Hits, totals.ShieldDamage, totals.HullDamage, totals.ShipsDestroyed, totals.FleetsDestroyed, totals.Retreated));
         Assert.True(totals.Hits > 0 && totals.HullDamage > 0 && totals.ShipsDestroyed > 0);
         Assert.Equal(2, final.Colonies.Sum(c => c.ProductionQueue.Count)); Assert.Equal(2, final.Civilizations.Sum(c => c.UnlockedResearchDefinitionIds.Count));
-        Assert.Equal("65a4f6b452fd8c6d8a80c775e6e74e944ac73f115bc3e7b9fb3e4e64da60f175", Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(baseline.ExportSave()))).ToLowerInvariant());
+        Assert.Equal("f7feb9be546c813380cab11b151e5c1e1b799453633dd5840dc9cbf292972f29", Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(baseline.ExportSave()))).ToLowerInvariant());
         foreach (var actor in new[] { "civ.cardassian", "civ.dominion" })
         {
             Assert.Contains(new DefinitionId("research.advanced-engineering"), final.Civilizations.Single(c => c.CivilizationId.Value == actor).UnlockedResearchDefinitionIds);

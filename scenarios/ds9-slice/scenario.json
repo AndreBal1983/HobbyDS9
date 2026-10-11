@@ -1,42 +1,59 @@
 {
   "ScenarioId": "ds9-strategic-slice-v1",
-  "RulesVersion": "population-economy-v1",
+  "RulesVersion": "population-politics-v1",
   "Definitions": {
-    "ContentFormatVersion": 6,
+    "ContentFormatVersion": 7,
     "DefinitionIds": [
-      "civilization.federation",
       "civilization.cardassian",
       "civilization.dominion",
-      "star-system.sol",
-      "star-system.cardassia",
-      "star-system.founders-homeworld",
-      "star-system.bajor",
-      "star-system.bajoran-wormhole",
-      "star-system.gamma-exit",
-      "research.advanced-engineering",
-      "ship-design.scout",
-      "ship-design.advanced-scout",
-      "species.human",
-      "species.vulcan",
-      "species.andorian",
-      "species.klingon",
-      "species.cardassian",
-      "species.bajoran",
-      "species.ferengi",
-      "species.founder",
-      "planet-definition.sol",
+      "civilization.federation",
+      "governance.autonomy",
+      "governance.extraction",
+      "governance.integration",
+      "governance.security",
+      "infrastructure.automated-fabricator",
+      "infrastructure.extraction",
+      "infrastructure.farms",
+      "infrastructure.institute",
+      "infrastructure.sealed-habitat",
+      "infrastructure.settlement",
+      "infrastructure.shipyard",
+      "memory-effect.accepted-as-refugees",
+      "memory-effect.civilian-casualties",
+      "memory-effect.community-investment",
+      "memory-effect.discriminated-against",
+      "memory-effect.homeland-destroyed",
+      "memory-effect.homeland-invaded",
+      "memory-effect.interned",
+      "memory-effect.liberated",
+      "memory-effect.prosperity-boom",
+      "memory-effect.protected-minority",
+      "memory-effect.repressed",
+      "memory-effect.unemployment",
+      "memory-effect.war-with-homeland",
+      "planet-definition.bajor",
       "planet-definition.cardassia",
       "planet-definition.founders-homeworld",
-      "planet-definition.bajor",
       "planet-definition.mars",
+      "planet-definition.sol",
+      "research.advanced-engineering",
       "resource.dilithium",
-      "infrastructure.settlement",
-      "infrastructure.farms",
-      "infrastructure.shipyard",
-      "infrastructure.automated-fabricator",
-      "infrastructure.institute",
-      "infrastructure.extraction",
-      "infrastructure.sealed-habitat"
+      "ship-design.advanced-scout",
+      "ship-design.scout",
+      "species.andorian",
+      "species.bajoran",
+      "species.cardassian",
+      "species.ferengi",
+      "species.founder",
+      "species.human",
+      "species.klingon",
+      "species.vulcan",
+      "star-system.bajor",
+      "star-system.bajoran-wormhole",
+      "star-system.cardassia",
+      "star-system.founders-homeworld",
+      "star-system.gamma-exit",
+      "star-system.sol"
     ],
     "Civilizations": [
       {
@@ -1015,6 +1032,270 @@
           }
         ]
       }
+    ],
+    "GovernancePolicies": [
+      {
+        "DefinitionId": "governance.integration",
+        "DisplayName": "Civic Integration",
+        "Description": "Inclusive institutions improve long-term civic participation, with little immediate suppression.",
+        "SatisfactionChange": 10,
+        "IntegrationChange": 10,
+        "AlignmentChange": 20,
+        "RadicalisationChange": -20,
+        "CreditsFactor": 10000,
+        "IndustryFactor": 10000,
+        "ResearchFactor": 10500,
+        "LogisticsFactor": 10000,
+        "Suppression": 0,
+        "AcceptsRefugees": true,
+        "LegalTransitions": [
+          {
+            "From": 4,
+            "To": 2,
+            "RequiredIntegration": 7000,
+            "RequiredSatisfaction": 6000,
+            "RequiredAlignment": 6500,
+            "RequiredStability": 6500,
+            "RequiredTurns": 8
+          },
+          {
+            "From": 2,
+            "To": 1,
+            "RequiredIntegration": 7000,
+            "RequiredSatisfaction": 6000,
+            "RequiredAlignment": 6500,
+            "RequiredStability": 6500,
+            "RequiredTurns": 8
+          },
+          {
+            "From": 6,
+            "To": 5,
+            "RequiredIntegration": 7000,
+            "RequiredSatisfaction": 6000,
+            "RequiredAlignment": 6500,
+            "RequiredStability": 6500,
+            "RequiredTurns": 8
+          },
+          {
+            "From": 5,
+            "To": 2,
+            "RequiredIntegration": 7000,
+            "RequiredSatisfaction": 6000,
+            "RequiredAlignment": 6500,
+            "RequiredStability": 6500,
+            "RequiredTurns": 8
+          },
+          {
+            "From": 3,
+            "To": 2,
+            "RequiredIntegration": 7000,
+            "RequiredSatisfaction": 6000,
+            "RequiredAlignment": 6500,
+            "RequiredStability": 6500,
+            "RequiredTurns": 8
+          }
+        ]
+      },
+      {
+        "DefinitionId": "governance.autonomy",
+        "DisplayName": "Local Autonomy",
+        "Description": "Local satisfaction and research improve while central extraction is reduced.",
+        "SatisfactionChange": 35,
+        "IntegrationChange": 5,
+        "AlignmentChange": 5,
+        "RadicalisationChange": -10,
+        "CreditsFactor": 8500,
+        "IndustryFactor": 9500,
+        "ResearchFactor": 11000,
+        "LogisticsFactor": 10000,
+        "Suppression": 0,
+        "AcceptsRefugees": true,
+        "LegalTransitions": [
+          {
+            "From": 4,
+            "To": 2,
+            "RequiredIntegration": 7000,
+            "RequiredSatisfaction": 6000,
+            "RequiredAlignment": 6500,
+            "RequiredStability": 6500,
+            "RequiredTurns": 12
+          },
+          {
+            "From": 2,
+            "To": 1,
+            "RequiredIntegration": 7000,
+            "RequiredSatisfaction": 6000,
+            "RequiredAlignment": 6500,
+            "RequiredStability": 6500,
+            "RequiredTurns": 12
+          },
+          {
+            "From": 6,
+            "To": 5,
+            "RequiredIntegration": 7000,
+            "RequiredSatisfaction": 6000,
+            "RequiredAlignment": 6500,
+            "RequiredStability": 6500,
+            "RequiredTurns": 12
+          },
+          {
+            "From": 5,
+            "To": 2,
+            "RequiredIntegration": 7000,
+            "RequiredSatisfaction": 6000,
+            "RequiredAlignment": 6500,
+            "RequiredStability": 6500,
+            "RequiredTurns": 12
+          },
+          {
+            "From": 3,
+            "To": 2,
+            "RequiredIntegration": 7000,
+            "RequiredSatisfaction": 6000,
+            "RequiredAlignment": 6500,
+            "RequiredStability": 6500,
+            "RequiredTurns": 12
+          }
+        ]
+      },
+      {
+        "DefinitionId": "governance.security",
+        "DisplayName": "Security Administration",
+        "Description": "Immediate suppression trades against satisfaction, integration and long-term radicalisation.",
+        "SatisfactionChange": -50,
+        "IntegrationChange": -5,
+        "AlignmentChange": -20,
+        "RadicalisationChange": 30,
+        "CreditsFactor": 10000,
+        "IndustryFactor": 10500,
+        "ResearchFactor": 9000,
+        "LogisticsFactor": 11000,
+        "Suppression": 1500,
+        "AcceptsRefugees": false,
+        "LegalTransitions": []
+      },
+      {
+        "DefinitionId": "governance.extraction",
+        "DisplayName": "Extractive Administration",
+        "Description": "Short-term extraction comes at severe political cost and poor civic integration.",
+        "SatisfactionChange": -100,
+        "IntegrationChange": -15,
+        "AlignmentChange": -60,
+        "RadicalisationChange": 60,
+        "CreditsFactor": 12000,
+        "IndustryFactor": 11000,
+        "ResearchFactor": 7500,
+        "LogisticsFactor": 9000,
+        "Suppression": 500,
+        "AcceptsRefugees": false,
+        "LegalTransitions": []
+      }
+    ],
+    "PoliticalMemoryEffects": [
+      {
+        "DefinitionId": "memory-effect.accepted-as-refugees",
+        "MemoryKind": "accepted-as-refugees",
+        "SatisfactionChange": 100,
+        "IntegrationChange": 10,
+        "AlignmentChange": 100,
+        "RadicalisationChange": -100
+      },
+      {
+        "DefinitionId": "memory-effect.liberated",
+        "MemoryKind": "liberated",
+        "SatisfactionChange": 150,
+        "IntegrationChange": 10,
+        "AlignmentChange": 200,
+        "RadicalisationChange": -100
+      },
+      {
+        "DefinitionId": "memory-effect.homeland-invaded",
+        "MemoryKind": "homeland-invaded",
+        "SatisfactionChange": -200,
+        "IntegrationChange": -5,
+        "AlignmentChange": -150,
+        "RadicalisationChange": 150
+      },
+      {
+        "DefinitionId": "memory-effect.homeland-destroyed",
+        "MemoryKind": "homeland-destroyed",
+        "SatisfactionChange": -300,
+        "IntegrationChange": -10,
+        "AlignmentChange": -200,
+        "RadicalisationChange": 250
+      },
+      {
+        "DefinitionId": "memory-effect.protected-minority",
+        "MemoryKind": "protected-minority",
+        "SatisfactionChange": 100,
+        "IntegrationChange": 10,
+        "AlignmentChange": 150,
+        "RadicalisationChange": -100
+      },
+      {
+        "DefinitionId": "memory-effect.discriminated-against",
+        "MemoryKind": "discriminated-against",
+        "SatisfactionChange": -150,
+        "IntegrationChange": -10,
+        "AlignmentChange": -200,
+        "RadicalisationChange": 150
+      },
+      {
+        "DefinitionId": "memory-effect.repressed",
+        "MemoryKind": "repressed",
+        "SatisfactionChange": -150,
+        "IntegrationChange": -10,
+        "AlignmentChange": -150,
+        "RadicalisationChange": 150
+      },
+      {
+        "DefinitionId": "memory-effect.interned",
+        "MemoryKind": "interned",
+        "SatisfactionChange": -200,
+        "IntegrationChange": -15,
+        "AlignmentChange": -200,
+        "RadicalisationChange": 200
+      },
+      {
+        "DefinitionId": "memory-effect.prosperity-boom",
+        "MemoryKind": "prosperity-boom",
+        "SatisfactionChange": 100,
+        "IntegrationChange": 5,
+        "AlignmentChange": 75,
+        "RadicalisationChange": -50
+      },
+      {
+        "DefinitionId": "memory-effect.unemployment",
+        "MemoryKind": "unemployment",
+        "SatisfactionChange": -100,
+        "IntegrationChange": -5,
+        "AlignmentChange": -100,
+        "RadicalisationChange": 100
+      },
+      {
+        "DefinitionId": "memory-effect.war-with-homeland",
+        "MemoryKind": "war-with-homeland",
+        "SatisfactionChange": -150,
+        "IntegrationChange": -5,
+        "AlignmentChange": -150,
+        "RadicalisationChange": 150
+      },
+      {
+        "DefinitionId": "memory-effect.civilian-casualties",
+        "MemoryKind": "civilian-casualties",
+        "SatisfactionChange": -250,
+        "IntegrationChange": -10,
+        "AlignmentChange": -200,
+        "RadicalisationChange": 250
+      },
+      {
+        "DefinitionId": "memory-effect.community-investment",
+        "MemoryKind": "community-investment",
+        "SatisfactionChange": 100,
+        "IntegrationChange": 10,
+        "AlignmentChange": 125,
+        "RadicalisationChange": -100
+      }
     ]
   },
   "InitialState": {
@@ -1264,7 +1545,8 @@
             "CivicAlignment": 8000,
             "Radicalisation": 500,
             "ExternalAffinities": [],
-            "Memories": []
+            "Memories": [],
+            "LegalStatusEligibleTurns": 0
           },
           {
             "CohortId": "cohort.sol.vulcan",
@@ -1277,7 +1559,8 @@
             "CivicAlignment": 8000,
             "Radicalisation": 500,
             "ExternalAffinities": [],
-            "Memories": []
+            "Memories": [],
+            "LegalStatusEligibleTurns": 0
           },
           {
             "CohortId": "cohort.sol.andorian",
@@ -1290,7 +1573,8 @@
             "CivicAlignment": 8000,
             "Radicalisation": 500,
             "ExternalAffinities": [],
-            "Memories": []
+            "Memories": [],
+            "LegalStatusEligibleTurns": 0
           }
         ],
         "Infrastructure": [
@@ -1314,7 +1598,21 @@
             "DefinitionId": "infrastructure.extraction",
             "Count": 1
           }
-        ]
+        ],
+        "Politics": {
+          "GovernancePolicyDefinitionId": "governance.integration",
+          "Resistance": 0,
+          "Pressure": 0,
+          "PreviousPressure": 0,
+          "EscalationTurns": 0,
+          "RecoveryTurns": 0,
+          "OrganizedTurns": 0,
+          "DisruptionRemainingTurns": 0,
+          "Disruptions": 0,
+          "LastUpdateTurn": 0,
+          "CohortReports": [],
+          "Events": []
+        }
       },
       {
         "ColonyId": "colony.cardassia",
@@ -1352,7 +1650,8 @@
             "CivicAlignment": 8000,
             "Radicalisation": 500,
             "ExternalAffinities": [],
-            "Memories": []
+            "Memories": [],
+            "LegalStatusEligibleTurns": 0
           }
         ],
         "Infrastructure": [
@@ -1376,7 +1675,21 @@
             "DefinitionId": "infrastructure.extraction",
             "Count": 1
           }
-        ]
+        ],
+        "Politics": {
+          "GovernancePolicyDefinitionId": "governance.integration",
+          "Resistance": 0,
+          "Pressure": 0,
+          "PreviousPressure": 0,
+          "EscalationTurns": 0,
+          "RecoveryTurns": 0,
+          "OrganizedTurns": 0,
+          "DisruptionRemainingTurns": 0,
+          "Disruptions": 0,
+          "LastUpdateTurn": 0,
+          "CohortReports": [],
+          "Events": []
+        }
       },
       {
         "ColonyId": "colony.founders-homeworld",
@@ -1414,7 +1727,8 @@
             "CivicAlignment": 8000,
             "Radicalisation": 500,
             "ExternalAffinities": [],
-            "Memories": []
+            "Memories": [],
+            "LegalStatusEligibleTurns": 0
           }
         ],
         "Infrastructure": [
@@ -1438,7 +1752,21 @@
             "DefinitionId": "infrastructure.extraction",
             "Count": 1
           }
-        ]
+        ],
+        "Politics": {
+          "GovernancePolicyDefinitionId": "governance.integration",
+          "Resistance": 0,
+          "Pressure": 0,
+          "PreviousPressure": 0,
+          "EscalationTurns": 0,
+          "RecoveryTurns": 0,
+          "OrganizedTurns": 0,
+          "DisruptionRemainingTurns": 0,
+          "Disruptions": 0,
+          "LastUpdateTurn": 0,
+          "CohortReports": [],
+          "Events": []
+        }
       },
       {
         "ColonyId": "colony.bajor",
@@ -1476,7 +1804,8 @@
             "CivicAlignment": 8000,
             "Radicalisation": 500,
             "ExternalAffinities": [],
-            "Memories": []
+            "Memories": [],
+            "LegalStatusEligibleTurns": 0
           },
           {
             "CohortId": "cohort.bajor.cardassian",
@@ -1488,8 +1817,23 @@
             "Integration": 8000,
             "CivicAlignment": 8000,
             "Radicalisation": 500,
-            "ExternalAffinities": [],
-            "Memories": []
+            "ExternalAffinities": [
+              {
+                "CivilizationId": "civ.cardassian",
+                "Rating": 8500
+              }
+            ],
+            "Memories": [
+              {
+                "Kind": "protected-minority",
+                "Magnitude": 3000,
+                "SourceEntityId": "civ.federation",
+                "StartTurn": 1,
+                "ExpiryTurn": 31,
+                "DecayPerTurn": 100
+              }
+            ],
+            "LegalStatusEligibleTurns": 0
           }
         ],
         "Infrastructure": [
@@ -1513,7 +1857,21 @@
             "DefinitionId": "infrastructure.extraction",
             "Count": 1
           }
-        ]
+        ],
+        "Politics": {
+          "GovernancePolicyDefinitionId": "governance.autonomy",
+          "Resistance": 0,
+          "Pressure": 0,
+          "PreviousPressure": 0,
+          "EscalationTurns": 0,
+          "RecoveryTurns": 0,
+          "OrganizedTurns": 0,
+          "DisruptionRemainingTurns": 0,
+          "Disruptions": 0,
+          "LastUpdateTurn": 0,
+          "CohortReports": [],
+          "Events": []
+        }
       },
       {
         "ColonyId": "colony.mars",
@@ -1551,7 +1909,8 @@
             "CivicAlignment": 8000,
             "Radicalisation": 500,
             "ExternalAffinities": [],
-            "Memories": []
+            "Memories": [],
+            "LegalStatusEligibleTurns": 0
           },
           {
             "CohortId": "cohort.mars.vulcan",
@@ -1564,7 +1923,8 @@
             "CivicAlignment": 8000,
             "Radicalisation": 500,
             "ExternalAffinities": [],
-            "Memories": []
+            "Memories": [],
+            "LegalStatusEligibleTurns": 0
           }
         ],
         "Infrastructure": [
@@ -1580,7 +1940,21 @@
             "DefinitionId": "infrastructure.sealed-habitat",
             "Count": 1
           }
-        ]
+        ],
+        "Politics": {
+          "GovernancePolicyDefinitionId": "governance.integration",
+          "Resistance": 0,
+          "Pressure": 0,
+          "PreviousPressure": 0,
+          "EscalationTurns": 0,
+          "RecoveryTurns": 0,
+          "OrganizedTurns": 0,
+          "DisruptionRemainingTurns": 0,
+          "Disruptions": 0,
+          "LastUpdateTurn": 0,
+          "CohortReports": [],
+          "Events": []
+        }
       }
     ],
     "Ships": [

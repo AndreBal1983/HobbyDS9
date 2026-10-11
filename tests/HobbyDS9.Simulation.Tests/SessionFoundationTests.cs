@@ -17,7 +17,7 @@ public sealed class SessionFoundationTests
         ResearchNodes = new(),
         Species = new(),
         Planets = new(),
-        Resources = new(),
+        Resources = new(), GovernancePolicies = new(), PoliticalMemoryEffects = new(),
         Infrastructure = new(),
         StarSystems = new(),
         GalaxyEdges = new(),

@@ -4,8 +4,8 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 10;
-        public const int ContentFormatVersion = 6;
+        public const int SaveFormatVersion = 11;
+        public const int ContentFormatVersion = 7;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
     }
@@ -36,6 +36,8 @@ namespace HobbyDS9.Contracts
         public List<CivilizationDefinitionDto>? Civilizations { get; set; }
         public List<StarSystemDefinitionDto>? StarSystems { get; set; }
         public List<GalaxyEdgeDto>? GalaxyEdges { get; set; }
+        public List<GovernancePolicyDefinitionDto>? GovernancePolicies { get; set; }
+        public List<PoliticalMemoryEffectDto>? PoliticalMemoryEffects { get; set; }
         public List<SpeciesDefinitionDto>? Species { get; set; }
         public List<PlanetDefinitionDto>? Planets { get; set; }
         public List<ResourceDefinitionDto>? Resources { get; set; }

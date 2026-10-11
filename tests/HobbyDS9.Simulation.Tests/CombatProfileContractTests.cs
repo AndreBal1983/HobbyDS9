@@ -109,7 +109,7 @@ public sealed class CombatProfileContractTests
     {
         var r = Request(); var plans = Plans(r); plans[1].RetreatHullPercent = 100; plans[1].RetreatSystemId = "node.exit"; CombatPlanValidation.Validate(r, plans); plans.Reverse(); CombatPlanValidation.Validate(r, plans);
         Assert.Equal(0, (int)CombatEventKind.EncounterResolved); Assert.Equal(1, (int)CombatEventKind.ShipDamaged); Assert.Equal(2, (int)CombatEventKind.ShipDestroyed); Assert.Equal(3, (int)CombatEventKind.FleetRetreated);
-        Assert.Equal(10, FoundationVersions.SaveFormatVersion); Assert.Equal(6, FoundationVersions.ContentFormatVersion);
+        Assert.Equal(11, FoundationVersions.SaveFormatVersion); Assert.Equal(7, FoundationVersions.ContentFormatVersion);
     }
     [Theory]
     [InlineData("phase")]

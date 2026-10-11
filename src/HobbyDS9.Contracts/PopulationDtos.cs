@@ -98,6 +98,7 @@ namespace HobbyDS9.Contracts
         public string CohortId { get; set; } = string.Empty;
         public string SpeciesDefinitionId { get; set; } = string.Empty;
         public long Population { get; set; }
+        public int LegalStatusEligibleTurns { get; set; }
         public LegalStatus LegalStatus { get; set; }
         public string? OriginCivilizationId { get; set; }
         public int Satisfaction { get; set; }

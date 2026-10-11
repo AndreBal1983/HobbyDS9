@@ -120,6 +120,7 @@ namespace HobbyDS9.Contracts
         public string CohortId { get; }
         public string SpeciesDefinitionId { get; }
         public long Population { get; }
+        public int LegalStatusEligibleTurns { get; }
         public LegalStatus LegalStatus { get; }
         public string? OriginCivilizationId { get; }
         public int Satisfaction { get; }
@@ -129,7 +130,7 @@ namespace HobbyDS9.Contracts
         public IReadOnlyList<ExternalAffinitySnapshot> ExternalAffinities { get; }
         public IReadOnlyList<PopulationMemorySnapshot> Memories { get; }
         public PopulationCohortSnapshot(PopulationCohortDto x)
-        { CohortId = x.CohortId; SpeciesDefinitionId = x.SpeciesDefinitionId; Population = x.Population; LegalStatus = x.LegalStatus; OriginCivilizationId = x.OriginCivilizationId; Satisfaction = x.Satisfaction; Integration = x.Integration; CivicAlignment = x.CivicAlignment; Radicalisation = x.Radicalisation; ExternalAffinities = x.ExternalAffinities!.Select(v => new ExternalAffinitySnapshot(v)).ToList().AsReadOnly(); Memories = x.Memories!.Select(v => new PopulationMemorySnapshot(v)).ToList().AsReadOnly(); }
+        { CohortId = x.CohortId; SpeciesDefinitionId = x.SpeciesDefinitionId; Population = x.Population; LegalStatus = x.LegalStatus; LegalStatusEligibleTurns = x.LegalStatusEligibleTurns; OriginCivilizationId = x.OriginCivilizationId; Satisfaction = x.Satisfaction; Integration = x.Integration; CivicAlignment = x.CivicAlignment; Radicalisation = x.Radicalisation; ExternalAffinities = x.ExternalAffinities!.Select(v => new ExternalAffinitySnapshot(v)).ToList().AsReadOnly(); Memories = x.Memories!.Select(v => new PopulationMemorySnapshot(v)).ToList().AsReadOnly(); }
     }
     public sealed class DisplacementSnapshot
     {
@@ -173,6 +174,7 @@ namespace HobbyDS9.Contracts
     }
     public sealed class ColonyStateSnapshot
     {
+        public WorldPoliticalStateSnapshot Politics { get; }
         public string ColonyId { get; }
         public string SystemId { get; }
         public string? OwnerCivilizationId { get; }
@@ -189,6 +191,6 @@ namespace HobbyDS9.Contracts
         public long Food { get; }
         public IReadOnlyList<ProductionQueueItemSnapshot> ProductionQueue { get; }
         public ColonyStateSnapshot(ColonyStateDto x)
-        { ColonyId = x.ColonyId; SystemId = x.SystemId; OwnerCivilizationId = x.OwnerCivilizationId; PlanetId = x.PlanetId; Cohorts = x.Cohorts!.Select(v => new PopulationCohortSnapshot(v)).ToList().AsReadOnly(); Infrastructure = x.Infrastructure!.Select(v => new InfrastructureStateSnapshot(v)).ToList().AsReadOnly(); Stockpiles = x.Stockpiles!.Select(v => new ResourceAmountSnapshot(v)).ToList().AsReadOnly(); DesiredStockpiles = x.DesiredStockpiles!.Select(v => new ResourceAmountSnapshot(v)).ToList().AsReadOnly(); Stability = x.Stability; Prosperity = x.Prosperity; Automation = x.Automation; FoodShortageTurns = x.FoodShortageTurns; AcceptsRefugees = x.AcceptsRefugees; Food = x.Food; ProductionQueue = x.ProductionQueue!.Select(v => new ProductionQueueItemSnapshot(v)).ToList().AsReadOnly(); }
+        { Politics = new WorldPoliticalStateSnapshot(x.Politics!); ColonyId = x.ColonyId; SystemId = x.SystemId; OwnerCivilizationId = x.OwnerCivilizationId; PlanetId = x.PlanetId; Cohorts = x.Cohorts!.Select(v => new PopulationCohortSnapshot(v)).ToList().AsReadOnly(); Infrastructure = x.Infrastructure!.Select(v => new InfrastructureStateSnapshot(v)).ToList().AsReadOnly(); Stockpiles = x.Stockpiles!.Select(v => new ResourceAmountSnapshot(v)).ToList().AsReadOnly(); DesiredStockpiles = x.DesiredStockpiles!.Select(v => new ResourceAmountSnapshot(v)).ToList().AsReadOnly(); Stability = x.Stability; Prosperity = x.Prosperity; Automation = x.Automation; FoodShortageTurns = x.FoodShortageTurns; AcceptsRefugees = x.AcceptsRefugees; Food = x.Food; ProductionQueue = x.ProductionQueue!.Select(v => new ProductionQueueItemSnapshot(v)).ToList().AsReadOnly(); }
     }
 }

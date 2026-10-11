@@ -7,6 +7,8 @@ internal static class PopulationFixture
     internal static DefinitionCatalogDto Content(DefinitionCatalogDto definitions)
     {
         var source = VerticalSliceFixture.Scenario().Definitions;
+        definitions.GovernancePolicies = new(){new(){DefinitionId="governance.fixture",DisplayName="Fixture",Description="Neutral test institutions",CreditsFactor=10000,IndustryFactor=10000,ResearchFactor=10000,LogisticsFactor=10000,AcceptsRefugees=true,LegalTransitions=new()}};
+        definitions.PoliticalMemoryEffects = new();definitions.DefinitionIds.Add("governance.fixture");
         definitions.Species = new() { PopulationData.Copy(source.Species!.Single(s => s.DefinitionId == "species.human")) };
         var planet = PopulationData.Copy(source.Planets!.Single(p => p.DefinitionId == "planet-definition.sol"));
         planet.DefinitionId = "planet-definition.fixture"; planet.SystemDefinitionId = "system.fixture"; planet.Deposits = new();
@@ -19,6 +21,7 @@ internal static class PopulationFixture
     }
     internal static ColonyStateDto Colony(string id, string system, string? owner, long population = 1000) => new()
     {
+        Politics = new(){GovernancePolicyDefinitionId="governance.fixture",CohortReports=new(),Events=new()},
         ColonyId = id,
         SystemId = system,
         OwnerCivilizationId = owner,

@@ -36,6 +36,7 @@ namespace HobbyDS9.Simulation
                         DecayPerTurn = g.Min(m => m.DecayPerTurn)
                     };
                 }).ToList();
+                a.LegalStatusEligibleTurns = Math.Min(a.LegalStatusEligibleTurns,b.LegalStatusEligibleTurns);
                 a.Population = total; colony.Cohorts!.Remove(b); state.EntityIdentities.RemoveAll(e => e.EntityId == b.CohortId);
             }
             colony.Cohorts!.Sort((a, b) => StringComparer.Ordinal.Compare(a.CohortId, b.CohortId));

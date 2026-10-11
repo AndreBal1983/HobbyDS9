@@ -14,6 +14,6 @@ public sealed class EconomyTests
         Assert.True(report.IsValid, string.Join(";", report.Issues.Select(i => i.Path + ":" + i.Code)));
         Assert.Equal(2, scenario.InitialState.Planets!.Count(p => p.SystemId == "system.sol"));
         Assert.Equal(3, scenario.InitialState.Colonies!.Single(c => c.ColonyId == "colony.sol").Cohorts!.Count);
-        Assert.Equal(6, scenario.Definitions.ContentFormatVersion);
+        Assert.Equal(7, scenario.Definitions.ContentFormatVersion);
     }
 }

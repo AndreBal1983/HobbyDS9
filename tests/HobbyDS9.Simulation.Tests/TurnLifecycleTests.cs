@@ -21,7 +21,7 @@ public sealed class TurnLifecycleTests
         ResearchNodes = new(),
         Species = new(),
         Planets = new(),
-        Resources = new(),
+        Resources = new(), GovernancePolicies = new(), PoliticalMemoryEffects = new(),
         Infrastructure = new(),
         DefinitionIds = new() { "system.beta", "civilization.ai", "system.alpha", "civilization.human" },
         Civilizations = new()

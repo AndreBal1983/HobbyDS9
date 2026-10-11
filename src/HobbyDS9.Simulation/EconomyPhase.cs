@@ -28,9 +28,6 @@ namespace HobbyDS9.Simulation
                 {
                     foreach (var memory in cohort.Memories!) memory.Magnitude = Math.Max(0, memory.Magnitude - memory.DecayPerTurn);
                     cohort.Memories.RemoveAll(m => m.ExpiryTurn <= s.TurnNumber || m.Magnitude == 0);
-                    var welcome = cohort.Memories.Where(m => m.Kind == "accepted-as-refugees").Sum(m => (long)m.Magnitude) / 100;
-                    cohort.Satisfaction = PopulationRules.Rating(cohort.Satisfaction + (sufficient ? 25 : -300) + welcome);
-                    if (sufficient) cohort.Integration = PopulationRules.Rating(cohort.Integration + 10);
                     if (!sufficient && c.FoodShortageTurns >= PopulationRules.ShortageGrace)
                     {
                         var protectedCount = s.Displacements!.SingleOrDefault(r => r.CohortId == cohort.CohortId)?.Population ?? 0;
@@ -46,6 +43,7 @@ namespace HobbyDS9.Simulation
                     foreach (var cohort in c.Cohorts!) if (distribution.TryGetValue(cohort.CohortId, out var count)) cohort.Population = checked(cohort.Population + count);
                     s.PopulationStatistics!.Births = checked(s.PopulationStatistics!.Births + births);
                 }
+                PoliticsRules.ExecuteWorld(c,s,d,sufficient);
                 var target = WorldEconomy.Project(c, s, d).TargetStability;
                 c.Stability += Math.Max(-PopulationRules.StabilityStep, Math.Min(PopulationRules.StabilityStep, target - c.Stability));
                 if (c.OwnerCivilizationId != null)

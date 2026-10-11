@@ -43,7 +43,8 @@ namespace HobbyDS9.Simulation
                 [CommandKind.SetResearchTarget] = new ResearchTargetHandler(this.definitions),
                 [CommandKind.EnqueueProduction] = new EnqueueProductionHandler(this.definitions),
                 [CommandKind.CancelProduction] = new CancelProductionHandler(),
-                [CommandKind.SetFleetRoute] = new SetFleetRouteHandler(Galaxy)
+                [CommandKind.SetFleetRoute] = new SetFleetRouteHandler(Galaxy),
+                [CommandKind.SetWorldGovernancePolicy] = new GovernancePolicyHandler(this.definitions)
             };
             foreach (var pair in commandHandlers)
             {
@@ -262,6 +263,8 @@ namespace HobbyDS9.Simulation
                 ResearchCost = n.ResearchCost,
                 PrerequisiteDefinitionIds = n.PrerequisiteDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal).ToList()
             }).ToList(),
+            GovernancePolicies = source.GovernancePolicies!.OrderBy(p=>p.DefinitionId,StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
+            PoliticalMemoryEffects = source.PoliticalMemoryEffects!.OrderBy(p=>p.DefinitionId,StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
             Species = source.Species!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
             Planets = source.Planets!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
             Resources = source.Resources!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
@@ -271,12 +274,12 @@ namespace HobbyDS9.Simulation
         };
 
         private static bool IsKnownKind(CommandKind kind) => kind == CommandKind.EnqueueProduction
-            || kind == CommandKind.CancelProduction || kind == CommandKind.SetResearchTarget || kind == CommandKind.SetFleetRoute;
+            || kind == CommandKind.CancelProduction || kind == CommandKind.SetResearchTarget || kind == CommandKind.SetFleetRoute || kind == CommandKind.SetWorldGovernancePolicy;
 
         private static bool HasValidPayload(CommandEnvelope command)
         {
             var count = (command.EnqueueProduction == null ? 0 : 1) + (command.CancelProduction == null ? 0 : 1)
-                + (command.SetResearchTarget == null ? 0 : 1) + (command.SetFleetRoute == null ? 0 : 1);
+                + (command.SetResearchTarget == null ? 0 : 1) + (command.SetFleetRoute == null ? 0 : 1) + (command.SetWorldGovernancePolicy == null ? 0 : 1);
             if (count != 1) return false;
             switch (command.Kind)
             {
@@ -288,6 +291,8 @@ namespace HobbyDS9.Simulation
                         && EntityId.TryParse(command.CancelProduction.QueueItemId, out _);
                 case CommandKind.SetResearchTarget:
                     return command.SetResearchTarget != null && DefinitionId.TryParse(command.SetResearchTarget.TargetDefinitionId, out _);
+                case CommandKind.SetWorldGovernancePolicy:
+                    return command.SetWorldGovernancePolicy != null && EntityId.TryParse(command.SetWorldGovernancePolicy.ColonyId,out _) && DefinitionId.TryParse(command.SetWorldGovernancePolicy.PolicyDefinitionId,out _);
                 case CommandKind.SetFleetRoute:
                     return command.SetFleetRoute != null && EntityId.TryParse(command.SetFleetRoute.FleetId, out _)
                         && command.SetFleetRoute.RouteSystemIds != null && command.SetFleetRoute.RouteSystemIds.All(id => EntityId.TryParse(id, out _));
@@ -360,6 +365,7 @@ namespace HobbyDS9.Simulation
                 ExpectedTurn = source.ExpectedTurn,
                 ExpectedRevision = source.ExpectedRevision,
                 Kind = source.Kind,
+                SetWorldGovernancePolicy = source.SetWorldGovernancePolicy == null ? null : new SetWorldGovernancePolicyPayload { ColonyId=source.SetWorldGovernancePolicy.ColonyId, PolicyDefinitionId=source.SetWorldGovernancePolicy.PolicyDefinitionId },
                 EnqueueProduction = source.EnqueueProduction == null ? null : new EnqueueProductionPayload
                 { ColonyId = source.EnqueueProduction.ColonyId, DefinitionId = source.EnqueueProduction.DefinitionId },
                 CancelProduction = source.CancelProduction == null ? null : new CancelProductionPayload

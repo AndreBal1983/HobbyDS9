@@ -4,7 +4,7 @@ using System.Linq;
 using HobbyDS9.Contracts;
 namespace HobbyDS9.Simulation
 {
-    internal static class PopulationData
+    internal static partial class PopulationData
     {
         internal static HabitatDefinitionDto Copy(HabitatDefinitionDto x) => new HabitatDefinitionDto
         {
@@ -157,6 +157,7 @@ namespace HobbyDS9.Simulation
             SpeciesDefinitionId = x.SpeciesDefinitionId,
             Population = x.Population,
             LegalStatus = x.LegalStatus,
+            LegalStatusEligibleTurns = x.LegalStatusEligibleTurns,
             OriginCivilizationId = x.OriginCivilizationId,
             Satisfaction = x.Satisfaction,
             Integration = x.Integration,
@@ -169,6 +170,7 @@ namespace HobbyDS9.Simulation
             && a.SpeciesDefinitionId == b.SpeciesDefinitionId
             && a.Population == b.Population
             && a.LegalStatus == b.LegalStatus
+            && a.LegalStatusEligibleTurns == b.LegalStatusEligibleTurns
             && a.OriginCivilizationId == b.OriginCivilizationId
             && a.Satisfaction == b.Satisfaction
             && a.Integration == b.Integration
@@ -237,6 +239,7 @@ namespace HobbyDS9.Simulation
             && a.ProductionCompleted == b.ProductionCompleted;
         internal static ColonyStateDto Copy(ColonyStateDto x) => new ColonyStateDto
         {
+            Politics = Copy(x.Politics!),
             ColonyId = x.ColonyId,
             SystemId = x.SystemId,
             OwnerCivilizationId = x.OwnerCivilizationId,
@@ -253,7 +256,7 @@ namespace HobbyDS9.Simulation
             Food = x.Food,
             ProductionQueue = x.ProductionQueue!.Select(q => new ProductionQueueItemDto { QueueItemId = q.QueueItemId, ShipDesignDefinitionId = q.ShipDesignDefinitionId, RequiredIndustry = q.RequiredIndustry, CompletedIndustry = q.CompletedIndustry, PaidCredits = q.PaidCredits, PaidResources = q.PaidResources!.OrderBy(v => v.ResourceDefinitionId, StringComparer.Ordinal).Select(Copy).ToList() }).ToList(),
         };
-        internal static bool Same(ColonyStateDto? a, ColonyStateDto? b) => a == null ? b == null : b != null && a.ColonyId == b.ColonyId
+        internal static bool Same(ColonyStateDto? a, ColonyStateDto? b) => a == null ? b == null : b != null && Same(a.Politics,b.Politics) && a.ColonyId == b.ColonyId
             && a.SystemId == b.SystemId
             && a.OwnerCivilizationId == b.OwnerCivilizationId
             && a.PlanetId == b.PlanetId
