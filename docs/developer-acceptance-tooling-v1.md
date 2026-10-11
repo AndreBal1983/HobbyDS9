@@ -2,7 +2,7 @@
 
 This local tooling validates a candidate without switching the primary checkout. It invokes the repository's existing solution and `scripts/PrepareUnity.proj`; it does not change gameplay, UI, content, versions, Unity settings, CI or that preparation project.
 
-The tooling branch is `codex/dev-acceptance-tooling-v1`, based exactly on accepted main `a0f750681438d26ded17fff38cb3df37c3da9eb0`. Keep it separate from the R&D and LCARS branches. Scripts can run from the tooling checkout with `-RepoPath` pointing to another checkout; candidates do not need to merge the tooling branch.
+The preserved checkpoint is `codex/dev-acceptance-tooling-v1` at `a68f7fdf75dc7622002b7caf2b8a58e4b63f1a1d`, originally based on `a0f750681438d26ded17fff38cb3df37c3da9eb0`. It remains unchanged. The current candidate is `codex/dev-acceptance-tooling-integration-v1`, replayed onto accepted Science & Engineering main `90edc7bff4fe9ecfd8a958417b5270a38ec2153a`. Keep it separate from the R&D and LCARS branches. Scripts can run from the tooling checkout with `-RepoPath` pointing to another checkout; candidates do not need to merge the tooling branch.
 
 ## Prerequisites
 
@@ -19,7 +19,7 @@ Scripts derive their default repository root from their location. Always pass th
 E:\HobbyDS9          accepted/main workspace (after the current feature work is safely moved)
 E:\HobbyDS9-rnd      Science & Engineering candidate
 E:\HobbyDS9-lcars    LCARS prototype
-<tooling checkout>  codex/dev-acceptance-tooling-v1
+<tooling checkout>  codex/dev-acceptance-tooling-integration-v1
 ```
 
 Point each local ChatGPT/Codex chat at its relevant worktree. Never ask two Unity batch processes or the editor and a batch process to use the same project simultaneously. The acceptance runner serializes its own runs in a worktree, but cannot lock out external Unity processes.
@@ -27,7 +27,7 @@ Point each local ChatGPT/Codex chat at its relevant worktree. Never ask two Unit
 In these examples, set `$Tooling` to the directory containing this document's tooling branch:
 
 ```powershell
-$Tooling = 'C:\Users\ambal\.codex\worktrees\dev-acceptance-tooling-v1\HobbyDS9'
+$Tooling = 'E:\HobbyDS9\artifacts\worktrees\dev-acceptance-tooling-integration-v1'
 $Tools = Join-Path $Tooling 'tools\acceptance'
 $Unity = 'C:\Program Files\Unity\Hub\Editor\6000.6.5f1\Editor\Unity.exe'
 
@@ -38,7 +38,7 @@ $Unity = 'C:\Program Files\Unity\Hub\Editor\6000.6.5f1\Editor\Unity.exe'
     -Branch 'codex/lcars-strategic-screen-prototype-v1' -Destination 'E:\HobbyDS9-lcars' -Fetch
 ```
 
-`-Fetch` runs only `git fetch origin`. Local branches take precedence; a fetch never advances an existing local branch. If only `origin/<branch>` exists, the helper creates a local tracking branch. A missing branch, existing destination, or branch already checked out elsewhere fails without force. **The current primary checkout already holds the R&D branch:** the first example will refuse until that branch is safely moved by its owner. Use the existing checkout in the meantime; the helper will not switch it, stash it or discard changes.
+`-Fetch` runs only `git fetch origin`. Local branches take precedence; a fetch never advances an existing local branch. If only `origin/<branch>` exists, the helper creates a local tracking branch. A missing branch, existing destination, or branch already checked out elsewhere fails without force. **Both feature branches are currently checked out elsewhere:** the primary checkout holds R&D and a separate worktree holds the LCARS prototype. These creation examples will refuse until their owners safely release those branches. Use the existing checkout in the meantime; the helper will not switch it, stash it or discard changes.
 
 ## Runner
 
@@ -54,7 +54,7 @@ $LASTEXITCODE
 
 Use `-ExpectedSha <full-40-character-SHA>` for an immutable candidate. `-ExpectedRef` also enforces exact HEAD equality with the resolved commit. With no fetch, remote refs are the locally cached refs. Ref movement during an ongoing run does not change the recorded candidate SHA. Detached HEAD is supported and recorded. Origin comparison reports `aheadBehind` as local-only count followed by remote-only count.
 
-All runs check source identity, dirty status, SDK selection, then execute locked restore, Release build and the full .NET test suite. Unity preparation is requested for either Unity gate. The existing Windows target includes EditMode, so `-BuildWindows` implies EditMode and does not add a duplicate independent test invocation. Native targets may repeat preparation as part of their own dependencies. The runner never reimplements preparation.
+All runs check source identity, dirty status, SDK selection, then execute locked restore, Release build and the full .NET test suite. Unity preparation is requested for either Unity gate. The existing Windows target includes EditMode, so `-BuildWindows` implies EditMode and does not add a duplicate independent test invocation. Native targets may repeat preparation as part of their own dependencies. The runner never reimplements preparation. Current main deliberately runs EditMode with graphics enabled (`-batchmode`, without `-nographics`) because the accepted R&D test attaches a displayed editor window. The runner passes the editor path to the existing target and adds no direct Unity flags; the Windows build retains its own accepted `-nographics` invocation. Do not change these target behaviors in acceptance tooling.
 
 Dirty source is rejected before tool/build work. `-AllowDirty` explicitly permits it, records files and warns that the result covers uncommitted state. Use it only after reviewing those changes. Never infer that a dirty acceptance run validates the committed SHA alone.
 
@@ -121,4 +121,20 @@ No removal helper or force cleanup is provided. Git removal can discard ignored 
 
 The integration fixture uses disposable temporary Git repositories and a fake dotnet CLI. It covers clean/dirty input, explicit dirty allowance, SHA/ref failure, conditional Unity discovery, missing/failed XML, Windows dependency evidence, nonzero gates, prerequisite handling, local/remote worktrees, collision/checked-out-branch refusal, and generated junk detection. Temporary fixtures/logs are retained for inspection. Fake Unity/player files are never executed. This tests orchestration and evidence, not Unity licensing, IL2CPP or visual correctness. The real .NET acceptance run is separate. CI and README are unchanged to avoid feature-branch overlap.
 
-Validated locally on 11 October 2026: all 23 fixture checks passed using PowerShell 7.6.5 and Windows PowerShell 5.1 child processes. A real clean tooling-branch run with SDK 10.0.401 passed locked restore, Release build (zero warnings/errors) and all 824 .NET tests. Unity/IL2CPP and player visuals were not exercised; their orchestration was verified with fixtures only.
+The preserved pre-Science/Engineering checkpoint passed 824 .NET tests. That is historical evidence, not the integration baseline. The current-main integration suite contains 930 tests. See the integration validation result below for this candidate.
+
+
+For large Unity validations, place the worktree and temporary directory on a volume with sufficient free space. The integration validation uses E: after C: ran out of space. Temporary output can be redirected per session without changing machine-wide settings:
+
+```powershell
+$env:TEMP = 'E:\HobbyDS9\artifacts\acceptance-temp'
+$env:TMP = $env:TEMP
+New-Item -ItemType Directory -Force -Path $env:TEMP | Out-Null
+```
+
+
+## Integration validation result
+
+Validated locally on 11 October 2026 against current main 90edc7bff4fe9ecfd8a958417b5270a38ec2153a: all 23 tooling fixture checks passed using PowerShell 7.6.5 and Windows PowerShell 5.1.26100.9444 child processes. Locked restore, Release build (zero warnings/errors), and all 930 .NET tests passed. The real accepted Unity 6000.6.5f1 EditMode target passed 61/61 tests, including the displayed-window R&D case, without any target or runner changes. JSON and Markdown evidence were produced, including post-import hygiene findings. Unity-generated settings state and .vsconfig were preserved as ignored evidence and restored/relocated only in this task-owned fresh worktree; none is part of the candidate. IL2CPP/player visuals were not rerun for this integration.
+
+The helper also safely refused the actual occupied R&D and LCARS branches and explained their existing worktree locations. Recommended E: sibling layouts remain valid after the relevant owners release their branches. No runner behavior adjustment was required by Science & Engineering; documentation updates record the new base, current test count, graphics-enabled EditMode behavior, occupied worktrees and E: validation location.
