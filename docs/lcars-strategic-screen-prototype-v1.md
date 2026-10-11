@@ -68,3 +68,20 @@ Review both captures for header spacing, rail readability, map dominance, inspec
 ## Reconciliation and next steps
 
 Review this strategic prototype and its two real Mars screenshots before extending to any other screen. Reconcile with Science & Engineering by keeping its research methods/contracts and porting only the compact header/shell presentation. Most new inspector logic is isolated in `StrategicPrototypePanels.cs`; the unavoidable shared integration points are `ClientEntry` and a small strategic-selection/fleet portion of `StrategicPanels`. No research method was edited. Do not merge or broaden scope until the Unity acceptance/screenshot gate is complete.
+
+## Local continuation — 11 October 2026
+
+Continued from candidate `5dae7f7b2cccb226628e1ace9d59e7a2a02d9b77` in an isolated managed worktree. The Science & Engineering checkout and main were preserved.
+
+Unity 6000.6.5f1 imported and compiled the client. All **55 EditMode tests passed**, including both StrategicPrototypeTests. The portable suite passed again: **839 tests**. Updated the older production overview assertion to expect `CommandFeedback.Explain` rather than the raw diagnostic enum.
+
+Real Unity rendering exposed a clipped Queue ship action at both review sizes. Compacted the selected-world system summary by retaining system/navigation in one row and the world selector while eliminating repeated system title/ownership. Colony ownership remains visible. The corrected captures pass the map-width and enqueue-button containment checks at both sizes.
+
+Captured and visually reviewed:
+
+- `artifacts/unity/lcars-strategic-prototype/mars-selected-1920x1080.png`
+- `artifacts/unity/lcars-strategic-prototype/mars-selected-3440x1440.png`
+
+**Capture provenance:** a Unity 6000.6.5f1 Mono development player rendered the live UIDocument into exact-size Unity RenderTextures. These are actual Unity UI renders, not Game view screenshots. Hidden Editor rendering stalled, and Windows fullscreen rendering retained the desktop resolution. The temporary harness and its build source are retained under ignored `artifacts/unity/capture-harness`; neither is shipped in Assets. Logs are `editmode.log`, `review-build.log`, and `player-capture.log` under `artifacts/unity`.
+
+The Mars inspector, disabled enqueue explanation, resource strip, navigation, activity strip, and map dominance were visually inspected at both sizes. Longer map marker names use ellipsis. Native mouse interaction, route preview/cancel/confirm, world switching, and real queue/cancel remain pending interactive acceptance. Do not treat render-target evidence as completion of the original Game view/pointer gate. No gameplay contracts, research logic, versions, or other screens were changed. No merge to main.

@@ -82,10 +82,11 @@ namespace HobbyDS9.UnityClient
             }
             if (!selection.Node.HasValue) { Text("Select a system or fleet on the map.", true); return; }
             var node = GalaxyProjection.Nodes(snapshot).Single(n => n.NodeId == selection.Node.Value);
-            Text(node.Label + " / SYSTEM", true);
+            var hasWorld = node.SystemId.HasValue && snapshot.Campaign.Colonies.Any(c => c.SystemId == node.SystemId.Value);
+            if (!hasWorld) Text(node.Label + " / SYSTEM", true);
             var region=snapshot.Navigation.Nodes.Single(n=>n.NodeId==node.NodeId);
             var knowledge=snapshot.NavigationKnowledge?.Nodes.FirstOrDefault(n=>n.Id==node.NodeId.Value);
-            if(knowledge!=null) details.Add(new LcarsDataRow("Navigation", knowledge.Level.ToString()));
+            if(knowledge!=null) details.Add(new LcarsDataRow(hasWorld ? node.Label + " / navigation" : "Navigation", knowledge.Level.ToString()));
             foreach(var id in region.PhenomenonDefinitionIds)
             {
                 var phenomenon=snapshot.Navigation.Phenomena.Single(p=>p.DefinitionId==id);
@@ -94,13 +95,13 @@ namespace HobbyDS9.UnityClient
             if (node.SystemId.HasValue)
             {
                 var system = snapshot.Campaign.StarSystems.Single(s => s.SystemId == node.SystemId.Value);
-                Text(system.OwnerCivilizationId.HasValue ? "Owner: " + OwnerName(snapshot, system.OwnerCivilizationId.Value) : "Unowned");
+                if (!hasWorld) Text(system.OwnerCivilizationId.HasValue ? "Owner: " + OwnerName(snapshot, system.OwnerCivilizationId.Value) : "Unowned");
                 var worlds = snapshot.Campaign.Colonies.Where(c => c.SystemId == system.SystemId).ToList();
                 if (worlds.Count > 0)
                 {
                     var index = Math.Max(0, worlds.FindIndex(c => c.PlanetId == selectedPlanet));
                     selectedPlanet = worlds[index].PlanetId;
-                    var field = new DropdownField("World", worlds.Select(c => c.Environment.DisplayName).ToList(), index);
+                    var field = new DropdownField(worlds.Select(c => c.Environment.DisplayName).ToList(), index) { name = "strategic-world-selector", tooltip = "Select a world in " + node.Label };
                     field.AddToClassList("combat-plan-field");
                     field.RegisterValueChangedCallback(_ => { selectedPlanet = worlds[field.index].PlanetId; Refresh(); }); details.Add(field);
                     ShowColony(snapshot, worlds[index]);
