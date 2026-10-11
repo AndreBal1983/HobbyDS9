@@ -9,6 +9,7 @@ using HobbyDS9.Application;
 var path = Path.Combine(AppContext.BaseDirectory, "scenarios", "ds9-slice", "scenario.json");
 var turns = 0;
 var combatOrder = "canonical";
+var resistanceTurns = Enum.GetValues<ResistanceState>().ToDictionary(r=>r,r=>0L);
 for (var i = 0; i < args.Length; i++)
 {
     if (args[i] == "--turns")
@@ -69,6 +70,8 @@ for (var i = 0; i < turns; i++)
         var finalStamp = session.CaptureSnapshot().Campaign; result = session.FinalizeCombat(finalStamp.TurnNumber, finalStamp.StateRevision);
     }
     if (result.Status != TurnStatus.Completed) throw new InvalidOperationException("Autonomous turn failed.");
+    foreach(var world in session.CaptureSnapshot().Campaign.Colonies) resistanceTurns[world.State.Politics.Resistance]++;
+
 
 }
 var snapshot = session.CaptureSnapshot().Campaign;
@@ -89,3 +92,8 @@ foreach (var civilization in snapshot.Civilizations)
         Console.WriteLine($"  {species.Key}: {species.Sum(c => c.Population)}");
 }
 foreach (var world in snapshot.Colonies) Console.WriteLine($"{world.Environment.DisplayName}: population={world.Population}, stability={world.State.Stability}, target={world.Economy.TargetStability}, food={world.Food}");
+
+var nav = snapshot.NavigationStatistics;
+Console.WriteLine($"movement-cost-paid={nav.TraversalCostPaid}, edges-completed={nav.EdgesCompleted}, partial-traversal-turns={nav.PartialTraversalTurns}");
+foreach(var resistance in Enum.GetValues<ResistanceState>()) Console.WriteLine($"resistance {resistance}: worlds={snapshot.Colonies.Count(c=>c.State.Politics.Resistance==resistance)}, world-turns={resistanceTurns[resistance]}");
+Console.WriteLine($"political-disruptions={snapshot.Colonies.Sum(c=>c.State.Politics.Disruptions)}");

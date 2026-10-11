@@ -174,7 +174,7 @@ public sealed class AiPlanningTests
         // Isolate stationary production from the new reachable-target route search.
         foreach(var edge in scenario.InitialState.NavigationKnowledge!.Single(k=>k.CivilizationId=="civ.cardassian").Connections!) edge.Level=NavigationKnowledgeLevel.Unknown;
         scenario.InitialState.Colonies!.Reverse(); var s = Session(scenario); var result = Advance(s);
-        Assert.Equal(2, result.CommandResults.Count); Assert.Contains(".k1.n00000000", result.CommandResults[1].CommandId);
+        Assert.Equal(3, result.CommandResults.Count); Assert.Contains(".k1.n00000000", result.CommandResults[2].CommandId);
         Assert.Single(s.ExportSave().GameState.Colonies!.Single(c => c.ColonyId == "colony.bajor").ProductionQueue!);
         Assert.Empty(s.ExportSave().GameState.Colonies!.Single(c => c.ColonyId == "colony.cardassia").ProductionQueue!);
         Assert.Equal(12, s.CaptureSnapshot().Civilizations.Single(c => c.CivilizationId.Value == "civ.cardassian").Credits);

@@ -120,10 +120,10 @@ namespace HobbyDS9.UnityClient
                 })) { text = "Finalize combat and complete turn" });
                 return;
             }
-            var request = requests[0]; Text(SystemName(snapshot, request.LocationNodeId), true);
+            var request = requests[0]; Text(NodeName(snapshot,new NavigationNodeId(request.LocationNodeId)), true);
             if (!combatPlans.TryGetValue(request.EncounterId, out var plans))
             { plans = new List<FleetCombatPlanDto>(); combatPlans[request.EncounterId] = plans; }
-            var destinations = snapshot.Campaign.StarSystems.OrderBy(s => s.SystemId.Value, StringComparer.Ordinal).ToList();
+            var destinations = snapshot.Navigation.Nodes.OrderBy(s => s.NodeId.Value, StringComparer.Ordinal).ToList();
             foreach (var participant in request.Participants)
             {
                 Text(OwnerName(snapshot, new EntityId(participant.CivilizationId)), true); Text(participant.FleetId);
@@ -143,7 +143,7 @@ namespace HobbyDS9.UnityClient
                 priority.AddToClassList("combat-plan-field");
                 priority.RegisterValueChangedCallback(_ => plan.TargetPriority = priorities[priority.index]); details.Add(priority);
                 var retreat = new IntegerField("Retreat hull % (0 disables)") { value = plan.RetreatHullPercent };
-                var destination = new DropdownField("Retreat system", destinations.Select(s => SystemName(snapshot, s.SystemId)).ToList(), Math.Max(0, destinations.FindIndex(s => s.SystemId.Value == plan.RetreatNodeId)));
+                var destination = new DropdownField("Retreat region", destinations.Select(s => NodeName(snapshot,s.NodeId)).ToList(), Math.Max(0, destinations.FindIndex(s => s.NodeId.Value == plan.RetreatNodeId)));
                 destination.AddToClassList("combat-plan-field");
                 retreat.AddToClassList("combat-plan-field");
                 destination.SetEnabled(plan.RetreatHullPercent > 0);
@@ -151,7 +151,7 @@ namespace HobbyDS9.UnityClient
                 {
                     plan.RetreatHullPercent = Mathf.Clamp(retreat.value, 0, 100); retreat.SetValueWithoutNotify(plan.RetreatHullPercent);
                     destination.SetEnabled(plan.RetreatHullPercent > 0);
-                    plan.RetreatNodeId = plan.RetreatHullPercent == 0 ? null : destinations[destination.index].SystemId.Value;
+                    plan.RetreatNodeId = plan.RetreatHullPercent == 0 ? null : destinations[destination.index].NodeId.Value;
                 }
                 retreat.RegisterValueChangedCallback(_ => UpdateRetreat()); destination.RegisterValueChangedCallback(_ => UpdateRetreat());
                 details.Add(retreat); details.Add(destination);

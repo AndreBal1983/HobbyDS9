@@ -24,7 +24,7 @@ namespace HobbyDS9.UnityClient
         private static CivilizationSnapshot? Human(CampaignSnapshot snapshot) => snapshot.Campaign.Civilizations
             .Where(c => c.ControllerKind == ControllerKind.Human).OrderBy(c => c.CivilizationId.Value, StringComparer.Ordinal).FirstOrDefault();
         private static string ResearchName(CampaignSnapshot snapshot, DefinitionId id) => snapshot.Content.Research.Single(r => r.DefinitionId == id).DisplayName;
-        private static string NodeName(CampaignSnapshot snapshot, NavigationNodeId id) => GalaxyProjection.Nodes(snapshot).Single(n => n.NodeId == id).Label;
+        private static string NodeName(CampaignSnapshot snapshot, NavigationNodeId id) => GalaxyProjection.Nodes(snapshot).FirstOrDefault(n => n.NodeId == id)?.Label ?? "Unknown region";
         private void AddStrategicTabs(VisualElement root)
         {
             var bar = new VisualElement(); bar.AddToClassList("strategic-tabs");
@@ -78,7 +78,7 @@ namespace HobbyDS9.UnityClient
             }
             Text("Fleets", true);
             foreach (var fleet in snapshot.Campaign.Fleets.Where(f => f.OwnerCivilizationId == actor.CivilizationId))
-                ActionButton(fleet.FleetId.Value + " • " + SystemName(snapshot, fleet.LocationNodeId), () =>
+                ActionButton(fleet.FleetId.Value + " • " + NodeName(snapshot, new NavigationNodeId(fleet.LocationNodeId.Value)), () =>
                 { ClearRoute(); selection.SelectFleet(fleet.FleetId); activeTab = "Selection"; Refresh(); });
         }
         private void ShowResearch(CampaignSnapshot snapshot)
@@ -106,6 +106,14 @@ namespace HobbyDS9.UnityClient
             if (!selection.Node.HasValue) { Text("Select a system or fleet on the map.", true); return; }
             var node = GalaxyProjection.Nodes(snapshot).Single(n => n.NodeId == selection.Node.Value);
             Text(node.Label, true); Text("Navigation: " + node.NodeId.Value);
+            var region=snapshot.Navigation.Nodes.Single(n=>n.NodeId==node.NodeId);
+            var knowledge=snapshot.NavigationKnowledge?.Nodes.FirstOrDefault(n=>n.Id==node.NodeId.Value);
+            if(knowledge!=null) Text("Navigation knowledge: "+knowledge.Level);
+            foreach(var id in region.PhenomenonDefinitionIds)
+            {
+                var phenomenon=snapshot.Navigation.Phenomena.Single(p=>p.DefinitionId==id);
+                Text(phenomenon.DisplayName+": "+phenomenon.Description);
+            }
             if (node.SystemId.HasValue)
             {
                 var system = snapshot.Campaign.StarSystems.Single(s => s.SystemId == node.SystemId.Value);
@@ -161,13 +169,18 @@ namespace HobbyDS9.UnityClient
         private void ShowFleet(CampaignSnapshot snapshot, FleetSnapshot fleet)
         {
             Text("Fleet", true); Text(fleet.FleetId.Value); Text("Owner: " + OwnerName(snapshot, fleet.OwnerCivilizationId));
-            var node = snapshot.Navigation.Nodes.FirstOrDefault(n => n.AssociatedSystemId == fleet.LocationNodeId);
-            Text("Location: " + SystemName(snapshot, fleet.LocationNodeId) + (node == null ? "" : "\nNavigation: " + node.NodeId.Value));
-            Text("Queued route: " + (fleet.RouteNodeIds.Count == 0 ? "None" : string.Join(" → ", fleet.RouteNodeIds.Select(id => SystemName(snapshot, id)))));
+            var node = snapshot.Navigation.Nodes.FirstOrDefault(n => n.NodeId.Value == fleet.LocationNodeId.Value);
+            Text("Location: " + NodeName(snapshot, new NavigationNodeId(fleet.LocationNodeId.Value)) + (node == null ? "" : "\nNavigation: " + node.NodeId.Value));
+            Text("Queued route: " + (fleet.RouteNodeIds.Count == 0 ? "None" : string.Join(" → ", fleet.RouteNodeIds.Select(id => NodeName(snapshot, new NavigationNodeId(id.Value))))));
+            var travel=snapshot.FleetTravel.Single(f=>f.FleetId==fleet.FleetId.Value);
+            Text($"Movement budget {travel.MovementBudget} • Remaining cost {travel.RemainingCost} • ETA {travel.EstimatedTurns} turns");
+            Text("Limiting ship: " + travel.LimitingShipId);
+            if(travel.TransitTotalCost>0) Text($"In transit: {travel.TransitProgress}/{travel.TransitTotalCost} cost paid toward {NodeName(snapshot,new NavigationNodeId(fleet.RouteNodeIds[0].Value))}");
+            Text("ETA assumes no combat delay or subsequent orders/ship changes.");
             var actor = Human(snapshot);
             var controlled = actor != null && actor.CivilizationId == fleet.OwnerCivilizationId && StrategicOptions.PlanningAccess(snapshot, actor.CivilizationId) == CommandErrorCode.None;
             ActionButton(routeFleet.HasValue ? "Choose another destination on the map" : "Set / replace route", () =>
-            { routeFleet = fleet.FleetId; routePreview = null; Refresh(); }, controlled && node != null);
+            { routeFleet = fleet.FleetId; routePreview = null; Refresh(); }, controlled && node != null && fleet.TransitTotalCost==0);
             if (routeFleet == fleet.FleetId)
             {
                 Text("Choose a destination node on the map. Previewing does not issue an order.");
@@ -178,7 +191,9 @@ namespace HobbyDS9.UnityClient
                     if (!preview.Route.Success) Text("Route unavailable: " + preview.Route.ErrorCode);
                     else
                     {
-                        Text("Traversal cost: " + preview.Route.TraversalCost + " (not a turn estimate)");
+                        Text("Traversal cost: " + preview.Route.TraversalCost);
+                        if(preview.Travel!=null) Text($"Movement budget {preview.Travel.MovementBudget} • ETA {preview.Travel.EstimatedTurns} turns");
+                        foreach(var edge in preview.Route.Costs) Text($"Base {edge.BaseCost} + phenomena {edge.PhenomenonCost} + artificial {edge.ArtificialCost} = {edge.EffectiveCost} • {edge.Kind}");
                         Text("Start: " + NodeName(snapshot, preview.Origin));
                         for (var i = 0; i < preview.Route.Steps.Count; i++) Text((i + 1) + ". " + NodeName(snapshot, preview.Route.Steps[i]));
                         if (preview.Route.Steps.Count == 0) Text("This clears the queued route; the fleet is already here.");
@@ -186,7 +201,7 @@ namespace HobbyDS9.UnityClient
                     ActionButton("Confirm route", () => Run(() =>
                     {
                         var result = host.Client.SubmitRoute(preview); ClearRoute(); return CommandFeedback.Describe(result);
-                    }), controlled && preview.Route.Success);
+                    }), controlled && preview.Route.Success && preview.Travel!=null);
                 }
                 ActionButton("Cancel route preview", () => { ClearRoute(); Refresh(); });
             }
@@ -199,19 +214,56 @@ namespace HobbyDS9.UnityClient
         }
         private static string Resources(CampaignSnapshot snapshot, IReadOnlyList<ResourceAmountSnapshot> values) => values.Count == 0 ? "No strategic resources"
             : string.Join(", ", values.Select(r => r.Amount + " " + snapshot.Content.Resources.Single(d => d.DefinitionId == r.ResourceDefinitionId).DisplayName));
+        private void ShowPolitics(CampaignSnapshot snapshot, ColonySnapshot world)
+        {
+            var politics=world.State.Politics;var effects=world.Economy.Politics;
+            var policy=snapshot.Content.GovernancePolicies.Single(p=>p.DefinitionId==politics.GovernancePolicyDefinitionId);
+            Text("Politics",true);
+            Text($"{policy.DisplayName} • {politics.Resistance}\nPressure {politics.Pressure/100.0:0.#}% (previous {politics.PreviousPressure/100.0:0.#}%)\nEscalation streak {politics.EscalationTurns}/3 • Recovery streak {politics.RecoveryTurns}/5\nDisruption duration {politics.DisruptionRemainingTurns} • Disruptions recorded {politics.Disruptions}");
+            Text($"Effective factors: credits {effects.CreditsFactor/100.0:0.#}% • industry/extraction {effects.IndustryFactor/100.0:0.#}% • R&D {effects.ResearchFactor/100.0:0.#}% • logistics {effects.LogisticsFactor/100.0:0.#}%\nRefugees accepted: {effects.AcceptsRefugees}");
+            var actor=Human(snapshot);
+            if(actor!=null && world.OwnerCivilizationId==actor.CivilizationId)
+            {
+                var choices=StrategicOptions.Governance(snapshot,actor.CivilizationId,world.ColonyId);
+                var dropdown=new DropdownField("Governance policy",choices.Select(c=>c.Policy.DisplayName).ToList(),choices.ToList().FindIndex(c=>c.Policy.DefinitionId==policy.DefinitionId));
+                dropdown.AddToClassList("combat-plan-field");details.Add(dropdown);
+                var explanation=new Label();explanation.style.whiteSpace=WhiteSpace.Normal;details.Add(explanation);
+                var apply=ActionButton("Apply policy",()=>Run(()=>CommandFeedback.Describe(host.Client.Governance(snapshot,actor.CivilizationId,world.ColonyId,new DefinitionId(choices[dropdown.index].Policy.DefinitionId)))));
+                void UpdatePolicy()
+                {
+                    var option=choices[dropdown.index];var p=option.Policy;
+                    explanation.text=$"{p.Description}\nPer turn: satisfaction {p.SatisfactionChange:+0;-0;0}, integration {p.IntegrationChange:+0;-0;0}, alignment {p.AlignmentChange:+0;-0;0}, radicalisation {p.RadicalisationChange:+0;-0;0}\nCredits {p.CreditsFactor/100.0:0.#}% • industry {p.IndustryFactor/100.0:0.#}% • R&D {p.ResearchFactor/100.0:0.#}% • logistics {p.LogisticsFactor/100.0:0.#}% • suppression {p.Suppression/100.0:0.#}%\nRefugees: {p.AcceptsRefugees} • {CommandFeedback.Explain(option.UnavailableReason)}";
+                    apply.SetEnabled(option.CanSelect);
+                }
+                dropdown.RegisterValueChangedCallback(_=>UpdatePolicy());UpdatePolicy();
+            }
+            foreach(var c in world.State.Cohorts)
+            {
+                var species=snapshot.Content.Species.Single(d=>d.DefinitionId==c.SpeciesDefinitionId);
+                var row=new Foldout { text=species.DisplayName+": "+c.Population+" • "+c.LegalStatus, value=false };
+                void Line(string value){var label=new Label(value);label.style.whiteSpace=WhiteSpace.Normal;row.Add(label);}
+                Line($"Satisfaction {c.Satisfaction/100.0:0.#}% • Integration {c.Integration/100.0:0.#}%\nAlignment {c.CivicAlignment/100.0:0.#}% • Radicalisation {c.Radicalisation/100.0:0.#}%");
+                foreach(var affinity in c.ExternalAffinities) Line("External affinity: "+OwnerName(snapshot,new EntityId(affinity.CivilizationId))+" "+affinity.Rating/100.0+"% (does not imply disloyalty)");
+                var report=politics.CohortReports.FirstOrDefault(r=>r.CohortId==c.CohortId);
+                if(report!=null)
+                {
+                    Line($"Last applied deltas: satisfaction {report.SatisfactionChange}, integration {report.IntegrationChange}, alignment {report.AlignmentChange}, radicalisation {report.RadicalisationChange}");
+                    foreach(var reason in report.Reasons) Line($"{reason.Code}: S {reason.SatisfactionChange}, I {reason.IntegrationChange}, A {reason.AlignmentChange}, R {reason.RadicalisationChange}");
+                }
+                var transition=policy.LegalTransitions.FirstOrDefault(r=>r.From==c.LegalStatus);
+                if(transition!=null) Line($"Eligible streak {c.LegalStatusEligibleTurns}/{transition.RequiredTurns} → {transition.To}; needs integration {transition.RequiredIntegration/100.0}%, satisfaction {transition.RequiredSatisfaction/100.0}%, alignment {transition.RequiredAlignment/100.0}%, stability {transition.RequiredStability/100.0}%");
+                foreach(var memory in c.Memories) Line("Memory: "+memory.Kind+" • "+memory.Magnitude+" • expires turn "+memory.ExpiryTurn);
+                details.Add(row);
+            }
+            foreach(var politicalEvent in politics.Events) Text("Last turn: "+politicalEvent);
+        }
         private void ShowWorld(CampaignSnapshot snapshot, ColonySnapshot world)
         {
             var e = world.Economy; var p = world.Environment;
             Text(p.DisplayName + " • Class " + p.PlanetClass, true);
             Text($"Stability {world.State.Stability / 100.0:0.#}% → target {e.TargetStability / 100.0:0.#}%\nNatural capacity {e.NaturalCapacity} • Effective {e.EffectiveCapacity}\nUnhoused/over-capacity {e.Crowding} • Experienced habitability {e.AverageHabitability / 100.0:0.#}%");
             Text($"Current output estimates: Credits {e.CreditOutput} • Local industry {e.Industry} • R&D {e.ResearchOutput}\nFood output {e.FoodOutput} • Demand {e.FoodDemand} • Reserve {world.Food}\nShortage turns {world.State.FoodShortageTurns} • Logistics capacity {e.LogisticsCapacity}");
-            Text("Population", true);
-            foreach (var c in world.State.Cohorts)
-            {
-                var species = snapshot.Content.Species.Single(d => d.DefinitionId == c.SpeciesDefinitionId);
-                Text($"{species.DisplayName}: {c.Population} • {c.LegalStatus}\nSatisfaction {c.Satisfaction / 100.0:0.#}% • Integration {c.Integration / 100.0:0.#}%\nCivic alignment {c.CivicAlignment / 100.0:0.#}% • Radicalisation {c.Radicalisation / 100.0:0.#}%");
-                foreach (var memory in c.Memories) Text("Memory: " + memory.Kind + " • " + memory.Magnitude + " • expires turn " + memory.ExpiryTurn);
-            }
+            ShowPolitics(snapshot,world);
             Text("Environment", true);
             Text($"Gravity {p.Gravity / 10000.0:0.##}g • Pressure {p.Pressure / 10000.0:0.##} • Radiation {p.Radiation}\nAtmosphere: {p.Atmosphere}");
             foreach (var h in p.Habitats) Text($"{h.Kind}: {h.ShareBps / 100.0:0.#}% surface • natural capacity {h.NaturalCapacity}");

@@ -34,9 +34,10 @@ namespace HobbyDS9.UnityClient
         public NavigationNodeId Destination { get; }
         public NavigationRoute Route { get; }
         public CampaignSnapshot Observed { get; }
+        public FleetTravelSnapshot? Travel { get; }
         internal RoutePreview(EntityId fleet, EntityId actor, NavigationNodeId origin, NavigationNodeId destination,
-            NavigationRoute route, CampaignSnapshot observed)
-        { FleetId = fleet; ActorId = actor; Origin = origin; Destination = destination; Route = route; Observed = observed; }
+            NavigationRoute route, CampaignSnapshot observed, FleetTravelSnapshot? travel)
+        { FleetId = fleet; ActorId = actor; Origin = origin; Destination = destination; Route = route; Observed = observed; Travel = travel; }
     }
 
     // Pure presentation controller, shared by Unity and ordinary .NET tests.
@@ -76,6 +77,12 @@ namespace HobbyDS9.UnityClient
             command.CancelProduction = new CancelProductionPayload { ColonyId = colony.Value, QueueItemId = queueItem.Value };
             return Submit(command);
         }
+        public CommandResult Governance(CampaignSnapshot observed, EntityId actor, EntityId colony, DefinitionId policy)
+        {
+            var command = Envelope(observed, actor, CommandKind.SetWorldGovernancePolicy);
+            command.SetWorldGovernancePolicy = new SetWorldGovernancePolicyPayload { ColonyId=colony.Value, PolicyDefinitionId=policy.Value };
+            return Submit(command);
+        }
         private CommandEnvelope Envelope(CampaignSnapshot observed, EntityId actor, CommandKind kind) => new CommandEnvelope
         {
             CommandId = ids.Next(Snapshot).Value, ActorCivilizationId = actor.Value, Kind = kind,
@@ -87,7 +94,8 @@ namespace HobbyDS9.UnityClient
         {
             var fleet = observed.Campaign.Fleets.Single(f => f.FleetId == fleetId);
             var origin = new NavigationNodeId(fleet.LocationNodeId.Value);
-            return new RoutePreview(fleetId, fleet.OwnerCivilizationId, origin, destination, session.FindRoute(origin, destination), observed);
+            var route=session.FindRoute(origin,destination);
+            return new RoutePreview(fleetId, fleet.OwnerCivilizationId, origin, destination, route, observed, route.Success?session.PreviewFleetTravel(fleetId,route.Steps):null);
         }
         public CommandResult SubmitRoute(RoutePreview preview)
         {
@@ -129,6 +137,9 @@ namespace HobbyDS9.UnityClient
                 case CommandErrorCode.ColonyNotOwned: return "This colony is not controlled by the selected civilization.";
                 case CommandErrorCode.FleetNotOwned: return "This fleet is not controlled by the selected civilization.";
                 case CommandErrorCode.ActorNotControlled: return "Only human-controlled civilizations can receive player orders.";
+                case CommandErrorCode.FleetInTransit: return "This fleet is already traversing an edge; change its route after arrival.";
+                case CommandErrorCode.GovernancePolicyUnchanged: return "This governance policy is already active.";
+                case CommandErrorCode.UnknownGovernancePolicy: return "This governance policy is unavailable.";
                 case CommandErrorCode.InvalidRoute: return "This route cannot be used by the fleet.";
                 case CommandErrorCode.UnknownQueueItem: return "This queue item no longer exists.";
                 case CommandErrorCode.DuplicateCommand: return "This order ID was already accepted; no order was repeated.";

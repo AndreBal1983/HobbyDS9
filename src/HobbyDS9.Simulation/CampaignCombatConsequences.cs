@@ -17,7 +17,8 @@ namespace HobbyDS9.Simulation
                 var participant = request.Participants.Single(p => p.FleetId == change.FleetId);
                 if (change.Disposition != FleetCombatDisposition.Destroyed && participant.Ships.All(s => hulls[s.ShipId] == 0)) return CombatSubmissionError.MalformedResult;
                 if (change.Disposition != FleetCombatDisposition.Retreated) continue;
-                if (!graph.Neighbors(request.LocationNodeId).Contains(change.RetreatNodeId!)) return CombatSubmissionError.InvalidRetreat;
+                if (!graph.Neighbors(request.LocationNodeId).Contains(change.RetreatNodeId!) || !graph.KnownNode(state,participant.CivilizationId,change.RetreatNodeId!)
+                    || !graph.KnownEdge(state,participant.CivilizationId,graph.Edge(request.LocationNodeId,change.RetreatNodeId!)!.ConnectionId)) return CombatSubmissionError.InvalidRetreat;
                 if (state.Fleets!.Any(f => f.TransitTotalCost==0 && f.LocationNodeId == change.RetreatNodeId && f.OwnerCivilizationId != participant.CivilizationId)) return CombatSubmissionError.InvalidRetreat;
                 if (result.FleetChanges.Any(other => other.FleetId != change.FleetId && other.Disposition == FleetCombatDisposition.Retreated && other.RetreatNodeId == change.RetreatNodeId
                     && request.Participants.Single(p => p.FleetId == other.FleetId).CivilizationId != participant.CivilizationId)) return CombatSubmissionError.InvalidRetreat;

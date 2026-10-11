@@ -268,7 +268,7 @@ public sealed class ApplicationBoundaryTests
     [InlineData(true)]
     public void TwentyFiveTurnsMatchDirectSimulationIncludingEveryCombatReload(bool reverse)
     {
-        var scenario = V.Scenario(false); var direct = V.Session(scenario); var app = CampaignApplication.StartScenario(Clone(scenario));
+        var scenario = V.Scenario(false, weighted:true); var direct = V.Session(scenario); var app = CampaignApplication.StartScenario(Clone(scenario));
         var resolver = new DeterministicPhasedCombatResolver(); var encounters = 0; var destroyed = 0;
         for (var i = 0; i < 25; i++)
         {
@@ -291,7 +291,7 @@ public sealed class ApplicationBoundaryTests
             }
             Assert.Equal(V.Json(direct), Save(app)); app = Reload(app, scenario);
         }
-        Assert.Equal(15, encounters); Assert.Equal(12, destroyed); Assert.Equal(26, State(app).TurnNumber);
-        Assert.Equal(7, State(app).Ships.Count); Assert.Equal(173, State(app).StateRevision);
+        Assert.Equal(17, encounters); Assert.Equal(10, destroyed); Assert.Equal(26, State(app).TurnNumber);
+        Assert.Equal(9, State(app).Ships.Count); Assert.Equal(187, State(app).StateRevision);
     }
 }

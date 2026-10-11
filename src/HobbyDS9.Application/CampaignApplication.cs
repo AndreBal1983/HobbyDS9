@@ -51,13 +51,14 @@ namespace HobbyDS9.Application
             ?? session.CaptureSnapshot().Actors.First().CivilizationId.Value;
         public CampaignSnapshot CaptureSnapshot()
         {
-            var view = session.CaptureNavigation(Viewer);
+            var projection = session.CaptureClientProjection();
+            var view = projection.Navigation;
             var navigation = new NavigationMapSnapshot(view.Nodes.Select(n => new NavigationNodeSnapshot(new NavigationNodeId(n.NodeId),
                 n.AssociatedSystemId == null ? (EntityId?)null : new EntityId(n.AssociatedSystemId), n.DisplayName, n.PhenomenonDefinitionIds)),
                 view.Connections.Select(e => new NavigationLinkSnapshot(new NavigationNodeId(e.FromNodeId), new NavigationNodeId(e.ToNodeId), e.Kind, e.EffectiveCost,
-                    e.BaseCost, e.PhenomenonCost, e.ArtificialCost)));
-            var campaign = session.CaptureSnapshot();
-            return new CampaignSnapshot(campaign, content, navigation, campaign.Fleets.Select(f => session.CaptureFleetTravel(f.FleetId.Value)));
+                    e.BaseCost, e.PhenomenonCost, e.ArtificialCost)), view.Phenomena);
+            var campaign = projection.Campaign;
+            return new CampaignSnapshot(campaign, content, navigation, projection.FleetTravel, projection.Knowledge);
         }
         public FleetTravelSnapshot GetFleetTravel(EntityId fleetId) => session.CaptureFleetTravel(fleetId.Value);
         public FleetTravelSnapshot? PreviewFleetTravel(EntityId fleetId, IReadOnlyList<NavigationNodeId> steps)

@@ -75,4 +75,27 @@ public sealed class WeightedGeographyTests
     [Fact] public void MovementFailureRollsBackCostProgressRngAndLedger()
     { var content=Scenario();var s=VerticalSliceFixture.Session(content,(phase,_)=>phase!=StrategicTurnPhase.Movement);Assert.True(Route(s,"nav.empty","system.bajor").Accepted);var before=VerticalSliceFixture.Json(s);var p=s.CaptureSnapshot();
       Assert.Equal(TurnStatus.Rejected,s.AdvanceTurn(p.TurnNumber,p.StateRevision).Status);Assert.Equal(before,VerticalSliceFixture.Json(s)); }
+    [Fact] public void LockedEdgeCostSurvivesScheduledScattererExpiryAndReload()
+    {var content=Scenario(3);content.InitialState.TraversalEffects!.Add(new(){EffectId="effect.short",ConnectionId="edge.direct",TraversalCostIncrease=3,StartTurn=1,EndTurn=1});var s=Session(content);
+     Assert.True(Route(s,"system.bajor").Accepted);Assert.Equal(5,s.CaptureFleetTravel("fleet.federation-scout").EstimatedTurns);VerticalSliceFixture.Advance(s);
+     Assert.Equal(15,Fleet(s).TransitTotalCost);Assert.Equal(3,Fleet(s).TransitProgress);Assert.Equal(4,s.CaptureFleetTravel("fleet.federation-scout").EstimatedTurns);
+     s=new SimulationSession(s.ExportSave(),content.Definitions,VerticalSliceFixture.Compatibility(content));
+     for(var i=0;i<4;i++)VerticalSliceFixture.Advance(s);Assert.Equal("system.bajor",Fleet(s).LocationNodeId.Value);}
+    [Fact] public void EtaProjectsScheduledInhibitorExpiryUsingSameBudgetsAsMovement()
+    {var content=Scenario(4);content.InitialState.TraversalEffects!.Add(new(){EffectId="effect.short",NodeId="system.sol",MovementBudgetPenalty=3,StartTurn=1,EndTurn=2});var s=Session(content);
+     Assert.True(Route(s,"system.bajor").Accepted);Assert.Equal(5,s.CaptureFleetTravel("fleet.federation-scout").EstimatedTurns);
+     for(var i=0;i<4;i++){VerticalSliceFixture.Advance(s);Assert.NotEqual("system.bajor",Fleet(s).LocationNodeId.Value);}VerticalSliceFixture.Advance(s);Assert.Equal("system.bajor",Fleet(s).LocationNodeId.Value);}
+    [Fact] public void LongRouteOverflowIsStableAndRejectedWithoutMutation()
+    {var content=Scenario(1);content.Definitions.NavigationConnections!.Single(e=>e.ConnectionId=="edge.first").BaseTraversalCost=long.MaxValue;
+     content.Definitions.NavigationConnections!.Single(e=>e.ConnectionId=="edge.direct").BaseTraversalCost=long.MaxValue;
+     var s=Session(content);Assert.Equal(RouteErrorCode.CostOverflow,s.FindNavigationRoute("civ.federation","system.sol","system.gamma-exit").ErrorCode);
+     var before=VerticalSliceFixture.Json(s);Assert.Equal(CommandErrorCode.InvalidRoute,Route(s,"nav.empty","system.bajor").ErrorCode);Assert.Equal(before,VerticalSliceFixture.Json(s));}
+    [Fact] public void FullTurnBudgetCanTraverseThreeCheapEdgesWhenUncontested()
+    {var content=Scenario(5);var s=Session(content);Assert.True(Route(s,"nav.empty","system.bajor","system.gamma-exit").Accepted);
+     VerticalSliceFixture.Advance(s);Assert.Equal("system.gamma-exit",Fleet(s).LocationNodeId.Value);Assert.Equal(3,s.CaptureSnapshot().NavigationStatistics.EdgesCompleted);Assert.Equal(5,s.CaptureSnapshot().NavigationStatistics.TraversalCostPaid);}
+    [Fact] public void SlowShipAddedToFleetSetsBudgetAndLimitingId()
+    {var content=Scenario(5);var design=content.Definitions.ShipDesigns!.Last();design.MovementBudget=2;var state=content.InitialState;var fleet=state.Fleets!.Single(f=>f.FleetId=="fleet.federation-scout");
+     fleet.ShipIds!.Add("ship.slow");state.Ships!.Add(new(){ShipId="ship.slow",ShipDesignDefinitionId=design.DefinitionId,FleetId=fleet.FleetId,OwnerCivilizationId=fleet.OwnerCivilizationId,CurrentHull=design.MaxHull});state.EntityIdentities.Add(new(){EntityId="ship.slow",DefinitionId=design.DefinitionId});
+     var travel=Session(content).CaptureFleetTravel(fleet.FleetId);Assert.Equal(2,travel.MovementBudget);Assert.Equal("ship.slow",travel.LimitingShipId);}
+
 }

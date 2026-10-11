@@ -102,3 +102,15 @@ namespace HobbyDS9.Contracts
         {Nodes=new List<NavigationRegionDefinitionSnapshot>(nodes).AsReadOnly();Connections=new List<NavigationCostSnapshot>(connections).AsReadOnly();Phenomena=new List<PhenomenonDefinitionSnapshot>(phenomena).AsReadOnly();}
     }
 }
+namespace HobbyDS9.Contracts
+{
+    public sealed class NavigationCampaignSnapshot
+    {
+        public SessionSnapshot Campaign { get; }
+        public NavigationViewSnapshot Navigation { get; }
+        public CivilizationNavigationKnowledgeSnapshot? Knowledge { get; }
+        public IReadOnlyList<FleetTravelSnapshot> FleetTravel { get; }
+        public NavigationCampaignSnapshot(SessionSnapshot campaign,NavigationViewSnapshot navigation,CivilizationNavigationKnowledgeSnapshot? knowledge,IEnumerable<FleetTravelSnapshot> travel)
+        {Campaign=campaign;Navigation=navigation;Knowledge=knowledge;FleetTravel=new List<FleetTravelSnapshot>(travel).AsReadOnly();}
+    }
+}

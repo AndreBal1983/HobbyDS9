@@ -13,6 +13,7 @@ namespace HobbyDS9.Contracts
     }
     public sealed class WorldEconomySnapshot
     {
+        public PoliticalEconomySnapshot Politics { get; }
         public long Population { get; }
         public long NaturalCapacity { get; }
         public long EffectiveCapacity { get; }
@@ -29,8 +30,9 @@ namespace HobbyDS9.Contracts
         public IReadOnlyList<HabitatAllocationSnapshot> Allocations { get; }
         public WorldEconomySnapshot(long population, long natural, long effective, long crowding, int habitability,
             int targetStability, long industry, long credits, long research, long food, long demand, long logistics, bool shipbuilding,
-            IEnumerable<HabitatAllocationSnapshot> allocations)
+            IEnumerable<HabitatAllocationSnapshot> allocations, PoliticalEconomySnapshot? politics = null)
         {
+            Politics = politics ?? new PoliticalEconomySnapshot(10000,10000,10000,10000,10000,true);
             Population = population; NaturalCapacity = natural; EffectiveCapacity = effective; Crowding = crowding;
             AverageHabitability = habitability; TargetStability = targetStability; Industry = industry; CreditOutput = credits;
             ResearchOutput = research; FoodOutput = food; FoodDemand = demand; LogisticsCapacity = logistics;

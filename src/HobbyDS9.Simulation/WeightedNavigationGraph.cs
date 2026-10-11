@@ -72,18 +72,24 @@ namespace HobbyDS9.Simulation
                 }
             }
         }
-        internal bool ValidateRoute(GameStateDto state,string actor,string origin,IEnumerable<string>? steps)
+        internal bool ValidateRoute(GameStateDto state,string actor,string origin,IEnumerable<string>? steps,long lockedRemainingCost=0)
         {
             if(steps==null||!nodes.ContainsKey(origin)||!KnownNode(state,actor,origin))return false;
-            foreach(var next in steps){var edge=Edge(origin,next);if(edge==null||!KnownNode(state,actor,next)||!KnownEdge(state,actor,edge.ConnectionId))return false;origin=next;}
+            BigInteger total=0;var first=true;
+            foreach(var next in steps)
+            {
+                var edge=Edge(origin,next);if(edge==null||!KnownNode(state,actor,next)||!KnownEdge(state,actor,edge.ConnectionId))return false;
+                total+=first&&lockedRemainingCost>0?lockedRemainingCost:Cost(state,origin,next).EffectiveCost;
+                if(total>long.MaxValue)return false;first=false;origin=next;
+            }
             return true;
         }
         internal FleetTravelSnapshot Travel(GameStateDto state,FleetStateDto fleet,DefinitionCatalogDto definitions,IReadOnlyList<string>? preview=null)
         {
             var route=preview??fleet.RouteNodeIds!;
-            var initialBudget=Budget(state,fleet,definitions,out var limiting);
+            long projectedTurn=(long)state.TurnNumber+(state.Phase==SessionPhase.AwaitingCombat?1:0);
+            var initialBudget=Budget(state,fleet,definitions,out var limiting,projectedTurn);
             // A private projection state advances only the known effect clock. No campaign mutation.
-            long projectedTurn=state.TurnNumber;
             var stationed=new FleetStateDto { FleetId=fleet.FleetId, LocationNodeId=fleet.LocationNodeId };
             long remainingTotal=0,turns=route.Count==0?0:1,left=initialBudget;
             for(var index=0;index<route.Count;index++)

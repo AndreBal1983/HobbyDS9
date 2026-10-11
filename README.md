@@ -1,5 +1,7 @@
 # HobbyDS9
 
+Current candidate: **Population Politics & Strategic Geography v1** on `codex/population-politics-strategic-geography-v1`, with save **12**, content **8**, rules **population-politics-geography-v1**, and unchanged phased combat resolver v1. Main remains the accepted economy milestone pending local Unity acceptance. See [rules, baseline and local acceptance](docs/population-politics-geography-v1.md).
+
 A portable C# strategy simulation for a future DS9/Dominion War-era BOTF spiritual successor. The strategic vertical slice now connects colony economy, research, ship production, fleets, graph movement and simple deterministic AI. It runs headlessly; the campaign encounter checkpoint is integrated; deterministic planned range-phase combat and generic campaign consequences are implemented; the Unity strategic client consumes the Application boundary; networking is deferred. No implementation code or assets have been copied from BotF2 or 3DBOTF2.
 
 Read [the architecture](docs/architecture.md) for contracts, deterministic rules, scenario definitions and acceptance gates.
@@ -32,7 +34,7 @@ A future client references `HobbyDS9.Application` and Contracts. `CampaignApplic
 
 Navigation has its own `NavigationNodeId`, optional system association, explicit link/route traversal cost, `FindRoute` and `SubmitFleetRoute`. The current adapter maps existing graph nodes one-to-one and preserves unit costs/BFS. Clients should use node associations rather than infer systems from node ID strings, and must not treat cost as a turn estimate. Voronoi geometry, independent navigation topology, weighted movement and budgets are deferred. No presentation state or new gameplay is added.
 
-The Application boundary preserves deterministic behavior. Current economy/save versions and baseline are below. Tests compare Application against direct Simulation through all 25 turns and pending/partial/fully buffered reloads in both result orders.
+The Application boundary preserves deterministic behavior. Candidate versions and baseline are in the milestone document; the accepted population/economy reference below is historical. Tests compare Application against direct Simulation through all 25 turns and pending/partial/fully buffered reloads in both result orders.
 
 ## Build and headless acceptance
 
@@ -69,7 +71,7 @@ Production reserves local named resources and credits when enqueued, uses post-E
 
 AI uses the same gameplay handlers through an internal trusted path. Public submissions remain Human-only. AI chooses legal research by cost/ID and affordable designs by industry cost/ID, then routes idle fleets toward adjacent foreign (score 2) or neutral (score 1) systems. Only an actual highest-score tie consumes campaign RNG. Deterministic command IDs use a reserved `ai-command.` prefix and never consume entity allocation.
 
-The scenario has Federation (Human), Cardassian Union and Dominion (AI), six map nodes, five inhabited planets/colonies (Earth and Mars share Sol), a data-defined wormhole, one starting scout/fleet per faction, two scout designs and one research node. Save format **10** and content format **6** deliberately reject older schemas without migration. Saves preserve queue progress, research, ships, fleet membership and routes and pending/resolved combat against the matching content/rules identity (population-economy-v1).
+The scenario has Federation (Human), Cardassian Union and Dominion (AI), six map nodes, five inhabited planets/colonies (Earth and Mars share Sol), a data-defined wormhole, one starting scout/fleet per faction, two scout designs and one research node. The earlier population/economy checkpoint used save format **10** and content format **6**, which deliberately reject older schemas without migration. Saves preserve queue progress, research, ships, fleet membership and routes and pending/resolved combat against the matching content/rules identity (population-economy-v1).
 
 Tests cover existing foundations, economy/research arithmetic, production/refunds, references and membership, route/movement rules, phase isolation, complete rollback, AI ordering/control/RNG, and 25-turn equality across repeated runs, reordered input and multiple save/reloads including pending, partially buffered and fully resolved combat checkpoints. All six three-battle submission permutations produce the same final save. The combat-boundary scaffold remains tested and supplies shared campaign validation/canonicalization. AwaitingCombat blocks strategic commands/advancement and supports persisted pending/resolved combat. Resolved results buffer without applying consequences. Explicit canonical finalization applies sparse damage/destruction/adjacent retreat, clears the batch/ledger and opens the next turn. Different civilizations sharing a system temporarily count as opposing; all fleets there participate in one frozen request. Each encounter consumes one global ID and campaign RNG draw; resolution/finalization consume neither. NoLossCombatResolver retains its own fixed identity and reference tests. The production resolver emits a detailed phase/attack/impact/destruction/retreat trace; presentation and richer tactical systems remain deferred.
 
@@ -83,7 +85,7 @@ Phases use simultaneous volleys: all living ships choose phase-start enemy targe
 
 Events identify phases, firing/target ships, hits/misses, actual shield/hull losses, destruction and retreat. They contain no coordinates or timing and never drive campaign consequences. No Unity, individual weapons, tactical movement, faction battle bonuses or persisted replay history is implemented.
 
-The population/economy v1 baseline reaches **15 checkpoints / 18 encounters**, **49 phases / 113 shots / 75 hits**, **128 shield / 133 hull damage**, and **13 destroyed ships/fleets**. It ends at turn **26**, revision **187**, with **129 AI commands**, **6 ships/fleets**, next sequence **80**, and RNG `850d3ff45bd6b85e`. Canonical/reverse final save SHA256:
+The historical accepted population/economy v1 baseline reaches **15 checkpoints / 18 encounters**, **49 phases / 113 shots / 75 hits**, **128 shield / 133 hull damage**, and **13 destroyed ships/fleets**. It ends at turn **26**, revision **187**, with **129 AI commands**, **6 ships/fleets**, next sequence **80**, and RNG `850d3ff45bd6b85e`. Canonical/reverse final save SHA256:
 
 ```text
 65a4f6b452fd8c6d8a80c775e6e74e944ac73f115bc3e7b9fb3e4e64da60f175

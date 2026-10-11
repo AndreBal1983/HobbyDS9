@@ -75,6 +75,10 @@ namespace HobbyDS9.Simulation
             var industry = PopulationRules.ScaleBy(PopulationRules.ScaleBy(Installed(colony, definitions, i => i.Industry), 10000L + colony.Automation), powerFactor);
             var credits = PopulationRules.ScaleBy(PopulationRules.ScaleBy(population / PopulationRules.PeoplePerCredit, colony.Prosperity), 5000 + colony.Stability / 2);
             var research = PopulationRules.ScaleBy(checked(Installed(colony, definitions, i => i.Research) + population / PopulationRules.PeoplePerResearch), 5000 + colony.Stability / 2);
+            var politics = PoliticalEconomy.Project(colony, definitions);
+            industry = PopulationRules.ScaleBy(industry, politics.IndustryFactor);
+            credits = PopulationRules.ScaleBy(credits, politics.CreditsFactor);
+            research = PopulationRules.ScaleBy(research, politics.ResearchFactor);
             var foodDemand = population / PopulationRules.PeoplePerFood + (population % PopulationRules.PeoplePerFood == 0 ? 0 : 1);
             var weighted = colony.Cohorts.Aggregate(BigInteger.Zero, (sum, c) => sum + (BigInteger)c.Population *
                 (4L * c.Satisfaction + 4L * c.CivicAlignment + 2L * (10000 - c.Radicalisation)));
@@ -83,7 +87,7 @@ namespace HobbyDS9.Simulation
                 + (colony.Prosperity - 5000) / 10 - (colony.FoodShortageTurns > 0 ? 1000 : 0));
             return new WorldEconomySnapshot(population, PopulationRules.Sum(planet.Habitats.Select(h => h.NaturalCapacity)), effective,
                 PopulationRules.Sum(remaining.Values), average, target, industry, credits, research, Installed(colony, definitions, i => i.FoodOutput), foodDemand,
-                Installed(colony, definitions, i => i.LogisticsCapacity), installed.Any(i => i.definition.Shipbuilding), allocations);
+                PopulationRules.ScaleBy(Installed(colony, definitions, i => i.LogisticsCapacity), politics.LogisticsFactor), installed.Any(i => i.definition.Shipbuilding), allocations, politics);
         }
         internal static int LegalPenalty(LegalStatus status) => status == LegalStatus.Occupied ? 1500 : status == LegalStatus.Subject ? 1000 : status == LegalStatus.Refugee ? 500 : 0;
     }

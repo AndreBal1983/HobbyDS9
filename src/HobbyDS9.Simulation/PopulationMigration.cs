@@ -64,7 +64,7 @@ namespace HobbyDS9.Simulation
                         var diaspora = destination.Cohorts!.Any(c => c.SpeciesDefinitionId == cohort.SpeciesDefinitionId) ? 1000 : 0;
                         var destScore = Opportunity(destination, facts[destination.ColonyId]) + destination.Stability + Fit(cohort, destination, s, d) + 7000 + diaspora;
                         var pull = Math.Max(0, destScore - sourceScore);
-                        if (pull > 0) choices.Add((destination.ColonyId, PopulationRules.ScaleBy(pull, route.integrity) / checked(route.cost + 1), capacity[destination.ColonyId]));
+                        if (pull > 0) choices.Add((destination.ColonyId, PopulationRules.ScaleBy(pull, route.integrity) / (route.cost==long.MaxValue?long.MaxValue:route.cost+1), capacity[destination.ColonyId]));
                     }
                     foreach (var allocation in Allocate(volume, choices).Where(a => a.Value > 0).OrderBy(a => a.Key, StringComparer.Ordinal))
                     { var to = colonies.Single(c => c.ColonyId == allocation.Key); identities[to.ColonyId].Add(PopulationRules.Identity(cohort)); moves.Add((source, to, cohort, allocation.Value, false, null)); capacity[to.ColonyId] -= allocation.Value; }
@@ -74,13 +74,13 @@ namespace HobbyDS9.Simulation
             {
                 var source = colonies.Single(c => c.PlanetId == request.SourcePlanetId); var cohort = source.Cohorts!.Single(c => c.CohortId == request.CohortId);
                 var choices = new List<(string id, long weight, long capacity)>();
-                foreach (var to in colonies.Where(c => c != source && c.AcceptsRefugees && c.OwnerCivilizationId != null))
+                foreach (var to in colonies.Where(c => c != source && facts[c.ColonyId].Politics.AcceptsRefugees && c.OwnerCivilizationId != null))
                 {
                     if (!Habitable(cohort, to, s, d) || facts[source.ColonyId].LogisticsCapacity == 0 || capacity[to.ColonyId] == 0 || !HasIdentitySlot(to, cohort, LegalStatus.Refugee) || facts[to.ColonyId].LogisticsCapacity == 0) continue;
                     var route = PopulationLogistics.Path(s, graph, source.SystemId, to.SystemId, to.OwnerCivilizationId); if (route.integrity == 0) continue;
                     var diaspora = to.Cohorts!.Any(c => c.SpeciesDefinitionId == cohort.SpeciesDefinitionId) ? 1L : 0;
                     // Radix weights preserve the declared priority ordering.
-                    var weight = checked((to.Stability / 100 + 1L) * 1000000000000L + (route.integrity / 100 / (checked(route.cost + 1))) * 100000000L + diaspora * 10000000L + Fit(cohort, to, s, d) * 100 + Math.Min(99999, Opportunity(to, facts[to.ColonyId])));
+                    var weight = checked((to.Stability / 100 + 1L) * 1000000000000L + (route.integrity / 100 / ((route.cost==long.MaxValue?long.MaxValue:route.cost+1))) * 100000000L + diaspora * 10000000L + Fit(cohort, to, s, d) * 100 + Math.Min(99999, Opportunity(to, facts[to.ColonyId])));
                     choices.Add((to.ColonyId, weight, capacity[to.ColonyId]));
                 }
                 foreach (var a in Allocate(request.Population, choices).Where(a => a.Value > 0).OrderBy(a => a.Key, StringComparer.Ordinal))
@@ -89,7 +89,7 @@ namespace HobbyDS9.Simulation
             foreach (var move in moves)
             {
                 move.cohort.Population -= move.amount;
-                var arrival = PopulationData.Copy(move.cohort); arrival.CohortId = CampaignAllocation.Allocate(s, "cohort", arrival.SpeciesDefinitionId); arrival.Population = move.amount;
+                var arrival = PopulationData.Copy(move.cohort); arrival.CohortId = CampaignAllocation.Allocate(s, "cohort", arrival.SpeciesDefinitionId); arrival.Population = move.amount; arrival.LegalStatusEligibleTurns=0;
                 if (move.refugee)
                 {
                     arrival.LegalStatus = LegalStatus.Refugee;

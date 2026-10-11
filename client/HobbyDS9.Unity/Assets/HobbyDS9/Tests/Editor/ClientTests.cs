@@ -18,7 +18,7 @@ namespace HobbyDS9.UnityClient.Tests
             Assert.That(Resources.Load<StyleSheet>("HobbyClient"), Is.Not.Null);
             var host = Start(); var snapshot = host.Snapshot;
             Assert.That(snapshot.Campaign.ScenarioId, Is.EqualTo("ds9-strategic-slice-v1"));
-            Assert.That(snapshot.Navigation.Nodes.Count, Is.EqualTo(6));
+            Assert.That(snapshot.Navigation.Nodes.Count, Is.EqualTo(7));
             Assert.That(snapshot.Campaign.Fleets.Count, Is.EqualTo(3));
             Assert.That(typeof(ClientEntry).Assembly.GetReferencedAssemblies().Any(a => a.Name == "HobbyDS9.Simulation"), Is.False);
         }
@@ -59,7 +59,7 @@ namespace HobbyDS9.UnityClient.Tests
         public void FleetPreviewStaysLocalUntilConfirmation()
         {
             var host = Start(); var before = host.SaveJson();
-            var preview = host.Client.Preview(host.Snapshot, new HobbyDS9.Contracts.EntityId("fleet.federation-scout"), new NavigationNodeId("system.bajor"));
+            var preview = host.Client.Preview(host.Snapshot, new HobbyDS9.Contracts.EntityId("fleet.federation-scout"), new NavigationNodeId("nav.bajor"));
             Assert.That(preview.Route.TraversalCost, Is.EqualTo(1)); Assert.That(host.SaveJson(), Is.EqualTo(before));
             var map = new GalaxyMap();
             map.Present(host.Snapshot, new GalaxySelection(), _ => { }, _ => { }); map.SetRoute(preview);
@@ -110,9 +110,9 @@ namespace HobbyDS9.UnityClient.Tests
                 }
             }
             var state = host.Snapshot.Campaign;
-            Assert.That(encounters, Is.EqualTo(18)); Assert.That(state.TurnNumber, Is.EqualTo(26));
-            Assert.That(state.StateRevision, Is.EqualTo(187)); Assert.That(state.Ships.Count, Is.EqualTo(6));
-            Assert.That(state.NextEntitySequence, Is.EqualTo(80UL)); Assert.That(state.RngState.State, Is.EqualTo(0x850d3ff45bd6b85eUL));
+            Assert.That(encounters, Is.EqualTo(17)); Assert.That(state.TurnNumber, Is.EqualTo(26));
+            Assert.That(state.StateRevision, Is.EqualTo(187)); Assert.That(state.Ships.Count, Is.EqualTo(9));
+            Assert.That(state.NextEntitySequence, Is.EqualTo(97UL)); Assert.That(state.RngState.State, Is.EqualTo(0xd8919406d6e01cf1UL));
         }
 
         [Test]
@@ -145,6 +145,44 @@ namespace HobbyDS9.UnityClient.Tests
             json["GameState"]["Colonies"][0]["Materials"]=99;
             Assert.Throws<Newtonsoft.Json.JsonSerializationException>(()=>host.LoadJson(json.ToString()));
             Assert.That(host.SaveJson(),Is.EqualTo(before));
+        }
+        [Test]
+        public void GovernanceCommandRefreshesDetachedPoliticsAndPreservesStaleRejection()
+        {
+            var host=Start();var before=host.Snapshot;
+            var result=host.Client.Governance(before,new HobbyDS9.Contracts.EntityId("civ.federation"),new HobbyDS9.Contracts.EntityId("colony.sol"),new DefinitionId("governance.autonomy"));
+            Assert.That(result.Accepted,Is.True);
+            Assert.That(before.Campaign.Colonies.Single(c=>c.ColonyId.Value=="colony.sol").State.Politics.GovernancePolicyDefinitionId,Is.EqualTo("governance.integration"));
+            var saved=host.SaveJson();
+            Assert.That(host.Client.Governance(before,new HobbyDS9.Contracts.EntityId("civ.federation"),new HobbyDS9.Contracts.EntityId("colony.sol"),new DefinitionId("governance.security")).ErrorCode,Is.EqualTo(CommandErrorCode.StaleRevision));
+            Assert.That(host.SaveJson(),Is.EqualTo(saved));
+            host.EndTurn();Assert.That(host.Snapshot.Campaign.Colonies.Single(c=>c.ColonyId.Value=="colony.sol").State.Politics.CohortReports,Is.Not.Empty);
+        }
+        [Test]
+        public void WeightedPreviewAndPartialTravelRoundTripThroughRealHost()
+        {
+            var host=Start();var before=host.SaveJson();var preview=host.Client.Preview(host.Snapshot,new HobbyDS9.Contracts.EntityId("fleet.federation-scout"),new NavigationNodeId("nav.bajor"));
+            Assert.That(preview.Route.TraversalCost,Is.EqualTo(7));Assert.That(preview.Travel.EstimatedTurns,Is.EqualTo(3));Assert.That(host.SaveJson(),Is.EqualTo(before));
+            Assert.That(host.Client.SubmitRoute(preview).Accepted,Is.True);host.EndTurn();var fleet=host.Snapshot.Campaign.Fleets.Single(f=>f.FleetId.Value=="fleet.federation-scout");
+            Assert.That(fleet.TransitProgress,Is.EqualTo(3));Assert.That(fleet.TransitTotalCost,Is.EqualTo(7));
+            var saved=host.SaveJson();host.LoadJson(saved);Assert.That(host.SaveJson(),Is.EqualTo(saved));
+        }
+        [Test]
+        public void IndependentEmptyHazardIsPresentedWithoutInferringSystem()
+        {
+            var snapshot=Start().Snapshot;var node=snapshot.Navigation.Nodes.Single(n=>n.NodeId.Value=="nav.badlands");
+            Assert.That(node.AssociatedSystemId,Is.Null);Assert.That(node.PhenomenonDefinitionIds,Does.Contain("phenomenon.plasma-storm"));
+            var sol=snapshot.Navigation.Nodes.Single(n=>n.NodeId.Value=="nav.sol");Assert.That(sol.AssociatedSystemId.Value.Value,Is.EqualTo("system.sol"));
+            Assert.That(GalaxyProjection.Nodes(snapshot).Single(n=>n.NodeId==node.NodeId).Label,Is.EqualTo("Badlands transit"));
+        }
+        [Test]
+        public void UnknownConnectionIsExcludedFromMapAndRoutePreviewAfterReload()
+        {
+            var host=Start();var json=Newtonsoft.Json.Linq.JObject.Parse(host.SaveJson());
+            var knowledge=json["GameState"]["NavigationKnowledge"].Single(k=>(string)k["CivilizationId"]=="civ.federation");
+            knowledge["Connections"].Single(e=>(string)e["Id"]=="connection.sol-bajor")["Level"]=0;
+            host.LoadJson(json.ToString());var preview=host.Client.Preview(host.Snapshot,new HobbyDS9.Contracts.EntityId("fleet.federation-scout"),new NavigationNodeId("nav.bajor"));
+            Assert.That(preview.Route.Success,Is.False);Assert.That(host.Snapshot.Navigation.Links.Any(e=>e.EndpointA.Value=="nav.sol"||e.EndpointB.Value=="nav.sol"),Is.False);
         }
     }
 }

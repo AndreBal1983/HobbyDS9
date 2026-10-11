@@ -7,12 +7,24 @@ namespace HobbyDS9.Simulation.Tests;
 
 internal static class VerticalSliceFixture
 {
-    internal static ScenarioDto Scenario(bool humans = true)
+    internal static ScenarioDto Scenario(bool humans = true, bool weighted = false)
     {
         var bytes = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "scenarios", "ds9-slice", "scenario.json"));
         var scenario = JsonSerializer.Deserialize<ScenarioDto>(bytes)!;
         scenario.ContentHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
-        if (humans) foreach (var c in scenario.InitialState.Civilizations!) c.ControllerKind = ControllerKind.Human;
+        if (!weighted)
+        {
+            // Historical unit-cost mechanics fixtures stay isolated from authored weighted balance.
+            var association=scenario.Definitions.NavigationRegions!.Where(n=>n.AssociatedSystemId!=null).ToDictionary(n=>n.NodeId,n=>n.AssociatedSystemId!);
+            foreach(var fleet in scenario.InitialState.Fleets!){fleet.LocationNodeId=association[fleet.LocationNodeId];fleet.RouteNodeIds=fleet.RouteNodeIds!.Select(n=>association[n]).ToList();}
+            NavigationFixture.Definitions(scenario.Definitions,scenario.InitialState.StarSystems!.Select(n=>n.SystemId).ToArray());
+            NavigationFixture.State(scenario.InitialState,scenario.Definitions);
+            foreach(var design in scenario.Definitions.ShipDesigns!)design.MovementBudget=1;
+        }
+        if(humans)
+        {
+            foreach (var c in scenario.InitialState.Civilizations!) c.ControllerKind = ControllerKind.Human;
+        }
         return scenario;
     }
     internal static SaveCompatibility Compatibility(ScenarioDto s) => new(s.ScenarioId, s.RulesVersion, s.ContentHash);

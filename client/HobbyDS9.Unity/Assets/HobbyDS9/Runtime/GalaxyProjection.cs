@@ -27,7 +27,7 @@ namespace HobbyDS9.UnityClient
             var systems = campaign.StarSystems.ToDictionary(s => s.SystemId);
             return nodes.OrderBy(n => n.NodeId.Value, StringComparer.Ordinal).Select(n =>
             {
-                var label = "Transit region";
+                var label = string.IsNullOrEmpty(n.DisplayName) ? "Transit region" : n.DisplayName;
                 if (n.AssociatedSystemId.HasValue && systems.TryGetValue(n.AssociatedSystemId.Value, out var system))
                     label = names.TryGetValue(system.DefinitionId, out var name) ? name : "Star system";
                 var fleets = campaign.Fleets.Where(f => f.LocationNodeId.Value == n.NodeId.Value)

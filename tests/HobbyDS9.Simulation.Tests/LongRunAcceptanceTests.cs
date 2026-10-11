@@ -14,10 +14,16 @@ public sealed class LongRunAcceptanceTests
     public void TwentyFiveAutonomousTurnsRepeatExactlyAcrossReloadsAndReorderedContentAndState()
     {
         var totals = new CombatTotals(); var builtBy = new HashSet<string>(); var travelledBy = new HashSet<string>();
-        var scenario = Scenario(false); var baseline = Session(scenario); var repeated = Session(Clone(scenario)); var resumed = Session(Clone(scenario));
+        var scenario = Scenario(false, weighted:true); var baseline = Session(scenario); var repeated = Session(Clone(scenario)); var resumed = Session(Clone(scenario));
         var reorderedScenario = Clone(scenario); var state = reorderedScenario.InitialState; var defs = reorderedScenario.Definitions;
         state.Civilizations!.Reverse(); state.StarSystems!.Reverse(); state.Colonies!.Reverse(); state.Ships!.Reverse(); state.Fleets!.Reverse(); state.EntityIdentities.Reverse();
         defs.DefinitionIds.Reverse(); defs.Civilizations!.Reverse(); defs.StarSystems!.Reverse(); defs.GalaxyEdges!.Reverse(); defs.ResearchNodes!.Reverse(); defs.ShipDesigns!.Reverse(); defs.Planets!.Reverse(); defs.Species!.Reverse(); defs.Infrastructure!.Reverse(); defs.Resources!.Reverse();
+        defs.NavigationRegions!.Reverse(); defs.NavigationConnections!.Reverse(); defs.Phenomena!.Reverse(); defs.GovernancePolicies!.Reverse(); defs.PoliticalMemoryEffects!.Reverse();
+        foreach(var edge in defs.NavigationConnections)(edge.EndpointA,edge.EndpointB)=(edge.EndpointB,edge.EndpointA);
+        state.NavigationKnowledge!.Reverse(); state.TraversalEffects!.Reverse();
+        foreach(var k in state.NavigationKnowledge){k.Nodes!.Reverse();k.Connections!.Reverse();}
+        foreach(var region in defs.NavigationRegions) region.PhenomenonDefinitionIds!.Reverse();
+        foreach(var world in state.Colonies){world.Cohorts!.Reverse();foreach(var cohort in world.Cohorts){cohort.Memories!.Reverse();cohort.ExternalAffinities!.Reverse();}}
         foreach (var d in defs.ShipDesigns) d.RequiredResearchDefinitionIds!.Reverse(); foreach (var r in defs.ResearchNodes) r.PrerequisiteDefinitionIds!.Reverse();
         var reordered = Session(reorderedScenario); var reloads = new HashSet<int> { 1, 2, 4, 7, 13, 18, 24 }; var partial = false; var orders = new List<string>(); var commandCount = 0; var generated = 0; var checkpoints = 0;
         for (var i = 1; i <= 25; i++)
@@ -27,20 +33,20 @@ public sealed class LongRunAcceptanceTests
             Assert.Equal(resultJson, JsonSerializer.Serialize(Advance(repeated))); Assert.Equal(resultJson, JsonSerializer.Serialize(AdvanceWithCombatReload(ref resumed, scenario, ref generated, ref checkpoints))); Assert.Equal(resultJson, JsonSerializer.Serialize(Advance(reordered)));
             Assert.Equal(Json(baseline), Json(repeated)); Assert.Equal(Json(baseline), Json(resumed)); Assert.Equal(Json(baseline), Json(reordered));
             foreach (var ship in baseline.CaptureSnapshot().Ships.Where(s => s.ShipId.TryGetAllocationSequence(out _))) builtBy.Add(ship.OwnerCivilizationId.Value);
-            foreach (var fleet in baseline.CaptureSnapshot().Fleets.Where(f => f.LocationNodeId.Value != (f.OwnerCivilizationId.Value == "civ.cardassian" ? "system.cardassia" : "system.founders-homeworld"))) travelledBy.Add(fleet.OwnerCivilizationId.Value);
-            Assert.All(baseline.CaptureSnapshot().Fleets.Where(f => f.OwnerCivilizationId.Value == "civ.federation"), f => { Assert.Equal("system.sol", f.LocationNodeId.Value); Assert.Empty(f.RouteNodeIds); });
+            foreach (var fleet in baseline.CaptureSnapshot().Fleets.Where(f => f.LocationNodeId.Value != (f.OwnerCivilizationId.Value == "civ.cardassian" ? "nav.cardassia" : "nav.founders-homeworld"))) travelledBy.Add(fleet.OwnerCivilizationId.Value);
+            Assert.All(baseline.CaptureSnapshot().Fleets.Where(f => f.OwnerCivilizationId.Value == "civ.federation"), f => { Assert.Equal("nav.sol", f.LocationNodeId.Value); Assert.Empty(f.RouteNodeIds); });
             var current = baseline.ExportSave().GameState; partial |= current.Colonies!.Any(c => c.ProductionQueue!.Any(q => q.CompletedIndustry > 0));
             Assert.All(current.Civilizations!.Where(c => c.ControllerKind == ControllerKind.AI), c => Assert.Contains(c.CivilizationId, new[] { "civ.cardassian", "civ.dominion" }));
             if (reloads.Contains(i)) resumed = new SimulationSession(Clone(resumed.ExportSave()), Clone(scenario.Definitions), Compatibility(scenario));
         }
-        Assert.True(partial); Assert.Equal(15, generated); Assert.Equal(14, checkpoints); Assert.Empty(baseline.CaptureSnapshot().Combats); Assert.Equal(25, orders.Count); var final = baseline.CaptureSnapshot();
+        Assert.True(partial); Assert.Equal(17, generated); Assert.Equal(12, checkpoints); Assert.Empty(baseline.CaptureSnapshot().Combats); Assert.Equal(25, orders.Count); var final = baseline.CaptureSnapshot();
         Assert.Equal(26, final.TurnNumber); Assert.Equal(SessionPhase.Planning, final.Phase);
-        Assert.Equal(173, final.StateRevision); Assert.Equal(119, commandCount);
-        Assert.Equal(7, final.Ships.Count); Assert.Equal(7, final.Fleets.Count); Assert.Equal(78UL, final.NextEntitySequence); Assert.Equal(0x035e2aa2e7e47af9UL, final.RngState.State);
-        Assert.Equal((41, 103, 70, 123L, 132L, 12, 12, 0), (totals.Phases, totals.Shots, totals.Hits, totals.ShieldDamage, totals.HullDamage, totals.ShipsDestroyed, totals.FleetsDestroyed, totals.Retreated));
+        Assert.Equal(187, final.StateRevision); Assert.Equal(133, commandCount);
+        Assert.Equal(9, final.Ships.Count); Assert.Equal(9, final.Fleets.Count); Assert.Equal(97UL, final.NextEntitySequence); Assert.Equal(0xd8919406d6e01cf1UL, final.RngState.State);
+        Assert.Equal((43, 98, 68, 126L, 116L, 10, 10, 0), (totals.Phases, totals.Shots, totals.Hits, totals.ShieldDamage, totals.HullDamage, totals.ShipsDestroyed, totals.FleetsDestroyed, totals.Retreated));
         Assert.True(totals.Hits > 0 && totals.HullDamage > 0 && totals.ShipsDestroyed > 0);
         Assert.Equal(2, final.Colonies.Sum(c => c.ProductionQueue.Count)); Assert.Equal(2, final.Civilizations.Sum(c => c.UnlockedResearchDefinitionIds.Count));
-        Assert.Equal("77fba4c5120bd50dad4c7d824cb055a51a1b53ff75cb61595270f549f94e9479", Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(baseline.ExportSave()))).ToLowerInvariant());
+        Assert.Equal("10009857d0396dea4bd0a81001cadfb6b5ebfad2c8772223d8288bd70d3559e4", Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(baseline.ExportSave()))).ToLowerInvariant());
         foreach (var actor in new[] { "civ.cardassian", "civ.dominion" })
         {
             Assert.Contains(new DefinitionId("research.advanced-engineering"), final.Civilizations.Single(c => c.CivilizationId.Value == actor).UnlockedResearchDefinitionIds);
@@ -57,15 +63,15 @@ public sealed class LongRunAcceptanceTests
     [Fact]
     public void HumanOrdersQueueProgressAndRoutedFleetSurviveRepeatedReloadAlongsideAutonomousAi()
     {
-        var humanProduced = false; var scenario = Scenario(false); var continuous = Session(scenario); var resumed = Session(Clone(scenario));
+        var humanProduced = false; var scenario = Scenario(false, weighted:true); var continuous = Session(scenario); var resumed = Session(Clone(scenario));
         foreach (var s in new[] { continuous, resumed })
-        { Assert.True(Enqueue(s).Accepted); Assert.True(FleetMovementTests.Route(s, "cmd.route", "system.bajor", "system.bajoran-wormhole", "system.gamma-exit").Accepted); }
+        { Assert.True(Enqueue(s).Accepted); Assert.True(FleetMovementTests.Route(s, "cmd.route", "nav.bajor", "nav.bajoran-wormhole", "nav.gamma-exit").Accepted); }
         for (var turn = 1; turn <= 25; turn++)
         {
             Assert.Equal(JsonSerializer.Serialize(Advance(continuous)), JsonSerializer.Serialize(Advance(resumed))); Assert.Equal(Json(continuous), Json(resumed));
             humanProduced |= resumed.CaptureSnapshot().Ships.Any(s => s.OwnerCivilizationId.Value == "civ.federation" && s.ShipId.TryGetAllocationSequence(out _));
             if (turn == 1)
-            { Assert.Equal(8, Colony(resumed).ProductionQueue![0].CompletedIndustry); Assert.Equal(2, resumed.CaptureSnapshot().Fleets.Single(f => f.FleetId.Value == "fleet.federation-scout").RouteNodeIds.Count); }
+            { Assert.Equal(8, Colony(resumed).ProductionQueue![0].CompletedIndustry); Assert.Equal(3, resumed.CaptureSnapshot().Fleets.Single(f => f.FleetId.Value == "fleet.federation-scout").RouteNodeIds.Count); }
             resumed = new SimulationSession(Clone(resumed.ExportSave()), Clone(scenario.Definitions), Compatibility(scenario));
         }
         Assert.True(humanProduced); Assert.Empty(Colony(resumed).ProductionQueue!);

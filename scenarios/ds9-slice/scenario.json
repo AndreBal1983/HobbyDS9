@@ -53,7 +53,8 @@
       "star-system.cardassia",
       "star-system.founders-homeworld",
       "star-system.gamma-exit",
-      "star-system.sol"
+      "star-system.sol",
+      "phenomenon.plasma-storm"
     ],
     "Civilizations": [
       {
@@ -152,7 +153,7 @@
             "Amount": 2
           }
         ],
-        "MovementBudget": 1
+        "MovementBudget": 3
       },
       {
         "DefinitionId": "ship-design.advanced-scout",
@@ -177,7 +178,7 @@
             "Amount": 3
           }
         ],
-        "MovementBudget": 1
+        "MovementBudget": 4
       }
     ],
     "Species": [
@@ -1301,80 +1302,104 @@
     ],
     "NavigationRegions": [
       {
-        "NodeId": "system.sol",
+        "NodeId": "nav.sol",
         "DisplayName": "Sol",
         "AssociatedSystemId": "system.sol",
         "PhenomenonDefinitionIds": []
       },
       {
-        "NodeId": "system.cardassia",
+        "NodeId": "nav.cardassia",
         "DisplayName": "Cardassia",
         "AssociatedSystemId": "system.cardassia",
         "PhenomenonDefinitionIds": []
       },
       {
-        "NodeId": "system.founders-homeworld",
+        "NodeId": "nav.founders-homeworld",
         "DisplayName": "Founders' Homeworld",
         "AssociatedSystemId": "system.founders-homeworld",
         "PhenomenonDefinitionIds": []
       },
       {
-        "NodeId": "system.bajor",
+        "NodeId": "nav.bajor",
         "DisplayName": "Bajor",
         "AssociatedSystemId": "system.bajor",
         "PhenomenonDefinitionIds": []
       },
       {
-        "NodeId": "system.bajoran-wormhole",
+        "NodeId": "nav.bajoran-wormhole",
         "DisplayName": "Bajoran Wormhole",
         "AssociatedSystemId": "system.bajoran-wormhole",
         "PhenomenonDefinitionIds": []
       },
       {
-        "NodeId": "system.gamma-exit",
+        "NodeId": "nav.gamma-exit",
         "DisplayName": "Gamma Exit",
         "AssociatedSystemId": "system.gamma-exit",
         "PhenomenonDefinitionIds": []
+      },
+      {
+        "NodeId": "nav.badlands",
+        "DisplayName": "Badlands transit",
+        "AssociatedSystemId": null,
+        "PhenomenonDefinitionIds": [
+          "phenomenon.plasma-storm"
+        ]
       }
     ],
     "NavigationConnections": [
       {
-        "ConnectionId": "connection.0",
-        "EndpointA": "system.sol",
-        "EndpointB": "system.bajor",
+        "ConnectionId": "connection.sol-bajor",
+        "EndpointA": "nav.sol",
+        "EndpointB": "nav.bajor",
+        "Kind": 1,
+        "BaseTraversalCost": 7
+      },
+      {
+        "ConnectionId": "connection.cardassia-badlands",
+        "EndpointA": "nav.cardassia",
+        "EndpointB": "nav.badlands",
+        "Kind": 1,
+        "BaseTraversalCost": 2
+      },
+      {
+        "ConnectionId": "connection.badlands-bajor",
+        "EndpointA": "nav.badlands",
+        "EndpointB": "nav.bajor",
+        "Kind": 1,
+        "BaseTraversalCost": 2
+      },
+      {
+        "ConnectionId": "connection.bajor-wormhole",
+        "EndpointA": "nav.bajor",
+        "EndpointB": "nav.bajoran-wormhole",
         "Kind": 1,
         "BaseTraversalCost": 1
       },
       {
-        "ConnectionId": "connection.1",
-        "EndpointA": "system.cardassia",
-        "EndpointB": "system.bajor",
-        "Kind": 1,
-        "BaseTraversalCost": 1
-      },
-      {
-        "ConnectionId": "connection.2",
-        "EndpointA": "system.bajor",
-        "EndpointB": "system.bajoran-wormhole",
-        "Kind": 1,
-        "BaseTraversalCost": 1
-      },
-      {
-        "ConnectionId": "connection.3",
-        "EndpointA": "system.bajoran-wormhole",
-        "EndpointB": "system.gamma-exit",
+        "ConnectionId": "connection.wormhole",
+        "EndpointA": "nav.bajoran-wormhole",
+        "EndpointB": "nav.gamma-exit",
         "Kind": 2,
         "BaseTraversalCost": 1
       },
       {
-        "ConnectionId": "connection.4",
-        "EndpointA": "system.gamma-exit",
-        "EndpointB": "system.founders-homeworld",
+        "ConnectionId": "connection.gamma-founders",
+        "EndpointA": "nav.gamma-exit",
+        "EndpointB": "nav.founders-homeworld",
         "Kind": 1,
-        "BaseTraversalCost": 1
+        "BaseTraversalCost": 4
       }
     ],
-    "Phenomena": []
+    "Phenomena": [
+      {
+        "DefinitionId": "phenomenon.plasma-storm",
+        "DisplayName": "Plasma storm",
+        "Description": "Adds two traversal cost at connected edges and reduces physical logistics integrity to 80%.",
+        "TraversalCostIncrease": 2,
+        "MovementBudgetPenalty": 0,
+        "LogisticsFactor": 8000
+      }
+    ]
   },
   "InitialState": {
     "Phase": 0,
@@ -2065,7 +2090,7 @@
         "ShipIds": [
           "ship.federation-scout"
         ],
-        "LocationNodeId": "system.sol",
+        "LocationNodeId": "nav.sol",
         "RouteNodeIds": [],
         "TransitTotalCost": 0,
         "TransitProgress": 0
@@ -2076,7 +2101,7 @@
         "ShipIds": [
           "ship.cardassian-scout"
         ],
-        "LocationNodeId": "system.cardassia",
+        "LocationNodeId": "nav.cardassia",
         "RouteNodeIds": [],
         "TransitTotalCost": 0,
         "TransitProgress": 0
@@ -2087,7 +2112,7 @@
         "ShipIds": [
           "ship.dominion-scout"
         ],
-        "LocationNodeId": "system.founders-homeworld",
+        "LocationNodeId": "nav.founders-homeworld",
         "RouteNodeIds": [],
         "TransitTotalCost": 0,
         "TransitProgress": 0
@@ -2170,49 +2195,57 @@
         "CivilizationId": "civ.federation",
         "Nodes": [
           {
-            "Id": "system.sol",
+            "Id": "nav.sol",
             "Level": 2
           },
           {
-            "Id": "system.cardassia",
+            "Id": "nav.cardassia",
             "Level": 2
           },
           {
-            "Id": "system.founders-homeworld",
+            "Id": "nav.founders-homeworld",
             "Level": 2
           },
           {
-            "Id": "system.bajor",
+            "Id": "nav.bajor",
             "Level": 2
           },
           {
-            "Id": "system.bajoran-wormhole",
+            "Id": "nav.bajoran-wormhole",
             "Level": 2
           },
           {
-            "Id": "system.gamma-exit",
+            "Id": "nav.gamma-exit",
+            "Level": 2
+          },
+          {
+            "Id": "nav.badlands",
             "Level": 2
           }
         ],
         "Connections": [
           {
-            "Id": "connection.0",
+            "Id": "connection.sol-bajor",
             "Level": 2
           },
           {
-            "Id": "connection.1",
+            "Id": "connection.cardassia-badlands",
             "Level": 2
           },
           {
-            "Id": "connection.2",
+            "Id": "connection.badlands-bajor",
             "Level": 2
           },
           {
-            "Id": "connection.3",
+            "Id": "connection.bajor-wormhole",
             "Level": 2
           },
           {
-            "Id": "connection.4",
+            "Id": "connection.wormhole",
+            "Level": 2
+          },
+          {
+            "Id": "connection.gamma-founders",
             "Level": 2
           }
         ]
@@ -2221,49 +2254,57 @@
         "CivilizationId": "civ.cardassian",
         "Nodes": [
           {
-            "Id": "system.sol",
+            "Id": "nav.sol",
             "Level": 2
           },
           {
-            "Id": "system.cardassia",
+            "Id": "nav.cardassia",
             "Level": 2
           },
           {
-            "Id": "system.founders-homeworld",
+            "Id": "nav.founders-homeworld",
             "Level": 2
           },
           {
-            "Id": "system.bajor",
+            "Id": "nav.bajor",
             "Level": 2
           },
           {
-            "Id": "system.bajoran-wormhole",
+            "Id": "nav.bajoran-wormhole",
             "Level": 2
           },
           {
-            "Id": "system.gamma-exit",
+            "Id": "nav.gamma-exit",
+            "Level": 2
+          },
+          {
+            "Id": "nav.badlands",
             "Level": 2
           }
         ],
         "Connections": [
           {
-            "Id": "connection.0",
+            "Id": "connection.sol-bajor",
             "Level": 2
           },
           {
-            "Id": "connection.1",
+            "Id": "connection.cardassia-badlands",
             "Level": 2
           },
           {
-            "Id": "connection.2",
+            "Id": "connection.badlands-bajor",
             "Level": 2
           },
           {
-            "Id": "connection.3",
+            "Id": "connection.bajor-wormhole",
             "Level": 2
           },
           {
-            "Id": "connection.4",
+            "Id": "connection.wormhole",
+            "Level": 2
+          },
+          {
+            "Id": "connection.gamma-founders",
             "Level": 2
           }
         ]
@@ -2272,49 +2313,57 @@
         "CivilizationId": "civ.dominion",
         "Nodes": [
           {
-            "Id": "system.sol",
+            "Id": "nav.sol",
             "Level": 2
           },
           {
-            "Id": "system.cardassia",
+            "Id": "nav.cardassia",
             "Level": 2
           },
           {
-            "Id": "system.founders-homeworld",
+            "Id": "nav.founders-homeworld",
             "Level": 2
           },
           {
-            "Id": "system.bajor",
+            "Id": "nav.bajor",
             "Level": 2
           },
           {
-            "Id": "system.bajoran-wormhole",
+            "Id": "nav.bajoran-wormhole",
             "Level": 2
           },
           {
-            "Id": "system.gamma-exit",
+            "Id": "nav.gamma-exit",
+            "Level": 2
+          },
+          {
+            "Id": "nav.badlands",
             "Level": 2
           }
         ],
         "Connections": [
           {
-            "Id": "connection.0",
+            "Id": "connection.sol-bajor",
             "Level": 2
           },
           {
-            "Id": "connection.1",
+            "Id": "connection.cardassia-badlands",
             "Level": 2
           },
           {
-            "Id": "connection.2",
+            "Id": "connection.badlands-bajor",
             "Level": 2
           },
           {
-            "Id": "connection.3",
+            "Id": "connection.bajor-wormhole",
             "Level": 2
           },
           {
-            "Id": "connection.4",
+            "Id": "connection.wormhole",
+            "Level": 2
+          },
+          {
+            "Id": "connection.gamma-founders",
             "Level": 2
           }
         ]

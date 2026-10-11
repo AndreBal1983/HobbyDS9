@@ -51,7 +51,7 @@ namespace HobbyDS9.Simulation
                 Check(nodes.Contains(fleet.LocationNodeId)&&fleet.TransitTotalCost>=0&&fleet.TransitProgress>=0
                     &&(fleet.TransitTotalCost==0?fleet.TransitProgress==0:fleet.TransitProgress>0&&fleet.TransitProgress<fleet.TransitTotalCost&&fleet.RouteNodeIds?.Count>0));
                 if(fleet.RouteNodeIds!=null&&state.NavigationKnowledge.Count(k=>k!=null&&k.CivilizationId==fleet.OwnerCivilizationId&&k.Nodes!=null&&k.Connections!=null)==1
-                    &&fleet.RouteNodeIds.All(n=>n!=null))Check(graph.ValidateRoute(state,fleet.OwnerCivilizationId,fleet.LocationNodeId,fleet.RouteNodeIds));
+                    &&fleet.RouteNodeIds.All(n=>n!=null))Check(graph.ValidateRoute(state,fleet.OwnerCivilizationId,fleet.LocationNodeId,fleet.RouteNodeIds,Math.Max(0,fleet.TransitTotalCost-fleet.TransitProgress)));
             }
         }
     }

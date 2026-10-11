@@ -11,11 +11,12 @@ namespace HobbyDS9.Application
         public ScenarioContentSnapshot Content { get; }
         public NavigationMapSnapshot Navigation { get; }
         public IReadOnlyList<FleetTravelSnapshot> FleetTravel { get; }
+        public CivilizationNavigationKnowledgeSnapshot? NavigationKnowledge { get; }
         // Current planning ledger only, not an action history. AI IDs are reserved.
         public IReadOnlyList<EntityId> AcceptedPlayerCommandIds { get; }
-        internal CampaignSnapshot(SessionSnapshot campaign, ScenarioContentSnapshot content, NavigationMapSnapshot navigation, IEnumerable<FleetTravelSnapshot> travel)
+        internal CampaignSnapshot(SessionSnapshot campaign, ScenarioContentSnapshot content, NavigationMapSnapshot navigation, IEnumerable<FleetTravelSnapshot> travel, CivilizationNavigationKnowledgeSnapshot? knowledge)
         {
-            Campaign = campaign; Content = content; Navigation = navigation; FleetTravel = travel.ToList().AsReadOnly();
+            Campaign = campaign; Content = content; Navigation = navigation; FleetTravel = travel.ToList().AsReadOnly(); NavigationKnowledge = knowledge;
             AcceptedPlayerCommandIds = campaign.AcceptedCommandIds
                 .Where(id => !id.Value.StartsWith("ai-command.", StringComparison.Ordinal)).ToList().AsReadOnly();
         }

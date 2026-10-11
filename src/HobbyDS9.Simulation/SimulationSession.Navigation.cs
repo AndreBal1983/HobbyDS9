@@ -4,6 +4,16 @@ namespace HobbyDS9.Simulation
 {
     public sealed partial class SimulationSession
     {
+        public NavigationCampaignSnapshot CaptureClientProjection()
+        {
+            lock(gate)
+            {
+                var viewer=state.Civilizations!.FirstOrDefault(c=>c.ControllerKind==ControllerKind.Human)??state.Civilizations.FirstOrDefault();
+                var navigation=viewer==null?new NavigationViewSnapshot(System.Array.Empty<NavigationRegionDefinitionSnapshot>(),System.Array.Empty<NavigationCostSnapshot>(),System.Array.Empty<PhenomenonDefinitionSnapshot>()):CaptureNavigation(viewer.CivilizationId);
+                var knowledge=viewer==null?null:new CivilizationNavigationKnowledgeSnapshot(state.NavigationKnowledge!.Single(k=>k.CivilizationId==viewer.CivilizationId));
+                return new NavigationCampaignSnapshot(CaptureSnapshot(),navigation,knowledge,state.Fleets!.Select(f=>Navigation.Travel(state,f,definitions)));
+            }
+        }
         public StrategicRouteSnapshot FindNavigationRoute(string civilization,string origin,string destination)
         {lock(gate)return Navigation.FindRoute(state,civilization,origin,destination);}
         public FleetTravelSnapshot CaptureFleetTravel(string fleetId,System.Collections.Generic.IReadOnlyList<string>? preview=null)

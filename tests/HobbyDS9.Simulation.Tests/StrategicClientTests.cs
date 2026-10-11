@@ -262,7 +262,7 @@ public sealed class StrategicClientTests
     [InlineData(true)]
     public void ClientTwentyFiveTurnPathMatchesApplicationWithRepeatedSaveReload(bool reverse)
     {
-        var scenario = VerticalSliceFixture.Scenario(false);
+        var scenario = VerticalSliceFixture.Scenario(false, weighted:true);
         var client = Start(scenario); var direct = CampaignApplication.StartScenario(scenario);
         for (var i = 0; i < 25; i++)
         {
@@ -291,7 +291,7 @@ public sealed class StrategicClientTests
             Assert.Equal(JsonSerializer.Serialize(direct.ExportSave()), Save(client));
         }
         Assert.Equal(26, client.Snapshot.Campaign.TurnNumber);
-        Assert.Equal(173, client.Snapshot.Campaign.StateRevision);
+        Assert.Equal(187, client.Snapshot.Campaign.StateRevision);
     }
 
 }

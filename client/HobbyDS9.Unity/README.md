@@ -1,6 +1,6 @@
 # Unity strategic vertical slice
 
-Editor pin: **6000.6.5f1** (Unity 6.6), URP **17.6.0**. Preserve the existing Universal 3D scaffold. Local acceptance on this Editor version passed: compilation, real scenario/map/fleets, selection/pan/zoom, End Turn/AI movement, combat planning/buffering/finalization with persistent damage, 4/4 EditMode tests, and a launched Windows x64 IL2CPP player. These Unity results were reported by the project owner; cloud CI verifies the .NET and static integration gates.
+Editor pin: **6000.6.5f1** (Unity 6.6), URP **17.6.0**. Preserve the existing Universal 3D scaffold. Historical vertical-slice acceptance on this Editor version passed: compilation, real scenario/map/fleets, selection/pan/zoom, End Turn/AI movement, combat planning/buffering/finalization with persistent damage, 4/4 EditMode tests, and a launched Windows x64 IL2CPP player. These Unity results were reported by the project owner; cloud CI verifies the .NET and static integration gates.
 
 ## Prepare portable libraries
 
@@ -14,7 +14,7 @@ Run this before opening Unity and after changing portable sources. It restores w
 
 `HobbyDS9.UnityClient.asmdef` uses explicit precompiled references to **Application** and **Contracts** only, plus Unity's Newtonsoft JSON adapter. It has no Simulation reference. Simulation is distributed as Application's runtime dependency and is not auto-referenced by client scripts. Plugin `.meta` files set `isExplicitlyReferenced: 1`. All authoritative operations go through `ICampaignSession`, via the client `CampaignHost`. No portable source depends on Unity, Newtonsoft or UI state. No engine code is duplicated in Assets.
 
-The pinned official `com.unity.nuget.newtonsoft-json` package is used because the DTOs have properties and Unity JsonUtility does not support that contract. Content hashing uses the exact resource bytes and SHA256; the population milestone uses save 10/content 6/rules `population-economy-v1`, rejecting older packages/saves.
+The pinned official `com.unity.nuget.newtonsoft-json` package is used because the DTOs have properties and Unity JsonUtility does not support that contract. Content hashing uses the exact resource bytes and SHA256; the current politics/geography candidate uses save 12/content 8/rules `population-politics-geography-v1`, rejecting older packages/saves.
 
 ## Run the prototype
 
@@ -25,7 +25,7 @@ Open the existing SampleScene and press Play. `ClientEntry` bootstraps once at r
 - End Turn passes the observed turn/revision to Application. New snapshots replace displayed facts; selection/pan/zoom never enter campaign state.
 - AwaitingCombat disables End Turn. The panel shows the next canonical pending request, ships, tactics, target priorities and retreat options. Resolve with defaults or selected plans, repeat for remaining encounters, then explicitly finalize to complete the turn. Rejected retreats/results display their stable error without advancing the campaign.
 
-Navigation node IDs are never parsed into system IDs. Fleet placement and labels use `AssociatedSystemId`; null associations produce transit-region nodes. Circular node placement is a deterministic placeholder view layout, not new navigation topology. Traversal costs are not movement budgets or turn estimates.
+Navigation node IDs are never parsed into system IDs. Fleet placement uses `LocationNodeId`; system labels use explicit `AssociatedSystemId`; null associations produce transit-region nodes. Circular node placement is a deterministic placeholder view layout, not new navigation topology. Traversal costs and movement budgets are distinct. The current candidate obtains ETA from Application using authoritative traversal rules.
 
 Major layout uses flex growth and a bounded sidebar, with a scrollable details/encounter panel. Combat controls stack their labels above full-width inputs so tactic and priority values remain readable. Panel scaling follows screen height rather than ultrawide aspect ratio. Individual map markers are positioned inside the map viewport. Required manual display checks remain 1920×1080, 2560×1440, 3440×1440 and 5120×1440; verify readable controls, visible fleets, pan/zoom, selection and combat scrolling at each size.
 
@@ -40,7 +40,7 @@ dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program F
 
 The Windows target requires passing, nonempty EditMode results before building. Tests cover real scenario startup, no direct Simulation assembly reference, empty-space association handling, and canonical/reverse 25-turn client-host runs through combat. The pure `GalaxyProjection.cs` is also linked into the existing .NET test project for ordering, detachment, movement refresh and selection tests. Existing CI still runs locked restore, Release build, all .NET tests and both deterministic headless smokes on its three platforms. It also runs PrepareUnity.proj and `python scripts/check-unity-integration.py` to check metadata/GUIDs, explicit assembly references, copied DLLs and scenario bytes. These are static checks, not Unity compilation.
 
-Editor logs, NUnit XML and the Windows player go under ignored `artifacts/unity`. `ClientBuild` enforces the Editor version, .NET Standard API compatibility and a Windows x64 IL2CPP build. The existing link.xml preserves portable DTOs and runtime dependencies. Windows x64 IL2CPP compilation and player startup passed local acceptance; repeat these checks after engine/client changes. Launch `artifacts/unity/Windows/HobbyDS9.exe` on Windows. Verify initial galaxy/fleets, all four display sizes, selection, End Turn and an AwaitingCombat → resolve → finalize → Planning cycle. The baseline 25-turn outcome is now turn 26/revision 187, 18 encounters, 6 ships/fleets, RNG `850d3ff45bd6b85e`.
+Editor logs, NUnit XML and the Windows player go under ignored `artifacts/unity`. `ClientBuild` enforces the Editor version, .NET Standard API compatibility and a Windows x64 IL2CPP build. The existing link.xml preserves portable DTOs and runtime dependencies. Windows x64 IL2CPP compilation and player startup passed local acceptance; repeat these checks after engine/client changes. Launch `artifacts/unity/Windows/HobbyDS9.exe` on Windows. Verify initial galaxy/fleets, all four display sizes, selection, End Turn and an AwaitingCombat → resolve → finalize → Planning cycle. The current candidate baseline is turn 26/revision 187, 17 encounters, 9 ships/fleets, RNG `d8919406d6e01cf1`.
 
 Unity acceptance is performed locally because the cloud environment has no Unity Editor. Keep local compilation, EditMode tests and Windows build/launch green alongside .NET CI. Verify the four display sizes when making layout changes; the final control-sizing/importer cleanup received static checks in the cloud rather than another Unity run.
 
@@ -131,3 +131,19 @@ Use Unity 6000.6.5f1 with Windows Build Support (IL2CPP), Visual Studio Desktop 
 6. Check scrollable panels at 1920×1080, 2560×1440, 3440×1440 and 5120×1440. The map remains the main workspace.
 
 Refugees are exercised through deterministic .NET fixtures, including rejection/no-destination, retained origin/legal status/memories and reload; no invasion trigger or policy UI was invented. See [the new baseline and scope](../../docs/economy-population-v1.md). Return compilation/test/build results and manual acceptance before this branch merges to main.
+
+## Population politics and strategic geography v1 acceptance
+
+The current candidate adds four EditMode cases, for an expected **18** cases, including governance/stale snapshots, weighted preview/partial-edge JSON round-trip, an independent empty hazard region and hidden-route filtering. These tests are authored, not executed in the cloud. Previous 14/14 local acceptance covers the earlier economy milestone only.
+
+With Unity closed, pull `codex/population-politics-strategic-geography-v1` and run from the repository root on Windows:
+
+```powershell
+dotnet restore HobbyDS9.slnx --locked-mode
+dotnet build HobbyDS9.slnx -c Release --no-restore
+dotnet test HobbyDS9.slnx -c Release --no-build --no-restore
+dotnet msbuild scripts/PrepareUnity.proj -t:EditMode "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
+dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
+```
+
+Require zero Editor compilation errors, 18/18 EditMode passes, Windows x64 IL2CPP build success, and a launched `artifacts/unity/Windows/HobbyDS9.exe`. Windows Build Support (IL2CPP), Visual Studio Desktop development with C++ and a compatible Windows SDK remain required. See [the exact manual acceptance checklist](../../docs/population-politics-geography-v1.md#local-unity-acceptance) for governance, partial travel, combat and all four display sizes. Main remains unchanged until these new checks are accepted.

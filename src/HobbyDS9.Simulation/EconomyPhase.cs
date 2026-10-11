@@ -14,7 +14,7 @@ namespace HobbyDS9.Simulation
                 foreach (var installed in WorldEconomy.Infrastructure(c, d))
                     foreach (var rate in installed.definition.Extraction!.OrderBy(r => r.ResourceDefinitionId, StringComparer.Ordinal))
                     {
-                        var amount = Math.Min(PopulationRules.Stock(planet.RemainingDeposits!, rate.ResourceDefinitionId), checked(rate.Amount * installed.count));
+                        var amount = Math.Min(PopulationRules.Stock(planet.RemainingDeposits!, rate.ResourceDefinitionId), PopulationRules.ScaleBy(checked(rate.Amount * installed.count), PoliticalEconomy.Project(c,d).ExtractionFactor));
                         PopulationRules.AddStock(planet.RemainingDeposits!, rate.ResourceDefinitionId, -amount); PopulationRules.AddStock(c.Stockpiles!, rate.ResourceDefinitionId, amount);
                         s.PopulationStatistics!.ResourceExtracted = checked(s.PopulationStatistics!.ResourceExtracted + amount);
                     }

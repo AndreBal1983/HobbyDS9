@@ -27,8 +27,22 @@ namespace HobbyDS9.Application
         { Design = design; UnavailableReason = reason; }
     }
 
+    public sealed class GovernanceOption
+    {
+        public GovernancePolicyDefinitionSnapshot Policy { get; }
+        public CommandErrorCode UnavailableReason { get; }
+        public bool CanSelect => UnavailableReason==CommandErrorCode.None;
+        internal GovernanceOption(GovernancePolicyDefinitionSnapshot policy,CommandErrorCode reason){Policy=policy;UnavailableReason=reason;}
+    }
     public static class StrategicOptions
     {
+        public static IReadOnlyList<GovernanceOption> Governance(CampaignSnapshot snapshot,EntityId actorId,EntityId colonyId)
+        {
+            var access=PlanningAccess(snapshot,actorId);var world=snapshot.Campaign.Colonies.SingleOrDefault(c=>c.ColonyId==colonyId);
+            return snapshot.Content.GovernancePolicies.Select(policy=>new GovernanceOption(policy,access!=CommandErrorCode.None?access
+                :world==null?CommandErrorCode.UnknownColony:world.OwnerCivilizationId!=actorId?CommandErrorCode.ColonyNotOwned
+                :world.State.Politics.GovernancePolicyDefinitionId==policy.DefinitionId?CommandErrorCode.GovernancePolicyUnchanged:CommandErrorCode.None)).ToList().AsReadOnly();
+        }
         public static CommandErrorCode PlanningAccess(CampaignSnapshot snapshot, EntityId actorId)
         {
             if (snapshot.Campaign.Phase != SessionPhase.Planning) return CommandErrorCode.CombatPending;

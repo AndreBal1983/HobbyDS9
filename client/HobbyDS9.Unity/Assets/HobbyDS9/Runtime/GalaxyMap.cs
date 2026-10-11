@@ -63,10 +63,14 @@ namespace HobbyDS9.UnityClient
             {
                 var node = nodes[i]; var angle = 2 * Mathf.PI * i / Math.Max(1, nodes.Count) - Mathf.PI / 2;
                 positions[node.NodeId] = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+                var region=snapshot.Navigation.Nodes.Single(n=>n.NodeId==node.NodeId);
+                var hazard=region.PhenomenonDefinitionIds.Count>0;
                 var wormhole = links.Any(l => l.Kind == GalaxyEdgeKind.Wormhole && (l.EndpointA == node.NodeId || l.EndpointB == node.NodeId));
                 var marker = new Button(() => nodeSelected(node.NodeId)) { text = (node.SystemId.HasValue ? "● " : "◇ ") + node.Label };
                 marker.AddToClassList("map-marker");
                 marker.style.backgroundColor = selection.Node == node.NodeId ? new Color(.25f, .45f, .6f) : wormhole ? new Color(.30f, .14f, .42f) : new Color(.10f, .19f, .28f);
+                marker.tooltip=string.Join(", ",region.PhenomenonDefinitionIds);
+                if(hazard) marker.style.backgroundColor=new Color(.45f,.23f,.1f);
                 marker.style.color = Color.white; marker.style.width = 170; marker.style.height = 30;
                 AddMarker(marker, node.NodeId, new Vector2(-85, -15));
                 for (var j = 0; j < node.Fleets.Count; j++)
@@ -74,7 +78,7 @@ namespace HobbyDS9.UnityClient
                     var fleet = node.Fleets[j];
                     var owner = snapshot.Campaign.Civilizations.Single(c => c.CivilizationId == fleet.OwnerCivilizationId);
                     var name = snapshot.Content.Civilizations.Single(c => c.DefinitionId == owner.DefinitionId).DisplayName;
-                    var button = new Button(() => fleetSelected(fleet.FleetId)) { text = "▸ " + name + " • " + fleet.ShipIds.Count };
+                    var button = new Button(() => fleetSelected(fleet.FleetId)) { text = "▸ " + name + " • " + fleet.ShipIds.Count + (fleet.TransitTotalCost>0?" ⇢ "+fleet.TransitProgress+"/"+fleet.TransitTotalCost:"") };
                     button.AddToClassList("map-marker");
                     button.tooltip = fleet.FleetId.Value;
                     button.style.color = Color.white; button.style.backgroundColor = selection.Fleet == fleet.FleetId ? new Color(.3f, .42f, .24f) : new Color(.12f, .16f, .19f);
@@ -113,7 +117,7 @@ namespace HobbyDS9.UnityClient
             var painter = context.painter2D;
             foreach (var edge in links)
             {
-                painter.strokeColor = edge.Kind == GalaxyEdgeKind.Wormhole ? new Color(.8f, .45f, 1f) : new Color(.23f, .36f, .45f);
+                painter.strokeColor = edge.Kind == GalaxyEdgeKind.Wormhole ? new Color(.8f, .45f, 1f) : edge.PhenomenonCost>0||edge.ArtificialCost>0?new Color(.8f,.4f,.15f):new Color(.23f, .36f, .45f);
                 var highlighted = Enumerable.Range(1, Math.Max(0, route.Count - 1)).Any(i =>
                     (route[i - 1] == edge.EndpointA && route[i] == edge.EndpointB) || (route[i - 1] == edge.EndpointB && route[i] == edge.EndpointA));
                 if (highlighted) painter.strokeColor = new Color(1f, .82f, .28f);

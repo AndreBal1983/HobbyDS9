@@ -49,6 +49,18 @@ namespace HobbyDS9.Simulation
                 for (var i = 0; i < colonies.Count; i++)
                 {
                     var colony = read().Colonies!.Single(c => c.ColonyId == colonies[i]);
+                    // Shared stamped policy command; species and affinities do not select policy.
+                    var pressure = colony.Politics!.Pressure;
+                    var policy = definitions.GovernancePolicies!.OrderByDescending(p => pressure >= 6000 ? p.Suppression : 0)
+                        .ThenByDescending(p => p.SatisfactionChange + 2L*p.IntegrationChange + p.AlignmentChange - 2L*p.RadicalisationChange)
+                        .ThenBy(p => p.DefinitionId,StringComparer.Ordinal).First();
+                    if (policy.DefinitionId != colony.Politics.GovernancePolicyDefinitionId)
+                    {
+                        var policyCommand = Envelope(CommandKind.SetWorldGovernancePolicy,i);
+                        policyCommand.SetWorldGovernancePolicy = new SetWorldGovernancePolicyPayload { ColonyId=colony.ColonyId, PolicyDefinitionId=policy.DefinitionId };
+                        results.Add(submit(policyCommand));
+                        colony = read().Colonies!.Single(c=>c.ColonyId==colonies[i]);
+                    }
                     if (colony.ProductionQueue!.Count != 0) continue;
                     var owner = read().Civilizations!.Single(c => c.CivilizationId == actorId);
                     var design = definitions.ShipDesigns!.Where(d => ResearchSatisfied(d.RequiredResearchDefinitionIds!) && owner.Credits >= d.CreditCost && d.ResourceCosts!.All(r => PopulationRules.Stock(colony.Stockpiles!, r.ResourceDefinitionId) >= r.Amount) && WorldEconomy.Infrastructure(colony, definitions).Any(i => i.definition.Shipbuilding))

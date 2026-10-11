@@ -49,8 +49,9 @@ namespace HobbyDS9.Application
     {
         public IReadOnlyList<NavigationNodeSnapshot> Nodes { get; }
         public IReadOnlyList<NavigationLinkSnapshot> Links { get; }
-        internal NavigationMapSnapshot(IEnumerable<NavigationNodeSnapshot> nodes, IEnumerable<NavigationLinkSnapshot> links)
-        { Nodes = new List<NavigationNodeSnapshot>(nodes).AsReadOnly(); Links = new List<NavigationLinkSnapshot>(links).AsReadOnly(); }
+        public IReadOnlyList<PhenomenonDefinitionSnapshot> Phenomena { get; }
+        internal NavigationMapSnapshot(IEnumerable<NavigationNodeSnapshot> nodes, IEnumerable<NavigationLinkSnapshot> links, IEnumerable<PhenomenonDefinitionSnapshot>? phenomena = null)
+        { Nodes = new List<NavigationNodeSnapshot>(nodes).AsReadOnly(); Links = new List<NavigationLinkSnapshot>(links).AsReadOnly(); Phenomena = new List<PhenomenonDefinitionSnapshot>(phenomena ?? Array.Empty<PhenomenonDefinitionSnapshot>()).AsReadOnly(); }
     }
 
     public enum NavigationRouteError { None = 0, InvalidNode = 1, UnknownNode = 2, Unreachable = 3, CostOverflow = 4 }

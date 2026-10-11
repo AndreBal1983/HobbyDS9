@@ -63,6 +63,7 @@ namespace HobbyDS9.Contracts
         public IReadOnlyList<DisplacementSnapshot> Displacements { get; }
         public IReadOnlyList<LogisticsDeliverySnapshot> LastDeliveries { get; }
         public PopulationStatisticsSnapshot PopulationStatistics { get; }
+        public NavigationStatisticsSnapshot NavigationStatistics { get; }
         public IReadOnlyList<CombatEncounterSnapshot> Combats { get; }
 
         public SessionSnapshot(string scenarioId, string rulesVersion, string contentHash, int turnNumber, long revision,
@@ -72,8 +73,9 @@ namespace HobbyDS9.Contracts
             IEnumerable<GalaxyEdge>? edges = null, SessionPhase phase = SessionPhase.Planning, IEnumerable<ColonySnapshot>? colonies = null, IEnumerable<ShipSnapshot>? ships = null,
             IEnumerable<FleetSnapshot>? fleets = null, IEnumerable<ShipDesignSnapshot>? shipDesigns = null, IEnumerable<CombatEncounterSnapshot>? combats = null,
             IEnumerable<PlanetStateSnapshot>? planets = null, IEnumerable<DisplacementSnapshot>? displacements = null,
-            IEnumerable<LogisticsDeliverySnapshot>? deliveries = null, PopulationStatisticsSnapshot? populationStatistics = null)
+            IEnumerable<LogisticsDeliverySnapshot>? deliveries = null, PopulationStatisticsSnapshot? populationStatistics = null, NavigationStatisticsSnapshot? navigationStatistics = null)
         {
+            NavigationStatistics = navigationStatistics ?? new NavigationStatisticsSnapshot(new NavigationStatisticsDto());
             ScenarioId = scenarioId; RulesVersion = rulesVersion; ContentHash = contentHash;
             Phase = phase; TurnNumber = turnNumber; StateRevision = revision; NextEntitySequence = nextEntitySequence;
             RngState = rng ?? throw new ArgumentNullException(nameof(rng));
