@@ -118,6 +118,29 @@ namespace HobbyDS9.UnityClient
         { var result = session.FinalizeCombat(observed.Campaign.TurnNumber, observed.Campaign.StateRevision); Refresh(); return result; }
     }
 
+    // Selection-independent presentation model. All facts are detached Application
+    // projections; commands retain the exact turn/revision displayed by this model.
+    public sealed class ProductionOverview
+    {
+        private readonly StrategicClient client;
+        public CampaignSnapshot Observed { get; }
+        public CivilizationSnapshot? Actor { get; }
+        public IReadOnlyList<ColonySnapshot> Worlds { get; }
+        public ProductionOverview(StrategicClient client, CampaignSnapshot observed)
+        {
+            this.client = client; Observed = observed;
+            Actor = observed.Campaign.Civilizations.Where(c => c.ControllerKind == ControllerKind.Human)
+                .OrderBy(c => c.CivilizationId.Value, StringComparer.Ordinal).FirstOrDefault();
+            Worlds = observed.Campaign.Colonies.Where(c => Actor != null && c.OwnerCivilizationId == Actor.CivilizationId)
+                .OrderBy(c => c.ColonyId.Value, StringComparer.Ordinal).ToList().AsReadOnly();
+        }
+        public IReadOnlyList<ProductionOption> Designs(EntityId world) => Actor == null
+            ? Array.Empty<ProductionOption>() : StrategicOptions.Production(Observed, Actor.CivilizationId, world);
+        public bool CanCancel => Actor != null && StrategicOptions.PlanningAccess(Observed, Actor.CivilizationId) == CommandErrorCode.None;
+        public CommandResult Enqueue(EntityId world, DefinitionId design) => client.Enqueue(Observed, Actor!.CivilizationId, world, design);
+        public CommandResult Cancel(EntityId world, EntityId item) => client.Cancel(Observed, Actor!.CivilizationId, world, item);
+    }
+
     public static class CommandFeedback
     {
         public static string Describe(CommandResult result) => result.Accepted ? "Order accepted." : Explain(result.ErrorCode) + " [" + result.ErrorCode + "]";

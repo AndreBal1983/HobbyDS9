@@ -11,6 +11,66 @@ namespace HobbyDS9.UnityClient.Tests
     {
         private static CampaignHost Start() => new CampaignHost(Resources.Load<TextAsset>("ds9-slice").bytes);
         [Test]
+        public void ProductionOverviewRendersAllOwnedWorldsWithoutCampaignMutation()
+        {
+            var host = Start(); var before = host.SaveJson();
+            var model = new ProductionOverview(host.Client, host.Snapshot);
+            var view = new ProductionOverviewView(); view.Present(model, operation => operation());
+            Assert.That(model.Worlds.Select(w => w.ColonyId.Value), Is.EqualTo(new[] { "colony.mars", "colony.sol" }));
+            foreach (var world in model.Worlds)
+            {
+                var section = view.Q<Foldout>(world.ColonyId.Value);
+                Assert.That(section, Is.Not.Null);
+                Assert.That(section.text, Does.Contain(world.Environment.DisplayName));
+                Assert.That(section.text, Does.Contain("Industry " + world.Economy.Industry));
+                foreach (var option in model.Designs(world.ColonyId))
+                {
+                    var row = section.Q<VisualElement>(option.Design.DefinitionId.Value);
+                    Assert.That(row, Is.Not.Null);
+                    Assert.That(row.Q<Button>().enabledSelf, Is.EqualTo(option.CanEnqueue));
+                    Assert.That(row.Q<Label>().text, Does.Contain(option.Design.IndustryCost + " Industry"));
+                    if (!option.CanEnqueue)
+                        Assert.That(row.Query<Label>().ToList().Any(l => l.text.Contains(option.UnavailableReason.ToString())), Is.True);
+                }
+            }
+            Assert.That(host.SaveJson(), Is.EqualTo(before));
+        }
+        [Test]
+        public void ProductionOverviewCommandsUseRealBoundaryAndRenderAuthoritativeQueue()
+        {
+            var host = Start(); var world = new HobbyDS9.Contracts.EntityId("colony.sol");
+            var model = new ProductionOverview(host.Client, host.Snapshot); var revision = host.Snapshot.Campaign.StateRevision;
+            Assert.That(model.Enqueue(world, new DefinitionId("ship-design.scout")).Accepted, Is.True);
+            Assert.That(host.Snapshot.Campaign.StateRevision, Is.EqualTo(revision + 1));
+            var queued = new ProductionOverview(host.Client, host.Snapshot);
+            var item = queued.Worlds.Single(w => w.ColonyId == world).ProductionQueue.Single();
+            var view = new ProductionOverviewView(); var beforeRender = host.SaveJson();
+            view.Present(queued, operation => operation());
+            var row = view.Q<VisualElement>(item.QueueItemId.Value);
+            Assert.That(row.Q<Label>().text, Does.Contain(item.CompletedIndustry + "/" + item.RequiredIndustry));
+            Assert.That(row.Q<Label>().text, Does.Contain("Paid " + item.PaidCredits));
+            Assert.That(row.Q<Button>().text, Does.StartWith("Cancel"));
+            Assert.That(host.SaveJson(), Is.EqualTo(beforeRender));
+            Assert.That(model.Enqueue(world, new DefinitionId("ship-design.scout")).ErrorCode, Is.EqualTo(CommandErrorCode.StaleRevision));
+            Assert.That(host.SaveJson(), Is.EqualTo(beforeRender));
+            Assert.That(queued.Cancel(world, item.QueueItemId).Accepted, Is.True);
+            Assert.That(host.Snapshot.Campaign.StateRevision, Is.EqualTo(revision + 2));
+            Assert.That(host.Snapshot.Campaign.Colonies.Single(w => w.ColonyId == world).ProductionQueue, Is.Empty);
+        }
+        [Test]
+        public void ProductionOverviewRemainsUsableWithoutWorldSelection()
+        {
+            var host = Start(); var selection = new GalaxySelection();
+            selection.SelectFleet(new HobbyDS9.Contracts.EntityId("fleet.federation-scout"));
+            var model = new ProductionOverview(host.Client, host.Snapshot);
+            var view = new ProductionOverviewView(); view.Present(model, operation => operation());
+            selection.SelectNode(new NavigationNodeId("nav.bajor"));
+            view.Present(model, operation => operation());
+            Assert.That(view.Q<Foldout>("colony.sol"), Is.Not.Null);
+            Assert.That(view.Q<Foldout>("colony.mars"), Is.Not.Null);
+            Assert.That(model.Enqueue(new HobbyDS9.Contracts.EntityId("colony.sol"), new DefinitionId("ship-design.scout")).Accepted, Is.True);
+        }
+        [Test]
         public void ProjectStartsRealScenarioThroughApplication()
         {
             Assert.That(UnityEngine.Application.unityVersion, Is.EqualTo("6000.6.5f1"));

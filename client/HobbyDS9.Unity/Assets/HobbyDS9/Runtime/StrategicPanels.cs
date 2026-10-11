@@ -33,6 +33,8 @@ namespace HobbyDS9.UnityClient
                 var tab = new Button(() => { if (host == null) return; activeTab = name; Refresh(); }) { text = name == "Saves" ? "Save / Load" : name };
                 tabs[name] = tab; bar.Add(tab);
             }
+            productionToggle = new Button(() => { productionVisibilityChosen = true; SetProductionVisible(!productionOpen); }) { text = "Production" };
+            bar.Add(productionToggle);
             root.Add(bar);
         }
         private void ClearRoute() { routeFleet = null; routePreview = null; }
@@ -138,33 +140,8 @@ namespace HobbyDS9.UnityClient
         private void ShowColony(CampaignSnapshot snapshot, ColonySnapshot colony)
         {
             ShowWorld(snapshot, colony);
-            Text($"Population {colony.Population} / {colony.PopulationCapacity}\nFood {colony.Food} • Industry {colony.Economy.Industry}");
-            if (colony.OwnerCivilizationId.HasValue)
-                Text("Owner credits: " + snapshot.Campaign.Civilizations.Single(c => c.CivilizationId == colony.OwnerCivilizationId.Value).Credits);
-            var actor = Human(snapshot);
-            var canManage = actor != null && colony.OwnerCivilizationId == actor.CivilizationId && StrategicOptions.PlanningAccess(snapshot, actor.CivilizationId) == CommandErrorCode.None;
-            Text("Production queue", true);
-            if (colony.ProductionQueue.Count == 0) Text("Queue is empty.");
-            foreach (var item in colony.ProductionQueue)
-            {
-                var design = snapshot.Campaign.ShipDesigns.Single(d => d.DefinitionId == item.ShipDesignDefinitionId);
-                Text($"{design.DisplayName} • Industry {item.CompletedIndustry}/{item.RequiredIndustry}\nPaid {item.PaidCredits} credits • {Resources(snapshot, item.PaidResources)}");
-                ActionButton("Cancel " + design.DisplayName, () => Confirm("Cancel this queue item? Unused credits and strategic resources are refunded proportionally; completed industry is lost.",
-                    () => CommandFeedback.Describe(host.Client.Cancel(snapshot, actor!.CivilizationId, colony.ColonyId, item.QueueItemId))), canManage,
-                    canManage ? "Cancel and refund the unused portion" : "Only your colonies in Planning can receive orders.");
-            }
-            Text("Ship designs", true);
-            if (actor == null) return;
-            foreach (var option in StrategicOptions.Production(snapshot, actor.CivilizationId, colony.ColonyId))
-            {
-                var design = option.Design;
-                Text(design.DisplayName, true);
-                Text($"{design.CreditCost} credits • {Resources(snapshot, design.ResourceCosts)} • {design.IndustryCost} industry\nHull {design.MaxHull} • Shields {design.CombatProfile.ShieldCapacity}");
-                Text("Required research: " + (design.RequiredResearchDefinitionIds.Count == 0 ? "None" : string.Join(", ", design.RequiredResearchDefinitionIds.Select(id => ResearchName(snapshot, id)))));
-                var explanation = CommandFeedback.Explain(option.UnavailableReason);
-                if (!option.CanEnqueue) Text(explanation);
-                ActionButton("Queue " + design.DisplayName, () => Run(() => CommandFeedback.Describe(host.Client.Enqueue(snapshot, actor.CivilizationId, colony.ColonyId, design.DefinitionId))), option.CanEnqueue, explanation);
-            }
+            if (colony.OwnerCivilizationId == Human(snapshot)?.CivilizationId)
+                ActionButton("Open Production overview", () => { productionVisibilityChosen = true; SetProductionVisible(true); });
         }
         private void ShowFleet(CampaignSnapshot snapshot, FleetSnapshot fleet)
         {

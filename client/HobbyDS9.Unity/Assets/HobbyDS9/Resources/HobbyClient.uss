@@ -90,3 +90,19 @@ Button:disabled { opacity: 0.5; }
     border-color: rgb(232, 191, 99);
     background-color: rgb(34, 35, 40);
 }
+
+/* Independent scrollable production dock; the center map retains flex space. */
+.production-panel {
+    width: 20%;
+    min-width: 300px;
+    max-width: 440px;
+    min-height: 0;
+    flex-shrink: 0;
+    padding: 12px;
+    background-color: rgb(15, 23, 33);
+}
+.production-panel Label { white-space: normal; margin-bottom: 8px; }
+.production-panel Button { min-height: 32px; white-space: normal; margin-bottom: 8px; }
+.production-world { margin-top: 12px; margin-bottom: 12px; }
+.production-panel .unity-foldout__text { white-space: normal; }
+#production-heading { font-size: 23px; -unity-font-style: bold; }

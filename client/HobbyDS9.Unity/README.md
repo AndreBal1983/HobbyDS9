@@ -134,7 +134,7 @@ Refugees are exercised through deterministic .NET fixtures, including rejection/
 
 ## Population politics and strategic geography v1 acceptance
 
-The current candidate adds four EditMode cases, for an expected **18** cases, including governance/stale snapshots, weighted preview/partial-edge JSON round-trip, an independent empty hazard region and hidden-route filtering. These tests are authored, not executed in the cloud. Previous 14/14 local acceptance covers the earlier economy milestone only.
+The politics/geography integration added four EditMode cases, bringing that earlier candidate to **18** cases, including governance/stale snapshots, weighted preview/partial-edge JSON round-trip, an independent empty hazard region and hidden-route filtering. These tests are authored, not executed in the cloud. Previous 14/14 local acceptance covers the earlier economy milestone only.
 
 With Unity closed, pull `codex/population-politics-strategic-geography-v1` and run from the repository root on Windows:
 
@@ -146,4 +146,42 @@ dotnet msbuild scripts/PrepareUnity.proj -t:EditMode "-p:UnityEditor=C:/Program 
 dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
 ```
 
-Require zero Editor compilation errors, 18/18 EditMode passes, Windows x64 IL2CPP build success, and a launched `artifacts/unity/Windows/HobbyDS9.exe`. Windows Build Support (IL2CPP), Visual Studio Desktop development with C++ and a compatible Windows SDK remain required. See [the exact manual acceptance checklist](../../docs/population-politics-geography-v1.md#local-unity-acceptance) for governance, partial travel, combat and all four display sizes. Main remains unchanged until these new checks are accepted.
+For the current production-layout candidate, require zero Editor compilation errors, 21/21 EditMode passes, Windows x64 IL2CPP build success, and a launched `artifacts/unity/Windows/HobbyDS9.exe`. Windows Build Support (IL2CPP), Visual Studio Desktop development with C++ and a compatible Windows SDK remain required. See [the exact manual acceptance checklist](../../docs/population-politics-geography-v1.md#local-unity-acceptance) for governance, partial travel, combat and all four display sizes. Main remains unchanged until these new checks are accepted.
+
+
+## Production overview layout (current candidate)
+
+The strategic workspace is `Production | Galaxy map | Selection/details`. The
+**Production** header control toggles a separate, scrollable left dock. At
+height-scaled workspace widths below 2300 UI units it starts collapsed (including
+1920×1080 and 2560×1440); at ultrawide widths it starts open. An explicit toggle
+persists across selection changes, turns and resizing for the current client
+session. Both docks have bounded widths; the map takes the remaining space.
+
+Production lists every human-owned world in ordinal colony-ID order, independently
+of the selected system/fleet. Industry, queue progress, paid amounts, design costs
+and unavailable reasons come from detached Application snapshots/options. Queue
+and confirmed Cancel use the same StrategicClient stamped Application commands
+as before. Rendering issues no commands. Politics, population, environment,
+infrastructure, resources and delivery reports stay in the right details panel;
+its former full production-management block is replaced by an Open Production
+shortcut. No save/content/rules versions or simulation balance changed.
+
+This adds three Unity EditMode cases, bringing the expected current total to
+**21**. Run the EditMode and Windows targets above with Unity 6000.6.5f1; neither
+Unity compilation nor IL2CPP execution is available in the cloud.
+
+For local acceptance at 1920×1080, 2560×1440, 3440×1440 and 5120×1440:
+
+- Toggle Production; confirm the map remains usable with both docks open.
+- Confirm Earth and Mars appear, with local Industry, queue progress/paid amounts,
+  design costs and disabled design reasons; enemy worlds are absent.
+- Select a fleet, Bajor and an empty navigation region: production remains usable
+  and its world foldouts retain their open/closed state across refreshes.
+- Queue a legal design from the left dock; confirm credits/resources and revision
+  refresh from authoritative state. Cancel through the inline confirmation; check
+  the refund and queue refresh. Opening/collapsing/rendering alone changes no turn
+  or revision. Inspect right-side Politics/population/environment/deliveries and
+  confirm there is no duplicate full production block.
+- End Turn, pass through AwaitingCombat and explicitly finalize; production remains
+  visible but commands are disabled during the checkpoint and resume in Planning.

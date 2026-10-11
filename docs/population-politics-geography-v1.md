@@ -101,7 +101,7 @@ Application captures campaign, knowledge-filtered map and fleet travel projectio
 
 ### Deterministic acceptance baseline
 
-Cloud verification passes locked restore, Release build with zero warnings/errors, **729 .NET tests**, portable Unity preparation and metadata/reference/copy checks. There are **18 authored Unity EditMode cases**, not executed in this cloud environment. The acceptance tests compare continuous/repeated runs, canonical/reverse submissions, reloads at pending/partially buffered/fully buffered checkpoints, and reordered content/state including navigation, knowledge, policies, memories and cohorts.
+Cloud verification passes locked restore, Release build with zero warnings/errors, **732 .NET tests**, portable Unity preparation and metadata/reference/copy checks. There are **21 authored Unity EditMode cases**, not executed in this cloud environment. The acceptance tests compare continuous/repeated runs, canonical/reverse submissions, reloads at pending/partially buffered/fully buffered checkpoints, and reordered content/state including navigation, knowledge, policies, memories and cohorts.
 
 Canonical/reverse/repeated 25-turn final save SHA256:
 
@@ -148,7 +148,7 @@ dotnet msbuild scripts/PrepareUnity.proj -t:EditMode "-p:UnityEditor=C:/Program 
 dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
 ```
 
-Require zero Editor compilation errors and **18/18** EditMode passes. `Windows` reruns EditMode before the x64 IL2CPP build. Results/logs/player are ignored under `artifacts/unity`; launch `artifacts/unity/Windows/HobbyDS9.exe`.
+Require zero Editor compilation errors and **21/21** EditMode passes. `Windows` reruns EditMode before the x64 IL2CPP build. Results/logs/player are ignored under `artifacts/unity`; launch `artifacts/unity/Windows/HobbyDS9.exe`.
 
 1. Inspect Earth/Bajor/Mars: policy, Stability versus target, pressure/resistance, cohort reasons/memories/affinities and inclusion thresholds. Change an owned-world policy, advance, and confirm authoritative ratings/effective outputs change. Mars under extractive policy is an optional sustained-treatment resistance demonstration; no species automatically rebels.
 2. Preview Federation Sol–Bajor: cost 7, budget 3, ETA 3. Confirm route, advance one turn, and inspect 3/7 paid progress. Save/load and verify exact progress and policy restoration. Route replacement is disabled during partial travel.
@@ -158,3 +158,18 @@ Require zero Editor compilation errors and **18/18** EditMode passes. `Windows` 
 6. Check selection, pan/zoom/Fit Map and all panels at 1920×1080, 2560×1440, 3440×1440 and 5120×1440.
 
 Unity compilation, these EditMode cases and Windows IL2CPP execution remain unverified until local acceptance is supplied. Do not merge this milestone to main before acceptance. Diplomacy/hostility context, invasion, espionage, ownership-changing rebellion, procedural Voronoi geometry, full exploration/devices and final art remain deferred.
+
+
+### Production dock acceptance follow-up
+
+Production management now lives in an independent left-side overview, toggled by
+**Production** in the strategic header. The galaxy remains in the center and all
+politics/population/environment/infrastructure/resource/delivery inspection stays
+in the right panel. Human-owned worlds use ordinal colony-ID order, regardless of
+map selection; queue/design facts and availability come from Application snapshots.
+Enqueue and confirmed Cancel retain normal observed turn/revision stamps. See the
+[client layout checklist](../client/HobbyDS9.Unity/README.md#production-overview-layout-current-candidate)
+for all four target resolutions. The three new EditMode cases cover owned-world
+rendering without mutation, real command/stale-revision handling and independence
+from map selection. This presentation-only follow-up changes no versions or
+canonical/reverse/reload/reordered deterministic baselines.

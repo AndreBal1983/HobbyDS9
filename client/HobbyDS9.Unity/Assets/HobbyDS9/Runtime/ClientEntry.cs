@@ -19,6 +19,16 @@ namespace HobbyDS9.UnityClient
         private Button endTurn = null!;
         private ScrollView details = null!;
         private PanelSettings panel = null!;
+        private ProductionOverviewView production = null!;
+        private Button productionToggle = null!;
+        private bool productionOpen;
+        private bool productionVisibilityChosen;
+        private void SetProductionVisible(bool open)
+        {
+            productionOpen = open;
+            if (production != null) production.style.display = open ? DisplayStyle.Flex : DisplayStyle.None;
+            if (productionToggle != null) productionToggle.EnableInClassList("active-tab", open);
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
@@ -51,6 +61,12 @@ namespace HobbyDS9.UnityClient
             var reset = new Button(() => map.ResetView()) { text = "Fit map" }; header.Add(reset); root.Add(header);
             AddStrategicTabs(root);
             var body = new VisualElement(); body.AddToClassList("workspace");
+            production = new ProductionOverviewView(); body.Add(production);
+            // Height-scaled UI: ultrawide layouts have extra logical width. A user
+            // toggle always wins over the initial responsive docking preference.
+            body.RegisterCallback<GeometryChangedEvent>(e =>
+            { if (!productionVisibilityChosen) SetProductionVisible(e.newRect.width >= 2300); });
+            SetProductionVisible(false);
             map = new GalaxyMap(); body.Add(map);
             details = new ScrollView(); details.AddToClassList("details-panel");
             body.Add(details); root.Add(body);
@@ -90,6 +106,7 @@ namespace HobbyDS9.UnityClient
             map.Present(snapshot, selection, SelectNode, id => { ClearRoute(); selection.SelectFleet(id); activeTab = "Selection"; Refresh(); });
             map.SetRoute(routePreview);
             foreach (var tab in tabs) tab.Value.EnableInClassList("active-tab", tab.Key == activeTab);
+            production.Present(new ProductionOverview(host.Client, snapshot), Run);
             details.Clear();
             switch (activeTab)
             {
