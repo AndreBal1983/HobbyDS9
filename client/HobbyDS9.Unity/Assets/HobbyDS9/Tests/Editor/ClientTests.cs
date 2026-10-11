@@ -202,7 +202,7 @@ namespace HobbyDS9.UnityClient.Tests
                     Assert.That(row.Q<Button>().enabledSelf, Is.EqualTo(option.CanEnqueue));
                     Assert.That(row.Q<Label>().text, Does.Contain(option.Design.IndustryCost + " Industry"));
                     if (!option.CanEnqueue)
-                        Assert.That(row.Query<Label>().ToList().Any(l => l.text.Contains(option.UnavailableReason.ToString())), Is.True);
+                        Assert.That(row.Query<Label>().ToList().Any(l => l.text.Contains(CommandFeedback.Explain(option.UnavailableReason))), Is.True);
                 }
             }
             Assert.That(host.SaveJson(), Is.EqualTo(before));
