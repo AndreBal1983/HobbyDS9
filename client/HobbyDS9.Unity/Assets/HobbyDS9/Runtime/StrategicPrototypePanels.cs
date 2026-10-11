@@ -99,7 +99,7 @@ namespace HobbyDS9.UnityClient
             // A single selector avoids many repetitive design cards pushing orders
             // below the fold. Eligibility still comes from Application.
             var options = model.Designs(world.ColonyId)
-                .OrderBy(o => o.Design.RequiredEngineeringDefinitionIds.Count)
+                .OrderBy(o => o.Design.RequiredEngineeringApplicationDefinitionIds.Count)
                 .ThenBy(o => o.Design.DisplayName, StringComparer.Ordinal).ToList();
             if (options.Count == 0) { block.Add(new LcarsReadout("No ship designs available.")); AddQueue(); return; }
             var index = strategicShipChoice.TryGetValue(world.PlanetId.Value, out var previous)
