@@ -106,3 +106,8 @@ Button:disabled { opacity: 0.5; }
 .production-world { margin-top: 12px; margin-bottom: 12px; }
 .production-panel .unity-foldout__text { white-space: normal; }
 #production-heading { font-size: 23px; -unity-font-style: bold; }
+
+.combat-text, .combat-heading { white-space: normal; margin-bottom: 12px; }
+.combat-heading { font-size: 23px; -unity-font-style: bold; }
+.battle-report { margin-top: 16px; }
+.battle-report .unity-foldout__text { white-space: normal; }

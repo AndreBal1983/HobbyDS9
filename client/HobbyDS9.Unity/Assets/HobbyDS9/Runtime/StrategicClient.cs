@@ -108,9 +108,18 @@ namespace HobbyDS9.UnityClient
         public TurnResult EndTurn(CampaignSnapshot observed)
         { var result = session.AdvanceTurn(observed.Campaign.TurnNumber, observed.Campaign.StateRevision); Refresh(); return result; }
         public IReadOnlyList<CombatRequestDto> Pending() => session.GetPendingCombatRequests();
+        public IReadOnlyList<BattleReportSnapshot> Reports() => session.GetBattleReports();
+        public IReadOnlyList<FleetCombatPlanDto> PlayerPlans(CampaignSnapshot observed, CombatRequestDto request)
+        {
+            var actor = observed.Campaign.Civilizations.Where(c => c.ControllerKind == ControllerKind.Human)
+                .OrderBy(c => c.CivilizationId.Value, StringComparer.Ordinal).First();
+            return session.GetPlayerCombatPlans(request.EncounterId, actor.CivilizationId);
+        }
         public CombatSubmissionResult Resolve(CampaignSnapshot observed, CombatRequestDto request, IReadOnlyList<FleetCombatPlanDto>? plans = null)
         {
-            var result = plans == null ? session.ResolveCombat(request) : session.ResolveCombat(request, plans);
+            var actor = observed.Campaign.Civilizations.Where(c => c.ControllerKind == ControllerKind.Human)
+                .OrderBy(c => c.CivilizationId.Value, StringComparer.Ordinal).First();
+            var result = session.ResolvePlayerCombat(request.EncounterId, actor.CivilizationId, plans);
             var submitted = session.SubmitCombatResult(result, observed.Campaign.TurnNumber, observed.Campaign.StateRevision);
             Refresh(); return submitted;
         }
@@ -139,6 +148,21 @@ namespace HobbyDS9.UnityClient
         public bool CanCancel => Actor != null && StrategicOptions.PlanningAccess(Observed, Actor.CivilizationId) == CommandErrorCode.None;
         public CommandResult Enqueue(EntityId world, DefinitionId design) => client.Enqueue(Observed, Actor!.CivilizationId, world, design);
         public CommandResult Cancel(EntityId world, EntityId item) => client.Cancel(Observed, Actor!.CivilizationId, world, item);
+    }
+
+    public static class CombatPresentation
+    {
+        public static string OwnerName(CampaignSnapshot snapshot, string id)
+        {
+            var actor = snapshot.Campaign.Civilizations.Single(c => c.CivilizationId.Value == id);
+            return snapshot.Content.Civilizations.Single(c => c.DefinitionId == actor.DefinitionId).DisplayName;
+        }
+        public static string Heading(CampaignSnapshot snapshot, IEnumerable<string> participants)
+        {
+            var ids = participants.Distinct(StringComparer.Ordinal).OrderBy(id => snapshot.Campaign.Civilizations.Single(c => c.CivilizationId.Value == id).ControllerKind == ControllerKind.Human ? 0 : 1)
+                .ThenBy(id => id, StringComparer.Ordinal).ToList();
+            return ids.Count + "-way engagement: " + string.Join(" vs ", ids.Select(id => OwnerName(snapshot, id)));
+        }
     }
 
     public static class CommandFeedback

@@ -431,3 +431,44 @@ The next milestone is specified in [population-politics-geography-v1.md](populat
 G1 on the population-politics/geography feature branch implements save 12/content 8 weighted independent navigation, persisted fleet budgets/progress and knowledge-filtered Dijkstra routes. Fleet, combat and logistics DTO location/route IDs are navigation IDs, not system IDs. The old BFS `GalaxyGraph` is a legacy foundation query only. Application exposes weighted costs and authoritative fleet travel projections; see `population-politics-geography-v1.md`. Unity presentation, resistance economic effects and final authored scenario are completed in I1 before local acceptance.
 
 I1 integrates policy economic/refugee trade-offs, local resistance/disruption effectiveness, weighted physical logistics, species-neutral AI policy selection through the shared stamped handler, and atomic detached campaign/navigation/knowledge/travel projections. The Unity client uses explicit associations for labels, navigation IDs for fleet/combat positions, an owned-world governance control and expandable political reasons, plus weighted cost/budget/progress/ETA presentation. The authored scenario has seven navigation regions including empty hazardous Badlands, with ship budgets 3/4 and meaningful wormhole links. No combat algorithm/version changes or earlier excluded systems are implemented. Local Unity/Windows acceptance for this candidate remains outstanding.
+
+
+## Combat player control and buffered battle reports
+
+Application exposes `GetPlayerCombatPlans(encounterId, actorId)` and
+`ResolvePlayerCombat(encounterId, actorId, humanPlans)`. The actor must have
+persisted Human control. Overrides must uniquely identify fleets owned by that
+actor in the authoritative frozen pending request; AI/foreign/unknown fleet plans
+are rejected before any resolution or state mutation. Resolution looks up the
+pending request by ID rather than trusting a caller-edited request DTO. All
+remaining fleets receive the same existing resolver-v1 default policy through a
+shared factory (FocusFire/Standard/Overcharge, LowestHullRatio, no retreat). This
+extraction changes no combat modifiers, targeting, RNG consumption or balance.
+The lower-level pure `ResolveCombat` overloads remain for trusted host/resolver
+integration; Unity's StrategicClient player path uses the ownership-scoped API.
+Stamped submission, buffering and explicit finalization remain separate operations.
+
+Current hostility is a **free-for-all between different civilizations**: same
+civilization fleets do not target each other, but no different civilization is
+implicitly allied. Encounter headings count distinct civilizations, not fleets.
+Presentation names never imply combat sides. Future explicit sides/hostility
+belong in versioned combat inputs and authoritative target validation; this
+correction adds neither alliances nor diplomacy.
+
+`GetBattleReports()` returns immutable, detached Application projections of the
+persisted ResolvedCombats request/result pairs in canonical encounter order. They
+include every fleet/ship, initial and final hull (respecting unchanged/Held omission
+semantics), fleet dispositions/retreat destinations, and event-derived shield/hull
+damage totals. Totals use BigInteger so summing valid Int64 damage cannot overflow.
+Ordered event snapshots are grouped into LongRange/MediumRange/CloseRange phases;
+Unity only formats them, without simulating attacks or consequences. Buffered
+reports remain queryable with other pending encounters and after checkpoint
+reload. They clear with the existing combat batch on explicit finalization; no
+persistent battle history or new save field is introduced. Unsubmitted human
+plan choices remain presentation state.
+
+Unity provides editable controls only for the player's fleets, read-only summaries
+for other participants, and expandable authoritative reports for every buffered
+battle. The finalization control appears only after every request is buffered.
+Save 12, content 8, rules population-politics-geography-v1 and phased resolver v1
+remain unchanged, as does the established deterministic smoke hash.
