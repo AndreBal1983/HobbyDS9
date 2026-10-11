@@ -13,7 +13,6 @@ namespace HobbyDS9.UnityClient
     {
         private string activeTab = "Empire";
         private SessionPhase? lastPhase;
-        private readonly Dictionary<string, Button> tabs = new Dictionary<string, Button>();
         private readonly Dictionary<string, List<FleetCombatPlanDto>> combatPlans = new Dictionary<string, List<FleetCombatPlanDto>>();
         private EntityId? routeFleet;
         private RoutePreview? routePreview;
@@ -25,18 +24,6 @@ namespace HobbyDS9.UnityClient
             .Where(c => c.ControllerKind == ControllerKind.Human).OrderBy(c => c.CivilizationId.Value, StringComparer.Ordinal).FirstOrDefault();
         private static string ResearchName(CampaignSnapshot snapshot, DefinitionId id) => snapshot.Content.Research.Single(r => r.DefinitionId == id).DisplayName;
         private static string NodeName(CampaignSnapshot snapshot, NavigationNodeId id) => GalaxyProjection.Nodes(snapshot).FirstOrDefault(n => n.NodeId == id)?.Label ?? "Unknown region";
-        private void AddStrategicTabs(VisualElement root)
-        {
-            var bar = new VisualElement(); bar.AddToClassList("strategic-tabs");
-            foreach (var name in new[] { "Empire", "Selection", "Research", "Saves", "Combat", "Audio" })
-            {
-                var tab = new Button(() => { if (host == null) return; activeTab = name; Refresh(); }) { text = name == "Saves" ? "Save / Load" : name };
-                tabs[name] = tab; bar.Add(tab);
-            }
-            productionToggle = new Button(() => { productionVisibilityChosen = true; SetProductionVisible(!productionOpen); }) { text = "Production" };
-            bar.Add(productionToggle);
-            root.Add(bar);
-        }
         private void ClearRoute() { routeFleet = null; routePreview = null; }
         private void SelectNode(NavigationNodeId id)
         {
@@ -141,7 +128,7 @@ namespace HobbyDS9.UnityClient
         {
             ShowWorld(snapshot, colony);
             if (colony.OwnerCivilizationId == Human(snapshot)?.CivilizationId)
-                ActionButton("Open Production overview", () => { productionVisibilityChosen = true; SetProductionVisible(true); });
+                ActionButton("Open Production overview", () => { shell.OpenProduction(); });
         }
         private void ShowFleet(CampaignSnapshot snapshot, FleetSnapshot fleet)
         {

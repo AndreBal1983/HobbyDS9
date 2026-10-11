@@ -22,19 +22,11 @@ namespace HobbyDS9.UnityClient
         private ScrollView details = null!;
         private PanelSettings panel = null!;
         private ProductionOverviewView production = null!;
-        private Button productionToggle = null!;
-        private bool productionOpen;
-        private bool productionVisibilityChosen;
-        private void SetProductionVisible(bool open)
-        {
-            productionOpen = open;
-            if (production != null) production.style.display = open ? DisplayStyle.Flex : DisplayStyle.None;
-            if (productionToggle != null) productionToggle.EnableInClassList("active-tab", open);
-        }
-
+        private LcarsShell shell = null!;
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void Bootstrap()
         {
+            if (UnityEngine.Object.FindAnyObjectByType<ClientEntry>() != null) return;
             var go = new GameObject("HobbyDS9 Client");
             DontDestroyOnLoad(go); go.AddComponent<ClientEntry>();
         }
@@ -46,37 +38,34 @@ namespace HobbyDS9.UnityClient
             panel.referenceResolution = new Vector2Int(1920, 1080);
             panel.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight; panel.match = 1;
             panel.themeStyleSheet = UnityEngine.Resources.Load<ThemeStyleSheet>("HobbyTheme");
-            var document = gameObject.AddComponent<UIDocument>(); document.panelSettings = panel;
-            var root = document.rootVisualElement;
+            var document = GetComponent<UIDocument>() ?? gameObject.AddComponent<UIDocument>(); document.panelSettings = panel;
+            var root = document.rootVisualElement; root.Clear();
             root.AddToClassList("client-root");
             root.styleSheets.Add(UnityEngine.Resources.Load<StyleSheet>("HobbyClient"));
-            var header = new VisualElement(); header.AddToClassList("top-bar");
-            header.Add(new Label("HobbyDS9"));
-            status = new Label(); status.AddToClassList("campaign-status"); header.Add(status);
-            endTurn = new Button(() => Run(() =>
+            root.styleSheets.Add(UnityEngine.Resources.Load<StyleSheet>("LcarsTokens"));
+            root.styleSheets.Add(UnityEngine.Resources.Load<StyleSheet>("Lcars"));
+            map = new GalaxyMap(); production = new ProductionOverviewView();
+            shell = new LcarsShell(map, production,
+                section => { if (host == null) return; activeTab = section; Refresh(); },
+                () => Run(() =>
+                {
+                    ClearRoute(); var result = host.EndTurn();
+                    if (result.Status != TurnStatus.Rejected) combat.Pump();
+                    if (combat.Error != null) throw new InvalidOperationException(combat.Error);
+                    if (result.Status == TurnStatus.Rejected) throw new InvalidOperationException(result.ErrorCode.ToString());
+                    return combat.Notice ?? (result.Status == TurnStatus.AwaitingCombat ? "Encounter checkpoint reached. Resolve the pending battles." : "Turn completed.");
+                }), () => map.ResetView());
+            status = shell.Header.Primary; message = shell.Message; endTurn = shell.Header.EndTurn; details = shell.Details;
+            root.Add(shell);
+            // Height-based scaling with a readability floor for small windows.
+            // Geometry callbacks converge: scale depends only on physical height,
+            // layout decisions depend only on panel logical bounds; no Update loop.
+            void MatchScale()
             {
-                ClearRoute();
-                var result = host.EndTurn();
-                if (result.Status != TurnStatus.Rejected) combat.Pump();
-                if (combat.Error != null) throw new InvalidOperationException(combat.Error);
-                if (result.Status == TurnStatus.Rejected) throw new InvalidOperationException(result.ErrorCode.ToString());
-                return combat.Notice ?? (result.Status == TurnStatus.AwaitingCombat ? "Encounter checkpoint reached. Resolve the pending battles." : "Turn completed.");
-            })) { text = "End Turn" };
-            header.Add(endTurn);
-            var reset = new Button(() => map.ResetView()) { text = "Fit map" }; header.Add(reset); root.Add(header);
-            AddStrategicTabs(root);
-            var body = new VisualElement(); body.AddToClassList("workspace");
-            production = new ProductionOverviewView(); body.Add(production);
-            // Height-scaled UI: ultrawide layouts have extra logical width. A user
-            // toggle always wins over the initial responsive docking preference.
-            body.RegisterCallback<GeometryChangedEvent>(e =>
-            { if (!productionVisibilityChosen) SetProductionVisible(e.newRect.width >= 2300); });
-            SetProductionVisible(false);
-            map = new GalaxyMap(); body.Add(map);
-            details = new ScrollView(); details.AddToClassList("details-panel");
-            body.Add(details); root.Add(body);
-            message = new Label("Drag empty map to pan • Scroll to zoom • Select nodes or fleet markers");
-            message.AddToClassList("message-bar"); root.Add(message);
+                var scale = (float)ResponsiveLayoutPolicy.PanelScaleMultiplier(Math.Max(1, Screen.height));
+                if (!Mathf.Approximately(panel.scale, scale)) panel.scale = scale;
+            }
+            MatchScale(); root.RegisterCallback<GeometryChangedEvent>(_ => MatchScale());
             try
             {
                 var asset = UnityEngine.Resources.Load<TextAsset>("ds9-slice");
@@ -103,8 +92,9 @@ namespace HobbyDS9.UnityClient
             var research = actor?.ResearchTargetDefinitionId;
             var researchName = research.HasValue ? ResearchName(snapshot, research.Value) : "No target";
             status.text = (actor == null ? "Observer" : OwnerName(snapshot, actor.CivilizationId) + " • Credits " + actor.Credits)
-                + $"  |  Turn {state.TurnNumber} • {state.Phase} • Revision {state.StateRevision}"
-                + "\nResearch: " + researchName + " • Reserve " + (actor?.ResearchReserve ?? 0);
+                + $"  |  Turn {state.TurnNumber} • {state.Phase}";
+            shell.Header.Secondary.text = "Research: " + researchName + " • Reserve " + (actor?.ResearchReserve ?? 0);
+            shell.Header.Diagnostic.text = "Authoritative revision " + state.StateRevision;
             endTurn.SetEnabled(state.Phase == SessionPhase.Planning);
             var combatFocus = combat.ReportToReview ?? combat.PendingHumanEncounter ?? (combat.RequiresPlayer ? "complete-turn" : null);
             if (state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer &&
@@ -114,7 +104,7 @@ namespace HobbyDS9.UnityClient
             lastPhase = state.Phase;
             map.Present(snapshot, selection, SelectNode, id => { ClearRoute(); selection.SelectFleet(id); activeTab = "Selection"; Refresh(); });
             map.SetRoute(routePreview);
-            foreach (var tab in tabs) tab.Value.EnableInClassList("active-tab", tab.Key == activeTab);
+            shell.SelectSection(activeTab);
             production.Present(new ProductionOverview(host.Client, snapshot), Run);
             details.Clear();
             switch (activeTab)
