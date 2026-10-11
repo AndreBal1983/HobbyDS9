@@ -147,7 +147,7 @@ public sealed class PopulationFoundationTests
     {
         var s = Scenario(); var owner = s.InitialState.Civilizations!.Single(c => c.CivilizationId == "civ.federation");
         var expected = s.InitialState.Colonies!.Where(c => c.OwnerCivilizationId == owner.CivilizationId).Sum(c => View(s, c).ResearchOutput);
-        ResearchPhase.Execute(s.InitialState, s.Definitions); Assert.Equal(expected, owner.EngineeringReserve);
+        ResearchPhase.Execute(s.InitialState, s.Definitions); Assert.Equal(expected * ResearchUnits.Scale, owner.EngineeringReserve);
     }
     [Fact]
     public void ShortageReducesSatisfactionBeforeDeathsAndFoodDemandUsesCeilingDivision()

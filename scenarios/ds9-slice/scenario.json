@@ -1396,7 +1396,7 @@
       {
         "DefinitionId": "engineering.advanced-starship-engineering",
         "DisplayName": "Advanced Starship Engineering",
-        "BaseEngineeringCost": 60,
+        "BaseEngineeringCost": 36000,
         "ScienceRequirements": [
           {
             "Discipline": 3,
@@ -1409,7 +1409,10 @@
             "RequiredBreakthroughOrdinal": 2
           }
         ],
-        "PrerequisiteDefinitionIds": []
+        "PrerequisiteDefinitionIds": [],
+        "Kind": 1,
+        "EffectSummary": "Unlocks Advanced Scout production.",
+        "ParameterChange": null
       }
     ]
   },
@@ -1569,8 +1572,6 @@
         "ControllerKind": 1,
         "Credits": 50,
         "ResearchDiscoverySeed": 13736600173946975838,
-        "ScienceFocus": 3,
-        "ScienceAllocationBps": 7000,
         "ScienceReserve": 0,
         "EngineeringReserve": 0,
         "EngineeringTargetDefinitionId": null,
@@ -1578,32 +1579,38 @@
           {
             "Discipline": 1,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 2,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 3,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 4,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 5,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 6,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           }
         ],
         "EngineeringProgress": [],
@@ -1617,7 +1624,35 @@
           "TotalBreakthroughs": 0,
           "TotalScienceLevelsCompleted": 0,
           "TotalEngineeringApplicationsMatured": 0
-        }
+        },
+        "ScienceAllocationUnits": 420,
+        "ScienceAllocations": [
+          {
+            "Discipline": 1,
+            "Weight": 100
+          },
+          {
+            "Discipline": 2,
+            "Weight": 100
+          },
+          {
+            "Discipline": 3,
+            "Weight": 100
+          },
+          {
+            "Discipline": 4,
+            "Weight": 100
+          },
+          {
+            "Discipline": 5,
+            "Weight": 100
+          },
+          {
+            "Discipline": 6,
+            "Weight": 100
+          }
+        ],
+        "EngineeringParameters": []
       },
       {
         "CivilizationId": "civ.cardassian",
@@ -1625,8 +1660,6 @@
         "ControllerKind": 2,
         "Credits": 50,
         "ResearchDiscoverySeed": 13210427566828714299,
-        "ScienceFocus": 3,
-        "ScienceAllocationBps": 7000,
         "ScienceReserve": 0,
         "EngineeringReserve": 0,
         "EngineeringTargetDefinitionId": null,
@@ -1634,32 +1667,38 @@
           {
             "Discipline": 1,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 2,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 3,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 4,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 5,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 6,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           }
         ],
         "EngineeringProgress": [],
@@ -1673,7 +1712,35 @@
           "TotalBreakthroughs": 0,
           "TotalScienceLevelsCompleted": 0,
           "TotalEngineeringApplicationsMatured": 0
-        }
+        },
+        "ScienceAllocationUnits": 420,
+        "ScienceAllocations": [
+          {
+            "Discipline": 1,
+            "Weight": 100
+          },
+          {
+            "Discipline": 2,
+            "Weight": 100
+          },
+          {
+            "Discipline": 3,
+            "Weight": 100
+          },
+          {
+            "Discipline": 4,
+            "Weight": 100
+          },
+          {
+            "Discipline": 5,
+            "Weight": 100
+          },
+          {
+            "Discipline": 6,
+            "Weight": 100
+          }
+        ],
+        "EngineeringParameters": []
       },
       {
         "CivilizationId": "civ.dominion",
@@ -1681,8 +1748,6 @@
         "ControllerKind": 2,
         "Credits": 50,
         "ResearchDiscoverySeed": 2336943345559599384,
-        "ScienceFocus": 3,
-        "ScienceAllocationBps": 7000,
         "ScienceReserve": 0,
         "EngineeringReserve": 0,
         "EngineeringTargetDefinitionId": null,
@@ -1690,32 +1755,38 @@
           {
             "Discipline": 1,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 2,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 3,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 4,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 5,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           },
           {
             "Discipline": 6,
             "Level": 1,
-            "ProgressTowardNextLevel": 0
+            "ProgressTowardNextLevel": 0,
+            "TotalSpent": 0
           }
         ],
         "EngineeringProgress": [],
@@ -1729,7 +1800,35 @@
           "TotalBreakthroughs": 0,
           "TotalScienceLevelsCompleted": 0,
           "TotalEngineeringApplicationsMatured": 0
-        }
+        },
+        "ScienceAllocationUnits": 420,
+        "ScienceAllocations": [
+          {
+            "Discipline": 1,
+            "Weight": 100
+          },
+          {
+            "Discipline": 2,
+            "Weight": 100
+          },
+          {
+            "Discipline": 3,
+            "Weight": 100
+          },
+          {
+            "Discipline": 4,
+            "Weight": 100
+          },
+          {
+            "Discipline": 5,
+            "Weight": 100
+          },
+          {
+            "Discipline": 6,
+            "Weight": 100
+          }
+        ],
+        "EngineeringParameters": []
       }
     ],
     "StarSystems": [

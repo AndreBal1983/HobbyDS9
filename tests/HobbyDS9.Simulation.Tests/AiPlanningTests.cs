@@ -11,7 +11,7 @@ public sealed class AiPlanningTests
     private static ScenarioDto OneAi()
     { var s = Scenario(); PopulationFixture.RemoveMars(s); s.InitialState.Civilizations!.Single(c => c.CivilizationId == "civ.cardassian").ControllerKind = ControllerKind.AI; return s; }
     private static void Node(ScenarioDto s, string id, long cost, params string[] prerequisites)
-    { s.Definitions.DefinitionIds.Add(id); s.Definitions.EngineeringApplications!.Add(new() { DefinitionId = id, DisplayName = id, BaseEngineeringCost = cost, ScienceRequirements = new(), PrerequisiteDefinitionIds = prerequisites.ToList() }); }
+    { s.Definitions.DefinitionIds.Add(id); s.Definitions.EngineeringApplications!.Add(new() { DefinitionId = id, DisplayName = id, BaseEngineeringCost = cost*600, Kind = EngineeringProjectKind.NewCapability, ScienceRequirements = new(), PrerequisiteDefinitionIds = prerequisites.ToList() }); }
     private static void Design(ScenarioDto s, string id, long industry, params string[] research)
     { s.Definitions.DefinitionIds.Add(id); s.Definitions.ShipDesigns!.Add(new() { DefinitionId = id, DisplayName = id, MovementBudget = 1, IndustryCost = industry, CreditCost = 7, ResourceCosts = new() { new() { ResourceDefinitionId = "resource.dilithium", Amount = 1 } }, MaxHull = 12, CombatProfile = new(), RequiredEngineeringApplicationDefinitionIds = research.ToList() }); }
 
@@ -39,7 +39,7 @@ public sealed class AiPlanningTests
         scenario.Definitions.ShipDesigns!.Reverse(); scenario.Definitions.EngineeringApplications!.Reverse();
         var s = Session(scenario); var result = Advance(s); Assert.Equal(3, result.CommandResults.Count);
         var ai = s.ExportSave().GameState.Civilizations!.Single(c => c.CivilizationId == "civ.cardassian");
-        Assert.Equal(new[] { "engineering.a" }, ai.MatureEngineeringApplicationDefinitionIds!); Assert.Equal(2, ai.EngineeringReserve); Assert.Null(ai.EngineeringTargetDefinitionId);
+        Assert.Equal(new[] { "engineering.a" }, ai.MatureEngineeringApplicationDefinitionIds!); Assert.Equal(2*600, ai.EngineeringReserve); Assert.Null(ai.EngineeringTargetDefinitionId);
         var item = Assert.Single(s.ExportSave().GameState.Colonies!.Single(c => c.ColonyId == "colony.cardassia").ProductionQueue!); Assert.Equal("ship-design.a", item.ShipDesignDefinitionId); Assert.Equal(8, item.CompletedIndustry);
         Advance(s); Assert.Contains("engineering.z", s.ExportSave().GameState.Civilizations!.Single(c => c.CivilizationId == "civ.cardassian").MatureEngineeringApplicationDefinitionIds!);
         Assert.Contains(s.CaptureSnapshot().Ships, ship => ship.ShipDesignDefinitionId.Value == "ship-design.a");

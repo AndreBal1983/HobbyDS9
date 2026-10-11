@@ -11,7 +11,7 @@ internal static class NavigationFixture
     internal static GameStateDto State(GameStateDto s, DefinitionCatalogDto d)
     {
         foreach(var civilization in s.Civilizations!) {
-            if(civilization.Disciplines==null){civilization.Disciplines=ScienceCoreTests.Initial().Disciplines;civilization.ScienceFocus=ScienceDiscipline.Construction;civilization.ResearchDiscoverySeed=0;civilization.EngineeringProgress=new();civilization.Statistics=new();}
+            if(civilization.Disciplines==null){civilization.Disciplines=ScienceCoreTests.Initial().Disciplines;civilization.ScienceAllocations=ScienceCoreTests.Initial().ScienceAllocations;civilization.EngineeringParameters=new();civilization.ResearchDiscoverySeed=0;civilization.EngineeringProgress=new();civilization.Statistics=new();}
         }
         s.ResearchPaceFactor ??= 10000; s.LastResearchReceipts ??= new();
         s.NavigationKnowledge = s.Civilizations!.Select(c => new CivilizationNavigationKnowledgeDto { CivilizationId = c.CivilizationId,

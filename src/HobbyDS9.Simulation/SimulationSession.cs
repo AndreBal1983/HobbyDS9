@@ -43,7 +43,7 @@ namespace HobbyDS9.Simulation
             handlers = new Dictionary<CommandKind, ICommandHandler>
             {
                 [CommandKind.SetResearchAllocation] = new ScienceCommandHandler(),
-                [CommandKind.SetScienceFocus] = new ScienceCommandHandler(),
+                [CommandKind.SetScienceAllocation] = new ScienceCommandHandler(),
                 [CommandKind.SetEngineeringTarget] = new EngineeringTargetHandler(this.definitions),
                 [CommandKind.EnqueueProduction] = new EnqueueProductionHandler(this.definitions),
                 [CommandKind.CancelProduction] = new CancelProductionHandler(),
@@ -266,7 +266,7 @@ namespace HobbyDS9.Simulation
             {
                 DefinitionId = n.DefinitionId,
                 DisplayName = n.DisplayName,
-                BaseEngineeringCost = n.BaseEngineeringCost,
+                BaseEngineeringCost = n.BaseEngineeringCost, Kind=n.Kind, EffectSummary=n.EffectSummary, ParameterChange=n.ParameterChange==null?null:new EngineeringParameterChangeDto{ParameterDefinitionId=n.ParameterChange.ParameterDefinitionId,Value=n.ParameterChange.Value},
                 ScienceRequirements = n.ScienceRequirements!.OrderBy(q => q.Discipline).ThenBy(q => q.IntervalStartLevel).ThenBy(q => q.RequiredBreakthroughOrdinal).Select(q => new EngineeringScienceRequirementDto { Discipline=q.Discipline, IntervalStartLevel=q.IntervalStartLevel, RequiredBreakthroughOrdinal=q.RequiredBreakthroughOrdinal }).ToList(),
                 PrerequisiteDefinitionIds = n.PrerequisiteDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal).ToList()
             }).ToList(),
@@ -284,11 +284,11 @@ namespace HobbyDS9.Simulation
         };
 
         private static bool IsKnownKind(CommandKind kind) => kind == CommandKind.EnqueueProduction
-            || kind == CommandKind.CancelProduction || kind == CommandKind.SetEngineeringTarget || kind == CommandKind.SetFleetRoute || kind == CommandKind.SetWorldGovernancePolicy || kind == CommandKind.SetResearchAllocation || kind == CommandKind.SetScienceFocus;
+            || kind == CommandKind.CancelProduction || kind == CommandKind.SetEngineeringTarget || kind == CommandKind.SetFleetRoute || kind == CommandKind.SetWorldGovernancePolicy || kind == CommandKind.SetResearchAllocation || kind == CommandKind.SetScienceAllocation;
 
         private static bool HasValidPayload(CommandEnvelope command)
         {
-            var count = (command.SetResearchAllocation == null ? 0 : 1) + (command.SetScienceFocus == null ? 0 : 1) + (command.EnqueueProduction == null ? 0 : 1) + (command.CancelProduction == null ? 0 : 1)
+            var count = (command.SetResearchAllocation == null ? 0 : 1) + (command.SetScienceAllocation == null ? 0 : 1) + (command.EnqueueProduction == null ? 0 : 1) + (command.CancelProduction == null ? 0 : 1)
                 + (command.SetEngineeringTarget == null ? 0 : 1) + (command.SetFleetRoute == null ? 0 : 1) + (command.SetWorldGovernancePolicy == null ? 0 : 1);
             if (count != 1) return false;
             switch (command.Kind)
@@ -300,7 +300,7 @@ namespace HobbyDS9.Simulation
                     return command.CancelProduction != null && EntityId.TryParse(command.CancelProduction.ColonyId, out _)
                         && EntityId.TryParse(command.CancelProduction.QueueItemId, out _);
                 case CommandKind.SetResearchAllocation: return command.SetResearchAllocation != null;
-                case CommandKind.SetScienceFocus: return command.SetScienceFocus != null;
+                case CommandKind.SetScienceAllocation: return command.SetScienceAllocation != null;
                 case CommandKind.SetEngineeringTarget:
                     return command.SetEngineeringTarget != null && (command.SetEngineeringTarget.TargetDefinitionId == null || DefinitionId.TryParse(command.SetEngineeringTarget.TargetDefinitionId, out _));
                 case CommandKind.SetWorldGovernancePolicy:
@@ -379,8 +379,8 @@ namespace HobbyDS9.Simulation
                 { ColonyId = source.EnqueueProduction.ColonyId, DefinitionId = source.EnqueueProduction.DefinitionId },
                 CancelProduction = source.CancelProduction == null ? null : new CancelProductionPayload
                 { ColonyId = source.CancelProduction.ColonyId, QueueItemId = source.CancelProduction.QueueItemId },
-                SetResearchAllocation = source.SetResearchAllocation == null ? null : new SetResearchAllocationPayload { ScienceAllocationBps = source.SetResearchAllocation.ScienceAllocationBps },
-                SetScienceFocus = source.SetScienceFocus == null ? null : new SetScienceFocusPayload { Discipline = source.SetScienceFocus.Discipline },
+                SetResearchAllocation = source.SetResearchAllocation == null ? null : new SetResearchAllocationPayload { ScienceAllocationUnits = source.SetResearchAllocation.ScienceAllocationUnits },
+                SetScienceAllocation = source.SetScienceAllocation == null ? null : new SetScienceAllocationPayload { Allocations = source.SetScienceAllocation.Allocations?.Select(a=>a==null?null!:new ScienceAllocationDto{Discipline=a.Discipline,Weight=a.Weight}).ToList() },
                 SetEngineeringTarget = source.SetEngineeringTarget == null ? null : new SetEngineeringTargetPayload
                 { TargetDefinitionId = source.SetEngineeringTarget.TargetDefinitionId },
                 SetFleetRoute = source.SetFleetRoute == null ? null : new SetFleetRoutePayload

@@ -14,8 +14,8 @@ internal static class VerticalSliceFixture
         scenario.ContentHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
         if (!weighted)
         {
-            foreach(var civilization in scenario.InitialState.Civilizations!) { civilization.ScienceAllocationBps=0; civilization.ScienceFocus=ScienceDiscipline.Construction; }
-            foreach(var application in scenario.Definitions.EngineeringApplications!) { application.ScienceRequirements=new();application.BaseEngineeringCost=9; }
+            foreach(var civilization in scenario.InitialState.Civilizations!) { civilization.ScienceAllocationUnits=0; }
+            foreach(var application in scenario.Definitions.EngineeringApplications!) { application.ScienceRequirements=new();application.BaseEngineeringCost=9*600; }
             // Historical unit-cost mechanics fixtures stay isolated from authored weighted balance.
             var association=scenario.Definitions.NavigationRegions!.Where(n=>n.AssociatedSystemId!=null).ToDictionary(n=>n.NodeId,n=>n.AssociatedSystemId!);
             foreach(var fleet in scenario.InitialState.Fleets!){fleet.LocationNodeId=association[fleet.LocationNodeId];fleet.RouteNodeIds=fleet.RouteNodeIds!.Select(n=>association[n]).ToList();}

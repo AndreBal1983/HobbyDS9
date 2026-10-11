@@ -28,7 +28,7 @@ public sealed class StrategicClientTests
         {
             DefinitionId = "engineering.follow-up",
             DisplayName = "Follow up",
-            BaseEngineeringCost = 20, ScienceRequirements = new(),
+            BaseEngineeringCost = 20*600, Kind = EngineeringProjectKind.NewCapability, ScienceRequirements = new(),
             PrerequisiteDefinitionIds = new() { Research.Value }
         });
         var client = Start(scenario);

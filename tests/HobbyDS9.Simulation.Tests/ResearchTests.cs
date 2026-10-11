@@ -10,7 +10,7 @@ public sealed class ResearchTests
 {
     private static readonly SaveCompatibility Compatibility = new("scenario.research", "research-fixture-v1", new string('a', 64));
     private static EngineeringApplicationDefinitionDto Node(string id, long cost, params string[] prerequisites) =>
-        new() { DefinitionId = id, DisplayName = id, BaseEngineeringCost = cost, ScienceRequirements = new(), PrerequisiteDefinitionIds = prerequisites.ToList() };
+        new() { DefinitionId = id, DisplayName = id, BaseEngineeringCost = cost*600, Kind = EngineeringProjectKind.NewCapability, ScienceRequirements = new(), PrerequisiteDefinitionIds = prerequisites.ToList() };
     private static DefinitionCatalogDto Definitions() => PopulationFixture.Content(NavigationFixture.Definitions(new()
     {
         ContentFormatVersion = FoundationVersions.ContentFormatVersion,
@@ -123,7 +123,7 @@ public sealed class ResearchTests
     [Fact]
     public void AlreadyUnlockedAndSameTargetHaveExplicitCodesWithoutRevisionOrIdReservation()
     {
-        var save = Save(); Human(save).MatureEngineeringApplicationDefinitionIds!.Add("engineering.alpha"); Human(save).EngineeringProgress!.Add(new(){DefinitionId="engineering.alpha",Progress=9}); var session = Session(save);
+        var save = Save(); Human(save).MatureEngineeringApplicationDefinitionIds!.Add("engineering.alpha"); Human(save).EngineeringProgress!.Add(new(){DefinitionId="engineering.alpha",Progress=9*600}); var session = Session(save);
         var before = StateJson(session);
         Assert.Equal(CommandErrorCode.EngineeringAlreadyMature, session.SubmitCommand(Command(session, "engineering.alpha")).ErrorCode);
         Assert.Equal(before, StateJson(session)); Assert.True(session.SubmitCommand(Command(session, "engineering.beta")).Accepted);
@@ -137,12 +137,12 @@ public sealed class ResearchTests
     [Fact]
     public void RetargetingKeepsReserveAndOnlyCompletionSpendsPoints()
     {
-        var save = Save(); Human(save).EngineeringReserve = 7; var session = Session(save);
+        var save = Save(); Human(save).EngineeringReserve = 7*600; var session = Session(save);
         Assert.True(session.SubmitCommand(Command(session, "engineering.alpha")).Accepted);
-        Assert.Equal(7, Human(session).EngineeringReserve);
+        Assert.Equal(7*600, Human(session).EngineeringReserve);
         Assert.True(session.SubmitCommand(Command(session, "engineering.alt", "cmd.retarget")).Accepted);
-        Assert.Equal(7, Human(session).EngineeringReserve); Assert.Equal("engineering.alt", Human(session).EngineeringTargetDefinitionId);
-        Advance(session); Assert.Equal(5, Human(session).EngineeringReserve); Assert.Null(Human(session).EngineeringTargetDefinitionId);
+        Assert.Equal(7*600, Human(session).EngineeringReserve); Assert.Equal("engineering.alt", Human(session).EngineeringTargetDefinitionId);
+        Advance(session); Assert.Equal(5*600, Human(session).EngineeringReserve); Assert.Null(Human(session).EngineeringTargetDefinitionId);
         Assert.Equal(new[] { "engineering.alt" }, Human(session).MatureEngineeringApplicationDefinitionIds);
     }
 
@@ -151,37 +151,37 @@ public sealed class ResearchTests
     {
         var scenario=VerticalSliceFixture.Scenario(false,weighted:true);
         var app=Assert.Single(scenario.Definitions.EngineeringApplications!);
-        Assert.Equal(60,app.BaseEngineeringCost);
+        Assert.Equal(36000,app.BaseEngineeringCost);
         Assert.Equal(2,app.ScienceRequirements!.Count);
         var session=VerticalSliceFixture.Session(scenario);
         var before=StateJson(session);
         Assert.Equal(CommandErrorCode.EngineeringScienceRequirementMissing,session.SubmitCommand(Command(session,app.DefinitionId,actor:"civ.federation")).ErrorCode);
         Assert.Equal(before,StateJson(session));
         foreach(var c in scenario.InitialState.Civilizations!)
-        { Assert.Equal(7000,c.ScienceAllocationBps);Assert.Equal(6,c.Disciplines!.Count);Assert.All(c.Disciplines,d=>Assert.Equal(1,d.Level)); }
+        { Assert.Equal(420,c.ScienceAllocationUnits);Assert.Equal(6,c.Disciplines!.Count);Assert.All(c.Disciplines,d=>Assert.Equal(1,d.Level)); }
     }
 
     [Fact]
     public void OwnedOutputsAggregateNeutralOutputDoesNotAndNoTargetAccumulatesReserve()
     {
         var save = Save(); AddColony(save, "other", "civ.z"); AddColony(save, "neutral", null); var session = Session(save);
-        Advance(session); Assert.Equal(6, Human(session).EngineeringReserve); Assert.Empty(Human(session).MatureEngineeringApplicationDefinitionIds!);
-        Assert.Equal(0, session.ExportSave().GameState.Civilizations!.Single(c => c.CivilizationId == "civ.a").EngineeringReserve);
-        Advance(session); Assert.Equal(12, Human(session).EngineeringReserve);
+        Advance(session); Assert.Equal(6*600, Human(session).EngineeringReserve); Assert.Empty(Human(session).MatureEngineeringApplicationDefinitionIds!);
+        Assert.Equal(0*600, session.ExportSave().GameState.Civilizations!.Single(c => c.CivilizationId == "civ.a").EngineeringReserve);
+        Advance(session); Assert.Equal(12*600, Human(session).EngineeringReserve);
         Assert.True(session.SubmitCommand(Command(session, "engineering.alpha")).Accepted); Advance(session);
-        Assert.Equal(9, Human(session).EngineeringReserve); Assert.Equal(new[] { "engineering.alpha" }, Human(session).MatureEngineeringApplicationDefinitionIds);
+        Assert.Equal(9*600, Human(session).EngineeringReserve); Assert.Equal(new[] { "engineering.alpha" }, Human(session).MatureEngineeringApplicationDefinitionIds);
     }
 
     [Fact]
     public void SurplusUnlocksOneNodeOnlyAndPrerequisiteChainRequiresNextPlanningCommands()
     {
-        var save = Save(); Human(save).EngineeringReserve = 20; var session = Session(save);
+        var save = Save(); Human(save).EngineeringReserve = 20*600; var session = Session(save);
         Assert.True(session.SubmitCommand(Command(session, "engineering.alpha")).Accepted); Advance(session);
-        Assert.Equal(14, Human(session).EngineeringReserve); Assert.Equal(new[] { "engineering.alpha" }, Human(session).MatureEngineeringApplicationDefinitionIds);
+        Assert.Equal(14*600, Human(session).EngineeringReserve); Assert.Equal(new[] { "engineering.alpha" }, Human(session).MatureEngineeringApplicationDefinitionIds);
         Assert.Null(Human(session).EngineeringTargetDefinitionId);
-        Advance(session); Assert.Equal(17, Human(session).EngineeringReserve); Assert.Single(Human(session).MatureEngineeringApplicationDefinitionIds!);
+        Advance(session); Assert.Equal(17*600, Human(session).EngineeringReserve); Assert.Single(Human(session).MatureEngineeringApplicationDefinitionIds!);
         Assert.True(session.SubmitCommand(Command(session, "engineering.beta")).Accepted); Advance(session);
-        Assert.Equal(16, Human(session).EngineeringReserve); Assert.Equal(new[] { "engineering.alpha", "engineering.beta" }, Human(session).MatureEngineeringApplicationDefinitionIds);
+        Assert.Equal(16*600, Human(session).EngineeringReserve); Assert.Equal(new[] { "engineering.alpha", "engineering.beta" }, Human(session).MatureEngineeringApplicationDefinitionIds);
         Assert.Equal(CommandErrorCode.EngineeringPrerequisiteMissing, session.SubmitCommand(Command(session, "engineering.gamma")).ErrorCode);
         Assert.True(session.SubmitCommand(Command(session, "engineering.alt")).Accepted); Advance(session);
         Assert.True(session.SubmitCommand(Command(session, "engineering.gamma")).Accepted); Advance(session);
@@ -269,7 +269,7 @@ public sealed class ResearchTests
     public void ReorderedDefinitionsPrerequisitesUnlocksAndStateHaveIdenticalContinuation()
     {
         var save = Save(); AddColony(save, "a", "civ.z"); var defs = Definitions();
-        Human(save).MatureEngineeringApplicationDefinitionIds = new() { "engineering.alt", "engineering.alpha" }; Human(save).EngineeringTargetDefinitionId = "engineering.gamma"; Human(save).EngineeringProgress=new(){new(){DefinitionId="engineering.alt",Progress=5},new(){DefinitionId="engineering.alpha",Progress=9}};
+        Human(save).MatureEngineeringApplicationDefinitionIds = new() { "engineering.alt", "engineering.alpha" }; Human(save).EngineeringTargetDefinitionId = "engineering.gamma"; Human(save).EngineeringProgress=new(){new(){DefinitionId="engineering.alt",Progress=5*600},new(){DefinitionId="engineering.alpha",Progress=9*600}};
         var baseline = Session(save, defs);
         defs.EngineeringApplications!.Reverse(); foreach (var node in defs.EngineeringApplications) node.PrerequisiteDefinitionIds!.Reverse();
         defs.DefinitionIds.Reverse(); save.GameState.Civilizations!.Reverse(); save.GameState.EntityIdentities.Reverse(); save.GameState.Colonies!.Reverse();
@@ -287,7 +287,7 @@ public sealed class ResearchTests
     public void MidResearchSaveReloadContinuesTargetsReserveAndDuplicateDetectionExactly()
     {
         var session = Session(); Assert.True(session.SubmitCommand(Command(session, "engineering.alpha")).Accepted); Advance(session);
-        Assert.Equal(0, Human(session).EngineeringReserve);
+        Assert.Equal(0*600, Human(session).EngineeringReserve);
         Assert.True(session.SubmitCommand(Command(session, "engineering.alt", "cmd.retarget")).Accepted);
         var command = Command(session, "engineering.alt", "cmd.retarget");
         var resumed = Session(JsonSerializer.Deserialize<SaveEnvelopeDto>(StateJson(session)), JsonSerializer.Deserialize<DefinitionCatalogDto>(JsonSerializer.Serialize(Definitions())));
@@ -311,8 +311,8 @@ public sealed class ResearchTests
         var staging = JsonSerializer.Deserialize<SaveEnvelopeDto>(JsonSerializer.Serialize(save))!.GameState;
         EconomyPhase.Execute(staging, defs); Assert.Equal(1005, PopulationRules.Population(staging.Colonies![0]));
         Assert.Throws<OverflowException>(() => ResearchPhase.Execute(staging, defs));
-        // Raw DTO puts civ.z first, yet civ.a was processed before civ.z failed.
-        Assert.Equal(error == "reserve" ? 3 : long.MaxValue / 2 + 2, staging.Civilizations!.Single(c => c.CivilizationId == "civ.a").EngineeringReserve);
+        // Canonical civ.a runs first: reserve overflow occurs in civ.z; scaling overflow occurs before civ.a receives research.
+        Assert.Equal(error == "reserve" ? 3 * ResearchUnits.Scale : 0, staging.Civilizations!.Single(c => c.CivilizationId == "civ.a").EngineeringReserve);
         Assert.Equal(before, StateJson(session));
     }
 
@@ -322,7 +322,7 @@ public sealed class ResearchTests
     [InlineData("invariant")]
     public void ResearchAndLaterFailuresDiscardEarlierEconomicAndResearchChanges(string failure)
     {
-        var save = Save(); Human(save).EngineeringReserve = 6; var failed = true; GameStateDto? retained = null;
+        var save = Save(); Human(save).EngineeringReserve = 6*600; var failed = true; GameStateDto? retained = null;
         var session = Session(save, probe: (phase, s) =>
         {
             retained = s;
@@ -340,10 +340,10 @@ public sealed class ResearchTests
         if (failure == "false") Assert.Equal(TurnErrorCode.PhaseFailed, Advance(session).ErrorCode);
         else if (failure == "exception") Assert.Throws<ApplicationException>(() => Advance(session));
         else Assert.Throws<InvalidOperationException>(() => Advance(session));
-        Assert.Equal(before, StateJson(session)); retained!.Civilizations![0].EngineeringReserve = 0; retained.Civilizations[0].MatureEngineeringApplicationDefinitionIds!.Clear();
+        Assert.Equal(before, StateJson(session)); retained!.Civilizations![0].EngineeringReserve = 0*600; retained.Civilizations[0].MatureEngineeringApplicationDefinitionIds!.Clear();
         Assert.Equal(before, StateJson(session)); failed = false; Assert.Equal(TurnStatus.Completed, Advance(session).Status);
         var after = StateJson(session); retained!.Civilizations![0].MatureEngineeringApplicationDefinitionIds!.Add("engineering.fake"); Assert.Equal(after, StateJson(session));
-        Assert.Equal(0, Human(session).EngineeringReserve); Assert.Equal(new[] { "engineering.alpha" }, Human(session).MatureEngineeringApplicationDefinitionIds);
+        Assert.Equal(0*600, Human(session).EngineeringReserve); Assert.Equal(new[] { "engineering.alpha" }, Human(session).MatureEngineeringApplicationDefinitionIds);
         Assert.Empty(session.CaptureSnapshot().AcceptedCommandIds);
     }
 
@@ -375,12 +375,12 @@ public sealed class ResearchTests
     {
         var save = Save(); var defs = Definitions(); var session = Session(save, defs); var old = session.CaptureSnapshot();
         var alpha = defs.EngineeringApplications!.Single(n => n.DefinitionId == "engineering.alpha"); alpha.BaseEngineeringCost = 1; alpha.PrerequisiteDefinitionIds!.Add("engineering.gamma");
-        defs.EngineeringApplications!.Clear(); Human(save).MatureEngineeringApplicationDefinitionIds!.Add("engineering.alpha"); Human(save).EngineeringReserve = 100;
-        Assert.True(session.SubmitCommand(Command(session, "engineering.alpha")).Accepted); Advance(session); Assert.Equal(0, Human(session).EngineeringReserve);
+        defs.EngineeringApplications!.Clear(); Human(save).MatureEngineeringApplicationDefinitionIds!.Add("engineering.alpha"); Human(save).EngineeringReserve = 100*600;
+        Assert.True(session.SubmitCommand(Command(session, "engineering.alpha")).Accepted); Advance(session); Assert.Equal(0*600, Human(session).EngineeringReserve);
         var snapshot = session.CaptureSnapshot(); var human = snapshot.Civilizations.Single(c => c.CivilizationId.Value == "civ.z");
-        Assert.Equal(0, human.EngineeringReserve); Assert.Equal(new DefinitionId("engineering.alpha"), human.EngineeringTargetDefinitionId);
+        Assert.Equal(0*600, human.EngineeringReserve); Assert.Equal(new DefinitionId("engineering.alpha"), human.EngineeringTargetDefinitionId);
         Assert.Throws<NotSupportedException>(() => ((IList<DefinitionId>)human.MatureEngineeringApplicationDefinitionIds).Clear());
-        Assert.Equal(0, old.Civilizations.Single(c => c.CivilizationId.Value == "civ.z").EngineeringReserve);
+        Assert.Equal(0*600, old.Civilizations.Single(c => c.CivilizationId.Value == "civ.z").EngineeringReserve);
         var before = StateJson(session); var exported = session.ExportSave(); Human(exported).MatureEngineeringApplicationDefinitionIds!.Add("engineering.fake"); Human(exported).EngineeringTargetDefinitionId = null;
         Assert.Equal(before, StateJson(session)); Advance(session); Advance(session);
         Assert.Equal(new[] { "engineering.alpha" }, Human(session).MatureEngineeringApplicationDefinitionIds);

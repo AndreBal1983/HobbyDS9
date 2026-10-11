@@ -24,14 +24,15 @@ namespace HobbyDS9.Application
     {
         public ScienceDiscipline Discipline { get; } public int Level { get; } public long Progress { get; } public long IntervalCost { get; }
         public int MaxLevel=>10; public decimal ProgressPercent=>Level==10?100m:100m*Progress/IntervalCost; public int BreakthroughCount=>Breakpoints.Count;
-        public bool IsFocus { get; } public CommandErrorCode UnavailableReason { get; } public bool CanFocus=>UnavailableReason==CommandErrorCode.None;
+        public int AllocationWeight { get; } public decimal AllocationPercent=>100m*AllocationWeight/ResearchUnits.Scale;
+        public bool Maxed=>Level==10; public bool AllocatedWhileMaxed=>Maxed&&AllocationWeight>0;
         public IReadOnlyList<ScienceBreakpointSnapshot> Breakpoints { get; }
         internal ScienceCardSnapshot(ScienceDisciplineSnapshot d,ScienceEngineeringSnapshot state,int pace,CommandErrorCode access)
         {
-            Discipline=d.Discipline;Level=d.Level;Progress=d.Progress;IsFocus=state.ScienceFocus==d.Discipline;
+            Discipline=d.Discipline;Level=d.Level;Progress=d.Progress;AllocationWeight=state.ScienceAllocations.Single(a=>a.Discipline==d.Discipline).Weight;
             IntervalCost=d.Level==10?0:ScienceRules.IntervalCost(d.Level,pace);
             Breakpoints=(d.Level==10?new List<ScienceBreakpointSnapshot>():ScienceRules.Schedule(state.ResearchDiscoverySeed,d.Discipline,d.Level,pace).Select(p=>new ScienceBreakpointSnapshot(p,d.Progress)).ToList()).AsReadOnly();
-            UnavailableReason=access!=CommandErrorCode.None?access:d.Level==10?CommandErrorCode.ScienceFocusMaxed:IsFocus?CommandErrorCode.ScienceFocusUnchanged:CommandErrorCode.None;
+
         }
     }
     public sealed class EngineeringCardSnapshot
@@ -57,17 +58,19 @@ namespace HobbyDS9.Application
     public sealed class ResearchOverviewSnapshot
     {
         public long ResearchOutput { get; } public long ScienceAllocation { get; } public long EngineeringAllocation { get; }
-        public int ScienceAllocationBps { get; } public int PaceFactor { get; } public long ScienceReserve { get; } public long EngineeringReserve { get; }
-        public ScienceDiscipline? Focus { get; } public DefinitionId? Target { get; }
+        public int ScienceAllocationUnits { get; } public int PaceFactor { get; } public long ScienceReserve { get; } public long EngineeringReserve { get; }
+        public DefinitionId? Target { get; }
+        public decimal SciencePercent=>100m*ScienceAllocationUnits/ResearchUnits.Scale; public decimal EngineeringPercent=>100m-SciencePercent;
+        public decimal ScienceReserveConceptual=>(decimal)ScienceReserve/ResearchUnits.Scale; public decimal EngineeringReserveConceptual=>(decimal)EngineeringReserve/ResearchUnits.Scale;
         public IReadOnlyList<ScienceCardSnapshot> Science { get; } public IReadOnlyList<EngineeringCardSnapshot> Engineering { get; }
         public IReadOnlyList<ResearchReceiptSnapshot> Receipts { get; }
         private ResearchOverviewSnapshot(CampaignSnapshot snapshot,CivilizationSnapshot actor)
         {
             var state=actor.Research!;var access=StrategicOptions.PlanningAccess(snapshot,actor.CivilizationId);
-            PaceFactor=snapshot.Campaign.ResearchPaceFactor;ScienceAllocationBps=state.ScienceAllocationBps;
+            PaceFactor=snapshot.Campaign.ResearchPaceFactor;ScienceAllocationUnits=state.ScienceAllocationUnits;
             ResearchOutput=snapshot.Campaign.Colonies.Where(c=>c.OwnerCivilizationId==actor.CivilizationId).Aggregate(0L,(sum,c)=>checked(sum+c.Economy.ResearchOutput));
-            ScienceAllocation=(long)((BigInteger)ResearchOutput*ScienceAllocationBps/10000);EngineeringAllocation=ResearchOutput-ScienceAllocation;
-            ScienceReserve=state.ScienceReserve;EngineeringReserve=state.EngineeringReserve;Focus=state.ScienceFocus;Target=state.EngineeringTarget;
+            ScienceAllocation=(long)((BigInteger)ResearchOutput*ScienceAllocationUnits);EngineeringAllocation=checked(ResearchOutput*ResearchUnits.Scale)-ScienceAllocation;
+            ScienceReserve=state.ScienceReserve;EngineeringReserve=state.EngineeringReserve;Target=state.EngineeringTarget;
             Science=state.Disciplines.Select(d=>new ScienceCardSnapshot(d,state,PaceFactor,access)).ToList().AsReadOnly();
             Engineering=snapshot.Content.Engineering.Select(d=>new EngineeringCardSnapshot(d,state,PaceFactor,access)).ToList().AsReadOnly();
             Receipts=snapshot.Campaign.LastResearchReceipts.Where(r=>r.CivilizationId==actor.CivilizationId).ToList().AsReadOnly();

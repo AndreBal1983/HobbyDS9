@@ -35,15 +35,12 @@ namespace HobbyDS9.Simulation
                 }
                 bool ResearchSatisfied(IEnumerable<string> prerequisites) => prerequisites.All(id => read().Civilizations!.Single(c => c.CivilizationId == actorId)
                     .MatureEngineeringApplicationDefinitionIds!.Contains(id, StringComparer.Ordinal));
-                if(actor.ScienceFocus==null||actor.Disciplines!.Single(d=>d.Discipline==actor.ScienceFocus).Level==10)
+                var unmaxed=actor.Disciplines!.Where(d=>d.Level<10).OrderBy(d=>d.Discipline).ToList();
+                if(unmaxed.Count>0&&actor.ScienceAllocations!.Any(w=>w.Weight>0&&actor.Disciplines.Single(d=>d.Discipline==w.Discipline).Level==10))
                 {
-                    var candidates=actor.Disciplines!.Where(d=>d.Level<10).OrderBy(d=>d, System.Collections.Generic.Comparer<ScienceDisciplineStateDto>.Create((a,b)=>
-                    {
-                        int level=a.Level.CompareTo(b.Level); if(level!=0)return level;
-                        int fraction=((System.Numerics.BigInteger)a.ProgressTowardNextLevel*ScienceRules.IntervalCost(b.Level,read().ResearchPaceFactor!.Value)).CompareTo((System.Numerics.BigInteger)b.ProgressTowardNextLevel*ScienceRules.IntervalCost(a.Level,read().ResearchPaceFactor!.Value));
-                        return fraction!=0?fraction:a.Discipline.CompareTo(b.Discipline);
-                    })).ToList();
-                    if(candidates.Count>0){var focusCommand=Envelope(CommandKind.SetScienceFocus,0);focusCommand.SetScienceFocus=new SetScienceFocusPayload{Discipline=candidates[0].Discipline};results.Add(submit(focusCommand));}
+                    int each=ResearchUnits.Scale/unmaxed.Count;int extra=ResearchUnits.Scale%unmaxed.Count;
+                    var allocations=actor.Disciplines.OrderBy(d=>d.Discipline).Select(d=>new ScienceAllocationDto{Discipline=d.Discipline,Weight=d.Level==10?0:each+(unmaxed.FindIndex(u=>u.Discipline==d.Discipline)<extra?1:0)}).ToList();
+                    var command=Envelope(CommandKind.SetScienceAllocation,0);command.SetScienceAllocation=new SetScienceAllocationPayload{Allocations=allocations};results.Add(submit(command));
                 }
                 actor=read().Civilizations!.Single(c=>c.CivilizationId==actorId);
                 if (actor.EngineeringTargetDefinitionId == null)

@@ -196,7 +196,7 @@ public sealed class CombatOrchestrationTests
             Assert.Equal(Json(manual.ExportSave()), Json(client.ExportSave()));
         }
         Assert.Equal(26, client.Snapshot.Campaign.TurnNumber); Assert.NotEmpty(client.RecentReports);
-        Assert.Equal("52487572e9ee41003afb0143dd08748b9ea9cf4590af54171d2e1651e9282fef",
+        Assert.Equal("83bdb9013db7ac7b2b33ef77c4b591a4bca065544a01912eb48c48161688f5c4",
             Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(client.ExportSave()))).ToLowerInvariant());
     }
 

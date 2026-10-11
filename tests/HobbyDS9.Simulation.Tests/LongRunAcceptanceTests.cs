@@ -25,7 +25,7 @@ public sealed class LongRunAcceptanceTests
         foreach(var region in defs.NavigationRegions) region.PhenomenonDefinitionIds!.Reverse();
         foreach(var world in state.Colonies){world.Cohorts!.Reverse();foreach(var cohort in world.Cohorts){cohort.Memories!.Reverse();cohort.ExternalAffinities!.Reverse();}}
         foreach (var d in defs.ShipDesigns) d.RequiredEngineeringApplicationDefinitionIds!.Reverse(); foreach (var r in defs.EngineeringApplications) { r.PrerequisiteDefinitionIds!.Reverse();r.ScienceRequirements!.Reverse(); }
-        foreach(var actor in state.Civilizations){actor.Disciplines!.Reverse();actor.EngineeringProgress!.Reverse();actor.MatureEngineeringApplicationDefinitionIds!.Reverse();}
+        foreach(var actor in state.Civilizations){actor.ScienceAllocations!.Reverse();actor.EngineeringParameters!.Reverse();actor.Disciplines!.Reverse();actor.EngineeringProgress!.Reverse();actor.MatureEngineeringApplicationDefinitionIds!.Reverse();}
         var reordered = Session(reorderedScenario); var reloads = new HashSet<int> { 1, 2, 4, 7, 13, 18, 24 }; var partial = false; var orders = new List<string>(); var commandCount = 0; var generated = 0; var checkpoints = 0;
         for (var i = 1; i <= 25; i++)
         {
@@ -47,11 +47,11 @@ public sealed class LongRunAcceptanceTests
         Assert.Equal((43, 98, 68, 126L, 116L, 10, 10, 0), (totals.Phases, totals.Shots, totals.Hits, totals.ShieldDamage, totals.HullDamage, totals.ShipsDestroyed, totals.FleetsDestroyed, totals.Retreated));
         Assert.True(totals.Hits > 0 && totals.HullDamage > 0 && totals.ShipsDestroyed > 0);
         Assert.Equal(2, final.Colonies.Sum(c => c.ProductionQueue.Count)); Assert.Equal(0, final.Civilizations.Sum(c => c.MatureEngineeringApplicationDefinitionIds.Count));
-        Assert.Equal("52487572e9ee41003afb0143dd08748b9ea9cf4590af54171d2e1651e9282fef", Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(baseline.ExportSave()))).ToLowerInvariant());
+        Assert.Equal("83bdb9013db7ac7b2b33ef77c4b591a4bca065544a01912eb48c48161688f5c4", Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(baseline.ExportSave()))).ToLowerInvariant());
         foreach (var actor in new[] { "civ.cardassian", "civ.dominion" })
         {
             Assert.Empty(final.Civilizations.Single(c => c.CivilizationId.Value == actor).MatureEngineeringApplicationDefinitionIds);
-            Assert.Equal(50,final.Civilizations.Single(c=>c.CivilizationId.Value==actor).Research!.Disciplines.Single(d=>d.Discipline==ScienceDiscipline.Construction).Progress);
+            Assert.All(final.Civilizations.Single(c=>c.CivilizationId.Value==actor).Research!.Disciplines, d => { Assert.Equal(7000, d.Progress); Assert.Equal(7000, d.TotalSpent); });
             Assert.Contains(actor, builtBy); Assert.Contains(actor, travelledBy);
         }
         var human = final.Civilizations.Single(c => c.ControllerKind == ControllerKind.Human);

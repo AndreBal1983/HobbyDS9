@@ -9,6 +9,7 @@ namespace HobbyDS9.Contracts
         public ScienceDiscipline Discipline { get; set; }
         public int Level { get; set; }
         public long ProgressTowardNextLevel { get; set; }
+        public long TotalSpent { get; set; }
     }
     public sealed class ResearchStatisticsDto
     {
@@ -24,8 +25,9 @@ namespace HobbyDS9.Contracts
     public class ScienceEngineeringStateDto
     {
         public ulong? ResearchDiscoverySeed { get; set; }
-        public ScienceDiscipline? ScienceFocus { get; set; }
-        public int ScienceAllocationBps { get; set; }
+        public List<ScienceAllocationDto>? ScienceAllocations { get; set; }
+        public List<EngineeringParameterDto>? EngineeringParameters { get; set; }
+        public int ScienceAllocationUnits { get; set; }
         public long ScienceReserve { get; set; }
         public long EngineeringReserve { get; set; }
         public List<ScienceDisciplineStateDto>? Disciplines { get; set; }
@@ -45,6 +47,9 @@ namespace HobbyDS9.Contracts
         public string? ApplicationDefinitionId { get; set; }
         public long Amount { get; set; }
     }
-    public sealed class SetResearchAllocationPayload { public int ScienceAllocationBps { get; set; } }
-    public sealed class SetScienceFocusPayload { public ScienceDiscipline Discipline { get; set; } }
+    public sealed class SetResearchAllocationPayload { public int ScienceAllocationUnits { get; set; } }
+    public sealed class SetScienceAllocationPayload { public List<ScienceAllocationDto>? Allocations { get; set; } }
+    public sealed class ScienceAllocationDto { public ScienceDiscipline Discipline { get; set; } public int Weight { get; set; } }
+    public sealed class EngineeringParameterDto { public string DefinitionId { get; set; } = string.Empty; public long Value { get; set; } }
+    public static class ResearchUnits { public const int Scale = 600; }
 }

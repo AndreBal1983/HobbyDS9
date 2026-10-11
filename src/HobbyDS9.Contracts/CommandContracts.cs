@@ -4,7 +4,7 @@ namespace HobbyDS9.Contracts
 {
     public enum CommandKind
     {
-        Unknown = 0, EnqueueProduction = 1, CancelProduction = 2, SetEngineeringTarget = 8, SetFleetRoute = 4, SetWorldGovernancePolicy = 5, SetResearchAllocation = 6, SetScienceFocus = 7
+        Unknown = 0, EnqueueProduction = 1, CancelProduction = 2, SetEngineeringTarget = 8, SetFleetRoute = 4, SetWorldGovernancePolicy = 5, SetResearchAllocation = 6, SetScienceAllocation = 7
     }
 
     public enum CommandStatus { Rejected = 0, Accepted = 1 }
@@ -17,7 +17,7 @@ namespace HobbyDS9.Contracts
         UnsupportedCommand = 11, RevisionExhausted = 12, InvalidTarget = 13, CombatPending = 14, UnknownEngineeringApplication = 15, EngineeringAlreadyMature = 16,
         EngineeringPrerequisiteMissing = 17, EngineeringTargetUnchanged = 18, UnknownColony = 19, ColonyNotOwned = 20, UnknownShipDesign = 21,
         DesignEngineeringPrerequisiteMissing = 22, InsufficientCredits = 23, InsufficientStrategicResource = 24,
-        UnknownQueueItem = 25, UnknownFleet = 26, FleetNotOwned = 27, InvalidRoute = 28, ReservedCommandId = 29, ShipbuildingUnavailable = 30, UnknownGovernancePolicy = 31, GovernancePolicyUnchanged = 32, FleetInTransit = 33, NavigationUnknown = 34, InvalidResearchAllocation = 35, ResearchAllocationUnchanged = 36, InvalidScienceDiscipline = 37, ScienceFocusMaxed = 38, ScienceFocusUnchanged = 39, EngineeringScienceRequirementMissing = 40
+        UnknownQueueItem = 25, UnknownFleet = 26, FleetNotOwned = 27, InvalidRoute = 28, ReservedCommandId = 29, ShipbuildingUnavailable = 30, UnknownGovernancePolicy = 31, GovernancePolicyUnchanged = 32, FleetInTransit = 33, NavigationUnknown = 34, InvalidResearchAllocation = 35, ResearchAllocationUnchanged = 36, InvalidScienceAllocation = 37, ScienceAllocationUnchanged = 39, EngineeringScienceRequirementMissing = 40
     }
 
     // Closed discriminated union: exactly one payload must match Kind. There
@@ -32,7 +32,7 @@ namespace HobbyDS9.Contracts
         public EnqueueProductionPayload? EnqueueProduction { get; set; }
         public CancelProductionPayload? CancelProduction { get; set; }
         public SetResearchAllocationPayload? SetResearchAllocation { get; set; }
-        public SetScienceFocusPayload? SetScienceFocus { get; set; }
+        public SetScienceAllocationPayload? SetScienceAllocation { get; set; }
         public SetEngineeringTargetPayload? SetEngineeringTarget { get; set; }
         public SetWorldGovernancePolicyPayload? SetWorldGovernancePolicy { get; set; }
         public SetFleetRoutePayload? SetFleetRoute { get; set; }

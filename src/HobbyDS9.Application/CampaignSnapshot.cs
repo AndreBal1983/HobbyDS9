@@ -34,11 +34,12 @@ namespace HobbyDS9.Application
         public DefinitionId DefinitionId { get; }
         public string DisplayName { get; }
         public long BaseEngineeringCost { get; }
+        public EngineeringProjectKind Kind { get; } public string EffectSummary { get; }
         public IReadOnlyList<EngineeringRequirementSnapshot> ScienceRequirements { get; }
         public IReadOnlyList<DefinitionId> Prerequisites { get; }
         internal EngineeringDefinitionSnapshot(EngineeringApplicationDefinitionDto dto)
         {
-            DefinitionId = new DefinitionId(dto.DefinitionId); DisplayName = dto.DisplayName; BaseEngineeringCost = dto.BaseEngineeringCost;
+            DefinitionId = new DefinitionId(dto.DefinitionId); DisplayName = dto.DisplayName; BaseEngineeringCost = dto.BaseEngineeringCost;Kind=dto.Kind;EffectSummary=dto.EffectSummary;
             ScienceRequirements=dto.ScienceRequirements!.OrderBy(q=>q.Discipline).ThenBy(q=>q.IntervalStartLevel).ThenBy(q=>q.RequiredBreakthroughOrdinal).Select(q=>new EngineeringRequirementSnapshot(q)).ToList().AsReadOnly();
             Prerequisites = dto.PrerequisiteDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal)
                 .Select(id => new DefinitionId(id)).ToList().AsReadOnly();

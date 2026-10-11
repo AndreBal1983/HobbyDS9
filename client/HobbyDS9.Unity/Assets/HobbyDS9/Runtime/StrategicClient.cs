@@ -73,12 +73,12 @@ namespace HobbyDS9.UnityClient
         public CommandResult AllocateResearch(CampaignSnapshot observed, EntityId actor, int scienceBps)
         {
             var command=Envelope(observed,actor,CommandKind.SetResearchAllocation);
-            command.SetResearchAllocation=new SetResearchAllocationPayload{ScienceAllocationBps=scienceBps};return Submit(command);
+            command.SetResearchAllocation=new SetResearchAllocationPayload{ScienceAllocationUnits=scienceBps};return Submit(command);
         }
-        public CommandResult FocusScience(CampaignSnapshot observed, EntityId actor, ScienceDiscipline discipline)
+        public CommandResult AllocateScience(CampaignSnapshot observed, EntityId actor, IReadOnlyList<ScienceAllocationDto>? allocations)
         {
-            var command=Envelope(observed,actor,CommandKind.SetScienceFocus);
-            command.SetScienceFocus=new SetScienceFocusPayload{Discipline=discipline};return Submit(command);
+            var command=Envelope(observed,actor,CommandKind.SetScienceAllocation);
+            command.SetScienceAllocation=new SetScienceAllocationPayload{Allocations=allocations?.Select(a=>a==null?null!:new ScienceAllocationDto{Discipline=a.Discipline,Weight=a.Weight}).ToList()};return Submit(command);
         }
         public CommandResult Enqueue(CampaignSnapshot observed, EntityId actor, EntityId colony, DefinitionId design)
         {
@@ -221,10 +221,9 @@ namespace HobbyDS9.UnityClient
                 case CommandErrorCode.EngineeringPrerequisiteMissing: case CommandErrorCode.DesignEngineeringPrerequisiteMissing: return "Required Engineering applications must be Mature.";
                 case CommandErrorCode.EngineeringScienceRequirementMissing: return "Required Science breakthroughs have not been achieved.";
                 case CommandErrorCode.ResearchAllocationUnchanged: return "This allocation is already active.";
-                case CommandErrorCode.InvalidResearchAllocation: return "Science allocation must be between 0 and 10000 BPS.";
-                case CommandErrorCode.ScienceFocusUnchanged: return "Already the Science focus.";
-                case CommandErrorCode.ScienceFocusMaxed: return "This discipline is already level 10.";
-                case CommandErrorCode.InvalidScienceDiscipline: return "Unknown Science discipline.";
+                case CommandErrorCode.InvalidResearchAllocation: return "Science share must be between 0 and 600 allocation units.";
+                case CommandErrorCode.ScienceAllocationUnchanged: return "This Science distribution is already active.";
+                case CommandErrorCode.InvalidScienceAllocation: return "Provide all six Science disciplines with nonnegative weights totaling 600.";
                 case CommandErrorCode.InsufficientCredits: return "Not enough civilization credits.";
                 case CommandErrorCode.InsufficientStrategicResource: return "A required strategic resource is unavailable locally. Check the delivery report.";
                 case CommandErrorCode.ShipbuildingUnavailable: return "This world has no shipbuilding infrastructure.";

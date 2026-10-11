@@ -30,6 +30,12 @@ namespace HobbyDS9.Simulation
                         else if(!uniqueRequirements.Add((q.Discipline,q.IntervalStartLevel,q.RequiredBreakthroughOrdinal))) Add(issues,ValidationCode.DuplicateId,p+".ScienceRequirements");
                     }
                 }
+                if(!Enum.IsDefined(typeof(EngineeringProjectKind),node.Kind))Add(issues,ValidationCode.InvalidResearchValue,p+".Kind");
+                if(node.Kind==EngineeringProjectKind.Refinement)
+                {
+                    if(node.ParameterChange==null||!DefinitionId.TryParse(node.ParameterChange.ParameterDefinitionId,out var parameter)||!definitions.Contains(parameter)||nodes.ContainsKey(node.ParameterChange.ParameterDefinitionId)||node.ParameterChange.Value<0||node.ParameterChange.Value>10000)Add(issues,ValidationCode.InvalidResearchValue,p+".ParameterChange");
+                }
+                else if(node.ParameterChange!=null)Add(issues,ValidationCode.InvalidResearchValue,p+".ParameterChange");
                 if (node.BaseEngineeringCost <= 0) Add(issues, ValidationCode.InvalidResearchValue, p + ".BaseEngineeringCost");
                 if (node.PrerequisiteDefinitionIds == null) { Add(issues, ValidationCode.MissingField, p + ".PrerequisiteDefinitionIds"); continue; }
                 var unique = new HashSet<string>(StringComparer.Ordinal);
@@ -68,7 +74,7 @@ namespace HobbyDS9.Simulation
             else
             {
                 var actors=new HashSet<string>((dto.Civilizations??new List<CivilizationStateDto>()).Where(c=>c!=null).Select(c=>c.CivilizationId),StringComparer.Ordinal);
-                if((System.Numerics.BigInteger)dto.LastResearchReceipts.Count>actors.Count*128L)Add(issues,ValidationCode.InvalidResearchValue,path+".LastResearchReceipts");
+                if((System.Numerics.BigInteger)dto.LastResearchReceipts.Count>actors.Count*512L)Add(issues,ValidationCode.InvalidResearchValue,path+".LastResearchReceipts");
                 var categories=new HashSet<string>(StringComparer.Ordinal){"allocation","science-allocated","engineering-allocated","science-spent","science-breakthrough","science-level","engineering-spent","engineering-band","engineering-mature"};
                 foreach(var receipt in dto.LastResearchReceipts)
                 {
@@ -110,6 +116,9 @@ namespace HobbyDS9.Simulation
                     }
                     if(civ.MatureEngineeringApplicationDefinitionIds!=null)foreach(var id in civ.MatureEngineeringApplicationDefinitionIds)if(!uniqueProgress.Contains(id))Add(issues,ValidationCode.InvalidResearchValue,p+".MatureEngineeringApplicationDefinitionIds");
                 }
+                var requiredParameters=new HashSet<string>(nodes.Values.Where(n=>n.Kind==EngineeringProjectKind.Refinement&&n.ParameterChange!=null).Select(n=>n.ParameterChange!.ParameterDefinitionId),StringComparer.Ordinal);
+                if(civ.EngineeringParameters==null)Add(issues,ValidationCode.MissingField,p+".EngineeringParameters");
+                else if(civ.EngineeringParameters.Any(v=>v==null||!DefinitionId.TryParse(v.DefinitionId,out _)||v.Value<0||v.Value>10000)||civ.EngineeringParameters.Select(v=>v.DefinitionId).Distinct(StringComparer.Ordinal).Count()!=civ.EngineeringParameters.Count||!requiredParameters.SetEquals(civ.EngineeringParameters.Select(v=>v.DefinitionId)))Add(issues,ValidationCode.InvalidResearchValue,p+".EngineeringParameters");
                 if (civ.EngineeringReserve < 0) Add(issues, ValidationCode.InvalidResearchValue, p + ".EngineeringReserve");
                 var unlocked = new HashSet<string>(StringComparer.Ordinal);
                 if (civ.MatureEngineeringApplicationDefinitionIds == null) Add(issues, ValidationCode.MissingField, p + ".MatureEngineeringApplicationDefinitionIds");

@@ -20,10 +20,12 @@ namespace HobbyDS9.Simulation
         public CommandErrorCode Execute(GameStateDto staging,CommandEnvelope command)
         {
             var civ=staging.Civilizations!.Single(c=>c.CivilizationId==command.ActorCivilizationId);
-            if(command.Kind==CommandKind.SetResearchAllocation){int value=command.SetResearchAllocation!.ScienceAllocationBps;if(value<0||value>10000)return CommandErrorCode.InvalidResearchAllocation;if(value==civ.ScienceAllocationBps)return CommandErrorCode.ResearchAllocationUnchanged;civ.ScienceAllocationBps=value;return CommandErrorCode.None;}
-            var focus=command.SetScienceFocus!.Discipline;if(!ScienceRules.ValidDiscipline(focus))return CommandErrorCode.InvalidScienceDiscipline;
-            if(civ.Disciplines!.Single(d=>d.Discipline==focus).Level==10)return CommandErrorCode.ScienceFocusMaxed;
-            if(civ.ScienceFocus==focus)return CommandErrorCode.ScienceFocusUnchanged;civ.ScienceFocus=focus;return CommandErrorCode.None;
+            if(command.Kind==CommandKind.SetResearchAllocation){int value=command.SetResearchAllocation!.ScienceAllocationUnits;if(value<0||value>ResearchUnits.Scale)return CommandErrorCode.InvalidResearchAllocation;if(value==civ.ScienceAllocationUnits)return CommandErrorCode.ResearchAllocationUnchanged;civ.ScienceAllocationUnits=value;return CommandErrorCode.None;}
+            var desired=command.SetScienceAllocation!.Allocations;
+            if(!ScienceRules.ValidAllocations(desired))return CommandErrorCode.InvalidScienceAllocation;
+            var ordered=desired!.OrderBy(a=>a.Discipline).ToList();
+            if(ordered.Select(a=>(a.Discipline,a.Weight)).SequenceEqual(civ.ScienceAllocations!.OrderBy(a=>a.Discipline).Select(a=>(a.Discipline,a.Weight))))return CommandErrorCode.ScienceAllocationUnchanged;
+            civ.ScienceAllocations=ordered.Select(a=>new ScienceAllocationDto{Discipline=a.Discipline,Weight=a.Weight}).ToList();return CommandErrorCode.None;
         }
     }
 }
