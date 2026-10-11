@@ -10,7 +10,7 @@ public sealed class FoundationDtoTests
     private const string Rules = "foundation-v1";
     private static readonly string ContentHash = new('a', 64);
     private static readonly SaveCompatibility Compatibility = new("scenario.fixture", Rules, ContentHash);
-    private static DefinitionCatalogDto Definitions() => NavigationFixture.Definitions(new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, ShipDesigns = new(), ResearchNodes = new(), Species = new(), Planets = new(), Resources = new(), GovernancePolicies = new(), PoliticalMemoryEffects = new(), Infrastructure = new(), Civilizations = new(), StarSystems = new(), GalaxyEdges = new(), DefinitionIds = new() { "definition.alpha", "definition.beta" } });
+    private static DefinitionCatalogDto Definitions() => NavigationFixture.Definitions(new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, ShipDesigns = new(), EngineeringApplications = new(), Species = new(), Planets = new(), Resources = new(), GovernancePolicies = new(), PoliticalMemoryEffects = new(), Infrastructure = new(), Civilizations = new(), StarSystems = new(), GalaxyEdges = new(), DefinitionIds = new() { "definition.alpha", "definition.beta" } });
 
     private static GameStateDto State() => NavigationFixture.State(new()
     {
@@ -20,7 +20,7 @@ public sealed class FoundationDtoTests
         PopulationStatistics = new(),
         PendingCombats = new(),
         ResolvedCombats = new(),
-        Phase = SessionPhase.Planning,
+        Phase = SessionPhase.Planning, ResearchPaceFactor = 10000, LastResearchReceipts = new(),
         TurnNumber = 1,
         StateRevision = 0,
         NextEntitySequence = 1,

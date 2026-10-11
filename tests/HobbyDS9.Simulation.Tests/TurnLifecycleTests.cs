@@ -18,7 +18,7 @@ public sealed class TurnLifecycleTests
     {
         ContentFormatVersion = FoundationVersions.ContentFormatVersion,
         ShipDesigns = new(),
-        ResearchNodes = new(),
+        EngineeringApplications = new(),
         Species = new(),
         Planets = new(),
         Resources = new(), GovernancePolicies = new(), PoliticalMemoryEffects = new(),
@@ -61,8 +61,8 @@ public sealed class TurnLifecycleTests
             AcceptedCommandIds = revision >= 2 ? new() { "cmd.z", "cmd.a" } : new(),
             Civilizations = new()
             {
-                new() { CivilizationId = "civ.human", DefinitionId = "civilization.human", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.Human },
-                new() { CivilizationId = "civ.ai", DefinitionId = "civilization.ai", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.AI }
+                new() { CivilizationId = "civ.human", DefinitionId = "civilization.human", MatureEngineeringApplicationDefinitionIds = new(), ControllerKind = ControllerKind.Human },
+                new() { CivilizationId = "civ.ai", DefinitionId = "civilization.ai", MatureEngineeringApplicationDefinitionIds = new(), ControllerKind = ControllerKind.AI }
             },
             StarSystems = new()
             {
@@ -83,7 +83,7 @@ public sealed class TurnLifecycleTests
         ICommandHandler? handler = null)
     {
         var handlers = new Dictionary<CommandKind, ICommandHandler>();
-        if (handler != null) handlers.Add(CommandKind.SetResearchTarget, handler);
+        if (handler != null) handlers.Add(CommandKind.SetEngineeringTarget, handler);
         return new SimulationSession(save ?? Save(), Definitions(), Compatibility, handlers, probe);
     }
     private static CommandEnvelope Command(int turn = 7, long revision = 5, string commandId = "cmd.new") => new()
@@ -92,8 +92,8 @@ public sealed class TurnLifecycleTests
         ActorCivilizationId = "civ.human",
         ExpectedTurn = turn,
         ExpectedRevision = revision,
-        Kind = CommandKind.SetResearchTarget,
-        SetResearchTarget = new() { TargetDefinitionId = "definition.future" }
+        Kind = CommandKind.SetEngineeringTarget,
+        SetEngineeringTarget = new() { TargetDefinitionId = "definition.future" }
     };
     private static string StateJson(SimulationSession session) => JsonSerializer.Serialize(session.ExportSave());
     private sealed class CommandProbe : ICommandHandler
@@ -203,7 +203,7 @@ public sealed class TurnLifecycleTests
         var save = initial.ExportSave(); var calls = 0;
         var session = new SimulationSession(save, scenario.Definitions, VerticalSliceFixture.Compatibility(scenario), new Dictionary<CommandKind, ICommandHandler>(), (_, _) => { calls++; return true; });
         var before = StateJson(session); var p = session.CaptureSnapshot();
-        var command = VerticalSliceFixture.Command(session, CommandKind.SetResearchTarget, "cmd.blocked"); command.SetResearchTarget = new() { TargetDefinitionId = "research.advanced-engineering" };
+        var command = VerticalSliceFixture.Command(session, CommandKind.SetEngineeringTarget, "cmd.blocked"); command.SetEngineeringTarget = new() { TargetDefinitionId = "engineering.advanced-starship-engineering" };
         Assert.Equal(CommandErrorCode.CombatPending, session.SubmitCommand(command).ErrorCode);
         Assert.Equal(TurnErrorCode.CombatPending, session.AdvanceTurn(p.TurnNumber, p.StateRevision).ErrorCode);
         Assert.Equal(0, calls); Assert.Equal(before, StateJson(session));

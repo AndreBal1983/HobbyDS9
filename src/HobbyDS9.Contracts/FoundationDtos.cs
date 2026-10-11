@@ -4,8 +4,8 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 12;
-        public const int ContentFormatVersion = 8;
+        public const int SaveFormatVersion = 13;
+        public const int ContentFormatVersion = 9;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
     }
@@ -45,7 +45,7 @@ namespace HobbyDS9.Contracts
         public List<PlanetDefinitionDto>? Planets { get; set; }
         public List<ResourceDefinitionDto>? Resources { get; set; }
         public List<InfrastructureDefinitionDto>? Infrastructure { get; set; }
-        public List<ResearchNodeDefinitionDto>? ResearchNodes { get; set; }
+        public List<EngineeringApplicationDefinitionDto>? EngineeringApplications { get; set; }
         public List<ShipDesignDefinitionDto>? ShipDesigns { get; set; }
         public List<string> DefinitionIds { get; set; } = new List<string>();
     }
@@ -54,6 +54,8 @@ namespace HobbyDS9.Contracts
     {
         // Required since save format 4; missing JSON is not implicitly Planning.
         public SessionPhase? Phase { get; set; }
+        public int? ResearchPaceFactor { get; set; }
+        public List<ResearchReceiptDto>? LastResearchReceipts { get; set; }
         public int TurnNumber { get; set; }
         public long StateRevision { get; set; }
         public ulong NextEntitySequence { get; set; }

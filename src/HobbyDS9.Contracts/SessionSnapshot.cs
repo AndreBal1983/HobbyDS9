@@ -40,6 +40,8 @@ namespace HobbyDS9.Contracts
     // and every element is immutable. No retained mutable session references.
     public sealed class SessionSnapshot
     {
+        public int ResearchPaceFactor { get; }
+        public IReadOnlyList<ResearchReceiptSnapshot> LastResearchReceipts { get; }
         public string ScenarioId { get; }
         public string RulesVersion { get; }
         public string ContentHash { get; }
@@ -73,8 +75,9 @@ namespace HobbyDS9.Contracts
             IEnumerable<GalaxyEdge>? edges = null, SessionPhase phase = SessionPhase.Planning, IEnumerable<ColonySnapshot>? colonies = null, IEnumerable<ShipSnapshot>? ships = null,
             IEnumerable<FleetSnapshot>? fleets = null, IEnumerable<ShipDesignSnapshot>? shipDesigns = null, IEnumerable<CombatEncounterSnapshot>? combats = null,
             IEnumerable<PlanetStateSnapshot>? planets = null, IEnumerable<DisplacementSnapshot>? displacements = null,
-            IEnumerable<LogisticsDeliverySnapshot>? deliveries = null, PopulationStatisticsSnapshot? populationStatistics = null, NavigationStatisticsSnapshot? navigationStatistics = null)
+            IEnumerable<LogisticsDeliverySnapshot>? deliveries = null, PopulationStatisticsSnapshot? populationStatistics = null, NavigationStatisticsSnapshot? navigationStatistics = null, int researchPaceFactor = 10000, IEnumerable<ResearchReceiptSnapshot>? researchReceipts = null)
         {
+            ResearchPaceFactor=researchPaceFactor; LastResearchReceipts=new List<ResearchReceiptSnapshot>(researchReceipts??Array.Empty<ResearchReceiptSnapshot>()).AsReadOnly();
             NavigationStatistics = navigationStatistics ?? new NavigationStatisticsSnapshot(new NavigationStatisticsDto());
             ScenarioId = scenarioId; RulesVersion = rulesVersion; ContentHash = contentHash;
             Phase = phase; TurnNumber = turnNumber; StateRevision = revision; NextEntitySequence = nextEntitySequence;

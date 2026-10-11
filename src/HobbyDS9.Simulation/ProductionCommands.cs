@@ -38,7 +38,7 @@ namespace HobbyDS9.Simulation
             var design = definitions.ShipDesigns!.SingleOrDefault(d => d.DefinitionId == payload.DefinitionId);
             if (design == null) return CommandErrorCode.UnknownShipDesign;
             var owner = state.Civilizations!.Single(c => c.CivilizationId == command.ActorCivilizationId);
-            if (design.RequiredResearchDefinitionIds!.Any(id => !owner.UnlockedResearchDefinitionIds!.Contains(id, StringComparer.Ordinal))) return CommandErrorCode.DesignResearchPrerequisiteMissing;
+            if (design.RequiredEngineeringApplicationDefinitionIds!.Any(id => !owner.MatureEngineeringApplicationDefinitionIds!.Contains(id, StringComparer.Ordinal))) return CommandErrorCode.DesignEngineeringPrerequisiteMissing;
             if (owner.Credits < design.CreditCost) return CommandErrorCode.InsufficientCredits;
             if (!WorldEconomy.Infrastructure(colony, definitions).Any(i => i.definition.Shipbuilding)) return CommandErrorCode.ShipbuildingUnavailable;
             if (design.ResourceCosts!.Any(r => PopulationRules.Stock(colony.Stockpiles!, r.ResourceDefinitionId) < r.Amount)) return CommandErrorCode.InsufficientStrategicResource;

@@ -34,16 +34,24 @@ namespace HobbyDS9.Simulation
                     };
                 }
                 bool ResearchSatisfied(IEnumerable<string> prerequisites) => prerequisites.All(id => read().Civilizations!.Single(c => c.CivilizationId == actorId)
-                    .UnlockedResearchDefinitionIds!.Contains(id, StringComparer.Ordinal));
-                if (actor.ResearchTargetDefinitionId == null)
+                    .MatureEngineeringApplicationDefinitionIds!.Contains(id, StringComparer.Ordinal));
+                if(actor.ScienceFocus==null||actor.Disciplines!.Single(d=>d.Discipline==actor.ScienceFocus).Level==10)
                 {
-                    var target = definitions.ResearchNodes!.Where(n => !actor.UnlockedResearchDefinitionIds!.Contains(n.DefinitionId, StringComparer.Ordinal)
-                        && ResearchSatisfied(n.PrerequisiteDefinitionIds!)).OrderBy(n => n.ResearchCost).ThenBy(n => n.DefinitionId, StringComparer.Ordinal).FirstOrDefault();
-                    if (target != null)
+                    var candidates=actor.Disciplines!.Where(d=>d.Level<10).OrderBy(d=>d, System.Collections.Generic.Comparer<ScienceDisciplineStateDto>.Create((a,b)=>
                     {
-                        var command = Envelope(CommandKind.SetResearchTarget, 0); command.SetResearchTarget = new SetResearchTargetPayload { TargetDefinitionId = target.DefinitionId };
-                        results.Add(submit(command));
-                    }
+                        int level=a.Level.CompareTo(b.Level); if(level!=0)return level;
+                        int fraction=((System.Numerics.BigInteger)a.ProgressTowardNextLevel*ScienceRules.IntervalCost(b.Level,read().ResearchPaceFactor!.Value)).CompareTo((System.Numerics.BigInteger)b.ProgressTowardNextLevel*ScienceRules.IntervalCost(a.Level,read().ResearchPaceFactor!.Value));
+                        return fraction!=0?fraction:a.Discipline.CompareTo(b.Discipline);
+                    })).ToList();
+                    if(candidates.Count>0){var focusCommand=Envelope(CommandKind.SetScienceFocus,0);focusCommand.SetScienceFocus=new SetScienceFocusPayload{Discipline=candidates[0].Discipline};results.Add(submit(focusCommand));}
+                }
+                actor=read().Civilizations!.Single(c=>c.CivilizationId==actorId);
+                if (actor.EngineeringTargetDefinitionId == null)
+                {
+                    var target=definitions.EngineeringApplications!.Where(a=>EngineeringRules.Availability(actor,a,read().ResearchPaceFactor!.Value)==CommandErrorCode.None)
+                        .OrderBy(a=>ScienceRules.AdjustCost(a.BaseEngineeringCost,read().ResearchPaceFactor!.Value)-(actor.EngineeringProgress!.SingleOrDefault(p=>p.DefinitionId==a.DefinitionId)?.Progress??0))
+                        .ThenBy(a=>a.DefinitionId,StringComparer.Ordinal).FirstOrDefault();
+                    if(target!=null){var command=Envelope(CommandKind.SetEngineeringTarget,0);command.SetEngineeringTarget=new SetEngineeringTargetPayload{TargetDefinitionId=target.DefinitionId};results.Add(submit(command));}
                 }
                 var colonies = read().Colonies!.Where(c => c.OwnerCivilizationId == actorId).Select(c => c.ColonyId).OrderBy(id => id, StringComparer.Ordinal).ToList();
                 for (var i = 0; i < colonies.Count; i++)
@@ -63,7 +71,7 @@ namespace HobbyDS9.Simulation
                     }
                     if (colony.ProductionQueue!.Count != 0) continue;
                     var owner = read().Civilizations!.Single(c => c.CivilizationId == actorId);
-                    var design = definitions.ShipDesigns!.Where(d => ResearchSatisfied(d.RequiredResearchDefinitionIds!) && owner.Credits >= d.CreditCost && d.ResourceCosts!.All(r => PopulationRules.Stock(colony.Stockpiles!, r.ResourceDefinitionId) >= r.Amount) && WorldEconomy.Infrastructure(colony, definitions).Any(i => i.definition.Shipbuilding))
+                    var design = definitions.ShipDesigns!.Where(d => ResearchSatisfied(d.RequiredEngineeringApplicationDefinitionIds!) && owner.Credits >= d.CreditCost && d.ResourceCosts!.All(r => PopulationRules.Stock(colony.Stockpiles!, r.ResourceDefinitionId) >= r.Amount) && WorldEconomy.Infrastructure(colony, definitions).Any(i => i.definition.Shipbuilding))
                         .OrderBy(d => d.IndustryCost).ThenBy(d => d.DefinitionId, StringComparer.Ordinal).FirstOrDefault();
                     if (design == null) continue;
                     var command = Envelope(CommandKind.EnqueueProduction, i); command.EnqueueProduction = new EnqueueProductionPayload { ColonyId = colony.ColonyId, DefinitionId = design.DefinitionId };

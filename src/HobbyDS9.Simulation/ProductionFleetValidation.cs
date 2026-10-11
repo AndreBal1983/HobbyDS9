@@ -13,7 +13,7 @@ namespace HobbyDS9.Simulation
             string path, List<ValidationIssue> issues)
         {
             if (catalog.ShipDesigns == null) { Add(issues, ValidationCode.MissingField, path + ".ShipDesigns"); return; }
-            var research = new HashSet<string>((catalog.ResearchNodes ?? new List<ResearchNodeDefinitionDto>()).Where(n => n != null).Select(n => n.DefinitionId), StringComparer.Ordinal);
+            var research = new HashSet<string>((catalog.EngineeringApplications ?? new List<EngineeringApplicationDefinitionDto>()).Where(n => n != null).Select(n => n.DefinitionId), StringComparer.Ordinal);
             for (var i = 0; i < catalog.ShipDesigns.Count; i++)
             {
                 var d = catalog.ShipDesigns[i]; var p = path + ".ShipDesigns[" + i.ToString(System.Globalization.CultureInfo.InvariantCulture) + "]";
@@ -25,13 +25,13 @@ namespace HobbyDS9.Simulation
                 if (d.MovementBudget<=0 || d.IndustryCost <= 0 || d.MaxHull <= 0 || d.CreditCost < 0) Add(issues, ValidationCode.InvalidProductionValue, p);
                 ValidateResources(d.ResourceCosts, catalog, p + ".ResourceCosts", issues);
                 if (!CombatProfiles.IsValid(d.CombatProfile)) Add(issues, ValidationCode.InvalidCombatProfile, p + ".CombatProfile");
-                if (d.RequiredResearchDefinitionIds == null) { Add(issues, ValidationCode.MissingField, p + ".RequiredResearchDefinitionIds"); continue; }
+                if (d.RequiredEngineeringApplicationDefinitionIds == null) { Add(issues, ValidationCode.MissingField, p + ".RequiredEngineeringApplicationDefinitionIds"); continue; }
                 var unique = new HashSet<string>(StringComparer.Ordinal);
-                foreach (var prerequisite in d.RequiredResearchDefinitionIds)
+                foreach (var prerequisite in d.RequiredEngineeringApplicationDefinitionIds)
                 {
-                    if (!DefinitionId.TryParse(prerequisite, out _)) Add(issues, ValidationCode.InvalidId, p + ".RequiredResearchDefinitionIds");
-                    else if (!research.Contains(prerequisite)) Add(issues, ValidationCode.MissingDefinition, p + ".RequiredResearchDefinitionIds");
-                    if (!unique.Add(prerequisite)) Add(issues, ValidationCode.DuplicateId, p + ".RequiredResearchDefinitionIds");
+                    if (!DefinitionId.TryParse(prerequisite, out _)) Add(issues, ValidationCode.InvalidId, p + ".RequiredEngineeringApplicationDefinitionIds");
+                    else if (!research.Contains(prerequisite)) Add(issues, ValidationCode.MissingDefinition, p + ".RequiredEngineeringApplicationDefinitionIds");
+                    if (!unique.Add(prerequisite)) Add(issues, ValidationCode.DuplicateId, p + ".RequiredEngineeringApplicationDefinitionIds");
                 }
             }
         }
@@ -76,9 +76,9 @@ namespace HobbyDS9.Simulation
                         Add(issues, ValidationCode.InvalidProductionValue, p);
                     ValidateResources(item.PaidResources, catalog, p + ".PaidResources", issues);
                     var owner = state.Civilizations?.FirstOrDefault(c => c != null && c.CivilizationId == colony.OwnerCivilizationId);
-                    if (design?.RequiredResearchDefinitionIds != null && owner?.UnlockedResearchDefinitionIds != null
-                        && design.RequiredResearchDefinitionIds.Any(id => !owner.UnlockedResearchDefinitionIds.Contains(id, StringComparer.Ordinal)))
-                        Add(issues, ValidationCode.ResearchPrerequisiteMissing, p);
+                    if (design?.RequiredEngineeringApplicationDefinitionIds != null && owner?.MatureEngineeringApplicationDefinitionIds != null
+                        && design.RequiredEngineeringApplicationDefinitionIds.Any(id => !owner.MatureEngineeringApplicationDefinitionIds.Contains(id, StringComparer.Ordinal)))
+                        Add(issues, ValidationCode.EngineeringPrerequisiteMissing, p);
                 }
             }
             if (state.Ships == null) Add(issues, ValidationCode.MissingField, path + ".Ships");

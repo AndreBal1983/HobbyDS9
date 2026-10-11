@@ -42,7 +42,9 @@ namespace HobbyDS9.Simulation
             if (commandHandlers == null) throw new ArgumentNullException(nameof(commandHandlers));
             handlers = new Dictionary<CommandKind, ICommandHandler>
             {
-                [CommandKind.SetResearchTarget] = new ResearchTargetHandler(this.definitions),
+                [CommandKind.SetResearchAllocation] = new ScienceCommandHandler(),
+                [CommandKind.SetScienceFocus] = new ScienceCommandHandler(),
+                [CommandKind.SetEngineeringTarget] = new EngineeringTargetHandler(this.definitions),
                 [CommandKind.EnqueueProduction] = new EnqueueProductionHandler(this.definitions),
                 [CommandKind.CancelProduction] = new CancelProductionHandler(),
                 [CommandKind.SetFleetRoute] = new SetFleetRouteHandler(Navigation),
@@ -177,7 +179,7 @@ namespace HobbyDS9.Simulation
         // Economy and Research each have a distinct allowed mutation surface.
         internal static void RequirePhaseChanges(GameStateDto state, GameStateDto candidate, bool allowEconomy, bool allowResearch = false, bool allowProduction = false, bool allowMovement = false)
         {
-            if (candidate.Phase != state.Phase || candidate.TurnNumber != state.TurnNumber
+            if (!ScienceData.Same(state,candidate,allowResearch) || candidate.Phase != state.Phase || candidate.TurnNumber != state.TurnNumber
                 || candidate.StateRevision != state.StateRevision || (!allowProduction && !allowEconomy && candidate.NextEntitySequence != state.NextEntitySequence)
                 || candidate.RngState.AlgorithmId != state.RngState.AlgorithmId
                 || candidate.RngState.AlgorithmVersion != state.RngState.AlgorithmVersion
@@ -186,11 +188,11 @@ namespace HobbyDS9.Simulation
                 || (!allowProduction && !allowEconomy && !candidate.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId))
                     .SequenceEqual(state.EntityIdentities.Select(e => (e.EntityId, e.DefinitionId))))
                 || !candidate.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind, allowEconomy ? 0L : c.Credits,
-                        allowResearch ? 0L : c.ResearchReserve, allowResearch ? null : c.ResearchTargetDefinitionId))
+                        allowResearch ? 0L : c.EngineeringReserve, allowResearch ? null : c.EngineeringTargetDefinitionId))
                     .SequenceEqual(state.Civilizations!.Select(c => (c.CivilizationId, c.DefinitionId, c.ControllerKind, allowEconomy ? 0L : c.Credits,
-                        allowResearch ? 0L : c.ResearchReserve, allowResearch ? null : c.ResearchTargetDefinitionId)))
+                        allowResearch ? 0L : c.EngineeringReserve, allowResearch ? null : c.EngineeringTargetDefinitionId)))
                 || (!allowResearch && candidate.Civilizations!.Zip(state.Civilizations!, (a, b) =>
-                    a.UnlockedResearchDefinitionIds!.SequenceEqual(b.UnlockedResearchDefinitionIds!)).Any(equal => !equal))
+                    a.MatureEngineeringApplicationDefinitionIds!.SequenceEqual(b.MatureEngineeringApplicationDefinitionIds!)).Any(equal => !equal))
                 || !candidate.StarSystems!.Select(n => (n.SystemId, n.DefinitionId, n.OwnerCivilizationId))
                     .SequenceEqual(state.StarSystems!.Select(n => (n.SystemId, n.DefinitionId, n.OwnerCivilizationId)))
                 || !PopulationGuards.Same(state, candidate, allowEconomy, allowProduction)
@@ -212,15 +214,15 @@ namespace HobbyDS9.Simulation
                     definitions.DefinitionIds.Select(d => new DefinitionId(d)).OrderBy(d => d),
                     state.Civilizations!.Select(c => new ActorSnapshot(new EntityId(c.CivilizationId), c.ControllerKind!.Value)),
                     state.AcceptedCommandIds!.Select(c => new EntityId(c)),
-                    state.Civilizations!.Select(c => new CivilizationSnapshot(new EntityId(c.CivilizationId), new DefinitionId(c.DefinitionId), c.ControllerKind!.Value, c.Credits, c.ResearchReserve,
-                        c.ResearchTargetDefinitionId == null ? (DefinitionId?)null : new DefinitionId(c.ResearchTargetDefinitionId),
-                        c.UnlockedResearchDefinitionIds!.Select(id => new DefinitionId(id)))),
+                    state.Civilizations!.Select(c => new CivilizationSnapshot(new EntityId(c.CivilizationId), new DefinitionId(c.DefinitionId), c.ControllerKind!.Value, c.Credits, c.EngineeringReserve,
+                        c.EngineeringTargetDefinitionId == null ? (DefinitionId?)null : new DefinitionId(c.EngineeringTargetDefinitionId),
+                        c.MatureEngineeringApplicationDefinitionIds!.Select(id => new DefinitionId(id)), new ScienceEngineeringSnapshot(c))),
                     state.StarSystems!.Select(n => new StarSystemSnapshot(new EntityId(n.SystemId), new DefinitionId(n.DefinitionId),
                         n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges, state.Phase!.Value, state.Colonies!.Select(c => new ColonySnapshot(c, WorldEconomy.Planet(c, state, definitions), WorldEconomy.Project(c, state, definitions))),
                     state.Ships!.Select(s => new ShipSnapshot(s)), state.Fleets!.Select(f => new FleetSnapshot(f)), definitions.ShipDesigns!.Select(d => new ShipDesignSnapshot(d)),
                     CampaignCombatState.AllRequests(state).Select(r => new CombatEncounterSnapshot(r, state.ResolvedCombats!.Any(c => c.Request.EncounterId == r.EncounterId))),
                     state.Planets!.Select(p => new PlanetStateSnapshot(p)), state.Displacements!.Select(r => new DisplacementSnapshot(r)),
-                    state.LastDeliveries!.Select(r => new LogisticsDeliverySnapshot(r)), new PopulationStatisticsSnapshot(state.PopulationStatistics!), new NavigationStatisticsSnapshot(state.NavigationStatistics!));
+                    state.LastDeliveries!.Select(r => new LogisticsDeliverySnapshot(r)), new PopulationStatisticsSnapshot(state.PopulationStatistics!), new NavigationStatisticsSnapshot(state.NavigationStatistics!), state.ResearchPaceFactor!.Value, state.LastResearchReceipts!.Select(r=>new ResearchReceiptSnapshot(r)));
             }
         }
 
@@ -258,13 +260,14 @@ namespace HobbyDS9.Simulation
                 CreditCost = d.CreditCost,
                 MaxHull = d.MaxHull,
                 CombatProfile = CombatProfiles.Copy(d.CombatProfile!),
-                RequiredResearchDefinitionIds = d.RequiredResearchDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal).ToList()
+                RequiredEngineeringApplicationDefinitionIds = d.RequiredEngineeringApplicationDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal).ToList()
             }).ToList(),
-            ResearchNodes = source.ResearchNodes!.OrderBy(n => n.DefinitionId, StringComparer.Ordinal).Select(n => new ResearchNodeDefinitionDto
+            EngineeringApplications = source.EngineeringApplications!.OrderBy(n => n.DefinitionId, StringComparer.Ordinal).Select(n => new EngineeringApplicationDefinitionDto
             {
                 DefinitionId = n.DefinitionId,
                 DisplayName = n.DisplayName,
-                ResearchCost = n.ResearchCost,
+                BaseEngineeringCost = n.BaseEngineeringCost,
+                ScienceRequirements = n.ScienceRequirements!.OrderBy(q => q.Discipline).ThenBy(q => q.IntervalStartLevel).ThenBy(q => q.RequiredBreakthroughOrdinal).Select(q => new EngineeringScienceRequirementDto { Discipline=q.Discipline, IntervalStartLevel=q.IntervalStartLevel, RequiredBreakthroughOrdinal=q.RequiredBreakthroughOrdinal }).ToList(),
                 PrerequisiteDefinitionIds = n.PrerequisiteDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal).ToList()
             }).ToList(),
             GovernancePolicies = source.GovernancePolicies!.OrderBy(p=>p.DefinitionId,StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
@@ -281,12 +284,12 @@ namespace HobbyDS9.Simulation
         };
 
         private static bool IsKnownKind(CommandKind kind) => kind == CommandKind.EnqueueProduction
-            || kind == CommandKind.CancelProduction || kind == CommandKind.SetResearchTarget || kind == CommandKind.SetFleetRoute || kind == CommandKind.SetWorldGovernancePolicy;
+            || kind == CommandKind.CancelProduction || kind == CommandKind.SetEngineeringTarget || kind == CommandKind.SetFleetRoute || kind == CommandKind.SetWorldGovernancePolicy || kind == CommandKind.SetResearchAllocation || kind == CommandKind.SetScienceFocus;
 
         private static bool HasValidPayload(CommandEnvelope command)
         {
-            var count = (command.EnqueueProduction == null ? 0 : 1) + (command.CancelProduction == null ? 0 : 1)
-                + (command.SetResearchTarget == null ? 0 : 1) + (command.SetFleetRoute == null ? 0 : 1) + (command.SetWorldGovernancePolicy == null ? 0 : 1);
+            var count = (command.SetResearchAllocation == null ? 0 : 1) + (command.SetScienceFocus == null ? 0 : 1) + (command.EnqueueProduction == null ? 0 : 1) + (command.CancelProduction == null ? 0 : 1)
+                + (command.SetEngineeringTarget == null ? 0 : 1) + (command.SetFleetRoute == null ? 0 : 1) + (command.SetWorldGovernancePolicy == null ? 0 : 1);
             if (count != 1) return false;
             switch (command.Kind)
             {
@@ -296,8 +299,10 @@ namespace HobbyDS9.Simulation
                 case CommandKind.CancelProduction:
                     return command.CancelProduction != null && EntityId.TryParse(command.CancelProduction.ColonyId, out _)
                         && EntityId.TryParse(command.CancelProduction.QueueItemId, out _);
-                case CommandKind.SetResearchTarget:
-                    return command.SetResearchTarget != null && DefinitionId.TryParse(command.SetResearchTarget.TargetDefinitionId, out _);
+                case CommandKind.SetResearchAllocation: return command.SetResearchAllocation != null;
+                case CommandKind.SetScienceFocus: return command.SetScienceFocus != null;
+                case CommandKind.SetEngineeringTarget:
+                    return command.SetEngineeringTarget != null && (command.SetEngineeringTarget.TargetDefinitionId == null || DefinitionId.TryParse(command.SetEngineeringTarget.TargetDefinitionId, out _));
                 case CommandKind.SetWorldGovernancePolicy:
                     return command.SetWorldGovernancePolicy != null && EntityId.TryParse(command.SetWorldGovernancePolicy.ColonyId,out _) && DefinitionId.TryParse(command.SetWorldGovernancePolicy.PolicyDefinitionId,out _);
                 case CommandKind.SetFleetRoute:
@@ -313,6 +318,8 @@ namespace HobbyDS9.Simulation
                 .Select(c => new PendingCombatDto { Request = CombatEncounterScaffold.CopyRequest(c.Request) }).ToList(),
             ResolvedCombats = source.ResolvedCombats!.OrderBy(c => c.Request.LocationNodeId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
                 .Select(c => new ResolvedCombatDto { Request = CombatEncounterScaffold.CopyRequest(c.Request), Result = CombatEncounterScaffold.CopyResult(c.Result) }).ToList(),
+            ResearchPaceFactor = source.ResearchPaceFactor,
+            LastResearchReceipts = source.LastResearchReceipts!.Select(ScienceData.Copy).ToList(),
             Phase = source.Phase,
             TurnNumber = source.TurnNumber,
             StateRevision = source.StateRevision,
@@ -327,16 +334,7 @@ namespace HobbyDS9.Simulation
                 .Select(e => new EntityIdentityDto { EntityId = e.EntityId, DefinitionId = e.DefinitionId }).ToList(),
             AcceptedCommandIds = source.AcceptedCommandIds!.OrderBy(c => c, StringComparer.Ordinal).ToList(),
             Civilizations = source.Civilizations!.OrderBy(c => c.CivilizationId, StringComparer.Ordinal)
-                .Select(c => new CivilizationStateDto
-                {
-                    CivilizationId = c.CivilizationId,
-                    DefinitionId = c.DefinitionId,
-                    ControllerKind = c.ControllerKind,
-                    Credits = c.Credits,
-                    ResearchReserve = c.ResearchReserve,
-                    ResearchTargetDefinitionId = c.ResearchTargetDefinitionId,
-                    UnlockedResearchDefinitionIds = c.UnlockedResearchDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal).ToList()
-                }).ToList(),
+                .Select(ScienceData.Copy).ToList(),
             StarSystems = source.StarSystems!.OrderBy(n => n.SystemId, StringComparer.Ordinal)
                 .Select(n => new StarSystemStateDto { SystemId = n.SystemId, DefinitionId = n.DefinitionId, OwnerCivilizationId = n.OwnerCivilizationId }).ToList(),
             Colonies = source.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal).Select(PopulationData.Copy).ToList(),
@@ -381,8 +379,10 @@ namespace HobbyDS9.Simulation
                 { ColonyId = source.EnqueueProduction.ColonyId, DefinitionId = source.EnqueueProduction.DefinitionId },
                 CancelProduction = source.CancelProduction == null ? null : new CancelProductionPayload
                 { ColonyId = source.CancelProduction.ColonyId, QueueItemId = source.CancelProduction.QueueItemId },
-                SetResearchTarget = source.SetResearchTarget == null ? null : new SetResearchTargetPayload
-                { TargetDefinitionId = source.SetResearchTarget.TargetDefinitionId },
+                SetResearchAllocation = source.SetResearchAllocation == null ? null : new SetResearchAllocationPayload { ScienceAllocationBps = source.SetResearchAllocation.ScienceAllocationBps },
+                SetScienceFocus = source.SetScienceFocus == null ? null : new SetScienceFocusPayload { Discipline = source.SetScienceFocus.Discipline },
+                SetEngineeringTarget = source.SetEngineeringTarget == null ? null : new SetEngineeringTargetPayload
+                { TargetDefinitionId = source.SetEngineeringTarget.TargetDefinitionId },
                 SetFleetRoute = source.SetFleetRoute == null ? null : new SetFleetRoutePayload
                 {
                     FleetId = source.SetFleetRoute.FleetId,

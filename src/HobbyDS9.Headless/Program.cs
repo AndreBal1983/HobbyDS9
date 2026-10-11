@@ -78,7 +78,7 @@ var snapshot = session.CaptureSnapshot().Campaign;
 Console.WriteLine(FormattableString.Invariant($"{scenario.ScenarioId}: completed={turns}, turn={snapshot.TurnNumber}, revision={snapshot.StateRevision}, AI commands={commands}, phase={snapshot.Phase}"));
 Console.WriteLine(FormattableString.Invariant($"combats generated={generated}, resolved={resolved}, awaiting checkpoints={checkpoints}, host order={combatOrder}"));
 Console.WriteLine(FormattableString.Invariant($"phases={phases}, shots={shots}, hits={hits}, shield damage={shieldDamage}, hull damage={hullDamage}, ships destroyed={destroyedShips}, fleets destroyed={destroyedFleets}, fleets retreated={retreatedFleets}"));
-Console.WriteLine(FormattableString.Invariant($"ships={snapshot.Ships.Count}, fleets={snapshot.Fleets.Count}, queued={snapshot.Colonies.Sum(c => c.ProductionQueue.Count)}, unlocks={snapshot.Civilizations.Sum(c => c.UnlockedResearchDefinitionIds.Count)}, nextEntity={snapshot.NextEntitySequence}, rng={snapshot.RngState.State:x16}"));
+Console.WriteLine(FormattableString.Invariant($"ships={snapshot.Ships.Count}, fleets={snapshot.Fleets.Count}, queued={snapshot.Colonies.Sum(c => c.ProductionQueue.Count)}, unlocks={snapshot.Civilizations.Sum(c => c.MatureEngineeringApplicationDefinitionIds.Count)}, nextEntity={snapshot.NextEntitySequence}, rng={snapshot.RngState.State:x16}"));
 var stateBytes = JsonSerializer.SerializeToUtf8Bytes(session.ExportSave());
 Console.WriteLine($"save-sha256={Convert.ToHexString(SHA256.HashData(stateBytes)).ToLowerInvariant()}");
 
@@ -97,3 +97,14 @@ var nav = snapshot.NavigationStatistics;
 Console.WriteLine($"movement-cost-paid={nav.TraversalCostPaid}, edges-completed={nav.EdgesCompleted}, partial-traversal-turns={nav.PartialTraversalTurns}");
 foreach(var resistance in Enum.GetValues<ResistanceState>()) Console.WriteLine($"resistance {resistance}: worlds={snapshot.Colonies.Count(c=>c.State.Politics.Resistance==resistance)}, world-turns={resistanceTurns[resistance]}");
 Console.WriteLine($"political-disruptions={snapshot.Colonies.Sum(c=>c.State.Politics.Disruptions)}");
+
+foreach(var civilization in snapshot.Civilizations)
+{
+    var research=civilization.Research!;var counts=research.Statistics;
+    var initial=scenario.InitialState.Civilizations!.Single(c=>c.CivilizationId==civilization.CivilizationId.Value);
+    if((BigInteger)counts.TotalScienceAllocated+counts.TotalEngineeringAllocated!=counts.TotalResearchGenerated
+        ||(BigInteger)counts.TotalScienceSpent+counts.TotalEngineeringSpent+research.ScienceReserve-initial.ScienceReserve+research.EngineeringReserve-initial.EngineeringReserve!=counts.TotalResearchGenerated)
+        throw new InvalidOperationException("Research conservation failed.");
+    Console.WriteLine($"{civilization.CivilizationId} research: generated={counts.TotalResearchGenerated}, science-allocated={counts.TotalScienceAllocated}, engineering-allocated={counts.TotalEngineeringAllocated}, science-spent={counts.TotalScienceSpent}, engineering-spent={counts.TotalEngineeringSpent}, science-reserve={research.ScienceReserve}, engineering-reserve={research.EngineeringReserve}, starting-science-reserve={initial.ScienceReserve}, starting-engineering-reserve={initial.EngineeringReserve}, breakthroughs={counts.TotalBreakthroughs}, levels-completed={counts.TotalScienceLevelsCompleted}, matured={counts.TotalEngineeringApplicationsMatured}");
+    Console.WriteLine("  levels: "+string.Join(", ",research.Disciplines.Select(d=>$"{d.Discipline}={d.Level}:{d.Progress}")));
+}

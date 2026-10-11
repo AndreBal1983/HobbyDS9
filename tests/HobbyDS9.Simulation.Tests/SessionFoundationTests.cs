@@ -14,7 +14,7 @@ public sealed class SessionFoundationTests
     {
         ContentFormatVersion = FoundationVersions.ContentFormatVersion,
         ShipDesigns = new(),
-        ResearchNodes = new(),
+        EngineeringApplications = new(),
         Species = new(),
         Planets = new(),
         Resources = new(), GovernancePolicies = new(), PoliticalMemoryEffects = new(),
@@ -38,7 +38,7 @@ public sealed class SessionFoundationTests
             PopulationStatistics = new(),
             PendingCombats = new(),
             ResolvedCombats = new(),
-            Phase = SessionPhase.Planning,
+            Phase = SessionPhase.Planning, ResearchPaceFactor = 10000, LastResearchReceipts = new(),
             TurnNumber = 1,
             StateRevision = revision,
             NextEntitySequence = 1,
@@ -48,8 +48,8 @@ public sealed class SessionFoundationTests
             Colonies = new(),
             AcceptedCommandIds = new(),
             StarSystems = new(),
-            Civilizations = new() { new() { CivilizationId = Alpha.Value, DefinitionId = "definition.alpha", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.Human },
-                new() { CivilizationId = Beta.Value, DefinitionId = "definition.beta", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.AI } },
+            Civilizations = new() { new() { CivilizationId = Alpha.Value, DefinitionId = "definition.alpha", MatureEngineeringApplicationDefinitionIds = new(), ControllerKind = ControllerKind.Human },
+                new() { CivilizationId = Beta.Value, DefinitionId = "definition.beta", MatureEngineeringApplicationDefinitionIds = new(), ControllerKind = ControllerKind.AI } },
             EntityIdentities = new()
             {
                 new() { EntityId = "entity.target", DefinitionId = "definition.alpha" },
@@ -64,14 +64,14 @@ public sealed class SessionFoundationTests
         ActorCivilizationId = actor ?? Alpha.Value,
         ExpectedTurn = 1,
         ExpectedRevision = revision,
-        Kind = CommandKind.SetResearchTarget,
-        SetResearchTarget = new() { TargetDefinitionId = "definition.beta" }
+        Kind = CommandKind.SetEngineeringTarget,
+        SetEngineeringTarget = new() { TargetDefinitionId = "definition.beta" }
     };
 
     private static SimulationSession Session(Probe? probe = null, SaveEnvelopeDto? save = null, bool controlBoth = false)
     {
         var handlers = new Dictionary<CommandKind, ICommandHandler>();
-        if (probe != null) handlers.Add(CommandKind.SetResearchTarget, probe);
+        if (probe != null) handlers.Add(CommandKind.SetEngineeringTarget, probe);
         var initial = save ?? Save();
         if (controlBoth) initial.GameState.Civilizations![1].ControllerKind = ControllerKind.Human;
         return new SimulationSession(initial, Definitions(), Compatibility, handlers);
@@ -226,7 +226,7 @@ public sealed class SessionFoundationTests
         probe.RetainedState.NextEntitySequence = 100;
         probe.RetainedState.AcceptedCommandIds!.Clear();
         probe.RetainedCommand!.CommandId = "cmd.hijacked";
-        probe.RetainedCommand.SetResearchTarget!.TargetDefinitionId = "definition.hijacked";
+        probe.RetainedCommand.SetEngineeringTarget!.TargetDefinitionId = "definition.hijacked";
         Assert.Equal(before, StateJson(session));
         Assert.Equal(original, JsonSerializer.Serialize(command));
     }
@@ -273,13 +273,13 @@ public sealed class SessionFoundationTests
             case "past-revision": command.ExpectedRevision = -1; break;
             case "future-revision": command.ExpectedRevision = 1; break;
             case "unknown-kind": command.Kind = (CommandKind)999; break;
-            case "missing-payload": command.SetResearchTarget = null; break;
+            case "missing-payload": command.SetEngineeringTarget = null; break;
             case "wrong-payload": command.Kind = CommandKind.CancelProduction; break;
             case "multiple-payloads": command.CancelProduction = new() { ColonyId = "colony.one", QueueItemId = "queue.one" }; break;
-            case "bad-definition-id": command.SetResearchTarget!.TargetDefinitionId = "definition.spawn.0000000000000001"; break;
+            case "bad-definition-id": command.SetEngineeringTarget!.TargetDefinitionId = "definition.spawn.0000000000000001"; break;
             case "null-route":
             case "bad-route":
-                command.Kind = CommandKind.SetFleetRoute; command.SetResearchTarget = null;
+                command.Kind = CommandKind.SetFleetRoute; command.SetEngineeringTarget = null;
                 command.SetFleetRoute = new() { FleetId = "fleet.one", RouteNodeIds = example == "null-route" ? null : new() { "Bad" } };
                 break;
         }

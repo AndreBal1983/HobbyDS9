@@ -18,15 +18,13 @@ namespace HobbyDS9.Contracts
         public string DisplayName { get; set; } = string.Empty;
     }
 
-    public sealed class CivilizationStateDto
+    public sealed class CivilizationStateDto : ScienceEngineeringStateDto
     {
         public string CivilizationId { get; set; } = string.Empty;
         public string DefinitionId { get; set; } = string.Empty;
         public ControllerKind? ControllerKind { get; set; }
         public long Credits { get; set; }
-        public long ResearchReserve { get; set; }
-        public string? ResearchTargetDefinitionId { get; set; }
-        public List<string>? UnlockedResearchDefinitionIds { get; set; }
+
     }
 
     public sealed class StarSystemStateDto
@@ -50,15 +48,16 @@ namespace HobbyDS9.Contracts
         public DefinitionId DefinitionId { get; }
         public ControllerKind ControllerKind { get; }
         public long Credits { get; }
-        public long ResearchReserve { get; }
-        public DefinitionId? ResearchTargetDefinitionId { get; }
-        public IReadOnlyList<DefinitionId> UnlockedResearchDefinitionIds { get; }
+        public ScienceEngineeringSnapshot? Research { get; }
+        public long EngineeringReserve { get; }
+        public DefinitionId? EngineeringTargetDefinitionId { get; }
+        public IReadOnlyList<DefinitionId> MatureEngineeringApplicationDefinitionIds { get; }
         public CivilizationSnapshot(EntityId id, DefinitionId definitionId, ControllerKind controllerKind, long credits = 0, long researchReserve = 0,
-            DefinitionId? researchTargetDefinitionId = null, IEnumerable<DefinitionId>? unlockedResearchDefinitionIds = null)
+            DefinitionId? researchTargetDefinitionId = null, IEnumerable<DefinitionId>? unlockedResearchDefinitionIds = null, ScienceEngineeringSnapshot? research = null)
         {
-            CivilizationId = id; DefinitionId = definitionId; ControllerKind = controllerKind; Credits = credits;
-            ResearchReserve = researchReserve; ResearchTargetDefinitionId = researchTargetDefinitionId;
-            UnlockedResearchDefinitionIds = new List<DefinitionId>(unlockedResearchDefinitionIds ?? Array.Empty<DefinitionId>()).AsReadOnly();
+            Research = research; CivilizationId = id; DefinitionId = definitionId; ControllerKind = controllerKind; Credits = credits;
+            EngineeringReserve = researchReserve; EngineeringTargetDefinitionId = researchTargetDefinitionId;
+            MatureEngineeringApplicationDefinitionIds = new List<DefinitionId>(unlockedResearchDefinitionIds ?? Array.Empty<DefinitionId>()).AsReadOnly();
         }
     }
 

@@ -267,7 +267,7 @@ namespace HobbyDS9.UnityClient.Tests
             var host = Start(); var client = host.Client;
             var actor = new HobbyDS9.Contracts.EntityId("civ.federation");
             var colony = new HobbyDS9.Contracts.EntityId("colony.sol");
-            Assert.That(client.Research(host.Snapshot, actor, new DefinitionId("research.advanced-engineering")).Accepted, Is.True);
+            Assert.That(client.Research(host.Snapshot, actor, new DefinitionId("engineering.advanced-starship-engineering")).Accepted, Is.True);
             Assert.That(client.Enqueue(host.Snapshot, actor, colony, new DefinitionId("ship-design.scout")).Accepted, Is.True);
             var json = host.SaveJson(); var saved = host.Snapshot;
             var item = saved.Campaign.Colonies.Single(c => c.ColonyId == colony).ProductionQueue.Single();

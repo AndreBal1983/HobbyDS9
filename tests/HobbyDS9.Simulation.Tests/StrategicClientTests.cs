@@ -9,7 +9,7 @@ namespace HobbyDS9.Simulation.Tests;
 public sealed class StrategicClientTests
 {
     private static readonly EntityId Human = new("civ.federation"), Colony = new("colony.sol"), Fleet = new("fleet.federation-scout");
-    private static readonly DefinitionId Research = new("research.advanced-engineering"), Scout = new("ship-design.scout");
+    private static readonly DefinitionId Research = new("engineering.advanced-starship-engineering"), Scout = new("ship-design.scout");
     private static StrategicClient Start(ScenarioDto? scenario = null)
     {
         var content = scenario ?? VerticalSliceFixture.Scenario(false);
@@ -23,26 +23,26 @@ public sealed class StrategicClientTests
     public void ResearchProjectionDistinguishesAvailableCurrentCompletedAndMissingPrerequisite()
     {
         var scenario = VerticalSliceFixture.Scenario();
-        scenario.Definitions.DefinitionIds.Add("research.follow-up");
-        scenario.Definitions.ResearchNodes!.Add(new()
+        scenario.Definitions.DefinitionIds.Add("engineering.follow-up");
+        scenario.Definitions.EngineeringApplications!.Add(new()
         {
-            DefinitionId = "research.follow-up",
+            DefinitionId = "engineering.follow-up",
             DisplayName = "Follow up",
-            ResearchCost = 20,
+            BaseEngineeringCost = 20, ScienceRequirements = new(),
             PrerequisiteDefinitionIds = new() { Research.Value }
         });
         var client = Start(scenario);
         var initial = StrategicOptions.Research(client.Snapshot, Human);
-        Assert.Equal(ResearchDisplayState.Available, initial.Single(r => r.Definition.DefinitionId == Research).State);
-        Assert.Equal(CommandErrorCode.ResearchPrerequisiteMissing, initial.Single(r => r.Definition.DefinitionId.Value == "research.follow-up").UnavailableReason);
+        Assert.Equal(EngineeringDisplayState.Available, initial.Single(r => r.Definition.DefinitionId == Research).State);
+        Assert.Equal(CommandErrorCode.EngineeringPrerequisiteMissing, initial.Single(r => r.Definition.DefinitionId.Value == "engineering.follow-up").UnavailableReason);
         Assert.True(client.Research(client.Snapshot, Human, Research).Accepted);
-        Assert.Equal(ResearchDisplayState.Current, StrategicOptions.Research(client.Snapshot, Human).Single(r => r.Definition.DefinitionId == Research).State);
+        Assert.Equal(EngineeringDisplayState.Current, StrategicOptions.Research(client.Snapshot, Human).Single(r => r.Definition.DefinitionId == Research).State);
         for (var i = 0; i < 3; i++) Assert.Equal(TurnStatus.Completed, client.EndTurn(client.Snapshot).Status);
         var complete = StrategicOptions.Research(client.Snapshot, Human);
-        Assert.Equal(ResearchDisplayState.Completed, complete.Single(r => r.Definition.DefinitionId == Research).State);
-        Assert.Equal(ResearchDisplayState.Available, complete.Single(r => r.Definition.DefinitionId.Value == "research.follow-up").State);
-        Assert.Equal(ResearchDisplayState.Available, initial.Single(r => r.Definition.DefinitionId == Research).State);
-        Assert.Throws<NotSupportedException>(() => ((IList<ResearchOption>)initial).Clear());
+        Assert.Equal(EngineeringDisplayState.Completed, complete.Single(r => r.Definition.DefinitionId == Research).State);
+        Assert.Equal(EngineeringDisplayState.Available, complete.Single(r => r.Definition.DefinitionId.Value == "engineering.follow-up").State);
+        Assert.Equal(EngineeringDisplayState.Available, initial.Single(r => r.Definition.DefinitionId == Research).State);
+        Assert.Throws<NotSupportedException>(() => ((IList<EngineeringOption>)initial).Clear());
     }
     [Fact]
     public void ResearchCommandsRefreshOnAcceptanceAndRejectUnchangedWithoutMutation()
@@ -50,11 +50,11 @@ public sealed class StrategicClientTests
         var client = Start(); var before = client.Snapshot;
         var accepted = client.Research(before, Human, Research);
         Assert.True(accepted.Accepted); Assert.Equal(1, client.Snapshot.Campaign.StateRevision);
-        Assert.Null(before.Campaign.Civilizations.Single(c => c.CivilizationId == Human).ResearchTargetDefinitionId);
-        Assert.Equal(Research, Actor(client).ResearchTargetDefinitionId);
+        Assert.Null(before.Campaign.Civilizations.Single(c => c.CivilizationId == Human).EngineeringTargetDefinitionId);
+        Assert.Equal(Research, Actor(client).EngineeringTargetDefinitionId);
         var save = Save(client); var rejected = client.Research(client.Snapshot, Human, Research);
-        Assert.Equal(CommandErrorCode.ResearchTargetUnchanged, rejected.ErrorCode); Assert.Equal(save, Save(client));
-        Assert.Contains("ResearchTargetUnchanged", CommandFeedback.Describe(rejected));
+        Assert.Equal(CommandErrorCode.EngineeringTargetUnchanged, rejected.ErrorCode); Assert.Equal(save, Save(client));
+        Assert.Contains("EngineeringTargetUnchanged", CommandFeedback.Describe(rejected));
         Assert.NotEqual(accepted.CommandId, rejected.CommandId);
     }
     [Fact]
@@ -74,7 +74,7 @@ public sealed class StrategicClientTests
     [Theory]
     [InlineData("credits", CommandErrorCode.InsufficientCredits)]
     [InlineData("resource", CommandErrorCode.InsufficientStrategicResource)]
-    [InlineData("research", CommandErrorCode.DesignResearchPrerequisiteMissing)]
+    [InlineData("research", CommandErrorCode.DesignEngineeringPrerequisiteMissing)]
     [InlineData("owner", CommandErrorCode.ColonyNotOwned)]
     public void ProductionProjectionMatchesCommandRejectionAndDoesNotMutate(string problem, CommandErrorCode expected)
     {
@@ -240,8 +240,8 @@ public sealed class StrategicClientTests
     public void InvalidResearchDoesNotBlockTheNextValidCommandOrReuseItsId()
     {
         var client = Start(); var before = Save(client);
-        var invalid = client.Research(client.Snapshot, Human, new("research.unknown"));
-        Assert.Equal(CommandErrorCode.UnknownResearchNode, invalid.ErrorCode); Assert.Equal(before, Save(client));
+        var invalid = client.Research(client.Snapshot, Human, new("engineering.unknown"));
+        Assert.Equal(CommandErrorCode.UnknownEngineeringApplication, invalid.ErrorCode); Assert.Equal(before, Save(client));
         var valid = client.Research(client.Snapshot, Human, Research);
         Assert.True(valid.Accepted); Assert.NotEqual(valid.CommandId, invalid.CommandId);
     }
@@ -291,7 +291,7 @@ public sealed class StrategicClientTests
             Assert.Equal(JsonSerializer.Serialize(direct.ExportSave()), Save(client));
         }
         Assert.Equal(26, client.Snapshot.Campaign.TurnNumber);
-        Assert.Equal(187, client.Snapshot.Campaign.StateRevision);
+        Assert.Equal(185, client.Snapshot.Campaign.StateRevision);
     }
 
 }

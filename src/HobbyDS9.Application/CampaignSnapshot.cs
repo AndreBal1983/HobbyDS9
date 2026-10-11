@@ -29,15 +29,17 @@ namespace HobbyDS9.Application
         internal NamedDefinitionSnapshot(string id, string name) { DefinitionId = new DefinitionId(id); DisplayName = name; }
     }
 
-    public sealed class ResearchDefinitionSnapshot
+    public sealed class EngineeringDefinitionSnapshot
     {
         public DefinitionId DefinitionId { get; }
         public string DisplayName { get; }
-        public long ResearchCost { get; }
+        public long BaseEngineeringCost { get; }
+        public IReadOnlyList<EngineeringRequirementSnapshot> ScienceRequirements { get; }
         public IReadOnlyList<DefinitionId> Prerequisites { get; }
-        internal ResearchDefinitionSnapshot(ResearchNodeDefinitionDto dto)
+        internal EngineeringDefinitionSnapshot(EngineeringApplicationDefinitionDto dto)
         {
-            DefinitionId = new DefinitionId(dto.DefinitionId); DisplayName = dto.DisplayName; ResearchCost = dto.ResearchCost;
+            DefinitionId = new DefinitionId(dto.DefinitionId); DisplayName = dto.DisplayName; BaseEngineeringCost = dto.BaseEngineeringCost;
+            ScienceRequirements=dto.ScienceRequirements!.Select(q=>new EngineeringRequirementSnapshot(q)).ToList().AsReadOnly();
             Prerequisites = dto.PrerequisiteDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal)
                 .Select(id => new DefinitionId(id)).ToList().AsReadOnly();
         }
@@ -54,7 +56,7 @@ namespace HobbyDS9.Application
         public IReadOnlyList<SpeciesDefinitionSnapshot> Species { get; }
         public IReadOnlyList<ResourceDefinitionSnapshot> Resources { get; }
         public IReadOnlyList<InfrastructureDefinitionSnapshot> Infrastructure { get; }
-        public IReadOnlyList<ResearchDefinitionSnapshot> Research { get; }
+        public IReadOnlyList<EngineeringDefinitionSnapshot> Engineering { get; }
         internal ScenarioContentSnapshot(DefinitionCatalogDto definitions)
         {
             GovernancePolicies = definitions.GovernancePolicies!.OrderBy(p=>p.DefinitionId,StringComparer.Ordinal).Select(p=>new GovernancePolicyDefinitionSnapshot(p)).ToList().AsReadOnly();
@@ -66,8 +68,8 @@ namespace HobbyDS9.Application
                 .Select(d => new NamedDefinitionSnapshot(d.DefinitionId, d.DisplayName)).ToList().AsReadOnly();
             StarSystems = definitions.StarSystems!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal)
                 .Select(d => new NamedDefinitionSnapshot(d.DefinitionId, d.DisplayName)).ToList().AsReadOnly();
-            Research = definitions.ResearchNodes!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal)
-                .Select(d => new ResearchDefinitionSnapshot(d)).ToList().AsReadOnly();
+            Engineering = definitions.EngineeringApplications!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal)
+                .Select(d => new EngineeringDefinitionSnapshot(d)).ToList().AsReadOnly();
         }
     }
 }

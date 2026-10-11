@@ -1,6 +1,6 @@
 # HobbyDS9
 
-Current candidate: **Population Politics & Strategic Geography v1** on `codex/population-politics-strategic-geography-v1`, with save **12**, content **8**, rules **population-politics-geography-v1**, and unchanged phased combat resolver v1. Main remains the accepted economy milestone pending local Unity acceptance. See [rules, baseline and local acceptance](docs/population-politics-geography-v1.md).
+Current candidate: **Science & Engineering foundation v1** on `codex/science-engineering-foundation-v1`: save **13**, content **9**, rules **science-engineering-v1**, unchanged phased combat resolver v1. S1/E1 are integrated; the I1 client panel is next. Main stays unchanged pending local Unity acceptance. See [research rules and acceptance](docs/science-engineering-v1.md).
 
 A portable C# strategy simulation for a future DS9/Dominion War-era BOTF spiritual successor. The strategic vertical slice now connects colony economy, research, ship production, fleets, graph movement and simple deterministic AI. It runs headlessly; the campaign encounter checkpoint is integrated; deterministic planned range-phase combat and generic campaign consequences are implemented; the Unity strategic client consumes the Application boundary; networking is deferred. No implementation code or assets have been copied from BotF2 or 3DBOTF2.
 

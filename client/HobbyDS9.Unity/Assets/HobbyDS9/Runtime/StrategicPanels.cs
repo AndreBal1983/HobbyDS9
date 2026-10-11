@@ -22,7 +22,7 @@ namespace HobbyDS9.UnityClient
 
         private static CivilizationSnapshot? Human(CampaignSnapshot snapshot) => snapshot.Campaign.Civilizations
             .Where(c => c.ControllerKind == ControllerKind.Human).OrderBy(c => c.CivilizationId.Value, StringComparer.Ordinal).FirstOrDefault();
-        private static string ResearchName(CampaignSnapshot snapshot, DefinitionId id) => snapshot.Content.Research.Single(r => r.DefinitionId == id).DisplayName;
+        private static string ResearchName(CampaignSnapshot snapshot, DefinitionId id) => snapshot.Content.Engineering.Single(r => r.DefinitionId == id).DisplayName;
         private static string NodeName(CampaignSnapshot snapshot, NavigationNodeId id) => GalaxyProjection.Nodes(snapshot).FirstOrDefault(n => n.NodeId == id)?.Label ?? "Unknown region";
         private void ClearRoute() { routeFleet = null; routePreview = null; }
         private void SelectNode(NavigationNodeId id)
@@ -55,8 +55,8 @@ namespace HobbyDS9.UnityClient
             var actor = Human(snapshot); Text("Empire", true);
             if (actor == null) { Text("No human-controlled civilization in this campaign."); return; }
             Text(OwnerName(snapshot, actor.CivilizationId));
-            Text($"Credits {actor.Credits} • Research reserve {actor.ResearchReserve}");
-            Text("Research: " + (actor.ResearchTargetDefinitionId.HasValue ? ResearchName(snapshot, actor.ResearchTargetDefinitionId.Value) : "No target selected"));
+            Text($"Credits {actor.Credits} • Research reserve {actor.EngineeringReserve}");
+            Text("Research: " + (actor.EngineeringTargetDefinitionId.HasValue ? ResearchName(snapshot, actor.EngineeringTargetDefinitionId.Value) : "No target selected"));
             Text($"Campaign population movement: {snapshot.Campaign.PopulationStatistics.Migrated} normal migrants • {snapshot.Campaign.PopulationStatistics.RefugeesMoved} refugees");
             Text("Owned colonies", true);
             foreach (var colony in snapshot.Campaign.Colonies.Where(c => c.OwnerCivilizationId == actor.CivilizationId))
@@ -74,12 +74,12 @@ namespace HobbyDS9.UnityClient
         {
             Text("Research", true); var actor = Human(snapshot);
             if (actor == null) { Text("No human civilization selected."); return; }
-            Text("Research reserve: " + actor.ResearchReserve + ". The reserve is spent by turn processing when the target can complete.");
+            Text("Research reserve: " + actor.EngineeringReserve + ". The reserve is spent by turn processing when the target can complete.");
             foreach (var option in StrategicOptions.Research(snapshot, actor.CivilizationId))
             {
                 var definition = option.Definition;
                 Text(definition.DisplayName + " • " + option.State, true);
-                Text("Cost: " + definition.ResearchCost);
+                Text("Cost: " + definition.BaseEngineeringCost);
                 Text("Prerequisites: " + (definition.Prerequisites.Count == 0 ? "None" : string.Join(", ", definition.Prerequisites.Select(id => ResearchName(snapshot, id)))));
                 var explanation = CommandFeedback.Explain(option.UnavailableReason);
                 if (!option.CanSelect) Text(explanation);

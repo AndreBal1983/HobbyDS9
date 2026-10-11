@@ -75,7 +75,7 @@ public sealed class FleetMovementTests
         var old = s.CaptureSnapshot(); var f = old.Fleets.Single(x => x.FleetId.Value == "fleet.federation-scout");
         Assert.Throws<NotSupportedException>(() => ((IList<EntityId>)f.RouteNodeIds).Clear()); Assert.Throws<NotSupportedException>(() => ((IList<EntityId>)f.ShipIds).Clear());
         var q = old.Colonies.Single(x => x.ColonyId.Value == "colony.sol"); Assert.Throws<NotSupportedException>(() => ((IList<ProductionQueueItemSnapshot>)q.ProductionQueue).Clear());
-        Assert.Throws<NotSupportedException>(() => ((IList<DefinitionId>)old.ShipDesigns[0].RequiredResearchDefinitionIds).Clear());
+        Assert.Throws<NotSupportedException>(() => ((IList<DefinitionId>)old.ShipDesigns[0].RequiredEngineeringApplicationDefinitionIds).Clear());
         var before = Json(s); mid.GameState.Fleets![0].RouteNodeIds!.Clear(); mid.GameState.Ships![0].CurrentHull = 1; Assert.Equal(before, Json(s));
         for (var i = 0; i < 5; i++) { Assert.Equal(JsonSerializer.Serialize(Advance(s)), JsonSerializer.Serialize(Advance(resumed))); Assert.Equal(Json(s), Json(resumed)); }
         Assert.Equal("system.bajor", f.LocationNodeId.Value); Assert.Equal(8, q.ProductionQueue[0].CompletedIndustry);

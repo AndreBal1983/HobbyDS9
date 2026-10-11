@@ -34,7 +34,7 @@ public sealed class ProductionTests
     [InlineData("neutral", CommandErrorCode.ColonyNotOwned)]
     [InlineData("design", CommandErrorCode.UnknownShipDesign)]
     [InlineData("nonship", CommandErrorCode.UnknownShipDesign)]
-    [InlineData("research", CommandErrorCode.DesignResearchPrerequisiteMissing)]
+    [InlineData("research", CommandErrorCode.DesignEngineeringPrerequisiteMissing)]
     [InlineData("credits", CommandErrorCode.InsufficientCredits)]
     [InlineData("resource", CommandErrorCode.InsufficientStrategicResource)]
     public void OrdinaryRejectionsPayAndAllocateNothing(string error, CommandErrorCode expected)
@@ -86,8 +86,8 @@ public sealed class ProductionTests
     [Fact]
     public void ResearchGateOpensAfterUnlockAndNoIndustryStoredWhenQueueEmpty()
     {
-        var s = EmptySession(); var command = Command(s, CommandKind.SetResearchTarget, "cmd.research"); command.SetResearchTarget = new() { TargetDefinitionId = "research.advanced-engineering" };
-        Assert.True(s.SubmitCommand(command).Accepted); Advance(s); Advance(s); Assert.Equal(CommandErrorCode.DesignResearchPrerequisiteMissing, Enqueue(s, design: "ship-design.advanced-scout").ErrorCode);
+        var s = EmptySession(); var command = Command(s, CommandKind.SetEngineeringTarget, "cmd.research"); command.SetEngineeringTarget = new() { TargetDefinitionId = "engineering.advanced-starship-engineering" };
+        Assert.True(s.SubmitCommand(command).Accepted); Advance(s); Advance(s); Assert.Equal(CommandErrorCode.DesignEngineeringPrerequisiteMissing, Enqueue(s, design: "ship-design.advanced-scout").ErrorCode);
         Advance(s); Assert.True(Enqueue(s, design: "ship-design.advanced-scout").Accepted); Advance(s); Assert.Equal(8, Colony(s).ProductionQueue![0].CompletedIndustry);
     }
 

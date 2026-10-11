@@ -256,10 +256,10 @@ public sealed class GalaxyFoundationTests
             ActorCivilizationId = actor,
             ExpectedTurn = 1,
             ExpectedRevision = 0,
-            Kind = CommandKind.SetResearchTarget,
-            SetResearchTarget = new() { TargetDefinitionId = "definition.future" }
+            Kind = CommandKind.SetEngineeringTarget,
+            SetEngineeringTarget = new() { TargetDefinitionId = "definition.future" }
         };
-        Assert.Equal(CommandErrorCode.UnknownResearchNode, resumed.SubmitCommand(Command("civ.federation")).ErrorCode);
+        Assert.Equal(CommandErrorCode.UnknownEngineeringApplication, resumed.SubmitCommand(Command("civ.federation")).ErrorCode);
         Assert.Equal(CommandErrorCode.ActorNotControlled, resumed.SubmitCommand(Command("civ.cardassian")).ErrorCode);
         Assert.Equal(CommandErrorCode.ActorNotControlled, resumed.SubmitCommand(Command("civ.dominion")).ErrorCode);
         Assert.Equal(CommandErrorCode.UnknownActor, resumed.SubmitCommand(Command("system.sol")).ErrorCode);
@@ -267,7 +267,7 @@ public sealed class GalaxyFoundationTests
         save.GameState.Civilizations!.Single(c => c.CivilizationId == "civ.federation").ControllerKind = ControllerKind.AI;
         var changed = new SimulationSession(save, content, Compatibility(s));
         Assert.Equal(CommandErrorCode.ActorNotControlled, changed.SubmitCommand(Command("civ.federation")).ErrorCode);
-        Assert.Equal(CommandErrorCode.UnknownResearchNode, resumed.SubmitCommand(Command("civ.federation")).ErrorCode);
+        Assert.Equal(CommandErrorCode.UnknownEngineeringApplication, resumed.SubmitCommand(Command("civ.federation")).ErrorCode);
     }
 
     [Fact]

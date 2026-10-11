@@ -66,8 +66,8 @@ namespace HobbyDS9.UnityClient
         }
         public CommandResult Research(CampaignSnapshot observed, EntityId actor, DefinitionId target)
         {
-            var command = Envelope(observed, actor, CommandKind.SetResearchTarget);
-            command.SetResearchTarget = new SetResearchTargetPayload { TargetDefinitionId = target.Value };
+            var command = Envelope(observed, actor, CommandKind.SetEngineeringTarget);
+            command.SetEngineeringTarget = new SetEngineeringTargetPayload { TargetDefinitionId = target.Value };
             return Submit(command);
         }
         public CommandResult Enqueue(CampaignSnapshot observed, EntityId actor, EntityId colony, DefinitionId design)
@@ -206,9 +206,9 @@ namespace HobbyDS9.UnityClient
                 case CommandErrorCode.None: return "Available";
                 case CommandErrorCode.StaleRevision: case CommandErrorCode.StaleTurn: return "The campaign changed. Review the refreshed state and issue the order again.";
                 case CommandErrorCode.CombatPending: return "Complete the pending battles before issuing strategic orders.";
-                case CommandErrorCode.ResearchAlreadyUnlocked: return "Research already completed.";
-                case CommandErrorCode.ResearchTargetUnchanged: return "Already the current research target.";
-                case CommandErrorCode.ResearchPrerequisiteMissing: case CommandErrorCode.DesignResearchPrerequisiteMissing: return "Required research has not been completed.";
+                case CommandErrorCode.EngineeringAlreadyMature: return "Research already completed.";
+                case CommandErrorCode.EngineeringTargetUnchanged: return "Already the current research target.";
+                case CommandErrorCode.EngineeringPrerequisiteMissing: case CommandErrorCode.DesignEngineeringPrerequisiteMissing: return "Required research has not been completed.";
                 case CommandErrorCode.InsufficientCredits: return "Not enough civilization credits.";
                 case CommandErrorCode.InsufficientStrategicResource: return "A required strategic resource is unavailable locally. Check the delivery report.";
                 case CommandErrorCode.ShipbuildingUnavailable: return "This world has no shipbuilding infrastructure.";

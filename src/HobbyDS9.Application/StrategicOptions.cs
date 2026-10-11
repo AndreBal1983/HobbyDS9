@@ -4,17 +4,17 @@ using HobbyDS9.Contracts;
 
 namespace HobbyDS9.Application
 {
-    public enum ResearchDisplayState { Locked, Available, Current, Completed }
+    public enum EngineeringDisplayState { Locked, Available, Current, Completed }
 
     // Advisory, immutable projections of an observed snapshot. Submission still
     // performs authoritative validation, including stamps, in Simulation.
-    public sealed class ResearchOption
+    public sealed class EngineeringOption
     {
-        public ResearchDefinitionSnapshot Definition { get; }
-        public ResearchDisplayState State { get; }
+        public EngineeringDefinitionSnapshot Definition { get; }
+        public EngineeringDisplayState State { get; }
         public CommandErrorCode UnavailableReason { get; }
         public bool CanSelect => UnavailableReason == CommandErrorCode.None;
-        internal ResearchOption(ResearchDefinitionSnapshot definition, ResearchDisplayState state, CommandErrorCode reason)
+        internal EngineeringOption(EngineeringDefinitionSnapshot definition, EngineeringDisplayState state, CommandErrorCode reason)
         { Definition = definition; State = state; UnavailableReason = reason; }
     }
 
@@ -51,21 +51,11 @@ namespace HobbyDS9.Application
             return actor.ControllerKind == ControllerKind.Human ? CommandErrorCode.None : CommandErrorCode.ActorNotControlled;
         }
 
-        public static IReadOnlyList<ResearchOption> Research(CampaignSnapshot snapshot, EntityId actorId)
+        public static IReadOnlyList<EngineeringOption> Research(CampaignSnapshot snapshot, EntityId actorId)
         {
-            var actor = snapshot.Campaign.Civilizations.SingleOrDefault(c => c.CivilizationId == actorId);
-            var access = PlanningAccess(snapshot, actorId);
-            return snapshot.Content.Research.Select(definition =>
-            {
-                var completed = actor != null && actor.UnlockedResearchDefinitionIds.Contains(definition.DefinitionId);
-                var missing = actor == null || definition.Prerequisites.Any(p => !actor.UnlockedResearchDefinitionIds.Contains(p));
-                var current = actor != null && actor.ResearchTargetDefinitionId == definition.DefinitionId;
-                var state = completed ? ResearchDisplayState.Completed : current ? ResearchDisplayState.Current
-                    : missing ? ResearchDisplayState.Locked : ResearchDisplayState.Available;
-                var reason = access != CommandErrorCode.None ? access : completed ? CommandErrorCode.ResearchAlreadyUnlocked
-                    : missing ? CommandErrorCode.ResearchPrerequisiteMissing : current ? CommandErrorCode.ResearchTargetUnchanged : CommandErrorCode.None;
-                return new ResearchOption(definition, state, reason);
-            }).ToList().AsReadOnly();
+            return ResearchOverviewSnapshot.For(snapshot,actorId).Engineering.Select(card=>new EngineeringOption(card.Definition,
+                card.Band==EngineeringMaturityBand.Mature?EngineeringDisplayState.Completed:card.IsTarget?EngineeringDisplayState.Current
+                :card.ScienceSatisfied.Any(s=>!s)||card.PrerequisitesSatisfied.Any(s=>!s)?EngineeringDisplayState.Locked:EngineeringDisplayState.Available,card.UnavailableReason)).ToList().AsReadOnly();
         }
 
         public static IReadOnlyList<ProductionOption> Production(CampaignSnapshot snapshot, EntityId actorId, EntityId colonyId)
@@ -78,7 +68,7 @@ namespace HobbyDS9.Application
                 var reason = access != CommandErrorCode.None ? access
                     : colony == null ? CommandErrorCode.UnknownColony
                     : colony.OwnerCivilizationId != actorId ? CommandErrorCode.ColonyNotOwned
-                    : design.RequiredResearchDefinitionIds.Any(id => !actor!.UnlockedResearchDefinitionIds.Contains(id)) ? CommandErrorCode.DesignResearchPrerequisiteMissing
+                    : design.RequiredEngineeringApplicationDefinitionIds.Any(id => !actor!.MatureEngineeringApplicationDefinitionIds.Contains(id)) ? CommandErrorCode.DesignEngineeringPrerequisiteMissing
                     : actor!.Credits < design.CreditCost ? CommandErrorCode.InsufficientCredits
                     : !colony.Economy.Shipbuilding ? CommandErrorCode.ShipbuildingUnavailable
                     : design.ResourceCosts.Any(r => (colony.State.Stockpiles.SingleOrDefault(s => s.ResourceDefinitionId == r.ResourceDefinitionId)?.Amount ?? 0) < r.Amount) ? CommandErrorCode.InsufficientStrategicResource : CommandErrorCode.None;

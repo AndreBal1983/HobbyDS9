@@ -80,7 +80,7 @@ namespace HobbyDS9.Simulation
             if(state.Disciplines!=null)foreach(var d in state.Disciplines.Where(d=>d!=null))
                 if(!ValidDiscipline(d.Discipline)||d.Level<1||d.Level>10||d.ProgressTowardNextLevel<0||(d.Level==10&&d.ProgressTowardNextLevel!=0)||(d.Level<10&&d.Level>=1&&ValidPace(pace)&&d.ProgressTowardNextLevel>=IntervalCost(d.Level,pace)))errors.Add("InvalidDisciplineState");
             if(state.Statistics==null||state.EngineeringProgress==null)errors.Add("MissingResearchCollections");
-            if(state.Statistics!=null){var s=state.Statistics;if(new[]{s.TotalResearchGenerated,s.TotalScienceAllocated,s.TotalEngineeringAllocated,s.TotalScienceSpent,s.TotalEngineeringSpent,s.TotalBreakthroughs,s.TotalScienceLevelsCompleted,s.TotalEngineeringApplicationsMatured}.Any(v=>v<0)||(BigInteger)s.TotalScienceAllocated+s.TotalEngineeringAllocated!=s.TotalResearchGenerated||s.TotalScienceSpent>s.TotalScienceAllocated||s.TotalEngineeringSpent>s.TotalEngineeringAllocated)errors.Add("InvalidResearchCounters");}
+            if(state.Statistics!=null){var s=state.Statistics;if(new[]{s.TotalResearchGenerated,s.TotalScienceAllocated,s.TotalEngineeringAllocated,s.TotalScienceSpent,s.TotalEngineeringSpent,s.TotalBreakthroughs,s.TotalScienceLevelsCompleted,s.TotalEngineeringApplicationsMatured}.Any(v=>v<0)||(BigInteger)s.TotalScienceAllocated+s.TotalEngineeringAllocated!=s.TotalResearchGenerated)errors.Add("InvalidResearchCounters");}
             return errors.AsReadOnly();
         }
     }

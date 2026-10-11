@@ -93,10 +93,10 @@ public sealed class SfxPolicyTests
         var session=CampaignApplication.StartScenario(VerticalSliceFixture.Scenario(false));
         var client=new StrategicClient(session,save=>CampaignApplication.LoadSave(VerticalSliceFixture.Scenario(false),save));
         var old=client.Snapshot;
-        var accepted=client.Research(old,new EntityId("civ.federation"),new DefinitionId("research.advanced-engineering"));
+        var accepted=client.Research(old,new EntityId("civ.federation"),new DefinitionId("engineering.advanced-starship-engineering"));
         Assert.True(accepted.Accepted);Assert.Equal(LcarsSfx.Success,SfxActionFeedback.For(accepted));
         var before=JsonSerializer.Serialize(client.ExportSave());
-        var rejected=client.Research(old,new EntityId("civ.federation"),new DefinitionId("research.advanced-engineering"));
+        var rejected=client.Research(old,new EntityId("civ.federation"),new DefinitionId("engineering.advanced-starship-engineering"));
         Assert.False(rejected.Accepted);Assert.Equal(LcarsSfx.Error,SfxActionFeedback.For(rejected));
         Assert.Equal(before,JsonSerializer.Serialize(client.ExportSave()));
     }

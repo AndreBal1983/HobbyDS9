@@ -17,14 +17,14 @@ public sealed class LongRunAcceptanceTests
         var scenario = Scenario(false, weighted:true); var baseline = Session(scenario); var repeated = Session(Clone(scenario)); var resumed = Session(Clone(scenario));
         var reorderedScenario = Clone(scenario); var state = reorderedScenario.InitialState; var defs = reorderedScenario.Definitions;
         state.Civilizations!.Reverse(); state.StarSystems!.Reverse(); state.Colonies!.Reverse(); state.Ships!.Reverse(); state.Fleets!.Reverse(); state.EntityIdentities.Reverse();
-        defs.DefinitionIds.Reverse(); defs.Civilizations!.Reverse(); defs.StarSystems!.Reverse(); defs.GalaxyEdges!.Reverse(); defs.ResearchNodes!.Reverse(); defs.ShipDesigns!.Reverse(); defs.Planets!.Reverse(); defs.Species!.Reverse(); defs.Infrastructure!.Reverse(); defs.Resources!.Reverse();
+        defs.DefinitionIds.Reverse(); defs.Civilizations!.Reverse(); defs.StarSystems!.Reverse(); defs.GalaxyEdges!.Reverse(); defs.EngineeringApplications!.Reverse(); defs.ShipDesigns!.Reverse(); defs.Planets!.Reverse(); defs.Species!.Reverse(); defs.Infrastructure!.Reverse(); defs.Resources!.Reverse();
         defs.NavigationRegions!.Reverse(); defs.NavigationConnections!.Reverse(); defs.Phenomena!.Reverse(); defs.GovernancePolicies!.Reverse(); defs.PoliticalMemoryEffects!.Reverse();
         foreach(var edge in defs.NavigationConnections)(edge.EndpointA,edge.EndpointB)=(edge.EndpointB,edge.EndpointA);
         state.NavigationKnowledge!.Reverse(); state.TraversalEffects!.Reverse();
         foreach(var k in state.NavigationKnowledge){k.Nodes!.Reverse();k.Connections!.Reverse();}
         foreach(var region in defs.NavigationRegions) region.PhenomenonDefinitionIds!.Reverse();
         foreach(var world in state.Colonies){world.Cohorts!.Reverse();foreach(var cohort in world.Cohorts){cohort.Memories!.Reverse();cohort.ExternalAffinities!.Reverse();}}
-        foreach (var d in defs.ShipDesigns) d.RequiredResearchDefinitionIds!.Reverse(); foreach (var r in defs.ResearchNodes) r.PrerequisiteDefinitionIds!.Reverse();
+        foreach (var d in defs.ShipDesigns) d.RequiredEngineeringApplicationDefinitionIds!.Reverse(); foreach (var r in defs.EngineeringApplications) r.PrerequisiteDefinitionIds!.Reverse();
         var reordered = Session(reorderedScenario); var reloads = new HashSet<int> { 1, 2, 4, 7, 13, 18, 24 }; var partial = false; var orders = new List<string>(); var commandCount = 0; var generated = 0; var checkpoints = 0;
         for (var i = 1; i <= 25; i++)
         {
@@ -41,19 +41,20 @@ public sealed class LongRunAcceptanceTests
         }
         Assert.True(partial); Assert.Equal(17, generated); Assert.Equal(12, checkpoints); Assert.Empty(baseline.CaptureSnapshot().Combats); Assert.Equal(25, orders.Count); var final = baseline.CaptureSnapshot();
         Assert.Equal(26, final.TurnNumber); Assert.Equal(SessionPhase.Planning, final.Phase);
-        Assert.Equal(187, final.StateRevision); Assert.Equal(133, commandCount);
+        Assert.Equal(185, final.StateRevision); Assert.Equal(131, commandCount);
         Assert.Equal(9, final.Ships.Count); Assert.Equal(9, final.Fleets.Count); Assert.Equal(97UL, final.NextEntitySequence); Assert.Equal(0xd8919406d6e01cf1UL, final.RngState.State);
         Assert.Equal((43, 98, 68, 126L, 116L, 10, 10, 0), (totals.Phases, totals.Shots, totals.Hits, totals.ShieldDamage, totals.HullDamage, totals.ShipsDestroyed, totals.FleetsDestroyed, totals.Retreated));
         Assert.True(totals.Hits > 0 && totals.HullDamage > 0 && totals.ShipsDestroyed > 0);
-        Assert.Equal(2, final.Colonies.Sum(c => c.ProductionQueue.Count)); Assert.Equal(2, final.Civilizations.Sum(c => c.UnlockedResearchDefinitionIds.Count));
-        Assert.Equal("10009857d0396dea4bd0a81001cadfb6b5ebfad2c8772223d8288bd70d3559e4", Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(baseline.ExportSave()))).ToLowerInvariant());
+        Assert.Equal(2, final.Colonies.Sum(c => c.ProductionQueue.Count)); Assert.Equal(0, final.Civilizations.Sum(c => c.MatureEngineeringApplicationDefinitionIds.Count));
+        Assert.Equal("52487572e9ee41003afb0143dd08748b9ea9cf4590af54171d2e1651e9282fef", Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(baseline.ExportSave()))).ToLowerInvariant());
         foreach (var actor in new[] { "civ.cardassian", "civ.dominion" })
         {
-            Assert.Contains(new DefinitionId("research.advanced-engineering"), final.Civilizations.Single(c => c.CivilizationId.Value == actor).UnlockedResearchDefinitionIds);
+            Assert.Empty(final.Civilizations.Single(c => c.CivilizationId.Value == actor).MatureEngineeringApplicationDefinitionIds);
+            Assert.Equal(50,final.Civilizations.Single(c=>c.CivilizationId.Value==actor).Research!.Disciplines.Single(d=>d.Discipline==ScienceDiscipline.Construction).Progress);
             Assert.Contains(actor, builtBy); Assert.Contains(actor, travelledBy);
         }
         var human = final.Civilizations.Single(c => c.ControllerKind == ControllerKind.Human);
-        Assert.Equal("civ.federation", human.CivilizationId.Value); Assert.Null(human.ResearchTargetDefinitionId); Assert.Empty(human.UnlockedResearchDefinitionIds);
+        Assert.Equal("civ.federation", human.CivilizationId.Value); Assert.Null(human.EngineeringTargetDefinitionId); Assert.Empty(human.MatureEngineeringApplicationDefinitionIds);
         Assert.DoesNotContain(final.Ships, ship => ship.OwnerCivilizationId == human.CivilizationId && ship.ShipId.Value != "ship.federation-scout");
         Assert.DoesNotContain(final.Fleets, fleet => fleet.OwnerCivilizationId == human.CivilizationId && fleet.FleetId.Value != "fleet.federation-scout");
         Assert.All(final.Colonies.Where(c => c.OwnerCivilizationId == human.CivilizationId), c => Assert.Empty(c.ProductionQueue));

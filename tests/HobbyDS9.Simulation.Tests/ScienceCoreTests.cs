@@ -4,7 +4,7 @@ using Xunit;
 namespace HobbyDS9.Simulation.Tests;
 public sealed class ScienceCoreTests
 {
-    internal static ScienceEngineeringStateDto Initial(ulong seed=0) => new(){ResearchDiscoverySeed=seed,ScienceAllocationBps=7000,ScienceFocus=ScienceDiscipline.Construction,Disciplines=Enum.GetValues<ScienceDiscipline>().Select(d=>new ScienceDisciplineStateDto{Discipline=d,Level=1}).ToList(),EngineeringProgress=new(),Statistics=new()};
+    internal static ScienceEngineeringStateDto Initial(ulong seed=0) => new(){ResearchDiscoverySeed=seed,ScienceAllocationBps=7000,ScienceFocus=ScienceDiscipline.Construction,Disciplines=Enum.GetValues<ScienceDiscipline>().Select(d=>new ScienceDisciplineStateDto{Discipline=d,Level=1}).ToList(),EngineeringProgress=new(),MatureEngineeringApplicationDefinitionIds=new(),Statistics=new()};
     [Theory] [InlineData(5000,50)] [InlineData(6700,67)] [InlineData(10000,100)] [InlineData(15000,150)] [InlineData(30000,300)]
     public void PaceAndCeilingAreExact(int pace,long expected){Assert.Equal(expected,ScienceRules.IntervalCost(1,pace));Assert.Equal((3L*pace+9999)/10000,ScienceRules.AdjustCost(3,pace));}
     [Fact] public void CostOverflowIsExplicit(){Assert.Throws<OverflowException>(()=>ScienceRules.AdjustCost(long.MaxValue,30000));Assert.Equal(long.MaxValue,ScienceRules.AdjustCost(long.MaxValue,10000));}

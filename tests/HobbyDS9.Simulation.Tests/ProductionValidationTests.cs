@@ -66,9 +66,9 @@ public sealed class ProductionValidationTests
             case "hull": design.MaxHull = 0; break;
             case "resource": design.ResourceCosts![0].Amount = -1; break;
             case "credits": design.CreditCost = -1; break;
-            case "missing-prerequisites": design.RequiredResearchDefinitionIds = null; break;
-            case "duplicate-prerequisites": design.RequiredResearchDefinitionIds = new() { "research.advanced-engineering", "research.advanced-engineering" }; break;
-            case "non-research-prerequisite": design.RequiredResearchDefinitionIds!.Add("economy.baseline"); break;
+            case "missing-prerequisites": design.RequiredEngineeringApplicationDefinitionIds = null; break;
+            case "duplicate-prerequisites": design.RequiredEngineeringApplicationDefinitionIds = new() { "engineering.advanced-starship-engineering", "engineering.advanced-starship-engineering" }; break;
+            case "non-research-prerequisite": design.RequiredEngineeringApplicationDefinitionIds!.Add("economy.baseline"); break;
             case "missing-queue": colony.ProductionQueue = null; break;
             case "null-item": colony.ProductionQueue!.Add(null!); break;
             case "duplicate-item": colony.ProductionQueue!.Add(item); break;

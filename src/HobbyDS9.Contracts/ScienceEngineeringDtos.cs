@@ -21,7 +21,7 @@ namespace HobbyDS9.Contracts
         public long TotalScienceLevelsCompleted { get; set; }
         public long TotalEngineeringApplicationsMatured { get; set; }
     }
-    public sealed class ScienceEngineeringStateDto
+    public class ScienceEngineeringStateDto
     {
         public ulong? ResearchDiscoverySeed { get; set; }
         public ScienceDiscipline? ScienceFocus { get; set; }
@@ -31,6 +31,7 @@ namespace HobbyDS9.Contracts
         public List<ScienceDisciplineStateDto>? Disciplines { get; set; }
         public string? EngineeringTargetDefinitionId { get; set; }
         public List<EngineeringProgressDto>? EngineeringProgress { get; set; }
+        public List<string>? MatureEngineeringApplicationDefinitionIds { get; set; }
         public ResearchStatisticsDto? Statistics { get; set; }
     }
     public sealed class EngineeringProgressDto { public string DefinitionId { get; set; } = string.Empty; public long Progress { get; set; } }

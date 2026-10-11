@@ -15,7 +15,7 @@ public sealed class ApplicationBoundaryTests
 {
     private static string Save(ICampaignSession app) => Json(app.ExportSave());
     private static SessionSnapshot State(ICampaignSession app) => app.CaptureSnapshot().Campaign;
-    private static CommandEnvelope Command(ICampaignSession app, string id = "cmd.test", CommandKind kind = CommandKind.SetResearchTarget)
+    private static CommandEnvelope Command(ICampaignSession app, string id = "cmd.test", CommandKind kind = CommandKind.SetEngineeringTarget)
     {
         var stamp = State(app);
         return new CommandEnvelope
@@ -25,7 +25,7 @@ public sealed class ApplicationBoundaryTests
             ExpectedTurn = stamp.TurnNumber,
             ExpectedRevision = stamp.StateRevision,
             Kind = kind,
-            SetResearchTarget = new() { TargetDefinitionId = "research.advanced-engineering" }
+            SetEngineeringTarget = new() { TargetDefinitionId = "engineering.advanced-starship-engineering" }
         };
     }
     private static ICampaignSession Reload(ICampaignSession app, ScenarioDto scenario)
@@ -60,13 +60,13 @@ public sealed class ApplicationBoundaryTests
         scenario.InitialState.Civilizations![0].Credits = 0;
         scenario.InitialState.Fleets![0].RouteNodeIds!.Add("system.sol");
         scenario.Definitions.Civilizations![0].DisplayName = "changed";
-        scenario.Definitions.StarSystems!.Clear(); scenario.Definitions.ResearchNodes![0].PrerequisiteDefinitionIds!.Add("research.missing");
+        scenario.Definitions.StarSystems!.Clear(); scenario.Definitions.EngineeringApplications![0].PrerequisiteDefinitionIds!.Add("engineering.missing");
         scenario.Definitions.ShipDesigns![0].CombatProfile!.AccuracyBps = 0;
         var save = app.ExportSave(); save.GameState.Civilizations!.Clear(); save.GameState.RngState.State = 0; save.GameState.AcceptedCommandIds!.Add("cmd.fake");
         Assert.Equal(initial, Save(app)); Assert.Equal(view, Json(old));
         Assert.Throws<NotSupportedException>(() => ((IList)old.Campaign.Fleets).Clear());
         Assert.Throws<NotSupportedException>(() => ((IList)old.Campaign.Fleets[0].ShipIds).Clear());
-        Assert.Throws<NotSupportedException>(() => ((IList)old.Content.Research[0].Prerequisites).Add(new DefinitionId("research.other")));
+        Assert.Throws<NotSupportedException>(() => ((IList)old.Content.Engineering[0].Prerequisites).Add(new DefinitionId("engineering.other")));
         Assert.Throws<NotSupportedException>(() => ((IList)old.Navigation.Nodes).Clear());
         Assert.Throws<NotSupportedException>(() => ((IList)old.AcceptedPlayerCommandIds).Add(new EntityId("cmd.fake")));
         Assert.True(app.SubmitCommand(Command(app)).Accepted);
@@ -79,12 +79,12 @@ public sealed class ApplicationBoundaryTests
     {
         var app = CampaignApplication.StartScenario(V.Scenario(false));
         Assert.True(app.SubmitCommand(Command(app, "cmd.research")).Accepted);
-        var enqueue = Command(app, "cmd.build", CommandKind.EnqueueProduction); enqueue.SetResearchTarget = null;
+        var enqueue = Command(app, "cmd.build", CommandKind.EnqueueProduction); enqueue.SetEngineeringTarget = null;
         enqueue.EnqueueProduction = new() { ColonyId = "colony.sol", DefinitionId = "ship-design.scout" };
         Assert.True(app.SubmitCommand(enqueue).Accepted);
         enqueue.EnqueueProduction.ColonyId = "colony.invalid"; // Not retained.
         var queue = State(app).Colonies.Single(c => c.ColonyId.Value == "colony.sol").ProductionQueue;
-        var cancel = Command(app, "cmd.cancel", CommandKind.CancelProduction); cancel.SetResearchTarget = null;
+        var cancel = Command(app, "cmd.cancel", CommandKind.CancelProduction); cancel.SetEngineeringTarget = null;
         cancel.CancelProduction = new() { ColonyId = "colony.sol", QueueItemId = Assert.Single(queue).QueueItemId.Value };
         Assert.True(app.SubmitCommand(cancel).Accepted);
         var nav = app.CaptureSnapshot().Navigation;
@@ -111,7 +111,7 @@ public sealed class ApplicationBoundaryTests
         if (reason == "stale-turn") cmd.ExpectedTurn = 2;
         if (reason == "ai") cmd.ActorCivilizationId = "civ.cardassian";
         if (reason == "reserved") cmd.CommandId = "ai-command.player";
-        if (reason == "payload") cmd.SetResearchTarget = null;
+        if (reason == "payload") cmd.SetEngineeringTarget = null;
         if (reason == "unknown") cmd.Kind = (CommandKind)999;
         var before = Save(app); Assert.Equal(expected, app.SubmitCommand(cmd).ErrorCode); Assert.Equal(before, Save(app));
         Assert.Empty(app.CaptureSnapshot().AcceptedPlayerCommandIds);
@@ -292,6 +292,6 @@ public sealed class ApplicationBoundaryTests
             Assert.Equal(V.Json(direct), Save(app)); app = Reload(app, scenario);
         }
         Assert.Equal(17, encounters); Assert.Equal(10, destroyed); Assert.Equal(26, State(app).TurnNumber);
-        Assert.Equal(9, State(app).Ships.Count); Assert.Equal(187, State(app).StateRevision);
+        Assert.Equal(9, State(app).Ships.Count); Assert.Equal(185, State(app).StateRevision);
     }
 }

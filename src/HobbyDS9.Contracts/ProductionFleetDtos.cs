@@ -12,7 +12,7 @@ namespace HobbyDS9.Contracts
         public long CreditCost { get; set; }
         public long MaxHull { get; set; }
         public ShipCombatProfileDto? CombatProfile { get; set; }
-        public List<string>? RequiredResearchDefinitionIds { get; set; }
+        public List<string>? RequiredEngineeringApplicationDefinitionIds { get; set; }
     }
     public sealed class ProductionQueueItemDto
     {
@@ -96,12 +96,12 @@ namespace HobbyDS9.Contracts
         public long CreditCost { get; }
         public long MaxHull { get; }
         public ShipCombatProfileSnapshot CombatProfile { get; }
-        public IReadOnlyList<DefinitionId> RequiredResearchDefinitionIds { get; }
+        public IReadOnlyList<DefinitionId> RequiredEngineeringApplicationDefinitionIds { get; }
         public ShipDesignSnapshot(ShipDesignDefinitionDto design)
         {
             DefinitionId = new DefinitionId(design.DefinitionId); DisplayName = design.DisplayName;
             MovementBudget=design.MovementBudget;IndustryCost = design.IndustryCost; ResourceCosts = ResourceAmountSnapshot.Copy(design.ResourceCosts!); CreditCost = design.CreditCost; MaxHull = design.MaxHull; CombatProfile = new ShipCombatProfileSnapshot(design.CombatProfile!);
-            RequiredResearchDefinitionIds = design.RequiredResearchDefinitionIds!.ConvertAll(id => new DefinitionId(id)).AsReadOnly();
+            RequiredEngineeringApplicationDefinitionIds = design.RequiredEngineeringApplicationDefinitionIds!.ConvertAll(id => new DefinitionId(id)).AsReadOnly();
         }
     }
 }

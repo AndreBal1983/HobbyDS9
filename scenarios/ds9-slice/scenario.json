@@ -1,8 +1,8 @@
 {
   "ScenarioId": "ds9-strategic-slice-v1",
-  "RulesVersion": "population-politics-geography-v1",
+  "RulesVersion": "science-engineering-v1",
   "Definitions": {
-    "ContentFormatVersion": 8,
+    "ContentFormatVersion": 9,
     "DefinitionIds": [
       "civilization.cardassian",
       "civilization.dominion",
@@ -36,7 +36,7 @@
       "planet-definition.founders-homeworld",
       "planet-definition.mars",
       "planet-definition.sol",
-      "research.advanced-engineering",
+      "engineering.advanced-starship-engineering",
       "resource.dilithium",
       "ship-design.advanced-scout",
       "ship-design.scout",
@@ -123,14 +123,6 @@
         "Kind": 1
       }
     ],
-    "ResearchNodes": [
-      {
-        "DefinitionId": "research.advanced-engineering",
-        "DisplayName": "Advanced Starship Engineering",
-        "ResearchCost": 9,
-        "PrerequisiteDefinitionIds": []
-      }
-    ],
     "ShipDesigns": [
       {
         "DefinitionId": "ship-design.scout",
@@ -146,14 +138,14 @@
           "AccuracyBps": 7000,
           "EvasionBps": 1000
         },
-        "RequiredResearchDefinitionIds": [],
         "ResourceCosts": [
           {
             "ResourceDefinitionId": "resource.dilithium",
             "Amount": 2
           }
         ],
-        "MovementBudget": 3
+        "MovementBudget": 3,
+        "RequiredEngineeringApplicationDefinitionIds": []
       },
       {
         "DefinitionId": "ship-design.advanced-scout",
@@ -169,16 +161,16 @@
           "AccuracyBps": 7500,
           "EvasionBps": 1500
         },
-        "RequiredResearchDefinitionIds": [
-          "research.advanced-engineering"
-        ],
         "ResourceCosts": [
           {
             "ResourceDefinitionId": "resource.dilithium",
             "Amount": 3
           }
         ],
-        "MovementBudget": 4
+        "MovementBudget": 4,
+        "RequiredEngineeringApplicationDefinitionIds": [
+          "engineering.advanced-starship-engineering"
+        ]
       }
     ],
     "Species": [
@@ -1399,6 +1391,26 @@
         "MovementBudgetPenalty": 0,
         "LogisticsFactor": 8000
       }
+    ],
+    "EngineeringApplications": [
+      {
+        "DefinitionId": "engineering.advanced-starship-engineering",
+        "DisplayName": "Advanced Starship Engineering",
+        "BaseEngineeringCost": 60,
+        "ScienceRequirements": [
+          {
+            "Discipline": 3,
+            "IntervalStartLevel": 1,
+            "RequiredBreakthroughOrdinal": 1
+          },
+          {
+            "Discipline": 5,
+            "IntervalStartLevel": 1,
+            "RequiredBreakthroughOrdinal": 2
+          }
+        ],
+        "PrerequisiteDefinitionIds": []
+      }
     ]
   },
   "InitialState": {
@@ -1556,27 +1568,168 @@
         "DefinitionId": "civilization.federation",
         "ControllerKind": 1,
         "Credits": 50,
-        "ResearchReserve": 0,
-        "ResearchTargetDefinitionId": null,
-        "UnlockedResearchDefinitionIds": []
+        "ResearchDiscoverySeed": 13736600173946975838,
+        "ScienceFocus": 3,
+        "ScienceAllocationBps": 7000,
+        "ScienceReserve": 0,
+        "EngineeringReserve": 0,
+        "EngineeringTargetDefinitionId": null,
+        "Disciplines": [
+          {
+            "Discipline": 1,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 2,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 3,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 4,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 5,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 6,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          }
+        ],
+        "EngineeringProgress": [],
+        "MatureEngineeringApplicationDefinitionIds": [],
+        "Statistics": {
+          "TotalResearchGenerated": 0,
+          "TotalScienceAllocated": 0,
+          "TotalEngineeringAllocated": 0,
+          "TotalScienceSpent": 0,
+          "TotalEngineeringSpent": 0,
+          "TotalBreakthroughs": 0,
+          "TotalScienceLevelsCompleted": 0,
+          "TotalEngineeringApplicationsMatured": 0
+        }
       },
       {
         "CivilizationId": "civ.cardassian",
         "DefinitionId": "civilization.cardassian",
         "ControllerKind": 2,
         "Credits": 50,
-        "ResearchReserve": 0,
-        "ResearchTargetDefinitionId": null,
-        "UnlockedResearchDefinitionIds": []
+        "ResearchDiscoverySeed": 13210427566828714299,
+        "ScienceFocus": 3,
+        "ScienceAllocationBps": 7000,
+        "ScienceReserve": 0,
+        "EngineeringReserve": 0,
+        "EngineeringTargetDefinitionId": null,
+        "Disciplines": [
+          {
+            "Discipline": 1,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 2,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 3,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 4,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 5,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 6,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          }
+        ],
+        "EngineeringProgress": [],
+        "MatureEngineeringApplicationDefinitionIds": [],
+        "Statistics": {
+          "TotalResearchGenerated": 0,
+          "TotalScienceAllocated": 0,
+          "TotalEngineeringAllocated": 0,
+          "TotalScienceSpent": 0,
+          "TotalEngineeringSpent": 0,
+          "TotalBreakthroughs": 0,
+          "TotalScienceLevelsCompleted": 0,
+          "TotalEngineeringApplicationsMatured": 0
+        }
       },
       {
         "CivilizationId": "civ.dominion",
         "DefinitionId": "civilization.dominion",
         "ControllerKind": 2,
         "Credits": 50,
-        "ResearchReserve": 0,
-        "ResearchTargetDefinitionId": null,
-        "UnlockedResearchDefinitionIds": []
+        "ResearchDiscoverySeed": 2336943345559599384,
+        "ScienceFocus": 3,
+        "ScienceAllocationBps": 7000,
+        "ScienceReserve": 0,
+        "EngineeringReserve": 0,
+        "EngineeringTargetDefinitionId": null,
+        "Disciplines": [
+          {
+            "Discipline": 1,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 2,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 3,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 4,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 5,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          },
+          {
+            "Discipline": 6,
+            "Level": 1,
+            "ProgressTowardNextLevel": 0
+          }
+        ],
+        "EngineeringProgress": [],
+        "MatureEngineeringApplicationDefinitionIds": [],
+        "Statistics": {
+          "TotalResearchGenerated": 0,
+          "TotalScienceAllocated": 0,
+          "TotalEngineeringAllocated": 0,
+          "TotalScienceSpent": 0,
+          "TotalEngineeringSpent": 0,
+          "TotalBreakthroughs": 0,
+          "TotalScienceLevelsCompleted": 0,
+          "TotalEngineeringApplicationsMatured": 0
+        }
       }
     ],
     "StarSystems": [
@@ -2374,6 +2527,8 @@
       "TraversalCostPaid": 0,
       "EdgesCompleted": 0,
       "PartialTraversalTurns": 0
-    }
+    },
+    "ResearchPaceFactor": 10000,
+    "LastResearchReceipts": []
   }
 }

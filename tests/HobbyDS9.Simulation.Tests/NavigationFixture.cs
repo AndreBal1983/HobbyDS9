@@ -10,6 +10,10 @@ internal static class NavigationFixture
     }
     internal static GameStateDto State(GameStateDto s, DefinitionCatalogDto d)
     {
+        foreach(var civilization in s.Civilizations!) {
+            if(civilization.Disciplines==null){civilization.Disciplines=ScienceCoreTests.Initial().Disciplines;civilization.ScienceFocus=ScienceDiscipline.Construction;civilization.ResearchDiscoverySeed=0;civilization.EngineeringProgress=new();civilization.Statistics=new();}
+        }
+        s.ResearchPaceFactor ??= 10000; s.LastResearchReceipts ??= new();
         s.NavigationKnowledge = s.Civilizations!.Select(c => new CivilizationNavigationKnowledgeDto { CivilizationId = c.CivilizationId,
             Nodes = d.NavigationRegions!.Select(n => new NavigationKnowledgeEntryDto { Id=n.NodeId, Level=NavigationKnowledgeLevel.Surveyed }).ToList(),
             Connections = d.NavigationConnections!.Select(e => new NavigationKnowledgeEntryDto { Id=e.ConnectionId, Level=NavigationKnowledgeLevel.Surveyed }).ToList() }).ToList();

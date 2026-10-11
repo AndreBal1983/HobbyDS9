@@ -112,11 +112,11 @@ namespace HobbyDS9.UnityClient
             var snapshot = host.Snapshot; var state = snapshot.Campaign;
             selection.Reconcile(snapshot);
             var actor = Human(snapshot);
-            var research = actor?.ResearchTargetDefinitionId;
+            var research = actor?.EngineeringTargetDefinitionId;
             var researchName = research.HasValue ? ResearchName(snapshot, research.Value) : "No target";
             status.text = (actor == null ? "Observer" : OwnerName(snapshot, actor.CivilizationId) + " • Credits " + actor.Credits)
                 + $"  |  Turn {state.TurnNumber} • {state.Phase}";
-            shell.Header.Secondary.text = "Research: " + researchName + " • Reserve " + (actor?.ResearchReserve ?? 0);
+            shell.Header.Secondary.text = "Research: " + researchName + " • Reserve " + (actor?.EngineeringReserve ?? 0);
             shell.Header.Diagnostic.text = "Authoritative revision " + state.StateRevision;
             endTurn.SetEnabled(state.Phase == SessionPhase.Planning);
             shell.Header.EnableInClassList("combat-attention",state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer);
