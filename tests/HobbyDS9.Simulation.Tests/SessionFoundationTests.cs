@@ -10,19 +10,47 @@ public sealed class SessionFoundationTests
     private static readonly EntityId Alpha = new("civ.alpha");
     private static readonly EntityId Beta = new("civ.beta");
     private static readonly SaveCompatibility Compatibility = new("scenario.session", "foundation-v2", new string('a', 64));
-    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, ShipDesigns = new(), ResearchNodes = new(), EconomicProfiles = new(), StarSystems = new(), GalaxyEdges = new(),
+    private static DefinitionCatalogDto Definitions() => new()
+    {
+        ContentFormatVersion = FoundationVersions.ContentFormatVersion,
+        ShipDesigns = new(),
+        ResearchNodes = new(),
+        Species = new(),
+        Planets = new(),
+        Resources = new(),
+        Infrastructure = new(),
+        StarSystems = new(),
+        GalaxyEdges = new(),
         Civilizations = new() { new() { DefinitionId = "definition.alpha", DisplayName = "Alpha" }, new() { DefinitionId = "definition.beta", DisplayName = "Beta" } },
-        DefinitionIds = new() { "definition.beta", "definition.alpha" } };
+        DefinitionIds = new() { "definition.beta", "definition.alpha" }
+    };
     private static SaveEnvelopeDto Save(long revision = 0) => new()
     {
-        SaveFormatVersion = FoundationVersions.SaveFormatVersion, ScenarioId = Compatibility.ScenarioId,
-        RulesVersion = Compatibility.RulesVersion, ContentHash = Compatibility.ContentHash,
+        SaveFormatVersion = FoundationVersions.SaveFormatVersion,
+        ScenarioId = Compatibility.ScenarioId,
+        RulesVersion = Compatibility.RulesVersion,
+        ContentHash = Compatibility.ContentHash,
         GameState = new()
         {
-            PendingCombats = new(), ResolvedCombats = new(), Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = revision, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(),
-            Ships = new(), Fleets = new(), Colonies = new(), AcceptedCommandIds = new(), StarSystems = new(),
+            Planets = new(),
+            Displacements = new(),
+            LastDeliveries = new(),
+            PopulationStatistics = new(),
+            PendingCombats = new(),
+            ResolvedCombats = new(),
+            Phase = SessionPhase.Planning,
+            TurnNumber = 1,
+            StateRevision = revision,
+            NextEntitySequence = 1,
+            RngState = new SplitMix64Random(47).ToDto(),
+            Ships = new(),
+            Fleets = new(),
+            Colonies = new(),
+            AcceptedCommandIds = new(),
+            StarSystems = new(),
             Civilizations = new() { new() { CivilizationId = Alpha.Value, DefinitionId = "definition.alpha", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.Human },
-                new() { CivilizationId = Beta.Value, DefinitionId = "definition.beta", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.AI } }, EntityIdentities = new()
+                new() { CivilizationId = Beta.Value, DefinitionId = "definition.beta", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.AI } },
+            EntityIdentities = new()
             {
                 new() { EntityId = "entity.target", DefinitionId = "definition.alpha" },
                 new() { EntityId = Beta.Value, DefinitionId = "definition.beta" }, new() { EntityId = Alpha.Value, DefinitionId = "definition.alpha" }
@@ -32,8 +60,12 @@ public sealed class SessionFoundationTests
 
     private static CommandEnvelope Command(string id = "cmd.one", long revision = 0, string? actor = null) => new()
     {
-        CommandId = id, ActorCivilizationId = actor ?? Alpha.Value, ExpectedTurn = 1, ExpectedRevision = revision,
-        Kind = CommandKind.SetResearchTarget, SetResearchTarget = new() { TargetDefinitionId = "definition.beta" }
+        CommandId = id,
+        ActorCivilizationId = actor ?? Alpha.Value,
+        ExpectedTurn = 1,
+        ExpectedRevision = revision,
+        Kind = CommandKind.SetResearchTarget,
+        SetResearchTarget = new() { TargetDefinitionId = "definition.beta" }
     };
 
     private static SimulationSession Session(Probe? probe = null, SaveEnvelopeDto? save = null, bool controlBoth = false)
@@ -330,7 +362,9 @@ public sealed class SessionFoundationTests
     [InlineData("exception")]
     public void ProgrammingFaultsDoNotPartiallyCommitAndTheSessionRecovers(string fault)
     {
-        var probe = new Probe { Action = (state, _) =>
+        var probe = new Probe
+        {
+            Action = (state, _) =>
         {
             state.RngState.State = 0;
             switch (fault)
@@ -344,7 +378,8 @@ public sealed class SessionFoundationTests
                 case "exception": throw new InvalidOperationException("Injected handler fault");
             }
             return CommandErrorCode.None;
-        } };
+        }
+        };
         var session = Session(probe);
         var before = StateJson(session);
         Assert.Throws<InvalidOperationException>(() => session.SubmitCommand(Command()));
@@ -419,23 +454,33 @@ public sealed class SessionFoundationTests
         var json = JsonSerializer.Serialize(Command()).Replace("\"ExpectedRevision\":0,", "");
         Assert.Equal(CommandErrorCode.InvalidEnvelope, session.SubmitCommand(JsonSerializer.Deserialize<CommandEnvelope>(json)).ErrorCode);
         Assert.Equal(CommandErrorCode.UnknownCommandKind, session.SubmitCommand(new CommandEnvelope
-            { CommandId = "cmd.unknown", ActorCivilizationId = Alpha.Value, ExpectedTurn = 1, ExpectedRevision = 0 }).ErrorCode);
+        { CommandId = "cmd.unknown", ActorCivilizationId = Alpha.Value, ExpectedTurn = 1, ExpectedRevision = 0 }).ErrorCode);
     }
 
     [Fact]
     public void HandlerRegistryAndMutableRoutePayloadsAreAlsoDetached()
     {
-        var probe = new Probe { Action = (_, command) =>
+        var probe = new Probe
+        {
+            Action = (_, command) =>
         {
             command.SetFleetRoute!.RouteSystemIds!.Add("system.changed");
             command.CommandId = "cmd.changed";
             return CommandErrorCode.None;
-        } };
+        }
+        };
         var handlers = new Dictionary<CommandKind, ICommandHandler> { [CommandKind.SetFleetRoute] = probe };
         var session = new SimulationSession(Save(), Definitions(), Compatibility, handlers);
         handlers.Clear();
-        var command = new CommandEnvelope { CommandId = "cmd.route", ActorCivilizationId = Alpha.Value, ExpectedTurn = 1, ExpectedRevision = 0,
-            Kind = CommandKind.SetFleetRoute, SetFleetRoute = new() { FleetId = "fleet.one", RouteSystemIds = new() { "system.one" } } };
+        var command = new CommandEnvelope
+        {
+            CommandId = "cmd.route",
+            ActorCivilizationId = Alpha.Value,
+            ExpectedTurn = 1,
+            ExpectedRevision = 0,
+            Kind = CommandKind.SetFleetRoute,
+            SetFleetRoute = new() { FleetId = "fleet.one", RouteSystemIds = new() { "system.one" } }
+        };
         var original = JsonSerializer.Serialize(command);
         var result = session.SubmitCommand(command);
         Assert.True(result.Accepted);

@@ -10,11 +10,27 @@ public sealed class FoundationDtoTests
     private const string Rules = "foundation-v1";
     private static readonly string ContentHash = new('a', 64);
     private static readonly SaveCompatibility Compatibility = new("scenario.fixture", Rules, ContentHash);
-    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, ShipDesigns = new(), ResearchNodes = new(), EconomicProfiles = new(), Civilizations = new(), StarSystems = new(), GalaxyEdges = new(), DefinitionIds = new() { "definition.alpha", "definition.beta" } };
+    private static DefinitionCatalogDto Definitions() => new() { ContentFormatVersion = FoundationVersions.ContentFormatVersion, ShipDesigns = new(), ResearchNodes = new(), Species = new(), Planets = new(), Resources = new(), Infrastructure = new(), Civilizations = new(), StarSystems = new(), GalaxyEdges = new(), DefinitionIds = new() { "definition.alpha", "definition.beta" } };
 
     private static GameStateDto State() => new()
     {
-        PendingCombats = new(), ResolvedCombats = new(), Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1, RngState = new SplitMix64Random(47).ToDto(), Ships = new(), Fleets = new(), Colonies = new(), AcceptedCommandIds = new(), Civilizations = new(), StarSystems = new(),
+        Planets = new(),
+        Displacements = new(),
+        LastDeliveries = new(),
+        PopulationStatistics = new(),
+        PendingCombats = new(),
+        ResolvedCombats = new(),
+        Phase = SessionPhase.Planning,
+        TurnNumber = 1,
+        StateRevision = 0,
+        NextEntitySequence = 1,
+        RngState = new SplitMix64Random(47).ToDto(),
+        Ships = new(),
+        Fleets = new(),
+        Colonies = new(),
+        AcceptedCommandIds = new(),
+        Civilizations = new(),
+        StarSystems = new(),
         EntityIdentities = new()
         {
             new() { EntityId = "entity.initial", DefinitionId = "definition.alpha" },
@@ -24,8 +40,11 @@ public sealed class FoundationDtoTests
 
     private static SaveEnvelopeDto Save(GameStateDto? state = null) => new()
     {
-        SaveFormatVersion = FoundationVersions.SaveFormatVersion, RulesVersion = Rules,
-        ScenarioId = "scenario.fixture", ContentHash = ContentHash, GameState = state ?? State()
+        SaveFormatVersion = FoundationVersions.SaveFormatVersion,
+        RulesVersion = Rules,
+        ScenarioId = "scenario.fixture",
+        ContentHash = ContentHash,
+        GameState = state ?? State()
     };
 
     [Fact]
@@ -37,8 +56,11 @@ public sealed class FoundationDtoTests
         for (var i = 0; i < 12; i++)
         {
             random.NextBelow(101);
-            state.EntityIdentities.Add(new() { EntityId = allocator.Allocate(i % 2 == 0 ? "entity" : "token").Value,
-                DefinitionId = "definition.beta" });
+            state.EntityIdentities.Add(new()
+            {
+                EntityId = allocator.Allocate(i % 2 == 0 ? "entity" : "token").Value,
+                DefinitionId = "definition.beta"
+            });
         }
         state.NextEntitySequence = allocator.NextEntitySequence;
         state.RngState = random.ToDto();
@@ -140,8 +162,14 @@ public sealed class FoundationDtoTests
     [Fact]
     public void ScenarioHeadersRoundTripAndCannotClaimTheRuntimeNamespace()
     {
-        var scenario = new ScenarioDto { ScenarioId = "scenario.fixture", RulesVersion = Rules,
-            ContentHash = ContentHash, Definitions = Definitions(), InitialState = State() };
+        var scenario = new ScenarioDto
+        {
+            ScenarioId = "scenario.fixture",
+            RulesVersion = Rules,
+            ContentHash = ContentHash,
+            Definitions = Definitions(),
+            InitialState = State()
+        };
         var loaded = JsonSerializer.Deserialize<ScenarioDto>(JsonSerializer.Serialize(scenario))!;
         Assert.True(FoundationValidator.ValidateScenario(loaded).IsValid);
         loaded.InitialState.EntityIdentities[0].EntityId = "entity.spawn.0000000000000001";

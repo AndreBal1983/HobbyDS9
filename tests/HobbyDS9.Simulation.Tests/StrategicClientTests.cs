@@ -24,8 +24,13 @@ public sealed class StrategicClientTests
     {
         var scenario = VerticalSliceFixture.Scenario();
         scenario.Definitions.DefinitionIds.Add("research.follow-up");
-        scenario.Definitions.ResearchNodes!.Add(new() { DefinitionId = "research.follow-up", DisplayName = "Follow up", ResearchCost = 20,
-            PrerequisiteDefinitionIds = new() { Research.Value } });
+        scenario.Definitions.ResearchNodes!.Add(new()
+        {
+            DefinitionId = "research.follow-up",
+            DisplayName = "Follow up",
+            ResearchCost = 20,
+            PrerequisiteDefinitionIds = new() { Research.Value }
+        });
         var client = Start(scenario);
         var initial = StrategicOptions.Research(client.Snapshot, Human);
         Assert.Equal(ResearchDisplayState.Available, initial.Single(r => r.Definition.DefinitionId == Research).State);
@@ -55,27 +60,27 @@ public sealed class StrategicClientTests
     [Fact]
     public void ProductionUsesAuthoritativeCostsQueueAndCancellationRefunds()
     {
-        var client = Start(); var old = client.Snapshot; var credits = Actor(client).Credits; var materials = Sol(client).Materials;
+        var client = Start(); var old = client.Snapshot; var credits = Actor(client).Credits; var resource = PopulationFixture.Dilithium(Sol(client));
         var design = old.Campaign.ShipDesigns.Single(d => d.DefinitionId == Scout);
         Assert.True(client.Enqueue(old, Human, Colony, Scout).Accepted);
         Assert.Equal(credits - design.CreditCost, Actor(client).Credits);
-        Assert.Equal(materials - design.MaterialCost, Sol(client).Materials);
+        Assert.Equal(resource - design.ResourceCosts.Single(r => r.ResourceDefinitionId == "resource.dilithium").Amount, PopulationFixture.Dilithium(Sol(client)));
         var queued = Assert.Single(Sol(client).ProductionQueue);
         Assert.Empty(old.Campaign.Colonies.Single(c => c.ColonyId == Colony).ProductionQueue);
         Assert.True(client.Cancel(client.Snapshot, Human, Colony, queued.QueueItemId).Accepted);
-        Assert.Empty(Sol(client).ProductionQueue); Assert.Equal(credits, Actor(client).Credits); Assert.Equal(materials, Sol(client).Materials);
+        Assert.Empty(Sol(client).ProductionQueue); Assert.Equal(credits, Actor(client).Credits); Assert.Equal(resource, PopulationFixture.Dilithium(Sol(client)));
         Assert.Equal(2, client.Snapshot.Campaign.StateRevision);
     }
     [Theory]
     [InlineData("credits", CommandErrorCode.InsufficientCredits)]
-    [InlineData("materials", CommandErrorCode.InsufficientMaterials)]
+    [InlineData("resource", CommandErrorCode.InsufficientStrategicResource)]
     [InlineData("research", CommandErrorCode.DesignResearchPrerequisiteMissing)]
     [InlineData("owner", CommandErrorCode.ColonyNotOwned)]
     public void ProductionProjectionMatchesCommandRejectionAndDoesNotMutate(string problem, CommandErrorCode expected)
     {
         var scenario = VerticalSliceFixture.Scenario(false);
         if (problem == "credits") scenario.InitialState.Civilizations!.Single(c => c.CivilizationId == Human.Value).Credits = 0;
-        if (problem == "materials") scenario.InitialState.Colonies!.Single(c => c.ColonyId == Colony.Value).Materials = 0;
+        if (problem == "resource") PopulationFixture.SetDilithium(scenario.InitialState.Colonies!.Single(c => c.ColonyId == Colony.Value), 0);
         var client = Start(scenario);
         var design = problem == "research" ? new DefinitionId("ship-design.advanced-scout") : Scout;
         var colony = problem == "owner" ? new EntityId("colony.cardassia") : Colony;
@@ -252,7 +257,8 @@ public sealed class StrategicClientTests
         Assert.Equal(before, Save(client));
     }
     [Theory]
-    [InlineData(false)] [InlineData(true)]
+    [InlineData(false)]
+    [InlineData(true)]
     public void ClientTwentyFiveTurnPathMatchesApplicationWithRepeatedSaveReload(bool reverse)
     {
         var scenario = VerticalSliceFixture.Scenario(false);
@@ -284,7 +290,7 @@ public sealed class StrategicClientTests
             Assert.Equal(JsonSerializer.Serialize(direct.ExportSave()), Save(client));
         }
         Assert.Equal(26, client.Snapshot.Campaign.TurnNumber);
-        Assert.Equal(228, client.Snapshot.Campaign.StateRevision);
+        Assert.Equal(187, client.Snapshot.Campaign.StateRevision);
     }
 
 }

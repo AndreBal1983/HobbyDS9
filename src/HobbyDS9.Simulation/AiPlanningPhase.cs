@@ -22,10 +22,16 @@ namespace HobbyDS9.Simulation
                 CommandEnvelope Envelope(CommandKind kind, int ordinal)
                 {
                     var state = read();
-                    return new CommandEnvelope { CommandId = "ai-command.t" + state.TurnNumber.ToString("d10", CultureInfo.InvariantCulture)
+                    return new CommandEnvelope
+                    {
+                        CommandId = "ai-command.t" + state.TurnNumber.ToString("d10", CultureInfo.InvariantCulture)
                         + ".a" + actorOrdinal.ToString("d8", CultureInfo.InvariantCulture) + ".k" + ((int)kind).ToString(CultureInfo.InvariantCulture)
-                        + ".n" + ordinal.ToString("d8", CultureInfo.InvariantCulture), ActorCivilizationId = actorId,
-                        ExpectedTurn = state.TurnNumber, ExpectedRevision = state.StateRevision, Kind = kind };
+                        + ".n" + ordinal.ToString("d8", CultureInfo.InvariantCulture),
+                        ActorCivilizationId = actorId,
+                        ExpectedTurn = state.TurnNumber,
+                        ExpectedRevision = state.StateRevision,
+                        Kind = kind
+                    };
                 }
                 bool ResearchSatisfied(IEnumerable<string> prerequisites) => prerequisites.All(id => read().Civilizations!.Single(c => c.CivilizationId == actorId)
                     .UnlockedResearchDefinitionIds!.Contains(id, StringComparer.Ordinal));
@@ -45,7 +51,7 @@ namespace HobbyDS9.Simulation
                     var colony = read().Colonies!.Single(c => c.ColonyId == colonies[i]);
                     if (colony.ProductionQueue!.Count != 0) continue;
                     var owner = read().Civilizations!.Single(c => c.CivilizationId == actorId);
-                    var design = definitions.ShipDesigns!.Where(d => ResearchSatisfied(d.RequiredResearchDefinitionIds!) && owner.Credits >= d.CreditCost && colony.Materials >= d.MaterialCost)
+                    var design = definitions.ShipDesigns!.Where(d => ResearchSatisfied(d.RequiredResearchDefinitionIds!) && owner.Credits >= d.CreditCost && d.ResourceCosts!.All(r => PopulationRules.Stock(colony.Stockpiles!, r.ResourceDefinitionId) >= r.Amount) && WorldEconomy.Infrastructure(colony, definitions).Any(i => i.definition.Shipbuilding))
                         .OrderBy(d => d.IndustryCost).ThenBy(d => d.DefinitionId, StringComparer.Ordinal).FirstOrDefault();
                     if (design == null) continue;
                     var command = Envelope(CommandKind.EnqueueProduction, i); command.EnqueueProduction = new EnqueueProductionPayload { ColonyId = colony.ColonyId, DefinitionId = design.DefinitionId };

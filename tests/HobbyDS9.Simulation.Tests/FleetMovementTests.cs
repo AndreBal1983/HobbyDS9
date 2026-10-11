@@ -38,21 +38,24 @@ public sealed class FleetMovementTests
     [InlineData("self", CommandErrorCode.InvalidRoute)]
     public void InvalidRouteCommandsRejectWithoutAnyMutation(string error, CommandErrorCode expected)
     {
-        var s = Session(); var c = Command(s, CommandKind.SetFleetRoute, "cmd.bad"); c.SetFleetRoute = new() { FleetId = error == "unknown" ? "fleet.absent" : error == "foreign" ? "fleet.cardassian-scout" : "fleet.federation-scout",
-            RouteSystemIds = new() { error == "unknown-node" ? "system.absent" : error == "self" ? "system.sol" : "system.gamma-exit" } };
+        var s = Session(); var c = Command(s, CommandKind.SetFleetRoute, "cmd.bad"); c.SetFleetRoute = new()
+        {
+            FleetId = error == "unknown" ? "fleet.absent" : error == "foreign" ? "fleet.cardassian-scout" : "fleet.federation-scout",
+            RouteSystemIds = new() { error == "unknown-node" ? "system.absent" : error == "self" ? "system.sol" : "system.gamma-exit" }
+        };
         var before = Json(s); Assert.Equal(expected, s.SubmitCommand(c).ErrorCode); Assert.Equal(before, Json(s));
     }
     [Fact]
     public void CompletionJoinsLowestStationaryFleetButNeverRoutedFleet()
     {
-        var scenario = Scenario(); var state = scenario.InitialState;
+        var scenario = Scenario(); PopulationFixture.RemoveMars(scenario); var state = scenario.InitialState;
         state.Fleets!.Add(new() { FleetId = "fleet.a", OwnerCivilizationId = "civ.federation", LocationSystemId = "system.sol", ShipIds = new() { "ship.a" }, RouteSystemIds = new() });
         state.Ships!.Add(new() { ShipId = "ship.a", ShipDesignDefinitionId = "ship-design.scout", OwnerCivilizationId = "civ.federation", FleetId = "fleet.a", CurrentHull = 10 });
         state.EntityIdentities.Add(new() { EntityId = "ship.a", DefinitionId = "ship-design.scout" }); state.EntityIdentities.Add(new() { EntityId = "fleet.a" });
         state.Fleets.Reverse(); var s = Session(scenario); Assert.True(Enqueue(s).Accepted); Advance(s); Advance(s); Advance(s);
         Assert.Equal("fleet.a", s.CaptureSnapshot().Ships.Single(ship => ship.ShipId.Value == "ship.spawn.0000000000000002").FleetId.Value);
         // Both old fleets depart on the completion turn, so Production must create a third.
-        var save = s.ExportSave(); var sol = save.GameState.Colonies!.Single(c => c.ColonyId == "colony.sol"); sol.Materials = 100;
+        var save = s.ExportSave(); var sol = save.GameState.Colonies!.Single(c => c.ColonyId == "colony.sol"); PopulationFixture.SetDilithium(sol, 100);
         foreach (var f in save.GameState.Fleets!.Where(f => f.OwnerCivilizationId == "civ.federation")) f.RouteSystemIds = new() { "system.bajor" };
         s = new(save, scenario.Definitions, Compatibility(scenario)); Assert.True(Enqueue(s, "cmd.again").Accepted);
         save = s.ExportSave(); save.GameState.Colonies!.Single(c => c.ColonyId == "colony.sol").ProductionQueue![0].CompletedIndustry = 19;
@@ -78,7 +81,12 @@ public sealed class FleetMovementTests
         Assert.Equal("system.bajor", f.LocationSystemId.Value); Assert.Equal(8, q.ProductionQueue[0].CompletedIndustry);
     }
     [Theory]
-    [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)] [InlineData(5)]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
     public void InstrumentationCannotChangeFleetRouteOrMembershipInAnyPhase(int target)
     {
         var s = Session(probe: (phase, state) => { if ((int)phase == target) state.Fleets![0].RouteSystemIds!.Add("system.bajor"); return true; });

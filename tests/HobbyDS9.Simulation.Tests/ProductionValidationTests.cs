@@ -16,7 +16,7 @@ public sealed class ProductionValidationTests
     [InlineData("missing-label")]
     [InlineData("industry")]
     [InlineData("hull")]
-    [InlineData("materials")]
+    [InlineData("resource")]
     [InlineData("credits")]
     [InlineData("missing-prerequisites")]
     [InlineData("duplicate-prerequisites")]
@@ -50,7 +50,7 @@ public sealed class ProductionValidationTests
     [InlineData("old-content")]
     public void InvalidContentOrPersistedProgressAndMembershipRejectWithoutMutation(string error)
     {
-        var scenario = Scenario(); scenario.InitialState.Colonies![0].Materials = 100;
+        var scenario = Scenario(); PopulationFixture.SetDilithium(scenario.InitialState.Colonies![0], 100);
         var s = Session(scenario); Assert.True(Enqueue(s).Accepted); Advance(s); Advance(s); Advance(s);
         Assert.True(Enqueue(s, "cmd.second").Accepted); Assert.True(Enqueue(s, "cmd.third").Accepted);
         var save = s.ExportSave(); var colony = save.GameState.Colonies!.Single(c => c.ColonyId == "colony.sol"); var item = colony.ProductionQueue![0];
@@ -64,7 +64,7 @@ public sealed class ProductionValidationTests
             case "missing-label": design.DisplayName = " "; break;
             case "industry": design.IndustryCost = 0; break;
             case "hull": design.MaxHull = 0; break;
-            case "materials": design.MaterialCost = -1; break;
+            case "resource": design.ResourceCosts![0].Amount = -1; break;
             case "credits": design.CreditCost = -1; break;
             case "missing-prerequisites": design.RequiredResearchDefinitionIds = null; break;
             case "duplicate-prerequisites": design.RequiredResearchDefinitionIds = new() { "research.advanced-engineering", "research.advanced-engineering" }; break;
@@ -106,7 +106,7 @@ public sealed class ProductionValidationTests
     [Fact]
     public void RefundCapacityOverflowAndFailedAllocationAreAtomicAndOtherItemsUnaffected()
     {
-        var scenario = Scenario(); scenario.InitialState.Colonies![0].Materials = 100;
+        var scenario = Scenario(); PopulationFixture.SetDilithium(scenario.InitialState.Colonies![0], 100);
         var s = Session(scenario); Assert.True(Enqueue(s).Accepted); Assert.True(Enqueue(s, "cmd.second").Accepted);
         var save = s.ExportSave(); save.GameState.Civilizations!.Single(c => c.CivilizationId == "civ.federation").Credits = long.MaxValue;
         s = new(save, scenario.Definitions, Compatibility(scenario)); var before = Json(s);

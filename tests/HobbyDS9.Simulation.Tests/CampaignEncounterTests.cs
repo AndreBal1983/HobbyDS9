@@ -9,7 +9,10 @@ namespace HobbyDS9.Simulation.Tests;
 public sealed class CampaignEncounterTests
 {
     [Theory]
-    [InlineData(0, false, 0)] [InlineData(1, false, 1)] [InlineData(1, true, 1)] [InlineData(3, true, 3)]
+    [InlineData(0, false, 0)]
+    [InlineData(1, false, 1)]
+    [InlineData(1, true, 1)]
+    [InlineData(3, true, 3)]
     public void ContestedLocationsCreateExactlyOneEncounterWithAllFleets(int battles, bool three, int expected)
     {
         var s = Session(CampaignCombatFixture.Scenario(battles, three)); var result = s.AdvanceTurn(1, 0);
@@ -51,19 +54,21 @@ public sealed class CampaignEncounterTests
     {
         var s = Session(CampaignCombatFixture.Scenario()); Assert.True(Enqueue(s).Accepted); var before = s.CaptureSnapshot(); var result = s.AdvanceTurn(1, before.StateRevision);
         Assert.Equal(TurnStatus.AwaitingCombat, result.Status); Assert.Equal(1, result.TurnNumber); Assert.Equal(2, result.StateRevision);
-        Assert.Equal(8, Colony(s).ProductionQueue![0].CompletedIndustry); Assert.Equal(1050, Colony(s).Population); Assert.Equal(new[] { new EntityId("cmd.enqueue") }, s.CaptureSnapshot().AcceptedCommandIds);
+        Assert.Equal(8, Colony(s).ProductionQueue![0].CompletedIndustry); Assert.Equal(1005, PopulationRules.Population(Colony(s))); Assert.Equal(new[] { new EntityId("cmd.enqueue") }, s.CaptureSnapshot().AcceptedCommandIds);
         var checkpoint = Json(s); Assert.Equal(TurnErrorCode.CombatPending, s.AdvanceTurn(1, result.StateRevision).ErrorCode); Assert.Equal(checkpoint, Json(s));
         Assert.Equal(CommandErrorCode.CombatPending, Enqueue(s, "cmd.blocked").ErrorCode); Assert.Equal(checkpoint, Json(s));
         Assert.Equal(TurnErrorCode.UnresolvedCombats, s.FinalizeCombat(1, result.StateRevision).ErrorCode); Assert.Equal(checkpoint, Json(s));
     }
     [Theory]
-    [InlineData("allocation")] [InlineData("checkpoint-failure")] [InlineData("checkpoint-mutation")]
+    [InlineData("allocation")]
+    [InlineData("checkpoint-failure")]
+    [InlineData("checkpoint-mutation")]
     public void EncounterFailureDiscardsEveryEarlierPhaseAndPartialSeedsAndIds(string fault)
     {
         var scenario = CampaignCombatFixture.Scenario(3); if (fault == "allocation") scenario.InitialState.NextEntitySequence = ulong.MaxValue - 1;
         var s = new SimulationSession(Save(scenario), scenario.Definitions, Compatibility(scenario), new Dictionary<CommandKind, ICommandHandler>(), combatCheckpointProbe: state =>
         {
-            Assert.Equal(3, state.PendingCombats!.Count); Assert.Equal(1050, state.Colonies![0].Population);
+            Assert.Equal(3, state.PendingCombats!.Count); Assert.Equal(1005, PopulationRules.Population(state.Colonies![0]));
             if (fault == "checkpoint-failure") return false;
             if (fault == "checkpoint-mutation") state.PendingCombats[0].Request.RandomState++;
             return true;
@@ -75,10 +80,23 @@ public sealed class CampaignEncounterTests
         Assert.Equal(before, Json(s));
     }
     [Theory]
-    [InlineData("pending-null")] [InlineData("resolved-null")] [InlineData("empty-batch")] [InlineData("wrong-phase")]
-    [InlineData("turn")] [InlineData("rules")] [InlineData("hash")] [InlineData("resolver")] [InlineData("rng")]
-    [InlineData("duplicate")] [InlineData("location")] [InlineData("owner")] [InlineData("hull")] [InlineData("design")] [InlineData("omitted-fleet")]
-    [InlineData("sequence-reuse")] [InlineData("old-save")]
+    [InlineData("pending-null")]
+    [InlineData("resolved-null")]
+    [InlineData("empty-batch")]
+    [InlineData("wrong-phase")]
+    [InlineData("turn")]
+    [InlineData("rules")]
+    [InlineData("hash")]
+    [InlineData("resolver")]
+    [InlineData("rng")]
+    [InlineData("duplicate")]
+    [InlineData("location")]
+    [InlineData("owner")]
+    [InlineData("hull")]
+    [InlineData("design")]
+    [InlineData("omitted-fleet")]
+    [InlineData("sequence-reuse")]
+    [InlineData("old-save")]
     public void InvalidCampaignCheckpointAndFrozenReferencesRejectWithoutChangingInputs(string error)
     {
         var scenario = CampaignCombatFixture.Scenario(); var s = Session(scenario); s.AdvanceTurn(1, 0); var save = s.ExportSave(); var state = save.GameState; var request = state.PendingCombats![0].Request;

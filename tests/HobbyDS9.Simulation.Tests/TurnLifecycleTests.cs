@@ -16,7 +16,13 @@ public sealed class TurnLifecycleTests
 
     private static DefinitionCatalogDto Definitions() => new()
     {
-        ContentFormatVersion = FoundationVersions.ContentFormatVersion, ShipDesigns = new(), ResearchNodes = new(), EconomicProfiles = new(),
+        ContentFormatVersion = FoundationVersions.ContentFormatVersion,
+        ShipDesigns = new(),
+        ResearchNodes = new(),
+        Species = new(),
+        Planets = new(),
+        Resources = new(),
+        Infrastructure = new(),
         DefinitionIds = new() { "system.beta", "civilization.ai", "system.alpha", "civilization.human" },
         Civilizations = new()
         {
@@ -32,13 +38,27 @@ public sealed class TurnLifecycleTests
     };
     private static SaveEnvelopeDto Save(int turn = 7, long revision = 5, SessionPhase phase = SessionPhase.Planning) => new()
     {
-        SaveFormatVersion = FoundationVersions.SaveFormatVersion, ScenarioId = Compatibility.ScenarioId,
-        RulesVersion = Compatibility.RulesVersion, ContentHash = Compatibility.ContentHash,
+        SaveFormatVersion = FoundationVersions.SaveFormatVersion,
+        ScenarioId = Compatibility.ScenarioId,
+        RulesVersion = Compatibility.RulesVersion,
+        ContentHash = Compatibility.ContentHash,
         GameState = new()
         {
-            PendingCombats = new(), ResolvedCombats = new(), Phase = phase, TurnNumber = turn, StateRevision = revision, NextEntitySequence = 17,
+            Planets = new(),
+            Displacements = new(),
+            LastDeliveries = new(),
+            PopulationStatistics = new(),
+            PendingCombats = new(),
+            ResolvedCombats = new(),
+            Phase = phase,
+            TurnNumber = turn,
+            StateRevision = revision,
+            NextEntitySequence = 17,
             RngState = new SplitMix64Random(47).ToDto(),
-            Ships = new(), Fleets = new(), Colonies = new(), AcceptedCommandIds = revision >= 2 ? new() { "cmd.z", "cmd.a" } : new(),
+            Ships = new(),
+            Fleets = new(),
+            Colonies = new(),
+            AcceptedCommandIds = revision >= 2 ? new() { "cmd.z", "cmd.a" } : new(),
             Civilizations = new()
             {
                 new() { CivilizationId = "civ.human", DefinitionId = "civilization.human", UnlockedResearchDefinitionIds = new(), ControllerKind = ControllerKind.Human },
@@ -68,8 +88,12 @@ public sealed class TurnLifecycleTests
     }
     private static CommandEnvelope Command(int turn = 7, long revision = 5, string commandId = "cmd.new") => new()
     {
-        CommandId = commandId, ActorCivilizationId = "civ.human", ExpectedTurn = turn, ExpectedRevision = revision,
-        Kind = CommandKind.SetResearchTarget, SetResearchTarget = new() { TargetDefinitionId = "definition.future" }
+        CommandId = commandId,
+        ActorCivilizationId = "civ.human",
+        ExpectedTurn = turn,
+        ExpectedRevision = revision,
+        Kind = CommandKind.SetResearchTarget,
+        SetResearchTarget = new() { TargetDefinitionId = "definition.future" }
     };
     private static string StateJson(SimulationSession session) => JsonSerializer.Serialize(session.ExportSave());
     private sealed class CommandProbe : ICommandHandler
@@ -190,7 +214,7 @@ public sealed class TurnLifecycleTests
     public static IEnumerable<object[]> PhaseFailures()
     {
         foreach (var phase in PhaseOrder)
-        foreach (var mode in new[] { "return-failure", "exception", "invariant" }) yield return new object[] { (int)phase, mode };
+            foreach (var mode in new[] { "return-failure", "exception", "invariant" }) yield return new object[] { (int)phase, mode };
     }
     [Theory]
     [MemberData(nameof(PhaseFailures))]
@@ -381,8 +405,14 @@ public sealed class TurnLifecycleTests
         Assert.Throws<ArgumentException>(() => Session(save));
         save = Save(turn: 1, revision: 0); save.GameState.NextEntitySequence = 1;
         save.GameState.EntityIdentities.RemoveAll(e => e.EntityId.StartsWith("token.", StringComparison.Ordinal));
-        var scenario = new ScenarioDto { ScenarioId = Compatibility.ScenarioId, RulesVersion = Compatibility.RulesVersion,
-            ContentHash = Compatibility.ContentHash, Definitions = Definitions(), InitialState = save.GameState };
+        var scenario = new ScenarioDto
+        {
+            ScenarioId = Compatibility.ScenarioId,
+            RulesVersion = Compatibility.RulesVersion,
+            ContentHash = Compatibility.ContentHash,
+            Definitions = Definitions(),
+            InitialState = save.GameState
+        };
         Assert.True(FoundationValidator.ValidateScenario(scenario).IsValid);
         scenario.InitialState.Phase = SessionPhase.AwaitingCombat;
         Assert.Contains(FoundationValidator.ValidateScenario(scenario).Issues, i => i.Code == ValidationCode.InvalidSessionPhase);

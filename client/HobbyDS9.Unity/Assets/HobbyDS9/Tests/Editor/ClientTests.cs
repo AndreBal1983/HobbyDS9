@@ -110,9 +110,41 @@ namespace HobbyDS9.UnityClient.Tests
                 }
             }
             var state = host.Snapshot.Campaign;
-            Assert.That(encounters, Is.EqualTo(15)); Assert.That(state.TurnNumber, Is.EqualTo(26));
-            Assert.That(state.StateRevision, Is.EqualTo(228)); Assert.That(state.Ships.Count, Is.EqualTo(8));
-            Assert.That(state.NextEntitySequence, Is.EqualTo(72UL)); Assert.That(state.RngState.State, Is.EqualTo(0x850d3ff45bd6b85eUL));
+            Assert.That(encounters, Is.EqualTo(18)); Assert.That(state.TurnNumber, Is.EqualTo(26));
+            Assert.That(state.StateRevision, Is.EqualTo(187)); Assert.That(state.Ships.Count, Is.EqualTo(6));
+            Assert.That(state.NextEntitySequence, Is.EqualTo(80UL)); Assert.That(state.RngState.State, Is.EqualTo(0x850d3ff45bd6b85eUL));
+        }
+
+        [Test]
+        public void MixedWorldSnapshotsAndNamedResourceCostsReachTheClient()
+        {
+            var host=Start();var snapshot=host.Snapshot;
+            var worlds=snapshot.Campaign.Colonies.Where(c=>c.SystemId.Value=="system.sol").ToList();
+            Assert.That(worlds.Count,Is.EqualTo(2));
+            var earth=worlds.Single(c=>c.PlanetId.Value=="planet.sol");
+            Assert.That(earth.State.Cohorts.Count,Is.EqualTo(3));
+            Assert.That(earth.Environment.Habitats.Sum(h=>h.ShareBps),Is.EqualTo(10000));
+            Assert.That(earth.Economy.Industry,Is.GreaterThan(0));
+            Assert.That(snapshot.Campaign.ShipDesigns.All(d=>d.ResourceCosts.Any(r=>r.ResourceDefinitionId=="resource.dilithium")),Is.True);
+            var json=host.SaveJson();host.EndTurn();host.LoadJson(json);Assert.That(host.SaveJson(),Is.EqualTo(json));
+        }
+        [TestCase("Stability")]
+        [TestCase("Prosperity")]
+        [TestCase("AcceptsRefugees")]
+        public void MissingAuthoritativeScalarRejectsLoadWithoutReplacingSession(string field)
+        {
+            var host=Start();var before=host.SaveJson();var json=Newtonsoft.Json.Linq.JObject.Parse(before);
+            ((Newtonsoft.Json.Linq.JObject)json["GameState"]["Colonies"][0]).Remove(field);
+            Assert.Throws<Newtonsoft.Json.JsonSerializationException>(()=>host.LoadJson(json.ToString()));
+            Assert.That(host.SaveJson(),Is.EqualTo(before));
+        }
+        [Test]
+        public void ObsoleteMaterialsFieldRejectsLoadWithoutReplacingSession()
+        {
+            var host=Start();var before=host.SaveJson();var json=Newtonsoft.Json.Linq.JObject.Parse(before);
+            json["GameState"]["Colonies"][0]["Materials"]=99;
+            Assert.Throws<Newtonsoft.Json.JsonSerializationException>(()=>host.LoadJson(json.ToString()));
+            Assert.That(host.SaveJson(),Is.EqualTo(before));
         }
     }
 }

@@ -59,6 +59,10 @@ namespace HobbyDS9.Contracts
         public IReadOnlyList<ShipSnapshot> Ships { get; }
         public IReadOnlyList<FleetSnapshot> Fleets { get; }
         public IReadOnlyList<ShipDesignSnapshot> ShipDesigns { get; }
+        public IReadOnlyList<PlanetStateSnapshot> Planets { get; }
+        public IReadOnlyList<DisplacementSnapshot> Displacements { get; }
+        public IReadOnlyList<LogisticsDeliverySnapshot> LastDeliveries { get; }
+        public PopulationStatisticsSnapshot PopulationStatistics { get; }
         public IReadOnlyList<CombatEncounterSnapshot> Combats { get; }
 
         public SessionSnapshot(string scenarioId, string rulesVersion, string contentHash, int turnNumber, long revision,
@@ -66,7 +70,9 @@ namespace HobbyDS9.Contracts
             IEnumerable<DefinitionId> definitions, IEnumerable<ActorSnapshot> actors, IEnumerable<EntityId> commands,
             IEnumerable<CivilizationSnapshot>? civilizations = null, IEnumerable<StarSystemSnapshot>? systems = null,
             IEnumerable<GalaxyEdge>? edges = null, SessionPhase phase = SessionPhase.Planning, IEnumerable<ColonySnapshot>? colonies = null, IEnumerable<ShipSnapshot>? ships = null,
-            IEnumerable<FleetSnapshot>? fleets = null, IEnumerable<ShipDesignSnapshot>? shipDesigns = null, IEnumerable<CombatEncounterSnapshot>? combats = null)
+            IEnumerable<FleetSnapshot>? fleets = null, IEnumerable<ShipDesignSnapshot>? shipDesigns = null, IEnumerable<CombatEncounterSnapshot>? combats = null,
+            IEnumerable<PlanetStateSnapshot>? planets = null, IEnumerable<DisplacementSnapshot>? displacements = null,
+            IEnumerable<LogisticsDeliverySnapshot>? deliveries = null, PopulationStatisticsSnapshot? populationStatistics = null)
         {
             ScenarioId = scenarioId; RulesVersion = rulesVersion; ContentHash = contentHash;
             Phase = phase; TurnNumber = turnNumber; StateRevision = revision; NextEntitySequence = nextEntitySequence;
@@ -82,6 +88,10 @@ namespace HobbyDS9.Contracts
             Ships = new List<ShipSnapshot>(ships ?? Array.Empty<ShipSnapshot>()).AsReadOnly();
             Fleets = new List<FleetSnapshot>(fleets ?? Array.Empty<FleetSnapshot>()).AsReadOnly();
             ShipDesigns = new List<ShipDesignSnapshot>(shipDesigns ?? Array.Empty<ShipDesignSnapshot>()).AsReadOnly();
+            Planets = new List<PlanetStateSnapshot>(planets ?? Array.Empty<PlanetStateSnapshot>()).AsReadOnly();
+            Displacements = new List<DisplacementSnapshot>(displacements ?? Array.Empty<DisplacementSnapshot>()).AsReadOnly();
+            LastDeliveries = new List<LogisticsDeliverySnapshot>(deliveries ?? Array.Empty<LogisticsDeliverySnapshot>()).AsReadOnly();
+            PopulationStatistics = populationStatistics ?? new PopulationStatisticsSnapshot(new PopulationStatisticsDto());
             Combats = new List<CombatEncounterSnapshot>(combats ?? Array.Empty<CombatEncounterSnapshot>()).AsReadOnly();
         }
     }

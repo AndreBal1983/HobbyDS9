@@ -4,8 +4,8 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 9;
-        public const int ContentFormatVersion = 5;
+        public const int SaveFormatVersion = 10;
+        public const int ContentFormatVersion = 6;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
     }
@@ -36,7 +36,10 @@ namespace HobbyDS9.Contracts
         public List<CivilizationDefinitionDto>? Civilizations { get; set; }
         public List<StarSystemDefinitionDto>? StarSystems { get; set; }
         public List<GalaxyEdgeDto>? GalaxyEdges { get; set; }
-        public List<EconomicProfileDefinitionDto>? EconomicProfiles { get; set; }
+        public List<SpeciesDefinitionDto>? Species { get; set; }
+        public List<PlanetDefinitionDto>? Planets { get; set; }
+        public List<ResourceDefinitionDto>? Resources { get; set; }
+        public List<InfrastructureDefinitionDto>? Infrastructure { get; set; }
         public List<ResearchNodeDefinitionDto>? ResearchNodes { get; set; }
         public List<ShipDesignDefinitionDto>? ShipDesigns { get; set; }
         public List<string> DefinitionIds { get; set; } = new List<string>();
@@ -55,6 +58,10 @@ namespace HobbyDS9.Contracts
         public List<string>? AcceptedCommandIds { get; set; }
         public List<CivilizationStateDto>? Civilizations { get; set; }
         public List<StarSystemStateDto>? StarSystems { get; set; }
+        public List<PlanetStateDto>? Planets { get; set; }
+        public List<DisplacementDto>? Displacements { get; set; }
+        public List<LogisticsDeliveryDto>? LastDeliveries { get; set; }
+        public PopulationStatisticsDto? PopulationStatistics { get; set; }
         public List<ColonyStateDto>? Colonies { get; set; }
         public List<ShipStateDto>? Ships { get; set; }
         public List<FleetStateDto>? Fleets { get; set; }

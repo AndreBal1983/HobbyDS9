@@ -7,7 +7,7 @@ namespace HobbyDS9.Contracts
         public string DefinitionId { get; set; } = string.Empty;
         public string DisplayName { get; set; } = string.Empty;
         public long IndustryCost { get; set; }
-        public long MaterialCost { get; set; }
+        public List<ResourceAmountDto>? ResourceCosts { get; set; }
         public long CreditCost { get; set; }
         public long MaxHull { get; set; }
         public ShipCombatProfileDto? CombatProfile { get; set; }
@@ -19,7 +19,7 @@ namespace HobbyDS9.Contracts
         public string ShipDesignDefinitionId { get; set; } = string.Empty;
         public long RequiredIndustry { get; set; }
         public long CompletedIndustry { get; set; }
-        public long PaidMaterials { get; set; }
+        public List<ResourceAmountDto>? PaidResources { get; set; }
         public long PaidCredits { get; set; }
     }
     public sealed class ShipStateDto
@@ -44,13 +44,13 @@ namespace HobbyDS9.Contracts
         public DefinitionId ShipDesignDefinitionId { get; }
         public long RequiredIndustry { get; }
         public long CompletedIndustry { get; }
-        public long PaidMaterials { get; }
+        public IReadOnlyList<ResourceAmountSnapshot> PaidResources { get; }
         public long PaidCredits { get; }
         public ProductionQueueItemSnapshot(ProductionQueueItemDto item)
         {
             QueueItemId = new EntityId(item.QueueItemId); ShipDesignDefinitionId = new DefinitionId(item.ShipDesignDefinitionId);
             RequiredIndustry = item.RequiredIndustry; CompletedIndustry = item.CompletedIndustry;
-            PaidMaterials = item.PaidMaterials; PaidCredits = item.PaidCredits;
+            PaidResources = ResourceAmountSnapshot.Copy(item.PaidResources!); PaidCredits = item.PaidCredits;
         }
     }
     public sealed class ShipSnapshot
@@ -86,7 +86,7 @@ namespace HobbyDS9.Contracts
         public DefinitionId DefinitionId { get; }
         public string DisplayName { get; }
         public long IndustryCost { get; }
-        public long MaterialCost { get; }
+        public IReadOnlyList<ResourceAmountSnapshot> ResourceCosts { get; }
         public long CreditCost { get; }
         public long MaxHull { get; }
         public ShipCombatProfileSnapshot CombatProfile { get; }
@@ -94,7 +94,7 @@ namespace HobbyDS9.Contracts
         public ShipDesignSnapshot(ShipDesignDefinitionDto design)
         {
             DefinitionId = new DefinitionId(design.DefinitionId); DisplayName = design.DisplayName;
-            IndustryCost = design.IndustryCost; MaterialCost = design.MaterialCost; CreditCost = design.CreditCost; MaxHull = design.MaxHull; CombatProfile = new ShipCombatProfileSnapshot(design.CombatProfile!);
+            IndustryCost = design.IndustryCost; ResourceCosts = ResourceAmountSnapshot.Copy(design.ResourceCosts!); CreditCost = design.CreditCost; MaxHull = design.MaxHull; CombatProfile = new ShipCombatProfileSnapshot(design.CombatProfile!);
             RequiredResearchDefinitionIds = design.RequiredResearchDefinitionIds!.ConvertAll(id => new DefinitionId(id)).AsReadOnly();
         }
     }

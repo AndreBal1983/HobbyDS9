@@ -7,6 +7,8 @@ namespace HobbyDS9.Simulation
 {
     public static partial class FoundationValidator
     {
+        private static bool SameResources(List<ResourceAmountDto>? a, List<ResourceAmountDto>? b) => a != null && b != null && a.Count == b.Count
+            && a.All(r => r != null && b.Any(v => v != null && v.ResourceDefinitionId == r.ResourceDefinitionId && v.Amount == r.Amount));
         private static void ValidateShipDesigns(DefinitionCatalogDto catalog, HashSet<DefinitionId> ids, HashSet<string> typed,
             string path, List<ValidationIssue> issues)
         {
@@ -20,7 +22,8 @@ namespace HobbyDS9.Simulation
                 else if (!ids.Contains(id)) Add(issues, ValidationCode.MissingDefinition, p + ".DefinitionId");
                 if (d.DefinitionId != null && !typed.Add(d.DefinitionId)) Add(issues, ValidationCode.DuplicateId, p + ".DefinitionId");
                 if (string.IsNullOrWhiteSpace(d.DisplayName)) Add(issues, ValidationCode.MissingField, p + ".DisplayName");
-                if (d.IndustryCost <= 0 || d.MaxHull <= 0 || d.MaterialCost < 0 || d.CreditCost < 0) Add(issues, ValidationCode.InvalidProductionValue, p);
+                if (d.IndustryCost <= 0 || d.MaxHull <= 0 || d.CreditCost < 0) Add(issues, ValidationCode.InvalidProductionValue, p);
+                ValidateResources(d.ResourceCosts, catalog, p + ".ResourceCosts", issues);
                 if (!CombatProfiles.IsValid(d.CombatProfile)) Add(issues, ValidationCode.InvalidCombatProfile, p + ".CombatProfile");
                 if (d.RequiredResearchDefinitionIds == null) { Add(issues, ValidationCode.MissingField, p + ".RequiredResearchDefinitionIds"); continue; }
                 var unique = new HashSet<string>(StringComparer.Ordinal);
@@ -68,9 +71,10 @@ namespace HobbyDS9.Simulation
                     Identity(item.QueueItemId, item.ShipDesignDefinitionId, p);
                     var design = Design(item.ShipDesignDefinitionId, p);
                     if (item.RequiredIndustry <= 0 || item.CompletedIndustry < 0 || item.CompletedIndustry >= item.RequiredIndustry
-                        || (i != 0 && item.CompletedIndustry != 0) || item.PaidMaterials < 0 || item.PaidCredits < 0
-                        || (design != null && (item.RequiredIndustry != design.IndustryCost || item.PaidMaterials != design.MaterialCost || item.PaidCredits != design.CreditCost)))
+                        || (i != 0 && item.CompletedIndustry != 0) || item.PaidCredits < 0
+                        || (design != null && (item.RequiredIndustry != design.IndustryCost || !SameResources(item.PaidResources, design.ResourceCosts) || item.PaidCredits != design.CreditCost)))
                         Add(issues, ValidationCode.InvalidProductionValue, p);
+                    ValidateResources(item.PaidResources, catalog, p + ".PaidResources", issues);
                     var owner = state.Civilizations?.FirstOrDefault(c => c != null && c.CivilizationId == colony.OwnerCivilizationId);
                     if (design?.RequiredResearchDefinitionIds != null && owner?.UnlockedResearchDefinitionIds != null
                         && design.RequiredResearchDefinitionIds.Any(id => !owner.UnlockedResearchDefinitionIds.Contains(id, StringComparer.Ordinal)))

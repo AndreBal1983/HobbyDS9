@@ -66,7 +66,8 @@ namespace HobbyDS9.Application
                     : colony.OwnerCivilizationId != actorId ? CommandErrorCode.ColonyNotOwned
                     : design.RequiredResearchDefinitionIds.Any(id => !actor!.UnlockedResearchDefinitionIds.Contains(id)) ? CommandErrorCode.DesignResearchPrerequisiteMissing
                     : actor!.Credits < design.CreditCost ? CommandErrorCode.InsufficientCredits
-                    : colony.Materials < design.MaterialCost ? CommandErrorCode.InsufficientMaterials : CommandErrorCode.None;
+                    : !colony.Economy.Shipbuilding ? CommandErrorCode.ShipbuildingUnavailable
+                    : design.ResourceCosts.Any(r => (colony.State.Stockpiles.SingleOrDefault(s => s.ResourceDefinitionId == r.ResourceDefinitionId)?.Amount ?? 0) < r.Amount) ? CommandErrorCode.InsufficientStrategicResource : CommandErrorCode.None;
                 return new ProductionOption(design, reason);
             }).ToList().AsReadOnly();
         }

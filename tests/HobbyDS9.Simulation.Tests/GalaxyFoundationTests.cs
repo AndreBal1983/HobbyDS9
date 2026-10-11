@@ -21,8 +21,11 @@ public sealed class GalaxyFoundationTests
     private static SaveCompatibility Compatibility(ScenarioDto s) => new(s.ScenarioId, s.RulesVersion, s.ContentHash);
     private static SaveEnvelopeDto Save(ScenarioDto s) => new()
     {
-        SaveFormatVersion = FoundationVersions.SaveFormatVersion, ScenarioId = s.ScenarioId,
-        RulesVersion = s.RulesVersion, ContentHash = s.ContentHash, GameState = s.InitialState
+        SaveFormatVersion = FoundationVersions.SaveFormatVersion,
+        ScenarioId = s.ScenarioId,
+        RulesVersion = s.RulesVersion,
+        ContentHash = s.ContentHash,
+        GameState = s.InitialState
     };
     private static SimulationSession Session(ScenarioDto s) => new(Save(s), s.Definitions, Compatibility(s));
     private static string GraphJson(GalaxyGraph g) => JsonSerializer.Serialize(new { g.Nodes, g.Edges });
@@ -41,7 +44,7 @@ public sealed class GalaxyFoundationTests
         var state = session.ExportSave().GameState;
         Assert.Equal(3, state.Civilizations!.Count);
         Assert.Equal(6, state.StarSystems!.Count);
-        Assert.Equal(19, state.EntityIdentities.Count);
+        Assert.Equal(34, state.EntityIdentities.Count);
         Assert.Equal(5, session.Galaxy.Edges.Count);
         Assert.Equal(ControllerKind.Human, state.Civilizations.Single(c => c.CivilizationId == "civ.federation").ControllerKind);
         Assert.All(state.Civilizations.Where(c => c.CivilizationId != "civ.federation"), c => Assert.Equal(ControllerKind.AI, c.ControllerKind));
@@ -100,8 +103,8 @@ public sealed class GalaxyFoundationTests
             Assert.Equal(snapshot, JsonSerializer.Serialize(session.CaptureSnapshot()));
             Assert.Equal(graph, GraphJson(session.Galaxy));
             foreach (var origin in baseline.Galaxy.Nodes)
-            foreach (var destination in baseline.Galaxy.Nodes)
-                Assert.Equal(baseline.Galaxy.FindRoute(origin, destination).Steps, session.Galaxy.FindRoute(origin, destination).Steps);
+                foreach (var destination in baseline.Galaxy.Nodes)
+                    Assert.Equal(baseline.Galaxy.FindRoute(origin, destination).Steps, session.Galaxy.FindRoute(origin, destination).Steps);
         }
     }
 
@@ -249,8 +252,12 @@ public sealed class GalaxyFoundationTests
         Assert.Equal(GraphJson(session.Galaxy), GraphJson(resumed.Galaxy));
         CommandEnvelope Command(string actor) => new()
         {
-            CommandId = "cmd.test", ActorCivilizationId = actor, ExpectedTurn = 1, ExpectedRevision = 0,
-            Kind = CommandKind.SetResearchTarget, SetResearchTarget = new() { TargetDefinitionId = "definition.future" }
+            CommandId = "cmd.test",
+            ActorCivilizationId = actor,
+            ExpectedTurn = 1,
+            ExpectedRevision = 0,
+            Kind = CommandKind.SetResearchTarget,
+            SetResearchTarget = new() { TargetDefinitionId = "definition.future" }
         };
         Assert.Equal(CommandErrorCode.UnknownResearchNode, resumed.SubmitCommand(Command("civ.federation")).ErrorCode);
         Assert.Equal(CommandErrorCode.ActorNotControlled, resumed.SubmitCommand(Command("civ.cardassian")).ErrorCode);

@@ -47,9 +47,15 @@ namespace HobbyDS9.Application
     {
         public IReadOnlyList<NamedDefinitionSnapshot> Civilizations { get; }
         public IReadOnlyList<NamedDefinitionSnapshot> StarSystems { get; }
+        public IReadOnlyList<SpeciesDefinitionSnapshot> Species { get; }
+        public IReadOnlyList<ResourceDefinitionSnapshot> Resources { get; }
+        public IReadOnlyList<InfrastructureDefinitionSnapshot> Infrastructure { get; }
         public IReadOnlyList<ResearchDefinitionSnapshot> Research { get; }
         internal ScenarioContentSnapshot(DefinitionCatalogDto definitions)
         {
+            Species = definitions.Species!.OrderBy(s => s.DefinitionId, StringComparer.Ordinal).Select(s => new SpeciesDefinitionSnapshot(s)).ToList().AsReadOnly();
+            Resources = definitions.Resources!.OrderBy(r => r.DefinitionId, StringComparer.Ordinal).Select(r => new ResourceDefinitionSnapshot(r)).ToList().AsReadOnly();
+            Infrastructure = definitions.Infrastructure!.OrderBy(i => i.DefinitionId, StringComparer.Ordinal).Select(i => new InfrastructureDefinitionSnapshot(i)).ToList().AsReadOnly();
             Civilizations = definitions.Civilizations!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal)
                 .Select(d => new NamedDefinitionSnapshot(d.DefinitionId, d.DisplayName)).ToList().AsReadOnly();
             StarSystems = definitions.StarSystems!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal)

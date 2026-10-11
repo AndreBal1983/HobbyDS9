@@ -1,6 +1,6 @@
 # HobbyDS9
 
-A portable C# strategy simulation for a future DS9/Dominion War-era BOTF spiritual successor. The strategic vertical slice now connects colony economy, research, ship production, fleets, graph movement and simple deterministic AI. It runs headlessly; the campaign encounter checkpoint is integrated; deterministic planned range-phase combat and generic campaign consequences are implemented; frontend and networking follow in later stages. No implementation code or assets have been copied from BotF2 or 3DBOTF2.
+A portable C# strategy simulation for a future DS9/Dominion War-era BOTF spiritual successor. The strategic vertical slice now connects colony economy, research, ship production, fleets, graph movement and simple deterministic AI. It runs headlessly; the campaign encounter checkpoint is integrated; deterministic planned range-phase combat and generic campaign consequences are implemented; the Unity strategic client consumes the Application boundary; networking is deferred. No implementation code or assets have been copied from BotF2 or 3DBOTF2.
 
 Read [the architecture](docs/architecture.md) for contracts, deterministic rules, scenario definitions and acceptance gates.
 
@@ -20,7 +20,7 @@ scenarios/ds9-slice/         # Separate DS9 content package
 docs/architecture.md
 ```
 
-Contracts, Simulation, Scenarios and Application target `netstandard2.1` with C# 9; Headless and Tests target `net10.0`. Production projects have no external packages, Unity/WPF/network dependencies or legacy references. Unity 6 can consume the portable libraries through an adapter; Unity/IL2CPP execution remains to be verified. JSON/file I/O stays in the host.
+Contracts, Simulation, Scenarios and Application target `netstandard2.1` with C# 9; Headless and Tests target `net10.0`. Production projects have no external packages, Unity/WPF/network dependencies or legacy references. Unity 6 can consume the portable libraries through an adapter; the previous Unity/IL2CPP milestone passed local acceptance; this population milestone requires a new local pass. JSON/file I/O stays in the host.
 
 ## Client application boundary
 
@@ -32,7 +32,7 @@ A future client references `HobbyDS9.Application` and Contracts. `CampaignApplic
 
 Navigation has its own `NavigationNodeId`, optional system association, explicit link/route traversal cost, `FindRoute` and `SubmitFleetRoute`. The current adapter maps existing graph nodes one-to-one and preserves unit costs/BFS. Clients should use node associations rather than infer systems from node ID strings, and must not treat cost as a turn estimate. Voronoi geometry, independent navigation topology, weighted movement and budgets are deferred. No presentation state or new gameplay is added.
 
-Save/content/rules/resolver versions and the 25-turn baseline are unchanged by this boundary. Tests compare Application against direct Simulation through all 25 turns and pending/partial/fully buffered reloads in both result orders.
+The Application boundary preserves deterministic behavior. Current economy/save versions and baseline are below. Tests compare Application against direct Simulation through all 25 turns and pending/partial/fully buffered reloads in both result orders.
 
 ## Build and headless acceptance
 
@@ -65,11 +65,11 @@ SimulationSession owns copied authoritative state. Commands use stable IDs, expe
 
 AdvanceTurn runs AI planning, Economy, Research, Production and Movement on deep staging state, then detects encounters. Without battles it completes the current turn and reopens Planning; with battles it commits AwaitingCombat at the current turn. Every accepted AI command increments staged revision once, and the checkpoint/turn commit increments it once more. The ledger clears only when the turn completes, including explicit combat finalization. A failure anywhere discards all staged work, including RNG, IDs and newly built entities. EncounterCreation groups post-Movement fleets from different civilizations and freezes an AwaitingCombat batch at the current turn. TurnResult returns ordered AI command results and empty strategic events.
 
-Production pays materials/credits when enqueued, uses post-Economy industry on the queue head, completes at most one item per colony and discards excess. Cancellation refunds the unused proportion with exact integer arithmetic, without overflowing the intermediate product. Completed ships join the lowest stationary owned fleet or create one; allocation order is ship then fleet when both are needed. Routes preserve caller order and move at most one normal/wormhole edge per turn.
+Production reserves local named resources and credits when enqueued, uses post-Economy industry on the queue head, completes at most one item per colony and discards excess. Cancellation refunds the unused proportion with exact integer arithmetic, without overflowing the intermediate product. Completed ships join the lowest stationary owned fleet or create one; allocation order is ship then fleet when both are needed. Routes preserve caller order and move at most one normal/wormhole edge per turn.
 
 AI uses the same gameplay handlers through an internal trusted path. Public submissions remain Human-only. AI chooses legal research by cost/ID and affordable designs by industry cost/ID, then routes idle fleets toward adjacent foreign (score 2) or neutral (score 1) systems. Only an actual highest-score tie consumes campaign RNG. Deterministic command IDs use a reserved `ai-command.` prefix and never consume entity allocation.
 
-The scenario has Federation (Human), Cardassian Union and Dominion (AI), six map nodes, four colonies, a data-defined wormhole, one starting scout/fleet per faction, two scout designs and one research node. Save format **9** and content format **5** deliberately reject older schemas without migration. Saves preserve queue progress, research, ships, fleet membership and routes and pending/resolved combat against the matching content/rules identity (phase-1-phased-combat-v1).
+The scenario has Federation (Human), Cardassian Union and Dominion (AI), six map nodes, five inhabited planets/colonies (Earth and Mars share Sol), a data-defined wormhole, one starting scout/fleet per faction, two scout designs and one research node. Save format **10** and content format **6** deliberately reject older schemas without migration. Saves preserve queue progress, research, ships, fleet membership and routes and pending/resolved combat against the matching content/rules identity (population-economy-v1).
 
 Tests cover existing foundations, economy/research arithmetic, production/refunds, references and membership, route/movement rules, phase isolation, complete rollback, AI ordering/control/RNG, and 25-turn equality across repeated runs, reordered input and multiple save/reloads including pending, partially buffered and fully resolved combat checkpoints. All six three-battle submission permutations produce the same final save. The combat-boundary scaffold remains tested and supplies shared campaign validation/canonicalization. AwaitingCombat blocks strategic commands/advancement and supports persisted pending/resolved combat. Resolved results buffer without applying consequences. Explicit canonical finalization applies sparse damage/destruction/adjacent retreat, clears the batch/ledger and opens the next turn. Different civilizations sharing a system temporarily count as opposing; all fleets there participate in one frozen request. Each encounter consumes one global ID and campaign RNG draw; resolution/finalization consume neither. NoLossCombatResolver retains its own fixed identity and reference tests. The production resolver emits a detailed phase/attack/impact/destruction/retreat trace; presentation and richer tactical systems remain deferred.
 
@@ -83,16 +83,16 @@ Phases use simultaneous volleys: all living ships choose phase-start enemy targe
 
 Events identify phases, firing/target ships, hits/misses, actual shield/hull losses, destruction and retreat. They contain no coordinates or timing and never drive campaign consequences. No Unity, individual weapons, tactical movement, faction battle bonuses or persisted replay history is implemented.
 
-The fixed 25-turn acceptance reaches **14 checkpoints / 15 encounters**, executes **37 phases / 118 shots / 81 hits**, applies **108 shield damage / 139 hull damage**, and destroys **13 ships / 13 fleets** (0 retreats under defaults). It ends at turn **26**, revision **228**, with **174 AI commands**, **8 ships/fleets**, **2 queued items**, **2 unlocks**, next sequence **72**, and campaign RNG `850d3ff45bd6b85e`. Canonical and reverse orders have identical final save SHA256:
+The population/economy v1 baseline reaches **15 checkpoints / 18 encounters**, **49 phases / 113 shots / 75 hits**, **128 shield / 133 hull damage**, and **13 destroyed ships/fleets**. It ends at turn **26**, revision **187**, with **129 AI commands**, **6 ships/fleets**, next sequence **80**, and RNG `850d3ff45bd6b85e`. Canonical/reverse final save SHA256:
 
 ```text
-3a310fad801dfc231d7639c909a0958fd03363097946944677a029fa7c914fee
+65a4f6b452fd8c6d8a80c775e6e74e944ac73f115bc3e7b9fb3e4e64da60f175
 ```
 
-The requested scout profiles required no balance adjustment. Existing strategic AI handles destroyed fleets and damaged ships without policy changes. Tests cover explicit-plan outcome changes, exact RNG vectors, 192 bounded neutral compositions, real-result permutations, and save/reload at every combat checkpoint.
+The new economy includes explicit planets, mixed cohorts, automatic habitat allocation, installed infrastructure, local Food/Dilithium logistics, stability, migration and durable displacement. Generic Materials are removed. Save **10**, content **6** and rules **population-economy-v1** reject older formats; combat resolver ID/version are unchanged. See [rules, conservation totals and deliberate limits](docs/economy-population-v1.md).
 
 ## Unity client
 
 The Unity 6000.6.5f1 URP scaffold and first client implementation are under [client/HobbyDS9.Unity](client/HobbyDS9.Unity/README.md). Prepare portable DLLs and the scenario with `dotnet msbuild scripts/PrepareUnity.proj`. The client uses Application snapshots and explicit combat checkpoints. Local Unity 6000.6.5f1 acceptance passed compilation, 4/4 EditMode tests, gameplay/combat flow, and a launched Windows x64 IL2CPP build. CI also verifies portable integration; display checks remain part of future UI changes.
 
-Strategic Gameplay UI v1 is implemented on its feature branch pending local Unity acceptance: a single tabbed sidebar for empire/colonies, research, production enqueue/cancel, visual fleet route preview/confirmation and three atomic save slots. All orders use observed Application stamps; stale errors are displayed without retry. See the [local acceptance checklist](client/HobbyDS9.Unity/README.md#verify-this-milestone-locally-before-merging). The original 4-test Unity acceptance applies to the prior milestone; this milestone has 9 EditMode cases awaiting execution.
+Strategic Gameplay UI v1 passed local acceptance. The current economy/population candidate adds a world selector, cohort/environment/infrastructure/resource inspection and delivery explanations to those screens. It stays on `codex/economy-population-foundation-v1` until the [new local Unity acceptance](client/HobbyDS9.Unity/README.md#populationeconomy-v1-local-acceptance) passes. Cloud checks do not execute Unity or produce a Windows player.

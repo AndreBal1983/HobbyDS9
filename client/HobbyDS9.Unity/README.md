@@ -14,7 +14,7 @@ Run this before opening Unity and after changing portable sources. It restores w
 
 `HobbyDS9.UnityClient.asmdef` uses explicit precompiled references to **Application** and **Contracts** only, plus Unity's Newtonsoft JSON adapter. It has no Simulation reference. Simulation is distributed as Application's runtime dependency and is not auto-referenced by client scripts. Plugin `.meta` files set `isExplicitlyReferenced: 1`. All authoritative operations go through `ICampaignSession`, via the client `CampaignHost`. No portable source depends on Unity, Newtonsoft or UI state. No engine code is duplicated in Assets.
 
-The pinned official `com.unity.nuget.newtonsoft-json` package is used because the DTOs have properties and Unity JsonUtility does not support that contract. Content hashing uses the exact resource bytes and SHA256; no save/content/rules versions change.
+The pinned official `com.unity.nuget.newtonsoft-json` package is used because the DTOs have properties and Unity JsonUtility does not support that contract. Content hashing uses the exact resource bytes and SHA256; the population milestone uses save 10/content 6/rules `population-economy-v1`, rejecting older packages/saves.
 
 ## Run the prototype
 
@@ -40,7 +40,7 @@ dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program F
 
 The Windows target requires passing, nonempty EditMode results before building. Tests cover real scenario startup, no direct Simulation assembly reference, empty-space association handling, and canonical/reverse 25-turn client-host runs through combat. The pure `GalaxyProjection.cs` is also linked into the existing .NET test project for ordering, detachment, movement refresh and selection tests. Existing CI still runs locked restore, Release build, all .NET tests and both deterministic headless smokes on its three platforms. It also runs PrepareUnity.proj and `python scripts/check-unity-integration.py` to check metadata/GUIDs, explicit assembly references, copied DLLs and scenario bytes. These are static checks, not Unity compilation.
 
-Editor logs, NUnit XML and the Windows player go under ignored `artifacts/unity`. `ClientBuild` enforces the Editor version, .NET Standard API compatibility and a Windows x64 IL2CPP build. The existing link.xml preserves portable DTOs and runtime dependencies. Windows x64 IL2CPP compilation and player startup passed local acceptance; repeat these checks after engine/client changes. Launch `artifacts/unity/Windows/HobbyDS9.exe` on Windows. Verify initial galaxy/fleets, all four display sizes, selection, End Turn and an AwaitingCombat → resolve → finalize → Planning cycle. The baseline 25-turn outcome remains turn 26/revision 228, 15 encounters, 8 ships/fleets, RNG `850d3ff45bd6b85e`.
+Editor logs, NUnit XML and the Windows player go under ignored `artifacts/unity`. `ClientBuild` enforces the Editor version, .NET Standard API compatibility and a Windows x64 IL2CPP build. The existing link.xml preserves portable DTOs and runtime dependencies. Windows x64 IL2CPP compilation and player startup passed local acceptance; repeat these checks after engine/client changes. Launch `artifacts/unity/Windows/HobbyDS9.exe` on Windows. Verify initial galaxy/fleets, all four display sizes, selection, End Turn and an AwaitingCombat → resolve → finalize → Planning cycle. The baseline 25-turn outcome is now turn 26/revision 187, 18 encounters, 6 ships/fleets, RNG `850d3ff45bd6b85e`.
 
 Unity acceptance is performed locally because the cloud environment has no Unity Editor. Keep local compilation, EditMode tests and Windows build/launch green alongside .NET CI. Verify the four display sizes when making layout changes; the final control-sizing/importer cleanup received static checks in the cloud rather than another Unity run.
 
@@ -62,7 +62,7 @@ The new interface keeps one tabbed sidebar beside the galaxy map. The persistent
 
 - **Empire** lists owned colonies and fleets with links to their contextual controls.
 - **Research** lists every definition, cost, prerequisites and available/current/completed/locked state. Select an available target to submit the existing command. Reserve is a civilization-wide pool, not separate progress on each technology.
-- **Selection / colony** shows population/capacity, food, materials, owner credits, ordered production queue and ship design costs. Queue an available design; cancelling requires inline confirmation and uses the existing proportional refund of unused costs.
+- **Selection / colony** shows population/capacity, food, named local resources, owner credits, ordered production queue and ship design costs. Queue an available design; cancelling requires inline confirmation and uses the existing proportional refund of unused costs.
 - **Selection / fleet** shows ownership, hull/design facts and queued route. Choose Set / replace route, click a map node, review the gold route and ordered steps, then Confirm route. Same-node routes clear queued orders. The displayed traversal cost is not an arrival-time estimate. Cancelling a preview changes no campaign state.
 - **Save / Load** offers three fixed slots under `UnityEngine.Application.persistentDataPath/CampaignSaves` (normally `%USERPROFILE%/AppData/LocalLow/<CompanyName>/<ProductName>/CampaignSaves` on Windows). An occupied slot requires overwrite confirmation; loading confirms replacement of unsaved campaign progress. The host writes UTF-8 and flushes it to disk into a same-directory temporary file, then atomically replaces the existing slot or moves a new slot into place. It never deletes a prior valid save as a fallback. Failed replacement leaves that save intact; failed JSON parsing/validation leaves the live campaign intact. No save data is written into the project.
 - **Combat** retains independent resolution, buffering and explicit finalization. Draft combat plans survive tab switches in the running view; they are intentionally not campaign-save data. Saves preserve pending requests and already-buffered results. Loading clears draft plans, route preview, object selection and camera, then shows the loaded phase.
@@ -96,7 +96,7 @@ Windows requires the existing IL2CPP module, Visual Studio C++ desktop tools and
 Manual acceptance in the player:
 
 1. At all four required resolutions (1920×1080, 2560×1440, 3440×1440, 5120×1440), verify status, readable buttons/dropdowns, scrollable panels and a map that occupies most of the screen. Confirm tab persistence and pan/zoom/Fit map.
-2. From Empire, manage Sol. Queue Scout, confirm credits/materials and queue update, cancel once with the keep-current-state button, then confirm cancellation and check the refund. Inspect a foreign colony and verify player orders are disabled.
+2. From Empire, manage Sol. Queue Scout, confirm credits/Dilithium and queue update, cancel once with the keep-current-state button, then confirm cancellation and check the refund. Inspect a foreign colony and verify player orders are disabled.
 3. Select Advanced Starship Engineering in Research, verify Current status/reserve, advance turns and verify Completed state and Advanced Scout availability. Check disabled explanations for insufficient resources or missing research.
 4. Select the Federation fleet. Preview a route, cancel it and confirm the queued route is unchanged. Preview/confirm a new route, replace it, and advance a turn to observe authoritative movement. Inspect the explicit wormhole cost. Same-node confirmation clears the route.
 5. Pass through AwaitingCombat with selected plans/defaults, verify research/production/routes are disabled, buffer results, then finalize. Switch tabs while editing plans and confirm draft selections persist.
@@ -105,3 +105,29 @@ Manual acceptance in the player:
 8. Return the EditMode XML, Windows build/launch result, and any Console/runtime/display errors. Keep generated logs/builds/saves out of Git. Merge to main only after this acceptance passes.
 
 Limitations: three fixed slots, no rename/delete UI or autosave; no camera/UI preference persistence; no multi-human selector; placeholder map geometry and art. No gameplay, save/content/rules/resolver version or balance changes.
+
+
+## Population/economy v1 local acceptance
+
+This candidate has **14 Unity EditMode cases** (the previous 9 plus mixed-world/resource/round-trip and strict incomplete/obsolete-save tests). They require local execution; cloud checks do not establish Unity compilation or IL2CPP acceptance.
+
+Close Unity, pull `codex/economy-population-foundation-v1`, then from the repository root run:
+
+```powershell
+git switch codex/economy-population-foundation-v1
+git pull --ff-only
+dotnet msbuild scripts/PrepareUnity.proj -t:Prepare
+dotnet msbuild scripts/PrepareUnity.proj -t:EditMode "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
+dotnet msbuild scripts/PrepareUnity.proj -t:Windows "-p:UnityEditor=C:/Program Files/Unity/Hub/Editor/6000.6.5f1/Editor/Unity.exe"
+```
+
+Use Unity 6000.6.5f1 with Windows Build Support (IL2CPP), Visual Studio Desktop development with C++, and a compatible Windows SDK. Launch `artifacts/unity/Windows/HobbyDS9.exe`.
+
+1. Select Sol and use the **World** dropdown to switch Earth/Mars. Earth must show Human/Vulcan/Andorian cohorts; Mars has lower population and higher installed industry. Empire Manage buttons select the corresponding world.
+2. Inspect habitat shares, natural/effective capacity, automatic allocations, cohort legal/needs ratings, stability/target, food, credit/R&D contribution, infrastructure and local Dilithium. Bajor has a Bajoran majority and Cardassian resident minority.
+3. Queue/cancel Scout on Earth; verify local Dilithium and credits reserve/refund. Mars begins without Dilithium and becomes eligible after delivery. Costs must show named resources.
+4. Advance turns and inspect last-turn origin/path/destination receipts, receiving stability and integrity. Nearby hostile fleets halve integrity; direct occupation blocks imports. Mars is intentionally import-dependent and can experience shortages in the idle-player 25-turn run. Population changes and migration totals follow the deterministic rules; no manual population assignment exists.
+5. Exercise research, production completion, routes, AwaitingCombat, plans, buffering and explicit finalization. Save before/after turns and combat; loading must restore planet/cohort/stability/resource facts. Old save-format slots are rejected and leave the active session intact.
+6. Check scrollable panels at 1920×1080, 2560×1440, 3440×1440 and 5120×1440. The map remains the main workspace.
+
+Refugees are exercised through deterministic .NET fixtures, including rejection/no-destination, retained origin/legal status/memories and reload; no invasion trigger or policy UI was invented. See [the new baseline and scope](../../docs/economy-population-v1.md). Return compilation/test/build results and manual acceptance before this branch merges to main.

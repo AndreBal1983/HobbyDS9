@@ -12,7 +12,8 @@
   "precompiledReferences": [
     "HobbyDS9.Application.dll",
     "HobbyDS9.Contracts.dll",
-    "nunit.framework.dll"
+    "nunit.framework.dll",
+    "Newtonsoft.Json.dll"
   ],
   "defineConstraints": [
     "UNITY_INCLUDE_TESTS"

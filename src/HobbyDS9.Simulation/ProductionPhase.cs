@@ -9,13 +9,12 @@ namespace HobbyDS9.Simulation
     {
         internal static void Execute(GameStateDto state, DefinitionCatalogDto definitions)
         {
-            var profiles = definitions.EconomicProfiles!.ToDictionary(p => p.DefinitionId, StringComparer.Ordinal);
             var designs = definitions.ShipDesigns!.ToDictionary(d => d.DefinitionId, StringComparer.Ordinal);
             foreach (var colony in state.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal))
             {
                 if (colony.ProductionQueue!.Count == 0) continue;
-                var head = colony.ProductionQueue[0]; var profile = profiles[colony.EconomicProfileDefinitionId];
-                var industry = checked(profile.BaseIndustry + colony.Population / profile.PopulationPerIndustry);
+                var head = colony.ProductionQueue[0];
+                var industry = WorldEconomy.Project(colony, state, definitions).Industry;
                 var remaining = head.RequiredIndustry - head.CompletedIndustry;
                 if (industry < remaining) { head.CompletedIndustry += industry; continue; }
                 var design = designs[head.ShipDesignDefinitionId];
@@ -25,13 +24,27 @@ namespace HobbyDS9.Simulation
                     .OrderBy(f => f.FleetId, StringComparer.Ordinal).FirstOrDefault();
                 if (fleet == null)
                 {
-                    fleet = new FleetStateDto { FleetId = CampaignAllocation.Allocate(state, "fleet", null), OwnerCivilizationId = colony.OwnerCivilizationId!,
-                        LocationSystemId = colony.SystemId, ShipIds = new List<string>(), RouteSystemIds = new List<string>() };
+                    fleet = new FleetStateDto
+                    {
+                        FleetId = CampaignAllocation.Allocate(state, "fleet", null),
+                        OwnerCivilizationId = colony.OwnerCivilizationId!,
+                        LocationSystemId = colony.SystemId,
+                        ShipIds = new List<string>(),
+                        RouteSystemIds = new List<string>()
+                    };
                     state.Fleets!.Add(fleet);
                 }
                 fleet.ShipIds!.Add(shipId);
-                state.Ships!.Add(new ShipStateDto { ShipId = shipId, ShipDesignDefinitionId = design.DefinitionId,
-                    OwnerCivilizationId = colony.OwnerCivilizationId!, FleetId = fleet.FleetId, CurrentHull = design.MaxHull });
+                state.Ships!.Add(new ShipStateDto
+                {
+                    ShipId = shipId,
+                    ShipDesignDefinitionId = design.DefinitionId,
+                    OwnerCivilizationId = colony.OwnerCivilizationId!,
+                    FleetId = fleet.FleetId,
+                    CurrentHull = design.MaxHull
+                });
+                state.PopulationStatistics!.ResourceConsumed = checked(state.PopulationStatistics.ResourceConsumed + PopulationRules.Sum(head.PaidResources!.Select(r => r.Amount)));
+                state.PopulationStatistics!.ProductionCompleted = checked(state.PopulationStatistics.ProductionCompleted + 1);
                 colony.ProductionQueue.RemoveAt(0); state.EntityIdentities.RemoveAll(e => e.EntityId == head.QueueItemId);
             }
         }

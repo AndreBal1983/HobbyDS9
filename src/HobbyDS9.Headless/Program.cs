@@ -26,7 +26,15 @@ for (var i = 0; i < args.Length; i++)
     else throw new ArgumentException("Usage: HobbyDS9.Headless [scenario.json] [--turns nonnegative-count] [--combat-order canonical|reverse]");
 }
 var bytes = File.ReadAllBytes(path);
-var scenario = JsonSerializer.Deserialize<ScenarioDto>(bytes) ?? throw new InvalidDataException("Missing scenario.");
+var jsonResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver();
+jsonResolver.Modifiers.Add(type =>
+{
+    if (type.Type.Assembly != typeof(GameStateDto).Assembly) return;
+    foreach (var property in type.Properties)
+        if (property.PropertyType.IsValueType && Nullable.GetUnderlyingType(property.PropertyType) == null)
+            property.IsRequired = true;
+});
+var scenario = JsonSerializer.Deserialize<ScenarioDto>(bytes, new JsonSerializerOptions { TypeInfoResolver = jsonResolver, UnmappedMemberHandling = System.Text.Json.Serialization.JsonUnmappedMemberHandling.Disallow }) ?? throw new InvalidDataException("Missing scenario.");
 scenario.ContentHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 var session = CampaignApplication.StartScenario(scenario);
 var commands = 0;
@@ -70,3 +78,14 @@ Console.WriteLine(FormattableString.Invariant($"phases={phases}, shots={shots}, 
 Console.WriteLine(FormattableString.Invariant($"ships={snapshot.Ships.Count}, fleets={snapshot.Fleets.Count}, queued={snapshot.Colonies.Sum(c => c.ProductionQueue.Count)}, unlocks={snapshot.Civilizations.Sum(c => c.UnlockedResearchDefinitionIds.Count)}, nextEntity={snapshot.NextEntitySequence}, rng={snapshot.RngState.State:x16}"));
 var stateBytes = JsonSerializer.SerializeToUtf8Bytes(session.ExportSave());
 Console.WriteLine($"save-sha256={Convert.ToHexString(SHA256.HashData(stateBytes)).ToLowerInvariant()}");
+
+var stats = snapshot.PopulationStatistics;
+Console.WriteLine($"births={stats.Births}, deaths={stats.Deaths}, migrated={stats.Migrated}, refugees={stats.RefugeesMoved}, food-delivered={stats.FoodDelivered}, resource-extracted={stats.ResourceExtracted}, resource-delivered={stats.ResourceDelivered}, resource-consumed={stats.ResourceConsumed}, production-completed={stats.ProductionCompleted}");
+foreach (var civilization in snapshot.Civilizations)
+{
+    var worlds = snapshot.Colonies.Where(c => c.OwnerCivilizationId == civilization.CivilizationId).ToList();
+    Console.WriteLine($"{civilization.CivilizationId}: credits={civilization.Credits}, population={worlds.Sum(c => c.Population)}");
+    foreach (var species in worlds.SelectMany(c => c.State.Cohorts).GroupBy(c => c.SpeciesDefinitionId).OrderBy(g => g.Key, StringComparer.Ordinal))
+        Console.WriteLine($"  {species.Key}: {species.Sum(c => c.Population)}");
+}
+foreach (var world in snapshot.Colonies) Console.WriteLine($"{world.Environment.DisplayName}: population={world.Population}, stability={world.State.Stability}, target={world.Economy.TargetStability}, food={world.Food}");

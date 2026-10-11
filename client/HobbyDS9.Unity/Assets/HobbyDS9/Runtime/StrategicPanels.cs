@@ -19,6 +19,7 @@ namespace HobbyDS9.UnityClient
         private RoutePreview? routePreview;
         private SaveSlotStore saves = null!;
         private int saveSlot = 1;
+        private EntityId? selectedPlanet;
 
         private static CivilizationSnapshot? Human(CampaignSnapshot snapshot) => snapshot.Campaign.Civilizations
             .Where(c => c.ControllerKind == ControllerKind.Human).OrderBy(c => c.CivilizationId.Value, StringComparer.Ordinal).FirstOrDefault();
@@ -67,12 +68,13 @@ namespace HobbyDS9.UnityClient
             Text(OwnerName(snapshot, actor.CivilizationId));
             Text($"Credits {actor.Credits} • Research reserve {actor.ResearchReserve}");
             Text("Research: " + (actor.ResearchTargetDefinitionId.HasValue ? ResearchName(snapshot, actor.ResearchTargetDefinitionId.Value) : "No target selected"));
+            Text($"Campaign population movement: {snapshot.Campaign.PopulationStatistics.Migrated} normal migrants • {snapshot.Campaign.PopulationStatistics.RefugeesMoved} refugees");
             Text("Owned colonies", true);
             foreach (var colony in snapshot.Campaign.Colonies.Where(c => c.OwnerCivilizationId == actor.CivilizationId))
             {
-                Text($"{SystemName(snapshot, colony.SystemId)} • Population {colony.Population}/{colony.PopulationCapacity}\nFood {colony.Food} • Materials {colony.Materials} • Queue {colony.ProductionQueue.Count}");
+                Text($"{colony.Environment.DisplayName} • Population {colony.Population}/{colony.PopulationCapacity}\nFood {colony.Food} • Industry {colony.Economy.Industry} • Queue {colony.ProductionQueue.Count}");
                 var node = snapshot.Navigation.Nodes.FirstOrDefault(n => n.AssociatedSystemId == colony.SystemId);
-                if (node != null) ActionButton("Manage " + SystemName(snapshot, colony.SystemId), () => { ClearRoute(); SelectNode(node.NodeId); });
+                if (node != null) ActionButton("Manage " + colony.Environment.DisplayName, () => { ClearRoute(); selectedPlanet = colony.PlanetId; SelectNode(node.NodeId); });
             }
             Text("Fleets", true);
             foreach (var fleet in snapshot.Campaign.Fleets.Where(f => f.OwnerCivilizationId == actor.CivilizationId))
@@ -108,7 +110,16 @@ namespace HobbyDS9.UnityClient
             {
                 var system = snapshot.Campaign.StarSystems.Single(s => s.SystemId == node.SystemId.Value);
                 Text(system.OwnerCivilizationId.HasValue ? "Owner: " + OwnerName(snapshot, system.OwnerCivilizationId.Value) : "Unowned");
-                foreach (var colony in snapshot.Campaign.Colonies.Where(c => c.SystemId == system.SystemId)) ShowColony(snapshot, colony);
+                var worlds = snapshot.Campaign.Colonies.Where(c => c.SystemId == system.SystemId).ToList();
+                if (worlds.Count > 0)
+                {
+                    var index = Math.Max(0, worlds.FindIndex(c => c.PlanetId == selectedPlanet));
+                    selectedPlanet = worlds[index].PlanetId;
+                    var field = new DropdownField("World", worlds.Select(c => c.Environment.DisplayName).ToList(), index);
+                    field.AddToClassList("combat-plan-field");
+                    field.RegisterValueChangedCallback(_ => { selectedPlanet = worlds[field.index].PlanetId; Refresh(); }); details.Add(field);
+                    ShowColony(snapshot, worlds[index]);
+                }
             }
             else Text("Transit region; no associated star system.");
             foreach (var link in snapshot.Navigation.Links.Where(l => l.EndpointA == node.NodeId || l.EndpointB == node.NodeId))
@@ -118,7 +129,8 @@ namespace HobbyDS9.UnityClient
         }
         private void ShowColony(CampaignSnapshot snapshot, ColonySnapshot colony)
         {
-            Text($"Population {colony.Population} / {colony.PopulationCapacity}\nFood {colony.Food} • Materials {colony.Materials}");
+            ShowWorld(snapshot, colony);
+            Text($"Population {colony.Population} / {colony.PopulationCapacity}\nFood {colony.Food} • Industry {colony.Economy.Industry}");
             if (colony.OwnerCivilizationId.HasValue)
                 Text("Owner credits: " + snapshot.Campaign.Civilizations.Single(c => c.CivilizationId == colony.OwnerCivilizationId.Value).Credits);
             var actor = Human(snapshot);
@@ -128,8 +140,8 @@ namespace HobbyDS9.UnityClient
             foreach (var item in colony.ProductionQueue)
             {
                 var design = snapshot.Campaign.ShipDesigns.Single(d => d.DefinitionId == item.ShipDesignDefinitionId);
-                Text($"{design.DisplayName} • Industry {item.CompletedIndustry}/{item.RequiredIndustry}\nPaid {item.PaidCredits} credits / {item.PaidMaterials} materials");
-                ActionButton("Cancel " + design.DisplayName, () => Confirm("Cancel this queue item? Unused credits and materials are refunded proportionally; completed industry is lost.",
+                Text($"{design.DisplayName} • Industry {item.CompletedIndustry}/{item.RequiredIndustry}\nPaid {item.PaidCredits} credits • {Resources(snapshot, item.PaidResources)}");
+                ActionButton("Cancel " + design.DisplayName, () => Confirm("Cancel this queue item? Unused credits and strategic resources are refunded proportionally; completed industry is lost.",
                     () => CommandFeedback.Describe(host.Client.Cancel(snapshot, actor!.CivilizationId, colony.ColonyId, item.QueueItemId))), canManage,
                     canManage ? "Cancel and refund the unused portion" : "Only your colonies in Planning can receive orders.");
             }
@@ -139,7 +151,7 @@ namespace HobbyDS9.UnityClient
             {
                 var design = option.Design;
                 Text(design.DisplayName, true);
-                Text($"{design.CreditCost} credits • {design.MaterialCost} materials • {design.IndustryCost} industry\nHull {design.MaxHull} • Shields {design.CombatProfile.ShieldCapacity}");
+                Text($"{design.CreditCost} credits • {Resources(snapshot, design.ResourceCosts)} • {design.IndustryCost} industry\nHull {design.MaxHull} • Shields {design.CombatProfile.ShieldCapacity}");
                 Text("Required research: " + (design.RequiredResearchDefinitionIds.Count == 0 ? "None" : string.Join(", ", design.RequiredResearchDefinitionIds.Select(id => ResearchName(snapshot, id)))));
                 var explanation = CommandFeedback.Explain(option.UnavailableReason);
                 if (!option.CanEnqueue) Text(explanation);
@@ -185,6 +197,44 @@ namespace HobbyDS9.UnityClient
                 Text($"{design.DisplayName}\n{ship.ShipId.Value}\nHull {ship.CurrentHull}/{design.MaxHull} • Shield capacity {design.CombatProfile.ShieldCapacity}");
             }
         }
+        private static string Resources(CampaignSnapshot snapshot, IReadOnlyList<ResourceAmountSnapshot> values) => values.Count == 0 ? "No strategic resources"
+            : string.Join(", ", values.Select(r => r.Amount + " " + snapshot.Content.Resources.Single(d => d.DefinitionId == r.ResourceDefinitionId).DisplayName));
+        private void ShowWorld(CampaignSnapshot snapshot, ColonySnapshot world)
+        {
+            var e = world.Economy; var p = world.Environment;
+            Text(p.DisplayName + " • Class " + p.PlanetClass, true);
+            Text($"Stability {world.State.Stability / 100.0:0.#}% → target {e.TargetStability / 100.0:0.#}%\nNatural capacity {e.NaturalCapacity} • Effective {e.EffectiveCapacity}\nUnhoused/over-capacity {e.Crowding} • Experienced habitability {e.AverageHabitability / 100.0:0.#}%");
+            Text($"Current output estimates: Credits {e.CreditOutput} • Local industry {e.Industry} • R&D {e.ResearchOutput}\nFood output {e.FoodOutput} • Demand {e.FoodDemand} • Reserve {world.Food}\nShortage turns {world.State.FoodShortageTurns} • Logistics capacity {e.LogisticsCapacity}");
+            Text("Population", true);
+            foreach (var c in world.State.Cohorts)
+            {
+                var species = snapshot.Content.Species.Single(d => d.DefinitionId == c.SpeciesDefinitionId);
+                Text($"{species.DisplayName}: {c.Population} • {c.LegalStatus}\nSatisfaction {c.Satisfaction / 100.0:0.#}% • Integration {c.Integration / 100.0:0.#}%\nCivic alignment {c.CivicAlignment / 100.0:0.#}% • Radicalisation {c.Radicalisation / 100.0:0.#}%");
+                foreach (var memory in c.Memories) Text("Memory: " + memory.Kind + " • " + memory.Magnitude + " • expires turn " + memory.ExpiryTurn);
+            }
+            Text("Environment", true);
+            Text($"Gravity {p.Gravity / 10000.0:0.##}g • Pressure {p.Pressure / 10000.0:0.##} • Radiation {p.Radiation}\nAtmosphere: {p.Atmosphere}");
+            foreach (var h in p.Habitats) Text($"{h.Kind}: {h.ShareBps / 100.0:0.#}% surface • natural capacity {h.NaturalCapacity}");
+            foreach (var a in e.Allocations)
+            {
+                var cohort = world.State.Cohorts.Single(c => c.CohortId == a.CohortId);
+                var species = snapshot.Content.Species.Single(d => d.DefinitionId == cohort.SpeciesDefinitionId);
+                Text($"{species.DisplayName} → {a.Habitat?.ToString() ?? "Artificial"}: {a.Population} • habitability {a.Habitability / 100.0:0.#}%");
+            }
+            Text("Infrastructure / resources", true);
+            foreach (var i in world.State.Infrastructure)
+            {
+                var definition = snapshot.Content.Infrastructure.Single(d => d.DefinitionId == i.DefinitionId);
+                Text(definition.DisplayName + " × " + i.Count + " • extraction " + Resources(snapshot, definition.Extraction));
+            }
+            Text("Local stock: " + Resources(snapshot, world.State.Stockpiles));
+            Text("Desired stock: " + Resources(snapshot, world.State.DesiredStockpiles));
+            var deliveries = snapshot.Campaign.LastDeliveries.Where(r => r.OriginPlanetId == world.PlanetId.Value || r.DestinationPlanetId == world.PlanetId.Value).ToList();
+            Text("Last turn deliveries", true);
+            if (deliveries.Count == 0) Text("No deliveries recorded. Food and strategic resources remain local until delivered.");
+            foreach (var r in deliveries)
+                Text($"{r.ResourceDefinitionId}: {r.OriginPlanetId} → {r.DestinationPlanetId}\nNeed {r.ImportNeed} • Reachable surplus {r.ReachableSurplus} • Capacity {r.RouteCapacity}\nReceiving stability {r.StabilityFactor / 100.0:0.#}% • Integrity {r.RouteIntegrity / 100.0:0.#}% • Delivered {r.Delivered}\nRoute: {string.Join(" → ", r.RouteSystemIds.Select(id => SystemName(snapshot, id)))}");
+        }
         private void ShowSaves()
         {
             Text("Campaign saves", true); Text("Three local slots. Saving includes pending encounters and buffered combat results. Unsaved combat plans and map camera state are presentation-only.");
@@ -211,7 +261,7 @@ namespace HobbyDS9.UnityClient
             {
                 host.LoadJson(saves.Read(slot));
                 // Only reset the view after a successful validated session replacement.
-                ClearRoute(); selection = new GalaxySelection(); combatPlans.Clear(); lastPhase = null;
+                ClearRoute(); selection = new GalaxySelection(); selectedPlanet = null; combatPlans.Clear(); lastPhase = null;
                 activeTab = "Empire"; map.ResetView();
                 return "Campaign loaded from slot " + slot + ".";
             }), valid);

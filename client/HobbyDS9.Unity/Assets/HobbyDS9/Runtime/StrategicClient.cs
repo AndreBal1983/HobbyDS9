@@ -124,7 +124,8 @@ namespace HobbyDS9.UnityClient
                 case CommandErrorCode.ResearchTargetUnchanged: return "Already the current research target.";
                 case CommandErrorCode.ResearchPrerequisiteMissing: case CommandErrorCode.DesignResearchPrerequisiteMissing: return "Required research has not been completed.";
                 case CommandErrorCode.InsufficientCredits: return "Not enough civilization credits.";
-                case CommandErrorCode.InsufficientMaterials: return "Not enough materials at this colony.";
+                case CommandErrorCode.InsufficientStrategicResource: return "A required strategic resource is unavailable locally. Check the delivery report.";
+                case CommandErrorCode.ShipbuildingUnavailable: return "This world has no shipbuilding infrastructure.";
                 case CommandErrorCode.ColonyNotOwned: return "This colony is not controlled by the selected civilization.";
                 case CommandErrorCode.FleetNotOwned: return "This fleet is not controlled by the selected civilization.";
                 case CommandErrorCode.ActorNotControlled: return "Only human-controlled civilizations can receive player orders.";

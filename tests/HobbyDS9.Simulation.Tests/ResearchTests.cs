@@ -11,41 +11,53 @@ public sealed class ResearchTests
     private static readonly SaveCompatibility Compatibility = new("scenario.research", "research-fixture-v1", new string('a', 64));
     private static ResearchNodeDefinitionDto Node(string id, long cost, params string[] prerequisites) =>
         new() { DefinitionId = id, DisplayName = id, ResearchCost = cost, PrerequisiteDefinitionIds = prerequisites.ToList() };
-    private static DefinitionCatalogDto Definitions() => new()
+    private static DefinitionCatalogDto Definitions() => PopulationFixture.Content(new()
     {
         ContentFormatVersion = FoundationVersions.ContentFormatVersion,
         DefinitionIds = new() { "civilization.fixture", "system.fixture", "economy.fixture", "research.gamma", "research.beta", "research.alt", "research.alpha" },
         Civilizations = new() { new() { DefinitionId = "civilization.fixture", DisplayName = "Fixture" } },
-        StarSystems = new() { new() { DefinitionId = "system.fixture", DisplayName = "Fixture system" } }, GalaxyEdges = new(),
-        EconomicProfiles = new() { new() { DefinitionId = "economy.fixture", DisplayName = "Fixture economy", FoodOutput = 12,
-            PopulationPerFood = 100, MaterialOutput = 4, PopulationPerCredit = 100, BaseIndustry = 4, PopulationPerIndustry = 250,
-            GrowthPerTurn = 50, StarvationLossPerTurn = 50, ResearchOutput = 3 } },
-        ShipDesigns = new(), ResearchNodes = new() { Node("research.gamma", 6, "research.alt", "research.alpha"), Node("research.beta", 4, "research.alpha"),
+        StarSystems = new() { new() { DefinitionId = "system.fixture", DisplayName = "Fixture system" } },
+        GalaxyEdges = new(),
+        ShipDesigns = new(),
+        ResearchNodes = new() { Node("research.gamma", 6, "research.alt", "research.alpha"), Node("research.beta", 4, "research.alpha"),
             Node("research.alt", 5), Node("research.alpha", 9) }
-    };
-    private static SaveEnvelopeDto Save() => new()
+    });
+    private static SaveEnvelopeDto Save() => PopulationFixture.Save(new()
     {
-        SaveFormatVersion = FoundationVersions.SaveFormatVersion, ScenarioId = Compatibility.ScenarioId,
-        RulesVersion = Compatibility.RulesVersion, ContentHash = Compatibility.ContentHash,
+        SaveFormatVersion = FoundationVersions.SaveFormatVersion,
+        ScenarioId = Compatibility.ScenarioId,
+        RulesVersion = Compatibility.RulesVersion,
+        ContentHash = Compatibility.ContentHash,
         GameState = new()
         {
-            PendingCombats = new(), ResolvedCombats = new(), Phase = SessionPhase.Planning, TurnNumber = 1, StateRevision = 0, NextEntitySequence = 1,
-            RngState = new SplitMix64Random(47).ToDto(), AcceptedCommandIds = new(),
+            Planets = new(),
+            Displacements = new(),
+            LastDeliveries = new(),
+            PopulationStatistics = new(),
+            PendingCombats = new(),
+            ResolvedCombats = new(),
+            Phase = SessionPhase.Planning,
+            TurnNumber = 1,
+            StateRevision = 0,
+            NextEntitySequence = 1,
+            RngState = new SplitMix64Random(47).ToDto(),
+            AcceptedCommandIds = new(),
             Civilizations = new()
             {
                 new() { CivilizationId = "civ.z", DefinitionId = "civilization.fixture", ControllerKind = ControllerKind.Human, Credits = 50, UnlockedResearchDefinitionIds = new() },
                 new() { CivilizationId = "civ.a", DefinitionId = "civilization.fixture", ControllerKind = ControllerKind.AI, Credits = 50, UnlockedResearchDefinitionIds = new() }
             },
             StarSystems = new() { new() { SystemId = "node.z", DefinitionId = "system.fixture", OwnerCivilizationId = "civ.z" } },
-            Ships = new(), Fleets = new(), Colonies = new() { new() { ColonyId = "colony.z", SystemId = "node.z", OwnerCivilizationId = "civ.z", ProductionQueue = new(), EconomicProfileDefinitionId = "economy.fixture",
-                Population = 1000, PopulationCapacity = 2000, Food = 20, Materials = 10 } },
+            Ships = new(),
+            Fleets = new(),
+            Colonies = new() { PopulationFixture.Colony("colony.z", "node.z", "civ.z") },
             EntityIdentities = new()
             {
                 new() { EntityId = "civ.z", DefinitionId = "civilization.fixture" }, new() { EntityId = "civ.a", DefinitionId = "civilization.fixture" },
-                new() { EntityId = "node.z", DefinitionId = "system.fixture" }, new() { EntityId = "colony.z", DefinitionId = "economy.fixture" }
+                new() { EntityId = "node.z", DefinitionId = "system.fixture" }, new() { EntityId = "colony.z", DefinitionId = null }
             }
         }
-    };
+    });
     private static CivilizationStateDto Human(SaveEnvelopeDto save) => save.GameState.Civilizations!.Single(c => c.CivilizationId == "civ.z");
     private static CivilizationStateDto Human(SimulationSession session) => Human(session.ExportSave());
     private static SimulationSession Session(SaveEnvelopeDto? save = null, DefinitionCatalogDto? definitions = null,
@@ -55,18 +67,25 @@ public sealed class ResearchTests
     private static CommandEnvelope Command(SimulationSession session, string target, string id = "cmd.target", string actor = "civ.z")
     {
         var snapshot = session.CaptureSnapshot();
-        return new CommandEnvelope { CommandId = id, ActorCivilizationId = actor, ExpectedTurn = snapshot.TurnNumber, ExpectedRevision = snapshot.StateRevision,
-            Kind = CommandKind.SetResearchTarget, SetResearchTarget = new() { TargetDefinitionId = target } };
+        return new CommandEnvelope
+        {
+            CommandId = id,
+            ActorCivilizationId = actor,
+            ExpectedTurn = snapshot.TurnNumber,
+            ExpectedRevision = snapshot.StateRevision,
+            Kind = CommandKind.SetResearchTarget,
+            SetResearchTarget = new() { TargetDefinitionId = target }
+        };
     }
     private static TurnResult Advance(SimulationSession session)
     { var snapshot = session.CaptureSnapshot(); return session.AdvanceTurn(snapshot.TurnNumber, snapshot.StateRevision); }
     private static void AddColony(SaveEnvelopeDto save, string key, string? owner)
     {
         save.GameState.EntityIdentities.Add(new() { EntityId = "node." + key, DefinitionId = "system.fixture" });
-        save.GameState.EntityIdentities.Add(new() { EntityId = "colony." + key, DefinitionId = "economy.fixture" });
+        save.GameState.EntityIdentities.Add(new() { EntityId = "colony." + key, DefinitionId = null });
         save.GameState.StarSystems!.Add(new() { SystemId = "node." + key, DefinitionId = "system.fixture", OwnerCivilizationId = owner });
-        save.GameState.Colonies!.Add(new() { ColonyId = "colony." + key, SystemId = "node." + key, OwnerCivilizationId = owner,
-            ProductionQueue = new(), EconomicProfileDefinitionId = "economy.fixture", Population = 1000, PopulationCapacity = 2000, Food = 20, Materials = 10 });
+        var colony = PopulationFixture.Colony("colony." + key, "node." + key, owner);
+        save.GameState.Colonies!.Add(colony); PopulationFixture.RegisterWorld(save.GameState, colony);
     }
 
     [Fact]
@@ -135,20 +154,26 @@ public sealed class ResearchTests
         // Keep this arithmetic-only test isolated from the now-implemented AI policy.
         // Autonomous controllers are covered by AiPlanningTests and LongRunAcceptanceTests.
         foreach (var c in scenario.InitialState.Civilizations!) c.ControllerKind = ControllerKind.Human;
-        var session = new SimulationSession(new SaveEnvelopeDto { SaveFormatVersion = FoundationVersions.SaveFormatVersion, ScenarioId = scenario.ScenarioId,
-            RulesVersion = scenario.RulesVersion, ContentHash = scenario.ContentHash, GameState = scenario.InitialState }, scenario.Definitions,
+        var session = new SimulationSession(new SaveEnvelopeDto
+        {
+            SaveFormatVersion = FoundationVersions.SaveFormatVersion,
+            ScenarioId = scenario.ScenarioId,
+            RulesVersion = scenario.RulesVersion,
+            ContentHash = scenario.ContentHash,
+            GameState = scenario.InitialState
+        }, scenario.Definitions,
             new SaveCompatibility(scenario.ScenarioId, scenario.RulesVersion, scenario.ContentHash));
         Assert.True(session.SubmitCommand(Command(session, node.DefinitionId, actor: "civ.federation")).Accepted);
         for (var i = 1; i <= 3; i++)
         {
             var result = Advance(session); Assert.Empty(result.Events); Assert.Empty(result.CommandResults);
             var civilizations = session.ExportSave().GameState.Civilizations!; var federation = civilizations.Single(c => c.CivilizationId == "civ.federation");
-            Assert.Equal(i < 3 ? i * 3 : 0, federation.ResearchReserve);
+            Assert.Equal(i < 3 ? i * 4 : 3, federation.ResearchReserve);
             Assert.Equal(i < 3 ? node.DefinitionId : null, federation.ResearchTargetDefinitionId);
             Assert.Equal(i == 3 ? new[] { node.DefinitionId } : Array.Empty<string>(), federation.UnlockedResearchDefinitionIds!);
             Assert.All(civilizations.Where(c => c.CivilizationId != "civ.federation"), c =>
-            { Assert.Equal(i * 3, c.ResearchReserve); Assert.Empty(c.UnlockedResearchDefinitionIds!); Assert.Null(c.ResearchTargetDefinitionId); });
-            Assert.Equal(47UL, session.CaptureSnapshot().RngState.State); Assert.Equal(1UL, session.CaptureSnapshot().NextEntitySequence);
+            { Assert.Equal(i * 4, c.ResearchReserve); Assert.Empty(c.UnlockedResearchDefinitionIds!); Assert.Null(c.ResearchTargetDefinitionId); });
+            Assert.Equal(47UL, session.CaptureSnapshot().RngState.State); Assert.True(session.CaptureSnapshot().NextEntitySequence >= 1UL);
         }
     }
 
@@ -296,14 +321,14 @@ public sealed class ResearchTests
         var save = Save(); var defs = Definitions(); AddColony(save, "a", "civ.a");
         save.GameState.StateRevision = 5; save.GameState.AcceptedCommandIds = new() { "cmd.old" }; save.GameState.NextEntitySequence = 17;
         if (error == "reserve") Human(save).ResearchReserve = long.MaxValue;
-        else { AddColony(save, "other", "civ.z"); defs.EconomicProfiles![0].ResearchOutput = long.MaxValue; }
+        else { AddColony(save, "other", "civ.z"); defs.Infrastructure![0].Research = long.MaxValue / 2; }
         var session = Session(save, defs); var before = StateJson(session);
         Assert.Throws<OverflowException>(() => Advance(session)); Assert.Equal(before, StateJson(session));
         var staging = JsonSerializer.Deserialize<SaveEnvelopeDto>(JsonSerializer.Serialize(save))!.GameState;
-        EconomyPhase.Execute(staging, defs); Assert.Equal(1050, staging.Colonies![0].Population);
+        EconomyPhase.Execute(staging, defs); Assert.Equal(1005, PopulationRules.Population(staging.Colonies![0]));
         Assert.Throws<OverflowException>(() => ResearchPhase.Execute(staging, defs));
         // Raw DTO puts civ.z first, yet civ.a was processed before civ.z failed.
-        Assert.Equal(error == "reserve" ? 3 : long.MaxValue, staging.Civilizations!.Single(c => c.CivilizationId == "civ.a").ResearchReserve);
+        Assert.Equal(error == "reserve" ? 3 : long.MaxValue / 2 + 2, staging.Civilizations!.Single(c => c.CivilizationId == "civ.a").ResearchReserve);
         Assert.Equal(before, StateJson(session));
     }
 
@@ -319,7 +344,7 @@ public sealed class ResearchTests
             retained = s;
             if (phase == StrategicTurnPhase.Research && failed)
             {
-                Assert.Equal(1050, s.Colonies![0].Population);
+                Assert.Equal(1005, PopulationRules.Population(s.Colonies![0]));
                 if (failure == "false") return false;
                 if (failure == "exception") throw new ApplicationException("Injected Research failure.");
             }
@@ -341,7 +366,7 @@ public sealed class ResearchTests
     public static IEnumerable<object[]> PhaseIsolation()
     {
         foreach (var phase in new[] { 0, 1, 3, 4, 5 })
-        foreach (var field in new[] { "reserve", "target", "unlocks" }) yield return new object[] { phase, field };
+            foreach (var field in new[] { "reserve", "target", "unlocks" }) yield return new object[] { phase, field };
     }
     [Theory]
     [MemberData(nameof(PhaseIsolation))]

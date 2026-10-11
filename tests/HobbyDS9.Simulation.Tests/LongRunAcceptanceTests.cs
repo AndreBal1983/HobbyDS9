@@ -17,7 +17,7 @@ public sealed class LongRunAcceptanceTests
         var scenario = Scenario(false); var baseline = Session(scenario); var repeated = Session(Clone(scenario)); var resumed = Session(Clone(scenario));
         var reorderedScenario = Clone(scenario); var state = reorderedScenario.InitialState; var defs = reorderedScenario.Definitions;
         state.Civilizations!.Reverse(); state.StarSystems!.Reverse(); state.Colonies!.Reverse(); state.Ships!.Reverse(); state.Fleets!.Reverse(); state.EntityIdentities.Reverse();
-        defs.DefinitionIds.Reverse(); defs.Civilizations!.Reverse(); defs.StarSystems!.Reverse(); defs.GalaxyEdges!.Reverse(); defs.ResearchNodes!.Reverse(); defs.ShipDesigns!.Reverse(); defs.EconomicProfiles!.Reverse();
+        defs.DefinitionIds.Reverse(); defs.Civilizations!.Reverse(); defs.StarSystems!.Reverse(); defs.GalaxyEdges!.Reverse(); defs.ResearchNodes!.Reverse(); defs.ShipDesigns!.Reverse(); defs.Planets!.Reverse(); defs.Species!.Reverse(); defs.Infrastructure!.Reverse(); defs.Resources!.Reverse();
         foreach (var d in defs.ShipDesigns) d.RequiredResearchDefinitionIds!.Reverse(); foreach (var r in defs.ResearchNodes) r.PrerequisiteDefinitionIds!.Reverse();
         var reordered = Session(reorderedScenario); var reloads = new HashSet<int> { 1, 2, 4, 7, 13, 18, 24 }; var partial = false; var orders = new List<string>(); var commandCount = 0; var generated = 0; var checkpoints = 0;
         for (var i = 1; i <= 25; i++)
@@ -33,14 +33,14 @@ public sealed class LongRunAcceptanceTests
             Assert.All(current.Civilizations!.Where(c => c.ControllerKind == ControllerKind.AI), c => Assert.Contains(c.CivilizationId, new[] { "civ.cardassian", "civ.dominion" }));
             if (reloads.Contains(i)) resumed = new SimulationSession(Clone(resumed.ExportSave()), Clone(scenario.Definitions), Compatibility(scenario));
         }
-        Assert.True(partial); Assert.Equal(15, generated); Assert.Equal(14, checkpoints); Assert.Empty(baseline.CaptureSnapshot().Combats); Assert.Equal(25, orders.Count); var final = baseline.CaptureSnapshot();
+        Assert.True(partial); Assert.Equal(18, generated); Assert.Equal(15, checkpoints); Assert.Empty(baseline.CaptureSnapshot().Combats); Assert.Equal(25, orders.Count); var final = baseline.CaptureSnapshot();
         Assert.Equal(26, final.TurnNumber); Assert.Equal(SessionPhase.Planning, final.Phase);
-        Assert.Equal(228, final.StateRevision); Assert.Equal(174, commandCount);
-        Assert.Equal(8, final.Ships.Count); Assert.Equal(8, final.Fleets.Count); Assert.Equal(72UL, final.NextEntitySequence); Assert.Equal(0x850d3ff45bd6b85eUL, final.RngState.State);
-        Assert.Equal((37, 118, 81, 108L, 139L, 13, 13, 0), (totals.Phases, totals.Shots, totals.Hits, totals.ShieldDamage, totals.HullDamage, totals.ShipsDestroyed, totals.FleetsDestroyed, totals.Retreated));
+        Assert.Equal(187, final.StateRevision); Assert.Equal(129, commandCount);
+        Assert.Equal(6, final.Ships.Count); Assert.Equal(6, final.Fleets.Count); Assert.Equal(80UL, final.NextEntitySequence); Assert.Equal(0x850d3ff45bd6b85eUL, final.RngState.State);
+        Assert.Equal((49, 113, 75, 128L, 133L, 13, 13, 0), (totals.Phases, totals.Shots, totals.Hits, totals.ShieldDamage, totals.HullDamage, totals.ShipsDestroyed, totals.FleetsDestroyed, totals.Retreated));
         Assert.True(totals.Hits > 0 && totals.HullDamage > 0 && totals.ShipsDestroyed > 0);
         Assert.Equal(2, final.Colonies.Sum(c => c.ProductionQueue.Count)); Assert.Equal(2, final.Civilizations.Sum(c => c.UnlockedResearchDefinitionIds.Count));
-        Assert.Equal("3a310fad801dfc231d7639c909a0958fd03363097946944677a029fa7c914fee", Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(baseline.ExportSave()))).ToLowerInvariant());
+        Assert.Equal("65a4f6b452fd8c6d8a80c775e6e74e944ac73f115bc3e7b9fb3e4e64da60f175", Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(baseline.ExportSave()))).ToLowerInvariant());
         foreach (var actor in new[] { "civ.cardassian", "civ.dominion" })
         {
             Assert.Contains(new DefinitionId("research.advanced-engineering"), final.Civilizations.Single(c => c.CivilizationId.Value == actor).UnlockedResearchDefinitionIds);
@@ -50,7 +50,7 @@ public sealed class LongRunAcceptanceTests
         Assert.Equal("civ.federation", human.CivilizationId.Value); Assert.Null(human.ResearchTargetDefinitionId); Assert.Empty(human.UnlockedResearchDefinitionIds);
         Assert.DoesNotContain(final.Ships, ship => ship.OwnerCivilizationId == human.CivilizationId && ship.ShipId.Value != "ship.federation-scout");
         Assert.DoesNotContain(final.Fleets, fleet => fleet.OwnerCivilizationId == human.CivilizationId && fleet.FleetId.Value != "fleet.federation-scout");
-        Assert.Empty(final.Colonies.Single(c => c.OwnerCivilizationId == human.CivilizationId).ProductionQueue);
+        Assert.All(final.Colonies.Where(c => c.OwnerCivilizationId == human.CivilizationId), c => Assert.Empty(c.ProductionQueue));
         // Full canonical save equality includes RNG, allocation, every queue/ship/fleet ID and every ordered route.
         Assert.Equal(Json(baseline), Json(resumed)); Assert.Equal(JsonSerializer.Serialize(final), JsonSerializer.Serialize(reordered.CaptureSnapshot()));
     }

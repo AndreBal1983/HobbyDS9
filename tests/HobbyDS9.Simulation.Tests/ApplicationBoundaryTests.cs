@@ -18,8 +18,15 @@ public sealed class ApplicationBoundaryTests
     private static CommandEnvelope Command(ICampaignSession app, string id = "cmd.test", CommandKind kind = CommandKind.SetResearchTarget)
     {
         var stamp = State(app);
-        return new CommandEnvelope { CommandId = id, ActorCivilizationId = "civ.federation", ExpectedTurn = stamp.TurnNumber,
-            ExpectedRevision = stamp.StateRevision, Kind = kind, SetResearchTarget = new() { TargetDefinitionId = "research.advanced-engineering" } };
+        return new CommandEnvelope
+        {
+            CommandId = id,
+            ActorCivilizationId = "civ.federation",
+            ExpectedTurn = stamp.TurnNumber,
+            ExpectedRevision = stamp.StateRevision,
+            Kind = kind,
+            SetResearchTarget = new() { TargetDefinitionId = "research.advanced-engineering" }
+        };
     }
     private static ICampaignSession Reload(ICampaignSession app, ScenarioDto scenario)
     {
@@ -40,8 +47,8 @@ public sealed class ApplicationBoundaryTests
             if (type.HasElementType) Check(type.GetElementType()!);
         }
         foreach (var type in assembly.GetExportedTypes())
-        foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
-        { Check(method.ReturnType); foreach (var parameter in method.GetParameters()) Check(parameter.ParameterType); }
+            foreach (var method in type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            { Check(method.ReturnType); foreach (var parameter in method.GetParameters()) Check(parameter.ParameterType); }
         Assert.Empty(typeof(CampaignApplication).GetConstructors());
     }
 
@@ -249,14 +256,15 @@ public sealed class ApplicationBoundaryTests
     [Fact]
     public void ApplicationPropagatesTurnFailureWithoutChangingAnyAuthoritativeFacts()
     {
-        var scenario = V.Scenario(false); scenario.InitialState.Colonies!.Single(c => c.ColonyId == "colony.sol").Materials = long.MaxValue;
+        var scenario = V.Scenario(false); PopulationFixture.SetDilithium(scenario.InitialState.Colonies!.Single(c => c.ColonyId == "colony.sol"), long.MaxValue);
         var app = CampaignApplication.StartScenario(scenario); Assert.True(app.SubmitCommand(Command(app)).Accepted); var before = Save(app);
         Assert.Throws<OverflowException>(() => app.AdvanceTurn(1, 1)); Assert.Equal(before, Save(app));
         Assert.Single(app.CaptureSnapshot().AcceptedPlayerCommandIds); Assert.Equal(SessionPhase.Planning, State(app).Phase);
     }
 
     [Theory]
-    [InlineData(false)] [InlineData(true)]
+    [InlineData(false)]
+    [InlineData(true)]
     public void TwentyFiveTurnsMatchDirectSimulationIncludingEveryCombatReload(bool reverse)
     {
         var scenario = V.Scenario(false); var direct = V.Session(scenario); var app = CampaignApplication.StartScenario(Clone(scenario));
@@ -282,7 +290,7 @@ public sealed class ApplicationBoundaryTests
             }
             Assert.Equal(V.Json(direct), Save(app)); app = Reload(app, scenario);
         }
-        Assert.Equal(15, encounters); Assert.Equal(13, destroyed); Assert.Equal(26, State(app).TurnNumber);
-        Assert.Equal(8, State(app).Ships.Count); Assert.Equal(228, State(app).StateRevision);
+        Assert.Equal(18, encounters); Assert.Equal(13, destroyed); Assert.Equal(26, State(app).TurnNumber);
+        Assert.Equal(6, State(app).Ships.Count); Assert.Equal(187, State(app).StateRevision);
     }
 }

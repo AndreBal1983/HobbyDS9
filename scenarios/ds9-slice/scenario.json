@@ -1,8 +1,8 @@
 {
   "ScenarioId": "ds9-strategic-slice-v1",
-  "RulesVersion": "phase-1-phased-combat-v1",
+  "RulesVersion": "population-economy-v1",
   "Definitions": {
-    "ContentFormatVersion": 5,
+    "ContentFormatVersion": 6,
     "DefinitionIds": [
       "civilization.federation",
       "civilization.cardassian",
@@ -13,10 +13,30 @@
       "star-system.bajor",
       "star-system.bajoran-wormhole",
       "star-system.gamma-exit",
-      "economy.baseline",
       "research.advanced-engineering",
       "ship-design.scout",
-      "ship-design.advanced-scout"
+      "ship-design.advanced-scout",
+      "species.human",
+      "species.vulcan",
+      "species.andorian",
+      "species.klingon",
+      "species.cardassian",
+      "species.bajoran",
+      "species.ferengi",
+      "species.founder",
+      "planet-definition.sol",
+      "planet-definition.cardassia",
+      "planet-definition.founders-homeworld",
+      "planet-definition.bajor",
+      "planet-definition.mars",
+      "resource.dilithium",
+      "infrastructure.settlement",
+      "infrastructure.farms",
+      "infrastructure.shipyard",
+      "infrastructure.automated-fabricator",
+      "infrastructure.institute",
+      "infrastructure.extraction",
+      "infrastructure.sealed-habitat"
     ],
     "Civilizations": [
       {
@@ -85,21 +105,6 @@
         "Kind": 1
       }
     ],
-    "EconomicProfiles": [
-      {
-        "DefinitionId": "economy.baseline",
-        "DisplayName": "Baseline colony economy",
-        "FoodOutput": 12,
-        "PopulationPerFood": 100,
-        "MaterialOutput": 4,
-        "PopulationPerCredit": 100,
-        "BaseIndustry": 4,
-        "PopulationPerIndustry": 250,
-        "GrowthPerTurn": 50,
-        "StarvationLossPerTurn": 50,
-        "ResearchOutput": 3
-      }
-    ],
     "ResearchNodes": [
       {
         "DefinitionId": "research.advanced-engineering",
@@ -113,22 +118,901 @@
         "DefinitionId": "ship-design.scout",
         "DisplayName": "Scout",
         "IndustryCost": 20,
-        "MaterialCost": 8,
         "CreditCost": 10,
         "MaxHull": 10,
-        "CombatProfile": {"ShieldCapacity": 4, "LongRangeAttack": 3, "MediumRangeAttack": 4, "CloseRangeAttack": 5, "AccuracyBps": 7000, "EvasionBps": 1000},
-        "RequiredResearchDefinitionIds": []
+        "CombatProfile": {
+          "ShieldCapacity": 4,
+          "LongRangeAttack": 3,
+          "MediumRangeAttack": 4,
+          "CloseRangeAttack": 5,
+          "AccuracyBps": 7000,
+          "EvasionBps": 1000
+        },
+        "RequiredResearchDefinitionIds": [],
+        "ResourceCosts": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 2
+          }
+        ]
       },
       {
         "DefinitionId": "ship-design.advanced-scout",
         "DisplayName": "Advanced Scout",
         "IndustryCost": 24,
-        "MaterialCost": 10,
         "CreditCost": 12,
         "MaxHull": 15,
-        "CombatProfile": {"ShieldCapacity": 6, "LongRangeAttack": 4, "MediumRangeAttack": 5, "CloseRangeAttack": 6, "AccuracyBps": 7500, "EvasionBps": 1500},
+        "CombatProfile": {
+          "ShieldCapacity": 6,
+          "LongRangeAttack": 4,
+          "MediumRangeAttack": 5,
+          "CloseRangeAttack": 6,
+          "AccuracyBps": 7500,
+          "EvasionBps": 1500
+        },
         "RequiredResearchDefinitionIds": [
           "research.advanced-engineering"
+        ],
+        "ResourceCosts": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 3
+          }
+        ]
+      }
+    ],
+    "Species": [
+      {
+        "DefinitionId": "species.human",
+        "DisplayName": "Human",
+        "Suitabilities": [
+          {
+            "Kind": 1,
+            "SuitabilityBps": 6500
+          },
+          {
+            "Kind": 2,
+            "SuitabilityBps": 4500
+          },
+          {
+            "Kind": 3,
+            "SuitabilityBps": 6500
+          },
+          {
+            "Kind": 4,
+            "SuitabilityBps": 10000
+          },
+          {
+            "Kind": 5,
+            "SuitabilityBps": 6500
+          },
+          {
+            "Kind": 6,
+            "SuitabilityBps": 8000
+          },
+          {
+            "Kind": 7,
+            "SuitabilityBps": 6500
+          },
+          {
+            "Kind": 8,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 9,
+            "SuitabilityBps": 3500
+          }
+        ],
+        "MinimumGravity": 4000,
+        "MaximumGravity": 18000,
+        "MinimumPressure": 3000,
+        "MaximumPressure": 18000,
+        "MaximumRadiation": 2500,
+        "Atmospheres": [
+          "atmosphere.oxygen-nitrogen"
+        ],
+        "TraitTags": []
+      },
+      {
+        "DefinitionId": "species.vulcan",
+        "DisplayName": "Vulcan",
+        "Suitabilities": [
+          {
+            "Kind": 1,
+            "SuitabilityBps": 2000
+          },
+          {
+            "Kind": 2,
+            "SuitabilityBps": 1500
+          },
+          {
+            "Kind": 3,
+            "SuitabilityBps": 3000
+          },
+          {
+            "Kind": 4,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 5,
+            "SuitabilityBps": 10000
+          },
+          {
+            "Kind": 6,
+            "SuitabilityBps": 5000
+          },
+          {
+            "Kind": 7,
+            "SuitabilityBps": 2500
+          },
+          {
+            "Kind": 8,
+            "SuitabilityBps": 9500
+          },
+          {
+            "Kind": 9,
+            "SuitabilityBps": 7500
+          }
+        ],
+        "MinimumGravity": 4000,
+        "MaximumGravity": 18000,
+        "MinimumPressure": 3000,
+        "MaximumPressure": 18000,
+        "MaximumRadiation": 2500,
+        "Atmospheres": [
+          "atmosphere.oxygen-nitrogen"
+        ],
+        "TraitTags": []
+      },
+      {
+        "DefinitionId": "species.andorian",
+        "DisplayName": "Andorian",
+        "Suitabilities": [
+          {
+            "Kind": 1,
+            "SuitabilityBps": 3000
+          },
+          {
+            "Kind": 2,
+            "SuitabilityBps": 10000
+          },
+          {
+            "Kind": 3,
+            "SuitabilityBps": 10000
+          },
+          {
+            "Kind": 4,
+            "SuitabilityBps": 6500
+          },
+          {
+            "Kind": 5,
+            "SuitabilityBps": 2000
+          },
+          {
+            "Kind": 6,
+            "SuitabilityBps": 2500
+          },
+          {
+            "Kind": 7,
+            "SuitabilityBps": 3000
+          },
+          {
+            "Kind": 8,
+            "SuitabilityBps": 7500
+          },
+          {
+            "Kind": 9,
+            "SuitabilityBps": 8000
+          }
+        ],
+        "MinimumGravity": 4000,
+        "MaximumGravity": 18000,
+        "MinimumPressure": 3000,
+        "MaximumPressure": 18000,
+        "MaximumRadiation": 2500,
+        "Atmospheres": [
+          "atmosphere.oxygen-nitrogen"
+        ],
+        "TraitTags": []
+      },
+      {
+        "DefinitionId": "species.klingon",
+        "DisplayName": "Klingon",
+        "Suitabilities": [
+          {
+            "Kind": 1,
+            "SuitabilityBps": 3000
+          },
+          {
+            "Kind": 2,
+            "SuitabilityBps": 1500
+          },
+          {
+            "Kind": 3,
+            "SuitabilityBps": 3000
+          },
+          {
+            "Kind": 4,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 5,
+            "SuitabilityBps": 8500
+          },
+          {
+            "Kind": 6,
+            "SuitabilityBps": 5500
+          },
+          {
+            "Kind": 7,
+            "SuitabilityBps": 3000
+          },
+          {
+            "Kind": 8,
+            "SuitabilityBps": 10000
+          },
+          {
+            "Kind": 9,
+            "SuitabilityBps": 8500
+          }
+        ],
+        "MinimumGravity": 4000,
+        "MaximumGravity": 18000,
+        "MinimumPressure": 3000,
+        "MaximumPressure": 18000,
+        "MaximumRadiation": 2500,
+        "Atmospheres": [
+          "atmosphere.oxygen-nitrogen"
+        ],
+        "TraitTags": []
+      },
+      {
+        "DefinitionId": "species.cardassian",
+        "DisplayName": "Cardassian",
+        "Suitabilities": [
+          {
+            "Kind": 1,
+            "SuitabilityBps": 3500
+          },
+          {
+            "Kind": 2,
+            "SuitabilityBps": 1000
+          },
+          {
+            "Kind": 3,
+            "SuitabilityBps": 2500
+          },
+          {
+            "Kind": 4,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 5,
+            "SuitabilityBps": 7500
+          },
+          {
+            "Kind": 6,
+            "SuitabilityBps": 10000
+          },
+          {
+            "Kind": 7,
+            "SuitabilityBps": 9000
+          },
+          {
+            "Kind": 8,
+            "SuitabilityBps": 6500
+          },
+          {
+            "Kind": 9,
+            "SuitabilityBps": 5000
+          }
+        ],
+        "MinimumGravity": 4000,
+        "MaximumGravity": 18000,
+        "MinimumPressure": 3000,
+        "MaximumPressure": 18000,
+        "MaximumRadiation": 2500,
+        "Atmospheres": [
+          "atmosphere.oxygen-nitrogen"
+        ],
+        "TraitTags": []
+      },
+      {
+        "DefinitionId": "species.bajoran",
+        "DisplayName": "Bajoran",
+        "Suitabilities": [
+          {
+            "Kind": 1,
+            "SuitabilityBps": 5500
+          },
+          {
+            "Kind": 2,
+            "SuitabilityBps": 3500
+          },
+          {
+            "Kind": 3,
+            "SuitabilityBps": 5500
+          },
+          {
+            "Kind": 4,
+            "SuitabilityBps": 10000
+          },
+          {
+            "Kind": 5,
+            "SuitabilityBps": 6500
+          },
+          {
+            "Kind": 6,
+            "SuitabilityBps": 9000
+          },
+          {
+            "Kind": 7,
+            "SuitabilityBps": 8500
+          },
+          {
+            "Kind": 8,
+            "SuitabilityBps": 7500
+          },
+          {
+            "Kind": 9,
+            "SuitabilityBps": 4000
+          }
+        ],
+        "MinimumGravity": 4000,
+        "MaximumGravity": 18000,
+        "MinimumPressure": 3000,
+        "MaximumPressure": 18000,
+        "MaximumRadiation": 2500,
+        "Atmospheres": [
+          "atmosphere.oxygen-nitrogen"
+        ],
+        "TraitTags": []
+      },
+      {
+        "DefinitionId": "species.ferengi",
+        "DisplayName": "Ferengi",
+        "Suitabilities": [
+          {
+            "Kind": 1,
+            "SuitabilityBps": 5500
+          },
+          {
+            "Kind": 2,
+            "SuitabilityBps": 1000
+          },
+          {
+            "Kind": 3,
+            "SuitabilityBps": 2000
+          },
+          {
+            "Kind": 4,
+            "SuitabilityBps": 6500
+          },
+          {
+            "Kind": 5,
+            "SuitabilityBps": 4500
+          },
+          {
+            "Kind": 6,
+            "SuitabilityBps": 10000
+          },
+          {
+            "Kind": 7,
+            "SuitabilityBps": 10000
+          },
+          {
+            "Kind": 8,
+            "SuitabilityBps": 4500
+          },
+          {
+            "Kind": 9,
+            "SuitabilityBps": 2500
+          }
+        ],
+        "MinimumGravity": 4000,
+        "MaximumGravity": 18000,
+        "MinimumPressure": 3000,
+        "MaximumPressure": 18000,
+        "MaximumRadiation": 2500,
+        "Atmospheres": [
+          "atmosphere.oxygen-nitrogen"
+        ],
+        "TraitTags": []
+      },
+      {
+        "DefinitionId": "species.founder",
+        "DisplayName": "Founder",
+        "Suitabilities": [
+          {
+            "Kind": 1,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 2,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 3,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 4,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 5,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 6,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 7,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 8,
+            "SuitabilityBps": 7000
+          },
+          {
+            "Kind": 9,
+            "SuitabilityBps": 7000
+          }
+        ],
+        "MinimumGravity": 4000,
+        "MaximumGravity": 18000,
+        "MinimumPressure": 3000,
+        "MaximumPressure": 18000,
+        "MaximumRadiation": 2500,
+        "Atmospheres": [
+          "atmosphere.oxygen-nitrogen"
+        ],
+        "TraitTags": []
+      }
+    ],
+    "Resources": [
+      {
+        "DefinitionId": "resource.dilithium",
+        "DisplayName": "Dilithium"
+      }
+    ],
+    "Infrastructure": [
+      {
+        "DefinitionId": "infrastructure.settlement",
+        "DisplayName": "Settlement",
+        "FoodOutput": 0,
+        "Industry": 0,
+        "PowerSupply": 20,
+        "PowerDemand": 0,
+        "Research": 0,
+        "LogisticsCapacity": 30,
+        "Shipbuilding": false,
+        "Extraction": [],
+        "AccessibleHabitats": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "ArtificialCapacity": 0,
+        "ArtificialHabitability": 0
+      },
+      {
+        "DefinitionId": "infrastructure.farms",
+        "DisplayName": "Farms",
+        "FoodOutput": 14,
+        "Industry": 0,
+        "PowerSupply": 0,
+        "PowerDemand": 2,
+        "Research": 0,
+        "LogisticsCapacity": 0,
+        "Shipbuilding": false,
+        "Extraction": [],
+        "AccessibleHabitats": [],
+        "ArtificialCapacity": 0,
+        "ArtificialHabitability": 0
+      },
+      {
+        "DefinitionId": "infrastructure.shipyard",
+        "DisplayName": "Shipyard",
+        "FoodOutput": 0,
+        "Industry": 8,
+        "PowerSupply": 0,
+        "PowerDemand": 6,
+        "Research": 0,
+        "LogisticsCapacity": 0,
+        "Shipbuilding": true,
+        "Extraction": [],
+        "AccessibleHabitats": [],
+        "ArtificialCapacity": 0,
+        "ArtificialHabitability": 0
+      },
+      {
+        "DefinitionId": "infrastructure.automated-fabricator",
+        "DisplayName": "Automated Fabricator",
+        "FoodOutput": 0,
+        "Industry": 18,
+        "PowerSupply": 0,
+        "PowerDemand": 10,
+        "Research": 0,
+        "LogisticsCapacity": 0,
+        "Shipbuilding": true,
+        "Extraction": [],
+        "AccessibleHabitats": [],
+        "ArtificialCapacity": 0,
+        "ArtificialHabitability": 0
+      },
+      {
+        "DefinitionId": "infrastructure.institute",
+        "DisplayName": "Institute",
+        "FoodOutput": 0,
+        "Industry": 0,
+        "PowerSupply": 0,
+        "PowerDemand": 2,
+        "Research": 3,
+        "LogisticsCapacity": 0,
+        "Shipbuilding": false,
+        "Extraction": [],
+        "AccessibleHabitats": [],
+        "ArtificialCapacity": 0,
+        "ArtificialHabitability": 0
+      },
+      {
+        "DefinitionId": "infrastructure.extraction",
+        "DisplayName": "Extraction",
+        "FoodOutput": 0,
+        "Industry": 0,
+        "PowerSupply": 0,
+        "PowerDemand": 3,
+        "Research": 0,
+        "LogisticsCapacity": 0,
+        "Shipbuilding": false,
+        "Extraction": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 3
+          }
+        ],
+        "AccessibleHabitats": [],
+        "ArtificialCapacity": 0,
+        "ArtificialHabitability": 0
+      },
+      {
+        "DefinitionId": "infrastructure.sealed-habitat",
+        "DisplayName": "Sealed Habitat",
+        "FoodOutput": 0,
+        "Industry": 0,
+        "PowerSupply": 0,
+        "PowerDemand": 2,
+        "Research": 0,
+        "LogisticsCapacity": 0,
+        "Shipbuilding": false,
+        "Extraction": [],
+        "AccessibleHabitats": [],
+        "ArtificialCapacity": 250,
+        "ArtificialHabitability": 8000
+      }
+    ],
+    "Planets": [
+      {
+        "DefinitionId": "planet-definition.sol",
+        "DisplayName": "Earth",
+        "SystemDefinitionId": "star-system.sol",
+        "PlanetClass": "M",
+        "Gravity": 10000,
+        "Pressure": 10000,
+        "Radiation": 100,
+        "Atmosphere": "atmosphere.oxygen-nitrogen",
+        "Habitats": [
+          {
+            "Kind": 1,
+            "ShareBps": 2500,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 2,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 3,
+            "ShareBps": 700,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 4,
+            "ShareBps": 2000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 5,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 6,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 7,
+            "ShareBps": 700,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 8,
+            "ShareBps": 900,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 9,
+            "ShareBps": 200,
+            "NaturalCapacity": 300
+          }
+        ],
+        "Deposits": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10000
+          }
+        ]
+      },
+      {
+        "DefinitionId": "planet-definition.cardassia",
+        "DisplayName": "Cardassia Prime",
+        "SystemDefinitionId": "star-system.cardassia",
+        "PlanetClass": "M",
+        "Gravity": 10000,
+        "Pressure": 10000,
+        "Radiation": 100,
+        "Atmosphere": "atmosphere.oxygen-nitrogen",
+        "Habitats": [
+          {
+            "Kind": 1,
+            "ShareBps": 2500,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 2,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 3,
+            "ShareBps": 700,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 4,
+            "ShareBps": 2000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 5,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 6,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 7,
+            "ShareBps": 700,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 8,
+            "ShareBps": 900,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 9,
+            "ShareBps": 200,
+            "NaturalCapacity": 300
+          }
+        ],
+        "Deposits": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10000
+          }
+        ]
+      },
+      {
+        "DefinitionId": "planet-definition.founders-homeworld",
+        "DisplayName": "Founders' Homeworld",
+        "SystemDefinitionId": "star-system.founders-homeworld",
+        "PlanetClass": "M",
+        "Gravity": 10000,
+        "Pressure": 10000,
+        "Radiation": 100,
+        "Atmosphere": "atmosphere.oxygen-nitrogen",
+        "Habitats": [
+          {
+            "Kind": 1,
+            "ShareBps": 2500,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 2,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 3,
+            "ShareBps": 700,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 4,
+            "ShareBps": 2000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 5,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 6,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 7,
+            "ShareBps": 700,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 8,
+            "ShareBps": 900,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 9,
+            "ShareBps": 200,
+            "NaturalCapacity": 300
+          }
+        ],
+        "Deposits": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10000
+          }
+        ]
+      },
+      {
+        "DefinitionId": "planet-definition.bajor",
+        "DisplayName": "Bajor",
+        "SystemDefinitionId": "star-system.bajor",
+        "PlanetClass": "M",
+        "Gravity": 10000,
+        "Pressure": 10000,
+        "Radiation": 100,
+        "Atmosphere": "atmosphere.oxygen-nitrogen",
+        "Habitats": [
+          {
+            "Kind": 1,
+            "ShareBps": 2500,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 2,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 3,
+            "ShareBps": 700,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 4,
+            "ShareBps": 2000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 5,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 6,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 7,
+            "ShareBps": 700,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 8,
+            "ShareBps": 900,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 9,
+            "ShareBps": 200,
+            "NaturalCapacity": 300
+          }
+        ],
+        "Deposits": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10000
+          }
+        ]
+      },
+      {
+        "DefinitionId": "planet-definition.mars",
+        "DisplayName": "Mars",
+        "SystemDefinitionId": "star-system.sol",
+        "PlanetClass": "K",
+        "Gravity": 10000,
+        "Pressure": 10000,
+        "Radiation": 100,
+        "Atmosphere": "atmosphere.oxygen-nitrogen",
+        "Habitats": [
+          {
+            "Kind": 1,
+            "ShareBps": 0,
+            "NaturalCapacity": 0
+          },
+          {
+            "Kind": 2,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 3,
+            "ShareBps": 1500,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 4,
+            "ShareBps": 0,
+            "NaturalCapacity": 0
+          },
+          {
+            "Kind": 5,
+            "ShareBps": 4500,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 6,
+            "ShareBps": 0,
+            "NaturalCapacity": 0
+          },
+          {
+            "Kind": 7,
+            "ShareBps": 0,
+            "NaturalCapacity": 0
+          },
+          {
+            "Kind": 8,
+            "ShareBps": 2000,
+            "NaturalCapacity": 300
+          },
+          {
+            "Kind": 9,
+            "ShareBps": 1000,
+            "NaturalCapacity": 300
+          }
+        ],
+        "Deposits": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10000
+          }
         ]
       }
     ]
@@ -183,19 +1067,19 @@
       },
       {
         "EntityId": "colony.sol",
-        "DefinitionId": "economy.baseline"
+        "DefinitionId": null
       },
       {
         "EntityId": "colony.cardassia",
-        "DefinitionId": "economy.baseline"
+        "DefinitionId": null
       },
       {
         "EntityId": "colony.founders-homeworld",
-        "DefinitionId": "economy.baseline"
+        "DefinitionId": null
       },
       {
         "EntityId": "colony.bajor",
-        "DefinitionId": "economy.baseline"
+        "DefinitionId": null
       },
       {
         "EntityId": "ship.federation-scout",
@@ -220,6 +1104,66 @@
       {
         "EntityId": "fleet.dominion-scout",
         "DefinitionId": null
+      },
+      {
+        "EntityId": "colony.mars",
+        "DefinitionId": null
+      },
+      {
+        "EntityId": "planet.sol",
+        "DefinitionId": "planet-definition.sol"
+      },
+      {
+        "EntityId": "cohort.sol.human",
+        "DefinitionId": "species.human"
+      },
+      {
+        "EntityId": "cohort.sol.vulcan",
+        "DefinitionId": "species.vulcan"
+      },
+      {
+        "EntityId": "cohort.sol.andorian",
+        "DefinitionId": "species.andorian"
+      },
+      {
+        "EntityId": "planet.cardassia",
+        "DefinitionId": "planet-definition.cardassia"
+      },
+      {
+        "EntityId": "cohort.cardassia.cardassian",
+        "DefinitionId": "species.cardassian"
+      },
+      {
+        "EntityId": "planet.founders-homeworld",
+        "DefinitionId": "planet-definition.founders-homeworld"
+      },
+      {
+        "EntityId": "cohort.founders-homeworld.founder",
+        "DefinitionId": "species.founder"
+      },
+      {
+        "EntityId": "planet.bajor",
+        "DefinitionId": "planet-definition.bajor"
+      },
+      {
+        "EntityId": "cohort.bajor.bajoran",
+        "DefinitionId": "species.bajoran"
+      },
+      {
+        "EntityId": "cohort.bajor.cardassian",
+        "DefinitionId": "species.cardassian"
+      },
+      {
+        "EntityId": "planet.mars",
+        "DefinitionId": "planet-definition.mars"
+      },
+      {
+        "EntityId": "cohort.mars.human",
+        "DefinitionId": "species.human"
+      },
+      {
+        "EntityId": "cohort.mars.vulcan",
+        "DefinitionId": "species.vulcan"
       }
     ],
     "Civilizations": [
@@ -288,45 +1232,355 @@
         "ColonyId": "colony.sol",
         "SystemId": "system.sol",
         "OwnerCivilizationId": "civ.federation",
-        "EconomicProfileDefinitionId": "economy.baseline",
-        "Population": 1000,
-        "PopulationCapacity": 2000,
         "Food": 20,
-        "Materials": 10,
-        "ProductionQueue": []
+        "ProductionQueue": [],
+        "PlanetId": "planet.sol",
+        "Stability": 8000,
+        "Prosperity": 8500,
+        "Automation": 0,
+        "FoodShortageTurns": 0,
+        "AcceptsRefugees": true,
+        "Stockpiles": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10
+          }
+        ],
+        "DesiredStockpiles": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 6
+          }
+        ],
+        "Cohorts": [
+          {
+            "CohortId": "cohort.sol.human",
+            "SpeciesDefinitionId": "species.human",
+            "Population": 700,
+            "LegalStatus": 1,
+            "OriginCivilizationId": "civ.federation",
+            "Satisfaction": 7500,
+            "Integration": 8000,
+            "CivicAlignment": 8000,
+            "Radicalisation": 500,
+            "ExternalAffinities": [],
+            "Memories": []
+          },
+          {
+            "CohortId": "cohort.sol.vulcan",
+            "SpeciesDefinitionId": "species.vulcan",
+            "Population": 200,
+            "LegalStatus": 1,
+            "OriginCivilizationId": "civ.federation",
+            "Satisfaction": 7500,
+            "Integration": 8000,
+            "CivicAlignment": 8000,
+            "Radicalisation": 500,
+            "ExternalAffinities": [],
+            "Memories": []
+          },
+          {
+            "CohortId": "cohort.sol.andorian",
+            "SpeciesDefinitionId": "species.andorian",
+            "Population": 100,
+            "LegalStatus": 1,
+            "OriginCivilizationId": "civ.federation",
+            "Satisfaction": 7500,
+            "Integration": 8000,
+            "CivicAlignment": 8000,
+            "Radicalisation": 500,
+            "ExternalAffinities": [],
+            "Memories": []
+          }
+        ],
+        "Infrastructure": [
+          {
+            "DefinitionId": "infrastructure.settlement",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.farms",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.shipyard",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.institute",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.extraction",
+            "Count": 1
+          }
+        ]
       },
       {
         "ColonyId": "colony.cardassia",
         "SystemId": "system.cardassia",
         "OwnerCivilizationId": "civ.cardassian",
-        "EconomicProfileDefinitionId": "economy.baseline",
-        "Population": 1000,
-        "PopulationCapacity": 2000,
         "Food": 20,
-        "Materials": 10,
-        "ProductionQueue": []
+        "ProductionQueue": [],
+        "PlanetId": "planet.cardassia",
+        "Stability": 8000,
+        "Prosperity": 7000,
+        "Automation": 0,
+        "FoodShortageTurns": 0,
+        "AcceptsRefugees": true,
+        "Stockpiles": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10
+          }
+        ],
+        "DesiredStockpiles": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 6
+          }
+        ],
+        "Cohorts": [
+          {
+            "CohortId": "cohort.cardassia.cardassian",
+            "SpeciesDefinitionId": "species.cardassian",
+            "Population": 1000,
+            "LegalStatus": 1,
+            "OriginCivilizationId": "civ.cardassian",
+            "Satisfaction": 7500,
+            "Integration": 8000,
+            "CivicAlignment": 8000,
+            "Radicalisation": 500,
+            "ExternalAffinities": [],
+            "Memories": []
+          }
+        ],
+        "Infrastructure": [
+          {
+            "DefinitionId": "infrastructure.settlement",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.farms",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.shipyard",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.institute",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.extraction",
+            "Count": 1
+          }
+        ]
       },
       {
         "ColonyId": "colony.founders-homeworld",
         "SystemId": "system.founders-homeworld",
         "OwnerCivilizationId": "civ.dominion",
-        "EconomicProfileDefinitionId": "economy.baseline",
-        "Population": 1000,
-        "PopulationCapacity": 2000,
         "Food": 20,
-        "Materials": 10,
-        "ProductionQueue": []
+        "ProductionQueue": [],
+        "PlanetId": "planet.founders-homeworld",
+        "Stability": 8000,
+        "Prosperity": 7000,
+        "Automation": 0,
+        "FoodShortageTurns": 0,
+        "AcceptsRefugees": true,
+        "Stockpiles": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10
+          }
+        ],
+        "DesiredStockpiles": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 6
+          }
+        ],
+        "Cohorts": [
+          {
+            "CohortId": "cohort.founders-homeworld.founder",
+            "SpeciesDefinitionId": "species.founder",
+            "Population": 1000,
+            "LegalStatus": 1,
+            "OriginCivilizationId": "civ.dominion",
+            "Satisfaction": 7500,
+            "Integration": 8000,
+            "CivicAlignment": 8000,
+            "Radicalisation": 500,
+            "ExternalAffinities": [],
+            "Memories": []
+          }
+        ],
+        "Infrastructure": [
+          {
+            "DefinitionId": "infrastructure.settlement",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.farms",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.shipyard",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.institute",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.extraction",
+            "Count": 1
+          }
+        ]
       },
       {
         "ColonyId": "colony.bajor",
         "SystemId": "system.bajor",
         "OwnerCivilizationId": null,
-        "EconomicProfileDefinitionId": "economy.baseline",
-        "Population": 1000,
-        "PopulationCapacity": 2000,
         "Food": 20,
-        "Materials": 10,
-        "ProductionQueue": []
+        "ProductionQueue": [],
+        "PlanetId": "planet.bajor",
+        "Stability": 8000,
+        "Prosperity": 7000,
+        "Automation": 0,
+        "FoodShortageTurns": 0,
+        "AcceptsRefugees": true,
+        "Stockpiles": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10
+          }
+        ],
+        "DesiredStockpiles": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 6
+          }
+        ],
+        "Cohorts": [
+          {
+            "CohortId": "cohort.bajor.bajoran",
+            "SpeciesDefinitionId": "species.bajoran",
+            "Population": 950,
+            "LegalStatus": 1,
+            "OriginCivilizationId": null,
+            "Satisfaction": 7500,
+            "Integration": 8000,
+            "CivicAlignment": 8000,
+            "Radicalisation": 500,
+            "ExternalAffinities": [],
+            "Memories": []
+          },
+          {
+            "CohortId": "cohort.bajor.cardassian",
+            "SpeciesDefinitionId": "species.cardassian",
+            "Population": 50,
+            "LegalStatus": 2,
+            "OriginCivilizationId": null,
+            "Satisfaction": 7500,
+            "Integration": 8000,
+            "CivicAlignment": 8000,
+            "Radicalisation": 500,
+            "ExternalAffinities": [],
+            "Memories": []
+          }
+        ],
+        "Infrastructure": [
+          {
+            "DefinitionId": "infrastructure.settlement",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.farms",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.shipyard",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.institute",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.extraction",
+            "Count": 1
+          }
+        ]
+      },
+      {
+        "ColonyId": "colony.mars",
+        "SystemId": "system.sol",
+        "OwnerCivilizationId": "civ.federation",
+        "ProductionQueue": [],
+        "PlanetId": "planet.mars",
+        "Stability": 8000,
+        "Prosperity": 7000,
+        "Automation": 0,
+        "FoodShortageTurns": 0,
+        "AcceptsRefugees": true,
+        "Food": 4,
+        "Stockpiles": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 0
+          }
+        ],
+        "DesiredStockpiles": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 6
+          }
+        ],
+        "Cohorts": [
+          {
+            "CohortId": "cohort.mars.human",
+            "SpeciesDefinitionId": "species.human",
+            "Population": 100,
+            "LegalStatus": 1,
+            "OriginCivilizationId": "civ.federation",
+            "Satisfaction": 7500,
+            "Integration": 8000,
+            "CivicAlignment": 8000,
+            "Radicalisation": 500,
+            "ExternalAffinities": [],
+            "Memories": []
+          },
+          {
+            "CohortId": "cohort.mars.vulcan",
+            "SpeciesDefinitionId": "species.vulcan",
+            "Population": 150,
+            "LegalStatus": 1,
+            "OriginCivilizationId": "civ.federation",
+            "Satisfaction": 7500,
+            "Integration": 8000,
+            "CivicAlignment": 8000,
+            "Radicalisation": 500,
+            "ExternalAffinities": [],
+            "Memories": []
+          }
+        ],
+        "Infrastructure": [
+          {
+            "DefinitionId": "infrastructure.settlement",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.automated-fabricator",
+            "Count": 1
+          },
+          {
+            "DefinitionId": "infrastructure.sealed-habitat",
+            "Count": 1
+          }
+        ]
       }
     ],
     "Ships": [
@@ -382,6 +1636,76 @@
       }
     ],
     "PendingCombats": [],
-    "ResolvedCombats": []
+    "ResolvedCombats": [],
+    "Planets": [
+      {
+        "PlanetId": "planet.sol",
+        "DefinitionId": "planet-definition.sol",
+        "SystemId": "system.sol",
+        "RemainingDeposits": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10000
+          }
+        ]
+      },
+      {
+        "PlanetId": "planet.cardassia",
+        "DefinitionId": "planet-definition.cardassia",
+        "SystemId": "system.cardassia",
+        "RemainingDeposits": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10000
+          }
+        ]
+      },
+      {
+        "PlanetId": "planet.founders-homeworld",
+        "DefinitionId": "planet-definition.founders-homeworld",
+        "SystemId": "system.founders-homeworld",
+        "RemainingDeposits": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10000
+          }
+        ]
+      },
+      {
+        "PlanetId": "planet.bajor",
+        "DefinitionId": "planet-definition.bajor",
+        "SystemId": "system.bajor",
+        "RemainingDeposits": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10000
+          }
+        ]
+      },
+      {
+        "PlanetId": "planet.mars",
+        "DefinitionId": "planet-definition.mars",
+        "SystemId": "system.sol",
+        "RemainingDeposits": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 10000
+          }
+        ]
+      }
+    ],
+    "Displacements": [],
+    "LastDeliveries": [],
+    "PopulationStatistics": {
+      "Births": 0,
+      "Deaths": 0,
+      "Migrated": 0,
+      "RefugeesMoved": 0,
+      "FoodDelivered": 0,
+      "ResourceExtracted": 0,
+      "ResourceDelivered": 0,
+      "ResourceConsumed": 0,
+      "ProductionCompleted": 0
+    }
   }
 }

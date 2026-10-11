@@ -34,7 +34,7 @@ namespace HobbyDS9.Simulation
                 if (item == null) Add(issues, ValidationCode.MissingField, p);
                 else Definition(item.DefinitionId, item.DisplayName, p);
             }
-            ValidateEconomicProfiles(dto, ids, typed, path, issues);
+            ValidatePopulationDefinitions(dto, ids, typed, path, issues);
             ValidateResearchDefinitions(dto, ids, typed, path, issues);
             ValidateShipDesigns(dto, ids, typed, path, issues);
             if (dto.GalaxyEdges == null) Add(issues, ValidationCode.MissingField, path + ".GalaxyEdges");

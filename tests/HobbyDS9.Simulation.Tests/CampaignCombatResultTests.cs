@@ -37,40 +37,67 @@ public sealed class CampaignCombatResultTests
         var completed = Finalize(s); Assert.Equal(TurnStatus.Completed, completed.Status); Assert.Equal(1, completed.CompletedTurnNumber); Assert.Equal(2, completed.TurnNumber); Assert.Equal(4, completed.StateRevision);
         Assert.Empty(s.CaptureSnapshot().AcceptedCommandIds); Assert.Empty(s.CaptureSnapshot().Combats); Assert.Empty(completed.Events); Assert.Empty(completed.CommandResults);
         Assert.Equal(checkpoint.GameState.NextEntitySequence, s.CaptureSnapshot().NextEntitySequence); Assert.Equal(checkpoint.GameState.RngState.State, s.CaptureSnapshot().RngState.State);
-        Assert.Equal(8, Colony(s).ProductionQueue![0].CompletedIndustry); Assert.Equal(1050, Colony(s).Population); Assert.Equal(TurnErrorCode.NotAwaitingCombat, Finalize(s).ErrorCode);
+        Assert.Equal(8, Colony(s).ProductionQueue![0].CompletedIndustry); Assert.Equal(1005, PopulationRules.Population(Colony(s))); Assert.Equal(TurnErrorCode.NotAwaitingCombat, Finalize(s).ErrorCode);
     }
     [Theory]
-    [InlineData("null", CombatSubmissionError.InvalidEncounterId)] [InlineData("bad-id", CombatSubmissionError.InvalidEncounterId)]
-    [InlineData("unknown", CombatSubmissionError.UnknownEncounter)] [InlineData("resolver", CombatSubmissionError.ResolverMismatch)] [InlineData("version", CombatSubmissionError.ResolverMismatch)]
-    [InlineData("status", CombatSubmissionError.MalformedResult)] [InlineData("ship-list", CombatSubmissionError.MalformedResult)] [InlineData("fleet-list", CombatSubmissionError.MalformedResult)] [InlineData("event-list", CombatSubmissionError.MalformedResult)]
-    [InlineData("ship-null", CombatSubmissionError.MalformedResult)] [InlineData("fleet-null", CombatSubmissionError.MalformedResult)]
-    [InlineData("nonparticipant-ship", CombatSubmissionError.Nonparticipant)] [InlineData("nonparticipant-fleet", CombatSubmissionError.Nonparticipant)]
-    [InlineData("hull-negative", CombatSubmissionError.InvalidHull)] [InlineData("hull-above-frozen", CombatSubmissionError.InvalidHull)]
-    [InlineData("duplicate-change", CombatSubmissionError.MalformedResult)] [InlineData("fleet-disposition", CombatSubmissionError.MalformedResult)]
-    [InlineData("event-sequence", CombatSubmissionError.InvalidEvents)] [InlineData("event-kind", CombatSubmissionError.InvalidEvents)]
-    [InlineData("event-reference", CombatSubmissionError.Nonparticipant)] [InlineData("event-null", CombatSubmissionError.InvalidEvents)] [InlineData("event-inconsistent", CombatSubmissionError.InvalidEvents)]
-    [InlineData("terminal-missing", CombatSubmissionError.InvalidEvents)] [InlineData("terminal-duplicate", CombatSubmissionError.InvalidEvents)]
-    [InlineData("retreat-unknown", CombatSubmissionError.InvalidRetreat)] [InlineData("retreat-self", CombatSubmissionError.InvalidRetreat)] [InlineData("retreat-not-adjacent", CombatSubmissionError.InvalidRetreat)]
-    [InlineData("held-destination", CombatSubmissionError.InvalidRetreat)] [InlineData("empty-held", CombatSubmissionError.MalformedResult)]
+    [InlineData("null", CombatSubmissionError.InvalidEncounterId)]
+    [InlineData("bad-id", CombatSubmissionError.InvalidEncounterId)]
+    [InlineData("unknown", CombatSubmissionError.UnknownEncounter)]
+    [InlineData("resolver", CombatSubmissionError.ResolverMismatch)]
+    [InlineData("version", CombatSubmissionError.ResolverMismatch)]
+    [InlineData("status", CombatSubmissionError.MalformedResult)]
+    [InlineData("ship-list", CombatSubmissionError.MalformedResult)]
+    [InlineData("fleet-list", CombatSubmissionError.MalformedResult)]
+    [InlineData("event-list", CombatSubmissionError.MalformedResult)]
+    [InlineData("ship-null", CombatSubmissionError.MalformedResult)]
+    [InlineData("fleet-null", CombatSubmissionError.MalformedResult)]
+    [InlineData("nonparticipant-ship", CombatSubmissionError.Nonparticipant)]
+    [InlineData("nonparticipant-fleet", CombatSubmissionError.Nonparticipant)]
+    [InlineData("hull-negative", CombatSubmissionError.InvalidHull)]
+    [InlineData("hull-above-frozen", CombatSubmissionError.InvalidHull)]
+    [InlineData("duplicate-change", CombatSubmissionError.MalformedResult)]
+    [InlineData("fleet-disposition", CombatSubmissionError.MalformedResult)]
+    [InlineData("event-sequence", CombatSubmissionError.InvalidEvents)]
+    [InlineData("event-kind", CombatSubmissionError.InvalidEvents)]
+    [InlineData("event-reference", CombatSubmissionError.Nonparticipant)]
+    [InlineData("event-null", CombatSubmissionError.InvalidEvents)]
+    [InlineData("event-inconsistent", CombatSubmissionError.InvalidEvents)]
+    [InlineData("terminal-missing", CombatSubmissionError.InvalidEvents)]
+    [InlineData("terminal-duplicate", CombatSubmissionError.InvalidEvents)]
+    [InlineData("retreat-unknown", CombatSubmissionError.InvalidRetreat)]
+    [InlineData("retreat-self", CombatSubmissionError.InvalidRetreat)]
+    [InlineData("retreat-not-adjacent", CombatSubmissionError.InvalidRetreat)]
+    [InlineData("held-destination", CombatSubmissionError.InvalidRetreat)]
+    [InlineData("empty-held", CombatSubmissionError.MalformedResult)]
     public void InvalidResultsRejectWithStableCodesAndByteIdenticalState(string error, CombatSubmissionError expected)
     {
         var s = Awaiting(); var request = s.GetPendingCombatRequests()[0]; CombatResultDto? result = CampaignCombatFixture.NoChanges(request); var ship = request.Participants[0].Ships[0].ShipId; var fleet = request.Participants[0].FleetId;
         switch (error)
         {
-            case "null": result = null; break; case "bad-id": result.EncounterId = "Bad"; break; case "unknown": result.EncounterId = "encounter.unknown"; break;
-            case "resolver": result.ResolverId = "resolver.other"; break; case "version": result.ResolverVersion++; break; case "status": result.Status = (CombatResolutionStatus)99; break;
-            case "ship-list": result.ShipChanges = null!; break; case "fleet-list": result.FleetChanges = null!; break; case "event-list": result.Events = null!; break;
-            case "ship-null": result.ShipChanges.Add(null!); break; case "fleet-null": result.FleetChanges.Add(null!); break;
+            case "null": result = null; break;
+            case "bad-id": result.EncounterId = "Bad"; break;
+            case "unknown": result.EncounterId = "encounter.unknown"; break;
+            case "resolver": result.ResolverId = "resolver.other"; break;
+            case "version": result.ResolverVersion++; break;
+            case "status": result.Status = (CombatResolutionStatus)99; break;
+            case "ship-list": result.ShipChanges = null!; break;
+            case "fleet-list": result.FleetChanges = null!; break;
+            case "event-list": result.Events = null!; break;
+            case "ship-null": result.ShipChanges.Add(null!); break;
+            case "fleet-null": result.FleetChanges.Add(null!); break;
             case "nonparticipant-ship": result.ShipChanges.Add(new() { ShipId = "ship.absent", RemainingHull = 1 }); break;
             case "nonparticipant-fleet": result.FleetChanges.Add(new() { FleetId = "fleet.absent" }); break;
             case "hull-negative": result.ShipChanges.Add(new() { ShipId = ship, RemainingHull = -1 }); break;
             case "hull-above-frozen": result.ShipChanges.Add(new() { ShipId = ship, RemainingHull = 11 }); break;
             case "duplicate-change": result.ShipChanges.Add(new() { ShipId = ship, RemainingHull = 1 }); result.ShipChanges.Add(result.ShipChanges[0]); break;
             case "fleet-disposition": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = (FleetCombatDisposition)99 }); break;
-            case "event-sequence": result.Events[0].Sequence = 1; break; case "event-kind": result.Events[0].Kind = (CombatEventKind)99; break;
-            case "event-reference": result.Events[0].ShipId = "ship.absent"; break; case "event-null": result.Events.Add(null!); break;
+            case "event-sequence": result.Events[0].Sequence = 1; break;
+            case "event-kind": result.Events[0].Kind = (CombatEventKind)99; break;
+            case "event-reference": result.Events[0].ShipId = "ship.absent"; break;
+            case "event-null": result.Events.Add(null!); break;
             case "event-inconsistent": result.Events.Insert(0, new() { Sequence = 0, Kind = CombatEventKind.ShipDestroyed, ShipId = ship }); result.Events[1].Sequence = 1; break;
-            case "terminal-missing": result.Events.Clear(); break; case "terminal-duplicate": result.Events.Add(new() { Sequence = 1, Kind = CombatEventKind.EncounterResolved }); break;
+            case "terminal-missing": result.Events.Clear(); break;
+            case "terminal-duplicate": result.Events.Add(new() { Sequence = 1, Kind = CombatEventKind.EncounterResolved }); break;
             case "retreat-unknown": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.absent" }); break;
             case "retreat-self": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = request.LocationSystemId }); break;
             case "retreat-not-adjacent": result.FleetChanges.Add(new() { FleetId = fleet, Disposition = FleetCombatDisposition.Retreated, RetreatSystemId = "system.gamma-exit" }); break;
@@ -89,7 +116,9 @@ public sealed class CampaignCombatResultTests
         Assert.Equal(CombatSubmissionError.WrongPhase, Submit(Session(), result).ErrorCode);
     }
     [Theory]
-    [InlineData("damage")] [InlineData("ship-destroyed")] [InlineData("fleet-destroyed")]
+    [InlineData("damage")]
+    [InlineData("ship-destroyed")]
+    [InlineData("fleet-destroyed")]
     public void ScriptedConsequencesApplyOnlyAtFinalizationAndRemoveEmptyMembership(string effect)
     {
         var s = Awaiting(); var request = s.GetPendingCombatRequests()[0]; var result = CampaignCombatFixture.NoChanges(request); var participant = request.Participants[0]; var ship = participant.Ships[0];
@@ -113,7 +142,9 @@ public sealed class CampaignCombatResultTests
         Assert.Empty(s.GetPendingCombatRequests()); Assert.Equal(SessionPhase.Planning, s.CaptureSnapshot().Phase);
     }
     [Theory]
-    [InlineData("partial-throw")] [InlineData("final-invariant")] [InlineData("valid-probe-mutation")]
+    [InlineData("partial-throw")]
+    [InlineData("final-invariant")]
+    [InlineData("valid-probe-mutation")]
     public void FinalizationFaultAfterDamageRollsBackTheEntireResolvedCheckpoint(string fault)
     {
         var scenario = CampaignCombatFixture.Scenario(3); var failed = true;

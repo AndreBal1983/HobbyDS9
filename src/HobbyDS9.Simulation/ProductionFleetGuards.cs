@@ -6,7 +6,7 @@ namespace HobbyDS9.Simulation
 {
     internal static class ProductionFleetGuards
     {
-        internal static void Require(GameStateDto before, GameStateDto after, bool production, bool movement)
+        internal static void Require(GameStateDto before, GameStateDto after, bool production, bool movement, bool economy = false)
         {
             void Check(bool condition) { if (!condition) throw new InvalidOperationException("Phase changed protected production/fleet facts."); }
             foreach (var colony in before.Colonies!)
@@ -21,8 +21,8 @@ namespace HobbyDS9.Simulation
                     for (var i = 0; i < next.Count; i++)
                     {
                         var old = queue[i + offset]; var current = next[i];
-                        Check((old.QueueItemId, old.ShipDesignDefinitionId, old.RequiredIndustry, old.PaidCredits, old.PaidMaterials)
-                            == (current.QueueItemId, current.ShipDesignDefinitionId, current.RequiredIndustry, current.PaidCredits, current.PaidMaterials));
+                        Check((old.QueueItemId, old.ShipDesignDefinitionId, old.RequiredIndustry, old.PaidCredits, ResourceKey(old))
+                            == (current.QueueItemId, current.ShipDesignDefinitionId, current.RequiredIndustry, current.PaidCredits, ResourceKey(current)));
                         Check(i + offset == 0 ? current.CompletedIndustry >= old.CompletedIndustry : current.CompletedIndustry == old.CompletedIndustry);
                     }
                 }
@@ -43,11 +43,13 @@ namespace HobbyDS9.Simulation
             if (production)
             {
                 var queueIds = before.Colonies!.SelectMany(c => c.ProductionQueue!).Select(q => q.QueueItemId).ToHashSet(StringComparer.Ordinal);
+                if (economy) queueIds.UnionWith(before.Colonies!.SelectMany(c => c.Cohorts!).Select(c => c.CohortId).Concat(before.Displacements!.Select(r => r.DisplacementId)));
                 Check(before.EntityIdentities.Where(e => !queueIds.Contains(e.EntityId)).All(e => after.EntityIdentities.Any(n => (n.EntityId, n.DefinitionId) == (e.EntityId, e.DefinitionId))));
             }
         }
-        private static (string, string, long, long, long, long) Key(ProductionQueueItemDto q) =>
-            (q.QueueItemId, q.ShipDesignDefinitionId, q.RequiredIndustry, q.CompletedIndustry, q.PaidMaterials, q.PaidCredits);
+        private static string ResourceKey(ProductionQueueItemDto q) => string.Join(";", q.PaidResources!.OrderBy(r => r.ResourceDefinitionId, StringComparer.Ordinal).Select(r => r.ResourceDefinitionId + ":" + r.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+        private static (string, string, long, long, string, long) Key(ProductionQueueItemDto q) =>
+            (q.QueueItemId, q.ShipDesignDefinitionId, q.RequiredIndustry, q.CompletedIndustry, ResourceKey(q), q.PaidCredits);
         private static (string, string, string, string, long) ShipKey(ShipStateDto s) =>
             (s.ShipId, s.ShipDesignDefinitionId, s.OwnerCivilizationId, s.FleetId, s.CurrentHull);
     }
