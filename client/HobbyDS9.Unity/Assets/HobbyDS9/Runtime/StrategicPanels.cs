@@ -29,11 +29,11 @@ namespace HobbyDS9.UnityClient
         {
             if (routeFleet.HasValue)
             {
-                try { routePreview = host.Client.Preview(host.Snapshot, routeFleet.Value, id); }
-                catch (Exception error) { message.text = "Route preview unavailable: " + error.Message; ClearRoute(); }
+                try { routePreview = host.Client.Preview(host.Snapshot, routeFleet.Value, id); SfxDirector.Cue(routePreview.Route.Success ? LcarsSfx.Search : LcarsSfx.Error); }
+                catch (Exception error) { SfxDirector.Cue(LcarsSfx.Error); message.text = "Route preview unavailable: " + error.Message; ClearRoute(); }
             }
             else selection.SelectNode(id);
-            activeTab = "Selection"; Refresh();
+            SfxDirector.TryGetOrCreate()?.OpenSection("Selection"); activeTab = "Selection"; Refresh();
         }
         private Button ActionButton(string label, Action action, bool enabled = true, string explanation = "")
         {
@@ -68,7 +68,7 @@ namespace HobbyDS9.UnityClient
             Text("Fleets", true);
             foreach (var fleet in snapshot.Campaign.Fleets.Where(f => f.OwnerCivilizationId == actor.CivilizationId))
                 ActionButton(fleet.FleetId.Value + " • " + NodeName(snapshot, new NavigationNodeId(fleet.LocationNodeId.Value)), () =>
-                { ClearRoute(); selection.SelectFleet(fleet.FleetId); activeTab = "Selection"; Refresh(); });
+                { ClearRoute(); selection.SelectFleet(fleet.FleetId); SfxDirector.TryGetOrCreate()?.OpenSection("Selection"); activeTab = "Selection"; Refresh(); });
         }
         private void ShowResearch(CampaignSnapshot snapshot)
         {
@@ -83,7 +83,7 @@ namespace HobbyDS9.UnityClient
                 Text("Prerequisites: " + (definition.Prerequisites.Count == 0 ? "None" : string.Join(", ", definition.Prerequisites.Select(id => ResearchName(snapshot, id)))));
                 var explanation = CommandFeedback.Explain(option.UnavailableReason);
                 if (!option.CanSelect) Text(explanation);
-                ActionButton("Research " + definition.DisplayName, () => Run(() => CommandFeedback.Describe(host.Client.Research(snapshot, actor.CivilizationId, definition.DefinitionId))), option.CanSelect, explanation);
+                ActionButton("Research " + definition.DisplayName, () => Run(() => SfxFeedback.Describe(host.Client.Research(snapshot, actor.CivilizationId, definition.DefinitionId))), option.CanSelect, explanation);
             }
         }
         private void ShowSelection(CampaignSnapshot snapshot)
@@ -164,7 +164,7 @@ namespace HobbyDS9.UnityClient
                     }
                     ActionButton("Confirm route", () => Run(() =>
                     {
-                        var result = host.Client.SubmitRoute(preview); ClearRoute(); return CommandFeedback.Describe(result);
+                        var result = host.Client.SubmitRoute(preview); ClearRoute(); return SfxFeedback.Describe(result);
                     }), controlled && preview.Route.Success && preview.Travel!=null);
                 }
                 ActionButton("Cancel route preview", () => { ClearRoute(); Refresh(); });
@@ -192,7 +192,7 @@ namespace HobbyDS9.UnityClient
                 var dropdown=new DropdownField("Governance policy",choices.Select(c=>c.Policy.DisplayName).ToList(),choices.ToList().FindIndex(c=>c.Policy.DefinitionId==policy.DefinitionId));
                 dropdown.AddToClassList("combat-plan-field");details.Add(dropdown);
                 var explanation=new Label();explanation.style.whiteSpace=WhiteSpace.Normal;details.Add(explanation);
-                var apply=ActionButton("Apply policy",()=>Run(()=>CommandFeedback.Describe(host.Client.Governance(snapshot,actor.CivilizationId,world.ColonyId,new DefinitionId(choices[dropdown.index].Policy.DefinitionId)))));
+                var apply=ActionButton("Apply policy",()=>Run(()=>SfxFeedback.Describe(host.Client.Governance(snapshot,actor.CivilizationId,world.ColonyId,new DefinitionId(choices[dropdown.index].Policy.DefinitionId)))));
                 void UpdatePolicy()
                 {
                     var option=choices[dropdown.index];var p=option.Policy;
@@ -267,6 +267,7 @@ namespace HobbyDS9.UnityClient
             string Save()
             {
                 saves.Write(slot, host.SaveJson(), exists);
+                SfxDirector.Cue(LcarsSfx.Success);
                 return "Campaign saved in slot " + slot + ".";
             }
             ActionButton("Save current campaign", () =>
@@ -281,7 +282,7 @@ namespace HobbyDS9.UnityClient
                 // Only reset the view after a successful validated session replacement.
                 ClearRoute(); selection = new GalaxySelection(); selectedPlanet = null; combatPlans.Clear(); lastPhase = null;
                 activeTab = "Empire"; map.ResetView();
-                return "Campaign loaded from slot " + slot + ".";
+                SfxDirector.Cue(LcarsSfx.Success); return "Campaign loaded from slot " + slot + ".";
             }), valid);
             Text("Stored in the application's persistent user-data folder. A failed load keeps the current campaign intact.");
         }

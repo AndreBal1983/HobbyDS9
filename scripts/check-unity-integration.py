@@ -112,6 +112,30 @@ for name in ("MusicPolicy.cs", "MusicCatalog.cs", "AudioDirector.cs"):
     code = (runtime / name).read_text(encoding="utf-8-sig")
     require(all(term not in code for term in ("HobbyDS9.Application", "HobbyDS9.Contracts", "HobbyDS9.Simulation", "SplitMix64")),
             f"Audio must remain independent of campaign APIs/RNG: {name}")
+# SFX assets may deliberately be absent when source sites block retrieval.
+sfx_catalog = (assets / "HobbyDS9/Resources/LcarsSfxCatalog.asset").read_text(encoding="utf-8-sig")
+sfx_ids = {"buttonPress", "success", "error", "processing", "screenOpen", "search"}
+require(set(re.findall(r"semanticId: (\w+)", sfx_catalog)) == sfx_ids, "Incomplete semantic SFX catalog")
+catalog_guid = re.search(r"m_Script: .*guid: ([0-9a-f]{32})", sfx_catalog)
+require(catalog_guid is not None and guids.get(catalog_guid.group(1)) == (runtime / "LcarsSfxCatalog.cs.meta").relative_to(root), "SFX catalog script reference is invalid")
+provenance = root / "docs/audio-sources.md"
+require(provenance.is_file(), "Missing SFX provenance")
+if provenance.is_file():
+    document = provenance.read_text()
+    for semantic in sfx_ids: require("`" + semantic + "`" in document, "Missing SFX provenance: " + semantic)
+    require("403" in document and "unclear" in document and "SHA256" in document, "Missing blocked-download/rights/hash status")
+for name in ("SfxDirector.cs", "SfxPolicy.cs", "LcarsSfxCatalog.cs", "SfxFeedback.cs", "SfxActionFeedback.cs"):
+    code = (runtime / name).read_text()
+    require(not re.search(r"UnityWebRequest|HttpClient|WebClient|https?://|SplitMix64|RandomState|NextEntitySequence", code), "SFX runtime must be local and independent of campaign RNG: " + name)
+sfx_service = (runtime / "SfxDirector.cs").read_text()
+require(len(re.findall(r"AddComponent<AudioSource>",sfx_service)) == 1 and "SfxPolicy.PoolSize" in sfx_service, "SFX must centralize bounded AudioSource creation")
+require("source.loop = false" in sfx_service and "source.spatialBlend = 0" in sfx_service, "SFX must remain non-looping and 2D")
+for audio in (assets / "HobbyDS9/Audio/SFX/LCARS").iterdir():
+    if audio.suffix.lower() in {".wav", ".mp3", ".ogg", ".aiff"}:
+        require(audio.name in re.findall(r"intendedFilename: ([^\n]+)",sfx_catalog), "Uncatalogued SFX/possible voice file: " + audio.name)
+        meta = Path(str(audio)+".meta").read_text()
+        require("loadType: 0" in meta and "preloadAudioData: 1" in meta, "Short SFX should decompress on load and preload: " + audio.name)
+
 scenario = root / "scenarios/ds9-slice/scenario.json"
 resource = assets / "HobbyDS9/Resources/ds9-slice.json"
 require(resource.exists(), "Scenario resource missing; run PrepareUnity.proj")

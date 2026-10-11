@@ -8,7 +8,7 @@ namespace HobbyDS9.UnityClient
 {
     public sealed class LcarsPillButton : Button
     {
-        public LcarsPillButton(string label, Action clicked) : base(clicked)
+        public LcarsPillButton(string label, Action clicked) : base(() => { SfxDirector.Cue(LcarsSfx.ButtonPress); clicked(); })
         { text = label; AddToClassList("lcars-pill"); }
     }
     public sealed class LcarsSectionHeader : Label
@@ -34,7 +34,7 @@ namespace HobbyDS9.UnityClient
         private readonly string caption;
         public string Section { get; }
         public bool Selected { get; private set; }
-        public LcarsNavSegment(string section, string label, Action selected) : base(selected)
+        public LcarsNavSegment(string section, string label, Action selected) : base(() => { SfxDirector.Cue(LcarsSfx.ButtonPress); selected(); })
         { Section = section; caption = label.ToUpperInvariant(); text = caption; name = "nav-" + section.ToLowerInvariant(); AddToClassList("lcars-nav-segment"); }
         public void Select(bool value)
         {

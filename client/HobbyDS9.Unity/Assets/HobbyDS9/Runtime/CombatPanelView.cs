@@ -75,10 +75,11 @@ namespace HobbyDS9.UnityClient
                 {
                     var result = orchestration == null ? client.Resolve(snapshot, request, selected) : orchestration.ResolveHuman(snapshot, request, selected).Submission;
                     if (result.Status != CombatSubmissionStatus.Buffered) throw new InvalidOperationException("Combat rejected: " + result.ErrorCode);
+                    SfxDirector.Cue(SfxActionFeedback.For(result));
                     return "Combat result buffered. Review the battle report before finalizing.";
                 });
-                Add(new Button(() => Resolve(null)) { name = "resolve-defaults", text = "Resolve with defaults" });
-                Add(new Button(() => Resolve(plans)) { name = "resolve-player-plans", text = "Resolve with selected human plans" });
+                Add(new LcarsPillButton("", () => Resolve(null)) { name = "resolve-defaults", text = "Resolve with defaults" });
+                Add(new LcarsPillButton("", () => Resolve(plans)) { name = "resolve-player-plans", text = "Resolve with selected human plans" });
             }
             foreach (var report in reports)
             {
@@ -86,14 +87,14 @@ namespace HobbyDS9.UnityClient
                 Report(snapshot, report.Report);
             }
             if (orchestration?.ReportToReview != null && requests.Count > 0)
-                Add(new Button(() => run(() => { orchestration.Continue(); return orchestration.Error ?? "Continue to the next encounter."; }))
+                Add(new LcarsPillButton("", () => run(() => { orchestration.Continue(); if (orchestration.Error != null) throw new InvalidOperationException(orchestration.Error); return "Continue to the next encounter."; }))
                     { name = "continue-combat", text = "Continue to next encounter" });
             if (requests.Count == 0 && snapshot.Campaign.Phase == SessionPhase.AwaitingCombat)
-                Add(new Button(() => run(() =>
+                Add(new LcarsPillButton("", () => run(() =>
                 {
                     var result = orchestration == null ? client.FinalizeCombats(snapshot) : orchestration.Complete(snapshot);
                     if (result.Status != TurnStatus.Completed) throw new InvalidOperationException(result.ErrorCode.ToString());
-                    drafts.Clear(); return "Combat finalized. Next planning turn opened.";
+                    SfxDirector.Cue(SfxActionFeedback.For(result)); drafts.Clear(); return "Combat finalized. Next planning turn opened.";
                 })) { name = "finalize-combat", text = "Finalize combat and complete turn" });
         }
         private void Report(CampaignSnapshot snapshot, BattleReportSnapshot report)

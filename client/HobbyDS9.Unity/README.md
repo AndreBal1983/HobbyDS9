@@ -226,3 +226,7 @@ Unity EditMode cases**. Existing acceptance branches/main stay unchanged. See
 breakpoints/readability scaling, exact local IL2CPP commands and the full six-size
 visual/functional acceptance matrix. Unity compilation/rendering remains unverified
 in cloud.
+
+### LCARS interface effects candidate
+
+The SFX service, controls and action hooks are implemented, but the six original clips are **missing** because source-site downloads returned HTTP 403. They safely remain silent. See [source provenance](../../docs/audio-sources.md) for the exact items to supply and [SFX verification](../../docs/lcars-sfx-foundation.md) for source assignment/import settings, policy, Unity 6000.6.5f1 EditMode and Windows x64 IL2CPP commands, and integrated acceptance checklist. Music assets/import settings are unchanged. This branch requires local Unity and audible acceptance; cloud checks are static/.NET only.

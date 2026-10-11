@@ -35,13 +35,13 @@ namespace HobbyDS9.UnityClient
                     var design = model.Observed.Campaign.ShipDesigns.Single(d => d.DefinitionId == item.ShipDesignDefinitionId);
                     var row = new VisualElement { name = item.QueueItemId.Value }; section.Add(row);
                     row.Add(new Label(design.DisplayName + $" • Industry {item.CompletedIndustry}/{item.RequiredIndustry}\nPaid {item.PaidCredits} credits • " + Resources(model.Observed, item.PaidResources)));
-                    var cancel = new Button(() =>
+                    var cancel = new LcarsPillButton("", () =>
                     {
                         var previous = row.Q<VisualElement>("cancel-confirmation"); if (previous != null) previous.RemoveFromHierarchy();
                         var confirmation = new VisualElement { name = "cancel-confirmation" }; confirmation.AddToClassList("confirmation");
                         confirmation.Add(new Label("Cancel? Unused credits/resources are refunded proportionally; completed Industry is lost."));
-                        confirmation.Add(new Button(() => run(() => CommandFeedback.Describe(model.Cancel(world.ColonyId, item.QueueItemId)))) { text = "Confirm cancellation" });
-                        confirmation.Add(new Button(() => confirmation.RemoveFromHierarchy()) { text = "Keep item" }); row.Add(confirmation);
+                        confirmation.Add(new LcarsPillButton("", () => run(() => SfxFeedback.Describe(model.Cancel(world.ColonyId, item.QueueItemId)))) { text = "Confirm cancellation" });
+                        confirmation.Add(new LcarsPillButton("", () => confirmation.RemoveFromHierarchy()) { text = "Keep item" }); row.Add(confirmation);
                     }) { text = "Cancel " + design.DisplayName };
                     cancel.AddToClassList("lcars-destructive"); cancel.SetEnabled(model.CanCancel); row.Add(cancel);
                 }
@@ -55,7 +55,7 @@ namespace HobbyDS9.UnityClient
                     row.Add(new Label("Required research: " + (design.RequiredResearchDefinitionIds.Count == 0 ? "None" : string.Join(", ", design.RequiredResearchDefinitionIds.Select(id => model.Observed.Content.Research.Single(r => r.DefinitionId == id).DisplayName)))));
                     var reason = CommandFeedback.Explain(option.UnavailableReason);
                     if (!option.CanEnqueue) row.Add(new Label(reason + " [" + option.UnavailableReason + "]"));
-                    var queue = new Button(() => run(() => CommandFeedback.Describe(model.Enqueue(world.ColonyId, design.DefinitionId))))
+                    var queue = new LcarsPillButton("", () => run(() => SfxFeedback.Describe(model.Enqueue(world.ColonyId, design.DefinitionId))))
                         { text = "Queue " + design.DisplayName, tooltip = reason };
                     queue.SetEnabled(option.CanEnqueue); row.Add(queue);
                 }

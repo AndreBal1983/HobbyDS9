@@ -12,6 +12,8 @@ namespace HobbyDS9.UnityClient
         private AudioSource processing = null!;
         private LcarsSfxCatalog? catalog;
         private float master = 1;
+        // Diagnostic notification of armed semantic requests, not proof of audible playback.
+        public event Action<LcarsSfx>? Requested;
         public SfxPolicy Policy { get; } = new SfxPolicy();
         public SfxPreferences Preferences { get; private set; } = null!;
         public static SfxDirector? TryGetOrCreate()
@@ -35,12 +37,13 @@ namespace HobbyDS9.UnityClient
             var store = new PlayerPrefsMusicStore(); Preferences = new SfxPreferences(store);
             master = new MusicPreferences(store).MasterVolume;
             catalog = UnityEngine.Resources.Load<LcarsSfxCatalog>("LcarsSfxCatalog");
+            var existing = GetComponents<AudioSource>();
             sources = new AudioSource[SfxPolicy.PoolSize];
-            for (int i = 0; i < sources.Length; i++) sources[i] = CreateSource();
-            processing = CreateSource(); ApplyGain();
+            for (int i = 0; i < sources.Length; i++) sources[i] = CreateSource(i < existing.Length ? existing[i] : null);
+            processing = CreateSource(existing.Length > sources.Length ? existing[sources.Length] : null); ApplyGain();
         }
-        private AudioSource CreateSource()
-        { var source = gameObject.AddComponent<AudioSource>(); source.playOnAwake = false; source.loop = false; source.spatialBlend = 0; return source; }
+        private AudioSource CreateSource(AudioSource? reusable)
+        { var source = reusable != null ? reusable : gameObject.AddComponent<AudioSource>(); source.playOnAwake = false; source.loop = false; source.spatialBlend = 0; return source; }
         public static void Cue(LcarsSfx effect) { try { TryGetOrCreate()?.Play(effect); } catch (Exception) { } }
         public static void SharedMaster(float value) { try { if (instance != null) { instance.master = value; instance.ApplyGain(); } } catch (Exception) { } }
         public void Arm() => Policy.Arm();
@@ -51,6 +54,8 @@ namespace HobbyDS9.UnityClient
         public void Play(LcarsSfx effect)
         {
             try {
+                if (!Policy.Armed) return;
+                Requested?.Invoke(effect);
                 var clip = catalog?.Find(effect); if (clip == null || Preferences.Gain(master) <= 0) return;
                 var slot = Policy.Reserve(effect, true, Time.frameCount, AudioSettings.dspTime, clip.length);
                 if (slot < 0) return;

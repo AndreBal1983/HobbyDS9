@@ -1,4 +1,7 @@
 using HobbyDS9.UnityClient;
+using HobbyDS9.Application;
+using HobbyDS9.Contracts;
+using System.Text.Json;
 using Xunit;
 namespace HobbyDS9.Simulation.Tests;
 public sealed class SfxPolicyTests
@@ -61,6 +64,35 @@ public sealed class SfxPolicyTests
         sfx.SetMuted(true);music.SetMuted(false);Assert.Equal(.4f,music.Gain);Assert.Equal(0,sfx.Gain(.5f));
         var reload=new SfxPreferences(store);Assert.True(reload.Muted);Assert.Equal(.4f,reload.Volume);
         reload.SetMuted(false);Assert.Equal(.2f,reload.Gain(.5f));
+    }
+    [Theory] [InlineData(CommandStatus.Accepted,LcarsSfx.Success)] [InlineData(CommandStatus.Rejected,LcarsSfx.Error)]
+    public void CommandOutcomeIsTypedNotMessageBased(CommandStatus status,LcarsSfx cue)
+    { Assert.Equal(cue,SfxActionFeedback.For(new CommandResult("command.test",status,status==CommandStatus.Accepted?CommandErrorCode.None:CommandErrorCode.StaleRevision,1,0))); }
+    [Theory] [InlineData(TurnStatus.Completed,LcarsSfx.Success)] [InlineData(TurnStatus.AwaitingCombat,LcarsSfx.Success)] [InlineData(TurnStatus.Rejected,LcarsSfx.Error)]
+    public void TurnOutcomeOnlyAcknowledgesAcceptedUserOperations(TurnStatus status,LcarsSfx cue)
+    { Assert.Equal(cue,SfxActionFeedback.For(new TurnResult(status,TurnErrorCode.None,1,1,0,SessionPhase.Planning,Array.Empty<StrategicEvent>(),Array.Empty<CommandResult>()))); }
+    [Theory] [InlineData(CombatSubmissionStatus.Buffered,LcarsSfx.Success)] [InlineData(CombatSubmissionStatus.Rejected,LcarsSfx.Error)] [InlineData(CombatSubmissionStatus.Deferred,LcarsSfx.Error)]
+    public void OnlyBufferedCombatAcknowledgesSuccess(CombatSubmissionStatus status,LcarsSfx cue)
+    { Assert.Equal(cue,SfxActionFeedback.For(new CombatSubmissionResult("encounter.test",status,CombatSubmissionError.None,1,0))); }
+    [Fact] public void AudioSettingsAndPolicyNeverChangeAuthoritativeSaveOrRandomState()
+    {
+        var session=CampaignApplication.StartScenario(VerticalSliceFixture.Scenario(false));
+        var before=JsonSerializer.Serialize(session.ExportSave());
+        var settings=new SfxPreferences(new Store()); var policy=new SfxPolicy();policy.Arm();
+        for(int i=0;i<100;i++) { settings.SetMuted(i%2==0);settings.SetVolume(i/100f);policy.Reserve(LcarsSfx.Success,true,i,i,.2);policy.OpenSection("Audio"); }
+        Assert.Equal(before,JsonSerializer.Serialize(session.ExportSave()));
+    }
+    [Fact] public void TypedAcceptedAndStaleResearchResultsMapWithoutChangingCommandSemantics()
+    {
+        var session=CampaignApplication.StartScenario(VerticalSliceFixture.Scenario(false));
+        var client=new StrategicClient(session,save=>CampaignApplication.LoadSave(VerticalSliceFixture.Scenario(false),save));
+        var old=client.Snapshot;
+        var accepted=client.Research(old,new EntityId("civ.federation"),new DefinitionId("research.advanced-engineering"));
+        Assert.True(accepted.Accepted);Assert.Equal(LcarsSfx.Success,SfxActionFeedback.For(accepted));
+        var before=JsonSerializer.Serialize(client.ExportSave());
+        var rejected=client.Research(old,new EntityId("civ.federation"),new DefinitionId("research.advanced-engineering"));
+        Assert.False(rejected.Accepted);Assert.Equal(LcarsSfx.Error,SfxActionFeedback.For(rejected));
+        Assert.Equal(before,JsonSerializer.Serialize(client.ExportSave()));
     }
     [Theory] [InlineData(-1f,0f)] [InlineData(2f,1f)] [InlineData(float.NaN,0f)] [InlineData(float.PositiveInfinity,0f)]
     public void VolumeClampsInvalidInputs(float value,float expected)

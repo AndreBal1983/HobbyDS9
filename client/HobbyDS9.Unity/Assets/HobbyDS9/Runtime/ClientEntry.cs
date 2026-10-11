@@ -24,6 +24,7 @@ namespace HobbyDS9.UnityClient
         private ProductionOverviewView production = null!;
         private LcarsShell shell = null!;
         private VisualElement? uiRoot;
+        private SfxInputBinding? sfxInput;
         private IVisualElementScheduledItem? scaleWatcher;
         private int previousViewportHeight;
         private void MatchReadableScale()
@@ -37,6 +38,7 @@ namespace HobbyDS9.UnityClient
         private void OnViewportGeometry(GeometryChangedEvent _) => MatchReadableScale();
         private void OnDisable()
         {
+            sfxInput?.Dispose(); sfxInput = null;
             scaleWatcher?.Pause(); uiRoot?.UnregisterCallback<GeometryChangedEvent>(OnViewportGeometry);
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -49,6 +51,7 @@ namespace HobbyDS9.UnityClient
         private void OnEnable()
         {
             AudioDirector.TryGetOrCreate();
+            var sfx = SfxDirector.TryGetOrCreate();
             if (panel != null) Destroy(panel);
             panel = ScriptableObject.CreateInstance<PanelSettings>();
             previousViewportHeight = 0;
@@ -64,17 +67,19 @@ namespace HobbyDS9.UnityClient
             root.styleSheets.Add(UnityEngine.Resources.Load<StyleSheet>("Lcars"));
             map = new GalaxyMap(); production = new ProductionOverviewView();
             shell = new LcarsShell(map, production,
-                section => { if (host == null) return; activeTab = section; Refresh(); },
+                section => { if (host == null) return; sfx?.OpenSection(section); activeTab = section; Refresh(); },
                 () => Run(() =>
                 {
                     ClearRoute(); var result = host.EndTurn();
                     if (result.Status != TurnStatus.Rejected) combat.Pump();
                     if (combat.Error != null) throw new InvalidOperationException(combat.Error);
                     if (result.Status == TurnStatus.Rejected) throw new InvalidOperationException(result.ErrorCode.ToString());
+                    SfxDirector.Cue(SfxActionFeedback.For(result));
                     return combat.Notice ?? (result.Status == TurnStatus.AwaitingCombat ? "Encounter checkpoint reached. Resolve the pending battles." : "Turn completed.");
                 }), () => map.ResetView());
             status = shell.Header.Primary; message = shell.Message; endTurn = shell.Header.EndTurn; details = shell.Details;
             root.Add(shell);
+            sfxInput = new SfxInputBinding(root, sfx);
             // Height-based scaling with a readability floor for small windows.
             // Geometry callbacks converge: scale depends only on physical height,
             // layout decisions depend only on panel logical bounds; no Update loop.
@@ -99,7 +104,7 @@ namespace HobbyDS9.UnityClient
         private void Run(Func<string> operation)
         {
             try { message.text = operation(); message.EnableInClassList("lcars-alert",false); }
-            catch (Exception error) { message.text = error.Message; message.EnableInClassList("lcars-alert",true); Debug.LogException(error); }
+            catch (Exception error) { SfxDirector.Cue(LcarsSfx.Error); message.text = error.Message; message.EnableInClassList("lcars-alert",true); Debug.LogException(error); }
             finally { if (host != null) { host.Refresh(); Refresh(); } }
         }
         private void Refresh()
@@ -117,11 +122,11 @@ namespace HobbyDS9.UnityClient
             shell.Header.EnableInClassList("combat-attention",state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer);
             var combatFocus = combat.ReportToReview ?? combat.PendingHumanEncounter ?? (combat.RequiresPlayer ? "complete-turn" : null);
             if (state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer &&
-                (lastPhase != state.Phase || combatFocus != lastCombatFocus)) { activeTab = "Combat"; ClearRoute(); }
+                (lastPhase != state.Phase || combatFocus != lastCombatFocus)) { SfxDirector.TryGetOrCreate()?.OpenSection("Combat"); activeTab = "Combat"; ClearRoute(); }
             lastCombatFocus = combatFocus;
             if (lastPhase != state.Phase && state.Phase == SessionPhase.Planning && activeTab == "Combat") activeTab = "Empire";
             lastPhase = state.Phase;
-            map.Present(snapshot, selection, SelectNode, id => { ClearRoute(); selection.SelectFleet(id); activeTab = "Selection"; Refresh(); });
+            map.Present(snapshot, selection, SelectNode, id => { ClearRoute(); selection.SelectFleet(id); SfxDirector.TryGetOrCreate()?.OpenSection("Selection"); activeTab = "Selection"; Refresh(); });
             map.SetRoute(routePreview);
             shell.SelectSection(activeTab);
             production.Present(new ProductionOverview(host.Client, snapshot), Run);

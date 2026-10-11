@@ -46,8 +46,8 @@ namespace HobbyDS9.UnityClient
         }
         public void SelectSection(string section)
         { Navigation.Select(section); DetailsFrame.Heading.text = section == "Saves" ? "SAVE / LOAD" : section.ToUpperInvariant() + " / CONTEXT"; DetailsOpen = true; ApplyPanels(); }
-        public void OpenProduction() { ProductionChoice.Choose(true); ApplyPanels(); }
-        public void ToggleProduction() { ProductionChoice.Toggle(Plan); ApplyPanels(); }
+        public void OpenProduction() { if (!ProductionOpen) SfxDirector.Cue(LcarsSfx.ScreenOpen); ProductionChoice.Choose(true); ApplyPanels(); }
+        public void ToggleProduction() { if (!ProductionOpen) SfxDirector.Cue(LcarsSfx.ScreenOpen); ProductionChoice.Toggle(Plan); ApplyPanels(); }
         public void ToggleDetails()
         {
             if (Plan.Mode == LayoutMode.Compact && ProductionOpen) { ProductionChoice.Choose(false); DetailsOpen = true; }
