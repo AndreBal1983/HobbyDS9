@@ -28,7 +28,7 @@ namespace HobbyDS9.UnityClient
         private void AddStrategicTabs(VisualElement root)
         {
             var bar = new VisualElement(); bar.AddToClassList("strategic-tabs");
-            foreach (var name in new[] { "Empire", "Selection", "Research", "Saves", "Combat" })
+            foreach (var name in new[] { "Empire", "Selection", "Research", "Saves", "Combat", "Audio" })
             {
                 var tab = new Button(() => { if (host == null) return; activeTab = name; Refresh(); }) { text = name == "Saves" ? "Save / Load" : name };
                 tabs[name] = tab; bar.Add(tab);

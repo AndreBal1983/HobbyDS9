@@ -48,6 +48,31 @@ for name in ("Contracts", "Application", "Simulation"):
     if source.exists() and plugin.exists():
         require(source.read_bytes() == plugin.read_bytes(), f"Stale {file_name}")
     require("isExplicitlyReferenced: 1" in Path(str(plugin) + ".meta").read_text(encoding="utf-8-sig"), f"Auto-referenced plugin: {file_name}")
+# Audio source integrity/import/reference checks. Never an audible-playback claim.
+music = assets / "HobbyDS9/Audio/Music"
+music_catalog = (assets / "HobbyDS9/Resources/MusicCatalog.asset").read_text(encoding="utf-8-sig")
+for filename, digest, track_id in (
+    ("Deep Station.mp3", "94bd236d2f1c1e6916cae87a240e4d3987bec0bae0f9857a8c502f6b7454a512", "music.deep-station"),
+    ("Deep Station track 1.mp3", "91c3e99e255c6dc5590000e204747ac16de55b342c84fbd2542e9b78d51ce91a", "music.deep-station-1"),
+):
+    source_audio = music / filename
+    require(source_audio.is_file(), f"Missing original soundtrack: {filename}")
+    if source_audio.is_file():
+        require(hashlib.sha256(source_audio.read_bytes()).hexdigest() == digest, f"Original soundtrack bytes changed: {filename}")
+    meta = Path(str(source_audio) + ".meta").read_text(encoding="utf-8-sig")
+    for setting in ("    loadType: 2", "    preloadAudioData: 0", "  loadInBackground: 1", "  forceToMono: 0", "  normalize: 0"):
+        require(setting in meta.splitlines(), f"Unexpected music import setting {setting.strip()}: {filename}")
+    guid = re.search(r"^guid: ([0-9a-f]{32})$", meta, re.MULTILINE)
+    entry = re.search(rf"(?ms)^  - id: {re.escape(track_id)}\n(.*?)(?=^  - id: |\Z)", music_catalog)
+    require(entry is not None, f"Missing stable track ID: {track_id}")
+    if entry is not None:
+        require(guid is not None and f"guid: {guid.group(1)}" in entry.group(1), f"Catalog clip reference missing: {filename}")
+        require("    loopPolicy: 0" in entry.group(1).splitlines() and "    category: 0" in entry.group(1).splitlines(),
+                f"Supplied cue must be FullCue/Strategic: {track_id}")
+for name in ("MusicPolicy.cs", "MusicCatalog.cs", "AudioDirector.cs"):
+    code = (runtime / name).read_text(encoding="utf-8-sig")
+    require(all(term not in code for term in ("HobbyDS9.Application", "HobbyDS9.Contracts", "HobbyDS9.Simulation", "SplitMix64")),
+            f"Audio must remain independent of campaign APIs/RNG: {name}")
 scenario = root / "scenarios/ds9-slice/scenario.json"
 resource = assets / "HobbyDS9/Resources/ds9-slice.json"
 require(resource.exists(), "Scenario resource missing; run PrepareUnity.proj")

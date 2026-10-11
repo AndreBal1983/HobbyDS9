@@ -185,3 +185,19 @@ For local acceptance at 1920×1080, 2560×1440, 3440×1440 and 5120×1440:
   confirm there is no duplicate full production block.
 - End Turn, pass through AwaitingCombat and explicitly finalize; production remains
   visible but commands are disabled during the checkpoint and resume in Planning.
+
+## Audio Foundation v1 stacked candidate
+
+`codex/audio-foundation-v1` is based exactly on `79009a3` and leaves the separate
+politics/geography/combat candidate unchanged. It includes both original Deep
+Station MP3s, a referenced Resources catalog, persistent two-source AudioDirector,
+six-second scheduled cue crossfades and an Audio tab with PlayerPrefs Master/Music
+volume and Mute. Music is entirely presentation state and continues across panels,
+turns, save/load and combat. Sources stream, preserve stereo/sample rate and never
+hard-loop these full cues. There is no local asset-copy step.
+
+This branch expects **747 .NET tests** and **24 Unity EditMode cases** (21 base + 3
+audio). Gameplay versions and the deterministic hash are unchanged. Unity/audio
+runtime and Windows IL2CPP acceptance remain local. See the [complete audio guide](../../docs/audio-foundation-v1.md)
+for original-byte hashes, import settings, architecture, exact Windows commands and
+the listening/duplicate-source/save-isolation checklist.

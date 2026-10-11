@@ -38,6 +38,7 @@ namespace HobbyDS9.UnityClient
         }
         private void OnEnable()
         {
+            AudioDirector.TryGetOrCreate();
             panel = ScriptableObject.CreateInstance<PanelSettings>();
             panel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
             panel.referenceResolution = new Vector2Int(1920, 1080);
@@ -110,6 +111,7 @@ namespace HobbyDS9.UnityClient
             details.Clear();
             switch (activeTab)
             {
+                case "Audio": ShowAudio(); break;
                 case "Research": ShowResearch(snapshot); break;
                 case "Saves": ShowSaves(); break;
                 case "Empire": ShowEmpire(snapshot); break;
