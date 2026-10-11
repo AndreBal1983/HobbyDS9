@@ -82,6 +82,11 @@ bar_css = re.search(r'--lcars-bar\s*:\s*([0-9.]+)px\s*;',tokens)
 bar_geometry = re.search(r'const\s+double\s+Bar\s*=\s*([0-9.]+)\s*;', (runtime / "ResponsiveLayoutPolicy.cs").read_text())
 require(bar_css is not None and bar_geometry is not None and float(bar_css.group(1)) == float(bar_geometry.group(1)),
         "LCARS vector bar thickness differs from the central style token")
+# The connected strategic header/footer align to the same logical rail width.
+rail_css = re.search(r'--lcars-rail-width\s*:\s*([0-9.]+)px\s*;', tokens)
+rail_geometry = re.search(r'const\s+double\s+Rail\s*=\s*([0-9.]+)\s*;', (runtime / "ResponsiveLayoutPolicy.cs").read_text())
+require(rail_css is not None and rail_geometry is not None and float(rail_css.group(1)) == float(rail_geometry.group(1)),
+        "Strategic connected rail/header/footer width tokens differ")
 # Bootstrap is singular; OnEnable reuses its document rather than accumulating it.
 require(len(re.findall(r'AddComponent<ClientEntry>\s*\(',entry)) == 1,
         "Client bootstrap must create exactly one entry point")

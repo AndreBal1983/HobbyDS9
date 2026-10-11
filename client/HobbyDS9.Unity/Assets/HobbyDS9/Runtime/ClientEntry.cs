@@ -96,15 +96,18 @@ namespace HobbyDS9.UnityClient
                 host = new CampaignHost(asset.bytes);
                 combat = new CombatOrchestrator(host.Client); combat.Pump();
                 saves = new SaveSlotStore(System.IO.Path.Combine(UnityEngine.Application.persistentDataPath, "CampaignSaves"));
+                // Presentation-only initial focus; no campaign command or mock world.
+                SelectInitialStrategicWorld();
+                shell.ProductionChoice.Choose(false);
                 Refresh();
             }
-            catch (Exception error) { endTurn.SetEnabled(false); message.text = error.Message; Debug.LogException(error); }
+            catch (Exception error) { endTurn.SetEnabled(false); message.text = StrategicScreenPresentation.PlayerMessage(error.Message); Debug.LogException(error); }
         }
         private void OnDestroy() { if (panel != null) Destroy(panel); }
         private void Run(Func<string> operation)
         {
-            try { message.text = operation(); message.EnableInClassList("lcars-alert",false); }
-            catch (Exception error) { SfxDirector.Cue(LcarsSfx.Error); message.text = error.Message; message.EnableInClassList("lcars-alert",true); Debug.LogException(error); }
+            try { message.text = StrategicScreenPresentation.PlayerMessage(operation()); message.EnableInClassList("lcars-alert",false); }
+            catch (Exception error) { SfxDirector.Cue(LcarsSfx.Error); message.text = StrategicScreenPresentation.PlayerMessage(error.Message); message.EnableInClassList("lcars-alert",true); Debug.LogException(error); }
             finally { if (host != null) { host.Refresh(); Refresh(); } }
         }
         private void Refresh()
@@ -114,10 +117,12 @@ namespace HobbyDS9.UnityClient
             var actor = Human(snapshot);
             var research = actor?.ResearchTargetDefinitionId;
             var researchName = research.HasValue ? ResearchName(snapshot, research.Value) : "No target";
-            status.text = (actor == null ? "Observer" : OwnerName(snapshot, actor.CivilizationId) + " • Credits " + actor.Credits)
-                + $"  |  Turn {state.TurnNumber} • {state.Phase}";
-            shell.Header.Secondary.text = "Research: " + researchName + " • Reserve " + (actor?.ResearchReserve ?? 0);
-            shell.Header.Diagnostic.text = "Authoritative revision " + state.StateRevision;
+            status.text = actor == null ? "Observer" : OwnerName(snapshot, actor.CivilizationId);
+            shell.Header.Credits.Value.text = (actor?.Credits ?? 0).ToString();
+            shell.Header.Turn.Value.text = state.TurnNumber.ToString("00");
+            shell.Header.Phase.Value.text = state.Phase == SessionPhase.AwaitingCombat ? "BATTLES PENDING" : "PLANNING";
+            shell.Header.Secondary.text = "Research / " + researchName + " • Reserve " + (actor?.ResearchReserve ?? 0);
+            shell.Header.Diagnostic.text = "LIVE CAMPAIGN / Revision " + state.StateRevision;
             endTurn.SetEnabled(state.Phase == SessionPhase.Planning);
             shell.Header.EnableInClassList("combat-attention",state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer);
             var combatFocus = combat.ReportToReview ?? combat.PendingHumanEncounter ?? (combat.RequiresPlayer ? "complete-turn" : null);
@@ -138,7 +143,7 @@ namespace HobbyDS9.UnityClient
                 case "Audio": ShowAudio(); break;
                 case "Research": ShowResearch(snapshot); break;
                 case "Saves": ShowSaves(); break;
-                case "Empire": ShowEmpire(snapshot); break;
+                case "Empire": ShowStrategicEmpire(snapshot); break;
                 case "Combat":
                     ShowEncounters(snapshot);
                     break;

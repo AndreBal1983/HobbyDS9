@@ -67,20 +67,62 @@ namespace HobbyDS9.UnityClient
             Production.EnableInClassList("production-open", open);
         }
     }
+    // Compact presentation primitives; no campaign calculations or command ownership.
+    public sealed class LcarsDataRow : VisualElement
+    {
+        public LcarsDataRow(string caption, string value)
+        {
+            AddToClassList("lcars-data-row"); pickingMode = PickingMode.Ignore;
+            var key = new Label(caption) { pickingMode = PickingMode.Ignore };
+            key.AddToClassList("lcars-data-key"); Add(key);
+            var data = new Label(value) { pickingMode = PickingMode.Ignore };
+            data.AddToClassList("lcars-data-value"); Add(data);
+        }
+    }
+    public sealed class LcarsMeter : VisualElement
+    {
+        public LcarsMeter(string caption, double value, double maximum)
+        {
+            AddToClassList("lcars-meter"); pickingMode = PickingMode.Ignore;
+            Add(new LcarsDataRow(caption, $"{value:0.#} / {maximum:0.#}"));
+            var track = new VisualElement { pickingMode = PickingMode.Ignore }; track.AddToClassList("lcars-meter-track"); Add(track);
+            var fill = new VisualElement { pickingMode = PickingMode.Ignore }; fill.AddToClassList("lcars-meter-fill");
+            fill.style.width = Length.Percent((float)(maximum > 0 ? Math.Max(0, Math.Min(1, value / maximum)) * 100 : 0)); track.Add(fill);
+        }
+    }
+    public sealed class LcarsInspectorBlock : VisualElement
+    {
+        public LcarsInspectorBlock(string heading)
+        { AddToClassList("lcars-inspector-block"); Add(new LcarsSectionHeader(heading)); }
+        public void Row(string caption, string value) => Add(new LcarsDataRow(caption, value));
+    }
+    public sealed class LcarsCompactReadout : VisualElement
+    {
+        public Label Value { get; } = new LcarsReadout();
+        public LcarsCompactReadout(string caption)
+        {
+            AddToClassList("lcars-compact-readout");
+            var key = new Label(caption) { pickingMode = PickingMode.Ignore }; key.AddToClassList("lcars-readout-key"); Add(key); Add(Value);
+        }
+    }
     public sealed class LcarsTopBar : VisualElement
     {
         public Label Primary { get; } = new LcarsReadout();
         public Label Secondary { get; } = new LcarsReadout();
         public Label Diagnostic { get; } = new LcarsReadout();
+        public LcarsCompactReadout Credits { get; } = new LcarsCompactReadout("CREDITS");
+        public LcarsCompactReadout Turn { get; } = new LcarsCompactReadout("TURN");
+        public LcarsCompactReadout Phase { get; } = new LcarsCompactReadout("PHASE");
         public Button EndTurn { get; }
         public Button FitMap { get; }
         public LcarsTopBar(Action endTurn, Action fitMap)
         {
             name = "lcars-header"; AddToClassList("lcars-header");
-            var title = new Label("HOBBY\nDS9"); title.AddToClassList("lcars-title"); Add(title);
+            var title = new Label("HOBBY DS9\nSTRATEGIC"); title.AddToClassList("lcars-title"); Add(title);
             var readouts = new VisualElement(); readouts.AddToClassList("lcars-header-readouts"); Add(readouts);
             Primary.AddToClassList("lcars-primary-status"); Secondary.AddToClassList("lcars-secondary-status");
             Diagnostic.AddToClassList("lcars-diagnostic"); readouts.Add(Primary); readouts.Add(Secondary); readouts.Add(Diagnostic);
+            Add(Credits); Add(Turn); Add(Phase);
             var controls = new VisualElement(); controls.AddToClassList("lcars-header-controls"); Add(controls);
             EndTurn = new LcarsPillButton("END TURN", endTurn) { name = "end-turn" };
             EndTurn.AddToClassList("lcars-primary-action"); FitMap = new LcarsPillButton("FIT MAP", fitMap) { name = "fit-map" };
