@@ -20,6 +20,17 @@ namespace HobbyDS9.UnityClient
             music.RegisterValueChangedCallback(e => director.SetMusicVolume(e.newValue));
             mute.RegisterValueChangedCallback(e => director.SetMuted(e.newValue));
             details.Add(master); details.Add(music); details.Add(mute);
+            var sfx = SfxDirector.TryGetOrCreate();
+            if (sfx != null) AddSfxControls(details, sfx);
+        }
+        public static void AddSfxControls(VisualElement container, SfxDirector sfx)
+        {
+            var volume = new Slider("SFX volume", 0, 1) { name = "sfx-volume", value = sfx.Preferences.Volume };
+            var muted = new Toggle("Mute SFX") { name = "sfx-mute", value = sfx.Preferences.Muted };
+            volume.AddToClassList("combat-plan-field");
+            volume.RegisterValueChangedCallback(e => sfx.SetVolume(e.newValue));
+            muted.RegisterValueChangedCallback(e => sfx.SetMuted(e.newValue));
+            container.Add(volume); container.Add(muted);
         }
     }
 }

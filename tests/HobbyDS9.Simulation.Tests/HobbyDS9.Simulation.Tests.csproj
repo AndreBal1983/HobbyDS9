@@ -24,6 +24,7 @@
   <ItemGroup>
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ResponsiveLayoutPolicy.cs" Link="UnityClient/ResponsiveLayoutPolicy.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/CombatOrchestrator.cs" Link="UnityClient/CombatOrchestrator.cs" />
+    <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/SfxPolicy.cs" Link="UnityClient/SfxPolicy.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/MusicPolicy.cs" Link="UnityClient/MusicPolicy.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/GalaxyProjection.cs" Link="UnityClient/GalaxyProjection.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/StrategicClient.cs" Link="UnityClient/StrategicClient.cs" />

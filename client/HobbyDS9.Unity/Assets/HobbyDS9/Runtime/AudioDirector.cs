@@ -72,7 +72,7 @@ namespace HobbyDS9.UnityClient
         }
         private bool Available(MusicTrack track) => clips.TryGetValue(track.Id, out var clip) && clip != null && !failed.Contains(track.Id) && clip.loadState != AudioDataLoadState.Failed;
         public void SetContext(MusicCategory category) { playlist.SetContext(category, Available); }
-        public void SetMasterVolume(float value) { Preferences.SetMaster(value); ApplyVolumes(); }
+        public void SetMasterVolume(float value) { Preferences.SetMaster(value); ApplyVolumes(); SfxDirector.SharedMaster(Preferences.MasterVolume); }
         public void SetMusicVolume(float value) { Preferences.SetMusic(value); ApplyVolumes(); }
         public void SetMuted(bool value) { Preferences.SetMuted(value); ApplyVolumes(); }
         // Explicit service transitions, not mute: mute leaves DSP playback running.

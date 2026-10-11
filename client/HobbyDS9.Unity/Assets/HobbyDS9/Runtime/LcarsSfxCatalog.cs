@@ -3,7 +3,6 @@ using System;
 using UnityEngine;
 namespace HobbyDS9.UnityClient
 {
-    public enum LcarsSfx { ButtonPress, Success, Error, Processing, ScreenOpen, Search }
     [Serializable] public sealed class LcarsSfxEntry
     {
         public LcarsSfx effect;
