@@ -60,11 +60,14 @@ namespace HobbyDS9.UnityClient.Tests
         {
             var host = Start(); var before = host.SaveJson();
             var preview = host.Client.Preview(host.Snapshot, new HobbyDS9.Contracts.EntityId("fleet.federation-scout"), new NavigationNodeId("nav.bajor"));
-            Assert.That(preview.Route.TraversalCost, Is.EqualTo(1)); Assert.That(host.SaveJson(), Is.EqualTo(before));
+            Assert.That(preview.Route.TraversalCost, Is.EqualTo(7)); Assert.That(host.SaveJson(), Is.EqualTo(before));
             var map = new GalaxyMap();
             map.Present(host.Snapshot, new GalaxySelection(), _ => { }, _ => { }); map.SetRoute(preview);
-            Assert.That(map.Query<Button>().ToList().Count, Is.EqualTo(9));
+            Assert.That(map.Query<Button>().ToList().Count, Is.EqualTo(10));
+            Assert.That(host.SaveJson(), Is.EqualTo(before));
             Assert.That(host.Client.SubmitRoute(preview).Accepted, Is.True);
+            Assert.That(host.Snapshot.Campaign.Fleets.Single(f => f.FleetId.Value == "fleet.federation-scout").RouteNodeIds.Select(n => n.Value), Is.EqualTo(new[] { "nav.bajor" }));
+            Assert.That(host.SaveJson(), Is.Not.EqualTo(before));
         }
         [Test]
         public void SlotOverwriteUsesTheRealHostSerializer()
