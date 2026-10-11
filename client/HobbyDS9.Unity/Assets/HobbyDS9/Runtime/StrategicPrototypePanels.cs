@@ -35,7 +35,7 @@ namespace HobbyDS9.UnityClient
             block.Row("Worlds / fleets", worlds.Count + " / " + fleets.Count);
             block.Row("Population", worlds.Sum(c => c.Population).ToString());
             block.Row("Credits", actor.Credits.ToString());
-            block.Row("Research reserve", actor.ResearchReserve.ToString());
+            block.Row("Engineering reserve", actor.EngineeringReserve.ToString());
             Text("OWNED WORLDS", true);
             foreach (var world in worlds)
             {
@@ -99,7 +99,7 @@ namespace HobbyDS9.UnityClient
             // A single selector avoids many repetitive design cards pushing orders
             // below the fold. Eligibility still comes from Application.
             var options = model.Designs(world.ColonyId)
-                .OrderBy(o => o.Design.RequiredResearchDefinitionIds.Count)
+                .OrderBy(o => o.Design.RequiredEngineeringDefinitionIds.Count)
                 .ThenBy(o => o.Design.DisplayName, StringComparer.Ordinal).ToList();
             if (options.Count == 0) { block.Add(new LcarsReadout("No ship designs available.")); AddQueue(); return; }
             var index = strategicShipChoice.TryGetValue(world.PlanetId.Value, out var previous)

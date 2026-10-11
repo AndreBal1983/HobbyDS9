@@ -29,7 +29,7 @@ public sealed class StrategicScreenPresentationTests
     [InlineData("CombatPending", "Complete the pending battles")]
     [InlineData("NavigationUnknown", "choose a known region")]
     [InlineData("Rejected [InsufficientStrategicResource]", "unavailable locally")]
-    [InlineData("Rejected [DesignResearchPrerequisiteMissing]", "research has not been completed")]
+    [InlineData("Rejected [DesignEngineeringPrerequisiteMissing]", "Engineering applications must be Mature")]
     [InlineData("StaleRevision", "Review the refreshed state")]
     [InlineData("UnresolvedCombats", "Resolve every pending battle")]
     [InlineData("Combat rejected: InvalidRetreat", "Choose an allowed retreat destination")]
