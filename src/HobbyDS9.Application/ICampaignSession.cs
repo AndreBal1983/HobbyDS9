@@ -22,6 +22,10 @@ namespace HobbyDS9.Application
         // Player path: only this persisted Human actor's fleet overrides are allowed.
         IReadOnlyList<FleetCombatPlanDto> GetPlayerCombatPlans(string encounterId, EntityId actorId);
         CombatResultDto ResolvePlayerCombat(string encounterId, EntityId actorId, IReadOnlyList<FleetCombatPlanDto>? humanPlans = null);
+        // Local client/hot-seat path: overrides may cover any persisted Human fleet,
+        // never an AI fleet. Canonical defaults fill every other participant.
+        IReadOnlyList<FleetCombatPlanDto> GetHumanCombatPlans(string encounterId);
+        CombatResultDto ResolveHumanCombat(string encounterId, IReadOnlyList<FleetCombatPlanDto>? humanPlans = null);
         IReadOnlyList<BattleReportSnapshot> GetBattleReports();
         CombatSubmissionResult SubmitCombatResult(CombatResultDto? result, int expectedTurn, long expectedRevision);
         TurnResult FinalizeCombat(int expectedTurn, long expectedRevision);

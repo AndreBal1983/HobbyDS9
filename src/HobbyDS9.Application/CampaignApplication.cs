@@ -126,6 +126,29 @@ namespace HobbyDS9.Application
             // Always resolve the frozen authoritative request, never a client-edited DTO.
             var request = PlayerRequest(encounterId, actorId);
             var owned = new HashSet<string>(request.Participants.Where(p => p.CivilizationId == actorId.Value).Select(p => p.FleetId), StringComparer.Ordinal);
+            return ResolveOwned(request, owned, humanPlans);
+        }
+        private CombatRequestDto PendingRequest(string encounterId) => session.GetPendingCombatRequests()
+            .SingleOrDefault(r => r.EncounterId == encounterId) ?? throw new ArgumentException("Encounter is not pending.", nameof(encounterId));
+        private HashSet<string> HumanFleets(CombatRequestDto request)
+        {
+            var humans = new HashSet<string>(session.CaptureSnapshot().Actors.Where(a => a.ControllerKind == ControllerKind.Human)
+                .Select(a => a.CivilizationId.Value), StringComparer.Ordinal);
+            return new HashSet<string>(request.Participants.Where(p => humans.Contains(p.CivilizationId)).Select(p => p.FleetId), StringComparer.Ordinal);
+        }
+        public IReadOnlyList<FleetCombatPlanDto> GetHumanCombatPlans(string encounterId)
+        {
+            var request = PendingRequest(encounterId); var owned = HumanFleets(request);
+            return DeterministicPhasedCombatResolver.CreateDefaultPlans(request).Where(p => owned.Contains(p.FleetId))
+                .OrderBy(p => p.FleetId, StringComparer.Ordinal).ToList().AsReadOnly();
+        }
+        public CombatResultDto ResolveHumanCombat(string encounterId, IReadOnlyList<FleetCombatPlanDto>? humanPlans = null)
+        {
+            var request = PendingRequest(encounterId);
+            return ResolveOwned(request, HumanFleets(request), humanPlans);
+        }
+        private CombatResultDto ResolveOwned(CombatRequestDto request, HashSet<string> owned, IReadOnlyList<FleetCombatPlanDto>? humanPlans)
+        {
             var overrides = new Dictionary<string, FleetCombatPlanDto>(StringComparer.Ordinal);
             if (humanPlans != null)
                 foreach (var plan in humanPlans)

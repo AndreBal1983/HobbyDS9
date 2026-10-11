@@ -13,6 +13,8 @@ namespace HobbyDS9.UnityClient
     public sealed partial class ClientEntry : MonoBehaviour
     {
         private CampaignHost host = null!;
+        private CombatOrchestrator combat = null!;
+        private string? lastCombatFocus;
         private GalaxySelection selection = new GalaxySelection();
         private GalaxyMap map = null!;
         private Label status = null!, message = null!;
@@ -55,8 +57,10 @@ namespace HobbyDS9.UnityClient
             {
                 ClearRoute();
                 var result = host.EndTurn();
+                if (result.Status != TurnStatus.Rejected) combat.Pump();
+                if (combat.Error != null) throw new InvalidOperationException(combat.Error);
                 if (result.Status == TurnStatus.Rejected) throw new InvalidOperationException(result.ErrorCode.ToString());
-                return result.Status == TurnStatus.AwaitingCombat ? "Encounter checkpoint reached. Resolve the pending battles." : "Turn completed.";
+                return combat.Notice ?? (result.Status == TurnStatus.AwaitingCombat ? "Encounter checkpoint reached. Resolve the pending battles." : "Turn completed.");
             })) { text = "End Turn" };
             header.Add(endTurn);
             var reset = new Button(() => map.ResetView()) { text = "Fit map" }; header.Add(reset); root.Add(header);
@@ -78,6 +82,7 @@ namespace HobbyDS9.UnityClient
                 var asset = UnityEngine.Resources.Load<TextAsset>("ds9-slice");
                 if (asset == null) throw new InvalidOperationException("Scenario missing. Run dotnet msbuild scripts/PrepareUnity.proj before opening Unity.");
                 host = new CampaignHost(asset.bytes);
+                combat = new CombatOrchestrator(host.Client); combat.Pump();
                 saves = new SaveSlotStore(System.IO.Path.Combine(UnityEngine.Application.persistentDataPath, "CampaignSaves"));
                 Refresh();
             }
@@ -101,7 +106,10 @@ namespace HobbyDS9.UnityClient
                 + $"  |  Turn {state.TurnNumber} • {state.Phase} • Revision {state.StateRevision}"
                 + "\nResearch: " + researchName + " • Reserve " + (actor?.ResearchReserve ?? 0);
             endTurn.SetEnabled(state.Phase == SessionPhase.Planning);
-            if (lastPhase != state.Phase && state.Phase == SessionPhase.AwaitingCombat) { activeTab = "Combat"; ClearRoute(); }
+            var combatFocus = combat.ReportToReview ?? combat.PendingHumanEncounter ?? (combat.RequiresPlayer ? "complete-turn" : null);
+            if (state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer &&
+                (lastPhase != state.Phase || combatFocus != lastCombatFocus)) { activeTab = "Combat"; ClearRoute(); }
+            lastCombatFocus = combatFocus;
             if (lastPhase != state.Phase && state.Phase == SessionPhase.Planning && activeTab == "Combat") activeTab = "Empire";
             lastPhase = state.Phase;
             map.Present(snapshot, selection, SelectNode, id => { ClearRoute(); selection.SelectFleet(id); activeTab = "Selection"; Refresh(); });
@@ -116,8 +124,7 @@ namespace HobbyDS9.UnityClient
                 case "Saves": ShowSaves(); break;
                 case "Empire": ShowEmpire(snapshot); break;
                 case "Combat":
-                    if (state.Phase == SessionPhase.AwaitingCombat) ShowEncounters(snapshot);
-                    else Text("No pending encounters.");
+                    ShowEncounters(snapshot);
                     break;
                 default: ShowSelection(snapshot); break;
             }
@@ -125,7 +132,7 @@ namespace HobbyDS9.UnityClient
         private void ShowEncounters(CampaignSnapshot snapshot)
         {
             var view = new CombatPanelView();
-            view.Present(snapshot, host.Client, combatPlans, Run); details.Add(view);
+            view.Present(snapshot, host.Client, combatPlans, Run, combat); details.Add(view);
         }
         private void Text(string text, bool heading = false)
         {

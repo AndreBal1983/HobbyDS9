@@ -48,16 +48,21 @@ namespace HobbyDS9.UnityClient
         private readonly Func<SaveEnvelopeDto, ICampaignSession> load;
         private readonly ClientCommandIds ids = new ClientCommandIds();
         public CampaignSnapshot Snapshot { get; private set; }
+        public long SessionGeneration { get; private set; }
+        private readonly List<RecentCombatReport> recent = new List<RecentCombatReport>();
+        public IReadOnlyList<RecentCombatReport> RecentReports => recent.ToList().AsReadOnly();
         public StrategicClient(ICampaignSession session, Func<SaveEnvelopeDto, ICampaignSession> load)
-        { this.session = session; this.load = load; Snapshot = session.CaptureSnapshot(); }
-        public void Refresh() => Snapshot = session.CaptureSnapshot();
+        { this.session = session; this.load = load; Snapshot = session.CaptureSnapshot(); RememberBuffered(); }
+        public void Refresh() { Snapshot = session.CaptureSnapshot(); RememberBuffered(); }
         public SaveEnvelopeDto ExportSave() => session.ExportSave();
         public void Load(SaveEnvelopeDto save)
         {
             // Validate/create/capture before publishing either reference.
             var replacement = load(save);
             var snapshot = replacement.CaptureSnapshot();
-            session = replacement; Snapshot = snapshot;
+            var restored = replacement.GetBattleReports().Select(report => new RecentCombatReport(report,
+                report.Fleets.Any(f => snapshot.Campaign.Civilizations.Any(c => c.CivilizationId.Value == f.CivilizationId && c.ControllerKind == ControllerKind.Human)))).ToList();
+            session = replacement; Snapshot = snapshot; SessionGeneration++; recent.Clear(); recent.AddRange(restored); TrimHistory();
         }
         public CommandResult Research(CampaignSnapshot observed, EntityId actor, DefinitionId target)
         {
@@ -110,18 +115,44 @@ namespace HobbyDS9.UnityClient
         public IReadOnlyList<CombatRequestDto> Pending() => session.GetPendingCombatRequests();
         public IReadOnlyList<BattleReportSnapshot> Reports() => session.GetBattleReports();
         public IReadOnlyList<FleetCombatPlanDto> PlayerPlans(CampaignSnapshot observed, CombatRequestDto request)
-        {
-            var actor = observed.Campaign.Civilizations.Where(c => c.ControllerKind == ControllerKind.Human)
-                .OrderBy(c => c.CivilizationId.Value, StringComparer.Ordinal).First();
-            return session.GetPlayerCombatPlans(request.EncounterId, actor.CivilizationId);
-        }
+            => session.GetHumanCombatPlans(request.EncounterId);
         public CombatSubmissionResult Resolve(CampaignSnapshot observed, CombatRequestDto request, IReadOnlyList<FleetCombatPlanDto>? plans = null)
+            => ResolveDetailed(observed, request, plans).Submission;
+        public CombatResolutionReceipt ResolveDetailed(CampaignSnapshot observed, CombatRequestDto request, IReadOnlyList<FleetCombatPlanDto>? plans = null)
         {
-            var actor = observed.Campaign.Civilizations.Where(c => c.ControllerKind == ControllerKind.Human)
-                .OrderBy(c => c.CivilizationId.Value, StringComparer.Ordinal).First();
-            var result = session.ResolvePlayerCombat(request.EncounterId, actor.CivilizationId, plans);
+            // Resolve the frozen pending request by ID; even caller-edited requests
+            // cannot forge participation, stats, seeds or editable AI fleets.
+            var frozen = session.GetPendingCombatRequests().Single(r => r.EncounterId == request.EncounterId);
+            var result = session.ResolveHumanCombat(frozen.EncounterId, plans);
             var submitted = session.SubmitCombatResult(result, observed.Campaign.TurnNumber, observed.Campaign.StateRevision);
-            Refresh(); return submitted;
+            var report = submitted.Status == CombatSubmissionStatus.Buffered
+                ? new BattleReportSnapshot(new ResolvedCombatDto { Request = frozen, Result = result }) : null;
+            Refresh();
+            return new CombatResolutionReceipt(submitted, report, CombatOrchestrator.HumanInvolved(Snapshot, frozen));
+        }
+        private void RememberBuffered()
+        {
+            foreach (var report in session.GetBattleReports())
+            {
+                if (recent.Any(r => r.Report.EncounterId == report.EncounterId)) continue;
+                var humans = Snapshot.Campaign.Civilizations.Where(c => c.ControllerKind == ControllerKind.Human)
+                    .Select(c => c.CivilizationId.Value).ToList();
+                recent.Add(new RecentCombatReport(report, report.Fleets.Any(f => humans.Contains(f.CivilizationId))));
+            }
+            TrimHistory();
+        }
+        private void TrimHistory()
+        {
+            recent.Sort((a,b) => { var turn = b.Report.TurnNumber.CompareTo(a.Report.TurnNumber);
+                return turn != 0 ? turn : StringComparer.Ordinal.Compare(a.Report.EncounterId, b.Report.EncounterId); });
+            // Keep every encounter from the latest turn, even if one huge checkpoint
+            // exceeds the normal 50-report bound. Never drop a current human report.
+            if (recent.Count > 50)
+            {
+                var latest = recent[0].Report.TurnNumber;
+                var keep = Math.Max(50, recent.Count(r => r.Report.TurnNumber == latest));
+                if (recent.Count > keep) recent.RemoveRange(keep, recent.Count - keep);
+            }
         }
         public TurnResult FinalizeCombats(CampaignSnapshot observed)
         { var result = session.FinalizeCombat(observed.Campaign.TurnNumber, observed.Campaign.StateRevision); Refresh(); return result; }

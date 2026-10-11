@@ -149,6 +149,7 @@ public sealed class CombatControlReportTests
         Assert.Equal("node.safe", report.Fleets[1].RetreatNodeId); Assert.Equal(FleetCombatDisposition.Held, report.Fleets[2].Disposition);
         Assert.Equal(100, report.Fleets[2].Ships[0].RemainingHull); Assert.Equal(100, report.Fleets[0].Ships[0].StartingHull);
         Assert.Equal(new[] { CombatPhaseKind.LongRange, CombatPhaseKind.MediumRange, CombatPhaseKind.CloseRange }, report.Phases.Select(p => p.Phase));
+        Assert.Equal(2, report.Shots); Assert.Equal(1, report.Hits); Assert.Equal(1, report.Misses); Assert.Equal(1, report.PhasesFought);
         Assert.Equal(1, report.Phases[0].Hits); Assert.Equal(1, report.Phases[1].Misses); Assert.Equal(CombatEventKind.FleetRetreated, report.Phases[2].Events.Last().Kind);
         var ordered = report.Phases.SelectMany(p => p.Events).Select(e => e.Sequence).ToArray();
         result.Events.Reverse(); request.Participants.Reverse();

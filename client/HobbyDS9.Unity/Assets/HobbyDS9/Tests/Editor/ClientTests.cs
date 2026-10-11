@@ -95,6 +95,94 @@ namespace HobbyDS9.UnityClient.Tests
             Assert.That(host.FinalizeCombats().Status, Is.EqualTo(TurnStatus.Completed));
         }
         [Test]
+        public void AiOnlyCheckpointDoesNotRequirePlannerAndRecentReportRendersAfterFinalization()
+        {
+            var host = ThreePartyCombat(); var save = host.Client.ExportSave();
+            foreach (var actor in save.GameState.Civilizations) actor.ControllerKind = ControllerKind.AI;
+            host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save));
+            var flow = new CombatOrchestrator(host.Client); flow.Pump();
+            Assert.That(flow.Error, Is.Null); Assert.That(flow.RequiresPlayer, Is.False);
+            Assert.That(host.Snapshot.Campaign.Phase, Is.EqualTo(SessionPhase.Planning));
+            var before = host.SaveJson(); var view = new CombatPanelView();
+            view.Present(host.Snapshot, host.Client, new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<FleetCombatPlanDto>>(), operation => operation(), flow);
+            Assert.That(view.Query<Label>().ToList().Any(l => l.text == "Recent Combat Reports"), Is.True);
+            Assert.That(view.Q<Button>("resolve-defaults"), Is.Null); Assert.That(view.Q<Button>("finalize-combat"), Is.Null);
+            Assert.That(view.Query<Foldout>().ToList().Count(f => f.name.StartsWith("battle-report-")), Is.EqualTo(1));
+            Assert.That(view.Query<Label>().ToList().Any(l => l.text.StartsWith("Shots:")), Is.True);
+            Assert.That(host.SaveJson(), Is.EqualTo(before)); flow.Pump(); Assert.That(host.SaveJson(), Is.EqualTo(before));
+            Assert.That(host.Client.RecentReports.Count, Is.EqualTo(1));
+        }
+        [Test]
+        public void PlannerSupportsSeveralPersistedHumansWithoutEditableAiControls()
+        {
+            var host = ThreePartyCombat(); var save = host.Client.ExportSave();
+            save.GameState.Civilizations.Single(c => c.CivilizationId == "civ.cardassian").ControllerKind = ControllerKind.Human;
+            host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save));
+            var flow = new CombatOrchestrator(host.Client); flow.Pump(); var before = host.SaveJson();
+            var view = new CombatPanelView();
+            view.Present(host.Snapshot, host.Client, new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<FleetCombatPlanDto>>(), operation => operation(), flow);
+            var request = host.Pending().Single();
+            foreach (var p in request.Participants)
+            {
+                var section = view.Q<VisualElement>("fleet-plan-" + p.FleetId);
+                Assert.That(section.Query<DropdownField>().ToList().Count, Is.EqualTo(p.CivilizationId == "civ.dominion" ? 0 : 5));
+            }
+            Assert.That(host.SaveJson(), Is.EqualTo(before));
+        }
+        [Test]
+        public void HumanReportHidesNextPlannerUntilContinueAndStillAllowsExplicitCompletion()
+        {
+            var host = ThreePartyCombat(2); var flow = new CombatOrchestrator(host.Client); flow.Pump();
+            flow.ResolveHuman(host.Snapshot, host.Pending().First(r => r.EncounterId == flow.PendingHumanEncounter));
+            var before = host.SaveJson(); var view = new CombatPanelView();
+            var drafts = new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<FleetCombatPlanDto>>();
+            view.Present(host.Snapshot, host.Client, drafts, operation => operation(), flow);
+            Assert.That(view.Q<Button>("resolve-defaults"), Is.Null); Assert.That(view.Q<Button>("continue-combat"), Is.Not.Null);
+            Assert.That(view.Query<Foldout>().ToList().Any(f => f.name.StartsWith("battle-report-")), Is.True);
+            Assert.That(host.SaveJson(), Is.EqualTo(before));
+            flow.Continue(); view.Present(host.Snapshot, host.Client, drafts, operation => operation(), flow);
+            Assert.That(view.Q<Button>("resolve-defaults"), Is.Not.Null);
+            flow.ResolveHuman(host.Snapshot, host.Pending().Single());
+            view.Present(host.Snapshot, host.Client, drafts, operation => operation(), flow);
+            Assert.That(view.Q<Button>("finalize-combat"), Is.Not.Null); Assert.That(host.Snapshot.Campaign.Phase, Is.EqualTo(SessionPhase.AwaitingCombat));
+            Assert.That(flow.Complete(host.Snapshot).Status, Is.EqualTo(TurnStatus.Completed));
+            view.Present(host.Snapshot, host.Client, drafts, operation => operation(), flow);
+            Assert.That(view.Query<Foldout>().ToList().Count(f => f.name.StartsWith("battle-report-")), Is.EqualTo(2));
+        }
+        [Test]
+        public void BufferedHumanReportReconstructsOnLoadAndDoesNotResolveAgain()
+        {
+            var host = ThreePartyCombat(2); var flow = new CombatOrchestrator(host.Client); flow.Pump();
+            flow.ResolveHuman(host.Snapshot, host.Pending().First(r => r.EncounterId == flow.PendingHumanEncounter));
+            var saved = host.SaveJson(); host.LoadJson(saved); flow.Pump();
+            Assert.That(flow.ReportToReview, Is.Not.Null); Assert.That(host.Client.RecentReports.Count, Is.EqualTo(1));
+            flow.Pump(); Assert.That(host.SaveJson(), Is.EqualTo(saved)); Assert.That(host.Pending().Count, Is.EqualTo(1));
+            var view = new CombatPanelView();
+            view.Present(host.Snapshot, host.Client, new System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<FleetCombatPlanDto>>(), operation => operation(), flow);
+            Assert.That(view.Q<Button>("continue-combat"), Is.Not.Null); Assert.That(host.SaveJson(), Is.EqualTo(saved));
+        }
+        [Test]
+        public void ActualScenarioOrchestrationAutoSkipsAiBattleBeforeHumanInteraction()
+        {
+            var host = Start(); var flow = new CombatOrchestrator(host.Client); var automatic = false;
+            for (var turn = 0; turn < 25; turn++)
+            {
+                host.EndTurn(); flow.Pump(); Assert.That(flow.Error, Is.Null);
+                if (flow.Notice != null && flow.Notice.Contains("AI battles resolved"))
+                { automatic = true; Assert.That(flow.RequiresPlayer, Is.False); Assert.That(host.Snapshot.Campaign.Phase, Is.EqualTo(SessionPhase.Planning)); }
+                while (host.Snapshot.Campaign.Phase == SessionPhase.AwaitingCombat)
+                {
+                    if (flow.ReportToReview != null) flow.Continue();
+                    else if (flow.PendingHumanEncounter != null) flow.ResolveHuman(host.Snapshot, host.Pending().Single(r => r.EncounterId == flow.PendingHumanEncounter));
+                    else Assert.That(flow.Complete(host.Snapshot).Status, Is.EqualTo(TurnStatus.Completed));
+                    Assert.That(flow.Error, Is.Null);
+                }
+            }
+            Assert.That(automatic, Is.True); Assert.That(host.Snapshot.Campaign.TurnNumber, Is.EqualTo(26));
+            Assert.That(host.Snapshot.Campaign.StateRevision, Is.EqualTo(187));
+            Assert.That(host.Client.RecentReports.Count, Is.EqualTo(17));
+        }
+        [Test]
         public void ProductionOverviewRendersAllOwnedWorldsWithoutCampaignMutation()
         {
             var host = Start(); var before = host.SaveJson();

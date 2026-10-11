@@ -445,7 +445,7 @@ remaining fleets receive the same existing resolver-v1 default policy through a
 shared factory (FocusFire/Standard/Overcharge, LowestHullRatio, no retreat). This
 extraction changes no combat modifiers, targeting, RNG consumption or balance.
 The lower-level pure `ResolveCombat` overloads remain for trusted host/resolver
-integration; Unity's StrategicClient player path uses the ownership-scoped API.
+integration; Unity's StrategicClient player path uses the Human-controller-scoped API.
 Stamped submission, buffering and explicit finalization remain separate operations.
 
 Current hostility is a **free-for-all between different civilizations**: same
@@ -472,3 +472,19 @@ for other participants, and expandable authoritative reports for every buffered
 battle. The finalization control appears only after every request is buffered.
 Save 12, content 8, rules population-politics-geography-v1 and phased resolver v1
 remain unchanged, as does the established deterministic smoke hash.
+
+
+## Combat client orchestration and recent reports (stacked candidate)
+
+Application adds `GetHumanCombatPlans` / `ResolveHumanCombat` for local clients with
+any number of persisted Human controllers; AI overrides are rejected and canonical
+resolver defaults fill every other fleet. The actor-scoped APIs remain available.
+`CombatOrchestrator` explicitly auto-buffers AI-only encounters after advancement or
+load and finalizes AI-only checkpoints through stamped Application operations. Mixed
+checkpoints pause for human plans/reports and explicit completion. Rendering alone
+has no side effects. Immutable successful receipts/recent reports remain in client
+memory after finalization; load clears history and reconstructs only the loaded
+checkpoint's buffered pairs. History is excluded from campaign saves. The immutable
+Application projection itself still reflects only authoritative buffered results.
+See [combat-ux-report-fix-v1.md](combat-ux-report-fix-v1.md) for behavior, testing and
+local acceptance. Save 12/content 8/rules/resolver/RNG and baseline are unchanged.

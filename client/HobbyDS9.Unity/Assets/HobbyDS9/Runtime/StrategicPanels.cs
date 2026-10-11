@@ -289,6 +289,8 @@ namespace HobbyDS9.UnityClient
             ActionButton("Load saved campaign", () => Confirm("Replace the live campaign with slot " + slot + "? Unsaved progress will be lost.", () =>
             {
                 host.LoadJson(saves.Read(slot));
+                combat.Pump();
+                if (combat.Error != null) throw new InvalidOperationException(combat.Error);
                 // Only reset the view after a successful validated session replacement.
                 ClearRoute(); selection = new GalaxySelection(); selectedPlanet = null; combatPlans.Clear(); lastPhase = null;
                 activeTab = "Empire"; map.ResetView();

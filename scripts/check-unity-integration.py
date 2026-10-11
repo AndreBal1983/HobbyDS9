@@ -48,6 +48,15 @@ for name in ("Contracts", "Application", "Simulation"):
     if source.exists() and plugin.exists():
         require(source.read_bytes() == plugin.read_bytes(), f"Stale {file_name}")
     require("isExplicitlyReferenced: 1" in Path(str(plugin) + ".meta").read_text(encoding="utf-8-sig"), f"Auto-referenced plugin: {file_name}")
+# Orchestration remains explicit; painting a panel must not advance a checkpoint.
+combat_panel = (runtime / "CombatPanelView.cs").read_text(encoding="utf-8-sig")
+require(".Pump()" not in combat_panel, "Combat panel rendering must not auto-resolve combat")
+entry = (runtime / "ClientEntry.cs").read_text(encoding="utf-8-sig")
+require("combat.RequiresPlayer" in entry and 'ShowEncounters(snapshot);' in entry,
+        "Client must support non-interrupting AI combat and Planning report history")
+client = (runtime / "StrategicClient.cs").read_text(encoding="utf-8-sig")
+require("session.ResolveHumanCombat" in client and "session.SubmitCombatResult" in client,
+        "Client combat must use frozen Application resolution plus stamped submission")
 # Audio source integrity/import/reference checks. Never an audible-playback claim.
 music = assets / "HobbyDS9/Audio/Music"
 music_catalog = (assets / "HobbyDS9/Resources/MusicCatalog.asset").read_text(encoding="utf-8-sig")

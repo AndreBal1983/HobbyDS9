@@ -17,6 +17,10 @@ namespace HobbyDS9.Application
         public IReadOnlyList<BattlePhaseReport> Phases { get; }
         public BigInteger ShieldDamage { get; }
         public BigInteger HullDamage { get; }
+        public int Shots => Phases.Sum(p => p.Attacks);
+        public int Hits => Phases.Sum(p => p.Hits);
+        public int Misses => Phases.Sum(p => p.Misses);
+        public int PhasesFought => Phases.Count(p => p.Events.Any(e => e.Kind == CombatEventKind.PhaseStarted));
         public int DestroyedShips => Fleets.Sum(f => f.Ships.Count(s => s.RemainingHull == 0));
         public BattleReportSnapshot(ResolvedCombatDto combat)
         {
