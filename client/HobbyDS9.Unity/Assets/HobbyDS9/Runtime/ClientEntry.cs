@@ -32,11 +32,11 @@ namespace HobbyDS9.UnityClient
             panel.scaleMode = PanelScaleMode.ScaleWithScreenSize;
             panel.referenceResolution = new Vector2Int(1920, 1080);
             panel.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight; panel.match = 1;
-            panel.themeStyleSheet = Resources.Load<ThemeStyleSheet>("HobbyTheme");
+            panel.themeStyleSheet = UnityEngine.Resources.Load<ThemeStyleSheet>("HobbyTheme");
             var document = gameObject.AddComponent<UIDocument>(); document.panelSettings = panel;
             var root = document.rootVisualElement;
             root.AddToClassList("client-root");
-            root.styleSheets.Add(Resources.Load<StyleSheet>("HobbyClient"));
+            root.styleSheets.Add(UnityEngine.Resources.Load<StyleSheet>("HobbyClient"));
             var header = new VisualElement(); header.AddToClassList("top-bar");
             header.Add(new Label("HobbyDS9"));
             status = new Label(); status.AddToClassList("campaign-status"); header.Add(status);
@@ -58,7 +58,7 @@ namespace HobbyDS9.UnityClient
             message.AddToClassList("message-bar"); root.Add(message);
             try
             {
-                var asset = Resources.Load<TextAsset>("ds9-slice");
+                var asset = UnityEngine.Resources.Load<TextAsset>("ds9-slice");
                 if (asset == null) throw new InvalidOperationException("Scenario missing. Run dotnet msbuild scripts/PrepareUnity.proj before opening Unity.");
                 host = new CampaignHost(asset.bytes);
                 saves = new SaveSlotStore(System.IO.Path.Combine(UnityEngine.Application.persistentDataPath, "CampaignSaves"));
