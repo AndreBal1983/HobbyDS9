@@ -11,29 +11,29 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 26b95b31818a4cd0b64d48254e767afd, type: 3}
   m_Name: LcarsSfxCatalog
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   entries:
   - effect: 0
     semanticId: buttonPress
     intendedFilename: federation-key-beep-1.wav
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: f8f39b975871d5f4791a3ddae38e1749, type: 3}
   - effect: 1
     semanticId: success
     intendedFilename: federation-input-successful-1.wav
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: 44543b2598d02584c8b5f13c6338818c, type: 3}
   - effect: 2
     semanticId: error
     intendedFilename: federation-access-denied.wav
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: 8281f0792b8d35a4b8c8f491fd04b88a, type: 3}
   - effect: 3
     semanticId: processing
     intendedFilename: federation-processing-1.wav
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: 0e12a5899704e334e847dba22c13b931, type: 3}
   - effect: 4
     semanticId: screenOpen
     intendedFilename: federation-screen-display-1.wav
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: 0fd11300a9d8765499f70dda31dc922f, type: 3}
   - effect: 5
     semanticId: search
     intendedFilename: federation-lcars-search.wav
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: 907b6948776a01b42937501dd68b2796, type: 3}

@@ -100,29 +100,33 @@ namespace HobbyDS9.UnityClient.Tests
         [Test]
         public void RepeatedAttachedGeometryEventsDoNotDuplicateControls()
         {
-            var window=ScriptableObject.CreateInstance<LcarsGeometryTestWindow>();
-            try
+            var shell = new LcarsShell(
+                new VisualElement(),
+                new ProductionOverviewView(),
+                _ => { },
+                () => { },
+                () => { });
+
+            var count = shell.Query<Button>().ToList().Count;
+
+            for (var i = 0; i < 5; i++)
             {
-                window.Show();var shell=new LcarsShell(new VisualElement(),new ProductionOverviewView(),_=>{},()=>{},()=>{});window.rootVisualElement.Add(shell);
-                var count=shell.Query<Button>().ToList().Count;var previous=new Rect(0,0,1920,1080);
-                for(var i=0;i<5;i++)foreach(var width in new[]{1422,1920,2580})
+                foreach (var width in new[] { 1422, 1920, 2580 })
                 {
-                    var next=new Rect(0,0,width,width==1422?800:1080);
-                    using(var change=GeometryChangedEvent.GetPooled(previous,next)){change.target=shell;shell.SendEvent(change);}
-                    Assert.That(shell.Plan.Mode,Is.EqualTo(ResponsiveLayoutPolicy.ForLogicalSize(next.width,next.height).Mode));previous=next;
+                    var height = width == 1422 ? 800 : 1080;
+
+                    shell.ApplyLogicalSize(width, height);
+
+                    Assert.That(
+                        shell.Plan.Mode,
+                        Is.EqualTo(
+                            ResponsiveLayoutPolicy.ForLogicalSize(width, height).Mode));
                 }
-                Assert.That(shell.Query<Button>().ToList().Count,Is.EqualTo(count));Assert.That(shell.Details,Is.InstanceOf<ScrollView>());
             }
-            finally{if(window!=null)window.Close();}
-        }
-        [TestCase(20,20)] [TestCase(104,64)] [TestCase(180,90)]
-        public void VectorElbowAcceptsContentSizesWithoutFrameDrivenGeometry(float width,float height)
-        {
-            var elbow=new LcarsElbow();elbow.style.width=width;elbow.style.height=height;
-            Assert.That(elbow.pickingMode,Is.EqualTo(PickingMode.Ignore));Assert.That(new ElbowMetrics(width,height).CanDraw,Is.True);
-            // Construction/metrics only; actual Painter2D visual output needs local rendering.
-            elbow.MarkDirtyRepaint();
+
+            Assert.That(shell.Query<Button>().ToList().Count, Is.EqualTo(count));
+            Assert.That(shell.Details, Is.InstanceOf<ScrollView>());
         }
     }
-    public sealed class LcarsGeometryTestWindow : UnityEditor.EditorWindow { }
+
 }

@@ -77,9 +77,9 @@ namespace HobbyDS9.UnityClient
             var drawer = Plan.ProductionDrawer;
             ProductionFrame.EnableInClassList("lcars-drawer",drawer);
             ProductionFrame.style.position = drawer ? Position.Absolute : Position.Relative;
-            ProductionFrame.style.left = drawer ? new StyleLength(0) : new StyleLength(StyleKeyword.Auto);
-            ProductionFrame.style.top = drawer ? new StyleLength(0) : new StyleLength(StyleKeyword.Auto);
-            ProductionFrame.style.bottom = drawer ? new StyleLength(0) : new StyleLength(StyleKeyword.Auto);
+            ProductionFrame.style.left = drawer ? new StyleLength(0f) : new StyleLength(StyleKeyword.Auto);
+            ProductionFrame.style.top = drawer ? new StyleLength(0f) : new StyleLength(StyleKeyword.Auto);
+            ProductionFrame.style.bottom = drawer ? new StyleLength(0f) : new StyleLength(StyleKeyword.Auto);
             // Keep drawers above map hit targets but do not cover the rest of it.
             if (drawer && ProductionOpen) ProductionFrame.BringToFront();
             else if (!drawer) ProductionFrame.SendToBack();
