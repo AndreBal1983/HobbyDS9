@@ -11,6 +11,8 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 | [Strategic AI](strategic-ai.md) | Persistent goals, coordinated plans, editable faction personalities, five fair difficulties, worked diplomacy plan | Direction agreed; detailed tuning proposed |
 | [Ship design](ship-design.md) | Shared capacity and mounting limits, dependencies, power profiles, engineered versions, refits and AI design | Shared capacity/mounting and hull refinement agreed; detailed rules proposed |
 
+| [Exploration and procedural missions](exploration-missions.md) | System/body surveys, first contact, mission director, shared consequences, expedition repair dilemmas | Direction agreed; infrastructure and tuning proposed |
+
 ## Decisions adopted
 
 - Keep faction abilities, personality and difficulty independent; canonical factions are editable presets.
@@ -21,6 +23,8 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 - Integrate the ship designer with the strategic planner: build for mission, timing, affordability and logistics.
 
 The power-profile rules, version/refit details, schemas, example statistics and implementation stages are proposals, not additional user-approved balance values.
+
+Exploration/first-contact decisions and the proposed mission infrastructure are recorded in [exploration-missions.md](exploration-missions.md). Persistent missions, survey/repair integration, diplomacy adapters and consequence schemas require scoped implementation; documenting them does not establish runtime support.
 
 ## Design versus implementation
 
