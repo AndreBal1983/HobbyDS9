@@ -153,6 +153,25 @@ Resolve resource acquisition and onboard fabrication before repair. Success can 
 
 Fulfilling a negotiated service creates trust through the commitment system. Trading technology transfers only the specified permitted knowledge. Repeated visits cannot farm the same finite discovery or political reward.
 
+## Spatial phenomena and black-hole expeditions
+
+Direction discussed 12 October 2026; mission details remain proposed. Use [weekly time and movement](time-movement-mobilisation.md) for the campaign clock and pacing constraints.
+
+- Detect evidence of hazards at a distance when sensor range/quality permits. Give actionable warnings before a deliberate dangerous approach; distinguish known risk from unknown information.
+- Finding a phenomenon early must not automatically trigger an unavoidable empire-ending threat. Crystalline entities and Borg-like actors require separate actor/encounter designs rather than being treated as passive black-hole hazards.
+- Offer perimeter observation, probe deployment and close investigation, with different equipment, time, exposure, observations and rewards. Record sites so better-equipped expeditions can return later.
+- A black hole does not impose extreme time dilation merely because a ship enters its system. Relevant proximity and trajectory govern the effect. Perimeter study can remain relatively unaffected.
+- Crew proper time and empire time differ on a close expedition; keep the whole campaign on one weekly empire clock. Time dilation reduces onboard elapsed work per empire interval, not a free research multiplier.
+- Proposed mission state can store onboard work progress and empire return estimates using bounded fixed-point parameters. Stronger scientific value comes from unique close observations, not extra subjective working time.
+- Communication limits require explicit signal/environmental or fictional subspace conditions; time dilation alone does not imply a complete blackout. Show estimated return windows and communication status, with honest uncertainty.
+- The ship can be committed/unavailable for several empire turns while the crew experiences a shorter investigation. Define withdrawal feasibility before commitment and at stage transitions. Never freeze the empire clock.
+- Damage, retreat, discoveries and useful data may coexist. Probes and preparation can reduce risk; safe observation should still have worthwhile value.
+- Science can reveal an Engineering opportunity or strategic route knowledge; usable equipment/routes still require applicable Engineering, construction and validation.
+- Wormhole stability, unknown exits, communication, probe-first scouting and collapse are future template variants. Do not silently promise stable traversal for an unstudied connection.
+- The complete black-hole chain, specific rewards, technology requirements, dilation parameters, mission duration and abort rules still need design review.
+
+Scientific grounding: [NASA's black-hole visualization explanation](https://science.nasa.gov/universe/black-holes/supermassive-black-holes/new-nasa-black-hole-visualization-takes-viewers-beyond-the-brink/) distinguishes gravitational/motion-related time dilation and the event horizon. Game parameters and survivable expedition envelopes are abstractions, not a general-relativity simulation.
+
 ## AI and presentation
 
 AI evaluates mission value against its persistent strategic plan, risk, time, resources, policies and lawful knowledge. Difficulty changes bounded evaluation effort, not outcomes or hidden information. Templates must offer decision metadata without letting AI read unrevealed branches.
