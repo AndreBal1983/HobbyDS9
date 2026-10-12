@@ -2,6 +2,8 @@
 
 Scoped backend implementation on `codex/blueprint-construction-v1`, based exactly on accepted main `4afe74dd5a6a62454e563fb7aef770ee0f002a23`. The [ship-design chapter](design/ship-design.md) retains its agreed/proposed/open distinctions. This milestone implements campaign publication, retained revisions and construction, without the simultaneous Unity designer UX changes.
 
+Integration acceptance, 12 October 2026: PR #5 combines source `63c7fa46f3e0e40d2c16a4ef38dc4f6924abeddc` with newer main `8732bb1c3dfaac01688389452033590ec10f92a2`. The newer design index, modular equipment/hull discussion and tactical combat chapter are preserved unchanged. Their agreed future direction does not introduce tactical rounds, configurable mount families or torpedo ammunition into this scoped construction milestone. The combined candidate must pass the same full portable validation and exact-commit CI before merge; final commit/run evidence is recorded in PR #5 and the integration handoff.
+
 ## Authority and content
 
 `DefinitionCatalogDto.ShipDesignCatalogue` supplies the campaign compiler input. `ShipDesignVersionAccess` contains exactly one content-owned gate per hull/component version. An empty prerequisite list explicitly declares starting equipment; other versions require every listed Engineering application to be mature in the owner's authoritative state. Missing, duplicate, unknown or malformed gates reject the content package. Application exposes the immutable catalogue and current available IDs through `GetShipDesignCatalogue(actor)`; no client whitelist grants campaign access.
