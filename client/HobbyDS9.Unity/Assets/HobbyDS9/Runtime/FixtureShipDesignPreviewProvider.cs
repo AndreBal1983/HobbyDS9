@@ -39,10 +39,29 @@ namespace HobbyDS9.UnityClient
                 $"{c.Kind} • {c.VersionId}\n"+string.Join(" • ",c.Modes.Select(m=>$"{m.Profile}: full {m.FullPower}, minimum {m.MinimumPower}, {m.Scaling}")),
                 $"{c.Capacity} capacity • crew {c.CrewRequired} • computer demand {c.ComputerDemand} • supply {c.PowerSupply} • envelope {c.EnvelopeSize}\n"+
                 $"{c.Cost.Credits} credits / {c.Cost.Industry} industry / upkeep {c.Cost.Maintenance}\n"+
-                string.Join(" • ",c.Mounts.Select(m=>$"{m.Kind}: {m.Count} mounts, size {m.SizeRating}")))).ToList().AsReadOnly();
+                string.Join(" • ",c.Mounts.Select(m=>$"{m.Kind}: {m.Count} mounts, size {m.SizeRating}")), SystemFor(c.Kind))).ToList().AsReadOnly();
             Templates = fixture.Drafts.Select(d=>new DesignerTemplate(d.ClassId,d.DisplayName,new DesignerFit(d))).ToList().AsReadOnly();
         }
         public ShipDesignAccessDto Access() => new ShipDesignAccessDto { AvailableVersionIds=available.ToList() };
+        public static string SystemFor(ComponentKind kind) => kind==ComponentKind.Reactor ? "Power" :
+            kind==ComponentKind.LifeSupport ? "Crew" : kind==ComponentKind.Command ? "Command" :
+            kind==ComponentKind.Propulsion ? "Propulsion" : kind==ComponentKind.Sensors ? "Sensors" :
+            kind==ComponentKind.Science ? "Science" : kind==ComponentKind.Shields ? "Shields" :
+            kind==ComponentKind.EnergyWeapon || kind==ComponentKind.TorpedoWeapon ? "Weapons" : "Support";
+        public bool Available(string id) => available.Contains(id,StringComparer.Ordinal);
+        public IReadOnlyList<DesignerMetric> ComponentFacts(string id,DesignerProfile profile)
+        {
+            var c=Designer.Catalogue.Components.Single(x=>x.VersionId==id);
+            var mode=c.Modes.SingleOrDefault(m=>m.Profile==DesignerFit.Kind(profile));
+            var rows=new List<DesignerMetric> { M("Version",c.VersionNumber),M("Capacity / crew",$"{c.Capacity} / {c.CrewRequired}"),
+                M("Credits / industry",$"{c.Cost.Credits} / {c.Cost.Industry}"),M("Upkeep",c.Cost.Maintenance),M("Computer demand",c.ComputerDemand),M("Power supply",c.PowerSupply),M("Envelope size",c.EnvelopeSize) };
+            if(mode!=null) { rows.Add(M("Full / minimum power",$"{mode.FullPower} / {mode.MinimumPower}")); rows.Add(M("Power response",mode.Scaling)); foreach(var o in mode.Outputs) rows.Add(M(o.Kind.ToString(),o.Amount)); }
+            foreach(var mount in c.Mounts) rows.Add(M(mount.Kind.ToString(),$"{mount.Count} mounts • size {mount.SizeRating}"));
+            foreach(var dep in c.Dependencies) rows.Add(M("Needs "+dep.Kind,dep.Amount));
+            if(c.RequiredComponentTags.Count>0) rows.Add(M("Required system tags",string.Join(", ",c.RequiredComponentTags)));
+            rows.Add(M("Compatible hull families",string.Join(", ",c.CompatibleHullFamilyIds)));
+            return rows.AsReadOnly();
+        }
         public ShipDesignPreview Evaluate(DesignerFit fit) => Designer.Preview(fit.ToDto(),Access());
         private static DesignerMetric M(string key,object value) => new DesignerMetric(key,Convert.ToString(value,System.Globalization.CultureInfo.InvariantCulture) ?? "—");
         public DesignerPreview Preview(DesignerFit fit,DesignerProfile profile)
@@ -50,6 +69,7 @@ namespace HobbyDS9.UnityClient
             var result=Evaluate(fit);
             var selected=result.Profiles.SingleOrDefault(p=>p.Kind==DesignerFit.Kind(profile));
             var power=new List<DesignerMetric>(); var capabilities=new List<DesignerMetric>(); var costs=new List<DesignerMetric>();
+            power.Add(M("Reactor / distribution",$"{result.ReactorPower?.ToString()??"Not evaluated"} / {result.DistributionLimit?.ToString()??"Not evaluated"}"));
             if(selected!=null)
             {
                 power.Add(M("Available / requested",$"{selected.AvailablePower} / {selected.RequestedPower}"));
@@ -73,7 +93,7 @@ namespace HobbyDS9.UnityClient
             var issues=result.Issues.Select(i=>new DesignerIssue(
                 dto.Installations!.FirstOrDefault(x=>i.Path.Contains(x.InstallationId))?.ComponentVersionId ?? "",
                 i.Severity==DesignIssueSeverity.Error?DesignerStatus.HardError:DesignerStatus.Warning,
-                i.Message+"\n"+i.Code+" • "+i.Path));
+                i.Message));
             return new DesignerPreview(!result.IsValid?DesignerStatus.HardError:result.Issues.Count>0?DesignerStatus.Warning:DesignerStatus.Valid,
                 "Portable backend preview • all profiles validated • no campaign order", result.CapacityUsed,result.CapacityLimit,
                 result.CapacityLimit.HasValue && result.CapacityUsed.HasValue ? result.CapacityLimit-result.CapacityUsed : null,

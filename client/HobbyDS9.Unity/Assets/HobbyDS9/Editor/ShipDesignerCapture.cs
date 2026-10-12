@@ -31,18 +31,19 @@ namespace HobbyDS9.UnityClient.Editor
             if(shell==null || !shell.DesignerOpen || view==null) throw new InvalidOperationException("Open Ship design before capture.");
             if(view.Draft.Modified || view.Draft.ConfirmationPending) throw new InvalidOperationException("Keep your local edits or explicitly reset them before fixture capture; this tool will not discard a modified draft.");
 
-            var original=view.Draft.TemplateId; var profile=view.Draft.Profile;
-            view.Draft.RequestTemplate("class.surveyor"); view.Draft.SelectProfile(DesignerProfile.Survey);
-            StrategicPrototypeCapture.CaptureSequence("ship-designer-prototype","surveyor",Sizes,Validate,()=>
+            var original=view.Draft.TemplateId; var profile=view.Draft.Profile;var system=view.SelectedSystem;
+            var cases=new[] {Tuple.Create("class.surveyor","Overview","surveyor-overview"),Tuple.Create("class.escort","Overview","escort-overview"),Tuple.Create("class.escort","Weapons","weapons"),Tuple.Create("class.escort","Power","power"),Tuple.Create("class.escort","Profiles","profiles-combat")};
+            void CaptureCase(int index)
             {
-                view.Draft.RequestTemplate("class.escort"); view.Draft.SelectProfile(DesignerProfile.Combat);
-                StrategicPrototypeCapture.CaptureSequence("ship-designer-prototype","escort",Sizes,Validate,()=>
+                if(index==cases.Length)
                 {
-                    view.Draft.RequestTemplate(original); view.Draft.SelectProfile(profile);
-                    Debug.Log("Ship designer: six real Game view screenshots complete. Inspect and perform native interaction checks before accepting.");
-                    completed();
-                });
-            });
+                    view.Draft.RequestTemplate(original);view.Draft.SelectProfile(profile);view.SelectSystem(system);
+                    Debug.Log("Ship designer: fifteen real Game view screenshots complete.");completed();return;
+                }
+                var item=cases[index];view.Draft.RequestTemplate(item.Item1);view.Draft.SelectProfile(item.Item1=="class.surveyor"?DesignerProfile.Survey:DesignerProfile.Combat);view.SelectSystem(item.Item2);
+                StrategicPrototypeCapture.CaptureSequence("ship-designer-ux-rebuild",item.Item3,Sizes,Validate,()=>CaptureCase(index+1));
+            }
+            CaptureCase(0);
         }
         // Optional command-line entry for reproducible real Game view evidence.
         // Uses the ordinary navigation entry and fixture capture; no campaign edits.
@@ -56,7 +57,8 @@ namespace HobbyDS9.UnityClient.Editor
             acceptanceDeadline=EditorApplication.timeSinceStartup+120;
             EditorApplication.update-=PollAcceptance;
             EditorApplication.update+=PollAcceptance;
-            EditorApplication.isPlaying=true;
+            // Let executeMethod return before entering Play mode at Editor startup.
+            EditorApplication.delayCall+=()=>EditorApplication.isPlaying=true;
         }
         private static void PollAcceptance()
         {
@@ -82,6 +84,10 @@ namespace HobbyDS9.UnityClient.Editor
             }
             if(!view.Q<Label>("designer-provider-status").text.Contains("Backend validated")) throw new InvalidOperationException("Backend provenance is missing.");
             if(view.Q<Button>("designer-construction").enabledSelf) throw new InvalidOperationException("Construction must remain unavailable.");
+            var workspace=view.Q<VisualElement>("designer-workspace");
+            if(workspace.worldBound.height<150)throw new InvalidOperationException("The focused workspace has no useful viewport.");
+            if(view.SelectedSystem=="Overview" && !view.Q<ShipSystemGraphic>().HasImage)throw new InvalidOperationException("Overview art failed to load.");
+            if(view.SelectedSystem!="Profiles" && view.Query<LongField>().ToList().Exists(f=>f.name.StartsWith("power-")))throw new InvalidOperationException("Power editors leaked outside their page.");
         }
     }
 }
