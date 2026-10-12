@@ -17,6 +17,7 @@ Read [the design index](README.md), [ship design](ship-design.md), [strategic AI
 - Risky missions can damage ships, including through military retaliation. Damage persists into the campaign.
 - Limited self-repair and local repair resources can create survival-versus-non-interference dilemmas. The suggested 90% field-repair ceiling is **provisional**, not approved balance.
 - Build procedural situations from authored templates populated with real campaign facts, persistent mission state and shared consequence rules.
+- Complete finite study chains per civilization; shared or stolen findings reduce remaining knowledge and never duplicate rewards. Standing local planetary research modifiers are separate from finite discoveries.
 
 All schemas, timing policies, formulas, pacing limits, examples and milestone boundaries below are **proposals** unless explicitly labeled otherwise.
 
@@ -168,9 +169,99 @@ Direction discussed 12 October 2026; mission details remain proposed. Use [weekl
 - Damage, retreat, discoveries and useful data may coexist. Probes and preparation can reduce risk; safe observation should still have worthwhile value.
 - Science can reveal an Engineering opportunity or strategic route knowledge; usable equipment/routes still require applicable Engineering, construction and validation.
 - Wormhole stability, unknown exits, communication, probe-first scouting and collapse are future template variants. Do not silently promise stable traversal for an unstudied connection.
-- The complete black-hole chain, specific rewards, technology requirements, dilation parameters, mission duration and abort rules still need design review.
+- The finite reward/mission-order framework below supplies the next black-hole-chain foundation. Specific content, technology requirements, dilation parameters, mission duration and abort rules still need design review.
 
 Scientific grounding: [NASA's black-hole visualization explanation](https://science.nasa.gov/universe/black-holes/supermassive-black-holes/new-nasa-black-hole-visualization-takes-viewers-beyond-the-brink/) distinguishes gravitational/motion-related time dilation and the event horizon. Game parameters and survivable expedition envelopes are abstractions, not a general-relativity simulation.
+
+## Finite study chains, expedition orders and scientific rewards
+
+Decision update: 12 October 2026.
+
+### Agreed direction
+
+- A phenomenon has a finite study chain. Once a civilization completes it, that civilization cannot mine it repeatedly for discoveries.
+- Study completion is **per civilization**, with shared or stolen findings reducing what remains to learn. Changing ships, ownership transfers or receiving the same data again cannot reset earned knowledge.
+- A chain can contain several decisions that shape the investigation and its reward. Three decision points are an illustrative template, not a required count for all sites.
+- Mission preparation, time, equipment and finite consumables influence the likelihood and quality of findings. The phenomenon influences the scientific disciplines that benefit.
+- One mission may yield insight in multiple disciplines. It is not restricted to one mutually exclusive Science result.
+- Keep a bounded total science reward budget so multiple successful discipline rolls do not accidentally multiply the payout.
+- Outcomes can be graded: modest usable data, substantial findings, partial success or loss. A failed substantial-finding check need not erase all routine observations.
+- Exploration and laboratory investment should both be viable over a campaign. Compare overall expected value and opportunity cost, not equal points on every mission.
+- Planetary geology or stellar conditions can separately supply a standing, discipline-specific research-production modifier. This is distinct from an exhausted one-time discovery reward.
+
+### Proposed mission order and autonomous execution
+
+For the initial black-hole example, the player chooses mission parameters before communications become unavailable:
+- Approach: flyby/perimeter, extended observation or close investigation.
+- Work/time budget and permitted probe expenditure.
+- Risk tolerance, minimum hull/repair reserve and withdrawal thresholds.
+- Scientific priorities where the available observations support them.
+- Rules for returning, reporting and safe fallback when conditions change.
+
+The captain executes those pre-authorized parameters through deterministic mission rules, not a live language model. Several internal decision stages can resolve autonomously using the chosen policy. A communications blackout must not prompt the empire leader for impossible live instructions or block the campaign. The absence of player input must not imply permission for unbounded risk or extra resource spending.
+
+Other mission templates may request multiple strategic choices while communication remains available. Distinguish an interactive chain from an autonomous chain; a three-stage chain does not necessarily mean three player popups. Amendments require established communication/access and a legal command; define an abort/return window explicitly.
+
+### Finite consumables
+
+Probes are stored physical equipment with limited stock. Deployment consumes actual stock once. Replenishment requires a supported supply, production or fabrication path, time and applicable costs; it is not a free reset between missions. Storage/launcher capacity belongs to the ship-design model. A launch budget cannot exceed loaded stock.
+
+The user also identified photon torpedoes as finite, refillable stores. This is an intended future ammunition/logistics direction, **not** a change to the current aggregate combat resolver, which excludes ammunition. Introduce combat ammunition only in its own scoped, versioned milestone. Keep scientific probes separate from torpedo stocks unless explicit equipment/content defines conversion.
+
+Avoid reintroducing a generic Materials currency. Missions use named resources and consumables where meaningful. Detailed consumable types, fabrication rates and fleet resupply remain proposed/open.
+
+### Proposed reward calculation
+
+Science disciplines remain Biotech, Computing, Construction, Energy, Propulsion and Weapons.
+
+Separate:
+1. **Data acquisition/quality:** capability, time, approach, consumables and hazards determine actual useful observations.
+2. **Discipline participation:** content-defined, potentially independent eligibility/chance checks determine which fields receive insight.
+3. **Point allocation:** distribute a bounded mission reward across participating fields using content weights, observed quality and remaining learnable findings.
+
+Independent chances do not need to sum to 100%; allocation weights for distributing one budget are a different quantity. If no discipline qualifies, use the authored modest-data or no-new-findings outcome; do not reroll until success. Use deterministic integer arithmetic, stable discipline order and explicit rounding/remainder rules.
+
+Illustrative substantial-finding chances discussed: flyby 50%, extended study 75%, probe-assisted study 95%. Illustrative black-hole participation chances: Propulsion 90%, Energy 80%, Construction 30%. These are **provisional examples**, not final success guarantees, fixed universal tiers or approved balances. Equipment, site difficulty and lawful knowledge affect the actual distributions.
+
+Example report: 523 Propulsion insight and 124 Construction insight, total 647, within the resolved budget. The example does not establish a universal 1,000-point Science level cost; actual progression uses scenario/content costs. Grant insight through the normal Science rules, including overflow/level transitions and seeded breakthrough handling where supported. Practical applications still require Engineering.
+
+Separate scientific findings from hazard damage and data recovery. A damaged ship may return useful data; a successful investigation can lose a probe. Define whether data was transmitted, recovered or lost before granting its reward. Unsupported data-recovery systems must be explicit fixtures, not silently assumed live behavior.
+
+### Knowledge identity and deduplication
+
+Proposed tracking key: civilization + stable phenomenon/site + stable finding identity. Store completed stages, claimed findings and acquired shared/stolen knowledge using bounded durable state and existing effect receipts. One civilization cannot run competing missions to claim the same finding twice.
+
+Transferred data carries finding provenance and scope. Receiving a previously claimed finding gives no new discovery payout. Receiving partial data narrows the remaining investigation; mission progress and costs are recalculated under explicit rules, without automatically completing unknown observations or buying trust.
+
+Another civilization may independently study the same accessible site, subject to access and physical conditions. Physical depletion/destruction is global where applicable, while scientific knowledge is civilization-specific. Capturing a ship/site or absorbing a civilization requires explicit knowledge-merge rules; changing IDs or ownership cannot refresh a completed reward.
+
+Paused/failed chains retain earned findings and consumed supplies. Resuming can claim only unresolved eligible findings. Abandoning and restarting must not reroll exhausted stages. Whether a newly unlocked instrument exposes a genuinely new finite chain remains open; newer equipment alone never automatically resets an old one.
+
+### Standing planetary research modifier
+
+A studied geological or stellar feature may reveal a persistent local modifier, such as +10% to local Energy Science production. This number is illustrative; an additive output bonus versus a percentage modifier remains a tuning/schema choice.
+
+The bonus is attached to the actual planet/feature and supported local research output, not to each visiting ship. It is applied once per relevant production calculation. It creates no repeatable mission reward. Control transfers do not duplicate it. Normal facility, access, stability and policy rules still determine usable output.
+
+Do not assume a Science modifier multiplies Engineering, the whole empire's R&D pool or every discipline. The current shared R&D allocation model needs an explicit local-to-discipline projection/adapter before implementation; do not silently alter its semantics. Discovery, facility prerequisites, stacking, caps and loss of the physical feature need authored rules.
+
+### Balance and acceptance additions
+
+Compare labs and expeditions over equal campaign horizons and realistic starts. Include ship/facility construction, upkeep, travel and committed weeks, probes, expected damage/losses, resupply and alternative use of Industry/credits. Credit finite discoveries, route knowledge, Engineering opportunities and exploration-victory progress as additional value. Laboratory output is steady; expedition output is uncertain, weighted by available sites and finite.
+
+Use reproducible scenario/seed suites, evaluate variance as well as means, and ensure neither labs nor expeditions universally dominate. Diminishing novel findings must limit late-game farming without making safe early observation pointless. More investment improves supported prospects; it does not guarantee a breakthrough or proportional unlimited rewards.
+
+Additional acceptance:
+- Completed chains cannot restart for the same civilization through ship swapping, reload or ownership changes.
+- Independent civilizations retain separate knowledge without respawning depleted physical rewards.
+- Shared/stolen duplicates pay out zero; partial transfers reduce only the corresponding remaining findings.
+- Multi-field rewards remain within the total budget and deterministic rounding rules.
+- Probe spending respects stock and occurs once; resupply follows real support rules.
+- Autonomous missions respect orders and cannot demand live choices during blackout.
+- Failed/aborted/resumed missions preserve claims, RNG and spent supplies.
+- A planetary modifier applies once to its supported local output and is separate from discovery rewards.
+- Current combat has no ammunition behavior change until a separate accepted implementation.
+
 
 ## AI and presentation
 
@@ -210,6 +301,6 @@ Initial suggested task: implement one portable repair mission end to end on an i
 
 ## Open decisions
 
-Body/actor ownership granularity; field repair rates/ceilings and supply abstraction; domestic policy-response model; exact risk curves and scientific rewards; mission frequency and concurrency; timeout/default choices; interception/retaliation timing; cross-civilization competition for one site; how much outcome preview is revealed.
+Exact chain lengths, finding-transfer/absorption rules, new-instrument follow-ups, standing modifier formula/stacking, data recovery and consumable logistics; body/actor ownership granularity; field repair rates/ceilings and supply abstraction; domestic policy-response model; exact risk curves and scientific rewards; mission frequency and concurrency; timeout/default choices; interception/retaliation timing; cross-civilization competition for one site; how much outcome preview is revealed.
 
 Resolve these in scoped implementation/design increments. Do not treat proposed example numbers as final balance.
