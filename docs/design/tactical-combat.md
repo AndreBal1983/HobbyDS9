@@ -338,11 +338,19 @@ The intended combat cadence is **three tactical rounds per encounter** (with obj
 
 **Agreed, 12 October 2026:** **every offensive weapon strikes the currently exposed directional shield sector before damaging hull.** While that shield sector has any remaining strength, its protection absorbs incoming damage up to that remaining strength; **there is no hull bleed-through, passive penetration, chance-based shield bypass or internal-system damage through active shields** in the agreed combat model. This applies to beams/arrays, cannon/pulse weapons, and all torpedo variants, including unusual faction technologies such as Dominion phased-polarons or Romulan plasma torpedoes.
 
-**Resolve each authoritative attack/volley deterministically against the impacted sector:** reduce that sector by the incoming damage it can absorb; **only damage in excess of the depleted sector's remaining strength spills to the hull in the same resolved impact/volley**. For example, a sector with 8 shield points taking 12 damage loses 8 shield points and receives 4 hull damage; if it takes 6, the sector falls to 2 and the hull receives none. A zero-strength sector affords no protection until recharged. Do not allow full shields on a different facing to intercept a legal hit against a depleted facing without a successful defensive maneuver/aspect change.
+**Resolve each authoritative attack/volley deterministically against the impacted sector:** reduce that sector by the incoming damage it can absorb; **only damage in excess of the depleted sector's remaining strength spills to the hull in the same resolved impact/volley**. For example, a sector with 8 shield points taking 12 damage loses 8 shield points and sends **4 raw damage toward the hull, subject to armor mitigation**; if it takes 6, the sector falls to 2 and the hull receives none. A zero-strength sector affords no protection until recharged. Do not allow full shields on a different facing to intercept a legal hit against a depleted facing without a successful defensive maneuver/aspect change.
 
 Directional facings, maneuver outcomes, the three-round encounter cap, limited shield recharge between rounds and simultaneous-volley fairness remain in effect. Record exposed sector, blocked damage, depleted strength and spillover in the backend event trace. Unity may stage bridge sparks or shield flickers as **cosmetic effects only**; it must not portray actual subsystem failures or hull damage that the backend did not determine.
 
 Weapon-family distinctions can modify **shield damage, tracking, salvo profile, countermeasure vulnerability, power draw, or other approved shield-facing interactions**, but **not shield penetration**. Any future exception would require an explicit new design decision and corresponding combat/save-contract changes; do not infer one from source fiction.
+
+## Hull armor — agreed mitigation layer
+
+**Decision, 12 October 2026:** ships have **armor**, distinct from directional shields and hull integrity. Armor mitigates incoming damage **only after the impacted shield sector is exhausted**. There is no separate ablative armor-health pool in the first-pass model; a ship's compiled armor rating reduces some of the raw damage reaching the hull, and the remainder reduces persistent hull integrity. This preserves an understandable sequence: **resolve hit and sector → shield absorbs → armor mitigates excess → hull takes remaining damage**.
+
+Armor performance derives from hull engineering, suitable protective components/materials and technology, within ship-design capacity and construction trade-offs; it is not a free faction bonus. A tougher ship should survive exposure after a shield facing collapses, while speed, agility and defensive-screening configurations remain meaningful alternatives. Armor is not directional in the first pass; one ship-wide rating avoids adding four more tracked pools.
+
+**Armor mitigation formula, technology scaling, maximum reduction and weapon-vs-armor interactions are OPEN for balance/implementation review.** Percentage mitigation is a candidate to avoid rendering rapid-fire weapons useless with flat per-hit subtraction, but is not yet locked. Ensure armor does not make ships universally invulnerable and preserve deterministic simultaneous-volley processing. Existing designs and save contracts must not be silently treated as already supporting armor. Subsystem damage remains explicitly parked.
 
 ## Damage resolution and presentation boundary
 
@@ -386,7 +394,7 @@ Still open for later review and playtesting:
 - conditional orders/contingencies;
 - detailed screening and target-access resolution;
 - retreat destination semantics after within-turn interception;
-- whether subsystem targeting/damage is desirable at all (explicitly parked, not approved future scope); critical hits, repairs and shield regeneration also remain separate open topics;
+- armor mitigation formula and scaling; whether subsystem targeting/damage is desirable at all (explicitly parked, not approved future scope); critical hits, hull repairs and **shield regeneration tuning** remain separate open topics;
 - AI tactical planning depth by difficulty.
 
 These are not permission to revert to hard fleet caps, true 3D authoritative combat, fixed one-way range phases or one-time pre-battle doctrine. Those higher-level decisions are agreed.
