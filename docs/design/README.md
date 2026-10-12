@@ -11,6 +11,7 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 | [Strategic AI](strategic-ai.md) | Persistent goals, coordinated plans, editable faction personalities, five fair difficulties, worked diplomacy plan | Direction agreed; detailed tuning proposed |
 | [Ship design](ship-design.md) | Shared capacity and mounting limits, dependencies, power profiles, engineered versions, refits and AI design | Shared capacity/mounting and hull refinement agreed; detailed rules proposed |
 | [Exploration and procedural missions](exploration-missions.md) | System/body surveys, first contact, mission director, shared consequences, expedition repair dilemmas | Direction agreed; infrastructure and tuning proposed |
+| [Time, movement and mobilisation](time-movement-mobilisation.md) | Weekly clock, sector travel, expediting, buyout, sensor warning and response | Direction agreed; speeds, prices and detailed timing proposed |
 
 ## Decisions adopted
 
@@ -20,6 +21,9 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 - Assemble classes from a shared internal capacity budget with explicit mounting and compatibility constraints.
 - Spend existing Engineering capacity to develop and refine hull/component versions; preserve diminishing returns and scientific prerequisites.
 - Integrate the ship designer with the strategic planner: build for mission, timing, affordability and logistics.
+- Use one week per strategic turn; express movement in sector crossings, separately from warp factors.
+- Allow credits to expedite eligible work and ship construction while respecting physical and social constraints.
+- Treat sensor infrastructure as an investment in warning time; balance warning, travel and mobilisation together.
 
 The power-profile rules, version/refit details, schemas, example statistics and implementation stages are proposals, not additional user-approved balance values.
 
