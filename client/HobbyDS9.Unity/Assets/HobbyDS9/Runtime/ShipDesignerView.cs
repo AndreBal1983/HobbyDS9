@@ -153,8 +153,20 @@ namespace HobbyDS9.UnityClient
             foreach(var item in Draft.Provider.Catalogue.Where(c=>Draft.Current.Installed.ContainsKey(c.Id)))
             {
                 var row=Block(s,item.Name+" × "+Draft.Current.Installed[item.Id]);row.AddToClassList("sd-profile-row");var power=Draft.Current.Power(item.Id,Draft.Profile);var fields=Buttons(row);
+                var range=p.PowerRanges.FirstOrDefault(r=>r.ComponentId==item.Id);
+                if(range!=null && range.Maximum>=0 && range.Maximum<=int.MaxValue)
+                {
+                    var invalid=p.Issues.Any(i=>i.Severity==DesignerStatus.HardError && (i.SystemId==item.Id || i.SystemId=="") && (!i.Profile.HasValue || i.Profile==Draft.Profile));
+                    fields.Add(new LcarsPowerSlider("Requested","power-requested-"+item.Id,power.RequestedPower,range.Maximum,invalid,v=>Draft.SetPower(item.Id,v,Draft.Current.Power(item.Id,Draft.Profile).AllocatedPower)));
+                    fields.Add(new LcarsPowerSlider("Allocated","power-allocated-"+item.Id,power.AllocatedPower,range.Maximum,invalid,v=>Draft.SetPower(item.Id,Draft.Current.Power(item.Id,Draft.Profile).RequestedPower,v)));
+                    row.Row("Backend powered minimum",range.PoweredMinimum+" units • full demand "+range.Maximum);
+                }
+                else
+                {
                 var requested=new LongField("Requested") {name="power-requested-"+item.Id,isDelayed=true};requested.SetValueWithoutNotify(power.RequestedPower);var allocated=new LongField("Allocated") {name="power-allocated-"+item.Id,isDelayed=true};allocated.SetValueWithoutNotify(power.AllocatedPower);
                 requested.RegisterValueChangedCallback(e=>Draft.SetPower(item.Id,e.newValue,Draft.Current.Power(item.Id,Draft.Profile).AllocatedPower));allocated.RegisterValueChangedCallback(e=>Draft.SetPower(item.Id,Draft.Current.Power(item.Id,Draft.Profile).RequestedPower,e.newValue));fields.Add(requested);fields.Add(allocated);
+                    row.Add(new LcarsReadout("Authoritative track range unavailable • precise input retained."));
+                }
                 var id=Draft.Current.ToDto().Installations!.Single(i=>i.ComponentVersionId==item.Id).InstallationId;var output=p.Capabilities.FirstOrDefault(m=>m.Caption==id)?.Value;row.Row("Actual output",string.IsNullOrEmpty(output)?"No evaluated output":output!);foreach(var issue in p.Issues.Where(i=>i.SystemId==item.Id && (!i.Profile.HasValue || i.Profile==Draft.Profile)))Issue(row,issue);
             }
             Metrics(s,"RESULTING CAPABILITIES",Headlines(p,"Overview"));Context(s,p);

@@ -82,4 +82,25 @@
 .sd-system-content > .sd-block { max-width: 760px; }
 .sd-system-content > .sd-graphic { max-width: 1100px; align-self: center; width: 100%; }
 .sd-profile-row { max-width: 1100px; }
+.lcars-power-slider { flex-basis: 44%; flex-grow: 1; min-width: 240px; margin-right: 16px; margin-bottom: 12px; padding: 8px 12px; background-color: var(--lcars-map); border-left-width: 6px; border-left-color: var(--lcars-blue); }
+.lps-heading, .lps-bounds { flex-direction: row; justify-content: space-between; flex-wrap: wrap; }
+.lps-heading Label { font-size: 16px; color: var(--lcars-blue); }
+.lps-bounds Label { font-size: 13px; color: var(--lcars-muted); }
+.lps-rail { height: 48px; min-height: 48px; margin-top: 6px; margin-bottom: 2px; }
+.lps-segments { position: absolute; left: 0; right: 0; top: 14px; height: 20px; flex-direction: row; }
+.lps-segment { flex-grow: 1; margin-right: 3px; background-color: var(--lcars-slate); }
+.lps-filled { background-color: var(--lcars-blue); }
+.lps-medium .lps-filled { background-color: var(--lcars-lavender); }
+.lps-high .lps-filled { background-color: var(--lcars-amber); }
+.lps-invalid .lps-filled { background-color: var(--lcars-alert); }
+.lps-backend-invalid { border-left-color: var(--lcars-alert); }
+.lps-track { position: absolute; left: 0; right: 0; top: 0; bottom: 0; margin: 0; }
+.ship-designer .lps-track > .unity-base-field__input { border-width: 0; background-color: rgba(0,0,0,0); }
+.lps-track .unity-base-slider__tracker { background-color: rgba(0,0,0,0); border-width: 0; }
+.lps-track .unity-base-slider__dragger { width: 24px; height: 36px; background-color: var(--lcars-text); border-radius: 8px; border-width: 2px; border-color: var(--lcars-canvas); }
+.lps-track:focus { border-width: 2px; border-color: var(--lcars-lavender); }
+.lps-track:disabled { opacity: 0.45; }
+.sd-profile-row .lcars-power-slider > .unity-base-field { flex-basis: auto; flex-grow: 0; margin-right: 0; }
+.lps-notice { font-size: 13px; color: var(--lcars-muted); white-space: normal; }
+.lps-invalid .lps-notice, .lps-backend-invalid .lps-notice { color: var(--lcars-alert); }
 #designer-profile-results > .sd-block { max-width: 1100px; }
