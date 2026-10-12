@@ -32,6 +32,7 @@ namespace HobbyDS9.Simulation
             {
                 Require(f != null, "Missing formation."); Id(f.FormationId); Id(f.SideId);
                 Require(formations.TryAdd(f.FormationId, f), "Duplicate formation.");
+                Require(f.StandingOrder != null, "Missing standing order.");
                 Require(new[] { f.Speed, f.Agility, f.Sensors, f.Command, f.Cohesion }.All(v => v >= 0 && v <= 100), "Formation rating outside 0..100.");
                 Require(Known(f.Status) && Known(f.Objective) && f.ObjectiveRequiredRounds >= 1 && f.ObjectiveRequiredRounds <= 3
                     && f.ObjectiveProgress >= 0 && f.ObjectiveProgress < state.NextRound && f.ObjectiveProgress <= f.ObjectiveRequiredRounds

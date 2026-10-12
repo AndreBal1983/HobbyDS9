@@ -90,7 +90,7 @@ An achieved local objective ends the encounter even with hostile survivors. Othe
 
 ## Validation evidence
 
-Local headless acceptance completed 13 October 2026 using .NET SDK **10.0.401**, runtime **10.0.12**, Windows **10.0.26200**, AMD Ryzen 9 **9950X** (16 cores/32 logical processors). Starting main: locked restore, zero-warning/error Release, **1,104/1,104** tests; no baseline drift. Final implementation: **1,272/1,272** tests, including **168 new v2 cases**, zero failures/skips. Cases include every opposing maneuver pair at every range (64 parameterized cases), 100-seed mixed-weapon repeated/reversed properties, integer extremes, defensive saturation/opportunity cost, simultaneous lethality, legal later-round changes, deep ownership, atomic rejection, saved boundaries and immutable event JSON replay.
+Local headless acceptance completed 13 October 2026 using .NET SDK **10.0.401**, runtime **10.0.12**, Windows **10.0.26200**, AMD Ryzen 9 **9950X** (16 cores/32 logical processors). Starting main: locked restore, zero-warning/error Release, **1,104/1,104** tests; no baseline drift. Final implementation: **1,273/1,273** tests, including **169 new v2 cases**, zero failures/skips. Cases include every opposing maneuver pair at every range (64 parameterized cases), 100-seed mixed-weapon repeated/reversed properties, integer extremes, defensive saturation/opportunity cost, simultaneous lethality, legal later-round changes, deep ownership, atomic rejection, saved boundaries and immutable event JSON replay.
 
 ```text
 dotnet restore HobbyDS9.slnx --locked-mode

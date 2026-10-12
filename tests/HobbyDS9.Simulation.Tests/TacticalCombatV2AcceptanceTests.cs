@@ -66,6 +66,13 @@ public sealed class TacticalCombatV2AcceptanceTests
         Assert.Equal(json, Json(restored)); Assert.Equal(state.RandomState, result.NextState.RandomState);
         Assert.All(typeof(TacticalEventV2).GetProperties(), property => Assert.Null(property.SetMethod));
     }
+    [Fact]
+    public void MalformedExitedBoundaryRejectsMissingStandingOrderAtomically()
+    {
+        var s = Round(Encounter()).NextState; s.Formations[0].Status = TacticalFormationStatus.Retreated;
+        s.Formations[0].StandingOrder = null!; var before = Json(s);
+        Assert.Throws<ArgumentException>(() => Round(s)); Assert.Equal(before, Json(s));
+    }
     [Theory]
     [InlineData(0)] [InlineData(1)] [InlineData(2)] [InlineData(3)] [InlineData(4)] [InlineData(5)] [InlineData(6)] [InlineData(7)]
     [InlineData(8)] [InlineData(9)] [InlineData(10)] [InlineData(11)] [InlineData(12)] [InlineData(13)] [InlineData(14)] [InlineData(15)]
