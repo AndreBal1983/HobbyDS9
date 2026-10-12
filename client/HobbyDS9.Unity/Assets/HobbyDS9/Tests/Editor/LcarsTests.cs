@@ -12,7 +12,7 @@ namespace HobbyDS9.UnityClient.Tests
         {
             var production=false;var rail=new LcarsNavigationRail(_=>{},()=>production=!production);
             rail.Select("Combat");rail.ShowProduction(true);
-            Assert.That(rail.Sections.Count,Is.EqualTo(6));Assert.That(rail.Query<Button>().ToList().Count,Is.EqualTo(7));
+            Assert.That(rail.Sections.Count,Is.EqualTo(7));Assert.That(rail.Query<Button>().ToList().Count,Is.EqualTo(8));
             Assert.That(System.Linq.Enumerable.Count(rail.Sections,s=>s.Selected),Is.EqualTo(1));
             Assert.That(rail.Production.ClassListContains("production-open"),Is.True);
             Assert.That(rail.Production.ClassListContains("active-tab"),Is.False);Assert.That(production,Is.False);

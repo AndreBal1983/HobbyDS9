@@ -20,6 +20,14 @@ namespace HobbyDS9.UnityClient
         public bool DetailsOpen { get; private set; } = true;
         private readonly VisualElement workspace;
         private readonly VisualElement mapFrame;
+        private VisualElement? designer;
+        private bool designerOpen;
+        public bool DesignerOpen => designerOpen;
+        public void AttachDesigner(VisualElement view)
+        {
+            if (designer != null) designer.RemoveFromHierarchy();
+            designer = view; workspace.Add(view); ApplyPanels();
+        }
         private readonly Button contextToggle;
         private double previousWidth = -1, previousHeight = -1;
         public LcarsShell(VisualElement map, VisualElement production, Action<string> select, Action endTurn, Action fitMap)
@@ -35,7 +43,7 @@ namespace HobbyDS9.UnityClient
             frameBar.Add(elbow);
             var bar = new Label("STRATEGIC OPERATIONS") { pickingMode = PickingMode.Ignore }; bar.AddToClassList("lcars-structural-bar"); frameBar.Add(bar); Add(frameBar);
             var body = new VisualElement { name = "lcars-body" }; body.AddToClassList("lcars-body"); Add(body);
-            Navigation = new LcarsNavigationRail(select, ToggleProduction); body.Add(Navigation);
+            Navigation = new LcarsNavigationRail(select, () => { if (designerOpen) select("Production"); else ToggleProduction(); }); body.Add(Navigation);
             var railTail = new Label("01 / OPERATIONS") { pickingMode = PickingMode.Ignore }; railTail.AddToClassList("lcars-rail-tail"); Navigation.Add(railTail);
             workspace = new VisualElement { name = "lcars-workspace" }; workspace.AddToClassList("lcars-workspace"); body.Add(workspace);
             ProductionFrame = new LcarsPanelFrame("PRODUCTION / WORLDS", production) { name = "production-frame" }; workspace.Add(ProductionFrame);
@@ -50,7 +58,7 @@ namespace HobbyDS9.UnityClient
             Navigation.Select("Empire"); ApplyLogicalSize(1920,1080);
         }
         public void SelectSection(string section)
-        { Navigation.Select(section); DetailsFrame.Heading.text = section == "Saves" ? "SAVE / LOAD" : section.ToUpperInvariant() + " / CONTEXT"; DetailsOpen = true; ApplyPanels(); }
+        { designerOpen = section == "Designer" && designer != null; EnableInClassList("designer-open", designerOpen); Navigation.Select(section); DetailsFrame.Heading.text = section == "Saves" ? "SAVE / LOAD" : section.ToUpperInvariant() + " / CONTEXT"; DetailsOpen = true; ApplyPanels(); }
         public void OpenProduction() { if (!ProductionOpen) SfxDirector.Cue(LcarsSfx.ScreenOpen); ProductionChoice.Choose(true); ApplyPanels(); }
         public void ToggleProduction() { if (!ProductionOpen) SfxDirector.Cue(LcarsSfx.ScreenOpen); ProductionChoice.Toggle(Plan); ApplyPanels(); }
         public void ToggleDetails()
@@ -77,8 +85,11 @@ namespace HobbyDS9.UnityClient
         }
         private void ApplyPanels()
         {
-            ProductionFrame.style.display = ProductionOpen ? DisplayStyle.Flex : DisplayStyle.None;
-            Navigation.ShowProduction(ProductionOpen);
+            if (designer != null) designer.style.display = designerOpen ? DisplayStyle.Flex : DisplayStyle.None;
+            mapFrame.style.display = designerOpen ? DisplayStyle.None : DisplayStyle.Flex;
+            Header.FitMap.SetEnabled(!designerOpen);
+            ProductionFrame.style.display = !designerOpen && ProductionOpen ? DisplayStyle.Flex : DisplayStyle.None;
+            Navigation.ShowProduction(!designerOpen && ProductionOpen);
             var drawer = Plan.ProductionDrawer;
             ProductionFrame.EnableInClassList("lcars-drawer",drawer);
             ProductionFrame.style.position = drawer ? Position.Absolute : Position.Relative;
@@ -88,9 +99,9 @@ namespace HobbyDS9.UnityClient
             // Keep drawers above map hit targets but do not cover the rest of it.
             if (drawer && ProductionOpen) ProductionFrame.BringToFront();
             else if (!drawer) ProductionFrame.SendToBack();
-            DetailsFrame.style.display = DetailsOpen && !(Plan.Mode == LayoutMode.Compact && ProductionOpen) ? DisplayStyle.Flex : DisplayStyle.None;
+            DetailsFrame.style.display = !designerOpen && DetailsOpen && !(Plan.Mode == LayoutMode.Compact && ProductionOpen) ? DisplayStyle.Flex : DisplayStyle.None;
             contextToggle.text = "DETAILS " + (DetailsOpen ? "−" : "+");
-            contextToggle.style.display = Plan.Mode == LayoutMode.Compact ? DisplayStyle.Flex : DisplayStyle.None;
+            contextToggle.style.display = !designerOpen && Plan.Mode == LayoutMode.Compact ? DisplayStyle.Flex : DisplayStyle.None;
             // Extremely narrow windows can collapse details via the visible toggle.
             DetailsFrame.EnableInClassList("lcars-context-drawer",Plan.ContextDrawer);
         }
