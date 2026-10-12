@@ -183,7 +183,7 @@ Examples:
 
 ## Tactical command rounds
 
-Combat is resolved as a sequence of tactical rounds.
+Combat is resolved in **up to three tactical rounds per encounter**, ending earlier when objectives or battle outcomes require it. The outcome after round three and rules for renewed contact on a later strategic opportunity are separate campaign decisions.
 
 Before combat, each side selects an **opening battle plan**. After each round resolves, the player receives the tactical picture that their sensors and command network legitimately reveal. They may then keep or change maneuver and targeting orders for the next round.
 
@@ -202,7 +202,7 @@ A round conceptually resolves:
 7. resolve weapons/damage using deterministic simultaneous rules where appropriate;
 8. update cohesion, objective progress, withdrawals, pursuits and surviving formation state;
 9. produce an ordered event trace for presentation/replay;
-10. continue to the next round if the encounter remains active.
+10. continue to the next round if the encounter remains active **and fewer than three rounds have elapsed**; otherwise finalize this encounter and leave any renewed-contact mechanics to campaign rules.
 
 Better commanders can make order changes less disruptive, coordinate different wings under different orders, or unlock conditional/contingency behavior. Exact costs for changing orders remain open.
 
@@ -315,8 +315,24 @@ Exact weapon stat fields and fire-substep timing are proposals to be tuned: dama
 - **Head-on / front access:** primarily exposes Fore; **Rear** exposes Aft. **Beam/Flank** exposes Port or Starboard based on the maneuver/aspect state and a deterministic tie-break or persistent tactical-side assignment, not an invented Unity-camera orientation. Exact mapping is a testing question, especially when formations mix or cross.
 - Defender agility and successful maneuvers can deny a clean flank, restore a stronger facing or move out of an unfavorable relative aspect. Attackers must actually win a maneuver/access opportunity to exploit a weakened sector; they cannot freely pick the weakest shield every round. Maintaining desired shield facing may trade against own weapon arc access and other formation objectives.
 - Shield damage and shield-sector changes must be part of the authoritative combat-round state and event log (sector, strength before/after, spillover to hull). Preserve simultaneous-volley fairness and determinism. Unity merely shows that facing taking hits and the reported status.
-- Keep first-pass player control at **maneuver-order level**, not manually ordering a separate shield facing for every ship each round. Directional generator allocation, dynamic shield-power redistribution, recharge rates during battle, recharge between battles, bleed-through/resistances and special shield bypass are **open questions** rather than approved mechanics.
+- Keep first-pass player control at **maneuver-order level**, not manually ordering a separate shield facing for every ship each round. Directional generator allocation, dynamic shield-power redistribution, precise recharge formulas/sector assignment, recharge between battles, bleed-through/resistances and special shield bypass are **open questions**; ship-level in-combat recharge itself is now agreed.
 - Performance expectation: four counters per ship and an O(1) sector lookup/damage operation per resolved impact, so directional shields should be inexpensive relative to attack resolution, but no guarantee without benchmarks. Require deterministic save/reload/replay, AI and large-fleet stress tests and an explicit save/content/contract versioning review before implementation. Existing scalar shield fields are not silently treated as already implementing this design.
+
+## In-combat shield regeneration — agreed ship statistic
+
+**Decision, 12 October 2026:** an engineered ship has an explicit **Shield Recharge per Tactical Round** statistic, derived from its defensive equipment and technology. Powered shields recover a **small, bounded amount during combat**; improved shield technologies can raise this statistic and thereby produce meaningful differences from improvements in offensive weapon technology. Regeneration does not repair hull damage or restore destroyed ships.
+
+The intended combat cadence is **three tactical rounds per encounter** (with objectives, withdrawal, destruction or breakthrough potentially ending it earlier). This explicit design constraint supersedes older open-ended wording in this chapter. At most **two regeneration transitions** influence later volleys within the same three-round encounter; avoid balance models that assume unlimited rounds of shield cycling. The precise strategic handling of fleets that remain in contact after round three / repeated engagements is separate work.
+
+**Proposed first-pass resolution contract (tuning still open):**
+
+- Each ship has a compiled base recharge amount in **shield points per tactical round**, and a powered/disabled status or available-power modifier. Technology and installed gear determine the value; one ship-wide recharge *budget* serves the four **Fore, Port, Starboard, Aft** shield-sector pools rather than automatically granting the full rate independently to all four sectors.
+- After applying a simultaneous volley's shield and hull damage, a surviving ship may recharge its depleted sectors before the next tactical round. Recharge is capped by each sector's maximum, the ship-wide round budget, and available power. No regenerative healing applies retroactively to the volley just resolved. After round three, handle further recovery as post-combat rather than inventing a fourth tactical round.
+- Prefer deterministic allocation toward depleted facings not under active fire this round; sectors under concentrated fire may have reduced or no recharge. Exact prioritization and suppression are balance/implementation details to validate, not yet frozen formulas. Do not let formation rotation replenish all four sectors at full rate or permit infinite shield cycling.
+- Between battles, shields may recover by a **separate, faster but not instantaneous** campaign rule; do not silently reset to full on disengagement or save/load. Hull damage continues to require physical repairs.
+- Backend is authoritative for recharge and its power costs. Persist sector values, compile the recharge stat through the ship-design contract, and include per-sector recovery in deterministic event traces and save/reload tests. Unity shows the reported state; it cannot regenerate shields independently.
+
+**Illustrative balance only:** a ship with a recharge statistic of 6 points/round could restore at most 6 shield points between rounds 1 and 2 and another 6 between rounds 2 and 3, *across its sectors*, if those sectors can accept the recharge and power is sufficient. This is not a locked numeric tuning target.
 
 ## Damage resolution and presentation boundary
 
