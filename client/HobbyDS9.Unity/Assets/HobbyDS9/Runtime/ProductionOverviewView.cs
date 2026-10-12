@@ -32,9 +32,9 @@ namespace HobbyDS9.UnityClient
                 if (world.ProductionQueue.Count == 0) section.Add(new Label("Queue is empty."));
                 foreach (var item in world.ProductionQueue)
                 {
-                    var design = model.Observed.Campaign.ShipDesigns.Single(d => d.DefinitionId == item.ShipDesignDefinitionId);
+                    var designName = QueueName(model.Observed, item);
                     var row = new VisualElement { name = item.QueueItemId.Value }; section.Add(row);
-                    row.Add(new Label(design.DisplayName + $" • Industry {item.CompletedIndustry}/{item.RequiredIndustry}\nPaid {item.PaidCredits} credits • " + Resources(model.Observed, item.PaidResources)));
+                    row.Add(new Label(designName + $" • Industry {item.CompletedIndustry}/{item.RequiredIndustry}\nPaid {item.PaidCredits} credits • " + Resources(model.Observed, item.PaidResources)));
                     var cancel = new LcarsPillButton("", () =>
                     {
                         var previous = row.Q<VisualElement>("cancel-confirmation"); if (previous != null) previous.RemoveFromHierarchy();
@@ -42,7 +42,7 @@ namespace HobbyDS9.UnityClient
                         confirmation.Add(new Label("Cancel? Unused credits/resources are refunded proportionally; completed Industry is lost."));
                         confirmation.Add(new LcarsPillButton("", () => run(() => SfxFeedback.Describe(model.Cancel(world.ColonyId, item.QueueItemId)))) { text = "Confirm cancellation" });
                         confirmation.Add(new LcarsPillButton("", () => confirmation.RemoveFromHierarchy()) { text = "Keep item" }); row.Add(confirmation);
-                    }) { text = "Cancel " + design.DisplayName };
+                    }) { text = "Cancel " + designName };
                     cancel.AddToClassList("lcars-destructive"); cancel.SetEnabled(model.CanCancel); row.Add(cancel);
                 }
                 var options = new Foldout { text = "Ship designs", value = true }; section.Add(options);
@@ -61,6 +61,11 @@ namespace HobbyDS9.UnityClient
                 }
             }
         }
+        // Campaign queues pin an immutable blueprint revision, not a static design.
+        // Keep its authoritative identity visible until campaign catalogue UX exists.
+        internal static string QueueName(CampaignSnapshot snapshot, ProductionQueueItemSnapshot item) => item.Blueprint != null
+            ? item.Blueprint.BlueprintId + " • revision " + item.Blueprint.Revision
+            : snapshot.Campaign.ShipDesigns.Single(d => d.DefinitionId == item.ShipDesignDefinitionId).DisplayName;
         private static string Resources(CampaignSnapshot snapshot, IReadOnlyList<ResourceAmountSnapshot> amounts) => amounts.Count == 0
             ? "no strategic resources" : string.Join(", ", amounts.Select(r => r.Amount + " " + snapshot.Content.Resources.Single(d => d.DefinitionId == r.ResourceDefinitionId).DisplayName));
     }

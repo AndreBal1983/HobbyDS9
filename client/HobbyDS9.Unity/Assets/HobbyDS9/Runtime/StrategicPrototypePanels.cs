@@ -89,9 +89,9 @@ namespace HobbyDS9.UnityClient
             {
                 foreach (var item in world.ProductionQueue)
                 {
-                    var design = snapshot.Campaign.ShipDesigns.Single(d => d.DefinitionId == item.ShipDesignDefinitionId);
-                    block.Add(new LcarsMeter(design.DisplayName, item.CompletedIndustry, item.RequiredIndustry));
-                    var cancel = new LcarsPillButton("Cancel " + design.DisplayName, () => Confirm("Cancel " + design.DisplayName + "? Unused costs are refunded; completed industry is lost.",
+                    var designName = ProductionOverviewView.QueueName(snapshot, item);
+                    block.Add(new LcarsMeter(designName, item.CompletedIndustry, item.RequiredIndustry));
+                    var cancel = new LcarsPillButton("Cancel " + designName, () => Confirm("Cancel " + designName + "? Unused costs are refunded; completed industry is lost.",
                         () => SfxFeedback.Describe(model.Cancel(world.ColonyId, item.QueueItemId))));
                     cancel.AddToClassList("lcars-destructive"); cancel.SetEnabled(model.CanCancel); block.Add(cancel);
                 }

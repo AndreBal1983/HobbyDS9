@@ -29,8 +29,11 @@ namespace HobbyDS9.UnityClient
         public string Group { get; }
         public string Description { get; }
         public string Facts { get; }
+        public string SystemId { get; }
         public DesignerComponent(string id,string name,string group,string description,string facts)
-        { Id=id; Name=name; Group=group; Description=description; Facts=facts; }
+            : this(id,name,group,description,facts,group) { }
+        public DesignerComponent(string id,string name,string group,string description,string facts,string systemId)
+        { Id=id; Name=name; Group=group; Description=description; Facts=facts; SystemId=systemId; }
     }
     public sealed class DesignerFit
     {
@@ -79,7 +82,8 @@ namespace HobbyDS9.UnityClient
         public string SystemId { get; }
         public DesignerStatus Severity { get; }
         public string Explanation { get; }
-        public DesignerIssue(string systemId,DesignerStatus severity,string explanation) { SystemId=systemId; Severity=severity; Explanation=explanation; }
+        public DesignerProfile? Profile { get; }
+        public DesignerIssue(string systemId,DesignerStatus severity,string explanation,DesignerProfile? profile=null) { SystemId=systemId; Severity=severity; Explanation=explanation; Profile=profile; }
     }
     public sealed class DesignerMetric
     {
@@ -200,6 +204,14 @@ namespace HobbyDS9.UnityClient
         {
             try { return Provider.Preview(starting?Starting:Current,Profile); }
             catch { return new DesignerPreview(DesignerStatus.NotEvaluated,"Preview provider unavailable. Your local draft is retained; no campaign order was sent."); }
+        }
+        // Detached local copy for proposed-edit previews; uses these same edit APIs.
+        public ShipDesignDraft PreviewCopy()
+        {
+            var copy=new ShipDesignDraft(Provider);
+            copy.TemplateId=TemplateId; copy.Starting=Starting; copy.edit=Current.ToDto(); copy.Profile=Profile;
+            copy.knownIds.Clear(); foreach(var pair in knownIds) copy.knownIds.Add(pair.Key,pair.Value);
+            return copy;
         }
     }
 }

@@ -10,6 +10,69 @@ namespace HobbyDS9.UnityClient.Tests
     public sealed class ClientTests
     {
         private static CampaignHost Start() => new CampaignHost(Resources.Load<TextAsset>("ds9-slice").bytes);
+        private static CampaignHost BlueprintCampaign(bool complete)
+        {
+            var host = Start();
+            var scenario = Newtonsoft.Json.JsonConvert.DeserializeObject<ScenarioDto>(Resources.Load<TextAsset>("ds9-slice").text);
+            scenario.ContentHash = host.Client.ExportSave().ContentHash;
+            var app = CampaignApplication.LoadSave(scenario, host.Client.ExportSave());
+            var draft = new ShipDesignDraft(ShipDesignFixtureLoader.Load()); draft.RequestTemplate("class.escort");
+            var stamp = app.CaptureSnapshot().Campaign;
+            Assert.That(app.SubmitCommand(new CommandEnvelope { CommandId = "test.publish", ActorCivilizationId = "civ.federation",
+                ExpectedTurn = stamp.TurnNumber, ExpectedRevision = stamp.StateRevision, Kind = CommandKind.PublishShipBlueprint,
+                PublishShipBlueprint = new PublishShipBlueprintPayload { BlueprintId = "blueprint.escort", Revision = 1, Draft = draft.Current.ToDto() } }).Accepted, Is.True);
+            stamp = app.CaptureSnapshot().Campaign;
+            Assert.That(app.SubmitCommand(new CommandEnvelope { CommandId = "test.build", ActorCivilizationId = "civ.federation",
+                ExpectedTurn = stamp.TurnNumber, ExpectedRevision = stamp.StateRevision, Kind = CommandKind.EnqueueBlueprintConstruction,
+                EnqueueBlueprintConstruction = new EnqueueBlueprintConstructionPayload { ColonyId = "colony.sol", BlueprintId = "blueprint.escort", Revision = 1 } }).Accepted, Is.True);
+            var save = app.ExportSave();
+            if (complete) { var item = save.GameState.Colonies.Single(c => c.ColonyId == "colony.sol").ProductionQueue.Single(); item.CompletedIndustry = item.RequiredIndustry - 1; }
+            host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save));
+            if (complete) Assert.That(host.EndTurn().Status, Is.EqualTo(TurnStatus.Completed));
+            return host;
+        }
+        [Test]
+        public void BlueprintQueueRendersInProductionAndWorldInspectorAfterSaveReload()
+        {
+            var host = BlueprintCampaign(false); var json = host.SaveJson(); host.LoadJson(json);
+            var world = host.Snapshot.Campaign.Colonies.Single(c => c.ColonyId.Value == "colony.sol");
+            var item = world.ProductionQueue.Single();
+            var production = new ProductionOverviewView(); production.Present(new ProductionOverview(host.Client, host.Snapshot), operation => operation());
+            Assert.That(production.Q<VisualElement>(item.QueueItemId.Value).Q<Label>().text, Does.Contain("blueprint.escort • revision 1"));
+            var go = new GameObject("Blueprint presentation test"); go.SetActive(false);
+            try
+            {
+                var entry = go.AddComponent<ClientEntry>(); var details = new ScrollView();
+                var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+                typeof(ClientEntry).GetField("host", flags).SetValue(entry, host);
+                typeof(ClientEntry).GetField("details", flags).SetValue(entry, details);
+                typeof(ClientEntry).GetMethod("ShowStrategicProduction", flags).Invoke(entry, new object[] { host.Snapshot, world });
+                Assert.That(details.Query<Label>().ToList().Any(l => l.text.Contains("blueprint.escort • revision 1")), Is.True);
+                Assert.That(host.SaveJson(), Is.EqualTo(json));
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+        [Test]
+        public void BlueprintFleetInspectorUsesResolvedDesignAfterSaveReload()
+        {
+            var host = BlueprintCampaign(true); var json = host.SaveJson(); host.LoadJson(json);
+            var ship = host.Snapshot.Campaign.Ships.Single(s => s.Blueprint != null);
+            Assert.That(ship.ResolvedDesign.MaxHull, Is.EqualTo(30));
+            Assert.That(ship.ResolvedDesign.MovementBudget, Is.EqualTo(4));
+            var go = new GameObject("Blueprint fleet test"); go.SetActive(false);
+            try
+            {
+                var entry = go.AddComponent<ClientEntry>(); var details = new ScrollView();
+                var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+                typeof(ClientEntry).GetField("host", flags).SetValue(entry, host);
+                typeof(ClientEntry).GetField("details", flags).SetValue(entry, details);
+                typeof(ClientEntry).GetMethod("ShowFleet", flags).Invoke(entry, new object[] { host.Snapshot, host.Snapshot.Campaign.Fleets.Single(f => f.FleetId == ship.FleetId) });
+                Assert.That(details.Query<Label>().ToList().Any(l => l.text.Contains("blueprint.escort • revision 1")), Is.True);
+                Assert.That(details.Query<Label>().ToList().Any(l => l.text == "30 / 30"), Is.True);
+                Assert.That(host.SaveJson(), Is.EqualTo(json));
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
         private static CampaignHost ThreePartyCombat(int battles = 1)
         {
             var host = Start(); var save = host.Client.ExportSave();
