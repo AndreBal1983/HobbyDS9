@@ -183,7 +183,7 @@ Examples:
 
 ## Tactical command rounds
 
-Combat is resolved as a sequence of tactical rounds.
+Combat is resolved in **up to three tactical rounds per encounter**, ending earlier when objectives or battle outcomes require it. The outcome after round three and rules for renewed contact on a later strategic opportunity are separate campaign decisions.
 
 Before combat, each side selects an **opening battle plan**. After each round resolves, the player receives the tactical picture that their sensors and command network legitimately reveal. They may then keep or change maneuver and targeting orders for the next round.
 
@@ -202,7 +202,7 @@ A round conceptually resolves:
 7. resolve weapons/damage using deterministic simultaneous rules where appropriate;
 8. update cohesion, objective progress, withdrawals, pursuits and surviving formation state;
 9. produce an ordered event trace for presentation/replay;
-10. continue to the next round if the encounter remains active.
+10. continue to the next round if the encounter remains active **and fewer than three rounds have elapsed**; otherwise finalize this encounter and leave any renewed-contact mechanics to campaign rules.
 
 Better commanders can make order changes less disruptive, coordinate different wings under different orders, or unlock conditional/contingency behavior. Exact costs for changing orders remain open.
 
@@ -304,7 +304,53 @@ Each command round follows a proposed resolution contract:
 
 The user may alter orders after the resolved round is presented; **do not pre-resolve all later interactive rounds**, since those decisions can change the outcome. For unattended AI battles or quick-resolve, the same round resolver may iterate using the configured standing orders and lawful AI decisions. Round boundary saves and event replay must be deterministic across platforms, save/reload and battle ordering.
 
-Exact weapon stat fields and fire-substep timing are proposals to be tuned: damage/yield, tracking and accuracy, range envelope, coverage/aspect, shot cadence, required power, magazine capacity/ammo type, and special shield/system interaction. Avoid fake per-projectile physical simulation in the authoritative backend.
+Exact weapon stat fields and fire-substep timing are proposals to be tuned: damage/yield, tracking and accuracy, range envelope, coverage/aspect, shot cadence, required power, magazine capacity/ammo type, and shield-specific damage or countermeasure interactions **without penetration through active shields**. Avoid fake per-projectile physical simulation in the authoritative backend.
+
+## Directional shield sectors — agreed direction, bounded first-pass model
+
+**Decision, 12 October 2026:** use **separate directional shields** rather than one ship-wide shield pool. This is intended to give flanking, agility, positional advantage and protecting a damaged facing meaningful tactical consequences. The requirement is contingent on a simple, deterministic, performant implementation and acceptance tests; do **not** replace abstract formation geometry with full 3D ship orientation or collision/trajectory calculations.
+
+**Proposed minimal implementation, subject to implementation review and balance:** each ship stores four shield sector values — **Fore, Port, Starboard, Aft** — and corresponding limits derived from its installed powered defensive systems. One aggregate generator capacity can be divided across the four sector maxima by a hull/fit profile; there need not be four independently designed shield-generator components. Sector values deplete independently. An attack's resolved relative aspect plus the deterministic maneuver contest selects the defending ship's exposed sector. The backend performs a constant-time sector lookup, applies shield damage to that sector, and passes any residual impact through to the existing hull-damage rules. A four-sector display is sufficient for Unity; **no authoritative XYZ, ship Euler angles, shot vector math or per-frame arc simulation** is required.
+
+- **Head-on / front access:** primarily exposes Fore; **Rear** exposes Aft. **Beam/Flank** exposes Port or Starboard based on the maneuver/aspect state and a deterministic tie-break or persistent tactical-side assignment, not an invented Unity-camera orientation. Exact mapping is a testing question, especially when formations mix or cross.
+- Defender agility and successful maneuvers can deny a clean flank, restore a stronger facing or move out of an unfavorable relative aspect. Attackers must actually win a maneuver/access opportunity to exploit a weakened sector; they cannot freely pick the weakest shield every round. Maintaining desired shield facing may trade against own weapon arc access and other formation objectives.
+- Shield damage and shield-sector changes must be part of the authoritative combat-round state and event log (sector, strength before/after, spillover to hull). Preserve simultaneous-volley fairness and determinism. Unity merely shows that facing taking hits and the reported status.
+- **Agreed, 12 October 2026 — fixed encounter allocation:** the four sector maximum capacities and initial allocation are established by the ship's engineered hull/shield configuration and combat profile at encounter start; **neither the player nor tactical orders transfer, rebalance or redistribute existing shield points or capacity between sectors during the three tactical rounds**. No automatic forward-bias for Charge, rear-bias for Withdrawal, or free extra strength on the exposed facing. Maneuvers change which shield facing is exposed to incoming fire—not how much shield power was assigned to that facing. Avoid per-ship facing sliders or hidden auto-allocation calculations during combat. This is a deliberate complexity/readability choice: if a decision is not meaningfully controlled or perceptible, do not add a simulation layer for it. The initial built-in sector split may vary by hull/fit but its exact percentages remain a balancing choice. **In-combat regeneration is distinct from redistribution:** the ship's finite per-round recharge budget can restore depleted points within sectors up to their unchanged sector maxima, subject to power and the separately specified suppression/allocation policy; it does not pull points out of intact sectors. Recharge formula, recharge between battles and shield resistance tuning remain open; **bleed-through and special shield bypass are excluded**.
+- Performance expectation: four counters per ship and an O(1) sector lookup/damage operation per resolved impact, so directional shields should be inexpensive relative to attack resolution, but no guarantee without benchmarks. Require deterministic save/reload/replay, AI and large-fleet stress tests and an explicit save/content/contract versioning review before implementation. Existing scalar shield fields are not silently treated as already implementing this design.
+
+## In-combat shield regeneration — agreed ship statistic
+
+**Decision, 12 October 2026:** an engineered ship has an explicit **Shield Recharge per Tactical Round** statistic, derived from its defensive equipment and technology. Powered shields recover a **small, bounded amount during combat**; improved shield technologies can raise this statistic and thereby produce meaningful differences from improvements in offensive weapon technology. Regeneration does not repair hull damage or restore destroyed ships.
+
+The intended combat cadence is **three tactical rounds per encounter** (with objectives, withdrawal, destruction or breakthrough potentially ending it earlier). This explicit design constraint supersedes older open-ended wording in this chapter. At most **two regeneration transitions** influence later volleys within the same three-round encounter; avoid balance models that assume unlimited rounds of shield cycling. The precise strategic handling of fleets that remain in contact after round three / repeated engagements is separate work.
+
+**Proposed first-pass resolution contract (tuning still open):**
+
+- Each ship has a compiled base recharge amount in **shield points per tactical round**, and a powered/disabled status or available-power modifier. Technology and installed gear determine the value; one ship-wide recharge *budget* serves the four **Fore, Port, Starboard, Aft** shield-sector pools rather than automatically granting the full rate independently to all four sectors.
+- After applying a simultaneous volley's shield and hull damage, a surviving ship may recharge its depleted sectors before the next tactical round. Recharge is capped by each sector's maximum, the ship-wide round budget, and available power. No regenerative healing applies retroactively to the volley just resolved. After round three, handle further recovery as post-combat rather than inventing a fourth tactical round.
+- Prefer deterministic allocation toward depleted facings not under active fire this round; sectors under concentrated fire may have reduced or no recharge. Exact prioritization and suppression are balance/implementation details to validate, not yet frozen formulas. Do not let formation rotation replenish all four sectors at full rate or permit infinite shield cycling.
+- Between battles, shields may recover by a **separate, faster but not instantaneous** campaign rule; do not silently reset to full on disengagement or save/load. Hull damage continues to require physical repairs.
+- Backend is authoritative for recharge and its power costs. Persist sector values, compile the recharge stat through the ship-design contract, and include per-sector recovery in deterministic event traces and save/reload tests. Unity shows the reported state; it cannot regenerate shields independently.
+
+**Illustrative balance only:** a ship with a recharge statistic of 6 points/round could restore at most 6 shield points between rounds 1 and 2 and another 6 between rounds 2 and 3, *across its sectors*, if those sectors can accept the recharge and power is sufficient. This is not a locked numeric tuning target.
+
+## Shield-first damage — no penetration while a sector remains active
+
+**Agreed, 12 October 2026:** **every offensive weapon strikes the currently exposed directional shield sector before damaging hull.** While that shield sector has any remaining strength, its protection absorbs incoming damage up to that remaining strength; **there is no hull bleed-through, passive penetration, chance-based shield bypass or internal-system damage through active shields** in the agreed combat model. This applies to beams/arrays, cannon/pulse weapons, and all torpedo variants, including unusual faction technologies such as Dominion phased-polarons or Romulan plasma torpedoes.
+
+**Resolve each authoritative attack/volley deterministically against the impacted sector:** reduce that sector by the incoming damage it can absorb; **only damage in excess of the depleted sector's remaining strength spills to the hull in the same resolved impact/volley**. For example, a sector with 8 shield points taking 12 damage loses 8 shield points and sends **4 raw damage toward the hull, subject to armor mitigation**; if it takes 6, the sector falls to 2 and the hull receives none. A zero-strength sector affords no protection until recharged. Do not allow full shields on a different facing to intercept a legal hit against a depleted facing without a successful defensive maneuver/aspect change.
+
+Directional facings, maneuver outcomes, the three-round encounter cap, limited shield recharge between rounds and simultaneous-volley fairness remain in effect. Record exposed sector, blocked damage, depleted strength and spillover in the backend event trace. Unity may stage bridge sparks or shield flickers as **cosmetic effects only**; it must not portray actual subsystem failures or hull damage that the backend did not determine.
+
+Weapon-family distinctions can modify **shield damage, tracking, salvo profile, countermeasure vulnerability, power draw, or other approved shield-facing interactions**, but **not shield penetration**. Any future exception would require an explicit new design decision and corresponding combat/save-contract changes; do not infer one from source fiction.
+
+## Hull armor — agreed mitigation layer
+
+**Decision, 12 October 2026:** ships have **armor**, distinct from directional shields and hull integrity. Armor mitigates incoming damage **only after the impacted shield sector is exhausted**. There is no separate ablative armor-health pool in the first-pass model; a ship's compiled armor rating reduces some of the raw damage reaching the hull, and the remainder reduces persistent hull integrity. This preserves an understandable sequence: **resolve hit and sector → shield absorbs → armor mitigates excess → hull takes remaining damage**.
+
+Armor performance derives from hull engineering, suitable protective components/materials and technology, within ship-design capacity and construction trade-offs; it is not a free faction bonus. A tougher ship should survive exposure after a shield facing collapses, while speed, agility and defensive-screening configurations remain meaningful alternatives. Armor is not directional in the first pass; one ship-wide rating avoids adding four more tracked pools.
+
+**Armor mitigation formula, technology scaling, maximum reduction and weapon-vs-armor interactions are OPEN for balance/implementation review.** Percentage mitigation is a candidate to avoid rendering rapid-fire weapons useless with flat per-hit subtraction, but is not yet locked. Ensure armor does not make ships universally invulnerable and preserve deterministic simultaneous-volley processing. Existing designs and save contracts must not be silently treated as already supporting armor. Subsystem damage remains explicitly parked.
 
 ## Damage resolution and presentation boundary
 
@@ -348,7 +394,7 @@ Still open for later review and playtesting:
 - conditional orders/contingencies;
 - detailed screening and target-access resolution;
 - retreat destination semantics after within-turn interception;
-- whether subsystem targeting/damage is desirable at all (explicitly parked, not approved future scope); critical hits, repairs and shield regeneration also remain separate open topics;
+- armor mitigation formula and scaling; whether subsystem targeting/damage is desirable at all (explicitly parked, not approved future scope); critical hits, hull repairs and **shield regeneration tuning** remain separate open topics;
 - AI tactical planning depth by difficulty.
 
 These are not permission to revert to hard fleet caps, true 3D authoritative combat, fixed one-way range phases or one-time pre-battle doctrine. Those higher-level decisions are agreed.

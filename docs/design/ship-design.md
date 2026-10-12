@@ -26,6 +26,10 @@ Engineering investments in a hull family therefore carry value across multiple f
 
 The three agreed universal combat weapon classes are Beam/Array, Cannon/Pulse and Torpedo; see [tactical combat](tactical-combat.md). Torpedo magazines are finite physical ammunition stored in installed ship capacity, depleted by firing and refilled via actual supply; beam and cannon packages rely on valid powered operating profiles rather than consumable magazine stocks. Exact mount ratings, sensor package types, magazine storage cost and resupply speed remain to be tuned.
 
+### Hull armor as an engineered defensive characteristic
+
+**Agreed combat-design direction, 12 October 2026:** hulls have a compiled **armor rating** that reduces incoming hull-bound damage after the impacted directional shield sector has been exhausted. Armor is **not** another ablative health pool or four separate directional armor sectors in the first pass. Hull engineering, protective materials, armor packages and relevant technologies may contribute to the rating, with capacity, cost and compatibility consequences to be specified in the content model. **The exact mitigation formula and balance caps remain open**; this is design intent, not an assertion that the current compiler or save schema already implements armor. See [tactical combat](tactical-combat.md) for combat ordering.
+
 ## Components and shared capacity
 
 Major component families are power generation, power distribution where represented, propulsion, life support and accommodation, computing/command, sensors, shields, energy weapons, torpedoes, science facilities and mission/support equipment. Sensor and computer packages may be grouped in the MVP while retaining explicit dependency ratings.
