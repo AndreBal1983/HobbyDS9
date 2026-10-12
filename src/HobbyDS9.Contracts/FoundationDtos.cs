@@ -4,8 +4,8 @@ namespace HobbyDS9.Contracts
 {
     public static class FoundationVersions
     {
-        public const int SaveFormatVersion = 13;
-        public const int ContentFormatVersion = 9;
+        public const int SaveFormatVersion = 14;
+        public const int ContentFormatVersion = 10;
         public const string RandomAlgorithmId = "splitmix64-rejection-v1";
         public const int RandomAlgorithmVersion = 1;
     }
@@ -46,6 +46,8 @@ namespace HobbyDS9.Contracts
         public List<ResourceDefinitionDto>? Resources { get; set; }
         public List<InfrastructureDefinitionDto>? Infrastructure { get; set; }
         public List<EngineeringApplicationDefinitionDto>? EngineeringApplications { get; set; }
+        public ShipDesign.ShipDesignCatalogueDto? ShipDesignCatalogue { get; set; }
+        public List<ShipDesignVersionAccessDto>? ShipDesignVersionAccess { get; set; } = new List<ShipDesignVersionAccessDto>();
         public List<ShipDesignDefinitionDto>? ShipDesigns { get; set; }
         public List<string> DefinitionIds { get; set; } = new List<string>();
     }
@@ -73,6 +75,7 @@ namespace HobbyDS9.Contracts
         public List<LogisticsDeliveryDto>? LastDeliveries { get; set; }
         public PopulationStatisticsDto? PopulationStatistics { get; set; }
         public List<ColonyStateDto>? Colonies { get; set; }
+        public List<BlueprintRevisionDto>? Blueprints { get; set; } = new List<BlueprintRevisionDto>();
         public List<ShipStateDto>? Ships { get; set; }
         public List<FleetStateDto>? Fleets { get; set; }
         public List<PendingCombatDto>? PendingCombats { get; set; }

@@ -10,6 +10,9 @@ namespace HobbyDS9.Simulation
         private static void ValidateCampaignCombat(GameStateDto? state, DefinitionCatalogDto? definitions, string? rulesVersion, string? contentHash, string path, List<ValidationIssue> issues)
         {
             if (state == null) return;
+            foreach (var blueprint in (state.Blueprints ?? new List<BlueprintRevisionDto>()).Where(b => b != null))
+                if ((rulesVersion != null && blueprint.RulesVersion != rulesVersion) || (contentHash != null && blueprint.SourceContentHash != contentHash))
+                    Add(issues, ValidationCode.BlueprintIdentityMismatch, path + ".Blueprints");
             if (state.PendingCombats == null) Add(issues, ValidationCode.MissingField, path + ".PendingCombats");
             if (state.ResolvedCombats == null) Add(issues, ValidationCode.MissingField, path + ".ResolvedCombats");
             if (state.PendingCombats == null || state.ResolvedCombats == null || !state.Phase.HasValue || state.RngState?.State == null
@@ -18,7 +21,6 @@ namespace HobbyDS9.Simulation
             try { CombatEncounterScaffold.ValidateCheckpoint(CampaignCombatState.ToCheckpoint(state)); }
             catch (ArgumentException) { Add(issues, ValidationCode.InvalidCombatCheckpoint, path + ".Combats"); return; }
             var requests = CampaignCombatState.AllRequests(state).ToList();
-            var designs = (definitions?.ShipDesigns ?? new List<ShipDesignDefinitionDto>()).Where(d => d != null && d.DefinitionId != null).GroupBy(d => d.DefinitionId, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
             var fleets = (state.Fleets ?? new List<FleetStateDto>()).Where(f => f != null && f.FleetId != null).GroupBy(f => f.FleetId, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
             var ships = (state.Ships ?? new List<ShipStateDto>()).Where(s => s != null && s.ShipId != null).GroupBy(s => s.ShipId, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
             var sequences = new HashSet<ulong>();
@@ -41,8 +43,8 @@ namespace HobbyDS9.Simulation
                         Add(issues, ValidationCode.InvalidCombatReference, path + ".Combats");
                     foreach (var snapshot in participant.Ships)
                         if (!ships.TryGetValue(snapshot.ShipId, out var ship) || ship.FleetId != participant.FleetId || ship.OwnerCivilizationId != participant.CivilizationId
-                            || ship.ShipDesignDefinitionId != snapshot.DesignId || ship.CurrentHull != snapshot.Hull
-                            || !designs.TryGetValue(snapshot.DesignId, out var design) || design.MaxHull != snapshot.MaxHull || !CombatProfiles.Equal(design.CombatProfile, snapshot.CombatProfile))
+                            || CampaignShipDesignResolver.Resolve(state, definitions, ship.ShipDesignDefinitionId, ship.Blueprint)?.DefinitionId != snapshot.DesignId || ship.CurrentHull != snapshot.Hull
+                            || !MatchesResolvedDesign(state, definitions, ship, snapshot))
                             Add(issues, ValidationCode.InvalidCombatReference, path + ".Combats");
                 }
             }
@@ -51,6 +53,11 @@ namespace HobbyDS9.Simulation
                 var contested = fleets.Values.Where(f=>f.TransitTotalCost==0).GroupBy(f => f.LocationNodeId, StringComparer.Ordinal).Where(g => g.Select(f => f.OwnerCivilizationId).Distinct(StringComparer.Ordinal).Count() >= 2).Select(g => g.Key).OrderBy(id => id, StringComparer.Ordinal);
                 if (!contested.SequenceEqual(requests.Select(r => r.LocationNodeId).OrderBy(id => id, StringComparer.Ordinal))) Add(issues, ValidationCode.InvalidCombatReference, path + ".Combats");
             }
+        }
+        private static bool MatchesResolvedDesign(GameStateDto state, DefinitionCatalogDto? definitions, ShipStateDto ship, CombatShipDto snapshot)
+        {
+            var design = CampaignShipDesignResolver.Resolve(state, definitions, ship.ShipDesignDefinitionId, ship.Blueprint);
+            return design != null && design.MaxHull == snapshot.MaxHull && CombatProfiles.Equal(design.CombatProfile, snapshot.CombatProfile);
         }
         private static void ValidateCombatTopology(GameStateDto? state, DefinitionCatalogDto? definitions, string path, List<ValidationIssue> issues)
         {

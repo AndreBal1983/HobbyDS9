@@ -16,6 +16,7 @@ namespace HobbyDS9.Contracts
     }
     public sealed class ProductionQueueItemDto
     {
+        public BlueprintReferenceDto? Blueprint { get; set; }
         public string QueueItemId { get; set; } = string.Empty;
         public string ShipDesignDefinitionId { get; set; } = string.Empty;
         public long RequiredIndustry { get; set; }
@@ -25,6 +26,7 @@ namespace HobbyDS9.Contracts
     }
     public sealed class ShipStateDto
     {
+        public BlueprintReferenceDto? Blueprint { get; set; }
         public string ShipId { get; set; } = string.Empty;
         public string ShipDesignDefinitionId { get; set; } = string.Empty;
         public string OwnerCivilizationId { get; set; } = string.Empty;
@@ -43,6 +45,7 @@ namespace HobbyDS9.Contracts
     }
     public sealed class ProductionQueueItemSnapshot
     {
+        public BlueprintReferenceSnapshot? Blueprint { get; }
         public EntityId QueueItemId { get; }
         public DefinitionId ShipDesignDefinitionId { get; }
         public long RequiredIndustry { get; }
@@ -51,21 +54,26 @@ namespace HobbyDS9.Contracts
         public long PaidCredits { get; }
         public ProductionQueueItemSnapshot(ProductionQueueItemDto item)
         {
-            QueueItemId = new EntityId(item.QueueItemId); ShipDesignDefinitionId = new DefinitionId(item.ShipDesignDefinitionId);
+            Blueprint = item.Blueprint == null ? null : new BlueprintReferenceSnapshot(item.Blueprint);
+            QueueItemId = new EntityId(item.QueueItemId); ShipDesignDefinitionId = new DefinitionId(item.Blueprint?.BlueprintId ?? item.ShipDesignDefinitionId);
             RequiredIndustry = item.RequiredIndustry; CompletedIndustry = item.CompletedIndustry;
             PaidResources = ResourceAmountSnapshot.Copy(item.PaidResources!); PaidCredits = item.PaidCredits;
         }
     }
     public sealed class ShipSnapshot
     {
+        public BlueprintReferenceSnapshot? Blueprint { get; }
+        public ShipDesignSnapshot? ResolvedDesign { get; }
         public EntityId ShipId { get; }
         public DefinitionId ShipDesignDefinitionId { get; }
         public EntityId OwnerCivilizationId { get; }
         public EntityId FleetId { get; }
         public long CurrentHull { get; }
-        public ShipSnapshot(ShipStateDto ship)
+        public ShipSnapshot(ShipStateDto ship, ShipDesignDefinitionDto? resolvedDesign = null)
         {
-            ShipId = new EntityId(ship.ShipId); ShipDesignDefinitionId = new DefinitionId(ship.ShipDesignDefinitionId);
+            ResolvedDesign = resolvedDesign == null ? null : new ShipDesignSnapshot(resolvedDesign);
+            Blueprint = ship.Blueprint == null ? null : new BlueprintReferenceSnapshot(ship.Blueprint);
+            ShipId = new EntityId(ship.ShipId); ShipDesignDefinitionId = new DefinitionId(ship.Blueprint?.BlueprintId ?? ship.ShipDesignDefinitionId);
             OwnerCivilizationId = new EntityId(ship.OwnerCivilizationId); FleetId = new EntityId(ship.FleetId); CurrentHull = ship.CurrentHull;
         }
     }

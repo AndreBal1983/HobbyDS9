@@ -12,6 +12,7 @@ namespace HobbyDS9.Simulation
         private static void ValidateShipDesigns(DefinitionCatalogDto catalog, HashSet<DefinitionId> ids, HashSet<string> typed,
             string path, List<ValidationIssue> issues)
         {
+            ValidateBlueprintCatalogue(catalog, path, issues);
             if (catalog.ShipDesigns == null) { Add(issues, ValidationCode.MissingField, path + ".ShipDesigns"); return; }
             var research = new HashSet<string>((catalog.EngineeringApplications ?? new List<EngineeringApplicationDefinitionDto>()).Where(n => n != null).Select(n => n.DefinitionId), StringComparer.Ordinal);
             for (var i = 0; i < catalog.ShipDesigns.Count; i++)
@@ -39,8 +40,7 @@ namespace HobbyDS9.Simulation
         private static void ValidateProductionFleets(GameStateDto state, DefinitionCatalogDto? catalog, Dictionary<string, EntityIdentityDto> headers,
             HashSet<string> typed, HashSet<string> civilizations, string path, List<ValidationIssue> issues)
         {
-            var designs = (catalog?.ShipDesigns ?? new List<ShipDesignDefinitionDto>()).Where(d => d != null && d.DefinitionId != null)
-                .GroupBy(d => d.DefinitionId, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+            ValidateBlueprintRegistry(state, catalog, path, issues);
             void Identity(string? id, string? definition, string p)
             {
                 if (!EntityId.TryParse(id, out _)) { Add(issues, ValidationCode.InvalidId, p); return; }
@@ -53,10 +53,14 @@ namespace HobbyDS9.Simulation
                 if (!EntityId.TryParse(id, out _)) Add(issues, ValidationCode.InvalidId, p);
                 else if (!civilizations.Contains(id!)) Add(issues, ValidationCode.MissingCivilization, p);
             }
-            ShipDesignDefinitionDto? Design(string? id, string p)
+            ShipDesignDefinitionDto? Design(string id, BlueprintReferenceDto? reference, string? owner, string p)
             {
-                if (!DefinitionId.TryParse(id, out _)) { Add(issues, ValidationCode.InvalidId, p); return null; }
-                if (!designs.TryGetValue(id!, out var design)) Add(issues, ValidationCode.MissingDefinition, p);
+                var design = CampaignShipDesignResolver.Resolve(state, catalog, id, reference);
+                if (reference == null && !DefinitionId.TryParse(id, out _)) Add(issues, ValidationCode.InvalidId, p);
+                if (design == null) Add(issues, ValidationCode.MissingDefinition, p);
+                if (reference != null && (id != string.Empty || reference.Revision <= 0 || !DefinitionId.TryParse(reference.BlueprintId, out _) ||
+                    state.Blueprints?.FirstOrDefault(b => b != null && b.BlueprintId == reference.BlueprintId && b.Revision == reference.Revision)?.OwnerCivilizationId != owner))
+                    Add(issues, ValidationCode.OwnershipMismatch, p);
                 return design;
             }
             foreach (var colony in (state.Colonies ?? new List<ColonyStateDto>()).Where(c => c != null))
@@ -68,8 +72,8 @@ namespace HobbyDS9.Simulation
                 {
                     var item = colony.ProductionQueue[i];
                     if (item == null) { Add(issues, ValidationCode.MissingField, p); continue; }
-                    Identity(item.QueueItemId, item.ShipDesignDefinitionId, p);
-                    var design = Design(item.ShipDesignDefinitionId, p);
+                    Identity(item.QueueItemId, item.Blueprint == null ? item.ShipDesignDefinitionId : null, p);
+                    var design = Design(item.ShipDesignDefinitionId, item.Blueprint, colony.OwnerCivilizationId, p);
                     if (item.RequiredIndustry <= 0 || item.CompletedIndustry < 0 || item.CompletedIndustry >= item.RequiredIndustry
                         || (i != 0 && item.CompletedIndustry != 0) || item.PaidCredits < 0
                         || (design != null && (item.RequiredIndustry != design.IndustryCost || !SameResources(item.PaidResources, design.ResourceCosts) || item.PaidCredits != design.CreditCost)))
@@ -117,7 +121,7 @@ namespace HobbyDS9.Simulation
             {
                 var p = path + ".Ships";
                 if (ship == null) { Add(issues, ValidationCode.MissingField, p); continue; }
-                Identity(ship.ShipId, ship.ShipDesignDefinitionId, p); Owner(ship.OwnerCivilizationId, p); var design = Design(ship.ShipDesignDefinitionId, p);
+                Identity(ship.ShipId, ship.Blueprint == null ? ship.ShipDesignDefinitionId : null, p); Owner(ship.OwnerCivilizationId, p); var design = Design(ship.ShipDesignDefinitionId, ship.Blueprint, ship.OwnerCivilizationId, p);
                 if (ship.CurrentHull <= 0 || (design != null && ship.CurrentHull > design.MaxHull)) Add(issues, ValidationCode.InvalidShipValue, p);
                 if (!EntityId.TryParse(ship.FleetId, out _)) Add(issues, ValidationCode.InvalidId, p + ".FleetId");
                 else if (!fleets.TryGetValue(ship.FleetId, out var fleet) || !memberships.Contains(ship.ShipId)

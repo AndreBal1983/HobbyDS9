@@ -23,7 +23,6 @@ namespace HobbyDS9.Simulation
             .Concat(state.ResolvedCombats!.Select(c => c.Request)).OrderBy(r => r.LocationNodeId, StringComparer.Ordinal).ThenBy(r => r.EncounterId, StringComparer.Ordinal);
         internal static void Detect(GameStateDto state, DefinitionCatalogDto definitions, SaveCompatibility compatibility)
         {
-            var designs = definitions.ShipDesigns!.ToDictionary(d => d.DefinitionId, StringComparer.Ordinal);
             var ships = state.Ships!.ToDictionary(s => s.ShipId, StringComparer.Ordinal);
             var templates = state.Fleets!.Where(f=>f.TransitTotalCost==0).GroupBy(f => f.LocationNodeId, StringComparer.Ordinal).Where(g => g.Select(f => f.OwnerCivilizationId).Distinct(StringComparer.Ordinal).Count() >= 2)
                 .OrderBy(g => g.Key, StringComparer.Ordinal).Select(g => new CombatRequestDto
@@ -33,7 +32,7 @@ namespace HobbyDS9.Simulation
                     Participants = g.OrderBy(f => f.OwnerCivilizationId, StringComparer.Ordinal).ThenBy(f => f.FleetId, StringComparer.Ordinal).Select(f => new CombatParticipantDto
                     {
                         CivilizationId = f.OwnerCivilizationId, FleetId = f.FleetId,
-                        Ships = f.ShipIds!.OrderBy(id => id, StringComparer.Ordinal).Select(id => new CombatShipDto { ShipId = id, DesignId = ships[id].ShipDesignDefinitionId, Hull = ships[id].CurrentHull, MaxHull = designs[ships[id].ShipDesignDefinitionId].MaxHull, CombatProfile = CombatProfiles.Copy(designs[ships[id].ShipDesignDefinitionId].CombatProfile!) }).ToList()
+                        Ships = f.ShipIds!.OrderBy(id => id, StringComparer.Ordinal).Select(id => new CombatShipDto { ShipId = id, DesignId = CampaignShipDesignResolver.Ship(state, definitions, ships[id]).DefinitionId, Hull = ships[id].CurrentHull, MaxHull = CampaignShipDesignResolver.Ship(state, definitions, ships[id]).MaxHull, CombatProfile = CombatProfiles.Copy(CampaignShipDesignResolver.Ship(state, definitions, ships[id]).CombatProfile!) }).ToList()
                     }).ToList()
                 }).ToList();
             SetCheckpoint(state, CombatEncounterScaffold.CreateCheckpoint(state.TurnNumber, state.StateRevision, state.RngState.State!.Value, state.NextEntitySequence, templates));
