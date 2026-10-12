@@ -43,3 +43,4 @@ client/HobbyDS9.Unity/*.mdb
 /artifacts/
 
 /client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ds9-slice.json
+/client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ship-design-fixture.json

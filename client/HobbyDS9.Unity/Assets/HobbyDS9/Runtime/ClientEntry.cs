@@ -116,7 +116,7 @@ namespace HobbyDS9.UnityClient
             {
                 if (section == "Designer" && shipDesigner == null)
                 {
-                    shipDesignDraft ??= new ShipDesignDraft(new FixtureShipDesignPreviewProvider());
+                    shipDesignDraft ??= new ShipDesignDraft(ShipDesignFixtureLoader.Load());
                     shipDesigner = new ShipDesignerView(shipDesignDraft, () => RequestStrategicSection("Selection"));
                     shell.AttachDesigner(shipDesigner);
                 }
@@ -147,7 +147,7 @@ namespace HobbyDS9.UnityClient
             shell.Header.Turn.Value.text = state.TurnNumber.ToString("00");
             shell.Header.Phase.Value.text = state.Phase == SessionPhase.AwaitingCombat ? "BATTLES PENDING" : "PLANNING";
             shell.Header.Secondary.text = "Engineering / " + researchName + " • Reserve " + ScienceAllocationDraft.Conceptual(actor?.EngineeringReserve ?? 0);
-            shell.Header.Diagnostic.text = activeTab == "Designer" ? "SHIP DESIGN DEMO / LOCAL DRAFT ONLY" : "LIVE CAMPAIGN / Revision " + state.StateRevision;
+            shell.Header.Diagnostic.text = activeTab == "Designer" ? "SHIP DESIGN PROTOTYPE / LOCAL DRAFT ONLY" : "LIVE CAMPAIGN / Revision " + state.StateRevision;
             endTurn.SetEnabled(activeTab != "Designer" && state.Phase == SessionPhase.Planning);
             shell.Header.EnableInClassList("combat-attention",state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer);
             var combatFocus = combat.ReportToReview ?? combat.PendingHumanEncounter ?? (combat.RequiresPlayer ? "complete-turn" : null);

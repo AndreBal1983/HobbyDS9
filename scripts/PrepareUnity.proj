@@ -15,6 +15,7 @@
     <MakeDir Directories="$(PluginOutput);$(UnityProject)/Assets/HobbyDS9/Resources;$(Artifacts)" />
     <Copy SourceFiles="@(PortableAssembly)" DestinationFolder="$(PluginOutput)" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(RepoRoot)/scenarios/ds9-slice/scenario.json" DestinationFiles="$(UnityProject)/Assets/HobbyDS9/Resources/ds9-slice.json" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(RepoRoot)/scenarios/ship-design-fixtures/fixture.json" DestinationFiles="$(UnityProject)/Assets/HobbyDS9/Resources/ship-design-fixture.json" SkipUnchangedFiles="true" />
   </Target>
   <Target Name="RequireEditor">
     <Error Condition="'$(UnityEditor)' == '' Or !Exists('$(UnityEditor)')" Text="Pass -p:UnityEditor=PATH to licensed Unity 6000.6.5f1 with Windows Build Support (IL2CPP) and the required Windows C++ toolchain." />

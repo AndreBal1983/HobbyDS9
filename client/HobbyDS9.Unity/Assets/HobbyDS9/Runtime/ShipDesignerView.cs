@@ -49,8 +49,10 @@ namespace HobbyDS9.UnityClient
             hull = new DropdownField("Hull / version",draft.Provider.Hulls.Select(h=>h.Caption).ToList(),0) { name = "designer-hull" }; left.Add(hull);
             hull.RegisterValueChangedCallback(_ => Draft.SetHull(Draft.Provider.Hulls[hull.index].Id));
             left.Add(hullFacts);
-            roles = new DropdownField("Desired role",new List<string> {"Surveyor","Escort","Custom"},0) { name = "designer-role" }; left.Add(roles);
-            roles.RegisterValueChangedCallback(e => Draft.SetRole(e.newValue));
+            roles = new DropdownField("Desired role",draft.Provider.Roles.Select(r=>r.Caption).ToList(),0) { name = "designer-role" }; left.Add(roles);
+            roles.RegisterValueChangedCallback(_ => Draft.SetRole(Draft.Provider.Roles[roles.index].Id));
+            var crew=new LongField("Embarked crew") { isDelayed=true, name="designer-crew" }; left.Add(crew);
+            crew.RegisterValueChangedCallback(e=>Draft.SetCrew(e.newValue));
             templates = new DropdownField("Start from template",draft.Provider.Templates.Select(t=>t.Caption).ToList(),0) { name = "designer-template" }; left.Add(templates);
             templates.RegisterValueChangedCallback(_ =>
             {
@@ -58,7 +60,7 @@ namespace HobbyDS9.UnityClient
                 Draft.RequestTemplate(id); RefreshPresentation();
             });
             left.Add(new LcarsReadout("Local session draft only. Edits do not submit orders, unlock Engineering or enter campaign saves."));
-            var construction = new LcarsPillButton("Construction unavailable",()=>{}) { name = "designer-construction", tooltip = "Demo only. No Build, publish, refit or construction command is connected." };
+            var construction = new LcarsPillButton("Construction unavailable",()=>{}) { name = "designer-construction", tooltip = "Construction integration pending. No Build, publish, refit or construction command is connected." };
             construction.SetEnabled(false); left.Add(construction);
             comparison.AddToClassList("sd-comparison"); left.Add(comparison);
 
@@ -129,7 +131,8 @@ namespace HobbyDS9.UnityClient
         private void RefreshPresentation()
         {
             var fit = Draft.Current; var preview = Draft.Preview();
-            className.SetValueWithoutNotify(fit.Name); roles.SetValueWithoutNotify(fit.Role);
+            className.SetValueWithoutNotify(fit.Name); roles.SetValueWithoutNotify(Draft.Provider.Roles.Single(r=>r.Id==fit.Role).Caption);
+            this.Q<LongField>("designer-crew").SetValueWithoutNotify(fit.EmbarkedCrew);
             var hullVersion=Draft.Provider.Hulls.Single(h=>h.Id==fit.HullId); hull.SetValueWithoutNotify(hullVersion.Caption); hullFacts.text=hullVersion.Facts;
             templates.SetValueWithoutNotify(Draft.Provider.Templates.Single(t=>t.Id==Draft.TemplateId).Caption);
             state.text = (Draft.Modified?"MODIFIED LOCAL DRAFT":"TEMPLATE / LOCAL DRAFT")+" • "+StatusCaption(preview.Status); StatusClass(state,preview.Status);
@@ -164,6 +167,14 @@ namespace HobbyDS9.UnityClient
                 controls.Add(new LcarsPillButton("−",()=>Draft.SetQuantity(item.Id,fit.Installed[item.Id]-1)) { name = "quantity-minus-"+item.Id, tooltip = "Remove one "+item.Name });
                 controls.Add(new LcarsPillButton("+",()=>Draft.Add(item.Id)) { name = "quantity-plus-"+item.Id, tooltip = "Add one "+item.Name });
                 controls.Add(new LcarsPillButton("Remove",()=>Draft.Remove(item.Id)) { name = "remove-"+item.Id });
+                var allocation=fit.Power(item.Id,Draft.Profile);
+                var powerControls=new VisualElement(); powerControls.AddToClassList("sd-power-controls"); row.Add(powerControls);
+                var requested=new LongField("Requested") { isDelayed=true, name="power-requested-"+item.Id };
+                var allocated=new LongField("Allocated") { isDelayed=true, name="power-allocated-"+item.Id };
+                requested.SetValueWithoutNotify(allocation.RequestedPower); allocated.SetValueWithoutNotify(allocation.AllocatedPower);
+                requested.RegisterValueChangedCallback(e=>Draft.SetPower(item.Id,e.newValue,Draft.Current.Power(item.Id,Draft.Profile).AllocatedPower));
+                allocated.RegisterValueChangedCallback(e=>Draft.SetPower(item.Id,Draft.Current.Power(item.Id,Draft.Profile).RequestedPower,e.newValue));
+                powerControls.Add(requested); powerControls.Add(allocated);
                 foreach(var issue in preview.Issues.Where(i=>i.SystemId==item.Id))
                 { var label = new LcarsReadout(issue.Explanation); StatusClass(label,issue.Severity); row.Add(label); }
             }
