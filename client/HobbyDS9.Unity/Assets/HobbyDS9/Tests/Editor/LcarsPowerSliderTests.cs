@@ -57,6 +57,10 @@ namespace HobbyDS9.UnityClient.Tests
                 Assert.That(commits,Is.EqualTo(1));Assert.That(stored,Is.EqualTo(7));
                 using(var e=KeyDownEvent.GetPooled('\0',KeyCode.RightArrow,EventModifiers.None)){e.target=slider.Track;slider.Track.SendEvent(e);}
                 Assert.That(stored,Is.EqualTo(8));Assert.That(commits,Is.EqualTo(2));
+                using(var e=NavigationMoveEvent.GetPooled(NavigationMoveEvent.Direction.Right)){e.target=slider.Track;slider.Track.SendEvent(e);}
+                Assert.That(stored,Is.EqualTo(8));Assert.That(commits,Is.EqualTo(2),"Synthesized navigation must not apply the same key twice");
+                using(var e=KeyDownEvent.GetPooled('\0',KeyCode.RightArrow,EventModifiers.None)){e.target=slider.Track;slider.Track.SendEvent(e);}
+                Assert.That(stored,Is.EqualTo(9));Assert.That(commits,Is.EqualTo(3));
                 using(var e=KeyDownEvent.GetPooled('\0',KeyCode.End,EventModifiers.None)){e.target=slider.Track;slider.Track.SendEvent(e);}
                 Assert.That(stored,Is.EqualTo(12));
             }

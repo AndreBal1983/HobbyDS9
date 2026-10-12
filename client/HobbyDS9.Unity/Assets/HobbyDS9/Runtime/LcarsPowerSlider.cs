@@ -38,19 +38,21 @@ namespace HobbyDS9.UnityClient
             RegisterCallback<DetachFromPanelEvent>(_=>dragging=false);
             rail.RegisterCallback<KeyDownEvent>(e=>
             {
-                if(e.keyCode==KeyCode.Home || e.keyCode==KeyCode.End)
+                var delta=e.keyCode==KeyCode.LeftArrow || e.keyCode==KeyCode.DownArrow?-1:e.keyCode==KeyCode.RightArrow || e.keyCode==KeyCode.UpArrow?1:0;
+                if(delta!=0 || e.keyCode==KeyCode.Home || e.keyCode==KeyCode.End)
                 {
-                    Value=e.keyCode==KeyCode.Home?0:maximum;Track.SetValueWithoutNotify((int)Value);Paint();Commit();e.StopImmediatePropagation();
+                    Value=e.keyCode==KeyCode.Home?0:e.keyCode==KeyCode.End?maximum:Math.Max(0,Math.Min(maximum,Math.Max(0,Math.Min(maximum,Value))+delta));
+                    Track.SetValueWithoutNotify((int)Value);Paint();Commit();e.StopImmediatePropagation();
                 }
             },TrickleDown.TrickleDown);
-            // Arrow keys become navigation events in UI Toolkit. Handle that event once,
-            // rather than also adjusting KeyDown and accidentally stepping twice.
+            // Editor panels may synthesize navigation from an arrow KeyDown, while the
+            // native player sends only KeyDown. Consume navigation so arrows step once
+            // in both hosts; keyboard editing belongs to the handler above.
             rail.RegisterCallback<NavigationMoveEvent>(e=>
             {
                 var delta=e.direction==NavigationMoveEvent.Direction.Left || e.direction==NavigationMoveEvent.Direction.Down?-1:e.direction==NavigationMoveEvent.Direction.Right || e.direction==NavigationMoveEvent.Direction.Up?1:0;
                 if(delta==0)return;
-                Value=Math.Max(0,Math.Min(maximum,Math.Max(0,Math.Min(maximum,Value))+delta));
-                Track.SetValueWithoutNotify((int)Value);Paint();Commit();e.StopImmediatePropagation();
+                e.StopImmediatePropagation();
             },TrickleDown.TrickleDown);
             var bounds=new VisualElement();bounds.AddToClassList("lps-bounds");Add(bounds);
             bounds.Add(new Label("0 units"));bounds.Add(new Label(maximum+" units • step 1"));
