@@ -71,6 +71,19 @@ namespace HobbyDS9.UnityClient.Tests
             }
         }
         [Test]
+        public void OperatingProfilesShowsOnlySelectedProfileInstallationWarnings()
+        {
+            var draft=new ShipDesignDraft(ShipDesignFixtureLoader.Load());draft.RequestTemplate("class.escort");
+            using(var view=new ShipDesignerView(draft,()=>{}))
+            {
+                view.SelectSystem("Profiles");draft.SelectProfile(DesignerProfile.Cruise);
+                Assert.That(draft.Preview().Issues.Any(i=>i.Profile==DesignerProfile.Combat),Is.True);
+                Assert.That(view.Query<Label>().ToList().Any(l=>l.text.Contains("declared power curve")),Is.False);
+                draft.SelectProfile(DesignerProfile.Combat);
+                Assert.That(view.Query<Label>().ToList().Any(l=>l.text.Contains("WARNING / Combat")&&l.text.Contains("declared power curve")),Is.True);
+            }
+        }
+        [Test]
         public void ProposedEditUsesSameDraftApisWithoutChangingSourceOrCampaign()
         {
             var host=new CampaignHost(Resources.Load<TextAsset>("ds9-slice").bytes);var save=host.SaveJson();

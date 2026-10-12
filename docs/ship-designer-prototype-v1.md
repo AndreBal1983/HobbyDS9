@@ -62,7 +62,7 @@ Templates, Rename, Reset, discard confirmation, navigation guards, backend previ
 
 ### UX rebuild verification
 
-Locked restore, Release build and all 1,057 .NET tests passed. Static Unity integration checks passed. All three canonical/reverse/repeated campaign smokes retain accepted save SHA256 `83bdb9013db7ac7b2b33ef77c4b591a4bca065544a01912eb48c48161688f5c4`. Unity 6000.6.5f1 EditMode passes 78/78 cases, retaining the accepted 70 and adding eight behavior cases. The attached callback test invokes real registered Clickable handlers; it does not claim synthetic events as native input.
+Locked restore, Release build and all 1,057 .NET tests passed. Static Unity integration checks passed. All three canonical/reverse/repeated campaign smokes retain accepted save SHA256 `83bdb9013db7ac7b2b33ef77c4b591a4bca065544a01912eb48c48161688f5c4`. Unity 6000.6.5f1 EditMode passes 79/79 cases, retaining the accepted 70 and adding nine behavior cases. The attached callback test invokes real registered Clickable handlers; it does not claim synthetic events as native input.
 
 The capture helper records five views at three exact Game view sizes, validating primary-action bounds, useful workspace height, Overview art loading, unavailable publication and separation of profile editors. Evidence lives under ignored `artifacts/unity/ship-designer-ux-rebuild/`:
 

@@ -82,7 +82,8 @@ namespace HobbyDS9.UnityClient
         public string SystemId { get; }
         public DesignerStatus Severity { get; }
         public string Explanation { get; }
-        public DesignerIssue(string systemId,DesignerStatus severity,string explanation) { SystemId=systemId; Severity=severity; Explanation=explanation; }
+        public DesignerProfile? Profile { get; }
+        public DesignerIssue(string systemId,DesignerStatus severity,string explanation,DesignerProfile? profile=null) { SystemId=systemId; Severity=severity; Explanation=explanation; Profile=profile; }
     }
     public sealed class DesignerMetric
     {

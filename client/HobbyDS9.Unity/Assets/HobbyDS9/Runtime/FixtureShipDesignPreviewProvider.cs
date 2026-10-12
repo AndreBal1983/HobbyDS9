@@ -64,6 +64,12 @@ namespace HobbyDS9.UnityClient
         }
         public ShipDesignPreview Evaluate(DesignerFit fit) => Designer.Preview(fit.ToDto(),Access());
         private static DesignerMetric M(string key,object value) => new DesignerMetric(key,Convert.ToString(value,System.Globalization.CultureInfo.InvariantCulture) ?? "—");
+        private static DesignerProfile? IssueProfile(string path)
+        {
+            foreach(DesignerProfile profile in Enum.GetValues(typeof(DesignerProfile)))
+                if(path.Contains("$.Profiles["+profile+"]"))return profile;
+            return null;
+        }
         public DesignerPreview Preview(DesignerFit fit,DesignerProfile profile)
         {
             var result=Evaluate(fit);
@@ -93,7 +99,7 @@ namespace HobbyDS9.UnityClient
             var issues=result.Issues.Select(i=>new DesignerIssue(
                 dto.Installations!.FirstOrDefault(x=>i.Path.Contains(x.InstallationId))?.ComponentVersionId ?? "",
                 i.Severity==DesignIssueSeverity.Error?DesignerStatus.HardError:DesignerStatus.Warning,
-                i.Message));
+                i.Message,IssueProfile(i.Path)));
             return new DesignerPreview(!result.IsValid?DesignerStatus.HardError:result.Issues.Count>0?DesignerStatus.Warning:DesignerStatus.Valid,
                 "Portable backend preview • all profiles validated • no campaign order", result.CapacityUsed,result.CapacityLimit,
                 result.CapacityLimit.HasValue && result.CapacityUsed.HasValue ? result.CapacityLimit-result.CapacityUsed : null,

@@ -22,6 +22,7 @@ namespace HobbyDS9.UnityClient
         private readonly DropdownField systemPicker;
         private readonly ShipDesignerGraphics? graphics;
         private string? selectedComponent, replacementSource;
+        private string? renderedSystem, renderedComponent;
         private bool comparisonOpen;
         public ShipDesignerView(ShipDesignDraft draft,Action closeRequested,ShipDesignerGraphics? graphicCatalogue=null)
         {
@@ -64,6 +65,10 @@ namespace HobbyDS9.UnityClient
         private static void StatusClass(VisualElement e,DesignerStatus s){e.EnableInClassList("sd-error",s==DesignerStatus.HardError);e.EnableInClassList("sd-warning",s==DesignerStatus.Warning);e.EnableInClassList("sd-valid",s==DesignerStatus.Valid);e.EnableInClassList("sd-unavailable",s==DesignerStatus.NotEvaluated);}
         private void Refresh()
         {
+            var offsets=new Dictionary<string,Vector2>();
+            if(renderedSystem==SelectedSystem)
+                foreach(var scroll in workspace.Query<ScrollView>().ToList())
+                    if(scroll.name!="designer-component-detail" || renderedComponent==selectedComponent)offsets[scroll.name]=scroll.scrollOffset;
             var fit=Draft.Current;var p=Draft.Preview();className.SetValueWithoutNotify(fit.Name);roles.SetValueWithoutNotify(Draft.Provider.Roles.Single(r=>r.Id==fit.Role).Caption);templates.SetValueWithoutNotify(Draft.Provider.Templates.Single(t=>t.Id==Draft.TemplateId).Caption);
             hullCaption.text=Draft.Provider.Hulls.Single(h=>h.Id==fit.HullId).Caption;state.text=Status(p.Status)+(Draft.Modified?" / EDITED":" / TEMPLATE");StatusClass(state,p.Status);
             capacity.text=p.UsedCapacity.HasValue?$"Capacity {p.UsedCapacity} / {p.TotalCapacity}":"Capacity not evaluated";cost.text=Metric(p.Costs,"Construction");ResetButton.SetEnabled(Draft.Modified);
@@ -72,6 +77,9 @@ namespace HobbyDS9.UnityClient
             systemPicker.SetValueWithoutNotify(Caption(SelectedSystem));
             workspace.Clear();workspace.Add(new LcarsSectionHeader(Caption(SelectedSystem).ToUpperInvariant()) {name="designer-workspace-title"});
             if(SelectedSystem=="Overview")Overview(p);else if(SelectedSystem=="Hull")Hull(p);else if(SelectedSystem=="Profiles")Profiles(p);else if(SelectedSystem=="Validation")Validation(p);else SystemPage(p);
+            renderedSystem=SelectedSystem;renderedComponent=selectedComponent;
+            foreach(var scroll in workspace.Query<ScrollView>().ToList())
+                if(offsets.TryGetValue(scroll.name,out var offset))scroll.schedule.Execute(()=>scroll.scrollOffset=offset);
         }
         private ShipSystemGraphic Graphic(string id)=>new ShipSystemGraphic(id,Caption(id),graphics!);
         private IEnumerable<DesignerMetric> Headlines(DesignerPreview p,string system)
@@ -120,7 +128,7 @@ namespace HobbyDS9.UnityClient
         }
         private void Component(VisualElement detail,DesignerComponent item,DesignerPreview p)
         {
-            var fit=Draft.Current;var count=fit.Installed.TryGetValue(item.Id,out var q)?q:0;detail.Add(new LcarsSectionHeader(item.Name));detail.Add(new LcarsReadout(item.Description.Split('\n')[0]) {name="designer-component-description"});
+            var fit=Draft.Current;var count=fit.Installed.TryGetValue(item.Id,out var q)?q:0;detail.Add(new LcarsSectionHeader(item.Name));detail.Add(new LcarsReadout(Caption(SelectedSystem)+" package / "+Draft.Profile+" performance") {name="designer-component-description"});
             var facts=(Draft.Provider as FixtureShipDesignPreviewProvider)?.ComponentFacts(item.Id,Draft.Profile);
             var countRow=Block(detail,"INSTALLED");countRow.Row("Quantity",count.ToString());var controls=Buttons(detail);
             var add=new LcarsPillButton("Add",()=>Draft.Add(item.Id)) {name="designer-add"};add.SetEnabled((Draft.Provider as FixtureShipDesignPreviewProvider)?.Available(item.Id)??true);controls.Add(add);
@@ -147,7 +155,7 @@ namespace HobbyDS9.UnityClient
                 var row=Block(s,item.Name+" × "+Draft.Current.Installed[item.Id]);row.AddToClassList("sd-profile-row");var power=Draft.Current.Power(item.Id,Draft.Profile);var fields=Buttons(row);
                 var requested=new LongField("Requested") {name="power-requested-"+item.Id,isDelayed=true};requested.SetValueWithoutNotify(power.RequestedPower);var allocated=new LongField("Allocated") {name="power-allocated-"+item.Id,isDelayed=true};allocated.SetValueWithoutNotify(power.AllocatedPower);
                 requested.RegisterValueChangedCallback(e=>Draft.SetPower(item.Id,e.newValue,Draft.Current.Power(item.Id,Draft.Profile).AllocatedPower));allocated.RegisterValueChangedCallback(e=>Draft.SetPower(item.Id,Draft.Current.Power(item.Id,Draft.Profile).RequestedPower,e.newValue));fields.Add(requested);fields.Add(allocated);
-                var id=Draft.Current.ToDto().Installations!.Single(i=>i.ComponentVersionId==item.Id).InstallationId;var output=p.Capabilities.FirstOrDefault(m=>m.Caption==id)?.Value;row.Row("Actual output",string.IsNullOrEmpty(output)?"No powered output":output!);foreach(var issue in p.Issues.Where(i=>i.SystemId==item.Id))Issue(row,issue);
+                var id=Draft.Current.ToDto().Installations!.Single(i=>i.ComponentVersionId==item.Id).InstallationId;var output=p.Capabilities.FirstOrDefault(m=>m.Caption==id)?.Value;row.Row("Actual output",string.IsNullOrEmpty(output)?"No evaluated output":output!);foreach(var issue in p.Issues.Where(i=>i.SystemId==item.Id && (!i.Profile.HasValue || i.Profile==Draft.Profile)))Issue(row,issue);
             }
             Metrics(s,"RESULTING CAPABILITIES",Headlines(p,"Overview"));Context(s,p);
         }
@@ -162,7 +170,7 @@ namespace HobbyDS9.UnityClient
             if(t.Contains("mount")||t.Contains("unarmed"))return "Weapons";if(t.Contains("computer")||t.Contains("command"))return "Command";if(t.Contains("crew")||t.Contains("life support"))return "Crew";if(t.Contains("propulsion"))return "Propulsion";
             if(t.Contains("capacity")||t.Contains("hull")||t.Contains("envelope"))return "Hull";if(t.Contains("allocation")||t.Contains("profile"))return "Profiles";if(t.Contains("power")||t.Contains("reactor"))return "Power";return "Validation";
         }
-        private static void Issue(VisualElement parent,DesignerIssue issue){var e=new LcarsReadout(Status(issue.Severity)+" • "+issue.Explanation);StatusClass(e,issue.Severity);parent.Add(e);}
+        private static void Issue(VisualElement parent,DesignerIssue issue){var e=new LcarsReadout(Status(issue.Severity)+(issue.Profile.HasValue?" / "+issue.Profile:"")+" • "+issue.Explanation);StatusClass(e,issue.Severity);parent.Add(e);}
         private void Context(VisualElement parent,DesignerPreview p){var issues=p.Issues.Where(i=>IssueSystem(i)==SelectedSystem).ToList();if(issues.Count==0)return;var b=Block(parent,"THIS SYSTEM / VALIDATION");foreach(var issue in issues)Issue(b,issue);}
         private void Comparison(VisualElement parent,DesignerPreview p,bool full)
         {
