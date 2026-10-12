@@ -35,7 +35,7 @@ namespace HobbyDS9.UnityClient
             block.Row("Worlds / fleets", worlds.Count + " / " + fleets.Count);
             block.Row("Population", worlds.Sum(c => c.Population).ToString());
             block.Row("Credits", actor.Credits.ToString());
-            block.Row("Engineering reserve", actor.EngineeringReserve.ToString());
+            block.Row("Engineering reserve", ScienceAllocationDraft.Conceptual(actor.EngineeringReserve));
             Text("OWNED WORLDS", true);
             foreach (var world in worlds)
             {

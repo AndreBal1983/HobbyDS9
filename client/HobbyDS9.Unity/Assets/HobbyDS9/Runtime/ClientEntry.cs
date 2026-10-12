@@ -123,7 +123,7 @@ namespace HobbyDS9.UnityClient
             shell.Header.Credits.Value.text = (actor?.Credits ?? 0).ToString();
             shell.Header.Turn.Value.text = state.TurnNumber.ToString("00");
             shell.Header.Phase.Value.text = state.Phase == SessionPhase.AwaitingCombat ? "BATTLES PENDING" : "PLANNING";
-            shell.Header.Secondary.text = "Engineering / " + researchName + " • Reserve " + (actor?.EngineeringReserve ?? 0);
+            shell.Header.Secondary.text = "Engineering / " + researchName + " • Reserve " + ScienceAllocationDraft.Conceptual(actor?.EngineeringReserve ?? 0);
             shell.Header.Diagnostic.text = "LIVE CAMPAIGN / Revision " + state.StateRevision;
             endTurn.SetEnabled(state.Phase == SessionPhase.Planning);
             shell.Header.EnableInClassList("combat-attention",state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer);

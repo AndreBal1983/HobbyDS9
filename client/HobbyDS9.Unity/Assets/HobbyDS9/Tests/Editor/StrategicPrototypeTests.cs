@@ -39,6 +39,30 @@ namespace HobbyDS9.UnityClient.Tests
             finally { Object.DestroyImmediate(go); }
         }
         [Test]
+        public void MarsAfterDeliveryRendersProductionAndCollapsedHistoryWithoutChangingCampaign()
+        {
+            var go = new GameObject("Mars delivery presentation test"); go.SetActive(false);
+            try
+            {
+                var entry = go.AddComponent<ClientEntry>();
+                var host = new CampaignHost(Resources.Load<TextAsset>("ds9-slice").bytes);
+                host.EndTurn();
+                var snapshot = host.Snapshot;
+                var mars = StrategicScreenPresentation.InitialWorld(snapshot);
+                Assert.That(snapshot.Campaign.LastDeliveries.Any(r => r.DestinationPlanetId == mars.PlanetId.Value), Is.True);
+                var before = host.SaveJson();
+                var shell = new LcarsShell(new GalaxyMap(), new ProductionOverviewView(), _ => {}, () => {}, () => {});
+                Set(entry, "host", host); Set(entry, "shell", shell); Set(entry, "details", shell.Details); Set(entry, "message", shell.Message);
+                Assert.DoesNotThrow(() => Call(entry, "ShowStrategicWorld", snapshot, mars));
+                var history = shell.Q<Foldout>("world-details");
+                Assert.That(history, Is.Not.Null); Assert.That(history.value, Is.False);
+                Assert.That(history.Query<Label>().ToList().Any(l => l.text.Contains("Route: Sol")), Is.True);
+                Assert.That(shell.Q<Button>("queue-selected-design").enabledSelf, Is.True);
+                Assert.That(host.SaveJson(), Is.EqualTo(before));
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+        [Test]
         public void MapDecorationCannotPickAndResizeKeepsStrategicControls()
         {
             var shell = new LcarsShell(new GalaxyMap(),new ProductionOverviewView(),_=>{},()=>{},()=>{});

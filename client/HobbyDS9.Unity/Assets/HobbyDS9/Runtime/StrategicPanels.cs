@@ -244,7 +244,7 @@ namespace HobbyDS9.UnityClient
             Text("Last turn deliveries", true);
             if (deliveries.Count == 0) Text("No deliveries recorded. Food and strategic resources remain local until delivered.");
             foreach (var r in deliveries)
-                Text($"{r.ResourceDefinitionId}: {r.OriginPlanetId} → {r.DestinationPlanetId}\nNeed {r.ImportNeed} • Reachable surplus {r.ReachableSurplus} • Capacity {r.RouteCapacity}\nReceiving stability {r.StabilityFactor / 100.0:0.#}% • Integrity {r.RouteIntegrity / 100.0:0.#}% • Delivered {r.Delivered}\nRoute: {string.Join(" → ", r.RouteNodeIds.Select(id => SystemName(snapshot, id)))}");
+                Text($"{r.ResourceDefinitionId}: {r.OriginPlanetId} → {r.DestinationPlanetId}\nNeed {r.ImportNeed} • Reachable surplus {r.ReachableSurplus} • Capacity {r.RouteCapacity}\nReceiving stability {r.StabilityFactor / 100.0:0.#}% • Integrity {r.RouteIntegrity / 100.0:0.#}% • Delivered {r.Delivered}\nRoute: {string.Join(" → ", r.RouteNodeIds.Select(id => NodeName(snapshot, new NavigationNodeId(id))))}");
         }
         private void ShowSaves()
         {
