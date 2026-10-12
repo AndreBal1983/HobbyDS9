@@ -9,7 +9,6 @@ namespace HobbyDS9.Simulation
     {
         internal static void Execute(GameStateDto state, DefinitionCatalogDto definitions)
         {
-            var designs = definitions.ShipDesigns!.ToDictionary(d => d.DefinitionId, StringComparer.Ordinal);
             foreach (var colony in state.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal))
             {
                 if (colony.ProductionQueue!.Count == 0) continue;
@@ -17,9 +16,9 @@ namespace HobbyDS9.Simulation
                 var industry = WorldEconomy.Project(colony, state, definitions).Industry;
                 var remaining = head.RequiredIndustry - head.CompletedIndustry;
                 if (industry < remaining) { head.CompletedIndustry += industry; continue; }
-                var design = designs[head.ShipDesignDefinitionId];
+                var design = CampaignShipDesignResolver.Queue(state, definitions, head);
                 // Ship first, then fleet (only if none stationary); one global sequence.
-                var shipId = CampaignAllocation.Allocate(state, "ship", design.DefinitionId);
+                var shipId = CampaignAllocation.Allocate(state, "ship", head.Blueprint == null ? design.DefinitionId : null);
                 var location=new WeightedNavigationGraph(definitions).NodeForSystem(colony.SystemId)!;
                 var fleet = state.Fleets!.Where(f => f.OwnerCivilizationId == colony.OwnerCivilizationId && f.LocationNodeId == location && f.TransitTotalCost==0 && f.RouteNodeIds!.Count == 0)
                     .OrderBy(f => f.FleetId, StringComparer.Ordinal).FirstOrDefault();
@@ -39,7 +38,8 @@ namespace HobbyDS9.Simulation
                 state.Ships!.Add(new ShipStateDto
                 {
                     ShipId = shipId,
-                    ShipDesignDefinitionId = design.DefinitionId,
+                    ShipDesignDefinitionId = head.ShipDesignDefinitionId,
+                    Blueprint = head.Blueprint == null ? null : BlueprintCopies.Copy(head.Blueprint),
                     OwnerCivilizationId = colony.OwnerCivilizationId!,
                     FleetId = fleet.FleetId,
                     CurrentHull = design.MaxHull

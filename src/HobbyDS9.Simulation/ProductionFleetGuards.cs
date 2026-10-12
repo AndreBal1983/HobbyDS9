@@ -21,8 +21,8 @@ namespace HobbyDS9.Simulation
                     for (var i = 0; i < next.Count; i++)
                     {
                         var old = queue[i + offset]; var current = next[i];
-                        Check((old.QueueItemId, old.ShipDesignDefinitionId, old.RequiredIndustry, old.PaidCredits, ResourceKey(old))
-                            == (current.QueueItemId, current.ShipDesignDefinitionId, current.RequiredIndustry, current.PaidCredits, ResourceKey(current)));
+                        Check((old.QueueItemId, old.ShipDesignDefinitionId, ReferenceKey(old.Blueprint), old.RequiredIndustry, old.PaidCredits, ResourceKey(old))
+                            == (current.QueueItemId, current.ShipDesignDefinitionId, ReferenceKey(current.Blueprint), current.RequiredIndustry, current.PaidCredits, ResourceKey(current)));
                         Check(i + offset == 0 ? current.CompletedIndustry >= old.CompletedIndustry : current.CompletedIndustry == old.CompletedIndustry);
                     }
                 }
@@ -53,9 +53,10 @@ namespace HobbyDS9.Simulation
             }
         }
         private static string ResourceKey(ProductionQueueItemDto q) => string.Join(";", q.PaidResources!.OrderBy(r => r.ResourceDefinitionId, StringComparer.Ordinal).Select(r => r.ResourceDefinitionId + ":" + r.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)));
-        private static (string, string, long, long, string, long) Key(ProductionQueueItemDto q) =>
-            (q.QueueItemId, q.ShipDesignDefinitionId, q.RequiredIndustry, q.CompletedIndustry, ResourceKey(q), q.PaidCredits);
-        private static (string, string, string, string, long) ShipKey(ShipStateDto s) =>
-            (s.ShipId, s.ShipDesignDefinitionId, s.OwnerCivilizationId, s.FleetId, s.CurrentHull);
+        private static string ReferenceKey(BlueprintReferenceDto? r) => r == null ? string.Empty : r.BlueprintId + ":" + r.Revision.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        private static (string, string, string, long, long, string, long) Key(ProductionQueueItemDto q) =>
+            (q.QueueItemId, q.ShipDesignDefinitionId, ReferenceKey(q.Blueprint), q.RequiredIndustry, q.CompletedIndustry, ResourceKey(q), q.PaidCredits);
+        private static (string, string, string, string, string, long) ShipKey(ShipStateDto s) =>
+            (s.ShipId, s.ShipDesignDefinitionId, ReferenceKey(s.Blueprint), s.OwnerCivilizationId, s.FleetId, s.CurrentHull);
     }
 }

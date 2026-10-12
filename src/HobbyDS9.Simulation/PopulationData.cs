@@ -254,7 +254,7 @@ namespace HobbyDS9.Simulation
             FoodShortageTurns = x.FoodShortageTurns,
             AcceptsRefugees = x.AcceptsRefugees,
             Food = x.Food,
-            ProductionQueue = x.ProductionQueue!.Select(q => new ProductionQueueItemDto { QueueItemId = q.QueueItemId, ShipDesignDefinitionId = q.ShipDesignDefinitionId, RequiredIndustry = q.RequiredIndustry, CompletedIndustry = q.CompletedIndustry, PaidCredits = q.PaidCredits, PaidResources = q.PaidResources!.OrderBy(v => v.ResourceDefinitionId, StringComparer.Ordinal).Select(Copy).ToList() }).ToList(),
+            ProductionQueue = x.ProductionQueue!.Select(q => new ProductionQueueItemDto { QueueItemId = q.QueueItemId, Blueprint = q.Blueprint == null ? null : BlueprintCopies.Copy(q.Blueprint), ShipDesignDefinitionId = q.ShipDesignDefinitionId, RequiredIndustry = q.RequiredIndustry, CompletedIndustry = q.CompletedIndustry, PaidCredits = q.PaidCredits, PaidResources = q.PaidResources!.OrderBy(v => v.ResourceDefinitionId, StringComparer.Ordinal).Select(Copy).ToList() }).ToList(),
         };
         internal static bool Same(ColonyStateDto? a, ColonyStateDto? b) => a == null ? b == null : b != null && Same(a.Politics,b.Politics) && a.ColonyId == b.ColonyId
             && a.SystemId == b.SystemId
@@ -270,6 +270,6 @@ namespace HobbyDS9.Simulation
             && a.FoodShortageTurns == b.FoodShortageTurns
             && a.AcceptsRefugees == b.AcceptsRefugees
             && a.Food == b.Food
-            && (a.ProductionQueue == null ? b.ProductionQueue == null : b.ProductionQueue != null && a.ProductionQueue.Count == b.ProductionQueue.Count && a.ProductionQueue.Zip(b.ProductionQueue, (x, y) => x.QueueItemId == y.QueueItemId && x.ShipDesignDefinitionId == y.ShipDesignDefinitionId && x.RequiredIndustry == y.RequiredIndustry && x.CompletedIndustry == y.CompletedIndustry && x.PaidCredits == y.PaidCredits && x.PaidResources!.Count == y.PaidResources!.Count && x.PaidResources.Zip(y.PaidResources, (r, s) => Same(r, s)).All(v => v)).All(v => v));
+            && (a.ProductionQueue == null ? b.ProductionQueue == null : b.ProductionQueue != null && a.ProductionQueue.Count == b.ProductionQueue.Count && a.ProductionQueue.Zip(b.ProductionQueue, (x, y) => BlueprintCopies.Same(x.Blueprint, y.Blueprint) && x.QueueItemId == y.QueueItemId && x.ShipDesignDefinitionId == y.ShipDesignDefinitionId && x.RequiredIndustry == y.RequiredIndustry && x.CompletedIndustry == y.CompletedIndustry && x.PaidCredits == y.PaidCredits && x.PaidResources!.Count == y.PaidResources!.Count && x.PaidResources.Zip(y.PaidResources, (r, s) => Same(r, s)).All(v => v)).All(v => v));
     }
 }

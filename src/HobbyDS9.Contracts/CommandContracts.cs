@@ -4,7 +4,7 @@ namespace HobbyDS9.Contracts
 {
     public enum CommandKind
     {
-        Unknown = 0, EnqueueProduction = 1, CancelProduction = 2, SetEngineeringTarget = 8, SetFleetRoute = 4, SetWorldGovernancePolicy = 5, SetResearchAllocation = 6, SetScienceAllocation = 7
+        PublishShipBlueprint = 9, EnqueueBlueprintConstruction = 10, Unknown = 0, EnqueueProduction = 1, CancelProduction = 2, SetEngineeringTarget = 8, SetFleetRoute = 4, SetWorldGovernancePolicy = 5, SetResearchAllocation = 6, SetScienceAllocation = 7
     }
 
     public enum CommandStatus { Rejected = 0, Accepted = 1 }
@@ -17,7 +17,7 @@ namespace HobbyDS9.Contracts
         UnsupportedCommand = 11, RevisionExhausted = 12, InvalidTarget = 13, CombatPending = 14, UnknownEngineeringApplication = 15, EngineeringAlreadyMature = 16,
         EngineeringPrerequisiteMissing = 17, EngineeringTargetUnchanged = 18, UnknownColony = 19, ColonyNotOwned = 20, UnknownShipDesign = 21,
         DesignEngineeringPrerequisiteMissing = 22, InsufficientCredits = 23, InsufficientStrategicResource = 24,
-        UnknownQueueItem = 25, UnknownFleet = 26, FleetNotOwned = 27, InvalidRoute = 28, ReservedCommandId = 29, ShipbuildingUnavailable = 30, UnknownGovernancePolicy = 31, GovernancePolicyUnchanged = 32, FleetInTransit = 33, NavigationUnknown = 34, InvalidResearchAllocation = 35, ResearchAllocationUnchanged = 36, InvalidScienceAllocation = 37, ScienceAllocationUnchanged = 39, EngineeringScienceRequirementMissing = 40
+        UnknownQueueItem = 25, UnknownFleet = 26, FleetNotOwned = 27, InvalidRoute = 28, ReservedCommandId = 29, ShipbuildingUnavailable = 30, UnknownGovernancePolicy = 31, GovernancePolicyUnchanged = 32, FleetInTransit = 33, NavigationUnknown = 34, InvalidResearchAllocation = 35, ResearchAllocationUnchanged = 36, InvalidScienceAllocation = 37, ScienceAllocationUnchanged = 39, EngineeringScienceRequirementMissing = 40, BlueprintRevisionConflict = 41, BlueprintNotOwned = 42, InvalidShipBlueprint = 43, ShipDesignVersionUnavailable = 44, UnknownBlueprint = 45, ShipDesignCatalogueUnavailable = 46
     }
 
     // Closed discriminated union: exactly one payload must match Kind. There
@@ -29,6 +29,8 @@ namespace HobbyDS9.Contracts
         public int? ExpectedTurn { get; set; }
         public long? ExpectedRevision { get; set; }
         public CommandKind Kind { get; set; }
+        public PublishShipBlueprintPayload? PublishShipBlueprint { get; set; }
+        public EnqueueBlueprintConstructionPayload? EnqueueBlueprintConstruction { get; set; }
         public EnqueueProductionPayload? EnqueueProduction { get; set; }
         public CancelProductionPayload? CancelProduction { get; set; }
         public SetResearchAllocationPayload? SetResearchAllocation { get; set; }

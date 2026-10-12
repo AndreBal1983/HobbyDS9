@@ -678,8 +678,8 @@ public sealed class ShipDesignInfrastructureTests
         var f = Load();
         f.Catalogue.FormatVersion = version;
         Assert.Null(ShipDesignApplication.Create(f.Catalogue).Designer);
-        Assert.Equal(13, FoundationVersions.SaveFormatVersion);
-        Assert.Equal(9, FoundationVersions.ContentFormatVersion);
+        Assert.Equal(14, FoundationVersions.SaveFormatVersion);
+        Assert.Equal(10, FoundationVersions.ContentFormatVersion);
     }
     [Fact]
     public void SupportedPowerGridHasNoFreePerformanceAndRepeatsInStableOrder()

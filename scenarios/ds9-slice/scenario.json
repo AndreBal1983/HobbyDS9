@@ -2,7 +2,7 @@
   "ScenarioId": "ds9-strategic-slice-v1",
   "RulesVersion": "science-engineering-v1",
   "Definitions": {
-    "ContentFormatVersion": 9,
+    "ContentFormatVersion": 10,
     "DefinitionIds": [
       "civilization.cardassian",
       "civilization.dominion",
@@ -121,6 +121,1056 @@
         "EndpointA": "system.gamma-exit",
         "EndpointB": "system.founders-homeworld",
         "Kind": 1
+      }
+    ],
+    "ShipDesignCatalogue": {
+      "FormatVersion": 1,
+      "HullFamilies": [
+        {
+          "FamilyId": "hull-family.utility",
+          "DisplayName": "Utility"
+        }
+      ],
+      "Hulls": [
+        {
+          "VersionId": "hull.utility.v1",
+          "FamilyId": "hull-family.utility",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Utility hull v1",
+          "Capacity": 100,
+          "MaxHull": 30,
+          "DesignLoad": 100,
+          "MinimumCrew": 10,
+          "PowerDistributionLimit": 60,
+          "MaxReactors": 1,
+          "MaxPropulsionPackages": 1,
+          "ReactorSizeLimit": 2,
+          "PropulsionSizeLimit": 2,
+          "Tags": [
+            "hull-tag.mobile"
+          ],
+          "Mounts": [
+            {
+              "Id": "mount.energy.forward",
+              "Kind": 1,
+              "SizeRating": 2,
+              "Count": 2,
+              "CoverageTag": "coverage.forward"
+            },
+            {
+              "Id": "mount.launcher",
+              "Kind": 2,
+              "SizeRating": 1,
+              "Count": 1,
+              "CoverageTag": "coverage.forward"
+            }
+          ],
+          "Cost": {
+            "Credits": 10,
+            "Industry": 20,
+            "Maintenance": 2,
+            "Resources": []
+          }
+        }
+      ],
+      "Components": [
+        {
+          "VersionId": "component.reactor.v1",
+          "FamilyId": "component-family.reactor",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Reactor",
+          "Kind": 1,
+          "Capacity": 18,
+          "CrewRequired": 1,
+          "ComputerDemand": 0,
+          "PowerSupply": 60,
+          "EnvelopeSize": 2,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [],
+          "RequiredComponentTags": [],
+          "Mounts": [],
+          "Dependencies": [],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": true,
+              "Outputs": []
+            },
+            {
+              "Profile": 2,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": true,
+              "Outputs": []
+            },
+            {
+              "Profile": 3,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": true,
+              "Outputs": []
+            }
+          ],
+          "Cost": {
+            "Credits": 6,
+            "Industry": 9,
+            "Maintenance": 1,
+            "Resources": [
+              {
+                "ResourceDefinitionId": "resource.dilithium",
+                "Amount": 1
+              }
+            ]
+          }
+        },
+        {
+          "VersionId": "component.life-support.v1",
+          "FamilyId": "component-family.life-support",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Life Support",
+          "Kind": 2,
+          "Capacity": 12,
+          "CrewRequired": 1,
+          "ComputerDemand": 2,
+          "PowerSupply": 0,
+          "EnvelopeSize": 0,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [
+            "system-tag.life-support"
+          ],
+          "RequiredComponentTags": [],
+          "Mounts": [],
+          "Dependencies": [],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 6,
+              "MinimumPower": 6,
+              "Scaling": 1,
+              "Essential": true,
+              "Outputs": [
+                {
+                  "Kind": 1,
+                  "Amount": 40
+                }
+              ]
+            },
+            {
+              "Profile": 2,
+              "FullPower": 6,
+              "MinimumPower": 6,
+              "Scaling": 1,
+              "Essential": true,
+              "Outputs": [
+                {
+                  "Kind": 1,
+                  "Amount": 40
+                }
+              ]
+            },
+            {
+              "Profile": 3,
+              "FullPower": 6,
+              "MinimumPower": 6,
+              "Scaling": 1,
+              "Essential": true,
+              "Outputs": [
+                {
+                  "Kind": 1,
+                  "Amount": 40
+                }
+              ]
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        },
+        {
+          "VersionId": "component.command.v1",
+          "FamilyId": "component-family.command",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Command",
+          "Kind": 3,
+          "Capacity": 8,
+          "CrewRequired": 1,
+          "ComputerDemand": 0,
+          "PowerSupply": 0,
+          "EnvelopeSize": 0,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [
+            "system-tag.command"
+          ],
+          "RequiredComponentTags": [],
+          "Mounts": [],
+          "Dependencies": [],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 4,
+              "MinimumPower": 4,
+              "Scaling": 1,
+              "Essential": true,
+              "Outputs": [
+                {
+                  "Kind": 2,
+                  "Amount": 60
+                },
+                {
+                  "Kind": 8,
+                  "Amount": 6000
+                }
+              ]
+            },
+            {
+              "Profile": 2,
+              "FullPower": 4,
+              "MinimumPower": 4,
+              "Scaling": 1,
+              "Essential": true,
+              "Outputs": [
+                {
+                  "Kind": 2,
+                  "Amount": 60
+                },
+                {
+                  "Kind": 8,
+                  "Amount": 7000
+                }
+              ]
+            },
+            {
+              "Profile": 3,
+              "FullPower": 4,
+              "MinimumPower": 4,
+              "Scaling": 1,
+              "Essential": true,
+              "Outputs": [
+                {
+                  "Kind": 2,
+                  "Amount": 60
+                },
+                {
+                  "Kind": 8,
+                  "Amount": 6000
+                }
+              ]
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        },
+        {
+          "VersionId": "component.propulsion.v1",
+          "FamilyId": "component-family.propulsion",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Propulsion",
+          "Kind": 4,
+          "Capacity": 16,
+          "CrewRequired": 1,
+          "ComputerDemand": 10,
+          "PowerSupply": 0,
+          "EnvelopeSize": 2,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [],
+          "RequiredComponentTags": [],
+          "Mounts": [],
+          "Dependencies": [],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 30,
+              "MinimumPower": 15,
+              "Scaling": 2,
+              "Essential": true,
+              "Outputs": [
+                {
+                  "Kind": 3,
+                  "Amount": 200
+                },
+                {
+                  "Kind": 10,
+                  "Amount": 4
+                }
+              ]
+            },
+            {
+              "Profile": 2,
+              "FullPower": 12,
+              "MinimumPower": 6,
+              "Scaling": 2,
+              "Essential": true,
+              "Outputs": [
+                {
+                  "Kind": 3,
+                  "Amount": 200
+                },
+                {
+                  "Kind": 9,
+                  "Amount": 1000
+                }
+              ]
+            },
+            {
+              "Profile": 3,
+              "FullPower": 8,
+              "MinimumPower": 4,
+              "Scaling": 2,
+              "Essential": true,
+              "Outputs": [
+                {
+                  "Kind": 3,
+                  "Amount": 200
+                },
+                {
+                  "Kind": 10,
+                  "Amount": 2
+                }
+              ]
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        },
+        {
+          "VersionId": "component.survey-sensors.v1",
+          "FamilyId": "component-family.survey-sensors",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Survey Sensors",
+          "Kind": 5,
+          "Capacity": 8,
+          "CrewRequired": 1,
+          "ComputerDemand": 2,
+          "PowerSupply": 0,
+          "EnvelopeSize": 0,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [
+            "system-tag.sensors"
+          ],
+          "RequiredComponentTags": [],
+          "Mounts": [],
+          "Dependencies": [],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 4,
+              "MinimumPower": 4,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": [
+                {
+                  "Kind": 11,
+                  "Amount": 8
+                }
+              ]
+            },
+            {
+              "Profile": 2,
+              "FullPower": 6,
+              "MinimumPower": 6,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": [
+                {
+                  "Kind": 11,
+                  "Amount": 6
+                },
+                {
+                  "Kind": 8,
+                  "Amount": 7500
+                }
+              ]
+            },
+            {
+              "Profile": 3,
+              "FullPower": 10,
+              "MinimumPower": 10,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": [
+                {
+                  "Kind": 11,
+                  "Amount": 10
+                }
+              ]
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        },
+        {
+          "VersionId": "component.escort-sensors.v1",
+          "FamilyId": "component-family.escort-sensors",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Escort Sensors",
+          "Kind": 5,
+          "Capacity": 6,
+          "CrewRequired": 1,
+          "ComputerDemand": 2,
+          "PowerSupply": 0,
+          "EnvelopeSize": 0,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [
+            "system-tag.sensors"
+          ],
+          "RequiredComponentTags": [],
+          "Mounts": [],
+          "Dependencies": [],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 4,
+              "MinimumPower": 4,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": [
+                {
+                  "Kind": 11,
+                  "Amount": 8
+                }
+              ]
+            },
+            {
+              "Profile": 2,
+              "FullPower": 6,
+              "MinimumPower": 6,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": [
+                {
+                  "Kind": 11,
+                  "Amount": 6
+                },
+                {
+                  "Kind": 8,
+                  "Amount": 7500
+                }
+              ]
+            },
+            {
+              "Profile": 3,
+              "FullPower": 10,
+              "MinimumPower": 10,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": [
+                {
+                  "Kind": 11,
+                  "Amount": 10
+                }
+              ]
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        },
+        {
+          "VersionId": "component.labs.v1",
+          "FamilyId": "component-family.labs",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Labs",
+          "Kind": 9,
+          "Capacity": 22,
+          "CrewRequired": 1,
+          "ComputerDemand": 10,
+          "PowerSupply": 0,
+          "EnvelopeSize": 0,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [],
+          "RequiredComponentTags": [
+            "system-tag.command"
+          ],
+          "Mounts": [],
+          "Dependencies": [
+            {
+              "Kind": 11,
+              "Amount": 10
+            }
+          ],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            },
+            {
+              "Profile": 2,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            },
+            {
+              "Profile": 3,
+              "FullPower": 24,
+              "MinimumPower": 6,
+              "Scaling": 2,
+              "Essential": false,
+              "Outputs": [
+                {
+                  "Kind": 12,
+                  "Amount": 100
+                }
+              ]
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        },
+        {
+          "VersionId": "component.mission-support.v1",
+          "FamilyId": "component-family.mission-support",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Mission Support",
+          "Kind": 10,
+          "Capacity": 10,
+          "CrewRequired": 1,
+          "ComputerDemand": 2,
+          "PowerSupply": 0,
+          "EnvelopeSize": 0,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [],
+          "RequiredComponentTags": [],
+          "Mounts": [],
+          "Dependencies": [],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            },
+            {
+              "Profile": 2,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            },
+            {
+              "Profile": 3,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        },
+        {
+          "VersionId": "component.small-shield.v1",
+          "FamilyId": "component-family.small-shield",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Small Shield",
+          "Kind": 6,
+          "Capacity": 6,
+          "CrewRequired": 1,
+          "ComputerDemand": 2,
+          "PowerSupply": 0,
+          "EnvelopeSize": 0,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [],
+          "RequiredComponentTags": [],
+          "Mounts": [],
+          "Dependencies": [],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            },
+            {
+              "Profile": 2,
+              "FullPower": 8,
+              "MinimumPower": 4,
+              "Scaling": 2,
+              "Essential": false,
+              "Outputs": [
+                {
+                  "Kind": 4,
+                  "Amount": 8
+                }
+              ]
+            },
+            {
+              "Profile": 3,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        },
+        {
+          "VersionId": "component.escort-shield.v1",
+          "FamilyId": "component-family.escort-shield",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Escort Shield",
+          "Kind": 6,
+          "Capacity": 12,
+          "CrewRequired": 1,
+          "ComputerDemand": 5,
+          "PowerSupply": 0,
+          "EnvelopeSize": 0,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [],
+          "RequiredComponentTags": [],
+          "Mounts": [],
+          "Dependencies": [],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            },
+            {
+              "Profile": 2,
+              "FullPower": 14,
+              "MinimumPower": 7,
+              "Scaling": 2,
+              "Essential": false,
+              "Outputs": [
+                {
+                  "Kind": 4,
+                  "Amount": 20
+                }
+              ]
+            },
+            {
+              "Profile": 3,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        },
+        {
+          "VersionId": "component.energy-bank.v1",
+          "FamilyId": "component-family.energy-bank",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Energy Bank",
+          "Kind": 7,
+          "Capacity": 8,
+          "CrewRequired": 1,
+          "ComputerDemand": 4,
+          "PowerSupply": 0,
+          "EnvelopeSize": 0,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [],
+          "RequiredComponentTags": [],
+          "Mounts": [
+            {
+              "Kind": 1,
+              "SizeRating": 1,
+              "Count": 1,
+              "CoverageTag": "coverage.forward"
+            }
+          ],
+          "Dependencies": [
+            {
+              "Kind": 11,
+              "Amount": 3
+            }
+          ],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            },
+            {
+              "Profile": 2,
+              "FullPower": 8,
+              "MinimumPower": 4,
+              "Scaling": 2,
+              "Essential": false,
+              "Outputs": [
+                {
+                  "Kind": 5,
+                  "Amount": 4
+                },
+                {
+                  "Kind": 6,
+                  "Amount": 8
+                },
+                {
+                  "Kind": 7,
+                  "Amount": 12
+                }
+              ]
+            },
+            {
+              "Profile": 3,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        },
+        {
+          "VersionId": "component.launcher.v1",
+          "FamilyId": "component-family.launcher",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Launcher",
+          "Kind": 8,
+          "Capacity": 8,
+          "CrewRequired": 1,
+          "ComputerDemand": 4,
+          "PowerSupply": 0,
+          "EnvelopeSize": 0,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [],
+          "RequiredComponentTags": [
+            "system-tag.sensors"
+          ],
+          "Mounts": [
+            {
+              "Kind": 2,
+              "SizeRating": 1,
+              "Count": 1,
+              "CoverageTag": ""
+            }
+          ],
+          "Dependencies": [],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            },
+            {
+              "Profile": 2,
+              "FullPower": 8,
+              "MinimumPower": 2,
+              "Scaling": 2,
+              "Essential": false,
+              "Outputs": [
+                {
+                  "Kind": 5,
+                  "Amount": 8
+                },
+                {
+                  "Kind": 6,
+                  "Amount": 4
+                },
+                {
+                  "Kind": 7,
+                  "Amount": 0
+                }
+              ]
+            },
+            {
+              "Profile": 3,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        },
+        {
+          "VersionId": "component.escort-support.v1",
+          "FamilyId": "component-family.escort-support",
+          "VersionNumber": 1,
+          "ParentVersionId": null,
+          "DisplayName": "Escort Support",
+          "Kind": 10,
+          "Capacity": 4,
+          "CrewRequired": 1,
+          "ComputerDemand": 2,
+          "PowerSupply": 0,
+          "EnvelopeSize": 0,
+          "CompatibleHullFamilyIds": [
+            "hull-family.utility"
+          ],
+          "RequiredHullTags": [
+            "hull-tag.mobile"
+          ],
+          "Tags": [],
+          "RequiredComponentTags": [],
+          "Mounts": [],
+          "Dependencies": [],
+          "Modes": [
+            {
+              "Profile": 1,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            },
+            {
+              "Profile": 2,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            },
+            {
+              "Profile": 3,
+              "FullPower": 0,
+              "MinimumPower": 0,
+              "Scaling": 1,
+              "Essential": false,
+              "Outputs": []
+            }
+          ],
+          "Cost": {
+            "Credits": 2,
+            "Industry": 3,
+            "Maintenance": 1,
+            "Resources": []
+          }
+        }
+      ],
+      "Roles": [
+        {
+          "RoleId": "role.surveyor",
+          "DisplayName": "Surveyor",
+          "Recommendations": [
+            {
+              "Profile": 3,
+              "Output": 11,
+              "Minimum": 10
+            },
+            {
+              "Profile": 3,
+              "Output": 12,
+              "Minimum": 80
+            }
+          ]
+        },
+        {
+          "RoleId": "role.escort",
+          "DisplayName": "Escort",
+          "Recommendations": [
+            {
+              "Profile": 2,
+              "Output": 4,
+              "Minimum": 15
+            },
+            {
+              "Profile": 2,
+              "Output": 6,
+              "Minimum": 12
+            }
+          ]
+        }
+      ]
+    },
+    "ShipDesignVersionAccess": [
+      {
+        "VersionId": "hull.utility.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.reactor.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.life-support.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.command.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.propulsion.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.survey-sensors.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.escort-sensors.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.labs.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.mission-support.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.small-shield.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.escort-shield.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.energy-bank.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.launcher.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
+      },
+      {
+        "VersionId": "component.escort-support.v1",
+        "RequiredEngineeringApplicationDefinitionIds": []
       }
     ],
     "ShipDesigns": [
@@ -1417,6 +2467,7 @@
     ]
   },
   "InitialState": {
+    "Blueprints": [],
     "Phase": 0,
     "TurnNumber": 1,
     "StateRevision": 0,

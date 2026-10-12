@@ -1,0 +1,41 @@
+# Blueprint construction v1
+
+Scoped backend implementation on `codex/blueprint-construction-v1`, based exactly on accepted main `4afe74dd5a6a62454e563fb7aef770ee0f002a23`. The [ship-design chapter](design/ship-design.md) retains its agreed/proposed/open distinctions. This milestone implements campaign publication, retained revisions and construction, without the simultaneous Unity designer UX changes.
+
+Integration acceptance, 12 October 2026: PR #5 combines source `63c7fa46f3e0e40d2c16a4ef38dc4f6924abeddc` with newer main `8732bb1c3dfaac01688389452033590ec10f92a2`. The newer design index, modular equipment/hull discussion and tactical combat chapter are preserved unchanged. Their agreed future direction does not introduce tactical rounds, configurable mount families or torpedo ammunition into this scoped construction milestone. The combined candidate must pass the same full portable validation and exact-commit CI before merge; final commit/run evidence is recorded in PR #5 and the integration handoff.
+
+## Authority and content
+
+`DefinitionCatalogDto.ShipDesignCatalogue` supplies the campaign compiler input. `ShipDesignVersionAccess` contains exactly one content-owned gate per hull/component version. An empty prerequisite list explicitly declares starting equipment; other versions require every listed Engineering application to be mature in the owner's authoritative state. Missing, duplicate, unknown or malformed gates reject the content package. Application exposes the immutable catalogue and current available IDs through `GetShipDesignCatalogue(actor)`; no client whitelist grants campaign access.
+
+The DS9 package initially adopts the existing fixture's provisional v1 equipment as starting content. Its values are stored in the campaign JSON content boundary, never duplicated as C# formulas or derived static-design entries. The standalone fixture remains a compiler/prototype test fixture; it is not read by campaign commands and cannot grant campaign access. Static Scout/Advanced Scout definitions remain separate legacy authored classes. No Engineering-generated versions, new balance formulas or Science prerequisites are invented by this milestone.
+
+## Publication and registry
+
+The closed, stamped `PublishShipBlueprint` command carries `BlueprintId`, an explicit positive `Revision`, and `ShipClassDraftDto`. It uses normal actor/controller, Planning/combat, turn, revision and command-ID validation, then the existing `ShipDesignCompiler.Publish` with authoritative access. Invalid fits and unavailable versions reject transactionally. Compiled statistics cannot be supplied in its payload. Publication consumes neither entity IDs nor RNG and charges no Engineering tax.
+
+`GameStateDto.Blueprints` is an append-only list of `BlueprintRevisionDto`, canonically ordered by ordinal blueprint ID then revision. IDs are globally unique across owners and cannot collide with authored content definitions. First revision is 1; each later revision must be exactly the latest plus one, preserving owner and class identity. Historical pairs cannot be overwritten or removed by commands or turn phases.
+
+Each record persists owner, blueprint ID/revision, compiler identity, campaign rules/content provenance, the complete frozen catalogue, canonical fit (including every installation and operating profile), compiled movement/hull/combat values, construction resources/credits/Industry and informational maintenance. Freezing the complete catalogue also retains version ancestry and role recommendations. Readonly `PublishedShipBlueprint` projections are restored using this frozen input and the same pinned compiler, never the current/latest class. Save validation recompiles and checks all persisted compiled values and prices against the frozen fit, verifies provenance, revision continuity, owners and resource identities, and rejects corruption. No serializer, filesystem or RNG is used in Simulation.
+
+## Construction and ships
+
+`EnqueueBlueprintConstruction` explicitly supplies colony ID, blueprint ID and revision. It requires that exact owned record, an owned colony, existing shipbuilding infrastructure and sufficient credits/named strategic resources. The staged command charges frozen costs once and allocates one queue entity. Static `EnqueueProduction` remains unchanged; AI continues to use static designs.
+
+Queue items persist an exact `BlueprintReferenceDto` and the amounts actually paid. Later publication cannot upgrade them. Existing FIFO Industry progress, one completion per colony/turn and cancellation's proportional unused-cost refund apply unchanged. Production creates a full-hull ship and joins the existing eligible stationary fleet or allocates a new fleet using the original ordering rules.
+
+Built ships retain blueprint ID/revision for their entire lifetime. `CampaignShipDesignResolver` is the single source resolver for production completion, fleet movement, encounter creation/validation and ship projections. Static sources use content; custom sources resolve the retained immutable record. Fleet movement still uses the slowest member and existing penalties. Combat still freezes the existing aggregate profile and resolves with phased combat resolver v1; no combat algorithm changes.
+
+DTO static design IDs are empty for custom sources and their identity headers have no content definition ID. Snapshot `Blueprint` discriminates source type; the existing snapshot design-ID field supplies the blueprint ID for custom records. Clients must inspect `Blueprint` and use the resolved data instead of looking custom IDs up in the static catalogue. `ShipSnapshot.ResolvedDesign` exposes the exact compiled facts and costs. Queue snapshots expose the locked reference and paid prices. `GetPublishedShipBlueprints()` exposes all retained revisions with `IsLatestRevision`; `GetBlueprintConstructionOptions(actor, colony)` provides readonly exact-revision prices/performance plus authoritative advisory eligibility. Submission always revalidates current state and stamps.
+
+## Compatibility and determinism
+
+SaveFormat **14**, ContentFormat **10**, RulesVersion **`science-engineering-v1`**, catalogue format **1**, compiler **`ship-design-compiler-v1`**. The persisted schema/content contract changes require format bumps; the unchanged gameplay/compiler rules do not require a rules-identity change. Older saves/content formats reject without migration. RNG remains **`splitmix64-rejection-v1`**, version **1**; combat remains **`combat-resolver.phased`**, version **1**.
+
+New 25-turn canonical/reverse/repeated serialized baseline: `fb2b75f18c8c5423f3a0850f38f6e53ee8249d3d08385978b5b2532041cc6089`. The hash change reflects new save fields, format and scenario content identity. Legacy gameplay outcomes remain turn 26, revision 185, 131 AI commands, 17 battles/12 checkpoints, 43 phases, 98 shots/68 hits, shield/hull damage 126/116, 9 ships/9 fleets, 2 queued orders, next entity 97 and RNG `d8919406d6e01cf1`. Existing economy/navigation/research conservation checks remain enforced.
+
+## Validation and deferred scope
+
+Local validation: locked restore and Release compilation passed with zero warnings/errors; 1,104 .NET tests passed with zero failures/skips, including 47 new campaign blueprint cases. These cover real publication/construction/movement/combat/save/reload, revision locking across engineered hull/propulsion changes, authoritative Engineering unlocks, malformed provenance/content and reordered/culture determinism. Canonical/reverse/repeated smokes, PrepareUnity and static assembly/asset checks passed. Scenario JSON retains LF bytes across platforms; its content SHA256 is `3b80eb970c5d832550fc947344e860777910d80208af0fc2f474a98ae04e0b59`. Exact-commit Linux/Windows/macOS CI results are recorded in the final handoff. No Unity visual acceptance is claimed for this backend branch; Unity presentation files are untouched.
+
+Deferred: Unity publication/construction UX, persistent editable drafts, refits, blueprint deletion/history cleanup, AI class design, modernization, automatic queue conversion, mass beyond the existing model, ammunition, subsystem damage, tactical power switching, maintenance consumption and campaign consumers for preview-only mission/sensor/range ratings.
