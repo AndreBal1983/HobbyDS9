@@ -304,7 +304,7 @@ Each command round follows a proposed resolution contract:
 
 The user may alter orders after the resolved round is presented; **do not pre-resolve all later interactive rounds**, since those decisions can change the outcome. For unattended AI battles or quick-resolve, the same round resolver may iterate using the configured standing orders and lawful AI decisions. Round boundary saves and event replay must be deterministic across platforms, save/reload and battle ordering.
 
-Exact weapon stat fields and fire-substep timing are proposals to be tuned: damage/yield, tracking and accuracy, range envelope, coverage/aspect, shot cadence, required power, magazine capacity/ammo type, and special shield/system interaction. Avoid fake per-projectile physical simulation in the authoritative backend.
+Exact weapon stat fields and fire-substep timing are proposals to be tuned: damage/yield, tracking and accuracy, range envelope, coverage/aspect, shot cadence, required power, magazine capacity/ammo type, and shield-specific damage or countermeasure interactions **without penetration through active shields**. Avoid fake per-projectile physical simulation in the authoritative backend.
 
 ## Directional shield sectors — agreed direction, bounded first-pass model
 
@@ -315,7 +315,7 @@ Exact weapon stat fields and fire-substep timing are proposals to be tuned: dama
 - **Head-on / front access:** primarily exposes Fore; **Rear** exposes Aft. **Beam/Flank** exposes Port or Starboard based on the maneuver/aspect state and a deterministic tie-break or persistent tactical-side assignment, not an invented Unity-camera orientation. Exact mapping is a testing question, especially when formations mix or cross.
 - Defender agility and successful maneuvers can deny a clean flank, restore a stronger facing or move out of an unfavorable relative aspect. Attackers must actually win a maneuver/access opportunity to exploit a weakened sector; they cannot freely pick the weakest shield every round. Maintaining desired shield facing may trade against own weapon arc access and other formation objectives.
 - Shield damage and shield-sector changes must be part of the authoritative combat-round state and event log (sector, strength before/after, spillover to hull). Preserve simultaneous-volley fairness and determinism. Unity merely shows that facing taking hits and the reported status.
-- Keep first-pass player control at **maneuver-order level**, not manually ordering a separate shield facing for every ship each round. Directional generator allocation, dynamic shield-power redistribution, precise recharge formulas/sector assignment, recharge between battles, bleed-through/resistances and special shield bypass are **open questions**; ship-level in-combat recharge itself is now agreed.
+- Keep first-pass player control at **maneuver-order level**, not manually ordering a separate shield facing for every ship each round. Directional generator allocation, dynamic shield-power redistribution, precise recharge formulas/sector assignment, recharge between battles and shield resistance tuning remain **open questions**; **bleed-through and special shield bypass are excluded**. Ship-level in-combat recharge itself is agreed.
 - Performance expectation: four counters per ship and an O(1) sector lookup/damage operation per resolved impact, so directional shields should be inexpensive relative to attack resolution, but no guarantee without benchmarks. Require deterministic save/reload/replay, AI and large-fleet stress tests and an explicit save/content/contract versioning review before implementation. Existing scalar shield fields are not silently treated as already implementing this design.
 
 ## In-combat shield regeneration — agreed ship statistic
@@ -333,6 +333,16 @@ The intended combat cadence is **three tactical rounds per encounter** (with obj
 - Backend is authoritative for recharge and its power costs. Persist sector values, compile the recharge stat through the ship-design contract, and include per-sector recovery in deterministic event traces and save/reload tests. Unity shows the reported state; it cannot regenerate shields independently.
 
 **Illustrative balance only:** a ship with a recharge statistic of 6 points/round could restore at most 6 shield points between rounds 1 and 2 and another 6 between rounds 2 and 3, *across its sectors*, if those sectors can accept the recharge and power is sufficient. This is not a locked numeric tuning target.
+
+## Shield-first damage — no penetration while a sector remains active
+
+**Agreed, 12 October 2026:** **every offensive weapon strikes the currently exposed directional shield sector before damaging hull.** While that shield sector has any remaining strength, its protection absorbs incoming damage up to that remaining strength; **there is no hull bleed-through, passive penetration, chance-based shield bypass or internal-system damage through active shields** in the agreed combat model. This applies to beams/arrays, cannon/pulse weapons, and all torpedo variants, including unusual faction technologies such as Dominion phased-polarons or Romulan plasma torpedoes.
+
+**Resolve each authoritative attack/volley deterministically against the impacted sector:** reduce that sector by the incoming damage it can absorb; **only damage in excess of the depleted sector's remaining strength spills to the hull in the same resolved impact/volley**. For example, a sector with 8 shield points taking 12 damage loses 8 shield points and receives 4 hull damage; if it takes 6, the sector falls to 2 and the hull receives none. A zero-strength sector affords no protection until recharged. Do not allow full shields on a different facing to intercept a legal hit against a depleted facing without a successful defensive maneuver/aspect change.
+
+Directional facings, maneuver outcomes, the three-round encounter cap, limited shield recharge between rounds and simultaneous-volley fairness remain in effect. Record exposed sector, blocked damage, depleted strength and spillover in the backend event trace. Unity may stage bridge sparks or shield flickers as **cosmetic effects only**; it must not portray actual subsystem failures or hull damage that the backend did not determine.
+
+Weapon-family distinctions can modify **shield damage, tracking, salvo profile, countermeasure vulnerability, power draw, or other approved shield-facing interactions**, but **not shield penetration**. Any future exception would require an explicit new design decision and corresponding combat/save-contract changes; do not infer one from source fiction.
 
 ## Damage resolution and presentation boundary
 
