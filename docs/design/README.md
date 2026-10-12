@@ -12,6 +12,7 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 | [Ship design](ship-design.md) | Shared capacity and mounting limits, dependencies, power profiles, engineered versions, refits and AI design | Shared capacity/mounting and hull refinement agreed; detailed rules proposed |
 | [Exploration and procedural missions](exploration-missions.md) | System/body surveys, first contact, mission director, shared consequences, expedition repair dilemmas | Direction agreed; infrastructure and tuning proposed |
 | [Time, movement and mobilisation](time-movement-mobilisation.md) | Weekly clock, sector travel, expediting, buyout, sensor warning and response | Direction agreed; speeds, prices and detailed timing proposed |
+| [Fleet interception and tactical combat](tactical-combat.md) | Fleet posture, detection/tracking/interception, command hierarchy, abstract maneuver, battle orders, targeting and combat objectives | Direction agreed; formulas and balance proposed/open |
 
 ## Decisions adopted
 
@@ -24,10 +25,18 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 - Use one week per strategic turn; express movement in sector crossings, separately from warp factors.
 - Allow credits to expedite eligible work and ship construction while respecting physical and social constraints.
 - Treat sensor infrastructure as an investment in warning time; balance warning, travel and mobilisation together.
+- Use no hard fleet-size cap; additional ships always add baseline capability, while command hierarchy and technology add positive coordination bonuses.
+- Keep detection, tracking and interception separate; fleet co-location or path crossing does not automatically force combat.
+- Resolve tactical combat through abstract formation-level relative geometry rather than true authoritative 3D coordinates.
+- Let ship design and fleet composition create capabilities, and let round-by-round maneuver plus targeting orders decide how those capabilities are used.
+- Keep tactical orders persistent unless changed and commit opposing round orders simultaneously from lawful information.
+- Allow combat objectives such as breakthrough, hold, escort, delay, raid, pursuit and disengagement rather than requiring universal destruction of one side.
 
 The power-profile rules, version/refit details, schemas, example statistics and implementation stages are proposals, not additional user-approved balance values.
 
 Exploration/first-contact decisions and the proposed mission infrastructure are recorded in [exploration-missions.md](exploration-missions.md). Persistent missions, survey/repair integration, diplomacy adapters and consequence schemas require scoped implementation; documenting them does not establish runtime support.
+
+Fleet/interception/combat decisions are recorded in [tactical-combat.md](tactical-combat.md). Its agreed high-level direction supersedes conflicting older GDD assumptions about fixed Long → Medium → Close combat, one-time pre-battle doctrine, hard fleet-size limits, automatic combat from simple co-location, or Unity/3D geometry determining the authoritative result. Detailed maneuver formulas, weapon envelopes and tuning remain proposed/open.
 
 ## Design versus implementation
 

@@ -8,6 +8,9 @@ namespace HobbyDS9.Application
     public interface ICampaignSession
     {
         CampaignSnapshot CaptureSnapshot();
+        CampaignShipDesignCatalogueSnapshot? GetShipDesignCatalogue(EntityId actor);
+        IReadOnlyList<CampaignBlueprintSnapshot> GetPublishedShipBlueprints();
+        IReadOnlyList<BlueprintConstructionSnapshot> GetBlueprintConstructionOptions(EntityId actor, EntityId colony);
         CommandResult SubmitCommand(CommandEnvelope? command);
         CommandResult SubmitFleetRoute(EntityId commandId, EntityId actorCivilizationId, int expectedTurn,
             long expectedRevision, EntityId fleetId, IReadOnlyList<NavigationNodeId>? steps);

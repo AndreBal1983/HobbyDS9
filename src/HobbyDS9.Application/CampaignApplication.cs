@@ -75,6 +75,9 @@ namespace HobbyDS9.Application
             return session.CaptureFleetTravel(fleetId.Value, steps.Select(n => n.Value).ToList());
         }
         public CommandResult SubmitCommand(CommandEnvelope? command) => session.SubmitCommand(command);
+        public CampaignShipDesignCatalogueSnapshot? GetShipDesignCatalogue(EntityId actor) => session.CaptureShipDesignCatalogue(actor.Value);
+        public IReadOnlyList<CampaignBlueprintSnapshot> GetPublishedShipBlueprints() => session.CaptureBlueprints();
+        public IReadOnlyList<BlueprintConstructionSnapshot> GetBlueprintConstructionOptions(EntityId actor, EntityId colony) => session.CaptureBlueprintConstruction(actor.Value, colony.Value);
         public CommandResult SubmitFleetRoute(EntityId commandId, EntityId actorCivilizationId, int expectedTurn,
             long expectedRevision, EntityId fleetId, IReadOnlyList<NavigationNodeId>? steps)
         {

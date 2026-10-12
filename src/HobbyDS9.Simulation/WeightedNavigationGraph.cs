@@ -38,8 +38,8 @@ namespace HobbyDS9.Simulation
         }
         internal long Budget(GameStateDto state,FleetStateDto fleet,DefinitionCatalogDto definitions,out string limiting,long? atTurn=null)
         {
-            var ships=state.Ships!.Where(s=>s.FleetId==fleet.FleetId).OrderBy(s=>definitions.ShipDesigns!.Single(d=>d.DefinitionId==s.ShipDesignDefinitionId).MovementBudget).ThenBy(s=>s.ShipId,StringComparer.Ordinal).ToList();
-            limiting=ships[0].ShipId;var basis=definitions.ShipDesigns!.Single(d=>d.DefinitionId==ships[0].ShipDesignDefinitionId).MovementBudget;
+            var ships=state.Ships!.Where(s=>s.FleetId==fleet.FleetId).OrderBy(s=>CampaignShipDesignResolver.Ship(state,definitions,s).MovementBudget).ThenBy(s=>s.ShipId,StringComparer.Ordinal).ToList();
+            limiting=ships[0].ShipId;var basis=CampaignShipDesignResolver.Ship(state,definitions,ships[0]).MovementBudget;
             var penalty=PopulationRules.Sum(nodes[fleet.LocationNodeId].PhenomenonDefinitionIds!.Select(id=>phenomena[id].MovementBudgetPenalty)
                 .Concat(Effects(state,atTurn).Where(e=>e.NodeId==fleet.LocationNodeId).Select(e=>e.MovementBudgetPenalty)));
             return Math.Max(1,basis-Math.Min(basis,penalty));

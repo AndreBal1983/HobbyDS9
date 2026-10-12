@@ -46,6 +46,8 @@ namespace HobbyDS9.Simulation
                 [CommandKind.SetScienceAllocation] = new ScienceCommandHandler(),
                 [CommandKind.SetEngineeringTarget] = new EngineeringTargetHandler(this.definitions),
                 [CommandKind.EnqueueProduction] = new EnqueueProductionHandler(this.definitions),
+                [CommandKind.PublishShipBlueprint] = new PublishShipBlueprintHandler(this.definitions, compatibility),
+                [CommandKind.EnqueueBlueprintConstruction] = new EnqueueBlueprintConstructionHandler(this.definitions),
                 [CommandKind.CancelProduction] = new CancelProductionHandler(),
                 [CommandKind.SetFleetRoute] = new SetFleetRouteHandler(Navigation),
                 [CommandKind.SetWorldGovernancePolicy] = new GovernancePolicyHandler(this.definitions)
@@ -100,6 +102,9 @@ namespace HobbyDS9.Simulation
             var error = handler.Execute(staging, command);
             if (!Enum.IsDefined(typeof(CommandErrorCode), error)) throw new InvalidOperationException("Handler returned an unknown error code.");
             if (error != CommandErrorCode.None) return Reject(error);
+            if (current.Blueprints!.Any(old => !staging.Blueprints!.Any(next => BlueprintCopies.Same(old, next)))
+                || (command.Kind != CommandKind.PublishShipBlueprint && current.Blueprints!.Count != staging.Blueprints!.Count))
+                throw new InvalidOperationException("Commands cannot rewrite immutable blueprint history.");
             if (staging.Phase != current.Phase || staging.TurnNumber != current.TurnNumber || staging.StateRevision != current.StateRevision
                 || staging.AcceptedCommandIds == null || !staging.AcceptedCommandIds.SequenceEqual(current.AcceptedCommandIds!))
                 throw new InvalidOperationException("Handlers cannot change phase, turn, revision or command deduplication bookkeeping.");
@@ -179,7 +184,7 @@ namespace HobbyDS9.Simulation
         // Economy and Research each have a distinct allowed mutation surface.
         internal static void RequirePhaseChanges(GameStateDto state, GameStateDto candidate, bool allowEconomy, bool allowResearch = false, bool allowProduction = false, bool allowMovement = false)
         {
-            if (!ScienceData.Same(state,candidate,allowResearch) || candidate.Phase != state.Phase || candidate.TurnNumber != state.TurnNumber
+            if (!state.Blueprints!.Zip(candidate.Blueprints!, (a,b) => BlueprintCopies.Same(a,b)).All(v => v) || state.Blueprints!.Count != candidate.Blueprints!.Count || !ScienceData.Same(state,candidate,allowResearch) || candidate.Phase != state.Phase || candidate.TurnNumber != state.TurnNumber
                 || candidate.StateRevision != state.StateRevision || (!allowProduction && !allowEconomy && candidate.NextEntitySequence != state.NextEntitySequence)
                 || candidate.RngState.AlgorithmId != state.RngState.AlgorithmId
                 || candidate.RngState.AlgorithmVersion != state.RngState.AlgorithmVersion
@@ -219,7 +224,7 @@ namespace HobbyDS9.Simulation
                         c.MatureEngineeringApplicationDefinitionIds!.Select(id => new DefinitionId(id)), new ScienceEngineeringSnapshot(c))),
                     state.StarSystems!.Select(n => new StarSystemSnapshot(new EntityId(n.SystemId), new DefinitionId(n.DefinitionId),
                         n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges, state.Phase!.Value, state.Colonies!.Select(c => new ColonySnapshot(c, WorldEconomy.Planet(c, state, definitions), WorldEconomy.Project(c, state, definitions))),
-                    state.Ships!.Select(s => new ShipSnapshot(s)), state.Fleets!.Select(f => new FleetSnapshot(f)), definitions.ShipDesigns!.Select(d => new ShipDesignSnapshot(d)),
+                    state.Ships!.Select(s => new ShipSnapshot(s, CampaignShipDesignResolver.Ship(state, definitions, s))), state.Fleets!.Select(f => new FleetSnapshot(f)), definitions.ShipDesigns!.Select(d => new ShipDesignSnapshot(d)),
                     CampaignCombatState.AllRequests(state).Select(r => new CombatEncounterSnapshot(r, state.ResolvedCombats!.Any(c => c.Request.EncounterId == r.EncounterId))),
                     state.Planets!.Select(p => new PlanetStateSnapshot(p)), state.Displacements!.Select(r => new DisplacementSnapshot(r)),
                     state.LastDeliveries!.Select(r => new LogisticsDeliverySnapshot(r)), new PopulationStatisticsSnapshot(state.PopulationStatistics!), new NavigationStatisticsSnapshot(state.NavigationStatistics!), state.ResearchPaceFactor!.Value, state.LastResearchReceipts!.Select(r=>new ResearchReceiptSnapshot(r)));
@@ -245,6 +250,8 @@ namespace HobbyDS9.Simulation
         private static DefinitionCatalogDto CopyDefinitions(DefinitionCatalogDto source) => new DefinitionCatalogDto
         {
             ContentFormatVersion = source.ContentFormatVersion,
+            ShipDesignCatalogue = source.ShipDesignCatalogue == null ? null : BlueprintCopies.Copy(source.ShipDesignCatalogue),
+            ShipDesignVersionAccess = source.ShipDesignVersionAccess!.OrderBy(g => g.VersionId, StringComparer.Ordinal).Select(BlueprintCopies.Copy).ToList(),
             DefinitionIds = source.DefinitionIds.OrderBy(d => d, StringComparer.Ordinal).ToList(),
             Civilizations = source.Civilizations!.OrderBy(c => c.DefinitionId, StringComparer.Ordinal)
                 .Select(c => new CivilizationDefinitionDto { DefinitionId = c.DefinitionId, DisplayName = c.DisplayName }).ToList(),
@@ -283,16 +290,20 @@ namespace HobbyDS9.Simulation
                 .Select(e => new GalaxyEdgeDto { EndpointA = e.EndpointA.Value, EndpointB = e.EndpointB.Value, Kind = e.Kind }).ToList()
         };
 
-        private static bool IsKnownKind(CommandKind kind) => kind == CommandKind.EnqueueProduction
+        private static bool IsKnownKind(CommandKind kind) => kind == CommandKind.PublishShipBlueprint || kind == CommandKind.EnqueueBlueprintConstruction || kind == CommandKind.EnqueueProduction
             || kind == CommandKind.CancelProduction || kind == CommandKind.SetEngineeringTarget || kind == CommandKind.SetFleetRoute || kind == CommandKind.SetWorldGovernancePolicy || kind == CommandKind.SetResearchAllocation || kind == CommandKind.SetScienceAllocation;
 
         private static bool HasValidPayload(CommandEnvelope command)
         {
-            var count = (command.SetResearchAllocation == null ? 0 : 1) + (command.SetScienceAllocation == null ? 0 : 1) + (command.EnqueueProduction == null ? 0 : 1) + (command.CancelProduction == null ? 0 : 1)
+            var count = (command.PublishShipBlueprint == null ? 0 : 1) + (command.EnqueueBlueprintConstruction == null ? 0 : 1) + (command.SetResearchAllocation == null ? 0 : 1) + (command.SetScienceAllocation == null ? 0 : 1) + (command.EnqueueProduction == null ? 0 : 1) + (command.CancelProduction == null ? 0 : 1)
                 + (command.SetEngineeringTarget == null ? 0 : 1) + (command.SetFleetRoute == null ? 0 : 1) + (command.SetWorldGovernancePolicy == null ? 0 : 1);
             if (count != 1) return false;
             switch (command.Kind)
             {
+                case CommandKind.PublishShipBlueprint:
+                    return command.PublishShipBlueprint != null && command.PublishShipBlueprint.Draft != null && DefinitionId.TryParse(command.PublishShipBlueprint.BlueprintId, out _) && command.PublishShipBlueprint.Revision > 0;
+                case CommandKind.EnqueueBlueprintConstruction:
+                    return command.EnqueueBlueprintConstruction != null && DefinitionId.TryParse(command.EnqueueBlueprintConstruction.BlueprintId, out _) && command.EnqueueBlueprintConstruction.Revision > 0 && EntityId.TryParse(command.EnqueueBlueprintConstruction.ColonyId, out _);
                 case CommandKind.EnqueueProduction:
                     return command.EnqueueProduction != null && EntityId.TryParse(command.EnqueueProduction.ColonyId, out _)
                         && DefinitionId.TryParse(command.EnqueueProduction.DefinitionId, out _);
@@ -314,6 +325,7 @@ namespace HobbyDS9.Simulation
 
         internal static GameStateDto CopyState(GameStateDto source) => new GameStateDto
         {
+            Blueprints = source.Blueprints!.OrderBy(b => b.BlueprintId, StringComparer.Ordinal).ThenBy(b => b.Revision).Select(BlueprintCopies.Copy).ToList(),
             PendingCombats = source.PendingCombats!.OrderBy(c => c.Request.LocationNodeId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
                 .Select(c => new PendingCombatDto { Request = CombatEncounterScaffold.CopyRequest(c.Request) }).ToList(),
             ResolvedCombats = source.ResolvedCombats!.OrderBy(c => c.Request.LocationNodeId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
@@ -348,6 +360,7 @@ namespace HobbyDS9.Simulation
             Ships = source.Ships!.OrderBy(s => s.ShipId, StringComparer.Ordinal).Select(s => new ShipStateDto
             {
                 ShipId = s.ShipId,
+                Blueprint = s.Blueprint == null ? null : BlueprintCopies.Copy(s.Blueprint),
                 ShipDesignDefinitionId = s.ShipDesignDefinitionId,
                 OwnerCivilizationId = s.OwnerCivilizationId,
                 FleetId = s.FleetId,
@@ -374,6 +387,8 @@ namespace HobbyDS9.Simulation
                 ExpectedTurn = source.ExpectedTurn,
                 ExpectedRevision = source.ExpectedRevision,
                 Kind = source.Kind,
+                PublishShipBlueprint = source.PublishShipBlueprint == null ? null : new PublishShipBlueprintPayload { BlueprintId = source.PublishShipBlueprint.BlueprintId, Revision = source.PublishShipBlueprint.Revision, Draft = source.PublishShipBlueprint.Draft == null ? null : BlueprintCopies.Copy(source.PublishShipBlueprint.Draft) },
+                EnqueueBlueprintConstruction = source.EnqueueBlueprintConstruction == null ? null : new EnqueueBlueprintConstructionPayload { ColonyId = source.EnqueueBlueprintConstruction.ColonyId, BlueprintId = source.EnqueueBlueprintConstruction.BlueprintId, Revision = source.EnqueueBlueprintConstruction.Revision },
                 SetWorldGovernancePolicy = source.SetWorldGovernancePolicy == null ? null : new SetWorldGovernancePolicyPayload { ColonyId=source.SetWorldGovernancePolicy.ColonyId, PolicyDefinitionId=source.SetWorldGovernancePolicy.PolicyDefinitionId },
                 EnqueueProduction = source.EnqueueProduction == null ? null : new EnqueueProductionPayload
                 { ColonyId = source.EnqueueProduction.ColonyId, DefinitionId = source.EnqueueProduction.DefinitionId },
