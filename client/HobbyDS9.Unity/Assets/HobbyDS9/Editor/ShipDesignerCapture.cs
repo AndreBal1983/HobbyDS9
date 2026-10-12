@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using HobbyDS9.UnityClient;
 using UnityEditor;
 using UnityEngine;
@@ -32,16 +33,22 @@ namespace HobbyDS9.UnityClient.Editor
             if(view.Draft.Modified || view.Draft.ConfirmationPending) throw new InvalidOperationException("Keep your local edits or explicitly reset them before fixture capture; this tool will not discard a modified draft.");
 
             var original=view.Draft.TemplateId; var profile=view.Draft.Profile;var system=view.SelectedSystem;
-            var cases=new[] {Tuple.Create("class.surveyor","Overview","surveyor-overview"),Tuple.Create("class.escort","Overview","escort-overview"),Tuple.Create("class.escort","Weapons","weapons"),Tuple.Create("class.escort","Power","power"),Tuple.Create("class.escort","Profiles","profiles-combat")};
+            var cases=new[] {Tuple.Create("class.surveyor","Overview","surveyor-overview"),Tuple.Create("class.escort","Overview","escort-overview"),Tuple.Create("class.escort","Weapons","weapons"),Tuple.Create("class.escort","Power","power"),Tuple.Create("class.escort","Profiles","profiles-combat"),Tuple.Create("class.escort","Profiles","profiles-zero"),Tuple.Create("class.escort","Profiles","profiles-full"),Tuple.Create("class.escort","Profiles","profiles-invalid")};
             void CaptureCase(int index)
             {
+                // Only discard the fixture edits this tool creates, after its clean-draft guard.
+                if(view.Draft.Modified){view.Draft.RequestReset();view.Draft.ConfirmDiscard();}
                 if(index==cases.Length)
                 {
                     view.Draft.RequestTemplate(original);view.Draft.SelectProfile(profile);view.SelectSystem(system);
-                    Debug.Log("Ship designer: fifteen real Game view screenshots complete.");completed();return;
+                    Debug.Log("Ship designer sliders: twenty-four real Game view screenshots complete.");completed();return;
                 }
                 var item=cases[index];view.Draft.RequestTemplate(item.Item1);view.Draft.SelectProfile(item.Item1=="class.surveyor"?DesignerProfile.Survey:DesignerProfile.Combat);view.SelectSystem(item.Item2);
-                StrategicPrototypeCapture.CaptureSequence("ship-designer-ux-rebuild",item.Item3,Sizes,Validate,()=>CaptureCase(index+1));
+                if(item.Item3=="profiles-zero")view.Draft.SetPower("component.energy-bank.v1",0,0);
+                var range=view.Draft.Preview().PowerRanges.FirstOrDefault(r=>r.ComponentId=="component.energy-bank.v1");
+                if(item.Item3=="profiles-full" && range!=null)view.Draft.SetPower("component.energy-bank.v1",range.Maximum,range.Maximum);
+                if(item.Item3=="profiles-invalid" && range!=null)view.Draft.SetPower("component.energy-bank.v1",range.Maximum,100);
+                StrategicPrototypeCapture.CaptureSequence("ship-designer-sliders",item.Item3,Sizes,Validate,()=>CaptureCase(index+1));
             }
             CaptureCase(0);
         }
@@ -88,6 +95,13 @@ namespace HobbyDS9.UnityClient.Editor
             if(workspace.worldBound.height<150)throw new InvalidOperationException("The focused workspace has no useful viewport.");
             if(view.SelectedSystem=="Overview" && !view.Q<ShipSystemGraphic>().HasImage)throw new InvalidOperationException("Overview art failed to load.");
             if(view.SelectedSystem!="Profiles" && view.Query<LongField>().ToList().Exists(f=>f.name.StartsWith("power-")))throw new InvalidOperationException("Power editors leaked outside their page.");
+            if(view.SelectedSystem=="Profiles")
+            {
+                var slider=view.Q<LcarsPowerSlider>("slider-power-allocated-component.energy-bank.v1");
+                if(slider==null || slider.Track.worldBound.width<180 || slider.Track.worldBound.height<44)
+                    throw new InvalidOperationException("Slider hit area is missing or undersized.");
+                view.Q<ScrollView>("designer-profile-results").ScrollTo(slider);
+            }
         }
     }
 }

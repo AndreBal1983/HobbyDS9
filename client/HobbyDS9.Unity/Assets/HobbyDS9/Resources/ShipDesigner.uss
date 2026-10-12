@@ -95,6 +95,7 @@
 .lps-invalid .lps-filled { background-color: var(--lcars-alert); }
 .lps-backend-invalid { border-left-color: var(--lcars-alert); }
 .lps-track { position: absolute; left: 0; right: 0; top: 0; bottom: 0; margin: 0; }
+.sd-profile-row .lps-track { margin: 0; flex-basis: auto; flex-grow: 0; }
 .ship-designer .lps-track > .unity-base-field__input { border-width: 0; background-color: rgba(0,0,0,0); }
 .lps-track .unity-base-slider__tracker { background-color: rgba(0,0,0,0); border-width: 0; }
 .lps-track .unity-base-slider__dragger { width: 24px; height: 36px; background-color: var(--lcars-text); border-radius: 8px; border-width: 2px; border-color: var(--lcars-canvas); }

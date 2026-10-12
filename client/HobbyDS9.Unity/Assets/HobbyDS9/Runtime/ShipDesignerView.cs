@@ -65,6 +65,8 @@ namespace HobbyDS9.UnityClient
         private static void StatusClass(VisualElement e,DesignerStatus s){e.EnableInClassList("sd-error",s==DesignerStatus.HardError);e.EnableInClassList("sd-warning",s==DesignerStatus.Warning);e.EnableInClassList("sd-valid",s==DesignerStatus.Valid);e.EnableInClassList("sd-unavailable",s==DesignerStatus.NotEvaluated);}
         private void Refresh()
         {
+            var focused=panel?.focusController.focusedElement as VisualElement;
+            var trackFocus=focused?.name?.StartsWith("track-power-",StringComparison.Ordinal)==true?focused.name:null;
             var offsets=new Dictionary<string,Vector2>();
             if(renderedSystem==SelectedSystem)
                 foreach(var scroll in workspace.Query<ScrollView>().ToList())
@@ -80,6 +82,7 @@ namespace HobbyDS9.UnityClient
             renderedSystem=SelectedSystem;renderedComponent=selectedComponent;
             foreach(var scroll in workspace.Query<ScrollView>().ToList())
                 if(offsets.TryGetValue(scroll.name,out var offset))scroll.schedule.Execute(()=>scroll.scrollOffset=offset);
+            if(trackFocus!=null){var track=workspace.Q<SliderInt>(trackFocus);if(track!=null)track.schedule.Execute(()=>track.Focus());}
         }
         private ShipSystemGraphic Graphic(string id)=>new ShipSystemGraphic(id,Caption(id),graphics!);
         private IEnumerable<DesignerMetric> Headlines(DesignerPreview p,string system)
