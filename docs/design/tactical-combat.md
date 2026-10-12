@@ -221,6 +221,29 @@ The agreed first-pass vocabulary is intentionally small. Naming can still be tun
 
 These orders should reward different combinations of speed, agility, durability, weapon coverage, sensors, screening assets and command quality.
 
+## Tactical pattern callouts — proposed presentation names
+
+The player requested Star Trek-style verbal/UI identifiers such as “Attack Pattern Omega Three”, “Defensive Pattern …” and “Evasive Maneuvers …”. **These are original game labels, not claims that the exact combinations are on-screen canon.** They are presentation aliases for the stable maneuver orders above, **not separate tactics, buffs, technologies or extra simulation rules**. Always show the practical order name alongside the callout so that players can predict what a commander will do.
+
+| Underlying maneuver order | Suggested spoken / displayed callout | Plain-English UI pairing |
+| --- | --- | --- |
+| Maintain Distance / Hold & Fire | **Defensive Pattern Beta Two** | Defensive Pattern Beta Two — Maintain Distance |
+| Charge / Frontal Assault | **Attack Pattern Alpha One** | Attack Pattern Alpha One — Charge |
+| Flank | **Attack Pattern Delta Three** | Attack Pattern Delta Three — Flank |
+| Screen | **Defensive Pattern Gamma One** | Defensive Pattern Gamma One — Screen |
+| Breakthrough | **Attack Pattern Omega Three** | Attack Pattern Omega Three — Breakthrough |
+| Pursuit | **Intercept Pattern Sigma Four** | Intercept Pattern Sigma Four — Pursuit |
+| Fighting Withdrawal | **Defensive Pattern Epsilon Two** | Defensive Pattern Epsilon Two — Fighting Withdrawal |
+| Disengage / Flee | **Evasive Maneuvers Zeta Four** | Evasive Maneuvers Zeta Four — Disengage |
+
+This is an initial vocabulary proposal, not a locked nomenclature or evidence that these named patterns exist in canon. Alternative localized or faction-specific names can later map to exactly the same underlying order ID. Targeting priorities remain plainly worded (for example “Concentrate Fire”), avoiding unnecessary lore names for basic fire-control choices.
+
+## Subsystem targeting — explicitly parked, not committed
+
+**Decision, 12 October 2026:** targeting individual engines, weapons, sensors, reactors or other ship subsystems is appealing and could someday deepen combat, but it is **out of scope for the first combat implementation and not an approved future commitment**. The team may revisit or reject it after testing maneuver, relative range/aspect, ship-level targeting and shields/hull damage. Do not require a subsystem-damage schema, per-component combat durability, status effects or system-disable orders in the MVP.
+
+Target orders for the first pass operate on ships and formations rather than individual subsystems. “Disable engines”, “target weapons” and the associated capture/disable behavior are candidate later ideas only, not available selectable actions until separately designed and accepted. No placeholder attack-mode UI should imply that the backend already supports them. New subsystem mechanics must justify their additional modeling, AI, save, determinism, balance and UX costs before adoption.
+
 ## Targeting orders
 
 Maneuver and targeting are separate so the player can combine them rather than select from dozens of bespoke battle cards.
@@ -232,7 +255,7 @@ Initial targeting concepts include:
 - Prioritize command/support ships;
 - Prioritize escorts/screens;
 - Prioritize damaged/crippled ships;
-- Disable/capture rather than destroy where supported.
+- Ship-level objective and target priorities only for the initial combat pass; individual subsystem disabling is explicitly deferred and undecided.
 
 Exact legal priorities, information requirements and faction/doctrine options remain content design.
 
@@ -325,7 +348,7 @@ Still open for later review and playtesting:
 - conditional orders/contingencies;
 - detailed screening and target-access resolution;
 - retreat destination semantics after within-turn interception;
-- subsystem damage, critical hits, repairs and shield regeneration;
+- whether subsystem targeting/damage is desirable at all (explicitly parked, not approved future scope); critical hits, repairs and shield regeneration also remain separate open topics;
 - AI tactical planning depth by difficulty.
 
 These are not permission to revert to hard fleet caps, true 3D authoritative combat, fixed one-way range phases or one-time pre-battle doctrine. Those higher-level decisions are agreed.
