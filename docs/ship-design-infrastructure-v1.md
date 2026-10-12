@@ -1,0 +1,15 @@
+# Ship Design Infrastructure v1
+
+Status: additive foundation under implementation on `codex/ship-design-infrastructure-v1`, based on main `36ac251`. The [ship-design chapter](design/ship-design.md) remains the intended design; its balance examples, Engineering portfolio, refits and planner are proposals. This milestone does not alter campaign designs, production, saves or AI.
+
+## Early frontend contract handoff
+
+Portable namespace: `HobbyDS9.Contracts.ShipDesign`. Application entry: `ShipDesignApplication.Create(ShipDesignCatalogueDto)`, returning structured catalogue issues and an optional `ShipDesigner`. The designer exposes an immutable `Catalogue`, `Preview(ShipClassDraftDto, ShipDesignAccessDto)` and `Publish(draft, access, blueprintId, revision)`. Invalid drafts return issues, not ordinary-validation exceptions. Only valid previews publish. Publication freezes selected hull/component values, fit, all profiles, costs and compiled performance; host-owned storage remains outside campaign saves.
+
+Input DTOs are detached editing/content carriers, never campaign state. Catalogue versions have canonical stable version IDs; hull families are separate IDs. Installations have unique authored IDs plus immutable component-version ID and quantity. Each draft explicitly supplies Cruise, Combat and Survey allocations, with requested and allocated power per installation stack. All three profiles are required in this first foundation; no automatic allocation or shedding occurs. Essential minimums are hard constraints; reduced output is legal only with a declared Linear curve and minimum allocation. Fixed systems are enabled at full demand or disabled. Full installed peak demand may exceed available power; actual allocations may not.
+
+Preview exposes `Issues` (stable code, Error/Warning severity, source path and explanation), `IsValid`, capacity/crew/mount usage, reactor and distribution limits, total costs, and ordered per-profile/per-installation requested/allocated/full power and actual outputs. Collections and nested values are readonly detached records. Warnings do not block publication: an unarmed surveyor can be valid. No frontend rule calculation or campaign mutation is needed.
+
+Supported aggregate adapter outputs are MaxHull, Combat's shield/Long/Medium/Close attacks/accuracy/evasion, and Cruise MovementBudget. Current fleet travel takes the slowest member's budget before existing node penalties; this compiler adds no fleet rule. Sensors, Science and operational-range ratings may appear as preview-only capability facts with explicit integration-gap warnings: current campaign has no survey/operational-supply contract. No fuel, shield regeneration, weapon coverage bonus or doctrine/faction/maturity modifier is inferred. Version values are already resolved Engineering outcomes; later combat doctrine remains in the existing resolver.
+
+Fixture values will be authored separately from the live DS9 package. A surveyor and escort share one hull; quantities consume shared capacity and package-level mounts once. All examples are provisional and franchise-neutral.
