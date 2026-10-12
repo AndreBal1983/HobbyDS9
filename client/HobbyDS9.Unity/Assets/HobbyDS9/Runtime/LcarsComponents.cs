@@ -50,9 +50,9 @@ namespace HobbyDS9.UnityClient
         public LcarsNavigationRail(Action<string> select, Action toggleProduction)
         {
             name = "lcars-navigation"; AddToClassList("lcars-navigation");
-            foreach (var id in new[] { "Empire", "Selection", "Research", "Production", "Combat", "Saves", "Audio" })
+            foreach (var id in new[] { "Empire", "Selection", "Research", "Designer", "Production", "Combat", "Saves", "Audio" })
             {
-                var segment = new LcarsNavSegment(id, id == "Saves" ? "Save / Load" : id,
+                var segment = new LcarsNavSegment(id, id == "Designer" ? "Ship design" : id == "Saves" ? "Save / Load" : id,
                     () => { if (id == "Production") toggleProduction(); else select(id); });
                 Add(segment);
                 if (id == "Production") Production = segment; else sections.Add(segment);

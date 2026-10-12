@@ -22,6 +22,8 @@
     <ProjectReference Include="../../src/HobbyDS9.Scenarios/HobbyDS9.Scenarios.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ShipDesignDraft.cs" Link="UnityClient/ShipDesignDraft.cs" />
+    <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/FixtureShipDesignPreviewProvider.cs" Link="UnityClient/FixtureShipDesignPreviewProvider.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ScienceAllocationDraft.cs" Link="UnityClient/ScienceAllocationDraft.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/StrategicScreenPresentation.cs" Link="UnityClient/StrategicScreenPresentation.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ResponsiveLayoutPolicy.cs" Link="UnityClient/ResponsiveLayoutPolicy.cs" />

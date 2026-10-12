@@ -76,6 +76,30 @@ for file_name in ("ResponsiveLayoutPolicy.cs", "LcarsComponents.cs", "LcarsShell
 for path in assets.rglob("*"):
     require(path.suffix.lower() not in {".ttf", ".otf", ".woff", ".woff2"},
             f"New font needs explicit license/provenance review: {path.relative_to(root)}")
+# Ship designer: Application/Contracts preview boundary; no Simulation calls
+# or campaign mutation. Static checks do not establish rendering.
+designer_style = assets / "HobbyDS9/Resources/ShipDesigner.uss"
+require(designer_style.exists(), "Missing ship designer stylesheet")
+designer_meta = Path(str(designer_style) + ".meta").read_text()
+require("ScriptedImporter:" in designer_meta and "fileID: 12385" in designer_meta,
+        "Incorrect ship designer stylesheet importer")
+require('Resources.Load<StyleSheet>("ShipDesigner")' in entry,
+        "Designer stylesheet is not attached to the existing document")
+for filename in ("ShipDesignDraft.cs", "FixtureShipDesignPreviewProvider.cs", "ShipDesignerView.cs"):
+    code = (runtime / filename).read_text()
+    require(not re.search(r"using HobbyDS9\.Simulation", code),
+            "Designer presentation must not call Simulation: " + filename)
+    require(not re.search(r"\.(SubmitCommand|Enqueue|Publish|AdvanceTurn|ExportSave)\(", code),
+            "Local designer must not submit or persist campaign orders: " + filename)
+require("IShipDesignPreviewProvider" in (runtime / "ShipDesignDraft.cs").read_text(),
+        "Missing replaceable preview-provider boundary")
+provider = (runtime / "FixtureShipDesignPreviewProvider.cs").read_text()
+require("ShipDesignApplication.Create(" in provider and "Designer.Preview(" in provider,
+        "Designer previews must use the portable Application")
+fixture_source = root / "scenarios/ship-design-fixtures/fixture.json"
+fixture_resource = assets / "HobbyDS9/Resources/ship-design-fixture.json"
+require(fixture_resource.exists() and fixture_resource.read_bytes() == fixture_source.read_bytes(),
+        "Ship-design resource must match the single authored fixture; run PrepareUnity")
 # Cross-check the vector bar thickness with its stylesheet token to prevent drift.
 tokens = (assets / "HobbyDS9/Resources/LcarsTokens.uss").read_text(encoding="utf-8-sig")
 bar_css = re.search(r'--lcars-bar\s*:\s*([0-9.]+)px\s*;',tokens)

@@ -23,6 +23,8 @@ namespace HobbyDS9.UnityClient
         private PanelSettings panel = null!;
         private ProductionOverviewView production = null!;
         private LcarsShell shell = null!;
+        private ShipDesignDraft? shipDesignDraft;
+        private ShipDesignerView? shipDesigner;
         private VisualElement? uiRoot;
         private SfxInputBinding? sfxInput;
         private IVisualElementScheduledItem? scaleWatcher;
@@ -38,7 +40,7 @@ namespace HobbyDS9.UnityClient
         private void OnViewportGeometry(GeometryChangedEvent _) => MatchReadableScale();
         private void OnDisable()
         {
-            sfxInput?.Dispose(); sfxInput = null;
+            sfxInput?.Dispose(); sfxInput = null; shipDesigner?.Dispose();
             scaleWatcher?.Pause(); uiRoot?.UnregisterCallback<GeometryChangedEvent>(OnViewportGeometry);
         }
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -54,6 +56,7 @@ namespace HobbyDS9.UnityClient
         {
             AudioDirector.TryGetOrCreate();
             var sfx = SfxDirector.TryGetOrCreate();
+            shipDesigner = null;
             if (panel != null) Destroy(panel);
             panel = ScriptableObject.CreateInstance<PanelSettings>();
             previousViewportHeight = 0;
@@ -67,9 +70,10 @@ namespace HobbyDS9.UnityClient
             root.styleSheets.Add(UnityEngine.Resources.Load<StyleSheet>("HobbyClient"));
             root.styleSheets.Add(UnityEngine.Resources.Load<StyleSheet>("LcarsTokens"));
             root.styleSheets.Add(UnityEngine.Resources.Load<StyleSheet>("Lcars"));
+            root.styleSheets.Add(UnityEngine.Resources.Load<StyleSheet>("ShipDesigner"));
             map = new GalaxyMap(); production = new ProductionOverviewView();
             shell = new LcarsShell(map, production,
-                section => { if (host == null) return; sfx?.OpenSection(section); activeTab = section; Refresh(); },
+                RequestStrategicSection,
                 () => Run(() =>
                 {
                     ClearRoute(); var result = host.EndTurn();
@@ -105,6 +109,25 @@ namespace HobbyDS9.UnityClient
             }
             catch (Exception error) { endTurn.SetEnabled(false); message.text = StrategicScreenPresentation.PlayerMessage(error.Message); Debug.LogException(error); }
         }
+        private void RequestStrategicSection(string section)
+        {
+            if (host == null) return;
+            void Select()
+            {
+                if (section == "Designer" && shipDesigner == null)
+                {
+                    shipDesignDraft ??= new ShipDesignDraft(ShipDesignFixtureLoader.Load());
+                    shipDesigner = new ShipDesignerView(shipDesignDraft, () => RequestStrategicSection("Selection"));
+                    shell.AttachDesigner(shipDesigner);
+                }
+                if (section == "Production") { activeTab = "Selection"; shell.OpenProduction(); }
+                else activeTab = section;
+                if (activeTab == "Designer") message.text = "Local ship draft • Preview only • No construction or campaign orders";
+                SfxDirector.TryGetOrCreate()?.OpenSection(activeTab); Refresh();
+            }
+            if (activeTab == "Designer" && section != "Designer" && shipDesigner != null) shipDesigner.RequestLeave(Select);
+            else Select();
+        }
         private void OnDestroy() { if (panel != null) Destroy(panel); }
         private void Run(Func<string> operation)
         {
@@ -124,8 +147,8 @@ namespace HobbyDS9.UnityClient
             shell.Header.Turn.Value.text = state.TurnNumber.ToString("00");
             shell.Header.Phase.Value.text = state.Phase == SessionPhase.AwaitingCombat ? "BATTLES PENDING" : "PLANNING";
             shell.Header.Secondary.text = "Engineering / " + researchName + " • Reserve " + ScienceAllocationDraft.Conceptual(actor?.EngineeringReserve ?? 0);
-            shell.Header.Diagnostic.text = "LIVE CAMPAIGN / Revision " + state.StateRevision;
-            endTurn.SetEnabled(state.Phase == SessionPhase.Planning);
+            shell.Header.Diagnostic.text = activeTab == "Designer" ? "SHIP DESIGN PROTOTYPE / LOCAL DRAFT ONLY" : "LIVE CAMPAIGN / Revision " + state.StateRevision;
+            endTurn.SetEnabled(activeTab != "Designer" && state.Phase == SessionPhase.Planning);
             shell.Header.EnableInClassList("combat-attention",state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer);
             var combatFocus = combat.ReportToReview ?? combat.PendingHumanEncounter ?? (combat.RequiresPlayer ? "complete-turn" : null);
             if (state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer &&
@@ -142,6 +165,7 @@ namespace HobbyDS9.UnityClient
             details.Clear();
             switch (activeTab)
             {
+                case "Designer": break; // Persistent workspace view; never a campaign panel.
                 case "Audio": ShowAudio(); break;
                 case "Research": ShowResearch(snapshot); break;
                 case "Saves": ShowSaves(); break;
