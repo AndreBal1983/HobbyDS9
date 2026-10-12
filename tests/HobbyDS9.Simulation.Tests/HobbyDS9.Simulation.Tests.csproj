@@ -32,6 +32,7 @@
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/GalaxyProjection.cs" Link="UnityClient/GalaxyProjection.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/StrategicClient.cs" Link="UnityClient/StrategicClient.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/SaveSlotStore.cs" Link="UnityClient/SaveSlotStore.cs" />
+    <None Include="../../scenarios/ship-design-fixtures/fixture.json" Link="scenarios/ship-design-fixtures/fixture.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../scenarios/ds9-slice/scenario.json" Link="scenarios/ds9-slice/scenario.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
