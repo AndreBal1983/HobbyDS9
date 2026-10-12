@@ -256,6 +256,33 @@ Ships or formations that successfully satisfy a breakthrough/escape condition ca
 
 Preconfigured retreat thresholds can remain as **automatic contingencies**: if a fleet reaches a declared loss/damage condition, it can switch to a withdrawal/disengage behavior. They are not the only way a fleet may disengage.
 
+## Weapon classes, ammunition and hull-defined attack capability
+
+**Agreed direction, 12 October 2026:** the three universal weapon classes are **Beam/Array**, **Cannon/Pulse**, and **Torpedo**. Faction technologies (Federation phasers, Klingon/Romulan disruptors, Dominion phased polarons and other families) provide distinct named implementations and later modifiers. A quantum or plasma torpedo is a variant within the Torpedo class, not a new universal class. The corresponding weapon-fitting rules belong to [ship design](ship-design.md).
+
+- **Torpedo:** longest reach and heavy warhead yield. Distant targets have more opportunity for evasion, jamming and interception; the explosive yield does not itself diminish over distance. Torpedoes are physical consumables: ships have limited magazines, ammunition is spent when fired, and replenishment requires a valid physical supply/resupply route or facility. They cannot magically refill between encounters. Exact magazine-size, volley policy, launcher cycle, torpedo variants and in-battle replenishment rules remain open.
+- **Beam/Array:** reliable, accurate/tracking-friendly sustained energy fire, broad coverage where the hull permits it, especially useful around medium engagement distance. Lower single-opportunity peak damage than close-range cannons or torpedo impacts. Its energy demand must fit the powered combat profile, but it has no physical ammunition magazine.
+- **Cannon/Pulse:** concentrated high-output energy bursts with typically narrow/forward coverage; best near close range after gaining a valid attack aspect. Firing opportunity falls when flanked or forced into withdrawal. It is power-limited, not torpedo-ammunition-limited.
+
+Weapon class is *not* identical to a fixed range phase. Relative distance and firing aspect change opportunity and effectiveness every round; engagements may open, close, become intermixed and separate again. Hull mount groups restrict which equipment packages and coverage categories can actually be fitted. Ship construction, tactical orders and outcome should therefore be connected and explainable.
+
+## Round-authoritative combat and Unity playback
+
+**Agreed architecture:** the backend is the sole authority for tactical orders, geometry contests, actual weapon attacks, ammunition expenditure, hit/miss, shield/hull damage, destruction, retreats, breakthrough and persistent campaign effects. Unity never decides whether a ship survived, rolls a hit, or adjusts damage to match its animation.
+
+Each command round follows a proposed resolution contract:
+
+1. Freeze current round state and the latest lawful tactical observations; gather both sides' orders simultaneously. Orders persist unless changed.
+2. Resolve formation maneuvers, relative distance, aspect, screening, target access and firing solutions.
+3. Determine eligible attacks from powered installed packages and remaining ammunition; reserve/consume actual torpedo rounds once.
+4. Resolve simultaneous volley or explicitly ordered sub-volley attack effects using deterministic seeded logic. Ships that are eligible at the start of the same simultaneous volley still fire even if destroyed by its end; a destroyed ship cannot act in subsequent volleys or rounds.
+5. Apply shields, hull, casualties/destruction and objective consequences once in the authoritative battle state. Emit an ordered, timestampable abstract event trace.
+6. Unity receives a round result plus events such as formation maneuver, weapon discharge, target, shield impact, hull impact, ship destruction, disengagement and updated ammunition. The client maps them to cinematic 3D choreography without feeding visual timing back into the result.
+
+The user may alter orders after the resolved round is presented; **do not pre-resolve all later interactive rounds**, since those decisions can change the outcome. For unattended AI battles or quick-resolve, the same round resolver may iterate using the configured standing orders and lawful AI decisions. Round boundary saves and event replay must be deterministic across platforms, save/reload and battle ordering.
+
+Exact weapon stat fields and fire-substep timing are proposals to be tuned: damage/yield, tracking and accuracy, range envelope, coverage/aspect, shot cadence, required power, magazine capacity/ammo type, and special shield/system interaction. Avoid fake per-projectile physical simulation in the authoritative backend.
+
 ## Damage resolution and presentation boundary
 
 Existing deterministic simultaneous-volley principles, encounter-local shields and persistent hull damage remain compatible unless separately redesigned. Tactical rounds, geometry and targeting determine who has a firing opportunity; they do not require Unity to calculate combat.
@@ -292,7 +319,7 @@ Still open for later review and playtesting:
 - officer generation, progression, succession and casualties;
 - exact tactical state scales and maneuver formulas;
 - how many formation groups a very large battle should resolve;
-- exact weapon envelopes, torpedo defense and ammunition rules;
+- exact weapon envelopes, torpedo defense, magazine sizes, resupply throughput and volley tuning;
 - exact categorical weapon-coverage groups exposed in ship design;
 - order-switching costs and commander effects;
 - conditional orders/contingencies;
