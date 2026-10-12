@@ -1,5 +1,7 @@
 # HobbyDS9
 
+Gameplay design: [decision index](docs/design/README.md), [strategic AI](docs/design/strategic-ai.md), and [modular ship design](docs/design/ship-design.md). These describe the agreed direction and proposed details; the implementation and acceptance status below remain separate.
+
 Current candidate: **Science & Engineering foundation v1** on `codex/science-engineering-foundation-v1`: save **13**, content **9**, rules **science-engineering-v1**, unchanged phased combat resolver v1. R1/R2 revise the unaccepted candidate to 600-unit fixed-point research, six simultaneous Science allocations and typed Engineering projects, with the Unity Research panel. Main stays unchanged pending local Unity acceptance. See [research rules and acceptance](docs/science-engineering-v1.md).
 
 A portable C# strategy simulation for a future DS9/Dominion War-era BOTF spiritual successor. The strategic vertical slice now connects colony economy, research, ship production, fleets, graph movement and simple deterministic AI. It runs headlessly; the campaign encounter checkpoint is integrated; deterministic planned range-phase combat and generic campaign consequences are implemented; the Unity strategic client consumes the Application boundary; networking is deferred. No implementation code or assets have been copied from BotF2 or 3DBOTF2.

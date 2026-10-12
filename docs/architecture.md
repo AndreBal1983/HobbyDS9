@@ -1,5 +1,7 @@
 # Phase 1 portable strategy simulation
 
+Long-term gameplay decisions are tracked in the [design index](design/README.md), including [strategic AI](design/strategic-ai.md) and [ship design](design/ship-design.md). This architecture document records implementation contracts; the design chapters do not retroactively change the current AI, ship statistics, research rules or acceptance results.
+
 Status: Phase 1 identity/session foundations, Phase 3A civilization/scenario identity and galaxy graph, Phase 3B turn/staging lifecycle, Phase 4A colony economy, Phase 4B civilization research, Stage A production, Stage B fleets/routes/movement, Stage C deterministic AI/headless acceptance, Stages D1–D3 campaign combat lifecycle integration, and Stages E1–E3 deterministic phased combat using the shared combat-boundary scaffold, a portable client Application boundary, the accepted strategic Unity UI, and Economy/Planets/Population Foundation v1. The accepted base includes Population Politics & Strategic Geography v1. The current candidate implements Science & Engineering foundation v1; see [current rules/versions/baseline](science-engineering-v1.md). The population/economy reference below is historical. No legacy implementation is copied. The engine and initial scenario are new work based on the requirements in this project. Feature implementation follows this document in small, tested increments.
 
 ## Goal and boundaries
