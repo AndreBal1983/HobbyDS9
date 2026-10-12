@@ -164,8 +164,9 @@ namespace HobbyDS9.UnityClient
             Text("Ships", true);
             foreach (var ship in snapshot.Campaign.Ships.Where(s => s.FleetId == fleet.FleetId))
             {
-                var design = snapshot.Campaign.ShipDesigns.Single(d => d.DefinitionId == ship.ShipDesignDefinitionId);
+                var design = ship.ResolvedDesign ?? snapshot.Campaign.ShipDesigns.Single(d => d.DefinitionId == ship.ShipDesignDefinitionId);
                 var block = new LcarsInspectorBlock(design.DisplayName); details.Add(block);
+                if (ship.Blueprint != null) block.Row("Blueprint", ship.Blueprint.BlueprintId + " • revision " + ship.Blueprint.Revision);
                 block.Row("Hull / capacity", ship.CurrentHull + " / " + design.MaxHull);
                 block.Row("Shields", design.CombatProfile.ShieldCapacity.ToString());
                 block.tooltip = ship.ShipId.Value;
