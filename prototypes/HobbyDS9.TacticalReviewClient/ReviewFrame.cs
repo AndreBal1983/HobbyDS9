@@ -16,11 +16,13 @@ namespace HobbyDS9.TacticalReviewClient
         public IReadOnlyList<FleetSnapshot> OwnStrategicFleets { get; }
         public IReadOnlyList<CampaignTacticalFleetCloakSetting> CloakSettings { get; }
         public CampaignTacticalObservation? Battle { get; }
+        public PhysicalTravelView? Travel { get; }
         internal ReviewFrame(Guid host, long generation, string actor, CampaignTacticalReviewStatus status,
             IReadOnlyList<string> encounters, IReadOnlyList<CampaignTacticalOwnShip> own,
-            IReadOnlyList<CampaignTacticalFleetCloakSetting> cloak, IReadOnlyList<FleetSnapshot> fleets, CampaignTacticalObservation? battle)
+            IReadOnlyList<CampaignTacticalFleetCloakSetting> cloak, IReadOnlyList<FleetSnapshot> fleets, CampaignTacticalObservation? battle,
+            PhysicalTravelView? travel = null)
         { HostId=host; Generation=generation; Actor=actor; Status=status; Encounters=encounters;
-            OwnShips=own; CloakSettings=cloak; OwnStrategicFleets=fleets; Battle=battle; }
+            OwnShips=own; CloakSettings=cloak; OwnStrategicFleets=fleets; Battle=battle; Travel=travel; }
     }
     public sealed class FleetEdit
     {
@@ -30,7 +32,7 @@ namespace HobbyDS9.TacticalReviewClient
         public FleetEdit(string fleet, CampaignFleetManeuver maneuver, string? focus)
         { Fleet=fleet; Maneuver=maneuver; Focus=focus; }
     }
-    public enum ReviewAction { Round, Finalize }
+    public enum ReviewAction { Round, Finalize, Travel }
     public sealed class ReviewWork
     {
         internal Guid HostId { get; }
@@ -46,12 +48,20 @@ namespace HobbyDS9.TacticalReviewClient
         public long BoundaryRevision { get; }
         public long CampaignRevision { get; }
         public IReadOnlyList<FleetEdit> Replacements { get; }
+        public TravelEdit? Travel { get; }
         internal ReviewWork(ReviewFrame frame, Guid controller, long request, ReviewAction action,
             string command, IReadOnlyList<FleetEdit> edits)
         { HostId=frame.HostId; ControllerId=controller; Request=request; Generation=frame.Generation;
             Action=action; Actor=frame.Actor; Encounter=frame.Battle!.EncounterId; CommandId=command;
             Turn=frame.Status.Turn; Round=frame.Battle.Round; BoundaryRevision=frame.Battle.BoundaryRevision;
             CampaignRevision=frame.Status.CampaignRevision; Replacements=edits; }
+        internal ReviewWork(ReviewFrame frame,Guid controller,long request,string command,TravelEdit travel)
+        {
+            HostId=frame.HostId; ControllerId=controller; Request=request; Generation=frame.Generation;
+            Action=ReviewAction.Travel; Actor=frame.Actor; Encounter=""; CommandId=command;
+            Turn=frame.Status.Turn; CampaignRevision=frame.Status.CampaignRevision;
+            Replacements=Array.Empty<FleetEdit>(); Travel=travel;
+        }
     }
     public sealed class ReviewReceipt
     {
@@ -61,5 +71,5 @@ namespace HobbyDS9.TacticalReviewClient
         internal ReviewReceipt(ReviewWork work, CampaignTacticalMutationResult result, ReviewFrame frame)
         { Work=work; Result=result; Frame=frame; }
     }
-    public enum ReviewMode { Planning, EncounterSelection, Orders, RoundReview, Sending, Waiting, Complete, CompletionReview, Finalizing }
+    public enum ReviewMode { Planning, EncounterSelection, Orders, RoundReview, Sending, Waiting, Complete, CompletionReview, Finalizing, TravelReview }
 }

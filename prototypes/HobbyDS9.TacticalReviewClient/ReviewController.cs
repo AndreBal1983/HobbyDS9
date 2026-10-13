@@ -8,7 +8,7 @@ namespace HobbyDS9.TacticalReviewClient
     // Headless local interaction controller. It never determines gameplay outcomes.
     public sealed partial class ReviewController
     {
-        private ReviewHost host;
+        private ITacticalClientHost host;
         private readonly Guid id=Guid.NewGuid();
         private readonly Dictionary<string,FleetEdit> draft=new Dictionary<string,FleetEdit>(StringComparer.Ordinal);
         private ReviewWork? pending;
@@ -17,12 +17,16 @@ namespace HobbyDS9.TacticalReviewClient
         public ReviewMode Mode { get; private set; }
         public CampaignTacticalError? LastBackendError { get; private set; }
         public bool RefreshRequired { get; private set; }
-        public bool Dirty => draft.Count != 0;
+        public bool Dirty => draft.Count != 0 || travelDraft != null;
         public IReadOnlyList<FleetEdit> Draft => draft.Values.OrderBy(o=>o.Fleet,StringComparer.Ordinal).ToList().AsReadOnly();
         public bool HasPendingWork => pending != null;
         public string? SelectedShip { get; private set; }
         public bool DraftInvalidated { get; private set; }
         public ReviewController(ReviewHost host, string actor)
+            : this((ITacticalClientHost)host,actor) { }
+        public ReviewController(PhysicalReviewHost host,string actor)
+            : this((ITacticalClientHost)host,actor) { }
+        private ReviewController(ITacticalClientHost host,string actor)
         { this.host=host; Frame=host.Read(actor); Mode=ModeFor(Frame); }
         private static ReviewMode ModeFor(ReviewFrame frame)
             => frame.Battle == null ? (frame.Status.Phase == SessionPhase.Planning ? ReviewMode.Planning : ReviewMode.EncounterSelection)
@@ -33,7 +37,7 @@ namespace HobbyDS9.TacticalReviewClient
             if(pending != null || Dirty && !discardDraft || !Frame.Encounters.Contains(encounter,StringComparer.Ordinal)) return false;
             var next=host.Read(Frame.Actor,encounter);
             if(next.Battle == null || !SameHostGeneration(next) || next.Status.CampaignRevision < Frame.Status.CampaignRevision) return false;
-            draft.Clear(); SelectedShip=null; Frame=next; Mode=ModeFor(next); RefreshRequired=false; LastBackendError=null;
+            draft.Clear(); travelDraft=null; SelectedShip=null; Frame=next; Mode=ModeFor(next); RefreshRequired=false; LastBackendError=null;
             return true;
         }
         public bool InspectShip(string ship)
@@ -59,7 +63,7 @@ namespace HobbyDS9.TacticalReviewClient
         }
         public bool CancelReview()
         {
-            if(Mode != ReviewMode.RoundReview && Mode != ReviewMode.CompletionReview) return false;
+            if(Mode != ReviewMode.RoundReview && Mode != ReviewMode.CompletionReview && Mode != ReviewMode.TravelReview) return false;
             Mode=ModeFor(Frame); return true;
         }
         public ReviewWork? ConfirmRound(string commandId)
@@ -106,7 +110,7 @@ namespace HobbyDS9.TacticalReviewClient
             { Mode=ModeFor(Frame); RefreshRequired=true; return true; }
             if(!Monotone(receipt.Frame) || receipt.Frame.Status.CampaignRevision < receipt.Result.CampaignRevision)
             { Mode=ModeFor(Frame); RefreshRequired=true; return true; }
-            Frame=receipt.Frame; draft.Clear(); Mode=ModeFor(Frame); RefreshRequired=false; LastBackendError=null; DraftInvalidated=false;
+            Frame=receipt.Frame; draft.Clear(); travelDraft=null; Mode=ModeFor(Frame); RefreshRequired=false; LastBackendError=null; DraftInvalidated=false;
             return true;
         }
         public bool Refresh()
@@ -117,8 +121,9 @@ namespace HobbyDS9.TacticalReviewClient
             bool changedBoundary=Frame.Battle != null && (next.Battle == null
                 || next.Battle.Round != Frame.Battle.Round || next.Battle.BoundaryRevision != Frame.Battle.BoundaryRevision);
             // A changed authoritative boundary invalidates local edits rather than resubmitting them.
-            if(changedBoundary || next.Battle?.OwnCommitmentAccepted == true)
-            { DraftInvalidated=Dirty; draft.Clear(); }
+            if(changedBoundary || next.Battle?.OwnCommitmentAccepted == true
+                || travelDraft != null && (next.Status.CampaignRevision != Frame.Status.CampaignRevision || next.Status.Turn != Frame.Status.Turn))
+            { DraftInvalidated=Dirty; draft.Clear(); travelDraft=null; }
             Frame=next; Mode=ModeFor(next); RefreshRequired=false; return true;
         }
         public ReviewSaveHandle SaveCommitted()
@@ -130,7 +135,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             if(pending != null || Dirty && !discardDraft) return false;
             var next=host.LoadCommitted(handle,Frame.Actor,Frame.Battle?.EncounterId);
-            Frame=next; draft.Clear(); SelectedShip=null; pending=null; Mode=ModeFor(next); RefreshRequired=false; LastBackendError=null; DraftInvalidated=false;
+            Frame=next; draft.Clear(); travelDraft=null; SelectedShip=null; pending=null; Mode=ModeFor(next); RefreshRequired=false; LastBackendError=null; DraftInvalidated=false;
             return true;
         }
         public bool ResetDraft()

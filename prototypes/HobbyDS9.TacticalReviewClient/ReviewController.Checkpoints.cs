@@ -27,7 +27,7 @@ namespace HobbyDS9.TacticalReviewClient
                 LastCheckpointError=pending != null ? ReviewCheckpointError.Busy : ReviewCheckpointError.DirtyDraft;
                 return new ReviewCheckpointResult(LastCheckpointError);
             }
-            var opened=host.ReopenFromSlot(slot,Frame.Actor,Frame.Battle?.EncounterId);
+            var opened=host.Reopen(slot,Frame.Actor,Frame.Battle?.EncounterId);
             LastCheckpointError=opened.Error;
             if(!opened.Succeeded) return new ReviewCheckpointResult(opened.Error);
             host=opened.Host!; ReplaceCheckpointFrame(opened.Frame!);
@@ -35,7 +35,7 @@ namespace HobbyDS9.TacticalReviewClient
         }
         private void ReplaceCheckpointFrame(ReviewFrame next)
         {
-            Frame=next; draft.Clear(); SelectedShip=null; pending=null;
+            Frame=next; draft.Clear(); travelDraft=null; SelectedShip=null; pending=null;
             Mode=ModeFor(next); RefreshRequired=false; LastBackendError=null; DraftInvalidated=false;
         }
     }

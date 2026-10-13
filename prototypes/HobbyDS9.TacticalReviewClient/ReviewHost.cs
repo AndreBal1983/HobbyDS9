@@ -85,8 +85,9 @@ namespace HobbyDS9.TacticalReviewClient
                         ExpectedTurn=work.Turn, ExpectedRound=work.Round, ExpectedBoundaryRevision=work.BoundaryRevision,
                         Replacements=work.Replacements.Select(o => new CampaignTacticalFleetOrderDto {
                             FleetId=o.Fleet, Maneuver=o.Maneuver, FocusFleetId=o.Focus }).ToList() });
-                else
+                else if(work.Action == ReviewAction.Finalize)
                     result=session.FinalizeBatch(work.Turn,work.CampaignRevision);
+                else throw new InvalidOperationException("B1 host does not support physical travel commands.");
                 return new ReviewReceipt(work,result,Capture(session,work.Actor,work.Encounter,generation));
             }
         }

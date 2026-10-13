@@ -13,13 +13,26 @@ namespace HobbyDS9.TacticalReviewClient
             text.AppendLine("HEADLESS AUTHORITATIVE REVIEW CLIENT / PRODUCTION ACTIVATION DISABLED");
             text.AppendLine(FormattableString.Invariant($"Actor {frame.Actor} | Turn {frame.Status.Turn} | {frame.Status.Phase} | {controller.Mode}"));
             text.AppendLine(frame.Status.TravelModel); text.AppendLine(frame.Status.ContactAdmission);
+            if(frame.Travel != null)
+            {
+                text.AppendLine("PHYSICAL REVIEW / PROPOSED POLICIES / COMPLETE FORMAT 2 HOST");
+                foreach(var order in frame.Travel.OwnOrders)
+                    text.AppendLine($"Own travel {order.FleetId}: {order.Intent} | contact {order.ContactFleetId ?? "none"} | route {string.Join(", ",order.RouteNodeIds)}");
+                foreach(var contact in frame.Travel.KnownContacts)
+                    text.AppendLine(FormattableString.Invariant($"Known contact {contact.FleetId}: LAST SEEN {contact.LastSeenNodeId}, turn {contact.LastSeenTurn}, fresh {contact.Fresh}; current position and destination unavailable"));
+                foreach(var receipt in frame.Travel.OwnReceipts)
+                    text.AppendLine(FormattableString.Invariant($"Own movement {receipt.FleetId}: turn {receipt.Turn}, end node {receipt.EndNodeId}, destination {receipt.TransitDestinationId ?? "none"}, locked progress {receipt.TransitProgress}/{receipt.TransitTotalCost}, paid {receipt.CostPaid}, edges {receipt.EdgesCompleted}, encounter stop {receipt.StoppedByEncounter}, exact time {receipt.StopTimeNumerator}/{receipt.StopTimeDenominator}"));
+                if(controller.TravelDraft != null)
+                    text.AppendLine($"UNSENT travel {controller.TravelDraft.Fleet}: {controller.TravelDraft.Intent} | contact {controller.TravelDraft.ContactFleet ?? "none"} | route {string.Join(", ",controller.TravelDraft.Route)}");
+                text.AppendLine("Travel choices: Stay, StayEngage, Leave, Follow. Backend validates ownership, contact freshness, routes and transit. Speed/ETA explanation unavailable.");
+            }
             foreach(var fleet in frame.OwnStrategicFleets)
                 text.AppendLine($"Own strategic fleet {fleet.FleetId.Value} | node {fleet.LocationNodeId.Value} | remaining route {string.Join(", ",fleet.RouteNodeIds.Select(n=>n.Value))}");
             if(controller.RefreshRequired) text.AppendLine("Refresh required; no automatic retry.");
             if(controller.LastBackendError.HasValue) text.AppendLine("Backend result: "+controller.LastBackendError.Value);
             if(controller.LastCheckpointError != ReviewCheckpointError.None)
                 text.AppendLine("Checkpoint result: "+controller.LastCheckpointError);
-            if(controller.DraftInvalidated) text.AppendLine("Draft invalidated by a new authoritative boundary or accepted commitment; review new orders.");
+            if(controller.DraftInvalidated) text.AppendLine("Draft invalidated by a new authoritative stamp or accepted commitment; review new orders.");
             if(b == null)
             {
                 text.AppendLine("Committed campaign stocks; select an encounter for current battle inspection.");
