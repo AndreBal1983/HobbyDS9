@@ -414,10 +414,19 @@ public sealed class CampaignTacticalReviewTests
         Assert.True(app.CommitRound(a).Accepted);Assert.True(app.CommitRound(Command(app,id,B)).Accepted);
         Assert.True(app.CommitRound(Command(app,id,"civ.dominion")).Accepted);
         Assert.DoesNotContain(app.Observe(id,A).VisibleEnemies,s=>s.ShipId=="ship.cardassian-scout");
+        Assert.Equal(0,Assert.Single(app.Observe(id,B).OwnShips).Condition.Hull);
+        Assert.All(app.Observe(id,B).OwnShips.SelectMany(s=>s.Weapons),w=>
+        {
+            Assert.True(w.Availability.OwnBlockers.HasFlag(CampaignWeaponOwnBlockers.ShipDestroyed));
+            Assert.True(w.Availability.OwnBlockers.HasFlag(CampaignWeaponOwnBlockers.FormationInactive));
+        });
         Assert.True(app.CommitRound(Command(app,id,A)).Accepted);
         Assert.True(app.CommitRound(Command(app,id,"civ.dominion")).Accepted);
         Assert.Contains(app.Observe(id,A).Reports,r=>r.Kind=="FocusFallback" && r.TargetShipId=="ship.additional-opponent"
-            && r.Detail=="Preferred fleet unavailable for this opportunity; a visible hostile alternative was acquired.");
+            && r.Detail=="Preferred fleet unavailable for this opportunity; a visible hostile alternative was acquired."
+            && r.FocusFallbackCause==CampaignFocusFallbackCause.PreferredFocusUnavailableForOpportunity);
+        Assert.All(app.Observe(id,A).Reports.Where(r=>r.Kind!="FocusFallback"),r=>Assert.Null(r.FocusFallbackCause));
+        Assert.Equal(Json(app.Observe(id,A)),Json(CampaignTacticalReviewApplication.LoadReviewSave(p,Clone(app.ExportSave())).Observe(id,A)));
         Assert.Equal("fleet.cardassian-scout",app.Observe(id,A).StandingOrders[0].FocusFleetId);
     }
     [Fact]
