@@ -40,3 +40,5 @@ jobs:
         run: python scripts/check-tactical-playground.py
       - name: Campaign tactical v2 eligibility (headless, activation remains blocked)
         run: python scripts/check-campaign-tactical-v2-inspection.py
+      - name: Authored tactical v2 equipment sources (headless, activation remains blocked)
+        run: python scripts/check-authored-tactical-equipment.py

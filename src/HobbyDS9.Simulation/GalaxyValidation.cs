@@ -10,7 +10,8 @@ namespace HobbyDS9.Simulation
         private static void ValidateTypedDefinitions(DefinitionCatalogDto dto, HashSet<DefinitionId> ids,
             string path, List<ValidationIssue> issues)
         {
-            if (dto.ContentFormatVersion != FoundationVersions.ContentFormatVersion)
+            if (dto.ContentFormatVersion != FoundationVersions.ContentFormatVersion
+                && dto.ContentFormatVersion != AuthoredTacticalEquipmentIdentity.ContentFormatVersion)
                 Add(issues, ValidationCode.UnsupportedContentFormat, path + ".ContentFormatVersion");
             var typed = new HashSet<string>(StringComparer.Ordinal);
             void Definition(string? id, string? label, string itemPath)
@@ -39,6 +40,7 @@ namespace HobbyDS9.Simulation
             ValidatePopulationDefinitions(dto, ids, typed, path, issues);
             ValidateResearchDefinitions(dto, ids, typed, path, issues);
             ValidateShipDesigns(dto, ids, typed, path, issues);
+            ValidateAuthoredTacticalEquipmentDefinitions(dto, typed, issues);
             if (dto.GalaxyEdges == null) Add(issues, ValidationCode.MissingField, path + ".GalaxyEdges");
         }
 
@@ -92,6 +94,7 @@ namespace HobbyDS9.Simulation
             ValidateColonies(dto, catalog, headers, typedIds, civilizationIds, path, issues);
             ValidateResearchState(dto, catalog, path, issues);
             ValidateProductionFleets(dto, catalog, headers, typedIds, civilizationIds, path, issues);
+            ValidateAuthoredTacticalEquipmentBindings(dto, catalog, false, issues);
             var graphReport = GalaxyGraph.Validate(dto.StarSystems?.Select(s => s?.SystemId ?? string.Empty), catalog?.GalaxyEdges);
             foreach (var issue in graphReport.Issues)
                 Add(issues, issue.Code, issue.Path.StartsWith("$.Edges", StringComparison.Ordinal)

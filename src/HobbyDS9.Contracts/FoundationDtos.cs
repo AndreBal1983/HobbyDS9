@@ -49,6 +49,7 @@ namespace HobbyDS9.Contracts
         public ShipDesign.ShipDesignCatalogueDto? ShipDesignCatalogue { get; set; }
         public List<ShipDesignVersionAccessDto>? ShipDesignVersionAccess { get; set; } = new List<ShipDesignVersionAccessDto>();
         public List<ShipDesignDefinitionDto>? ShipDesigns { get; set; }
+        public AuthoredTacticalEquipmentCatalogueDto? AuthoredTacticalEquipment { get; set; }
         public List<string> DefinitionIds { get; set; } = new List<string>();
     }
 

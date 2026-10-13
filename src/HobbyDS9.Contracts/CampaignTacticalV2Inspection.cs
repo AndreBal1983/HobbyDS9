@@ -36,13 +36,16 @@ namespace HobbyDS9.Contracts
         public ShipSnapshot Ship { get; }
         // Null for static designs: absence is not an empty or fabricated fit.
         public CampaignBlueprintSnapshot? FrozenBlueprint { get; }
+        public AuthoredTacticalEquipmentSnapshot? AuthoredEquipment { get; }
+        public CampaignTacticalSourceKind SourceKind => AuthoredEquipment != null ? CampaignTacticalSourceKind.AuthoredEquipmentV2
+            : FrozenBlueprint != null ? CampaignTacticalSourceKind.FrozenBlueprintV1 : CampaignTacticalSourceKind.LegacyStatic;
         public IReadOnlyList<CampaignTacticalV2Blocker> MissingFitSemantics { get; }
         public bool CanProjectTacticalV2 => MissingFitSemantics.Count == 0;
 
         public CampaignTacticalShipSourceSnapshot(ShipSnapshot ship, CampaignBlueprintSnapshot? blueprint,
-            IEnumerable<CampaignTacticalV2Blocker> missingFitSemantics)
+            IEnumerable<CampaignTacticalV2Blocker> missingFitSemantics, AuthoredTacticalEquipmentSnapshot? authoredEquipment = null)
         {
-            Ship = ship; FrozenBlueprint = blueprint;
+            Ship = ship; FrozenBlueprint = blueprint; AuthoredEquipment = authoredEquipment;
             MissingFitSemantics = missingFitSemantics.Distinct().OrderBy(v => v).ToList().AsReadOnly();
         }
     }

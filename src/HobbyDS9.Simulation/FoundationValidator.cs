@@ -45,6 +45,7 @@ namespace HobbyDS9.Simulation
                 var ids = ValidateDefinitions(dto.Definitions, "$.Definitions", issues);
                 ValidateState(dto.InitialState, ids, true, "$.InitialState", issues);
                 ValidateTypedState(dto.InitialState, dto.Definitions, "$.InitialState", issues);
+                ValidateAuthoredTacticalEquipmentBindings(dto.InitialState, dto.Definitions, true, issues);
                 ValidateCampaignCombat(dto.InitialState, dto.Definitions, dto.RulesVersion, dto.ContentHash, "$.InitialState", issues);
                 ValidateCombatTopology(dto.InitialState, dto.Definitions, "$.InitialState", issues);
                 if (dto.InitialState != null && (dto.InitialState.TurnNumber != 1 || dto.InitialState.StateRevision != 0

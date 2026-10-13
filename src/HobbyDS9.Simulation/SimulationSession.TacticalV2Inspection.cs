@@ -8,8 +8,8 @@ namespace HobbyDS9.Simulation
 {
     public sealed partial class SimulationSession
     {
-        // Deliberately enumerated current-schema gaps, not a configurable whitelist.
-        // These remain blockers even for an unarmed ship or a campaign with no ships.
+        // Deliberately enumerated legacy-source gaps, not a configurable whitelist.
+        // An empty campaign cannot bypass them; authored equipment is validated separately.
         private static readonly CampaignTacticalV2Blocker[] TacticalV2FitGaps =
         {
             CampaignTacticalV2Blocker.ExplicitEquipmentSchemaRequired,
@@ -56,8 +56,14 @@ namespace HobbyDS9.Simulation
                     {
                         var blueprint = ship.Blueprint == null ? null
                             : blueprints[(ship.Blueprint.BlueprintId, ship.Blueprint.Revision)];
+                        var equipmentCatalogue = definitions.AuthoredTacticalEquipment;
+                        var provision = equipmentCatalogue?.InitialShipProvisions!.SingleOrDefault(p => p.ShipId == ship.ShipId);
+                        var fit = provision == null ? null : equipmentCatalogue!.Fits!.Single(f =>
+                            f.DefinitionId == provision.FitDefinitionId && f.Revision == provision.FitRevision);
+                        var equipment = fit == null ? null : new AuthoredTacticalEquipmentSnapshot(equipmentCatalogue!, fit, provision!);
                         ships.Add(new CampaignTacticalShipSourceSnapshot(new ShipSnapshot(ship,
-                            CampaignShipDesignResolver.Ship(state, definitions, ship)), blueprint, TacticalV2FitGaps));
+                            CampaignShipDesignResolver.Ship(state, definitions, ship)), blueprint,
+                            equipment == null ? TacticalV2FitGaps : Array.Empty<CampaignTacticalV2Blocker>(), equipment));
                     }
                     if (definitions.ShipDesignCatalogue != null)
                         catalogue = new CampaignShipDesignCatalogueSnapshot(new ShipDesignCatalogueSnapshot(definitions.ShipDesignCatalogue),
@@ -65,7 +71,9 @@ namespace HobbyDS9.Simulation
                 }
                 return new CampaignTacticalV2EligibilitySnapshot(actor, error, state.TurnNumber, state.StateRevision,
                     state.Phase!.Value, compatibility.ScenarioId, compatibility.RulesVersion, compatibility.ContentHash,
-                    TacticalV2FitGaps.Concat(TacticalV2LifecycleGaps), catalogue, blueprints.Values, ships);
+                    (ships.Count == 0 || ships.Any(s => !s.CanProjectTacticalV2) || blueprints.Count > 0
+                        ? TacticalV2FitGaps : new[] { CampaignTacticalV2Blocker.FormationCapabilityDerivationRequired })
+                    .Concat(TacticalV2LifecycleGaps), catalogue, blueprints.Values, ships);
             }
         }
     }

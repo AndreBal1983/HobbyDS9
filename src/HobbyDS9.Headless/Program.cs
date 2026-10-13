@@ -96,7 +96,10 @@ if (inspectTacticalActor != null)
     Console.WriteLine(FormattableString.Invariant($"tactical-v2-inspection-format={inspection.FormatVersion}, can-activate={inspection.CanActivate}, campaign-resolver={inspection.CampaignResolverId}/{inspection.CampaignResolverVersion}, owned-ships={inspection.OwnedShips.Count}, owned-revisions={inspection.OwnedBlueprintRevisions.Count}"));
     Console.WriteLine("tactical-v2-blockers=" + string.Join(",", inspection.Blockers));
     foreach (var source in inspection.OwnedShips)
+    {
         Console.WriteLine(FormattableString.Invariant($"tactical-source={source.Ship.ShipId}, design={source.Ship.ShipDesignDefinitionId}, revision={source.Ship.Blueprint?.Revision.ToString(CultureInfo.InvariantCulture) ?? "static"}, can-project-v2={source.CanProjectTacticalV2}"));
+        if (source.AuthoredEquipment != null) AuthoredEquipmentDiagnostics.Write(source.AuthoredEquipment);
+    }
 }
 
 var stats = snapshot.PopulationStatistics;

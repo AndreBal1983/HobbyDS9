@@ -250,6 +250,7 @@ namespace HobbyDS9.Simulation
         private static DefinitionCatalogDto CopyDefinitions(DefinitionCatalogDto source) => new DefinitionCatalogDto
         {
             ContentFormatVersion = source.ContentFormatVersion,
+            AuthoredTacticalEquipment = source.AuthoredTacticalEquipment == null ? null : AuthoredTacticalEquipmentCopies.Copy(source.AuthoredTacticalEquipment),
             ShipDesignCatalogue = source.ShipDesignCatalogue == null ? null : BlueprintCopies.Copy(source.ShipDesignCatalogue),
             ShipDesignVersionAccess = source.ShipDesignVersionAccess!.OrderBy(g => g.VersionId, StringComparer.Ordinal).Select(BlueprintCopies.Copy).ToList(),
             DefinitionIds = source.DefinitionIds.OrderBy(d => d, StringComparer.Ordinal).ToList(),
