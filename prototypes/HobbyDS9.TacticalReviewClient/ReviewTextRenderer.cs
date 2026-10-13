@@ -65,13 +65,14 @@ namespace HobbyDS9.TacticalReviewClient
                 Condition(text,"Own",own.Condition,own.ShieldMaximum);
                 text.AppendLine(FormattableString.Invariant($"Fit {own.FitId} revision {own.FitRevision} | provenance {own.ProvenanceId} | cloak {own.Cloaked}"));
                 text.AppendLine(FormattableString.Invariant($"Armor {own.Armor} | power {own.EffectivePower} | equipment budget {own.EquipmentPowerBudget} | cloak reservation {own.CloakPowerReserved}"));
-                if(own.Weapons.Count == 0) text.AppendLine("No installed weapon packages.");
+                if(own.Unarmed) text.AppendLine("No installed weapon packages. Authoritative Unarmed=True.");
+                else text.AppendLine("Authoritative Unarmed=False.");
                 foreach(var weapon in own.Weapons)
                 {
                     text.AppendLine(FormattableString.Invariant($"Own package {weapon.WeaponId} | {weapon.PackageVersionId} | {weapon.Class} | mount {weapon.MountId} | slots {weapon.SlotsRequired} | coverage {weapon.Coverage}"));
                     text.AppendLine(FormattableString.Invariant($"Supplied ammunition {weapon.Ammunition}/{weapon.MagazineCapacity} | ammunition definition {weapon.AmmunitionDefinitionId}"));
                     text.AppendLine(FormattableString.Invariant($"Powered {weapon.Powered} | power allocation {weapon.AllocatedPower}/{weapon.RequiredPower} | next fire round {weapon.NextFireRound} | cadence {weapon.CadenceRounds}"));
-                    text.AppendLine("Readiness explanation unavailable: backend does not supply this projection.");
+                    Availability(text,weapon.Availability);
                 }
             }
             if(controller.SelectedShip != null && (frame.OwnShips.Any(s=>s.Condition.ShipId == controller.SelectedShip)
@@ -97,7 +98,8 @@ namespace HobbyDS9.TacticalReviewClient
             {
                 // No private Detail parsing, opponent package IDs, chance or reserve reconstruction.
                 text.AppendLine(FormattableString.Invariant($"#{e.Sequence} Round {e.Round} {e.Kind} | ship {e.ShipId ?? "unavailable"} | target {e.TargetShipId ?? "unavailable"} | own package {e.OwnWeaponId ?? "unavailable"} | amount {e.Amount} | sector {e.Sector} | range {e.Range}"));
-                if(e.Kind == "FocusFallback") text.AppendLine("Authoritative focus fallback reported; selected focus remains a preference. Detailed reason unavailable.");
+                if(e.FocusFallbackCause == CampaignFocusFallbackCause.PreferredFocusUnavailableForOpportunity)
+                    text.AppendLine("Authoritative focus fallback reported: PreferredFocusUnavailableForOpportunity. Preferred focus unavailable for that recorded opportunity; a lawful alternative was used. No shot promised; specific historical reason not supplied.");
             }
             return text.ToString();
         }
@@ -108,15 +110,31 @@ namespace HobbyDS9.TacticalReviewClient
             if(own != null)
             {
                 Condition(text,"Own",own.Condition,own.ShieldMaximum);
+                text.AppendLine("Authoritative Unarmed="+own.Unarmed);
                 foreach(var w in own.Weapons)
+                {
                     text.AppendLine(FormattableString.Invariant($"Own package {w.WeaponId} | {w.Class} | ammunition {w.Ammunition}/{w.MagazineCapacity} | next fire round {w.NextFireRound}"));
-                text.AppendLine("Readiness explanation unavailable.");
+                    Availability(text,w.Availability);
+                }
                 return text.ToString();
             }
             var enemy=controller.Frame.Battle?.VisibleEnemies.SingleOrDefault(s=>s.ShipId == shipId);
             if(enemy != null) Condition(text,"Visible enemy",enemy,null);
             else text.AppendLine("No lawful ship observation available.");
             return text.ToString();
+        }
+        private static void Availability(StringBuilder text,CampaignWeaponAvailability supplied)
+        {
+            text.AppendLine("Own availability "+supplied.Status+" | blockers "+supplied.OwnBlockers
+                +" | round "+(supplied.Round.HasValue ? supplied.Round.Value.ToString(System.Globalization.CultureInfo.InvariantCulture) : "outside context"));
+            if(supplied.Status == CampaignWeaponAvailabilityStatus.OutsideEncounter)
+                text.AppendLine("Outside encounter: no battle-round context or live firing readiness.");
+            else if(supplied.Status == CampaignWeaponAvailabilityStatus.OwnStateBlocked)
+                text.AppendLine("Own state blocks participation at this observed boundary.");
+            else if(supplied.Status == CampaignWeaponAvailabilityStatus.TargetDependent)
+                text.AppendLine("Target dependent: no listed own-state blocker; no shot promised.");
+            // This limitation is distinct from the supplied own-state explanation.
+            text.AppendLine("Readiness explanation unavailable for a specific target; no shot count, chance or outcome forecast.");
         }
     }
 }
