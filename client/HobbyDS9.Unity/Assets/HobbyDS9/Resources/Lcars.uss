@@ -90,6 +90,7 @@
 .strategic-prototype .lcars-header { min-height: var(--lcars-header-height); }
 .strategic-prototype .lcars-title { width: var(--lcars-rail-width); font-size: 20px; padding: 16px; border-top-left-radius: 40px; }
 .strategic-prototype .lcars-frame-bar { height: var(--lcars-frame-height); }
+.strategic-prototype .lcars-structural-bar { height: 30px; margin: 0; }
 .strategic-prototype .lcars-navigation { background-color: var(--lcars-amber); border-bottom-left-radius: 40px; padding-bottom: 24px; }
 .strategic-prototype .lcars-nav-segment { border-radius: 0; border-top-width: 0; border-bottom-width: 0; margin-bottom: 6px; }
 .strategic-prototype .lcars-nav-segment.active-tab { border-left-width: 6px; }

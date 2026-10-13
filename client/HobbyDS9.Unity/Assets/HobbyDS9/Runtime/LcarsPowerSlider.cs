@@ -6,86 +6,144 @@ using UnityEngine.UIElements;
 
 namespace HobbyDS9.UnityClient
 {
+    // Rendering scale only, never gameplay budgets or validation.
+    public sealed class LcarsPowerScale
+    {
+        public const int SafeSegmentLimit=48;
+        public const float Pitch=6, ZeroHeight=14;
+        public float SegmentPitch { get; }
+        public bool Paired { get; }
+        public long UnitsPerBar { get; }
+        public int TallestCount { get; }
+        public string Legend=>Paired?"2 bars / power":"1 bar = "+UnitsPerBar+" power • approximate; exact values below";
+        public LcarsPowerScale(long largestMaximum,float availableHeight=288,float segmentPitch=Pitch)
+        {
+            if(largestMaximum<0)throw new ArgumentOutOfRangeException(nameof(largestMaximum));
+            if(float.IsNaN(segmentPitch)||float.IsInfinity(segmentPitch)||segmentPitch<4||segmentPitch>12)throw new ArgumentOutOfRangeException(nameof(segmentPitch));
+            SegmentPitch=segmentPitch;
+            var limit=Math.Max(16,Math.Min(SafeSegmentLimit,(int)(Math.Max(96,Math.Min(288,availableHeight))/SegmentPitch)));
+            Paired=largestMaximum<=limit/2;UnitsPerBar=Paired?1:Ceiling(largestMaximum,limit);
+            TallestCount=Count(largestMaximum);
+        }
+        private static long Ceiling(long value,long divisor)=>value/divisor+(value%divisor==0?0:1);
+        public int Count(long maximum)
+        {
+            if(maximum<0)throw new ArgumentOutOfRangeException(nameof(maximum));
+            var count=Paired?(maximum>SafeSegmentLimit/2?(long)SafeSegmentLimit+1:maximum*2):Ceiling(maximum,UnitsPerBar);
+            if(count>SafeSegmentLimit)throw new ArgumentException("Range must belong to this bank's common scale",nameof(maximum));
+            return (int)count;
+        }
+        public long SegmentValue(int index,long maximum)
+        {
+            if(maximum==0)return 0;
+            index=Math.Max(0,Math.Min(Count(maximum)-1,index));
+            if(Paired)return Math.Min(maximum,index/2+1);
+            var bars=(long)index+1;
+            return bars>maximum/UnitsPerBar?maximum:bars*UnitsPerBar;
+        }
+        public int Filled(long value,long maximum)
+        {
+            value=Math.Max(0,Math.Min(maximum,value));
+            if(value==maximum)return Count(maximum);
+            return Paired?(int)(value*2):(int)(value/UnitsPerBar);
+        }
+    }
+
+    // The lights capture pointer input directly; no SliderInt or hidden fader.
     public sealed class LcarsPowerSlider : VisualElement
     {
-        public SliderInt Track { get; }
+        public VisualElement Track { get; }
         public LongField Exact { get; }
         public long Value { get; private set; }
+        public long Maximum { get; }
+        public LcarsPowerScale Scale { get; }
         public string PositionState { get; private set; }="zero";
+        public bool Pending=>pointer>=0;
         private readonly Label readout=new Label(), notice=new Label();
-        private readonly VisualElement[] segments=new VisualElement[12];
+        private readonly VisualElement[] segments;
         private readonly Action<long> commit;
-        private readonly long maximum;
         private readonly bool backendInvalid;
-        private bool dragging;
+        private int pointer=-1;
         private long committed;
-        public LcarsPowerSlider(string caption,string fieldName,long value,long maximum,bool invalid,Action<long> commit,long poweredMinimum=0)
+        public LcarsPowerSlider(string caption,string fieldName,long value,long maximum,bool invalid,Action<long> commit,long poweredMinimum=0,LcarsPowerScale? scale=null)
         {
-            if(maximum<0 || maximum>int.MaxValue)throw new ArgumentOutOfRangeException(nameof(maximum));
-            this.maximum=maximum;this.commit=commit;backendInvalid=invalid;Value=committed=value;
+            if(maximum<0)throw new ArgumentOutOfRangeException(nameof(maximum));
+            Maximum=maximum;this.commit=commit;backendInvalid=invalid;Value=committed=value;Scale=scale??new LcarsPowerScale(maximum);
             name="slider-"+fieldName;AddToClassList("lcars-power-slider");
-            var heading=new VisualElement();heading.AddToClassList("lps-heading");Add(heading);
-            heading.Add(new Label(caption.ToUpperInvariant()));readout.AddToClassList("lps-readout");heading.Add(readout);
-            var body=new VisualElement();body.AddToClassList("lps-body");Add(body);
-            var rail=new VisualElement();rail.AddToClassList("lps-rail");body.Add(rail);
-            var bars=new VisualElement {pickingMode=PickingMode.Ignore};bars.AddToClassList("lps-segments");rail.Add(bars);
-            // Index zero is the bottom segment. USS column-reverse matches the real
-            // non-inverted vertical SliderInt: zero at bottom, full demand at top.
+            Add(new Label(caption.StartsWith("Requested",StringComparison.Ordinal)?"R":"A") {tooltip=caption});
+            var stage=new VisualElement();stage.AddToClassList("lps-stage");stage.style.height=Scale.TallestCount*Scale.SegmentPitch+LcarsPowerScale.ZeroHeight;Add(stage);
+            Track=new VisualElement {name="track-"+fieldName,focusable=true,tabIndex=0,tooltip=caption+" power. Tap lights; arrows ±1, Home zero, End full. Powered minimum "+poweredMinimum};
+            Track.AddToClassList("lps-track");Track.style.height=Scale.Count(maximum)*Scale.SegmentPitch+LcarsPowerScale.ZeroHeight;stage.Add(Track);Track.SetEnabled(maximum>0);
+            var bars=new VisualElement {pickingMode=PickingMode.Ignore};bars.AddToClassList("lps-segments");Track.Add(bars);
+            segments=new VisualElement[Scale.Count(maximum)];
             for(var i=0;i<segments.Length;i++)
             {
-                segments[i]=new VisualElement {name="segment-"+i,pickingMode=PickingMode.Ignore};
-                segments[i].AddToClassList("lps-segment");
-                segments[i].AddToClassList(i<5?"lps-band-low":i<9?"lps-band-middle":"lps-band-high");
-                bars.Add(segments[i]);
+                var segment=new VisualElement {name="segment-"+i,pickingMode=PickingMode.Ignore};segments[i]=segment;segment.AddToClassList("lps-segment");
+                segment.style.height=Scale.SegmentPitch-2;segment.style.minHeight=Scale.SegmentPitch-2;
+                segment.AddToClassList(i<segments.Length*.42?"lps-band-low":i<segments.Length*.75?"lps-band-middle":"lps-band-high");bars.Add(segment);
             }
-            Track=new SliderInt(0,(int)maximum) {name="track-"+fieldName,direction=SliderDirection.Vertical,inverted=false};Track.AddToClassList("lps-track");rail.Add(Track);
-            Track.SetEnabled(maximum>0);Track.SetValueWithoutNotify((int)Math.Max(0,Math.Min(maximum,value)));
-            rail.RegisterCallback<PointerDownEvent>(_=>dragging=true,TrickleDown.TrickleDown);
-            Track.RegisterValueChangedCallback(e=>{Value=e.newValue;Paint();if(!dragging)Commit();});
-            rail.RegisterCallback<PointerUpEvent>(_=>{dragging=false;Paint();Commit();},TrickleDown.TrickleDown);
-            Track.RegisterCallback<PointerCaptureOutEvent>(_=>{if(dragging){dragging=false;Paint();Commit();}});
-            RegisterCallback<DetachFromPanelEvent>(_=>dragging=false);
-            rail.RegisterCallback<KeyDownEvent>(e=>
+            var zero=new Label("0") {pickingMode=PickingMode.Ignore};zero.AddToClassList("lps-zero");Track.Add(zero);
+            Track.RegisterCallback<PointerDownEvent>(e=>
             {
+                if(e.button!=0 || pointer>=0 || Maximum==0)return;
+                // Capture coordinates before FocusIn selects/reparents the exact
+                // editor. Event-local coordinates remain valid if that dirties
+                // the bank's layout/world transform in the current dispatch.
+                var y=e.localPosition.y;
+                Track.Focus();pointer=e.pointerId;Track.CapturePointer(pointer);Scrub(y);e.StopPropagation();
+            });
+            Track.RegisterCallback<PointerMoveEvent>(e=>{if(e.pointerId==pointer){Scrub(e.localPosition.y);e.StopPropagation();}});
+            Track.RegisterCallback<PointerUpEvent>(e=>
+            {
+                if(e.pointerId!=pointer)return;
+                Scrub(e.localPosition.y);Finish();e.StopPropagation();
+            });
+            Track.RegisterCallback<PointerCaptureOutEvent>(e=>{if(e.pointerId==pointer)Finish();});
+            Track.RegisterCallback<PointerCancelEvent>(e=>{if(e.pointerId==pointer)Finish();});
+            RegisterCallback<DetachFromPanelEvent>(_=>{pointer=-1;Value=committed;Paint();});
+            Track.RegisterCallback<KeyDownEvent>(e=>
+            {
+                if(Pending)return;
                 var delta=e.keyCode==KeyCode.LeftArrow || e.keyCode==KeyCode.DownArrow?-1:e.keyCode==KeyCode.RightArrow || e.keyCode==KeyCode.UpArrow?1:0;
-                if(delta!=0 || e.keyCode==KeyCode.Home || e.keyCode==KeyCode.End)
-                {
-                    Value=e.keyCode==KeyCode.Home?0:e.keyCode==KeyCode.End?maximum:Math.Max(0,Math.Min(maximum,Math.Max(0,Math.Min(maximum,Value))+delta));
-                    Track.SetValueWithoutNotify((int)Value);Paint();Commit();e.StopImmediatePropagation();
-                }
-            },TrickleDown.TrickleDown);
-            // Editor panels may synthesize navigation from an arrow KeyDown, while the
-            // native player sends only KeyDown. Consume navigation so arrows step once
-            // in both hosts; keyboard editing belongs to the handler above.
-            rail.RegisterCallback<NavigationMoveEvent>(e=>
-            {
-                var delta=e.direction==NavigationMoveEvent.Direction.Left || e.direction==NavigationMoveEvent.Direction.Down?-1:e.direction==NavigationMoveEvent.Direction.Right || e.direction==NavigationMoveEvent.Direction.Up?1:0;
-                if(delta==0)return;
-                e.StopImmediatePropagation();
-            },TrickleDown.TrickleDown);
-            var bounds=new VisualElement();bounds.AddToClassList("lps-bounds");body.Add(bounds);
-            bounds.Add(new Label("FULL "+maximum+" units"));
-            bounds.Add(new Label("Powered min "+poweredMinimum));
-            Exact=new LongField("Exact units") {name=fieldName,isDelayed=true};Exact.SetValueWithoutNotify(value);bounds.Add(Exact);
-            Exact.RegisterValueChangedCallback(e=>{Value=e.newValue;Track.SetValueWithoutNotify((int)Math.Max(0,Math.Min(maximum,Value)));Paint();Commit();});
-            bounds.Add(new Label("0 units / bottom"));
-            notice.AddToClassList("lps-notice");Add(notice);Paint();
+                if(delta==0 && e.keyCode!=KeyCode.Home && e.keyCode!=KeyCode.End)return;
+                var bounded=Math.Max(0,Math.Min(Maximum,Value));
+                Value=e.keyCode==KeyCode.Home?0:e.keyCode==KeyCode.End?Maximum:delta>0?(bounded<Maximum?bounded+1:Maximum):(bounded>0?bounded-1:0);
+                Paint();Commit();e.StopImmediatePropagation();
+            });
+            Track.RegisterCallback<NavigationMoveEvent>(e=>{if(e.direction!=NavigationMoveEvent.Direction.None)e.StopImmediatePropagation();});
+            readout.AddToClassList("lps-readout");Add(readout);notice.AddToClassList("lps-notice");Add(notice);
+            var storage=new VisualElement();storage.AddToClassList("lps-exact-store");Add(storage);
+            Exact=new LongField(caption+" / exact power") {name=fieldName,isDelayed=true};Exact.SetValueWithoutNotify(value);storage.Add(Exact);
+            Exact.RegisterValueChangedCallback(e=>{Value=e.newValue;Paint();Commit();});Paint();
+        }
+        public long ValueAtLocalY(float y)
+        {
+            if(Maximum==0)return 0;
+            // Matches the explicitly sized stack. Do not query a layout rect
+            // while focus/detail/preview updates have invalidated that layout.
+            var fromBottom=Scale.Count(Maximum)*Scale.SegmentPitch-y;
+            if(fromBottom<0)return 0;
+            return Scale.SegmentValue((int)Math.Min(Scale.Count(Maximum)-1,Math.Max(0,Math.Floor(fromBottom/Scale.SegmentPitch))),Maximum);
+        }
+        private void Scrub(float localY){Value=ValueAtLocalY(localY);Paint();}
+        private void Finish()
+        {
+            var id=pointer;pointer=-1;
+            if(id>=0 && Track.HasPointerCapture(id))Track.ReleasePointer(id);
+            Paint();Commit();
         }
         private void Commit(){if(Value==committed)return;committed=Value;commit(Value);}
         private void Paint()
         {
-            var fraction=maximum==0?0:Math.Max(0,Math.Min(1,(double)Value/maximum));
-            PositionState=Value<0 || Value>maximum?"invalid":maximum==0?"disabled":Value==0?"zero":fraction>=.85?"high":fraction>=.5?"medium":"low";
+            var fraction=Maximum==0?0:Math.Max(0,Math.Min(1,(double)Value/Maximum));
+            PositionState=Value<0 || Value>Maximum?"invalid":Maximum==0?"disabled":Value==0?"zero":fraction>=.85?"high":fraction>=.5?"medium":"low";
             foreach(var state in new[]{"invalid","disabled","zero","high","medium","low"})EnableInClassList("lps-"+state,state==PositionState);
-            EnableInClassList("lps-backend-invalid",backendInvalid && !dragging);
-            for(var i=0;i<segments.Length;i++)segments[i].EnableInClassList("lps-filled",fraction>=(double)(i+1)/segments.Length);
-            readout.text=Value.ToString(CultureInfo.InvariantCulture)+" units";
-            Exact.SetValueWithoutNotify(Value);
-            notice.text=dragging?"EDIT PREVIEW • release to validate":
-                PositionState=="invalid"?"! OUTSIDE RANGE • exact value retained":
-                backendInvalid?"! BACKEND ERROR • see validation":
-                maximum==0?"NO POWER DEMAND • track disabled":Value==0?"ZERO • backend validation applies":
-                "POSITION "+PositionState.ToUpperInvariant()+" • not legality";
+            EnableInClassList("lps-backend-invalid",backendInvalid);EnableInClassList("lps-pending",Pending);
+            for(var i=0;i<segments.Length;i++)segments[i].EnableInClassList("lps-filled",i<Scale.Filled(Value,Maximum));
+            readout.text=Value.ToString(CultureInfo.InvariantCulture);Exact.SetValueWithoutNotify(Value);
+            notice.text=Pending?"PENDING":PositionState=="invalid"?"! RANGE":backendInvalid?"! BACKEND ERROR":Maximum==0?"NO DEMAND":!Scale.Paired?"≈ SCALE":"";
+            notice.style.display=notice.text.Length==0?DisplayStyle.None:DisplayStyle.Flex;
+            tooltip="Exact "+Value+" / maximum "+Maximum+". "+notice.text;
         }
     }
 }

@@ -133,14 +133,17 @@ namespace HobbyDS9.UnityClient
     // UI Toolkit repaints on layout/style changes; no Update/timer/raster assets.
     public sealed class LcarsElbow : VisualElement
     {
-        public LcarsElbow()
+        private readonly float jointWidth;
+        public LcarsElbow(float jointWidth = 0)
         {
+            this.jointWidth = jointWidth;
             AddToClassList("lcars-elbow"); pickingMode = PickingMode.Ignore;
             generateVisualContent += Draw;
             RegisterCallback<GeometryChangedEvent>(_ => MarkDirtyRepaint());
         }
         private void Draw(MeshGenerationContext context)
         {
+            if (jointWidth > 0) { DrawShellJoint(context); return; }
             var rect = contentRect; var metrics = new ElbowMetrics(rect.width, rect.height);
             if (!metrics.CanDraw) return;
             var t = (float)metrics.Thickness; var rx = (float)metrics.RadiusX; var ry = (float)metrics.RadiusY;
@@ -151,6 +154,24 @@ namespace HobbyDS9.UnityClient
             painter.LineTo(new Vector2(0, rect.height)); painter.LineTo(new Vector2(t, rect.height)); painter.LineTo(new Vector2(t, ry));
             painter.BezierCurveTo(new Vector2(t, ry - k * (ry-t)), new Vector2(rx - k * (rx-t), t), new Vector2(rx, t));
             painter.LineTo(new Vector2(rect.width, t)); painter.ClosePath(); painter.Fill();
+        }
+        private void DrawShellJoint(MeshGenerationContext context)
+        {
+            var r=contentRect;
+            if(r.width<=0 || r.height<=0)return;
+            var t=Math.Min((float)LcarsMetrics.Bar,r.height);
+            var outer=Math.Min(48,r.height);
+            var innerY=r.height-t;
+            var innerX=Math.Min(48,Math.Max(0,r.width-jointWidth));
+            const float k=.55228475f;
+            var p=context.painter2D;p.fillColor=resolvedStyle.color;
+            p.BeginPath();p.MoveTo(new Vector2(r.width,0));p.LineTo(new Vector2(outer,0));
+            p.BezierCurveTo(new Vector2(outer*(1-k),0),new Vector2(0,outer*(1-k)),new Vector2(0,outer));
+            p.LineTo(new Vector2(0,r.height));p.LineTo(new Vector2(jointWidth,r.height));
+            // Join exactly to the navigation rail at the frame's bottom, and to
+            // the structural bar's 30-unit top strip at the right edge.
+            p.BezierCurveTo(new Vector2(jointWidth,r.height-k*innerY),new Vector2(jointWidth+innerX*(1-k),t),new Vector2(jointWidth+innerX,t));
+            p.LineTo(new Vector2(r.width,t));p.ClosePath();p.Fill();
         }
     }
 }

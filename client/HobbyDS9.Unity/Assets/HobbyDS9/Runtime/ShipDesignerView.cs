@@ -24,6 +24,8 @@ namespace HobbyDS9.UnityClient
         private string? selectedComponent, replacementSource;
         private string? renderedSystem, renderedComponent;
         private bool comparisonOpen;
+        private string? selectedPowerComponent;
+        private readonly Dictionary<string,LcarsPowerSlider[]> powerEditors=new Dictionary<string,LcarsPowerSlider[]>();
         public ShipDesignerView(ShipDesignDraft draft,Action closeRequested,ShipDesignerGraphics? graphicCatalogue=null)
         {
             Draft=draft; graphics=graphicCatalogue??Resources.Load<ShipDesignerGraphics>("ShipDesignerGraphics");
@@ -50,11 +52,24 @@ namespace HobbyDS9.UnityClient
             workspace.name="designer-workspace";workspace.AddToClassList("sd-workspace");body.Add(workspace);
             var provenance=Buttons(this);provenance.AddToClassList("sd-provenance");provenance.Add(new LcarsReadout(draft.Provider.StatusLabel) {name="designer-provider-status"});
             var pending=new LcarsPillButton("Blueprint publication integration pending",()=>{}) {name="designer-construction"};pending.SetEnabled(false);provenance.Add(pending);
-            Draft.Changed+=Refresh;RegisterCallback<GeometryChangedEvent>(e=>ApplyLogicalWidth(e.newRect.width));ApplyLogicalWidth(1700);Refresh();
+            Draft.Changed+=Refresh;RegisterCallback<GeometryChangedEvent>(e=>{ApplyLogicalWidth(e.newRect.width);ApplyLogicalHeight(e.newRect.height);});ApplyLogicalWidth(1700);Refresh();
         }
         public void Dispose()=>Draft.Changed-=Refresh;
         public void RequestLeave(Action leave)=>Draft.RequestDiscard(leave);
-        public void ApplyLogicalWidth(float width){if(width<=0||float.IsNaN(width)||float.IsInfinity(width))return;EnableInClassList("sd-narrow",width<1450);EnableInClassList("sd-wide",width>=2200);}
+        public void ApplyLogicalWidth(float width)
+        {
+            if(width<=0||float.IsNaN(width)||float.IsInfinity(width))return;
+            var changed=ClassListContains("sd-narrow")!=(width<1450);
+            EnableInClassList("sd-narrow",width<1450);EnableInClassList("sd-wide",width>=2200);
+            if(changed && SelectedSystem=="Profiles" && powerEditors.Count>0)Refresh();
+        }
+        private void ApplyLogicalHeight(float height)
+        {
+            if(height<=0||float.IsNaN(height)||float.IsInfinity(height))return;
+            var changed=ClassListContains("sd-short")!=(height<600);
+            EnableInClassList("sd-short",height<600);
+            if(changed && SelectedSystem=="Profiles" && powerEditors.Count>0)Refresh();
+        }
         public void SelectSystem(string id){if(!Systems.Contains(id))throw new ArgumentException("Unknown system",nameof(id));SelectedSystem=id;selectedComponent=null;replacementSource=null;Refresh();}
         private static string Caption(string id)=>Captions[Array.IndexOf(Systems,id)];
         private static VisualElement Buttons(VisualElement parent){var e=new VisualElement();e.AddToClassList("sd-buttons");parent.Add(e);return e;}
@@ -77,12 +92,12 @@ namespace HobbyDS9.UnityClient
             confirmation.style.display=Draft.ConfirmationPending?DisplayStyle.Flex:DisplayStyle.None;this.Q<Button>("designer-global-issues").text=p.Issues.Count+" issues";
             foreach(var id in Systems)navigation.Q<Button>("designer-system-"+id.ToLowerInvariant()).EnableInClassList("sd-selected",id==SelectedSystem);
             systemPicker.SetValueWithoutNotify(Caption(SelectedSystem));
-            workspace.Clear();workspace.Add(new LcarsSectionHeader(Caption(SelectedSystem).ToUpperInvariant()) {name="designer-workspace-title"});
+            workspace.Clear();workspace.EnableInClassList("sd-profile-page",SelectedSystem=="Profiles");workspace.Add(new LcarsSectionHeader(Caption(SelectedSystem).ToUpperInvariant()) {name="designer-workspace-title"});
             if(SelectedSystem=="Overview")Overview(p);else if(SelectedSystem=="Hull")Hull(p);else if(SelectedSystem=="Profiles")Profiles(p);else if(SelectedSystem=="Validation")Validation(p);else SystemPage(p);
             renderedSystem=SelectedSystem;renderedComponent=selectedComponent;
             foreach(var scroll in workspace.Query<ScrollView>().ToList())
                 if(offsets.TryGetValue(scroll.name,out var offset))scroll.schedule.Execute(()=>scroll.scrollOffset=offset);
-            if(trackFocus!=null){var track=workspace.Q<SliderInt>(trackFocus);if(track!=null)track.schedule.Execute(()=>track.Focus());}
+            if(trackFocus!=null){var track=workspace.Q<VisualElement>(trackFocus);if(track!=null)track.schedule.Execute(()=>track.Focus());}
         }
         private ShipSystemGraphic Graphic(string id)=>new ShipSystemGraphic(id,Caption(id),graphics!);
         private IEnumerable<DesignerMetric> Headlines(DesignerPreview p,string system)
@@ -151,28 +166,76 @@ namespace HobbyDS9.UnityClient
         private static string Metric(IEnumerable<DesignerMetric> values,string key)=>values.FirstOrDefault(m=>m.Caption==key)?.Value??"Not evaluated";
         private void Profiles(DesignerPreview p)
         {
-            var buttons=Buttons(workspace);foreach(DesignerProfile mode in Enum.GetValues(typeof(DesignerProfile))){var b=new LcarsPillButton(mode.ToString(),()=>Draft.SelectProfile(mode)) {name="designer-profile-"+mode.ToString().ToLowerInvariant()};b.EnableInClassList("sd-selected",Draft.Profile==mode);buttons.Add(b);}
-            var s=Scroll("designer-profile-results");workspace.Add(s);Metrics(s,"AVAILABLE / REQUESTED / ALLOCATED",p.Power.Where(m=>m.Caption=="Available / requested"||m.Caption=="Actual allocation"));
+            this.Q<Label>("designer-workspace-title").text="OPERATING PROFILE / "+Draft.Profile.ToString().ToUpperInvariant();
+            var narrow=ClassListContains("sd-narrow")||ClassListContains("sd-short");
+            var buttons=Buttons(workspace);buttons.AddToClassList("sd-profile-actions");
+            var caption=new Label("OPERATING PROFILE / "+Draft.Profile.ToString().ToUpperInvariant());caption.AddToClassList("sd-profile-caption");buttons.Add(caption);
+            foreach(DesignerProfile mode in Enum.GetValues(typeof(DesignerProfile))){var b=new LcarsPillButton(mode.ToString(),()=>Draft.SelectProfile(mode)) {name="designer-profile-"+mode.ToString().ToLowerInvariant()};b.EnableInClassList("sd-selected",Draft.Profile==mode);buttons.Add(b);}
+            var totals=new VisualElement {name="designer-power-totals"};totals.AddToClassList("sd-power-totals");if(narrow)buttons.Add(totals);else workspace.Add(totals);
+            totals.Add(new Label("AVAILABLE / REQUESTED  "+Metric(p.Power,"Available / requested")+"     ALLOCATED  "+Metric(p.Power,"Actual allocation")));
+            // No numeric excess is projected; expose the backend's budget issues.
+            var global=p.Issues.Where(i=>i.SystemId=="" && (!i.Profile.HasValue || i.Profile==Draft.Profile)).ToList();
+            totals.Add(new Label(global.Any(i=>i.Severity==DesignerStatus.HardError)?"! BACKEND ERROR • review bank validation":"EXCESS: backend issues"));
+            var scale=new LcarsPowerScale(p.PowerRanges.Select(r=>r.Maximum).DefaultIfEmpty(0).Max(),narrow?128:240,narrow?4:5);
+            totals.Add(new Label("COMMON SCALE • "+scale.Legend));
+            var s=Scroll("designer-profile-results");s.horizontalScrollerVisibility=ScrollerVisibility.Hidden;s.contentContainer.style.width=Length.Percent(100);workspace.Add(s);
             var bank=new VisualElement {name="designer-power-bank"};bank.AddToClassList("sd-power-bank");s.Add(bank);
+            powerEditors.Clear();
             foreach(var item in Draft.Provider.Catalogue.Where(c=>Draft.Current.Installed.ContainsKey(c.Id)))
             {
-                var row=Block(bank,item.Name+" × "+Draft.Current.Installed[item.Id]);row.AddToClassList("sd-profile-row");var power=Draft.Current.Power(item.Id,Draft.Profile);var fields=Buttons(row);
+                var row=new VisualElement {name="power-tile-"+item.Id};row.AddToClassList("sd-profile-row");bank.Add(row);
+                var title=new Button(()=>{SfxDirector.Cue(LcarsSfx.ButtonPress);ShowPowerDetails(item.Id,p);}) {text=item.Name+" × "+Draft.Current.Installed[item.Id],name="select-power-"+item.Id,tooltip="Select "+item.Name+" exact editor"};
+                title.AddToClassList("sd-instrument-title");row.Add(title);
+                var power=Draft.Current.Power(item.Id,Draft.Profile);var fields=Buttons(row);
                 var range=p.PowerRanges.FirstOrDefault(r=>r.ComponentId==item.Id);
-                if(range!=null && range.Maximum>=0 && range.Maximum<=int.MaxValue)
+                var issues=p.Issues.Where(i=>i.SystemId==item.Id && (!i.Profile.HasValue || i.Profile==Draft.Profile)).ToList();
+                var invalid=issues.Concat(global).Any(i=>i.Severity==DesignerStatus.HardError);
+                if(range!=null && range.Maximum>=0)
                 {
-                    var invalid=p.Issues.Any(i=>i.Severity==DesignerStatus.HardError && (i.SystemId==item.Id || i.SystemId=="") && (!i.Profile.HasValue || i.Profile==Draft.Profile));
-                    fields.Add(new LcarsPowerSlider("Requested","power-requested-"+item.Id,power.RequestedPower,range.Maximum,invalid,v=>Draft.SetPower(item.Id,v,Draft.Current.Power(item.Id,Draft.Profile).AllocatedPower),range.PoweredMinimum));
-                    fields.Add(new LcarsPowerSlider("Allocated","power-allocated-"+item.Id,power.AllocatedPower,range.Maximum,invalid,v=>Draft.SetPower(item.Id,Draft.Current.Power(item.Id,Draft.Profile).RequestedPower,v),range.PoweredMinimum));
+                    var requested=new LcarsPowerSlider("Requested","power-requested-"+item.Id,power.RequestedPower,range.Maximum,invalid,v=>Draft.SetPower(item.Id,v,Draft.Current.Power(item.Id,Draft.Profile).AllocatedPower),range.PoweredMinimum,scale);
+                    var allocated=new LcarsPowerSlider("Allocated","power-allocated-"+item.Id,power.AllocatedPower,range.Maximum,invalid,v=>Draft.SetPower(item.Id,Draft.Current.Power(item.Id,Draft.Profile).RequestedPower,v),range.PoweredMinimum,scale);
+                    fields.Add(requested);fields.Add(allocated);powerEditors.Add(item.Id,new[]{requested,allocated});
+                    foreach(var editor in new[]{requested,allocated})editor.Track.RegisterCallback<FocusInEvent>(_=>ShowPowerDetails(item.Id,p));
+                    row.Add(new Label("MAX "+range.Maximum+(scale.Paired?"":" • ≈ common scale")));
                 }
                 else
                 {
-                var requested=new LongField("Requested") {name="power-requested-"+item.Id,isDelayed=true};requested.SetValueWithoutNotify(power.RequestedPower);var allocated=new LongField("Allocated") {name="power-allocated-"+item.Id,isDelayed=true};allocated.SetValueWithoutNotify(power.AllocatedPower);
-                requested.RegisterValueChangedCallback(e=>Draft.SetPower(item.Id,e.newValue,Draft.Current.Power(item.Id,Draft.Profile).AllocatedPower));allocated.RegisterValueChangedCallback(e=>Draft.SetPower(item.Id,Draft.Current.Power(item.Id,Draft.Profile).RequestedPower,e.newValue));fields.Add(requested);fields.Add(allocated);
-                    row.Add(new LcarsReadout("Authoritative track range unavailable • precise input retained."));
+                    var requested=new LongField("Requested") {name="power-requested-"+item.Id,isDelayed=true};requested.SetValueWithoutNotify(power.RequestedPower);var allocated=new LongField("Allocated") {name="power-allocated-"+item.Id,isDelayed=true};allocated.SetValueWithoutNotify(power.AllocatedPower);
+                    requested.RegisterValueChangedCallback(e=>Draft.SetPower(item.Id,e.newValue,Draft.Current.Power(item.Id,Draft.Profile).AllocatedPower));allocated.RegisterValueChangedCallback(e=>Draft.SetPower(item.Id,Draft.Current.Power(item.Id,Draft.Profile).RequestedPower,e.newValue));fields.Add(requested);fields.Add(allocated);
+                    row.Add(new LcarsReadout("Range unavailable • exact input."));
                 }
-                var id=Draft.Current.ToDto().Installations!.Single(i=>i.ComponentVersionId==item.Id).InstallationId;var output=p.Capabilities.FirstOrDefault(m=>m.Caption==id)?.Value;row.Row("Actual output",string.IsNullOrEmpty(output)?"No evaluated output":output!);foreach(var issue in p.Issues.Where(i=>i.SystemId==item.Id && (!i.Profile.HasValue || i.Profile==Draft.Profile)))Issue(row,issue);
+                if(issues.Any(i=>i.Severity==DesignerStatus.HardError)){var error=new Label("! "+issues.Count(i=>i.Severity==DesignerStatus.HardError)+" ERRORS • select to review");error.AddToClassList("sd-error");row.Add(error);}
             }
+            foreach(var issue in global)Issue(s,issue);
+            var profileIssues=p.Issues.Where(i=>i.SystemId!="" && (!i.Profile.HasValue || i.Profile==Draft.Profile)).ToList();
+            var validation=new Foldout {name="designer-bank-validation",text="BACKEND VALIDATION • "+profileIssues.Count(i=>i.Severity==DesignerStatus.HardError)+" errors / "+profileIssues.Count(i=>i.Severity==DesignerStatus.Warning)+" warnings",value=false};s.Add(validation);
+            foreach(var issue in profileIssues)Issue(validation,issue);
             Metrics(s,"RESULTING CAPABILITIES",Headlines(p,"Overview"));Context(s,p);
+            var detail=Scroll("designer-power-detail");detail.AddToClassList("sd-power-detail");
+            if(narrow){s.Insert(1,detail);}else workspace.Add(detail);
+            if(selectedPowerComponent==null || !powerEditors.ContainsKey(selectedPowerComponent))selectedPowerComponent=powerEditors.Keys.FirstOrDefault();
+            if(selectedPowerComponent!=null)ShowPowerDetails(selectedPowerComponent,p);
+        }
+        private void ShowPowerDetails(string id,DesignerPreview p)
+        {
+            var detail=workspace.Q<ScrollView>("designer-power-detail");
+            if(detail==null || !powerEditors.TryGetValue(id,out var editors))return;
+            // Move existing fields, never duplicate a value editor or recreate tracks
+            // while pointer capture is active.
+            foreach(var field in detail.Query<LongField>().ToList())
+            {
+                var control=workspace.Q<LcarsPowerSlider>("slider-"+field.name);
+                control?.Q<VisualElement>(className:"lps-exact-store").Add(field);
+            }
+            selectedPowerComponent=id;detail.Clear();
+            foreach(var pair in powerEditors)workspace.Q<VisualElement>("power-tile-"+pair.Key).EnableInClassList("sd-power-selected",pair.Key==id);
+            var item=Draft.Provider.Catalogue.Single(c=>c.Id==id);var range=p.PowerRanges.Single(r=>r.ComponentId==id);
+            detail.Add(new LcarsSectionHeader(item.Name+" / "+Draft.Profile+" • MAX "+range.Maximum+" • POWERED MIN "+range.PoweredMinimum));
+            var fields=Buttons(detail);fields.Add(editors[0].Exact);fields.Add(editors[1].Exact);
+            detail.Add(new LcarsReadout((editors[0].Scale.Paired?"Either bar in a pair = one whole power unit.":"Coarse bars round upwards to the common scale; use exact entry for smaller changes.")+" Zero strip = 0. Scrub; release to validate. Arrows ±1 • Home 0 • End max. Exact input commits on Return/focus loss; invalid values retained."));
+            var installation=Draft.Current.Power(id,Draft.Profile).InstallationId;
+            detail.Add(new LcarsReadout("Backend output: "+Metric(p.Capabilities,installation)));
+            foreach(var issue in p.Issues.Where(i=>(i.SystemId==id || i.SystemId=="") && (!i.Profile.HasValue || i.Profile==Draft.Profile)))Issue(detail,issue);
         }
         private void Validation(DesignerPreview p)
         {

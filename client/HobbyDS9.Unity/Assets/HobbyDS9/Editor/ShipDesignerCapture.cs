@@ -33,7 +33,7 @@ namespace HobbyDS9.UnityClient.Editor
             if(view.Draft.Modified || view.Draft.ConfirmationPending) throw new InvalidOperationException("Keep your local edits or explicitly reset them before fixture capture; this tool will not discard a modified draft.");
 
             var original=view.Draft.TemplateId; var profile=view.Draft.Profile;var system=view.SelectedSystem;
-            var cases=new[] {Tuple.Create("class.surveyor","Overview","surveyor-overview"),Tuple.Create("class.escort","Overview","escort-overview"),Tuple.Create("class.escort","Weapons","weapons"),Tuple.Create("class.escort","Power","power"),Tuple.Create("class.escort","Profiles","profiles-combat"),Tuple.Create("class.escort","Profiles","profiles-zero"),Tuple.Create("class.escort","Profiles","profiles-full"),Tuple.Create("class.escort","Profiles","profiles-invalid")};
+            var cases=new[] {Tuple.Create("class.surveyor","Overview","surveyor-overview"),Tuple.Create("class.escort","Overview","escort-overview"),Tuple.Create("class.escort","Weapons","weapons"),Tuple.Create("class.escort","Power","power"),Tuple.Create("class.escort","Profiles","profiles-combat"),Tuple.Create("class.escort","Profiles","profiles-zero"),Tuple.Create("class.escort","Profiles","profiles-full"),Tuple.Create("class.escort","Profiles","profiles-invalid"),Tuple.Create("class.escort","Profiles","profiles-cruise"),Tuple.Create("class.escort","Profiles","profiles-survey"),Tuple.Create("class.escort","Profiles","profiles-paired"),Tuple.Create("class.escort","Profiles","profiles-invalid-detail")};
             void CaptureCase(int index)
             {
                 // Only discard the fixture edits this tool creates, after its clean-draft guard.
@@ -41,14 +41,28 @@ namespace HobbyDS9.UnityClient.Editor
                 if(index==cases.Length)
                 {
                     view.Draft.RequestTemplate(original);view.Draft.SelectProfile(profile);view.SelectSystem(system);
-                    Debug.Log("Ship designer sliders: twenty-four real Game view screenshots complete.");completed();return;
+                    Debug.Log("Ship designer instruments: thirty-six real Game view screenshots complete.");completed();return;
                 }
                 var item=cases[index];view.Draft.RequestTemplate(item.Item1);view.Draft.SelectProfile(item.Item1=="class.surveyor"?DesignerProfile.Survey:DesignerProfile.Combat);view.SelectSystem(item.Item2);
+                if(item.Item3=="profiles-cruise")view.Draft.SelectProfile(DesignerProfile.Cruise);
+                if(item.Item3=="profiles-survey")view.Draft.SelectProfile(DesignerProfile.Survey);
+                if(item.Item3=="profiles-paired")view.Draft.SetPower("component.command.v1",4,3);
                 if(item.Item3=="profiles-zero")view.Draft.SetPower("component.energy-bank.v1",0,0);
                 var range=view.Draft.Preview().PowerRanges.FirstOrDefault(r=>r.ComponentId=="component.energy-bank.v1");
-                if(item.Item3=="profiles-full" && range!=null){view.Draft.SetPower("component.energy-bank.v1",range.Maximum,range.Maximum-1);view.Draft.SetPower("component.launcher.v1",6,2);}
-                if(item.Item3=="profiles-invalid" && range!=null)view.Draft.SetPower("component.energy-bank.v1",range.Maximum,100);
-                StrategicPrototypeCapture.CaptureSequence("vertical-lcars-controls",item.Item3,Sizes,Validate,()=>CaptureCase(index+1));
+                if(item.Item3=="profiles-full" && range!=null){view.Draft.SetPower("component.energy-bank.v1",range.Maximum,range.Maximum);view.Draft.SetPower("component.launcher.v1",8,2);}
+                if(item.Item3.StartsWith("profiles-invalid",StringComparison.Ordinal) && range!=null)view.Draft.SetPower("component.energy-bank.v1",range.Maximum,100);
+                if(item.Item2=="Profiles")
+                {
+                    var component=item.Item3=="profiles-paired"?"component.command.v1":"component.energy-bank.v1";
+                    var button=view.Q<Button>("select-power-"+component);
+                    typeof(Clickable).GetMethod("Invoke",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(button.clickable,new object[]{null});
+                }
+                StrategicPrototypeCapture.CaptureSequence("lcars-instrument-bank-v2",item.Item3,Sizes,root=>
+                {
+                    Validate(root);
+                    if(item.Item3=="profiles-invalid-detail" && view.Q<ScrollView>("designer-profile-results").Contains(view.Q<ScrollView>("designer-power-detail")))
+                        view.Q<ScrollView>("designer-profile-results").ScrollTo(view.Q<ScrollView>("designer-power-detail"));
+                },()=>CaptureCase(index+1));
             }
             CaptureCase(0);
         }
@@ -77,7 +91,14 @@ namespace HobbyDS9.UnityClient.Editor
             EditorApplication.update-=PollAcceptance;
             SessionState.SetBool(AcceptanceKey,false);
             typeof(ClientEntry).GetMethod("RequestStrategicSection",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(entry,new object[] {"Designer"});
-            CaptureFixtures(()=>EditorApplication.Exit(0));
+            acceptanceDeadline=EditorApplication.timeSinceStartup+240;
+            EditorApplication.update+=WatchCapture;
+            CaptureFixtures(()=>{EditorApplication.update-=WatchCapture;EditorApplication.Exit(0);});
+        }
+        private static void WatchCapture()
+        {
+            if(EditorApplication.timeSinceStartup<=acceptanceDeadline)return;
+            EditorApplication.update-=WatchCapture;Debug.LogError("Designer capture sequence failed or timed out; inspect the first exception.");EditorApplication.Exit(1);
         }
         private static void Validate(VisualElement root)
         {
@@ -98,9 +119,11 @@ namespace HobbyDS9.UnityClient.Editor
             if(view.SelectedSystem=="Profiles")
             {
                 var slider=view.Q<LcarsPowerSlider>("slider-power-allocated-component.energy-bank.v1");
-                if(slider==null || slider.Track.direction!=SliderDirection.Vertical || slider.Track.inverted || slider.Track.worldBound.width<60 || slider.Track.worldBound.height<120)
+                if(slider==null || slider.Query<SliderInt>().ToList().Count!=0 || slider.Track.worldBound.width<40 || slider.Track.worldBound.height<13)
                     throw new InvalidOperationException("Slider hit area is missing or undersized.");
-                view.Q<ScrollView>("designer-profile-results").ScrollTo(slider.Track);
+                if(view.Q<ScrollView>("designer-profile-results").contentViewport.worldBound.height<120)
+                    throw new InvalidOperationException("Instrument bank viewport is too small to operate.");
+                view.Q<ScrollView>("designer-profile-results").scrollOffset=Vector2.zero;
             }
         }
     }
