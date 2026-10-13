@@ -91,8 +91,18 @@ namespace HobbyDS9.UnityClient
         public string Value { get; }
         public DesignerMetric(string caption,string value) { Caption=caption; Value=value; }
     }
+    // Detached presentation range: full/minimum power comes from Application's stack preview.
+    public sealed class DesignerPowerRange
+    {
+        public string ComponentId { get; }
+        public long Maximum { get; }
+        public long PoweredMinimum { get; }
+        public DesignerPowerRange(string componentId,long maximum,long poweredMinimum)
+        { ComponentId=componentId; Maximum=maximum; PoweredMinimum=poweredMinimum; }
+    }
     public sealed class DesignerPreview
     {
+        public IReadOnlyList<DesignerPowerRange> PowerRanges { get; }
         public DesignerStatus Status { get; }
         public string Notice { get; }
         public long? UsedCapacity { get; }
@@ -103,8 +113,9 @@ namespace HobbyDS9.UnityClient
         public IReadOnlyList<DesignerMetric> Costs { get; }
         public IReadOnlyList<DesignerIssue> Issues { get; }
         public DesignerPreview(DesignerStatus status,string notice,long? used=null,long? total=null,long? free=null,
-            IEnumerable<DesignerMetric>? power=null,IEnumerable<DesignerMetric>? capabilities=null,IEnumerable<DesignerMetric>? costs=null,IEnumerable<DesignerIssue>? issues=null)
+            IEnumerable<DesignerMetric>? power=null,IEnumerable<DesignerMetric>? capabilities=null,IEnumerable<DesignerMetric>? costs=null,IEnumerable<DesignerIssue>? issues=null,IEnumerable<DesignerPowerRange>? powerRanges=null)
         {
+            PowerRanges=(powerRanges??Array.Empty<DesignerPowerRange>()).ToList().AsReadOnly();
             Status=status; Notice=notice; UsedCapacity=used; TotalCapacity=total; FreeCapacity=free;
             Power=(power??Array.Empty<DesignerMetric>()).ToList().AsReadOnly(); Capabilities=(capabilities??Array.Empty<DesignerMetric>()).ToList().AsReadOnly();
             Costs=(costs??Array.Empty<DesignerMetric>()).ToList().AsReadOnly(); Issues=(issues??Array.Empty<DesignerIssue>()).ToList().AsReadOnly();

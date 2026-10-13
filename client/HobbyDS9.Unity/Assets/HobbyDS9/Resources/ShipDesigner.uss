@@ -81,5 +81,44 @@
 /* Keep readable rows bounded even when the system graphic owns extra width. */
 .sd-system-content > .sd-block { max-width: 760px; }
 .sd-system-content > .sd-graphic { max-width: 1100px; align-self: center; width: 100%; }
-.sd-profile-row { max-width: 1100px; }
+/* Common-scale paired instruments, with no conventional fader. */
+.sd-power-totals { flex-shrink: 0; flex-direction: row; flex-wrap: wrap; padding: 4px 8px; border-bottom-width: 2px; border-bottom-color: var(--lcars-lavender); }
+.sd-power-totals Label { font-size: 15px; color: var(--lcars-sand); margin-right: 16px; }
+.sd-profile-caption { display: none; font-size: 14px; color: var(--lcars-sand); margin-right: 12px; }
+.sd-narrow .sd-profile-caption, .sd-short .sd-profile-caption { display: flex; }
+.sd-narrow .sd-profile-page > #designer-workspace-title, .sd-short .sd-profile-page > #designer-workspace-title { display: none; }
+.sd-profile-actions > .sd-power-totals { flex-grow: 1; flex-shrink: 1; min-width: 0; border-bottom-width: 0; padding: 0; }
+.sd-power-bank { flex-direction: row; flex-wrap: wrap; align-items: flex-start; }
+.sd-power-bank > .sd-profile-row { width: 156px; min-width: 156px; max-width: 156px; flex-shrink: 0; margin-right: 8px; margin-bottom: 12px; padding: 4px 8px 8px; background-color: var(--lcars-map); border-top-width: 3px; border-top-color: var(--lcars-blue); }
+.sd-profile-row.sd-power-selected { border-top-color: var(--lcars-lavender); background-color: #10151E; }
+.sd-profile-row:hover { background-color: #141D28; }
+.sd-instrument-title { height: 44px; min-height: 44px; padding: 0 2px; margin: 0 0 4px; border-width: 0; border-radius: 0; background-color: rgba(0,0,0,0); color: var(--lcars-sand); white-space: normal; font-size: 15px; -unity-font-style: bold; }
+.sd-instrument-title:focus { border-width: 2px; border-color: var(--lcars-lavender); }
+.sd-profile-row > .sd-buttons { justify-content: space-around; align-items: flex-start; flex-wrap: nowrap; }
+.sd-profile-row > Label { font-size: 13px; margin: 3px 0 0; }
+.lcars-power-slider { width: 60px; min-width: 60px; flex-shrink: 0; align-items: center; }
+.lcars-power-slider > Label { color: var(--lcars-blue); font-size: 15px; margin: 0; }
+.lps-stage { justify-content: flex-end; align-items: center; flex-shrink: 0; }
+.lps-track { width: 44px; min-width: 44px; flex-shrink: 0; background-color: var(--lcars-canvas); }
+.lps-track:focus { background-color: #3A2F4C; }
+.lps-track:hover { background-color: #24323E; }
+.lps-track:disabled { opacity: 0.5; }
+.lps-segments { position: absolute; left: 8px; right: 8px; top: 0; bottom: 14px; flex-direction: column-reverse; }
+.lps-segment { height: 4px; min-height: 4px; flex-shrink: 0; margin-top: 2px; background-color: #1B2934; }
+.lps-band-low.lps-filled { background-color: var(--lcars-blue); }
+.lps-band-middle.lps-filled { background-color: var(--lcars-lavender); }
+.lps-band-high.lps-filled { background-color: var(--lcars-amber); }
+.lps-zero-strip { position: absolute; bottom: 0; left: 0; right: 0; height: 14px; margin: 0; font-size: 11px; -unity-text-align: middle-center; color: var(--lcars-muted); }
+.lcars-power-slider > .lps-readout { font-size: 16px; color: var(--lcars-text); white-space: normal; }
+.lcars-power-slider > .lps-notice { font-size: 10px; color: var(--lcars-muted); white-space: normal; }
+.lps-invalid > .lps-notice, .lps-backend-invalid > .lps-notice { color: var(--lcars-alert); }
+.lps-pending > .lps-notice { color: var(--lcars-sand); }
+.lps-exact-store { display: none; }
+.sd-power-detail { height: 160px; max-height: 200px; flex-shrink: 0; flex-grow: 0; border-top-width: 3px; border-top-color: var(--lcars-lavender); }
+.sd-power-detail .unity-base-field { width: 240px; min-width: 180px; margin-right: 16px; }
+.sd-power-detail .lcars-section-heading { font-size: 16px; }
+.sd-narrow .sd-power-detail { height: 150px; }
+.sd-narrow .sd-instrument-title { height: 36px; min-height: 36px; }
+.sd-short .sd-power-detail { height: 150px; }
+.sd-short .sd-instrument-title { height: 36px; min-height: 36px; }
 #designer-profile-results > .sd-block { max-width: 1100px; }

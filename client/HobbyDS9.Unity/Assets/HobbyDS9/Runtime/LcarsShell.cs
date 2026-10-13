@@ -38,8 +38,8 @@ namespace HobbyDS9.UnityClient
             Header.Add(contextToggle);
             var frameBar = new VisualElement { name = "lcars-frame-bar", pickingMode = PickingMode.Ignore };
             frameBar.AddToClassList("lcars-frame-bar");
-            var elbow = new LcarsElbow { name = "lcars-shell-elbow" };
-            elbow.style.width = (float)LcarsMetrics.ElbowWidth; elbow.style.height = (float)LcarsMetrics.ElbowHeight;
+            var elbow = new LcarsElbow((float)LcarsMetrics.Rail) { name = "lcars-shell-elbow" };
+            elbow.style.width = (float)LcarsMetrics.Rail + 48; elbow.style.height = Length.Percent(100);
             frameBar.Add(elbow);
             var bar = new Label("STRATEGIC OPERATIONS") { pickingMode = PickingMode.Ignore }; bar.AddToClassList("lcars-structural-bar"); frameBar.Add(bar); Add(frameBar);
             var body = new VisualElement { name = "lcars-body" }; body.AddToClassList("lcars-body"); Add(body);
