@@ -9,6 +9,7 @@ using HobbyDS9.Application;
 var path = Path.Combine(AppContext.BaseDirectory, "scenarios", "ds9-slice", "scenario.json");
 var turns = 0;
 var combatOrder = "canonical";
+string? inspectTacticalActor = null;
 var resistanceTurns = Enum.GetValues<ResistanceState>().ToDictionary(r=>r,r=>0L);
 for (var i = 0; i < args.Length; i++)
 {
@@ -23,8 +24,14 @@ for (var i = 0; i < args.Length; i++)
             throw new ArgumentException("--combat-order requires canonical or reverse.");
         combatOrder = args[i];
     }
+    else if (args[i] == "--inspect-tactical-v2")
+    {
+        if (++i >= args.Length || !EntityId.TryParse(args[i], out _))
+            throw new ArgumentException("--inspect-tactical-v2 requires a canonical actor ID.");
+        inspectTacticalActor = args[i];
+    }
     else if (!args[i].StartsWith("--", StringComparison.Ordinal)) path = args[i];
-    else throw new ArgumentException("Usage: HobbyDS9.Headless [scenario.json] [--turns nonnegative-count] [--combat-order canonical|reverse]");
+    else throw new ArgumentException("Usage: HobbyDS9.Headless [scenario.json] [--turns nonnegative-count] [--combat-order canonical|reverse] [--inspect-tactical-v2 actor-id]");
 }
 var bytes = File.ReadAllBytes(path);
 var jsonResolver = new System.Text.Json.Serialization.Metadata.DefaultJsonTypeInfoResolver();
@@ -81,6 +88,16 @@ Console.WriteLine(FormattableString.Invariant($"phases={phases}, shots={shots}, 
 Console.WriteLine(FormattableString.Invariant($"ships={snapshot.Ships.Count}, fleets={snapshot.Fleets.Count}, queued={snapshot.Colonies.Sum(c => c.ProductionQueue.Count)}, unlocks={snapshot.Civilizations.Sum(c => c.MatureEngineeringApplicationDefinitionIds.Count)}, nextEntity={snapshot.NextEntitySequence}, rng={snapshot.RngState.State:x16}"));
 var stateBytes = JsonSerializer.SerializeToUtf8Bytes(session.ExportSave());
 Console.WriteLine($"save-sha256={Convert.ToHexString(SHA256.HashData(stateBytes)).ToLowerInvariant()}");
+if (inspectTacticalActor != null)
+{
+    var inspection = ((ICampaignTacticalV2Inspection)session).InspectCampaignTacticalV2(inspectTacticalActor);
+    if (inspection.ErrorCode != CampaignTacticalInspectionError.None)
+        throw new InvalidOperationException("Tactical v2 inspection rejected: " + inspection.ErrorCode);
+    Console.WriteLine(FormattableString.Invariant($"tactical-v2-inspection-format={inspection.FormatVersion}, can-activate={inspection.CanActivate}, campaign-resolver={inspection.CampaignResolverId}/{inspection.CampaignResolverVersion}, owned-ships={inspection.OwnedShips.Count}, owned-revisions={inspection.OwnedBlueprintRevisions.Count}"));
+    Console.WriteLine("tactical-v2-blockers=" + string.Join(",", inspection.Blockers));
+    foreach (var source in inspection.OwnedShips)
+        Console.WriteLine(FormattableString.Invariant($"tactical-source={source.Ship.ShipId}, design={source.Ship.ShipDesignDefinitionId}, revision={source.Ship.Blueprint?.Revision.ToString(CultureInfo.InvariantCulture) ?? "static"}, can-project-v2={source.CanProjectTacticalV2}"));
+}
 
 var stats = snapshot.PopulationStatistics;
 Console.WriteLine($"births={stats.Births}, deaths={stats.Deaths}, migrated={stats.Migrated}, refugees={stats.RefugeesMoved}, food-delivered={stats.FoodDelivered}, resource-extracted={stats.ResourceExtracted}, resource-delivered={stats.ResourceDelivered}, resource-consumed={stats.ResourceConsumed}, production-completed={stats.ProductionCompleted}");

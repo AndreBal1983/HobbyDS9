@@ -8,7 +8,7 @@ namespace HobbyDS9.Application
 {
     // Synchronous local application boundary. Simulation alone owns mutable state.
     // Hosts own JSON, files, content hashing, UI selection and scheduling.
-    public sealed class CampaignApplication : ICampaignSession
+    public sealed partial class CampaignApplication : ICampaignSession
     {
         private readonly SimulationSession session;
         private readonly ScenarioContentSnapshot content;
