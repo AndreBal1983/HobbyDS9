@@ -506,6 +506,15 @@ implementation/testing limits and local acceptance. Save/content/rules/resolver/
 and the deterministic baseline are unchanged.
 
 
+## Campaign tactical v2 source inspection checkpoint
+
+The [campaign tactical v2 source inspection checkpoint](campaign-tactical-combat-v2-integration.md)
+adds an optional Application inspection capability backed by one authoritative
+Simulation capture. It inventories human-owned static/frozen-blueprint sources and
+reports typed fit/lifecycle blockers. Campaign v2 activation remains disabled;
+phased-v1 combat, saves/content and the frozen v1 compiler are unchanged. This is
+not a live round/persistence/aftermath integration.
+
 ## Additive Ship Design Infrastructure v1
 
 [Ship Design Infrastructure v1](ship-design-infrastructure-v1.md) adds an independent portable catalogue/draft/compiler and Application preview/publish facade. Hull/component snapshots and published blueprint records are immutable; typed structured issues distinguish hard legality from role warnings. Explicit Cruise/Combat/Survey power allocations determine actual scaled outputs. Compilation maps only existing aggregate combat stats and Cruise movement budget; preview-only sensor/Science/range ratings carry integration-gap warnings. No campaign state, production path, AI policy, save/content/rules/resolver version or baseline changes. This implements a scoped foundation of the [ship-design proposal](design/ship-design.md), not its refit/planner/Engineering portfolio roadmap.
