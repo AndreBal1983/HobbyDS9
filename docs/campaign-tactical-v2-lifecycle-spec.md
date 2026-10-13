@@ -2,6 +2,8 @@
 
 Prepared 13 October 2026. Status: **agreed player behavior consolidated; proposed technical rules; no gameplay implementation or activation claimed**. This milestone follows the authored equipment foundation and leads to the first playable Unity slice.
 
+Execution update: the owner subsequently dispatched the backend and UX assignments. Stage A prototypes are delivered in draft PR #20; a gated Stage B layer and an isolated presenter are being developed. See [overnight review notes](overnight-review-notes.md) and the product-manager memory for dated evidence. Prepared API/formula proposals remain proposals until reviewed; dispatch does not establish acceptance or activation.
+
 Read [the design index](design/README.md), [tactical combat](design/tactical-combat.md), [ship design](design/ship-design.md), [strategic AI](design/strategic-ai.md), [time and movement](design/time-movement-mobilisation.md), [architecture](architecture.md) and [blueprint construction](blueprint-construction-v1.md). The tactical chapter is authoritative for the agreed decisions; this document defines the scoped implementation and acceptance work. Do not silently implement the wider roadmap.
 
 ## Starting checkpoint and authority

@@ -260,7 +260,7 @@ A round conceptually resolves:
 9. produce an ordered event trace for presentation/replay;
 10. continue to the next round if the encounter remains active **and fewer than three rounds have elapsed**; otherwise finalize this encounter and leave any renewed-contact mechanics to campaign rules.
 
-Better commanders can make order changes less disruptive, coordinate different wings under different orders, or unlock conditional/contingency behavior. Exact costs for changing orders remain open.
+Future commander mechanics may make order changes less disruptive or unlock conditional/contingency behavior. Independently ordered wings are wider-roadmap proposals, not part of the agreed one-fleet command model for this slice. Exact costs for changing orders remain open.
 
 ## First-pass maneuver orders
 
@@ -269,7 +269,7 @@ The agreed first-pass vocabulary is intentionally small. Naming can still be tun
 - **Maintain Distance / Hold & Fire** — try to stabilize at a preferred engagement distance while preserving formation and firing opportunity.
 - **Charge / Frontal Assault** — close aggressively and preserve forward attack aspect where possible.
 - **Flank** — sacrifice immediate direct pressure to seek superior aspect/target access.
-- **Screen** — position suitable elements to protect designated formations, transports, command/support ships or a battle line.
+- **Screen** — position suitable ships to protect transports, command/support ships and other members of their own fleet. The first slice has no separately designated allied-fleet protection target.
 - **Breakthrough** — create/exploit a gap and move designated elements through the enemy formation toward the strategic objective.
 - **Pursuit** — chase withdrawing or breakthrough elements, accepting possible formation stretching.
 - **Fighting Withdrawal** — increase distance while continuing organized fire.
@@ -304,7 +304,7 @@ Target orders for the first pass operate on ships and formations rather than ind
 
 Maneuver and targeting are separate so the player can combine them rather than select from dozens of bespoke battle cards.
 
-Initial targeting concepts include:
+Earlier targeting concepts included the list below. For the agreed first campaign slice, player targeting control is enemy-fleet focus with automatic individual selection and legal fallback, as specified above. These concepts may inform backend automatic policies; they are not additional player ship-priority controls:
 
 - Fire at will;
 - Concentrate fire;
@@ -405,6 +405,8 @@ Exact weapon stat fields and fire-substep timing are proposals to be tuned: dama
 The intended combat cadence is **three tactical rounds per encounter** (with objectives, withdrawal, destruction or breakthrough potentially ending it earlier). This explicit design constraint supersedes older open-ended wording in this chapter. At most **two regeneration transitions** influence later volleys within the same three-round encounter; avoid balance models that assume unlimited rounds of shield cycling. The precise strategic handling of fleets that remain in contact after round three / repeated engagements is separate work.
 
 **Proposed first-pass resolution contract (tuning still open):**
+
+The first playable campaign slice retains depleted shield stocks between battles with no automatic between-battle recovery. The faster campaign recovery idea below is a deferred wider-roadmap proposal, not an exception to that scoped agreement. New encounter creation uses retained current stocks rather than resetting to a fit's initial allocation.
 
 - Each ship has a compiled base recharge amount in **shield points per tactical round**, and a powered/disabled status or available-power modifier. Technology and installed gear determine the value; one ship-wide recharge *budget* serves the four **Fore, Port, Starboard, Aft** shield-sector pools rather than automatically granting the full rate independently to all four sectors.
 - After applying a simultaneous volley's shield and hull damage, a surviving ship may recharge its depleted sectors before the next tactical round. Recharge is capped by each sector's maximum, the ship-wide round budget, and available power. No regenerative healing applies retroactively to the volley just resolved. After round three, handle further recovery as post-combat rather than inventing a fourth tactical round.
