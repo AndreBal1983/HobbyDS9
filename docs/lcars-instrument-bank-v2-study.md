@@ -61,4 +61,4 @@ The shell currently draws a 64-unit elbow inside a 48-unit frame; its 25.6-unit 
 
 ## Acceptance status
 
-Implementation, tests, rendered evidence and exact-head CI will be recorded in the acceptance document. Prior native results do not count as v2 results. Native mouse/keyboard remains paused until explicit owner permission after batch checks. Physical touch, controller input and screen-reader interoperability require separate device testing; labels/tooltips and keyboard focus are retained.
+Implementation, tests, rendered evidence and exact-head CI are recorded in the [acceptance document](lcars-instrument-bank-v2-acceptance.md). Prior native results do not count as v2 results. The owner resumed desktop input on 13 October 2026, then stopped it to join a meeting; remaining native navigation checks are explicitly pending. Physical touch, controller input and screen-reader interoperability require separate device testing; labels/tooltips and keyboard focus are retained.
