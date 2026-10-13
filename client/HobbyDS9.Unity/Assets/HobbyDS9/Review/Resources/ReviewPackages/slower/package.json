@@ -1,0 +1,60 @@
+{
+  "FormatVersion": 2,
+  "ProfileId": "campaign-tactical-v2-physical-review-1",
+  "PolicyStatus": "proposed",
+  "DefaultActivationAllowed": false,
+  "BoundaryPolicy": "arrivals-contact-departures-v1",
+  "SharedStartPolicy": "departure-first-start-v1",
+  "LaterArrivalPolicy": "join-connected-before-allocation-v1",
+  "ContactFreshnessTurns": 20,
+  "Hostilities": [
+    {
+      "CivilizationA": "civ.federation",
+      "CivilizationB": "civ.cardassian"
+    }
+  ],
+  "InitialContacts": [
+    {
+      "ActorId": "civ.federation",
+      "FleetId": "fleet.cardassian-scout",
+      "LastSeenNodeId": "nav.sol",
+      "LastSeenTurn": 1,
+      "TrackingNodeIds": [
+        "nav.sol",
+        "nav.cardassia",
+        "nav.founders-homeworld",
+        "nav.bajor",
+        "nav.bajoran-wormhole",
+        "nav.gamma-exit",
+        "nav.badlands"
+      ]
+    },
+    {
+      "ActorId": "civ.cardassian",
+      "FleetId": "fleet.federation-scout",
+      "LastSeenNodeId": "nav.sol",
+      "LastSeenTurn": 1,
+      "TrackingNodeIds": [
+        "nav.sol",
+        "nav.cardassia",
+        "nav.founders-homeworld",
+        "nav.bajor",
+        "nav.bajoran-wormhole",
+        "nav.gamma-exit",
+        "nav.badlands"
+      ]
+    }
+  ],
+  "InitialOrders": [
+    {
+      "FleetId": "fleet.federation-scout",
+      "Intent": 0,
+      "RouteNodeIds": []
+    },
+    {
+      "FleetId": "fleet.cardassian-scout",
+      "Intent": 0,
+      "RouteNodeIds": []
+    }
+  ]
+}
