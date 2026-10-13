@@ -1,0 +1,45 @@
+name: Tactical presenter prototype (test-owned only)
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  prototype:
+    name: Presenter prototype (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Restore isolated locked dependencies
+        run: dotnet restore tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj --locked-mode -warnaserror
+      - name: Build isolated zero-warning Release
+        run: dotnet build tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj --configuration Release --no-restore -warnaserror
+      - name: Test presenter interactions (mock data, no campaign authority)
+        run: dotnet test tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=presenter-prototype.trx" --results-directory artifacts/tactical-presenter-prototype
+      - name: Verify complete 115-case inventory without failures or skips
+        shell: pwsh
+        run: |
+          [xml]$prototypeResults = Get-Content -LiteralPath 'artifacts/tactical-presenter-prototype/presenter-prototype.trx'
+          $prototypeCounts = $prototypeResults.TestRun.ResultSummary.Counters
+          if ($prototypeCounts.total -ne '115' -or $prototypeCounts.passed -ne '115' -or $prototypeCounts.failed -ne '0' -or $prototypeCounts.notExecuted -ne '0') {
+            throw 'Expected all 115 isolated prototype cases to pass without failures/skips.'
+          }
+          '### Test-owned tactical presenter prototype' >> $env:GITHUB_STEP_SUMMARY
+          '115 passed; 0 failed/skipped. Mock observations only; campaign v2 remains gated.' >> $env:GITHUB_STEP_SUMMARY
+      - name: Preserve isolated test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tactical-presenter-prototype-${{ matrix.os }}
+          path: artifacts/tactical-presenter-prototype/*.trx
+          if-no-files-found: warn
