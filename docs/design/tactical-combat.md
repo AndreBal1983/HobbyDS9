@@ -66,6 +66,32 @@ Prepared anti-cloak measures can include detection grids, specialized sensor pla
 
 Remaining cloak costs and limits — sensor restrictions, communications, high-warp detectability, weapon readiness and faction-specific behavior — remain content/balance decisions.
 
+### Engaged-fleet visibility and cloaked attacks — agreed direction
+
+Decision, 13 October 2026: engaged uncloaked ships are visible because they are within scanning range. Their upcoming orders remain hidden; visibility must not reveal newly selected maneuvers for counter-picking. This establishes visibility of the ships, not automatic knowledge of every hidden equipment statistic or future action; exact scan detail remains open.
+
+Cloaked ships are the exception during the first tactical round. Against visible opponents, a fully cloaked side makes its ordinary round-one attack without targeted return fire against its cloaked ships. **Free attack means round-one targeting protection, not an additional pre-round volley, double attack or fourth round.** Normal powered-weapon eligibility, firing opportunities, cadence and ammunition expenditure apply; free does not mean free resources. In a mixed fleet, cloaked ships may fire while remaining unavailable as direct targets during round one; visible uncloaked ships engage each other normally. Cloak state is per ship: a visible fleet member does not automatically expose the fleet's cloaked members, and hidden members do not conceal the visible ones.
+
+**Reveal timing, 13 October 2026 — agreed:** once the first tactical round finishes, all surviving cloaked ships are uncloaked for the remainder of the encounter, regardless of whether they fired. They are visible and ordinarily targetable from round two onward. Firing does not itself end their round-one protection early, and there is no re-cloaking in later rounds of this slice. Cloaking does not provide repeated untargetable fire or a fresh surprise advantage each round.
+
+**Reactive defense, 13 October 2026 — agreed:** defenders can react to incoming torpedoes fired by cloaked ships. The incoming ordnance is a defensive target even when its launching ship is unavailable as an offensive target. Resolve interception through actual powered defensive equipment, coverage, firing opportunities and the existing finite attempt costs; cloak does not grant torpedoes automatic penetration, and reaction does not grant guaranteed interception or free defensive capacity. This requires no separate per-torpedo player command.
+
+An authoritative engagement with no visible enemy should make the player wary. Show a cautious unresolved-contact/possible-attack state using only lawful encounter information; do not turn that warning into disclosure of hidden ship counts, equipment, locations or intentions. Do not silently replace the player's standing maneuver with Screen or grant extra defensive opportunities because nothing is visible. Exact warning wording and baseline AI response remain proposals.
+
+**Open before implementation:** mutual-cloak handling, initial cloak state in subsequent encounters, and how counter-detection changes opening attack/target eligibility. Strategic evidence of a cloaked contact and tactical target acquisition remain distinct; the earlier anti-cloak preparation direction still needs an explicit targeting contract.
+
+**Strategic cloak setting, 13 October 2026 — agreed:** provide one fleet-level strategic cloak setting rather than individual ship controls. When enabled, ships with authoritative cloak capability approach an encounter cloaked; other members remain visible. The same setting therefore supports fully cloaked and mixed fleets without merging or splitting their command unit. A ship name, faction or local UI flag cannot grant cloak capability.
+
+The setting governs approach to subsequent encounters as well. Uncloaking after round one does not clear the strategic setting, but it does leave every surviving ship uncloaked for the remainder of that encounter. The setting cannot re-cloak ships in round two or three and never restores hull, shields or ammunition. This settles ordinary initial cloak state across encounters; operational cloak costs, restrictions and counter-detection remain separate design work.
+
+**Mutual-cloak decision, 13 October 2026 — agreed:** if both opposing sides enter fully cloaked, neither has a visible target for offensive fire in round one. That round is maneuver-only; it counts toward the normal three-round limit. Both sides uncloak at its end and can fight normally from round two. Do not award either side an extra volley, infer hidden targets, or extend the encounter to compensate for the first round. No offensive ammunition or firing opportunity is spent on a nonexistent shot. This settles mutual cloak behavior for the first slice; future counter-detection rules must be separately designed and reconciled with the baseline.
+
+**Scan-detail decision, 13 October 2026 — agreed:** scans reveal visible enemy ship types, hull condition and shield strength. Enemy ammunition reserves and upcoming orders remain hidden. Cloaked ships do not appear in this visible-ship inspection until revealed under the cloak rules. Do not infer full hidden equipment access from visibility; exact display precision and which equipment characteristics are otherwise observable remain proposals.
+
+Apply this observation boundary to snapshots, target selectors, tooltips, reports and replay alike. Observed torpedo launches/interceptions can be reported, but internal remaining-ammunition fields or private order-commit events must not leak through an omniscient resolver trace. The player may reason from observed behavior; the interface must not supply the concealed answer. Own ships retain their normal exact equipment/resource inspection.
+
+**Implementation gap:** current authored equipment and standalone v2 resolution do not establish this cloak/visibility/free-attack lifecycle. It requires explicitly scoped equipment/state, lawful observation, targeting, resolver/event and persistence work. Do not infer cloaking from a faction or ship name, alter a pinned resolver silently, or treat this documentation as runtime support. Determine its place in the first playable milestone after the open behavior is resolved.
+
 ## Strategic speed, agility and interception
 
 Separate three concepts:
@@ -85,6 +111,22 @@ Possible pursuit behavior includes:
 - **Full pursuit** — the formation sacrifices cohesion to maximize pursuit pressure; exact bonuses/risks are open.
 
 Once a track exists, the core question is geometric and operational rather than another arbitrary combat-trigger roll: can the interceptor reach the target's projected path before the target escapes or breaks the track?
+
+## Strategic fleets as tactical units — agreed
+
+Decision, 13 October 2026: the player creates fleets at the strategic level, and each participating strategic fleet enters combat as one distinct tactical command unit. Two fleets travelling along exactly the same route remain separate units if they participate in the same battle. Shared ownership, position or travel orders do not merge their identities or orders.
+
+For the first playable campaign-v2 slice, map each participating fleet to one formation with its own maneuver and targeting orders. Individual ships retain their own weapons, hull, shield sectors and ammunition within that formation. Combat does not automatically split a fleet into role-based formations. Future internal command hierarchies may improve coordination; independently controllable wings, detachments or tactical fleet splitting require a separately agreed command model and are not implied by the hierarchy discussion below.
+
+This settles the command-unit boundary, not encounter eligibility: common routes, path crossings and co-location still do not by themselves establish detection, tracking or interception. Formation capability aggregation and initial relative geometry remain open.
+
+**Target-control decision, 13 October 2026 — agreed:** the player can choose an enemy fleet to focus on. Ships then select suitable individual targets within that fleet automatically according to the authoritative tactical rules. The first interface does not offer individual enemy-ship selection as a firing order, subsystem targeting or manual per-ship fire control. Selecting a visible ship for condition inspection is separate from ordering attacks.
+
+Fleet focus does not guarantee a shot or bypass lawful visibility, range, arcs, screening, power, cadence or ammunition constraints. Each friendly fleet retains its own focus and command identity. Existing standalone ship-priority fields are backend policy inputs, not automatically additional player controls in this simpler campaign interface.
+
+**Focus fallback, 13 October 2026 — agreed:** preserve the chosen enemy fleet as the preferred target whenever suitable legal targets exist. If it is destroyed or offers no valid targets for a ship's firing opportunity, automatically use another visible hostile fleet with legal targets rather than waste an otherwise available shot. Never fall back to allies, hidden ships or targets outside lawful weapon access. The report must explain the fallback. This does not silently replace the player's standing focus; exact deterministic fallback ranking and automatic within-fleet ship selection remain proposed/open.
+
+**Starting-distance decision, 13 October 2026 — agreed for the first playable slice:** initialize each new battle's opposing fleet-formation pairs at **Distant** range. Do not vary starting distance through ambush, approach, sensors or other inferred circumstances in this slice. Subsequent rounds may change range through the authoritative maneuver rules. This sets initial range only; facing initialization and capability formulas remain open. It does not reset surviving hull, shields or ammunition. Variable starting distances are deferred.
 
 ## Fleet command hierarchy
 
@@ -132,6 +174,20 @@ Do not prohibit homogeneous fleets. A mono-design fleet can be extremely powerfu
 
 Ship design creates capabilities; fleet composition combines those capabilities; battle orders decide how to exploit them.
 
+### Simple fleet orders and capability-based composition — agreed
+
+Decision, 13 October 2026: keep the combat interface and commands simple. The player gives fleet-level orders; ships automatically contribute suitable functions according to their actual equipment and capabilities. Choosing fleet composition strategically should matter more than managing individual ships during battle. A fleet is one command unit, not a requirement that all its ships move identically. Fast escorts retain useful tactical mobility alongside slower capital ships; do not impose the strategic slowest-ship travel rule universally on tactical actions.
+
+Calculate combined-arms benefits within authoritative tactical resolution. Screening effectiveness must follow available capabilities, power, weapon coverage, tactical opportunity and surviving ships, with finite limits and opportunity costs. Ships do not grant a generic defence buff merely because a class label says Escort or a fleet satisfies a prescribed composition ratio. Internal modifiers are acceptable when they represent an explained capability and circumstance rather than a label-based composition bonus. Homogeneous fleets remain valid.
+
+Under a fleet Screen order, capable ships can contribute protection automatically without individual escort assignments. Torpedo interception spends actual firing opportunities, including failed attempts; offensive opportunities consequently compete with defensive work. Protection can be saturated and weakens when contributing ships are destroyed or cannot operate their relevant equipment. Cruisers and capital ships with suitable equipment may contribute too. Show practical results such as interception attempts/successes and threats that penetrated the screen rather than an unexplained composition multiplier.
+
+**Fleet-local protection, 13 October 2026 — agreed:** fleets are separate groups of ships and do not mingle in tactical combat. Screening/protection is internal to the commanding fleet. To protect a transport or colony ship, put the escorts in that same strategic fleet before battle. A Screen order has no optional allied-fleet protection target, and shared ownership, side or encounter does not let another fleet's escorts screen its ships. Automatic defensive contributions and protection benefits must respect this membership boundary.
+
+This supersedes earlier proposals for separately controllable screening fleets protecting another fleet. The standalone v2 resolver currently supports designated allied-formation protection; that existing capability must not be exposed as a lawful campaign order under this agreed fleet model. Any campaign restriction or resolver change requires explicit validation and regression acceptance; documenting the restriction does not remove the standalone capability. Future officer/wing coordination does not imply cross-fleet protection without a separately agreed change.
+
+Exact mobility contribution, automatic role selection, capability aggregation and screening formulas remain **proposed/open**, with no new numerical bonuses approved. The existing standalone v2 resolver already accounts for interception firing opportunities, but its shared formation geometry does not establish the full individual-mobility behavior described here. Review and version any required resolver changes separately; this agreement does not claim runtime support or authorize silently expanding the campaign-lifecycle implementation.
+
 Useful battlefield functions can include screening, battle-line pressure, strike/breakthrough, support, reconnaissance, command and reserve. These are functional roles, not mandatory class labels or required percentages.
 
 The desired rock-paper-scissors effect is systemic rather than a direct `class A +20% vs class B` table: one capability creates a tactical problem that another capability is designed to solve.
@@ -161,7 +217,7 @@ A forward-heavy design should perform especially well when its battle orders rep
 
 The backend does not track exact ship XYZ coordinates, yaw, pitch, collision paths or meter-scale firing arcs.
 
-Combat resolves primarily at **formation/squadron level** using relative tactical state. Candidate state variables include:
+Combat resolves primarily at **fleet formation level** using relative tactical state. Each strategic fleet is a distinct tactical unit as agreed above; future squadron hierarchy does not change that command boundary without a separate decision. Candidate state variables include:
 
 - **Range state** — e.g. Distant, Engagement, Close, Intermixed;
 - **Aspect / relative orientation** — e.g. head-on, beam, flank, rear;
@@ -278,6 +334,30 @@ Supported objective families should include:
 Ships or formations that successfully satisfy a breakthrough/escape condition can leave the encounter and continue toward the strategic objective rather than magically turning back because enemy ships survive elsewhere in the battle.
 
 Preconfigured retreat thresholds can remain as **automatic contingencies**: if a fleet reaches a declared loss/damage condition, it can switch to a withdrawal/disengage behavior. They are not the only way a fleet may disengage.
+
+### Inconclusive battles and strategic contact choices — agreed
+
+Decision, 13 October 2026: after a nondecisive battle reaches the three-round limit, surviving fleets remain in their sector with their actual damage, shield stocks and ammunition. Return to strategic planning rather than immediately forcing another battle or treating the round limit as victory. Tactical completion does not itself relocate survivors or replenish them.
+
+Clarification, 13 October 2026: after the battle has resolved, the player chooses strategic actions such as leaving, remaining to re-engage, or following the opposing fleet. Pursuit uses actual strategic-map movement and relative fleet travel capability. There is no separate post-battle catch/escape roll at departure, and no special abstract interception resolver farther along a route. This clarification supersedes the earlier proposed pursuit-versus-escape contest.
+
+Leaving uses a lawful movement route/destination. Following must use lawful knowledge of the contact, not hidden opponent routes. Strategic orders resolve under the common movement timing; freshly submitted opposing orders are not exposed for counter-picking. A pursuer must physically reach the opponent's sector at the same time to make renewed engagement possible. Greater speed can enable that catch; an insufficiently fast fleet cannot be granted contact by an abstract pursuit bonus. Reachability, routes and timing still matter.
+
+| Opposing fleet intentions | Agreed direction |
+| --- | --- |
+| Both maintain contact | Seek another engagement through the next eligible strategic resolution; no immediate repeat within the completed battle turn |
+| One leaves, one follows | Both use strategic movement; another engagement requires reaching the same sector at the same time, with lawful hostile contact and intent to engage |
+| Both break contact | Neither pursues the other; depart through their lawful strategic movement routes, retaining normal access, travel costs/progress and other independently relevant encounter constraints |
+
+Here **catch** means reaching a renewed engagement opportunity, not capturing ownership of enemy ships. Fleet intentions do not override physical reach, known navigation, movement budgets or the distinction between detection, tracking and interception. Successful departure does not teleport a fleet to its final destination. Common sector/time is the physical condition for this re-engagement model, not permission to attack allies or reveal unknown fleets.
+
+Detailed simultaneous travel timing, intermediate-sector and weighted-edge occupancy, legal engagement opportunity, movement continuation after contact, multi-fleet target selection and last-known-contact following remain **proposed/open**. A simple engagement/leave intention does not eliminate route and contact-target selection. These are explicit strategic movement/contact rules shared by human and AI; do not add a separate chase probability to avoid defining physical timing.
+
+**Movement-stop decision, 13 October 2026 — agreed:** when fleets meet and engage, combat stops all participating fleets' remaining strategic movement for that turn in the encounter sector. Surviving fleets do not automatically resume their pre-battle route after resolution or finalization. They choose fresh strategic orders during Planning for the following turn. Unrelated fleets are not stopped by this rule. Whether an interrupted route is shown as a reference for an explicit new order is presentation detail; it must not remain an executable movement order. This settles movement continuation after contact; simultaneous/intermediate-sector travel timing and weighted-edge occupancy remain open. Combat finalization must not advance the clock a second time or grant another same-turn travel budget.
+
+**Mutual re-engagement decision, 13 October 2026 — agreed:** if surviving hostile fleets both remain in the sector and choose to re-engage, allocate a new battle during the following strategic turn's resolution. Use their actual surviving ships and retained hull, directional shields and ammunition; encounter creation must not refill or recover them. This is a new encounter following a new strategic decision, not a fourth tactical round or an automatic same-turn replay. Normal in-battle recharge may apply under the pinned v2 rules, without inventing between-battle recovery.
+
+**Implementation scope:** this agreement resolves the intended post-battle choice model. It requires separately scoped campaign contact/movement work; current source inspection/equipment and standalone resolution do not implement it. The first slice still excludes within-battle strategic exit objectives, but its lifecycle proposal must now explain how it will support or explicitly phase this post-battle contact model. Do not silently replace it with permanent engagement, an abstract catch/escape contest, or immediate combat loops. Record any conflict with existing end-of-Movement-only encounter detection before changing that behavior.
 
 ## Weapon classes, ammunition and hull-defined attack capability
 
