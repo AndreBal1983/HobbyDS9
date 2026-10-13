@@ -131,9 +131,14 @@ namespace HobbyDS9.UnityClient
         IReadOnlyList<DesignerTemplate> Templates { get; }
         DesignerPreview Preview(DesignerFit fit,DesignerProfile profile);
     }
+    public interface IShipDesignCatalogueFacts
+    {
+        bool Available(string id);
+        IReadOnlyList<DesignerMetric> ComponentFacts(string id,DesignerProfile profile);
+    }
     public sealed class ShipDesignDraft
     {
-        public IShipDesignPreviewProvider Provider { get; }
+        public IShipDesignPreviewProvider Provider { get; private set; }
         public DesignerFit Starting { get; private set; } = null!;
         public string TemplateId { get; private set; } = "";
         public DesignerProfile Profile { get; private set; } = DesignerProfile.Cruise;
@@ -147,6 +152,15 @@ namespace HobbyDS9.UnityClient
         public ShipDesignDraft(IShipDesignPreviewProvider provider) { Provider=provider; StartTemplate(provider.Templates.First().Id); }
         private void Notify() => Changed?.Invoke();
         private void CopyStarting() { edit=Starting.ToDto(); }
+        public void RefreshProvider(IShipDesignPreviewProvider provider) { Provider=provider; Notify(); }
+        public void StartFit(DesignerFit fit)
+        {
+            Starting=new DesignerFit(fit.ToDto()); CopyStarting(); TemplateId="";
+            knownIds.Clear(); foreach(var i in edit.Installations!)knownIds.Add(i.ComponentVersionId,i.InstallationId);
+            pending=null; Notify();
+        }
+        public void SetClassId(string id) { edit.ClassId=id; Notify(); }
+        public void MarkPublished() { Starting=Current; Notify(); }
         private void StartTemplate(string id)
         {
             TemplateId=id; Starting=new DesignerFit(Provider.Templates.Single(t=>t.Id==id).Fit.ToDto()); CopyStarting();

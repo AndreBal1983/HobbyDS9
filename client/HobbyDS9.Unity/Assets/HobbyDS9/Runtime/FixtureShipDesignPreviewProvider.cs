@@ -15,9 +15,19 @@ namespace HobbyDS9.UnityClient
         public List<ShipClassDraftDto> Drafts { get; set; } = null!;
     }
     // Presentation adapter only. The portable Application owns every computed fact.
-    public sealed class FixtureShipDesignPreviewProvider : IShipDesignPreviewProvider
+    public sealed class FixtureShipDesignPreviewProvider : ApplicationShipDesignPreviewProvider
     {
-        public string StatusLabel => "Backend validated prototype • Construction integration pending";
+        public FixtureShipDesignPreviewProvider(DesignerFixture fixture)
+            : base(ShipDesignApplication.Create(fixture.Catalogue).Designer
+                ?? throw new ArgumentException("Invalid offline catalogue."), fixture.Access.AvailableVersionIds!,
+                fixture.Drafts.Select(d=>new DesignerTemplate(d.ClassId,d.DisplayName,new DesignerFit(d))),
+                "Backend validated prototype • Construction integration pending") { }
+    }
+    // Shared projection adapter: offline fixtures and live campaigns use the same
+    // Application compiler; facts and availability never depend on a fixture cast.
+    public class ApplicationShipDesignPreviewProvider : IShipDesignPreviewProvider, IShipDesignCatalogueFacts
+    {
+        public string StatusLabel { get; }
         public bool FixtureResults => false;
         public IReadOnlyList<DesignerHull> Hulls { get; }
         public IReadOnlyList<DesignerComponent> Catalogue { get; }
@@ -25,11 +35,11 @@ namespace HobbyDS9.UnityClient
         public IReadOnlyList<DesignerRole> Roles { get; }
         public ShipDesigner Designer { get; }
         private readonly string[] available;
-        public FixtureShipDesignPreviewProvider(DesignerFixture fixture)
+        public ApplicationShipDesignPreviewProvider(ShipDesigner designer, IEnumerable<string> access,
+            IEnumerable<DesignerTemplate> templates, string status)
         {
-            var creation = ShipDesignApplication.Create(fixture.Catalogue);
-            Designer = creation.Designer ?? throw new ArgumentException(string.Join("; ",creation.Issues.Select(i=>i.Message)));
-            available = fixture.Access.AvailableVersionIds!.ToArray();
+            Designer = designer; StatusLabel = status;
+            available = access.ToArray();
             Hulls = Designer.Catalogue.Hulls.Select(h=>new DesignerHull(h.VersionId,h.DisplayName,
                 $"{h.Capacity} capacity • {h.PowerDistributionLimit} distribution • crew minimum {h.MinimumCrew}")).ToList().AsReadOnly();
             Roles = Designer.Catalogue.Roles.Select(r=>new DesignerRole(r.RoleId,r.DisplayName)).ToList().AsReadOnly();
@@ -40,7 +50,7 @@ namespace HobbyDS9.UnityClient
                 $"{c.Capacity} capacity • crew {c.CrewRequired} • computer demand {c.ComputerDemand} • supply {c.PowerSupply} • envelope {c.EnvelopeSize}\n"+
                 $"{c.Cost.Credits} credits / {c.Cost.Industry} industry / upkeep {c.Cost.Maintenance}\n"+
                 string.Join(" • ",c.Mounts.Select(m=>$"{m.Kind}: {m.Count} mounts, size {m.SizeRating}")), SystemFor(c.Kind))).ToList().AsReadOnly();
-            Templates = fixture.Drafts.Select(d=>new DesignerTemplate(d.ClassId,d.DisplayName,new DesignerFit(d))).ToList().AsReadOnly();
+            Templates = templates.ToList().AsReadOnly();
         }
         public ShipDesignAccessDto Access() => new ShipDesignAccessDto { AvailableVersionIds=available.ToList() };
         public static string SystemFor(ComponentKind kind) => kind==ComponentKind.Reactor ? "Power" :

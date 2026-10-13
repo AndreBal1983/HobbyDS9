@@ -38,3 +38,5 @@ jobs:
         run: dotnet run --project src/HobbyDS9.Headless --configuration Release --no-build --no-restore -- --turns 25
       - name: Playable tactical sandbox scripted smoke and round-boundary resume
         run: python scripts/check-tactical-playground.py
+      - name: Campaign tactical v2 eligibility (headless, activation remains blocked)
+        run: python scripts/check-campaign-tactical-v2-inspection.py

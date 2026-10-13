@@ -270,7 +270,7 @@ namespace HobbyDS9.UnityClient
             {
                 if (exists) Confirm("Overwrite the campaign in slot " + slot + "?", Save); else Run(Save);
             });
-            ActionButton("Load saved campaign", () => Confirm("Replace the live campaign with slot " + slot + "? Unsaved progress will be lost.", () =>
+            ActionButton("Load saved campaign", () => Confirm("Replace the live campaign with slot " + slot + "? Unsaved progress will be lost. Any designer draft will become review-only until explicitly discarded.", () =>
             {
                 host.LoadJson(saves.Read(slot));
                 combat.Pump();

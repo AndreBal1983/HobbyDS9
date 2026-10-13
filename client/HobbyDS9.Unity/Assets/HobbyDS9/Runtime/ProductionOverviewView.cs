@@ -12,6 +12,7 @@ namespace HobbyDS9.UnityClient
     public sealed class ProductionOverviewView : ScrollView
     {
         private readonly Dictionary<string, bool> expanded = new Dictionary<string, bool>();
+        private string? selectedWorld;
         public ProductionOverviewView()
         { name = "production-overview"; AddToClassList("production-panel"); }
         public void Present(ProductionOverview model, Action<Func<string>> run)
@@ -20,7 +21,11 @@ namespace HobbyDS9.UnityClient
             Add(new LcarsSectionHeader("Empire production") { name = "production-heading" });
             Add(new Label(model.Actor == null ? "No human civilization." : "Empire-wide • Credits " + model.Actor.Credits));
             if (model.Worlds.Count == 0) Add(new Label("No owned worlds."));
-            foreach (var world in model.Worlds)
+            if(selectedWorld!=null && !model.Worlds.Any(w=>w.ColonyId.Value==selectedWorld))selectedWorld=null;
+            var captions=new[]{"All owned colonies"}.Concat(model.Worlds.Select(w=>w.Environment.DisplayName+" / "+w.ColonyId.Value)).ToList();
+            var colony=new DropdownField("Owned colony",captions,selectedWorld==null?0:model.Worlds.ToList().FindIndex(w=>w.ColonyId.Value==selectedWorld)+1) {name="production-owned-colony"};
+            colony.RegisterValueChangedCallback(_=> {selectedWorld=colony.index==0?null:model.Worlds[colony.index-1].ColonyId.Value;Present(model,run);});Add(colony);
+            foreach (var world in model.Worlds.Where(w=>selectedWorld==null || w.ColonyId.Value==selectedWorld))
             {
                 var id = world.ColonyId.Value;
                 var section = new Foldout { name = id, text = world.Environment.DisplayName + " • Industry " + world.Economy.Industry,
@@ -46,6 +51,25 @@ namespace HobbyDS9.UnityClient
                     cancel.AddToClassList("lcars-destructive"); cancel.SetEnabled(model.CanCancel); row.Add(cancel);
                 }
                 var options = new Foldout { text = "Ship designs", value = true }; section.Add(options);
+                var published=new Foldout {text="Published blueprints / exact revisions",value=true,name="blueprint-options-"+id};section.Add(published);
+                var blueprintOptions=model.Blueprints(world.ColonyId);
+                if(blueprintOptions.Count==0)published.Add(new Label("No owned published revisions. Publish a class in Ship design."));
+                foreach(var option in blueprintOptions)
+                {
+                    var blueprint=option.Blueprint.Blueprint;var cost=blueprint.Performance.Cost!;
+                    var row=new VisualElement {name="blueprint-option-"+blueprint.BlueprintId+"-r"+blueprint.Revision};published.Add(row);
+                    row.Add(new Label(blueprint.Fit.DisplayName+" • revision "+blueprint.Revision+(option.Blueprint.IsLatestRevision?" / latest":" / historical")));
+                    row.Add(new Label(blueprint.BlueprintId+"\n"+cost.Credits+" credits • "+cost.Industry+" Industry • "+string.Join(", ",cost.Resources.Select(r=>r.Amount+" "+r.ResourceDefinitionId))));
+                    row.Add(new Label("Prerequisites: owned colony with shipbuilding; local resources and credits. Engineering was validated at publication; this frozen revision remains buildable."));
+                    row.Add(new Label(CommandFeedback.Explain(option.ErrorCode)+" ["+option.ErrorCode+"]"));
+                    var queued=false;
+                    var queue=new LcarsPillButton("",()=> {
+                        if(queued)return; queued=true;
+                        row.Query<Button>().ForEach(b=>b.SetEnabled(false));
+                        run(()=>SfxFeedback.Describe(model.EnqueueBlueprint(world.ColonyId,option)));
+                    }) {text="Queue revision "+blueprint.Revision,name="queue-blueprint-"+blueprint.BlueprintId+"-r"+blueprint.Revision};
+                    queue.SetEnabled(option.CanBuild);row.Add(queue);
+                }
                 foreach (var option in model.Designs(world.ColonyId))
                 {
                     var design = option.Design;
@@ -62,7 +86,7 @@ namespace HobbyDS9.UnityClient
             }
         }
         // Campaign queues pin an immutable blueprint revision, not a static design.
-        // Keep its authoritative identity visible until campaign catalogue UX exists.
+        // Resolve only the pinned revision for its caption; identity remains visible.
         internal static string QueueName(CampaignSnapshot snapshot, ProductionQueueItemSnapshot item) => item.Blueprint != null
             ? item.Blueprint.BlueprintId + " • revision " + item.Blueprint.Revision
             : snapshot.Campaign.ShipDesigns.Single(d => d.DefinitionId == item.ShipDesignDefinitionId).DisplayName;
