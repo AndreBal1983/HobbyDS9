@@ -103,7 +103,7 @@ namespace HobbyDS9.UnityClient
             return new DesignerPreview(!result.IsValid?DesignerStatus.HardError:result.Issues.Count>0?DesignerStatus.Warning:DesignerStatus.Valid,
                 "Portable backend preview • all profiles validated • no campaign order", result.CapacityUsed,result.CapacityLimit,
                 result.CapacityLimit.HasValue && result.CapacityUsed.HasValue ? result.CapacityLimit-result.CapacityUsed : null,
-                power,capabilities,costs,issues);
+                power,capabilities,costs,issues,selected?.Installations.Select(i=>new DesignerPowerRange(dto.Installations!.Single(x=>x.InstallationId==i.InstallationId).ComponentVersionId,i.FullPower,i.MinimumPower)));
         }
     }
 }
