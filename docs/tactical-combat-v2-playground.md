@@ -99,6 +99,7 @@ dotnet run --project src/HobbyDS9.TacticalPlayground -c Release -- --scenario br
 dotnet run --project src/HobbyDS9.TacticalPlayground -c Release -- --scenario cruiser --seed 47 --script 'Flank' --stop-after 1 --save artifacts/tactical-playground/save.json
 dotnet run --project src/HobbyDS9.TacticalPlayground -c Release -- --resume artifacts/tactical-playground/save.json --script 'Flank;Flank'
 dotnet publish src/HobbyDS9.TacticalPlayground/HobbyDS9.TacticalPlayground.csproj -c Release -r win-x64 --self-contained true -o artifacts/tactical-playground/win-x64
+python scripts/check-tactical-playground.py
 ```
 
 Inline `--script` tokens apply to the first active human formation at invocation. Other human formations retain their orders. Short scripts and blank tokens retain orders for remaining rounds. Numeric maneuvers work (`'3;3;3'`). On resume, script steps describe **remaining rounds**, while `--stop-after 1|2` is an **absolute** boundary and requires both `--save` and `--script`. If an explicitly ordered formation dies, subsequent commands for it reject rather than silently controlling another ship; blank remaining steps retain surviving orders. `--reverse-fixture` checks canonicalization without changing the result. Bad arguments/scripts exit **2**; success/user quit/EOF exits **0**.
