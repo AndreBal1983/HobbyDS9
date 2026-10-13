@@ -45,6 +45,7 @@ namespace HobbyDS9.Simulation
                     Require(Known(s.Role) && s.MaxHull > 0 && s.Hull >= 0 && s.Hull <= s.MaxHull && s.Armor >= 0 && Bps(s.EvasionBps), "Invalid hull/armor/evasion.");
                     Require(s.PowerBudget >= 0 && s.ShieldPowerRequired >= 0 && s.ShieldPowerAllocated >= 0
                         && s.ShieldPowerAllocated <= s.ShieldPowerRequired && s.ShieldRechargePerRound >= 0, "Invalid shield power/recharge.");
+                    Require(s.ShieldRechargePerRound == 0 || s.ShieldPowerRequired > 0, "Positive shield recharge requires a positive power requirement.");
                     Require(s.Shields != null && s.Shields.Count == 4 && s.Mounts != null && s.Weapons != null, "Missing shield/mount/weapon data.");
                     var sectors = new HashSet<TacticalSector>();
                     foreach (var q in s.Shields)
