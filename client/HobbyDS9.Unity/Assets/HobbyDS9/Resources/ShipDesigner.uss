@@ -108,7 +108,7 @@
 .lps-band-low.lps-filled { background-color: var(--lcars-blue); }
 .lps-band-middle.lps-filled { background-color: var(--lcars-lavender); }
 .lps-band-high.lps-filled { background-color: var(--lcars-amber); }
-.lps-zero { position: absolute; bottom: 0; left: 0; right: 0; height: 14px; margin: 0; font-size: 11px; -unity-text-align: middle-center; color: var(--lcars-muted); }
+.lps-zero-strip { position: absolute; bottom: 0; left: 0; right: 0; height: 14px; margin: 0; font-size: 11px; -unity-text-align: middle-center; color: var(--lcars-muted); }
 .lcars-power-slider > .lps-readout { font-size: 16px; color: var(--lcars-text); white-space: normal; }
 .lcars-power-slider > .lps-notice { font-size: 10px; color: var(--lcars-muted); white-space: normal; }
 .lps-invalid > .lps-notice, .lps-backend-invalid > .lps-notice { color: var(--lcars-alert); }

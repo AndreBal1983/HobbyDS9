@@ -252,6 +252,12 @@ namespace HobbyDS9.UnityClient.Tests
                     var zero=new Vector2(slider.Track.worldBound.center.x,slider.Track.worldBound.yMax-3);
                     Pointer(slider.Track,EventType.MouseDrag,zero);Assert.That(slider.Value,Is.Zero);Assert.That(changes,Is.Zero);
                     Pointer(slider.Track,EventType.MouseUp,zero);Assert.That(draft.Current.Power("component.energy-bank.v1",DesignerProfile.Combat).AllocatedPower,Is.Zero);Assert.That(changes,Is.EqualTo(1));
+                    yield return null;yield return null;
+                    var allocated=view.Q<LcarsPowerSlider>("slider-power-allocated-component.energy-bank.v1");
+                    var requested=view.Q<LcarsPowerSlider>("slider-power-requested-component.energy-bank.v1");
+                    Assert.That(allocated.resolvedStyle.position,Is.EqualTo(Position.Relative),"Zero state must not inherit the zero strip's absolute positioning");
+                    Assert.That(allocated.Track.worldBound.yMax,Is.EqualTo(requested.Track.worldBound.yMax).Within(1));
+                    Assert.That(allocated.Track.worldBound.xMin,Is.GreaterThan(requested.Track.worldBound.xMax));
                 }
                 finally{window.Close();}
             }

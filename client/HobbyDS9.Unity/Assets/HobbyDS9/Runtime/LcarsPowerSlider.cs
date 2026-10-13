@@ -64,6 +64,7 @@ namespace HobbyDS9.UnityClient
         private readonly Action<long> commit;
         private readonly bool backendInvalid;
         private int pointer=-1;
+        private float pointerOriginY;
         private long committed;
         public LcarsPowerSlider(string caption,string fieldName,long value,long maximum,bool invalid,Action<long> commit,long poweredMinimum=0,LcarsPowerScale? scale=null)
         {
@@ -82,21 +83,22 @@ namespace HobbyDS9.UnityClient
                 segment.style.height=Scale.SegmentPitch-2;segment.style.minHeight=Scale.SegmentPitch-2;
                 segment.AddToClassList(i<segments.Length*.42?"lps-band-low":i<segments.Length*.75?"lps-band-middle":"lps-band-high");bars.Add(segment);
             }
-            var zero=new Label("0") {pickingMode=PickingMode.Ignore};zero.AddToClassList("lps-zero");Track.Add(zero);
+            var zero=new Label("0") {pickingMode=PickingMode.Ignore};zero.AddToClassList("lps-zero-strip");Track.Add(zero);
             Track.RegisterCallback<PointerDownEvent>(e=>
             {
                 if(e.button!=0 || pointer>=0 || Maximum==0)return;
-                // Capture coordinates before FocusIn selects/reparents the exact
-                // editor. Event-local coordinates remain valid if that dirties
-                // the bank's layout/world transform in the current dispatch.
-                var y=e.localPosition.y;
+                // Freeze the panel-space origin before FocusIn reparents the
+                // exact editor. Native event-local coordinates can change as
+                // dispatch/focus dirties transforms; panel positions stay stable.
+                pointerOriginY=Track.worldBound.y;
+                var y=e.position.y-pointerOriginY;
                 Track.Focus();pointer=e.pointerId;Track.CapturePointer(pointer);Scrub(y);e.StopPropagation();
             });
-            Track.RegisterCallback<PointerMoveEvent>(e=>{if(e.pointerId==pointer){Scrub(e.localPosition.y);e.StopPropagation();}});
+            Track.RegisterCallback<PointerMoveEvent>(e=>{if(e.pointerId==pointer){Scrub(e.position.y-pointerOriginY);e.StopPropagation();}});
             Track.RegisterCallback<PointerUpEvent>(e=>
             {
                 if(e.pointerId!=pointer)return;
-                Scrub(e.localPosition.y);Finish();e.StopPropagation();
+                Scrub(e.position.y-pointerOriginY);Finish();e.StopPropagation();
             });
             Track.RegisterCallback<PointerCaptureOutEvent>(e=>{if(e.pointerId==pointer)Finish();});
             Track.RegisterCallback<PointerCancelEvent>(e=>{if(e.pointerId==pointer)Finish();});
