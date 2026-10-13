@@ -6,9 +6,9 @@ using HobbyDS9.Contracts;
 namespace HobbyDS9.TacticalReviewClient
 {
     // Headless local interaction controller. It never determines gameplay outcomes.
-    public sealed class ReviewController
+    public sealed partial class ReviewController
     {
-        private readonly ReviewHost host;
+        private ReviewHost host;
         private readonly Guid id=Guid.NewGuid();
         private readonly Dictionary<string,FleetEdit> draft=new Dictionary<string,FleetEdit>(StringComparer.Ordinal);
         private ReviewWork? pending;

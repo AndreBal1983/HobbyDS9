@@ -23,7 +23,7 @@ namespace HobbyDS9.TacticalReviewClient
         { HostId=host; Id=id; Turn=status.Turn; CampaignRevision=status.CampaignRevision; }
         public override string ToString() => "Private committed review checkpoint";
     }
-    public sealed class ReviewHost
+    public sealed partial class ReviewHost
     {
         private readonly object gate = new object();
         private readonly Guid id = Guid.NewGuid();
@@ -32,14 +32,18 @@ namespace HobbyDS9.TacticalReviewClient
         private readonly Dictionary<long,CampaignTacticalReviewSaveDto> saves = new Dictionary<long,CampaignTacticalReviewSaveDto>();
         private ICampaignTacticalReviewSession session;
         private long generation, nextSave;
-        private ReviewHost(CampaignTacticalReviewPackageDto package, IReviewHostCodec codec)
+        private readonly IReviewCheckpointStore? checkpointStore;
+        private ReviewHost(CampaignTacticalReviewPackageDto package, IReviewHostCodec codec, IReviewCheckpointStore? store = null)
         {
             this.codec=codec ?? throw new ArgumentNullException(nameof(codec));
             this.package=codec.CopyPackage(package);
+            checkpointStore=store;
             session=CampaignTacticalReviewApplication.StartReviewPackage(this.package);
         }
         public static ReviewHost Start(CampaignTacticalReviewPackageDto package, IReviewHostCodec codec)
             => new ReviewHost(package,codec);
+        public static ReviewHost Start(CampaignTacticalReviewPackageDto package, IReviewHostCodec codec, IReviewCheckpointStore store)
+            => new ReviewHost(package,codec,store);
         public ReviewFrame Read(string actor, string? encounter = null)
         { lock(gate) return Capture(session, actor, encounter, generation); }
         private ReviewFrame Capture(ICampaignTacticalReviewSession candidate, string actor, string? encounter, long epoch)

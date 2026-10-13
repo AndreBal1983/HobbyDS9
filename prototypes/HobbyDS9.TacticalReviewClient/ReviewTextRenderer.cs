@@ -17,6 +17,8 @@ namespace HobbyDS9.TacticalReviewClient
                 text.AppendLine($"Own strategic fleet {fleet.FleetId.Value} | node {fleet.LocationNodeId.Value} | remaining route {string.Join(", ",fleet.RouteNodeIds.Select(n=>n.Value))}");
             if(controller.RefreshRequired) text.AppendLine("Refresh required; no automatic retry.");
             if(controller.LastBackendError.HasValue) text.AppendLine("Backend result: "+controller.LastBackendError.Value);
+            if(controller.LastCheckpointError != ReviewCheckpointError.None)
+                text.AppendLine("Checkpoint result: "+controller.LastCheckpointError);
             if(controller.DraftInvalidated) text.AppendLine("Draft invalidated by a new authoritative boundary or accepted commitment; review new orders.");
             if(b == null)
             {
