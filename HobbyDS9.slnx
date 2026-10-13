@@ -5,6 +5,7 @@
     <Project Path="src/HobbyDS9.Headless/HobbyDS9.Headless.csproj" />
     <Project Path="src/HobbyDS9.Scenarios/HobbyDS9.Scenarios.csproj" />
     <Project Path="src/HobbyDS9.Simulation/HobbyDS9.Simulation.csproj" />
+    <Project Path="src/HobbyDS9.TacticalPlayground/HobbyDS9.TacticalPlayground.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/HobbyDS9.Simulation.Tests/HobbyDS9.Simulation.Tests.csproj" />
