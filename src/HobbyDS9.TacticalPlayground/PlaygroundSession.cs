@@ -83,7 +83,7 @@ public static class PlaygroundFiles
     public static JsonSerializerOptions Options { get; } = CreateOptions();
     private static JsonSerializerOptions CreateOptions()
     {
-        var options = new JsonSerializerOptions { WriteIndented = true, UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
+        var options = new JsonSerializerOptions { WriteIndented = true, NewLine = "\n", UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
         options.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false)); options.MakeReadOnly(populateMissingResolver: true); return options;
     }
     public static string Json<T>(T value) => JsonSerializer.Serialize(value, Options);

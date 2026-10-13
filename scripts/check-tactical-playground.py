@@ -25,10 +25,10 @@ def checksum(output):
 
 
 fixtures = [
-    ("cruiser", "Flank;Flank;Flank", "0de23f5fb76b8e3150a0593d69a760254c7a931a669c5258beb06d5b2618eee3"),
-    ("cruiser", "Charge;Charge;Charge", "f67cd3e66055f7db10880ddb37845459f6c81bf2d410db7870f2f557eb07052e"),
-    ("screen", "Screen;Charge;Screen", "82f027e8d29ba28ea0c3e5117dafb53de47aac38727fcb36cdb2f843910eae72"),
-    ("breakthrough", "Breakthrough;Breakthrough", "ac8cbcb951e0f75ccab886a4adaba63367941bedaa30e9dd992115b2c65c17a6"),
+    ("cruiser", "Flank;Flank;Flank", "23f2fcd1d5a5481cdcb33facb340827c8ea7d696aa9d1fc5e87cf8000f74f640"),
+    ("cruiser", "Charge;Charge;Charge", "54a3f0914e63281994689a97029f48c38a2a9b1df60c5eb42ed262ac43c0f347"),
+    ("screen", "Screen;Charge;Screen", "63202d4cd495e05bf29f9da449c8b90f9d794356cfc0a5e1c49557b8975c5248"),
+    ("breakthrough", "Breakthrough;Breakthrough", "b7786e5c9bde2def82b9711b45c7a56d9c3bf327ecc6d5443f6eb699938e4197"),
 ]
 canonical = None
 for scenario, orders, expected in fixtures:

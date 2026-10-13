@@ -89,7 +89,7 @@ public sealed class TacticalPlaygroundTests
         { flank.Advance(new[] { Order(flank, TacticalManeuver.Flank) }, round); charge.Advance(new[] { Order(charge, TacticalManeuver.Charge) }, round); }
         Assert.Equal(220, flank.State.Formations.Single(f => f.SideId == PlaygroundScenarios.PlayerSide).Ships[0].Hull);
         Assert.Equal(63, charge.State.Formations.Single(f => f.SideId == PlaygroundScenarios.PlayerSide).Ships[0].Hull);
-        Assert.Equal("0de23f5fb76b8e3150a0593d69a760254c7a931a669c5258beb06d5b2618eee3", flank.Checksum());
+        Assert.Equal("23f2fcd1d5a5481cdcb33facb340827c8ea7d696aa9d1fc5e87cf8000f74f640", flank.Checksum());
         Assert.Contains("SAME-SEED COMPARISON", PlaygroundReports.Compare(flank.Export(), charge.Export()));
     }
     [Fact]
@@ -152,7 +152,7 @@ public sealed class TacticalPlaygroundTests
             Assert.Equal(0, first.Code); Assert.Empty(first.Error); Assert.Equal(2, PlaygroundFiles.Load(path).State.NextRound);
             var second = Run(new[] { "--resume", path, "--script", "Flank;Flank", "--save", path });
             Assert.Equal(0, second.Code); Assert.Empty(second.Error);
-            Assert.Equal("0de23f5fb76b8e3150a0593d69a760254c7a931a669c5258beb06d5b2618eee3", PlaygroundFiles.Load(path).Checksum());
+            Assert.Equal("23f2fcd1d5a5481cdcb33facb340827c8ea7d696aa9d1fc5e87cf8000f74f640", PlaygroundFiles.Load(path).Checksum());
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, recursive: true); }
     }
@@ -215,5 +215,14 @@ public sealed class TacticalPlaygroundTests
         TacticalCombatV2Fixture.Weapon(TacticalCombatV2Fixture.Ship(state), TacticalWeaponClass.Beam, 1000);
         var result = TacticalCombatV2Fixture.Round(state);
         Assert.Contains("incoming landed 1000; shields absorbed 0; armor removed 0; post-armor 1000; hull lost 10; overkill discarded 990", PlaygroundReports.Round(state, result, false));
+    }
+    [Fact]
+    public void HostJsonUsesCanonicalLfAndAcceptsEquivalentWindowsWhitespace()
+    {
+        var session = new PlaygroundSession("cruiser", 47); session.Advance(new[] { Order(session, TacticalManeuver.Flank) }, 1);
+        var json = PlaygroundFiles.Json(session.Export()); Assert.DoesNotContain("\r", json);
+        var windows = json.Replace("\n", "\r\n", StringComparison.Ordinal);
+        var restored = System.Text.Json.JsonSerializer.Deserialize<PlaygroundSave>(windows, PlaygroundFiles.Options)!;
+        Assert.Equal(session.Checksum(), PlaygroundSession.Restore(restored).Checksum());
     }
 }
