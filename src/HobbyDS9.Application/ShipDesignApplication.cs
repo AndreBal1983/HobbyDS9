@@ -17,6 +17,11 @@ namespace HobbyDS9.Application
     }
     public static class ShipDesignApplication
     {
+        // Campaign snapshots have already passed scenario validation. Reuse their
+        // immutable catalogue without a host reconstructing gameplay definitions.
+        public static ShipDesigner FromCampaignCatalogue(ShipDesignCatalogueSnapshot catalogue) =>
+            new ShipDesigner(catalogue ?? throw new System.ArgumentNullException(nameof(catalogue)));
+
         public static ShipDesignerCreationResult Create(ShipDesignCatalogueDto? catalogue)
         {
             var issues = ShipDesignCatalogueValidation.Validate(catalogue);

@@ -76,8 +76,8 @@ for file_name in ("ResponsiveLayoutPolicy.cs", "LcarsComponents.cs", "LcarsShell
 for path in assets.rglob("*"):
     require(path.suffix.lower() not in {".ttf", ".otf", ".woff", ".woff2"},
             f"New font needs explicit license/provenance review: {path.relative_to(root)}")
-# Ship designer: Application/Contracts preview boundary; no Simulation calls
-# or campaign mutation. Static checks do not establish rendering.
+# Ship designer: Application/Contracts previews and stamped client commands.
+# Local drafts/providers remain preview-only. Static checks do not establish rendering.
 designer_style = assets / "HobbyDS9/Resources/ShipDesigner.uss"
 require(designer_style.exists(), "Missing ship designer stylesheet")
 designer_meta = Path(str(designer_style) + ".meta").read_text()
@@ -85,12 +85,25 @@ require("ScriptedImporter:" in designer_meta and "fileID: 12385" in designer_met
         "Incorrect ship designer stylesheet importer")
 require('Resources.Load<StyleSheet>("ShipDesigner")' in entry,
         "Designer stylesheet is not attached to the existing document")
-for filename in ("ShipDesignDraft.cs", "FixtureShipDesignPreviewProvider.cs", "ShipDesignerView.cs"):
+for filename in ("ShipDesignDraft.cs", "FixtureShipDesignPreviewProvider.cs", "ShipDesignerView.cs", "CampaignDesigner.cs"):
     code = (runtime / filename).read_text()
     require(not re.search(r"using HobbyDS9\.Simulation", code),
             "Designer presentation must not call Simulation: " + filename)
-    require(not re.search(r"\.(SubmitCommand|Enqueue|Publish|AdvanceTurn|ExportSave)\(", code),
-            "Local designer must not submit or persist campaign orders: " + filename)
+    require(not re.search(r"\.(SubmitCommand|Enqueue|AdvanceTurn|ExportSave)\(", code),
+            "Designer must use its stamped campaign controller: " + filename)
+    if filename in ("ShipDesignDraft.cs", "FixtureShipDesignPreviewProvider.cs"):
+        require(".Publish(" not in code, "Local draft/preview provider must not publish: " + filename)
+campaign_designer = (runtime / "CampaignDesigner.cs").read_text()
+require("ShipDesignApplication.FromCampaignCatalogue(" in campaign_designer
+        and "client.ShipDesignCatalogue(Actor)" in campaign_designer
+        and "source.AvailableVersionIds" in campaign_designer,
+        "Live designer must use the campaign Application catalogue and Engineering access")
+require("client.PublishBlueprint(Observed,Actor" in campaign_designer
+        and "generation!=client.SessionGeneration" in campaign_designer
+        and "RefreshRequired=true" in campaign_designer,
+        "Publication must retain observed stamps and block stale/replaced sessions")
+require("ShipDesignFixtureLoader.Load" not in entry,
+        "Campaign entry must not open an offline fixture-backed designer")
 require("IShipDesignPreviewProvider" in (runtime / "ShipDesignDraft.cs").read_text(),
         "Missing replaceable preview-provider boundary")
 provider = (runtime / "FixtureShipDesignPreviewProvider.cs").read_text()

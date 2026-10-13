@@ -25,6 +25,8 @@ namespace HobbyDS9.UnityClient
         private LcarsShell shell = null!;
         private ShipDesignDraft? shipDesignDraft;
         private ShipDesignerView? shipDesigner;
+        private CampaignDesigner? campaignDesigner;
+        private EntityId? designerActor;
         private VisualElement? uiRoot;
         private SfxInputBinding? sfxInput;
         private IVisualElementScheduledItem? scaleWatcher;
@@ -116,17 +118,33 @@ namespace HobbyDS9.UnityClient
             {
                 if (section == "Designer" && shipDesigner == null)
                 {
-                    shipDesignDraft ??= new ShipDesignDraft(ShipDesignFixtureLoader.Load());
-                    shipDesigner = new ShipDesignerView(shipDesignDraft, () => RequestStrategicSection("Selection"));
-                    shell.AttachDesigner(shipDesigner);
+                    OpenCampaignDesigner();
                 }
                 if (section == "Production") { activeTab = "Selection"; shell.OpenProduction(); }
                 else activeTab = section;
-                if (activeTab == "Designer") message.text = "Local ship draft • Preview only • No construction or campaign orders";
+                if (activeTab == "Designer") message.text = campaignDesigner?.Notice??"Campaign catalogue unavailable.";
                 SfxDirector.TryGetOrCreate()?.OpenSection(activeTab); Refresh();
             }
             if (activeTab == "Designer" && section != "Designer" && shipDesigner != null) shipDesigner.RequestLeave(Select);
             else Select();
+        }
+        private void OpenCampaignDesigner()
+        {
+            var actor=host.Snapshot.Campaign.Civilizations.FirstOrDefault(c=>c.ControllerKind==ControllerKind.Human && (!designerActor.HasValue || c.CivilizationId==designerActor.Value));
+            if(actor==null) {shell.AttachDesigner(new Label("No human actor is available to design ships."));return;}
+            designerActor=actor.CivilizationId;
+            campaignDesigner=new CampaignDesigner(host.Client,actor.CivilizationId);
+            shipDesignDraft=campaignDesigner.Draft;shipDesigner?.Dispose();shipDesigner=null;
+            if(shipDesignDraft==null)
+            {
+                shell.AttachDesigner(new Label(campaignDesigner.Notice) {name="designer-unavailable"});return;
+            }
+            shipDesigner=new ShipDesignerView(shipDesignDraft,()=>RequestStrategicSection("Selection"),campaign:campaignDesigner,campaignChanged:()=> {
+                message.text=campaignDesigner.Notice;Refresh();
+            },restartWorkspace:()=> {OpenCampaignDesigner();message.text="Loaded campaign workspace ready.";Refresh();},selectActor:id=> {
+                designerActor=id;OpenCampaignDesigner();message.text="Selected actor workspace ready.";Refresh();
+            });
+            shell.AttachDesigner(shipDesigner);
         }
         private void OnDestroy() { if (panel != null) Destroy(panel); }
         private void Run(Func<string> operation)
@@ -147,7 +165,14 @@ namespace HobbyDS9.UnityClient
             shell.Header.Turn.Value.text = state.TurnNumber.ToString("00");
             shell.Header.Phase.Value.text = state.Phase == SessionPhase.AwaitingCombat ? "BATTLES PENDING" : "PLANNING";
             shell.Header.Secondary.text = "Engineering / " + researchName + " • Reserve " + ScienceAllocationDraft.Conceptual(actor?.EngineeringReserve ?? 0);
-            shell.Header.Diagnostic.text = activeTab == "Designer" ? "SHIP DESIGN PROTOTYPE / LOCAL DRAFT ONLY" : "LIVE CAMPAIGN / Revision " + state.StateRevision;
+            if(campaignDesigner!=null)
+            {
+                if(campaignDesigner.SessionReplaced || (!campaignDesigner.RefreshRequired &&
+                    (campaignDesigner.Observed.Campaign.StateRevision!=state.StateRevision || campaignDesigner.Observed.Campaign.TurnNumber!=state.TurnNumber)))
+                    campaignDesigner.Refresh();
+                shipDesigner?.RefreshCampaignState();
+            }
+            shell.Header.Diagnostic.text = activeTab == "Designer" ? campaignDesigner?.SessionReplaced==true?"PREVIOUS CAMPAIGN DRAFT / BLOCKED":"SHIP DESIGN / LIVE CAMPAIGN" : "LIVE CAMPAIGN / Revision " + state.StateRevision;
             endTurn.SetEnabled(activeTab != "Designer" && state.Phase == SessionPhase.Planning);
             shell.Header.EnableInClassList("combat-attention",state.Phase == SessionPhase.AwaitingCombat && combat.RequiresPlayer);
             var combatFocus = combat.ReportToReview ?? combat.PendingHumanEncounter ?? (combat.RequiresPlayer ? "complete-turn" : null);
@@ -161,11 +186,11 @@ namespace HobbyDS9.UnityClient
             shell.SelectSection(activeTab);
             // Synchronize passive focus changes without playing or arming audio.
             SfxDirector.ObserveSection(activeTab);
-            production.Present(new ProductionOverview(host.Client, snapshot), Run);
+            production.Present(new ProductionOverview(host.Client, snapshot,designerActor), Run);
             details.Clear();
             switch (activeTab)
             {
-                case "Designer": break; // Persistent workspace view; never a campaign panel.
+                case "Designer": break; // Persistent local draft with stamped campaign actions.
                 case "Audio": ShowAudio(); break;
                 case "Research": ShowResearch(snapshot); break;
                 case "Saves": ShowSaves(); break;

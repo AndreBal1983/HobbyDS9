@@ -7,6 +7,6 @@
     "Editor"
   ],
   "overrideReferences": true,
-  "precompiledReferences": [],
+  "precompiledReferences": ["HobbyDS9.Application.dll", "HobbyDS9.Contracts.dll"],
   "autoReferenced": false
 }
