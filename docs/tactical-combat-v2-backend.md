@@ -124,6 +124,8 @@ Fixtures use 1,000 hull and four 50-point shields; focus fire naturally destroys
 
 ## Follow-up gates before campaign cutover
 
+Playground follow-up, 13 October 2026: the [interactive console sandbox](tactical-combat-v2-playground.md) adds host-only fixtures, reports and round-boundary persistence. It also tightens standalone v2 validation: positive shield recharge requires a positive power requirement, rejecting the zero-required/zero-allocated/positive-recharge edge case. Passive zero-power sectors without recharge remain legal; campaign v1 and the v2 reference vector are unchanged. The original backend acceptance counts above describe PR #9; the playground document records its separate validation.
+
 1. Version the compiler/content contract to produce complete mount coverage, powered class weapons/cadence, armor, fixed sector maxima and recharge. Retain immutable old blueprint revisions and their original compiler/validation behavior; reject incomplete v2 conversions rather than inventing equipment.
 2. Decide persistent shield/ammunition/recovery/replenishment semantics and deliberate Save/Content/Rules version identities, including explicit backward rejection or separately authorized migration. The current v1 ship state contains hull, not these new persistent pools.
 3. Add a versioned encounter allocator and session-owned round checkpoints: lawful observations, simultaneous order gathering/actor validation, transactional round/result submission, batch canonicalization, save boundaries, retreat destinations and objective consequences. Validate results against original frozen fits; detached fixture DTOs alone are not an authorization boundary.
