@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0": {
+      "hobbyds9.application": {
+        "type": "Project",
+        "dependencies": {
+          "HobbyDS9.Contracts": "[1.0.0, )",
+          "HobbyDS9.Simulation": "[1.0.0, )"
+        }
+      },
+      "hobbyds9.contracts": {
+        "type": "Project"
+      },
+      "hobbyds9.simulation": {
+        "type": "Project",
+        "dependencies": {
+          "HobbyDS9.Contracts": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}
