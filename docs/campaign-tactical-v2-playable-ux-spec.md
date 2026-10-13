@@ -1,352 +1,315 @@
-# First playable campaign Tactical Combat v2 — UX specification
+# First playable campaign Tactical Combat v2 — reconciled UX specification
 
-Review date: 13 October 2026. Revised against the owner's product review of commit `bb8982682f4440ef93aba3c164d28609ec893f02`. Status: **proposed interface; documentation only; design discussion and accepted campaign lifecycle required before implementation**. Incorporating the review's proposals does not mark them or D1–D8 agreed.
+Reconciliation date: 13 October 2026. Status: **agreed player behavior; proposed interfaces and technical details; documentation only**. This supersedes the interface proposals in local revisions bb89826 and d4d12ae where they conflict with the dated lifecycle decisions. It does not implement or activate campaign v2.
 
-This specification describes the first campaign-owned, interactive v2 slice. It is not an acceptance report or evidence that campaign v2 is playable. The annotated wireframes are proposed layouts, not screenshots. No production Unity files, backend contracts, serialized versions or gameplay are changed.
+Unity implementation waits for reviewed authoritative campaign lifecycle contracts and actual campaign-owned round → save/resume → finalization → successive-battle proof. Textual wireframes are proposals, not rendered or native acceptance. No production Unity/backend files, saves, runtime versions or gameplay are changed.
 
-## Review basis and decision status
+## Sources, checkpoints and precedence
 
-The documentation branch starts at local main `4e1a365fbae52591ddfc593200fae7b1f79a53db`. This is a recorded local checkpoint, not a claim about current remote main or the acceptance of incoming branches. Runtime capability statements below distinguish this base from the separately inspected v2 source checkpoint.
+This separate documentation branch retains local base 4e1a365fbae52591ddfc593200fae7b1f79a53db. The current accepted combined checkpoint is **53d2e64973d9081a4d0090e771f5e777fc55cf40**, verified by fetching origin/main during this reconciliation. Its tree matches the earlier reviewed combined candidate 22096fb56d81d203f194a6c0407d7de76721d93c. No branch was merged into this documentation branch.
 
 Read together:
 
-- [Design index](design/README.md), [tactical combat](design/tactical-combat.md), [ship design](design/ship-design.md), [strategic AI](design/strategic-ai.md), [time and movement](design/time-movement-mobilisation.md), and [exploration/repair direction](design/exploration-missions.md).
-- [Architecture](architecture.md), [blueprint construction v1](blueprint-construction-v1.md), and [existing combat orchestration/reports](combat-ux-report-fix-v1.md). Historical version/count statements in these documents remain historical.
-- Local planning inputs: the [next-step plan](E:/HobbyDS9/docs/next-step-preparation.md), dated 13 October 2026, and its [equipment preparation prompt](E:/HobbyDS9/docs/prompts/tactical-v2-authored-equipment-foundation.md). These remain untracked in the primary checkout and are not distributed project documentation on this branch; this change does not copy, revise or dispatch them. Initial plan SHA256: `366d996d84cd229356e7db2fa1bc7ea6ef947daa724d3ae0ff65fb20df736fb6`; updated plan read for this revision: `3efeff42de896a6842cd2190b0dd94b7a40de8e27130776d1efa4dab8bfa5b59`. The agreed product constraints are restated below so review does not depend on those local files being present. Replace these machine-local references with repository-relative links when the planning files are actually committed alongside the specification; do not create links to absent files or imply their distribution now.
-- The owner's local [UX review](E:/HobbyDS9/docs/campaign-tactical-v2-ux-review.md), dated 13 October 2026, SHA256 `9f1bc03a8242998abae307f1ef176cfad180dde7ac66f15c4c64590d1f0452fe`. It is also an untracked review input, not a document included in this branch. The response matrix and staged decision gates below preserve its recommendations without requiring access to that file.
-- Pinned incoming source checkpoint `27ed955296b2a4ce8b86f1b65d663c389023e99e`: [standalone backend](https://github.com/AndreBal1983/HobbyDS9/blob/27ed955296b2a4ce8b86f1b65d663c389023e99e/docs/tactical-combat-v2-backend.md), [console playground](https://github.com/AndreBal1983/HobbyDS9/blob/27ed955296b2a4ce8b86f1b65d663c389023e99e/docs/tactical-combat-v2-playground.md), and [campaign inspection/migration report](https://github.com/AndreBal1983/HobbyDS9/blob/27ed955296b2a4ce8b86f1b65d663c389023e99e/docs/campaign-tactical-combat-v2-integration.md). Actual [contracts](https://github.com/AndreBal1983/HobbyDS9/blob/27ed955296b2a4ce8b86f1b65d663c389023e99e/src/HobbyDS9.Contracts/TacticalCombatV2Contracts.cs), [order validation](https://github.com/AndreBal1983/HobbyDS9/blob/27ed955296b2a4ce8b86f1b65d663c389023e99e/src/HobbyDS9.Simulation/TacticalCombatV2State.cs), and [one-round resolver](https://github.com/AndreBal1983/HobbyDS9/blob/27ed955296b2a4ce8b86f1b65d663c389023e99e/src/HobbyDS9.Simulation/DeterministicTacticalCombatV2Resolver.cs) were inspected for the semantics below. Their presence on that branch does not establish their presence or acceptance on this documentation base.
+- Repository design context: [index](design/README.md), [ship design](design/ship-design.md), [strategic AI](design/strategic-ai.md), [time and movement](design/time-movement-mobilisation.md), [architecture](architecture.md), and [blueprint construction](blueprint-construction-v1.md). These relative links exist on this branch; their historical implementation statements do not establish new lifecycle support.
+- **Latest agreed behavior:** the owner's amended [tactical chapter](E:/HobbyDS9/docs/design/tactical-combat.md) and [lifecycle milestone](E:/HobbyDS9/docs/campaign-tactical-v2-lifecycle-spec.md), both dated 13 October 2026. These primary-checkout inputs are modified/untracked and are not distributed by this branch. The relative [older tactical chapter](design/tactical-combat.md) remains historical context; the dated decisions consolidated below govern this revision. Earlier open statements about mutual cloak, next-encounter cloak initialization, command-unit identity and ordinary scan detail are superseded by the later explicit decisions.
+- The [reconciliation assignment](E:/HobbyDS9/docs/prompts/campaign-tactical-v2-lifecycle-ux-reconciliation.md), [next-step plan](E:/HobbyDS9/docs/next-step-preparation.md), and earlier [product review](E:/HobbyDS9/docs/campaign-tactical-v2-ux-review.md) are local review inputs, not files included here. Use repository-relative links only after those target documents actually exist in the delivery branch.
+- Accepted [combined report](https://github.com/AndreBal1983/HobbyDS9/blob/53d2e64973d9081a4d0090e771f5e777fc55cf40/docs/inspection-designer-combined-acceptance.md), read at that exact checkpoint. Its 1,358 .NET / 116 Unity tests, IL2CPP/native acceptance and unchanged determinism are recorded executions, not reruns here. Its original draft/unmerged wording is historical; the accepted merge checkpoint above supersedes it.
+- Equipment delivery [report](https://github.com/AndreBal1983/HobbyDS9/blob/be02572fc3fc2cfdb90cdd9ad763bbdf3d79716b/docs/tactical-v2-authored-equipment-foundation.md) and [typed source definitions](https://github.com/AndreBal1983/HobbyDS9/blob/be02572fc3fc2cfdb90cdd9ad763bbdf3d79716b/src/HobbyDS9.Contracts/AuthoredTacticalEquipmentDtos.cs), pinned at **be02572fc3fc2cfdb90cdd9ad763bbdf3d79716b** (also the fetched equipment branch head). The report records 1,507 tests and Content 11 source support alongside legacy Content 10; Save 14 and the v1 path remain unchanged. The planning inputs describe this as PR #19 awaiting acceptance; this reconciliation does not merge or establish acceptance of it.
+- Historical [standalone backend](https://github.com/AndreBal1983/HobbyDS9/blob/53d2e64973d9081a4d0090e771f5e777fc55cf40/docs/tactical-combat-v2-backend.md), [playground](https://github.com/AndreBal1983/HobbyDS9/blob/53d2e64973d9081a4d0090e771f5e777fc55cf40/docs/tactical-combat-v2-playground.md) and [inspection report](https://github.com/AndreBal1983/HobbyDS9/blob/53d2e64973d9081a4d0090e771f5e777fc55cf40/docs/campaign-tactical-combat-v2-integration.md). Their fixture targeting/protection and observation capabilities are not campaign permissions.
 
-**Agreed slice constraints:** a separate, explicitly opt-in scenario with authored v2 ships; finite persistent ammunition and four directional shield stocks; persistent hull damage; no automatic between-battle recovery or ammunition refill; existing v2 in-battle recharge; destruction/basic battles with a maximum of three rounds; no strategic retreat, Breakthrough or other objective exits. Existing v1 ships and designer-built v1 blueprints stay on their supported path, without inferred conversion.
+Read-input SHA256 identities: lifecycle milestone a61e29d88c7c2d77752803adf596ecfc323eefb0c7e86bfb4c678d0966358033; latest tactical chapter 1dee3914fdd69ebcba9b5be0b03684d9e04210c2f4a912941636dc6ebd24f4e8; assignment 69da4851cb4cd1eea498576046b9d61c29f55696cc15439be73569c99423451c. These identify local inputs, not committed source versions.
 
-**Proposed here:** screen structure, labels, order editing/review, target picker behavior, report presentation, save prompts and completion flow. **Open:** the decisions in the discussion register. Examples supply illustrative data or explicitly identified standalone evidence, never approved campaign balance.
+### Agreed behavior and remaining scope
 
-The broader design agrees future objectives and cinematic visualization. Their exclusion from this slice is deliberate phasing, not a reversal. The older design/architecture descriptions of encounter-local resetting shields apply to v1; they must not be copied into the opted-in persistent v2 path. Recovery proposals in the migration report do not override the owner's narrower no-recovery decision.
+**Agreed, 13 October 2026, source: latest tactical chapter and lifecycle milestone linked above:**
 
-**Simulation enforcement requirement:** basic Defeat objectives alone do not prevent extraction. The standalone Disengage maneuver can extract under another objective. The opt-in campaign allocator/order validator must reject Disengage, Breakthrough and every other excluded extraction/objective-exit path, including initial or loaded standing orders, retained orders and new replacements. Enforce the restrictions before round mutation/RNG consumption, regardless of which client supplies orders. Menu visibility is presentation only. Fighting Withdrawal remains an in-battle range change, with no strategic destination or exit. This is a required lifecycle gate, not a validator implemented by this specification.
+- One strategic fleet equals one tactical command unit. Same-route fleets remain separate. No automatic tactical wings, role-group splitting or merging.
+- Player controls are fleet maneuver and enemy-fleet focus. Ships select suitable individual targets and contribute automatically from actual installed capabilities. Ship selection opens inspection, not firing orders.
+- Screening protects ships within the same fleet only. Put escorts and transports together strategically. No allied-fleet protection picker or cross-fleet defensive contribution.
+- Every new battle starts Distant between opposing fleet formations. Later rounds maneuver normally. Initial facings and mobility/aggregation formulas remain open; no universal tactical slowest-ship rule or label-based composition bonus.
+- Focus is a preference among lawful firing targets. Automatic visible-hostile fallback preserves standing focus and is explained in reports; deterministic ranking remains open.
+- Visible enemy ship types, hull condition and shield strength are shown. Enemy reserves and freshly selected orders stay hidden across planner, inspection, tooltips, reports and replay. Own equipment/resources remain fully inspectable.
+- One strategic fleet cloak setting governs approach: capable ships cloak, incapable members stay visible. Cloaked ships have ordinary round-one fire against visible targets without offensive targeting of themselves. This is targeting protection, not an extra attack or round; ordinary resources/cadence/opportunities apply.
+- Incoming torpedoes from hidden launchers can trigger ordinary automatic defensive reactions. No per-torpedo order, guaranteed interception or free capacity. All surviving cloaked ships reveal at round-one end regardless of firing and stay revealed through that encounter.
+- Mutual full cloak produces maneuver-only round one, then reveal. It counts toward the three-round maximum; nonexistent offensive shots spend no ammunition or offensive firing opportunities.
+- Survivors retain hull, four shield stocks and finite ammunition. No automatic between-battle recovery/refill. Meeting and engaging stops all participating fleets' remaining travel in the encounter sector; interrupted routes do not execute after battle. Other fleets are unaffected.
+- Next-turn Planning accepts fresh strategic orders to leave, stay/re-engage or follow. Pursuit uses ordinary physical map movement and lawful same-sector/time engagement, with no separate catch roll or remote interception minigame. Mutual stay-and-combat produces a new encounter next turn with retained stocks, not a fourth round or same-turn loop.
 
-### Reconciliation with the combined candidate
+**Preserved agreed initial scope:** authored opt-in v2 ships; basic destruction/three-round battles; no strategic retreat or objective exits during battle; no conquest/objective reward; no v1 blueprint conversion, refits, resupply economy, subsystem targeting or advanced tactical AI. Post-battle strategic leave/follow orders do not introduce within-battle exits.
 
-The [combined acceptance report](https://github.com/AndreBal1983/HobbyDS9/blob/22096fb56d81d203f194a6c0407d7de76721d93c/docs/inspection-designer-combined-acceptance.md) at exact delivery head `22096fb56d81d203f194a6c0407d7de76721d93c` was read for this revision. It combines the inspection and live v1 designer histories, records 1,358 .NET tests, 116 Unity tests, IL2CPP/native acceptance and unchanged compatibility/determinism, and explicitly keeps campaign v2 disabled. Those are the report's recorded results, not tests rerun here. The owner's review records PR #18 as draft/unmerged and exact-head CI successful; this revision does not independently assert a newer remote PR state or establish a merged checkpoint.
+**Proposed:** screen layouts, five-maneuver menu, exact display precision, reports/warnings, confirmation wording and saving committed state while retaining local unsent edits. Remaining formulas, cloak operational power/cost semantics, shared travel timing, version identities and persistence contracts are open. Broader anti-cloak counter-detection and strategic fog-of-war systems are outside this slice.
 
-The standalone contracts, state validation, one-round resolver and Application inspection files are unchanged between the pinned source head `27ed955…` and combined delivery head `22096fb…` (Git blob comparison). The capability map below therefore still describes their limits; live v1 publication/construction acceptance supplies no campaign-v2 lifecycle, equipment or persistent stock contract.
+## Current capability versus required authority
 
-This documentation branch deliberately retains its original local base; incorporating production integration commits is outside this change. **Before implementation**, reconcile against the actually accepted combined main SHA and accepted equipment/lifecycle contracts, replacing historical capability references where appropriate. A candidate acceptance report, or a later equipment-completeness projection alone, is not permission to build the Unity slice. No entire acceptance rerun is commissioned by this documentation revision.
-
-## Capability and dependency map
-
-| Area | Existing capability at the inspected checkpoint | Required campaign dependency / proposed UX |
+| Area | Existing capability at inspected checkpoints | Missing campaign behavior / interface dependency |
 | --- | --- | --- |
-| One round | Pure `ResolveRound` accepts an explicit standalone encounter and joint replacements, returns detached state and immutable events | Session-owned encounter and human-authorized round transaction; the UI must not submit a fixture/result as campaign authority |
-| Standing orders | Formation `StandingOrder`; omitted formations retain orders; supplied orders replace all fields | Campaign persistence and lawful actor-scoped observation; UI shows retained versus unsent changes |
-| Targets | Optional enemy formation preference plus `LowestId`, `LowestHullRatio`, `CommandSupport`, `Screen`; optional allied Screen protection | Campaign actor/side validation, explicit scenario observation policy and advisory legal choices; no locked individual-ship target API exists |
-| Geometry | Pairwise categorical range and both facings; provisional maneuver contests, arcs and screening | Authored capabilities, accepted formation mapping and initial geometry; no camera coordinates determine access |
-| Stocks | Four current/max shield sectors, hull, weapon-level finite torpedo ammunition, cadence and recharge in standalone state | Persistent campaign resources bound to exact authored fits, frozen encounters and atomic aftermath |
-| Completion | `Decisive`, `Objective`, `RoundLimit`; Disengage may extract even under Defeat in the standalone resolver | Simulation must reject excluded maneuvers and every extraction/objective-exit path, including standing orders; Defeat-only objectives and hidden buttons are insufficient |
-| Inspection | Incoming source-inspection capability inventories real v1 sources; activation remains blocked | Equipment foundation must provide complete authored v2 data; completeness alone must not enable live rounds |
-| Save/resume | Standalone host round-boundary saves; existing campaign v1 pending/buffered checkpoint saves | Versioned campaign v2 boundaries, standing orders, resources, local RNG and report retention policy; standalone JSON is not a campaign save |
-| Campaign completion | V1 stamped buffering and atomic batch finalization exist | V2 batch validation/aftermath must commit survivor resources and destruction exactly once; existing v1 operations are not automatically v2 APIs |
-| Unity reports | Existing v1 planner, phase reports and recent client-memory history | New presentation of actual campaign v2 observations/results; no v2 UI is implemented by this document |
+| Equipment sources | Equipment candidate validates complete authored fits, essential power reservations, fixed maxima and initial provisions; detached owned-source inspection | Initial provisions are content facts, not persisted current battle pools. No cloak capability/state support or live activation follows from source completeness |
+| Round resolver | Standalone one-round resolution, standing orders, pair geometry, shields/ammunition, immutable events and three-round completion | Session-owned authorized rounds, fleet-local screening, cloak/visibility and agreed automatic targeting/mobility need accepted rules/contracts and independent vectors |
+| Protection/target policy | Standalone supports designated allied-formation protection and ship-priority fields | Reject cross-fleet protection and exclude player priority controls on campaign path; do not silently change standalone goldens |
+| Campaign checkpoint | V1 pending/buffered combat and atomic finalization exist | Saved current v2 pools/orders/visibility, filtered reports, joint commitments, stop-travel consequences and atomic v2 aftermath remain lifecycle work |
+| Movement | Existing weighted strategic navigation exists | Physical intermediate same-sector/time contact, simultaneous travel boundaries and stop behavior require scoped authority, not a UI chase calculation |
+| Unity | Accepted live v1 designer/publication/construction and existing v1 reports | This document supplies no v2 runtime interface, new command or native evidence |
 
-No new API names, method signatures, command discriminators, error enums or save-version numbers are specified here. Phrases such as “commit round” and “complete battle turn” below are proposed user actions and required behaviors, not repository APIs. Backend contracts must be reviewed separately before a Unity implementation prompt is written.
+No fictional API names or signatures are supplied. The actions below identify required authoritative behavior only. Do not submit combatant DTOs, opponent orders, geometry, stocks, seeds or results as player commands. Application presents detached lawful facts; Simulation validates ownership, phase, stamps, permitted orders, resources, replay and outcome.
 
-## Player journey and state boundaries
+Basic Defeat objectives alone do not prevent standalone Disengage extraction. Simulation must reject all excluded exit paths, including initial, loaded, retained and replacement orders. Menu hiding is insufficient. Fighting Withdrawal changes tactical range while staying in battle. Cross-fleet defensive access must be prevented in acquisition, interception and consequences, not merely omitted from the order payload.
 
-1. Explicitly choose the opt-in scenario. Read that damage and ammunition carry into later battles and resupply/recovery is absent in this slice. Normal campaign selection remains normal v1 behavior.
-2. At an authoritative encounter checkpoint, read location, participants, current round and owned formations. Open the round planner without executing gameplay.
-3. Retain or edit owned formation orders using lawful start-round observations. Inspect own ships and known contacts. Review all changed orders before commitment.
-4. Commit **one** round. Backend gathers lawful opposing decisions without revealing or reacting to newly submitted human choices, validates and resolves. Disable repeated submission while awaiting the authoritative response.
-5. Read the round report and boundary stocks. If unfinished, retain or revise orders for the next round. Save/resume at a supported stable boundary.
-6. When an encounter ends, review its outcome. If other encounters remain, proceed to them. Only the backend's complete batch permits final campaign completion and return to Planning.
+Engagement must halt remaining participant travel at the actual contact point, before it can execute farther along the route. The checkpoint records that interruption; finalization preserves the halt and prevents the old route from becoming executable again. The legacy end-of-Movement-only detector does not prove this behavior. A shared authoritative travel/contact timeline is a lifecycle activation gate, not a post-battle UI cancellation or a client-side chase check.
 
-| Screen state (presentation terms) | Primary action | Meaning / restrictions |
-| --- | --- | --- |
-| Equipment/lifecycle unavailable | Review reason / Back | No “Play v2” fallback through a fixture or v1 conversion |
-| Round ready, no unsent edits | Review retained orders | Does not mutate standing orders or advance a round |
-| Round ready, edited | Review changes | Local editing only; switching tabs preserves edits for this encounter/actor/boundary |
-| Order review | Commit round N | Explicit single-round commitment, including unchanged retained orders |
-| Awaiting authoritative response | Disabled commit; show progress | No Save/Load replacement racing a transaction; never retry automatically |
-| Round report, unfinished | Plan round N+1 | Opens editing, does not resolve the next round |
-| Encounter complete, batch unfinished | Next encounter | No round 4 and no strategic End Turn |
-| All encounters complete, aftermath pending | Complete battle turn | Explicit atomic campaign completion, not report acknowledgment |
-| Finalization rejected | Review reason / Refresh | Remain at checkpoint; completed encounters are not re-resolved |
-| Finalization accepted | Return to campaign | Display authoritative Planning state; do not call another End Turn |
+## Proposed player actions and their authority
 
-Persistent header: scenario mode, location, actor, encounter, **round N of up to 3**, and “Battle turn incomplete” until finalized. Technical stamps/IDs are available in an expandable diagnostic panel, not the primary player flow. Do not describe one tactical round as a week or advance the strategic calendar during report playback.
+| Proposed UI action | Required authoritative behavior; no API promised |
+| --- | --- |
+| Enable fleet approach cloak in strategic Planning | Own controllable fleet, observed stamp and legal Planning phase; persist setting and derive per-ship eligibility from explicit equipment and accepted operational rules. Never infer capability from names |
+| Select own fleet / inspect ship | Read permitted immutable facts; no mutation, RNG, target assignment or stock change |
+| Draft fleet maneuver / enemy-fleet focus | Local edits bound to session, actor, encounter and round. Backend supplies lawful choices; no protection destination or player ship-priority field |
+| Review and commit round N | Validate complete permitted fleet-order replacements, preserve other standing fields, jointly commit lawful opposing choices and resolve exactly one round. Reject before mutation/RNG; no automatic refresh/retry |
+| Retain orders | Explicit commitment of the next round with current standing intent; do not reselect targets in Unity or pre-resolve later human choices |
+| Save committed battle state | Export supported stable authoritative boundary; proposed host behavior retains local unsent edits but does not serialize or commit them |
+| Load boundary | Validate fully before replacing session; restore committed resources/orders/round/setting once. Successful replacement drops old drafts; failed load retains session/draft |
+| Complete battle turn | Once all encounters complete, atomically apply current survivor pools/destruction and travel stop, clear batch, complete existing strategic turn once and open next Planning |
+| Leave / stay and seek combat / follow next turn | Fresh strategic orders through actual map access/knowledge/engagement rules; no same-turn continuation, teleport, catch-roll modal or hidden route disclosure |
 
-### Tactical observations without a new fog-of-war milestone
+The strategic cloak control is an agreed player setting with a proposed UI. It is not a mid-battle re-cloak button. Show current accepted setting separately from an unsent strategic change and per-ship current visibility. Zero eligible members cannot gain capability through enabling it; eligibility/reasons must come from authority.
 
-Actor/controller ownership and withholding freshly selected opponent orders are mandatory. D4 must explicitly decide which enemy geometry, equipment, stock values and resolved actions the first authored scenario may reveal at each boundary. It may choose a simple, declared observation policy; this specification does not select one, implement sensors/intelligence or require a new strategic fog-of-war system. A “contact” below means a participant entry permitted by that policy, not a new detection/tracking state machine.
+## Annotated wireframe A — strategic approach and round planner
 
-The planner, target picker and report must use the same lawful observations supplied by the accepted lifecycle. Show exact enemy values only if permitted, otherwise omit them or use the contract's unavailable/unknown wording without leaking hidden identities. Even a policy permitting full equipment/geometry inspection does not permit counter-picking fresh opponent orders or automatically disclose every private event in an omniscient standalone trace. Information restrictions are owned by the backend projection/commit boundary, not invented or bypassed by Unity.
-
-## Annotated wireframe A — entry and round planner
-
-**Proposed standard layout, 1920 × 1080.** All numbers/names in wireframes are illustrative. Bracketed numbers refer to annotations, not controls.
-
-```text
-+----------------------------------------------------------------------------------+
-| [1] OPT-IN V2 CAMPAIGN | Border region | Round 1 / up to 3 | Battle turn incomplete |
-+---------------------+-----------------------------------+------------------------+
-| [2] YOUR FORMATIONS  | [3] TACTICAL RELATIONSHIPS          | [4] ORDERS: Escort     |
-| > Escort    2 ships | Escort -> Attack wing             | Standing: Hold & Fire  |
-|   Transport 1 ship  | Range: Engagement                 | Maneuver [Screen    v] |
-|                     | Own facing: Fore                  | Range [Engagement   v] |
-| CONTACTS            | Contact facing: [known value]     | Protect [Transport  v] |
-| Attack wing [known] |                                   | Priority [Damaged   v] |
-| Policy [info]       | ABSTRACT RELATION, NOT A MAP       | Prefer [Attack wing v] |
-|                     | No drag-to-steer or distance ruler| [5] Unsent change      |
-+---------------------+-----------------------------------+------------------------+
-| [6] Escort stocks: Hull / Fore / Port / Starboard / Aft / torpedo stocks [Inspect] |
-| Orders persist until changed. Target preference does not guarantee a firing shot. |
-+----------------------------------------------------------------------------------+
-| [Back to campaign] [Save / Load] [Discard edits]             [Review round 1 orders]|
-+----------------------------------------------------------------------------------+
-```
-
-1. Entry briefing uses “Authored v2 scenario — persistent damage and ammunition; no resupply or between-battle shield recovery.” Activation is backend-gated, not inferred from the scenario's display name.
-2. Only actor-owned, active formations receive editable orders. Other participants are read-only entries permitted by the still-open scenario observation policy (D4), not proof of a new strategic fog-of-war system. Authored sides, rather than faction names, determine hostility. Formation creation/splitting is outside this slice.
-3. Select a pair to show its range and both facings only to the extent lawfully observed. Multiple hostile formations require a pair list; one global range or one facing arrow cannot represent every opponent. Decorative positions cannot select firing arcs.
-4. Show practical maneuver names first. Optional pattern callouts from the design chapter remain secondary proposed aliases, not additional buffs. Details scroll independently of the formation list.
-5. Always distinguish **Standing**, **Unsent change**, and **Committed for round N**. Changing selection, opening Reports or returning to the campaign tab does not lose edits or commit them.
-6. Formation totals are secondary; individual-ship stocks remain inspectable. Never average four shield facings into one apparently healthy bar. The footer is outside all scrolling panels.
-
-### Round orders and review
-
-Proposed initial maneuver menu: Maintain Distance / Hold & Fire, Charge, Flank, Screen, Fighting Withdrawal. Hold/Flank/Screen show the standalone preferred-range categories Distant, Engagement, Close, Intermixed. Hide irrelevant range inputs for Charge and Fighting Withdrawal while preserving their full order data explicitly; range is a preference, not a promised final position.
-
-Fighting Withdrawal means **open tactical distance while remaining in this battle**. It must not trigger strategic movement or extraction. Simulation must reject Breakthrough and Disengage in this slice, even under a Defeat objective and even when supplied as retained/loaded orders; the menu also omits them. Pursuit exists in the standalone resolver but its inclusion in the initial menu is an open choice (D5); omission is a proposed UX simplification. Do not expose Hold/Delay objectives, retreat thresholds, exit destinations, per-shot power switches, subsystem targets, repair or refill controls. Screen protection is not an Escort crossing objective.
-
-Screen adds “Protect allied formation” with lawful eligible allies or “Own formation only” (no external protected ID). Switching away from Screen clears its incompatible protection field in the proposed replacement and shows that change in review. No silent changes to the backend's committed standing order occur during editing.
-
-The review sheet lists every controlled active formation: old → proposed maneuver, range, target priority, concentration and protection; unchanged rows say **Retained**. Supply complete replacements for changed formations only once the real lifecycle contract defines submission. Standalone replacement DTO defaults do not mean “retain the omitted field”; partial field patches would lose prior choices. Missing required opening orders must be surfaced from the backend, never filled with Unity-invented defaults.
-
-Primary button: **Commit round N**. Help: “Resolve this round using these orders. Later rounds wait for your decision.” Committing retained orders is explicit; no automatic multi-round or quick-resolve action in the first UI proposal. No opponent's newly chosen orders appear on the review sheet. Outcome, target access and firing cannot be guaranteed by review.
-
-## Annotated wireframe B — legal target selection
-
-```text
-+-----------------------------------------------------------------------+
-| [1] Escort — target preference for round 2                             |
-| Priority: [Most damaged hull ratio v]                                 |
-| Prefer formation:                                                     |
-| (*) No formation preference                                           |
-| ( ) Attack wing      [2] Selectable; currently screened                |
-| ( ) Distant contact  [2] Selectable; weapon opportunity may change      |
-| (x) Destroyed wing   [3] Unavailable for a new selection                |
-|     Other contacts are shown only when lawfully known                  |
-|                                                                       |
-| [4] Preference applies among eligible targets; screening, arcs, range, |
-|     power, cadence and ammunition still determine actual fire.         |
-| [Cancel]                                          [Use in order draft] |
-+-----------------------------------------------------------------------+
-```
-
-1. Targeting has two distinct fields: **ship priority** and optional **formation preference**. Map labels honestly: LowestId → “Stable target order” (not “optimal fire at will”); LowestHullRatio → “Most damaged hull ratio”; CommandSupport → “Command/support first”; Screen → “Screens/escorts first.” These prioritize eligible ships, not a selected subsystem or named locked ship. Individual-ship selection opens inspection only.
-2. Separate **legal order preference** from **current firing opportunity**. A visible hostile formation may be a lawful concentration even if screened or currently beyond an energy weapon's reach. Maneuver happens after commitment and can change opportunity. Show current restrictions only when the backend supplies lawful advisory reasons; do not disable a valid tactical intent by calculating future fire in Unity.
-3. New selection must use authoritative selectable choices. Standalone validation checks side relationships but does not provide actor-scoped visibility or require an active target for every retained preference. Campaign selection restrictions are a dependency, not a claim that this picker already exists. Unknown contacts must not leak names, hull, hidden orders or equipment via disabled entries or tooltips.
-4. If the preferred formation becomes destroyed/ineligible, show the retained preference as unavailable and explain the actual backend fallback: preference is among eligible targets; remaining lawful targets may receive fire, or there may be no eligible shot. Do not silently rewrite the standing ID. Whether campaign validation retains historical preferences or requires replacement is D3. “No formation preference” clears concentration intentionally; it does not clear the ship priority.
-
-Protection uses a separate allied picker. Only backend-authorized allies may be protected; an enemy or a contact inferred from a name cannot qualify. Protecting a lawful ally does not grant permission to edit that ally's orders. Whether another actor's allied formation can be protected follows the campaign side/authorization contract, not an own-faction guess. If a protected ally is lost, show that state and the backend's remaining Screen behavior, not a fabricated replacement ally.
-
-## Annotated wireframe C — ship condition and finite stocks
-
-```text
-+-----------------------------------------------------------------------+
-| [1] Escort / Ship A | Exact authored fit | Start of round 2             |
-| HULL 90 / 100 [damaged]       Armor: 0 [read-only]                      |
-|                                                                       |
-|                            FORE 0 / 40 [depleted]                      |
-|              PORT 13 / 40   [ship silhouette]   STARBOARD 40 / 40       |
-|                             AFT 5 / 40                                 |
-| [2] Fixed facing maxima. No redistribution. Own facing vs wing: Fore.  |
-|                                                                       |
-| WEAPON PACKAGE           STOCK / STATUS                               |
-| Forward torpedo launcher 1 / 3 rounds | Powered | Ready this round     |
-| Beam array               No physical ammo | Powered | Ready           |
-| Cannon package           No physical ammo | Unpowered                 |
-| [3] Details: coverage, cadence, power and reported firing opportunity  |
-| [4] Last round: 2 torpedoes launched; 1 intercepted; 1 missed           |
-|     Recharge: Port +3; Fore hit this round, recharge suppressed         |
-| [Close inspection]                                                    |
-+-----------------------------------------------------------------------+
-```
-
-1. Values are observed boundary state, labelled by round, not a speculative animation counter. Hull damage remains damage after battle, load, view refresh and profile selection. Destruction is terminal according to the authoritative result; show an immutable report row even if the campaign entity will be removed.
-2. Fore/Port/Starboard/Aft are ship-relative labels, independent of screen/camera orientation. Each sector shows exact current/max, a bar and a textual state; colors alone are insufficient. Zero maximum displays “No capacity — 0/0,” not a percentage division or an inferred equipment diagnosis. A pair selector changes the exposure highlight, not the sector stocks. Backend recharge may restore damaged sectors but never transfer points from an intact facing.
-3. Show torpedo stock per installed package because the standalone fields are weapon-level. A collapsed ship total is optional and secondary; it must not imply different variants share a transferable pool. Energy weapons say “No physical ammunition,” not infinity. Ready/cooling down, out of ammunition, unpowered and no current opportunity are different states. Display only reasons provided by authoritative data; package cadence/power cannot be changed here.
-4. A fired torpedo costs one stock even if intercepted or missed. Failed beam interception attempts also spend firing opportunities; they do not consume fictional beam ammunition. Recharge has a finite ship-wide budget and power requirement; standalone current defaults prioritize Fore → Port → Starboard → Aft, suppress hit sectors, and recharge only if another round remains. These are provisional backend rules, not UI balance promises. No recharge occurs on early completion or after round 3.
-
-For values too large for a bar label, keep exact numbers in selectable text/details. Presentation formatting must not clamp authoritative integers or infer combat changes by subtracting animated bars. Critical depletion warnings are proposed textual callouts; warning thresholds are D8, not new legality rules.
-
-## Annotated wireframe D — resolved round report
+Proposed 1920 × 1080 layout. Illustrative names and values; brackets identify annotations.
 
 ```text
 +--------------------------------------------------------------------------------+
-| [1] ROUND 1 RESOLVED | Battle ongoing | Round 2 awaiting your orders              |
+| STRATEGIC FLEET A [1] Approach cloak [Enabled]  Capable members: own facts only  |
+| Applies to next encounters. No recovery/refill. [Review strategic change]       |
 +--------------------------------------------------------------------------------+
-| [2] MANEUVER: Escort / Attack wing: Engagement -> Engagement                     |
-|     Known facings: Escort Fore; attack wing Starboard                            |
-|     FIRE: 2 torpedo launches; 1 intercepted; 1 missed                             |
-|     LOSSES: Ship A Fore -20; hull -10; no ship destroyed                          |
-|     STOCKS: launcher 3 -> 1; recharge Port +3                                    |
-| [3] These values illustrate report structure, not one executed fixture result.   |
+| OPT-IN V2 | Border sector | Round 1 / up to 3 | Battle turn incomplete          |
++-----------------------+--------------------------------+-----------------------+
+| [2] YOUR FLEETS        | [3] SELECTED FLEET / RELATION   | [4] FLEET ORDERS       |
+| > Fleet A             | Fleet A -> visible Fleet X     | Standing: Hold & Fire |
+|   cruiser + transport | Opening range: Distant         | Maneuver [Screen v]   |
+|   Fleet B             | Own exposure: reported facing  | Focus [Fleet X v]     |
+|   separate escort     | Enemy types / hull / shields   | Unsent change         |
+|                       | [Inspect visible ship]         |                       |
+| VISIBLE HOSTILES      | No enemy reserves or new orders| Same-fleet screening  |
+| Fleet X [observed]    | Abstract geometry, no steering | [Composition details] |
++-----------------------+--------------------------------+-----------------------+
+| [5] Own ship inspection: hull | Fore | Port | Starboard | Aft | finite magazines |
+| Orders persist. Focus is preference, not guaranteed fire or subsystem targeting.|
 +--------------------------------------------------------------------------------+
-| [4] EVENTS [expand] | Ship filter [All v] | Formation filter [All v]              |
-| #   Maneuver / discharge / interception / hit / shield / armor / hull / recharge  |
-| ... Ordered authoritative rows; selected event opens details                    |
-+--------------------------------------------------------------------------------+
-| [5] Standing orders retained. No later round has been resolved.                  |
-| [Back to campaign] [Save / Load] [Inspect stocks]           [Plan round 2]        |
+| [Back to campaign] [Save / Load] [Discard edits]          [Review round 1 orders]|
 +--------------------------------------------------------------------------------+
 ```
 
-1. Show early decisive completion, ongoing state or round-limit completion from the backend. Never label a nondecisive round limit “Victory.” Round 3's primary action becomes encounter review/next encounter, not Plan round 4.
-2. Explain cause and effect using authoritative geometry/events: changed exposure, actual discharges, interception attempts/successes, misses, sector absorption, armor mitigation, actual hull loss, destruction and recharge. “Attempted yield,” “landed damage,” “post-armor damage” and “actual hull loss” differ; intercepted/missed yield does not count as shield loss. No arbitrary rounding of valid large totals or double counting armor and hull is permitted.
-3. Report wireframe values are illustrative. The worked examples below separate actual standalone evidence from a hypothetical stock ledger.
-4. Preserve event sequence. Filters hide rows without renumbering or reordering them. An optional compact replay may highlight those already-resolved events; skipping/replaying it never resolves, spends stocks or draws RNG. No cinematic 3D work is necessary for the first slice. Report visibility follows D4's explicit first-scenario observation policy, not a newly promised strategic fog-of-war system. An omniscient fixture trace, including opponent `OrderCommitted` events or private equipment, is not automatically safe for human display; Unity must not treat it as player intelligence.
-5. Report acknowledgment is presentation state. Plan round 2 reuses committed orders and opens editing; it does not invoke another round. A report remains associated with its encounter and boundary, not whichever strategic fleet is currently selected. Save-time report retention is D7.
+1. Strategic strip illustrates the separate Planning control. At an active checkpoint it is read-only accepted approach setting, not an executable mid-battle change. All cloaked survivors reveal at the round-one boundary without clearing the approach setting.
+2. Fleet A's ships are one command unit. Fleet B remains separate even if it follows the same route. No automatic escort wing or transport formation is created.
+3. Every opposing pair starts Distant; later pairwise range/exposure comes from the backend. Enemy inspection reveals permitted visible types, hull and shield strength, never magazines. Facing initialization/display precision remain proposals.
+4. Only maneuver and enemy-fleet focus are player tactical controls. Screen is fleet-local. Composition details explain actual contributing equipment, defensive opportunities used and lost offense; they do not assign buffs by class names.
+5. Exact own per-ship inspection remains available. Fleet condition summaries do not replace four directional pools. Lists and details scroll independently; footer stays reachable.
 
-## Annotated wireframe E — save/resume and unsent edits
+Proposed initial maneuvers: Maintain Distance / Hold & Fire, Charge, Flank, Screen, Fighting Withdrawal. Pattern aliases may accompany practical names as proposed presentation only. Pursuit's inclusion as a tactical menu item remains D5; post-battle strategic following is already agreed and is a different action. Breakthrough, Disengage, objectives/retreat destinations and individual firing/power controls are absent and authoritatively excluded.
+
+A preferred-range field is not part of the main controls. The campaign must determine any needed range-policy inputs under reviewed rules; standalone defaults or omitted DTO fields cannot become accidental player policy. Review lists each owned active fleet's retained versus proposed maneuver/focus. Complete replacements follow the eventual lifecycle contract, not invented partial patches.
+
+## Annotated wireframe B — fleet focus and no visible enemy
 
 ```text
-+-----------------------------------------------------------------------+
++------------------------------------------------------------------------+
+| [1] Fleet A — preferred enemy fleet for round 2                         |
+| (*) No fleet preference                                                |
+| ( ) Fleet X [visible] — legal preference; fire access may change        |
+| ( ) Fleet Y [visible] — legal preference; not a guaranteed shot         |
+| [2] Standing focus unavailable — retained; fallback is automatic       |
+| Individual visible ships: [Inspect condition] — no firing selector     |
+| [Cancel]                                         [Use in order draft]  |
++------------------------------------------------------------------------+
+| [3] NO VISIBLE ENEMY                                                   |
+| Possible attack. Proceed cautiously; standing orders are unchanged.    |
+| No hidden names, ship counts, fleet counts or stock/position details.   |
+| Choose your fleet maneuver; commit only through the normal review.     |
++------------------------------------------------------------------------+
+```
+
+1. The focus picker contains lawful visible hostile choices from authority. A legal preference can currently lack firing opportunity; future maneuver, range/arcs, screening, power, cadence and ammunition still constrain acquisition. Unity does not compute them.
+2. Destroyed/unavailable focus is preserved. Automatic selection may use another visible hostile with valid targets; it does not overwrite standing focus. Report the lawful reason and observed alternate target. Where no valid target exists, no shot is manufactured. “No preference” is an explicit player clear, not an automatic fallback rewrite. Previously known identity is shown only to the extent permitted; unavailability must not confirm hidden survival/location.
+3. Warning wording is proposed; caution is agreed. The authoritative encounter may contain hidden opponents, but the player projection must not reveal their identities/counts. Do not substitute Screen, add defensive opportunities or disclose hidden launchers when incoming ordnance appears. No strategic detection/tracking minigame is introduced.
+
+## Annotated wireframe C — individual condition, composition and visibility
+
+```text
++------------------------------------------------------------------------+
+| YOUR FLEET A / CRUISER [1] Exact authored fit and current round boundary |
+| Hull 220 / 220 | Armor 10 | Own power/reservations [Details]             |
+|                       FORE 18 / 40                                     |
+|          PORT 25 / 25   [ship outline]   STARBOARD 12 / 25               |
+|                       AFT 0 / 20                                       |
+| Torpedo launcher: 7 / 12 [2] | Beam/Cannon: no physical ammunition       |
+| Cadence / power / coverage: backend-reported readiness [Details]        |
+| Approach cloak: Enabled | Current state: [backend status]               |
+| [3] Fleet Screen contribution: actual attempts/successes and limits     |
++------------------------------------------------------------------------+
+| VISIBLE ENEMY SHIP [4] Type: observed | Hull condition: observed         |
+| Shield strength / facing detail: permitted observation                  |
+| Ammunition reserves: not disclosed | Upcoming orders: not disclosed     |
+| [Close inspection]                                                     |
++------------------------------------------------------------------------+
+```
+
+1. Cruiser values are the equipment report's **provisional source facts**, not a live battle capture. PR #19 supplies initial Fore/Port/Starboard/Aft values and caps; it does not expose persisted current v2 combat stocks. A future live inspector must label actual current boundary data and never refill it from source provisions.
+2. Own magazines are per installed package/munition. Energy weapons have no physical ammunition; no fictional infinite torpedo pool. Show out of ammo, unpowered, cadence and no firing opportunity as different backend-reported states.
+3. A capable cruiser/capital ship may contribute screening, not only an Escort-labelled hull. Fast escorts keep useful individual tactical mobility; the exact model is open. Show actual contribution/finite opportunity costs and saturation. Fleet B cannot contribute defense to Fleet A merely by ownership, route or proximity.
+4. Enemy types/hull/shield strength are agreed visible facts; exact precision is D4. Hide reserves, powered-fit internals not granted by observation, private orders and unrevealed ships. Own cloak eligibility here is illustrative future data: PR #19 has no authored cloak capability.
+
+Four sectors remain ship-relative, not camera-relative. Display exact own current/max with text and bars; zero capacity is 0/0 without percentage division. No shield redistribution, manual firing, repair, refill, profile swapping or re-cloak control exists in battle. In-battle recharge follows accepted pinned rules only; it does not transfer intact sector points or create between-battle recovery.
+
+## Annotated wireframe D — resolved round report and reveal
+
+```text
++--------------------------------------------------------------------------------+
+| ROUND 1 RESOLVED [1] | Battle ongoing | Round 2 awaits orders                     |
+| Maneuver: authoritative pairwise range / exposure changes                       |
+| Own Screen: attempts / successes / penetrating threats, no generic bonus        |
+| [2] Incoming torpedo intercepted; launching ship unavailable in that observation|
+| Own torpedoes: actual launches and retained stock | Enemy launches: observed only|
+| [3] Round-one reveal: surviving formerly cloaked ships are now visible           |
+| [4] Focus fallback: Fleet X unavailable; visible Fleet Y acquired where legal    |
+| Standing focus: Fleet X (retained)                                               |
++--------------------------------------------------------------------------------+
+| EVENTS [expand] | Ship / fleet filter [visible permitted entries only]           |
+| Original sequence order, filtered authoritative rows, no hidden stock fields    |
++--------------------------------------------------------------------------------+
+| [Back to campaign] [Save / Load] [Inspect stocks]                   [Plan round 2]|
++--------------------------------------------------------------------------------+
+```
+
+1. Summaries show observed maneuver/fire/actual shield/hull loss, armor and destruction; attempted yield, landed damage and actual hull loss differ. No local combat math or stock change drives the report. Own defensive attempts, including failures, consume real firing opportunities.
+2. Incoming ordnance may be a defensive target without its launcher being an offensive target. Report an observed incoming threat without hidden launcher identity or remaining enemy reserves. Defensive reactions are automatic and constrained by actual equipment/coverage/power/cadence/opportunities.
+3. Reveal occurs at the authoritative round-one end even if neither side fired. Use the boundary's newly permitted enemy type/hull/shield observations; do not retroactively reveal concealed launcher/private fields in earlier events. No UI timer or animation decides targetability.
+4. Explain visible-target fallback while retaining focus. If no eligible shot occurred, say so without leaking hidden candidates. Filters/tooltips/replay/debug details presented to players must obey the same observation boundary. Do not dump a full standalone event trace.
+
+Playback/skip/report acknowledgment is presentation only, never a second RNG draw, launch or recharge. Round limit means survivors remain, not a fabricated winner. No round 4. Enemy-reserve privacy holds after reveal and after completion. Fresh opposing commitments cannot be disclosed for counter-picking.
+
+## Annotated wireframe E — committed save with local edits retained
+
+```text
++------------------------------------------------------------------------+
 | SAVE CAMPAIGN — round 1 resolved; round 2 ready                         |
-| [1] Saved: authoritative checkpoint, standing orders and finite stocks |
-| [2] You have unsent round 2 changes. These are not committed orders.    |
-|     They stay in this session but are not stored in this save.         |
+| Saved data: committed boundary, orders and persistent stocks           |
+| [1] Unsent changes stay in this running session but are not saved.      |
 |     Successful load or restart loses them.                             |
-| [Cancel]                               [Save committed battle state]  |
-+-----------------------------------------------------------------------+
-| LOAD CONFIRMATION                                                     |
-| Slot: same opt-in scenario | Round 2 ready | Battle turn incomplete     |
-| [3] Replaces this campaign after validation; unsent edits will be lost. |
-| [Cancel]                                                [Load slot]   |
-+-----------------------------------------------------------------------+
+| [Cancel]                                [Save committed battle state] |
++------------------------------------------------------------------------+
+| LOAD CONFIRMATION: valid boundary restores round 2 ready                |
+| [2] Successful replacement discards this session's unsent edits.        |
+| [Cancel]                                                   [Load slot] |
++------------------------------------------------------------------------+
 ```
 
-**Revised proposal, still awaiting interaction review:** campaign saves at a stable start-round, resolved-round, completed-encounter or ready-to-finalize batch boundary once the lifecycle supports it. Primary action **Save committed battle state** saves the authoritative checkpoint and keeps the local order draft in the running session. An unsent draft is not stored in that save; explain this before saving and state that successful load or process restart loses it. Saving neither commits nor requires discarding those edits. The subsequent save-slot overwrite confirmation remains separate; Cancel preserves the live draft and the prior file.
+1. **Revised UX proposal, still pending interaction review:** saving committed state retains the local draft, does not commit it and does not require discard. Failed save retains prior valid file, live campaign and edits. Success leaves the draft labelled Unsent, not Saved order. Discard is a separate deliberate action. Slot overwrite confirmation remains separate.
+2. Successful load/restart restores committed state only. Failed validation/load preserves old session/draft/reports. Do not match old drafts to replacement sessions by coincident IDs. Navigation/resize preserves local edits; changing session/actor or quitting warns appropriately. Save-and-quit warns of unsent-edit loss and stays open on failed save.
 
-Failed save must retain the valid prior save, live campaign and local edits, with an explicit failure message. After a successful save the unsent draft still shows **Unsent change**, not “Saved order,” and returning to the same planner retains it. **Discard edits** remains a separate deliberate planner action; it is not a prerequisite, side effect or recovery action for saving. This is a UX proposal, not a campaign v2 save contract implemented now.
+Accepted v1 save behavior and standalone boundary saves do not constitute accepted **campaign-v2** persistence. The required lifecycle must preserve current pools, standing focus/maneuver, approach setting, round/completion/visibility, exact fits/identities, encounter-local RNG, all pending/staged encounters and replay protection. Current-batch report retention, waiting-for-human boundaries and exact version identities remain open. Save 14/Content 11 source support does not reserve the live lifecycle versions.
 
-The backend save must preserve opt-in identities, exact source fits/stock caps, all pending/completed encounters, next-round/completion state, accepted standing orders, local RNG and command/replay protection. Do not reset shields/ammunition on load or reconstruct them from maxima. Exact schema/version identities and order-commit boundaries are unresolved backend work (D6), not specified here.
+Disable session replacement while a round transaction is in flight; reconcile an ambiguous response through authoritative refresh, never automatic retry. No future human rounds are pre-resolved. Saved round 1 resumes round 2 without replaying round 1 or granting recharge/reveal again.
 
-After successful load, drop old session drafts/selections, capture fresh authoritative observations and open the loaded boundary: round 1 resolved means **round 2 ready**, not replay round 1 to reconstruct state. Failed validation/load leaves the prior campaign, drafts and reports intact. In-flight submission disables session replacement until its definitive response is reconciled. A lost/ambiguous response requires an authoritative refresh; no silent resubmit or fresh command ID to force another round.
-
-Navigation to strategic/read-only pages preserves local order edits in the same session. Starting a different campaign, changing the controlled actor or loading another slot warns that unsent edits will be lost and offers Cancel; successful session replacement clears them, while failed load preserves them. Returning to the campaign screen does not retreat. End Turn and strategic mutating orders remain blocked at an unfinished combat checkpoint. Quitting may offer **Save committed state and quit**, with an explicit warning that unsent edits will be lost on exit, or Cancel. A failed save keeps the session and edits open; no automatic advancement or forced discard occurs.
-
-## Annotated wireframe F — encounter and campaign completion
+## Annotated wireframe F — aftermath and fresh strategic orders
 
 ```text
-+------------------------------------------------------------------------------+
-| [1] ENCOUNTER COMPLETE — ROUND LIMIT (3 / 3)                                  |
-| Survivors on both sides. No victory, extraction or objective reward asserted. |
-| Your survivors: Ship A hull 90/100; shields F3/P13/S40/A5; torpedoes 0/3         |
-| [2] AFTERMATH PENDING — these stocks are the staged encounter result.         |
-+------------------------------------------------------------------------------+
-| [3] BATTLE TURN                                                               |
-| Border region: complete          Second region: awaiting round orders         |
-| Complete battle turn [disabled: 1 encounter remains]       [Next encounter]   |
-+------------------------------------------------------------------------------+
-| WHEN ALL ENCOUNTERS ARE COMPLETE                                              |
-| [4] Review losses and retained stocks [Save checkpoint] [Complete battle turn]|
-| ACCEPTED: Turn complete / Planning | stocks applied | [Return to campaign]    |
-| REJECTED: Checkpoint unchanged | reason [Review] [Refresh]                     |
-+------------------------------------------------------------------------------+
++--------------------------------------------------------------------------------+
+| ENCOUNTER COMPLETE — ROUND LIMIT 3 / 3 | Survivors remain in encounter sector     |
+| [1] Actual retained hull / four shields / ammunition | AFTERMATH PENDING          |
+| Participating travel stopped; previous routes will not resume                   |
+| Other encounters: authoritative status [Next encounter]                         |
+| [Save checkpoint] [Complete battle turn: enabled only when batch is ready]       |
++--------------------------------------------------------------------------------+
+| AFTER ACCEPTED ATOMIC COMPLETION — NEXT PLANNING                                 |
+| [2] Fleet A: same sector, retained stocks, no extra same-turn movement            |
+| Previous interrupted route [reference only]                                     |
+| Fresh strategic order: [Leave via lawful route] [Stay / seek combat] [Follow]    |
+| [3] Follow uses map movement and lawful contact knowledge, not a catch roll      |
+| Approach cloak setting: retained; capability/conditions checked next encounter   |
++--------------------------------------------------------------------------------+
 ```
 
-1. Use outcome language supplied by the backend: decisive with identified survivor sides, mutually destroyed if applicable, or **Round limit — survivors remain**. Completion is distinct from a strategic victory condition. Do not manufacture a winner from damage totals.
-2. Encounter resources may be staged until batch finalization. Label them accordingly; a strategic ship inspector must not display stale pre-battle values as if they were its final v2 condition. After acceptance, show actual persisted hull, all four shields and ammunition. No post-completion recharge, repair, resupply or profile-selection heal occurs.
-3. Mixed checkpoints list real encounter status/resolver availability. Do not resolve all remaining human rounds because another encounter finished. An unsupported mixed v1/v2 encounter reports a backend blocker; no implicit scalar-to-equipment conversion. V1 and v2 encounters may only coexist if the lifecycle routing explicitly supports that batch (D2).
-4. Finalization requires every encounter complete and a backend-authorized atomic transaction. It applies survivor stocks/destruction in canonical order, completes the already-processed strategic turn exactly once and opens the next Planning state. A stale/repeated/invalid completion leaves state and RNG unchanged; earlier completed encounters remain available for review. A failure in a later encounter rolls back the whole attempted aftermath, not just the last ship.
+1. Until finalization, label stocks as staged results. When every encounter is complete, atomic authority applies all survivor pools/destruction and travel stop once in canonical order, clears the batch and opens next Planning. Failure preserves every staged result and the whole pre-finalization campaign; do not re-resolve completed encounters.
+2. Sector retention, travel stop and fresh next-turn orders are **agreed**, no longer an unanswered “return-to-campaign” choice. Old routes are non-executable; optional reference/explicit new-order proposal remains UI detail. Other fleets are unaffected. Finalization does not advance calendar twice, restore movement, heal or replenish.
+3. Follow/leave/stay are proposed presentations of agreed strategic behavior. Physical same-sector/time contact and lawful engagement are required. No departure catch roll, remote route contest, invisible destination, teleport or path-crossing-only encounter. A slower pursuer may fail to reach contact. Both leaving use lawful routes. Mutual stay-and-combat gives a new next-turn encounter, beginning Distant with retained pools and approach cloak applied again.
 
-**Release gate D1:** round-three survivors' actual location, route continuation and renewed-contact policy are unresolved. This wireframe intentionally has no invented escape/teleport, conquest reward, automatic new battle loop or “continue past enemy” rule. “Return to campaign” cannot be advertised as playable until lawful backend aftermath exists for a nondecisive third round. Returning to the strategic UI is navigation, not relocation.
+Shared travel timeline, simultaneous arrival/departure, weighted-edge occupancy and precise contact/engagement commands remain backend gates (D1), not a UI minigame or decided formula. Do not present these strategic controls as implemented while that lifecycle is absent.
 
-## Worked examples
+## Worked examples and acceptance cases
 
-### Example 1 — real standalone maneuver evidence, not a campaign walkthrough
+All campaign examples below are **illustrative required behaviors, not executed runtime acceptance**. Equipment report facts are identified separately; no new numeric balance or formulas are approved.
 
-The pinned playground report records the `cruiser` fixture at seed 47. Round 1 Flank keeps Engagement range and exposes the attack wing's Starboard while the cruiser retains Fore. The forward-only attackers emit no offensive discharges. Three Flank rounds leave cruiser hull **220/220** and enemy hull total **132**. Three Charge rounds instead leave cruiser hull **63/220** and enemy hull total **170**. Both end at the round limit; neither proves campaign aftermath or declares a winner.
+### Example 1 — same route, separate fleets
 
-Proposed player explanation: “Flank gained lateral exposure. Their forward weapons had no offensive discharge this round.” Only show that causal statement when the actual report supports it; do not predict automatic Flank success before commitment. The UI can place a practical order beside the optional “Attack Pattern Delta Three” alias, with no new rule attached.
+Fleet A contains a transport. Friendly Fleet B contains capable escorts. They share owner, route and encounter sector but retain distinct identities/maneuver/focus. Fleet B's Screen cannot protect Fleet A's transport. No protection picker appears and no silent merging or escort wing occurs. Opening pairs are Distant. Acceptance must check actual defensive access/results, not just absent controls.
 
-The same report's `screen` fixture records four beam opportunities spent and three torpedoes intercepted in its first Screen round, with no landed damage to the protected transport. A failed interception still costs an opportunity. The report should show **4 attempts / 3 successes**, not suggest unlimited defense. These are authored standalone demonstrations, not the new scenario's approved equipment or opponent behavior.
+### Example 2 — same-fleet escorted transport and composition
 
-### Example 2 — hypothetical three-round stock ledger
+Before battle, the player strategically places the transport and capable escorts in Fleet A. One Screen order lets suitable powered packages contribute within that fleet automatically, including suitable cruiser hardware. If a hypothetical accepted report records four interception attempts and three successes, show 4 attempts / 3 successes, finite opportunities spent (including failure), and any penetrating threats; do not turn it into a class-label percentage buff.
 
-**Illustrative accounting only; not executed acceptance or an approved fit.** Suppose a fully validated, explicitly authored Ship A has hull 100/100, armor 0, fixed shield maxima 40 each, entry stocks Fore 20 / Port 10 / Starboard 40 / Aft 5, and one launcher with 3/3 torpedoes. Its recharge budget is 3, fully powered, with the inspected provisional suppression/priority rules. All packages and mandatory systems have feasible authored reservations; the UI does not invent power. This ledger assumes the backend produced the stated events, cadence permits those launches, and opponents survive all three rounds.
+Use the equipment candidate's provisional cruiser as an inspection example: reactor 100, distribution 80, essentials 26, equipment budget 54; allocations 36 leave 18 unused. Its hull 220, shield caps 40/25/25/20, initial shields 18/25/12/0 and launcher 7/12 are authored source facts. They neither prove a live escort model nor imply fully recovered pools. Tactical speed 70 is independent of strategic movement; a universal minimum-speed/average aggregation is not adopted. Mobility and contribution formulas must be reviewed with actual fits.
 
-| Boundary | Authoritative events assumed for this example | Hull | F / P / S / A current | Torpedoes |
-| --- | --- | --- | --- | --- |
-| Entry, round 1 ready | No initial replenishment | 100 | 20 / 10 / 40 / 5 | 3 |
-| Round 1 resolved | Incoming landed yield 30 on Fore: absorb 20, armor 0, hull loss 10. Two own launches: one intercepted, one misses. Fore hit suppresses recharge; Port receives 3 | 90 | 0 / 13 / 40 / 5 | 1 |
-| Round 2 resolved | No incoming hit; one own launch misses. Recharge gives Fore 3 | 90 | 3 / 13 / 40 / 5 | 0 |
-| Round 3 complete | No incoming hit; exhausted launcher does not discharge. No recharge after completion | 90 | 3 / 13 / 40 / 5 | 0 |
-| Finalization accepted | Persist exactly these survivor values, once | 90 | 3 / 13 / 40 / 5 | 0 |
-| Later lawful encounter entry | No refill, recovery or hull heal; later encounter creation itself changes none of these stocks | 90 | 3 / 13 / 40 / 5 | 0 |
+### Example 3 — automatic focus fallback and hidden reserves
 
-Save after round 1, load, retain orders and commit round 2 must reproduce the same remaining events/resources/RNG as uninterrupted play given identical subsequent orders. Reloading repeatedly must not grant another Port +3. The later encounter row is conditional on D1 being resolved; it grants no rule for triggering a fresh battle. In that later battle, ordinary in-battle recharge may again occur at unfinished round transitions; this is not between-battle recovery.
+Fleet A retains focus X. At a firing opportunity, X is destroyed or supplies no lawful target; visible hostile Y has an eligible target. Backend acquires Y and reports the lawful reason, while standing focus stays X. It never acquires hidden Z or reveals Z's identity/count. Individual ship choice is automatic; no player priority dropdown.
 
-If the player first drafts a different round-2 maneuver, **Save committed battle state** stores this same round-1 checkpoint and retained standing orders while leaving the unsent change visible in the running planner. Continuing without loading preserves that local change for later review. Loading the save successfully or restarting loses the unsent change and restores only the accepted standing orders; a failed save or failed load preserves the running draft. This extension illustrates the revised proposal, not an executed v2 save test.
+An observed enemy torpedo launch may appear in the report. The player sees the visible enemy's type, hull and shield strength, but no “remaining ammo,” inferred magazine fill bar, private reserve total or fresh order. Own stock display remains exact. Fallback ranking and exact visible condition precision remain open.
 
-### Example 3 — persistent intent, loss of a preferred target and stale editing
+### Example 4 — fully cloaked fleet versus visible fleet
 
-At round 1, Escort is ordered Screen, protect Transport, prefer Attack wing, prioritize command/support. Round 2 opens with the same standing fields. The player only changes priority to most damaged hull ratio; the review must retain Screen, protected Transport and concentration, rather than fill other fields from DTO defaults.
+Fleet A's accepted strategic cloak setting is on and every member has future explicitly authored cloak capability. Visible hostile Fleet X is a lawful offensive target. Round one begins Distant; any eligible attacks are ordinary round-one attacks, consuming normal power/opportunities/cadence/ammunition. Fleet X cannot offensively target A's cloaked ships. Incoming torpedoes may trigger X's ordinary defenses without revealing their launchers.
 
-If Attack wing was destroyed, its historical preference remains visibly unavailable. Existing standalone acquisition would fall back to another eligible hostile, not shoot a destroyed ship. New campaign rules must decide whether that retained ID is accepted or requires correction (D3). The UI must show the decision/reason returned by that contract and allow an explicit clear/change; it must not invent an alternate target or promise fire through screening.
+A's ships stay protected through round one even after firing. At its end all surviving A ships reveal, whether they fired or not. Round two permits ordinary targeting. There is no extra volley, round or refill, and no re-cloak control. PR #19 currently provides no cloak capability: this case requires new accepted source/state/resolver support.
 
-If another accepted command changes the observed boundary before commitment, the user's old proposal is rejected without stocks/RNG changing. Show “Battle state changed. Review the current round before committing.” Keep the rejected proposal for comparison within the same session; refresh authoritative facts explicitly, mark conflicts, require a new review. A campaign load clears that old proposal instead of attaching it to matching IDs in the replacement session. No automatic refresh-and-retry and no forged opponent orders.
+### Example 5 — mixed cloak within one fleet
 
-### Example 4 — two encounters and a failed campaign commit
+Fleet A has one capable cloaked ship and one incapable visible transport; it stays one command unit. The transport can be targeted normally in round one. The hidden member may fire at visible enemies and contribute allowed same-fleet defense under accepted rules; its presence must not make the transport invisible or disclose the hidden member via fleet totals. A visible member must not reveal all hidden members. Capability/defensive eligibility is authoritative, not inferred from a role label. All surviving hidden members reveal at round-one end.
 
-Encounter A finishes round 2 decisively; encounter B finishes round 3 with survivors. A's completion does not open Planning or refill its ships. Save the whole checkpoint, load it, and present A as completed and B at its stored boundary without replaying either. Once both are complete, enable finalization only if authoritative eligibility permits it. If B's aftermath validation fails, show the failure and preserve both staged results plus the pre-finalization campaign. The UI does not apply A's hull loss separately or advance a calendar to hide B's blocker. D1 must first define B's lawful survivor placement and future-contact policy.
+### Example 6 — mutual cloak and caution
 
-## Responsive presentation and interaction acceptance proposal
+Both opposing sides are fully cloaked. Their player projections show no visible enemy, not a fabricated named/contact-count list. Show the proposed caution message and retain maneuver/focus. Round one maneuvers with no offensive targets or shots; no offensive ammunition/opportunities/hit rolls are spent on nonexistent fire. Both reveal at the end; rounds two/three fight normally from authoritative resulting geometry. Round one counts toward the same three-round maximum, with no compensating round. Costs for cloak or other non-offensive operations remain separate open rules.
 
-| Size | Proposed adaptation | Review target, not claimed runtime evidence |
+### Example 7 — saved round boundary with unsent changes
+
+After round 1, reveal/stocks/standing focus are authoritative. The player drafts a different round-2 maneuver, then saves committed state. Proposed host behavior keeps that draft locally; the file excludes it. Failed save or failed load preserves the running draft and prior valid state/file. Successful load/restart resumes round 2 with accepted orders only, without a second reveal/recharge or reconstructing stock from initial provisions. Given identical subsequent orders, uninterrupted and resumed campaign events/pools/RNG must match. This is a future lifecycle acceptance case, not existing Save-14 proof.
+
+### Example 8 — successive depleted battles, travel stop and pursuit
+
+Illustrative survivor boundary: hull 90/100; fixed caps 40 each; Fore/Port/Starboard/Aft current 3/13/40/5; launcher 0/3. After round 3, no final-round recharge occurs under preserved compatible v2 rules. Atomic finalization retains exactly those values and stops participant routes at the encounter sector. Fresh next-turn choices are leave, stay/re-engage or follow; no same-turn movement resumes.
+
+If both hostile survivors stay and choose combat, next-turn authority allocates a new encounter with those depleted values, not 100 hull/full shields/three torpedoes. Opening range is Distant. Persistent approach cloak may apply to capable survivors again; it changes no stocks. Ordinary in-battle recharge may occur at allowed unfinished transitions, not between encounters.
+
+If one leaves and another follows, physical shared travel determines contact: a faster fleet can only catch where actual routes/budgets/time permit; a slower one cannot get a compensating roll. Mutual departure follows normal routes. Acceptance must demonstrate mid-turn engagement stopping remaining travel and simultaneous arrival/departure policies, not only equal end positions. Exact travel timing is still open.
+
+## D1–D8 decision register, reconciled
+
+Each **agreed** entry below is dated 13 October 2026 and sourced to the latest tactical chapter/lifecycle milestone. Partial resolution must not be relabelled wholly open or wholly implemented.
+
+| ID | Agreed behavior now resolved | Remaining proposed/open work |
 | --- | --- | --- |
-| 1280 × 720 | Two columns: compact selectable formations, tabbed relationship/orders/ship panel; report replaces central panel. Bounded list/detail scrolling; persistent footer | All order fields reachable without clipping; commitment, Back, Save/Load and dirty-state message always reachable |
-| 1920 × 1080 | Wireframe A three columns; inspection/report drawers; full practical labels | Pairwise geometry and all four sectors readable; draft and retained order distinction obvious |
-| 3440 × 1440 | Bounded readable orders/inspection width; extra area for pair list and report, rather than stretched text or tiny typography | No detached confirmation far from its context; same command behavior and essential controls |
+| D1 Aftermath/contact | Same-sector survivors, retained pools, stopped participating travel, fresh next-turn orders, physical strategic pursuit, mutual next-turn re-engagement; no same-turn repeat/catch roll | Shared travel/event timing, simultaneous arrival/departure, weighted-edge occupancy, lawful follow/engagement details and multi-encounter atomic conflicts |
+| D2 Command/composition | One fleet/one formation; separate same-route fleets; fleet-local screening; automatic meaningful individual contributions; every new battle Distant | Mobility/capability aggregation and screening formulas, initial facings, exact rules/resolver versions and mixed v1/v2 routing. No automatic wing or universal tactical bottleneck-speed assumption |
+| D3 Focus/targeting | Fleet focus only; automatic suitable individual targets, visible-hostile fallback, retained focus and report explanation; no protected allied-fleet target | Deterministic fallback/within-fleet ranking, no-focus default policy and precise authoritative unavailable-focus reasons. Remove obsolete player ship-priority and protection decisions |
+| D4 Observation/cloak | Visible types/hull/shields, concealed enemy reserves/fresh orders; strategic approach setting, per-ship mixed cloak protection, ordinary round-one fire, defensive reaction, end-R1 reveal, mutual maneuver-only R1 | Precision/other scan detail, explicit cloak capability/power/cost/state contracts, permitted geometry visibility and baseline opponent policy. No new strategic fog-of-war or advanced counter-detection implementation implied |
+| D5 Orders/menu | Simple fleet maneuver plus enemy focus; persistent intent; no per-ship fire management or within-battle exit orders | Five-maneuver menu/aliases, tactical Pursuit inclusion and backend automatic preferred-range policy; strategic following is already agreed |
+| D6 Save/resume | Required authoritative round-boundary resume without recovery/refill; committed standing intent/approach behavior must survive appropriate lifecycle boundaries | Exact save/content/rules identities, ledger/commit/waiting boundaries. Saving committed state while retaining unsent local draft remains UX proposal, not accepted v2 persistence |
+| D7 Reports | Apply observation/privacy and fallback explanation to all player reports/replay; never rerun combat for display | Current-batch event/report retention and compact projection schema, finalization history handling. Proposed current-batch saved reports; no permanent campaign archive |
+| D8 Readability | Own exact pools inspectable, visible enemy condition available under agreed observation limits | Warning thresholds, report density, precision, confirmation wording and responsive/focus details remain interface proposals |
 
-Reuse LCARS visual vocabulary in a later implementation, with black field, segmented rails, readable numeric text and plain practical labels. Keep shape/text cues alongside status colors. Logical keyboard focus follows header → formation list → selected details → footer; Enter in a field must not commit a round. Commitment happens only from its focused explicit action/review. Escape cancels the active modal before changing screens. Tooltips supplement visible reasons, not hide essential validation. Focus/scroll/resize cannot submit commands. No mouse/keyboard/desktop session was launched for this documentation work.
+Equipment acceptance and reviewable mobility/cloak/visibility/travel contract proofs precede lifecycle activation. Backend rounds, current pools, simultaneous commitments, filtered projections, save boundaries and atomic aftermath must be proven before Unity. Documentation can proceed in parallel; it does not require unmerged API names or dispatch another chat.
 
-Future acceptance must use a real campaign-owned headless R1 → save → R2/R3 → atomic finalization proof before Unity. Cover lawful targets/protection separately from immediate firing opportunity, owned versus foreign actors, the declared observation policy and withheld fresh opponent orders, unavailable/mixed sources, retained fields, target loss, zero/large stocks, cadence/empty ammunition, sector depletion/recharge, simultaneous destruction, stale/duplicate commitments, rejected finalization and multi-encounter saves. Test excluded exit maneuvers under Defeat through direct submissions and initial/loaded/retained orders, with rejection before mutation/RNG; Fighting Withdrawal remains in-battle. Confirm dirty-draft saving retains edits, successful load/restart loses unsent edits, and failed save/load preserves both the running draft and valid previous save where applicable. Then test the actual UI at all three sizes and distinguish Unity/native evidence from CI. This is an acceptance proposal, not a request to run gameplay tests now.
+## Responsive and future acceptance matrix
 
-## Unresolved choices for the design discussion
-
-| ID | Decision and worked consequence | Proposed discussion starting point / gate |
+| Size | Proposed layout | Review criterion; no rendered/native claim |
 | --- | --- | --- |
-| D1 | Nondecisive round 3: where do survivors remain, what happens to routes, when can a fresh encounter occur? Example 2 cannot simply restart while co-located; example 4 cannot finalize via teleport | Resolve authoritative geography/contact policy before lifecycle implementation. No UX default can settle it; no free exit or implied objective reward |
-| D2 | Fleet-to-formation mapping, capability aggregation, initial pair geometry and mixed-source routing. One escort and transport cannot acquire guessed ratings or invented sides | First authored scenario should make source/membership/capabilities explicit; actual formation policy and whether mixed v1/v2 encounters reject or route separately require backend design |
-| D3 | Retained concentration/protection referencing a destroyed formation: keep historical preference with eligible fallback, or require repair of orders? Example 3 exposes the difference | Prefer visible retained intent plus backend fallback where legal; distinguish this proposal from standalone's weaker side-only order validation |
-| D4 | Explicit first-scenario observation policy for enemy geometry/equipment/events, deterministic baseline opponent policy, joint commit timing and local multiple-human handoff | Ownership and withholding fresh opponent orders are mandatory. Exact visible enemy facts remain open; no new strategic fog-of-war system is promised. Never copy an omniscient trace into player intelligence. Resolve policy/commit boundary before lifecycle work; advanced tactical AI and multiplayer stay deferred |
-| D5 | Initial maneuver menu and naming: include Pursuit when extraction is excluded? Are pattern aliases useful beside practical names? | Begin with five practical maneuvers listed above; discuss Pursuit separately. No Breakthrough/Disengage or objective menu, regardless of labels |
-| D6 | Exact campaign save identities, supported commit/save boundaries and behavior if a response is lost | Save only authoritative stable boundaries; no partial joint commitment assumption or guessed Save/Content bump. Discuss whether committed-waiting states need persistence |
-| D7 | Which resolved reports/events survive checkpoint saves and finalization? V1 recent history is client memory, not persistent campaign history | Minimum: enough saved authoritative data to resume without resolving again. Propose retaining current batch round reports while pending; long-term report archive/replay remains separately scoped |
-| D8 | Depletion warnings, report summary density and finalization confirmation | Exact stocks always visible; discuss zero versus low-stock warnings and a single review before finalization. Do not turn a warning threshold into a gameplay restriction |
+| 1280 × 720 | Compact fleet list; tabbed relationship/orders/inspection; separate scrolling detail/report; fixed footer | Maneuver/focus, Back, Save and review/commit reachable; all four own sectors and privacy-safe enemy condition readable |
+| 1920 × 1080 | Wireframe A columns with inspection/report drawers | Retained versus unsent intent clear; no protection/priority controls; own pools and reveal/fallback legible |
+| 3440 × 1440 | Bounded readable controls, wider pair/report area | No stretched tiny text or detached context; identical authoritative behavior |
 
-### Decisions and gates by stage
+Use text/shape as well as LCARS status colors. Selection, scrolling, keyboard focus and resizing cannot submit a command. Enter in an edit field cannot commit a round. Preserve local drafts across tabs. No scientific/gameplay value is calculated by the presentation.
 
-| Stage | Inputs / open choices | Required treatment |
-| --- | --- | --- |
-| Equipment foundation | Complete authored fit, power reservations, initial stocks and explicit per-ship capabilities with actual version identities | Prepared backend scope only; no guessed formation aggregation or activation. Revise the illustrative equipment examples when the real contract is delivered, retaining their provisional labels until reviewed |
-| Campaign lifecycle | D1 survivor geography/contact; D2 formation/geometry/mixed-source routing; D4 scenario observations/baseline AI/joint commitments; D6 authoritative saves; D7 current-batch report persistence | Resolve before commissioning lifecycle implementation; enforce excluded exit paths in Simulation and prove campaign-owned rounds/save/resume/atomic aftermath |
-| Unity interaction specification | D3 lost target/protection intent; D5 menu/Pursuit; D8 warnings/reports/confirmation; revised unsent-edit save behavior | Confirm against accepted lifecycle projections, then finalize the Unity implementation prompt. No runtime UI work while lifecycle is absent |
+Future acceptance must prove all eight examples against campaign-owned authority, including direct cross-fleet protection rejection and excluded exit paths even under Defeat, mixed-source refusal where unsupported, hidden reserve/order/launcher privacy in every player projection, legal automatic fallback, cadence/stock/overflow handling, early/mutual destruction, stale/repeated commands, failed save/load and full later-encounter aftermath rollback. Preserve legacy v1 and standalone-v2 goldens; new lifecycle rules receive independent vectors. Only then exercise actual Unity/native controls at all three sizes, reporting CI separately from local runtime evidence.
 
-Suggested design-round order: actual equipment and formation/source mapping → initial geometry and scenario observations → nondecisive round-three aftermath/contact → baseline orders and persistence/report details. Use real authored equipment once available; do not settle rating formulas from placeholder numbers. Proposed defaults remain retained intent with lawful backend fallback, practical names first, exact stocks with zero-stock warnings, current-batch report retention across saves and no campaign-long archive. No response or product review implies agreement.
+## Documentation delivery boundary
 
-### Response to the owner's review
-
-| Review item | Revision | Decision status |
-| --- | --- | --- |
-| 1. Saving without forced discard | Wireframe E, save/failure/load/quit behavior and example 2 now save committed state while retaining the running draft | Revised UX proposal; unsent edits remain session-local; confirm against D6 and accepted lifecycle |
-| 2. Combined checkpoint and planning references | Read pinned combined report and compared relevant source blobs; retained original branch base and explicit pre-implementation reconciliation gate. Local untracked inputs are labelled undistributed; relative links await actual committed files | Recorded candidate evidence, not an accepted/merged checkpoint or runtime rerun |
-| 3. Tactical contacts without new fog-of-war | Added explicit scenario observation-policy boundary; clarified wireframes, D4 and report visibility | Actor ownership/order secrecy mandatory; exact enemy facts still open; no strategic fog-of-war expansion |
-| 4. Legal intent versus fire opportunity | Retained formation preference, eligible-target fallback and backend acquisition authority; acceptance proposal checks the distinction | No locked ship/subsystem selector or firing guarantee; no Unity acquisition rules |
-| 5. Simulation-enforced exclusions | Explicitly reject Disengage even under Defeat, Breakthrough and all excluded exit paths across initial/loaded/retained/new orders; added future acceptance cases | Required lifecycle constraint, not an implemented validator; Fighting Withdrawal remains in-battle |
-
-Agreement sought: approve or revise these interactions and resolve lifecycle gates before commissioning the Unity slice. This document does not dispatch equipment/lifecycle work, amend the agreed scope, implement production UI, claim new campaign capabilities or authorize a merge.
-
-## Documentation verification
-
-For the initial draft, 17 linked source references and the original plan hash were checked. For this revision, links are checked against local input files or pinned Git objects; both current review/plan hashes are recorded above. Relevant standalone/inspection source blobs were compared with the combined candidate. Six fenced annotated wireframes and four worked examples remain. The revision diff is limited to this specification and checked with `git diff --cached --check`. No gameplay tests, Unity runs, native builds or desktop tools were launched for this documentation-only change; runtime acceptance remains future work.
+This revision changes only this specification on codex/campaign-tactical-v2-ux-spec. Local source hashes, pinned links, decision consistency, six annotated wireframes, eight worked examples and the diff are checked. Existing gameplay acceptance was read, not repeated. No production edits, desktop tools, publication/push, merge, other-chat messaging or Unity runtime work is part of this assignment.
