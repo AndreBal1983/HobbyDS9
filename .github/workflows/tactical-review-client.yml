@@ -1,0 +1,56 @@
+name: Tactical review client (real Application and preserved mock tests)
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  review-client:
+    name: Real review client and preserved mocks (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Restore real adapter tests with locked dependencies
+        run: dotnet restore tests/HobbyDS9.TacticalReviewClient.Tests/HobbyDS9.TacticalReviewClient.Tests.csproj --locked-mode -warnaserror
+      - name: Build real adapter and tests
+        run: dotnet build tests/HobbyDS9.TacticalReviewClient.Tests/HobbyDS9.TacticalReviewClient.Tests.csproj --configuration Release --no-restore -warnaserror
+      - name: Test actual Application integration separately
+        run: dotnet test tests/HobbyDS9.TacticalReviewClient.Tests/HobbyDS9.TacticalReviewClient.Tests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=actual-review-client.trx" --results-directory artifacts/tactical-review-client/real
+      - name: Restore preserved mock tests with locked dependencies
+        run: dotnet restore tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj --locked-mode -warnaserror
+      - name: Build preserved mock tests
+        run: dotnet build tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj --configuration Release --no-restore -warnaserror
+      - name: Test preserved mock presenter separately
+        run: dotnet test tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=preserved-mock.trx" --results-directory artifacts/tactical-review-client/mock
+      - name: Verify separate real and mock evidence counts
+        shell: pwsh
+        run: |
+          $cases = @(
+            @{ Path = 'artifacts/tactical-review-client/real/actual-review-client.trx'; Expected = 51; Kind = 'real Application integration' },
+            @{ Path = 'artifacts/tactical-review-client/mock/preserved-mock.trx'; Expected = 115; Kind = 'preserved mock presenter' }
+          )
+          foreach ($case in $cases) {
+            [xml]$trx = Get-Content -LiteralPath $case.Path
+            $c = $trx.TestRun.ResultSummary.Counters
+            if ([int]$c.total -ne $case.Expected -or [int]$c.passed -ne $case.Expected -or [int]$c.failed -ne 0 -or [int]$c.notExecuted -ne 0) {
+              throw "Unexpected test evidence for $($case.Kind): $($c.OuterXml)"
+            }
+            Write-Host "$($case.Kind): $($c.passed) passed, 0 failed, 0 skipped"
+          }
+      - name: Upload separate TRX evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tactical-review-client-${{ matrix.os }}
+          path: artifacts/tactical-review-client/**/*.trx
+          if-no-files-found: warn
