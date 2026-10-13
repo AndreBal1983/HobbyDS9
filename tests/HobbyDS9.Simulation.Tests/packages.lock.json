@@ -100,6 +100,9 @@
           "HobbyDS9.Simulation": "[1.0.0, )"
         }
       },
+      "hobbyds9.campaigntacticalv2.prototypes": {
+        "type": "Project"
+      },
       "hobbyds9.contracts": {
         "type": "Project"
       },

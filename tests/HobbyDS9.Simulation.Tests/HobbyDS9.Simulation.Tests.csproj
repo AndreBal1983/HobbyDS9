@@ -17,6 +17,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../prototypes/HobbyDS9.CampaignTacticalV2.Prototypes/HobbyDS9.CampaignTacticalV2.Prototypes.csproj" />
     <ProjectReference Include="../../src/HobbyDS9.Application/HobbyDS9.Application.csproj" />
     <ProjectReference Include="../../src/HobbyDS9.Contracts/HobbyDS9.Contracts.csproj" />
     <ProjectReference Include="../../src/HobbyDS9.Simulation/HobbyDS9.Simulation.csproj" />
