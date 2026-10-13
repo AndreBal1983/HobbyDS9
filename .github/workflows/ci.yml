@@ -46,3 +46,5 @@ jobs:
         run: python scripts/check-campaign-lifecycle-prototypes.py
       - name: Actual campaign tactical review layer (production activation gated)
         run: python scripts/check-campaign-tactical-review.py
+      - name: Actual weighted travel and contact review (proposed policies gated)
+        run: python scripts/check-campaign-physical-travel.py

@@ -16,17 +16,43 @@ namespace HobbyDS9.Simulation
         private readonly TacticalRulesV2Dto rules;
         private readonly List<CampaignTacticalCloakSourceDto> cloak;
         private readonly Dictionary<string,ControllerKind> controllers;
+        private readonly int initialTurn;
         private CampaignTacticalReviewSaveDto state;
+        private CampaignTacticalTravelSaveDto? travel;
+        private List<CampaignDeclaredHostilityDto>? declaredHostilities;
+        private List<CampaignContactKnowledgeDto>? authoredContactGrids;
+        private int contactFreshness;
+        private Dictionary<string,string>? authoredFleetOwners;
+        private SessionPhase CurrentPhase=>travel?.Phase??state.Campaign.GameState.Phase!.Value;
+        private IReadOnlyList<CombatRequestDto> CurrentRequests=>travel?.Requests??state.Campaign.GameState.PendingCombats!.Select(p=>p.Request).ToList();
         internal Action<int>? FinalizationProbe { get; set; }
-        private CampaignTacticalReviewSession(CampaignTacticalReviewPackageDto package, CampaignTacticalReviewSaveDto? save)
+        private CampaignTacticalReviewSession(CampaignTacticalReviewPackageDto package, CampaignTacticalReviewSaveDto? save,
+            CampaignTacticalTravelPackageDto? physicalPackage=null,CampaignTacticalTravelSaveDto? physicalSave=null)
         {
             ValidatePackage(package);
             definitions = SimulationSession.CopyDefinitions(package.Campaign!.Definitions);
             controllers = package.Campaign.InitialState.Civilizations!.ToDictionary(c => c.CivilizationId,c => c.ControllerKind!.Value,StringComparer.Ordinal);
+            initialTurn = package.Campaign.InitialState.TurnNumber;
             compatibility = new SaveCompatibility(package.Campaign.ScenarioId, package.Campaign.RulesVersion, package.Campaign.ContentHash);
             rules = CopyRules(package.Rules!);
             cloak = package.CloakSources!.OrderBy(c => c.FitId, StringComparer.Ordinal).Select(c => new CampaignTacticalCloakSourceDto {
                 FitId = c.FitId, FitRevision = c.FitRevision, Capable = c.Capable, ConcurrentPowerRequired = c.ConcurrentPowerRequired }).ToList();
+            if(physicalPackage!=null)
+            {
+                CampaignTacticalTravelData.ValidatePackage(physicalPackage);
+                declaredHostilities=physicalPackage.Hostilities!.Select(h=>new CampaignDeclaredHostilityDto { CivilizationA=h.CivilizationA,CivilizationB=h.CivilizationB }).ToList();
+                authoredContactGrids=physicalPackage.InitialContacts!.Select(CampaignTacticalTravelData.Copy).ToList();
+                authoredFleetOwners=package.Campaign.InitialState.Fleets!.ToDictionary(f=>f.FleetId,f=>f.OwnerCivilizationId,StringComparer.Ordinal);
+                contactFreshness=physicalPackage.ContactFreshnessTurns!.Value;
+                travel=physicalSave==null?new CampaignTacticalTravelSaveDto { FormatVersion=CampaignTacticalTravelIdentity.SaveFormat,
+                    ProfileId=CampaignTacticalTravelIdentity.Profile,PackageHash=physicalPackage.PackageHash!,Phase=SessionPhase.Planning,
+                    Requests=new List<CombatRequestDto>(),Orders=physicalPackage.InitialOrders!.Select(CampaignTacticalTravelData.Copy).ToList(),
+                    Contacts=physicalPackage.InitialContacts!.Select(CampaignTacticalTravelData.Copy).ToList(),LastMovement=new List<CampaignFleetTravelReceiptDto>() }
+                    :new CampaignTacticalTravelSaveDto { FormatVersion=physicalSave.FormatVersion,ProfileId=physicalSave.ProfileId,
+                        PackageHash=physicalSave.PackageHash,Phase=physicalSave.Phase,Core=physicalSave.Core,Requests=physicalSave.Requests,
+                        Orders=physicalSave.Orders,Contacts=physicalSave.Contacts,LastMovement=physicalSave.LastMovement,MovementProof=physicalSave.MovementProof };
+                Require(travel.PackageHash==physicalPackage.PackageHash,"Different physical package.");
+            }
             if (save == null)
             {
                 var initial = new SaveEnvelopeDto { SaveFormatVersion = FoundationVersions.SaveFormatVersion,
@@ -45,6 +71,12 @@ namespace HobbyDS9.Simulation
                 ValidateSave(save); state = Copy(save);
             }
             ValidateSave(state); state = Copy(state);
+            if(travel!=null)
+            {
+                travel.Core=state;
+                if(physicalSave==null)foreach(var o in travel.Orders)state.Campaign.GameState.Fleets!.Single(f=>f.FleetId==o.FleetId).RouteNodeIds=new List<string>(o.RouteNodeIds);
+                ValidateTravelSave(travel);travel=CampaignTacticalTravelData.Copy(travel);state=travel.Core;
+            }
         }
         public static CampaignTacticalReviewSession Start(CampaignTacticalReviewPackageDto package) => new CampaignTacticalReviewSession(package, null);
         public static CampaignTacticalReviewSession Load(CampaignTacticalReviewPackageDto package, CampaignTacticalReviewSaveDto save)
@@ -80,7 +112,7 @@ namespace HobbyDS9.Simulation
             lock (gate)
             {
                 var game = state.Campaign.GameState; var a = Actor(actor); if (a != CampaignTacticalError.None) return Result(a);
-                if (game.Phase != SessionPhase.Planning) return Result(CampaignTacticalError.WrongPhase);
+                if (CurrentPhase != SessionPhase.Planning) return Result(CampaignTacticalError.WrongPhase);
                 if (turn != game.TurnNumber) return Result(CampaignTacticalError.StaleTurn);
                 if (revision != game.StateRevision) return Result(CampaignTacticalError.StaleRevision);
                 if (!EntityId.TryParse(commandId, out _) || commandId.StartsWith("ai-command.", StringComparison.Ordinal)) return Result(CampaignTacticalError.InvalidOrder);
@@ -96,6 +128,8 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
+                if(CurrentPhase!=SessionPhase.Planning)return Result(CampaignTacticalError.WrongPhase);
+                if(travel!=null&&command?.Kind==CommandKind.SetFleetRoute)return Result(CampaignTacticalError.InvalidOrder);
                 if (command != null && state.AcceptedRoundCommands.Contains(command.CommandId, StringComparer.Ordinal)) return Result(CampaignTacticalError.DuplicateCommand);
                 if (command != null && (command.Kind == CommandKind.EnqueueProduction || command.Kind == CommandKind.EnqueueBlueprintConstruction))
                     return Result(CampaignTacticalError.UnsupportedSource); // no authored-v2 construction/provisioning contract.
@@ -115,6 +149,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
+                if(travel!=null)return AdvancePhysicalTurn(turn,revision);
                 if (state.Campaign.GameState.Phase != SessionPhase.Planning) return Result(CampaignTacticalError.WrongPhase);
                 if (turn != state.Campaign.GameState.TurnNumber) return Result(CampaignTacticalError.StaleTurn);
                 if (revision != state.Campaign.GameState.StateRevision) return Result(CampaignTacticalError.StaleRevision);
@@ -211,7 +246,7 @@ namespace HobbyDS9.Simulation
                     Replacements = command.Replacements?.Select(o => o == null ? null! : Copy(o)).ToList() };
                 var actor = Actor(command.ActorId); if (actor != CampaignTacticalError.None) return Result(actor);
                 var game = state.Campaign.GameState;
-                if (game.Phase != SessionPhase.AwaitingCombat) return Result(CampaignTacticalError.WrongPhase);
+                if (CurrentPhase != SessionPhase.AwaitingCombat) return Result(CampaignTacticalError.WrongPhase);
                 if (!EntityId.TryParse(command.CommandId, out _) || command.CommandId.StartsWith("ai-command.", StringComparison.Ordinal)) return Result(CampaignTacticalError.InvalidOrder);
                 if (state.AcceptedRoundCommands.Contains(command.CommandId, StringComparer.Ordinal) || game.AcceptedCommandIds!.Contains(command.CommandId))
                     return Result(CampaignTacticalError.DuplicateCommand);
@@ -255,12 +290,13 @@ namespace HobbyDS9.Simulation
             lock (gate)
             {
                 var game = state.Campaign.GameState;
-                if (game.Phase != SessionPhase.AwaitingCombat) return Result(CampaignTacticalError.WrongPhase);
+                if (CurrentPhase != SessionPhase.AwaitingCombat) return Result(CampaignTacticalError.WrongPhase);
                 if (turn != game.TurnNumber) return Result(CampaignTacticalError.StaleTurn);
                 if (revision != game.StateRevision) return Result(CampaignTacticalError.StaleRevision);
                 if (state.Battles.Count == 0 || state.Battles.Any(b => b.State.Completion == TacticalCompletion.None)) return Result(CampaignTacticalError.IncompleteBatch);
                 if (revision == long.MaxValue || turn == int.MaxValue) return Result(CampaignTacticalError.Overflow);
                 var next = Copy(state); var staged = next.Campaign.GameState;
+                CampaignTacticalTravelSaveDto? physicalNext = null;
                 try
                 {
                     int index = 0;
@@ -288,10 +324,21 @@ namespace HobbyDS9.Simulation
                     { staged.Fleets!.Remove(fleet); staged.EntityIdentities.RemoveAll(e => e.EntityId == fleet.FleetId); next.FleetSettings.RemoveAll(f => f.FleetId == fleet.FleetId); }
                     staged.PendingCombats!.Clear(); staged.ResolvedCombats!.Clear(); staged.Phase = SessionPhase.Planning;
                     staged.TurnNumber++; staged.StateRevision++; staged.AcceptedCommandIds!.Clear(); next.Battles.Clear();
-                    ValidateSave(next);
+                    ValidateSave(next,travel!=null?Array.Empty<CombatRequestDto>():null);
+                    if (travel != null)
+                    {
+                        physicalNext = TravelCopy(); physicalNext.Core = next;
+                        physicalNext.Phase = SessionPhase.Planning; physicalNext.Requests.Clear();
+                        physicalNext.Orders.RemoveAll(o => !staged.Fleets!.Any(f => f.FleetId == o.FleetId));
+                        foreach (var o in physicalNext.Orders.Where(o => physicalNext.LastMovement.Any(r => r.FleetId == o.FleetId && r.StoppedByEncounter)))
+                        { o.Intent = CampaignTravelIntent.Stay; o.ContactFleetId = null; o.ExpectedContactSeenTurn = null; o.RouteNodeIds.Clear(); }
+                        ValidateTravelSave(physicalNext);
+                    }
                 }
                 catch (Exception e) when (e is ArgumentException || e is InvalidOperationException || e is OverflowException) { return Result(CampaignTacticalError.InvalidBatch); }
-                state = Copy(next); return Result(CampaignTacticalError.None);
+                state = Copy(next);
+                if (physicalNext != null) { travel = CampaignTacticalTravelData.Copy(physicalNext); state = travel.Core; }
+                return Result(CampaignTacticalError.None);
             }
         }
     }

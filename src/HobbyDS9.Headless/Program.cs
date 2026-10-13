@@ -5,6 +5,12 @@ using System.Text.Json;
 using HobbyDS9.Contracts;
 using HobbyDS9.Application;
 
+if (args.Length == 1 && args[0] == "--review-physical-travel")
+{
+    CampaignPhysicalTravelWalkthrough.Run();
+    return;
+}
+
 if ((args.Length == 1 || args.Length == 2) && args[0] == "--review-campaign-tactical-v2")
 {
     CampaignTacticalReviewWalkthrough.Run(args.Length == 2 ? args[1] : Path.Combine(AppContext.BaseDirectory,"scenarios","tactical-v2-campaign-review","package.json"));

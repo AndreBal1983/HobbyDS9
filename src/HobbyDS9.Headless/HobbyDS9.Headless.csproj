@@ -6,6 +6,7 @@
     <OutputType>Exe</OutputType>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../scenarios/tactical-v2-physical-review/**/*.json" Link="scenarios/tactical-v2-physical-review/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="../../prototypes/HobbyDS9.CampaignTacticalV2.Prototypes/HobbyDS9.CampaignTacticalV2.Prototypes.csproj" />
     <ProjectReference Include="../HobbyDS9.Contracts/HobbyDS9.Contracts.csproj" />
     <ProjectReference Include="../HobbyDS9.Application/HobbyDS9.Application.csproj" />

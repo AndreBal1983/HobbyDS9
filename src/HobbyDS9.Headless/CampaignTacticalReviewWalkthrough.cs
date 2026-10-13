@@ -8,7 +8,7 @@ using HobbyDS9.Contracts;
 
 internal static class CampaignTacticalReviewWalkthrough
 {
-    private static readonly JsonSerializerOptions Options = CreateOptions();
+    internal static readonly JsonSerializerOptions Options = CreateOptions();
     private static JsonSerializerOptions CreateOptions()
     {
         var resolver = new DefaultJsonTypeInfoResolver();
