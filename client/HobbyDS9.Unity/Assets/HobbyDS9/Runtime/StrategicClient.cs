@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using HobbyDS9.Application;
 using HobbyDS9.Contracts;
+using HobbyDS9.Contracts.ShipDesign;
 
 namespace HobbyDS9.UnityClient
 {
@@ -55,6 +56,27 @@ namespace HobbyDS9.UnityClient
         { this.session = session; this.load = load; Snapshot = session.CaptureSnapshot(); RememberBuffered(); }
         public void Refresh() { Snapshot = session.CaptureSnapshot(); RememberBuffered(); }
         public SaveEnvelopeDto ExportSave() => session.ExportSave();
+        public CampaignShipDesignCatalogueSnapshot? ShipDesignCatalogue(EntityId actor) => session.GetShipDesignCatalogue(actor);
+        public IReadOnlyList<CampaignBlueprintSnapshot> Blueprints() => session.GetPublishedShipBlueprints();
+        public IReadOnlyList<BlueprintConstructionSnapshot> BlueprintOptions(EntityId actor, EntityId colony) => session.GetBlueprintConstructionOptions(actor,colony);
+        public CommandResult PublishBlueprint(CampaignSnapshot observed, EntityId actor, string id, int revision, ShipClassDraftDto? draft)
+        {
+            var command=Envelope(observed,actor,CommandKind.PublishShipBlueprint);
+            command.PublishShipBlueprint=new PublishShipBlueprintPayload { BlueprintId=id,Revision=revision,Draft=CopyDraft(draft) };
+            return Submit(command);
+        }
+        // Preserve malformed inputs as malformed inputs for authoritative rejection.
+        private static ShipClassDraftDto? CopyDraft(ShipClassDraftDto? d) => d==null?null:new ShipClassDraftDto {
+            ClassId=d.ClassId,DisplayName=d.DisplayName,HullVersionId=d.HullVersionId,RoleId=d.RoleId,EmbarkedCrew=d.EmbarkedCrew,
+            Installations=d.Installations?.Select(i=>i==null?null!:new ShipInstallationDto { InstallationId=i.InstallationId,ComponentVersionId=i.ComponentVersionId,Quantity=i.Quantity }).ToList(),
+            Profiles=d.Profiles?.Select(p=>p==null?null!:new ShipOperatingProfileDto { Kind=p.Kind,Allocations=p.Allocations?.Select(a=>a==null?null!:new ProfilePowerAllocationDto { InstallationId=a.InstallationId,RequestedPower=a.RequestedPower,AllocatedPower=a.AllocatedPower }).ToList() }).ToList()
+        };
+        public CommandResult EnqueueBlueprint(CampaignSnapshot observed, EntityId actor, EntityId colony, string id, int revision)
+        {
+            var command=Envelope(observed,actor,CommandKind.EnqueueBlueprintConstruction);
+            command.EnqueueBlueprintConstruction=new EnqueueBlueprintConstructionPayload { ColonyId=colony.Value,BlueprintId=id,Revision=revision };
+            return Submit(command);
+        }
         public void Load(SaveEnvelopeDto save)
         {
             // Validate/create/capture before publishing either reference.
@@ -176,13 +198,26 @@ namespace HobbyDS9.UnityClient
         public CampaignSnapshot Observed { get; }
         public CivilizationSnapshot? Actor { get; }
         public IReadOnlyList<ColonySnapshot> Worlds { get; }
-        public ProductionOverview(StrategicClient client, CampaignSnapshot observed)
+        private readonly Dictionary<EntityId,IReadOnlyList<BlueprintConstructionSnapshot>> blueprints = new Dictionary<EntityId,IReadOnlyList<BlueprintConstructionSnapshot>>();
+        private readonly long generation;
+        private readonly HashSet<string> submitted = new HashSet<string>(StringComparer.Ordinal);
+        public ProductionOverview(StrategicClient client, CampaignSnapshot observed, EntityId? actor=null)
         {
-            this.client = client; Observed = observed;
+            this.client = client; Observed = observed; generation=client.SessionGeneration;
             Actor = observed.Campaign.Civilizations.Where(c => c.ControllerKind == ControllerKind.Human)
-                .OrderBy(c => c.CivilizationId.Value, StringComparer.Ordinal).FirstOrDefault();
+                .OrderBy(c => c.CivilizationId.Value, StringComparer.Ordinal).FirstOrDefault(c=>!actor.HasValue || c.CivilizationId==actor.Value);
             Worlds = observed.Campaign.Colonies.Where(c => Actor != null && c.OwnerCivilizationId == Actor.CivilizationId)
                 .OrderBy(c => c.ColonyId.Value, StringComparer.Ordinal).ToList().AsReadOnly();
+            foreach(var world in Worlds)blueprints[world.ColonyId]=client.BlueprintOptions(Actor!.CivilizationId,world.ColonyId);
+        }
+        public IReadOnlyList<BlueprintConstructionSnapshot> Blueprints(EntityId world) => blueprints.TryGetValue(world,out var options)?options:Array.Empty<BlueprintConstructionSnapshot>();
+        public CommandResult EnqueueBlueprint(EntityId world, BlueprintConstructionSnapshot option)
+        {
+            if(generation!=client.SessionGeneration)throw new InvalidOperationException("Campaign replaced. Review current production options.");
+            if(!Blueprints(world).Contains(option))throw new InvalidOperationException("Select an owned colony and its observed blueprint option.");
+            var key=world.Value+"/"+option.Blueprint.Blueprint.BlueprintId+"/"+option.Blueprint.Blueprint.Revision;
+            if(!submitted.Add(key))throw new InvalidOperationException("This displayed order was already submitted. Review production before ordering again.");
+            return client.EnqueueBlueprint(Observed,Actor!.CivilizationId,world,option.Blueprint.Blueprint.BlueprintId,option.Blueprint.Blueprint.Revision);
         }
         public IReadOnlyList<ProductionOption> Designs(EntityId world) => Actor == null
             ? Array.Empty<ProductionOption>() : StrategicOptions.Production(Observed, Actor.CivilizationId, world);
@@ -214,6 +249,12 @@ namespace HobbyDS9.UnityClient
             switch (code)
             {
                 case CommandErrorCode.None: return "Available";
+                case CommandErrorCode.BlueprintRevisionConflict: return "Blueprint history changed. Refresh and review the next revision.";
+                case CommandErrorCode.BlueprintNotOwned: return "This blueprint belongs to another civilization.";
+                case CommandErrorCode.InvalidShipBlueprint: return "The backend rejected this fit. Review all profiles and validation issues.";
+                case CommandErrorCode.ShipDesignVersionUnavailable: return "A hull or package requires unavailable Mature Engineering.";
+                case CommandErrorCode.UnknownBlueprint: return "This exact blueprint revision is unavailable.";
+                case CommandErrorCode.ShipDesignCatalogueUnavailable: return "This campaign has no ship design catalogue.";
                 case CommandErrorCode.StaleRevision: case CommandErrorCode.StaleTurn: return "The campaign changed. Review the refreshed state and issue the order again.";
                 case CommandErrorCode.CombatPending: return "Complete the pending battles before issuing strategic orders.";
                 case CommandErrorCode.EngineeringAlreadyMature: return "Engineering application is already Mature.";
