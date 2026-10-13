@@ -157,6 +157,23 @@ namespace HobbyDS9.Contracts
         public CampaignTacticalCondition(string ship, string fleet, string type, long hull, long max, IEnumerable<long> shields)
         { ShipId = ship; FleetId = fleet; Type = type; Hull = hull; MaxHull = max; Shields = shields.ToList().AsReadOnly(); }
     }
+    [Flags]
+    public enum CampaignWeaponOwnBlockers
+    {
+        None=0, NotEquipped=1, PowerIncomplete=2, NoDamage=4, NoAmmunition=8, CadenceWait=16,
+        ShipDestroyed=32, FormationInactive=64, EncounterComplete=128
+    }
+    public enum CampaignWeaponAvailabilityStatus { OutsideEncounter=0, OwnStateBlocked=1, TargetDependent=2 }
+    public sealed class CampaignWeaponAvailability
+    {
+        public CampaignWeaponAvailabilityStatus Status { get; }
+        public CampaignWeaponOwnBlockers OwnBlockers { get; }
+        public int? Round { get; }
+        // No shot count, target readiness or outcome promise: this is a boundary projection.
+        public CampaignWeaponAvailability(CampaignWeaponAvailabilityStatus status,CampaignWeaponOwnBlockers blockers,int? round)
+        {Status=status;OwnBlockers=blockers;Round=round;}
+    }
+    public enum CampaignFocusFallbackCause { PreferredFocusUnavailableForOpportunity=0 }
     public sealed class CampaignTacticalOwnWeapon
     {
         public string WeaponId { get; }
@@ -177,13 +194,16 @@ namespace HobbyDS9.Contracts
         public int OpportunitiesPerRound { get; }
         public int CadenceRounds { get; }
         public string AmmunitionDefinitionId { get; }
-        public CampaignTacticalOwnWeapon(TacticalWeaponV2Dto w, AuthoredTacticalWeaponDto source)
+        public CampaignWeaponAvailability Availability { get; }
+        public CampaignTacticalOwnWeapon(TacticalWeaponV2Dto w, AuthoredTacticalWeaponDto source):this(w,source,null) { }
+        public CampaignTacticalOwnWeapon(TacticalWeaponV2Dto w, AuthoredTacticalWeaponDto source,CampaignWeaponAvailability? availability)
         { WeaponId = w.WeaponId; Class = w.Class; Ammunition = w.Ammunition; MagazineCapacity = w.MagazineCapacity;
             NextFireRound = w.NextFireRound; Powered = w.Equipped && w.RequiredPower == w.AllocatedPower;
             PackageVersionId = source.PackageVersionId!; MountId = source.MountId!; SlotsRequired = source.SlotsRequired!.Value;
             Coverage = w.Coverage; RequiredPower = w.RequiredPower; AllocatedPower = w.AllocatedPower; Damage = w.Damage;
             AccuracyBps = w.AccuracyBps; TrackingBps = w.TrackingBps; OpportunitiesPerRound = w.OpportunitiesPerRound;
-            CadenceRounds = w.CadenceRounds; AmmunitionDefinitionId = source.AmmunitionDefinitionId!; }
+            CadenceRounds = w.CadenceRounds; AmmunitionDefinitionId = source.AmmunitionDefinitionId!;
+            Availability=availability??new CampaignWeaponAvailability(CampaignWeaponAvailabilityStatus.OutsideEncounter,CampaignWeaponOwnBlockers.None,null); }
     }
     public sealed class CampaignTacticalOwnShip
     {
@@ -193,6 +213,7 @@ namespace HobbyDS9.Contracts
         public string ProvenanceId { get; }
         public bool Cloaked { get; }
         public IReadOnlyList<CampaignTacticalOwnWeapon> Weapons { get; }
+        public bool Unarmed => Weapons.Count==0;
         public long Armor { get; }
         public int EvasionBps { get; }
         public AuthoredTacticalCapabilitiesSnapshot Capabilities { get; }
@@ -208,8 +229,13 @@ namespace HobbyDS9.Contracts
         public long ShieldRechargePerRound { get; }
         public CampaignTacticalOwnShip(CampaignTacticalCondition condition, CampaignTacticalPoolDto pool, bool cloaked,
             TacticalShipV2Dto ship, AuthoredTacticalFitDto source, bool cloakCapable, long cloakPower)
+            :this(condition,pool,cloaked,ship,source,cloakCapable,cloakPower,null) { }
+        public CampaignTacticalOwnShip(CampaignTacticalCondition condition, CampaignTacticalPoolDto pool, bool cloaked,
+            TacticalShipV2Dto ship, AuthoredTacticalFitDto source, bool cloakCapable, long cloakPower,
+            IReadOnlyDictionary<string,CampaignWeaponAvailability>? availability)
         { Condition = condition; FitId = pool.FitId; FitRevision = pool.FitRevision; ProvenanceId = pool.ProvenanceId; Cloaked = cloaked;
-            Weapons = ship.Weapons.Select(w => new CampaignTacticalOwnWeapon(w,source.Weapons!.Single(s => s.WeaponId == w.WeaponId))).ToList().AsReadOnly();
+            Weapons = ship.Weapons.OrderBy(w=>w.WeaponId,StringComparer.Ordinal).Select(w => new CampaignTacticalOwnWeapon(w,source.Weapons!.Single(s => s.WeaponId == w.WeaponId),
+                availability!=null&&availability.TryGetValue(w.WeaponId,out var value)?value:null)).ToList().AsReadOnly();
             Armor = ship.Armor; EvasionBps = ship.EvasionBps; Capabilities = new AuthoredTacticalCapabilitiesSnapshot(source.Capabilities!);
             ShieldMaximum = ship.Shields.OrderBy(q => q.Sector).Select(q => q.Maximum).ToList().AsReadOnly();
             Mounts = source.Mounts!.Select(m => new AuthoredTacticalMountSnapshot(m)).ToList().AsReadOnly();
@@ -249,9 +275,11 @@ namespace HobbyDS9.Contracts
         public TacticalSector? Sector { get; }
         public TacticalRange? Range { get; }
         public string Detail { get; }
+        public CampaignFocusFallbackCause? FocusFallbackCause { get; }
         public CampaignTacticalReportEntry(CampaignTacticalActorReportDto e)
         { Sequence = e.Sequence; Round = e.Round; Kind = e.Kind; ShipId = e.ShipId; TargetShipId = e.TargetShipId;
-            OwnWeaponId = e.OwnWeaponId; Amount = e.Amount; Sector = e.Sector; Range = e.Range; Detail = e.Detail; }
+            OwnWeaponId = e.OwnWeaponId; Amount = e.Amount; Sector = e.Sector; Range = e.Range; Detail = e.Detail;
+            FocusFallbackCause=e.Kind=="FocusFallback"?CampaignFocusFallbackCause.PreferredFocusUnavailableForOpportunity:(CampaignFocusFallbackCause?)null; }
     }
     public sealed class CampaignTacticalObservation
     {

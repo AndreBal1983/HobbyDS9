@@ -46,7 +46,8 @@ namespace HobbyDS9.Simulation
                 return state.Campaign.GameState.Ships!.Where(s => s.OwnerCivilizationId == actor).Select(s => {
                     var pool = state.Pools.Single(p => p.ShipId == s.ShipId); var compiled = Compile(s, Fit(s.ShipId), pool);
                     var fit = Fit(s.ShipId); var cl = cloak.Single(c => c.FitId == fit.DefinitionId);
-                    return new CampaignTacticalOwnShip(Condition(s.FleetId, compiled), pool, false, compiled, fit, cl.Capable!.Value, cl.ConcurrentPowerRequired!.Value);
+                    return new CampaignTacticalOwnShip(Condition(s.FleetId, compiled), pool, false, compiled, fit, cl.Capable!.Value, cl.ConcurrentPowerRequired!.Value,
+                        TacticalWeaponOwnConstraints.Project(compiled,null));
                 }).OrderBy(s => s.Condition.ShipId, StringComparer.Ordinal).ToList().AsReadOnly();
             }
         }
@@ -60,7 +61,8 @@ namespace HobbyDS9.Simulation
                 var own = b.State.Formations.Where(f => f.SideId == actor).SelectMany(f => f.Ships.Select(s => {
                     var fit = Fit(s.ShipId); var cl = cloak.Single(c => c.FitId == fit.DefinitionId);
                     return new CampaignTacticalOwnShip(Condition(f.FormationId,s),state.Pools.Single(p => p.ShipId == s.ShipId),
-                        b.HiddenShipIds.Contains(s.ShipId,StringComparer.Ordinal),s,fit,cl.Capable!.Value,cl.ConcurrentPowerRequired!.Value);
+                        b.HiddenShipIds.Contains(s.ShipId,StringComparer.Ordinal),s,fit,cl.Capable!.Value,cl.ConcurrentPowerRequired!.Value,
+                        TacticalWeaponOwnConstraints.Project(s,b.State.NextRound,f.Status,b.State.Completion!=TacticalCompletion.None));
                 })).ToList();
                 var visible = b.State.Formations.Where(f => f.SideId != actor).SelectMany(f => f.Ships.Where(s => s.Hull > 0
                     && !b.HiddenShipIds.Contains(s.ShipId, StringComparer.Ordinal)).Select(s => Condition(f.FormationId, s))).ToList();
