@@ -35,7 +35,7 @@ namespace HobbyDS9.UnityClient
             {
                 segments[i]=new VisualElement {name="segment-"+i,pickingMode=PickingMode.Ignore};
                 segments[i].AddToClassList("lps-segment");
-                segments[i].AddToClassList(i<6?"lps-band-low":i<10?"lps-band-middle":"lps-band-high");
+                segments[i].AddToClassList(i<5?"lps-band-low":i<9?"lps-band-middle":"lps-band-high");
                 bars.Add(segments[i]);
             }
             Track=new SliderInt(0,(int)maximum) {name="track-"+fieldName,direction=SliderDirection.Vertical,inverted=false};Track.AddToClassList("lps-track");rail.Add(Track);
