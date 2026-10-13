@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsTestProject>true</IsTestProject>
+    <IsPackable>false</IsPackable>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../prototypes/HobbyDS9.TacticalReviewShell/HobbyDS9.TacticalReviewShell.csproj" />
+    <Compile Include="../HobbyDS9.TacticalReviewClient.Tests/ActualReviewFixture.cs" Link="PreservedSource/ActualReviewFixture.cs" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <None Include="../../scenarios/tactical-v2-campaign-review/*.json" Link="scenarios/tactical-v2-campaign-review/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../scenarios/tactical-v2-physical-review/**/*.json" Link="scenarios/tactical-v2-physical-review/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="CopyReviewShell" AfterTargets="Build">
+    <ItemGroup><ShellFiles Include="../../prototypes/HobbyDS9.TacticalReviewShell/bin/$(Configuration)/net10.0/*" /></ItemGroup>
+    <Copy SourceFiles="@(ShellFiles)" DestinationFolder="$(OutDir)shell" />
+  </Target>
+</Project>

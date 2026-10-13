@@ -1,0 +1,54 @@
+name: Authoritative explanations and trusted review shell (headless)
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  review-shell:
+    name: Explanation shell and preserved suites (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Restore build and test explicit projects with separate counts
+        shell: pwsh
+        run: |
+          $suites = @(
+            @{ Project = 'tests/HobbyDS9.TacticalReviewShell.Tests/HobbyDS9.TacticalReviewShell.Tests.csproj'; Kind = 'new'; Name = 'explanations-shell.trx'; Expected = 23 },
+            @{ Project = 'tests/HobbyDS9.TacticalTravelClient.Tests/HobbyDS9.TacticalTravelClient.Tests.csproj'; Kind = 'physical'; Name = 'physical.trx'; Expected = 47 },
+            @{ Project = 'tests/HobbyDS9.TacticalReviewStorage.Tests/HobbyDS9.TacticalReviewStorage.Tests.csproj'; Kind = 'storage'; Name = 'storage.trx'; Expected = 47 },
+            @{ Project = 'tests/HobbyDS9.TacticalReviewClient.Tests/HobbyDS9.TacticalReviewClient.Tests.csproj'; Kind = 'real'; Name = 'real-client.trx'; Expected = 51 },
+            @{ Project = 'tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj'; Kind = 'mock'; Name = 'mock.trx'; Expected = 115 }
+          )
+          foreach ($suite in $suites) {
+            dotnet restore $suite.Project --locked-mode -warnaserror
+            if ($LASTEXITCODE -ne 0) { throw "Restore failed for $($suite.Kind)" }
+            dotnet build $suite.Project --configuration Release --no-restore -warnaserror
+            if ($LASTEXITCODE -ne 0) { throw "Build failed for $($suite.Kind)" }
+            $directory = "artifacts/tactical-review-shell/$($suite.Kind)"
+            dotnet test $suite.Project --configuration Release --no-build --no-restore --logger "trx;LogFileName=$($suite.Name)" --results-directory $directory
+            if ($LASTEXITCODE -ne 0) { throw "Tests failed for $($suite.Kind)" }
+            [xml]$trx = Get-Content -LiteralPath "$directory/$($suite.Name)"
+            $c = $trx.TestRun.ResultSummary.Counters
+            if ([int]$c.total -ne $suite.Expected -or [int]$c.passed -ne $suite.Expected -or [int]$c.failed -ne 0 -or [int]$c.notExecuted -ne 0) {
+              throw "Unexpected evidence for $($suite.Kind): $($c.OuterXml)"
+            }
+            Write-Host "$($suite.Kind): $($c.passed) passed, 0 failed, 0 skipped"
+          }
+      - name: Upload separate explanation, actual-session and mock evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: explanation-shell-${{ matrix.os }}
+          path: artifacts/tactical-review-shell/**/*.trx
+          if-no-files-found: warn

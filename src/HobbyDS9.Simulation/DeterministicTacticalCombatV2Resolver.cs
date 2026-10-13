@@ -122,8 +122,7 @@ namespace HobbyDS9.Simulation
                     Emit(TacticalEventKind.OrderCommitted, formation: f.FormationId, detail: f.StandingOrder.Maneuver.ToString());
                 Maneuver();
                 PrepareTargets();
-                var batteries = active.SelectMany(c => c.Ship.Weapons.Where(w => w.Equipped && w.AllocatedPower == w.RequiredPower
-                    && w.Damage > 0 && w.NextFireRound <= index && (w.Class != TacticalWeaponClass.Torpedo || w.Ammunition > 0))
+                var batteries = active.SelectMany(c => c.Ship.Weapons.Where(w => TacticalWeaponOwnConstraints.Blockers(w,index)==CampaignWeaponOwnBlockers.None)
                     .Select(w => new Battery(c, w, DefenseCapacity(c.Formation, w)))).ToList();
                 foreach (var b in batteries)
                     Emit(TacticalEventKind.FiringOpportunity, b.Owner.Formation.FormationId, b.Owner.Ship.ShipId,
