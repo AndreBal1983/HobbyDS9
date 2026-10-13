@@ -36,3 +36,10 @@ jobs:
         run: dotnet run --project src/HobbyDS9.Headless --configuration Release --no-build --no-restore -- --turns 25 --combat-order reverse
       - name: Repeated phased combat resolution smoke (25 turns)
         run: dotnet run --project src/HobbyDS9.Headless --configuration Release --no-build --no-restore -- --turns 25
+      - name: Playable tactical sandbox scripted smoke and round-boundary resume
+        run: |
+          dotnet run --project src/HobbyDS9.TacticalPlayground --configuration Release --no-build --no-restore -- --scenario cruiser --seed 47 --script "Flank;Flank;Flank"
+          dotnet run --project src/HobbyDS9.TacticalPlayground --configuration Release --no-build --no-restore -- --scenario screen --seed 47 --script "Screen;Charge;Screen"
+          dotnet run --project src/HobbyDS9.TacticalPlayground --configuration Release --no-build --no-restore -- --scenario breakthrough --seed 47 --script "Breakthrough;Breakthrough"
+          dotnet run --project src/HobbyDS9.TacticalPlayground --configuration Release --no-build --no-restore -- --scenario cruiser --seed 47 --script "Flank" --stop-after 1 --save artifacts/tactical-playground/ci-save.json
+          dotnet run --project src/HobbyDS9.TacticalPlayground --configuration Release --no-build --no-restore -- --resume artifacts/tactical-playground/ci-save.json --script "Flank;Flank"

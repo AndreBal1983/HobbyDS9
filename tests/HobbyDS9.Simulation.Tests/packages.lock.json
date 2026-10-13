@@ -114,6 +114,13 @@
         "dependencies": {
           "HobbyDS9.Contracts": "[1.0.0, )"
         }
+      },
+      "hobbyds9.tacticalplayground": {
+        "type": "Project",
+        "dependencies": {
+          "HobbyDS9.Contracts": "[1.0.0, )",
+          "HobbyDS9.Simulation": "[1.0.0, )"
+        }
       }
     }
   }

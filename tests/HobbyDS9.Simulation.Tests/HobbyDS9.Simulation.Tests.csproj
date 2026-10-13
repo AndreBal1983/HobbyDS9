@@ -20,6 +20,7 @@
     <ProjectReference Include="../../src/HobbyDS9.Contracts/HobbyDS9.Contracts.csproj" />
     <ProjectReference Include="../../src/HobbyDS9.Simulation/HobbyDS9.Simulation.csproj" />
     <ProjectReference Include="../../src/HobbyDS9.Scenarios/HobbyDS9.Scenarios.csproj" />
+    <ProjectReference Include="../../src/HobbyDS9.TacticalPlayground/HobbyDS9.TacticalPlayground.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ShipDesignDraft.cs" Link="UnityClient/ShipDesignDraft.cs" />
