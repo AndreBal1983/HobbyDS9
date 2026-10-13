@@ -5,6 +5,12 @@ using System.Text.Json;
 using HobbyDS9.Contracts;
 using HobbyDS9.Application;
 
+if (args.Length == 1 && args[0] == "--review-lifecycle-prototypes")
+{
+    foreach (var line in LifecyclePrototypeDiagnostics.Run()) Console.WriteLine(line);
+    return;
+}
+
 // Only the host handles JSON/files/package hashing and diagnostics.
 var path = Path.Combine(AppContext.BaseDirectory, "scenarios", "ds9-slice", "scenario.json");
 var turns = 0;
