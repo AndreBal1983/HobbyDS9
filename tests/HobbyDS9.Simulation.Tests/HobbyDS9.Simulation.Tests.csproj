@@ -25,6 +25,7 @@
     <ProjectReference Include="../../src/HobbyDS9.TacticalPlayground/HobbyDS9.TacticalPlayground.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="../../scenarios/tactical-v2-campaign-review/*.json" Link="scenarios/tactical-v2-campaign-review/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ShipDesignDraft.cs" Link="UnityClient/ShipDesignDraft.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/FixtureShipDesignPreviewProvider.cs" Link="UnityClient/FixtureShipDesignPreviewProvider.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ScienceAllocationDraft.cs" Link="UnityClient/ScienceAllocationDraft.cs" />

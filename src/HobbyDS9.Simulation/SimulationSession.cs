@@ -247,7 +247,7 @@ namespace HobbyDS9.Simulation
             }
         }
 
-        private static DefinitionCatalogDto CopyDefinitions(DefinitionCatalogDto source) => new DefinitionCatalogDto
+        internal static DefinitionCatalogDto CopyDefinitions(DefinitionCatalogDto source) => new DefinitionCatalogDto
         {
             ContentFormatVersion = source.ContentFormatVersion,
             AuthoredTacticalEquipment = source.AuthoredTacticalEquipment == null ? null : AuthoredTacticalEquipmentCopies.Copy(source.AuthoredTacticalEquipment),
