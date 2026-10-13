@@ -12,6 +12,7 @@
     <ProjectReference Include="../HobbyDS9.Scenarios/HobbyDS9.Scenarios.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="../../scenarios/tactical-v2-campaign-review/*.json" Link="scenarios/tactical-v2-campaign-review/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../scenarios/ds9-slice/scenario.json" Link="scenarios/ds9-slice/scenario.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../scenarios/tactical-v2-equipment-source/scenario.json" Link="scenarios/tactical-v2-equipment-source/scenario.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

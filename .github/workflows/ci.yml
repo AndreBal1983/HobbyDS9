@@ -44,3 +44,5 @@ jobs:
         run: python scripts/check-authored-tactical-equipment.py
       - name: Campaign lifecycle review prototypes (not campaign authority)
         run: python scripts/check-campaign-lifecycle-prototypes.py
+      - name: Actual campaign tactical review layer (production activation gated)
+        run: python scripts/check-campaign-tactical-review.py

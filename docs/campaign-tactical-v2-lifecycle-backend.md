@@ -1,5 +1,7 @@
 # Campaign tactical v2 lifecycle — executable contract review
 
+Subsequent delivery: [gated authoritative Stage B core](campaign-tactical-v2-stage-b-core.md). The Stage A status and vectors below remain historical review evidence; later implementation does not approve these proposals or activate the default campaign.
+
 13 October 2026. **Stage A review candidate; Stage B not implemented; campaign activation disabled.** All formulas, numerical fixtures and future API names below are proposals. The executable review assembly has no campaign-state import/conversion or production Simulation/Application dependency. It must not be used as a combat resolver.
 
 ## Checkpoint and review inputs
