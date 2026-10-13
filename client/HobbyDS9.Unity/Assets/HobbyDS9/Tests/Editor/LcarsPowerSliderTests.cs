@@ -1,12 +1,92 @@
 using System.Linq;
+using System.Collections;
 using HobbyDS9.Contracts.ShipDesign;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.TestTools;
 namespace HobbyDS9.UnityClient.Tests
 {
     public sealed class LcarsPowerSliderTests
     {
+        [TestCase(0,0)][TestCase(6,6)][TestCase(12,12)]
+        public void VerticalFillCountsFromBottomWithoutChangingBackendValidity(long value,int filled)
+        {
+            var slider=new LcarsPowerSlider("Allocated","test",value,12,false,_=>{},4);
+            Assert.That(slider.Track.direction,Is.EqualTo(SliderDirection.Vertical));Assert.That(slider.Track.inverted,Is.False);
+            Assert.That(slider.Query<VisualElement>(className:"lps-filled").ToList().Count,Is.EqualTo(filled));
+            for(var i=0;i<12;i++)Assert.That(slider.Q<VisualElement>("segment-"+i).ClassListContains("lps-filled"),Is.EqualTo(i<filled));
+            Assert.That(slider.Q<VisualElement>("segment-0").ClassListContains("lps-band-low"),Is.True);
+            Assert.That(slider.Q<VisualElement>("segment-11").ClassListContains("lps-band-high"),Is.True);
+            Assert.That(slider.Query<Label>().ToList().Any(l=>l.text=="Powered min 4"),Is.True);
+        }
+        [UnityTest]
+        public IEnumerator StyledRailPlacesZeroAtBottomAndPreservesKeyboardFocusAfterRefresh()
+        {
+            var window=ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();
+            var draft=new ShipDesignDraft(ShipDesignFixtureLoader.Load());draft.RequestTemplate("class.escort");draft.SelectProfile(DesignerProfile.Combat);
+            using(var view=new ShipDesignerView(draft,()=>{}))
+            {
+                try
+                {
+                    window.rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("ShipDesigner"));
+                    window.Show();window.rootVisualElement.Add(view);view.SelectSystem("Profiles");yield return null;yield return null;
+                    var slider=view.Q<LcarsPowerSlider>("slider-power-allocated-component.energy-bank.v1");
+                    var bottom=slider.Q<VisualElement>("segment-0");var top=slider.Q<VisualElement>("segment-11");
+                    Assert.That(bottom.worldBound.yMin,Is.GreaterThan(top.worldBound.yMax));
+                    var thumb=slider.Track.Q<VisualElement>(className:"unity-base-slider__dragger");
+                    slider.Track.SetValueWithoutNotify(0);yield return null;var zeroY=thumb.worldBound.center.y;
+                    slider.Track.SetValueWithoutNotify(slider.Track.highValue);yield return null;
+                    Assert.That(thumb.worldBound.center.y,Is.LessThan(zeroY-80),"Real vertical thumb must rise as power increases");
+                    Assert.That(thumb.worldBound.xMin,Is.GreaterThanOrEqualTo(slider.Track.worldBound.xMin));
+                    Assert.That(thumb.worldBound.xMax,Is.LessThanOrEqualTo(slider.Track.worldBound.xMax),"Thumb must not overlap adjacent legends");
+                    slider.Track.Focus();
+                    using(var e=KeyDownEvent.GetPooled('\0',KeyCode.Home,EventModifiers.None)){e.target=slider.Track;slider.Track.SendEvent(e);}
+                    yield return null;yield return null;
+                    slider=view.Q<LcarsPowerSlider>("slider-power-allocated-component.energy-bank.v1");
+                    Assert.That(slider.panel.focusController.focusedElement,Is.EqualTo(slider.Track));
+                    using(var e=KeyDownEvent.GetPooled('\0',KeyCode.UpArrow,EventModifiers.None)){e.target=slider.Track;slider.Track.SendEvent(e);}
+                    Assert.That(draft.Current.Power("component.energy-bank.v1",DesignerProfile.Combat).AllocatedPower,Is.EqualTo(1));
+                    yield return null;yield return null;
+                    slider=view.Q<LcarsPowerSlider>("slider-power-allocated-component.energy-bank.v1");
+                    using(var e=KeyDownEvent.GetPooled('\0',KeyCode.DownArrow,EventModifiers.None)){e.target=slider.Track;slider.Track.SendEvent(e);}
+                    Assert.That(draft.Current.Power("component.energy-bank.v1",DesignerProfile.Combat).AllocatedPower,Is.Zero);
+                }
+                finally{window.Close();}
+            }
+        }
+        [UnityTest]
+        public IEnumerator PowerBankWrapsAtNarrowStandardAndWideWidthsWithReachableExactControls()
+        {
+            var window=ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();
+            var draft=new ShipDesignDraft(ShipDesignFixtureLoader.Load());draft.RequestTemplate("class.escort");
+            using(var view=new ShipDesignerView(draft,()=>{}))
+            {
+                try
+                {
+                    window.rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("ShipDesigner"));
+                    window.Show();window.rootVisualElement.Add(view);view.SelectSystem("Profiles");
+                    foreach(var width in new[]{700,1200,1900})
+                    {
+                        view.style.width=width;view.style.height=800;yield return null;yield return null;
+                        var bank=view.Q<VisualElement>("designer-power-bank");var rows=bank.Query<VisualElement>(className:"sd-profile-row").ToList();
+                        Assert.That(rows.Count,Is.GreaterThan(2));
+                        foreach(var row in rows)
+                        {
+                            Assert.That(row.worldBound.xMax,Is.LessThanOrEqualTo(bank.worldBound.xMax+1));
+                            foreach(var slider in row.Query<LcarsPowerSlider>().ToList())
+                            {
+                                Assert.That(slider.Track.worldBound.width,Is.GreaterThanOrEqualTo(60));Assert.That(slider.Track.worldBound.height,Is.GreaterThanOrEqualTo(120));
+                                Assert.That(slider.Exact.worldBound.width,Is.GreaterThan(55));
+                                Assert.That(slider.Exact.worldBound.xMax,Is.LessThanOrEqualTo(row.worldBound.xMax));
+                            }
+                        }
+                        Assert.That(rows.Last().worldBound.yMin,Is.GreaterThan(rows.First().worldBound.yMin),"Many installations must wrap into scrollable rows");
+                    }
+                }
+                finally{window.Close();}
+            }
+        }
         [TestCase(0,"zero")][TestCase(1,"low")][TestCase(6,"medium")][TestCase(12,"high")][TestCase(-1,"invalid")][TestCase(13,"invalid")]
         public void RangeRoundTripAndPositionStatesNeverClampExactInput(long value,string state)
         {

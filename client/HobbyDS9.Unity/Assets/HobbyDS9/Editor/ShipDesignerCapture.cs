@@ -46,9 +46,9 @@ namespace HobbyDS9.UnityClient.Editor
                 var item=cases[index];view.Draft.RequestTemplate(item.Item1);view.Draft.SelectProfile(item.Item1=="class.surveyor"?DesignerProfile.Survey:DesignerProfile.Combat);view.SelectSystem(item.Item2);
                 if(item.Item3=="profiles-zero")view.Draft.SetPower("component.energy-bank.v1",0,0);
                 var range=view.Draft.Preview().PowerRanges.FirstOrDefault(r=>r.ComponentId=="component.energy-bank.v1");
-                if(item.Item3=="profiles-full" && range!=null)view.Draft.SetPower("component.energy-bank.v1",range.Maximum,range.Maximum);
+                if(item.Item3=="profiles-full" && range!=null){view.Draft.SetPower("component.energy-bank.v1",range.Maximum,range.Maximum-1);view.Draft.SetPower("component.launcher.v1",6,2);}
                 if(item.Item3=="profiles-invalid" && range!=null)view.Draft.SetPower("component.energy-bank.v1",range.Maximum,100);
-                StrategicPrototypeCapture.CaptureSequence("ship-designer-sliders",item.Item3,Sizes,Validate,()=>CaptureCase(index+1));
+                StrategicPrototypeCapture.CaptureSequence("vertical-lcars-controls",item.Item3,Sizes,Validate,()=>CaptureCase(index+1));
             }
             CaptureCase(0);
         }
@@ -98,9 +98,9 @@ namespace HobbyDS9.UnityClient.Editor
             if(view.SelectedSystem=="Profiles")
             {
                 var slider=view.Q<LcarsPowerSlider>("slider-power-allocated-component.energy-bank.v1");
-                if(slider==null || slider.Track.worldBound.width<180 || slider.Track.worldBound.height<44)
+                if(slider==null || slider.Track.direction!=SliderDirection.Vertical || slider.Track.inverted || slider.Track.worldBound.width<60 || slider.Track.worldBound.height<120)
                     throw new InvalidOperationException("Slider hit area is missing or undersized.");
-                view.Q<ScrollView>("designer-profile-results").ScrollTo(slider);
+                view.Q<ScrollView>("designer-profile-results").ScrollTo(slider.Track);
             }
         }
     }

@@ -153,16 +153,16 @@ namespace HobbyDS9.UnityClient
         {
             var buttons=Buttons(workspace);foreach(DesignerProfile mode in Enum.GetValues(typeof(DesignerProfile))){var b=new LcarsPillButton(mode.ToString(),()=>Draft.SelectProfile(mode)) {name="designer-profile-"+mode.ToString().ToLowerInvariant()};b.EnableInClassList("sd-selected",Draft.Profile==mode);buttons.Add(b);}
             var s=Scroll("designer-profile-results");workspace.Add(s);Metrics(s,"AVAILABLE / REQUESTED / ALLOCATED",p.Power.Where(m=>m.Caption=="Available / requested"||m.Caption=="Actual allocation"));
+            var bank=new VisualElement {name="designer-power-bank"};bank.AddToClassList("sd-power-bank");s.Add(bank);
             foreach(var item in Draft.Provider.Catalogue.Where(c=>Draft.Current.Installed.ContainsKey(c.Id)))
             {
-                var row=Block(s,item.Name+" × "+Draft.Current.Installed[item.Id]);row.AddToClassList("sd-profile-row");var power=Draft.Current.Power(item.Id,Draft.Profile);var fields=Buttons(row);
+                var row=Block(bank,item.Name+" × "+Draft.Current.Installed[item.Id]);row.AddToClassList("sd-profile-row");var power=Draft.Current.Power(item.Id,Draft.Profile);var fields=Buttons(row);
                 var range=p.PowerRanges.FirstOrDefault(r=>r.ComponentId==item.Id);
                 if(range!=null && range.Maximum>=0 && range.Maximum<=int.MaxValue)
                 {
                     var invalid=p.Issues.Any(i=>i.Severity==DesignerStatus.HardError && (i.SystemId==item.Id || i.SystemId=="") && (!i.Profile.HasValue || i.Profile==Draft.Profile));
-                    fields.Add(new LcarsPowerSlider("Requested","power-requested-"+item.Id,power.RequestedPower,range.Maximum,invalid,v=>Draft.SetPower(item.Id,v,Draft.Current.Power(item.Id,Draft.Profile).AllocatedPower)));
-                    fields.Add(new LcarsPowerSlider("Allocated","power-allocated-"+item.Id,power.AllocatedPower,range.Maximum,invalid,v=>Draft.SetPower(item.Id,Draft.Current.Power(item.Id,Draft.Profile).RequestedPower,v)));
-                    row.Row("Backend powered minimum",range.PoweredMinimum+" units • full demand "+range.Maximum);
+                    fields.Add(new LcarsPowerSlider("Requested","power-requested-"+item.Id,power.RequestedPower,range.Maximum,invalid,v=>Draft.SetPower(item.Id,v,Draft.Current.Power(item.Id,Draft.Profile).AllocatedPower),range.PoweredMinimum));
+                    fields.Add(new LcarsPowerSlider("Allocated","power-allocated-"+item.Id,power.AllocatedPower,range.Maximum,invalid,v=>Draft.SetPower(item.Id,Draft.Current.Power(item.Id,Draft.Profile).RequestedPower,v),range.PoweredMinimum));
                 }
                 else
                 {
