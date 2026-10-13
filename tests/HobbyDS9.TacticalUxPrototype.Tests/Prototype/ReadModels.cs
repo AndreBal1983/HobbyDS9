@@ -17,6 +17,20 @@ namespace HobbyDS9.TacticalUxPrototype.Tests.Prototype
         public FleetOrder(string fleet, Maneuver maneuver, string? focusFleet)
         { Fleet = fleet; Maneuver = maneuver; FocusFleet = focusFleet; }
     }
+    // Optional supplied per-package facts. No class-to-stock or readiness inference.
+    public sealed class OwnPackage
+    {
+        public string Package { get; }
+        public string WeaponClass { get; }
+        public bool? UsesPhysicalAmmunition { get; }
+        public long? Ammunition { get; }
+        public long? MagazineCapacity { get; }
+        public string? ReadinessReason { get; }
+        public OwnPackage(string package, string weaponClass, bool? physical, long? ammunition,
+            long? capacity, string? readinessReason)
+        { Package = package; WeaponClass = weaponClass; UsesPhysicalAmmunition = physical;
+            Ammunition = ammunition; MagazineCapacity = capacity; ReadinessReason = readinessReason; }
+    }
     public sealed class OwnShip
     {
         public string Ship { get; }
@@ -26,17 +40,16 @@ namespace HobbyDS9.TacticalUxPrototype.Tests.Prototype
         public long MaxHull { get; }
         public IReadOnlyList<long> Shields { get; }
         public IReadOnlyList<long> ShieldMaximum { get; }
-        // Stage A has aggregate toy ammo, not production per-package stocks.
-        public long ToyAmmunition { get; }
-        public long ToyMagazineCapacity { get; }
+        // Null means projection absent; empty means explicitly supplied no packages.
+        public IReadOnlyList<OwnPackage>? Packages { get; }
         public bool Hidden { get; }
         public bool CloakCapable { get; }
         public OwnShip(string ship, string fleet, string type, long hull, long maxHull,
-            IEnumerable<long> shields, IEnumerable<long> maximum, long ammo, long capacity, bool hidden, bool capable)
+            IEnumerable<long> shields, IEnumerable<long> maximum, IEnumerable<OwnPackage>? packages, bool hidden, bool capable)
         {
             Ship = ship; Fleet = fleet; Type = type; Hull = hull; MaxHull = maxHull;
             Shields = SectorCopy(shields); ShieldMaximum = SectorCopy(maximum);
-            ToyAmmunition = ammo; ToyMagazineCapacity = capacity; Hidden = hidden; CloakCapable = capable;
+            Packages = packages == null ? null : Array.AsReadOnly(packages.ToArray()); Hidden = hidden; CloakCapable = capable;
         }
         internal static IReadOnlyList<long> SectorCopy(IEnumerable<long> source)
         {

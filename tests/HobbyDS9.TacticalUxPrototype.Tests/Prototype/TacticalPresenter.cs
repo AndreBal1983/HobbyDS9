@@ -11,6 +11,8 @@ namespace HobbyDS9.TacticalUxPrototype.Tests.Prototype
         public const string Marker = "PROTOTYPE / TEST-OWNED DATA / CAMPAIGN V2 DISABLED";
         private readonly IPrototypeActions actions;
         private Boundary boundary;
+        private Boundary? actionBoundary;
+        private readonly Dictionary<string, Boundary> observedEncounters = new Dictionary<string, Boundary>(StringComparer.Ordinal);
         private readonly Dictionary<string, FleetOrder> drafts = new Dictionary<string, FleetOrder>(StringComparer.Ordinal);
         private long sequence;
         private string? pendingAction;
@@ -27,8 +29,8 @@ namespace HobbyDS9.TacticalUxPrototype.Tests.Prototype
         public bool Dirty => drafts.Count != 0;
         public bool HasPending => pendingAction != null || pendingSave != null;
         public TacticalPresenter(IPrototypeActions actions, Boundary initial, long generation = 1)
-        { this.actions = actions; boundary = initial; Generation = generation; State = StateFor(initial); }
-        private static ScreenState StateFor(Boundary b) => b.Status switch
+        { this.actions = actions; boundary = initial; Generation = generation; State = StateFor(initial); Remember(initial); }
+        private static ScreenState StateFor(Boundary b) => !BoundaryChronology.HasShape(b) ? ScreenState.RefreshRequired : b.Status switch
         {
             BoundaryStatus.Ready => b.Round >= 1 && b.Round <= 3 ? ScreenState.Ready : ScreenState.RefreshRequired,
             BoundaryStatus.Waiting => ScreenState.Waiting,
@@ -83,7 +85,7 @@ namespace HobbyDS9.TacticalUxPrototype.Tests.Prototype
         {
             if (State != ScreenState.Review || HasPending) return false;
             var request = NextRequest();
-            pendingAction = request; State = ScreenState.Sending; Notice = "";
+            pendingAction = request; actionBoundary = boundary; State = ScreenState.Sending; Notice = "";
             // Stage A requires FULL owned active-fleet orders, not just changed rows.
             var orders = boundary.StandingOrders.Select(o => OrderFor(o.Fleet)).ToArray();
             sentOrders = Array.AsReadOnly(orders);
@@ -97,11 +99,10 @@ namespace HobbyDS9.TacticalUxPrototype.Tests.Prototype
             pendingAction = null;
             if (rejection != null || observed == null)
             { State = ScreenState.RefreshRequired; Notice = rejection ?? "Missing response; explicit refresh required."; return true; }
-            if (observed.Actor != boundary.Actor || observed.Encounter != boundary.Encounter
-                || observed.Status != BoundaryStatus.Waiting && observed.Status != BoundaryStatus.Report && observed.Status != BoundaryStatus.EncounterComplete)
-            { State = ScreenState.RefreshRequired; Notice = "Response has wrong scope or no accepted commitment boundary."; return true; }
+            if (actionBoundary == null || !BoundaryChronology.CanReceiveRound(actionBoundary, observed))
+            { State = ScreenState.RefreshRequired; Notice = "Rejected prototype receipt scope/chronology; observed state and local edits retained. Refresh explicitly."; return true; }
             AcknowledgedOrders = observed.Status == BoundaryStatus.Waiting ? sentOrders : Array.Empty<FleetOrder>();
-            boundary = observed; drafts.Clear(); State = StateFor(observed); Notice = "Prototype response only; no campaign command was executed.";
+            boundary = observed; Remember(observed); drafts.Clear(); State = StateFor(observed); Notice = "Prototype response only; no campaign command was executed.";
             SelectedShip = null; ReconcileSelection(); return true;
         }
         public bool BeginNextRound()
@@ -112,17 +113,23 @@ namespace HobbyDS9.TacticalUxPrototype.Tests.Prototype
         public bool Refresh(Boundary observed, long generation)
         {
             if (HasPending || generation != Generation || observed.Actor != boundary.Actor || observed.Encounter != boundary.Encounter) return false;
+            if (!BoundaryChronology.CanRefresh(boundary, observed))
+            { Notice = "Rejected obsolete or impossible prototype refresh; current state and local edits retained."; return false; }
+            var unchangedPhase = observed.Round == boundary.Round && observed.BoundaryRevision == boundary.BoundaryRevision && observed.Status == boundary.Status;
             if (observed.Round != boundary.Round || observed.BoundaryRevision != boundary.BoundaryRevision)
             { drafts.Clear(); AcknowledgedOrders = Array.Empty<FleetOrder>(); Notice = "Boundary changed; obsolete unsent proposal discarded. Review fresh orders."; }
-            boundary = observed;
+            boundary = observed; Remember(observed);
             foreach (var fleet in drafts.Keys.Where(f => !observed.StandingOrders.Any(o => o.Fleet == f)).ToArray()) drafts.Remove(fleet);
-            State = StateFor(observed); ReconcileSelection(); return true;
+            if (!unchangedPhase || State == ScreenState.RefreshRequired) State = StateFor(observed);
+            ReconcileSelection(); return true;
         }
         public bool NavigateEncounter(Boundary observed)
         {
             if (Dirty || HasPending || State == ScreenState.Review || State == ScreenState.CompletionReview
                 || observed.Actor != boundary.Actor || observed.Encounter == boundary.Encounter) return false;
-            boundary = observed; AcknowledgedOrders = Array.Empty<FleetOrder>(); State = StateFor(observed); SelectedFleet = SelectedShip = null; return true;
+            if (!BoundaryChronology.HasShape(observed) || observedEncounters.TryGetValue(observed.Encounter, out var previous)
+                && !BoundaryChronology.CanRefresh(previous, observed)) return false;
+            boundary = observed; Remember(observed); AcknowledgedOrders = Array.Empty<FleetOrder>(); State = StateFor(observed); SelectedFleet = SelectedShip = null; return true;
         }
         public bool SaveCommittedBoundary()
         {
@@ -142,7 +149,8 @@ namespace HobbyDS9.TacticalUxPrototype.Tests.Prototype
         }
         public bool TryReplaceSession(Boundary loaded, long newGeneration, bool validated, bool discardConsent)
         {
-            if (!validated || HasPending || newGeneration <= Generation || Dirty && !discardConsent) return false;
+            if (!validated || !BoundaryChronology.HasShape(loaded) || HasPending || newGeneration <= Generation || Dirty && !discardConsent) return false;
+            observedEncounters.Clear(); Remember(loaded);
             boundary = loaded; Generation = newGeneration; drafts.Clear(); AcknowledgedOrders = Array.Empty<FleetOrder>(); State = StateFor(loaded);
             SelectedFleet = SelectedShip = null; Notice = "Prototype session replaced; no old local edits reattached."; return true;
         }
@@ -154,7 +162,7 @@ namespace HobbyDS9.TacticalUxPrototype.Tests.Prototype
         public bool CompleteReviewedBatch()
         {
             if (State != ScreenState.CompletionReview || HasPending || boundary.BatchReady != true) return false;
-            var request = NextRequest(); pendingAction = request; State = ScreenState.Completing;
+            var request = NextRequest(); pendingAction = request; actionBoundary = boundary; State = ScreenState.Completing;
             try { actions.RecordCompletion(new OperationIntent(Generation, request, boundary)); }
             catch { pendingAction = null; State = ScreenState.RefreshRequired; Notice = "Ambiguous prototype completion; refresh without re-resolving."; }
             return true;
@@ -163,10 +171,12 @@ namespace HobbyDS9.TacticalUxPrototype.Tests.Prototype
         {
             if (generation != Generation || pendingAction != request || State != ScreenState.Completing) return false;
             pendingAction = null;
-            if (rejection != null || finalized == null || finalized.Actor != boundary.Actor || finalized.Status != BoundaryStatus.Finalized)
+            if (rejection != null || finalized == null || actionBoundary == null || !BoundaryChronology.CanFinalize(actionBoundary, finalized))
             { State = ScreenState.RefreshRequired; Notice = rejection ?? "Finalization not confirmed; staged prototype data retained."; return true; }
-            boundary = finalized; State = ScreenState.Finalized; Notice = "PROTOTYPE completion; live campaign v2 remains disabled."; return true;
+            boundary = finalized; Remember(finalized); State = ScreenState.Finalized; Notice = "PROTOTYPE completion; live campaign v2 remains disabled."; return true;
         }
+        private void Remember(Boundary value)
+        { if (BoundaryChronology.HasShape(value)) observedEncounters[value.Encounter] = value; }
         private string NextRequest() => "ui-prototype." + checked(++sequence).ToString(CultureInfo.InvariantCulture);
         private void ReconcileSelection()
         {
@@ -187,14 +197,24 @@ namespace HobbyDS9.TacticalUxPrototype.Tests.Prototype
             foreach (var o in boundary.StandingOrders)
             {
                 var current = OrderFor(o.Fleet);
-                var label = State == ScreenState.Waiting ? AcknowledgedOrders.Count > 0 ? "acknowledged" : "previous standing (accepted detail missing)" : "draft/retained";
+                var label = drafts.ContainsKey(o.Fleet) ? "unsent" : State == ScreenState.Waiting ? AcknowledgedOrders.Count > 0 ? "acknowledged" : "previous standing (accepted detail missing)" : "draft/retained";
                 rows.Add("Fleet " + o.Fleet + ": " + label + " " + current.Maneuver + "; order focus " + (current.FocusFleet ?? "none")
                     + "; committed " + o.Maneuver + "; standing focus " + (o.FocusFleet ?? "none") + "; screening is same-fleet only");
             }
             foreach (var s in boundary.OwnShips)
             {
                 rows.Add("Own " + s.Ship + " " + s.Type + ": Hull " + N(s.Hull) + "/" + N(s.MaxHull) + "; " + Sectors(s.Shields, s.ShieldMaximum));
-                rows.Add("Stage A toy aggregate ammo " + N(s.ToyAmmunition) + "/" + N(s.ToyMagazineCapacity) + "; dependency: production per-package pools");
+                if (s.Packages == null) rows.Add("DEPENDENCY: own per-package stock/readiness projection absent; no aggregate conversion");
+                else if (s.Packages.Count == 0) rows.Add("Supplied empty package list; no weapon packages");
+                else foreach (var package in s.Packages)
+                {
+                    var stocks = package.UsesPhysicalAmmunition == false ? "No physical ammunition (supplied)"
+                        : "Stock " + (package.Ammunition.HasValue ? N(package.Ammunition.Value) : "DEPENDENCY: ammunition absent")
+                            + "/" + (package.MagazineCapacity.HasValue ? N(package.MagazineCapacity.Value) : "DEPENDENCY: capacity absent");
+                    rows.Add("Own package " + package.Package + " " + package.WeaponClass + ": " + stocks
+                        + (package.UsesPhysicalAmmunition == null ? "; DEPENDENCY: stock kind absent" : "")
+                        + "; " + (package.ReadinessReason ?? "DEPENDENCY: readiness reason absent"));
+                }
                 rows.Add("Own visibility: " + (s.Hidden ? "cloaked this boundary" : "visible") + "; no mid-battle re-cloak control");
             }
             foreach (var s in boundary.VisibleShips)

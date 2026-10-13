@@ -25,7 +25,7 @@ namespace HobbyDS9.TacticalUxPrototype.Tests
         }
         private static OwnShip Own(string id = "own", string fleet = "A", bool hidden = false, long ammo = 5, long hull = 90)
             => new OwnShip(id, fleet, "authored fixture", hull, 100, new long[] { 3, 13, 40, 5 },
-                new long[] { 40, 40, 40, 40 }, ammo, 7, hidden, true);
+                new long[] { 40, 40, 40, 40 }, new[] { new OwnPackage("launcher.fixture", "Torpedo", true, ammo, 7, "Fixture-supplied readiness") }, hidden, true);
         private static VisibleShip Enemy(string ship = "enemy", string fleet = "X")
             => new VisibleShip(ship, fleet, "observed cruiser", 92, new long[] { 0, 5, 5, 0 });
         private static Boundary Snapshot(BoundaryStatus status = BoundaryStatus.Ready, int round = 1, long revision = 8,
@@ -189,7 +189,7 @@ namespace HobbyDS9.TacticalUxPrototype.Tests
         {
             var (ui, port) = Make(); var intent = Send(ui, port);
             Assert.True(ui.ReceiveRound(1, intent.Request, Snapshot(BoundaryStatus.Report, 2, 9, ammo: 3)));
-            Assert.Equal(3, Assert.Single(ui.Observation.OwnShips).ToyAmmunition);
+            Assert.Equal(3, Assert.Single(ui.Observation.OwnShips).Packages![0].Ammunition);
             Assert.Equal(ScreenState.Report, ui.State);
             Assert.False(ui.CommitReviewedRound());
             Assert.True(ui.BeginNextRound()); Assert.Single(port.Rounds);
@@ -238,12 +238,12 @@ namespace HobbyDS9.TacticalUxPrototype.Tests
             var (ui, port) = Make(Snapshot(visible: false, hiddenOwn: true, focus: null, ammo: 7));
             ui.ReplayReport(); ui.Resize(3440, 1440); ui.RenderText();
             Assert.True(Assert.Single(ui.Observation.OwnShips).Hidden);
-            Assert.Equal(7, Assert.Single(ui.Observation.OwnShips).ToyAmmunition);
+            Assert.Equal(7, Assert.Single(ui.Observation.OwnShips).Packages![0].Ammunition);
             var intent = Send(ui, port);
             ui.ReceiveRound(1, intent.Request, Snapshot(BoundaryStatus.Report, 2, 9, ammo: 5,
                 reports: new[] { new ReportRow(1, 1, "Incoming torpedo intercepted; launcher not visible at that event.") }));
             Assert.False(Assert.Single(ui.Observation.OwnShips).Hidden);
-            Assert.Equal(5, Assert.Single(ui.Observation.OwnShips).ToyAmmunition);
+            Assert.Equal(5, Assert.Single(ui.Observation.OwnShips).Packages![0].Ammunition);
             Assert.Contains("launcher not visible", Assert.Single(ui.ReplayReport()).Message);
             Assert.DoesNotContain("hidden-launcher-id", string.Join("\n", ui.RenderText()));
         }
@@ -330,7 +330,7 @@ namespace HobbyDS9.TacticalUxPrototype.Tests
             var operation = Assert.Single(port.Completions);
             ui.ReceiveCompletion(1, operation.Request, null, "later encounter validation failed");
             Assert.Equal(ScreenState.RefreshRequired, ui.State);
-            Assert.Equal(0, Assert.Single(ui.Observation.OwnShips).ToyAmmunition);
+            Assert.Equal(0, Assert.Single(ui.Observation.OwnShips).Packages![0].Ammunition);
             Assert.Single(ui.ReplayReport()); Assert.Empty(port.Rounds);
         }
         [Fact] public void AcceptedPrototypeCompletionDisplaysStopAndNewOrdersWithoutAdvancingTurn()
@@ -360,7 +360,7 @@ namespace HobbyDS9.TacticalUxPrototype.Tests
             for (var i = 0; i < 3; i++) { ui.RenderText(); ui.ReplayReport(); ui.Resize(1280, 720); }
             Assert.Equal(before, JsonSerializer.Serialize(ui.Observation));
             Assert.True(ui.NavigateEncounter(Snapshot(encounter: "next-turn-test-owned", ammo: 0)));
-            Assert.Equal(0, Assert.Single(ui.Observation.OwnShips).ToyAmmunition);
+            Assert.Equal(0, Assert.Single(ui.Observation.OwnShips).Packages![0].Ammunition);
             Assert.Equal(new long[] { 3, 13, 40, 5 }, Assert.Single(ui.Observation.OwnShips).Shields);
             Assert.Equal(0, port.Count);
         }
@@ -385,7 +385,7 @@ namespace HobbyDS9.TacticalUxPrototype.Tests
             try
             {
                 var ship = new OwnShip("huge", "A", "fixture", long.MaxValue, long.MaxValue,
-                    Enumerable.Repeat(long.MaxValue, 4), Enumerable.Repeat(long.MaxValue, 4), long.MaxValue, long.MaxValue, false, false);
+                    Enumerable.Repeat(long.MaxValue, 4), Enumerable.Repeat(long.MaxValue, 4), new[] { new OwnPackage("launcher.huge", "Torpedo", true, long.MaxValue, long.MaxValue, "Supplied readiness") }, false, false);
                 var b = new Boundary("e", "human", 1, 8, BoundaryStatus.Ready,
                     new[] { new FleetOrder("A", Maneuver.Hold, null) }, new[] { ship }, Array.Empty<VisibleShip>());
                 var (ui, port) = Make(b);
