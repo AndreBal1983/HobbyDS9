@@ -116,10 +116,12 @@ namespace HobbyDS9.Contracts
         public SessionPhase Phase { get; }
         public bool CanFinalizeBatch { get; }
         public bool ProductionActivationAllowed => false;
-        public string TravelModel => "legacy-cost-step; physical-contact integration pending";
-        public string ContactAdmission => "legacy-review-allocation; explicit hostility/intent pending";
-        public CampaignTacticalReviewStatus(int turn, long revision, SessionPhase phase, bool canFinalize)
-        { Turn = turn; CampaignRevision = revision; Phase = phase; CanFinalizeBatch = canFinalize; }
+        public string TravelModel { get; }
+        public string ContactAdmission { get; }
+        public CampaignTacticalReviewStatus(int turn, long revision, SessionPhase phase, bool canFinalize,bool physical=false)
+        { Turn = turn; CampaignRevision = revision; Phase = phase; CanFinalizeBatch = canFinalize;
+            TravelModel=physical?"exact shared time; proposed review profile":"legacy-cost-step; physical-contact integration pending";
+            ContactAdmission=physical?"declared hostility, lawful tracking and explicit intent; proposed":"legacy-review-allocation; explicit hostility/intent pending"; }
     }
     public sealed class CampaignTacticalFleetCloakSetting
     {

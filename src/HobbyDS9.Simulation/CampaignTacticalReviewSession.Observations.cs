@@ -19,7 +19,7 @@ namespace HobbyDS9.Simulation
         public CampaignTacticalReviewStatus CaptureStatus()
         {
             lock (gate) return new CampaignTacticalReviewStatus(state.Campaign.GameState.TurnNumber, state.Campaign.GameState.StateRevision,
-                state.Campaign.GameState.Phase!.Value, state.Battles.Count > 0 && state.Battles.All(b => b.State.Completion != TacticalCompletion.None));
+                CurrentPhase, state.Battles.Count > 0 && state.Battles.All(b => b.State.Completion != TacticalCompletion.None),travel!=null);
         }
         public IReadOnlyList<CampaignTacticalFleetCloakSetting> FleetCloakSettings(string actor)
         {
@@ -28,7 +28,7 @@ namespace HobbyDS9.Simulation
                 Require(Actor(actor) == CampaignTacticalError.None, "Only a controlled human actor can inspect fleet settings.");
                 return state.Campaign.GameState.Fleets!.Where(f => f.OwnerCivilizationId == actor).Select(f =>
                     new CampaignTacticalFleetCloakSetting(f.FleetId,state.FleetSettings.Single(s => s.FleetId == f.FleetId).ApproachCloak,
-                        state.Campaign.GameState.Phase == SessionPhase.Planning, f.ShipIds!.Where(id => cloak.Single(c => c.FitId == Fit(id).DefinitionId).Capable == true)))
+                        CurrentPhase == SessionPhase.Planning, f.ShipIds!.Where(id => cloak.Single(c => c.FitId == Fit(id).DefinitionId).Capable == true)))
                     .OrderBy(f => f.FleetId,StringComparer.Ordinal).ToList().AsReadOnly();
             }
         }
@@ -79,7 +79,7 @@ namespace HobbyDS9.Simulation
                     own, visible, orders, b.Reports.Where(r => r.ActorId == actor).Select(r => new CampaignTacticalReportEntry(r)),
                     commitment?.CommandId, commitment?.Orders.Select(o => new CampaignTacticalStandingOrder(o.FleetId, o.Maneuver, o.FocusFleetId,false))
                         ?? Array.Empty<CampaignTacticalStandingOrder>(),relations,actor,
-                    state.Campaign.GameState.PendingCombats!.Single(p => p.Request.EncounterId == encounter).Request.LocationNodeId);
+                    CurrentRequests.Single(p => p.EncounterId == encounter).LocationNodeId);
             }
         }
         private void AddReports(CampaignTacticalBattleCheckpointDto b, IReadOnlyList<TacticalEventV2> events)
@@ -110,7 +110,8 @@ namespace HobbyDS9.Simulation
                     OwnWeaponId = own ? e.WeaponId : null,
                     Sector = e.Sector,
                     Range = e.TargetShipId != null && !b.HiddenShipIds.Contains(e.TargetShipId,StringComparer.Ordinal) ? e.Range : null,
-                    Amount = own || e.Kind == TacticalEventKind.ShieldImpact || e.Kind == TacticalEventKind.HullDamage ? e.Amount : 0 });
+                    Amount = own || e.Kind == TacticalEventKind.ShieldImpact || e.Kind == TacticalEventKind.HullDamage ? e.Amount : 0,
+                    Detail = e.Detail.StartsWith("focus-fallback:",StringComparison.Ordinal) ? "Preferred fleet unavailable for this opportunity; a visible hostile alternative was acquired." : "" });
             }
         }
     }

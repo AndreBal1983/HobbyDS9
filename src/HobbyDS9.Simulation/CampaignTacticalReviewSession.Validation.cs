@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using HobbyDS9.Contracts;
 using static HobbyDS9.Simulation.CampaignTacticalReviewData;
 
@@ -7,13 +8,15 @@ namespace HobbyDS9.Simulation
 {
     public sealed partial class CampaignTacticalReviewSession
     {
-        private void ValidateSave(CampaignTacticalReviewSaveDto s)
+        private void ValidateSave(CampaignTacticalReviewSaveDto s,IReadOnlyList<CombatRequestDto>? physicalRequests=null)
         {
             Require(s != null && s.FormatVersion == CampaignTacticalReviewIdentity.SaveFormat && s.ProfileId == CampaignTacticalReviewIdentity.Profile
                 && Hash(s.PackageHash) && s.ResolverId == CampaignTacticalReviewIdentity.Resolver && s.ResolverVersion == CampaignTacticalReviewIdentity.ResolverVersion
                 && s.Campaign != null && s.Pools != null && s.FleetSettings != null && s.Battles != null && s.AcceptedRoundCommands != null, "Invalid review save envelope.");
             FoundationValidator.ValidateSave(s.Campaign, definitions, compatibility).ThrowIfInvalid(nameof(s));
             var game = s.Campaign.GameState;
+            if(travel!=null)Require(game.Phase==SessionPhase.Planning&&game.PendingCombats!.Count==0,"Physical core cannot carry legacy pending encounters.");
+            var requests=travel!=null?(physicalRequests??travel.Requests):game.PendingCombats!.Select(p=>p.Request).ToList();
             Require(game.Civilizations!.Count == controllers.Count && game.Civilizations.All(c => controllers.TryGetValue(c.CivilizationId,out var controller)
                 && c.ControllerKind == controller), "Controller configuration differs from the pinned review package.");
             Require(game.ResolvedCombats!.Count == 0, "External v1 results cannot enter the private review lifecycle.");
@@ -47,13 +50,13 @@ namespace HobbyDS9.Simulation
             }
             Require(s.FleetSettings.Count == game.Fleets!.Count && s.FleetSettings.All(f => f != null && game.Fleets.Any(p => p.FleetId == f.FleetId))
                 && s.FleetSettings.Select(f => f.FleetId).Distinct(StringComparer.Ordinal).Count() == s.FleetSettings.Count, "Invalid fleet cloak settings.");
-            Require(s.Battles.Count == game.PendingCombats!.Count && s.Battles.All(b => b != null && b.State != null)
+            Require(s.Battles.Count == requests.Count && s.Battles.All(b => b != null && b.State != null)
                 && s.Battles.Select(b => b.State.EncounterId).Distinct(StringComparer.Ordinal).Count() == s.Battles.Count, "Invalid private battle batch.");
             foreach (var b in s.Battles)
             {
                 TacticalCombatV2State.Validate(b.State);
                 var canonicalBattle = TacticalCombatV2State.Copy(b.State);
-                var frozen = game.PendingCombats.SingleOrDefault(p => p.Request.EncounterId == b.State.EncounterId)?.Request;
+                var frozen = requests.SingleOrDefault(p => p.EncounterId == b.State.EncounterId);
                 Require(frozen != null && RulesKey(b.State.Rules) == RulesKey(rules)
                     && b.BoundaryRevision == b.State.NextRound - 1 && b.HiddenShipIds != null
                     && b.Commitments != null && b.Reports != null && b.ResolvedRounds != null, "Invalid frozen battle/stamp.");
@@ -117,7 +120,8 @@ namespace HobbyDS9.Simulation
                 foreach (var r in b.Reports)
                 {
                     Require(r != null && r.Round >= 1 && r.Round < b.State.NextRound && b.State.Formations.Any(f => f.SideId == r.ActorId)
-                        && r.Detail == "" && r.Amount >= 0 && (Enum.TryParse<TacticalEventKind>(r.Kind, out var kind) && Enum.IsDefined(typeof(TacticalEventKind), kind)
+                        && (r.Detail == "" || r.Kind=="FocusFallback"&&r.Detail=="Preferred fleet unavailable for this opportunity; a visible hostile alternative was acquired.")
+                        && r.Amount >= 0 && (Enum.TryParse<TacticalEventKind>(r.Kind, out var kind) && Enum.IsDefined(typeof(TacticalEventKind), kind)
                             || r.Kind == "IncomingTorpedo" || r.Kind == "FocusFallback"), "Invalid filtered report.");
                     if (r.OwnWeaponId != null) Require(r.ShipId != null && b.State.Formations.Any(f => f.SideId == r.ActorId
                         && f.Ships.Any(p => p.ShipId == r.ShipId && p.Weapons.Any(w => w.WeaponId == r.OwnWeaponId))), "Opponent equipment in report.");

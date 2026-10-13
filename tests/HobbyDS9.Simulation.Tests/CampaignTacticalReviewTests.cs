@@ -416,7 +416,8 @@ public sealed class CampaignTacticalReviewTests
         Assert.DoesNotContain(app.Observe(id,A).VisibleEnemies,s=>s.ShipId=="ship.cardassian-scout");
         Assert.True(app.CommitRound(Command(app,id,A)).Accepted);
         Assert.True(app.CommitRound(Command(app,id,"civ.dominion")).Accepted);
-        Assert.Contains(app.Observe(id,A).Reports,r=>r.Kind=="FocusFallback" && r.TargetShipId=="ship.additional-opponent");
+        Assert.Contains(app.Observe(id,A).Reports,r=>r.Kind=="FocusFallback" && r.TargetShipId=="ship.additional-opponent"
+            && r.Detail=="Preferred fleet unavailable for this opportunity; a visible hostile alternative was acquired.");
         Assert.Equal("fleet.cardassian-scout",app.Observe(id,A).StandingOrders[0].FocusFleetId);
     }
     [Fact]
