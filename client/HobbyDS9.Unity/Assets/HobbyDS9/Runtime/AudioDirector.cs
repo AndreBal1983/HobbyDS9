@@ -45,6 +45,7 @@ namespace HobbyDS9.UnityClient
         }
         private void Initialize()
         {
+            AudioOutputListener.Acquire(this);
             if (initialized) return;
             initialized = true;
             Preferences = new MusicPreferences(new PlayerPrefsMusicStore());
@@ -156,7 +157,7 @@ namespace HobbyDS9.UnityClient
         }
         private void Warn(string key, string text) { if (warnings.Add(key)) Debug.LogWarning(text); }
         private void OnDisable() { StopSources(); }
-        private void OnDestroy() { StopSources(); if (instance == this) instance = null; }
+        private void OnDestroy() { StopSources(); AudioOutputListener.Release(this); if (instance == this) instance = null; }
     }
     internal sealed class PlayerPrefsMusicStore : IMusicSettingsStore
     {
