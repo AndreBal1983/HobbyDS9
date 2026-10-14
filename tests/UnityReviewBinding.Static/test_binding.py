@@ -47,7 +47,9 @@ class BindingTests(unittest.TestCase):
 
     def test_render_dispatch_rejected(self):
         path = self.assets / "Review/Runtime/ReviewEntry.cs"
-        path.write_text(path.read_text().replace("private void Draw()\n", "private void Draw()\n", 1).replace("message!.text=model.Message;", "model.Advance();message!.text=model.Message;"))
+        source = path.read_text()
+        self.assertIn("private void Draw()", source)
+        path.write_text(source.replace("private void Draw()\n        {", "private void Draw()\n        {\n            model.Advance();", 1))
         self.assertTrue(any("Painting" in x for x in checker.check(self.root)))
 
     def test_default_output_overwrite_rejected(self):

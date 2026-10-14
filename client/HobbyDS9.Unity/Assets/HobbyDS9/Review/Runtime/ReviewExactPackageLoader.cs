@@ -23,5 +23,12 @@ namespace HobbyDS9.UnityReview
         }
         private static string Hash(byte[] bytes)
         { using(var sha=SHA256.Create()) return string.Concat(sha.ComputeHash(bytes).Select(b=>b.ToString("x2",CultureInfo.InvariantCulture))); }
+        public static CampaignIntegratedPlaytestPackageDto LoadIntegrated(byte[] outer,byte[] physical,byte[] core,byte[] scenario,ReviewNewtonsoftCodec codec)
+        {
+            var package=codec.DecodeIntegratedProfile(outer);
+            package.Physical=Load(physical,core,scenario,codec);
+            package.PackageHash=Hash(Encoding.ASCII.GetBytes("campaign-integrated-playtest-package-v3\n"+Hash(outer)+"\n"+package.Physical.PackageHash+"\n"));
+            return package;
+        }
     }
 }

@@ -32,7 +32,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Actual-source tests failed' }
           [xml]$trx = Get-Content -LiteralPath 'artifacts/unity-review-adapter/unity-adapter.trx'
           $c = $trx.TestRun.ResultSummary.Counters
-          if ([int]$c.total -lt 64 -or [int]$c.passed -ne [int]$c.total -or [int]$c.failed -ne 0 -or [int]$c.notExecuted -ne 0) { throw 'Missing or unexecuted adapter cases' }
+          if ([int]$c.total -lt 107 -or [int]$c.passed -ne [int]$c.total -or [int]$c.failed -ne 0 -or [int]$c.notExecuted -ne 0) { throw 'Missing or unexecuted adapter cases' }
           Write-Host "Actual-source portable cases: $($c.passed) passed; Editor/AOT/native not executed"
       - uses: actions/setup-python@v6
         with:
@@ -41,6 +41,11 @@ jobs:
         run: |
           python scripts/check-unity-review-binding.py
           python -B -m unittest discover -s tests/UnityReviewBinding.Static -p "test_*.py" -v
+      - name: Prepare and check additive integrated opt-in resources and source boundaries
+        run: |
+          dotnet msbuild scripts/PrepareUnityIntegrated.proj -t:Prepare
+          python scripts/check-unity-integrated.py
+          python -B -m unittest discover -s tests/UnityIntegrated.Static -p "test_*.py" -v
       - uses: actions/upload-artifact@v4
         if: always()
         with:

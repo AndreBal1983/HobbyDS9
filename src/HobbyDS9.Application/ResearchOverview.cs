@@ -64,9 +64,9 @@ namespace HobbyDS9.Application
         public decimal ScienceReserveConceptual=>(decimal)ScienceReserve/ResearchUnits.Scale; public decimal EngineeringReserveConceptual=>(decimal)EngineeringReserve/ResearchUnits.Scale;
         public IReadOnlyList<ScienceCardSnapshot> Science { get; } public IReadOnlyList<EngineeringCardSnapshot> Engineering { get; }
         public IReadOnlyList<ResearchReceiptSnapshot> Receipts { get; }
-        private ResearchOverviewSnapshot(CampaignSnapshot snapshot,CivilizationSnapshot actor)
+        private ResearchOverviewSnapshot(CampaignSnapshot snapshot,CivilizationSnapshot actor,bool planningAllowed)
         {
-            var state=actor.Research!;var access=StrategicOptions.PlanningAccess(snapshot,actor.CivilizationId);
+            var state=actor.Research!;var access=planningAllowed?StrategicOptions.PlanningAccess(snapshot,actor.CivilizationId):CommandErrorCode.CombatPending;
             PaceFactor=snapshot.Campaign.ResearchPaceFactor;ScienceAllocationUnits=state.ScienceAllocationUnits;
             ResearchOutput=snapshot.Campaign.Colonies.Where(c=>c.OwnerCivilizationId==actor.CivilizationId).Aggregate(0L,(sum,c)=>checked(sum+c.Economy.ResearchOutput));
             ScienceAllocation=(long)((BigInteger)ResearchOutput*ScienceAllocationUnits);EngineeringAllocation=checked(ResearchOutput*ResearchUnits.Scale)-ScienceAllocation;
@@ -75,6 +75,7 @@ namespace HobbyDS9.Application
             Engineering=snapshot.Content.Engineering.Select(d=>new EngineeringCardSnapshot(d,state,PaceFactor,access)).ToList().AsReadOnly();
             Receipts=snapshot.Campaign.LastResearchReceipts.Where(r=>r.CivilizationId==actor.CivilizationId).ToList().AsReadOnly();
         }
-        public static ResearchOverviewSnapshot For(CampaignSnapshot snapshot,EntityId actorId)=>new ResearchOverviewSnapshot(snapshot,snapshot.Campaign.Civilizations.Single(c=>c.CivilizationId==actorId));
+        public static ResearchOverviewSnapshot For(CampaignSnapshot snapshot,EntityId actorId)=>For(snapshot,actorId,true);
+        internal static ResearchOverviewSnapshot For(CampaignSnapshot snapshot,EntityId actorId,bool planningAllowed)=>new ResearchOverviewSnapshot(snapshot,snapshot.Campaign.Civilizations.Single(c=>c.CivilizationId==actorId),planningAllowed);
     }
 }

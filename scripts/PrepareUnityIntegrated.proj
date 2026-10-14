@@ -1,0 +1,15 @@
+<Project DefaultTargets="Prepare">
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))</RepoRoot>
+    <UnityProject>$(RepoRoot)/client/HobbyDS9.Unity</UnityProject>
+    <IntegratedSource>$(RepoRoot)/scenarios/integrated-playtest-v1</IntegratedSource>
+    <IntegratedOutput>$(UnityProject)/Assets/HobbyDS9/Review/Resources/IntegratedPackages/v1</IntegratedOutput>
+  </PropertyGroup>
+  <!-- Additive preparation only; no Editor/player/build/default activation. -->
+  <Target Name="Prepare">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)PrepareUnityReview.proj" Targets="Prepare" />
+    <ItemGroup><RawSource Include="$(IntegratedSource)/package.json;$(IntegratedSource)/physical.json;$(IntegratedSource)/core.json;$(IntegratedSource)/scenario.json" /></ItemGroup>
+    <MakeDir Directories="$(IntegratedOutput)" />
+    <Copy SourceFiles="@(RawSource)" DestinationFolder="$(IntegratedOutput)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

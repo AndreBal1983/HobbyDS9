@@ -16,7 +16,7 @@ using Newtonsoft.Json.Serialization;
 namespace HobbyDS9.UnityReview
 {
     // Actual Unity-compatible codec. Complete physical package/root only; no engine API or net10 dependency.
-    public sealed class ReviewNewtonsoftCodec : IPhysicalReviewHostCodec
+    public sealed class ReviewNewtonsoftCodec : IIntegratedReviewHostCodec
     {
         private static readonly UTF8Encoding Utf8=new UTF8Encoding(false,true);
         private static JsonSerializerSettings Settings() => new JsonSerializerSettings {
@@ -34,6 +34,11 @@ namespace HobbyDS9.UnityReview
         public CampaignTacticalTravelPackageDto DecodeProfile(byte[] bytes) => Decode<CampaignTacticalTravelPackageDto>(bytes);
         public CampaignTacticalReviewPackageDto DecodeCoreProfile(byte[] bytes) => Decode<CampaignTacticalReviewPackageDto>(bytes);
         public ScenarioDto DecodeScenario(byte[] bytes) => Decode<ScenarioDto>(bytes);
+        public CampaignIntegratedPlaytestPackageDto CopyPackage(CampaignIntegratedPlaytestPackageDto package)=>Decode<CampaignIntegratedPlaytestPackageDto>(Encode(package));
+        public CampaignIntegratedPlaytestSaveDto CopySave(CampaignIntegratedPlaytestSaveDto save)=>Decode<CampaignIntegratedPlaytestSaveDto>(Encode(save));
+        public CampaignIntegratedPlaytestPackageDto DecodeIntegratedProfile(byte[] bytes)=>Decode<CampaignIntegratedPlaytestPackageDto>(bytes);
+        public byte[] EncodeIntegratedRoot(CampaignIntegratedPlaytestSaveDto save)=>Encode(save);
+        public CampaignIntegratedPlaytestSaveDto DecodeIntegratedRoot(byte[] bytes)=>Decode<CampaignIntegratedPlaytestSaveDto>(bytes);
         private static byte[] Encode<T>(T value)
         {
             try { return Utf8.GetBytes(JsonConvert.SerializeObject(value,Formatting.None,Settings())); }

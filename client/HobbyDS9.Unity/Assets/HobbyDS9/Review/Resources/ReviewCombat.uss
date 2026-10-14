@@ -1,0 +1,21 @@
+/* Central battle hierarchy from the accepted first-iteration art baseline. */
+.review-toolbar, .review-field-row, .review-tabs, .review-footer { flex-direction: row; flex-wrap: wrap; flex-shrink: 0; }
+.review-heading { font-size: 22px; -unity-font-style: bold; color: #efb36a; margin: 6px; }
+.review-central { flex-grow: 1; min-height: 0; border-width: 2px; border-color: #85bddd; padding: 10px; margin: 6px; background-color: #0b1422; }
+.review-stage-row { flex-direction: row; flex-grow: 1; min-height: 0; }
+.review-panel { border-width: 1px; border-color: #486179; padding: 10px; margin: 4px; min-width: 0; min-height: 0; background-color: #121e2d; }
+.review-roster { width: 280px; flex-shrink: 0; }
+.review-viewer { flex-grow: 1; }
+.review-panel Label, .review-order-dock Label { white-space: normal; margin-bottom: 5px; }
+.review-detail-scroll { flex-grow: 1; min-height: 0; }
+.review-schematic-scroll { max-height: 220px; min-height: 60px; flex-shrink: 1; }
+.review-order-dock { width: 340px; flex-shrink: 0; border-width: 1px; border-color: #85bddd; padding: 8px; margin: 4px; min-height: 0; }
+.review-footer { border-top-width: 3px; border-top-color: #efb36a; padding: 8px; background-color: #111925; }
+.review-input { min-width: 220px; flex-direction: column; margin: 4px; }
+.review-action { margin: 4px; padding: 6px 12px; }
+.review-confirmation { position: absolute; left: 0; right: 0; top: 0; bottom: 0; padding: 40px; background-color: #111925; }
+.review-compact .review-stage-row { flex-direction: column; }
+.review-compact .review-roster { width: auto; flex-direction: row; flex-wrap: wrap; max-height: 140px; }
+.review-compact .review-order-dock { width: auto; max-height: 210px; }
+.review-compact .review-schematic-scroll { max-height: 100px; }
+.review-compact .review-heading { font-size: 18px; }

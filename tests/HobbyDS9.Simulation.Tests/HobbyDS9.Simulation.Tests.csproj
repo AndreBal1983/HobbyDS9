@@ -8,6 +8,8 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/HobbyDS9.Headless/IntegratedPlaytestPackageReader.cs" Link="IntegratedPlaytestPackageReader.cs" />
+    <None Include="../../scenarios/integrated-playtest-v1/*.json" Link="scenarios/integrated-playtest-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/CampaignDesigner.cs" Link="UnityClient/CampaignDesigner.cs" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />

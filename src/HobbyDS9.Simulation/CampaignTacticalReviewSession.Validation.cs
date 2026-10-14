@@ -15,6 +15,7 @@ namespace HobbyDS9.Simulation
                 && s.Campaign != null && s.Pools != null && s.FleetSettings != null && s.Battles != null && s.AcceptedRoundCommands != null, "Invalid review save envelope.");
             FoundationValidator.ValidateSave(s.Campaign, definitions, compatibility).ThrowIfInvalid(nameof(s));
             var game = s.Campaign.GameState;
+            ValidateBuiltShips(game);
             if(travel!=null)Require(game.Phase==SessionPhase.Planning&&game.PendingCombats!.Count==0,"Physical core cannot carry legacy pending encounters.");
             var requests=travel!=null?(physicalRequests??travel.Requests):game.PendingCombats!.Select(p=>p.Request).ToList();
             Require(game.Civilizations!.Count == controllers.Count && game.Civilizations.All(c => controllers.TryGetValue(c.CivilizationId,out var controller)
@@ -28,7 +29,7 @@ namespace HobbyDS9.Simulation
             foreach (var pool in s.Pools)
             {
                 var actual = game.Ships.SingleOrDefault(p => p.ShipId == pool.ShipId);
-                Require(actual != null && definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Any(p => p.ShipId == pool.ShipId), "Unbound current source.");
+                Require(actual != null && KnownSource(pool.ShipId), "Unbound current source.");
                 var fit = Fit(pool.ShipId);
                 Require(pool.FitId == fit.DefinitionId && pool.FitRevision == fit.Revision && pool.ProvenanceId == fit.ProvenanceId
                     && pool.Shields != null && pool.Shields.Count == 4 && pool.Shields.All(q => q != null && q.Sector.HasValue && q.Current.HasValue)

@@ -128,6 +128,8 @@ namespace HobbyDS9.TacticalReviewClient
             { DraftInvalidated=Dirty; draft.Clear(); travelDraft=null; }
             Frame=next; Mode=ModeFor(next); RefreshRequired=false; return true;
         }
+        public void MarkStrategicFailure(CampaignTacticalError error)
+        {if(pending!=null)return;LastBackendError=error;RefreshRequired=true;}
         public ReviewSaveHandle SaveCommitted()
         {
             if(pending != null) throw new InvalidOperationException("Wait for the pending operation before saving.");
