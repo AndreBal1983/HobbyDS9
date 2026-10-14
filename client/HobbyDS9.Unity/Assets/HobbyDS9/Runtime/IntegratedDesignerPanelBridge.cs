@@ -17,6 +17,7 @@ namespace HobbyDS9.UnityClient
             public ShipDesignerView? View;
             public Action<bool> Changed=null!;
             public Action Back=null!;
+            public Action? PreviewCaption;
         }
         public static object Create(CampaignIntegratedDesignLibrarySnapshot library,Action<bool> changed,Action back)
         {
@@ -35,9 +36,13 @@ namespace HobbyDS9.UnityClient
         public static void Present(VisualElement root,object context)
         {
             var state=(State)context;root.Clear();
-            var note=new Label("Local v1 design preview. No published blueprint is changed. Publication from this page is pending; custom v2 construction is unsupported."){name="integrated-design-scope"};note.style.whiteSpace=WhiteSpace.Normal;root.Add(note);
+            var note=new Label("Local v1 design preview. Start with Hull, then add required Power, Crew, Command and Propulsion systems; Cost / Validation explains remaining requirements. Publication from this page is pending; custom v2 construction is unsupported."){name="integrated-design-scope"};note.style.whiteSpace=WhiteSpace.Normal;root.Add(note);
             if(state.Draft==null){root.Add(new Label("No available ship-design hull for this actor."));return;}
-            state.View?.Dispose();state.View=new ShipDesignerView(state.Draft,state.Back);state.View.style.flexGrow=1;state.View.style.minHeight=0;root.Add(state.View);
+            if(state.PreviewCaption!=null)state.Draft.Changed-=state.PreviewCaption;
+            state.View?.Dispose();state.View=new ShipDesignerView(state.Draft,state.Back);state.View.style.flexGrow=1;state.View.style.minHeight=0;
+            root.Add(state.View);
+            state.PreviewCaption=()=>{if(state.Draft.Current.Installed.Count==0){var caption=state.View.Q<Label>("designer-state");caption.text="Incomplete local preview";caption.tooltip="This empty fit has actual backend validation errors. Add required systems and inspect Cost / Validation; it is not publishable.";}};
+            state.Draft.Changed+=state.PreviewCaption;state.PreviewCaption();
             var history=new Foldout{text="Your published revisions (read only)",value=false};root.Add(history);
             if(state.Library.Published.Count==0)history.Add(new Label("No published revisions."));
             foreach(var record in state.Library.Published)history.Add(new Label(record.Blueprint.Fit.DisplayName+" · revision "+record.Blueprint.Revision));
