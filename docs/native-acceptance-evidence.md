@@ -1,0 +1,13 @@
+# Native acceptance evidence
+
+These optional operator tools supply evidence from the actual packaged player. They do not establish release readiness themselves. Ordinary launches create no probe, alter no preferences and emit no probe reports.
+
+Pass `--hobbyds9-native-evidence` alongside the intended profile's normal launcher arguments. `NativeAcceptanceProbe` writes `HOBBYDS9_NATIVE_EVIDENCE` JSON records to the ordinary player log every fifteen seconds, on focus loss and at exit. It reads no campaign state, records no keyboard content, submits no commands, and changes no frame limit, VSync, lighting or audio setting. One persistent component owns a bounded 8,192-sample buffer.
+
+Frame intervals use `Time.unscaledDeltaTime`, with five seconds of startup warmup and unfocused intervals excluded. Percentiles use the nearest-rank sample. A window with zero samples is unmeasured. VSync and OS scheduling are included; these are not GPU execution timings or a general machine benchmark. Interpret measurements with the reported screen size/frame settings, no competing GPU work, and the small overhead of this opt-in instrumentation.
+
+Reports include engine allocated/reserved bytes, generation-zero collection count, loaded material/mesh/render-texture counts and active audio source/listener counts. Counts include engine/assets as well as game objects. Compare stable repeated operations after caches warm; a single difference does not demonstrate a leak. Audio source counts and playing status do not prove output or physical audibility.
+
+`tools/acceptance/Capture-HobbyDS9Loopback.py` provides a separate bounded Windows speaker-output capture to a fresh WAV/JSON identity. The tested acceptance environment uses SoundCard 0.4.6, CFFI and NumPy; it is not a game/build dependency. Point `--dependencies` at an isolated installed dependency directory, `--output` at a new `.wav`, and `--seconds` at one to fifteen seconds. It refuses a non-loopback endpoint or an existing evidence file. Only the default speaker output is recorded, never microphone input. System output may include other applications: compare idle, game music, mute and isolated SFX windows. Restore the originally observed game audio preferences afterward. A captured digital signal is distinct from human listening judgment.
+
+Preserve source/build identity, process launch and exit, actual screenshots, save identities and any untested outcomes with the evidence. The probe is new instrumentation requiring receiving Unity compilation and actual flagged-player verification; earlier recovery binaries do not contain it.
