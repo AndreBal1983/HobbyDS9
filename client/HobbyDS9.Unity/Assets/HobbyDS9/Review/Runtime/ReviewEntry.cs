@@ -57,6 +57,8 @@ namespace HobbyDS9.UnityReview
             }
             catch(Exception)
             {
+                root?.UnregisterCallback<GeometryChangedEvent>(Geometry);
+                if(panel!=null)Destroy(panel);
                 var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();
                 panel=ScriptableObject.CreateInstance<PanelSettings>();doc.panelSettings=panel;
                 root=doc.rootVisualElement;root.Clear();
@@ -67,6 +69,7 @@ namespace HobbyDS9.UnityReview
         private void OnDestroy(){if(panel!=null)Destroy(panel);}
         private void Build()
         {
+            root?.UnregisterCallback<GeometryChangedEvent>(Geometry);
             if(panel!=null)Destroy(panel);
             panel=ScriptableObject.CreateInstance<PanelSettings>();
             panel.scaleMode=PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
