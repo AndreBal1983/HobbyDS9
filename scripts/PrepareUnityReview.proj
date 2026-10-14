@@ -1,0 +1,26 @@
+<Project DefaultTargets="Prepare">
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))</RepoRoot>
+    <UnityProject>$(RepoRoot)/client/HobbyDS9.Unity</UnityProject>
+    <ReviewOutput>$(RepoRoot)/prototypes/HobbyDS9.TacticalReviewClient/bin/Release/netstandard2.1</ReviewOutput>
+    <PluginOutput>$(UnityProject)/Assets/Plugins/HobbyDS9</PluginOutput>
+    <PackageOutput>$(UnityProject)/Assets/HobbyDS9/Review/Resources/ReviewPackages</PackageOutput>
+  </PropertyGroup>
+  <!-- Explicit opt-in import only. No Editor, build-player, default entry or activation target. -->
+  <Target Name="Prepare">
+    <Error Condition="!Exists('$(UnityProject)/ProjectSettings/ProjectVersion.txt')" Text="The existing Unity scaffold is required." />
+    <MSBuild Projects="$(RepoRoot)/prototypes/HobbyDS9.TacticalReviewClient/HobbyDS9.TacticalReviewClient.csproj" Targets="Restore;Build" Properties="Configuration=Release;RestoreLockedMode=true" />
+    <ItemGroup>
+      <PortableAssembly Include="$(ReviewOutput)/HobbyDS9.Contracts.dll;$(ReviewOutput)/HobbyDS9.Application.dll;$(ReviewOutput)/HobbyDS9.Simulation.dll;$(ReviewOutput)/HobbyDS9.TacticalReviewClient.dll" />
+      <ProfileSource Include="$(RepoRoot)/scenarios/tactical-v2-physical-review/faster/package.json;$(RepoRoot)/scenarios/tactical-v2-physical-review/faster/core.json;$(RepoRoot)/scenarios/tactical-v2-physical-review/faster/scenario.json">
+        <Profile>faster</Profile>
+      </ProfileSource>
+      <ProfileSource Include="$(RepoRoot)/scenarios/tactical-v2-physical-review/slower/package.json;$(RepoRoot)/scenarios/tactical-v2-physical-review/slower/core.json;$(RepoRoot)/scenarios/tactical-v2-physical-review/slower/scenario.json">
+        <Profile>slower</Profile>
+      </ProfileSource>
+    </ItemGroup>
+    <MakeDir Directories="$(PluginOutput);$(PackageOutput)/faster;$(PackageOutput)/slower" />
+    <Copy SourceFiles="@(PortableAssembly)" DestinationFolder="$(PluginOutput)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(ProfileSource)" DestinationFiles="@(ProfileSource->'$(PackageOutput)/%(Profile)/%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
