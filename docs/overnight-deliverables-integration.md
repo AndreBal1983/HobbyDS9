@@ -15,7 +15,7 @@ Ordinary merge commits preserve history; no source branch is rewritten or delete
 
 ## Verification of the combined tree
 
-The final tree's production `src`, scenario content, Unity `client`, existing test sources, and real client/storage/shell code match native candidate `bae723f` exactly. Differences in those areas are documentation only. Added executable code is confined to the optional reference compiler harness/PE metadata probe; the added workflow explicitly runs the preserved prototype cases.
+At initial consolidation `6b9e0d6`, production `src`, scenario content, Unity `client`, existing test sources, and real client/storage/shell code matched native candidate `bae723f` exactly, with documentation-only differences. Added executable code was confined to the optional reference compiler harness/PE metadata probe. Subsequent owner-authorized review identified and corrected the retained-focus client guard described below; simulation rules/content remain unchanged.
 
 Executed on the combined checkout: default and review portable preparation; default Unity static regression; review PE/dependency/resource-byte checks; binding/source checks; **7 binding adversarial and 13 import adversarial cases**, all passed. The split compiler compiled **eight actual separate Player/Editor/test assembly outputs**, including real default Bootstrap and review Launch, and verified metadata. Existing Unity deprecation warnings remain visible. This compiler check executes no Unity process, test runner or compiled Unity assembly.
 
@@ -25,4 +25,6 @@ Fresh exact-head GitHub CI is tracked in the integration PR. Earlier native evid
 
 ## Remaining disposition
 
-Manual review feedback, keyboard navigation diagnosis, ICU/post-processing follow-up and four proposed policy choices remain open. General mixed-hostility sides and newly constructed v2 source provisioning remain gated. Default activation stays disabled. Merge to main, closing/rebasing original stacked PRs and enabling gameplay are distinct actions; this branch makes one coherent candidate available for review first.
+The owner subsequently authorized automated acceptance and a full merge for playtesting. Review found one P2: the client rejected maneuver changes retaining a destroyed standing focus even though the backend allows them and supplies lawful fallback. The client now permits only that existing focus or a currently visible legal selection. The existing real multi-opponent regression first failed on this case, then passed after the fix, including unknown/own-focus rejection and successful Screen/fallback with unchanged standing focus. The complete real-client suite remains **51/51**.
+
+See [playtest merge acceptance](tactical-v2-playtest-merge-acceptance.md) for the execution plan and evidence boundaries. Manual feedback, keyboard navigation, ICU/post-processing follow-up and four proposed policy choices remain open. General mixed-hostility sides and newly constructed v2 source provisioning remain gated. Default activation stays disabled; merging the opt-in review is separate from approving proposed gameplay or enabling it by default.

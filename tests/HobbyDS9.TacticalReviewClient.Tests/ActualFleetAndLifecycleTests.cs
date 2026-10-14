@@ -59,8 +59,12 @@ public sealed class ActualFleetAndLifecycleTests
         Assert.True(f.A.EditFleet(FleetA,CampaignFleetManeuver.Hold,FleetB));
         f.Send(f.A); f.Send(f.B); f.Send(third); f.A.Refresh(); third.Refresh();
         Assert.DoesNotContain(f.A.Frame.Battle!.VisibleEnemies,s=>s.ShipId == "ship.cardassian-scout");
+        Assert.False(f.A.EditFleet(FleetA,CampaignFleetManeuver.Screen,"fleet.unknown"));
+        Assert.False(f.A.EditFleet(FleetA,CampaignFleetManeuver.Screen,FleetA));
+        Assert.True(f.A.EditFleet(FleetA,CampaignFleetManeuver.Screen,FleetB));
         f.Send(f.A); f.Send(third); f.A.Refresh();
         Assert.Equal(FleetB,Assert.Single(f.A.Frame.Battle!.StandingOrders).FocusFleetId);
+        Assert.Equal(CampaignFleetManeuver.Screen,Assert.Single(f.A.Frame.Battle.StandingOrders).Maneuver);
         Assert.Contains(f.A.Frame.Battle.Reports,r=>r.Kind == "FocusFallback" && r.TargetShipId == "ship.additional-opponent");
         Assert.Contains("Authoritative focus fallback reported",ReviewTextRenderer.RenderReport(f.A));
         Assert.DoesNotContain("focus-fallback:",ReviewTextRenderer.RenderReport(f.A));

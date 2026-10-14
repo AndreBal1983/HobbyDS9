@@ -49,10 +49,12 @@ namespace HobbyDS9.TacticalReviewClient
         public bool EditFleet(string fleet, CampaignFleetManeuver maneuver, string? focus)
         {
             var b=Frame.Battle;
+            var standing=b?.StandingOrders.SingleOrDefault(o=>o.FleetId == fleet && o.CanOrder);
             if(Mode != ReviewMode.Orders || RefreshRequired || b == null
-                || !b.StandingOrders.Any(o=>o.FleetId == fleet && o.CanOrder)
+                || standing == null
                 || !b.LegalManeuvers.Contains(maneuver)
-                || focus != null && !b.LegalFocusFleetIds.Contains(focus,StringComparer.Ordinal)) return false;
+                || focus != null && focus != standing.FocusFleetId
+                    && !b.LegalFocusFleetIds.Contains(focus,StringComparer.Ordinal)) return false;
             draft[fleet]=new FleetEdit(fleet,maneuver,focus); DraftInvalidated=false; return true;
         }
         public bool ReviewRound()
