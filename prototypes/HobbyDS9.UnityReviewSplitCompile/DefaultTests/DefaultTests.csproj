@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../Shared.props" />
+  <PropertyGroup><AssemblyName>HobbyDS9.UnityClient.Tests</AssemblyName><DefineConstants>$(DefineConstants);UNITY_INCLUDE_TESTS</DefineConstants></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DefaultRuntime/DefaultRuntime.csproj" />
+    <ProjectReference Include="$(RepoRoot)/src/HobbyDS9.Application/HobbyDS9.Application.csproj" />
+    <ProjectReference Include="$(RepoRoot)/src/HobbyDS9.Contracts/HobbyDS9.Contracts.csproj" />
+    <Reference Include="$(UnityManagedDir)/UnityEngine/UnityEditor*.dll"><Private>false</Private></Reference>
+    <Reference Include="Newtonsoft.Json"><HintPath>$(UnityNewtonsoftPath)</HintPath><Private>false</Private></Reference>
+    <Reference Include="nunit.framework"><HintPath>$(UnityNUnitPath)</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.TestRunner"><HintPath>$(UnityTestRunnerDir)/UnityEngine.TestRunner.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEditor.TestRunner"><HintPath>$(UnityTestRunnerDir)/UnityEditor.TestRunner.dll</HintPath><Private>false</Private></Reference>
+    <Compile Include="$(RepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor/*.cs" Link="ActualUnitySource/%(Filename)%(Extension)" />
+  </ItemGroup>
+  <Target Name="RequireTestVariant" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(UnityCompileVariant)' != 'Editor' Or '$(UnityNUnitPath)' == '' Or !Exists('$(UnityNUnitPath)') Or !Exists('$(UnityTestRunnerDir)/UnityEngine.TestRunner.dll') Or !Exists('$(UnityTestRunnerDir)/UnityEditor.TestRunner.dll')" Text="Supply Editor variant, actual Unity-custom NUnit and test runner references. No tests execute." />
+  </Target>
+</Project>

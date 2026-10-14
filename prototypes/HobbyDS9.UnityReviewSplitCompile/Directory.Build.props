@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="../../Directory.Build.props" />
+  <PropertyGroup>
+    <UnityCompileVariant Condition="'$(UnityCompileVariant)' == ''">Player</UnityCompileVariant>
+    <BaseIntermediateOutputPath>obj/$(UnityCompileVariant)/</BaseIntermediateOutputPath>
+    <BaseOutputPath>bin/$(UnityCompileVariant)/</BaseOutputPath>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <!-- Unity's default nullable context; individual actual sources can opt in.
+         Keep warnings visible, not promoted by the portable simulation's policy. -->
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>
