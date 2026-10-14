@@ -62,6 +62,8 @@ namespace HobbyDS9.ArtDemo.Tests
                             Assert.That(material, Is.Not.Null);
                             Assert.That(material.shader.name, Is.EqualTo("Universal Render Pipeline/Lit"));
                             Assert.That(material.shader.isSupported, Is.True);
+                            if (material.GetColor("_EmissionColor").maxColorComponent > 0)
+                                Assert.That(material.IsKeywordEnabled("_EMISSION"), Is.True, material.name + " world emission must survive URP validation.");
                         }
                     }
                     Assert.That(triangles, Is.EqualTo(expected[l]));
@@ -99,6 +101,29 @@ namespace HobbyDS9.ArtDemo.Tests
                 Assert.That(stage.Availability, Is.EqualTo(ShipPreviewAvailability.Model));
                 Assert.That(stage.VisualKey, Is.EqualTo(ShipVisualCatalog.ExplorationCruiser));
                 AssertRendered(stage.Texture, "cruiser");
+                var baseline = Read(stage.Texture);
+                var unrelatedLight = new GameObject("Unrelated main-scene directional light");
+                var unrelatedObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                try
+                {
+                    var light = unrelatedLight.AddComponent<Light>();
+                    light.type = LightType.Directional;
+                    light.color = Color.magenta;
+                    light.intensity = 100;
+                    light.cullingMask = -1;
+                    unrelatedObject.transform.position = new Vector3(0, -10000, 0);
+                    unrelatedObject.transform.localScale = Vector3.one * 20;
+                    stage.Render();
+                    var contaminated = Read(stage.Texture);
+                    try { Assert.That(contaminated.GetPixels32(), Is.EqualTo(baseline.GetPixels32()), "External all-layer light/default-layer object must not contaminate the preview."); }
+                    finally { UnityEngine.Object.DestroyImmediate(contaminated); }
+                }
+                finally
+                {
+                    UnityEngine.Object.DestroyImmediate(baseline);
+                    UnityEngine.Object.DestroyImmediate(unrelatedLight);
+                    UnityEngine.Object.DestroyImmediate(unrelatedObject);
+                }
                 stage.Show(new ShipPreviewSelection("civilization.cardassian", "ship-design.travel-target", ShipPreviewDisclosure.LawfullyVisible));
                 Assert.That(stage.Availability, Is.EqualTo(ShipPreviewAvailability.GenericFallback));
                 Assert.That(stage.VisualKey, Is.Null);
@@ -121,9 +146,13 @@ namespace HobbyDS9.ArtDemo.Tests
         [UnityTest]
         public IEnumerator ReplacementAndMultipleInstancesReleaseTheirOwnNativeResources()
         {
+            yield return null; // Drain prior asynchronously unloaded preview scenes.
             int scenes = SceneManager.sceneCount;
-            int cameras = UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None).Length;
-            int lights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None).Length;
+            int cameras = UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length;
+            int lights = UnityEngine.Object.FindObjectsByType<Light>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length;
+            int materials = PreviewMaterialCount();
+            int meshes = Resources.FindObjectsOfTypeAll<Mesh>().Count(m => m.name == "ArtDemo generic marker");
+            int textures = Resources.FindObjectsOfTypeAll<RenderTexture>().Count(t => t.name == "ArtDemo ship preview");
             var first = new ShipPreviewStage(256, 160);
             var second = new ShipPreviewStage(320, 200);
             var texture = first.Texture;
@@ -136,6 +165,25 @@ namespace HobbyDS9.ArtDemo.Tests
                     first.Show(new ShipPreviewSelection("civilization.cardassian", "ship-design.travel-target", ShipPreviewDisclosure.LawfullyVisible));
                 }
                 second.Show(Cruiser());
+                var cruiserBefore = Read(second.Texture);
+                var genericBefore = Read(first.Texture);
+                try
+                {
+                    // Different simultaneous content, not merely object counts.
+                    Assert.That(cruiserBefore.GetPixels32().Distinct().Count(), Is.GreaterThan(2));
+                    Assert.That(genericBefore.GetPixels32().Distinct().Count(), Is.GreaterThan(2));
+                    first.Render();
+                    second.Render();
+                    var cruiserAfter = Read(second.Texture);
+                    var genericAfter = Read(first.Texture);
+                    try
+                    {
+                        Assert.That(cruiserAfter.GetPixels32(), Is.EqualTo(cruiserBefore.GetPixels32()), "Other stage must not contaminate cruiser render.");
+                        Assert.That(genericAfter.GetPixels32(), Is.EqualTo(genericBefore.GetPixels32()), "Other stage must not contaminate fallback render.");
+                    }
+                    finally { UnityEngine.Object.DestroyImmediate(cruiserAfter); UnityEngine.Object.DestroyImmediate(genericAfter); }
+                }
+                finally { UnityEngine.Object.DestroyImmediate(cruiserBefore); UnityEngine.Object.DestroyImmediate(genericBefore); }
                 first.Dispose(); first.Dispose();
                 Assert.That(texture == null, Is.True);
                 Assert.That(first.Texture, Is.Null);
@@ -146,8 +194,11 @@ namespace HobbyDS9.ArtDemo.Tests
             finally { first.Dispose(); second.Dispose(); }
             yield return null;
             Assert.That(SceneManager.sceneCount, Is.EqualTo(scenes));
-            Assert.That(UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsSortMode.None).Length, Is.EqualTo(cameras));
-            Assert.That(UnityEngine.Object.FindObjectsByType<Light>(FindObjectsSortMode.None).Length, Is.EqualTo(lights));
+            Assert.That(UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length, Is.EqualTo(cameras));
+            Assert.That(UnityEngine.Object.FindObjectsByType<Light>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length, Is.EqualTo(lights));
+            Assert.That(PreviewMaterialCount(), Is.EqualTo(materials));
+            Assert.That(Resources.FindObjectsOfTypeAll<Mesh>().Count(m => m.name == "ArtDemo generic marker"), Is.EqualTo(meshes));
+            Assert.That(Resources.FindObjectsOfTypeAll<RenderTexture>().Count(t => t.name == "ArtDemo ship preview"), Is.EqualTo(textures));
         }
 
         [Test]
@@ -167,6 +218,9 @@ namespace HobbyDS9.ArtDemo.Tests
             finally { RenderTexture.active = before; }
             return image;
         }
+
+        private static int PreviewMaterialCount() => Resources.FindObjectsOfTypeAll<Material>()
+            .Count(m => m.name == "ArtDemo generic marker" || m.name.EndsWith(" preview", StringComparison.Ordinal));
 
         private static void AssertRendered(RenderTexture texture, string name)
         {

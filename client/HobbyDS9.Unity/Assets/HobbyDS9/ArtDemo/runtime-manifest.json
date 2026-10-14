@@ -3,8 +3,8 @@
   "files": [
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Collector_Red.mat",
-      "bytes": 3956,
-      "sha256": "56ec5b9234848125556fb07c5bce290e50297713e7871be958fa1c2ad90e675e"
+      "bytes": 4104,
+      "sha256": "244d40a735f06b7ffd63ba5983622b6007806bed06fbd9b6599a6b2edbcc27b6"
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Collector_Red.mat.meta",
@@ -13,8 +13,8 @@
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Deflector_Amber.mat",
-      "bytes": 3962,
-      "sha256": "95b1d80e2634dd30b6ec80a531b3a230bc34629b1344ba8e544366398f1ed7d5"
+      "bytes": 4116,
+      "sha256": "d4484dfe34ceb4ce21bf36482dbd9298e5df35610c7742a2b2dc0ea171f08ba1"
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Deflector_Amber.mat.meta",
@@ -23,8 +23,8 @@
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Hull_Pearl.mat",
-      "bytes": 3927,
-      "sha256": "fd9abd9ade15a51a4d08e0cbf0bfc351bcf62e92d318a2e589efa54f5abc22c3"
+      "bytes": 3933,
+      "sha256": "4f89cff82a6be7c85c1980b6fd0b511abb69c7377e4d7e8372b3c12d8d21dda6"
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Hull_Pearl.mat.meta",
@@ -43,8 +43,8 @@
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Panel_Slate.mat",
-      "bytes": 3927,
-      "sha256": "3cb3007da9b8398afb74ded626990dc5325a901f498f4ef23014dd913f84ef7d"
+      "bytes": 3945,
+      "sha256": "ad5b836b22aae38ccb9287c140edf8e40661a4f696290bc9bde85feee4c2f45e"
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Panel_Slate.mat.meta",
@@ -53,8 +53,8 @@
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Phaser_Bronze.mat",
-      "bytes": 3944,
-      "sha256": "45359ef796c8137ea4c00cab99f6418eb03435917586a2ec25edeffe1614aa7e"
+      "bytes": 3962,
+      "sha256": "7247b5280849e26f2d9d0e63efdab34adc499e3be336e77767f4f2684abe8e79"
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Phaser_Bronze.mat.meta",
@@ -63,8 +63,8 @@
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Recess_Graphite.mat",
-      "bytes": 3952,
-      "sha256": "047f1cf73ad6cd4416f04f07adb6230a392f74f2c465737abad6a618d2aef776"
+      "bytes": 3958,
+      "sha256": "2cd9c4fda022cfbfe1427a1fafb11827a319fa59035bb8bc8417e9fefefb73b1"
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Recess_Graphite.mat.meta",
@@ -73,8 +73,8 @@
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Warp_Blue.mat",
-      "bytes": 3950,
-      "sha256": "958b5a954159bde20d57adb7088f44b7f673b85cc2c0aa17bec31f93d4205af5"
+      "bytes": 4098,
+      "sha256": "2a8482fe8eae1384dcc0f198fbca540011a15015a99cce953efdf70c801daf41"
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Warp_Blue.mat.meta",
@@ -83,8 +83,8 @@
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Window_Ice.mat",
-      "bytes": 3946,
-      "sha256": "10085416f2b4e41517bbb93297ba3231202e64ccafc5a561e198df711880a519"
+      "bytes": 4094,
+      "sha256": "48388ac1170d441e94c918f74fd6a24fa6c0f25bea437cad4f2775c3efd1cec5"
     },
     {
       "file": "Resources/ArtDemo/Federation/Materials/FED_Window_Ice.mat.meta",
@@ -232,9 +232,20 @@
       "sha256": "90f10ac1449affee7bd85727d50d61f1c40b42671b85d3ce552fc24984cb69f3"
     },
     {
+      "file": "Resources/ArtDemo/PreviewStudio.shader",
+      "bytes": 2280,
+      "sha256": "131d9ab728a720eefbe90ea33bbfd5356727644ce7eb4bb7c6e39950d0fc41da"
+    },
+    {
+      "file": "Resources/ArtDemo/PreviewStudio.shader.meta",
+      "bytes": 213,
+      "sha256": "fe2abdca74c3c72ce1cbd26192ef2e8e714da98099560ec56ba9afc7abf75fb6"
+    },
+    {
       "file": "Resources/ArtDemo.meta",
       "bytes": 180,
       "sha256": "16b9f1ae310f60a1b5ee0b152cf31f4b25be1f1529b00f7b3b0ce5d98e7fe77c"
     }
-  ]
+  ],
+  "note": "Unity 6000.6.5f1 URP17.6 normalized legacy _Color values; 4 luminous materials explicitly retain AnyEmissive/keyword. Geometry unchanged."
 }
