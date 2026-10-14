@@ -2,7 +2,7 @@
 
 **PROTOTYPE / TEST-OWNED DATA / CAMPAIGN V2 DISABLED**
 
-This isolated project runs headless interaction tests. It is not a Unity assembly, view, campaign adapter, combat resolver or executable playable campaign. It is not included in the main solution/CI. No production dependencies or Stage A assembly are referenced. Accepted ResponsiveLayoutPolicy.cs is linked read-only for presentation reflow assertions.
+This isolated project runs headless interaction tests. It is not a Unity assembly, view, campaign adapter, combat resolver or executable playable campaign. It stays outside the main solution and unchanged normal ci.yml; [dedicated isolated CI](../../.github/workflows/tactical-presenter-prototype.yml) runs it explicitly on Linux/Windows/macOS. No production dependencies or Stage A assembly are referenced. Accepted ResponsiveLayoutPolicy.cs is linked read-only for presentation reflow assertions.
 
 Read [the package and pending real-campaign acceptance script](../../docs/unity-tactical-v2-implementation-acceptance-plan.md), [prototype chronology/package contract](../../docs/tactical-v2-presenter-hardening.md) and [preserved UX specification](../../docs/campaign-tactical-v2-playable-ux-spec.md).
 

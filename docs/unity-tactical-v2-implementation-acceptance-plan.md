@@ -29,7 +29,7 @@ dotnet build tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototy
 dotnet test tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj -c Release --no-build --no-restore --logger 'trx;LogFileName=hardening-final.trx'
 ```
 
-The project is deliberately outside HobbyDS9.slnx and existing CI workflows. Those workflows do not discover these 115 cases automatically. A future approved CI integration must run this explicit project command. Its package lock is committed; no production dependency is added.
+The project remains outside HobbyDS9.slnx and the unchanged normal ci.yml. The separately added [tactical presenter workflow](../.github/workflows/tactical-presenter-prototype.yml) now runs this explicit isolated project on Linux/Windows/macOS, with locked restore, warnings-as-errors Release, a 115-case/no-failure/no-skip TRX gate and uploaded results. See the [delivery record](tactical-presenter-prototype-ci-delivery.md) for the fresh-main packaging basis; exact-source-head results are recorded in the draft PR/handover. Its package lock is committed; no production dependency is added.
 
 ### What these tests establish
 
@@ -153,6 +153,6 @@ Reports should distinguish author/test execution, fake fixture inputs, headless 
 
 ## Handover and scope
 
-Delivered on a separate local coherent branch preserving the full UX spec history. No push/PR/merge/default activation or other-chat messages. No desktop mouse/keyboard, Unity Editor or native tools. Current useful preparation is complete and committed/tested for review; later work requires concrete accepted B1–B11 capabilities and a narrow assignment.
+Initial delivery and hardening were local prototype-only changes. The subsequently authorized draft packaging uses a fresh main-based delivery branch with an ordinary history-preserving local merge and dedicated isolated CI; no source branch is rewritten and no PR merge/default activation is authorized. No other-chat messages, desktop mouse/keyboard, Unity Editor or native tools are part of this package. A real adapter still requires concrete accepted B1–B11 capabilities and a narrow assignment.
 
 The coordination cutoff is 08:30 Europe/Amsterdam on 14 October 2026 (06:30 UTC). This assignment reaches a safe checkpoint before that cutoff; it does not authorize independently beginning further work afterward or imply another task is scheduled.
