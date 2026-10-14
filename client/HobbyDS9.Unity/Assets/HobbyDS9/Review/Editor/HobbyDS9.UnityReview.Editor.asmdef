@@ -1,0 +1,8 @@
+{
+  "name": "HobbyDS9.UnityReview.Editor",
+  "references": ["HobbyDS9.UnityReview"],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": [],
+  "autoReferenced": false
+}

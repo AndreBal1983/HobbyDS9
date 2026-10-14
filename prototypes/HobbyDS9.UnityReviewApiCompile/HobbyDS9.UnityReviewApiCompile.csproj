@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Compiler-only API check against a locally installed pinned Editor's reference DLLs.
+       No Unity process, scene import, tests, builder, player or native code is executed. -->
+  <ItemGroup>
+    <ProjectReference Include="../HobbyDS9.TacticalReviewClient/HobbyDS9.TacticalReviewClient.csproj" />
+    <Reference Include="$(UnityManagedDir)/UnityEngine/*.dll"><Private>false</Private></Reference>
+    <Reference Include="Newtonsoft.Json"><HintPath>$(UnityNewtonsoftPath)</HintPath><Private>false</Private></Reference>
+    <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/*.cs" Link="UnitySource/%(Filename)%(Extension)" />
+    <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/ReviewBuild.cs" Link="ReviewBuild.cs" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(UnityNUnitPath)' != ''">
+    <Reference Include="nunit.framework"><HintPath>$(UnityNUnitPath)</HintPath><Private>false</Private></Reference>
+    <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/ReviewBindingEditModeTests.cs" Link="ReviewBindingEditModeTests.cs" />
+  </ItemGroup>
+  <Target Name="RequireExplicitUnityReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(UnityManagedDir)' == '' or !Exists('$(UnityManagedDir)/UnityEngine/UnityEngine.CoreModule.dll')" Text="Supply UnityManagedDir pointing to pinned Unity 6000.6.5f1 Editor/Data/Managed for this optional compiler-only check." />
+    <Error Condition="'$(UnityNewtonsoftPath)' == '' or !Exists('$(UnityNewtonsoftPath)')" Text="Supply UnityNewtonsoftPath pointing to the pinned Unity Newtonsoft package DLL, not the Editor tools DLL." />
+  </Target>
+</Project>

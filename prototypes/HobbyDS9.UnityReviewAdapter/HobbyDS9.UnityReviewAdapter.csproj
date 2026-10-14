@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../HobbyDS9.TacticalReviewClient/HobbyDS9.TacticalReviewClient.csproj" />
+    <!-- Unity package 3.2.1 describes Newtonsoft 13.0.2. This portable proof is not Unity/AOT execution. -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/*.cs" Exclude="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.cs" Link="UnitySource/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

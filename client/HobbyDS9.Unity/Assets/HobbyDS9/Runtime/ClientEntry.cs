@@ -50,6 +50,20 @@ namespace HobbyDS9.UnityClient
         {
             QualitySettings.vSyncCount = 1;
             UnityEngine.Application.targetFrameRate = -1;
+            // Explicit opt-in only. Reflection avoids a default-assembly dependency/cycle.
+            var reviewArgs=Environment.GetCommandLineArgs();
+            if(Array.IndexOf(reviewArgs,"--hobbyds9-physical-review")>=0)
+            {
+                try
+                {
+                    var bridge=Type.GetType("HobbyDS9.UnityReview.ReviewLaunch, HobbyDS9.UnityReview",false);
+                    var launch=bridge?.GetMethod("Launch",System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static);
+                    if(launch==null)throw new InvalidOperationException();
+                    launch.Invoke(null,new object[]{reviewArgs});
+                }
+                catch(Exception){Debug.LogError("Explicit physical review binding unavailable. Default campaign was not started.");}
+                return;
+            }
             if (UnityEngine.Object.FindAnyObjectByType<ClientEntry>(FindObjectsInactive.Include) != null) return;
             var go = new GameObject("HobbyDS9 Client");
             DontDestroyOnLoad(go); go.AddComponent<ClientEntry>();

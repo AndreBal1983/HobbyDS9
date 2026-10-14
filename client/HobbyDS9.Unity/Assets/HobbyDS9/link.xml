@@ -4,4 +4,7 @@
   <assembly fullname="HobbyDS9.Application" preserve="all" />
   <assembly fullname="HobbyDS9.Simulation" preserve="all" />
   <assembly fullname="HobbyDS9.UnityClient" preserve="all" />
+  <!-- Explicit review bridge and complete-root codec reflection; native stripping still unverified. -->
+  <assembly fullname="HobbyDS9.TacticalReviewClient" preserve="all" />
+  <assembly fullname="HobbyDS9.UnityReview" preserve="all" />
 </linker>
