@@ -1,0 +1,240 @@
+{
+  "status": "Original procedural provisional demo hull pack; no third-party geometry",
+  "files": [
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Collector_Red.mat",
+      "bytes": 3956,
+      "sha256": "56ec5b9234848125556fb07c5bce290e50297713e7871be958fa1c2ad90e675e"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Collector_Red.mat.meta",
+      "bytes": 188,
+      "sha256": "e2929b333650bb39c5b1c613646d097adfada40a9492253b07494c8338a1a01b"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Deflector_Amber.mat",
+      "bytes": 3962,
+      "sha256": "95b1d80e2634dd30b6ec80a531b3a230bc34629b1344ba8e544366398f1ed7d5"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Deflector_Amber.mat.meta",
+      "bytes": 188,
+      "sha256": "74c5e46d38f4316ddf0b701dd11accd21eac95e915e3dd0c0c6aeb8b4ef5a9fb"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Hull_Pearl.mat",
+      "bytes": 3927,
+      "sha256": "fd9abd9ade15a51a4d08e0cbf0bfc351bcf62e92d318a2e589efa54f5abc22c3"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Hull_Pearl.mat.meta",
+      "bytes": 188,
+      "sha256": "b86a9231527ec92a7d551ae0fb44fdb486c33f1c28e0557acfde7f9b1a0b2a2b"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Panel_Silver.mat",
+      "bytes": 3928,
+      "sha256": "78e096709bc897c2a31abb11c96a6d4da172987bba11acd783a4e0b5bc853576"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Panel_Silver.mat.meta",
+      "bytes": 188,
+      "sha256": "db8a04a9eaf9d8f2ce7098047bc44acbcd5cd7ed80d8dec45a0d7fb3fe489e61"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Panel_Slate.mat",
+      "bytes": 3927,
+      "sha256": "3cb3007da9b8398afb74ded626990dc5325a901f498f4ef23014dd913f84ef7d"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Panel_Slate.mat.meta",
+      "bytes": 188,
+      "sha256": "dd741d9de67c05d94cd3d9cab551316261b892fe7c6d4f740632b72d2dbc85fd"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Phaser_Bronze.mat",
+      "bytes": 3944,
+      "sha256": "45359ef796c8137ea4c00cab99f6418eb03435917586a2ec25edeffe1614aa7e"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Phaser_Bronze.mat.meta",
+      "bytes": 188,
+      "sha256": "c68e05815c0b348e74e762438040586db6c4fecdf9b3f7162954f267324c87c9"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Recess_Graphite.mat",
+      "bytes": 3952,
+      "sha256": "047f1cf73ad6cd4416f04f07adb6230a392f74f2c465737abad6a618d2aef776"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Recess_Graphite.mat.meta",
+      "bytes": 188,
+      "sha256": "29ef92ade7b65ee021c4e00af3df9b6a2cac2bef965cdd0fc966a4407019fdf5"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Warp_Blue.mat",
+      "bytes": 3950,
+      "sha256": "958b5a954159bde20d57adb7088f44b7f673b85cc2c0aa17bec31f93d4205af5"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Warp_Blue.mat.meta",
+      "bytes": 188,
+      "sha256": "c59e77f7d64ed47f0fe6b4f21ec718f972e6f6cb7add82fd93f5d1d476646c70"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Window_Ice.mat",
+      "bytes": 3946,
+      "sha256": "10085416f2b4e41517bbb93297ba3231202e64ccafc5a561e198df711880a519"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials/FED_Window_Ice.mat.meta",
+      "bytes": 188,
+      "sha256": "d63fe3f4a874f44343d6eda9e29ff85cd9cfcfac58433faa9a4d224c36320af3"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Materials.meta",
+      "bytes": 172,
+      "sha256": "2de0c345607c60cdbb848eeb34303859fa5f138b43ba3283eeabb47941138548"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/compact-escort_LOD0.fbx",
+      "bytes": 140428,
+      "sha256": "6853bfef2480c87c9ef5cc5c9f739c21fdf263e5e80e123a1ae91a47f5a3f3e8"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/compact-escort_LOD0.fbx.meta",
+      "bytes": 3063,
+      "sha256": "cfafb46ab4c9311f4ff5c7e20ba8236c595fc1fea1723338ee4d712b556158f9"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/compact-escort_LOD1.fbx",
+      "bytes": 84908,
+      "sha256": "1b01080488f08f07f00482a4a4aa172f01fb27366aacbaa007e63b360a7e2647"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/compact-escort_LOD1.fbx.meta",
+      "bytes": 3063,
+      "sha256": "1888bf1961b6e8ea4bf20e28210548151df3bda1e8ca951a123840e6e49ca5ae"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/compact-escort_LOD2.fbx",
+      "bytes": 68892,
+      "sha256": "5780e633a6934c7d5a31baa06df79f33bdb97012a2a24dfc5b284829c2dbd409"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/compact-escort_LOD2.fbx.meta",
+      "bytes": 3063,
+      "sha256": "8fbf67ecb5143f93481dae1bb82089ec7e585b95a33a366b25e558888fff783e"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/exploration-cruiser_LOD0.fbx",
+      "bytes": 252044,
+      "sha256": "52237e6b527906edfb5f0eb7ed4571417c50f780fe7d8a93090bd3b659c6efad"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/exploration-cruiser_LOD0.fbx.meta",
+      "bytes": 3063,
+      "sha256": "5ea916be7538a08ba5e28bc63401a45322bb65b7f2b29c49265528a0e536548d"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/exploration-cruiser_LOD1.fbx",
+      "bytes": 136668,
+      "sha256": "c57d9b07339d6e67b468c339b3358e9365a00972f3427c62a5c6ebbef462cf76"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/exploration-cruiser_LOD1.fbx.meta",
+      "bytes": 3063,
+      "sha256": "3ab9fa903064f4a8198d37d3ece173a01d9121f1da5c7c67e2abbe082cb8e6f8"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/exploration-cruiser_LOD2.fbx",
+      "bytes": 91644,
+      "sha256": "8d219837487f3e93c4edf2a5c8a6b019ab290567945268d1b0d8cdd7148c26c5"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/exploration-cruiser_LOD2.fbx.meta",
+      "bytes": 3063,
+      "sha256": "b7b872806a38fcc0f21a0b969ad9ccb6c5d9ba70c0d8bbf905801a0ecf815e0e"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/patrol-frigate_LOD0.fbx",
+      "bytes": 221532,
+      "sha256": "da99ee2e6d44821fb1f0ceb307533c281bc6e0b20c06b5a37be2acc37e179b6b"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/patrol-frigate_LOD0.fbx.meta",
+      "bytes": 3063,
+      "sha256": "8123866607bbfe44881f1baa0f29481ff0aed033f154d51c067cb47599be818a"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/patrol-frigate_LOD1.fbx",
+      "bytes": 123388,
+      "sha256": "b3b12cde10efeb3a92edca010255e5816c9b30d46fa9e9378929f1a40e6f6b4b"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/patrol-frigate_LOD1.fbx.meta",
+      "bytes": 3063,
+      "sha256": "bf6c06e8405032d0bffaa51a6a55ddded18f7a2fcdb0302ff795d797c34cd7ac"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/patrol-frigate_LOD2.fbx",
+      "bytes": 79260,
+      "sha256": "245a33a02c1f00474a4753f3903b95342ce37852ba1660eaaa9ee38858cd16fb"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models/patrol-frigate_LOD2.fbx.meta",
+      "bytes": 3063,
+      "sha256": "a5a1d7f5be96dd3589a5c4c704a85e08ce7a47ed118bf2aaa61f205abcb70fa2"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Models.meta",
+      "bytes": 172,
+      "sha256": "5339740aa91b637c5a4222fdaa54495970e34be6f9d835185ef48c876ec2e618"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Prefabs/compact-escort.prefab",
+      "bytes": 24767,
+      "sha256": "c61ce00bc72e21ab65f4812455019984a8277f5504bae6437c68872796a63684"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Prefabs/compact-escort.prefab.meta",
+      "bytes": 154,
+      "sha256": "7ea60510436292801122c1e4fccd2f737eb70a58aa809395287238c9dbc65427"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Prefabs/exploration-cruiser.prefab",
+      "bytes": 27697,
+      "sha256": "2677ca74d1b6b08f387a3fca0afcdb0b882c4c8a4cfb7798c6aff5d615658f6c"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Prefabs/exploration-cruiser.prefab.meta",
+      "bytes": 154,
+      "sha256": "4e6adc03c495b176193c32a6f84ba38bee9e5280be08559dd70ca69b6ce8dcb6"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Prefabs/patrol-frigate.prefab",
+      "bytes": 26948,
+      "sha256": "525e5f026b63c6b9fa238a31c3d91906e2eb36c30451d9270c6588102b0b1ab9"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Prefabs/patrol-frigate.prefab.meta",
+      "bytes": 154,
+      "sha256": "32f17232a705e03381dfaf22d80d62a2b4bc092e2d3667ed06db6ed983125b53"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation/Prefabs.meta",
+      "bytes": 172,
+      "sha256": "4529a09486c89a26100f6f738467042ced3f37d525d2128548573c1eaed14bf0"
+    },
+    {
+      "file": "Resources/ArtDemo/Federation.meta",
+      "bytes": 180,
+      "sha256": "90f10ac1449affee7bd85727d50d61f1c40b42671b85d3ce552fc24984cb69f3"
+    },
+    {
+      "file": "Resources/ArtDemo.meta",
+      "bytes": 180,
+      "sha256": "16b9f1ae310f60a1b5ee0b152cf31f4b25be1f1529b00f7b3b0ce5d98e7fe77c"
+    }
+  ]
+}

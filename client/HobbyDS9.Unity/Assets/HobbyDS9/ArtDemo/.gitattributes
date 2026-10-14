@@ -1,0 +1,4 @@
+# Preserve manifest-pinned asset bytes on every platform.
+Resources/** -text
+source-manifest.json -text
+runtime-manifest.json -text
