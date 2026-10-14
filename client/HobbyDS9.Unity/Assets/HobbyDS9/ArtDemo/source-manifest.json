@@ -1,0 +1,3479 @@
+{
+  "created": "2026-10-14",
+  "status": "Engine-targeted original hull art candidates; native acceptance recorded separately",
+  "creator": "HobbyDS9 original procedural mesh authoring by Codex",
+  "thirdPartyGeometryUsed": false,
+  "referenceRole": "Owner-supplied Federation silhouettes/material references only; not exact canon class replicas",
+  "recipe": "tools/art/build_federation_fleet.py",
+  "materials": [
+    {
+      "name": "FED_Hull_Pearl",
+      "baseColour": [
+        0.5099999904632568,
+        0.5799999833106995,
+        0.6499999761581421,
+        1.0
+      ],
+      "metallic": 0.3499999940395355,
+      "roughness": 0.36000001430511475,
+      "emission": 0.0,
+      "pbr": "Principled base colour / metallic / roughness / emissive; no external textures"
+    },
+    {
+      "name": "FED_Panel_Slate",
+      "baseColour": [
+        0.28999999165534973,
+        0.36000001430511475,
+        0.4399999976158142,
+        1.0
+      ],
+      "metallic": 0.44999998807907104,
+      "roughness": 0.4000000059604645,
+      "emission": 0.0,
+      "pbr": "Principled base colour / metallic / roughness / emissive; no external textures"
+    },
+    {
+      "name": "FED_Panel_Silver",
+      "baseColour": [
+        0.6499999761581421,
+        0.6899999976158142,
+        0.7099999785423279,
+        1.0
+      ],
+      "metallic": 0.4000000059604645,
+      "roughness": 0.4000000059604645,
+      "emission": 0.0,
+      "pbr": "Principled base colour / metallic / roughness / emissive; no external textures"
+    },
+    {
+      "name": "FED_Recess_Graphite",
+      "baseColour": [
+        0.017999999225139618,
+        0.028999999165534973,
+        0.04500000178813934,
+        1.0
+      ],
+      "metallic": 0.3499999940395355,
+      "roughness": 0.41999998688697815,
+      "emission": 0.0,
+      "pbr": "Principled base colour / metallic / roughness / emissive; no external textures"
+    },
+    {
+      "name": "FED_Phaser_Bronze",
+      "baseColour": [
+        0.2800000011920929,
+        0.20000000298023224,
+        0.10499999672174454,
+        1.0
+      ],
+      "metallic": 0.6499999761581421,
+      "roughness": 0.3400000035762787,
+      "emission": 0.0,
+      "pbr": "Principled base colour / metallic / roughness / emissive; no external textures"
+    },
+    {
+      "name": "FED_Warp_Blue",
+      "baseColour": [
+        0.02500000037252903,
+        0.3199999928474426,
+        1.0,
+        1.0
+      ],
+      "metallic": 0.15000000596046448,
+      "roughness": 0.30000001192092896,
+      "emission": 2.4000000953674316,
+      "pbr": "Principled base colour / metallic / roughness / emissive; no external textures"
+    },
+    {
+      "name": "FED_Collector_Red",
+      "baseColour": [
+        0.949999988079071,
+        0.07000000029802322,
+        0.017999999225139618,
+        1.0
+      ],
+      "metallic": 0.20000000298023224,
+      "roughness": 0.30000001192092896,
+      "emission": 1.100000023841858,
+      "pbr": "Principled base colour / metallic / roughness / emissive; no external textures"
+    },
+    {
+      "name": "FED_Window_Ice",
+      "baseColour": [
+        0.550000011920929,
+        0.7599999904632568,
+        1.0,
+        1.0
+      ],
+      "metallic": 0.05000000074505806,
+      "roughness": 0.3499999940395355,
+      "emission": 1.2999999523162842,
+      "pbr": "Principled base colour / metallic / roughness / emissive; no external textures"
+    },
+    {
+      "name": "FED_Deflector_Amber",
+      "baseColour": [
+        0.949999988079071,
+        0.3199999928474426,
+        0.054999999701976776,
+        1.0
+      ],
+      "metallic": 0.25,
+      "roughness": 0.30000001192092896,
+      "emission": 1.5,
+      "pbr": "Principled base colour / metallic / roughness / emissive; no external textures"
+    }
+  ],
+  "assets": [
+    {
+      "id": "art.federation.exploration-cruiser.v1",
+      "name": "Federation exploration cruiser",
+      "slug": "exploration-cruiser",
+      "nominalArtLengthMetres": 620,
+      "source": "exploration-cruiser.blend",
+      "authoringAxes": "-Y forward, +Z up",
+      "expectedGLBAxes": "+Z forward, +Y up",
+      "anchorsAuthoringMetres": {
+        "Nacelle_Port": [
+          -160.2385711669922,
+          158.38966369628906,
+          71.121826171875
+        ],
+        "Nacelle_Starboard": [
+          160.2385711669922,
+          158.38966369628906,
+          71.121826171875
+        ],
+        "Forward_Equipment": [
+          0.0,
+          -286.58050537109375,
+          41.5393180847168
+        ],
+        "Effect_Deflector": [
+          0.0,
+          -69.02584838867188,
+          -43.51038360595703
+        ],
+        "Effect_Torpedo": [
+          0.0,
+          -22.803180694580078,
+          -23.788715362548828
+        ],
+        "Axis_Bow": [
+          0,
+          -310.0,
+          0
+        ],
+        "Axis_Up": [
+          0,
+          0,
+          62.0
+        ]
+      },
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 7700,
+          "vertices": 4274,
+          "meshObjects": 4,
+          "materialSlots": 20,
+          "boundsAuthoring": [
+            [
+              -221.86878967285156,
+              -310.0,
+              -86.65154266357422
+            ],
+            [
+              221.86878967285156,
+              310.0,
+              85.9336929321289
+            ]
+          ],
+          "fbx": "exploration-cruiser_LOD0.fbx",
+          "glb": "exploration-cruiser_LOD0.glb"
+        },
+        {
+          "level": 1,
+          "triangles": 3542,
+          "vertices": 1989,
+          "meshObjects": 4,
+          "materialSlots": 20,
+          "boundsAuthoring": [
+            [
+              -221.86878967285156,
+              -310.0,
+              -86.65154266357422
+            ],
+            [
+              221.86878967285156,
+              310.0,
+              85.69731140136719
+            ]
+          ],
+          "fbx": "exploration-cruiser_LOD1.fbx",
+          "glb": "exploration-cruiser_LOD1.glb"
+        },
+        {
+          "level": 2,
+          "triangles": 2004,
+          "vertices": 1078,
+          "meshObjects": 4,
+          "materialSlots": 19,
+          "boundsAuthoring": [
+            [
+              -221.86878967285156,
+              -310.0,
+              -86.65154266357422
+            ],
+            [
+              221.86878967285156,
+              310.0,
+              86.65153503417969
+            ]
+          ],
+          "fbx": "exploration-cruiser_LOD2.fbx",
+          "glb": "exploration-cruiser_LOD2.glb"
+        }
+      ]
+    },
+    {
+      "id": "art.federation.patrol-frigate.v1",
+      "name": "Federation patrol frigate",
+      "slug": "patrol-frigate",
+      "nominalArtLengthMetres": 280,
+      "source": "patrol-frigate.blend",
+      "authoringAxes": "-Y forward, +Z up",
+      "expectedGLBAxes": "+Z forward, +Y up",
+      "anchorsAuthoringMetres": {
+        "Nacelle_Port": [
+          -104.74073791503906,
+          41.48147964477539,
+          -34.18983459472656
+        ],
+        "Nacelle_Starboard": [
+          104.74073791503906,
+          41.48147964477539,
+          -34.18983459472656
+        ],
+        "Forward_Equipment": [
+          0.0,
+          41.48147964477539,
+          41.51386642456055
+        ],
+        "Effect_Torpedo": [
+          0.0,
+          18.66666603088379,
+          40.476829528808594
+        ],
+        "Effect_Deflector": [
+          0.0,
+          -126.51851654052734,
+          -13.44909381866455
+        ],
+        "Axis_Bow": [
+          0,
+          -140.0,
+          0
+        ],
+        "Axis_Up": [
+          0,
+          0,
+          28.0
+        ]
+      },
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 6612,
+          "vertices": 3732,
+          "meshObjects": 4,
+          "materialSlots": 19,
+          "boundsAuthoring": [
+            [
+              -111.84898376464844,
+              -140.0,
+              -46.68083572387695
+            ],
+            [
+              111.84898376464844,
+              140.0,
+              47.21757507324219
+            ]
+          ],
+          "fbx": "patrol-frigate_LOD0.fbx",
+          "glb": "patrol-frigate_LOD0.glb"
+        },
+        {
+          "level": 1,
+          "triangles": 3072,
+          "vertices": 1756,
+          "meshObjects": 4,
+          "materialSlots": 19,
+          "boundsAuthoring": [
+            [
+              -111.81333923339844,
+              -140.0,
+              -46.61336898803711
+            ],
+            [
+              111.81333923339844,
+              140.0,
+              47.21757507324219
+            ]
+          ],
+          "fbx": "patrol-frigate_LOD1.fbx",
+          "glb": "patrol-frigate_LOD1.glb"
+        },
+        {
+          "level": 2,
+          "triangles": 1564,
+          "vertices": 860,
+          "meshObjects": 4,
+          "materialSlots": 18,
+          "boundsAuthoring": [
+            [
+              -112.7805404663086,
+              -140.0,
+              -47.21757125854492
+            ],
+            [
+              112.7805404663086,
+              140.0,
+              47.21757507324219
+            ]
+          ],
+          "fbx": "patrol-frigate_LOD2.fbx",
+          "glb": "patrol-frigate_LOD2.glb"
+        }
+      ]
+    },
+    {
+      "id": "art.federation.compact-escort.v1",
+      "name": "Federation compact escort",
+      "slug": "compact-escort",
+      "nominalArtLengthMetres": 170,
+      "source": "compact-escort.blend",
+      "authoringAxes": "-Y forward, +Z up",
+      "expectedGLBAxes": "+Z forward, +Y up",
+      "anchorsAuthoringMetres": {
+        "Nacelle_Port": [
+          -55.037994384765625,
+          8.620746612548828,
+          -8.963330268859863
+        ],
+        "Nacelle_Starboard": [
+          55.037994384765625,
+          8.620746612548828,
+          -8.963330268859863
+        ],
+        "Forward_Equipment": [
+          0.0,
+          -81.23719787597656,
+          -8.963330268859863
+        ],
+        "Effect_Cannon_Port": [
+          -52.79154586791992,
+          -65.5120620727539,
+          -11.209778785705566
+        ],
+        "Effect_Cannon_Starboard": [
+          52.79154586791992,
+          -65.5120620727539,
+          -11.209778785705566
+        ],
+        "Axis_Bow": [
+          0,
+          -85.0,
+          0
+        ],
+        "Axis_Up": [
+          0,
+          0,
+          17.0
+        ]
+      },
+      "lods": [
+        {
+          "level": 0,
+          "triangles": 3892,
+          "vertices": 2024,
+          "meshObjects": 4,
+          "materialSlots": 16,
+          "boundsAuthoring": [
+            [
+              -69.58374786376953,
+              -85.00000762939453,
+              -19.184673309326172
+            ],
+            [
+              69.58374786376953,
+              85.0,
+              19.184673309326172
+            ]
+          ],
+          "fbx": "compact-escort_LOD0.fbx",
+          "glb": "compact-escort_LOD0.glb"
+        },
+        {
+          "level": 1,
+          "triangles": 1852,
+          "vertices": 1002,
+          "meshObjects": 4,
+          "materialSlots": 16,
+          "boundsAuthoring": [
+            [
+              -69.58374786376953,
+              -85.00000762939453,
+              -19.184673309326172
+            ],
+            [
+              69.58374786376953,
+              85.0,
+              19.184673309326172
+            ]
+          ],
+          "fbx": "compact-escort_LOD1.fbx",
+          "glb": "compact-escort_LOD1.glb"
+        },
+        {
+          "level": 2,
+          "triangles": 1260,
+          "vertices": 676,
+          "meshObjects": 4,
+          "materialSlots": 15,
+          "boundsAuthoring": [
+            [
+              -69.58374786376953,
+              -85.00000762939453,
+              -19.184673309326172
+            ],
+            [
+              69.58374786376953,
+              85.0,
+              19.184673309326172
+            ]
+          ],
+          "fbx": "compact-escort_LOD2.fbx",
+          "glb": "compact-escort_LOD2.glb"
+        }
+      ]
+    }
+  ],
+  "files": [
+    {
+      "path": "exports/compact-escort_LOD0.fbx",
+      "bytes": 140428,
+      "sha256": "6853bfef2480c87c9ef5cc5c9f739c21fdf263e5e80e123a1ae91a47f5a3f3e8"
+    },
+    {
+      "path": "exports/compact-escort_LOD0.glb",
+      "bytes": 176816,
+      "sha256": "ca6611bfd7508db055f4569ef18ac88ec59c9272a7af30681671d551a91940a2"
+    },
+    {
+      "path": "exports/compact-escort_LOD1.fbx",
+      "bytes": 84908,
+      "sha256": "1b01080488f08f07f00482a4a4aa172f01fb27366aacbaa007e63b360a7e2647"
+    },
+    {
+      "path": "exports/compact-escort_LOD1.glb",
+      "bytes": 95404,
+      "sha256": "37e5d4a62f827050ca57f95ca7a2999b994a0fdeae34cae374bb6d8af871a368"
+    },
+    {
+      "path": "exports/compact-escort_LOD2.fbx",
+      "bytes": 68892,
+      "sha256": "5780e633a6934c7d5a31baa06df79f33bdb97012a2a24dfc5b284829c2dbd409"
+    },
+    {
+      "path": "exports/compact-escort_LOD2.glb",
+      "bytes": 61216,
+      "sha256": "30e77c29fda96c9d86c870685cce9fc31b44ea48f0418b87947704e636240743"
+    },
+    {
+      "path": "exports/exploration-cruiser_LOD0.fbx",
+      "bytes": 252044,
+      "sha256": "52237e6b527906edfb5f0eb7ed4571417c50f780fe7d8a93090bd3b659c6efad"
+    },
+    {
+      "path": "exports/exploration-cruiser_LOD0.glb",
+      "bytes": 325608,
+      "sha256": "9236718340c2b1815fb369e5d875a98eb396a3f87627a6f906a57a84202f27aa"
+    },
+    {
+      "path": "exports/exploration-cruiser_LOD1.fbx",
+      "bytes": 136668,
+      "sha256": "c57d9b07339d6e67b468c339b3358e9365a00972f3427c62a5c6ebbef462cf76"
+    },
+    {
+      "path": "exports/exploration-cruiser_LOD1.glb",
+      "bytes": 154556,
+      "sha256": "91faadfc1065db7dd5735f8b060167380e68c4f7ea471514b69ed5c15a09eefa"
+    },
+    {
+      "path": "exports/exploration-cruiser_LOD2.fbx",
+      "bytes": 91644,
+      "sha256": "8d219837487f3e93c4edf2a5c8a6b019ab290567945268d1b0d8cdd7148c26c5"
+    },
+    {
+      "path": "exports/exploration-cruiser_LOD2.glb",
+      "bytes": 85316,
+      "sha256": "c9a57c39fd4ae006265188892e7fc35a2f58586bd01d4f8d8ab33979336ba750"
+    },
+    {
+      "path": "exports/patrol-frigate_LOD0.fbx",
+      "bytes": 221532,
+      "sha256": "da99ee2e6d44821fb1f0ceb307533c281bc6e0b20c06b5a37be2acc37e179b6b"
+    },
+    {
+      "path": "exports/patrol-frigate_LOD0.glb",
+      "bytes": 313340,
+      "sha256": "7ab2015c5f141e3639b0398c933c9c4017276dc9c96853af9913e97ecc3b5cc8"
+    },
+    {
+      "path": "exports/patrol-frigate_LOD1.fbx",
+      "bytes": 123388,
+      "sha256": "b3b12cde10efeb3a92edca010255e5816c9b30d46fa9e9378929f1a40e6f6b4b"
+    },
+    {
+      "path": "exports/patrol-frigate_LOD1.glb",
+      "bytes": 146352,
+      "sha256": "1f8427aafbe27efb87ea50f2d04dad7858f5d5824ffc503923e980b323606c52"
+    },
+    {
+      "path": "exports/patrol-frigate_LOD2.fbx",
+      "bytes": 79260,
+      "sha256": "245a33a02c1f00474a4753f3903b95342ce37852ba1660eaaa9ee38858cd16fb"
+    },
+    {
+      "path": "exports/patrol-frigate_LOD2.glb",
+      "bytes": 73880,
+      "sha256": "5fdff7306c0d4697c0bd85c98c3afa77de47f3523b3d6f825403c5d26afe56d1"
+    },
+    {
+      "path": "previews/compact-escort-beauty.png",
+      "bytes": 1701632,
+      "sha256": "d1136697238b9d8f958fb12be3f984737f6291c16d82d59686b057501176d6f4"
+    },
+    {
+      "path": "previews/compact-escort-top.png",
+      "bytes": 1684101,
+      "sha256": "24f9353088bab429ac75c71e1e9495d022f28a2d52ef67c64538b8ee802f8bf1"
+    },
+    {
+      "path": "previews/exploration-cruiser-beauty.png",
+      "bytes": 1663166,
+      "sha256": "9976e5d52b8c60265a9635813210746ad82a5ad9ce680fcd7afd6ad1cc98956e"
+    },
+    {
+      "path": "previews/exploration-cruiser-top.png",
+      "bytes": 1671266,
+      "sha256": "be70f2b509e4e5f94f6637f59e350e14245456a3f3fa995d7c337a5ffbb15226"
+    },
+    {
+      "path": "previews/exploration-debug.png",
+      "bytes": 1656433,
+      "sha256": "70909307b6a1ed618fa883c4fc5d516a84ad821937ec52666b78eaf1e74fbeed"
+    },
+    {
+      "path": "previews/patrol-frigate-beauty.png",
+      "bytes": 1727322,
+      "sha256": "e08dea1f58187e833fdaf9b8547d6773239363071d8052b7c3d93a71b653e70e"
+    },
+    {
+      "path": "previews/patrol-frigate-top.png",
+      "bytes": 1680760,
+      "sha256": "53f33589d0399ecb8c4836566bfd2c629505aae68987da5ac6378669c38b357b"
+    },
+    {
+      "path": "sources/compact-escort.blend",
+      "bytes": 229999,
+      "sha256": "3a678b6a726e283ecbfebae434d1f7eee126ad8163008ae93163188758eb52a5"
+    },
+    {
+      "path": "sources/exploration-cruiser.blend",
+      "bytes": 372129,
+      "sha256": "fb9e1b4762da93743d50851a611dd913117f9f01f31df90f2c1a547012688c7d"
+    },
+    {
+      "path": "sources/patrol-frigate.blend",
+      "bytes": 329383,
+      "sha256": "51cfd37acefca104982ae657c0ec8790c750c21cddfedafbac9507aa3b5c4220"
+    },
+    {
+      "path": "validation/unity-smoke/Assets/Federation/Models/compact-escort_LOD0.fbx",
+      "bytes": 140412,
+      "sha256": "0534c2669581ac71e7180011b722a5c8291d67fdb66c34b82eed6e7225ab1793"
+    },
+    {
+      "path": "validation/unity-smoke/Assets/Federation/Models/compact-escort_LOD1.fbx",
+      "bytes": 84876,
+      "sha256": "83a93cc4d8353a2f4b1c5d9530d3c43eb57464557ea119b4323f47327e3389d9"
+    },
+    {
+      "path": "validation/unity-smoke/Assets/Federation/Models/compact-escort_LOD2.fbx",
+      "bytes": 68860,
+      "sha256": "261297ed2541b501e1eddc606af7205ee049ce9e9d7c3e8b1c3c462d280b6b25"
+    },
+    {
+      "path": "validation/unity-smoke/Assets/Federation/Models/exploration-cruiser_LOD0.fbx",
+      "bytes": 252076,
+      "sha256": "5258cdc04018ba0965e476e7bdfa7c8a58b5467d6f16a8d3461e19b83deef53d"
+    },
+    {
+      "path": "validation/unity-smoke/Assets/Federation/Models/exploration-cruiser_LOD1.fbx",
+      "bytes": 136700,
+      "sha256": "487787780e017f1f54e980d4c7d1f5c2bbfcd0e51b98a03c0eb3fb1eb28a21b8"
+    },
+    {
+      "path": "validation/unity-smoke/Assets/Federation/Models/exploration-cruiser_LOD2.fbx",
+      "bytes": 91596,
+      "sha256": "4e9ce4ce5531009d2d4ef93c729d00b7fa73cc11e9cd429fe6e90fff136b9dab"
+    },
+    {
+      "path": "validation/unity-smoke/Assets/Federation/Models/patrol-frigate_LOD0.fbx",
+      "bytes": 221500,
+      "sha256": "dd89a6af2b5fb0b8d0ead1e5abb89ec57ee56edcb67cab346cc778ff9f5a60c8"
+    },
+    {
+      "path": "validation/unity-smoke/Assets/Federation/Models/patrol-frigate_LOD1.fbx",
+      "bytes": 123388,
+      "sha256": "9487bd8029d9e5d2bab6e2e86435eaaa42365a111dd60203cbed408a241a2d6b"
+    },
+    {
+      "path": "validation/unity-smoke/Assets/Federation/Models/patrol-frigate_LOD2.fbx",
+      "bytes": 79308,
+      "sha256": "91d72d31bd8eed77340a58fc1635c1d6621039b655d4d9cb029a05db0c062b93"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareAxisTransform.png",
+      "bytes": 5838,
+      "sha256": "ec9be24bef32ed8692a3b1daee2973dffad32cdff24a2d5e7cc473c22c2f7481"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareColor.png",
+      "bytes": 11633,
+      "sha256": "e49695dcde0a262421cfa9b3f3260e2852e2b4647b3d3ef6c49c65817eabc8d8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareColorAngularGradient.png",
+      "bytes": 10451,
+      "sha256": "b11f86093400a1f4e6a8f8c1e7e3976392749607c550028e5a53775e929e98a7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareColorConstant.png",
+      "bytes": 4016,
+      "sha256": "d1794015d1be5ef488719fbf64cba3c049491559fa7ccccd04357d5a8907528c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareColorRadialGradient.png",
+      "bytes": 7508,
+      "sha256": "a00db415cbfd6df4b8e05f4a85817147c38434d44e5aadafa01eba1f3ba69434"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareComp.png",
+      "bytes": 42736,
+      "sha256": "dc6dd9a2a750ef932e2ba2b0ba13bfbeb174eb4c29368d6145ad07d1051589aa"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareCutoff.png",
+      "bytes": 7516,
+      "sha256": "a27423f82bd5ea3b78902fab1990972418bebaca4a519f37f1477bc16874b5ee"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareHeader.png",
+      "bytes": 1516817,
+      "sha256": "736c486aeab0b2d088d3983bd05a42dadb34846b5cdf6ef6e0038b41272a17f6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareMultileElementCurve.png",
+      "bytes": 10220,
+      "sha256": "f0f18f145dd120714d54f01525fe87dea9bb7761d7294919b6c0b5fe85aeda77"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareMultileElementRandom.png",
+      "bytes": 15030,
+      "sha256": "c42ff548fe60224170233b49ce2f9ff374419ded5ceab52c8abe311086e87f4a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareMultileElementUniform.png",
+      "bytes": 8441,
+      "sha256": "760078c2900344b5e310a6dc49f7ad3b5ef92e703048b12857398f7570ba80e9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareRadialDistortion.png",
+      "bytes": 6588,
+      "sha256": "ab396188024362649753909d0c5f2431cd9306089ba9dc768cb3091bd0400c82"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareShapeCircle.png",
+      "bytes": 8522,
+      "sha256": "7200e47793d24c525f64ce085d7f923260e80f3ab1e71044b1938adf60f97f54"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareShapeImage.png",
+      "bytes": 10577,
+      "sha256": "6467b8053b88b593b3a3e8266d5d5af97697a1497f92f2a497d4b702bf25da96"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareShapeLensFlareDataSRP.png",
+      "bytes": 11189,
+      "sha256": "3f8dcf62473904e8cd8d576143b1fd986cab3621a91888e35adff49f056faa99"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareShapePolygon.png",
+      "bytes": 13585,
+      "sha256": "5ffe4668b4a5b973fa765b29c049cc3c35b8478a289b58adb5436ddfcc3ef3ce"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareShapeRing.png",
+      "bytes": 18056,
+      "sha256": "7bfbea86a9b2b053ca8ebb324bca92baba378f0c12c98459ca288eaf14204ac9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LensFlareTransform.png",
+      "bytes": 7252,
+      "sha256": "f5b6c8b789a706313a9f6604692a18dc0148a4e401b32207844ba6bd434ef231"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Common/images/LightAnchor0.png",
+      "bytes": 37909,
+      "sha256": "8f6a48ee49363d076bccd2f2c77b51759b75a9299e65149d83bcea75d51b7469"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/Blitter_octohedron.png",
+      "bytes": 6237,
+      "sha256": "007709d7b257320b939e09b5175d2daaac0d392d3b211f743aebb1df25fef565"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/core_render_pipeline_preference_provider.png",
+      "bytes": 22051,
+      "sha256": "270b433f71fcad0326b0b31f3ede771694c9830bc14e49bccf95c512e20854e9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/customsettings-addsetting.png",
+      "bytes": 57141,
+      "sha256": "3f48402eac6fdcc277a93054e377bc136b3b8e1bcdebd3accb84b9a5ec3b221c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/customsettings-settingsgroup.png",
+      "bytes": 61630,
+      "sha256": "b74c98bb052e8aab08703f700f84873f79ea63addedc9985eccce34c5a8a1de5"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/ExampleOutputTexture.png",
+      "bytes": 107531,
+      "sha256": "0a3afdac97fd8f3ae003da075ce1004aa8c809f093a3993a77dc69e54a0a3099"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/lens-flare-comp.png",
+      "bytes": 38564,
+      "sha256": "85596adc746f85cad65b6c325cb6584972d6a4d8810bd9b650790a6e670a517b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/LightAnchor0.png",
+      "bytes": 36428,
+      "sha256": "cd09e91362a81a0176e167af667bba0d81c50584c55c7e6a088eeb9cb1532f5e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/Preferences/AdvancedProperties_Settings.png",
+      "bytes": 4531,
+      "sha256": "811ba6f8139af4f9aba3c9628b3c72a4e8af28d2e09c73ee08a68475e4d93e87"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/Preferences/HDRP_WaterSurface_General.png",
+      "bytes": 19567,
+      "sha256": "b0a6b9c2a3d44814b8c155777ce502da222ec197e5a28f3cfc24eb850f4f014c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/Preferences/HDRP_WaterSurface_General_Visible.png",
+      "bytes": 17600,
+      "sha256": "915334b99f1a4b3c6513292a619494c1992c6d143bf62f2cf0459cc65cb51afe"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/Preferences/PopUpAdvanced.png",
+      "bytes": 17413,
+      "sha256": "d0057cc9a8464fbf13d7e4c8a94fc631e798b58dd9885ff1f793270ff9e3560f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/rendering-debugger.png",
+      "bytes": 23486,
+      "sha256": "981d55178b324f58ddd0557c0004cbdf0ca79e968c4cd5af2f4d6a2ce2d86be8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/view-lighting-tool-gizmo.png",
+      "bytes": 2410,
+      "sha256": "db47185b33bddefd5b8475463cb7efdc31301c5e3157096f64e53ddd51fb813e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Documentation~/Images/view-lighting-tool-light-anchor0.png",
+      "bytes": 158513,
+      "sha256": "38028e8534c62c6c780bcfb6413d4f8f4851e54d3d920fb200a6fa93f6cf82d6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_RenderPipelineResources@128.png",
+      "bytes": 2648,
+      "sha256": "23be6d1c3e0a811d2abd19d8fc741103a36a6d05042f1e587585d86947aefcad"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_RenderPipelineResources@16.png",
+      "bytes": 454,
+      "sha256": "a0f72f5414f1c139581bd81eef4a4e0bf08ba72b3ec82b7d35afd6876ed9a8f2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_RenderPipelineResources@256.png",
+      "bytes": 5354,
+      "sha256": "50d23e017b7d72efd41abdfd96ba630040fce50a78d958cbf418a9ae7f78b2da"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_RenderPipelineResources@32.png",
+      "bytes": 781,
+      "sha256": "98827027f67cb0f9b70a0c885bd8e46e86e5ed1292bacdeb2edc2c69e43be89c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_RenderPipelineResources@64.png",
+      "bytes": 1502,
+      "sha256": "1f66af117efefe916991b44a6a33cff546f7306929c67855fe1ecac78340db5f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_Volume@128.png",
+      "bytes": 2882,
+      "sha256": "57e8b3dcc25a85bb164da151e5439c3f70367338d327fc670bc2986cd7fe727a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_Volume@16.png",
+      "bytes": 585,
+      "sha256": "70d913023ebe0e3cdad470895c8d9f691f24ed4c8adda555c25bd588289c473f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_Volume@256.png",
+      "bytes": 5028,
+      "sha256": "4110cee7b876fc5649289094305d8c0fe32e2dc583086e421847077abe6b5166"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_Volume@32.png",
+      "bytes": 1040,
+      "sha256": "a242c80119d1cf38babb2649212d1890be6f30a2023ba3ee355c5aaea25a8f47"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_Volume@64.png",
+      "bytes": 1819,
+      "sha256": "d8e4d0d85b3e113b872b10eb1fb796511609bd738368479f0eacd754e52c4747"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_VolumeProfile@128.png",
+      "bytes": 2391,
+      "sha256": "4769efac2f2cd50f1d89bb732784f9b78015d63b8a22d36f295bfdeaedca0079"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_VolumeProfile@16.png",
+      "bytes": 464,
+      "sha256": "8b85522a3f55cc556a211f10a01d2da5cadf9afec4ce1126bf3957318ad3c9d8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_VolumeProfile@256.png",
+      "bytes": 4700,
+      "sha256": "899c023e9a952e952637d9af8b0f1387a9731798361472316f2e3f84dd826a3e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_VolumeProfile@32.png",
+      "bytes": 815,
+      "sha256": "b5b96fbf9a37c1908f24522eaba89a86034e95d5c5de1f7734d3aa6b8eeb6767"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/d_VolumeProfile@64.png",
+      "bytes": 1453,
+      "sha256": "5e50b231e0c7e27f44e4676a5ead2475f8f5dc9eabdca22655755e047573d08b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderGraphViewer/d_PassInspector@16.png",
+      "bytes": 316,
+      "sha256": "2e787327a0377a82a74e613120981ed67a8f7ef3b6eff4366aa434997eb91ff7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderGraphViewer/d_PassInspector@32.png",
+      "bytes": 575,
+      "sha256": "115f8a650b35767286679455477f9f590bb7ff2ff0ad3e025bf6804470e52c15"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderGraphViewer/d_Resources@16.png",
+      "bytes": 204,
+      "sha256": "76d5bfcb1410398285ee9371a591aaca57072cc61d74d6d106ccf7f75560b2f4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderGraphViewer/d_Resources@32.png",
+      "bytes": 276,
+      "sha256": "d75db78853a2ee5e2ff7c076a626d3d33cf4998a7ce512779eb3aa9618f2465d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderGraphViewer/PassInspector@16.png",
+      "bytes": 332,
+      "sha256": "ebfa697b42e0709b63d0cc7f5ae1c7e0badf6c27c3183c3e14d8f055281203bb"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderGraphViewer/PassInspector@32.png",
+      "bytes": 616,
+      "sha256": "7a959fb751bb7541b82ca079392f2e7aeb56bdb977b77a340e2c8991341f399d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderGraphViewer/Resources@16.png",
+      "bytes": 202,
+      "sha256": "25c8cbf08e241b0981b469016f7e8dc4b8178ec2a5a629588da9d559a1065c98"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderGraphViewer/Resources@32.png",
+      "bytes": 273,
+      "sha256": "2e70459c6992ba7b01b0deef8ce94ddad2ef452839ed281fc909dcf9d9572a0a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderPipelineResources@128.png",
+      "bytes": 3087,
+      "sha256": "dda8a32324efcfb9aadbb9e58b3048ea17b3bc442282336b9e72e5f1537ef5f8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderPipelineResources@16.png",
+      "bytes": 505,
+      "sha256": "bf0a498024788d34c0e7282859856b6b10a56f260478449f6e423336c22f576a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderPipelineResources@256.png",
+      "bytes": 6301,
+      "sha256": "1040691da6b98e5ae0d32c68c0572f534439d371dbe70bdd21e08c80bd3517f1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderPipelineResources@32.png",
+      "bytes": 918,
+      "sha256": "e2443dc41cfea6cc7b490172351f7cdbb9717a803946703a07786f6e097de671"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/RenderPipelineResources@64.png",
+      "bytes": 1745,
+      "sha256": "9e5138035e6d9bac7dcdf9be01fe8fdd6643f6a8ef3a891bf97d6131148a5f5b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/Volume@128.png",
+      "bytes": 3031,
+      "sha256": "9c21af9323399b41d62f5825e4c10c418e6e8520c80e9606280f203bd0416d4c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/Volume@16.png",
+      "bytes": 607,
+      "sha256": "5dc87c0a2702e18b26758f993f6049a7f01161256c9d6b0ef070dafa3d770a6f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/Volume@256.png",
+      "bytes": 5205,
+      "sha256": "37977068729e3af36d128a2781db991eb2a3083ab4cc3444121569e986dbf4f3"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/Volume@32.png",
+      "bytes": 1096,
+      "sha256": "feadb8bf6782ca7140dc25de9f0d272fdc617c553eaa78db73b1f9c23f7951b4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/Volume@64.png",
+      "bytes": 1907,
+      "sha256": "5bdc9e7bf8d418101c0dd27db3e08de9a667e30599d8b966ff7b37d0249a957b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/VolumeProfile@128.png",
+      "bytes": 4807,
+      "sha256": "6eea7341b5f3f0b81ca236c77abc3578f48ebd748fb166b8396151d1749b970d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/VolumeProfile@16.png",
+      "bytes": 506,
+      "sha256": "5a8ea55a9bcfb25243ffe5075b4ea9c37782efea6b5ff5074cd01e3545b8b087"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/VolumeProfile@256.png",
+      "bytes": 7862,
+      "sha256": "3ba5368ac2e3213562c4702d420e834223ad8f0e8dc8e0e3f9f854db459e68f0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/VolumeProfile@32.png",
+      "bytes": 944,
+      "sha256": "1d6282314244b8b1ab5187c2857f6fb46cc9a09ac9750a28222e31d96e32d698"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/MipLevels/VolumeProfile@64.png",
+      "bytes": 1762,
+      "sha256": "33973a3417d05684e99109d71aa2c9fb8d04b92fe51c0bfd6e0f80ff605fc4ca"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/AccelerationStructure@2x.png",
+      "bytes": 321,
+      "sha256": "1186a330d83286c429c9b83c5237f6d6989c75db2a55902e813f582629a01168"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/Buffer@2x.png",
+      "bytes": 306,
+      "sha256": "019a778c3177e2e9dd3c7e782c8817892471784ab466d4bad3eeecd8101cdcab"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/d_AccelerationStructure@2x.png",
+      "bytes": 331,
+      "sha256": "f5c238aadfa0137c23b2d64b53abe2aa3f21e64790c285ce45f4b24d6edc2de1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/d_Buffer@2x.png",
+      "bytes": 302,
+      "sha256": "fe9a1fb29beabf68992ce5644c65dc771bc42fb1d1358c366f37f45a3301ab34"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/d_FramebufferFetch@2x.png",
+      "bytes": 597,
+      "sha256": "31401e4a12081c9098e1109911c72fe0f774cfbbf642d01279e39c48987cbcce"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/d_Global@2x.png",
+      "bytes": 1032,
+      "sha256": "5311d21631927ea17eeebd04017ce9219692194cb7f659361a812463a1682bf0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/d_Import@2x.png",
+      "bytes": 506,
+      "sha256": "1b8dab6ab7ee42294241ad51978ebe042bf7e305cee15461dd866c3993bd39ed"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/d_MemorylessTexture@2x.png",
+      "bytes": 254,
+      "sha256": "2508e92047c81fa25e96792252a66c1295491f99c831baf6316ed8b31d04789e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/d_MultipleUsage.png",
+      "bytes": 526,
+      "sha256": "db8ee4186196a161ce9d61496c1db90cacfedfce0212f712b75307273f7de08f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/d_PassInspector@2x.png",
+      "bytes": 626,
+      "sha256": "c704f92a9b9646847eefc50043d41a7ee7de1efb97601d5e065f64927d940433"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/d_Resources@2x.png",
+      "bytes": 292,
+      "sha256": "9580d1e6f71f566468ce395494867d9f670f4e5e68c32d50ff19c75656ae840e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/d_ScriptLink@2x.png",
+      "bytes": 6446,
+      "sha256": "df51d4514fb7dac2ed6e962e42bcbe93b671899ab17b14b947484acd09eed928"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/d_Texture@2x.png",
+      "bytes": 282,
+      "sha256": "5e847a682ecbacd0e966a2a0fbf14ea68c2811028f8e396226cdbf0d84dd81b4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/dash.png",
+      "bytes": 161,
+      "sha256": "51cfbdc52e20042eab30c8abcdfd9fee88cf29913a913e25a0053d2740d6b663"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/FramebufferFetch@2x.png",
+      "bytes": 593,
+      "sha256": "ceedd63584fd5818d45bb842e100ecdd41e855d41ec9b516b6dd4d419e452423"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/Global@2x.png",
+      "bytes": 1033,
+      "sha256": "96bc49ebcc445d7b4c0b2292aa246bab9cc7ab79064b21bfa2dfd8009f918435"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/Import@2x.png",
+      "bytes": 574,
+      "sha256": "6741a02ae6a5b26b9f47fb2b18e38ec4a6d02a9feb0d5e630009e60a9958d629"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/MemorylessTexture@2x.png",
+      "bytes": 263,
+      "sha256": "c85ebf70f9a674e754957d2a1ec542a83f30f1b808aa2ae94bb3e1a28dc1ee00"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/MultipleUsage.png",
+      "bytes": 307,
+      "sha256": "70aa31d04e9a626bbd6f79e9c22c6bc34bbd377154ed8d0b8d9e088bd7001f66"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/PassInspector@2x.png",
+      "bytes": 616,
+      "sha256": "7a959fb751bb7541b82ca079392f2e7aeb56bdb977b77a340e2c8991341f399d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/Resources@2x.png",
+      "bytes": 273,
+      "sha256": "2e70459c6992ba7b01b0deef8ce94ddad2ef452839ed281fc909dcf9d9572a0a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/ScriptLink@2x.png",
+      "bytes": 6327,
+      "sha256": "366bfa4132f602682a1ab6b033154ad12bb5b2593404bb8aaf913e91f8a02db6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Icons/RenderGraphViewer/Texture@2x.png",
+      "bytes": 292,
+      "sha256": "44f06e8eed29af73621e9afec80cda8d2ddfa45f5ea562d8bab84cacceaf5361"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/Advanced_Pressed_mini.png",
+      "bytes": 3061,
+      "sha256": "8a7506689830db1cd7fb2ea3cb8ca8f861b3dcff462568285574fdec504cfef1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/Advanced_UnPressed_mini.png",
+      "bytes": 2109,
+      "sha256": "ead4126ae9a0a27bc10190c97f441a05c323920cb818684f1aa133cb51dc4e30"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon On.png",
+      "bytes": 379,
+      "sha256": "3b5eec0c75f45cfcb32e706c895f775e8b4e6057407e7f221780c363a90aae92"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon On@128.png",
+      "bytes": 2404,
+      "sha256": "deb11be74dbb8c92d4ad1ff09b651fb7a7214995dabbcb6e6c62355b8894a675"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon On@16.png",
+      "bytes": 379,
+      "sha256": "3b5eec0c75f45cfcb32e706c895f775e8b4e6057407e7f221780c363a90aae92"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon On@256.png",
+      "bytes": 4865,
+      "sha256": "e27a74f559c571cbb198ac8efa628814a1b0dc4d4e3480f75b3dce3d88acfc78"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon On@2x.png",
+      "bytes": 687,
+      "sha256": "577fd8e23601faad5012358ec78391cfa18024554b7b3818ca145927d3568916"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon On@32.png",
+      "bytes": 687,
+      "sha256": "577fd8e23601faad5012358ec78391cfa18024554b7b3818ca145927d3568916"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon On@64.png",
+      "bytes": 1304,
+      "sha256": "8cb55cbe53d07ce79f158c7031e0a8e7872f01a127f5ef7f2cff9eb0ff07c546"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon.png",
+      "bytes": 429,
+      "sha256": "8d3919d168bbb86770b704c5b1f7de1e61111d30b4d032b31bb0e6c09d20e453"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon@128.png",
+      "bytes": 2796,
+      "sha256": "a6eb19177bc59d0085416d6cd8380d1753cd27ad13ece419242b87a427ca58c9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon@16.png",
+      "bytes": 429,
+      "sha256": "8d3919d168bbb86770b704c5b1f7de1e61111d30b4d032b31bb0e6c09d20e453"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon@256.png",
+      "bytes": 5402,
+      "sha256": "1a80218631885659d59756a5038781c0c55c3a43d34a5ab0ca7dc07021f7b324"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon@2x.png",
+      "bytes": 810,
+      "sha256": "5bdccd31c3024f893e014b006c7ba24acddea621b0112b896d82c51c45112cae"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon@32.png",
+      "bytes": 810,
+      "sha256": "5bdccd31c3024f893e014b006c7ba24acddea621b0112b896d82c51c45112cae"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/d_LightPlacement_Icon@64.png",
+      "bytes": 1498,
+      "sha256": "4dbe2ff04a8785d1bdd6bcdef2cc46acb7aad323be4eebe63f534d799fa6db9d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/DownSnatch.png",
+      "bytes": 290,
+      "sha256": "e8b2e33db34909d1371d78163e0627571e5c0cf33806fb5efd93b83a61353f54"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/DownSnatchFocused.png",
+      "bytes": 470,
+      "sha256": "326761dfcfed7bd5275d4505c9801bb1137223e28a8e9f44f168b133b9e0c603"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/HorizontalGradient.png",
+      "bytes": 1681,
+      "sha256": "1020a4195e54aea18cd0bc800087c1506c62a5620a1d1da995b79f43482b5e9e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/IESProfile.png",
+      "bytes": 3548,
+      "sha256": "96c7864d0b1e8ecac55a6f21e66649b7eb30da0b8d32c8a849d72e00b7c8eb41"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightAnchor_Icon.png",
+      "bytes": 2882,
+      "sha256": "57323f7608ff69742164529b5457f239fde9d8b4b220e50d80e77e0b2479614e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightPlacement_Icon.png",
+      "bytes": 436,
+      "sha256": "e5158c917c5bef4a6a18a27a3b1ad31372be149f73c0b4b2a5c342bbfb60d445"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightPlacement_Icon@128.png",
+      "bytes": 2860,
+      "sha256": "6cfcdfc43775744ed3a5a20c63f44138d60062b5eceb878b4b7859d93026ce27"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightPlacement_Icon@16.png",
+      "bytes": 436,
+      "sha256": "e5158c917c5bef4a6a18a27a3b1ad31372be149f73c0b4b2a5c342bbfb60d445"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightPlacement_Icon@256.png",
+      "bytes": 5552,
+      "sha256": "870474054750247ac208c2c5bac182c8f374c570df890f10fb87502ea0df3dc1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightPlacement_Icon@2x.png",
+      "bytes": 818,
+      "sha256": "f20a4024290cd164c4a9aeb62d329c96bae31846b4a4072b182b9e62f89ce556"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightPlacement_Icon@32.png",
+      "bytes": 818,
+      "sha256": "f20a4024290cd164c4a9aeb62d329c96bae31846b4a4072b182b9e62f89ce556"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightPlacement_Icon@64.png",
+      "bytes": 1516,
+      "sha256": "f6ebc184d12ef81d820d088a8509a12bdf9917f2cc8961ca5732e8bf84da68e9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/BlueSky.png",
+      "bytes": 379,
+      "sha256": "d34d1dca8b1a7c66d4909ac4065e2628c0b77a3f68b359f9b145959bac1cfaa1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/BlueSky@2x.png",
+      "bytes": 670,
+      "sha256": "6a14f7b54e52a77a862038f8072afb2c2cbe3cbc319c9d63f65a2e02c349ab2c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/BrightSky.png",
+      "bytes": 380,
+      "sha256": "8f95e026efb4605b68896f22689fd7c6b46341be4d4a7a0dd3a94898d64bf90a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/BrightSky@2x.png",
+      "bytes": 558,
+      "sha256": "25c00b85c2e7110d07deb81fa55aeebc6c3e98b273268440aee80d0973ff85e5"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/Candlelight.png",
+      "bytes": 277,
+      "sha256": "6d09f3ecce9f5523ea1bdaff23d3fc397befbee9b1758364f2580b9034ce8c2e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/Candlelight@2x.png",
+      "bytes": 457,
+      "sha256": "037ca0e21e354ff987be882f37f0c716101491f01af32d5c29fb21df2d36b645"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/ClearSky.png",
+      "bytes": 433,
+      "sha256": "7b23187b16c5dc00985edd4ae027beab6a39cf7a505b260127c320a25d41effa"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/ClearSky@2x.png",
+      "bytes": 907,
+      "sha256": "495adc8cee66c377ffb0e564f888eb26c9490248da38d4d570f52d35a932bdbe"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/CloudySky.png",
+      "bytes": 330,
+      "sha256": "519e629b23549a94cbba394b4eebd29b41bb53444e18d0c84ee4be9ffdbe11c2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/CloudySky@2x.png",
+      "bytes": 582,
+      "sha256": "ef2ca313a030d7aec2f72e14ebeb60e9cd07eb97d3e60f83b687dba5f06e2fe6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_BlueSky.png",
+      "bytes": 382,
+      "sha256": "78249728c22e661318f6a0167031f089b3aadf93eb9c253e5ebecc3eb46695e5"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_BlueSky@2x.png",
+      "bytes": 617,
+      "sha256": "d8e8a846bc8a402dd35a574261a8769e3c53c2944f7f877735b4a899308de359"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_BrightSky.png",
+      "bytes": 365,
+      "sha256": "23cc0e2b79dc365e5751221674bcb9bbcff94c7b2492000e73ef964eddbfda14"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_BrightSky@2x.png",
+      "bytes": 543,
+      "sha256": "332ad8842dcec2f823fdd3bceb8e31386cbd985704eed245601e79d573a15b9c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_Candlelight.png",
+      "bytes": 278,
+      "sha256": "9eec7b760619dbe5f7667fa4f076c5613e8119be0fe3f04014afc1efe42be4d3"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_Candlelight@2x.png",
+      "bytes": 457,
+      "sha256": "0a45e9f9fefa6fc8bcbde1a4bcdc063ab92229594bf0e0dd51fc34dfa5302f15"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_ClearSky.png",
+      "bytes": 430,
+      "sha256": "8368e9f9e13756bdadedf74da8fea1314bad0d1804c89d07d75c191a5d3042e2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_ClearSky@2x.png",
+      "bytes": 851,
+      "sha256": "bf7b141c6675c592856e5c515fa8b1fe545884d5450f9f899d1c076cbad87420"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_CloudySky.png",
+      "bytes": 331,
+      "sha256": "4e648aaf2c4078d34e396567ee75eebbce41cce401115e61ff4e18ea04b9b0ff"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_CloudySky@2x.png",
+      "bytes": 538,
+      "sha256": "f9202c07738addbb3afdd146b2d1373dbdcffcc5e08c1fb024b2f355077f0eb0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_DecorativeLight.png",
+      "bytes": 251,
+      "sha256": "96a5e4c27d332cf0fc3dd3aa69228e8ef7237c0fc22d98cf996258e652143bf0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_DecorativeLight@2x.png",
+      "bytes": 330,
+      "sha256": "56c4d01774a4fab8f634987d248ffa47399d33a556ebde45e38e3870aeaf5b9d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_DirectSunlight.png",
+      "bytes": 351,
+      "sha256": "8bf4bc52f5b7f4d7e9e4f4e67ebfb96d222bdefc4d267d50b6c02b3f9a04f135"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_DirectSunlight@2x.png",
+      "bytes": 608,
+      "sha256": "0b24d967b21c731886bc1f45c2aa8a09b4feed1b54e0f30b83c4f5065d9e9da7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_ExteriorLight.png",
+      "bytes": 317,
+      "sha256": "ec2b9084fea7c5ceb2f2adfcb107ec49e4f118d3746f9007594d93ec431677f2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_ExteriorLight@2x.png",
+      "bytes": 539,
+      "sha256": "47a89069b89c30d23b9d6c829fe611a81c30c7ca865f0d5d27721c0b49b95683"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_Fluorescent.png",
+      "bytes": 380,
+      "sha256": "00b401a2a5bb0105586437551fe044c32134d2ae610694400bc925fcc5286b20"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_Fluorescent@2x.png",
+      "bytes": 594,
+      "sha256": "4b24b3bee23ef2dc047d5028b860a0c13a39e559d20211e6885bf0f6e77b0cb6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_IntenseAreaLight.png",
+      "bytes": 396,
+      "sha256": "e313dcb98f7d8399d8475f6a97a76c9791e8b56aade047c0916fbe9b01969e73"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_IntenseAreaLight@2x.png",
+      "bytes": 737,
+      "sha256": "b9ed2c47e90310c85874a45e29aaf6c813c4e403dc674f2739ed91dd38f369bf"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_InteriorLight.png",
+      "bytes": 312,
+      "sha256": "fa4edd55c7a9ff727db58089c157e1c8cc4344544e4340e66c9b4357e25b71dd"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_InteriorLight@2x.png",
+      "bytes": 511,
+      "sha256": "23a40deb087b1551ba662c50b6465438725508f361cc07359fb4305f61908552"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_MediumAreaLight.png",
+      "bytes": 344,
+      "sha256": "b70f4e77282cc36f41ff9fbff6cedef5b5fd33d3ce4757cdf453c0bb90cb006d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_MediumAreaLight@2x.png",
+      "bytes": 585,
+      "sha256": "85949e6786ae207b079ca1fcf4f9c5644a6a7e7629a53d9cbb4d0d74a4093ebc"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_MoonlessNight.png",
+      "bytes": 358,
+      "sha256": "b737b66bf5aa3cb4537d3403e47b3b1cac6a6d28fd46c44df3b88bd54a735bf1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_MoonlessNight@2x.png",
+      "bytes": 595,
+      "sha256": "59cef33da73d7653b2f1d07669ae50325daafd8a8f1c87fedacb164f8f162f2b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_Moonlight.png",
+      "bytes": 329,
+      "sha256": "24c720835e01f5b65abb8b07f9e894ba2f6e208f5dd25cd1641e928af43fc0ae"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_Moonlight@2x.png",
+      "bytes": 551,
+      "sha256": "4d5d796c9364f44a2a570898633472e6a61e36f38c8f25411cf351b1a5081a55"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_Overcast.png",
+      "bytes": 331,
+      "sha256": "4e648aaf2c4078d34e396567ee75eebbce41cce401115e61ff4e18ea04b9b0ff"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_Overcast@2x.png",
+      "bytes": 538,
+      "sha256": "f9202c07738addbb3afdd146b2d1373dbdcffcc5e08c1fb024b2f355077f0eb0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_Shade.png",
+      "bytes": 323,
+      "sha256": "2345dace289e525d64d369c9f9e2066c4eaf899f557ad3d1daa2645f4a76a6f6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_Shade@2x.png",
+      "bytes": 509,
+      "sha256": "3e32a957e1bd02b96055b64b7fe4e113f40ae07c374269de6e7c29ec06c34d4d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_SoftAreaLight.png",
+      "bytes": 297,
+      "sha256": "e2d63092352d998fd7239d4a56059a1df99682bfae747a68434577daa4823761"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_SoftAreaLight@2x.png",
+      "bytes": 475,
+      "sha256": "d0ae651c34e593c33052a346a80514f13c279a034bd76b8fbb8df8bc42690330"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_SunriseSunset.png",
+      "bytes": 311,
+      "sha256": "67d1ea7b43990050035ec30b12333ef5019da745605e12d770189741bf8cca13"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_SunriseSunset@2x.png",
+      "bytes": 441,
+      "sha256": "8f8bd9848a9e8a9da78c1c37e458179a2f5c78afb303607aa6f227c34f8c501d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_VeryBrightSun.png",
+      "bytes": 365,
+      "sha256": "23cc0e2b79dc365e5751221674bcb9bbcff94c7b2492000e73ef964eddbfda14"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/d_VeryBrightSun@2x.png",
+      "bytes": 543,
+      "sha256": "332ad8842dcec2f823fdd3bceb8e31386cbd985704eed245601e79d573a15b9c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/DecorativeLight.png",
+      "bytes": 250,
+      "sha256": "396e9e42440f133e1b46c405c6d0ac8bf9913831fb527319f1da0160753bd6d4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/DecorativeLight@2x.png",
+      "bytes": 327,
+      "sha256": "d10118b3038de4832024f461da9b2671aa77ad216065e241469f9440d1f685ac"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/DirectSunlight.png",
+      "bytes": 350,
+      "sha256": "e3f761cfc94f869c38623c7863ef38484a6a3ffa50ddd79dfd7fa6702d92eb37"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/DirectSunlight@2x.png",
+      "bytes": 648,
+      "sha256": "980a18b83daa3fac4582dd5cb790df38d229e3cb6805fe887a875ad4e9fe85b7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/ExteriorLight.png",
+      "bytes": 318,
+      "sha256": "80c1c17df399edbf6ff60ae37e0009bba4070dabb4f3b0dba5be0fff8144a58c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/ExteriorLight@2x.png",
+      "bytes": 541,
+      "sha256": "440d3d172bbb9dfc7e679066638885134375070f34771be71a32ef9c40fd9678"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/Fluorescent.png",
+      "bytes": 390,
+      "sha256": "0f1b0e8aa3b7ff259163ed2454bf6a48f8fe2079d514d0586e331e4e446d20c7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/Fluorescent@2x.png",
+      "bytes": 657,
+      "sha256": "64c2c34c217efaa1409cb8647bac96b80094ee2be26c88776330064c05c7a37b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/IntenseAreaLight.png",
+      "bytes": 386,
+      "sha256": "b4d1e15322c1aa5b3b50b8294bb9997a293cf42d658f4ff2b021629883eea17d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/IntenseAreaLight@2x.png",
+      "bytes": 744,
+      "sha256": "892ab141c4a58db5844a52f5523feba85303ebc8c10136d2174457daf8f758ae"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/InteriorLight.png",
+      "bytes": 312,
+      "sha256": "3883e80da89ce4ad9fcad8770b83babe5ae2cc04a6145f1a47f3cb9105a6d7ab"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/InteriorLight@2x.png",
+      "bytes": 552,
+      "sha256": "67bc36effc03dda6514a8dbcd9c7fcc1168a1269635af944847f3f5671009af0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/MediumAreaLight.png",
+      "bytes": 337,
+      "sha256": "ee322ec4a20dea9a67ec10351bbda4a97daf2c1920b4136b5e59d7b60cb8b230"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/MediumAreaLight@2x.png",
+      "bytes": 613,
+      "sha256": "58e03f7a0a3496487fede05a1b261a60586383d4f0e0cfc8db35f234bed24111"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/MoonlessNight.png",
+      "bytes": 384,
+      "sha256": "ac184e02b6035142a060bdf3c14a72fe6caf8ea56d9d5c88a74692b0101b5fdd"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/MoonlessNight@2x.png",
+      "bytes": 599,
+      "sha256": "4502f2d9a68c32e0dbadc6536fc95e38954443816dfecdd084facbd42d49c5c7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/Moonlight.png",
+      "bytes": 344,
+      "sha256": "b7c702116044aeee7c78e212025e01e5dda1cec15c0cadc500df67c348abff1c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/Moonlight@2x.png",
+      "bytes": 581,
+      "sha256": "c74489397a10fac363501b14b399ee4406b389410186bb1b2f1b51cbff4a1254"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/Overcast.png",
+      "bytes": 330,
+      "sha256": "519e629b23549a94cbba394b4eebd29b41bb53444e18d0c84ee4be9ffdbe11c2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/Overcast@2x.png",
+      "bytes": 582,
+      "sha256": "ef2ca313a030d7aec2f72e14ebeb60e9cd07eb97d3e60f83b687dba5f06e2fe6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/Shade.png",
+      "bytes": 330,
+      "sha256": "38535828d4f58ef3d7b5a28d055825a835bdd607bae757ecee93840c2fffd65d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/Shade@2x.png",
+      "bytes": 537,
+      "sha256": "44ab0e52fbd9468e53779d4b133fa352f4e95b9244abe5dce8616dda4926f2c4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/SoftAreaLight.png",
+      "bytes": 293,
+      "sha256": "356a6b585e2356918a764d4bf23da5edc33edfb375947df5ed54b391ef3af9eb"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/SoftAreaLight@2x.png",
+      "bytes": 511,
+      "sha256": "84da547880a2f502b15baa77dff8f1f2a579bf7e3e761b2807b324296f2cf1ba"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/SunriseSunset.png",
+      "bytes": 297,
+      "sha256": "9f2ba343d01c29500770415033476057350994d9a2894b602869b1e357eeb97e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/SunriseSunset@2x.png",
+      "bytes": 468,
+      "sha256": "9335eea018ceacdd034c1bca5a2ae49eca56acd782a4796a9a762f66c1170135"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/VeryBrightSun.png",
+      "bytes": 365,
+      "sha256": "23cc0e2b79dc365e5751221674bcb9bbcff94c7b2492000e73ef964eddbfda14"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/LightUnitIcons/VeryBrightSun@2x.png",
+      "bytes": 543,
+      "sha256": "332ad8842dcec2f823fdd3bceb8e31386cbd985704eed245601e79d573a15b9c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/PresetBounce_Left.png",
+      "bytes": 8175,
+      "sha256": "837912929e573207164fa66afed9b96a9692acc3cc6c6960e469947f7eb561f9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/PresetBounce_Right.png",
+      "bytes": 8044,
+      "sha256": "b727655b9fedb824b6eb80d8b1e4f891d1bbbfa9e175679f3d256792baaace11"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/PresetFill_Left.png",
+      "bytes": 7855,
+      "sha256": "e626ca17db67b8c3969d95ec4a91660c96d5d9a4eeff02db3b5362c8d96aadaa"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/PresetFill_Right.png",
+      "bytes": 8027,
+      "sha256": "a940706cae5c0f33a677c28007e554ef54af29c93414eb72b2820d6f23a9c21e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/PresetHair.png",
+      "bytes": 6724,
+      "sha256": "3e460b2140ed0e5eb726fa95f9357f99a6bb1984b39f96aa3b60d58560937c3a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/PresetKick_Left.png",
+      "bytes": 7044,
+      "sha256": "9d3cd6a6af93a0bb8f306d53c2178e7697f98bdc52ecd247a86a1506597b303f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/PresetKick_Right.png",
+      "bytes": 7117,
+      "sha256": "763c30effc1fc54e553a02d352d913e6c7729650306f1b084f26e08d510a006a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/PresetRim_Left.png",
+      "bytes": 6445,
+      "sha256": "8a50638e2a762c75a83cf2227e2fee475e3a2958d1bb9ee822647d8c33221c5e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/PresetRim_Right.png",
+      "bytes": 6853,
+      "sha256": "1f453aafffb212dbe34dfb0252ba974c3edadb00956207c6ac57a10c9b00ff11"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/UpSnatch.png",
+      "bytes": 286,
+      "sha256": "aa45204df57a45cd9ced184529787c41f76d071f02a1135dfba8bf6da4cf46a2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Lighting/Icons/UpSnatchFocused.png",
+      "bytes": 464,
+      "sha256": "6685d74de31267df6a1854dca9ac9e58a86fd330aeb90a378dbeb4b79fa0a9c1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/PostProcessing/LensFlareResource/CircleFlareThumbnail.png",
+      "bytes": 1779,
+      "sha256": "4c3a222e1ff3add00e20824ffde4ef728dd2df7dc3d198f885cacb2cc7db74be"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/PostProcessing/LensFlareResource/CircleFlareThumbnail@2x.png",
+      "bytes": 3338,
+      "sha256": "4235364c230478b20530b3bbddca0c27d29b69e93b34c4ba4d634f7b3d202b07"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/PostProcessing/LensFlareResource/Flare.png",
+      "bytes": 4768,
+      "sha256": "704626625515538f11f34c30db13256bab7f87c1f49979fef79d84e60f6407a0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/PostProcessing/LensFlareResource/Flare128.png",
+      "bytes": 4768,
+      "sha256": "704626625515538f11f34c30db13256bab7f87c1f49979fef79d84e60f6407a0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/PostProcessing/LensFlareResource/Flare@2x.png",
+      "bytes": 4768,
+      "sha256": "704626625515538f11f34c30db13256bab7f87c1f49979fef79d84e60f6407a0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/PostProcessing/LensFlareResource/PolygonFlareThumbnail.png",
+      "bytes": 1511,
+      "sha256": "6f587323d77c5a859046876c063316741c623cb839f9486566faf7ef4cdc587b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/PostProcessing/LensFlareResource/PolygonFlareThumbnail@2x.png",
+      "bytes": 2642,
+      "sha256": "e05fae7fa930fd0f82259920577444f026d9d70c0f3e689df44defa3c74aec19"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Resources/DebugProbe.fbx",
+      "bytes": 20572,
+      "sha256": "bb080c5dbeaf395aa237b85e66580d32cd774be33972c81a152ddd7b4320c1c2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Resources/Gizmos/ProbeTouchupVolume.png",
+      "bytes": 33501,
+      "sha256": "ea5d0be899a28a554a7015b695908472aecacfa39c178fc7beedd11d8c24e55b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-40ehp234E0EZ/package/Editor/Resources/Gizmos/ProbeVolume.png",
+      "bytes": 33282,
+      "sha256": "8e99e37e0ca2781ff76150cce529eeb12b3a942d839438005bd5f8a34cb46482"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/AbsoluteNodeThumb.png",
+      "bytes": 11005,
+      "sha256": "24f0f89fc978cb85642d5dccae2603c0eee68500f2966426507bcb0f3c51bc6c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Active-Inactive-Blocks.png",
+      "bytes": 52826,
+      "sha256": "516747ec8c042ff0dabbf7a7d632f790ad59d0947682fcd84e82c1e0d4c3a8cf"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/AddNodePage01.png",
+      "bytes": 26139,
+      "sha256": "48752151e297787740cccd8618b3d205ad9a69c3b7243468d394ccda10ae4d80"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/AddNodeThumb.png",
+      "bytes": 12652,
+      "sha256": "6682b5995baa2dce1b417d3cd62f8d7bb3e79751dd2bf0a6a28411e4f2295771"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/AllNodeThumb.png",
+      "bytes": 11407,
+      "sha256": "e29a0034cc14f389b4b03bf27c38eff5722c5d539c9983992c8ca084110c845d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/AmbientNodeThumb.png",
+      "bytes": 18277,
+      "sha256": "c01c66b76ce0f032a764032b855261e400146ea734febe8a47fd3817eb254277"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/AndNodeThumb.png",
+      "bytes": 13624,
+      "sha256": "c483f4eda5315ace921e931bdb0437b1c0c01cc44d9af23311e9e34fc4d83ef0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/AnyNodeThumb.png",
+      "bytes": 12003,
+      "sha256": "e324e51445e96d7e0f08e88027c9412358253973dfd3d336ccf314c0610e97f6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/AppendNodeThumb.png",
+      "bytes": 9057,
+      "sha256": "e82a4407f11f3b154b5051842204ea2e9c7220da414c8786e0f01c7accbff26e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ArccosineNodeThumb.png",
+      "bytes": 10716,
+      "sha256": "2175499006b2d33595ac293c76876317a3f78ac4e1688132e585b21465204826"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ArcsineNodeThumb.png",
+      "bytes": 10814,
+      "sha256": "62600e2e52c9d17b8d870185bf69b666595b92b8d5a2c4481db2620f75c1d78d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Arctangent2NodeThumb.png",
+      "bytes": 14689,
+      "sha256": "8f207805ecb21e8aad5bd1f2b5884b124d6000096482d1ace7fb2a4471408a85"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ArctangentNodeThumb.png",
+      "bytes": 11330,
+      "sha256": "865b2d2a9bd9d3ef5f0a7552f60907bf86cc1220b083f39678e09cb098be0b94"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/BitangentVectorNodeThumb.png",
+      "bytes": 42093,
+      "sha256": "8013afd2292dfc5c122d9c2ab12c5edf7246e04f9200844618fe044c247fd839"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/blackboard_shadergraph_path.png",
+      "bytes": 17445,
+      "sha256": "668fd76b9fcca88c3985b3898479a455d1bb0d39af7918ec8003f8539090fb9e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/blackboard_subgraph_path.png",
+      "bytes": 5307,
+      "sha256": "fc483b4b625a1b8841db2b742106dff1ce5c5abc32c0843a8763e1bc522cb662"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/blackboardcategories1.png",
+      "bytes": 99264,
+      "sha256": "77b5280363bde397c60c33a0ae11501c2a181710e012002bd490f3de3c67698c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/BlackbodyNodeThumb.png",
+      "bytes": 13521,
+      "sha256": "d805cdc1aa02221ac9e8e4384a175c900a3e5748e971e41396f66e9d4818ccb3"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/BlendNodeThumb.png",
+      "bytes": 17294,
+      "sha256": "d6f8134c25c7b5e508639e91d997628140a0a0c7af90cfc046af8f8afcb5b36a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/BooleanNodeThumb.png",
+      "bytes": 11381,
+      "sha256": "1f56b35abadd918261fea54963eb47d0da795f02c51d177214e990a1c7eede3a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/BranchNodeThumb.png",
+      "bytes": 15873,
+      "sha256": "0ba09aff5e0b85c90c0aa959ec1e252787a9e0a623532065130f0eadec55074a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/CameraNodeThumb.png",
+      "bytes": 28587,
+      "sha256": "c4803cdcdbd9db2acb47845b07f5f89dbe365b6b39bd4d4632bb612d9ad87846"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/CeilingNodeThumb.png",
+      "bytes": 10545,
+      "sha256": "e18ebc351986e0e8cb58c9c9c30bb8c38756e24102e6e8907fa43a9fb4f31a7d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ChannelMaskNodeThumb.png",
+      "bytes": 14305,
+      "sha256": "1207d2dd039d2d2935eb1ca936d5a571f6985bfcb2adbf5f8f4eb090ad553bd1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ChannelMixerNodeThumb.png",
+      "bytes": 14446,
+      "sha256": "9a131f65f1f11fa0dda0b912e530a75185d2658a839c0fd45e91f2a52f35b710"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/CheckerboardNodeThumb.png",
+      "bytes": 21271,
+      "sha256": "c02078e226819d8346a7970e59999fde921a23e9d605dad7b0ed9ea5a22141f4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ClampNodeThumb.png",
+      "bytes": 15054,
+      "sha256": "0b1116dbb57d7c562196ecb01fede89dbea00b063b6a406e595ab0794540ee44"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Color-Mode-Category.png",
+      "bytes": 197597,
+      "sha256": "72703ddb6baf404c5d9a6ff2302ee43a45c2de5097f190a6bf0191a741b54475"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Color-Mode-Precision.png",
+      "bytes": 87070,
+      "sha256": "1170387e8966755ee84c6c7722ed2f4ac206bb183f23fe700677cd6f3dc19f7c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ColorMaskNodeThumb.png",
+      "bytes": 18625,
+      "sha256": "8f7c8b87ffb322b1d4843810d2aafaf40e80e62fc2d6d15d2d4ddeb76f841464"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ColorNodeThumb.png",
+      "bytes": 13008,
+      "sha256": "1528043ae984d571537e321d942a43b6a60bc6beb605eb631f70941aa11325d7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ColorspaceConversionNodeThumb.png",
+      "bytes": 12903,
+      "sha256": "68dcee3eb6c60fe5e1b475645c65b8d76efd5526486e8c11e7f40e8796314a56"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/CombineNodeThumb.png",
+      "bytes": 16759,
+      "sha256": "7a5fc157f560876d1b9b63d665b575ada1113affe79e1f82a9b07aff5a9a0fdd"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ComparisonNodeThumb.png",
+      "bytes": 20230,
+      "sha256": "5a769aa58293c658172a06afb9c0289d60aba7c4493c426fdc9ca5b1d28cebe2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ComputeDeformationNodeThumb.png",
+      "bytes": 22793,
+      "sha256": "a39753db679f185944c67e689c2ddc20db6444e37af8464bcf3445c18a8ae8a8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ConstantNodeThumb.png",
+      "bytes": 10741,
+      "sha256": "f09c8e4340b736b61168bf1a617b95592f65f8edbb63e30cf2011e44f6547c62"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ContrastNodeThumb.png",
+      "bytes": 13947,
+      "sha256": "22765947282326ce974abcf54df5217fd3b0e8abe57e76676c3a95a555217278"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/CosineNodeThumb.png",
+      "bytes": 11072,
+      "sha256": "8dbe5a571097ea792ec50fa8288787ed5ef509899e5c366e2c82dcf09109c11c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/CrossProductNodeThumb.png",
+      "bytes": 14661,
+      "sha256": "859603f78b62fadba9a91d559cd0046659d48b38af72058b0c13d0e25ee4998f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/CubemapAssetNodeThumb.png",
+      "bytes": 19411,
+      "sha256": "8a8d9b36078d3ae5f7a2df6258be0f807d597481ca618b2d0cd56d1e1e55685c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Function-Node-File-Function-01.png",
+      "bytes": 12160,
+      "sha256": "f226bcbd9dced871fb3f8008ffb922ae1948aad56b0ca66e48e884525f1f8866"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Function-Node-File-Function-02.png",
+      "bytes": 16403,
+      "sha256": "990d0e7d7ccc748c2e0c7398d9f8cb1ea9cf5e812e1ed95dc3e64e82c50a05d8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Function-Node-File-Function-03.png",
+      "bytes": 18494,
+      "sha256": "3306c4764f02c1b1d6fc053eef45ad91c999fa0282fa189581d41e88fe977e70"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Function-Node-File-Function-04.png",
+      "bytes": 16552,
+      "sha256": "7ff0c07be9b4921ebd93be89d7f48113a8a079c370c92451843aad934e8e3772"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Function-Node-File-wFunction.png",
+      "bytes": 27176,
+      "sha256": "70b95a2bc04daf22624aacaca8d66a8e74ea08158978e50babd1a8993acd38bc"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Function-Node-File.png",
+      "bytes": 23180,
+      "sha256": "fcc6043c3013426cdd1c7ef21422d72672bb552ae9e7283c312943cab181427e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Function-Node-String-Output.png",
+      "bytes": 4914,
+      "sha256": "0c86af5bcc202759b43411e74caca8fec2f07f94a91ddd2e101137e40bcac0b2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Function-Node-String-wFunction.png",
+      "bytes": 32038,
+      "sha256": "a474d63adfcda9261644c9e17f8134151727b393c17270ddfe4debf2b6fc306c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Function-Node-Subgraph.png",
+      "bytes": 54052,
+      "sha256": "3b259a74d014bc4ff17036b104d6aad75748d2dccdebdaffd13fed1f71615186"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Function-Node.png",
+      "bytes": 9312,
+      "sha256": "27053e78a938c3529bc6d455bf7b9778cddae4a2d9000ed62189a68da20189a9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/custom-interpolators-1.png",
+      "bytes": 62158,
+      "sha256": "77493a1d9b8371aa27500e72a252805546da049ac949278e3220f16c68fe8966"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/custom-interpolators-2.png",
+      "bytes": 39502,
+      "sha256": "3dd7c15cb6984248ddb061d8633f30e477affa574b5f527008b609404209b44a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/custom-interpolators-4.png",
+      "bytes": 107655,
+      "sha256": "cb9a7db10eb564668a72ebcd36446357ab514870e3ab2e4e67ba00c659e9b4bc"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Port-Menu-Add.png",
+      "bytes": 14933,
+      "sha256": "7b72a41d5df836ecab18d24dc88ac8fed0aa0ac974386f3f1ce750ea1b620936"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Port-Menu-Empty.png",
+      "bytes": 11654,
+      "sha256": "75fb5e5c7e4c3a42b81e64dbd4862ddaec4353fabbb6c1a641cf8c5066cf494a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Port-Menu-Remove.png",
+      "bytes": 19207,
+      "sha256": "669610c58ad584be89426a0da0647a2a76424dd25cdfd2637f27fc0a5694b3b1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Port-Menu-Rename.png",
+      "bytes": 17343,
+      "sha256": "e4789b9ae98d9843392474529ed0bf8ecb342145da6885448613434e19827b81"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Custom-Port-Menu-Type.png",
+      "bytes": 26688,
+      "sha256": "4cf3517482fe91010b0d7b2d641d123dec02e8833e3ae38155c5f758732ccb6f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/CustomRenderTextureSelf.png",
+      "bytes": 5581,
+      "sha256": "dd299beb146a5a568fc9cb8751ce6a82badfeed483c4375c2edc6daed0da213f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/CustomRenderTextureShaderGraph.png",
+      "bytes": 94534,
+      "sha256": "fd69e6977831c508c152ce251f987eae1a5347730d5fcd3274b893fb34579df9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/CustomRenderTextureSize.png",
+      "bytes": 5211,
+      "sha256": "c6af7b81daf1f40f2e9381b7c9d214298e6d962a948bd4ec65d782c1364880fd"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/CustomRenderTextureSliceIndex.png",
+      "bytes": 4859,
+      "sha256": "860f97307f3c00f1d00409379b5bee7249bcd41ccc6ee1e86f3983e92f6f3e3a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DDXNodeThumb.png",
+      "bytes": 10883,
+      "sha256": "1b60035daf6688062c3e1e0ba6f106c7dc960f27e12277325a581451d5688932"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DDXYNodeThumb.png",
+      "bytes": 11260,
+      "sha256": "24823c4888d02fa79183679ddc366f077e16519458c27f4a4d65a9a8cbe8d035"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DDYNodeThumb.png",
+      "bytes": 10922,
+      "sha256": "912bbfec05b720331c5d717770e4d74d3716b3382dd1e6c384ec41766b20362e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DegreesToRadiansNodeThumb.png",
+      "bytes": 13389,
+      "sha256": "aea2421f2321f3de19d7131c0a22c8ae30c93d579ecb45e56230318de4db4ee4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DeprecatedColorNode.png",
+      "bytes": 21812,
+      "sha256": "9834cc8a8de80c7fab992862d54898b3cd1a76dafb360490332d7c8bbd743187"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DeprecatedColorProperty.png",
+      "bytes": 11696,
+      "sha256": "bd22355be95f26843a54ddc1a86beca0587b0a10af9eb5b55ae4e5718bcc44c5"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DeprecatedWarning.png",
+      "bytes": 32578,
+      "sha256": "1d63aadb29209ac42046a77c72b9d50b3b2d30ae01bd7b30a11e005f5d6f6bed"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DielectricSpecularNodeThumb.png",
+      "bytes": 14137,
+      "sha256": "32db39d1f9318dd12a5622ee2325e1ede8e855ea527d0887ac86bd5276609b92"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DistanceNodeThumb.png",
+      "bytes": 14866,
+      "sha256": "2a668d5a55c35a16b0523fa523472205a361e355357a4a6b8d16ce76c53f19c8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DitherNodeThumb.png",
+      "bytes": 16974,
+      "sha256": "6b6d29e97c1d847c9bd110195a99ab361dd802395115ea89e7349220132c952e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DivideNodeThumb.png",
+      "bytes": 14489,
+      "sha256": "b267886520b6838017af504ef3fb46d6dd2e9ecec170e5a61297a78636493e8d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/DotProductNodeThumb.png",
+      "bytes": 15005,
+      "sha256": "e469651d638c2b2507e1581d3284174ca46aef0fee080f721769b5950a26dd57"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/EllipseNodeThumb.png",
+      "bytes": 24632,
+      "sha256": "708683c069023d17f45900bc74ea3f031bf429c5b73861fb008cd55a64f5c01b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ExponentialNodeThumb.png",
+      "bytes": 14379,
+      "sha256": "44336e6c81bfbd5c2acbdf5bd7bbca6f27c7ed371afd1d3cfd662100d8890e37"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/EyeIndexNodeThumb.png",
+      "bytes": 2726,
+      "sha256": "4900c5e98c7cc6030284bc4d60c4b6a99f207d60af7a6d3ed31ddb7d4bced71b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/FlipbookNodeThumb.png",
+      "bytes": 18611,
+      "sha256": "09d300e75857a82f310219af3ff883796caf7ab2ac01f6c7b82dfb460be7eaac"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/FlipNodeThumb.png",
+      "bytes": 9813,
+      "sha256": "c17f45f2e3651b18cd0e03e2b76e41bb49ee342974318c6f1370682abc6c6082"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/FloorNodeThumb.png",
+      "bytes": 10849,
+      "sha256": "937b22a906fe249e38d7eff5d1a9cb695f6224a67b3c8015b3caf4bf7f65934a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/FogNodeThumb.png",
+      "bytes": 16449,
+      "sha256": "be76b5d0e293e5809c08f3c209f1f2a9ed0ab8150a20d869f0a2f79118bb1abe"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/FractionNodeThumb.png",
+      "bytes": 11796,
+      "sha256": "67aa47825990fa7d086e97fdd01ee3f23a7a53737d216e46cab3d78148cbb36b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/FresnelEffectNodeThumb.png",
+      "bytes": 52159,
+      "sha256": "46aa98cae073d349cde5e2a5426ca3b34e9c56b58ccf6725e64ff273c6d47dc4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/GeneratedShaderButton.png",
+      "bytes": 19951,
+      "sha256": "679214a95104ed1693c6c73b914011ff330d0efed170a7ca847b034e3c082d73"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/GradientNodeThumb.png",
+      "bytes": 10695,
+      "sha256": "0d1e345bb618c8013fc3e6c3fdf2b3950a683a88789876ece1f5dcc42647ed46"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/GradientNoiseNodeThumb.png",
+      "bytes": 81132,
+      "sha256": "5c4c41fd47f1191ee0507c8fd4ccad71e1affa6152b6890242835b14405f4aca"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/HeatMapGradient.png",
+      "bytes": 241,
+      "sha256": "debb7b75cc55e4072fe3022e09e4bf5309f228c3859bab25a9372bf799551ac5"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/HueNodeThumb.png",
+      "bytes": 15817,
+      "sha256": "3bc228a83403a1474daa6f3816c997db36a6cf8ca60fc8ec3b9b9ac45f7dc306"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/HyperbolicCosineNodeThumb.png",
+      "bytes": 13374,
+      "sha256": "c57892ff7d8f5116675a987f387fb31cf1477e7c61165d29656f4280d84938b2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/HyperbolicSineNodeThumb.png",
+      "bytes": 13055,
+      "sha256": "d93b9328c2db0156ba026f54924a6f8f6855c948b2fd92e9b9c87ba80b616f64"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/HyperbolicTangentNodeThumb.png",
+      "bytes": 13521,
+      "sha256": "2937fe6f2f2e9f7d4ed45c11221425eb3596c88b2476258e6d9719437d457df8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Inspector-PerNodePrecision.png",
+      "bytes": 13828,
+      "sha256": "d4960baab0c8cc386ee740a661782148197ea0bb49a4df6fc192e103dc5f13bc"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Inspector-SubgraphOutput.png",
+      "bytes": 15730,
+      "sha256": "105561b3c9320295c56e2fea2be7646ae98886ec1b4c481f082ef74af59b507f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Inspector02.png",
+      "bytes": 18408,
+      "sha256": "8fa5431502b2ba66a5ff2c802abbb260be7790c78db2f041ba6b5429373190ff"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/InstanceIDNodeThumb.png",
+      "bytes": 2988,
+      "sha256": "f30c209edcf9eec929be24ebb9da45ea1988d7d33b9383132be6937ac396e03c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/IntegerNodeThumb.png",
+      "bytes": 11023,
+      "sha256": "78d59c3ced507737cf99dcf37be81b2e88f5d69b45cf5e9c45f7e6f40d558df6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/InternalInspectorBlackboardProperty.png",
+      "bytes": 22296,
+      "sha256": "1263fc4deca8b8fcd02c605c9f03d47c7e09ba69d6e7dd28dc69d4f83c1e61ea"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/InternalInspectorGraphProperty.png",
+      "bytes": 18110,
+      "sha256": "b8ce6c2f3d82de9531847f97f8d4d2aaaad6ae1c8c178562c8ec1d079bc19385"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/InverseLerpNodeThumb.png",
+      "bytes": 15876,
+      "sha256": "ebd7337dc626f846a9ff970eee5f110ae4bd4e6a6a7f64db5e0fc3840ea310e6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/InvertColorsNodeThumb.png",
+      "bytes": 13780,
+      "sha256": "6f052e88ea80c0a7ebd4d92946567a228c9c24f7a4ea51bf370324ae93d46445"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/IsFrontFaceNodeThumb.png",
+      "bytes": 12176,
+      "sha256": "cb362bf88d572f2c511c1c8a082ffc615f96ddd7564dbc3bfdd784864291a2b8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/IsInfiniteNodeThumb.png",
+      "bytes": 13952,
+      "sha256": "90baf2af268bdc9d3e855d9cea26550606ecc23ec08883e2eae0940107b1cca3"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/IsNaNNodeThumb.png",
+      "bytes": 13585,
+      "sha256": "399958697287d6cfb9750cd8a4a1d925fdc4ae59b089b0077439e807a949dd76"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/keywords_enum.png",
+      "bytes": 26811,
+      "sha256": "54e3a85f95dceff244c0bb01144e1fe6ad7e187c3d0f93c0bc445e31ed570be9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/LengthNodePage02.png",
+      "bytes": 20076,
+      "sha256": "46402a188ad3ea7f5ec61c8b800f9c74a4289f1957bb4df989b2324e44bb12ef"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/LengthNodePage03.png",
+      "bytes": 20382,
+      "sha256": "e55c8b082fa274db6ccadf25a6caecc4ea667ee5e306bfe6022bb8bb6305dbce"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/LengthNodeThumb.png",
+      "bytes": 11679,
+      "sha256": "ea55051d4517f5c60a700efc429bb4105d72bb84491cba5136adaaaf48e8e23b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/LerpNodeThumb.png",
+      "bytes": 15081,
+      "sha256": "beb813e6bddee197df98d9782d7baec6f0e37402ea73fc60e678cdbe193647bb"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/LightProbeNodeThumb.png",
+      "bytes": 31364,
+      "sha256": "0cdc8b9e8553a996e92697947113707637c97728bac8b13a123b5d1979afa9b1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/LinearBlendSkinningNodeThumb.png",
+      "bytes": 16431,
+      "sha256": "825d3ee8dd982c3adabd7d0759d0c803839d381168feff22da797a38eaa16568"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/LogNodePage01.png",
+      "bytes": 146986,
+      "sha256": "252031804b861a1cb3188ab94af89e9244b0b8fcc100395d7af8b1fc8f85e0da"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/LogNodePage02.png",
+      "bytes": 19796,
+      "sha256": "f022d99b11f5504a22d39bc6968274ce5b484eee986028427a8e78d339845ade"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/LogNodeThumb.png",
+      "bytes": 12771,
+      "sha256": "33db60de48ff4e70002cdb6d9d541976fa1ee20b84680b49ad6512aa11a342b4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/MasterStack_Populated.png",
+      "bytes": 42217,
+      "sha256": "e054e0c446fbd0c926d121341146d9c41ebbad98b63b4299003f9a1351fe83a9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/materialoverride1.png",
+      "bytes": 60441,
+      "sha256": "0c8f73404988e4f89309ae82972012f20655d2922909ebaf30f4434b509bf062"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/materialoverride2.png",
+      "bytes": 67821,
+      "sha256": "d7d5bf34b73f5ca59b6c99b553ef8e0b8f53a51bc543b0fea102f8a38e78ca3d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Matrix2x2NodeThumb.png",
+      "bytes": 15446,
+      "sha256": "c59692c442b2411ef3a626af66b73d56dcbe5303584fa9fa94bbe7deaaab542f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Matrix3x3NodeThumb.png",
+      "bytes": 18320,
+      "sha256": "3f404b3e43515107a119e462105bd1f88072997e0b2757d708e5b5452ccacdbc"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Matrix4x4NodeThumb.png",
+      "bytes": 18850,
+      "sha256": "30e2a8dbe0ea826de4fe1b501b086771f48a5937c0093b447e787cfffe51f3a4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/MatrixConstructionNodeThumb.png",
+      "bytes": 25569,
+      "sha256": "97eb54236fbe218c7dd4e87e818cfad90a9f359b8282d10f0781688a35bfa6de"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/MatrixDeterminantNodeThumb.png",
+      "bytes": 14551,
+      "sha256": "ec59f8cf3a57b280c50e0e42834371624ca10f248026d5590a8034584d4f3f11"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/MatrixSplitNodeThumb.png",
+      "bytes": 21842,
+      "sha256": "286eed7d0ee7148e2841bd6ad0a8ed9d36a0a05c384fd4dcccc25ecdd1eac08d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/MatrixTransposeNodeThumb.png",
+      "bytes": 15621,
+      "sha256": "d60cd6e4583a91536b99846846c7746409630931829ec207efdd0e270c952f31"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/MaximumNodeThumb.png",
+      "bytes": 14583,
+      "sha256": "48fc424a728cb135f763ec5bc5547eb2a791e5e1bbcabd1a1fb359b1fa2d6153"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/MetalReflectanceNodeThumb.png",
+      "bytes": 11725,
+      "sha256": "12f386dcc21119f22ebc9758415c04eaa6016450fa78d1a9c552e219819de00a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/MinimumNodeThumb.png",
+      "bytes": 13828,
+      "sha256": "49f876b3cf07d079c9d71e98f93acf7123d7f06372ab8a59394e6af980ea7948"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ModuloNodeThumb.png",
+      "bytes": 14022,
+      "sha256": "95154c397f5beae982281101d5e83c1cde45b80d618f6c43de0a82138ac80040"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/MultiplyNodeThumb.png",
+      "bytes": 14650,
+      "sha256": "f79c0706a9cad967db22a52ee23b6ffa860883f72f5089bf8544adafd47b4f77"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NandNodeThumb.png",
+      "bytes": 15182,
+      "sha256": "150832bd5de5a3061d2eff1219a18fe3b723f0cc593c8d2663986b91c08afd3d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NegateNodeThumb.png",
+      "bytes": 11887,
+      "sha256": "d5298e876d27c24694e97f985a5a1abe8db2c6b3eb4349a77a7050f3b031ceda"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/node-splittexturetransform.png",
+      "bytes": 29906,
+      "sha256": "fe9ec7d32720b4680bf7f2a11202be46d8131c1bc64a130cb42f1f704771ca4d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NodeReferenceSamples.png",
+      "bytes": 651962,
+      "sha256": "6a859a89a38709f3dacd269a871c895199518d73d9fad757a1b5edfc6dd59b61"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NoiseSineWaveNodeThumb.png",
+      "bytes": 16634,
+      "sha256": "d95f503f491ca1326cd89dd4226c6de1abf03663560a0c7e25b192f3c063bddf"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NormalBlendNodeThumb.png",
+      "bytes": 16910,
+      "sha256": "281d5f5bbd77b1fc4ccb46daaf659a2fc50044fbdf3e1f6e23751751e48f932b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NormalFromHeightNodeThumb.png",
+      "bytes": 19845,
+      "sha256": "a1c468d9c12c8dfedf466bfc06756c47a1956ccc517fb5fa4d512b9067e16384"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NormalFromTextureNodeThumb.png",
+      "bytes": 23619,
+      "sha256": "c91f19e50e09d359aedb1f639254e939a61e88f519e9f08c9041a02b12c7cc17"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NormalizeNodeThumb.png",
+      "bytes": 12041,
+      "sha256": "5e76998ab235b22b4026fa1b6d8dfb429481a8065abbf84d88e127b47abd1532"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NormalReconstructZNodeThumb.png",
+      "bytes": 13479,
+      "sha256": "3dca6173a791299a24276f18898d1fe4b9f93210df03b76503b44857048f90d8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NormalStrengthNodeThumb.png",
+      "bytes": 14948,
+      "sha256": "65396682a97297c1a94f794571d220a2d0d1a68eb90bd4e692b357ef64288b3e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NormalUnpackNodeThumb.png",
+      "bytes": 12972,
+      "sha256": "a1fa2196f16adff4c71ab4d1597e6d1412acfa2ff5e74240893b49acf4a33d2e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NormalVectorNodeThumb.png",
+      "bytes": 25828,
+      "sha256": "61104e5c65d211ba860092b811771bb8b74f9f8f61c7846a3c40c27af4240ca2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/NotNodeThumb.png",
+      "bytes": 12786,
+      "sha256": "9831b517c51bd0aac92a93e554e8aa0e93792c0ad03eb43468f18c2c099b31d0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ObjectNodeThumb.png",
+      "bytes": 18033,
+      "sha256": "447fba432e61fbe6a739a2e2d8002b21979b186cdc95203962576d22b17cd7cf"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/OneMinusNodeThumb.png",
+      "bytes": 11895,
+      "sha256": "ff79774a41cbe7b40f0dc7746151650eb2a31d08d3e7511f138d1eb27d0d7936"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/OrNodeThumb.png",
+      "bytes": 15515,
+      "sha256": "2e2065adc22de561a827c28957b9f39d5269334c6c05a165c7a70beb01d96b55"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ParallaxMappingNodeThumb.png",
+      "bytes": 22422,
+      "sha256": "cadacb3f072d75867f161777e902b25a29a7bb5ae42c4b63a8a0d2e42cdc8357"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ParallaxOcclusionMappingNodeThumb.png",
+      "bytes": 36992,
+      "sha256": "4c81b863fb0af73ef9b543c4babb489e5b2344cb308dd90e5e03565abdac00d9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ParallaxOcclusionMappingThumb.png",
+      "bytes": 27519,
+      "sha256": "94be0f497b7e78651bc12dca216d71e1c3193cc58a8c5edd42df33510d0cbf37"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/PolarCoordinatesNodeThumb.png",
+      "bytes": 52791,
+      "sha256": "04cfe24bda56c1084bbb84a8220fb71a7b0b27b03c5cd91c697a2de235f638d1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/PolygonNodeThumb.png",
+      "bytes": 27190,
+      "sha256": "b22c680cf0e3456b9c56d5c74aab549603bebb5ced24b0e431d375aba0bf9f1d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/PositionNodeThumb.png",
+      "bytes": 23796,
+      "sha256": "089a6d10d11d02e2be32011ac29649d6ee20c8a880f11dd464b68be8be481a54"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/PosterizeNodeThumb.png",
+      "bytes": 15748,
+      "sha256": "769616b2739a2eb6fd55918c9aa3487f6ff4dee6591f92b50b18fe6ef4ec6600"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/PowerNodeThumb.png",
+      "bytes": 14547,
+      "sha256": "deae10a2b21ed0c4d9bd3641f668a0fdec75d308b3660c01847475217b84b833"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Precision_DropDown.png",
+      "bytes": 31805,
+      "sha256": "014ebc4779bd7f3b4702bcdeeeb67c4610699bb02aad07ff929a73b345394adb"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Precision_Inheritance_01.png",
+      "bytes": 8667,
+      "sha256": "73ecb7d9287bba43293a26e0ebe63b233dfab72207eedba9a6c59bfe257cfe6d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Precision_Inheritance_02.png",
+      "bytes": 21965,
+      "sha256": "fb6269b722cced0f988acbc7101316b1d239a9db498cc97a67dfa75a745695a6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Precision_Inheritance_03.png",
+      "bytes": 24099,
+      "sha256": "edde95f8104fea1b6225bd5fb44d32f8c61433eb0dd3d977533ce721129e1ccb"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Precision_Inheritance_04.png",
+      "bytes": 26381,
+      "sha256": "754279ae6c47ae4ce6319d94eb82929637db9841ab665bdf4a909bc888e4ff65"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Precision_Per_Node.png",
+      "bytes": 11744,
+      "sha256": "b1c773febeb2b1107598739d6453cdc3b00d8a034be33531e8eb77021a00bab9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Precision_SubGraph_01.png",
+      "bytes": 11836,
+      "sha256": "b71cfc7795906c6e009609e482c066087eb101ef82cfda059026e6d6882bb8c1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Precision_SubGraph_02.png",
+      "bytes": 14428,
+      "sha256": "f1034807eb7103d44e8c2caffb244dc5cf67fcfb4d4fbb52bbf40d1a697d87ee"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Precision_SubGraph_03.png",
+      "bytes": 24888,
+      "sha256": "250b685c68f02b47f436459d34086c657d68eabe03a97eb7a685984eeaf09f0d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/precisionmodes1.png",
+      "bytes": 32455,
+      "sha256": "bd31749ed477dca3b0b7295fd9632128c89daa9afb5416224ebf09e402731c6e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/precisionmodes2.png",
+      "bytes": 39858,
+      "sha256": "602921a7113ce88721492b7e0bc8680158ec533c4980e09abf592f258229c0a5"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/precisionmodes3.png",
+      "bytes": 68201,
+      "sha256": "3161b37f91db0403bcce80617e2dd816ea38a83982020aeba53eeeab0d2163fb"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/precisionmodes4.png",
+      "bytes": 71080,
+      "sha256": "e0dc4009e6588943f968403ff295db6921c661d6b78365a1caa8dc4b612f0239"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/PreviewNodeThumb.png",
+      "bytes": 11773,
+      "sha256": "8976b6cf00f7a4e8de158fed1784fb61dd556ef3b9e13806e5f0214500d38db5"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ProjectionNodeThumb.png",
+      "bytes": 15030,
+      "sha256": "0079d44bb3e59aeb9f0d48f7563ed413a5ffc0875621cede3cf0042823fabd93"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/RadialShearNodeThumb.png",
+      "bytes": 54957,
+      "sha256": "47e25a6dc54fd9db2d49de0a80342d44de2351134ab8ae17aa6c79d2c553b90f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/RadiansToDegreesNodeThumb.png",
+      "bytes": 13226,
+      "sha256": "24635e61a5f7e5572a583e8ea23bdf6e10790a7d0f0494974232b994e1a479c3"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/RandomRangeNodeThumb.png",
+      "bytes": 18281,
+      "sha256": "491a6546576444e8611950b8bdc7b39d1083b8f0f143549f6ca14f5b75455422"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ReciprocalNodeThumb.png",
+      "bytes": 14161,
+      "sha256": "615af944954c3cedef08f9ea4e7210314aff8dc1142d348216476be585934d2e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ReciprocalSquareRootNodeThumb.png",
+      "bytes": 13159,
+      "sha256": "b12f19f7349f7be68bacb90992064c8a5607dade2c25289c647a0e2af110cfd9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/RectangleNodeThumb.png",
+      "bytes": 15338,
+      "sha256": "9bc9a9dd12e9f2436e2eebbccd213bfc356a87c1d572a35b2c072cafc3a5d7a0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ReflectionNodeThumb.png",
+      "bytes": 15727,
+      "sha256": "1b7288253a3e14d0fec0c1e442a734cd7a14795003fe8f7c4780f8d1648f803e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ReflectionProbeNodeThumb.png",
+      "bytes": 23967,
+      "sha256": "10e9e29222bc5c406a40a64345c5efbe15c9122e47ecdff2d87ef3786c4545ab"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/RejectionNodeThumb.png",
+      "bytes": 15242,
+      "sha256": "449b18b9a4a0f3f0f2994e2cd09ae9525e15814bb72efd489d538302ba5e0b55"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/RemapNodeThumb.png",
+      "bytes": 18564,
+      "sha256": "0b818bf84ee224ec4bc4ccf35e4efc9b9e10150972bfd7f07375b16e9a5fc4fc"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ReplaceColorNodeThumb.png",
+      "bytes": 20871,
+      "sha256": "a03960812de9fd9bd3967dcc1d44ecaebd17432e0558bb314599bfe4a121a33a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/RotateAboutAxisNodeThumb.png",
+      "bytes": 20237,
+      "sha256": "550198854f814aae783b7cf5e1c4b1dd25de7d5b7a63d17991fe4aaecebb3907"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/RotateNodeThumb.png",
+      "bytes": 20029,
+      "sha256": "4a0d9622a8c355c3a76d9e0c88064fac9067af51d8f542defd424234e7df9b96"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/RoundedPolygonNodeThumb.png",
+      "bytes": 27439,
+      "sha256": "e45a9331171f8dab92c17a5aa1731ed27c51ba88dc6062d9fa82da08f4bf7e80"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/RoundedRectangleNodeThumb.png",
+      "bytes": 25947,
+      "sha256": "0b0bbf93c5520678c4058658d15581582264a34aa459dfa620ad2451768c6ca9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/RoundNodeThumb.png",
+      "bytes": 11616,
+      "sha256": "1acc517b90de4d28c250fe439697e69a6286e02558b3b9d568f5b22bf11a6728"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SampleCubemapNodeThumb.png",
+      "bytes": 11174,
+      "sha256": "3c52f7e22d78f83f9c377a4619f66f95c13bdf454d0c060274d16706b4c25a6e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SampleGradientNodeThumb.png",
+      "bytes": 16913,
+      "sha256": "ec28d67d7794702a232c1d6eff5af59edd63f9363f6b9ceff5446c0856c9bedc"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SampleReflectedCubemapThumb.png",
+      "bytes": 31787,
+      "sha256": "5deaa6a1985ed29003793c2f7534774c1dedbae859f9a7a7d53f48cd5c6a4992"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SamplerStateNodeThumb.png",
+      "bytes": 20687,
+      "sha256": "9a7a3fe7f17564c8a308ffe11242d7fb3cd7c9429f38fc90e6b8a2accf68689f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SampleTexture2DArrayNodeThumb.png",
+      "bytes": 25457,
+      "sha256": "81d2f15d0417c1aa0507f0b1a182f5e703d648cfe50375ccac24eba9b55c22be"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SampleTexture2DLODNodeThumb.png",
+      "bytes": 25355,
+      "sha256": "96a3e21c6835543858ee25a8d29bb7c4fc0dd621a39bf824a5fe9b3b889b1e8b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SampleTexture2DNodeThumb.png",
+      "bytes": 23211,
+      "sha256": "20bed2fef96ca19166476e5644722962747cccd0d87665a77925bd169464d5fa"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SampleTexture3DNodeThumb.png",
+      "bytes": 18659,
+      "sha256": "5b62c3afbc2f269936f9f302e00e8014b99a2c8f9ab5e92e0bdb1e8264ffe682"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SampleVirtualTextureNodeThumb.png",
+      "bytes": 25990,
+      "sha256": "a05226430647f114af3ff294810b40670283790d967e12acc4ba0239b403a9fd"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SaturateNodeThumb.png",
+      "bytes": 11638,
+      "sha256": "7a9742282bd8b40d25dea7cb7354fe2e67941abef5ae5d6d84f0e12714f8d879"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SaturationNodeThumb.png",
+      "bytes": 14110,
+      "sha256": "4fcb5df0ab9053856fd2dfe381559bbac46b6dddf7b03b22866ae38b5e6c25dd"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SawtoothWaveNodeThumb.png",
+      "bytes": 13506,
+      "sha256": "434211b105d5d39e15678e5fed5a2776523d318ea9d620d2e50087995e02217f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SceneColorNodeThumb.png",
+      "bytes": 16658,
+      "sha256": "2a2484ba7bc703891031e355fdf60d14abc075dad2bd8abfd5cf7a7d04491cde"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SceneDepthNodeThumb.png",
+      "bytes": 18478,
+      "sha256": "923a35fadd9c04fa98a1f52ebf58efb23f325c029ea8654d356254e1a7e180fc"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ScreenNodeThumb.png",
+      "bytes": 15847,
+      "sha256": "1a35fb55f05b00410517928ced18b1c0edf7c2e70ccda021ded6ac32059518b7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ScreenPositionNodeThumb.png",
+      "bytes": 13690,
+      "sha256": "ce2f95d3152e41ed26a66a14fda6237dfeca36abe0f6e5134ded14479870c7c6"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-append-node-example.png",
+      "bytes": 63901,
+      "sha256": "3409631642b1964ef36b0c1c197121351efb284ecedc46cf984358de922429d9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-blackboard-icon.png",
+      "bytes": 926,
+      "sha256": "14f867f224445aab138199a4702932915b23395e6be32d5d5b3790b83aa87a64"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-branch-on-input-connection-node-example.png",
+      "bytes": 24383,
+      "sha256": "2599087c5fb1a04d28f73d60627072b5500fa2a06c4b5814d23ce8a785e45a0c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-branch-on-input-connection-node.png",
+      "bytes": 9144,
+      "sha256": "8c918a0bec6f246020ae3866accb66e0b35083a81784ba982dccf63a3118c672"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-calculate-level-detail-texture-2d-node-example.png",
+      "bytes": 40972,
+      "sha256": "05c4e0bfb588a0aa3d1f327af82558264d8ca47afcc9ac44b4019cd01bf3cee0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-calculate-level-detail-texture-2d-node.png",
+      "bytes": 11589,
+      "sha256": "a3610f516c923ad637445599bec628f289f01e91417aef42725099aef626eb04"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-color-mode-selector.png",
+      "bytes": 4130,
+      "sha256": "3b560ddfe8c0e0936bc738dbc9699cc531f13fd0db828f4bff8a16b98e76366f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-dropdown-icon.png",
+      "bytes": 411,
+      "sha256": "0242c7caeb0d8dbbc426ebb021321b11242809e330f06f7ee4106f57e15947f9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-gather-texture-2d-node-example-2.png",
+      "bytes": 41935,
+      "sha256": "60ed58888807706b930b1486165f3ea34a909c76d5eb2de19e698abad5d647d5"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-gather-texture-2d-node-example-3.png",
+      "bytes": 39053,
+      "sha256": "218c5fef589952db1f8867f23ea4987d6df06470bfc1c9582a676cd7648b8542"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-gather-texture-2d-node-example.png",
+      "bytes": 36089,
+      "sha256": "7c87043637743a53ba35a8e403e9ab27516b61d6246fa35a70bf7178ba10dcd4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-gather-texture-2d-node-sample-order.png",
+      "bytes": 1927,
+      "sha256": "2f60f8d5927ec0264f4976e5d9482610b44d249420b282e792b2e6b1028e0283"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-gather-texture-2d-node.png",
+      "bytes": 12542,
+      "sha256": "504c256693cfdaa1e39c76ea2c728e316d88b7da2356d495df77edf66a2a3b81"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-graph-inspector-icon.png",
+      "bytes": 352,
+      "sha256": "6786d27df1f6d38a599eba52d9928d6a96a524cde6d50235c179bb21688e712e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-help_icon.png",
+      "bytes": 436,
+      "sha256": "1cd068ccd71ff2b44ca44dc3cce6b650c9e00bd367b1846761e2b238ab4e0044"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-main-preview-icon.png",
+      "bytes": 549,
+      "sha256": "7c15012d5751527ac15e9a64253a1a8ec83668098abf759641b310815cabf591"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-sample-texture-2d-array-node-example-2.png",
+      "bytes": 205713,
+      "sha256": "be6a62bf3fbd1a961f2dfdf3bd224be61aa179b87f2dddb911e4a8af53150476"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-sample-texture-2d-array-node-example.png",
+      "bytes": 194842,
+      "sha256": "cbd90637d3f830f2c6b94e30e42d714c8566b935acd3c8fd8399ef09ee00c884"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-sample-texture-2d-array-node.png",
+      "bytes": 37148,
+      "sha256": "3b8fd9b318b0c1cb3efd2bab5528e84a3af88af1213920af22b56cbd87718334"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-sample-texture-2d-node-example-2.png",
+      "bytes": 79891,
+      "sha256": "029611c9b1271f0d812856cb3b36ea615d72d7c36a0a4044505e876aaf41cede"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-sample-texture-2d-node-example.png",
+      "bytes": 71471,
+      "sha256": "b2e1b410890a65ff8fa8561b996bbadbe3973799e19427badb5fc58af4715481"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-sample-texture-2d-node.png",
+      "bytes": 35248,
+      "sha256": "2c7b1a34af48b03db5bb4b2113d4cc866886bb9b4e2aa3b61801bb505ab89e9c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-sample-texture-3d-node-example.png",
+      "bytes": 105114,
+      "sha256": "66bf1e25ac8e00af68dbec63e22494cad4337435bbaadfdc61cadd602aae1afe"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-sample-texture-3d-node.png",
+      "bytes": 37373,
+      "sha256": "68c1eac88aa5894187ad9ac47acd8ccc9e38d5e56afc1609ad7dd76a3eae77be"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-save-icon.png",
+      "bytes": 338,
+      "sha256": "c42bf2476143e38b1a3c5db477787cb9a7dbd8d8779dc9f767565463bf0a66f5"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-subgraph-dropdown-node-example-2.png",
+      "bytes": 64166,
+      "sha256": "f6048f062eb2ccb61aef3bb6009c4685cd46b39eb7dd04653fb1deaa776849bc"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-threadmapdetail-node.png",
+      "bytes": 20567,
+      "sha256": "692679bcbe888f6efb2a85bac410a8089aa807acfaa82cdfb62c5fddf65f1e20"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sg-uvcombine-node.png",
+      "bytes": 37265,
+      "sha256": "6ae4befb7d6a1634b8bae6d0b07d0ae75f728b50fd3c8ec3f56cdfff22cd1588"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/shader_graph_branch_on_connection.png",
+      "bytes": 57997,
+      "sha256": "a8875fc55014060bab0d89a97f2499865e8c0c775af2f135dcd4f70f5268d5af"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ShaderGraphWindow.png",
+      "bytes": 146823,
+      "sha256": "5b11453e8babfcbe3814a0fbdecb17bf7c70bb0fc4e79d36d3f0d76e34057c70"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SignNodeThumb.png",
+      "bytes": 11470,
+      "sha256": "f93d22353f2db4bacf1778b93ffd99e14ba940fbd761db59fde637156c3d20c3"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SimpleNoiseNodeThumb.png",
+      "bytes": 149352,
+      "sha256": "696f19a6ccab3965df59bf5246f276f717fa1004a2c197c2abadd7b20ed92e91"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SineNodeThumb.png",
+      "bytes": 11342,
+      "sha256": "fe21be6315297f9b50babd7b1e69be9355ddbb1b5a558b91b0f67aa84da1c785"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SliderNodeThumb.png",
+      "bytes": 12951,
+      "sha256": "676b96cdcf5c726b8d61b47fa36f6994d052656d94a471150987634b5cd67c34"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SmoothstepNodeThumb.png",
+      "bytes": 17998,
+      "sha256": "89e66c3b09afbd397faae8cb5d54340561fa9a76ccd07c7bbcadbf4e25bf8efe"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SphereMaskNodeThumb.png",
+      "bytes": 23742,
+      "sha256": "b3461097b32ee9afd369e62fb12df359e36b782cbe5212383513807eb937cb0b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SpherizeNodeThumb.png",
+      "bytes": 40259,
+      "sha256": "dd196e8a9cd8ca4ce5997c747e4cc49fade0b3102941782541f60b3d076a8379"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SplitNodeThumb.png",
+      "bytes": 8176,
+      "sha256": "c0a75809b748cc750aa0619e8b29f5d999086c3489cdf5b7df209cbee8f5a20e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SpriteSkinningNodeThumb.png",
+      "bytes": 19891,
+      "sha256": "3d2b81cd613a814a8728c570d472a60d97e71924100ae49ff63f2687898e8de8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SquareRootNodeThumb.png",
+      "bytes": 12993,
+      "sha256": "0096f40b0fd341b69aca206eaad0696f8fa09c0631b21d819c896f5bb444f565"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SquareWaveNodeThumb.png",
+      "bytes": 13030,
+      "sha256": "597e58b0cfe0fb71a23212779b1e23e7c7497df08c678bfe1d9f588c04ba2966"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/StepNodeThumb.png",
+      "bytes": 14885,
+      "sha256": "b12092522679e7f4b1aef5f888f201c6c725f38db5162b5bec4e34d4468622f8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sub-graph-example-parent-graph.png",
+      "bytes": 59582,
+      "sha256": "815b818cfc2550041c6214265f2e3064dc80750d4ddf0629ab8cbbb19e3b0227"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/sub-graph-example.png",
+      "bytes": 42303,
+      "sha256": "5ec7482dca5dce5ea8dca8d6b3f6f16611caeccf9bb03e38e89d1f7b99c7f232"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SubgraphNodeThumb.png",
+      "bytes": 33799,
+      "sha256": "797c355fa15e90a5dd1fe3cea1cc404400671821507a0b69338de18eca64ae92"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SubtractNodeThumb.png",
+      "bytes": 14434,
+      "sha256": "c7a0b6ab2de0fec7cccc7650a05d71dfe6a143a219b2485829e641261c718f48"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/SwizzleNodeThumb.png",
+      "bytes": 9138,
+      "sha256": "191028b37e31142ca5ff1e34f0dae2cc4df72ae60630f1f759cc263ec4d5a745"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/TangentNodeThumb.png",
+      "bytes": 11868,
+      "sha256": "8562e48efc3437db495fb5c79569f98a97238ef7f476338fb4b2043b5428ddb5"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/TangentVectorNodeThumb.png",
+      "bytes": 38635,
+      "sha256": "64d1c4c1c3b06c8445f3637c537d5da123679c1d1ee4af3b375897aa114c2fad"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/template-browser.png",
+      "bytes": 223730,
+      "sha256": "008ee706c74d6530066aef77b1bbb8dd6e17b872133df54d4fc29e41ee920ff2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/TexelSizeNodeThumb.png",
+      "bytes": 21448,
+      "sha256": "8aaffbbae7361bc2d45d3ead49d0954aba066459b0a76f2e94a3fdbc856d07e7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Texture2DArrayAssetNodeThumb.png",
+      "bytes": 20450,
+      "sha256": "8452c3ea8acde7f56c5da05ce2f6f02ed48d67a6c29c491354073d11899bcd07"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Texture2DAssetNodeThumb.png",
+      "bytes": 18829,
+      "sha256": "2dd5759faa17067f177b2976e33ee85b2a135c94285fcb1a78beca204b98a023"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Texture3DAssetNodeThumb.png",
+      "bytes": 20207,
+      "sha256": "a9750f50bc6c7d27e3f03d4af4b6d224d9b91cacb016e2f4931d7529a716401d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/TilingAndOffsetNodeThumb.png",
+      "bytes": 20989,
+      "sha256": "dad7be09c0bdbd7e8f5b12d61482367df2fd7b33f75c506808cebbaf12a6f8e8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/TimeNodeThumb.png",
+      "bytes": 24938,
+      "sha256": "6d782b817f02fe45918473278b2690bd7428e6c6f94e7db918bd0f5f5cdc9e6f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/TransformationMatrixNodeThumb.png",
+      "bytes": 16370,
+      "sha256": "473086910750b6f7039980995648280bac349226d9e45d9541900f263ad0a4a7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/TransformNodeThumb.png",
+      "bytes": 16139,
+      "sha256": "1bb1bdc35b9d5c58f7c2226472952671cedd5bd1db8b72e50ce46cb5a4d9fa59"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/TriangleWaveNodeThumb.png",
+      "bytes": 12305,
+      "sha256": "e82a248dcbf6a2f864e43a3efcdf9c703f424ba2deb84eecf6fc04c04eee67c1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/TriplanarNodeThumb.png",
+      "bytes": 31695,
+      "sha256": "57b0aa1c462aa0a064eb16128c174cb1de8a8e41aa7970c5cc2568ef0f707eee"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/TruncateNodeThumb.png",
+      "bytes": 11778,
+      "sha256": "711cefc018447e692ccd1cd748cadefc578a17b0b1d5d3b007c228de978be8a3"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/TwirlNodeThumb.png",
+      "bytes": 73614,
+      "sha256": "3f7c8b07fae9eb51fde3591ed3436fe63e65ddc3da3dd373302dfa051b385744"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/UITools-buttons.png",
+      "bytes": 179783,
+      "sha256": "dee9d591e5bf4408a8d4d1a230376d4f828d0579913b05a1bc09880cb3536c27"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/UITools-meters.png",
+      "bytes": 90494,
+      "sha256": "2861c8faa7b6afc0c303fbc7563215b5ed457aac94b864f01abcdb06dc301cb8"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/UITools-meters2.png",
+      "bytes": 186311,
+      "sha256": "2018e1cf16313ffb17e7ec697e803bcbc46c551dfc211a0b9c25f4af577999e9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/UITools-subgraphs.png",
+      "bytes": 624769,
+      "sha256": "35912147d00fea1f70070fb20c13277e15d901565d1742a0f54c018d4be82cca"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/UVNodeThumb.png",
+      "bytes": 11295,
+      "sha256": "a5485c2644f3ad3099d950d44518a9b79c2497affe8e5c65f6e03502523a532a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Vector1NodeThumb.png",
+      "bytes": 14407,
+      "sha256": "55c88c8027ebe188c7f45c9e18a34d77e487384cb39b6ecfc411cf6cdd421518"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Vector2NodeThumb.png",
+      "bytes": 18517,
+      "sha256": "1fa02b676ab9469f2a374c9dbbf8facee24d3c4e0f967fb1c85a43ab9cb99796"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Vector3NodeThumb.png",
+      "bytes": 21937,
+      "sha256": "aaa8af1fa771ef1db4ff37346c5130ce9fb1e8fb0e8e1a6893747a79ff908899"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/Vector4NodeThumb.png",
+      "bytes": 25401,
+      "sha256": "15b9d8ecb4ef620f31ecbb56b62eda68ed3ff2ae42785c6e0f63117536f72b2a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/VertexColorNodeThumb.png",
+      "bytes": 20720,
+      "sha256": "bfcb79dd34d009627a730523ff5dbb59e8ea63a2628038a1d01ecaa4a3b16e7d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/VertexIDNodeThumb.png",
+      "bytes": 3927,
+      "sha256": "3ec6f93f618cca2aedea15c9b37225b274cfedf4b786ff0e15adabb2236ba6a3"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/ViewDirectionNodeThumb.png",
+      "bytes": 24251,
+      "sha256": "a76fd3d979be5ca1d97368e2b987e80913f011b76bbbcc1cdfce0ccc344151a1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/VoronoiNodeThumb.png",
+      "bytes": 64808,
+      "sha256": "85d446e5a728c7f68041f6012c00e8dd6b194dbdc460484bbad7ab106c92531b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/images/WhiteBalanceNodeThumb.png",
+      "bytes": 16907,
+      "sha256": "1b2204145c03831444f834b7c829cad2afa273ef26d849bd83e96cc1e08f5fdf"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-BnlLeiXMwgGU/package/Documentation~/node-parallaxocclusionmapping.png",
+      "bytes": 44573,
+      "sha256": "3a671120c0c81f6d5381b5e577a117d4e61eadd4df71c46aadb69cf280952c46"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/PackageResources/ProfilerIcon/2D_Graphics.png",
+      "bytes": 460,
+      "sha256": "deee7d43f128619205597016c22f9fe49decd3eab0a53787756c9c1423649150"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/PackageResources/ProfilerIcon/2D_Graphics@128.png",
+      "bytes": 3118,
+      "sha256": "d0464d32d3595f5fd5964288f34a22bd33e1f60e555017403a8d6a8c4c891e51"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/PackageResources/ProfilerIcon/2D_Graphics@256.png",
+      "bytes": 6259,
+      "sha256": "9784098124251da89c8d88d3db01f38f0c1643acf55e46893b4db60b6af8626a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/PackageResources/ProfilerIcon/2D_Graphics@32.png",
+      "bytes": 837,
+      "sha256": "c84c5fa429a6a4890523425c66cf873c72de5eb27f321b5c48f069502d756ed2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/PackageResources/ProfilerIcon/2D_Graphics@64.png",
+      "bytes": 1656,
+      "sha256": "2b3a5e8b6b950462a533a1304011eb6f92626c5d2a1685a33397efb426a49110"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/PackageResources/ProfilerIcon/d_2D_Graphics.png",
+      "bytes": 468,
+      "sha256": "76880e4026d1d422583242ca30cea0b5203170815bc01ccc5d7bcf11fb3daadb"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/PackageResources/ProfilerIcon/d_2D_Graphics@128.png",
+      "bytes": 3046,
+      "sha256": "9b055273f7ae60200a0c50f473c3fbacd3a4c046e43da842a1d5b943152cd1c1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/PackageResources/ProfilerIcon/d_2D_Graphics@256.png",
+      "bytes": 5997,
+      "sha256": "37075120489b84a4b0bb756e189b2c014635e66fd5723eca7aa7b4f44f5cc54d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/PackageResources/ProfilerIcon/d_2D_Graphics@32.png",
+      "bytes": 834,
+      "sha256": "9bf21a139d634c7f33fbca934c6a19a44946965c04712802dc8ed70d0affb732"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/PackageResources/ProfilerIcon/d_2D_Graphics@64.png",
+      "bytes": 1590,
+      "sha256": "3bad43b6ee441ff8aded4a1918b17f51d625511181cce436eeab3ba44d9cec83"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/Cinemachine.png",
+      "bytes": 66152,
+      "sha256": "3841fa64b887ddf68d6f0175bc8e99dd32637df547bcb174b3e760bd3275f092"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/InspectorIcons/FreeformLight.png",
+      "bytes": 801,
+      "sha256": "99176afc9d13d9aecdf01ef337c69fb6fb3a60c0929675ffe0804c7ff5067aa1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/InspectorIcons/GlobalLight.png",
+      "bytes": 844,
+      "sha256": "504a7aeb46a056bd5024f5e298bd6c161611f70f1f5584288019729d845cb830"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/InspectorIcons/ParametricLight.png",
+      "bytes": 879,
+      "sha256": "3d7f874bd228d4091b5ac5d1271cec320239d3e0b26792e58a6663484aa95a0d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/InspectorIcons/PointLight.png",
+      "bytes": 14193,
+      "sha256": "43a5b8cf9f618623d6d47f4dc2d7c8ea1aa64f694f66b05d10098100e7644e2d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/InspectorIcons/SpriteLight.png",
+      "bytes": 777,
+      "sha256": "9d514ce4860e0cea1a6b5f6fb451ae00d3e120c92cec879ebd8ed0363acf982a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/LightCapBottomLeft.png",
+      "bytes": 2532,
+      "sha256": "2cdf8dada44398f008651a4d3251a9a1de81cea3e6a917221a3ec87438a3443e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/LightCapBottomRight.png",
+      "bytes": 2531,
+      "sha256": "80097f5b6e8306280f423baa63c51e7ee29f92b4c99c38e0beae34fe5f01f66d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/LightCapDown.png",
+      "bytes": 2396,
+      "sha256": "e6eebb301c295dfaaf0d49abbc0e419bf7aba3f3463c190187db1eec0b4d7dbd"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/LightCapTopLeft.png",
+      "bytes": 2506,
+      "sha256": "659bf2e81f6a047a88d65f629be3b63fd91429d1ab602ea777420d1cbeba153c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/LightCapTopRight.png",
+      "bytes": 2694,
+      "sha256": "9919d1d5df864999afec6e24900ea088567bd5d0ccb4b5f88bc30e19b59fdde0"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/LightCapUp.png",
+      "bytes": 3436,
+      "sha256": "2f2951ede2844685108426893e97f5d4b1e3b3673e28b6de7ca3161263092693"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/PixelPerfectCamera.png",
+      "bytes": 2733,
+      "sha256": "3c5f54593888c53ac325ab16e14f9fb3a2cda84dd7103a41da341655e1bcd291"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/SceneViewIcons/FreeformLight.png",
+      "bytes": 24280,
+      "sha256": "d9ed71808ee9b33047d35841f9ec4212388d8f69e81d60526e8591035f34b04e"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/SceneViewIcons/GlobalLight.png",
+      "bytes": 27065,
+      "sha256": "ccb95bc888b957458614d8f3c5cf92ec6a99a022a9fc25bd3e37cbc9d94921c1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/SceneViewIcons/ParametricLight.png",
+      "bytes": 19797,
+      "sha256": "a6748ec8644cc0ec5270d59d1598cd3b8b2dcd3acd3fe00a18a4347a11839f54"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/SceneViewIcons/PointLight.png",
+      "bytes": 11890,
+      "sha256": "40b81cc5e564681dff38dc65448e2cb9708b3a5df26911d88a6403dc6cdeb790"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/SceneViewIcons/SpriteLight.png",
+      "bytes": 16995,
+      "sha256": "3a0bac87758e06e8f54e5e671ccec6630eb309d40b521a282f030bf39bd21d54"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/2D/Resources/Sparkle.png",
+      "bytes": 3250,
+      "sha256": "2432c4016903df7a0bd7b9cf422341c4a8d62049d8f41aa68507793b45352c92"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/Decal/Resources/DecalGizmo.png",
+      "bytes": 4491,
+      "sha256": "d26db046287dd6a26a821c58861b58efe79532f9cf711817479c12dc6921b5b2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/Gizmos/Camera_Base.png",
+      "bytes": 6467,
+      "sha256": "08b4050e81f0b48e1b1683f409d503695ae4b797484fcd7163c69daa12da7b0d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/Gizmos/Camera_Offscreen.png",
+      "bytes": 7102,
+      "sha256": "aaa16966baf515c1da7e06a8a9019d17af8bb2182b5f5fec491f54e965b433d1"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/Gizmos/Camera_Overlay.png",
+      "bytes": 4735,
+      "sha256": "49dc7c87c23f0a592e1a0d9c36e26a94f62ad5701d696880f5f09f4a5bc483a7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/Gizmos/Camera_PostProcessing.png",
+      "bytes": 7036,
+      "sha256": "a2f34f175f2c0b063f3d20692a7e01e5d27458f2d4fb5abc56e4d082c0f97ce9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/Gizmos/Camera_UI.png",
+      "bytes": 4988,
+      "sha256": "8f02451ffd777e5aa75f13cce59dc387057725de36f7e8f175c85e23e1d2d74f"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/ShaderGraph/GraphTemplates/2D/2DSpriteLitTemplateThumbnail.png",
+      "bytes": 705790,
+      "sha256": "cad3514e505f301fb66cf566b47c4ff03239ae2705f58c3b1055ca0de958a7a3"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/ShaderGraph/GraphTemplates/2D/2DSpriteUnlitTemplateThumbnail.png",
+      "bytes": 646443,
+      "sha256": "cf71aaec422d83aec3bfb0e4d000447215377d5e76b094315e7b9b186976f720"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/ShaderGraph/GraphTemplates/FullscreenBasicTemplateThumbnail.png",
+      "bytes": 678660,
+      "sha256": "a4c5d50365472459430d1db5bad4d26e2fba85050d21e679a5bb65af875af4d7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/ShaderGraph/GraphTemplates/UITKBasicTemplate.png",
+      "bytes": 282357,
+      "sha256": "456ecc5e21a56b45279d194f2105a16ac6c9565a4d70d5cd588ac65de484d17d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/.tmp-38796-RBSor5Tv9Qvj/package/Editor/ShaderGraph/GraphTemplates/UITKFullTemplate.png",
+      "bytes": 423886,
+      "sha256": "c7d5c4d854233ffca5bfdfa709d111950d0fa6556c4de7260ce22408500a75d2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.collections@10fff0607388/Unity.Collections.PerformanceTests/PerformanceTestFrameworkOutputFixedSize.png",
+      "bytes": 140257,
+      "sha256": "74cf7438f5c556ae17d946f3b65e1e7f01c6f44a6442c0a9e1bb3879b169137c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.collections@10fff0607388/Unity.Collections.PerformanceTests/PerformanceTestFrameworkOutputListAdd.png",
+      "bytes": 82081,
+      "sha256": "1d0225d460914dec961c6fd784bb71c77f4a5266cb5445c6566bce8f3dcd38d7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.collections@10fff0607388/Unity.Collections.PerformanceTests/Unity.PerformanceTesting.Benchmark/PerformanceTestFrameworkOutput.png",
+      "bytes": 84055,
+      "sha256": "f6295c60a9752655d1a0de87fab4efb15d2da0bc98ce98db5d06460ee3da3e80"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.profiling.core@8a49f7027d06/Documentation~/images/hierarchyview_metadata.png",
+      "bytes": 63121,
+      "sha256": "4a5952ed28a00ae80ffd281ca8a844cfd78c5eb168f92575c1fb254ec1ce5a7a"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.profiling.core@8a49f7027d06/Documentation~/images/install_package_by_name.png",
+      "bytes": 37106,
+      "sha256": "6bf1b799107aef3a3bbef128ef8352ac05d182714df590b9a76565ed44d77e25"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.profiling.core@8a49f7027d06/Documentation~/images/mystatsmodule.png",
+      "bytes": 77720,
+      "sha256": "79c0392cc7e1d4420a22d0f279d6f48fd7c07e86366af3e2200ac87c18681735"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.profiling.core@8a49f7027d06/Documentation~/images/profilercounter_flow.png",
+      "bytes": 22629,
+      "sha256": "e723a44d483001b0386372935adacbfa6d17f1184ccc664a1e1c55010bb4caea"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.profiling.core@8a49f7027d06/Documentation~/images/profilermoduleeditor.png",
+      "bytes": 131345,
+      "sha256": "1231991e871d73c159e3b5e9e56f0a0acc54697572a03ffc1595e4100da6e7a9"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.profiling.core@8a49f7027d06/Documentation~/images/profilerwindow.png",
+      "bytes": 110957,
+      "sha256": "e330bab68bfd6a29c84f329fac1708afd20c6935bb6af09452ff6bcde8dfcbf2"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.profiling.core@8a49f7027d06/Documentation~/images/timelineview_metadata.png",
+      "bytes": 42685,
+      "sha256": "be1db80d91a1d1825cce3338664d9628ea1095276e93c2fb611b8c349f9a1d1b"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Documentation~/images/popup_window.png",
+      "bytes": 63270,
+      "sha256": "67491a466ae73be7814ec1c0d90fc190e1b9752925f444828c21669d61e7d2de"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Documentation~/images/quick_search.png",
+      "bytes": 12895,
+      "sha256": "9dfb8212acc28d9732228c425d76107c8e0d9d5f7cf62c37e55de7bc3b7540e7"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Documentation~/images/tree_view.png",
+      "bytes": 29290,
+      "sha256": "f75140311296d719cb3ab36ee5f2cb653a60f637f959c6bca9ef62e72e6b85ed"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Editor/Resources/FlatSkin/SearchSmallDownOff.png",
+      "bytes": 2744,
+      "sha256": "0bb7331fcceee0bfe0073abfbbe7b2ae3c8d0bab0d547bb7fdf4261405682a7d"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Editor/Resources/FlatSkin/SearchSmallDownOff@2x.png",
+      "bytes": 2492,
+      "sha256": "94e5f302cac4ba98b5b6eb79e7a9d0e9de760d8eb764796bf8934468074bdaf4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Editor/Resources/FlatSkin/SearchSmallDownOn.png",
+      "bytes": 2669,
+      "sha256": "b4cda1cfc8df0468ce14fe855c8fe7a1ebb883404f218d5ab7ca029358cb5b45"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Editor/Resources/FlatSkin/SearchSmallDownOn@2x.png",
+      "bytes": 3344,
+      "sha256": "19c76b720da7b57e0142e4b6b61ec86eac7f842043c4dbe3f3427db750ce1423"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Samples~/Resources/twotone_book_black_18dp.png",
+      "bytes": 173,
+      "sha256": "265f8a52818b19f1c288860f17dd5efc8526aa8ffa9511ae452d02663b95df58"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Samples~/Resources/twotone_book_white_18dp.png",
+      "bytes": 174,
+      "sha256": "4f0534c02b85644ab9f46f729f84453a1e2d4f19741ec0fb8c3305c5739cf998"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Samples~/Resources/twotone_emoji_people_black_18dp.png",
+      "bytes": 174,
+      "sha256": "06accb0b22029cfb2517ab493833cf8d71bce94a5509007b90ce54c1b0821eea"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Samples~/Resources/twotone_emoji_people_white_18dp.png",
+      "bytes": 181,
+      "sha256": "39dbdd2fc2c3d5aa80ab424aa35bda00e237dfc5d33b98dc3545b40d0800f50c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Samples~/Resources/twotone_outdoor_grill_black_18dp.png",
+      "bytes": 236,
+      "sha256": "3ef7d8116794154112817c494c087f0f4fc006cb87a91e45bbbbb0c3fdddd954"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Samples~/Resources/twotone_outdoor_grill_white_18dp.png",
+      "bytes": 248,
+      "sha256": "18d30ec3dbe02133ece387befae3effb94f4c3aabb110438e4c2b9b6788956e4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Samples~/Resources/twotone_science_black_18dp.png",
+      "bytes": 197,
+      "sha256": "18bc7d156c877861531527a4795e6635da7ceafc3ea902f4c744bad1d91c5029"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.searcher@a463122f2c00/Samples~/Resources/twotone_science_white_18dp.png",
+      "bytes": 211,
+      "sha256": "d191bd2acac467e95cb94575911305890b5539a438429c681e70da15e8ec0d10"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.test-framework.performance@54c5bd86aedb/Documentation~/images/example01.png",
+      "bytes": 17007,
+      "sha256": "08eb76cd5f6962edc8843a4242759047c9d773248057fa4fc49c755697a2077c"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.test-framework.performance@54c5bd86aedb/Documentation~/images/example02.png",
+      "bytes": 60476,
+      "sha256": "eace0cfc8deb37cde8f3024af5c3749dfa62587ab75dd530c40a2f8dd4389dac"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.test-framework.performance@54c5bd86aedb/Documentation~/images/example03.png",
+      "bytes": 152653,
+      "sha256": "d552e3c70109787b7d2569f8bf38658d755ea20d7af1c9560622552c9ea5a1a4"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.test-framework.performance@54c5bd86aedb/Documentation~/images/example04.png",
+      "bytes": 70826,
+      "sha256": "c4f7c90f1b8e3c025ab0d759188b0895897d43a0ec03069099261ca18c6869b3"
+    },
+    {
+      "path": "validation/unity-smoke/Library/PackageCache/com.unity.test-framework.performance@54c5bd86aedb/Documentation~/images/graphtool.png",
+      "bytes": 130251,
+      "sha256": "339962743d52267659509b21027887359d2aa8886f577938debf58a5ba63e33d"
+    }
+  ]
+}
