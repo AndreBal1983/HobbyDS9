@@ -10,6 +10,7 @@ namespace HobbyDS9.Application
     {
         CampaignIntegratedStrategySnapshot CaptureStrategy(string actor);
         CampaignIntegratedPlaytestSaveDto ExportIntegratedSave();
+        CampaignIntegratedDesignLibrarySnapshot CaptureDesignLibrary(string actor);
     }
     public sealed class CampaignIntegratedConstructionOption
     {
@@ -33,6 +34,7 @@ namespace HobbyDS9.Application
         public IReadOnlyList<FleetSnapshot> Fleets { get; }
         public NavigationMapSnapshot Navigation { get; }
         public IReadOnlyList<CampaignIntegratedConstructionOption> Construction { get; }
+        public CampaignIntegratedReferenceSnapshot References { get; }
         internal CampaignIntegratedStrategySnapshot(CampaignSnapshot privateFacts,CampaignTacticalReviewStatus status, EntityId actor,
             IEnumerable<CampaignIntegratedConstructionOption> construction)
         {
@@ -42,6 +44,7 @@ namespace HobbyDS9.Application
             Ships=privateFacts.Campaign.Ships.Where(s=>s.OwnerCivilizationId==actor).ToList().AsReadOnly();
             Fleets=privateFacts.Campaign.Fleets.Where(f=>f.OwnerCivilizationId==actor).ToList().AsReadOnly();
             Navigation=privateFacts.Navigation;Construction=construction.ToList().AsReadOnly();
+            References=new CampaignIntegratedReferenceSnapshot(privateFacts,actor);
         }
     }
     public sealed class CampaignIntegratedPlaytestApplication : ICampaignIntegratedPlaytestSession
@@ -53,6 +56,8 @@ namespace HobbyDS9.Application
         public static ICampaignIntegratedPlaytestSession LoadSave(CampaignIntegratedPlaytestPackageDto p,CampaignIntegratedPlaytestSaveDto s)
             => new CampaignIntegratedPlaytestApplication(CampaignTacticalReviewSession.LoadIntegrated(p,s));
         public CampaignIntegratedPlaytestSaveDto ExportIntegratedSave()=>session.ExportIntegratedSave();
+        public CampaignIntegratedDesignLibrarySnapshot CaptureDesignLibrary(string actor)
+        {var facts=session.CaptureIntegratedLibrary(actor);return new CampaignIntegratedDesignLibrarySnapshot(actor,facts.Status,facts.Catalogue,facts.Published);}
         // Inherited legacy-shaped export is not a complete integrated checkpoint. Fail closed.
         public CampaignTacticalTravelSaveDto ExportSave()=>throw new InvalidOperationException("Use ExportIntegratedSave: bare physical format2 omits construction provenance.");
         public CampaignIntegratedStrategySnapshot CaptureStrategy(string actor)
