@@ -1,0 +1,12 @@
+{
+  "FormatVersion": 3,
+  "ProfileId": "campaign-tactical-v2-integrated-playtest-1",
+  "PolicyStatus": "proposed",
+  "DefaultActivationAllowed": false,
+  "ConstructionTemplates": [
+    {
+      "ShipDesignDefinitionId": "ship-design.source-cruiser",
+      "SourceProvisionShipId": "ship.equipment-cruiser"
+    }
+  ]
+}

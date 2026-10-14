@@ -25,7 +25,7 @@ namespace HobbyDS9.Simulation
             Require(travel!=null,"Session has no physical profile.");
             var copy=CampaignTacticalTravelData.Copy(travel);copy.Core=Copy(state);return copy;
         }
-        public CampaignTacticalTravelSaveDto ExportTravelSave(){lock(gate)return TravelCopy();}
+        public CampaignTacticalTravelSaveDto ExportTravelSave(){lock(gate){Require(demo==null,"Use ExportDemoSave: bare physical root is incomplete.");return TravelCopy();}}
         public IReadOnlyList<CampaignKnownContact> KnownContacts(string actor)
         {
             lock(gate)
@@ -83,22 +83,37 @@ namespace HobbyDS9.Simulation
         {
             lock(gate)
             {
-                if(travel==null||command==null||command.Order==null)return Result(CampaignTacticalError.InvalidOrder);
-                var game=state.Campaign.GameState;var actor=Actor(command.ActorId);if(actor!=CampaignTacticalError.None)return Result(actor);
-                if(CurrentPhase!=SessionPhase.Planning)return Result(CampaignTacticalError.WrongPhase);
-                if(command.ExpectedTurn!=game.TurnNumber)return Result(CampaignTacticalError.StaleTurn);
-                if(!EntityId.TryParse(command.CommandId,out _)||command.CommandId.StartsWith("ai-command.",StringComparison.Ordinal))return Result(CampaignTacticalError.InvalidOrder);
-                if(state.AcceptedRoundCommands.Contains(command.CommandId,StringComparer.Ordinal)||game.AcceptedCommandIds!.Contains(command.CommandId))return Result(CampaignTacticalError.DuplicateCommand);
-                if(command.ExpectedRevision!=game.StateRevision)return Result(CampaignTacticalError.StaleRevision);
-                if(!game.Fleets!.Any(f=>f.FleetId==command.Order.FleetId&&f.OwnerCivilizationId==command.ActorId)
-                    ||!ValidTravelOrder(game,command.Order,travel.Contacts))return Result(CampaignTacticalError.InvalidOrder);
-                if(game.StateRevision==long.MaxValue)return Result(CampaignTacticalError.Overflow);
-                var next=TravelCopy();var order=CampaignTacticalTravelData.Copy(command.Order);
-                next.Orders[next.Orders.FindIndex(o=>o.FleetId==order.FleetId)]=order;
-                next.Core.Campaign.GameState.Fleets!.Single(f=>f.FleetId==order.FleetId).RouteNodeIds=new List<string>(order.RouteNodeIds);
-                next.Core.AcceptedRoundCommands.Add(command.CommandId);next.Core.Campaign.GameState.StateRevision++;
+                if(DemoMutationBlocked)return Result(CampaignTacticalError.WrongPhase);
+                if(travel==null)return Result(CampaignTacticalError.InvalidOrder);
+                var error=ValidateTravelCommand(command,TravelCopy(),false);if(error!=CampaignTacticalError.None)return Result(error);
+                var next=TravelCopy();ApplyTravelCommand(next,command!);
                 ValidateTravelSave(next);travel=CampaignTacticalTravelData.Copy(next);state=travel.Core;return Result(CampaignTacticalError.None);
             }
+        }
+        private CampaignTacticalError ValidateTravelCommand(SubmitCampaignTravelOrderDto? command,CampaignTacticalTravelSaveDto candidate,bool trustedAi)
+        {
+            if(command==null||command.Order==null)return CampaignTacticalError.InvalidOrder;
+            var game=candidate.Core.Campaign.GameState;
+            var actor=game.Civilizations!.SingleOrDefault(c=>c.CivilizationId==command.ActorId);
+            if(actor==null)return CampaignTacticalError.UnknownActor;
+            if(actor.ControllerKind!=(trustedAi?ControllerKind.AI:ControllerKind.Human))return CampaignTacticalError.ActorNotControlled;
+            if(candidate.Phase!=SessionPhase.Planning)return CampaignTacticalError.WrongPhase;
+            if(command.ExpectedTurn!=game.TurnNumber)return CampaignTacticalError.StaleTurn;
+            if(!EntityId.TryParse(command.CommandId,out _)||command.CommandId.StartsWith("ai-command.",StringComparison.Ordinal)!=trustedAi)return CampaignTacticalError.InvalidOrder;
+            if(candidate.Core.AcceptedRoundCommands.Contains(command.CommandId,StringComparer.Ordinal)||game.AcceptedCommandIds!.Contains(command.CommandId))return CampaignTacticalError.DuplicateCommand;
+            if(command.ExpectedRevision!=game.StateRevision)return CampaignTacticalError.StaleRevision;
+            if(!game.Fleets!.Any(f=>f.FleetId==command.Order.FleetId&&f.OwnerCivilizationId==command.ActorId)
+                ||!ValidTravelOrder(game,command.Order,candidate.Contacts))return CampaignTacticalError.InvalidOrder;
+            return game.StateRevision==long.MaxValue?CampaignTacticalError.Overflow:CampaignTacticalError.None;
+        }
+        private static void ApplyTravelCommand(CampaignTacticalTravelSaveDto next,SubmitCampaignTravelOrderDto command)
+        {
+            var order=CampaignTacticalTravelData.Copy(command.Order!);
+            next.Orders[next.Orders.FindIndex(o=>o.FleetId==order.FleetId)]=order;
+            next.Core.Campaign.GameState.Fleets!.Single(f=>f.FleetId==order.FleetId).RouteNodeIds=new List<string>(order.RouteNodeIds);
+            if(command.CommandId.StartsWith("ai-command.",StringComparison.Ordinal))next.Core.Campaign.GameState.AcceptedCommandIds!.Add(command.CommandId);
+            else next.Core.AcceptedRoundCommands.Add(command.CommandId);
+            next.Core.Campaign.GameState.StateRevision++;
         }
         private List<CombatRequestDto> FreezePhysical(GameStateDto game,PhysicalMovementResult movement)
         {
@@ -146,7 +161,8 @@ namespace HobbyDS9.Simulation
                 void Probe(StrategicTurnPhase phase){if(PhysicalPhaseProbe!=null&&!PhysicalPhaseProbe(phase))throw new InvalidOperationException("Injected phase failure.");}
                 Probe(StrategicTurnPhase.AiPlanning);
                 var beforeAi=SimulationSession.CopyState(next.Core.Campaign.GameState);
-                next.Core.Campaign.GameState=Legacy(next.Core).RunPlanningAiForPhysicalReview();
+                next.Core.Campaign.GameState=demo==null?Legacy(next.Core).RunPlanningAiForPhysicalReview()
+                    :Legacy(next.Core).RunDemoPlanningAi(demo.OpponentActorId!,constructionTemplates!.Select(t=>t.ShipDesignDefinitionId!).ToList());
                 var game=next.Core.Campaign.GameState;
                 foreach(var order in next.Orders)
                 {
@@ -154,6 +170,7 @@ namespace HobbyDS9.Simulation
                     if(controllers[f.OwnerCivilizationId]==ControllerKind.AI&&!f.RouteNodeIds!.SequenceEqual(beforeAi.Fleets!.Single(p=>p.FleetId==f.FleetId).RouteNodeIds!))
                     {order.Intent=f.RouteNodeIds!.Count>0?CampaignTravelIntent.Leave:CampaignTravelIntent.Stay;order.ContactFleetId=null;order.ExpectedContactSeenTurn=null;order.RouteNodeIds=new List<string>(f.RouteNodeIds);}
                 }
+                if(demo!=null)PlanDemoTravel(next);
                 void Phase(StrategicTurnPhase phase,Action action)
                 {
                     Probe(phase);var before=SimulationSession.CopyState(game);action();

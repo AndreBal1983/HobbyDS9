@@ -5,6 +5,22 @@ using System.Text.Json;
 using HobbyDS9.Contracts;
 using HobbyDS9.Application;
 
+if (args.Length == 1 && args[0] == "--singleplayer-demo")
+{
+    var package=SingleplayerDemoPackageReader.Read(Path.Combine(AppContext.BaseDirectory,"scenarios/singleplayer-demo-v1"));
+    var baseline=JsonSerializer.Serialize(SingleplayerDemoWalkthrough.Run(package));
+    foreach(var mode in new[]{(true,false),(false,true),(false,false)})
+        if(baseline!=JsonSerializer.Serialize(SingleplayerDemoWalkthrough.Run(package,mode.Item1,mode.Item2)))throw new InvalidOperationException("Demo determinism mismatch.");
+    Console.WriteLine("singleplayer-package-sha256="+package.PackageHash);
+    Console.WriteLine("singleplayer-save-sha256="+Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(baseline))).ToLowerInvariant());
+    var saved=JsonSerializer.Deserialize<CampaignSingleplayerDemoSaveDto>(baseline)!;
+    var result=CampaignSingleplayerDemoApplication.LoadSave(package,saved).CaptureDemo();
+    var human=saved.Integrated!.Physical!.Core.Campaign.GameState.Civilizations!.Single(c=>c.CivilizationId==package.HumanActorId);
+    Console.WriteLine("outcome="+result.Outcome+" turn="+result.Turn+" built="+saved.Integrated.BuiltShips!.Count+" first-build-turn="+saved.Integrated.BuiltShips.Min(b=>b.TurnBuilt)
+        +" mature-human-projects="+human.MatureEngineeringApplicationDefinitionIds!.Count);
+    Console.WriteLine("Actual single-human paid construction, lawful AI, joint rounds, explicit aftermath and reload/reverse/repeated checks passed; native UI NOT executed.");
+    return;
+}
 if (args.Length == 1 && args[0] == "--review-integrated-playtest")
 {
     IntegratedPlaytestWalkthrough.Run();
