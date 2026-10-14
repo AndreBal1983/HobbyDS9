@@ -25,7 +25,7 @@ jobs:
         run: |
           $suites = @(
             @{ Project = 'tests/HobbyDS9.TacticalReviewShell.Tests/HobbyDS9.TacticalReviewShell.Tests.csproj'; Kind = 'new'; Name = 'explanations-shell.trx'; Expected = 23 },
-            @{ Project = 'tests/HobbyDS9.TacticalTravelClient.Tests/HobbyDS9.TacticalTravelClient.Tests.csproj'; Kind = 'physical'; Name = 'physical.trx'; Expected = 47 },
+            @{ Project = 'tests/HobbyDS9.TacticalTravelClient.Tests/HobbyDS9.TacticalTravelClient.Tests.csproj'; Kind = 'physical'; Name = 'physical.trx'; Expected = 63 },
             @{ Project = 'tests/HobbyDS9.TacticalReviewStorage.Tests/HobbyDS9.TacticalReviewStorage.Tests.csproj'; Kind = 'storage'; Name = 'storage.trx'; Expected = 47 },
             @{ Project = 'tests/HobbyDS9.TacticalReviewClient.Tests/HobbyDS9.TacticalReviewClient.Tests.csproj'; Kind = 'real'; Name = 'real-client.trx'; Expected = 51 },
             @{ Project = 'tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj'; Kind = 'mock'; Name = 'mock.trx'; Expected = 115 }
