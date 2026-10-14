@@ -19,10 +19,12 @@ namespace HobbyDS9.UnityClient
         public static SfxDirector? TryGetOrCreate()
         {
             try {
-                if (instance != null) return instance;
+                if (instance != null) { instance.Initialize(); return instance; }
                 var existing = FindFirstObjectByType<SfxDirector>();
                 if (existing != null) { instance = existing; existing.Initialize(); return existing; }
-                return new GameObject("HobbyDS9 SFX").AddComponent<SfxDirector>();
+                instance = new GameObject("HobbyDS9 SFX").AddComponent<SfxDirector>();
+                instance.Initialize();
+                return instance;
             } catch (Exception) { return null; }
         }
         private void Awake()
@@ -33,6 +35,7 @@ namespace HobbyDS9.UnityClient
         }
         private void Initialize()
         {
+            AudioOutputListener.Acquire(this);
             if (sources.Length != 0) return;
             var store = new PlayerPrefsMusicStore(); Preferences = new SfxPreferences(store);
             master = new MusicPreferences(store).MasterVolume;
@@ -74,7 +77,7 @@ namespace HobbyDS9.UnityClient
         }
         public void StopProcessing() { try { Policy.StopProcessing(); if (processing != null) processing.Stop(); } catch (Exception) { } }
         private void OnDisable() { StopProcessing(); foreach (var source in sources) if (source != null) source.Stop(); }
-        private void OnDestroy() { if (instance == this) instance = null; }
+        private void OnDestroy() { AudioOutputListener.Release(this); if (instance == this) instance = null; }
     }
     public sealed class SfxInputBinding : IDisposable
     {

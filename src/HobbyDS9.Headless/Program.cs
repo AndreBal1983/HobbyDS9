@@ -5,6 +5,12 @@ using System.Text.Json;
 using HobbyDS9.Contracts;
 using HobbyDS9.Application;
 
+if (args.Length == 1 && args[0] == "--review-integrated-playtest")
+{
+    IntegratedPlaytestWalkthrough.Run();
+    return;
+}
+
 if (args.Length == 1 && args[0] == "--review-physical-travel")
 {
     CampaignPhysicalTravelWalkthrough.Run();

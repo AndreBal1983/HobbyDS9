@@ -74,7 +74,7 @@ namespace HobbyDS9.Simulation
             if(order.Intent==CampaignTravelIntent.Leave&&order.RouteNodeIds.Count==0)return false;
             if(order.Intent!=CampaignTravelIntent.Follow)return order.ContactFleetId==null&&order.ExpectedContactSeenTurn==null;
             var known=contacts.SingleOrDefault(k=>k.ActorId==fleet.OwnerCivilizationId&&k.FleetId==order.ContactFleetId);
-            return order.ContactFleetId!=null&&authoredFleetOwners!.TryGetValue(order.ContactFleetId,out var targetOwner)
+            return order.ContactFleetId!=null&&KnownFleetOwner(order.ContactFleetId) is string targetOwner
                 &&CampaignPhysicalMovement.Hostile(declaredHostilities!,fleet.OwnerCivilizationId,targetOwner)
                 &&known!=null&&known.LastSeenTurn==order.ExpectedContactSeenTurn&&(allowStale||(long)game.TurnNumber-known.LastSeenTurn<=contactFreshness)
                 &&(order.RouteNodeIds.Count>0||known.TrackingNodeIds.Contains(fleet.LocationNodeId,StringComparer.Ordinal));
@@ -140,6 +140,7 @@ namespace HobbyDS9.Simulation
             if(revision!=state.Campaign.GameState.StateRevision)return Result(CampaignTacticalError.StaleRevision);
             if(turn==int.MaxValue||revision==long.MaxValue)return Result(CampaignTacticalError.Overflow);
             var next=TravelCopy();
+            stagedBuiltShips = constructionTemplates == null ? null : builtShips.Select(CopyBuild).ToList();
             try
             {
                 void Probe(StrategicTurnPhase phase){if(PhysicalPhaseProbe!=null&&!PhysicalPhaseProbe(phase))throw new InvalidOperationException("Injected phase failure.");}
@@ -162,7 +163,9 @@ namespace HobbyDS9.Simulation
                 }
                 Phase(StrategicTurnPhase.Economy,()=>EconomyPhase.Execute(game,definitions));
                 Phase(StrategicTurnPhase.Research,()=>ResearchPhase.Execute(game,definitions));
+                var beforeProduction=SimulationSession.CopyState(game);
                 Phase(StrategicTurnPhase.Production,()=>ProductionPhase.Execute(game,definitions));
+                ProvisionCompletedShips(next,beforeProduction);
                 if(game.Ships!.Any(s=>!next.Core.Pools.Any(p=>p.ShipId==s.ShipId)))return Result(CampaignTacticalError.UnsupportedSource);
                 Probe(StrategicTurnPhase.Movement);
                 next.MovementProof=new CampaignPhysicalMovementProofDto { Start=SimulationSession.CopyState(game),
@@ -194,10 +197,14 @@ namespace HobbyDS9.Simulation
                     while(b.State.Completion==TacticalCompletion.None&&b.State.Formations.Where(f=>f.Status==TacticalFormationStatus.Active).All(f=>controllers[f.SideId]==ControllerKind.AI))
                     {game.StateRevision=checked(game.StateRevision+1);ResolveJoint(next.Core,b);}
                 }
-                ValidateTravelSave(next);travel=CampaignTacticalTravelData.Copy(next);state=travel.Core;return Result(CampaignTacticalError.None);
+                ValidateTravelSave(next);
+                var committed=CampaignTacticalTravelData.Copy(next);
+                if(stagedBuiltShips!=null)builtShips=stagedBuiltShips.Select(CopyBuild).ToList();
+                travel=committed;state=travel.Core;return Result(CampaignTacticalError.None);
             }
             catch(OverflowException){return Result(CampaignTacticalError.Overflow);}
             catch(Exception e)when(e is ArgumentException||e is InvalidOperationException){LastPhysicalFailure=e.ToString();return Result(CampaignTacticalError.InvalidBatch);}
+            finally { stagedBuiltShips = null; }
         }
     }
 }

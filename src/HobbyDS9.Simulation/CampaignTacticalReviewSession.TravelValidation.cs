@@ -71,7 +71,7 @@ namespace HobbyDS9.Simulation
             Require(s.LastMovement.Select(r=>r.FleetId).Distinct(StringComparer.Ordinal).Count()==s.LastMovement.Count,"Duplicate movement receipt.");
             foreach(var r in s.LastMovement)
             {
-                Require(authoredFleetOwners!.TryGetValue(r.FleetId,out var owner)&&owner==r.OwnerId&&r.Turn>=1&&r.Turn<=game.TurnNumber
+                Require(KnownFleetOwner(r.FleetId) is string owner&&owner==r.OwnerId&&r.Turn>=1&&r.Turn<=game.TurnNumber
                     &&r.CostPaid>=0&&r.EdgesCompleted>=0&&r.TransitProgress>=0&&r.TransitTotalCost>=0&&r.TransitProgress<r.TransitTotalCost+new BigInteger(1)
                     &&BigInteger.TryParse(r.StopTimeNumerator,NumberStyles.None,CultureInfo.InvariantCulture,out var n)
                     &&BigInteger.TryParse(r.StopTimeDenominator,NumberStyles.None,CultureInfo.InvariantCulture,out var d)&&d>0&&n>=0&&n<=d
