@@ -172,5 +172,16 @@ namespace HobbyDS9.Simulation
         }
         internal IReadOnlyList<CampaignIntegratedConstructionTemplateDto> CaptureConstructionTemplates()
         { lock(gate) return constructionTemplates!.Select(t => new CampaignIntegratedConstructionTemplateDto { ShipDesignDefinitionId=t.ShipDesignDefinitionId,SourceProvisionShipId=t.SourceProvisionShipId }).ToList().AsReadOnly(); }
+        internal (CampaignTacticalReviewStatus Status,CampaignShipDesignCatalogueSnapshot? Catalogue,IReadOnlyList<CampaignBlueprintSnapshot> Published)
+            CaptureIntegratedLibrary(string actor)
+        {
+            lock(gate)
+            {
+                Require(constructionTemplates!=null&&Actor(actor)==CampaignTacticalError.None,"Only controlled integrated actors may inspect their design library.");
+                var legacy=Legacy(state);
+                return (CaptureStatus(),legacy.CaptureShipDesignCatalogue(actor),legacy.CaptureBlueprints()
+                    .Where(b=>b.OwnerCivilizationId.Value==actor).ToList().AsReadOnly());
+            }
+        }
     }
 }
