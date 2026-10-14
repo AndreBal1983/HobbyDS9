@@ -110,6 +110,16 @@ namespace HobbyDS9.Simulation
                     && b.Commitments.Select(c => c.CommandId).Distinct(StringComparer.Ordinal).Count() == b.Commitments.Count
                     && b.Commitments.Select(c => c.ActorId).Distinct(StringComparer.Ordinal).Count() == b.Commitments.Count,
                     "Invalid private commitments.");
+                if(demo!=null&&b.State.Completion==TacticalCompletion.None)
+                {
+                    foreach(var ai in b.State.Formations.Where(f=>f.Status==TacticalFormationStatus.Active&&controllers[f.SideId]==ControllerKind.AI)
+                        .Select(f=>f.SideId).Distinct(StringComparer.Ordinal))
+                    {
+                        var commitment=b.Commitments.SingleOrDefault(c=>c.ActorId==ai);
+                        Require(commitment!=null&&commitment.CommandId=="ai-command.review."+ai+"."+b.State.EncounterId+"."+b.State.NextRound
+                            &&SameOrders(commitment.Orders,DemoTacticalOrders(b,ai)),"Forged/missing pending demo AI boundary commitment.");
+                    }
+                }
                 foreach (var c in b.Commitments)
                 {
                     Require(EntityId.TryParse(c.CommandId, out _) && (game.Civilizations!.Single(a => a.CivilizationId == c.ActorId).ControllerKind == ControllerKind.AI

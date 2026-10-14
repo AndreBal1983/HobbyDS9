@@ -34,11 +34,16 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
+                Require(demo==null,"Use ExportDemoSave: nested integrated save omits demo policy/objective.");
+                return ExportIntegratedCore();
+            }
+        }
+        private CampaignIntegratedPlaytestSaveDto ExportIntegratedCore()
+        {
                 Require(integratedHash != null, "Session is not an integrated playtest.");
                 return new CampaignIntegratedPlaytestSaveDto { FormatVersion = CampaignIntegratedPlaytestIdentity.SaveFormat,
                     ProfileId = CampaignIntegratedPlaytestIdentity.Profile, PackageHash = integratedHash!, Physical = TravelCopy(),
                     BuiltShips = builtShips.OrderBy(b => b.ShipId, StringComparer.Ordinal).Select(CopyBuild).ToList() };
-            }
         }
         private static CampaignIntegratedBuiltShipDto CopyBuild(CampaignIntegratedBuiltShipDto b) => new CampaignIntegratedBuiltShipDto {
             ShipId=b.ShipId,ShipDesignDefinitionId=b.ShipDesignDefinitionId,SourceProvisionShipId=b.SourceProvisionShipId,
