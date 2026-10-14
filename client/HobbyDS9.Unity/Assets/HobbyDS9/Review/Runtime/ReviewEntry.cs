@@ -80,10 +80,13 @@ namespace HobbyDS9.UnityReview
             panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");
             var document=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();document.panelSettings=panel;
             root=document.rootVisualElement;root.Clear();confirmation=null;
+            root.AddToClassList("physical-review-root");
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.025f,0.025f,0.035f);root.style.color=new Color(1f,0.72f,0.4f);
             root.style.fontSize=ReviewLayoutPolicy.MinimumReadableFont;
             foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars"})
             {var sheet=Resources.Load<StyleSheet>(resource);if(sheet!=null)root.styleSheets.Add(sheet);}
+            var controlsStyle=Resources.Load<StyleSheet>("ReviewControls");
+            if(controlsStyle!=null)root.styleSheets.Add(controlsStyle);
             banner=new Label();banner.style.whiteSpace=WhiteSpace.Normal;banner.style.unityFontStyleAndWeight=FontStyle.Bold;root.Add(banner);
             message=new Label();message.style.whiteSpace=WhiteSpace.Normal;root.Add(message);
             var toolbar=Row();root.Add(toolbar);
@@ -159,12 +162,13 @@ namespace HobbyDS9.UnityReview
         }
         private static Label Readout(){var l=new Label();l.style.whiteSpace=WhiteSpace.Normal;l.style.flexShrink=0;l.style.marginTop=12;return l;}
         private static VisualElement Row(){var r=new VisualElement();r.style.flexDirection=FlexDirection.Row;r.style.flexWrap=Wrap.Wrap;r.style.flexShrink=0;return r;}
-        private static TextField Field(string label,string value){var f=new TextField(label){value=value};f.style.minWidth=ReviewLayoutPolicy.MinimumControlWidth;return f;}
-        private static DropdownField Choice(string label,List<string> values){var f=new DropdownField(label,values,0);f.style.minWidth=ReviewLayoutPolicy.MinimumControlWidth;return f;}
+        private static TextField Field(string label,string value){var f=new TextField(label){value=value};f.AddToClassList("review-input");f.style.minWidth=ReviewLayoutPolicy.MinimumControlWidth;return f;}
+        private static DropdownField Choice(string label,List<string> values){var f=new DropdownField(label,values,0);f.AddToClassList("review-input");f.style.minWidth=ReviewLayoutPolicy.MinimumControlWidth;return f;}
         private static void Set(DropdownField field,List<string> values){if(values.Count==0)values.Add("none");var current=field.value;field.choices=values;field.SetValueWithoutNotify(values.Contains(current)?current:values[0]);}
         private Button AddButton(VisualElement parent,string title,Action action,bool dialog=false)
         {
             var epoch=viewEpoch;var button=new Button(()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null))action();}){text=title};
+            button.AddToClassList("review-action");
             button.style.minHeight=32;button.style.flexShrink=0;parent.Add(button);return button;
         }
         private void Do(Action action)
