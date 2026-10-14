@@ -37,7 +37,7 @@ namespace HobbyDS9.UnityClient
         private void Update()
         {
             double now = Time.realtimeSinceStartupAsDouble;
-            if (!Application.isFocused || now - started < WarmupSeconds) { skipNext = true; return; }
+            if (!UnityEngine.Application.isFocused || now - started < WarmupSeconds) { skipNext = true; return; }
             if (skipNext) { skipNext = false; return; }
             float ms = Time.unscaledDeltaTime * 1000f;
             if (ms > 0 && !float.IsNaN(ms) && !float.IsInfinity(ms))
@@ -82,8 +82,8 @@ namespace HobbyDS9.UnityClient
                     frameP99Ms = Percentile(sorted, .99),
                     maxFrameMs = Percentile(sorted, 1),
                     screenWidth = Screen.width, screenHeight = Screen.height,
-                    focused = Application.isFocused,
-                    vSyncCount = QualitySettings.vSyncCount, targetFrameRate = Application.targetFrameRate,
+                    focused = UnityEngine.Application.isFocused,
+                    vSyncCount = QualitySettings.vSyncCount, targetFrameRate = UnityEngine.Application.targetFrameRate,
                     engineAllocatedBytes = Profiler.GetTotalAllocatedMemoryLong(),
                     engineReservedBytes = Profiler.GetTotalReservedMemoryLong(),
                     gen0Collections = GC.CollectionCount(0),
