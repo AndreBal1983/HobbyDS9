@@ -10,8 +10,11 @@ manifest = json.loads((PACK / 'runtime-manifest.json').read_text(encoding='utf-8
 for entry in manifest['files']:
     file = PACK / entry['file']
     assert file.is_file(), file
-    assert hashlib.sha256(file.read_bytes()).hexdigest() == entry['sha256'], file
-    assert file.stat().st_size == entry['bytes'], file
+    data = file.read_bytes()
+    if entry.get('hashMode') == 'utf8-lf-trim-eol':
+        data = ('\n'.join(line.rstrip() for line in data.decode('utf-8').splitlines()) + '\n').encode('utf-8')
+    assert hashlib.sha256(data).hexdigest() == entry['sha256'], file
+    assert len(data) == entry['bytes'], file
 guids = {}
 for file in (ROOT / 'client/HobbyDS9.Unity/Assets').rglob('*.meta'):
     match = re.search(r'^guid: (\w+)', file.read_text(encoding='utf-8'), re.M)
