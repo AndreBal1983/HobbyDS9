@@ -47,10 +47,10 @@ namespace HobbyDS9.Application
             References=new CampaignIntegratedReferenceSnapshot(privateFacts,actor);
         }
     }
-    public sealed class CampaignIntegratedPlaytestApplication : ICampaignIntegratedPlaytestSession
+    public class CampaignIntegratedPlaytestApplication : ICampaignIntegratedPlaytestSession
     {
-        private readonly CampaignTacticalReviewSession session;
-        private CampaignIntegratedPlaytestApplication(CampaignTacticalReviewSession session) { this.session=session; }
+        protected readonly CampaignTacticalReviewSession session;
+        internal CampaignIntegratedPlaytestApplication(CampaignTacticalReviewSession session) { this.session=session; }
         public static ICampaignIntegratedPlaytestSession StartPackage(CampaignIntegratedPlaytestPackageDto p)
             => new CampaignIntegratedPlaytestApplication(CampaignTacticalReviewSession.StartIntegrated(p));
         public static ICampaignIntegratedPlaytestSession LoadSave(CampaignIntegratedPlaytestPackageDto p,CampaignIntegratedPlaytestSaveDto s)
