@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Linq;
 using HobbyDS9.Contracts;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -17,13 +18,15 @@ namespace HobbyDS9.UnityReview
             var spine=new VisualElement();spine.AddToClassList("console-spine");root.Add(spine);
             var header=new VisualElement{name="player-header"};header.AddToClassList("console-header");root.Add(header);
             var names=new VisualElement();header.Add(names);
-            var identity=Readout("EARLY CAMPAIGN PREVIEW · "+OwnerName(model!.Current.Frame.Actor));identity.name="review-scenario-identity";identity.AddToClassList("console-kicker");names.Add(identity);
+            var identity=Readout((model!.SingleplayerDemo?"HOBBYDS9 · SINGLE PLAYER DEMO · ":"EARLY CAMPAIGN PREVIEW · ")+OwnerName(model.Current.Frame.Actor));identity.name="review-scenario-identity";identity.AddToClassList("console-kicker");names.Add(identity);
             playerTitle=Readout(Title(workspace!.Page));playerTitle.AddToClassList("console-title");names.Add(playerTitle);
+            if(model.Current.Frame.Demo!=null){var objective=Readout("");objective.name="demo-objective";objective.AddToClassList("console-kicker");names.Add(objective);}
             playerStatus=Readout("");playerStatus.AddToClassList("console-status");header.Add(playerStatus);
             playerGuidance=Readout("");playerGuidance.name="player-guidance";playerGuidance.AddToClassList("console-guidance");root.Add(playerGuidance);
             var body=new VisualElement();body.AddToClassList("console-body");root.Add(body);
-            var nav=new VisualElement{name="review-workspace-navigation"};nav.AddToClassList("console-nav");body.Add(nav);
-            foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Designer,ReviewWorkspacePage.Tools})
+            var nav=new ScrollView(ScrollViewMode.Vertical){name="review-workspace-navigation"};nav.AddToClassList("console-nav");body.Add(nav);if(model.SingleplayerDemo&&(demoLanding||!demoStarted))nav.style.display=DisplayStyle.None;
+            if(model.SingleplayerDemo){var menu=AddButton(nav,"Menu",OpenDemoMenu);menu.name="demo-menu";}
+            foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Display,ReviewWorkspacePage.Designer,ReviewWorkspacePage.Tools})
             {
                 var b=AddButton(nav,(page==ReviewWorkspacePage.Map?"Map":Title(page))+(workspace.Page==page?"  ›":""),()=>Navigate(page));b.name="review-nav-"+page;b.SetEnabled(workspace.CanNavigate);b.EnableInClassList("selected-nav",workspace.Page==page);
             }
@@ -48,6 +51,7 @@ namespace HobbyDS9.UnityReview
                 case ReviewWorkspacePage.Audio:return "Audio";
                 case ReviewWorkspacePage.Designer:return "Ship Design";
                 case ReviewWorkspacePage.Worlds:return "Worlds";
+                case ReviewWorkspacePage.Display:return "Display";
                 default:return "Test Tools";
             }
         }
@@ -55,10 +59,13 @@ namespace HobbyDS9.UnityReview
         {
             var frame=model!.Current.Frame;playerTitle!.text=Title(workspace!.Page);
             playerStatus!.text="Turn "+frame.Status.Turn+" · "+(frame.Status.Phase==SessionPhase.Planning?"Planning":"Combat pending")+"\nCredits "+frame.Strategy!.Civilization.Credits;
+            if(frame.Demo!=null){var goal=frame.Strategy.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==frame.Demo.ObjectiveNodeId)?.DisplayName??"Objective sector";root!.Q<Label>("demo-objective").text="Objective: "+goal+" · Through turn "+frame.Demo.LastTurn+" · "+frame.Demo.Outcome;}
             playerGuidance!.text=PlayerMessage();
-            if(workspace.Page==ReviewWorkspacePage.Combat)central!.Render();
+            if(model.SingleplayerDemo&&demoLanding){playerTitle.text="HobbyDS9 Demo";DrawDemoLanding();}
+            else if(workspace.Page==ReviewWorkspacePage.Combat)central!.Render();
             else if(workspace.Page==ReviewWorkspacePage.Saves)DrawSaves();
             else if(workspace.Page==ReviewWorkspacePage.Audio)DrawAudio();
+            else if(workspace.Page==ReviewWorkspacePage.Display)DrawDisplay();
             else if(workspace.Page==ReviewWorkspacePage.Tools)DrawTools();
             else if(workspace.Page==ReviewWorkspacePage.Designer)DrawDesigner();
             else player!.Render(content!,workspace.Page);
@@ -66,13 +73,18 @@ namespace HobbyDS9.UnityReview
         }
         private string PlayerMessage()
         {
+            if(model!.HasLocalEdits)return model.Current.RefreshRequired?"Unsent changes kept · refresh your view before applying. Saving committed state keeps these edits locally.":"Unsent changes · apply or discard them before ending the turn. Navigation keeps your edits.";
+            var demo=model.Current.Frame.Demo;
+            if(demo!=null&&demo.Outcome!=CampaignDemoOutcome.Active)return "Demo outcome: "+demo.Outcome+". You may inspect or save the completed campaign, or start a new demo from Menu.";
             if(model!.Message.Contains("Stale"))return "Your view changed. Open Test Tools to refresh it before trying again. Your edits are kept.";
             if(model.Current.RefreshRequired)return "That action could not be applied. Your campaign and edits are kept; refresh the view in Test Tools.";
-            if(model.Message.Contains("Checkpoint result: None"))return "Campaign saved or loaded successfully.";
-            if(model.Message=="Validated complete-root checkpoint loaded.")return "Campaign loaded. Accepted state is restored; previous local edits were discarded.";
-            if(model.Message.Contains("NotFound"))return "That save slot is empty. Choose another slot or save your current campaign.";
-            if(model.Message.Contains("InvalidCheckpoint"))return "This save cannot be loaded by the current scenario. Your campaign is unchanged.";
-            if(model.Message.Contains("WriteFailed"))return "Saving failed. Your previous save and current campaign are kept.";
+            if(workspace!.Page==ReviewWorkspacePage.Saves||demoLanding){
+                if(model.Message.Contains("Checkpoint result: None"))return "Campaign saved or loaded successfully.";
+                if(model.Message=="Validated complete-root checkpoint loaded.")return "Campaign loaded. Accepted state is restored; previous local edits were discarded.";
+                if(model.Message.Contains("NotFound"))return "That save slot is empty. Choose another slot or save your current campaign.";
+                if(model.Message.Contains("InvalidCheckpoint"))return "This save cannot be loaded by the current scenario. Your campaign is unchanged.";
+                if(model.Message.Contains("WriteFailed"))return "Saving failed. Your previous save and current campaign are kept.";
+            }
             if(flow!.Stage==ReviewCombatStage.Waiting)return "Your orders are submitted. This early scenario uses two human sides: open Test Tools to switch sides and provide their orders.";
             if(flow.Stage==ReviewCombatStage.AftermathPending)return "Battle complete. Confirm the campaign aftermath in Combat, then give survivors fresh fleet orders.";
             if(flow.Stage==ReviewCombatStage.RoundResult)return "Round resolved. Review the report and retained stocks in Combat, then plan the next round.";
@@ -84,6 +96,7 @@ namespace HobbyDS9.UnityReview
         private void DrawPlayerFooter()
         {
             playerFooter!.Clear();var left=new VisualElement();left.AddToClassList("review-field-row");playerFooter.Add(left);
+            if(model!.SingleplayerDemo&&(demoLanding||!demoStarted)){AddButton(left,"Back to menu",OpenDemoMenu);return;}
             AddButton(left,"‹ Return to map",()=>Navigate(ReviewWorkspacePage.Map));
             AddButton(left,"Save",()=>Navigate(ReviewWorkspacePage.Saves));
             if(model!.HasLocalEdits)AddButton(left,"Discard changes",()=>Confirm("Discard your unsent edits? Your accepted orders and campaign remain unchanged.",()=>Do(()=>model.Reset())));
@@ -97,7 +110,7 @@ namespace HobbyDS9.UnityReview
             if(model.Current.Frame.Status.Phase!=SessionPhase.Planning){Primary("Open combat",()=>Navigate(ReviewWorkspacePage.Combat));return;}
             Primary("End turn →",()=>Confirm("End turn with your accepted orders? Research and Industry will progress. Unsent edits must be applied or discarded first.",()=>Do(()=>model.Advance())),CanPlan()&&!model.HasLocalEdits);
         }
-        private bool CanPlan()=>model!.Current.Frame.Status.Phase==SessionPhase.Planning&&!model.Current.RefreshRequired&&!model.Current.HasPendingWork&&!model.Busy&&!model.Closed;
+        private bool CanPlan()=>model!.Current.Frame.Status.Phase==SessionPhase.Planning&&(model.Current.Frame.Demo==null||model.Current.Frame.Demo.Outcome==CampaignDemoOutcome.Active)&&!model.Current.RefreshRequired&&!model.Current.HasPendingWork&&!model.Busy&&!model.Closed;
         private Button Primary(string label,Action action,bool enabled=true){var b=AddButton(playerFooter!,label,action);b.AddToClassList("primary-action");b.name="player-primary-action";b.SetEnabled(enabled);return b;}
         private VisualElement PagePanel(string heading)
         {content!.Clear();var p=new ScrollView(ScrollViewMode.Vertical);p.AddToClassList("console-panel");content.Add(p);var h=Readout(heading);h.AddToClassList("console-section");p.Add(h);return p;}
@@ -105,12 +118,12 @@ namespace HobbyDS9.UnityReview
         {
             var p=PagePanel("Save & resume");p.Add(Readout("Save your current campaign, or load a compatible save. Saving keeps unsent edits locally; successful loading replaces them."));
             var slots=new VisualElement();slots.AddToClassList("review-field-row");p.Add(slots);
-            foreach(var slot in new[]{"campaign-1","campaign-2","campaign-3"})
-            {var b=AddButton(slots,"Campaign "+slot.Substring(slot.Length-1)+(slotName==slot?" · selected":""),()=>{slotName=slot;Draw();});b.name="save-slot-"+slot;}
+            foreach(var slot in model!.SingleplayerDemo?new[]{"demo-1","demo-2","demo-3"}:new[]{"campaign-1","campaign-2","campaign-3"})
+            {var b=AddButton(slots,(model.SingleplayerDemo?"Demo ":"Campaign ")+slot.Substring(slot.Length-1)+(slotName==slot?" · selected":""),()=>{slotName=slot;Draw();});b.name="save-slot-"+slot;}
             p.Add(Readout("Selected slot: "+slotName));
             var save=AddButton(p,"Save current campaign",()=>Do(()=>{if(!model!.Save(slotName)&&model.Message=="Checkpoint result: SlotOccupied")Confirm("Replace the save in "+slotName+"? Your current campaign will be saved; unsent edits stay local.",()=>Do(()=>model.Save(slotName,true)));}));save.name="player-save";save.AddToClassList("primary-action");
             var load=AddButton(p,"Load selected campaign",()=>Confirm("Load "+slotName+"? Only a validated compatible save can replace this campaign. Unsent edits will be discarded after a successful load.",()=>Do(()=>model!.Load(slotName,true))));load.name="player-load";
-            p.Add(Readout("Early campaign saves remain separate from classic and earlier physical-review saves. Failed loads keep your current session."));
+            p.Add(Readout(model.SingleplayerDemo?"Format-4 demo saves remain separate from classic, physical and integrated-review saves. Failed loads keep your current session.":"Early campaign saves remain separate from classic and earlier physical-review saves. Failed loads keep your current session."));
         }
         private void DrawAudio()
         {
@@ -121,6 +134,7 @@ namespace HobbyDS9.UnityReview
         private void DrawTools()
         {
             var p=PagePanel("Developer / Test Tools");p.Add(Readout("This early scenario uses two human sides. These host controls are not an opponent AI or an account security boundary."));
+            if(model!.SingleplayerDemo){p.Clear();p.Add(Readout("Single-player demo: the computer owns its decisions. No opponent actor switching is exposed."));AddButton(p,"Refresh current view",()=>Do(()=>model.Refresh()));p.Add(Readout(model.Message));return;}
             foreach(var actor in new[]{"civ.federation","civ.cardassian"}){var b=AddButton(p,"Switch human side to "+OwnerName(actor),()=>{if(model!.HasLocalEdits)Confirm("Switch side and discard unsent edits?",()=>Do(()=>model.SwitchActor(actor,true)));else Do(()=>model.SwitchActor(actor));});b.name="player-switch-"+actor;}
             AddButton(p,"Refresh view",()=>Do(()=>model!.Refresh()));
             p.Add(Readout("Profile integrated-playtest-v1 · proposed numerical policies · default activation disabled"));p.Add(Readout(workspace!.BoundaryIdentity));p.Add(Readout(model!.Message));

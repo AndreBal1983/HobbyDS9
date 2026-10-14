@@ -31,6 +31,7 @@ namespace HobbyDS9.UnityReview
     {
         private ReviewLaunchOptions? options;
         private IntegratedLaunchOptions? integratedOptions;
+        private SingleplayerDemoLaunchOptions? demoOptions;
         private ReviewUiModel? model;
         private ReviewCombatFlow? flow;
         public ReviewCombatFlow? Presentation=>flow;
@@ -49,24 +50,32 @@ namespace HobbyDS9.UnityReview
         private readonly ReviewModalPermission modalPermission=new ReviewModalPermission();
         public void Configure(ReviewLaunchOptions value){if(options==null)options=value;}
         public void ConfigureIntegrated(IntegratedLaunchOptions value){if(options==null&&integratedOptions==null)integratedOptions=value;}
+        public void ConfigureDemo(SingleplayerDemoLaunchOptions value){if(options==null&&integratedOptions==null&&demoOptions==null)demoOptions=value;}
         private void OnEnable()
         {
             viewEpoch++;modalPermission.Invalidate();
             try
             {
-                if(options==null&&integratedOptions==null)throw new InvalidOperationException();
+                if(options==null&&integratedOptions==null&&demoOptions==null)throw new InvalidOperationException();
                 if(model==null)
                 {
                     byte[] Bytes(string name)
                     {
                         string path;
-                        if(integratedOptions!=null)path="IntegratedPackages/v1/"+name;
+                        if(demoOptions!=null)path="DemoPackages/v1/"+name;
+                        else if(integratedOptions!=null)path="IntegratedPackages/v1/"+name;
                         else{if(options==null)throw new InvalidOperationException();path="ReviewPackages/"+options.Profile+"/"+name;}
                         var asset=Resources.Load<TextAsset>(path);
                         if(asset==null)throw new InvalidOperationException();return asset.bytes;
                     }
                     var codec=new ReviewNewtonsoftCodec();
-                    if(integratedOptions!=null)
+                    if(demoOptions!=null)
+                    {
+                        demoSource=ReviewExactPackageLoader.LoadDemo(Bytes("demo"),Bytes("package"),Bytes("physical"),Bytes("core"),Bytes("scenario"),codec);
+                        model=new ReviewUiModel(demoSource,codec,new ReviewDemoSlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9SingleplayerDemoOnly-v4"),codec));
+                        slotName="demo-1";demoLanding=true;
+                    }
+                    else if(integratedOptions!=null)
                     {
                         var package=ReviewExactPackageLoader.LoadIntegrated(Bytes("package"),Bytes("physical"),Bytes("core"),Bytes("scenario"),codec);
                         model=new ReviewUiModel(package,codec,new ReviewIntegratedSlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9IntegratedPlaytestOnly-v3"),codec),integratedOptions.Actor);
@@ -77,7 +86,7 @@ namespace HobbyDS9.UnityReview
                         var package=ReviewExactPackageLoader.Load(Bytes("package"),Bytes("core"),Bytes("scenario"),codec);
                         model=new ReviewUiModel(package,codec,new ReviewUnitySlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9PhysicalReviewOnly-v2"),codec),options!.Actor);
                     }
-                    flow=new ReviewCombatFlow(model);workspace=new ReviewWorkspace(flow);actorInput=integratedOptions?.Actor??options!.Actor;
+                    flow=new ReviewCombatFlow(model);workspace=new ReviewWorkspace(flow);actorInput=model.Current.Frame.Actor;
                 }
                 Build();
             }
@@ -115,12 +124,12 @@ namespace HobbyDS9.UnityReview
             panel=ScriptableObject.CreateInstance<PanelSettings>();panel.scaleMode=model!.Integrated?PanelScaleMode.ConstantPixelSize:PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
             panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=1;panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");
             var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();doc.panelSettings=panel;
-            root=doc.rootVisualElement;root.Clear();confirmation=null;root.AddToClassList("physical-review-root");
+            root=doc.rootVisualElement;root.Clear();root.styleSheets.Clear();confirmation=null;root.AddToClassList("physical-review-root");
             BindAudio();
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.03f,0.05f,0.08f);root.style.color=new Color(0.92f,0.95f,1);root.style.fontSize=16;
             foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ShipDesigner","ReviewControls","ReviewCombat","PlayerConsole"})
             {var sheet=Resources.Load<StyleSheet>(resource);if(sheet!=null)root.styleSheets.Add(sheet);}
-            if(model.Integrated){BuildPlayerShell();root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();return;}
+            if(model.Integrated){workspace!.Compact=Screen.width<1600||Screen.height<850;root.EnableInClassList("player-narrow",workspace.Compact);BuildPlayerShell();root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();return;}
             var identity=Readout((model!.Integrated?"OPT-IN INTEGRATED PLAYTEST | SCENARIO: integrated-playtest-v1":"OPT-IN PHYSICAL TACTICAL V2 | SCENARIO: "+options!.Profile)+" | ACTOR VIEW: "+model.Current.Frame.Actor+" | Proposed policies; default campaign activation disabled");
             identity.name="review-scenario-identity";identity.AddToClassList("review-heading");root.Add(identity);
             root.Add(Readout(workspace!.BoundaryIdentity));

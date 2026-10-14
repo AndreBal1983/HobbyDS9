@@ -52,6 +52,22 @@ namespace HobbyDS9.UnityClient
             UnityEngine.Application.targetFrameRate = -1;
             // Explicit opt-in only. Reflection avoids a default-assembly dependency/cycle.
             var reviewArgs=Environment.GetCommandLineArgs();
+            // This define is supplied only to the separate versioned demo build.
+            // Ordinary builds retain their existing no-flag startup behavior.
+#if HOBBYDS9_SINGLEPLAYER_DEMO
+            if(Array.IndexOf(reviewArgs,"--hobbyds9-singleplayer-demo")<0)reviewArgs=reviewArgs.Concat(new[]{"--hobbyds9-singleplayer-demo"}).ToArray();
+#endif
+            if(Array.IndexOf(reviewArgs,"--hobbyds9-singleplayer-demo")>=0)
+            {
+                try
+                {
+                    var bridge=Type.GetType("HobbyDS9.UnityReview.SingleplayerDemoLaunch, HobbyDS9.UnityReview",false);
+                    var launch=bridge?.GetMethod("Launch",System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static);
+                    if(launch==null)throw new InvalidOperationException();launch.Invoke(null,new object[]{reviewArgs});
+                }
+                catch(Exception){Debug.LogError("Single-player demo unavailable. Check its complete package/resources; no legacy campaign was started.");}
+                return;
+            }
             if(Array.IndexOf(reviewArgs,"--hobbyds9-integrated-playtest")>=0)
             {
                 try

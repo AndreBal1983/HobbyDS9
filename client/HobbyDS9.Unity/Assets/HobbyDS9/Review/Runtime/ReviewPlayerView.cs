@@ -19,7 +19,7 @@ namespace HobbyDS9.UnityReview
         private KnownRouteOffer? route {get=>workspace.RoutePreview;set=>workspace.RoutePreview=value;}
         public ReviewPlayerView(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate,Action<string,string?,string?> selectFleet)
         {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;this.selectFleet=selectFleet;}
-        private bool Editable=>model.Current.Frame.Status.Phase==SessionPhase.Planning&&!model.Current.HasPendingWork&&!model.Current.RefreshRequired&&!model.Current.Dirty&&!model.Busy&&!model.Closed;
+        private bool Editable=>model.Current.Frame.Status.Phase==SessionPhase.Planning&&(model.Current.Frame.Demo==null||model.Current.Frame.Demo.Outcome==CampaignDemoOutcome.Active)&&!model.Current.HasPendingWork&&!model.Current.RefreshRequired&&!model.Current.Dirty&&!model.Busy&&!model.Closed;
         private static Label Text(VisualElement p,string text,string cls="console-copy",string? id=null)
         {var l=new Label(text){name=id??""};l.AddToClassList(cls);p.Add(l);return l;}
         private Button Btn(VisualElement p,string text,string id,Action action,bool enabled=true,bool primary=false)
@@ -44,7 +44,7 @@ namespace HobbyDS9.UnityReview
             var r=facts.Research;var d=model.ResearchInputs()!;bool edit=Editable&&d.Current(model.Current.Frame);
             if(workspace.ResearchTab=="science")
             {
-                Text(main,"Invest in discovery","console-intro");
+                if(!workspace.Compact)Text(main,"Invest in discovery","console-intro");
                 var grid=Row(main,"science-grid");grid.name="six-science-cards";
                 foreach(var card in r.Science)
                 {
@@ -81,6 +81,7 @@ namespace HobbyDS9.UnityReview
                     Text(card,project.Definition.DisplayName,"console-section");Text(card,project.IsTarget?"Current project":Reason(project.UnavailableReason));
                     card.Add(new ProgressBar{value=project.MaturityPercent});Text(card,project.MaturityPercent+"% · "+project.Band,"console-metric");
                     Text(card,"Cost: "+Units(project.Cost)+" research points");Text(card,project.Definition.EffectSummary);
+                    Text(card,"Construction in this preview supports "+string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct())+". Additional class unlocks are not available here yet.");
                     var requirements=new Foldout{text="Requirements & progress",value=false};card.Add(requirements);
                     for(int i=0;i<project.Definition.ScienceRequirements.Count;i++){var q=project.Definition.ScienceRequirements[i];Text(requirements,(project.ScienceSatisfied[i]?"✓ ":"○ ")+q.Discipline+" interval "+q.IntervalStartLevel+" breakthrough "+q.BreakthroughOrdinal);}
                     Btn(card,"Develop project","integrated-develop-"+project.Definition.DefinitionId,()=>confirm("Develop "+project.Definition.DisplayName+"? Earned progress is retained when you change targets. Work progresses on End turn.",()=>perform(()=>model.Engineering(project.Definition.DefinitionId.Value,ReviewUiModel.NewCommandId()))),edit&&project.CanTarget,true);
@@ -111,9 +112,9 @@ namespace HobbyDS9.UnityReview
         {
             var main=Panel(root,"Production queue");var aside=Panel(root,"Build a ship","console-aside");
             var eligible=facts.Construction.FirstOrDefault(o=>o.CanEnqueue)?.ColonyId.Value;
-            if(colony==null||!facts.Colonies.Any(c=>c.ColonyId.Value==colony))colony=eligible??facts.Colonies.FirstOrDefault()?.ColonyId.Value;
+            if(colony==null||!facts.Colonies.Any(c=>c.ColonyId.Value==colony))colony=facts.Colonies.FirstOrDefault(c=>c.ProductionQueue.Count>0)?.ColonyId.Value??eligible??facts.Colonies.FirstOrDefault()?.ColonyId.Value;
             var selection=Row(main);
-            foreach(var world in facts.Colonies)Btn(selection,world.Environment.DisplayName+(world.ColonyId.Value==colony?" · selected":""),"production-colony-"+world.ColonyId,()=>perform(()=>colony=world.ColonyId.Value));
+            foreach(var world in facts.Colonies)Btn(selection,world.Environment.DisplayName+(world.ProductionQueue.Count>0?" · queue "+world.ProductionQueue.Count:"")+(world.ColonyId.Value==colony?" · selected":""),"production-colony-"+world.ColonyId,()=>perform(()=>colony=world.ColonyId.Value));
             var selected=facts.Colonies.FirstOrDefault(c=>c.ColonyId.Value==colony);
             if(selected==null){Text(main,"You have no owned shipyards.");return;}
             Text(main,selected.Environment.DisplayName+" · Industry "+selected.Economy.Industry,"console-intro");

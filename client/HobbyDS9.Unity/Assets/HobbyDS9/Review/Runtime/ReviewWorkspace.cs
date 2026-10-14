@@ -4,7 +4,7 @@ using HobbyDS9.TacticalReviewClient;
 
 namespace HobbyDS9.UnityReview
 {
-    public enum ReviewWorkspacePage { Map, Research, Production, FleetOrders, Combat, Saves, Audio, Tools, Designer, Worlds }
+    public enum ReviewWorkspacePage { Map, Research, Production, FleetOrders, Combat, Saves, Audio, Tools, Designer, Worlds, Display }
 
     // Navigation owns presentation only. It never creates/replaces a host, refreshes a
     // campaign, drops a controller draft or dispatches authoritative work.

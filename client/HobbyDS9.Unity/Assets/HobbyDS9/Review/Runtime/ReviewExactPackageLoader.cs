@@ -30,5 +30,12 @@ namespace HobbyDS9.UnityReview
             package.PackageHash=Hash(Encoding.ASCII.GetBytes("campaign-integrated-playtest-package-v3\n"+Hash(outer)+"\n"+package.Physical.PackageHash+"\n"));
             return package;
         }
+        public static CampaignSingleplayerDemoPackageDto LoadDemo(byte[] demo,byte[] integrated,byte[] physical,byte[] core,byte[] scenario,ReviewNewtonsoftCodec codec)
+        {
+            var package=codec.DecodeDemoProfile(demo);
+            package.Integrated=LoadIntegrated(integrated,physical,core,scenario,codec);
+            package.PackageHash=Hash(Encoding.ASCII.GetBytes("campaign-singleplayer-demo-package-v4\n"+Hash(demo)+"\n"+package.Integrated.PackageHash+"\n"));
+            return package;
+        }
     }
 }
