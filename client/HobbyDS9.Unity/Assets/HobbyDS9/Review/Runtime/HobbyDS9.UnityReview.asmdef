@@ -1,0 +1,13 @@
+{
+  "name": "HobbyDS9.UnityReview",
+  "rootNamespace": "HobbyDS9.UnityReview",
+  "references": [],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "HobbyDS9.Application.dll",
+    "HobbyDS9.Contracts.dll",
+    "HobbyDS9.TacticalReviewClient.dll",
+    "Newtonsoft.Json.dll"
+  ],
+  "autoReferenced": false
+}
