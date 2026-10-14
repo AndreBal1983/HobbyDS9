@@ -16,12 +16,16 @@ Actual Editor captures from the corrected run (not Blender renders or whole-scre
 
 ![Explicit generic fallback](demo-art-runtime-evidence/fallback.png)
 
-## Final narrow follow-up
+## Final exact-pin recheck
 
-**Pending a coordinated recheck:** after the 15/15 run, Unity's serialized material normalization exposed four luminous materials with missing AnyEmissive flags. Their world URP emission flags/keywords were corrected; the preview shader's colour/emission source values are unchanged. The fixture now asserts world emission retention and additionally counts inactive cameras, owned materials, fallback meshes and render textures after disposal. These final assertions/data edits have not yet been rerun; do not apply the prior green count to the new final head without that check.
+**Passed at source `02f5992be2041ee52f08d917fa7b7777af0d3415`: 15/15**, zero failed, pinned Unity6000.6.5f1 graphics-enabled Editor EditMode. The final fixture confirms world emission retention after import and additionally counts inactive cameras, owned materials, fallback meshes and render textures after disposal. Actual refreshed PNGs were visually inspected; runtime manifest verification still passes after import. Unity exited and the lease was released immediately. No runtime source changed afterward.
+
+Exact source/results/evidence hashes are in `artifacts/art-demo-runtime/final-acceptance.json` and `FINAL-ACCEPTANCE.md`; raw final report/log are `editmode-final.xml/.log`. These final local report updates and PR metadata supersede historical pending paragraphs in the frozen PR source docs. No additional source push was made after the final test, respecting the coordinator's freeze.
 
 Raw reports/logs: `C:/Users/ambal/.codex/worktrees/demo-art-runtime/HobbyDS9/artifacts/art-demo-runtime/editmode.xml`, `editmode.log`, `editmode-2.xml`, `editmode-2.log`. Receipt and runtime manifest preserve exact tested/source hashes; Git/PR records delivery pins. Generated receiving-project/Unity settings deltas from preparation/import are excluded from this art branch's commits.
 
 ## Limits
+
+CI follow-up: both default static workflows at02f failed because the Git-policy `.gitattributes` file was inside Assets and therefore lacked Unity metadata. The policy is moved to the repository root with identical ArtDemo-only patterns; metadata validation is unchanged. This fixes file placement, not runtime behaviour. Prior15/15 graphics evidence still applies to the unchanged runtime/asset payload, while exact new-head hosted static checks remain a separate gate.
 
 Simple provisional hull art and fixed studio preview lighting; no final texture atlases, canon-class claim, new gameplay ships/equipment, physics/combat authority, native player interaction proof or profiled fleet performance budget. Only the exact Federation source-cruiser binding is enabled. Unsupported faction/design identities remain generic; hidden/non-visible selections clear. Frontend call-site binding and combined player validation are separate deliveries owned by Secondary/coordinator.
