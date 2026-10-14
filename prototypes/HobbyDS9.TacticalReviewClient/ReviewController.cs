@@ -20,6 +20,17 @@ namespace HobbyDS9.TacticalReviewClient
         public bool Dirty => draft.Count != 0 || travelDraft != null;
         public IReadOnlyList<FleetEdit> Draft => draft.Values.OrderBy(o=>o.Fleet,StringComparer.Ordinal).ToList().AsReadOnly();
         public bool HasPendingWork => pending != null;
+        public ReviewReceipt ExecutePending(ReviewWork work)
+        {
+            if(pending==null||!ReferenceEquals(pending,work)||work.ControllerId!=id)
+                throw new InvalidOperationException("Only this controller's current pending work may execute.");
+            if(!host.IsCurrent(work))
+            {
+                pending=null;RefreshRequired=true;Mode=ModeFor(Frame);
+                throw new InvalidOperationException("Pending work belongs to an obsolete host generation; explicitly reload to recover.");
+            }
+            return host.Execute(work); // Reopen may have replaced the host; never dispatch through an obsolete caller reference.
+        }
         public string? SelectedShip { get; private set; }
         public bool DraftInvalidated { get; private set; }
         public ReviewController(ReviewHost host, string actor)

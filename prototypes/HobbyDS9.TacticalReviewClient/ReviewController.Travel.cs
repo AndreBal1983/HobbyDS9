@@ -16,7 +16,7 @@ namespace HobbyDS9.TacticalReviewClient
         }
         public bool EditTravel(string fleet,CampaignTravelIntent intent,KnownRouteOffer? offer = null,string? contact = null)
         {
-            if(Mode != ReviewMode.Planning || RefreshRequired || Frame.Travel == null
+            if(Mode != ReviewMode.Planning || RefreshRequired || Frame.Travel == null || Frame.Demo!=null&&Frame.Demo.Outcome!=CampaignDemoOutcome.Active
                 || !Frame.OwnStrategicFleets.Any(f=>f.FleetId.Value == fleet) || !Enum.IsDefined(typeof(CampaignTravelIntent),intent)) return false;
             if(offer != null && (offer.HostId != Frame.HostId || offer.Generation != Frame.Generation || offer.Actor != Frame.Actor
                 || offer.Fleet != fleet || offer.Turn != Frame.Status.Turn || offer.CampaignRevision != Frame.Status.CampaignRevision || !offer.Route.Success)) return false;
