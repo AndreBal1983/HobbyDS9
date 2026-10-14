@@ -1,0 +1,6 @@
+{
+  "name": "HobbyDS9.ArtDemo",
+  "rootNamespace": "HobbyDS9.ArtDemo",
+  "references": ["Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
+  "autoReferenced": false
+}
