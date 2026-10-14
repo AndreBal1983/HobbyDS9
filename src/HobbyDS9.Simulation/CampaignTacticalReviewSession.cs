@@ -27,12 +27,20 @@ namespace HobbyDS9.Simulation
         private IReadOnlyList<CombatRequestDto> CurrentRequests=>travel?.Requests??state.Campaign.GameState.PendingCombats!.Select(p=>p.Request).ToList();
         internal Action<int>? FinalizationProbe { get; set; }
         private CampaignTacticalReviewSession(CampaignTacticalReviewPackageDto package, CampaignTacticalReviewSaveDto? save,
-            CampaignTacticalTravelPackageDto? physicalPackage=null,CampaignTacticalTravelSaveDto? physicalSave=null)
+            CampaignTacticalTravelPackageDto? physicalPackage=null,CampaignTacticalTravelSaveDto? physicalSave=null,
+            CampaignIntegratedPlaytestPackageDto? integratedPackage=null,CampaignIntegratedPlaytestSaveDto? integratedSave=null)
         {
             ValidatePackage(package);
             definitions = SimulationSession.CopyDefinitions(package.Campaign!.Definitions);
             controllers = package.Campaign.InitialState.Civilizations!.ToDictionary(c => c.CivilizationId,c => c.ControllerKind!.Value,StringComparer.Ordinal);
             initialTurn = package.Campaign.InitialState.TurnNumber;
+            if (integratedPackage != null)
+            {
+                integratedHash = integratedPackage.PackageHash;
+                constructionTemplates = integratedPackage.ConstructionTemplates!.Select(t => new CampaignIntegratedConstructionTemplateDto {
+                    ShipDesignDefinitionId=t.ShipDesignDefinitionId,SourceProvisionShipId=t.SourceProvisionShipId }).ToList();
+                builtShips = integratedSave == null ? new List<CampaignIntegratedBuiltShipDto>() : integratedSave.BuiltShips!.Select(CopyBuild).ToList();
+            }
             compatibility = new SaveCompatibility(package.Campaign.ScenarioId, package.Campaign.RulesVersion, package.Campaign.ContentHash);
             rules = CopyRules(package.Rules!);
             cloak = package.CloakSources!.OrderBy(c => c.FitId, StringComparer.Ordinal).Select(c => new CampaignTacticalCloakSourceDto {
@@ -84,7 +92,7 @@ namespace HobbyDS9.Simulation
         public CampaignTacticalReviewSaveDto ExportSave() { lock (gate) return Copy(state); }
         internal SessionSnapshot CaptureCampaign() { lock (gate) return Legacy(state).CaptureSnapshot(); }
         private SimulationSession Legacy(CampaignTacticalReviewSaveDto s) => new SimulationSession(s.Campaign, definitions, compatibility);
-        private AuthoredTacticalShipProvisionDto Provision(string id) => definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Single(p => p.ShipId == id);
+        private AuthoredTacticalShipProvisionDto Provision(string id) => ResolveProvision(id);
         private AuthoredTacticalFitDto Fit(string ship) { var p = Provision(ship); return definitions.AuthoredTacticalEquipment!.Fits!.Single(f => f.DefinitionId == p.FitDefinitionId && f.Revision == p.FitRevision); }
         private CampaignTacticalPoolDto InitialPool(string ship)
         {
@@ -131,7 +139,7 @@ namespace HobbyDS9.Simulation
                 if(CurrentPhase!=SessionPhase.Planning)return Result(CampaignTacticalError.WrongPhase);
                 if(travel!=null&&command?.Kind==CommandKind.SetFleetRoute)return Result(CampaignTacticalError.InvalidOrder);
                 if (command != null && state.AcceptedRoundCommands.Contains(command.CommandId, StringComparer.Ordinal)) return Result(CampaignTacticalError.DuplicateCommand);
-                if (command != null && (command.Kind == CommandKind.EnqueueProduction || command.Kind == CommandKind.EnqueueBlueprintConstruction))
+                if (command != null && (command.Kind == CommandKind.EnqueueProduction || command.Kind == CommandKind.EnqueueBlueprintConstruction) && !AdmittedConstruction(command))
                     return Result(CampaignTacticalError.UnsupportedSource); // no authored-v2 construction/provisioning contract.
                 var session = Legacy(state); var result = session.SubmitCommand(command);
                 if (!result.Accepted)
