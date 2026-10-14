@@ -43,6 +43,9 @@ def check(root):
             "Review resource loader must consume exact TextAsset bytes")
     require("viewEpoch++" in entry and "epoch==viewEpoch" in entry and "ReferenceEquals(before,model.Current.Frame)" in entry,
             "Missing view epoch replacement guard")
+    require("modalPermission.TryOpen" in entry and '"Cancel",callbacks.Cancel' in entry and
+            '"Confirm",callbacks.Confirm' in entry and "modalPermission.Invalidate()" in entry,
+            "Modal buttons must use the actual portable one-use permission and lifetime invalidation")
     draw = entry.split("private void Draw()", 1)[1].split("private static Label Readout", 1)[0]
     require(not re.search(r"\.(?:CommitRound|SendTravel|Advance|FinalizeBatch|Load|SetCloak|Save|Dispatch|Execute)\(", draw),
             "Painting must not dispatch authoritative work")

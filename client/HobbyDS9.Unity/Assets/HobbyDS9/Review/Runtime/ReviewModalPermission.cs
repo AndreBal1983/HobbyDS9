@@ -3,8 +3,8 @@ using System;
 
 namespace HobbyDS9.UnityReview
 {
-    // Initial extraction preserves the existing clear-then-action callback semantics.
-    // The focused failing regression establishes the gap before adding permission checks.
+    // UI-thread permission, not campaign authority. Each opaque request is terminal once;
+    // invalidate on view/lifetime replacement. Consume before invoking any external code.
     public sealed class ReviewModalPermission
     {
         private ReviewModalCallbacks? active;
@@ -12,18 +12,26 @@ namespace HobbyDS9.UnityReview
         public ReviewModalCallbacks? TryOpen(Action confirm,Action cancel)
         {
             if(active!=null)return null;
-            active=new ReviewModalCallbacks(
-                ()=>{active=null;confirm();},
-                ()=>{active=null;cancel();});
+            if(confirm==null)throw new ArgumentNullException(nameof(confirm));
+            if(cancel==null)throw new ArgumentNullException(nameof(cancel));
+            active=new ReviewModalCallbacks(this,confirm,cancel);
             return active;
         }
         public void Invalidate(){active=null;}
+        internal void Invoke(ReviewModalCallbacks request,Action action)
+        {
+            if(!ReferenceEquals(active,request))return;
+            active=null;
+            action();
+        }
     }
     public sealed class ReviewModalCallbacks
     {
         private readonly Action confirm,cancel;
-        internal ReviewModalCallbacks(Action confirm,Action cancel){this.confirm=confirm;this.cancel=cancel;}
-        public void Confirm(){confirm();}
-        public void Cancel(){cancel();}
+        private readonly ReviewModalPermission owner;
+        internal ReviewModalCallbacks(ReviewModalPermission owner,Action confirm,Action cancel)
+        {this.owner=owner;this.confirm=confirm;this.cancel=cancel;}
+        public void Confirm(){owner.Invoke(this,confirm);}
+        public void Cancel(){owner.Invoke(this,cancel);}
     }
 }

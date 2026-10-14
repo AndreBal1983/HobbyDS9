@@ -38,7 +38,7 @@ namespace HobbyDS9.UnityReview
         public void Configure(ReviewLaunchOptions value){if(options==null)options=value;}
         private void OnEnable()
         {
-            viewEpoch++;
+            viewEpoch++;modalPermission.Invalidate();
             try
             {
                 if(options==null)throw new InvalidOperationException();
@@ -58,6 +58,7 @@ namespace HobbyDS9.UnityReview
             }
             catch(Exception)
             {
+                modalPermission.Invalidate();
                 root?.UnregisterCallback<GeometryChangedEvent>(Geometry);
                 if(panel!=null)Destroy(panel);
                 var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();
@@ -163,7 +164,7 @@ namespace HobbyDS9.UnityReview
         private static void Set(DropdownField field,List<string> values){if(values.Count==0)values.Add("none");var current=field.value;field.choices=values;field.SetValueWithoutNotify(values.Contains(current)?current:values[0]);}
         private Button AddButton(VisualElement parent,string title,Action action,bool dialog=false)
         {
-            var epoch=viewEpoch;var button=new Button(()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog||confirmation==null))action();}){text=title};
+            var epoch=viewEpoch;var button=new Button(()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null))action();}){text=title};
             button.style.minHeight=32;button.style.flexShrink=0;parent.Add(button);return button;
         }
         private void Do(Action action)
