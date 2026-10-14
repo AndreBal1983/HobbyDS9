@@ -23,10 +23,13 @@ namespace HobbyDS9.UnityReview
         private ReviewUiModel? model;
         private ReviewCombatFlow? flow;
         public ReviewCombatFlow? Presentation=>flow;
+        private ReviewWorkspace? workspace;
+        public ReviewWorkspace? Workspace=>workspace;
         private PanelSettings? panel;
         private VisualElement? root,confirmation,content;
         private Label? message;
         private ReviewCentralView? central;
+        private ReviewController? centralContext;
         private string slotName="review-1",actorInput="";
         private long viewEpoch;
         private readonly ReviewModalPermission modalPermission=new ReviewModalPermission();
@@ -47,7 +50,7 @@ namespace HobbyDS9.UnityReview
                     var codec=new ReviewNewtonsoftCodec();
                     var package=ReviewExactPackageLoader.Load(Bytes("package"),Bytes("core"),Bytes("scenario"),codec);
                     model=new ReviewUiModel(package,codec,new ReviewUnitySlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9PhysicalReviewOnly-v2"),codec),options.Actor);
-                    flow=new ReviewCombatFlow(model);actorInput=options.Actor;
+                    flow=new ReviewCombatFlow(model);workspace=new ReviewWorkspace(flow);actorInput=options.Actor;
                 }
                 Build();
             }
@@ -78,6 +81,7 @@ namespace HobbyDS9.UnityReview
             {var sheet=Resources.Load<StyleSheet>(resource);if(sheet!=null)root.styleSheets.Add(sheet);}
             var identity=Readout("OPT-IN PHYSICAL TACTICAL V2 | SCENARIO: "+options!.Profile+" | ACTOR VIEW: "+model!.Current.Frame.Actor+" | Proposed policies; production activation disabled");
             identity.name="review-scenario-identity";identity.AddToClassList("review-heading");root.Add(identity);
+            root.Add(Readout("INTEGRATED PLAYTEST SHELL — strategic bindings in progress | "+workspace!.BoundaryIdentity));
             message=Readout(model.Message);message.name="review-command-status";root.Add(message);
             var tools=new VisualElement();tools.AddToClassList("review-toolbar");root.Add(tools);
             AddButton(tools,"Refresh authority",()=>Do(()=>model.Refresh()));
@@ -95,10 +99,26 @@ namespace HobbyDS9.UnityReview
                 else Do(()=>model.SwitchActor(actorInput));
             });
             AddButton(testHost,"Exit review",()=>Confirm("Exit without automatic save? Unsent edits will be lost.",()=>Do(()=>model.Close(true))));
+            var navigation=new VisualElement{name="review-workspace-navigation"};navigation.AddToClassList("review-toolbar");root.Add(navigation);
+            foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat})
+            {
+                var nav=AddButton(navigation,PageLabel(page),()=>Navigate(page));nav.name="review-nav-"+page;
+                nav.SetEnabled(workspace.CanNavigate);nav.EnableInClassList("review-selected-page",workspace.Page==page);
+            }
             content=new VisualElement{name="review-central-content"};content.style.flexGrow=1;content.style.minHeight=0;root.Add(content);
-            central=new ReviewCentralView(content,flow!,(parent,title,action)=>AddButton(parent,title,action),Do,Confirm);
+            if(central==null||!ReferenceEquals(centralContext,model.Current))
+            {
+                central=new ReviewCentralView(content,flow!,(parent,title,action)=>AddButton(parent,title,action),Do,Confirm);centralContext=model.Current;
+            }
+            else central.Bind(content);
             root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();
         }
+        private void Navigate(ReviewWorkspacePage page)
+        {
+            if(workspace==null||confirmation!=null||!workspace.Navigate(page))return;
+            viewEpoch++;Build(); // Old detached controls/modal permissions cannot act on another panel.
+        }
+        private static string PageLabel(ReviewWorkspacePage page)=>page==ReviewWorkspacePage.Research?"R&D":page==ReviewWorkspacePage.FleetOrders?"Fleet orders":page.ToString();
         private void Geometry(GeometryChangedEvent e)
         {
             if(root==null||panel==null)return;
@@ -109,7 +129,26 @@ namespace HobbyDS9.UnityReview
         private void Draw()
         {
             if(model==null||root==null)return;
-            message!.text=model.Message+" "+flow!.Notice;central?.Render();
+            message!.text=model.Message+" "+flow!.Notice;
+            if(workspace!.Page==ReviewWorkspacePage.Combat||workspace.Page==ReviewWorkspacePage.FleetOrders)central?.Render();
+            else DrawStrategicPanel();
+        }
+        private void DrawStrategicPanel()
+        {
+            content!.Clear();var page=workspace!.Page;var frame=model!.Current.Frame;
+            var heading=Readout(PageLabel(page));heading.name="review-workspace-heading";heading.AddToClassList("review-heading");content.Add(heading);
+            var details=new ScrollView(ScrollViewMode.Vertical){name="review-strategic-details"};details.style.flexGrow=1;details.style.minHeight=0;content.Add(details);
+            if(page==ReviewWorkspacePage.Map)
+            {
+                details.Add(Readout("Owned fleets and lawful last-seen contacts — known-map topology binding pending."));
+                foreach(var fleet in frame.OwnStrategicFleets)details.Add(Readout("Your fleet "+fleet.FleetId+" | sector "+fleet.LocationNodeId+" | owned ships "+fleet.ShipIds.Count));
+                foreach(var contact in frame.Travel?.KnownContacts??Array.Empty<HobbyDS9.Contracts.CampaignKnownContact>())
+                    details.Add(Readout("Last seen "+contact.FleetId+" | "+contact.LastSeenNodeId+" | turn "+contact.LastSeenTurn+" | fresh "+contact.Fresh+". Current enemy route and destination unavailable."));
+                if(frame.Status.Phase!=HobbyDS9.Contracts.SessionPhase.Planning)
+                    AddButton(details,"Resume pending combat",()=>Navigate(ReviewWorkspacePage.Combat));
+            }
+            else details.Add(Readout(page==ReviewWorkspacePage.Research?"Research display unavailable for this scenario until its player-scoped campaign projection is connected.":"Ship construction unavailable for this scenario: supported authored-v2 production and equipment provisioning are required. No resources or progress are simulated by this panel."));
+            details.Add(Readout("Panel navigation preserves this campaign and unsent orders. Use Fleet orders for current travel choices. Integration is in progress; R&D/production acceptance is not complete."));
         }
         private static Label Readout(string value){var l=new Label(value);l.style.whiteSpace=WhiteSpace.Normal;return l;}
         private static TextField Field(string title,string value){var f=new TextField(title){value=value};f.AddToClassList("review-input");return f;}

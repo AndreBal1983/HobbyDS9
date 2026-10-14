@@ -14,7 +14,7 @@ namespace HobbyDS9.UnityReview
         private readonly Func<VisualElement,string,Action,Button> button;
         private readonly Action<Action> perform;
         private readonly Action<string,Action> confirm;
-        private readonly VisualElement root;
+        private VisualElement root;
         private string selectedFleet="",selectedShip="",tab="stocks",destination="nav.bajor",contact="none",focus="retain standing focus";
         private CampaignTravelIntent travel=CampaignTravelIntent.StayEngage;
         private CampaignFleetManeuver maneuver=CampaignFleetManeuver.Hold;
@@ -27,6 +27,9 @@ namespace HobbyDS9.UnityReview
             var draft=flow.Model.Current.TravelDraft;
             if(draft!=null){selectedFleet=draft.Fleet;travel=draft.Intent;contact=draft.ContactFleet??"none";destination=draft.Route.LastOrDefault()??"";selectedTravelIsDraft=true;}
         }
+        // Keep pending field selections when shell navigation replaces the view tree.
+        // Entry creates a new view instead when actor/controller/load context changes.
+        public void Bind(VisualElement target){root=target;root.AddToClassList("review-central");}
         public void Render()
         {
             root.Clear();var model=flow.Model;var c=model.Current;var frame=c.Frame;var stage=flow.Stage;var battle=frame.Battle;
