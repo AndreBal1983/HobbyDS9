@@ -27,7 +27,7 @@ namespace HobbyDS9.UnityReview
             var entry=go.AddComponent<ReviewEntry>();entry.ConfigureIntegrated(options!);go.SetActive(true);
         }
     }
-    public sealed class ReviewEntry : MonoBehaviour
+    public sealed partial class ReviewEntry : MonoBehaviour
     {
         private ReviewLaunchOptions? options;
         private IntegratedLaunchOptions? integratedOptions;
@@ -70,6 +70,7 @@ namespace HobbyDS9.UnityReview
                     {
                         var package=ReviewExactPackageLoader.LoadIntegrated(Bytes("package"),Bytes("physical"),Bytes("core"),Bytes("scenario"),codec);
                         model=new ReviewUiModel(package,codec,new ReviewIntegratedSlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9IntegratedPlaytestOnly-v3"),codec),integratedOptions.Actor);
+                        slotName="campaign-1";
                     }
                     else
                     {
@@ -111,14 +112,15 @@ namespace HobbyDS9.UnityReview
         private void Build()
         {
             modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);ReleasePanel();
-            panel=ScriptableObject.CreateInstance<PanelSettings>();panel.scaleMode=PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
+            panel=ScriptableObject.CreateInstance<PanelSettings>();panel.scaleMode=model!.Integrated?PanelScaleMode.ConstantPixelSize:PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
             panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=1;panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");
             var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();doc.panelSettings=panel;
             root=doc.rootVisualElement;root.Clear();confirmation=null;root.AddToClassList("physical-review-root");
             BindAudio();
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.03f,0.05f,0.08f);root.style.color=new Color(0.92f,0.95f,1);root.style.fontSize=16;
-            foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ReviewControls","ReviewCombat"})
+            foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ShipDesigner","ReviewControls","ReviewCombat","PlayerConsole"})
             {var sheet=Resources.Load<StyleSheet>(resource);if(sheet!=null)root.styleSheets.Add(sheet);}
+            if(model.Integrated){BuildPlayerShell();root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();return;}
             var identity=Readout((model!.Integrated?"OPT-IN INTEGRATED PLAYTEST | SCENARIO: integrated-playtest-v1":"OPT-IN PHYSICAL TACTICAL V2 | SCENARIO: "+options!.Profile)+" | ACTOR VIEW: "+model.Current.Frame.Actor+" | Proposed policies; default campaign activation disabled");
             identity.name="review-scenario-identity";identity.AddToClassList("review-heading");root.Add(identity);
             root.Add(Readout(workspace!.BoundaryIdentity));
@@ -163,6 +165,7 @@ namespace HobbyDS9.UnityReview
         private void Geometry(GeometryChangedEvent e)
         {
             if(root==null||panel==null)return;
+            if(model?.Integrated==true){var playerCompact=e.newRect.width<1600||e.newRect.height<850;root.EnableInClassList("player-narrow",playerCompact);if(workspace!.Compact!=playerCompact){workspace.Compact=playerCompact;Draw();}return;}
             var compact=e.newRect.width<1700||e.newRect.height<850;
             root.EnableInClassList("review-compact",compact);
             var scale=Mathf.Max(1,1080f*0.9f/Mathf.Max(1,Screen.height));if(!Mathf.Approximately(panel.scale,scale))panel.scale=scale;
@@ -170,6 +173,7 @@ namespace HobbyDS9.UnityReview
         private void Draw()
         {
             if(model==null||root==null)return;
+            if(model.Integrated){DrawPlayer();return;}
             message!.text=model.Message+" "+flow!.Notice;
             if(workspace!.Page==ReviewWorkspacePage.Combat||workspace.Page==ReviewWorkspacePage.FleetOrders)central?.Render();
             else DrawStrategicPanel();
@@ -211,12 +215,23 @@ namespace HobbyDS9.UnityReview
             var callbacks=modalPermission.TryOpen(()=>{ClearConfirmation();action();},()=>ClearConfirmation());if(callbacks==null)return;
             confirmation=new VisualElement{name="review-one-use-confirmation"};confirmation.AddToClassList("review-confirmation");
             foreach(var child in root!.Children())child.SetEnabled(false);
-            confirmation.Add(Readout(title));var scroll=new ScrollView();scroll.style.flexGrow=1;scroll.style.minHeight=0;
-            scroll.Add(Readout(flow!.OrderReview()));confirmation.Add(scroll);
+            if(model!.Integrated)
+            {
+                confirmation.style.position=Position.Absolute;confirmation.style.left=0;confirmation.style.top=0;confirmation.style.right=0;confirmation.style.bottom=0;
+                confirmation.style.marginLeft=0;confirmation.style.marginRight=0;confirmation.style.marginTop=0;confirmation.style.marginBottom=0;
+                confirmation.style.alignItems=Align.Center;confirmation.style.justifyContent=Justify.Center;confirmation.style.backgroundColor=new Color(.02f,.03f,.06f,.96f);
+                var box=new VisualElement{name="player-confirmation-summary"};box.AddToClassList("console-panel");box.style.width=620;box.style.maxWidth=new Length(90,LengthUnit.Percent);box.style.maxHeight=new Length(80,LengthUnit.Percent);
+                var text=Readout(title);text.style.fontSize=22;box.Add(text);var actions=new VisualElement();actions.AddToClassList("review-field-row");box.Add(actions);
+                AddButton(actions,"Cancel",callbacks.Cancel,true);var yes=AddButton(actions,"Confirm",callbacks.Confirm,true);yes.AddToClassList("primary-action");
+                confirmation.RegisterCallback<KeyDownEvent>(e=>{if(e.keyCode==KeyCode.Escape){callbacks.Cancel();e.StopPropagation();}});
+                confirmation.Add(box);root.Add(confirmation);yes.Focus();return;
+            }
+            var scroll=new ScrollView();scroll.style.flexGrow=1;scroll.style.minHeight=0;
+            scroll.Add(Readout(title));confirmation.Add(scroll);
             AddButton(confirmation,"Cancel",callbacks.Cancel,true);var button=AddButton(confirmation,"Confirm",callbacks.Confirm,true);
             root.Add(confirmation);button.Focus();
         }
         private void ClearConfirmation()
-        {modalPermission.Invalidate();confirmation?.RemoveFromHierarchy();confirmation=null;foreach(var child in root!.Children())child.SetEnabled(true);Draw();}
+        {modalPermission.Invalidate();confirmation?.RemoveFromHierarchy();confirmation=null;foreach(var child in root!.Children())child.SetEnabled(true);Draw();if(model!.Integrated)root.Q<Button>("player-primary-action")?.Focus();}
     }
 }

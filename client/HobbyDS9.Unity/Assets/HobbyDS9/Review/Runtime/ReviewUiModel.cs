@@ -31,7 +31,10 @@ namespace HobbyDS9.UnityReview
         }
         public bool Integrated=>integratedPackage!=null;
         public ReviewResearchDraft? ResearchDraft { get; private set; }
-        public bool HasLocalEdits=>Current.Dirty||(ResearchDraft?.Dirty??false);
+        public bool LocalDesignDirty {get;set;}
+        public Action? ResetLocalDesign {get;set;}
+        public HobbyDS9.Application.CampaignIntegratedDesignLibrarySnapshot DesignLibrary()=>host.CaptureDesignLibrary(Current.Frame);
+        public bool HasLocalEdits=>Current.Dirty||(ResearchDraft?.Dirty??false)||LocalDesignDirty;
         public ReviewResearchDraft? ResearchInputs()
         {
             if(Current.Frame.Strategy==null)return null;
@@ -79,7 +82,7 @@ namespace HobbyDS9.UnityReview
         }
         public bool SwitchActor(string actor,bool discard=false)=>Run(()=>{
             if(Current.HasPendingWork || HasLocalEdits&&!discard){Message="Explicit discard is required before switching actor.";return false;}
-            var next=Controller(host,actor); Current=next;ResearchDraft=null; Message="Actor view changed; inspection and local edits cleared."; return true;
+            var next=Controller(host,actor); Current=next;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null; Message="Actor view changed; inspection and local edits cleared."; return true;
         });
         public bool SelectEncounter(string id,bool discard=false)=>Run(()=>{
             var result=Current.SelectEncounter(id,discard);Message=result?"Encounter selected.":"Encounter unavailable or explicit discard required.";return result;
@@ -87,12 +90,17 @@ namespace HobbyDS9.UnityReview
         public bool Refresh()=>Run(()=>{var r=Current.Refresh();Message=r?"Authoritative view refreshed.":"Refresh unavailable.";return r;});
         public bool Inspect(string ship)=>Run(()=>{var r=Current.InspectShip(ship);Message=r?"Lawful ship inspection selected.":"No lawful ship observation.";return r;});
         public bool DraftTravel(string fleet,CampaignTravelIntent intent,string? destination,string? contact)=>Run(()=>{
-            if(ResearchDraft?.Dirty==true){Message="Apply or explicitly discard unsent research before preparing travel.";return false;}
+            if(ResearchDraft?.Dirty==true||LocalDesignDirty){Message="Apply or explicitly discard unsent edits before preparing travel.";return false;}
             var offer=string.IsNullOrEmpty(destination)?null:Current.FindKnownRoute(fleet,destination!);
             if(!string.IsNullOrEmpty(destination)&&offer==null){Message="Known route unavailable.";return false;}
             var r=Current.EditTravel(fleet,intent,offer,contact);Message=r?"Local travel draft; no command submitted.":"Travel input unavailable; backend rules remain authoritative.";return r;
         });
         public bool SendTravel(string command)=>Run(()=>(ResearchDraft?.Dirty??false)?Unavailable():Current.ReviewTravel()?Dispatch(Current.ConfirmTravel(command)):Unavailable());
+        public bool SendPreviewedTravel(KnownRouteOffer offer,string command)=>Run(()=>{
+            if(HasLocalEdits||Current.HasPendingWork)return Unavailable();
+            if(!Current.EditTravel(offer.Fleet,CampaignTravelIntent.Leave,offer,null))return Unavailable();
+            return Current.ReviewTravel()?Dispatch(Current.ConfirmTravel(command)):Unavailable();
+        });
         public bool DraftFleet(string fleet,CampaignFleetManeuver maneuver,string? focus,bool retainFocus=false)=>Run(()=>{
             if(retainFocus)
             {
@@ -128,12 +136,12 @@ namespace HobbyDS9.UnityReview
             var opened=integratedPackage!=null?PhysicalReviewHost.OpenIntegratedFromSlot(integratedPackage,codec,integratedSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :PhysicalReviewHost.OpenFromSlot(package!,codec,slots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId);
             if(!opened.Succeeded){Message="Checkpoint result: "+opened.Error;return false;}
-            var next=Controller(opened.Host!,Current.Frame.Actor);host=opened.Host!;Current=next;ResearchDraft=null;Message="Validated complete-root checkpoint loaded.";return true;
+            var next=Controller(opened.Host!,Current.Frame.Actor);host=opened.Host!;Current=next;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null;Message="Validated complete-root checkpoint loaded.";return true;
         });
         public bool Reset()=>Run(()=>{
             if(Current.HasPendingWork)return Unavailable();
             var r=Current.TravelDraft!=null?Current.ResetTravelDraft():!Current.Dirty||Current.ResetDraft();
-            if(r)ResearchDraft=null;
+            if(r){ResearchDraft=null;ResetLocalDesign?.Invoke();LocalDesignDirty=false;}
             Message=r?"Local edits cleared; no command submitted.":"Reset unavailable.";return r;
         });
         public bool Close(bool discard=false)=>Run(()=>{

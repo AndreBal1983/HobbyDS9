@@ -28,6 +28,14 @@ namespace HobbyDS9.TacticalReviewClient
         }
         public static PhysicalReviewHost StartIntegrated(CampaignIntegratedPlaytestPackageDto package,IIntegratedReviewHostCodec codec,IIntegratedReviewCheckpointStore? store=null)
             =>new PhysicalReviewHost(package,codec,store);
+        public CampaignIntegratedDesignLibrarySnapshot CaptureDesignLibrary(ReviewFrame observed)
+        {
+            lock(gate)
+            {
+                RequireCurrent(observed.HostId,observed.Generation);
+                return ((ICampaignIntegratedPlaytestSession)session).CaptureDesignLibrary(observed.Actor);
+            }
+        }
         public CampaignTacticalMutationResult SubmitStrategicCommand(ReviewFrame observed,CommandEnvelope command)
         {
             lock(gate)
