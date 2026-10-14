@@ -5,6 +5,24 @@ using System.Text.Json;
 using HobbyDS9.Contracts;
 using HobbyDS9.Application;
 
+if (args.Length == 1 && args[0] == "--review-physical-travel")
+{
+    CampaignPhysicalTravelWalkthrough.Run();
+    return;
+}
+
+if ((args.Length == 1 || args.Length == 2) && args[0] == "--review-campaign-tactical-v2")
+{
+    CampaignTacticalReviewWalkthrough.Run(args.Length == 2 ? args[1] : Path.Combine(AppContext.BaseDirectory,"scenarios","tactical-v2-campaign-review","package.json"));
+    return;
+}
+
+if (args.Length == 1 && args[0] == "--review-lifecycle-prototypes")
+{
+    foreach (var line in LifecyclePrototypeDiagnostics.Run()) Console.WriteLine(line);
+    return;
+}
+
 // Only the host handles JSON/files/package hashing and diagnostics.
 var path = Path.Combine(AppContext.BaseDirectory, "scenarios", "ds9-slice", "scenario.json");
 var turns = 0;
@@ -96,7 +114,10 @@ if (inspectTacticalActor != null)
     Console.WriteLine(FormattableString.Invariant($"tactical-v2-inspection-format={inspection.FormatVersion}, can-activate={inspection.CanActivate}, campaign-resolver={inspection.CampaignResolverId}/{inspection.CampaignResolverVersion}, owned-ships={inspection.OwnedShips.Count}, owned-revisions={inspection.OwnedBlueprintRevisions.Count}"));
     Console.WriteLine("tactical-v2-blockers=" + string.Join(",", inspection.Blockers));
     foreach (var source in inspection.OwnedShips)
+    {
         Console.WriteLine(FormattableString.Invariant($"tactical-source={source.Ship.ShipId}, design={source.Ship.ShipDesignDefinitionId}, revision={source.Ship.Blueprint?.Revision.ToString(CultureInfo.InvariantCulture) ?? "static"}, can-project-v2={source.CanProjectTacticalV2}"));
+        if (source.AuthoredEquipment != null) AuthoredEquipmentDiagnostics.Write(source.AuthoredEquipment);
+    }
 }
 
 var stats = snapshot.PopulationStatistics;

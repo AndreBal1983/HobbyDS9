@@ -40,3 +40,11 @@ jobs:
         run: python scripts/check-tactical-playground.py
       - name: Campaign tactical v2 eligibility (headless, activation remains blocked)
         run: python scripts/check-campaign-tactical-v2-inspection.py
+      - name: Authored tactical v2 equipment sources (headless, activation remains blocked)
+        run: python scripts/check-authored-tactical-equipment.py
+      - name: Campaign lifecycle review prototypes (not campaign authority)
+        run: python scripts/check-campaign-lifecycle-prototypes.py
+      - name: Actual campaign tactical review layer (production activation gated)
+        run: python scripts/check-campaign-tactical-review.py
+      - name: Actual weighted travel and contact review (proposed policies gated)
+        run: python scripts/check-campaign-physical-travel.py

@@ -22,6 +22,12 @@ namespace HobbyDS9.Simulation
     public sealed class DeterministicTacticalCombatV2Resolver
     {
         public TacticalRoundV2Result ResolveRound(TacticalEncounterV2Dto input, TacticalOrderBatchV2Dto? orders = null)
+            => ResolveCore(input, orders, null);
+
+        internal TacticalRoundV2Result ResolveCampaignReviewRound(TacticalEncounterV2Dto input, CampaignRoundPolicy policy)
+            => ResolveCore(input, null, policy);
+
+        private TacticalRoundV2Result ResolveCore(TacticalEncounterV2Dto input, TacticalOrderBatchV2Dto? orders, CampaignRoundPolicy? policy)
         {
             var state = Copy(input);
             Require(state.Completion == TacticalCompletion.None, "Encounter is complete.");
@@ -39,7 +45,7 @@ namespace HobbyDS9.Simulation
                 }
                 foreach (var order in orders.Replacements) formations[order.FormationId].StandingOrder = CopyOrder(order);
             }
-            var round = new Round(state, formations);
+            var round = new Round(state, formations, policy);
             round.Resolve();
             Validate(state);
             return new TacticalRoundV2Result(state, round.Events);
@@ -92,12 +98,13 @@ namespace HobbyDS9.Simulation
             private readonly EncounterRandomStream random;
             private readonly int index;
             private readonly List<Combatant> active;
+            private readonly CampaignRoundPolicy? policy;
             private readonly Dictionary<TacticalTargetPriority, List<Combatant>> targetCandidates = new Dictionary<TacticalTargetPriority, List<Combatant>>();
             private readonly Dictionary<(string, string), bool> targetAccess = new Dictionary<(string, string), bool>();
             internal readonly List<TacticalEventV2> Events = new List<TacticalEventV2>();
-            internal Round(TacticalEncounterV2Dto state, Dictionary<string, TacticalFormationV2Dto> formations)
+            internal Round(TacticalEncounterV2Dto state, Dictionary<string, TacticalFormationV2Dto> formations, CampaignRoundPolicy? policy)
             {
-                this.state = state; this.formations = formations; index = state.NextRound;
+                this.state = state; this.formations = formations; this.policy = policy; index = state.NextRound;
                 geometry = state.Geometry.ToDictionary(g => (g.FormationA, g.FormationB));
                 random = new EncounterRandomStream(state.RandomState);
                 active = state.Formations.Where(f => f.Status == TacticalFormationStatus.Active)
@@ -115,8 +122,7 @@ namespace HobbyDS9.Simulation
                     Emit(TacticalEventKind.OrderCommitted, formation: f.FormationId, detail: f.StandingOrder.Maneuver.ToString());
                 Maneuver();
                 PrepareTargets();
-                var batteries = active.SelectMany(c => c.Ship.Weapons.Where(w => w.Equipped && w.AllocatedPower == w.RequiredPower
-                    && w.Damage > 0 && w.NextFireRound <= index && (w.Class != TacticalWeaponClass.Torpedo || w.Ammunition > 0))
+                var batteries = active.SelectMany(c => c.Ship.Weapons.Where(w => TacticalWeaponOwnConstraints.Blockers(w,index)==CampaignWeaponOwnBlockers.None)
                     .Select(w => new Battery(c, w, DefenseCapacity(c.Formation, w)))).ToList();
                 foreach (var b in batteries)
                     Emit(TacticalEventKind.FiringOpportunity, b.Owner.Formation.FormationId, b.Owner.Ship.ShipId,
@@ -155,6 +161,11 @@ namespace HobbyDS9.Simulation
             private int Score(TacticalFormationV2Dto f)
             {
                 var r = state.Rules;
+                if (policy != null)
+                {
+                    var individual = f.Ships.Where(s => s.Hull > 0).Select(s => policy.Mobility(s.ShipId)).OrderBy(v => v).ToList();
+                    return individual.Count == 0 ? 0 : individual[(individual.Count - 1) / 2] * (r.SpeedWeight + r.AgilityWeight);
+                }
                 return f.Speed * r.SpeedWeight + f.Agility * r.AgilityWeight + f.Sensors * r.SensorsWeight
                     + f.Command * r.CommandWeight + f.Cohesion * r.CohesionWeight;
             }
@@ -181,9 +192,9 @@ namespace HobbyDS9.Simulation
                     g.FacingA = IsWithdrawing(a) ? TacticalSector.Aft : TacticalSector.Fore;
                     g.FacingB = IsWithdrawing(b) ? TacticalSector.Aft : TacticalSector.Fore;
                     // A won flank leaves its own forward weapons facing the opponent's lateral sector.
-                    if (a.StandingOrder.Maneuver == TacticalManeuver.Flank && difference > state.Rules.ManeuverTieMargin)
+                    if (policy == null && a.StandingOrder.Maneuver == TacticalManeuver.Flank && difference > state.Rules.ManeuverTieMargin)
                     { g.FacingA = TacticalSector.Fore; g.FacingB = TacticalSector.Port; }
-                    else if (b.StandingOrder.Maneuver == TacticalManeuver.Flank && -difference > state.Rules.ManeuverTieMargin)
+                    else if (policy == null && b.StandingOrder.Maneuver == TacticalManeuver.Flank && -difference > state.Rules.ManeuverTieMargin)
                     { g.FacingB = TacticalSector.Fore; g.FacingA = TacticalSector.Starboard; }
                     Emit(TacticalEventKind.Maneuver, a.FormationId, targetFormation: b.FormationId, sector: g.FacingA, range: g.Range,
                         detail: previous + "->" + g.Range + ";opponent-facing=" + g.FacingB + ";contest=" + difference.ToString(CultureInfo.InvariantCulture));
@@ -198,8 +209,10 @@ namespace HobbyDS9.Simulation
             private bool Eligible(Battery b, Combatant target)
             {
                 if (target.Formation.SideId == b.Owner.Formation.SideId) return false;
+                if (policy != null && policy.Hidden.Contains(target.Ship.ShipId)) return false;
                 var g = Pair(b.Owner.Formation.FormationId, target.Formation.FormationId);
                 if (!InRange(b.Weapon, g.Range) || !Covers(b.Weapon, Facing(g, b.Owner.Formation.FormationId))) return false;
+                if (policy != null) return true; // no cross-fleet designated protection in this profile.
                 var key = (b.Owner.Formation.FormationId, target.Formation.FormationId);
                 if (targetAccess.TryGetValue(key, out var access)) return access;
                 // Screen can block direct acquisition of its designated ally while in nearby attack access.
@@ -222,7 +235,7 @@ namespace HobbyDS9.Simulation
             {
                 // All weapons in a formation have the same target access. Rank ships once,
                 // then acquire from one candidate per hostile formation rather than O(ships²).
-                var groups = active.GroupBy(c => c.Formation.FormationId).ToList();
+                var groups = active.Where(c => policy == null || !policy.Hidden.Contains(c.Ship.ShipId)).GroupBy(c => c.Formation.FormationId).ToList();
                 foreach (TacticalTargetPriority priority in Enum.GetValues(typeof(TacticalTargetPriority)))
                 {
                     var candidates = new List<Combatant>();
@@ -250,6 +263,14 @@ namespace HobbyDS9.Simulation
             {
                 var target = Target(b); if (target == null) return;
                 var g = Pair(b.Owner.Formation.FormationId, target.Formation.FormationId);
+                if (policy != null)
+                {
+                    g = policy.LocalGeometry(b.Owner.Ship, b.Owner.Formation, target.Formation, g);
+                    if (b.Owner.Formation.StandingOrder.TargetFormationId != null
+                        && b.Owner.Formation.StandingOrder.TargetFormationId != target.Formation.FormationId)
+                        Emit(TacticalEventKind.FiringOpportunity, b.Owner.Formation.FormationId, b.Owner.Ship.ShipId,
+                            target.Formation.FormationId, target.Ship.ShipId, detail: "focus-fallback: preferred fleet unavailable; visible alternative acquired");
+                }
                 while (b.Remaining > 0 && (b.Weapon.Class != TacticalWeaponClass.Torpedo || b.Weapon.Ammunition > 0))
                 {
                     b.Remaining--; b.Used = true;
@@ -270,7 +291,8 @@ namespace HobbyDS9.Simulation
             private void Intercept(Shot shot, List<Battery> batteries)
             {
                 // Screen allies get first access; then self defense, canonical ship/weapon order.
-                var defenders = batteries.Where(b => b.DefenseRemaining > 0 && b.Owner.Formation.SideId == shot.Target.Formation.SideId)
+                var defenders = batteries.Where(b => b.DefenseRemaining > 0 && b.Remaining > 0 && b.Owner.Formation.SideId == shot.Target.Formation.SideId
+                    && (policy == null || b.Owner.Formation.FormationId == shot.Target.Formation.FormationId))
                     .OrderBy(b => b.Owner.Formation.StandingOrder.Maneuver == TacticalManeuver.Screen ? 0 : 1);
                 foreach (var b in defenders)
                 {
@@ -279,11 +301,12 @@ namespace HobbyDS9.Simulation
                         && (b.Owner.Formation.FormationId == shot.Target.Formation.FormationId
                             || b.Owner.Formation.StandingOrder.ProtectedFormationId == shot.Target.Formation.FormationId);
                     if (!self && !ally) continue;
+                    if (policy != null && !self && policy.Mobility(b.Owner.Ship.ShipId) < policy.Mobility(shot.Battery.Owner.Ship.ShipId)) continue;
                     var g = Pair(b.Owner.Formation.FormationId, shot.Battery.Owner.Formation.FormationId);
-                    if (!self && !Nearby(g, shot.Geometry)) continue;
+                    if (!self && policy == null && !Nearby(g, shot.Geometry)) continue;
                     if (!Covers(b.Weapon, Facing(g, b.Owner.Formation.FormationId))) continue;
                     b.Remaining--; b.DefenseRemaining--; b.Used = true;
-                    var chance = Clamp(state.Rules.InterceptionBaseBps + b.Weapon.TrackingBps + b.Owner.Formation.Sensors * 20
+                    var chance = Clamp(state.Rules.InterceptionBaseBps + b.Weapon.TrackingBps + (policy == null ? b.Owner.Formation.Sensors : policy.Sensors(b.Owner.Ship.ShipId)) * 20
                         + (g.Range == TacticalRange.Distant ? state.Rules.DistantInterceptionBonusBps : 0));
                     Emit(TacticalEventKind.InterceptionAttempt, b.Owner.Formation.FormationId, b.Owner.Ship.ShipId,
                         shot.Battery.Owner.Formation.FormationId, shot.Battery.Owner.Ship.ShipId, b.Weapon.WeaponId, range: g.Range, chance: chance,

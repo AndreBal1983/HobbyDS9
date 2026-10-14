@@ -181,6 +181,16 @@ namespace HobbyDS9.Simulation
             }
         }
 
+        // Reuse the actual shared AI command path before the physical review phase;
+        // no legacy Movement or encounter detection is executed here.
+        internal GameStateDto RunPlanningAiForPhysicalReview()
+        {
+            var staging=CopyState(state);var results=new List<CommandResult>();
+            AiPlanningPhase.Execute(()=>staging,definitions,Navigation,c=>ExecuteCommand(ref staging,c,trustedAi:true),results);
+            FoundationValidator.ValidateGameState(staging,definitions).ThrowIfInvalid(nameof(staging));
+            return CopyState(staging);
+        }
+
         // Economy and Research each have a distinct allowed mutation surface.
         internal static void RequirePhaseChanges(GameStateDto state, GameStateDto candidate, bool allowEconomy, bool allowResearch = false, bool allowProduction = false, bool allowMovement = false)
         {
@@ -247,9 +257,10 @@ namespace HobbyDS9.Simulation
             }
         }
 
-        private static DefinitionCatalogDto CopyDefinitions(DefinitionCatalogDto source) => new DefinitionCatalogDto
+        internal static DefinitionCatalogDto CopyDefinitions(DefinitionCatalogDto source) => new DefinitionCatalogDto
         {
             ContentFormatVersion = source.ContentFormatVersion,
+            AuthoredTacticalEquipment = source.AuthoredTacticalEquipment == null ? null : AuthoredTacticalEquipmentCopies.Copy(source.AuthoredTacticalEquipment),
             ShipDesignCatalogue = source.ShipDesignCatalogue == null ? null : BlueprintCopies.Copy(source.ShipDesignCatalogue),
             ShipDesignVersionAccess = source.ShipDesignVersionAccess!.OrderBy(g => g.VersionId, StringComparer.Ordinal).Select(BlueprintCopies.Copy).ToList(),
             DefinitionIds = source.DefinitionIds.OrderBy(d => d, StringComparer.Ordinal).ToList(),

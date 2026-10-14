@@ -1,0 +1,38 @@
+{
+  "FormatVersion": 1,
+  "ProfileId": "campaign-tactical-v2-lifecycle-review-1",
+  "PolicyStatus": "proposed",
+  "DefaultActivationAllowed": false,
+  "Rules": {
+    "SpeedWeight": 4,
+    "AgilityWeight": 3,
+    "SensorsWeight": 1,
+    "CommandWeight": 1,
+    "CohesionWeight": 1,
+    "ManeuverTieMargin": 10,
+    "ArmorNumerator": 6,
+    "ArmorDenominator": 100,
+    "DistantTorpedoHitPenaltyBps": 1500,
+    "DistantInterceptionBonusBps": 1000,
+    "InterceptionBaseBps": 3000,
+    "ScreenDefenseBps": 10000,
+    "WithdrawalDefenseBps": 10000,
+    "HoldDefenseBps": 5000,
+    "ChargeDefenseBps": 0,
+    "SuppressRechargeOnHitSector": true
+  },
+  "CloakSources": [
+    {
+      "FitId": "fit.provisional-cruiser",
+      "FitRevision": 1,
+      "Capable": true,
+      "ConcurrentPowerRequired": 6
+    },
+    {
+      "FitId": "fit.provisional-surveyor",
+      "FitRevision": 1,
+      "Capable": false,
+      "ConcurrentPowerRequired": 0
+    }
+  ]
+}

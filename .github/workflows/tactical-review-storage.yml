@@ -1,0 +1,63 @@
+name: Durable tactical review checkpoints (headless only)
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checkpoints:
+    name: Durable checkpoint and preserved client tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Restore durable store and cross-process probe
+        run: dotnet restore tests/HobbyDS9.TacticalReviewStorage.Tests/HobbyDS9.TacticalReviewStorage.Tests.csproj --locked-mode -warnaserror
+      - name: Build durable store and cross-process probe
+        run: dotnet build tests/HobbyDS9.TacticalReviewStorage.Tests/HobbyDS9.TacticalReviewStorage.Tests.csproj --configuration Release --no-restore -warnaserror
+      - name: Run actual disk and separate-process acceptance
+        run: dotnet test tests/HobbyDS9.TacticalReviewStorage.Tests/HobbyDS9.TacticalReviewStorage.Tests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=durable-storage.trx" --results-directory artifacts/tactical-review-storage/storage
+      - name: Restore prior real-client acceptance
+        run: dotnet restore tests/HobbyDS9.TacticalReviewClient.Tests/HobbyDS9.TacticalReviewClient.Tests.csproj --locked-mode -warnaserror
+      - name: Build prior real-client acceptance
+        run: dotnet build tests/HobbyDS9.TacticalReviewClient.Tests/HobbyDS9.TacticalReviewClient.Tests.csproj --configuration Release --no-restore -warnaserror
+      - name: Run prior real-client acceptance
+        run: dotnet test tests/HobbyDS9.TacticalReviewClient.Tests/HobbyDS9.TacticalReviewClient.Tests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=preserved-real-client.trx" --results-directory artifacts/tactical-review-storage/real
+      - name: Restore prior mock presenter acceptance
+        run: dotnet restore tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj --locked-mode -warnaserror
+      - name: Build prior mock presenter acceptance
+        run: dotnet build tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj --configuration Release --no-restore -warnaserror
+      - name: Run prior mock presenter acceptance
+        run: dotnet test tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj --configuration Release --no-build --no-restore --logger "trx;LogFileName=preserved-mock.trx" --results-directory artifacts/tactical-review-storage/mock
+      - name: Verify separate storage, real-client and mock evidence
+        shell: pwsh
+        run: |
+          $cases = @(
+            @{ Path = 'artifacts/tactical-review-storage/storage/durable-storage.trx'; Expected = 47; Kind = 'durable storage and cross-process' },
+            @{ Path = 'artifacts/tactical-review-storage/real/preserved-real-client.trx'; Expected = 51; Kind = 'preserved real Application client' },
+            @{ Path = 'artifacts/tactical-review-storage/mock/preserved-mock.trx'; Expected = 115; Kind = 'preserved mock presenter' }
+          )
+          foreach ($case in $cases) {
+            [xml]$trx = Get-Content -LiteralPath $case.Path
+            $c = $trx.TestRun.ResultSummary.Counters
+            if ([int]$c.total -ne $case.Expected -or [int]$c.passed -ne $case.Expected -or [int]$c.failed -ne 0 -or [int]$c.notExecuted -ne 0) {
+              throw "Unexpected evidence for $($case.Kind): $($c.OuterXml)"
+            }
+            Write-Host "$($case.Kind): $($c.passed) passed, 0 failed, 0 skipped"
+          }
+      - name: Upload separate TRX evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tactical-review-storage-${{ matrix.os }}
+          path: artifacts/tactical-review-storage/**/*.trx
+          if-no-files-found: warn

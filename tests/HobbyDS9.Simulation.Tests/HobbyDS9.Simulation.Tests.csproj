@@ -17,6 +17,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="../../prototypes/HobbyDS9.CampaignTacticalV2.Prototypes/HobbyDS9.CampaignTacticalV2.Prototypes.csproj" />
     <ProjectReference Include="../../src/HobbyDS9.Application/HobbyDS9.Application.csproj" />
     <ProjectReference Include="../../src/HobbyDS9.Contracts/HobbyDS9.Contracts.csproj" />
     <ProjectReference Include="../../src/HobbyDS9.Simulation/HobbyDS9.Simulation.csproj" />
@@ -24,6 +25,7 @@
     <ProjectReference Include="../../src/HobbyDS9.TacticalPlayground/HobbyDS9.TacticalPlayground.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="../../scenarios/tactical-v2-campaign-review/*.json" Link="scenarios/tactical-v2-campaign-review/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ShipDesignDraft.cs" Link="UnityClient/ShipDesignDraft.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/FixtureShipDesignPreviewProvider.cs" Link="UnityClient/FixtureShipDesignPreviewProvider.cs" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ScienceAllocationDraft.cs" Link="UnityClient/ScienceAllocationDraft.cs" />
@@ -38,5 +40,6 @@
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/SaveSlotStore.cs" Link="UnityClient/SaveSlotStore.cs" />
     <None Include="../../scenarios/ship-design-fixtures/fixture.json" Link="scenarios/ship-design-fixtures/fixture.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../scenarios/ds9-slice/scenario.json" Link="scenarios/ds9-slice/scenario.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../scenarios/tactical-v2-equipment-source/scenario.json" Link="scenarios/tactical-v2-equipment-source/scenario.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

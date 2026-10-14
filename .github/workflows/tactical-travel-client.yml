@@ -1,0 +1,53 @@
+name: Physical travel client and complete-root storage (headless)
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  physical-client:
+    name: Physical client and preserved suites (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Restore build and test explicit client projects
+        shell: pwsh
+        run: |
+          $suites = @(
+            @{ Project = 'tests/HobbyDS9.TacticalTravelClient.Tests/HobbyDS9.TacticalTravelClient.Tests.csproj'; Kind = 'physical'; Name = 'physical-client.trx'; Expected = 47 },
+            @{ Project = 'tests/HobbyDS9.TacticalReviewStorage.Tests/HobbyDS9.TacticalReviewStorage.Tests.csproj'; Kind = 'b1-storage'; Name = 'preserved-b1-storage.trx'; Expected = 47 },
+            @{ Project = 'tests/HobbyDS9.TacticalReviewClient.Tests/HobbyDS9.TacticalReviewClient.Tests.csproj'; Kind = 'real'; Name = 'preserved-real.trx'; Expected = 51 },
+            @{ Project = 'tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj'; Kind = 'mock'; Name = 'preserved-mock.trx'; Expected = 115 }
+          )
+          foreach ($suite in $suites) {
+            dotnet restore $suite.Project --locked-mode -warnaserror
+            if ($LASTEXITCODE -ne 0) { throw "Restore failed for $($suite.Kind)" }
+            dotnet build $suite.Project --configuration Release --no-restore -warnaserror
+            if ($LASTEXITCODE -ne 0) { throw "Build failed for $($suite.Kind)" }
+            $directory = "artifacts/tactical-travel-client/$($suite.Kind)"
+            dotnet test $suite.Project --configuration Release --no-build --no-restore --logger "trx;LogFileName=$($suite.Name)" --results-directory $directory
+            if ($LASTEXITCODE -ne 0) { throw "Tests failed for $($suite.Kind)" }
+            [xml]$trx = Get-Content -LiteralPath "$directory/$($suite.Name)"
+            $c = $trx.TestRun.ResultSummary.Counters
+            if ([int]$c.total -ne $suite.Expected -or [int]$c.passed -ne $suite.Expected -or [int]$c.failed -ne 0 -or [int]$c.notExecuted -ne 0) {
+              throw "Unexpected evidence for $($suite.Kind): $($c.OuterXml)"
+            }
+            Write-Host "$($suite.Kind): $($c.passed) passed, 0 failed, 0 skipped"
+          }
+      - name: Upload separate actual and mock evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: physical-client-${{ matrix.os }}
+          path: artifacts/tactical-travel-client/**/*.trx
+          if-no-files-found: warn

@@ -1,0 +1,36 @@
+name: Explicit Unity review import (static only)
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  import:
+    name: Review import metadata and bytes (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Preserve default preparation
+        run: dotnet msbuild scripts/PrepareUnity.proj -t:Prepare
+      - name: Explicit portable review preparation
+        run: dotnet msbuild scripts/PrepareUnityReview.proj -t:Prepare
+      - name: Review actual PE metadata and exact assets
+        run: python scripts/check-unity-review-integration.py
+      - name: Negative import package checks
+        run: python tests/UnityReviewImport.Tests/test_unity_review_import.py -v
+      - name: Default Unity static regression
+        run: python scripts/check-unity-integration.py
+      - name: Repeated preparation
+        run: dotnet msbuild scripts/PrepareUnityReview.proj -t:Prepare
+      - name: Recheck bytes and metadata
+        run: python scripts/check-unity-review-integration.py

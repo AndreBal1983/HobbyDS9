@@ -1,0 +1,82 @@
+/* Review-only palette: never inherit the root's gold onto default light controls. */
+.physical-review-root .review-action {
+    color: #111318;
+    background-color: #e9b66e;
+    background-image: none;
+    border-width: 2px;
+    border-color: #e9b66e;
+    opacity: 1;
+    -unity-font-style: bold;
+}
+.physical-review-root .review-action:hover,
+.physical-review-root .review-action:active {
+    color: #111318;
+    background-color: #ffd166;
+    border-color: #ffd166;
+}
+.physical-review-root .review-action:focus {
+    border-color: #ffffff;
+}
+.physical-review-root .review-action:disabled {
+    color: #c5cbd3;
+    background-color: #353b46;
+    border-color: #687283;
+    opacity: 1;
+}
+.physical-review-root .review-input,
+.physical-review-root .review-input .unity-base-field__label {
+    color: #fff1d6;
+    opacity: 1;
+}
+.physical-review-root .review-input .unity-base-field__input {
+    color: #ffffff;
+    background-color: #202630;
+    background-image: none;
+    border-width: 2px;
+    border-color: #8290a4;
+    opacity: 1;
+    --unity-cursor-color: #ffffff;
+    --unity-selection-color: #295b94;
+}
+.physical-review-root .review-input .unity-base-popup-field__text,
+.physical-review-root .review-input .unity-text-element {
+    color: #ffffff;
+}
+.physical-review-root .review-input .unity-base-popup-field__arrow {
+    -unity-background-image-tint-color: #ffffff;
+}
+.physical-review-root .review-input:focus > .unity-base-field__input,
+.physical-review-root .review-input .unity-base-field__input:focus {
+    border-color: #ffd166;
+}
+.physical-review-root .review-input:disabled,
+.physical-review-root .review-input:disabled .unity-base-field__input {
+    color: #c5cbd3;
+    background-color: #353b46;
+    border-color: #687283;
+    opacity: 1;
+}
+.physical-review-root .review-input:disabled .unity-base-popup-field__text,
+.physical-review-root .review-input:disabled .unity-text-element,
+.physical-review-root .review-input:disabled .unity-base-field__label {
+    color: #c5cbd3;
+    opacity: 1;
+}
+/* Keep menu rows dark-on-light; selected/keyboard-focused rows reverse clearly. */
+.physical-review-root .unity-base-dropdown__item,
+.physical-review-root .unity-base-dropdown__label {
+    color: #111318;
+    background-color: #f5f7fa;
+}
+.physical-review-root .unity-base-dropdown__item:hover,
+.physical-review-root .unity-base-dropdown__item:focus,
+.physical-review-root .unity-base-dropdown__item:checked {
+    color: #ffffff;
+    background-color: #295b94;
+}
+.physical-review-root .unity-base-dropdown__item:hover .unity-base-dropdown__label,
+.physical-review-root .unity-base-dropdown__item:focus .unity-base-dropdown__label,
+.physical-review-root .unity-base-dropdown__item:checked .unity-base-dropdown__label {
+    color: #ffffff;
+    background-color: #295b94;
+}

@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../..'))</RepoRoot>
+    <DefineConstants>$(DefineConstants);UNITY_6000_6_OR_NEWER;UNITY_6000_0_OR_NEWER;UNITY_2023_1_OR_NEWER;UNITY_STANDALONE;UNITY_STANDALONE_WIN</DefineConstants>
+    <DefineConstants Condition="'$(UnityCompileVariant)' == 'Editor'">$(DefineConstants);UNITY_EDITOR;UNITY_EDITOR_WIN</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Runtime references exclude UnityEditor modules; this is not Unity asmdef resolution. -->
+    <Reference Include="$(UnityManagedDir)/UnityEngine/UnityEngine*.dll"><Private>false</Private></Reference>
+  </ItemGroup>
+  <Target Name="RequirePinnedLocalReferences" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(UnityCompileVariant)' != 'Player' And '$(UnityCompileVariant)' != 'Editor'" Text="Use explicit Player or Editor compiler variant." />
+    <Error Condition="'$(UnityManagedDir)' == '' Or !Exists('$(UnityManagedDir)/UnityEngine/UnityEngine.CoreModule.dll')" Text="Supply installed pinned Unity6000.6.5f1 Managed references; no Editor will be launched." />
+    <Error Condition="'$(UnityNewtonsoftPath)' == '' Or !Exists('$(UnityNewtonsoftPath)')" Text="Supply exact pinned Unity Newtonsoft Runtime DLL." />
+  </Target>
+</Project>

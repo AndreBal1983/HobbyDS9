@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../Shared.props" />
+  <PropertyGroup><AssemblyName>HobbyDS9.UnityClient.Editor</AssemblyName></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../DefaultRuntime/DefaultRuntime.csproj" />
+    <ProjectReference Include="$(RepoRoot)/src/HobbyDS9.Application/HobbyDS9.Application.csproj" />
+    <ProjectReference Include="$(RepoRoot)/src/HobbyDS9.Contracts/HobbyDS9.Contracts.csproj" />
+    <Reference Include="$(UnityManagedDir)/UnityEngine/UnityEditor*.dll"><Private>false</Private></Reference>
+    <Compile Include="$(RepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/Editor/*.cs" Link="ActualUnitySource/%(Filename)%(Extension)" />
+  </ItemGroup>
+  <Target Name="RequireEditorVariant" BeforeTargets="ResolveReferences"><Error Condition="'$(UnityCompileVariant)' != 'Editor'" Text="Editor source requires Editor compiler variant." /></Target>
+</Project>

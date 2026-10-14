@@ -9,7 +9,8 @@ namespace HobbyDS9.Contracts
         InvalidControllerKind, InvalidEdgeKind, MissingEntity, MissingCivilization,
         IdentityMismatch, SelfEdge, DuplicateEdge, MissingEndpoint, InvalidSessionPhase, InvalidEconomicValue, MissingSystem, OwnershipMismatch, DuplicateColonySystem, InvalidResearchValue, SelfPrerequisite, ResearchCycle,
         EngineeringAlreadyMature, EngineeringPrerequisiteMissing, InvalidProductionValue, InvalidShipValue, InvalidFleetMembership, InvalidFleetRoute, InvalidCombatCheckpoint, CombatIdentityMismatch, InvalidCombatReference, InvalidCombatProfile,
-        InvalidBlueprint, BlueprintIdentityMismatch, InvalidShipDesignCatalogue
+        InvalidBlueprint, BlueprintIdentityMismatch, InvalidShipDesignCatalogue,
+        InvalidAuthoredTacticalEquipment, InvalidTacticalEquipmentPower, InvalidTacticalEquipmentBinding
     }
 
     public sealed class ValidationIssue

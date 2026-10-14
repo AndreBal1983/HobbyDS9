@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../Shared.props" />
+  <PropertyGroup><AssemblyName>HobbyDS9.UnityClient</AssemblyName></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)/src/HobbyDS9.Application/HobbyDS9.Application.csproj" />
+    <ProjectReference Include="$(RepoRoot)/src/HobbyDS9.Contracts/HobbyDS9.Contracts.csproj" />
+    <Reference Include="Newtonsoft.Json"><HintPath>$(UnityNewtonsoftPath)</HintPath><Private>false</Private></Reference>
+    <Compile Include="$(RepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/*.cs" Link="ActualUnitySource/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>
