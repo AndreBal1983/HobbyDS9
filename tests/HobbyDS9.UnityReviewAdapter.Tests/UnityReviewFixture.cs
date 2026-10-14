@@ -18,10 +18,11 @@ internal sealed class UnityReviewFixture : IDisposable
     public PhysicalReviewHost Host { get; private set; }
     public ReviewController Own { get; private set; }
     public ReviewController Other { get; private set; }
-    public UnityReviewFixture(string profile="faster",Action<UnityReviewWriteStage>? probe=null)
+    public UnityReviewFixture(string profile="faster",Action<UnityReviewWriteStage>? probe=null,Action<CampaignTacticalTravelPackageDto>? adjust=null)
     {
         var dir=Path.Combine(AppContext.BaseDirectory,"scenarios","tactical-v2-physical-review",profile);
         Package=ReviewExactPackageLoader.Load(File.ReadAllBytes(Path.Combine(dir,"package.json")),File.ReadAllBytes(Path.Combine(dir,"core.json")),File.ReadAllBytes(Path.Combine(dir,"scenario.json")),Codec);
+        adjust?.Invoke(Package);
         Store=new ReviewUnitySlotStore(DirectoryPath,Codec,probe);
         Host=PhysicalReviewHost.Start(Package,Codec,Store);Own=new ReviewController(Host,A);Other=new ReviewController(Host,B);
     }
