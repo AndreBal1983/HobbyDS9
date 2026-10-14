@@ -23,6 +23,25 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(Model.Integrated,Is.True);
         }
         [TearDown] public void Cleanup(){if(entry!=null)Invoke("OnDestroy");if(go!=null)UnityEngine.Object.DestroyImmediate(go);}
+        [Test] public void ExplicitIntegratedEntryStartsExistingAudioWithoutCreatingADefaultCampaign()
+        {
+            // Default ClientEntry.OnEnable is bypassed by the explicit integrated flag.
+            // Remove any earlier test's services so they cannot mask missing startup.
+            foreach(var owner in UnityEngine.Object.FindObjectsByType<AudioSource>().Select(s=>s.gameObject).Distinct().ToArray())
+                if(owner.name=="HobbyDS9 Audio"||owner.name=="HobbyDS9 SFX")UnityEngine.Object.DestroyImmediate(owner);
+            var output=GameObject.Find("HobbyDS9 Audio Output");if(output!=null)UnityEngine.Object.DestroyImmediate(output);
+            var frame=Model.Current.Frame;Invoke("OnEnable");
+            var sources=UnityEngine.Object.FindObjectsByType<AudioSource>();
+            Assert.That(sources.Count(s=>s.gameObject.name=="HobbyDS9 Audio"),Is.EqualTo(2));
+            Assert.That(sources.Count(s=>s.gameObject.name=="HobbyDS9 SFX"),Is.EqualTo(5));
+            Assert.That(UnityEngine.Object.FindObjectsByType<AudioListener>().Count(l=>l.isActiveAndEnabled),Is.EqualTo(1));
+            Assert.That(Model.Current.Frame,Is.SameAs(frame));
+            Assert.That(GameObject.Find("HobbyDS9 Client"),Is.Null,"Audio must not start another default campaign.");
+            Invoke("OnEnable");Assert.That(UnityEngine.Object.FindObjectsByType<AudioSource>().Length,Is.EqualTo(sources.Length));
+            foreach(var owner in sources.Select(s=>s.gameObject).Distinct().ToArray())
+                if(owner!=null&&(owner.name=="HobbyDS9 Audio"||owner.name=="HobbyDS9 SFX"))UnityEngine.Object.DestroyImmediate(owner);
+            output=GameObject.Find("HobbyDS9 Audio Output");if(output!=null)UnityEngine.Object.DestroyImmediate(output);
+        }
         [Test] public void ActualIntegratedResourcesStartOneScopedMapWithExplicitIdentity()
         {
             Assert.That(Root.Q<Label>("review-scenario-identity").text,Does.Contain("OPT-IN INTEGRATED PLAYTEST"));

@@ -44,6 +44,8 @@ namespace HobbyDS9.UnityReview
         private ReviewController? centralContext;
         private string slotName="review-1",actorInput="";
         private long viewEpoch;
+        private IDisposable? audioInput;
+        private Action? buttonSound;
         private readonly ReviewModalPermission modalPermission=new ReviewModalPermission();
         public void Configure(ReviewLaunchOptions value){if(options==null)options=value;}
         public void ConfigureIntegrated(IntegratedLaunchOptions value){if(options==null&&integratedOptions==null)integratedOptions=value;}
@@ -85,13 +87,26 @@ namespace HobbyDS9.UnityReview
                 root=doc.rootVisualElement;root.Clear();root.Add(new Label("OPT-IN PHYSICAL TACTICAL V2 — unavailable. Check profile/resources/preparation; default campaign was not started."));
             }
         }
-        private void OnDisable(){viewEpoch++;modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);confirmation=null;}
+        private void OnDisable(){viewEpoch++;modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);confirmation=null;ReleaseAudio();}
         private void OnDestroy(){ReleasePanel();}
         private void ReleasePanel()
         {
+            ReleaseAudio();
             if(panel==null)return;
             if(UnityEngine.Application.isPlaying)Destroy(panel);else DestroyImmediate(panel);
             panel=null;
+        }
+        private void ReleaseAudio(){audioInput?.Dispose();audioInput=null;buttonSound=null;}
+        private void BindAudio()
+        {
+            try
+            {
+                var bridge=Type.GetType("HobbyDS9.UnityClient.AudioPresentationBridge, HobbyDS9.UnityClient",false);
+                if(bridge==null)throw new InvalidOperationException();
+                audioInput=bridge.GetMethod("Bind")!.Invoke(null,new object[]{root!}) as IDisposable;
+                buttonSound=(Action)Delegate.CreateDelegate(typeof(Action),bridge.GetMethod("ButtonPress")!);
+            }
+            catch(Exception){ReleaseAudio();Debug.LogWarning("Review audio unavailable; playtest continues.");}
         }
         private void Build()
         {
@@ -100,6 +115,7 @@ namespace HobbyDS9.UnityReview
             panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=1;panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");
             var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();doc.panelSettings=panel;
             root=doc.rootVisualElement;root.Clear();confirmation=null;root.AddToClassList("physical-review-root");
+            BindAudio();
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.03f,0.05f,0.08f);root.style.color=new Color(0.92f,0.95f,1);root.style.fontSize=16;
             foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ReviewControls","ReviewCombat"})
             {var sheet=Resources.Load<StyleSheet>(resource);if(sheet!=null)root.styleSheets.Add(sheet);}
@@ -180,7 +196,7 @@ namespace HobbyDS9.UnityReview
         private static TextField Field(string title,string value){var f=new TextField(title){value=value};f.AddToClassList("review-input");return f;}
         private Button AddButton(VisualElement parent,string title,Action action,bool dialog=false)
         {
-            var epoch=viewEpoch;var button=new Button(()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null))action();}){text=title};
+            var epoch=viewEpoch;var button=new Button(()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();action();}}){text=title};
             button.AddToClassList("review-action");button.style.minHeight=36;parent.Add(button);return button;
         }
         private void Do(Action action)

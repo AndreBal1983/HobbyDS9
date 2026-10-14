@@ -1,9 +1,22 @@
 #nullable enable
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace HobbyDS9.UnityClient
 {
+    // Reflection bridge keeps opt-in review/default assemblies independent.
+    // Starts only presentation services, never ClientEntry or a campaign session.
+    public static class AudioPresentationBridge
+    {
+        public static System.IDisposable Bind(VisualElement root)
+        {
+            AudioDirector.TryGetOrCreate();
+            return new SfxInputBinding(root, SfxDirector.TryGetOrCreate());
+        }
+        public static void ButtonPress() => SfxDirector.Cue(LcarsSfx.ButtonPress);
+    }
+
     // Shared by the independent music and SFX services. Scene listeners retain
     // ownership; this fallback only supplies output when no scene listener is active.
     [DisallowMultipleComponent]
