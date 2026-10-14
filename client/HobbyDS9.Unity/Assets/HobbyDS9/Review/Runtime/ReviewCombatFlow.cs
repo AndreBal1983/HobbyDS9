@@ -82,7 +82,7 @@ namespace HobbyDS9.UnityReview
             =>Guard(confirmed&&CanDraftNextOrder&&Model.Current.TravelDraft!=null,"Next-turn order not submitted: a confirmed current Planning draft is required.",()=>Model.SendTravel(command));
         public bool AdvancePlanning(bool confirmed)
         {
-            if(!confirmed||!CanDraftNextOrder||Model.Current.Dirty){Notice="Advance unavailable: confirm accepted Planning orders; submit or explicitly discard the draft first.";return false;}
+            if(!confirmed||!CanDraftNextOrder||Model.HasLocalEdits){Notice="Advance unavailable: confirm accepted Planning orders; submit or explicitly discard the draft first.";return false;}
             Notice="";
             var success=Model.Advance();if(success){aftermathConfirmed=false;ownLosses.Clear();SurfaceOpen=true;}return success;
         }

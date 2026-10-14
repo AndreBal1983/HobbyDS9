@@ -17,9 +17,20 @@ namespace HobbyDS9.UnityReview
             var entry=go.AddComponent<ReviewEntry>();entry.Configure(options!);go.SetActive(true);
         }
     }
+    public static class IntegratedReviewLaunch
+    {
+        public static void Launch(string[] args)
+        {
+            if(!IntegratedLaunchOptions.TryParse(args,out var options))throw new InvalidOperationException("Explicit integrated launch options required.");
+            if(UnityEngine.Object.FindAnyObjectByType<ReviewEntry>(FindObjectsInactive.Include)!=null)return;
+            var go=new GameObject("HobbyDS9 Integrated Playtest");go.SetActive(false);UnityEngine.Object.DontDestroyOnLoad(go);
+            var entry=go.AddComponent<ReviewEntry>();entry.ConfigureIntegrated(options!);go.SetActive(true);
+        }
+    }
     public sealed class ReviewEntry : MonoBehaviour
     {
         private ReviewLaunchOptions? options;
+        private IntegratedLaunchOptions? integratedOptions;
         private ReviewUiModel? model;
         private ReviewCombatFlow? flow;
         public ReviewCombatFlow? Presentation=>flow;
@@ -29,28 +40,41 @@ namespace HobbyDS9.UnityReview
         private VisualElement? root,confirmation,content;
         private Label? message;
         private ReviewCentralView? central;
+        private ReviewStrategyView? strategy;
         private ReviewController? centralContext;
         private string slotName="review-1",actorInput="";
         private long viewEpoch;
         private readonly ReviewModalPermission modalPermission=new ReviewModalPermission();
         public void Configure(ReviewLaunchOptions value){if(options==null)options=value;}
+        public void ConfigureIntegrated(IntegratedLaunchOptions value){if(options==null&&integratedOptions==null)integratedOptions=value;}
         private void OnEnable()
         {
             viewEpoch++;modalPermission.Invalidate();
             try
             {
-                if(options==null)throw new InvalidOperationException();
+                if(options==null&&integratedOptions==null)throw new InvalidOperationException();
                 if(model==null)
                 {
                     byte[] Bytes(string name)
                     {
-                        var asset=Resources.Load<TextAsset>("ReviewPackages/"+options.Profile+"/"+name);
+                        string path;
+                        if(integratedOptions!=null)path="IntegratedPackages/v1/"+name;
+                        else{if(options==null)throw new InvalidOperationException();path="ReviewPackages/"+options.Profile+"/"+name;}
+                        var asset=Resources.Load<TextAsset>(path);
                         if(asset==null)throw new InvalidOperationException();return asset.bytes;
                     }
                     var codec=new ReviewNewtonsoftCodec();
-                    var package=ReviewExactPackageLoader.Load(Bytes("package"),Bytes("core"),Bytes("scenario"),codec);
-                    model=new ReviewUiModel(package,codec,new ReviewUnitySlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9PhysicalReviewOnly-v2"),codec),options.Actor);
-                    flow=new ReviewCombatFlow(model);workspace=new ReviewWorkspace(flow);actorInput=options.Actor;
+                    if(integratedOptions!=null)
+                    {
+                        var package=ReviewExactPackageLoader.LoadIntegrated(Bytes("package"),Bytes("physical"),Bytes("core"),Bytes("scenario"),codec);
+                        model=new ReviewUiModel(package,codec,new ReviewIntegratedSlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9IntegratedPlaytestOnly-v3"),codec),integratedOptions.Actor);
+                    }
+                    else
+                    {
+                        var package=ReviewExactPackageLoader.Load(Bytes("package"),Bytes("core"),Bytes("scenario"),codec);
+                        model=new ReviewUiModel(package,codec,new ReviewUnitySlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9PhysicalReviewOnly-v2"),codec),options!.Actor);
+                    }
+                    flow=new ReviewCombatFlow(model);workspace=new ReviewWorkspace(flow);actorInput=integratedOptions?.Actor??options!.Actor;
                 }
                 Build();
             }
@@ -79,9 +103,9 @@ namespace HobbyDS9.UnityReview
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.03f,0.05f,0.08f);root.style.color=new Color(0.92f,0.95f,1);root.style.fontSize=16;
             foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ReviewControls","ReviewCombat"})
             {var sheet=Resources.Load<StyleSheet>(resource);if(sheet!=null)root.styleSheets.Add(sheet);}
-            var identity=Readout("OPT-IN PHYSICAL TACTICAL V2 | SCENARIO: "+options!.Profile+" | ACTOR VIEW: "+model!.Current.Frame.Actor+" | Proposed policies; production activation disabled");
+            var identity=Readout((model!.Integrated?"OPT-IN INTEGRATED PLAYTEST | SCENARIO: integrated-playtest-v1":"OPT-IN PHYSICAL TACTICAL V2 | SCENARIO: "+options!.Profile)+" | ACTOR VIEW: "+model.Current.Frame.Actor+" | Proposed policies; default campaign activation disabled");
             identity.name="review-scenario-identity";identity.AddToClassList("review-heading");root.Add(identity);
-            root.Add(Readout("INTEGRATED PLAYTEST SHELL — strategic bindings in progress | "+workspace!.BoundaryIdentity));
+            root.Add(Readout(workspace!.BoundaryIdentity));
             message=Readout(model.Message);message.name="review-command-status";root.Add(message);
             var tools=new VisualElement();tools.AddToClassList("review-toolbar");root.Add(tools);
             AddButton(tools,"Refresh authority",()=>Do(()=>model.Refresh()));
@@ -95,7 +119,7 @@ namespace HobbyDS9.UnityReview
             testHost.Add(Readout("This authored review uses human actors civ.federation and civ.cardassian. Deliberately switch view to supply that human's choices. Do not infer opponent readiness from the host controls."));
             var actor=Field("Explicit actor ID",actorInput);actor.RegisterValueChangedCallback(e=>actorInput=e.newValue);testHost.Add(actor);
             AddButton(testHost,"Switch human actor view",()=>{
-                if(model.Current.Dirty)Confirm("Switch actor and discard unsent edits?",()=>Do(()=>model.SwitchActor(actorInput,true)));
+                if(model.HasLocalEdits)Confirm("Switch actor and discard unsent edits?",()=>Do(()=>model.SwitchActor(actorInput,true)));
                 else Do(()=>model.SwitchActor(actorInput));
             });
             AddButton(testHost,"Exit review",()=>Confirm("Exit without automatic save? Unsent edits will be lost.",()=>Do(()=>model.Close(true))));
@@ -111,6 +135,7 @@ namespace HobbyDS9.UnityReview
                 central=new ReviewCentralView(content,flow!,(parent,title,action)=>AddButton(parent,title,action),Do,Confirm);centralContext=model.Current;
             }
             else central.Bind(content);
+            strategy=new ReviewStrategyView(model,workspace,(parent,title,action)=>AddButton(parent,title,action),Do,Confirm,Navigate,(fleet,node,ship)=>{central.SelectStrategicFleet(fleet,node,ship);Navigate(ReviewWorkspacePage.FleetOrders);});
             root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();
         }
         private void Navigate(ReviewWorkspacePage page)
@@ -135,6 +160,7 @@ namespace HobbyDS9.UnityReview
         }
         private void DrawStrategicPanel()
         {
+            if(model!.Integrated){strategy!.Render(content!,workspace!.Page);return;}
             content!.Clear();var page=workspace!.Page;var frame=model!.Current.Frame;
             var heading=Readout(PageLabel(page));heading.name="review-workspace-heading";heading.AddToClassList("review-heading");content.Add(heading);
             var details=new ScrollView(ScrollViewMode.Vertical){name="review-strategic-details"};details.style.flexGrow=1;details.style.minHeight=0;content.Add(details);

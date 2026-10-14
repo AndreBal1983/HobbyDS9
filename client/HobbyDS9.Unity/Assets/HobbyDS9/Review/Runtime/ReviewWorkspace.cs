@@ -14,12 +14,13 @@ namespace HobbyDS9.UnityReview
         public ReviewUiModel Model=>Combat.Model;
         private ReviewController context;
         private ReviewWorkspacePage page=ReviewWorkspacePage.Map;
+        public string? SelectedNode { get; set; }
         public long NavigationEpoch { get; private set; }
         public ReviewWorkspace(ReviewCombatFlow combat){Combat=combat;context=combat.Model.Current;}
         private void Context()
         {
             if(ReferenceEquals(context,Model.Current))return;
-            context=Model.Current;page=ReviewWorkspacePage.Map;NavigationEpoch=checked(NavigationEpoch+1);
+            context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;NavigationEpoch=checked(NavigationEpoch+1);
         }
         public ReviewWorkspacePage Page { get {Context();return page;} }
         public bool CanNavigate=>!Model.Closed&&!Model.Busy&&!Model.Current.HasPendingWork;

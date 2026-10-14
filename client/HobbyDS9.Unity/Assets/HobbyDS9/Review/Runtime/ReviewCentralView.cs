@@ -30,6 +30,8 @@ namespace HobbyDS9.UnityReview
         // Keep pending field selections when shell navigation replaces the view tree.
         // Entry creates a new view instead when actor/controller/load context changes.
         public void Bind(VisualElement target){root=target;root.AddToClassList("review-central");}
+        public void SelectStrategicFleet(string fleet,string? node=null,string? ship=null)
+        {selectedFleet=fleet;SyncFleetOrder();if(node!=null)destination=node;if(ship!=null)selectedShip=ship;}
         public void Render()
         {
             root.Clear();var model=flow.Model;var c=model.Current;var frame=c.Frame;var stage=flow.Stage;var battle=frame.Battle;
@@ -103,7 +105,14 @@ namespace HobbyDS9.UnityReview
                 }
                 if(!(frame.Travel?.KnownContacts.Any(k=>k.Fresh)??false))dock.Add(Text("Follow unavailable: no fresh lawful contact. No current enemy state is inferred."));
                 var fields=new VisualElement();fields.AddToClassList("review-field-row");dock.Add(fields);
-                var dest=Field("Explicit known destination",destination);dest.RegisterValueChangedCallback(e=>{destination=e.newValue;selectedTravelIsDraft=false;});fields.Add(dest);
+                if(frame.Strategy!=null)
+                {
+                    var nodes=frame.Strategy.Navigation.Nodes.ToList();var captions=nodes.Select(n=>n.DisplayName+" / "+n.NodeId).ToList();
+                    var index=nodes.FindIndex(n=>n.NodeId.Value==destination);if(index<0&&nodes.Count>0){index=0;destination=nodes[0].NodeId.Value;}
+                    var dest=new DropdownField("Known destination",captions,Math.Max(0,index)){name="integrated-known-destination"};
+                    dest.RegisterValueChangedCallback(_=>{destination=nodes[dest.index].NodeId.Value;selectedTravelIsDraft=false;});fields.Add(dest);
+                }
+                else{var dest=Field("Explicit known destination",destination);dest.RegisterValueChangedCallback(e=>{destination=e.newValue;selectedTravelIsDraft=false;});fields.Add(dest);}
                 var known=new[]{"none"}.Concat(frame.Travel?.KnownContacts.Where(k=>k.Fresh).Select(k=>k.FleetId)??Array.Empty<string>()).ToList();
                 var contacts=Choice("Fresh known contact",known);if(known.Contains(contact))contacts.SetValueWithoutNotify(contact);else contact="none";
                 contacts.RegisterValueChangedCallback(e=>{contact=e.newValue;selectedTravelIsDraft=false;});fields.Add(contacts);

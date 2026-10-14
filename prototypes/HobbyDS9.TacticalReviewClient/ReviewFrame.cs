@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using HobbyDS9.Contracts;
+using HobbyDS9.Application;
 
 namespace HobbyDS9.TacticalReviewClient
 {
@@ -17,12 +18,13 @@ namespace HobbyDS9.TacticalReviewClient
         public IReadOnlyList<CampaignTacticalFleetCloakSetting> CloakSettings { get; }
         public CampaignTacticalObservation? Battle { get; }
         public PhysicalTravelView? Travel { get; }
+        public CampaignIntegratedStrategySnapshot? Strategy { get; }
         internal ReviewFrame(Guid host, long generation, string actor, CampaignTacticalReviewStatus status,
             IReadOnlyList<string> encounters, IReadOnlyList<CampaignTacticalOwnShip> own,
             IReadOnlyList<CampaignTacticalFleetCloakSetting> cloak, IReadOnlyList<FleetSnapshot> fleets, CampaignTacticalObservation? battle,
-            PhysicalTravelView? travel = null)
+            PhysicalTravelView? travel = null,CampaignIntegratedStrategySnapshot? strategy = null)
         { HostId=host; Generation=generation; Actor=actor; Status=status; Encounters=encounters;
-            OwnShips=own; CloakSettings=cloak; OwnStrategicFleets=fleets; Battle=battle; Travel=travel; }
+            OwnShips=own; CloakSettings=cloak; OwnStrategicFleets=fleets; Battle=battle; Travel=travel; Strategy=strategy; }
     }
     public sealed class FleetEdit
     {

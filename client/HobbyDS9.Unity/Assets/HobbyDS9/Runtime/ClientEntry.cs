@@ -52,6 +52,17 @@ namespace HobbyDS9.UnityClient
             UnityEngine.Application.targetFrameRate = -1;
             // Explicit opt-in only. Reflection avoids a default-assembly dependency/cycle.
             var reviewArgs=Environment.GetCommandLineArgs();
+            if(Array.IndexOf(reviewArgs,"--hobbyds9-integrated-playtest")>=0)
+            {
+                try
+                {
+                    var bridge=Type.GetType("HobbyDS9.UnityReview.IntegratedReviewLaunch, HobbyDS9.UnityReview",false);
+                    var launch=bridge?.GetMethod("Launch",System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static);
+                    if(launch==null)throw new InvalidOperationException();launch.Invoke(null,new object[]{reviewArgs});
+                }
+                catch(Exception){Debug.LogError("Explicit integrated playtest unavailable. Use its launch script and prepared resources. Default campaign was not started.");}
+                return;
+            }
             if(Array.IndexOf(reviewArgs,"--hobbyds9-physical-review")>=0)
             {
                 try

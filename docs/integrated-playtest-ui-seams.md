@@ -1,6 +1,6 @@
 # Unified opt-in campaign shell — early UI and authority seams
 
-14 October 2026. **Current implementation assignment; preparation in progress.** This follow-on branch preserves [PR #36](https://github.com/AndreBal1983/HobbyDS9/pull/36), head `890c6b70ee81296cff34973fdb8fc166af1ec858`, and its current-main ancestor `c5d2b6ac32e8a6c47b073e58f53e9ecb129c11e4`. PR #36 is complete. Historical UX documentation `455bf10` is a different assignment. No main merge or activation is authorized.
+14 October 2026. **Early plan retained as historical preparation; backend dependency subsequently delivered and bound.** [PR #37](https://github.com/AndreBal1983/HobbyDS9/pull/37), exact source `8a9ece2fa35a72b2dd53736856af181f07f601d0`, was merged ordinarily into this isolated follow-on branch, preserving shell `82ac718`, [PR #36](https://github.com/AndreBal1983/HobbyDS9/pull/36), head `890c6b70ee81296cff34973fdb8fc166af1ec858`, and current-main ancestor `c5d2b6ac32e8a6c47b073e58f53e9ecb129c11e4`. The source [final API contract](integrated-playtest-contract.md) and [backend acceptance](integrated-playtest-backend-acceptance.md) supersede missing-seam statements below. See [the UI delivery report](integrated-playtest-ui-acceptance.md) for actual final bindings/evidence. Historical UX `455bf10` is a different assignment. No main merge or activation is authorized.
 
 ## One authority through every screen
 
