@@ -8,6 +8,9 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/HobbyDS9.Headless/SingleplayerDemoPackageReader.cs" Link="SingleplayerDemoPackageReader.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/SingleplayerDemoWalkthrough.cs" Link="SingleplayerDemoWalkthrough.cs" />
+    <None Include="../../scenarios/singleplayer-demo-v1/*.json" Link="scenarios/singleplayer-demo-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/HobbyDS9.Headless/IntegratedPlaytestPackageReader.cs" Link="IntegratedPlaytestPackageReader.cs" />
     <None Include="../../scenarios/integrated-playtest-v1/*.json" Link="scenarios/integrated-playtest-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/CampaignDesigner.cs" Link="UnityClient/CampaignDesigner.cs" />

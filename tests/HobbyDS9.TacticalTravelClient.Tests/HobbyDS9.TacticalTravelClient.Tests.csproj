@@ -8,6 +8,9 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/HobbyDS9.Headless/IntegratedPlaytestPackageReader.cs" Link="IntegratedPlaytestPackageReader.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/SingleplayerDemoPackageReader.cs" Link="SingleplayerDemoPackageReader.cs" />
+    <None Include="../../scenarios/singleplayer-demo-v1/*.json" Link="scenarios/singleplayer-demo-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="../../prototypes/HobbyDS9.TacticalReviewStorage/HobbyDS9.TacticalReviewStorage.csproj" />
     <ProjectReference Include="../../prototypes/HobbyDS9.TacticalTravelClient.Probe/HobbyDS9.TacticalTravelClient.Probe.csproj" ReferenceOutputAssembly="false" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />

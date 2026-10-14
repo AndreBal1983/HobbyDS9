@@ -28,8 +28,10 @@ namespace HobbyDS9.Simulation
         internal Action<int>? FinalizationProbe { get; set; }
         private CampaignTacticalReviewSession(CampaignTacticalReviewPackageDto package, CampaignTacticalReviewSaveDto? save,
             CampaignTacticalTravelPackageDto? physicalPackage=null,CampaignTacticalTravelSaveDto? physicalSave=null,
-            CampaignIntegratedPlaytestPackageDto? integratedPackage=null,CampaignIntegratedPlaytestSaveDto? integratedSave=null)
+            CampaignIntegratedPlaytestPackageDto? integratedPackage=null,CampaignIntegratedPlaytestSaveDto? integratedSave=null,
+            CampaignSingleplayerDemoPackageDto? demoPackage=null)
         {
+            demo = demoPackage == null ? null : CopyDemoSettings(demoPackage);
             ValidatePackage(package);
             definitions = SimulationSession.CopyDefinitions(package.Campaign!.Definitions);
             controllers = package.Campaign.InitialState.Civilizations!.ToDictionary(c => c.CivilizationId,c => c.ControllerKind!.Value,StringComparer.Ordinal);
@@ -90,7 +92,7 @@ namespace HobbyDS9.Simulation
         public static CampaignTacticalReviewSession Start(CampaignTacticalReviewPackageDto package) => new CampaignTacticalReviewSession(package, null);
         public static CampaignTacticalReviewSession Load(CampaignTacticalReviewPackageDto package, CampaignTacticalReviewSaveDto save)
         { if (save == null) throw new ArgumentNullException(nameof(save)); return new CampaignTacticalReviewSession(package, save); }
-        public CampaignTacticalReviewSaveDto ExportSave() { lock (gate) return Copy(state); }
+        public CampaignTacticalReviewSaveDto ExportSave() { lock (gate) {Require(demo==null,"Use ExportDemoSave: bare lifecycle root is incomplete.");return Copy(state);} }
         internal SessionSnapshot CaptureCampaign() { lock (gate) return Legacy(state).CaptureSnapshot(); }
         private SimulationSession Legacy(CampaignTacticalReviewSaveDto s) => new SimulationSession(s.Campaign, definitions, compatibility);
         private AuthoredTacticalShipProvisionDto Provision(string id) => ResolveProvision(id);
@@ -120,6 +122,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
+                if(DemoMutationBlocked)return Result(CampaignTacticalError.WrongPhase);
                 var game = state.Campaign.GameState; var a = Actor(actor); if (a != CampaignTacticalError.None) return Result(a);
                 if (CurrentPhase != SessionPhase.Planning) return Result(CampaignTacticalError.WrongPhase);
                 if (turn != game.TurnNumber) return Result(CampaignTacticalError.StaleTurn);
@@ -137,7 +140,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
-                if(CurrentPhase!=SessionPhase.Planning)return Result(CampaignTacticalError.WrongPhase);
+                if(DemoMutationBlocked||CurrentPhase!=SessionPhase.Planning)return Result(CampaignTacticalError.WrongPhase);
                 if(travel!=null&&command?.Kind==CommandKind.SetFleetRoute)return Result(CampaignTacticalError.InvalidOrder);
                 if (command != null && state.AcceptedRoundCommands.Contains(command.CommandId, StringComparer.Ordinal)) return Result(CampaignTacticalError.DuplicateCommand);
                 if (command != null && (command.Kind == CommandKind.EnqueueProduction || command.Kind == CommandKind.EnqueueBlueprintConstruction) && !AdmittedConstruction(command))
@@ -158,6 +161,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
+                if(demo!=null&&DemoSnapshot().Outcome!=CampaignDemoOutcome.Active)return Result(CampaignTacticalError.WrongPhase);
                 if(travel!=null)return AdvancePhysicalTurn(turn,revision);
                 if (state.Campaign.GameState.Phase != SessionPhase.Planning) return Result(CampaignTacticalError.WrongPhase);
                 if (turn != state.Campaign.GameState.TurnNumber) return Result(CampaignTacticalError.StaleTurn);
@@ -239,6 +243,7 @@ namespace HobbyDS9.Simulation
                     && f.Ships.Any(s => s.Hull > 0 && !b.HiddenShipIds.Contains(s.ShipId, StringComparer.Ordinal))).OrderBy(f => f.FormationId, StringComparer.Ordinal).FirstOrDefault();
                 var orders = b.State.Formations.Where(f => f.SideId == actor && f.Status == TacticalFormationStatus.Active)
                     .Select(f => new CampaignTacticalFleetOrderDto { FleetId = f.FormationId, Maneuver = CampaignFleetManeuver.Hold, FocusFleetId = visible?.FormationId }).ToList();
+                if(demo!=null)orders=DemoTacticalOrders(b,actor);
                 Require(orders.All(o => ValidOrder(b, actor, o)), "Invalid baseline AI commitment.");
                 b.Commitments.Add(new CampaignTacticalCommitmentDto { ActorId = actor,
                     CommandId = "ai-command.review." + actor + "." + b.State.EncounterId + "." + b.State.NextRound, Orders = orders });
