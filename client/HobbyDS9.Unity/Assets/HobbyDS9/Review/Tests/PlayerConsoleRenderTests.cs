@@ -14,6 +14,30 @@ namespace HobbyDS9.UnityReview.Tests
     // Run separately with explicit integrated CLI flags, graphics enabled. No OS input.
     public sealed class PlayerConsoleRenderTests
     {
+        [UnityTest] public IEnumerator DesignerCaptionStyleAndPixelProbe()
+        {
+            if(Array.IndexOf(Environment.GetCommandLineArgs(),"--hobbyds9-player-render-tests")<0)Assert.Ignore("Dedicated graphics bootstrap required.");
+            yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            typeof(ReviewEntry).GetMethod("Navigate",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entry,new object[]{ReviewWorkspacePage.Designer});
+            var target=new RenderTexture(1280,720,24,RenderTextureFormat.ARGB32);target.Create();doc.panelSettings.targetTexture=target;
+            var root=doc.rootVisualElement;root.style.width=1280;root.style.height=720;yield return null;yield return null;yield return null;
+            foreach(var id in new[]{"designer-close","designer-reset","designer-global-issues","designer-construction"})
+            {
+                var b=root.Q<Button>(id);Debug.Log("DESIGN CAPTION "+id+" text="+b.text+" color="+b.resolvedStyle.color+" background="+b.resolvedStyle.backgroundColor+" size="+b.resolvedStyle.fontSize+" font="+b.resolvedStyle.unityFont+" fontDefinition="+b.resolvedStyle.unityFontDefinition+" bounds="+b.worldBound);
+            }
+            var back=root.Q<Button>("designer-close");
+            Assert.That(root.Q<Label>("designer-state").text,Is.EqualTo("Incomplete local preview"));
+            yield return null;yield return null;
+            var prior=RenderTexture.active;RenderTexture.active=target;var png=new Texture2D(1280,720,TextureFormat.RGBA32,false);png.ReadPixels(new Rect(0,0,1280,720),0,0);png.Apply();
+            var output=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/early-game-player-ui/designer-probe.png"));File.WriteAllBytes(output,png.EncodeToPNG());RenderTexture.active=prior;
+            var bounds=back.worldBound;int ink=0;
+            for(int x=(int)bounds.xMin+12;x<(int)bounds.xMax-12;x++)for(int y=(int)bounds.yMin+8;y<(int)bounds.yMax-8;y++)
+            {var pixel=png.GetPixel(x,719-y);if(pixel.r<.2f&&pixel.g<.2f&&pixel.b<.2f)ink++;}
+            Debug.Log("DESIGN CAPTION actual dark glyph pixels="+ink);Assert.That(ink,Is.GreaterThan(15),"Enabled Back needs actual readable glyph pixels, not only text in hierarchy");
+            doc.panelSettings.targetTexture=null;target.Release();UnityEngine.Object.Destroy(target);UnityEngine.Object.Destroy(png);
+            yield return new ExitPlayMode();
+        }
         [UnityTest] public IEnumerator RenderActualRuntimeConsoleAndExercisePlayerActions()
         {
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"--hobbyds9-player-render-tests")<0)Assert.Ignore("Dedicated render run requires explicit integrated bootstrap flags.");
@@ -59,7 +83,7 @@ namespace HobbyDS9.UnityReview.Tests
             {
                 foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})
                 {
-                    var target=new RenderTexture(size.x,size.y,0,RenderTextureFormat.ARGB32);target.Create();document.panelSettings.targetTexture=target;
+                    var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);target.Create();document.panelSettings.targetTexture=target;
                     root=document.rootVisualElement;root.style.width=size.x;root.style.height=size.y;
                     yield return null;yield return null;yield return null;
                     var summary=root.Q("player-confirmation-summary");
@@ -72,7 +96,7 @@ namespace HobbyDS9.UnityReview.Tests
             }
             foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})
             {
-                var target=new RenderTexture(size.x,size.y,0,RenderTextureFormat.ARGB32);target.Create();document.panelSettings.targetTexture=target;
+                var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);target.Create();document.panelSettings.targetTexture=target;
                 root.style.width=size.x;root.style.height=size.y;root.EnableInClassList("player-narrow",size.x<1600||size.y<850);
                 foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Designer})
                 {

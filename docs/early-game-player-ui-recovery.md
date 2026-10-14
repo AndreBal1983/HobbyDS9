@@ -27,17 +27,19 @@ The decorative background is the existing text-free art-rollout asset, with trac
 | Graphics-enabled full Unity EditMode suite | 144/144 passed, zero failed/skipped: inherited 143 plus actual runtime UI render/outcome case |
 | Actual runtime panel rendering | 75 PNGs across 1280×720, 1920×1080 and 3440×1440; these are Editor/runtime-panel pixels, not native player screenshots |
 | Live UI event walkthrough | Research preview/apply/cancel; paid queue 250→50 credits; turn-13 completion; both human routes; waiting/three joint rounds/results; explicit aftermath; unique format-3 save/load with retained ammunition passed |
-| Final small guidance/theme/old-designer-callback/Escape checks | API compilation passed; targeted graphics verification pending at this checkpoint |
-| New IL2CPP package/native operator input/restart | Pending; older binaries do not contain this UI |
+| Final small guidance/old-designer-callback/Escape checks | Targeted real runtime fixture passed on source 13f6337 |
+| Rounded designer caption pixels | Depth-zero offscreen target produced invalid white stencil masks. Corrected depth/stencil-24 target restores actual glyphs and colors; 2/2 focused cases passed and all 75 captures refreshed. No font workaround remains |
+| New IL2CPP package | Strict Windows x64 build succeeded at 13f6337; preserved review package `E:/HobbyDS9/artifacts/demos/HobbyDS9-UIRecovery-20261014-r1` |
+| Native operator input/restart | Pending, separate from Editor rendering and successful build |
 
 The render fixture enters real Play Mode through the explicit integrated bootstrap, dispatches focused `NavigationSubmitEvent` to actual buttons, uses actual `PanelSettings.targetTexture`, and verifies card/action bounds against viewports. Setup/inspection uses reflection; it does not submit fabricated combat state, grants or results. Keyboard event injection is distinct from physical native input. The save action uses a fresh unique review slot and never overwrites existing owner slots. Renderer evidence does not establish hardware audibility or GPU performance.
 
-Local evidence is under this worktree's `artifacts/early-game-player-ui/`: `editor-full-1.xml`, `render-tests-10.xml`, .NET TRX and `rendered/`. These ignored artifacts are local review evidence, not distributed runtime assets. Delivery SHA and CI link belong in the PR/delivery checkpoint rather than a self-referential source hash.
+Local evidence is under this worktree's `artifacts/early-game-player-ui/`: `editor-full-1.xml`, `render-tests-11.xml`, corrected stencil captures/actual-glyph check in `render-tests-12.xml`, .NET TRX and `rendered/`. Earlier depth-zero white designer capsules were a capture defect, not established native behavior. These ignored artifacts are local review evidence, not distributed runtime assets. Delivery SHA and CI link belong in the PR/delivery checkpoint rather than a self-referential source hash.
 
 Preserved integrated package SHA256: `88a919f6f51d244f79bb638ba933ff3c17305f25231a6b793aa6d53fca5f688b`; complete save golden: `417d1852e052b4fe1f4f2b5f611ba49b82b7d76cd6154540a58bcaefc474e865`. No golden was updated.
 
 ## Remaining delivery gates
 
-Independent exact-source review, final targeted graphics checks, exact-head CI and a new versioned Windows package/native walkthrough remain. No latest-validated-demo pointer or main merge is created by this worker checkpoint. The current scenario still has two human sides; switching under Test Tools is an explicit technical limit, not AI. Raw combat IDs and schematic presentation remain visible in the inherited central surface.
+Independent route/modal/draft/context/save/compiler-seam review accepted source 13f6337; final corrective source review, exact-head CI and native walkthrough/restart remain. No latest-validated-demo pointer or main merge is created by this worker checkpoint. The current scenario still has two human sides; switching under Test Tools is an explicit technical limit, not AI. Raw combat IDs and schematic presentation remain visible in the inherited central surface. The local designer's initial empty fit is labelled incomplete with concrete required-system/Validation guidance; actual compiler errors and disabled publication remain.
 
 The next bounded milestone connects the separately owned single-player contract, lawful AI/objective and wrapper-4 save namespace, then Start Demo/Continue, contextual onboarding and display controls. Original fleet art follows its separately validated asset contract. This first UI recovery does not claim the autonomous playable-demo objective complete.
