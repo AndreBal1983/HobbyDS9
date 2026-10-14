@@ -44,20 +44,20 @@ namespace HobbyDS9.UnityReview.Tests
         }
         [Test] public void ActualIntegratedResourcesStartOneScopedMapWithExplicitIdentity()
         {
-            Assert.That(Root.Q<Label>("review-scenario-identity").text,Does.Contain("OPT-IN INTEGRATED PLAYTEST"));
+            Assert.That(Root.Q<Label>("review-scenario-identity").text,Does.Contain("EARLY CAMPAIGN PREVIEW").And.Contain("Federation"));
             Assert.That(Model.Current.Frame.Strategy!.Civilization.CivilizationId.Value,Is.EqualTo("civ.federation"));
             Assert.That(Model.Current.Frame.Strategy.Civilization.Credits,Is.EqualTo(250));
-            Assert.That(Root.Q("integrated-known-map"),Is.Not.Null);Assert.That(Root.Q("strategy-advance"),Is.Not.Null);
+            Assert.That(Root.Q("integrated-known-map"),Is.Not.Null);Assert.That(Root.Q("player-primary-action"),Is.Not.Null);
             Assert.That(Root.Q("map-fleet-orders-fleet.cardassian-scout"),Is.Null);
         }
         [Test] public void ActualNavigationRendersRealResearchAndProductionWithoutResettingDraft()
         {
             var controller=Model.Current;var frame=controller.Frame;Invoke("Navigate",ReviewWorkspacePage.Research);
-            Assert.That(Root.Q("integrated-research-split"),Is.TypeOf<DropdownField>());
+            Assert.That(Root.Q("integrated-research-split"),Is.TypeOf<SliderInt>());
             Assert.That(Root.Q<Button>("integrated-apply-split").enabledSelf,Is.False);
             Model.ResearchInputs()!.ScienceUnits=300;Invoke("Navigate",ReviewWorkspacePage.Production);
             Assert.That(Root.Q("integrated-queue-ship-design.source-cruiser"),Is.Not.Null);
-            Assert.That(Root.Q<Button>("strategy-advance").enabledSelf,Is.False);
+            Assert.That(Root.Q<Button>("player-primary-action").enabledSelf,Is.False);
             Invoke("Navigate",ReviewWorkspacePage.Map);Invoke("Navigate",ReviewWorkspacePage.Research);
             Assert.That(Model.Current,Is.SameAs(controller));Assert.That(Model.Current.Frame,Is.SameAs(frame));Assert.That(Model.HasLocalEdits,Is.True);
             Assert.That(Root.Q<Button>("integrated-apply-split").enabledSelf,Is.True);
@@ -67,7 +67,7 @@ namespace HobbyDS9.UnityReview.Tests
         {
             var frame=Model.Current.Frame;
             using(var e=GeometryChangedEvent.GetPooled(Rect.zero,new Rect(0,0,width,height)))Invoke("Geometry",e);
-            Assert.That(Root.ClassListContains("review-compact"),Is.EqualTo(compact));Assert.That(Model.Current.Frame,Is.SameAs(frame));
+            Assert.That(Root.ClassListContains("player-narrow"),Is.EqualTo(compact));Assert.That(Model.Current.Frame,Is.SameAs(frame));
             Assert.That(Root.Q("review-workspace-navigation"),Is.Not.Null);
             // Actual handler/tree/class checks; no runtime event dispatch/native pixel proof.
         }
@@ -91,7 +91,7 @@ namespace HobbyDS9.UnityReview.Tests
             for(int i=0;i<13;i++)Assert.That(Model.Advance(),Is.True);
             var produced=Model.Current.Frame.Strategy!.Ships.Single(s=>!initial.Contains(s.ShipId.Value));
             Invoke("Build");Invoke("Navigate",ReviewWorkspacePage.Production);yield return null;
-            Assert.That(Root.Q("integrated-strategy-details"),Is.Not.Null);Assert.That(Model.Current.Frame.Strategy.Ships.Any(s=>s.ShipId==produced.ShipId),Is.True);
+            Assert.That(Root.Q("player-footer"),Is.Not.Null);Assert.That(Model.Current.Frame.Strategy.Ships.Any(s=>s.ShipId==produced.ShipId),Is.True);
             foreach(var actor in new[]{"civ.federation","civ.cardassian"})
             {
                 Assert.That(Model.SwitchActor(actor),Is.True);var fleet=actor=="civ.federation"?"fleet.federation-scout":"fleet.cardassian-scout";
