@@ -21,6 +21,45 @@ public sealed class IntegratedUiFixture : IDisposable
 }
 public sealed class IntegratedUiTests
 {
+    [Fact]
+    public void ChangingMapDestinationInvalidatesPreviewAndExactOfferSubmissionNeverRecomputesIt()
+    {
+        using var f=new IntegratedUiFixture();var m=f.Model;var workspace=new ReviewWorkspace(new ReviewCombatFlow(m));
+        workspace.SelectedFleet="fleet.federation-scout";workspace.SelectedNode="nav.bajor";
+        var offer=m.Current.FindKnownRoute(workspace.SelectedFleet,workspace.SelectedNode)!;workspace.RoutePreview=offer;
+        Assert.True(workspace.RoutePreviewMatchesCurrent);Assert.True(workspace.Navigate(ReviewWorkspacePage.Map));
+        workspace.SelectedNode="nav.cardassia";Assert.Null(workspace.RoutePreview);Assert.False(workspace.RoutePreviewMatchesCurrent);
+        Assert.True(workspace.Navigate(ReviewWorkspacePage.FleetOrders));Assert.False(workspace.RoutePreviewMatchesCurrent);
+        // Even a frozen old callback carries B's exact offer; it never replans silently to C.
+        Assert.True(m.SendPreviewedTravel(offer,ReviewUiModel.NewCommandId()));
+        Assert.Equal(offer.Route.Steps,m.Current.Frame.OwnStrategicFleets.Single().RouteNodeIds.Select(n=>n.Value));
+        var frame=m.Current.Frame;Assert.False(m.SendPreviewedTravel(offer,ReviewUiModel.NewCommandId()));Assert.Same(frame,m.Current.Frame);
+    }
+    [Fact]
+    public void LocalDesignDraftBlocksAdvanceTravelAndActorReplacementButSaveKeepsIt()
+    {
+        using var f=new IntegratedUiFixture();var m=f.Model;var frame=m.Current.Frame;
+        m.LocalDesignDirty=true;bool reset=false;m.ResetLocalDesign=()=>reset=true;
+        Assert.True(m.HasLocalEdits);Assert.False(m.Advance());
+        Assert.False(m.DraftTravel("fleet.federation-scout",CampaignTravelIntent.Leave,"nav.bajor",null));
+        Assert.False(m.SwitchActor(B));Assert.Same(frame,m.Current.Frame);
+        Assert.True(m.Save("design-local"));Assert.True(m.LocalDesignDirty);Assert.False(reset);
+        Assert.False(m.Load("missing",true));Assert.Same(frame,m.Current.Frame);Assert.True(m.LocalDesignDirty);
+        Assert.True(m.Reset());Assert.True(reset);Assert.False(m.HasLocalEdits);
+        m.LocalDesignDirty=true;Assert.True(m.Load("design-local",true));Assert.False(m.LocalDesignDirty);Assert.Null(m.ResetLocalDesign);
+    }
+    [Fact]
+    public void OwnedDesignCatalogueAndPublishedLibraryUseTheSameScopedHostWithoutMutation()
+    {
+        using var f=new IntegratedUiFixture();var m=f.Model;var frame=m.Current.Frame;
+        var library=m.DesignLibrary();Assert.Equal(A,library.Actor);Assert.NotNull(library.Catalogue);
+        Assert.False(library.CanConstructPublishedBlueprints);Assert.Same(frame,m.Current.Frame);
+        var workspace=new ReviewWorkspace(new ReviewCombatFlow(m)){SelectedColony="colony.sol"};
+        Assert.True(workspace.Navigate(ReviewWorkspacePage.Worlds));Assert.True(workspace.Navigate(ReviewWorkspacePage.Production));
+        Assert.Equal("colony.sol",workspace.SelectedColony);Assert.Same(frame,m.Current.Frame);
+        Assert.True(m.SwitchActor(B));_ =workspace.Page;Assert.Null(workspace.SelectedColony);
+        Assert.Equal(B,m.DesignLibrary().Actor);
+    }
     [Theory][InlineData("none",false)][InlineData("physical",false)][InlineData("missing",false)][InlineData("invalid",false)][InlineData("both",false)][InlineData("valid",true)]
     public void ExplicitIntegratedSelectorDoesNotReusePhysicalFlagsOrEnableDefault(string scenario,bool accepted)
     {
