@@ -75,6 +75,7 @@ namespace HobbyDS9.Application
             Engineering=snapshot.Content.Engineering.Select(d=>new EngineeringCardSnapshot(d,state,PaceFactor,access)).ToList().AsReadOnly();
             Receipts=snapshot.Campaign.LastResearchReceipts.Where(r=>r.CivilizationId==actor.CivilizationId).ToList().AsReadOnly();
         }
-        public static ResearchOverviewSnapshot For(CampaignSnapshot snapshot,EntityId actorId,bool planningAllowed=true)=>new ResearchOverviewSnapshot(snapshot,snapshot.Campaign.Civilizations.Single(c=>c.CivilizationId==actorId),planningAllowed);
+        public static ResearchOverviewSnapshot For(CampaignSnapshot snapshot,EntityId actorId)=>For(snapshot,actorId,true);
+        internal static ResearchOverviewSnapshot For(CampaignSnapshot snapshot,EntityId actorId,bool planningAllowed)=>new ResearchOverviewSnapshot(snapshot,snapshot.Campaign.Civilizations.Single(c=>c.CivilizationId==actorId),planningAllowed);
     }
 }

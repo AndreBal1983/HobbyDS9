@@ -37,6 +37,7 @@ namespace HobbyDS9.Simulation
             if (integratedPackage != null)
             {
                 integratedHash = integratedPackage.PackageHash;
+                initialProductionCompleted = package.Campaign.InitialState.PopulationStatistics!.ProductionCompleted;
                 constructionTemplates = integratedPackage.ConstructionTemplates!.Select(t => new CampaignIntegratedConstructionTemplateDto {
                     ShipDesignDefinitionId=t.ShipDesignDefinitionId,SourceProvisionShipId=t.SourceProvisionShipId }).ToList();
                 builtShips = integratedSave == null ? new List<CampaignIntegratedBuiltShipDto>() : integratedSave.BuiltShips!.Select(CopyBuild).ToList();

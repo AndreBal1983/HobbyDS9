@@ -301,4 +301,109 @@ public sealed class IntegratedPlaytestTests
         if(kind=="blueprint-static")p.ConstructionTemplates!.Single().ShipDesignDefinitionId="ship-design.scout";
         Assert.Throws<ArgumentException>(()=>CampaignIntegratedPlaytestApplication.StartPackage(p));
     }
+
+    [Fact]
+    public void ExistingEngineeringGateCannotBeBypassedByAValidTemplateBinding()
+    {
+        var p=Package();p.Physical!.CorePackage!.Campaign!.Definitions.ShipDesigns!.Single(d=>d.DefinitionId==Design)
+            .RequiredEngineeringApplicationDefinitionIds=new List<string>{"engineering.advanced-starship-engineering"};
+        var app=CampaignIntegratedPlaytestApplication.StartPackage(p);
+        Assert.All(app.CaptureStrategy(A).Construction,o=>Assert.Equal(CommandErrorCode.DesignEngineeringPrerequisiteMissing,o.UnavailableReason));
+        var before=Json(app.ExportIntegratedSave());Assert.False(app.SubmitStrategicCommand(Enqueue(app)).Accepted);Assert.Equal(before,Json(app.ExportIntegratedSave()));
+    }
+
+    [Fact]
+    public void ActualProductionAllocationExhaustionRollsBackPaidQueueAndAllPhases()
+    {
+        var p=Package();var app=CampaignIntegratedPlaytestApplication.StartPackage(p);Assert.True(app.SubmitStrategicCommand(Enqueue(app)).Accepted);
+        for(int i=0;i<100;i++){var trial=Reload(p,app);Advance(trial);if(trial.ExportIntegratedSave().BuiltShips!.Count>0)break;Advance(app);}
+        var save=app.ExportIntegratedSave();save.Physical!.Core.Campaign.GameState.NextEntitySequence=ulong.MaxValue;
+        app=CampaignIntegratedPlaytestApplication.LoadSave(p,save);var before=Json(app.ExportIntegratedSave());var s=app.CaptureStatus();
+        Assert.Equal(CampaignTacticalError.Overflow,app.AdvanceTurn(s.Turn,s.CampaignRevision).Error);Assert.Equal(before,Json(app.ExportIntegratedSave()));
+    }
+
+    [Fact]
+    public void SimultaneousPaidCompletionsAtSameSystemHaveDistinctSourceProvenance()
+    {
+        var p=Package();var g=p.Physical!.CorePackage!.Campaign!.InitialState;
+        g.Civilizations!.Single(c=>c.CivilizationId==A).Credits=450;
+        var sol=g.Colonies!.Single(c=>c.ColonyId=="colony.sol");var mars=g.Colonies!.Single(c=>c.ColonyId=="colony.mars");
+        mars.Infrastructure=Clone(sol.Infrastructure);mars.Stockpiles=Clone(sol.Stockpiles);
+        var app=CampaignIntegratedPlaytestApplication.StartPackage(p);
+        Assert.True(app.SubmitStrategicCommand(Enqueue(app)).Accepted);Assert.True(app.SubmitStrategicCommand(Enqueue(app,"colony.mars")).Accepted);
+        // Isolate completion mapping using a valid paid partial-work checkpoint, not fabricated ships.
+        var save=app.ExportIntegratedSave();var queues=save.Physical!.Core.Campaign.GameState.Colonies!.Where(c=>c.OwnerCivilizationId==A&&c.ProductionQueue!.Count>0).ToList();
+        foreach(var c in queues)c.ProductionQueue![0].CompletedIndustry=99;
+        var expected=queues.Select(c=>c.ProductionQueue![0].QueueItemId).OrderBy(x=>x).ToArray();app=CampaignIntegratedPlaytestApplication.LoadSave(p,save);Advance(app);
+        Assert.Equal(2,app.ExportIntegratedSave().BuiltShips!.Count);Assert.Equal(expected,app.ExportIntegratedSave().BuiltShips!.Select(b=>b.QueueItemId).OrderBy(x=>x));
+        Assert.All(app.ExportIntegratedSave().BuiltShips!,b=>Assert.Equal(FA,b.FleetIdAtConstruction));app=Reload(p,app);Assert.Equal(3,app.GetOwnStrategicFleets(A).Single().ShipIds.Count);
+    }
+
+    [Fact]
+    public void DifferentOwnersPayAndReceiveOnlyTheirOwnExactConstructionSources()
+    {
+        var p=Package();p.Physical!.CorePackage!.Campaign!.InitialState.Civilizations!.Single(c=>c.CivilizationId==B).Credits=250;
+        var app=CampaignIntegratedPlaytestApplication.StartPackage(p);Assert.True(app.SubmitStrategicCommand(Enqueue(app)).Accepted);
+        var b=Enqueue(app,"colony.cardassia");b.ActorCivilizationId=B;Assert.True(app.SubmitStrategicCommand(b).Accepted);
+        for(int i=0;i<100&&app.ExportIntegratedSave().BuiltShips!.Count<2;i++)Advance(app);
+        var built=app.ExportIntegratedSave().BuiltShips!;Assert.Equal(2,built.Count);
+        foreach(var record in built)Assert.Contains(app.CaptureStrategy(record.OwnerCivilizationId!).Ships,s=>s.ShipId.Value==record.ShipId);
+        Assert.DoesNotContain(app.CaptureStrategy(A).Ships,s=>built.Any(n=>n.OwnerCivilizationId==B&&n.ShipId==s.ShipId.Value));
+    }
+
+    [Theory]
+    [InlineData("completion-counter")][InlineData("unknown-fleet")][InlineData("unadmitted-queue")]
+    public void MalformedCompletionLedgerAndConstructionQueuesRejectOnLoad(string kind)
+    {
+        var p=Package();var app=CampaignIntegratedPlaytestApplication.StartPackage(p);Build(app);var save=app.ExportIntegratedSave();
+        if(kind=="completion-counter")save.Physical!.Core.Campaign.GameState.PopulationStatistics!.ProductionCompleted++;
+        if(kind=="unknown-fleet")save.BuiltShips!.Single().FleetIdAtConstruction="fleet.unallocated";
+        if(kind=="unadmitted-queue")
+        {
+            var core=save.Physical!.Core;var legacy=new SimulationSession(core.Campaign,p.Physical!.CorePackage!.Campaign!.Definitions,
+                new SaveCompatibility(core.Campaign.ScenarioId,core.Campaign.RulesVersion,core.Campaign.ContentHash));
+            var command=Enqueue(app);command.EnqueueProduction!.DefinitionId="ship-design.scout";Assert.True(legacy.SubmitCommand(command).Accepted);save.Physical.Core.Campaign=legacy.ExportSave();
+        }
+        Assert.Throws<ArgumentException>(()=>CampaignIntegratedPlaytestApplication.LoadSave(p,save));
+    }
+
+    [Fact]
+    public void ExpiredAuthoredKnowledgeRemainsAnExplicitContactGate()
+    {
+        var p=Package();p.Physical!.CorePackage!.Campaign!.InitialState.Fleets!.Single(f=>f.FleetId==FB).LocationNodeId="nav.sol";
+        var app=CampaignIntegratedPlaytestApplication.StartPackage(p);for(int i=0;i<21;i++)Advance(app);
+        Assert.All(app.GetKnownContacts(A),k=>Assert.False(k.Fresh));Order(app,A,FA,CampaignTravelIntent.StayEngage);Advance(app);
+        Assert.Equal(SessionPhase.Planning,app.CaptureStatus().Phase);Assert.Empty(app.GetEncounters(A));
+    }
+
+    [Theory]
+    [InlineData(false)][InlineData(true)]
+    public void MissingResourcesOrYardRemainRealConstructionRequirements(bool yard)
+    {
+        var p=Package();var colony=p.Physical!.CorePackage!.Campaign!.InitialState.Colonies!.Single(c=>c.ColonyId=="colony.sol");
+        if(yard)colony.Infrastructure!.RemoveAll(i=>p.Physical.CorePackage.Campaign.Definitions.Infrastructure!.Any(d=>d.DefinitionId==i.DefinitionId&&d.Shipbuilding));
+        else colony.Stockpiles!.Single(s=>s.ResourceDefinitionId=="resource.dilithium").Amount=0;
+        var app=CampaignIntegratedPlaytestApplication.StartPackage(p);var option=app.CaptureStrategy(A).Construction.Single(o=>o.ColonyId.Value=="colony.sol");
+        Assert.Equal(yard?CommandErrorCode.ShipbuildingUnavailable:CommandErrorCode.InsufficientStrategicResource,option.UnavailableReason);
+        var before=Json(app.ExportIntegratedSave());Assert.False(app.SubmitStrategicCommand(Enqueue(app)).Accepted);Assert.Equal(before,Json(app.ExportIntegratedSave()));
+    }
+
+    [Fact]
+    public void UncontrolledActorsCannotInspectOrSubmitHumanConstruction()
+    {
+        var p=Package();p.Physical!.CorePackage!.Campaign!.InitialState.Civilizations!.Single(c=>c.CivilizationId==B).ControllerKind=ControllerKind.AI;
+        var app=CampaignIntegratedPlaytestApplication.StartPackage(p);Assert.Throws<ArgumentException>(()=>app.CaptureStrategy(B));
+        var command=Enqueue(app,"colony.cardassia");command.ActorCivilizationId=B;var before=Json(app.ExportIntegratedSave());
+        Assert.Equal(CampaignTacticalError.ActorNotControlled,app.SubmitStrategicCommand(command).Error);Assert.Equal(before,Json(app.ExportIntegratedSave()));
+    }
+
+    [Fact]
+    public void CallerCannotRetargetOwnedConstructionTemplatesOrHardwareAfterStart()
+    {
+        var p=Package();var app=CampaignIntegratedPlaytestApplication.StartPackage(p);
+        p.ConstructionTemplates!.Single().SourceProvisionShipId="ship.cardassian-scout";
+        p.Physical!.CorePackage!.Campaign!.Definitions.AuthoredTacticalEquipment!.Fits!.Single(f=>f.DefinitionId=="fit.provisional-cruiser").MaxHull=999;
+        Build(app);var built=app.ExportIntegratedSave().BuiltShips!.Single();Assert.Equal("ship.equipment-cruiser",built.SourceProvisionShipId);
+        Assert.Equal(220,app.CaptureStrategy(A).Ships.Single(s=>s.ShipId.Value==built.ShipId).CurrentHull);
+    }
 }
