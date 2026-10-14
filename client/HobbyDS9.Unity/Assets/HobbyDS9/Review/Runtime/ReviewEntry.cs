@@ -34,10 +34,11 @@ namespace HobbyDS9.UnityReview
         private Button? advance,round,finalize,sendTravel;
         private ScrollView? controlScroll;
         private long viewEpoch;
+        private readonly ReviewModalPermission modalPermission=new ReviewModalPermission();
         public void Configure(ReviewLaunchOptions value){if(options==null)options=value;}
         private void OnEnable()
         {
-            viewEpoch++;
+            viewEpoch++;modalPermission.Invalidate();
             try
             {
                 if(options==null)throw new InvalidOperationException();
@@ -57,6 +58,7 @@ namespace HobbyDS9.UnityReview
             }
             catch(Exception)
             {
+                modalPermission.Invalidate();
                 root?.UnregisterCallback<GeometryChangedEvent>(Geometry);
                 if(panel!=null)Destroy(panel);
                 var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();
@@ -65,10 +67,11 @@ namespace HobbyDS9.UnityReview
                 root.Add(new Label("PHYSICAL REVIEW / PROPOSED / DEFAULT ACTIVATION DISABLED\nReview content or binding unavailable. Preparation and Editor/native verification are still required."));
             }
         }
-        private void OnDisable(){viewEpoch++;root?.UnregisterCallback<GeometryChangedEvent>(Geometry);confirmation=null;}
+        private void OnDisable(){viewEpoch++;modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);confirmation=null;}
         private void OnDestroy(){if(panel!=null)Destroy(panel);}
         private void Build()
         {
+            modalPermission.Invalidate();
             root?.UnregisterCallback<GeometryChangedEvent>(Geometry);
             if(panel!=null)Destroy(panel);
             panel=ScriptableObject.CreateInstance<PanelSettings>();
@@ -161,7 +164,7 @@ namespace HobbyDS9.UnityReview
         private static void Set(DropdownField field,List<string> values){if(values.Count==0)values.Add("none");var current=field.value;field.choices=values;field.SetValueWithoutNotify(values.Contains(current)?current:values[0]);}
         private Button AddButton(VisualElement parent,string title,Action action,bool dialog=false)
         {
-            var epoch=viewEpoch;var button=new Button(()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog||confirmation==null))action();}){text=title};
+            var epoch=viewEpoch;var button=new Button(()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null))action();}){text=title};
             button.style.minHeight=32;button.style.flexShrink=0;parent.Add(button);return button;
         }
         private void Do(Action action)
@@ -178,18 +181,20 @@ namespace HobbyDS9.UnityReview
         private void Confirm(string title,Action action)
         {
             if(confirmation!=null)return;
+            var callbacks=modalPermission.TryOpen(()=>{ClearConfirmation();action();},()=>ClearConfirmation());
+            if(callbacks==null)return;
             confirmation=new VisualElement();confirmation.style.position=Position.Absolute;confirmation.style.left=0;confirmation.style.right=0;confirmation.style.top=0;confirmation.style.bottom=0;
             confirmation.style.backgroundColor=new Color(0.04f,0.04f,0.06f,0.98f);confirmation.style.paddingTop=60;confirmation.style.paddingLeft=30;
             var summary=new Label(title);summary.style.whiteSpace=WhiteSpace.Normal;confirmation.Add(summary);
             var review=new ScrollView();review.style.flexGrow=1;review.style.minHeight=0;
             var boundary=new Label(model!.Facts());boundary.style.whiteSpace=WhiteSpace.Normal;review.Add(boundary);confirmation.Add(review);
             foreach(var child in root!.Children())child.SetEnabled(false);
-            AddButton(confirmation,"Cancel",()=>ClearConfirmation(),true);
-            var confirmButton=AddButton(confirmation,"Confirm",()=>{ClearConfirmation();action();},true);
+            AddButton(confirmation,"Cancel",callbacks.Cancel,true);
+            var confirmButton=AddButton(confirmation,"Confirm",callbacks.Confirm,true);
             root!.Add(confirmation);
             confirmButton.Focus();
         }
         private void ClearConfirmation()
-        {confirmation?.RemoveFromHierarchy();confirmation=null;foreach(var child in root!.Children())child.SetEnabled(true);Draw();}
+        {modalPermission.Invalidate();confirmation?.RemoveFromHierarchy();confirmation=null;foreach(var child in root!.Children())child.SetEnabled(true);Draw();}
     }
 }

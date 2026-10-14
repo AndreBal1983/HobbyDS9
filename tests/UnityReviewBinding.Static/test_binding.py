@@ -55,6 +55,11 @@ class BindingTests(unittest.TestCase):
         path.write_text(path.read_text().replace("artifacts/unity-review/Windows/HobbyDS9Review.exe", "artifacts/unity/Windows/HobbyDS9.exe"))
         self.assertTrue(any("disjoint" in x for x in checker.check(self.root)))
 
+    def test_bypassed_portable_modal_permission_rejected(self):
+        path = self.assets / "Review/Runtime/ReviewEntry.cs"
+        path.write_text(path.read_text().replace('"Confirm",callbacks.Confirm', '"Confirm",action'))
+        self.assertTrue(any("Modal buttons" in x for x in checker.check(self.root)))
+
 
 if __name__ == "__main__":
     unittest.main()
