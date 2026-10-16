@@ -1,0 +1,75 @@
+{
+  "asset_id": "galaxy-class.meshy.v2",
+  "status": "owner-selected temporary stand-in; runtime integration pending",
+  "created_at": "2026-10-16",
+  "provider": "Meshy",
+  "cli_version": "0.4.0",
+  "resource": "multi-image-to-3d",
+  "task_id": "01a143e2-9d4c-74e9-891e-9655559ec73a",
+  "consumed_credits": 30,
+  "reference_images": [
+    "image(20261016-084059).png",
+    "image(20261016-084055).png",
+    "image(20261016-084135).png"
+  ],
+  "settings": {
+    "should_texture": true,
+    "enable_pbr": true,
+    "texture_resolution": "4k",
+    "remove_lighting": true
+  },
+  "glb": {
+    "version": 2,
+    "meshes": 1,
+    "materials": 1,
+    "embedded_images": 4,
+    "indexed_triangles": 1067410,
+    "extensions_required": []
+  },
+  "files": {
+    "galaxy-class-v2.glb": {
+      "bytes": 56507400,
+      "sha256": "3464ee3faa5aa4e41d01baf08d7403ebb28075a950dceb311b68e467660a67aa"
+    },
+    "galaxy-class-v2-preview.png": {
+      "bytes": 45744,
+      "sha256": "ce67a51571cf68919757be21cd13c2ca8f5edb0e60e89ef9e47dceb1e8da1c5c"
+    }
+  },
+  "distribution": {
+    "encoding": "gzip split into ordered parts",
+    "parts": [
+      {
+        "name": "galaxy-class-v2.glb.gz.part01",
+        "bytes": 8388608,
+        "sha256": "a822490fca8bcdb1ddcf168fcfbf2ad6b1d8e859331821308501685a9c2d226c"
+      },
+      {
+        "name": "galaxy-class-v2.glb.gz.part02",
+        "bytes": 8388608,
+        "sha256": "254de4072936aa4f62b600b35cf0170b807f3d0583f460b255f01f77da42fca9"
+      },
+      {
+        "name": "galaxy-class-v2.glb.gz.part03",
+        "bytes": 8388608,
+        "sha256": "5c0d02f2b9e2f18ecd2028f4224ec05970d1689eb7541d5cf7d8790e0991bddc"
+      },
+      {
+        "name": "galaxy-class-v2.glb.gz.part04",
+        "bytes": 8388608,
+        "sha256": "003e0063641ee3b7748a87e9faeb090f263e7a18658d0cc96585361c17551f8e"
+      },
+      {
+        "name": "galaxy-class-v2.glb.gz.part05",
+        "bytes": 8388608,
+        "sha256": "6e412fb8baf03b1c566f0110ffef987af2ddb875abaf45054556214d27217f98"
+      },
+      {
+        "name": "galaxy-class-v2.glb.gz.part06",
+        "bytes": 4624964,
+        "sha256": "0257e18e627a9d92ae341ffce5f01440730b7ace62aebffc2ba8d928cccbc8d2"
+      }
+    ],
+    "restore_command": "python assets/art/galaxy-class-meshy-v2/restore_model.py"
+  }
+}
