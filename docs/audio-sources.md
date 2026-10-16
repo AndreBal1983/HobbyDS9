@@ -33,3 +33,33 @@ Added at the project owner's request on 2026-10-16.
 - Unity GUID: `c0e242ee197e4d9d9e2072837dc3186c`. Import settings match the existing music assets: Streaming, Vorbis quality 0.85, preserve sample rate/stereo, background loading, preload disabled.
 
 Available as an audio resource; not yet registered in `Resources/MusicCatalog.asset`. The integration agent can register it with stable ID `music.quiet-frontier`, display name `Quiet Frontier`, Strategic category and FullCue policy. It has not been edited or verified as a seamless loop. Audition transitions and choose crossfade/quiet-tail values during local Unity acceptance. Existing playlist behavior is unchanged.
+
+
+## Across the Stars — generated music resource
+
+Added at the project owner's request on 2026-10-16.
+
+- Asset: [`Across the Stars.mp3`](../client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Across%20the%20Stars.mp3).
+- Intended use: Original late-Romantic piano concerto with acoustic orchestra; major discoveries and sweeping journeys.
+- Generated using ElevenLabs Music v2 (`eleven_music_v2`) from the owner's musical brief, with original melody and instrumental-only settings. Named musical references were expressed as descriptive musical qualities.
+- Flow ID: `iSfmjLNsF2OAP7vPuw5E`; generation ID: `evDZiC9YyGkCk4ER0tI4`.
+- Source: unmodified generated MP3, 8,658,322 bytes; stereo 48 kHz; encoded duration 360.024 seconds.
+- SHA-256: `8449a257fe7322f959e5a24ebb4f1b42a05fa95ac38a7b6d1f4a0cad39d1b32a`.
+- Unity GUID: `22b9873a967243259ce547af180f0da1`. Import settings match the existing music assets: Streaming, Vorbis quality 0.85, preserve sample rate/stereo, background loading, preload disabled.
+
+Available as an audio resource; not yet registered in `Resources/MusicCatalog.asset`. Suggested stable ID: `music.across-the-stars`; display name: `Across the Stars`; FullCue policy. The integration agent should choose playback context and audition crossfade/quiet-tail values locally. The source is not verified as a seamless loop. Existing playlist behavior is unchanged.
+
+
+## Secrets in the Courtyard — generated music resource
+
+Added at the project owner's request on 2026-10-16.
+
+- Asset: [`Secrets in the Courtyard.mp3`](../client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Secrets%20in%20the%20Courtyard.mp3).
+- Intended use: Restrained Cardassian courtyard instrumental; low strings, bass clarinet, bassoon and understated intrigue.
+- Generated using ElevenLabs Music v2 (`eleven_music_v2`) from the owner's musical brief, with original melody and instrumental-only settings. Named musical references were expressed as descriptive musical qualities.
+- Flow ID: `gT2vsBXYKuf9MzJ3WTFk`; generation ID: `Z7zf7hZdyn4usOUsPMkN`.
+- Source: unmodified generated MP3, 1,938,706 bytes; stereo 48 kHz; encoded duration 80.040 seconds.
+- SHA-256: `c6b4ed4cfd02a527fa8f49c2cf759cd7d3052ce9188a0552a3f86487bbec2128`.
+- Unity GUID: `106b49eb6ae14ac1af9aa7cfc8b4c852`. Import settings match the existing music assets: Streaming, Vorbis quality 0.85, preserve sample rate/stereo, background loading, preload disabled.
+
+Available as an audio resource; not yet registered in `Resources/MusicCatalog.asset`. Suggested stable ID: `music.secrets-in-the-courtyard`; display name: `Secrets in the Courtyard`; FullCue policy. The integration agent should choose playback context and audition crossfade/quiet-tail values locally. The source is not verified as a seamless loop. Existing playlist behavior is unchanged.
