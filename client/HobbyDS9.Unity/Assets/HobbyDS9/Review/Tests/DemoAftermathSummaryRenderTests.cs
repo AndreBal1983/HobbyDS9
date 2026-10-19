@@ -71,6 +71,12 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(flow.AftermathSummary,Is.SameAs(summary));
             }
             yield return Capture("Confirmed-selected-aftermath",SummaryBounds);
+            Caption("Ship status");yield return null;
+            Assert.That(doc.rootVisualElement.Q("combat-own-current-stocks"),Is.Not.Null,"Ship status keeps its selected own-stock readout");
+            Assert.That(doc.rootVisualElement.Q("combat-schematic"),Is.Not.Null);
+            Caption("Battle summary");yield return null;
+            Assert.That(doc.rootVisualElement.Q("combat-own-current-stocks"),Is.Null,"Summary contains all survivor stocks without a duplicate block");
+            Assert.That(doc.rootVisualElement.Q("combat-schematic"),Is.Null);
             Id("review-nav-Map");yield return null;Id("review-nav-Combat");yield return null;yield return Capture("Aftermath-kept-on-navigation",SummaryBounds);
             Id("review-nav-Saves");yield return null;typeof(ReviewEntry).GetField("slotName",BindingFlags.NonPublic|BindingFlags.Instance)!.SetValue(entry,"missing-"+Guid.NewGuid().ToString("N").Substring(0,8));Invoke("Draw");
             Id("player-load");yield return null;Caption("Confirm");yield return null;Assert.That(flow.AftermathSummary,Is.SameAs(summary));
