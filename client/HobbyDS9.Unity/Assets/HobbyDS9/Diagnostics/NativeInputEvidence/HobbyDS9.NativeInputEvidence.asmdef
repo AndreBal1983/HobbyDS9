@@ -1,0 +1,14 @@
+{
+  "name": "HobbyDS9.NativeInputEvidence",
+  "rootNamespace": "HobbyDS9.NativeInputEvidence",
+  "references": ["Unity.InputSystem"],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": true,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

@@ -1,0 +1,16 @@
+<linker>
+  <assembly fullname="HobbyDS9.NativeInputEvidence">
+    <type fullname="HobbyDS9.NativeInputEvidence.NativeInputEvidence" preserve="all" />
+    <type fullname="HobbyDS9.NativeInputEvidence.NativeInputEvidence/Row" preserve="all" />
+  </assembly>
+  <assembly fullname="UnityEngine.InputForUIModule">
+    <type fullname="UnityEngine.InputForUI.EventProvider" preserve="fields" />
+  </assembly>
+  <assembly fullname="Unity.InputSystem">
+    <type fullname="UnityEngine.InputSystem.Plugins.InputForUI.InputSystemProvider" preserve="fields" />
+  </assembly>
+  <assembly fullname="UnityEngine.UIElementsModule">
+    <type fullname="UnityEngine.UIElements.UIElementsRuntimeUtility" preserve="fields" />
+    <type fullname="UnityEngine.UIElements.DefaultEventSystem" preserve="fields" />
+  </assembly>
+</linker>
