@@ -1,0 +1,754 @@
+[
+  {
+    "id": "start",
+    "title": "Welcome / Start and Continue",
+    "family": "Campaign",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Single-player demo implemented; new composition proposed"
+  },
+  {
+    "id": "continue",
+    "title": "Continue / compatible campaign slots",
+    "family": "Campaign",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Wrapper4 demo saves; wrapper5 frontier remains separate"
+  },
+  {
+    "id": "setup",
+    "title": "Campaign setup / mode and difficulty",
+    "family": "Campaign",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Full campaign setup proposed; five fair difficulty principles agreed"
+  },
+  {
+    "id": "setup-galaxy",
+    "title": "Procedural galaxy / seed and density preview",
+    "family": "Map",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Generator parameters/topology proposed; no runtime generator"
+  },
+  {
+    "id": "setup-faction",
+    "title": "Civilisation / personality / difficulty",
+    "family": "Campaign",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Independent faction personality and difficulty agreed; presets proposed"
+  },
+  {
+    "id": "setup-review",
+    "title": "Review campaign / generation validation",
+    "family": "Campaign",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Generation validation and launch transaction proposed"
+  },
+  {
+    "id": "turn-summary",
+    "title": "Weekly activity / decisions",
+    "family": "Campaign",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Weekly clock agreed; consolidated activity layout proposed"
+  },
+  {
+    "id": "victory",
+    "title": "Victory / inspect or save completed campaign",
+    "family": "Campaign",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Demo terminal outcome implemented; no fresh orders"
+  },
+  {
+    "id": "defeat",
+    "title": "Defeat / no new campaign mutations",
+    "family": "Campaign",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Demo terminal outcome implemented"
+  },
+  {
+    "id": "map-overview",
+    "title": "Procedural galaxy / known space",
+    "family": "Map",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Owner requested procedural map; generated fixture only"
+  },
+  {
+    "id": "map-dense",
+    "title": "Dense galaxy / semantic zoom",
+    "family": "Map",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Density and level-of-detail interface proposed"
+  },
+  {
+    "id": "map-sector",
+    "title": "Selected navigation region / system context",
+    "family": "Map",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Known weighted graph inspection implemented; polygon geometry proposed"
+  },
+  {
+    "id": "map-hover",
+    "title": "Map hover / keyboard focus / pinned selection",
+    "family": "Map",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Equivalent pointer and keyboard inspection proposed"
+  },
+  {
+    "id": "map-route",
+    "title": "Fleet route / preview and explicit review",
+    "family": "Map",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Known route and stamped submission implemented"
+  },
+  {
+    "id": "map-unavailable",
+    "title": "Unknown destination / retained accepted route",
+    "family": "Map",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Unknown route rejection and retained state implemented"
+  },
+  {
+    "id": "map-travel",
+    "title": "Fleet in transit / intermediate progress",
+    "family": "Map",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Weighted partial-edge progress implemented; sector animation proposed"
+  },
+  {
+    "id": "map-sensors",
+    "title": "Coverage / current stale unknown",
+    "family": "Map",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Sensor warning principles agreed; sensing projection/rules open"
+  },
+  {
+    "id": "map-filters",
+    "title": "Map filters / independent layers",
+    "family": "Map",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Filters are presentation proposals using lawful data only"
+  },
+  {
+    "id": "empire",
+    "title": "Empire overview / exceptions",
+    "family": "Empire",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Owned economy/world/fleet summaries implemented in existing profiles"
+  },
+  {
+    "id": "worlds",
+    "title": "World list / owned and permitted",
+    "family": "Worlds",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Existing owned colony inspection; list composition proposed"
+  },
+  {
+    "id": "system",
+    "title": "System / bodies and separate planet owners",
+    "family": "Worlds",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Body survey and one government per planet agreed future design"
+  },
+  {
+    "id": "world",
+    "title": "Planet / known facts and actions",
+    "family": "Worlds",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Existing owned environment/economy inspection; future actions gated"
+  },
+  {
+    "id": "colony",
+    "title": "Colony economy / production and needs",
+    "family": "Worlds",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Economy population outputs implemented"
+  },
+  {
+    "id": "politics",
+    "title": "Population / policies and ordered causes",
+    "family": "Worlds",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Population-politics existing profile; conquest integration future"
+  },
+  {
+    "id": "logistics",
+    "title": "Infrastructure / freight and support",
+    "family": "Worlds",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Existing physical freight; expedition support accounting open"
+  },
+  {
+    "id": "production",
+    "title": "Empire production / yards and queues",
+    "family": "Production",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Authored admitted v2 Cruiser construction implemented in demo"
+  },
+  {
+    "id": "queue",
+    "title": "World production / exact revision / eligibility",
+    "family": "Production",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Queue payments completion cancellation implemented; custom-v2 conversion unsupported"
+  },
+  {
+    "id": "production-cancel",
+    "title": "Cancel selected production order",
+    "family": "Production",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Existing profile cancellation; no refund quote projection"
+  },
+  {
+    "id": "buyout",
+    "title": "Expedite construction / eligible remaining work",
+    "family": "Production",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Emergency buyout direction agreed; costs/timing/eligibility open"
+  },
+  {
+    "id": "fleet",
+    "title": "Fleet roster / ships and retained pools",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Actor-owned fleets and finite stocks implemented"
+  },
+  {
+    "id": "fleet-compose",
+    "title": "Fleet composition / create transfer detach",
+    "family": "Fleets",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Strategic formation operations require scoped admission; no tactical split"
+  },
+  {
+    "id": "fleet-orders",
+    "title": "Strategic orders / remain seek move follow",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Physical travel intentions implemented; follow needs current lawful contact"
+  },
+  {
+    "id": "fleet-cloak",
+    "title": "Approach cloak / capable members only",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Scoped per-fleet approach setting and per-ship capability implemented"
+  },
+  {
+    "id": "ship",
+    "title": "Own ship / fit power and finite magazines",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Exact owned inspection implemented"
+  },
+  {
+    "id": "contact",
+    "title": "Visible contact / hull and shields only",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Visible type hull shields; no enemy ammo fit or new orders"
+  },
+  {
+    "id": "science",
+    "title": "Science / six-discipline allocation draft",
+    "family": "Research",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Science split six disciplines and explicit apply implemented"
+  },
+  {
+    "id": "engineering",
+    "title": "Engineering / eligible target and maturity",
+    "family": "Research",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "One target reserve cost and capped maturity; no assumed Scout construction"
+  },
+  {
+    "id": "research-report",
+    "title": "Research facts / illustrated progression",
+    "family": "Research",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Typed current facts exist; before/after progression shown here is illustrative, not a stored archive"
+  },
+  {
+    "id": "library",
+    "title": "Class library / revision provenance",
+    "family": "Designer",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Legacy blueprint registry implemented; current demo authored-v2 only"
+  },
+  {
+    "id": "designer",
+    "title": "Ship designer / overview and capability",
+    "family": "Designer",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Local v1 designer exists; not v2 construction authorisation"
+  },
+  {
+    "id": "designer-hull",
+    "title": "Hull versions / fixed silhouette / capacity",
+    "family": "Designer",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Hull catalogue local preview; Engineering version/refit policy separate"
+  },
+  {
+    "id": "designer-components",
+    "title": "Components / dependencies mounts quantity",
+    "family": "Designer",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Local catalogue installation editing exists; category tabs included"
+  },
+  {
+    "id": "designer-power",
+    "title": "Cruise Combat Survey / allocation profiles",
+    "family": "Designer",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Local v1 profile preview exists; no per-shot power switches"
+  },
+  {
+    "id": "designer-validation",
+    "title": "Validation / compare / draft errors",
+    "family": "Designer",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Local compiler checks implemented; versioned data authoritative"
+  },
+  {
+    "id": "designer-publish",
+    "title": "Release revision / unsupported profile boundary",
+    "family": "Designer",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Legacy publication exists; demo v1-to-v2 publication unavailable"
+  },
+  {
+    "id": "refit",
+    "title": "Refit / current versus target installed fit",
+    "family": "Designer",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Compatible refits agreed direction; compatibility and lifecycle open"
+  },
+  {
+    "id": "frontier",
+    "title": "Arrival charting / new public lanes",
+    "family": "Exploration",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Implemented opt-in wrapper5 frontier; inactive in demo; not survey"
+  },
+  {
+    "id": "survey",
+    "title": "Body survey / equipment / finite study queue",
+    "family": "Exploration",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Arrival Survey Study distinctions agreed; mission engine not implemented"
+  },
+  {
+    "id": "mission",
+    "title": "Mission decision / repair and interference",
+    "family": "Exploration",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Persistent choices consequences agreed; template timing and outcomes proposed"
+  },
+  {
+    "id": "first-contact",
+    "title": "First contact / permitted approaches",
+    "family": "Diplomacy",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Detection/action-driven contact agreed; exact response rules open"
+  },
+  {
+    "id": "colonise",
+    "title": "Founding expedition / survey settlers supplies",
+    "family": "Expansion",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "16Oct colonisation framework agreed; not implemented"
+  },
+  {
+    "id": "colony-establish",
+    "title": "Founding colony / support / evacuation",
+    "family": "Expansion",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Ownership on deployment and finite reserves agreed; timings open"
+  },
+  {
+    "id": "colony-dispute",
+    "title": "Rival deployment / paused dispute",
+    "family": "Expansion",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "No processing-order winner; dispute lifecycle open"
+  },
+  {
+    "id": "blockade",
+    "title": "Planet-specific orbital operations",
+    "family": "Expansion",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Targeted blockade/surrender/landing framework agreed; numbers open"
+  },
+  {
+    "id": "invasion",
+    "title": "Ground campaign / strategic policy and supply",
+    "family": "Expansion",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Abstract weekly campaign agreed; no ground tile battle"
+  },
+  {
+    "id": "occupation",
+    "title": "Occupation / policy integration liberation",
+    "family": "Expansion",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Control integration and historical population identity separate"
+  },
+  {
+    "id": "diplomacy",
+    "title": "Diplomatic relations / contact and rights",
+    "family": "Diplomacy",
+    "status": "A",
+    "statusLabel": "AGREED DESIGN (future integration)",
+    "scope": "Diplomatic expansion direction agreed; treaty model proposed"
+  },
+  {
+    "id": "treaty",
+    "title": "Treaty offer / transit supply settlement rights",
+    "family": "Diplomacy",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Distinct rights agreed; negotiations terms and acceptance open"
+  },
+  {
+    "id": "battle-lobby",
+    "title": "Encounter selection / participating fleets",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Owned encounters and batch readiness implemented; no hidden participants"
+  },
+  {
+    "id": "battle-orders",
+    "title": "Battle deployment / round fleet orders",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "One strategic fleet one command unit; Distant initial pair; no drag steering"
+  },
+  {
+    "id": "battle-inspect",
+    "title": "Battle / own ship condition and visible contact",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Selected inspected ship independent of targeting preference"
+  },
+  {
+    "id": "battle-review",
+    "title": "Review / explicit round commitment",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "All owned fleet commitments; no per-ship firing orders"
+  },
+  {
+    "id": "battle-waiting",
+    "title": "Own orders accepted / waiting",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Private own receipt; no enemy readiness display"
+  },
+  {
+    "id": "battle-replay",
+    "title": "3D resolver projection / replay controls",
+    "family": "Battle",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Authoritative abstract resolver implemented; cinematic3D playback proposed"
+  },
+  {
+    "id": "battle-result",
+    "title": "Round resolved / filtered event report",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Joint round and retained current stocks implemented"
+  },
+  {
+    "id": "battle-hidden",
+    "title": "No visible enemy / cautious order review",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "No hidden count type location intent; standing maneuver retained"
+  },
+  {
+    "id": "battle-reveal",
+    "title": "End round1 reveal / round2 target access",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Surviving cloaked ships reveal after round1; no re-cloak"
+  },
+  {
+    "id": "battle-mutual",
+    "title": "Round1 no legal targets / maneuver only",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Mutual-cloak handling implemented; no nonexistent-shot ammo costs"
+  },
+  {
+    "id": "battle-aftermath",
+    "title": "Batch aftermath / atomic confirm",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "No refill; commit once only when whole batch ready"
+  },
+  {
+    "id": "battle-fresh",
+    "title": "Confirmed aftermath / fresh strategic draft",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Stopped routes do not auto resume; new order submitted separately"
+  },
+  {
+    "id": "battle-no-survivors",
+    "title": "Owned losses / no survivor orders",
+    "family": "Battle",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "No action for destroyed fleets; retain report/save where allowed"
+  },
+  {
+    "id": "saves",
+    "title": "Save load / committed state and local drafts",
+    "family": "Settings",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Profile-separated atomic slots implemented"
+  },
+  {
+    "id": "save-confirm",
+    "title": "Overwrite / named slot and consequence",
+    "family": "Settings",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit overwrite confirmation and safe cancel"
+  },
+  {
+    "id": "load-confirm",
+    "title": "Load / discard-local-draft confirmation",
+    "family": "Settings",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Only successful load replaces host; generation invalidation"
+  },
+  {
+    "id": "load-error",
+    "title": "Failed load / profile mismatch / retry",
+    "family": "Settings",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Failed load retains session and local drafts"
+  },
+  {
+    "id": "audio",
+    "title": "Audio / master music effects / cue context",
+    "family": "Settings",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Existing Deep Station cues and UI effects; no music generation"
+  },
+  {
+    "id": "audio-unavailable",
+    "title": "Unavailable audio / recoverable settings",
+    "family": "Settings",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Service availability handled without blocking play"
+  },
+  {
+    "id": "display",
+    "title": "Display / size mode / accessibility proposal",
+    "family": "Settings",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Three app sizes/modes implemented; text-scale option proposed"
+  },
+  {
+    "id": "help",
+    "title": "Help / input / strategy and battle boundaries",
+    "family": "Settings",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Consolidated help proposed; actual supported controls documented"
+  },
+  {
+    "id": "notifications",
+    "title": "Notifications / actionable lawful receipts",
+    "family": "Settings",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Unified queue proposed; no hidden intel aggregation"
+  },
+  {
+    "id": "states",
+    "title": "Components / focus disabled error busy empty",
+    "family": "Settings",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Shared state visual grammar proposed"
+  },
+  {
+    "id": "diagnostics",
+    "title": "Developer review / explicitly separate",
+    "family": "Settings",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Existing diagnostic utilities; not player actor switching"
+  },
+  {
+    "id": "production-review",
+    "title": "Review construction / exact costs",
+    "family": "Production",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "science-review",
+    "title": "Review six-way Science allocation",
+    "family": "Research",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "split-review",
+    "title": "Review Science / Engineering split",
+    "family": "Research",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "strategic-review",
+    "title": "Review strategic route / explicit submit",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "cloak-review",
+    "title": "Review approach-cloak setting",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "designer-discard",
+    "title": "Discard unsaved local design",
+    "family": "Designer",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "endturn-review",
+    "title": "Review strategic turn / consequences",
+    "family": "Campaign",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "setup-error",
+    "title": "Generation validation / retry retained seed",
+    "family": "Campaign",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Proposed generator failure state; no campaign replaced"
+  },
+  {
+    "id": "ship-fit",
+    "title": "Own ship / retained installed fit",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Read-only authored-v2 own inspection; separate from local-v1 designer"
+  },
+  {
+    "id": "ship-power",
+    "title": "Own ship / retained power reservation",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Read-only hardware power snapshot; no tactical allocation switches"
+  },
+  {
+    "id": "stalemate",
+    "title": "Stalemate / completed campaign inspection",
+    "family": "Campaign",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Implemented bounded demo outcome; broader victory policies are future"
+  },
+  {
+    "id": "objectives",
+    "title": "Objective / own progress and current scenario",
+    "family": "Campaign",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Implemented demo objective projection; alternative victory paths proposed"
+  }
+]
