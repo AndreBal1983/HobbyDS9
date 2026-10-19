@@ -111,9 +111,9 @@ namespace HobbyDS9.UnityReview
                     case ReviewCombatStage.AftermathConfirmed:return "Aftermath confirmed — choose a fresh strategic order";
                     case ReviewCombatStage.NoOwnedFleet:return "No owned surviving fleet available for orders";
                     case ReviewCombatStage.SelectEncounter:return "Select an owned encounter";
-                    case ReviewCombatStage.Closed:return Model.Current.Frame.Demo!=null?"Campaign closed":"Review closed";
+                    case ReviewCombatStage.Closed:return Model.SingleplayerDemo||Model.FrontierPreview?"Campaign closed":"Review closed";
                     case ReviewCombatStage.CampaignComplete:return "Campaign complete — "+Model.Current.Frame.Demo!.Outcome+" · inspection";
-                    default:return Model.Current.Frame.Demo!=null?"Combat — strategic Planning":"Physical tactical-v2 review — strategic Planning";
+                    default:return Model.SingleplayerDemo||Model.FrontierPreview?"Combat — strategic Planning":"Physical tactical-v2 review — strategic Planning";
                 }
             }
         }

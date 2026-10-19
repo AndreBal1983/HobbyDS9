@@ -151,6 +151,7 @@ namespace HobbyDS9.UnityReview
         }
         private void Map(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
+            if(model.FrontierPreview){new ReviewFrontierMap(model,workspace,button,perform,confirm,navigate).Render(root);return;}
             var main=Panel(root,"Strategic operations");var aside=Panel(root,"Selection / context","console-aside");
             var ordinaryColor=new Color(.61f,.76f,.87f);var wormholeColor=new Color(.72f,.64f,.9f);
             var legend=Row(main);legend.name="map-link-legend";
