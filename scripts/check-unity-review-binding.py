@@ -48,9 +48,34 @@ def check(root):
             "Modal buttons must use the actual portable one-use permission and lifetime invalidation")
     keyboard = (runtime / "ReviewEntry.Keyboard.cs").read_text(encoding="utf-8-sig")
     require('if(model!.SingleplayerDemo)BindDemoButtonKeyboard(button,guarded);' in entry and
-            'new Button(guarded)' in entry and 'if(SubmitAlreadyPerformed()){if(enter)returnHeld=true;else spaceHeld=true;return;}' in keyboard and
+            'new Button(guarded)' in entry and 'if(SubmitAlreadyPerformed())' in keyboard and
+            'if(!(enter?returnHeld:spaceHeld))LatchDemoKey(button,e.keyCode,e.timestamp);return;' in keyboard and
+            'if(enter?returnHeld:spaceHeld){e.StopPropagation();return;}' in keyboard and
             'WasPerformedThisFrame()' in keyboard and 'returnHeld' in keyboard and 'DemoKeyUp' in keyboard,
             "Keyboard buttons must share the guarded click and defer real Submit, with held-key suppression")
+    require('if(model?.SingleplayerDemo!=true||panel==null||doc.panelSettings!=panel)' in entry and
+            'UnbindDemoKeyboard();ReleaseAudio();' in entry and
+            'root=doc.rootVisualElement;root.Clear();' in entry and
+            'PreserveDemoKeyOrigins();' in entry.split('private void Build()',1)[1].split('private void Navigate(',1)[0],
+            "Demo rebuild must preserve its original panel while disposing audio and retaining held origins")
+    require('origin.SetEnabled(false);origin.focusable=false;keyboardRetired.Add(origin);' in keyboard and
+            'keyboardRetired.style.display=DisplayStyle.None;root.panel.visualTree.Add(keyboardRetired);' in keyboard and
+            'new[]{returnHeld?returnOrigin:null,spaceHeld?spaceOrigin:null}' in keyboard and
+            'try{action();}finally{PreserveDemoKeyOrigins();}' in entry and
+            'try{DrawPlayer();}finally{PreserveDemoKeyOrigins();}' in entry,
+            "Removed held origins must stay bounded, hidden and disabled on the original panel after draw/actions")
+    require('e.keyCode==spaceCode&&e.timestamp>=spaceStarted' in keyboard and
+            'e.keyCode==returnCode&&e.timestamp>=returnStarted' in keyboard and
+            'ReferenceEquals(target,origin)' in keyboard and
+            'ReferenceEquals(target,focused)&&keyboardRoot.Contains(target)&&target.enabledInHierarchy' in keyboard,
+            "Release must match the accepted physical key/time and reject obsolete nonfocused panel targets")
+    require('returnOrigin=null;spaceOrigin=null;keyboardRetired?.RemoveFromHierarchy();keyboardRetired=null;' in keyboard and
+            'if(!focused)ResetDemoKeyboard();' in keyboard and
+            'UnbindDemoKeyboard();ResetDemoKeyboard();' in entry and
+            'private void OnDestroy(){ResetDemoKeyboard();ReleasePanel();}' in entry and
+            'RemoveRetiredDemoKeyOrigin(spaceOrigin)' in keyboard and 'RemoveRetiredDemoKeyOrigin(returnOrigin)' in keyboard and
+            'if(returnHeld&&ReferenceEquals(origin,returnOrigin)||spaceHeld&&ReferenceEquals(origin,spaceOrigin))return;' in keyboard,
+            "Release/focus loss/disable/destroy must clean retired origins without removing another held key's origin")
     require('var next=currentPanel?.visualTree;' in keyboard and
             'keyboardReleaseRoot?.RegisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);' in keyboard and
             'keyboardReleaseRoot?.UnregisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);' in keyboard and

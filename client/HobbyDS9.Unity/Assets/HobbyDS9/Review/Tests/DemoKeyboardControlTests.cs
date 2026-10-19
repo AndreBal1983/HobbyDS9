@@ -28,6 +28,17 @@ namespace HobbyDS9.UnityReview.Tests
             else{using(var evt=KeyDownEvent.GetPooled(systemEvent)){evt.target=element;element.SendEvent(evt);}}
         }
         private static Button Confirm(VisualElement root)=>root.Q("review-one-use-confirmation").Query<Button>().ToList().Single(b=>b.text=="Confirm");
+        private static void ReleaseThrough(VisualElement originalPanelRoot,VisualElement actualOrigin,KeyCode key)
+        {
+            using(var evt=KeyUpEvent.GetPooled(new Event{type=EventType.KeyUp,keyCode=key}))
+            {evt.target=actualOrigin;originalPanelRoot.SendEvent(evt);}
+        }
+        private static VisualElement ForeignPanel(out GameObject owner,out PanelSettings settings)
+        {
+            owner=new GameObject("Unrelated keyboard fixture document");var document=owner.AddComponent<UIDocument>();
+            settings=ScriptableObject.CreateInstance<PanelSettings>();document.panelSettings=settings;
+            return document.rootVisualElement.panel.visualTree;
+        }
 
         [UnityTest] public IEnumerator FocusedButtonKeysRespectDisabledDetachedModifiersAndHeldKeys()
         {
@@ -153,7 +164,7 @@ namespace HobbyDS9.UnityReview.Tests
             var oldPanelRoot=doc.rootVisualElement.panel.visualTree;
             Key(start,KeyCode.Return);yield return null;
             var root=doc.rootVisualElement;var panelRoot=root.panel.visualTree;var frame=entry.Presentation!.Model.Current.Frame;
-            Assert.That(panelRoot,Is.Not.SameAs(oldPanelRoot),"Actual Start replaces the panel");
+            Assert.That(panelRoot,Is.SameAs(oldPanelRoot),"Demo Start keeps the original dispatch panel");
             Assert.That(root.Q("demo-start"),Is.Null);Assert.That(root.Q("review-nav-Production"),Is.Not.Null);
             Assert.That(root.panel.focusController.focusedElement,Is.Null,"Start leaves no focused child to receive release");
             // Arrange the public UI event route used when no element is focused.
@@ -166,14 +177,225 @@ namespace HobbyDS9.UnityReview.Tests
             Key(panelRoot,KeyCode.Return,true);yield return new ExitPlayMode();
         }
 
+        [UnityTest] public IEnumerator RetiredActualStartReturnReleaseAllowsLaterEndTurnConfirmation()
+            =>ActualStartOriginRelease(KeyCode.Return,true);
+
+        [UnityTest] public IEnumerator RetiredActualStartKeypadReleaseAllowsLaterEndTurnConfirmation()
+            =>ActualStartOriginRelease(KeyCode.KeypadEnter,true);
+
+        [UnityTest] public IEnumerator RetiredActualStartSpaceReleaseAllowsLaterEndTurnConfirmation()
+            =>ActualStartOriginRelease(KeyCode.Space,true);
+
+        [UnityTest] public IEnumerator ActualStartHeldReturnRemainsBlockedUntilItsRetiredOriginRelease()
+            =>ActualStartOriginRelease(KeyCode.Return,false);
+
+        private static IEnumerator ActualStartOriginRelease(KeyCode key,bool releaseBeforeModal)
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            var start=doc.rootVisualElement.Q<Button>("demo-start");var oldPanel=doc.rootVisualElement.panel.visualTree;
+            start.Focus();Key(start,key);yield return null;
+            var root=doc.rootVisualElement;var model=entry.Presentation!.Model;var before=model.Current.Frame;
+            Assert.That(root.panel.visualTree,Is.SameAs(oldPanel));Assert.That(start.panel,Is.SameAs(root.panel),"actual Start remains on original dispatch panel");
+            Assert.That(oldPanel.Contains(start),Is.True);Assert.That(root.Contains(start),Is.False,"retired origin is outside the visible document");
+            Assert.That(start.enabledInHierarchy,Is.False);Assert.That(start.focusable,Is.False);
+            Assert.That(start.parent.name,Is.EqualTo("demo-retired-key-origins"));Assert.That(start.parent.style.display.value,Is.EqualTo(DisplayStyle.None));
+            using(var e=NavigationSubmitEvent.GetPooled()){e.target=start;oldPanel.SendEvent(e);}
+            Assert.That(model.Current.Frame,Is.SameAs(before),"retired disabled Start cannot run again");
+            Assert.That(root.Q("demo-start"),Is.Null);Assert.That(root.panel.focusController.focusedElement,Is.Null);
+            if(releaseBeforeModal){ReleaseThrough(oldPanel,start,key);Assert.That(start.panel,Is.Null,"matching release retires the obsolete target");}
+            var endTurn=root.Q<Button>("player-primary-action");
+            using(var e=NavigationSubmitEvent.GetPooled()){e.target=endTurn;endTurn.SendEvent(e);}
+            var confirm=Confirm(root);Assert.That(root.panel.focusController.focusedElement,Is.SameAs(confirm));
+            Key(confirm,key);
+            if(!releaseBeforeModal)
+            {
+                Key(confirm,key);Assert.That(model.Current.Frame,Is.SameAs(before),"held Start must not confirm a later modal");
+                Assert.That(root.Q("review-one-use-confirmation"),Is.Not.Null);
+                ReleaseThrough(oldPanel,start,key);Assert.That(start.panel,Is.Null);Key(confirm,key);
+            }
+            var accepted=model.Current.Frame;Assert.That(accepted.Status.Turn,Is.EqualTo(before.Status.Turn+1));
+            Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
+            Key(confirm,key);Key(start,key);Assert.That(model.Current.Frame,Is.SameAs(accepted),"detached obsolete controls cannot act");
+            Assert.That(confirm.panel,Is.SameAs(oldPanel.panel),"actual confirming origin survives ClearConfirmation and rebuild");
+            ReleaseThrough(oldPanel,confirm,key);Assert.That(confirm.panel,Is.Null);yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator StaleReleasedStartCannotClearNewerRetiredEndTurnConfirmationPress()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            var start=doc.rootVisualElement.Q<Button>("demo-start");var originalPanel=doc.rootVisualElement.panel.visualTree;
+            start.Focus();Key(start,KeyCode.Return);yield return null;ReleaseThrough(originalPanel,start,KeyCode.Return);
+            void OpenEndTurn()
+            {
+                var button=doc.rootVisualElement.Q<Button>("player-primary-action");
+                using(var e=NavigationSubmitEvent.GetPooled()){e.target=button;button.SendEvent(e);}
+            }
+            OpenEndTurn();var first=Confirm(doc.rootVisualElement);Key(first,KeyCode.Return);yield return null;
+            var model=entry.Presentation!.Model;var accepted=model.Current.Frame;Assert.That(accepted.Status.Turn,Is.EqualTo(2));
+            Assert.That(first.panel,Is.SameAs(originalPanel.panel));Assert.That(first.enabledInHierarchy,Is.False);OpenEndTurn();var next=Confirm(doc.rootVisualElement);
+            ReleaseThrough(originalPanel,start,KeyCode.Return);Key(next,KeyCode.Return);Key(next,KeyCode.Return);
+            Assert.That(model.Current.Frame,Is.SameAs(accepted),"old Start release cannot release the newer confirming press");
+            Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null);
+            ReleaseThrough(originalPanel,first,KeyCode.Return);Assert.That(first.panel,Is.Null);Key(next,KeyCode.Return);
+            Assert.That(model.Current.Frame.Status.Turn,Is.EqualTo(3));ReleaseThrough(originalPanel,next,KeyCode.Return);
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator StaleAttachedDisabledButtonReleaseCannotClearDifferentFocusedButtonPress()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var root=entry.GetComponent<UIDocument>().rootVisualElement;
+            int aCount=0,bCount=0;var a=Add(entry,root,()=>aCount++);var b=Add(entry,root,()=>bCount++);
+            a.Focus();Key(a,KeyCode.Return);Key(a,KeyCode.Return,true);b.Focus();Key(b,KeyCode.Return);a.SetEnabled(false);
+            Key(a,KeyCode.Return,true);Key(b,KeyCode.Return);
+            Assert.That(aCount,Is.EqualTo(1));Assert.That(bCount,Is.EqualTo(1),"stale disabled attached origin cannot release a different hold");
+            Key(b,KeyCode.Return,true);Key(b,KeyCode.Return);Assert.That(bCount,Is.EqualTo(2));Key(b,KeyCode.Return,true);
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator ReturnKeypadReleaseMustMatchAndSpaceHoldRemainsIndependent()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var root=entry.GetComponent<UIDocument>().rootVisualElement;
+            int count=0;var button=Add(entry,root,()=>count++);button.Focus();
+            Key(button,KeyCode.Return);Key(button,KeyCode.KeypadEnter,true);Key(button,KeyCode.KeypadEnter);
+            Assert.That(count,Is.EqualTo(1),"keypad release is not release of held main Return");
+            Key(button,KeyCode.Space);Key(button,KeyCode.Space);Assert.That(count,Is.EqualTo(2),"Space has a separate hold");
+            Key(button,KeyCode.Space,true);Key(button,KeyCode.Return);Assert.That(count,Is.EqualTo(2));
+            Key(button,KeyCode.Return,true);Key(button,KeyCode.KeypadEnter);Assert.That(count,Is.EqualTo(3));
+            Key(button,KeyCode.Return,true);Key(button,KeyCode.KeypadEnter);Assert.That(count,Is.EqualTo(3),"main Return cannot release held keypad Enter");
+            Key(button,KeyCode.KeypadEnter,true);Key(button,KeyCode.Return);Assert.That(count,Is.EqualTo(4));Key(button,KeyCode.Return,true);
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator FocusLossCleanupInvalidatesOldOriginBeforeNewPress()=>CleanupInvalidatesOrigin(false);
+        [UnityTest] public IEnumerator DisableCleanupInvalidatesOldOriginBeforeNewPress()=>CleanupInvalidatesOrigin(true);
+
+        private static IEnumerator CleanupInvalidatesOrigin(bool disable)
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            int count=0;var old=Add(entry,doc.rootVisualElement,()=>count++);old.Focus();Key(old,KeyCode.Return);Invoke(entry,"Build");
+            var originalPanel=doc.rootVisualElement.panel.visualTree;Assert.That(originalPanel.Contains(old),Is.True);
+            Assert.That(doc.rootVisualElement.Contains(old),Is.False);Assert.That(old.enabledInHierarchy,Is.False);
+            if(disable){entry.enabled=false;Key(old,KeyCode.Return,true);entry.enabled=true;yield return null;}
+            else Invoke(entry,"OnApplicationFocus",false);
+            Assert.That(old.panel,Is.Null,"cleanup removes the retired origin");Assert.That(originalPanel.Q("demo-retired-key-origins"),Is.Null);
+            var current=Add(entry,doc.rootVisualElement,()=>count++);current.Focus();Key(current,KeyCode.Return);
+            Assert.That(count,Is.EqualTo(2),"lifecycle cleanup permits a new press");
+            Key(old,KeyCode.Return,true);Key(current,KeyCode.Return);Assert.That(count,Is.EqualTo(2),"delayed pre-cleanup origin cannot release new hold");
+            Key(current,KeyCode.Return,true);Key(current,KeyCode.Return);Assert.That(count,Is.EqualTo(3));Key(current,KeyCode.Return,true);
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator SharedReturnAndSpaceRetiredOriginRemainsUntilBothKeysRelease()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();int count=0;
+            var button=Add(entry,doc.rootVisualElement,()=>{if(++count==2)Invoke(entry,"Build");});var originalPanel=doc.rootVisualElement.panel.visualTree;
+            button.Focus();Key(button,KeyCode.Return);Key(button,KeyCode.Space);
+            var retired=originalPanel.Q("demo-retired-key-origins");Assert.That(retired.childCount,Is.EqualTo(1));
+            Assert.That(button.panel,Is.SameAs(originalPanel.panel));Assert.That(button.enabledInHierarchy,Is.False);
+            ReleaseThrough(originalPanel,button,KeyCode.Return);Assert.That(button.panel,Is.SameAs(originalPanel.panel),"Space still owns this same origin");
+            ReleaseThrough(originalPanel,button,KeyCode.Space);Assert.That(button.panel,Is.Null);Assert.That(originalPanel.Q("demo-retired-key-origins"),Is.Null);
+            Assert.That(count,Is.EqualTo(2));
+            var a=Add(entry,doc.rootVisualElement,()=>{});var b=Add(entry,doc.rootVisualElement,()=>Invoke(entry,"Build"));
+            a.Focus();Key(a,KeyCode.Return);b.Focus();Key(b,KeyCode.Space);
+            Invoke(entry,"Build");Invoke(entry,"Build");retired=originalPanel.Q("demo-retired-key-origins");
+            Assert.That(retired.childCount,Is.EqualTo(2),"repeated rebuilds retain only the two actual held origins");
+            ReleaseThrough(originalPanel,a,KeyCode.Return);Assert.That(retired.childCount,Is.EqualTo(1));Assert.That(b.panel,Is.SameAs(originalPanel.panel));
+            ReleaseThrough(originalPanel,b,KeyCode.Space);Assert.That(originalPanel.Q("demo-retired-key-origins"),Is.Null);
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator DirectCentralTabRenderRetainsItsActualPressedOriginUntilRelease()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            var start=doc.rootVisualElement.Q<Button>("demo-start");using(var e=NavigationSubmitEvent.GetPooled()){e.target=start;start.SendEvent(e);}yield return null;
+            var nav=doc.rootVisualElement.Q<Button>("review-nav-FleetOrders");using(var e=NavigationSubmitEvent.GetPooled()){e.target=nav;nav.SendEvent(e);}yield return null;
+            var root=doc.rootVisualElement;var originalPanel=root.panel.visualTree;var frame=entry.Presentation!.Model.Current.Frame;
+            var inspection=root.Query<Button>().ToList().Single(b=>b.text=="Inspection");inspection.Focus();Key(inspection,KeyCode.Return);
+            Assert.That(root.Contains(inspection),Is.False);Assert.That(inspection.panel,Is.SameAs(originalPanel.panel));
+            Assert.That(inspection.enabledInHierarchy,Is.False);Assert.That(inspection.focusable,Is.False);
+            Assert.That(originalPanel.Q("demo-retired-key-origins").childCount,Is.EqualTo(1));
+            var current=root.Query<Button>().ToList().Single(b=>b.text=="Ship status");current.Focus();Key(current,KeyCode.Return);
+            Assert.That(root.Contains(current),Is.True,"held tab key cannot activate another tab");
+            ReleaseThrough(originalPanel,inspection,KeyCode.Return);Assert.That(inspection.panel,Is.Null);Key(current,KeyCode.Return);
+            Assert.That(root.Contains(current),Is.False);Assert.That(current.panel,Is.SameAs(originalPanel.panel));
+            ReleaseThrough(originalPanel,current,KeyCode.Return);Assert.That(current.panel,Is.Null);
+            Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(frame));yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator QueuedOldPanelReleaseTimestampCannotClearNewerButtonPress()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var root=entry.GetComponent<UIDocument>().rootVisualElement;
+            int count=0;var button=Add(entry,root,()=>count++);button.Focus();Key(button,KeyCode.Return);Key(button,KeyCode.Return,true);
+            // Public pooled-event timestamps; no setter/reflection or fabricated time.
+            using(var stale=KeyUpEvent.GetPooled(new Event{type=EventType.KeyUp,keyCode=KeyCode.Return}))
+            {
+                yield return null;yield return null;long started=0;
+                button.RegisterCallback<KeyDownEvent>(e=>started=e.timestamp,TrickleDown.TrickleDown);
+                Key(button,KeyCode.Return);Assert.That(started,Is.GreaterThan(stale.timestamp));
+                stale.target=root.panel.visualTree;root.panel.visualTree.SendEvent(stale);Key(button,KeyCode.Return);
+                Assert.That(count,Is.EqualTo(2),"a queued release from before the current hold cannot release it");
+                Key(button,KeyCode.Return,true);Key(button,KeyCode.Return);Assert.That(count,Is.EqualTo(3));Key(button,KeyCode.Return,true);
+            }
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator AlreadyPerformedSubmitStartRebuildReleasesFromItsActualRetainedOrigin()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            var submit=InputSystem.actions.FindAction("UI/Submit",true);var map=submit.actionMap;
+            var priorDevices=map.devices;var priorEnabled=submit.enabled;var priorRouting=InputSystem.settings.editorInputBehaviorInPlayMode;
+            var priorBackground=InputSystem.settings.backgroundBehavior;var priorRun=UnityEngine.Application.runInBackground;
+            var keyboard=InputSystem.AddDevice<Keyboard>("DemoStartSubmitOrigin");
+            try
+            {
+                UnityEngine.Application.runInBackground=true;InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
+                InputSystem.settings.editorInputBehaviorInPlayMode=InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+                map.devices=new InputDevice[]{keyboard};if(!priorEnabled)submit.Enable();
+                var start=doc.rootVisualElement.Q<Button>("demo-start");start.Focus();var oldPanel=doc.rootVisualElement.panel.visualTree;
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState(UnityEngine.InputSystem.Key.Enter));InputSystem.Update();
+                Assert.That(submit.WasPerformedThisFrame(),Is.True);Key(start,KeyCode.Return);
+                Assert.That(doc.rootVisualElement.Q<Button>("demo-start"),Is.SameAs(start),"performed action owns activation");
+                // Explicitly arranged queued NavigationSubmit, not a native-provider claim.
+                using(var e=NavigationSubmitEvent.GetPooled()){e.target=start;start.SendEvent(e);}
+                Assert.That(start.panel,Is.SameAs(oldPanel.panel));Assert.That(start.enabledInHierarchy,Is.False);
+                Assert.That(doc.rootVisualElement.panel.visualTree,Is.SameAs(oldPanel));Assert.That(oldPanel.Contains(start),Is.True);
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState());InputSystem.Update();Assert.That(submit.WasPerformedThisFrame(),Is.False);
+                var model=entry.Presentation!.Model;var before=model.Current.Frame;var endTurn=doc.rootVisualElement.Q<Button>("player-primary-action");
+                using(var e=NavigationSubmitEvent.GetPooled()){e.target=endTurn;endTurn.SendEvent(e);}
+                var confirm=Confirm(doc.rootVisualElement);Key(confirm,KeyCode.Return);Assert.That(model.Current.Frame,Is.SameAs(before));
+                ReleaseThrough(oldPanel,start,KeyCode.Return);Assert.That(start.panel,Is.Null);Key(confirm,KeyCode.Return);
+                var accepted=model.Current.Frame;Assert.That(accepted.Status.Turn,Is.EqualTo(before.Status.Turn+1));
+                using(var e=NavigationSubmitEvent.GetPooled()){e.target=start;start.SendEvent(e);}
+                Key(confirm,KeyCode.Return);Assert.That(model.Current.Frame,Is.SameAs(accepted),"obsolete queued submit/repeat cannot activate again");
+                ReleaseThrough(oldPanel,confirm,KeyCode.Return);Assert.That(confirm.panel,Is.Null);
+            }
+            finally
+            {
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState());InputSystem.Update();
+                if(!priorEnabled)submit.Disable();map.devices=priorDevices;
+                InputSystem.settings.editorInputBehaviorInPlayMode=priorRouting;InputSystem.RemoveDevice(keyboard);
+                InputSystem.settings.backgroundBehavior=priorBackground;UnityEngine.Application.runInBackground=priorRun;
+            }
+            yield return new ExitPlayMode();
+        }
+
         [UnityTest] public IEnumerator PanelReleaseBindingRejectsOldDetachedAndRepeatedBindingsWithoutClearingHeldPress()
         {
             RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
             var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
-            var oldPanelRoot=doc.rootVisualElement.panel.visualTree;var start=doc.rootVisualElement.Q<Button>("demo-start");start.Focus();
+            var originalPanelRoot=doc.rootVisualElement.panel.visualTree;var start=doc.rootVisualElement.Q<Button>("demo-start");start.Focus();
             Key(start,KeyCode.Return);yield return null;
             var root=doc.rootVisualElement;var panelRoot=root.panel.visualTree;
-            Assert.That(panelRoot,Is.Not.SameAs(oldPanelRoot));
+            Assert.That(panelRoot,Is.SameAs(originalPanelRoot));var oldPanelRoot=ForeignPanel(out var foreignOwner,out var foreignSettings);
             Invoke(entry,"BindDemoKeyboard");Invoke(entry,"BindDemoKeyboard");Invoke(entry,"BindDemoKeyboard");
             Key(oldPanelRoot,KeyCode.Return,true);
             int accepted=0;Invoke(entry,"Confirm","Held through replacement fixture",(Action)(()=>accepted++));var confirm=Confirm(root);
@@ -184,7 +406,7 @@ namespace HobbyDS9.UnityReview.Tests
             confirm.Focus();Key(confirm,KeyCode.Return);Assert.That(accepted,Is.Zero,"Detached document release cannot clear its held press");
             Assert.That(root.Q("review-one-use-confirmation"),Is.Not.Null);
             Key(panelRoot,KeyCode.Return,true);Key(confirm,KeyCode.Return);Assert.That(accepted,Is.EqualTo(1),"Reattachment observes release on its current panel");
-            Key(panelRoot,KeyCode.Return,true);yield return new ExitPlayMode();
+            Key(panelRoot,KeyCode.Return,true);UnityEngine.Object.Destroy(foreignOwner);UnityEngine.Object.Destroy(foreignSettings);yield return new ExitPlayMode();
         }
 
         [UnityTest] public IEnumerator UnfocusedPanelTabAfterActualEndTurnConfirmationUsesNormalForwardAndReverseRing()
@@ -199,7 +421,7 @@ namespace HobbyDS9.UnityReview.Tests
             var confirm=Confirm(doc.rootVisualElement);Assert.That(doc.rootVisualElement.panel.focusController.focusedElement,Is.SameAs(confirm));
             Key(confirm,KeyCode.Return);yield return null;
             var root=doc.rootVisualElement;var panelRoot=root.panel.visualTree;var accepted=model.Current.Frame;
-            Assert.That(accepted.Status.Turn,Is.EqualTo(before.Status.Turn+1));Assert.That(panelRoot,Is.Not.SameAs(oldPanelRoot));
+            Assert.That(accepted.Status.Turn,Is.EqualTo(before.Status.Turn+1));Assert.That(panelRoot,Is.SameAs(oldPanelRoot));
             Assert.That(root.panel.focusController.focusedElement,Is.Null,"Accepted confirmation rebuild leaves no focused child");
             Key(panelRoot,KeyCode.Return,true);int moves=0;panelRoot.RegisterCallback<NavigationMoveEvent>(_=>moves++,TrickleDown.TrickleDown);
             Key(panelRoot,KeyCode.Tab);
@@ -218,7 +440,8 @@ namespace HobbyDS9.UnityReview.Tests
         [UnityTest] public IEnumerator UnfocusedPanelTabDefersModifiersRawInputOldPanelAndDetachedDocument()
         {
             RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
-            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();var oldPanelRoot=doc.rootVisualElement.panel.visualTree;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            var oldPanelRoot=ForeignPanel(out var foreignOwner,out var foreignSettings);
             var start=doc.rootVisualElement.Q<Button>("demo-start");using(var e=NavigationSubmitEvent.GetPooled()){e.target=start;start.SendEvent(e);}yield return null;
             var root=doc.rootVisualElement;var panelRoot=root.panel.visualTree;var frame=entry.Presentation!.Model.Current.Frame;
             Assert.That(root.panel.focusController.focusedElement,Is.Null);int moves=0;panelRoot.RegisterCallback<NavigationMoveEvent>(_=>moves++,TrickleDown.TrickleDown);
@@ -246,7 +469,7 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(moves,Is.Zero);Assert.That(root.panel.visualTree,Is.SameAs(panelRoot));
             Assert.That(doc.rootVisualElement,Is.SameAs(root));Assert.That(root.panel.focusController.focusedElement,Is.Null);
             Key(panelRoot,KeyCode.Tab);Assert.That(moves,Is.EqualTo(1));Assert.That(root.panel.focusController.focusedElement,Is.SameAs(root.Q<Button>("demo-menu")));
-            Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(frame));yield return new ExitPlayMode();
+            Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(frame));UnityEngine.Object.Destroy(foreignOwner);UnityEngine.Object.Destroy(foreignSettings);yield return new ExitPlayMode();
         }
 
         [UnityTest] public IEnumerator ReleasedReturnAfterFailedLoadDrawAndNavigationCanConfirmCombatRound()
@@ -288,9 +511,11 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(doc.rootVisualElement.Q<Label>("save-load-result").text,Does.Contain("empty").And.Contain("unsent edits are unchanged"));
             Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
             Assert.That(doc.rootVisualElement.panel.visualTree,Is.SameAs(panelBeforeLoad),"Failed load redraw keeps this panel");
-            if(releaseBeforeNavigation)Key(panelBeforeLoad,KeyCode.Return,true);
+            Assert.That(loadConfirm.panel,Is.SameAs(panelBeforeLoad.panel),"actual removed modal origin survives same-panel Draw");
+            Assert.That(loadConfirm.enabledInHierarchy,Is.False);Assert.That(doc.rootVisualElement.Contains(loadConfirm),Is.False);
+            if(releaseBeforeNavigation){ReleaseThrough(panelBeforeLoad,loadConfirm,KeyCode.Return);Assert.That(loadConfirm.panel,Is.Null);}
             Id("review-nav-Combat");yield return null;
-            Assert.That(doc.rootVisualElement.panel.visualTree,Is.Not.SameAs(panelBeforeLoad),"Navigation rebuild replaces the panel");
+            Assert.That(doc.rootVisualElement.panel.visualTree,Is.SameAs(panelBeforeLoad),"Demo navigation retains the dispatch panel");
             var review=doc.rootVisualElement.Query<Button>().ToList().Single(b=>b.text=="Review / commit round "+battle.Round);Click(review);
             var commitConfirm=Confirm(doc.rootVisualElement);Assert.That(doc.rootVisualElement.panel.focusController.focusedElement,Is.SameAs(commitConfirm));
             Key(commitConfirm,KeyCode.Return);
@@ -298,7 +523,7 @@ namespace HobbyDS9.UnityReview.Tests
             {
                 Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(model.HasLocalEdits,Is.True);
                 Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null,"Held load-confirm key cannot commit the later round");
-                Key(doc.rootVisualElement.panel.visualTree,KeyCode.Return,true);Key(commitConfirm,KeyCode.Return);
+                ReleaseThrough(panelBeforeLoad,loadConfirm,KeyCode.Return);Key(commitConfirm,KeyCode.Return);
             }
             Assert.That(model.Current.Frame,Is.Not.SameAs(frame));Assert.That(model.Current.Draft,Is.Empty);
             Assert.That(model.Current.Frame.Battle!.Reports.Select(r=>r.Round).Distinct().ToArray(),Is.EqualTo(new[]{battle.Round}),"Exactly one reviewed round was committed");

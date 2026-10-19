@@ -98,7 +98,7 @@ namespace HobbyDS9.UnityReview
             }
         }
         private void OnDisable(){viewEpoch++;modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();}
-        private void OnDestroy(){ReleasePanel();}
+        private void OnDestroy(){ResetDemoKeyboard();ReleasePanel();}
         private void ReleasePanel()
         {
             ReleaseAudio();
@@ -120,11 +120,15 @@ namespace HobbyDS9.UnityReview
         }
         private void Build()
         {
-            modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ReleasePanel();
-            panel=ScriptableObject.CreateInstance<PanelSettings>();panel.scaleMode=model!.Integrated?PanelScaleMode.ConstantPixelSize:PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
-            panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=1;panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");
-            var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();doc.panelSettings=panel;
+            modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ReleaseAudio();
+            var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();
+            if(model?.SingleplayerDemo!=true||panel==null||doc.panelSettings!=panel)
+            {
+                ReleasePanel();panel=ScriptableObject.CreateInstance<PanelSettings>();panel.scaleMode=model!.Integrated?PanelScaleMode.ConstantPixelSize:PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
+                panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=1;panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");doc.panelSettings=panel;
+            }
             root=doc.rootVisualElement;root.Clear();root.styleSheets.Clear();confirmation=null;root.AddToClassList("physical-review-root");
+            PreserveDemoKeyOrigins();
             BindDemoKeyboard();
             BindAudio();
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.03f,0.05f,0.08f);root.style.color=new Color(0.92f,0.95f,1);root.style.fontSize=16;
@@ -183,7 +187,7 @@ namespace HobbyDS9.UnityReview
         private void Draw()
         {
             if(model==null||root==null)return;
-            if(model.Integrated){DrawPlayer();return;}
+            if(model.Integrated){try{DrawPlayer();}finally{PreserveDemoKeyOrigins();}return;}
             message!.text=model.Message+" "+flow!.Notice;
             if(workspace!.Page==ReviewWorkspacePage.Combat||workspace.Page==ReviewWorkspacePage.FleetOrders)central?.Render();
             else DrawStrategicPanel();
@@ -210,7 +214,7 @@ namespace HobbyDS9.UnityReview
         private static TextField Field(string title,string value){var f=new TextField(title){value=value};f.AddToClassList("review-input");return f;}
         private Button AddButton(VisualElement parent,string title,Action action,bool dialog=false)
         {
-            var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();action();}};
+            var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
             var button=new Button(guarded){text=title};
             if(model!.SingleplayerDemo)BindDemoButtonKeyboard(button,guarded);
             button.AddToClassList("review-action");button.style.minHeight=36;parent.Add(button);return button;
