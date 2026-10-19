@@ -23,7 +23,7 @@ namespace HobbyDS9.UnityReview
         {
             if(actor!=frame.Actor||generation!=frame.Generation){actor=frame.Actor;generation=frame.Generation;ownFleets.Clear();ownShips.Clear();enemyFleets.Clear();enemyShips.Clear();contacts.Clear();}
             foreach(var id in frame.OwnStrategicFleets.Select(f=>f.FleetId.Value).Concat(frame.OwnShips.Select(s=>s.Condition.FleetId)).Distinct().OrderBy(s=>s,StringComparer.Ordinal))
-                if(!ownFleets.ContainsKey(id))ownFleets.Add(id,"Your fleet "+(ownFleets.Count+1));
+                if(!ownFleets.ContainsKey(id))ownFleets.Add(id,"Fleet "+(ownFleets.Count+1));
             foreach(var ship in frame.OwnShips.OrderBy(s=>s.Condition.ShipId,StringComparer.Ordinal))
                 if(!ownShips.ContainsKey(ship.Condition.ShipId))ownShips.Add(ship.Condition.ShipId,OwnType(frame,ship.Condition)+" "+(ownShips.Count+1));
             foreach(var ship in frame.Battle?.VisibleEnemies.OrderBy(s=>s.ShipId,StringComparer.Ordinal)??Enumerable.Empty<CampaignTacticalCondition>())
@@ -126,12 +126,12 @@ namespace HobbyDS9.UnityReview
                 if(e.Kind=="ShieldImpact")shieldImpact+=e.Amount;
             }
             var text=new StringBuilder("Round "+round+" resolved\n");
-            text.AppendLine(FormattableString.Invariant($"Your hull damage recorded: {ownHull}. Total observed hull damage: {observedHull}."));
-            text.AppendLine(FormattableString.Invariant($"Observed shield absorption: {shieldImpact}. Your weapon discharges: {latest.Count(e=>e.Kind=="WeaponDischarged"&&e.OwnWeaponId!=null)}."));
-            text.AppendLine("Observed destroyed ships: "+latest.Count(e=>e.Kind=="ShipDestroyed")+". Recorded torpedo interceptions: "+latest.Count(e=>e.Kind=="TorpedoIntercepted")+".");
+            text.AppendLine(FormattableString.Invariant($"Your hull loss: {ownHull} · total observed hull loss: {observedHull}"));
+            text.AppendLine(FormattableString.Invariant($"Observed shield absorption: {shieldImpact} · your recorded shots: {latest.Count(e=>e.Kind=="WeaponDischarged"&&e.OwnWeaponId!=null)}"));
+            text.AppendLine("Observed ships destroyed: "+latest.Count(e=>e.Kind=="ShipDestroyed")+" · torpedo interceptions: "+latest.Count(e=>e.Kind=="TorpedoIntercepted"));
             if(latest.Any(e=>e.Kind=="IncomingTorpedo"))text.AppendLine("Incoming torpedoes were reported without exposing hidden launchers.");
             if(latest.Any(e=>e.FocusFallbackCause.HasValue))text.AppendLine("Preferred focus was unavailable for a reported opportunity; a visible alternative was used. Your standing preference is retained.");
-            return text.Append("Only your filtered report is summarized; these are recorded results, not a firing forecast.").ToString();
+            return text.Append("Your filtered report only · recorded results, not a firing forecast.").ToString();
         }
         public string TravelDraft(ReviewController controller)
         {

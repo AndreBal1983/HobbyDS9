@@ -52,7 +52,7 @@ namespace HobbyDS9.UnityReview
             if(battle==null&&frame.Status.Phase==SessionPhase.Planning)
                 root.Add(Text(demo?"Use Re-engage to stay and seek combat on End turn, or plot a known route in Fleets. The computer chooses its own orders; you command only your fleets.":"OPT-IN PHYSICAL TACTICAL V2. To enter battle: draft Re-engage, review/submit, then advance the strategic turn. Each human actor supplies their own round choice through the labelled test-host controls. No opponent AI is invented."));
             else if(demo&&battle!=null)
-                root.Add(Text("The computer supplies opposing orders. Review your fleet maneuver and focus, commit one round at a time, then confirm the aftermath when all battles are complete."));
+            {var context=Text("The computer supplies opposing orders. Review your fleet maneuver and focus, commit one round at a time, then confirm the aftermath when all battles are complete.");context.AddToClassList("combat-context-copy");root.Add(context);}
             var stageRow=new VisualElement{name="central-combat-surface"};stageRow.AddToClassList("review-stage-row");root.Add(stageRow);
             var roster=new ScrollView(ScrollViewMode.Vertical){name="central-fleet-rail"};roster.AddToClassList("review-panel");roster.AddToClassList("review-roster");roster.Add(Text("Owned fleet / ship inspection"));stageRow.Add(roster);
             var fleet=demo?LabeledChoice("Your fleet",fleets,selectedFleet,id=>readable.Fleet(frame,id),id=>{selectedFleet=id;SyncFleetOrder();Render();}):Choice("Owned fleet",fleets);
