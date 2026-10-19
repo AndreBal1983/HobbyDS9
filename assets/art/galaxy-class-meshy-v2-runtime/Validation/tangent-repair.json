@@ -1,0 +1,39 @@
+{
+  "scope": "Diagnostic GLB only; does not prove Unity FBX tangent acceptance",
+  "policy": "First ascending-index nondegenerate incident triangle UV gradient; Gram-Schmidt against existing normal; sign from its bitangent",
+  "beforeSha256": "3a3902aa839296fcc55c1597d7269ec5aadf3984f2f869e1b44a446be6ca2002",
+  "afterSha256": "0d6685a4dd1820819225f272b545cbeeced22af0bff612cd0c65e5b0b76dc18d",
+  "repairedVertices": [
+    {
+      "vertex": 5594,
+      "incidentTriangle": 7306,
+      "basis": [
+        0.9920118451118469,
+        0.0035638920962810516,
+        0.1260939985513687
+      ],
+      "sign": -1
+    },
+    {
+      "vertex": 31726,
+      "incidentTriangle": 39371,
+      "basis": [
+        0.9208152890205383,
+        0.00044659996638074517,
+        0.3899987041950226
+      ],
+      "sign": 1
+    },
+    {
+      "vertex": 31966,
+      "incidentTriangle": 39371,
+      "basis": [
+        0.9186497926712036,
+        -0.0033873131033033133,
+        0.395058274269104
+      ],
+      "sign": 1
+    }
+  ],
+  "unchanged": "positions,indices,UVs,normals,images,materials,FBX/source files"
+}
