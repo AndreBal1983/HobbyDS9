@@ -24,7 +24,7 @@ jobs:
         shell: pwsh
         run: |
           $suites = @(
-            @{ Project = 'tests/HobbyDS9.TacticalTravelClient.Tests/HobbyDS9.TacticalTravelClient.Tests.csproj'; Kind = 'physical'; Name = 'physical-client.trx'; Expected = 63 },
+            @{ Project = 'tests/HobbyDS9.TacticalTravelClient.Tests/HobbyDS9.TacticalTravelClient.Tests.csproj'; Kind = 'physical'; Name = 'physical-client.trx'; Expected = 89 },
             @{ Project = 'tests/HobbyDS9.TacticalReviewStorage.Tests/HobbyDS9.TacticalReviewStorage.Tests.csproj'; Kind = 'b1-storage'; Name = 'preserved-b1-storage.trx'; Expected = 47 },
             @{ Project = 'tests/HobbyDS9.TacticalReviewClient.Tests/HobbyDS9.TacticalReviewClient.Tests.csproj'; Kind = 'real'; Name = 'preserved-real.trx'; Expected = 51 },
             @{ Project = 'tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj'; Kind = 'mock'; Name = 'preserved-mock.trx'; Expected = 115 }
