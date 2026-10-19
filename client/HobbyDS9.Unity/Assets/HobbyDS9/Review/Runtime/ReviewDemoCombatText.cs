@@ -65,7 +65,7 @@ namespace HobbyDS9.UnityReview
         public string Node(ReviewFrame frame,string id)=>frame.Strategy?.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==id)?.DisplayName??"Known sector";
         public string Encounter(ReviewFrame frame,string id)=>"Battle "+(frame.Encounters.ToList().IndexOf(id)+1);
         public static string Maneuver(string value)=>value=="Hold"?"Maintain distance":value=="FightingWithdrawal"?"Fighting withdrawal":value;
-        public string Focus(ReviewFrame frame,string value)=>value=="retain standing focus"?"Keep standing preference":value=="clear focus"?"No fleet preference":Fleet(frame,value);
+        public string Focus(ReviewFrame frame,string value)=>value=="retain standing focus"?"Keep focus":value=="clear focus"?"No preference":Fleet(frame,value);
         public string Orders(ReviewController controller)
         {
             var frame=controller.Frame;var text=new StringBuilder("Your fleet orders\n");
@@ -80,7 +80,7 @@ namespace HobbyDS9.UnityReview
         public string Diagram(ReviewFrame frame)
         {
             var battle=frame.Battle;
-            if(battle==null)return frame.Status.Phase==SessionPhase.Planning?"Campaign Planning · no active battle selected. Fleets move on End turn.":"Choose one of your battles. Hidden participants are not inferred.";
+            if(battle==null)return frame.Demo!=null&&frame.Demo.Outcome!=CampaignDemoOutcome.Active?"Campaign complete · "+frame.Demo.Outcome+". Inspect retained ships and stocks.":frame.Status.Phase==SessionPhase.Planning?"Campaign Planning · no active battle selected. Fleets move on End turn.":"Choose one of your battles. Hidden participants are not inferred.";
             var text=new StringBuilder(Node(frame,battle.LocationNodeId)+" · "+(battle.Complete?"Battle complete":"Round "+battle.Round+" of up to 3")+"\n");
             foreach(var pair in battle.Relations)text.AppendLine(Fleet(frame,pair.OwnFleetId)+" → "+Fleet(frame,pair.VisibleEnemyFleetId)+": "+pair.Range+" · own facing "+pair.OwnFacing);
             if(battle.VisibleEnemies.Count==0)text.AppendLine("No visible enemy. Proceed cautiously; hidden identities and counts are unavailable.");
@@ -117,7 +117,7 @@ namespace HobbyDS9.UnityReview
         public string LatestRound(ReviewFrame frame)
         {
             Observe(frame);var events=frame.Battle?.Reports;
-            if(events==null||events.Count==0)return "No resolved-round report yet. Review your fleet orders, then commit one round.";
+            if(events==null||events.Count==0)return frame.Demo!=null&&frame.Demo.Outcome!=CampaignDemoOutcome.Active?"Campaign complete. No current-batch round report is available; inspect retained ships and stocks.":"No resolved-round report yet. Review your fleet orders, then commit one round.";
             int round=events.Max(e=>e.Round);var latest=events.Where(e=>e.Round==round).ToList();
             BigInteger ownHull=BigInteger.Zero,observedHull=BigInteger.Zero,shieldImpact=BigInteger.Zero;
             foreach(var e in latest)

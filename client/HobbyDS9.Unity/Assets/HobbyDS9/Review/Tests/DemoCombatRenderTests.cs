@@ -70,8 +70,16 @@ namespace HobbyDS9.UnityReview.Tests
                 foreach(var scroll in center.Query<ScrollView>().ToList())
                 {Assert.That(scroll.contentViewport.worldBound.yMax,Is.LessThanOrEqualTo(center.worldBound.yMax+1),"central viewport contained");Assert.That(scroll.contentViewport.worldBound.yMax,Is.LessThanOrEqualTo(root.Q("central-combat-footer").worldBound.yMin),"no body behind actions");}
                 Assert.That(root.Q("combat-own-current-stocks").worldBound.yMax,Is.LessThanOrEqualTo(center.worldBound.yMax));
-                foreach(var id in new[]{"combat-fleet-picker","combat-ship-picker"})
-                {var field=root.Q<DropdownField>(id);var value=field.Q<TextElement>(className:"unity-base-popup-field__text");Assert.That(value,Is.Not.Null,id);var required=field.choices.Max(caption=>value.MeasureTextSize(caption,0,VisualElement.MeasureMode.Undefined,0,VisualElement.MeasureMode.Undefined).x);Assert.That(value.worldBound.width+1,Is.GreaterThanOrEqualTo(required),id+" all captions must fit");}
+                foreach(var id in new[]{"combat-fleet-picker","combat-ship-picker","combat-focus-picker"})
+                {
+                    var field=root.Q<DropdownField>(id);var value=field.Q<TextElement>(className:"unity-base-popup-field__text");Assert.That(value,Is.Not.Null,id);
+                    var original=field.value;var longest=field.choices.OrderByDescending(caption=>value.MeasureTextSize(caption,0,VisualElement.MeasureMode.Undefined,0,VisualElement.MeasureMode.Undefined).x).First();
+                    var required=value.MeasureTextSize(longest,0,VisualElement.MeasureMode.Undefined,0,VisualElement.MeasureMode.Undefined).x;
+                    Assert.That(value.worldBound.width,Is.GreaterThan(0),id+" visible value");Assert.That(value.worldBound.width+1,Is.GreaterThanOrEqualTo(required),id+" all captions must fit");
+                    field.SetValueWithoutNotify(longest);Assert.That(value.text,Is.EqualTo(longest),id+" selected caption");field.SetValueWithoutNotify(original);
+                }
+                Assert.That(root.Q<DropdownField>("combat-focus-picker").choices[0],Is.EqualTo("Keep focus"));
+                Assert.That(root.Q<DropdownField>("combat-focus-picker").choices[1],Is.EqualTo("No preference"));
                 Assert.That(root.Q<DropdownField>("combat-fleet-picker").choices.Any(s=>s.Contains("fleet.")),Is.False);
                 Assert.That(root.Q<DropdownField>("combat-ship-picker").choices.Any(s=>s.Contains("ship.")||s.Contains("PROVISIONAL")),Is.False);
                 Assert.That(root.Q<Foldout>("combat-technical-details").value,Is.False);
@@ -90,6 +98,53 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(doc.rootVisualElement.Q<Label>("save-load-result").text,Does.Contain("empty").And.Contain("unsent edits are unchanged"));
                 Assert.That(doc.rootVisualElement.Q<Label>("player-guidance").text,Does.Contain("Unsent"));
             });
+            foreach(var pursueVictory in new[]{false,true})
+            {
+                // Start a new real campaign, never load/edit an owner's save or forge an outcome DTO.
+                Invoke("StartFreshDemo");model=entry.Presentation!.Model;yield return null;
+                if(pursueVictory)
+                {
+                    Assert.That(model.Enqueue("colony.sol","ship-design.source-cruiser",ReviewUiModel.NewCommandId()),Is.True);
+                    Assert.That(model.Enqueue("colony.sol","ship-design.source-cruiser",ReviewUiModel.NewCommandId()),Is.True);
+                    Assert.That(model.AllocateResearch(450,ReviewUiModel.NewCommandId()),Is.True);
+                }
+                for(int step=0;step<30&&model.Current.Frame.Demo!.Outcome==CampaignDemoOutcome.Active;step++)
+                {
+                    var battle=model.Current.Frame.Battle;
+                    if(battle!=null)
+                    {
+                        if(battle.Complete){Assert.That(model.FinalizeBatch(),Is.True);continue;}
+                        foreach(var order in battle.StandingOrders.Where(o=>o.CanOrder))
+                            Assert.That(model.DraftFleet(order.FleetId,CampaignFleetManeuver.Charge,battle.LegalFocusFleetIds.FirstOrDefault(),false),Is.True);
+                        Assert.That(model.CommitRound(ReviewUiModel.NewCommandId()),Is.True);
+                    }
+                    else
+                    {
+                        if(pursueVictory&&model.Current.Frame.Status.Turn>=5)
+                            foreach(var currentFleet in model.Current.Frame.OwnStrategicFleets)
+                            {
+                                var atObjective=currentFleet.LocationNodeId.Value==model.Current.Frame.Demo!.ObjectiveNodeId;
+                                Assert.That(model.DraftTravel(currentFleet.FleetId.Value,atObjective?CampaignTravelIntent.StayEngage:CampaignTravelIntent.Leave,atObjective?null:model.Current.Frame.Demo.ObjectiveNodeId,null),Is.True);
+                                Assert.That(model.SendTravel(ReviewUiModel.NewCommandId()),Is.True);
+                            }
+                        Assert.That(model.Advance(),Is.True);
+                    }
+                }
+                var outcome=pursueVictory?CampaignDemoOutcome.Victory:CampaignDemoOutcome.Defeat;
+                Assert.That(model.Current.Frame.Demo!.Outcome,Is.EqualTo(outcome));Invoke("Build");Id("review-nav-Combat");yield return null;Caption("Round report");yield return null;
+                yield return Capture("Completed-"+outcome,()=>{
+                    var root=doc.rootVisualElement;Assert.That(root.Q<Label>("combat-stage-heading").text,Does.Contain(outcome.ToString()).And.Contain("inspection"));
+                    Assert.That(root.Q("combat-completed-notice"),Is.Not.Null);Assert.That(root.Q("central-fleet-rail"),Is.Not.Null);
+                    Assert.That(root.Q("central-order-dock").Query<Button>().ToList(),Is.Empty,"No terminal fleet mutations");
+                    Assert.That(root.Q("central-combat-footer").Query<Button>().ToList(),Is.Empty,"No terminal advance or round mutations");
+                    var copy=string.Join("\n",root.Q(className:"review-central").Query<Label>().ToList().Select(l=>l.text));
+                    Assert.That(copy,Does.Not.Contain("choose a fresh").And.Not.Contain("FRESH ORDER").And.Not.Contain("Fleets move on End turn").And.Not.Contain("Use Re-engage").And.Not.Contain("commit one round"));
+                    Assert.That(root.Q<Label>("combat-own-current-stocks").text,Does.Contain("Hull").And.Contain("Torpedoes"));
+                });
+                Caption("Inspect ship");yield return null;Assert.That(model.Inspection(),Does.Contain("Hull"));
+                Id("review-nav-Saves");yield return null;Assert.That(doc.rootVisualElement.Q<Button>("player-save").enabledInHierarchy,Is.True);
+                Assert.That(doc.rootVisualElement.Q<Button>("player-load").enabledInHierarchy,Is.True);
+            }
             yield return new ExitPlayMode();
         }
     }

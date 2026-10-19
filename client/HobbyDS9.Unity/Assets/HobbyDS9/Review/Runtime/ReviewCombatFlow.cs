@@ -8,7 +8,7 @@ using HobbyDS9.TacticalReviewClient;
 
 namespace HobbyDS9.UnityReview
 {
-    public enum ReviewCombatStage { Planning, SelectEncounter, Orders, Waiting, RoundResult, AftermathPending, AftermathConfirmed, NoOwnedFleet, Closed }
+    public enum ReviewCombatStage { Planning, SelectEncounter, Orders, Waiting, RoundResult, AftermathPending, AftermathConfirmed, NoOwnedFleet, Closed, CampaignComplete }
 
     // Presentation state only. Every mutation still passes the actual host/controller validation.
     public sealed class ReviewCombatFlow
@@ -32,6 +32,7 @@ namespace HobbyDS9.UnityReview
             {
                 Context();if(Model.Closed)return ReviewCombatStage.Closed;
                 var frame=Model.Current.Frame;var battle=frame.Battle;
+                if(CampaignComplete)return ReviewCombatStage.CampaignComplete;
                 if(battle!=null)
                 {
                     if(battle.Complete)
@@ -51,7 +52,8 @@ namespace HobbyDS9.UnityReview
         }
         public bool CanCommitRound=>Stage==ReviewCombatStage.Orders&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired;
         public bool CanFinalize=>Stage==ReviewCombatStage.AftermathPending&&Model.Current.Frame.Status.CanFinalizeBatch&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired;
-        public bool CanDraftNextOrder=>Model.Current.Frame.Status.Phase==SessionPhase.Planning&&Model.Current.Frame.OwnStrategicFleets.Count>0&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired&&!Model.Closed&&Model.Current.Mode==ReviewMode.Planning;
+        public bool CampaignComplete=>Model.Current.Frame.Demo!=null&&Model.Current.Frame.Demo.Outcome!=CampaignDemoOutcome.Active;
+        public bool CanDraftNextOrder=>!CampaignComplete&&Model.Current.Frame.Status.Phase==SessionPhase.Planning&&Model.Current.Frame.OwnStrategicFleets.Count>0&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired&&!Model.Closed&&Model.Current.Mode==ReviewMode.Planning;
         public IReadOnlyList<string> OwnLosses { get {Context();return ownLosses.OrderBy(s=>s,StringComparer.Ordinal).ToList().AsReadOnly();} }
         public void Open(){Context();SurfaceOpen=true;}
         public void Dismiss(){SurfaceOpen=false;} // No command, discard or time advance.
@@ -100,6 +102,7 @@ namespace HobbyDS9.UnityReview
                     case ReviewCombatStage.NoOwnedFleet:return "No owned surviving fleet available for orders";
                     case ReviewCombatStage.SelectEncounter:return "Select an owned encounter";
                     case ReviewCombatStage.Closed:return Model.Current.Frame.Demo!=null?"Campaign closed":"Review closed";
+                    case ReviewCombatStage.CampaignComplete:return "Campaign complete — "+Model.Current.Frame.Demo!.Outcome+" · inspection";
                     default:return Model.Current.Frame.Demo!=null?"Combat — strategic Planning":"Physical tactical-v2 review — strategic Planning";
                 }
             }
@@ -137,7 +140,7 @@ namespace HobbyDS9.UnityReview
         {
             var text=new StringBuilder("SCHEMATIC STAGING — no steering or authoritative 3D geometry\n");
             var b=Model.Current.Frame.Battle;
-            if(b==null)return text.AppendLine(Model.Current.Frame.Status.Phase==SessionPhase.Planning?"Current campaign boundary; fresh orders use known routes and contacts.":"Select an owned encounter. No hidden participants or identities are inferred.").ToString();
+            if(b==null)return text.AppendLine(CampaignComplete?"Completed campaign boundary; retained ships and stocks are available for inspection.":Model.Current.Frame.Status.Phase==SessionPhase.Planning?"Current campaign boundary; fresh orders use known routes and contacts.":"Select an owned encounter. No hidden participants or identities are inferred.").ToString();
             text.AppendLine(FormattableString.Invariant($"Sector {b.LocationNodeId} | {(b.Complete?"Completed after up to 3 rounds":"Round "+b.Round+" / up to 3")}"));
             foreach(var relation in b.Relations)text.AppendLine(relation.OwnFleetId+" → "+relation.VisibleEnemyFleetId+": "+relation.Range+" | own facing "+relation.OwnFacing);
             if(b.VisibleEnemies.Count==0)text.AppendLine("No visible enemy. Proceed cautiously; hidden identities/counts are unavailable.");

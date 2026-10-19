@@ -49,7 +49,9 @@ namespace HobbyDS9.UnityReview
                 root.Add(Text("Battle checkpoint retained. Unsent draft preserved; returning does not submit or advance time."));
                 button(root,"Resume battle",()=>perform(()=>flow.Open()));return;
             }
-            if(battle==null&&frame.Status.Phase==SessionPhase.Planning)
+            if(flow.CampaignComplete)
+                root.Add(Text("This campaign is complete. Inspect retained ships and stocks, save the completed campaign, or start a new demo from Menu."));
+            else if(battle==null&&frame.Status.Phase==SessionPhase.Planning)
                 root.Add(Text(demo?"Use Re-engage to stay and seek combat on End turn, or plot a known route in Fleets. The computer chooses its own orders; you command only your fleets.":"OPT-IN PHYSICAL TACTICAL V2. To enter battle: draft Re-engage, review/submit, then advance the strategic turn. Each human actor supplies their own round choice through the labelled test-host controls. No opponent AI is invented."));
             else if(demo&&battle!=null)
             {var context=Text("The computer supplies opposing orders. Review your fleet maneuver and focus, commit one round at a time, then confirm the aftermath when all battles are complete.");context.AddToClassList("combat-context-copy");root.Add(context);}
@@ -87,7 +89,9 @@ namespace HobbyDS9.UnityReview
             if(stage==ReviewCombatStage.AftermathPending&&!frame.Status.CanFinalizeBatch)
                 viewer.Add(Text("This battle is complete. Other battles are not ready; campaign aftermath cannot be finalized yet. Select another owned encounter when available."));
             var dock=new ScrollView(ScrollViewMode.Vertical){name="central-order-dock"};dock.AddToClassList("review-order-dock");stageRow.Add(dock);
-            if(battle!=null)
+            if(flow.CampaignComplete)
+            {var completed=Text("Campaign complete — "+frame.Demo!.Outcome+". Fleet orders and turn advancement are unavailable. Inspection and Save / Load remain available.");completed.name="combat-completed-notice";dock.Add(completed);}
+            else if(battle!=null)
             {
                 dock.Add(Text(demo?readable.Orders(c):flow.OrderReview()));
                 var row=new VisualElement();row.AddToClassList("review-field-row");dock.Add(row);
@@ -95,6 +99,7 @@ namespace HobbyDS9.UnityReview
                 if(!demo){if(maneuvers.Contains(maneuver.ToString()))move.SetValueWithoutNotify(maneuver.ToString());move.RegisterValueChangedCallback(e=>{if(Enum.TryParse(e.newValue,out CampaignFleetManeuver m))maneuver=m;});}row.Add(move);
                 var targets=new[]{"retain standing focus","clear focus"}.Concat(battle.LegalFocusFleetIds).ToList();if(demo&&!targets.Contains(focus))focus="retain standing focus";var target=demo?LabeledChoice("Enemy-fleet preference",targets,focus,id=>readable.Focus(frame,id),id=>focus=id):Choice("Enemy-fleet preference",targets);
                 if(!demo){if(targets.Contains(focus))target.SetValueWithoutNotify(focus);target.RegisterValueChangedCallback(e=>focus=e.newValue);}target.name="combat-focus-picker";row.Add(target);
+                if(demo)target.tooltip="Keep focus retains the standing enemy-fleet preference. No preference clears it. Targets are selected automatically from lawful observations.";
                 button(row,"Apply to local draft",()=>perform(()=>flow.DraftFleet(selectedFleet,maneuver,focus=="retain standing focus"||focus=="clear focus"?null:focus,focus=="retain standing focus"))).SetEnabled(flow.CanCommitRound&&battle.StandingOrders.Any(o=>o.FleetId==selectedFleet&&o.CanOrder));
                 dock.Add(Text("Same-fleet screening only. Focus is a preference; ships choose lawful targets automatically. Approach cloak is read-only battle context."));
             }
@@ -139,7 +144,8 @@ namespace HobbyDS9.UnityReview
             else dock.Add(Text(stage==ReviewCombatStage.NoOwnedFleet?"No owned surviving fleet can receive a strategic order. Current campaign facts remain inspectable.":"Choose an owned encounter to review its battle. Fresh strategic orders wait for complete-batch aftermath."));
             var footer=new VisualElement{name="central-combat-footer"};footer.AddToClassList("review-footer");root.Add(footer);
             if(battle!=null)button(footer,"Back / keep draft",()=>{flow.Dismiss();Render();});
-            if(stage==ReviewCombatStage.Orders)button(footer,"Review / commit round "+battle!.Round,()=>confirm((demo?readable.Orders(c):flow.OrderReview())+(demo?"\nCommit your orders for one round against the computer?":"\nCommit one round for this human actor?"),()=>perform(()=>flow.CommitRound(ReviewUiModel.NewCommandId(),true)))).SetEnabled(flow.CanCommitRound);
+            if(flow.CampaignComplete)footer.Add(Text("Completed campaign — inspection and saving available"));
+            else if(stage==ReviewCombatStage.Orders)button(footer,"Review / commit round "+battle!.Round,()=>confirm((demo?readable.Orders(c):flow.OrderReview())+(demo?"\nCommit your orders for one round against the computer?":"\nCommit one round for this human actor?"),()=>perform(()=>flow.CommitRound(ReviewUiModel.NewCommandId(),true)))).SetEnabled(flow.CanCommitRound);
             else if(stage==ReviewCombatStage.RoundResult)button(footer,"Plan next round",()=>perform(()=>flow.PlanNextRound()));
             else if(stage==ReviewCombatStage.AftermathPending)button(footer,"Confirm campaign aftermath",()=>confirm("Apply complete-batch aftermath exactly once? Stocks are retained; no refill or extra movement.",()=>perform(()=>flow.FinalizeAftermath(true)))).SetEnabled(flow.CanFinalize);
             else if(stage==ReviewCombatStage.Waiting)footer.Add(Text("Waiting — no duplicate commitment"));
