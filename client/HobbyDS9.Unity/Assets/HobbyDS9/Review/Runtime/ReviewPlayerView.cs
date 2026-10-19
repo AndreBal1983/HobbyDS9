@@ -169,12 +169,17 @@ namespace HobbyDS9.UnityReview
             foreach(var f in facts.Fleets)Btn(main,"Fleet · "+NodeName(facts,f.LocationNodeId.Value)+" · "+f.ShipIds.Count+" ships"+(f.FleetId.Value==workspace.SelectedFleet?" · selected":""),"fleet-select-"+f.FleetId,()=>perform(()=>{workspace.SelectedFleet=f.FleetId.Value;route=null;}));
             var fleet=facts.Fleets.FirstOrDefault(f=>f.FleetId.Value==workspace.SelectedFleet);
             if(fleet==null){Text(main,"No owned surviving fleet can receive orders. You may build a supported ship if you have an eligible shipyard.");return;}
+            var ships=facts.Ships.Where(s=>s.FleetId==fleet.FleetId).ToList();
+            if(!ships.Any(s=>s.ShipId.Value==workspace.SelectedOwnShip))workspace.SelectedOwnShip=ships.FirstOrDefault()?.ShipId.Value;
+            foreach(var own in ships)Btn(main,"Inspect ship "+(ships.IndexOf(own)+1)+(own.ShipId.Value==workspace.SelectedOwnShip?" · selected":""),"own-ship-select-"+own.ShipId,()=>perform(()=>workspace.SelectedOwnShip=own.ShipId.Value));
+            var selectedShip=ships.FirstOrDefault(s=>s.ShipId.Value==workspace.SelectedOwnShip);
+            if(selectedShip!=null)main.Add(new ReviewShipArtPanel(facts.Civilization.DefinitionId.Value,selectedShip.ShipDesignDefinitionId.Value));
             Text(main,NodeName(facts,fleet.LocationNodeId.Value),"console-intro");Text(main,"Accepted route: "+(fleet.RouteNodeIds.Count==0?"None":string.Join(" → ",fleet.RouteNodeIds.Select(n=>NodeName(facts,n.Value)))));
-            foreach(var ship in model.Current.Frame.OwnShips.Where(s=>s.Condition.FleetId==fleet.FleetId.Value))
-            {var c=new VisualElement();c.AddToClassList("console-queue");main.Add(c);Text(c,ship.Condition.Type,"console-section");Text(c,"Hull "+ship.Condition.Hull+" / "+ship.Condition.MaxHull);Text(c,"Fore / Port / Starboard / Aft: "+string.Join(" / ",ship.Condition.Shields));foreach(var w in ship.Weapons.Where(w=>w.Class==TacticalWeaponClass.Torpedo))Text(c,"Torpedoes "+w.Ammunition+" / "+w.MagazineCapacity);}
+            foreach(var ship in model.Current.Frame.OwnShips.Where(s=>s.Condition.FleetId==fleet.FleetId.Value&&s.Condition.ShipId==workspace.SelectedOwnShip))
+            {var c=new VisualElement();c.AddToClassList("console-queue");main.Add(c);var design=facts.Construction.FirstOrDefault(o=>o.Design.DefinitionId==selectedShip?.ShipDesignDefinitionId)?.Design;Text(c,design==null?"Ship":ShipName(design),"console-section");Text(c,"Hull "+ship.Condition.Hull+" / "+ship.Condition.MaxHull);Text(c,"Fore / Port / Starboard / Aft: "+string.Join(" / ",ship.Condition.Shields));foreach(var w in ship.Weapons.Where(w=>w.Class==TacticalWeaponClass.Torpedo))Text(c,"Torpedoes "+w.Ammunition+" / "+w.MagazineCapacity);}
             Text(aside,"1 · Select fleet","console-section");Text(aside,NodeName(facts,fleet.LocationNodeId.Value)+" · "+fleet.ShipIds.Count+" ships");Text(aside,"2 · Choose destination","console-section");
             Text(aside,workspace.SelectedNode==null?"No destination selected":NodeName(facts,workspace.SelectedNode));
-            var destinations=new Foldout{text="Choose / change destination",value=workspace.DestinationExpanded};aside.Add(destinations);destinations.RegisterValueChangedCallback(e=>workspace.DestinationExpanded=e.newValue);
+            var destinations=new Foldout{name="fleet-route-destination",text="Destination",value=workspace.DestinationExpanded};aside.Add(destinations);destinations.RegisterValueChangedCallback(e=>workspace.DestinationExpanded=e.newValue);
             foreach(var n in facts.Navigation.Nodes)Btn(destinations,n.DisplayName+(n.NodeId.Value==workspace.SelectedNode?" · selected":""),"route-destination-"+n.NodeId,()=>perform(()=>{workspace.SelectedNode=n.NodeId.Value;workspace.DestinationExpanded=false;route=null;}));
             var target=workspace.SelectedNode;
             if(route!=null&&!workspace.RoutePreviewMatchesCurrent)route=null;
@@ -188,7 +193,7 @@ namespace HobbyDS9.UnityReview
             }
             Btn(aside,"Remain here","player-stay",()=>confirm("Keep this fleet in its current sector without requesting combat?",()=>perform(()=>{if(model.DraftTravel(fleet.FleetId.Value,CampaignTravelIntent.Stay,null,null))model.SendTravel(ReviewUiModel.NewCommandId());})),Editable&&!model.HasLocalEdits);
             Btn(aside,"Stay / seek combat","player-stay-engage",()=>confirm("Stay and seek a lawful engagement on the next turn? This does not start an immediate battle.",()=>perform(()=>{if(model.DraftTravel(fleet.FleetId.Value,CampaignTravelIntent.StayEngage,null,null))model.SendTravel(ReviewUiModel.NewCommandId());})),Editable&&!model.HasLocalEdits);
-            var details=new Foldout{text="Contact / advanced order details",value=false};aside.Add(details);
+            var details=new Foldout{text="Contact details",value=false};aside.Add(details);
             foreach(var known in model.Current.Frame.Travel!.KnownContacts)Text(details,"Last seen contact at "+NodeName(facts,known.LastSeenNodeId)+", turn "+known.LastSeenTurn+" · "+(known.Fresh?"fresh":"stale")+". Current destination is unknown.");
             Btn(details,"Open complete order controls","advanced-fleet-orders",()=>navigate(ReviewWorkspacePage.Combat));
         }

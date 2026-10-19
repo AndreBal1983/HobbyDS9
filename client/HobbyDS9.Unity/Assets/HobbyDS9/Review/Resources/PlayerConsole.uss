@@ -48,7 +48,7 @@
 .player-console .unity-base-popup-field__input { background-color: #182431; color: #eeeaf2; border-width: 1px; border-color: #65798e; min-height: 40px; }
 .player-narrow { padding: 8px 12px 8px 28px; }
 .player-narrow .console-spine { width: 12px; left: 4px; }
-.player-narrow .console-nav { width: 122px; padding-right: 6px; }
+.player-narrow .console-nav { width: 144px; padding-right: 6px; }
 .player-narrow .console-nav .review-action { font-size: 16px; min-height: 40px; padding: 6px 8px; margin-bottom: 5px; }
 .player-narrow .console-header { min-height: 58px; }
 .player-narrow .console-title { font-size: 24px; margin-bottom: 4px; }

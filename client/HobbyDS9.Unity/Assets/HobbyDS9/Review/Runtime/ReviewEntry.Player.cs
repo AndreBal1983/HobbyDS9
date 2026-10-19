@@ -85,7 +85,7 @@ namespace HobbyDS9.UnityReview
                 if(model.Message.Contains("InvalidCheckpoint"))return "This save cannot be loaded by the current scenario. Your campaign is unchanged.";
                 if(model.Message.Contains("WriteFailed"))return "Saving failed. Your previous save and current campaign are kept.";
             }
-            if(flow!.Stage==ReviewCombatStage.Waiting)return "Your orders are submitted. This early scenario uses two human sides: open Test Tools to switch sides and provide their orders.";
+            if(flow!.Stage==ReviewCombatStage.Waiting)return model.SingleplayerDemo?"Your orders are accepted. Waiting for the current battle boundary; refresh your view if needed. The computer owns its orders.":"Your orders are submitted. This early scenario uses two human sides: open Test Tools to switch sides and provide their orders.";
             if(flow.Stage==ReviewCombatStage.AftermathPending)return "Battle complete. Confirm the campaign aftermath in Combat, then give survivors fresh fleet orders.";
             if(flow.Stage==ReviewCombatStage.RoundResult)return "Round resolved. Review the report and retained stocks in Combat, then plan the next round.";
             if(flow.Stage==ReviewCombatStage.AftermathConfirmed)return "Aftermath confirmed. Return to the map or give surviving fleets fresh strategic orders.";

@@ -9,6 +9,7 @@
     <Reference Include="$(UnityManagedDir)/UnityEngine/UnityEditor*.dll"><Private>false</Private></Reference>
     <Reference Include="Newtonsoft.Json"><HintPath>$(UnityNewtonsoftPath)</HintPath><Private>false</Private></Reference>
     <Reference Include="nunit.framework"><HintPath>$(UnityNUnitPath)</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.InputSystem"><HintPath>$(UnityInputSystemPath)</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.TestRunner"><HintPath>$(UnityTestRunnerDir)/UnityEngine.TestRunner.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEditor.TestRunner"><HintPath>$(UnityTestRunnerDir)/UnityEditor.TestRunner.dll</HintPath><Private>false</Private></Reference>
     <Compile Include="$(RepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/*.cs" Link="ActualUnitySource/%(Filename)%(Extension)" />

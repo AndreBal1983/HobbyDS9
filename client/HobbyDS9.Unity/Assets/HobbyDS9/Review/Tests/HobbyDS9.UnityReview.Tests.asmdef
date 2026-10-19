@@ -1,6 +1,6 @@
 {
   "name": "HobbyDS9.UnityReview.Tests",
-  "references": ["HobbyDS9.UnityReview", "UnityEngine.TestRunner", "UnityEditor.TestRunner"],
+  "references": ["HobbyDS9.UnityReview", "UnityEngine.TestRunner", "UnityEditor.TestRunner", "Unity.InputSystem"],
   "includePlatforms": ["Editor"],
   "overrideReferences": true,
   "precompiledReferences": ["HobbyDS9.Application.dll", "HobbyDS9.Contracts.dll", "HobbyDS9.TacticalReviewClient.dll", "Newtonsoft.Json.dll", "nunit.framework.dll"],

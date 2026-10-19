@@ -23,17 +23,19 @@ def main():
     parser.add_argument("--newtonsoft",type=Path,required=True)
     parser.add_argument("--nunit",type=Path,required=True)
     parser.add_argument("--test-runner-dir",type=Path,required=True)
+    parser.add_argument("--art-demo",type=Path,required=True,help="Receiving project's compiled HobbyDS9.ArtDemo.dll")
+    parser.add_argument("--input-system",type=Path,required=True,help="Receiving project's compiled Unity.InputSystem.dll")
     parser.add_argument("--output",type=Path,default=ROOT/"artifacts/split-compiler")
     args=parser.parse_args()
     args.output.mkdir(parents=True,exist_ok=True)
     for path in (args.unity_managed_dir/"UnityEngine/UnityEngine.CoreModule.dll",args.newtonsoft,args.nunit,
-                 args.test_runner_dir/"UnityEngine.TestRunner.dll",args.test_runner_dir/"UnityEditor.TestRunner.dll"):
+                 args.test_runner_dir/"UnityEngine.TestRunner.dll",args.test_runner_dir/"UnityEditor.TestRunner.dll",args.art_demo,args.input_system):
         if not path.is_file(): raise ValueError("Missing explicit local reference: "+str(path))
     if "6000.6.5f1" not in args.unity_managed_dir.parts: raise ValueError("References must belong to pinned Unity6000.6.5f1 installation")
     if sha(args.newtonsoft)!=EXPECTED_NEWTONSOFT: raise ValueError("Pinned Unity Runtime Newtonsoft bytes differ")
-    refs={"UnityManagedDir":args.unity_managed_dir,"UnityNewtonsoftPath":args.newtonsoft,"UnityNUnitPath":args.nunit,"UnityTestRunnerDir":args.test_runner_dir}
+    refs={"UnityManagedDir":args.unity_managed_dir,"UnityNewtonsoftPath":args.newtonsoft,"UnityNUnitPath":args.nunit,"UnityTestRunnerDir":args.test_runner_dir,"UnityArtDemoPath":args.art_demo,"UnityInputSystemPath":args.input_system}
     record={"mode":"compiler-only; no Unity process/AOT/tests executed","references":{k:str(v.resolve()) for k,v in refs.items()},
-            "newtonsoft_sha256":sha(args.newtonsoft),"nunit_sha256":sha(args.nunit),"builds":[]}
+            "newtonsoft_sha256":sha(args.newtonsoft),"nunit_sha256":sha(args.nunit),"art_demo_sha256":sha(args.art_demo),"input_system_sha256":sha(args.input_system),"builds":[]}
     paths=[]
     for project,variant in [(p,v) for v in ("Player","Editor") for p in ("DefaultRuntime","ReviewRuntime")]+[(p,"Editor") for p in ("DefaultEditor","ReviewEditor","DefaultTests","ReviewTests")]:
         command=["dotnet","build",str(BASE/project/(project+".csproj")),"-c","Release","-t:Rebuild","-p:RestoreLockedMode=true","-p:UnityCompileVariant="+variant]+["-p:"+key+"="+str(value.resolve()) for key,value in refs.items()]

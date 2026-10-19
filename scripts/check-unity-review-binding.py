@@ -18,7 +18,7 @@ def check(root):
     asm = json.loads((runtime / "HobbyDS9.UnityReview.asmdef").read_text(encoding="utf-8-sig"))
     require(asm["name"] == "HobbyDS9.UnityReview" and asm.get("overrideReferences") is True and asm.get("autoReferenced") is False,
             "Review runtime requires the preserved explicit assembly identity")
-    require(asm.get("references") == [] and set(asm.get("precompiledReferences", [])) == {
+    require(asm.get("references") == ["HobbyDS9.ArtDemo"] and set(asm.get("precompiledReferences", [])) == {
         "HobbyDS9.Contracts.dll", "HobbyDS9.Application.dll", "HobbyDS9.TacticalReviewClient.dll", "Newtonsoft.Json.dll"},
         "Unexpected review runtime reference; host-only/storage/Simulation imports are forbidden")
     for name in ("Editor", "Tests"):

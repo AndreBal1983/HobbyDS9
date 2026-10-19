@@ -18,6 +18,7 @@ namespace HobbyDS9.UnityReview
         public string? SelectedNode { get=>selectedNode;set{if(selectedNode!=value)RoutePreview=null;selectedNode=value;} }
         public string? SelectedFleet { get=>selectedFleet;set{if(selectedFleet!=value)RoutePreview=null;selectedFleet=value;} }
         public string? SelectedColony { get; set; }
+        public string? SelectedOwnShip { get; set; }
         public KnownRouteOffer? RoutePreview { get; set; }
         public bool DestinationExpanded { get; set; }
         public HobbyDS9.Contracts.ScienceDiscipline? ScienceDetails { get; set; }
@@ -39,7 +40,7 @@ namespace HobbyDS9.UnityReview
         private void Context()
         {
             if(ReferenceEquals(context,Model.Current))return;
-            context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";NavigationEpoch=checked(NavigationEpoch+1);
+            context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;SelectedOwnShip=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";NavigationEpoch=checked(NavigationEpoch+1);
         }
         public ReviewWorkspacePage Page { get {Context();return page;} }
         public bool CanNavigate=>!Model.Closed&&!Model.Busy&&!Model.Current.HasPendingWork;
