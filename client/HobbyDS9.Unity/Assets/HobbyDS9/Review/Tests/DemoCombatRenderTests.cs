@@ -46,6 +46,14 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(box.Query<Label>().ToList().Any(l=>l.text.Contains("ACTOR-SCOPED")||l.text.Contains("fleet.federation")),Is.False);
             });
             Caption("Cancel");yield return null;Assert.That(model.Reset(),Is.True);
+            Invoke("Confirm","Layout stress fixture, not campaign results.\n"+string.Concat(Enumerable.Repeat("Long review text must scroll without pushing away Cancel or Confirm.\n",80)),(Action)(()=>{}));yield return null;
+            yield return Capture("Long-dialog-layout-fixture",()=>{
+                var box=doc.rootVisualElement.Q("player-confirmation-summary");var body=doc.rootVisualElement.Q<ScrollView>("player-confirmation-details");
+                var confirm=box.Query<Button>().ToList().Single(b=>b.text=="Confirm");
+                Assert.That(body.verticalScroller.highValue,Is.GreaterThan(0));
+                Assert.That(body.contentViewport.worldBound.yMax,Is.LessThanOrEqualTo(confirm.worldBound.yMin));
+                Assert.That(confirm.worldBound.yMax,Is.LessThanOrEqualTo(box.worldBound.yMax+1));
+            });Caption("Cancel");yield return null;
             var own=model.Current.Frame.OwnStrategicFleets.First().FleetId.Value;
             Assert.That(model.DraftTravel(own,CampaignTravelIntent.Leave,"nav.bajor",null),Is.True);Assert.That(model.SendTravel(ReviewUiModel.NewCommandId()),Is.True);
             int limit=0;while(model.Current.Frame.Status.Phase==SessionPhase.Planning&&model.Current.Frame.OwnStrategicFleets.First().LocationNodeId.Value!="nav.bajor"&&limit++<5)Assert.That(model.Advance(),Is.True);
