@@ -59,6 +59,12 @@ def check(root):
             'UnregisterCallback<AttachToPanelEvent>(DemoKeyboardAttached)' in keyboard and
             'UnregisterCallback<DetachFromPanelEvent>(DemoKeyboardDetached)' in keyboard,
             "Keyboard release observation must follow the current panel visual tree and detach with its document")
+    require('keyboardReleaseRoot?.RegisterCallback<KeyDownEvent>(DemoUnfocusedTab);' in keyboard and
+            'keyboardReleaseRoot?.UnregisterCallback<KeyDownEvent>(DemoUnfocusedTab);' in keyboard and
+            'ReferenceEquals(e.target,keyboardReleaseRoot)' in keyboard and
+            'current.focusController.focusedElement!=null' in keyboard and
+            'keyboardReleaseRoot!.SendEvent(navigation)' in keyboard,
+            "Unfocused Tab must own only its live panel-root event and unsubscribe with that panel")
     build_entry = entry.split('private void Build()', 1)[1].split('private void Navigate(', 1)[0]
     require('ResetDemoKeyboard()' not in build_entry and
             'returnHeld=false' not in keyboard.split('private void ResetDemoKeyboard()', 1)[0] and

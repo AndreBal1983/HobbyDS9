@@ -185,5 +185,64 @@ namespace HobbyDS9.UnityReview.Tests
             Key(panelRoot,KeyCode.Return,true);Key(confirm,KeyCode.Return);Assert.That(accepted,Is.EqualTo(1),"Reattachment observes release on its current panel");
             Key(panelRoot,KeyCode.Return,true);yield return new ExitPlayMode();
         }
+
+        [UnityTest] public IEnumerator UnfocusedPanelTabAfterActualEndTurnConfirmationUsesNormalForwardAndReverseRing()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            var start=doc.rootVisualElement.Q<Button>("demo-start");
+            using(var e=NavigationSubmitEvent.GetPooled()){e.target=start;start.SendEvent(e);}yield return null;
+            var model=entry.Presentation!.Model;var before=model.Current.Frame;var oldPanelRoot=doc.rootVisualElement.panel.visualTree;
+            var endTurn=doc.rootVisualElement.Q<Button>("player-primary-action");
+            using(var e=NavigationSubmitEvent.GetPooled()){e.target=endTurn;endTurn.SendEvent(e);}
+            var confirm=Confirm(doc.rootVisualElement);Assert.That(doc.rootVisualElement.panel.focusController.focusedElement,Is.SameAs(confirm));
+            Key(confirm,KeyCode.Return);yield return null;
+            var root=doc.rootVisualElement;var panelRoot=root.panel.visualTree;var accepted=model.Current.Frame;
+            Assert.That(accepted.Status.Turn,Is.EqualTo(before.Status.Turn+1));Assert.That(panelRoot,Is.Not.SameAs(oldPanelRoot));
+            Assert.That(root.panel.focusController.focusedElement,Is.Null,"Accepted confirmation rebuild leaves no focused child");
+            Key(panelRoot,KeyCode.Return,true);int moves=0;panelRoot.RegisterCallback<NavigationMoveEvent>(_=>moves++,TrickleDown.TrickleDown);
+            Key(panelRoot,KeyCode.Tab);
+            // Menu is the first eligible control in the existing navigation;
+            // End turn is the final enabled footer control. Product code does
+            // not select either: normal runtime focus-ring events must do so.
+            Assert.That(root.panel.focusController.focusedElement,Is.SameAs(root.Q<Button>("demo-menu")));Assert.That(moves,Is.EqualTo(1));
+            Key(root.Q<Button>("demo-menu"),KeyCode.Tab,false,EventModifiers.Shift);
+            endTurn=root.Q<Button>("player-primary-action");Assert.That(root.panel.focusController.focusedElement,Is.SameAs(endTurn));Assert.That(moves,Is.EqualTo(2));
+            endTurn.Blur();Assert.That(root.panel.focusController.focusedElement,Is.Null);
+            Key(panelRoot,KeyCode.Tab,false,EventModifiers.Shift);Assert.That(root.panel.focusController.focusedElement,Is.SameAs(endTurn));Assert.That(moves,Is.EqualTo(3));
+            Assert.That(model.Current.Frame,Is.SameAs(accepted));Assert.That(model.HasLocalEdits,Is.False);Assert.That(root.Q("review-one-use-confirmation"),Is.Null);
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator UnfocusedPanelTabDefersModifiersRawInputOldPanelAndDetachedDocument()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();var oldPanelRoot=doc.rootVisualElement.panel.visualTree;
+            var start=doc.rootVisualElement.Q<Button>("demo-start");using(var e=NavigationSubmitEvent.GetPooled()){e.target=start;start.SendEvent(e);}yield return null;
+            var root=doc.rootVisualElement;var panelRoot=root.panel.visualTree;var frame=entry.Presentation!.Model.Current.Frame;
+            Assert.That(root.panel.focusController.focusedElement,Is.Null);int moves=0;panelRoot.RegisterCallback<NavigationMoveEvent>(_=>moves++,TrickleDown.TrickleDown);
+            foreach(var modifiers in new[]{EventModifiers.Control,EventModifiers.Alt,EventModifiers.Command})Key(panelRoot,KeyCode.Tab,false,modifiers);
+            Key(oldPanelRoot,KeyCode.Tab);Assert.That(moves,Is.Zero);Assert.That(root.panel.focusController.focusedElement,Is.Null);
+            var keyboard=InputSystem.AddDevice<Keyboard>("DemoUnfocusedTab");var priorRouting=InputSystem.settings.editorInputBehaviorInPlayMode;
+            var priorBackground=InputSystem.settings.backgroundBehavior;var priorRun=UnityEngine.Application.runInBackground;
+            try
+            {
+                UnityEngine.Application.runInBackground=true;InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
+                InputSystem.settings.editorInputBehaviorInPlayMode=InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState(UnityEngine.InputSystem.Key.Tab));InputSystem.Update();Assert.That(keyboard.tabKey.wasPressedThisFrame,Is.True);
+                Key(panelRoot,KeyCode.Tab);Assert.That(moves,Is.Zero,"Raw Tab owns navigation even without a focused child");
+                Assert.That(root.panel.focusController.focusedElement,Is.Null);
+            }
+            finally
+            {
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState());InputSystem.Update();InputSystem.RemoveDevice(keyboard);
+                InputSystem.settings.editorInputBehaviorInPlayMode=priorRouting;InputSystem.settings.backgroundBehavior=priorBackground;UnityEngine.Application.runInBackground=priorRun;
+            }
+            Invoke(entry,"BindDemoKeyboard");Invoke(entry,"BindDemoKeyboard");Invoke(entry,"UnbindDemoKeyboard");Key(panelRoot,KeyCode.Tab);Assert.That(moves,Is.Zero);
+            Invoke(entry,"BindDemoKeyboard");var parent=root.parent;root.RemoveFromHierarchy();Key(panelRoot,KeyCode.Tab);parent.Add(root);
+            Assert.That(moves,Is.Zero,"Detached document must not translate panel Tab");
+            Key(panelRoot,KeyCode.Tab);Assert.That(moves,Is.EqualTo(1));Assert.That(root.panel.focusController.focusedElement,Is.SameAs(root.Q<Button>("demo-menu")));
+            Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(frame));yield return new ExitPlayMode();
+        }
     }
 }

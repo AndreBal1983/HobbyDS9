@@ -39,13 +39,15 @@ namespace HobbyDS9.UnityReview
         private void BindDemoKeyboardRelease(IPanel? currentPanel)
         {
             // With no focused child, UI Toolkit routes release to the panel
-            // visual tree, outside the document subtree. Observe release only;
-            // held presses remain latched across document/panel replacement.
+            // visual tree, outside the document subtree. Observe release and
+            // unfocused Tab only; held presses remain latched across replacement.
             var next=currentPanel?.visualTree;
             if(ReferenceEquals(next,keyboardReleaseRoot))return;
             keyboardReleaseRoot?.UnregisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);
+            keyboardReleaseRoot?.UnregisterCallback<KeyDownEvent>(DemoUnfocusedTab);
             keyboardReleaseRoot=next;
             keyboardReleaseRoot?.RegisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);
+            keyboardReleaseRoot?.RegisterCallback<KeyDownEvent>(DemoUnfocusedTab);
         }
         private void ResetDemoKeyboard(){returnHeld=false;spaceHeld=false;}
         private void OnApplicationFocus(bool focused){if(!focused)ResetDemoKeyboard();}
@@ -87,6 +89,20 @@ namespace HobbyDS9.UnityReview
             e.StopPropagation();
             using(var navigation=NavigationMoveEvent.GetPooled(e.shiftKey?NavigationMoveEvent.Direction.Previous:NavigationMoveEvent.Direction.Next,e.modifiers))
             {navigation.target=focused;focused.SendEvent(navigation);}
+        }
+        private void DemoUnfocusedTab(KeyDownEvent e)
+        {
+            if(e.keyCode!=KeyCode.Tab||e.altKey||e.ctrlKey||e.commandKey)return;
+            var current=root?.panel;
+            if(!isActiveAndEnabled||model==null||!model.SingleplayerDemo||model.Closed||model.Busy||current==null
+                ||!ReferenceEquals(keyboardRoot,root)||!root!.enabledInHierarchy
+                ||!ReferenceEquals(keyboardReleaseRoot,current.visualTree)||!ReferenceEquals(e.target,keyboardReleaseRoot)
+                ||current.focusController.focusedElement!=null)return;
+            var tab=Keyboard.current?.tabKey;
+            if(tab!=null&&(tab.isPressed||tab.wasPressedThisFrame))return;
+            e.StopPropagation();
+            using(var navigation=NavigationMoveEvent.GetPooled(e.shiftKey?NavigationMoveEvent.Direction.Previous:NavigationMoveEvent.Direction.Next,e.modifiers))
+            {navigation.target=keyboardReleaseRoot;keyboardReleaseRoot!.SendEvent(navigation);}
         }
         private void ScheduleDemoMenuFocus(Button button)
         {
