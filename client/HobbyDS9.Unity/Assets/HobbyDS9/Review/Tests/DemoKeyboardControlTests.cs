@@ -242,6 +242,9 @@ namespace HobbyDS9.UnityReview.Tests
             Invoke(entry,"BindDemoKeyboard");Invoke(entry,"BindDemoKeyboard");Invoke(entry,"UnbindDemoKeyboard");Key(panelRoot,KeyCode.Tab);Assert.That(moves,Is.Zero);
             Invoke(entry,"BindDemoKeyboard");var parent=root.parent;root.RemoveFromHierarchy();Key(panelRoot,KeyCode.Tab);parent.Add(root);
             Assert.That(moves,Is.Zero,"Detached document must not translate panel Tab");
+            yield return null; // Reattached controls need their normal layout update before focus-ring traversal.
+            Assert.That(moves,Is.Zero);Assert.That(root.panel.visualTree,Is.SameAs(panelRoot));
+            Assert.That(doc.rootVisualElement,Is.SameAs(root));Assert.That(root.panel.focusController.focusedElement,Is.Null);
             Key(panelRoot,KeyCode.Tab);Assert.That(moves,Is.EqualTo(1));Assert.That(root.panel.focusController.focusedElement,Is.SameAs(root.Q<Button>("demo-menu")));
             Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(frame));yield return new ExitPlayMode();
         }
