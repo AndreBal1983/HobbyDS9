@@ -141,7 +141,11 @@ namespace HobbyDS9.UnityReview.Tests
                     Assert.That(copy,Does.Not.Contain("choose a fresh").And.Not.Contain("FRESH ORDER").And.Not.Contain("Fleets move on End turn").And.Not.Contain("Use Re-engage").And.Not.Contain("commit one round"));
                     Assert.That(root.Q<Label>("combat-own-current-stocks").text,Does.Contain("Hull").And.Contain("Torpedoes"));
                 });
-                Caption("Inspect ship");yield return null;Assert.That(model.Inspection(),Does.Contain("Hull"));
+                Caption("Inspect ship");yield return null;
+                var inspected=model.Current.Frame.OwnShips.Single(s=>s.Condition.ShipId==model.Current.SelectedShip);
+                Assert.That(model.Inspection(),Does.Contain("hull "+inspected.Condition.Hull+"/"+inspected.Condition.MaxHull),"technical inspection matches selected owned condition");
+                var inspectionText=doc.rootVisualElement.Q<ScrollView>("central-combat-details").contentContainer.Children().OfType<Label>().Single().text;
+                Assert.That(inspectionText,Does.Contain("Hull "+inspected.Condition.Hull+" / "+inspected.Condition.MaxHull),"displayed inspection matches selected owned condition");
                 Id("review-nav-Saves");yield return null;Assert.That(doc.rootVisualElement.Q<Button>("player-save").enabledInHierarchy,Is.True);
                 Assert.That(doc.rootVisualElement.Q<Button>("player-load").enabledInHierarchy,Is.True);
             }
