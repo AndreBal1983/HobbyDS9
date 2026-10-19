@@ -77,6 +77,16 @@ class BindingTests(unittest.TestCase):
         path.write_text(path.read_text().replace("guid: ", "guid: f"))
         self.assertTrue(any("Invalid keyboard source metadata" in x for x in checker.check(self.root)))
 
+    def test_document_only_keyboard_release_route_is_rejected(self):
+        path = self.assets / "Review/Runtime/ReviewEntry.Keyboard.cs"
+        path.write_text(path.read_text().replace("var next=currentPanel?.visualTree;", "var next=keyboardRoot;"))
+        self.assertTrue(any("release observation" in x for x in checker.check(self.root)))
+
+    def test_rebuild_cannot_clear_held_press_to_reenable_next_modal(self):
+        path = self.assets / "Review/Runtime/ReviewEntry.cs"
+        path.write_text(path.read_text().replace("UnbindDemoKeyboard();ReleasePanel();", "UnbindDemoKeyboard();ResetDemoKeyboard();ReleasePanel();"))
+        self.assertTrue(any("preserve a held press" in x for x in checker.check(self.root)))
+
 
 if __name__ == "__main__":
     unittest.main()

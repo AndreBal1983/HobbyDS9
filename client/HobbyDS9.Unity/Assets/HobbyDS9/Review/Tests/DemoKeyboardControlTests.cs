@@ -143,5 +143,47 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(root.panel.focusController.focusedElement,Is.SameAs(Confirm(root)),"scheduled menu focus cannot escape current modal");
             yield return new ExitPlayMode();
         }
+
+        [UnityTest] public IEnumerator PanelRootReleaseAfterActualStartRebuildAllowsLaterModalEnter()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            var start=doc.rootVisualElement.Q<Button>("demo-start");start.Focus();
+            var oldPanelRoot=doc.rootVisualElement.panel.visualTree;
+            Key(start,KeyCode.Return);yield return null;
+            var root=doc.rootVisualElement;var panelRoot=root.panel.visualTree;var frame=entry.Presentation!.Model.Current.Frame;
+            Assert.That(panelRoot,Is.Not.SameAs(oldPanelRoot),"Actual Start replaces the panel");
+            Assert.That(root.Q("demo-start"),Is.Null);Assert.That(root.Q("review-nav-Production"),Is.Not.Null);
+            Assert.That(root.panel.focusController.focusedElement,Is.Null,"Start leaves no focused child to receive release");
+            // Arrange the public UI event route used when no element is focused.
+            // This does not establish that OS/provider delivery emitted KeyUp.
+            Key(panelRoot,KeyCode.Return,true);
+            int accepted=0;Invoke(entry,"Confirm","Later purchase fixture",(Action)(()=>accepted++));
+            var confirm=Confirm(root);Assert.That(root.panel.focusController.focusedElement,Is.SameAs(confirm));
+            Key(confirm,KeyCode.Return);Assert.That(accepted,Is.EqualTo(1),"A distinct released press can confirm the later modal");
+            Assert.That(root.Q("review-one-use-confirmation"),Is.Null);Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(frame));
+            Key(panelRoot,KeyCode.Return,true);yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator PanelReleaseBindingRejectsOldDetachedAndRepeatedBindingsWithoutClearingHeldPress()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            var oldPanelRoot=doc.rootVisualElement.panel.visualTree;var start=doc.rootVisualElement.Q<Button>("demo-start");start.Focus();
+            Key(start,KeyCode.Return);yield return null;
+            var root=doc.rootVisualElement;var panelRoot=root.panel.visualTree;
+            Assert.That(panelRoot,Is.Not.SameAs(oldPanelRoot));
+            Invoke(entry,"BindDemoKeyboard");Invoke(entry,"BindDemoKeyboard");Invoke(entry,"BindDemoKeyboard");
+            Key(oldPanelRoot,KeyCode.Return,true);
+            int accepted=0;Invoke(entry,"Confirm","Held through replacement fixture",(Action)(()=>accepted++));var confirm=Confirm(root);
+            Key(confirm,KeyCode.Return);Assert.That(accepted,Is.Zero,"A release on an obsolete panel must not clear the current held press");
+            Invoke(entry,"UnbindDemoKeyboard");Key(panelRoot,KeyCode.Return,true);Invoke(entry,"BindDemoKeyboard");
+            Key(confirm,KeyCode.Return);Assert.That(accepted,Is.Zero,"Repeated binds must not leave a release callback after unbind");
+            var parent=root.parent;root.RemoveFromHierarchy();Key(panelRoot,KeyCode.Return,true);parent.Add(root);yield return null;
+            confirm.Focus();Key(confirm,KeyCode.Return);Assert.That(accepted,Is.Zero,"Detached document release cannot clear its held press");
+            Assert.That(root.Q("review-one-use-confirmation"),Is.Not.Null);
+            Key(panelRoot,KeyCode.Return,true);Key(confirm,KeyCode.Return);Assert.That(accepted,Is.EqualTo(1),"Reattachment observes release on its current panel");
+            Key(panelRoot,KeyCode.Return,true);yield return new ExitPlayMode();
+        }
     }
 }

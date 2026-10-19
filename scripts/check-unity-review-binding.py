@@ -51,6 +51,19 @@ def check(root):
             'new Button(guarded)' in entry and 'if(SubmitAlreadyPerformed()){if(enter)returnHeld=true;else spaceHeld=true;return;}' in keyboard and
             'WasPerformedThisFrame()' in keyboard and 'returnHeld' in keyboard and 'DemoKeyUp' in keyboard,
             "Keyboard buttons must share the guarded click and defer real Submit, with held-key suppression")
+    require('var next=currentPanel?.visualTree;' in keyboard and
+            'keyboardReleaseRoot?.RegisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);' in keyboard and
+            'keyboardReleaseRoot?.UnregisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);' in keyboard and
+            'RegisterCallback<AttachToPanelEvent>(DemoKeyboardAttached)' in keyboard and
+            'RegisterCallback<DetachFromPanelEvent>(DemoKeyboardDetached)' in keyboard and
+            'UnregisterCallback<AttachToPanelEvent>(DemoKeyboardAttached)' in keyboard and
+            'UnregisterCallback<DetachFromPanelEvent>(DemoKeyboardDetached)' in keyboard,
+            "Keyboard release observation must follow the current panel visual tree and detach with its document")
+    build_entry = entry.split('private void Build()', 1)[1].split('private void Navigate(', 1)[0]
+    require('ResetDemoKeyboard()' not in build_entry and
+            'returnHeld=false' not in keyboard.split('private void ResetDemoKeyboard()', 1)[0] and
+            'spaceHeld=false' not in keyboard.split('private void ResetDemoKeyboard()', 1)[0],
+            "Keyboard rebuild/binding must preserve a held press until release, not confirm a new modal")
     require('tab.wasPressedThisFrame' in keyboard and 'NavigationMoveEvent.GetPooled' in keyboard and
             'element is TextField||element is DropdownField' in keyboard and 'focused.SendEvent(navigation)' in keyboard and
             'InputSystem.Update(' not in keyboard and '.Enable(' not in keyboard and 'SetInputSystemProvider' not in keyboard,
