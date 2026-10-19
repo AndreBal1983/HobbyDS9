@@ -10,7 +10,7 @@ namespace HobbyDS9.Simulation
     {
         private void ValidateSave(CampaignTacticalReviewSaveDto s,IReadOnlyList<CombatRequestDto>? physicalRequests=null)
         {
-            Require(s != null && s.FormatVersion == CampaignTacticalReviewIdentity.SaveFormat && s.ProfileId == CampaignTacticalReviewIdentity.Profile
+            Require(s != null && s.FormatVersion == CampaignTacticalReviewIdentity.SaveFormat && s.ProfileId == (frontier==null?CampaignTacticalReviewIdentity.Profile:CampaignFrontierIdentity.EmbeddedCoreProfile)
                 && Hash(s.PackageHash) && s.ResolverId == CampaignTacticalReviewIdentity.Resolver && s.ResolverVersion == CampaignTacticalReviewIdentity.ResolverVersion
                 && s.Campaign != null && s.Pools != null && s.FleetSettings != null && s.Battles != null && s.AcceptedRoundCommands != null, "Invalid review save envelope.");
             FoundationValidator.ValidateSave(s.Campaign, definitions, compatibility).ThrowIfInvalid(nameof(s));
