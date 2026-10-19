@@ -1,5 +1,7 @@
 # Scenario identity hashes exact file bytes; preserve them across host platforms.
 scenarios/**/*.json text eol=lf
+# CPU candidate manifests pin exported payload bytes; keep this art-only scope.
+assets/art/galaxy-class-meshy-v2-runtime/**/*.json -text
 # Preserve the original demo pack's manifest-pinned asset bytes. Git policy
 # belongs outside Unity Assets, where every real asset requires metadata.
 client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/** -text

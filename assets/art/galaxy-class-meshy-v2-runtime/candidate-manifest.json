@@ -1,0 +1,82 @@
+{
+  "assetId": "fed.galaxy-meshy-v2.standin.v1",
+  "status": "CPU-prepared candidate; not Unity activated",
+  "ownerSourceCommit": "22a5ad955e3e45a01981b4bc7fedcdb256718b68",
+  "sourceGlbSha256": "3464ee3faa5aa4e41d01baf08d7403ebb28075a950dceb311b68e467660a67aa",
+  "files": [
+    {
+      "file": "derivative-manifest.json",
+      "bytes": 3785,
+      "sha256": "8b2688b63eb2c0966a28c496a87ca41a78a9ae9c3726688ee11e1a2bcbfd9e64"
+    },
+    {
+      "file": "Models/GalaxyMeshyV2_LOD0.fbx",
+      "bytes": 2292844,
+      "sha256": "0e9dac75f2b82ec90d49d926f03938ade4c13da1b97fe6b51cfbdf0af960d828"
+    },
+    {
+      "file": "Models/GalaxyMeshyV2_LOD1.fbx",
+      "bytes": 808796,
+      "sha256": "6feb4ac75637e12ffa8cfc85aa6db32c17cffcc6b94b83b85a8f12387f5d7c56"
+    },
+    {
+      "file": "Models/GalaxyMeshyV2_LOD2.fbx",
+      "bytes": 315596,
+      "sha256": "2c41498b50bc27801164d5fa62904c59809dd271f274bdc1b18d6fc1fa939adc"
+    },
+    {
+      "file": "Textures/BaseColor.jpg",
+      "bytes": 13730145,
+      "sha256": "4f6d73c8e9c75b95a9e9231248c5ec8d99cbc26f33777495516f114d4d1f29b7"
+    },
+    {
+      "file": "Textures/Normal.jpg",
+      "bytes": 9249889,
+      "sha256": "9f4eafd39b2593253cf7c1374159f82976434db7c6a4f0f21c2c17d6c9fa40ee"
+    },
+    {
+      "file": "Textures/Emission.jpg",
+      "bytes": 75606,
+      "sha256": "7ca6a2c097c5be26cb91a4fa9d078abf36a53702ead63a24dae16c6dee193342"
+    },
+    {
+      "file": "Textures/MetallicRoughness.jpg",
+      "bytes": 2056144,
+      "sha256": "7244ff813ac983464eed7d3572d3b11b91bb4a7d8549eb03f54ba626e1288c70"
+    },
+    {
+      "file": "Textures/MetallicSmoothness.png",
+      "bytes": 3210773,
+      "sha256": "c85c4b3183f8cb75975700ed93f99c340f7910cd0654f887407dc761c7b17a6e"
+    },
+    {
+      "file": "Validation/cpu-validation.json",
+      "bytes": 1330,
+      "sha256": "0e31e485ade49ffd55406d7ac8c94e09793dc21bd8d79b100118d7e139bf1708"
+    },
+    {
+      "file": "Validation/fbx-cpu-validation.json",
+      "bytes": 2100,
+      "sha256": "edf8c13a70db93bc4de766497075b1193e11568092d4b17f10e8c2211aa17156"
+    },
+    {
+      "file": "Validation/tangent-repair.json",
+      "bytes": 1098,
+      "sha256": "742ed241a9a307565248812e14527f1652f3c44a975a5a0772a1e3041487fb04"
+    }
+  ],
+  "scope": "Outside Unity Assets; no existing catalog, mapping, shaders or release assets changed",
+  "runtimeTextureInputs": [
+    "BaseColor.jpg",
+    "Normal.jpg",
+    "Emission.jpg",
+    "MetallicSmoothness.png"
+  ],
+  "sourceOnlyTexture": "MetallicRoughness.jpg retained for byte/channel provenance, not an added AO or runtime map",
+  "pending": [
+    "Receiving pinned Unity import/metas/material/prefab/LODs",
+    "Native finite unit tangent frames with UV-gradient fallback if needed",
+    "Texture-aware preview adapter and real textured graphics evidence",
+    "Explicit reversible appearance binding/activation by coordinator"
+  ]
+}
