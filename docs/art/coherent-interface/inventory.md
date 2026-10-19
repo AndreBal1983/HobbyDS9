@@ -8,12 +8,12 @@ Implemented means a scoped profile/source capability, not final native acceptanc
 
 ## Interaction flows
 
-- Startâ†’Continue(profile-compatible slots) or setupâ†’mode/faction/personality/difficultyâ†’procedural seed/density previewâ†’validationâ†’explicit start. A full generation preview is pre-campaign; it never reveals hidden later-campaign empires. Generator controls are proposed.
-- Map hover/focusâ†’inspect/pin; pan/zoom/filter alter presentation only. Select owned fleetâ†’known destinationâ†’route cost/ETA reviewâ†’explicit submitâ†’accepted order; invalid/unknown destinations retain accepted route. Partial-edge progress cannot be erased by a replacement. Sensor overlays separate current/stale/unobserved; no report means no guarantee of emptiness.
-- Worldâ†’economy/politics/yard; class libraryâ†’local design/components/profilesâ†’validationâ†’release only in a supported profileâ†’exact-revision construction. Current demo admits authored v2 Cruiser only; no v1 conversion. Research prerequisiteâ†’eligible Engineeringâ†’explicit developâ†’maturity does not promise unsupported construction.
-- Frontier arrival receiptâ†’body survey proposalâ†’study/mission choice. Surveyed uninhabited planetâ†’settler source/equipment/suppliesâ†’review expeditionâ†’actual deployment establishes claimâ†’multi-week establishment. Rival same-turn deployment pauses dispute; orbital victory is separate from ground control/integration. All settlement/conquest concepts remain future design.
-- Strategic fleets enter battle as separate command unitsâ†’Distant opening assembly inspectionâ†’standing versus unsent fleet maneuver/enemy-fleet preferenceâ†’round reviewâ†’explicit commitâ†’own receipt onlyâ†’authoritative filtered result/revealâ†’next round. Cinematic3D playback/camera never submits positions, orders, damage or time. No tactical sector-exit, manual steering or individual firing. Cloak protection consumes normal resources; all surviving cloaked ships reveal after round1, mutual cloak yields maneuver-only first round, no fourth round.
-- Battle completeâ†’whole-batch readinessâ†’atomic aftermath confirmation onceâ†’retained survivors/stocks/stopped routesâ†’fresh strategic order review/submit. Terminal outcomes permit inspection/save only. Save/load confirms consequences; failed load retains host/drafts. Settings/help never advance time.
+- Start → Continue(profile-compatible slots) or setup → mode/faction/personality/difficulty → procedural seed/density preview → validation → explicit start. A full generation preview is pre-campaign; it never reveals hidden later-campaign empires. Generator controls are proposed.
+- Map hover/focus → inspect/pin; pan/zoom/filter alter presentation only. Select owned fleet → known destination → route cost / known-steps review (no current ETA) → explicit submit → accepted order; invalid/unknown destinations retain accepted route. Partial-edge progress cannot be erased by a replacement. Sensor overlays separate current/stale/unobserved; no report means no guarantee of emptiness.
+- World → economy/politics/yard; class library → local design/components/profiles → validation → release only in a supported profile → exact-revision construction. Current demo admits authored v2 Cruiser only; no v1 conversion. Research prerequisite → eligible Engineering → explicit develop → maturity does not promise unsupported construction.
+- Frontier arrival receipt → body survey proposal → study/mission choice. Surveyed uninhabited planet → settler source/equipment/supplies → review expedition → actual deployment establishes claim → multi-week establishment. Rival same-turn deployment pauses dispute; orbital victory is separate from ground control/integration. All settlement/conquest concepts remain future design.
+- Strategic fleets enter battle as separate command units → Distant opening assembly inspection → standing versus unsent fleet maneuver/enemy-fleet preference → round review → explicit commit → own receipt only → authoritative filtered result/reveal → next round. Cinematic3D playback/camera never submits positions, orders, damage or time. No tactical sector-exit, manual steering or individual firing. Cloak protection consumes normal resources; all surviving cloaked ships reveal after round1, mutual cloak yields maneuver-only first round, no fourth round.
+- Battle complete → whole-batch readiness → atomic aftermath confirmation once → retained survivors/stocks/stopped routes → fresh strategic order review/submit. Terminal outcomes permit inspection/save only. Save/load confirms consequences; failed load retains host/drafts. Settings/help never advance time.
 
 ## Screen/state matrix
 
@@ -48,7 +48,7 @@ Every row receives distinct high-fidelity composition/state, annotated feature s
 |logistics|Infrastructure / freight and support|IMPLEMENTED (scoped profile)|Existing physical freight; expedition support accounting open|
 |production|Empire production / yards and queues|IMPLEMENTED (scoped profile)|Authored admitted v2 Cruiser construction implemented in demo|
 |queue|World production / exact revision / eligibility|IMPLEMENTED (scoped profile)|Queue payments completion cancellation implemented; custom-v2 conversion unsupported|
-|production-cancel|Cancel order / proportional refund review|IMPLEMENTED (scoped profile)|Existing profile cancellation; authority supplies actual refund|
+|production-cancel|Cancel selected production order|IMPLEMENTED (scoped profile)|Existing profile cancellation; no refund quote projection|
 |buyout|Expedite construction / eligible remaining work|AGREED DESIGN (future integration)|Emergency buyout direction agreed; costs/timing/eligibility open|
 |fleet|Fleet roster / ships and retained pools|IMPLEMENTED (scoped profile)|Actor-owned fleets and finite stocks implemented|
 |fleet-compose|Fleet composition / create transfer detach|PROPOSED|Strategic formation operations require scoped admission; no tactical split|
@@ -58,7 +58,7 @@ Every row receives distinct high-fidelity composition/state, annotated feature s
 |contact|Visible contact / hull and shields only|IMPLEMENTED (scoped profile)|Visible type hull shields; no enemy ammo fit or new orders|
 |science|Science / six-discipline allocation draft|IMPLEMENTED (scoped profile)|Science split six disciplines and explicit apply implemented|
 |engineering|Engineering / eligible target and maturity|IMPLEMENTED (scoped profile)|One target reserve cost and capped maturity; no assumed Scout construction|
-|research-report|Research receipts / prerequisites and deltas|IMPLEMENTED (scoped profile)|Existing projected latest-turn records; presentation proposed|
+|research-report|Research facts / illustrated progression|IMPLEMENTED (scoped profile)|Typed current facts exist; before/after progression shown here is illustrative, not a stored archive|
 |library|Class library / revision provenance|IMPLEMENTED (scoped profile)|Legacy blueprint registry implemented; current demo authored-v2 only|
 |designer|Ship designer / overview and capability|IMPLEMENTED (scoped profile)|Local v1 designer exists; not v2 construction authorisation|
 |designer-hull|Hull versions / fixed silhouette / capacity|IMPLEMENTED (scoped profile)|Hull catalogue local preview; Engineering version/refit policy separate|

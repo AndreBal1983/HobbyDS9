@@ -4,3 +4,5 @@
 
 input[type=range]{accent-color:var(--amber);padding:0;background:transparent} .map-tip{font-size:16px}
 @media(max-width:1450px){button,select,input{font-size:18px}.stock-grid div,.card small,.field label{font-size:16px}[data-screen=science] td{padding:2px 9px}[data-screen=science] th{padding:8px 9px}[data-screen=science] .tabbar{margin-bottom:8px}.navigation button{font-size:16px}.header-facts .muted{display:none}}
+
+.battle-center.completed{display:flex;flex-direction:column;height:auto;overflow:visible}.battle-center.completed>div{flex:0 0 auto}.battle-center.completed .battle-view{height:220px;min-height:220px}

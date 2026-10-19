@@ -217,11 +217,11 @@
   },
   {
     "id": "production-cancel",
-    "title": "Cancel order / proportional refund review",
+    "title": "Cancel selected production order",
     "family": "Production",
     "status": "I",
     "statusLabel": "IMPLEMENTED (scoped profile)",
-    "scope": "Existing profile cancellation; authority supplies actual refund"
+    "scope": "Existing profile cancellation; no refund quote projection"
   },
   {
     "id": "buyout",
@@ -297,11 +297,11 @@
   },
   {
     "id": "research-report",
-    "title": "Research receipts / prerequisites and deltas",
+    "title": "Research facts / illustrated progression",
     "family": "Research",
     "status": "I",
     "statusLabel": "IMPLEMENTED (scoped profile)",
-    "scope": "Existing projected latest-turn records; presentation proposed"
+    "scope": "Typed current facts exist; before/after progression shown here is illustrative, not a stored archive"
   },
   {
     "id": "library",

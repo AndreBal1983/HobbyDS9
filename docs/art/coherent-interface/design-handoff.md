@@ -34,7 +34,7 @@ Hover/focus is temporary; click/Enter pins known-node inspection. Wheel/zoom/fit
 flowchart LR
  A[Known map / own outliner] --> B[Hover or focus / pin known region]
  B --> C[Select owned fleet]
- C --> D[Known route preview / authority cost ETA]
+ C --> D[Known route preview / projected cost / known steps (current demo has no ETA)]
  D --> E[Review / explicit strategic submission]
  E --> F[Accepted order / actual intermediate transit]
  F --> G[Lawful contact / owned encounter]
@@ -79,3 +79,5 @@ Reuse the project-owned generated backdrop and freshly authored procedural cruis
 4. Resolve generator topology/cost policy and fairness; sensor uncertainty/timing; event-to-art mapping/playback defaults; v1 versus authored-v2 publication/refit; colony quantities/supply/dispute lifecycle; treaty terms/refusal/rights; and full-campaign difficulty/search budgets. None is approved by selecting a mockup.
 
 Research inspiration: [root-delegated4X gameplay report at exact a294bc4](https://github.com/AndreBal1983/HobbyDS9/blob/a294bc4068f6c0791475edc4ff724737554d5443/docs/research/4x-gameplay-inspiration-2026-10-19.md). Its researcher actually viewed paused frames; this art pass used that report rather than claiming independent video viewing. Applied ideas are stable object context, explicit next action, production/pay/completion distinctions, truthful research payoff and strategic→battle→aftermath continuity. No branded artwork, era reset, tile combat, old Stellaris planet tiles, arbitrary fleet cap or new physics rule was imported.
+
+Secondary review corrections: selected Bajor shows Bajoran permitted bodies, while Earth/Mars yard actions retain their own context. Fleet stock panels explicitly identify the selected own ship. Hold/maintain distance is one maneuver, with Fighting withdrawal separately available; retain/clear target preference are distinct even with no visible target. Aftermath prioritizes own survivors/losses and retained pools for the selected current-session encounter. Saved campaigns expose current stocks, not a stored battle-report archive. Current route offers contain cost/steps without ETA; cancellation has no refund quote projection; illustrated research before/after pairs are not a generic receipt archive.
