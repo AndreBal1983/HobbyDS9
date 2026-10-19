@@ -74,6 +74,42 @@ public sealed class FrontierTests
         var other=CampaignFrontierApplication.StartPackage(changed);Advance(other);
         Assert.Equal(Json(start.Fleets!.Single(f=>f.FleetId==FB).RouteNodeIds),Json(other.ExportFrontierSave().Integrated!.Physical!.MovementProof!.Start.Fleets!.Single(f=>f.FleetId==FB).RouteNodeIds));
     }
+    [Fact] public void LegalRoundCommitOrderPreservesAuthoritativeOutcomeAndTrueProvenanceOrder()
+    {
+        var package=CombatPackage();
+        (CampaignFrontierSaveDto Resolved,CampaignFrontierSaveDto Final) Run(bool reverse)
+        {
+            var app=CampaignFrontierApplication.StartPackage(package);
+            Route(app,"nav.bajor","nav.badlands");Advance(app);
+            Assert.Single(app.GetEncounters(A));ResolveRounds(app,reverse);
+            var resolved=app.ExportFrontierSave();
+            Assert.True(app.CaptureStatus().CanFinalizeBatch);
+            Assert.Equal(Json(resolved),Json(CampaignFrontierApplication.LoadSave(package,Clone(resolved)).ExportFrontierSave()));
+            var stamp=app.CaptureStatus();Assert.True(app.FinalizeBatch(stamp.Turn,stamp.CampaignRevision).Accepted);
+            var final=app.ExportFrontierSave();
+            Assert.Equal(Json(final),Json(CampaignFrontierApplication.LoadSave(package,Clone(final)).ExportFrontierSave()));
+            return (resolved,final);
+        }
+        var canonical=Run(false);var reversed=Run(true);
+        // Compare frozen battles, resolved round traces/RNG/stocks, then committed
+        // strategic aftermath and discoveries. Provenance is a separate ordered input.
+        Assert.Equal(Json(canonical.Resolved.Integrated),Json(reversed.Resolved.Integrated));
+        Assert.Equal(Json(canonical.Final.Integrated),Json(reversed.Final.Integrated));
+        Assert.Equal(Json(canonical.Final.Discoveries),Json(reversed.Final.Discoveries));
+        Assert.NotEmpty(canonical.Final.Discoveries!);
+        foreach(var pair in new[]{(Save:canonical.Final,Actors:new[]{A,B}),(Save:reversed.Final,Actors:new[]{B,A})})
+        {
+            var rounds=pair.Save.Transcript!.Where(o=>o.Kind==FrontierOperationKind.Round).ToList();
+            Assert.NotEmpty(rounds);
+            foreach(var round in rounds.GroupBy(o=>(o.Round!.EncounterId,o.Round.ExpectedRound)))
+                Assert.Equal(pair.Actors,round.Select(o=>o.Round!.ActorId));
+        }
+        // Same accepted payloads/stamps/IDs, in genuinely different legal orders.
+        Assert.Equal(canonical.Final.Transcript!.Select(Json).OrderBy(s=>s,StringComparer.Ordinal),
+            reversed.Final.Transcript!.Select(Json).OrderBy(s=>s,StringComparer.Ordinal));
+        Assert.NotEqual(Json(canonical.Final.Transcript),Json(reversed.Final.Transcript));
+        Assert.NotEqual(Json(canonical.Final),Json(reversed.Final));
+    }
     [Theory][InlineData(false)][InlineData(true)]
     public void HumanAndTrustedAiUnknownRoutesShareGameplayLegality(bool ai)
     {
