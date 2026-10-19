@@ -12,19 +12,40 @@ namespace HobbyDS9.UnityReview
         // no corresponding InputSystem navigation action. No polling/dispatch
         // loop, provider replacement, action enablement or gameplay shortcut.
         private VisualElement? keyboardRoot;
+        private VisualElement? keyboardReleaseRoot;
         private bool returnHeld,spaceHeld;
         private void BindDemoKeyboard()
         {
+            UnbindDemoKeyboard();
             if(!model!.SingleplayerDemo)return;
             keyboardRoot=root;
             keyboardRoot!.RegisterCallback<KeyDownEvent>(DemoTab);
-            keyboardRoot.RegisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);
+            keyboardRoot.RegisterCallback<AttachToPanelEvent>(DemoKeyboardAttached);
+            keyboardRoot.RegisterCallback<DetachFromPanelEvent>(DemoKeyboardDetached);
+            BindDemoKeyboardRelease(keyboardRoot.panel);
         }
         private void UnbindDemoKeyboard()
         {
             keyboardRoot?.UnregisterCallback<KeyDownEvent>(DemoTab);
-            keyboardRoot?.UnregisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);
+            keyboardRoot?.UnregisterCallback<AttachToPanelEvent>(DemoKeyboardAttached);
+            keyboardRoot?.UnregisterCallback<DetachFromPanelEvent>(DemoKeyboardDetached);
+            BindDemoKeyboardRelease(null);
             keyboardRoot=null;
+        }
+        private void DemoKeyboardAttached(AttachToPanelEvent e)
+        {if(ReferenceEquals(e.target,keyboardRoot))BindDemoKeyboardRelease(e.destinationPanel);}
+        private void DemoKeyboardDetached(DetachFromPanelEvent e)
+        {if(ReferenceEquals(e.target,keyboardRoot))BindDemoKeyboardRelease(null);}
+        private void BindDemoKeyboardRelease(IPanel? currentPanel)
+        {
+            // With no focused child, UI Toolkit routes release to the panel
+            // visual tree, outside the document subtree. Observe release only;
+            // held presses remain latched across document/panel replacement.
+            var next=currentPanel?.visualTree;
+            if(ReferenceEquals(next,keyboardReleaseRoot))return;
+            keyboardReleaseRoot?.UnregisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);
+            keyboardReleaseRoot=next;
+            keyboardReleaseRoot?.RegisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);
         }
         private void ResetDemoKeyboard(){returnHeld=false;spaceHeld=false;}
         private void OnApplicationFocus(bool focused){if(!focused)ResetDemoKeyboard();}
