@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
+using HobbyDS9.Contracts;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -184,6 +185,125 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(root.Q("review-one-use-confirmation"),Is.Not.Null);
             Key(panelRoot,KeyCode.Return,true);Key(confirm,KeyCode.Return);Assert.That(accepted,Is.EqualTo(1),"Reattachment observes release on its current panel");
             Key(panelRoot,KeyCode.Return,true);yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator UnfocusedPanelTabAfterActualEndTurnConfirmationUsesNormalForwardAndReverseRing()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            var start=doc.rootVisualElement.Q<Button>("demo-start");
+            using(var e=NavigationSubmitEvent.GetPooled()){e.target=start;start.SendEvent(e);}yield return null;
+            var model=entry.Presentation!.Model;var before=model.Current.Frame;var oldPanelRoot=doc.rootVisualElement.panel.visualTree;
+            var endTurn=doc.rootVisualElement.Q<Button>("player-primary-action");
+            using(var e=NavigationSubmitEvent.GetPooled()){e.target=endTurn;endTurn.SendEvent(e);}
+            var confirm=Confirm(doc.rootVisualElement);Assert.That(doc.rootVisualElement.panel.focusController.focusedElement,Is.SameAs(confirm));
+            Key(confirm,KeyCode.Return);yield return null;
+            var root=doc.rootVisualElement;var panelRoot=root.panel.visualTree;var accepted=model.Current.Frame;
+            Assert.That(accepted.Status.Turn,Is.EqualTo(before.Status.Turn+1));Assert.That(panelRoot,Is.Not.SameAs(oldPanelRoot));
+            Assert.That(root.panel.focusController.focusedElement,Is.Null,"Accepted confirmation rebuild leaves no focused child");
+            Key(panelRoot,KeyCode.Return,true);int moves=0;panelRoot.RegisterCallback<NavigationMoveEvent>(_=>moves++,TrickleDown.TrickleDown);
+            Key(panelRoot,KeyCode.Tab);
+            // Menu is the first eligible control in the existing navigation;
+            // End turn is the final enabled footer control. Product code does
+            // not select either: normal runtime focus-ring events must do so.
+            Assert.That(root.panel.focusController.focusedElement,Is.SameAs(root.Q<Button>("demo-menu")));Assert.That(moves,Is.EqualTo(1));
+            Key(root.Q<Button>("demo-menu"),KeyCode.Tab,false,EventModifiers.Shift);
+            endTurn=root.Q<Button>("player-primary-action");Assert.That(root.panel.focusController.focusedElement,Is.SameAs(endTurn));Assert.That(moves,Is.EqualTo(2));
+            endTurn.Blur();Assert.That(root.panel.focusController.focusedElement,Is.Null);
+            Key(panelRoot,KeyCode.Tab,false,EventModifiers.Shift);Assert.That(root.panel.focusController.focusedElement,Is.SameAs(endTurn));Assert.That(moves,Is.EqualTo(3));
+            Assert.That(model.Current.Frame,Is.SameAs(accepted));Assert.That(model.HasLocalEdits,Is.False);Assert.That(root.Q("review-one-use-confirmation"),Is.Null);
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator UnfocusedPanelTabDefersModifiersRawInputOldPanelAndDetachedDocument()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();var oldPanelRoot=doc.rootVisualElement.panel.visualTree;
+            var start=doc.rootVisualElement.Q<Button>("demo-start");using(var e=NavigationSubmitEvent.GetPooled()){e.target=start;start.SendEvent(e);}yield return null;
+            var root=doc.rootVisualElement;var panelRoot=root.panel.visualTree;var frame=entry.Presentation!.Model.Current.Frame;
+            Assert.That(root.panel.focusController.focusedElement,Is.Null);int moves=0;panelRoot.RegisterCallback<NavigationMoveEvent>(_=>moves++,TrickleDown.TrickleDown);
+            foreach(var modifiers in new[]{EventModifiers.Control,EventModifiers.Alt,EventModifiers.Command})Key(panelRoot,KeyCode.Tab,false,modifiers);
+            Key(oldPanelRoot,KeyCode.Tab);Assert.That(moves,Is.Zero);Assert.That(root.panel.focusController.focusedElement,Is.Null);
+            var keyboard=InputSystem.AddDevice<Keyboard>("DemoUnfocusedTab");var priorRouting=InputSystem.settings.editorInputBehaviorInPlayMode;
+            var priorBackground=InputSystem.settings.backgroundBehavior;var priorRun=UnityEngine.Application.runInBackground;
+            try
+            {
+                UnityEngine.Application.runInBackground=true;InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
+                InputSystem.settings.editorInputBehaviorInPlayMode=InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState(UnityEngine.InputSystem.Key.Tab));InputSystem.Update();Assert.That(keyboard.tabKey.wasPressedThisFrame,Is.True);
+                Key(panelRoot,KeyCode.Tab);Assert.That(moves,Is.Zero,"Raw Tab owns navigation even without a focused child");
+                Assert.That(root.panel.focusController.focusedElement,Is.Null);
+            }
+            finally
+            {
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState());InputSystem.Update();InputSystem.RemoveDevice(keyboard);
+                InputSystem.settings.editorInputBehaviorInPlayMode=priorRouting;InputSystem.settings.backgroundBehavior=priorBackground;UnityEngine.Application.runInBackground=priorRun;
+            }
+            Invoke(entry,"BindDemoKeyboard");Invoke(entry,"BindDemoKeyboard");Invoke(entry,"UnbindDemoKeyboard");Key(panelRoot,KeyCode.Tab);Assert.That(moves,Is.Zero);
+            Invoke(entry,"BindDemoKeyboard");var parent=root.parent;root.RemoveFromHierarchy();Key(panelRoot,KeyCode.Tab);parent.Add(root);
+            Assert.That(moves,Is.Zero,"Detached document must not translate panel Tab");
+            yield return null; // Reattached controls need their normal layout update before focus-ring traversal.
+            Assert.That(moves,Is.Zero);Assert.That(root.panel.visualTree,Is.SameAs(panelRoot));
+            Assert.That(doc.rootVisualElement,Is.SameAs(root));Assert.That(root.panel.focusController.focusedElement,Is.Null);
+            Key(panelRoot,KeyCode.Tab);Assert.That(moves,Is.EqualTo(1));Assert.That(root.panel.focusController.focusedElement,Is.SameAs(root.Q<Button>("demo-menu")));
+            Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(frame));yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator ReleasedReturnAfterFailedLoadDrawAndNavigationCanConfirmCombatRound()
+            =>FailedLoadDrawAndNavigationReturn(true);
+
+        [UnityTest] public IEnumerator HeldReturnAfterFailedLoadDrawAndNavigationCannotConfirmCombatRound()
+            =>FailedLoadDrawAndNavigationReturn(false);
+
+        private static IEnumerator FailedLoadDrawAndNavigationReturn(bool releaseBeforeNavigation)
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            void Click(Button button)
+            {
+                Assert.That(button,Is.Not.Null);Assert.That(button.enabledInHierarchy,Is.True);
+                using(var e=NavigationSubmitEvent.GetPooled()){e.target=button;button.SendEvent(e);}
+            }
+            void Id(string id)=>Click(doc.rootVisualElement.Q<Button>(id));
+            Id("demo-start");yield return null;var model=entry.Presentation!.Model;
+            Assert.That(model.Enqueue("colony.sol","ship-design.source-cruiser",ReviewUiModel.NewCommandId()),Is.True);
+            Assert.That(model.Enqueue("colony.sol","ship-design.source-cruiser",ReviewUiModel.NewCommandId()),Is.True);
+            Assert.That(model.AllocateResearch(450,ReviewUiModel.NewCommandId()),Is.True);
+            while(model.Current.Frame.Status.Turn<5)Assert.That(model.Advance(),Is.True);
+            Assert.That(model.Current.Frame.OwnShips.Count,Is.EqualTo(3));var fleet=model.Current.Frame.OwnStrategicFleets.Single().FleetId.Value;
+            Assert.That(model.DraftTravel(fleet,CampaignTravelIntent.Leave,"nav.bajor",null),Is.True);
+            Assert.That(model.SendTravel(ReviewUiModel.NewCommandId()),Is.True);Assert.That(model.Advance(),Is.True);
+            var battle=model.Current.Frame.Battle;Assert.That(battle,Is.Not.Null);
+            foreach(var order in battle!.StandingOrders.Where(o=>o.CanOrder))
+                Assert.That(model.DraftFleet(order.FleetId,CampaignFleetManeuver.Charge,battle.LegalFocusFleetIds.FirstOrDefault(),false),Is.True);
+            Assert.That(model.HasLocalEdits,Is.True);var controller=model.Current;var frame=controller.Frame;
+            var draft=controller.Draft.Select(o=>o.Fleet+"|"+o.Maneuver+"|"+o.Focus).ToArray();Assert.That(draft,Is.Not.Empty);
+            Invoke(entry,"Build");Id("review-nav-Saves");yield return null;
+            // Unique absent slot; never load, overwrite or inspect an owner's slots.
+            typeof(ReviewEntry).GetField("slotName",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,"missing-"+Guid.NewGuid().ToString("N").Substring(0,8));Invoke(entry,"Draw");
+            var panelBeforeLoad=doc.rootVisualElement.panel.visualTree;Id("player-load");var loadConfirm=Confirm(doc.rootVisualElement);
+            Assert.That(doc.rootVisualElement.panel.focusController.focusedElement,Is.SameAs(loadConfirm));Key(loadConfirm,KeyCode.Return);yield return null;
+            Assert.That(model.Current,Is.SameAs(controller));Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(model.HasLocalEdits,Is.True);
+            Assert.That(controller.Draft.Select(o=>o.Fleet+"|"+o.Maneuver+"|"+o.Focus),Is.EqualTo(draft));
+            Assert.That(doc.rootVisualElement.Q<Label>("save-load-result").text,Does.Contain("empty").And.Contain("unsent edits are unchanged"));
+            Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
+            Assert.That(doc.rootVisualElement.panel.visualTree,Is.SameAs(panelBeforeLoad),"Failed load redraw keeps this panel");
+            if(releaseBeforeNavigation)Key(panelBeforeLoad,KeyCode.Return,true);
+            Id("review-nav-Combat");yield return null;
+            Assert.That(doc.rootVisualElement.panel.visualTree,Is.Not.SameAs(panelBeforeLoad),"Navigation rebuild replaces the panel");
+            var review=doc.rootVisualElement.Query<Button>().ToList().Single(b=>b.text=="Review / commit round "+battle.Round);Click(review);
+            var commitConfirm=Confirm(doc.rootVisualElement);Assert.That(doc.rootVisualElement.panel.focusController.focusedElement,Is.SameAs(commitConfirm));
+            Key(commitConfirm,KeyCode.Return);
+            if(!releaseBeforeNavigation)
+            {
+                Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(model.HasLocalEdits,Is.True);
+                Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null,"Held load-confirm key cannot commit the later round");
+                Key(doc.rootVisualElement.panel.visualTree,KeyCode.Return,true);Key(commitConfirm,KeyCode.Return);
+            }
+            Assert.That(model.Current.Frame,Is.Not.SameAs(frame));Assert.That(model.Current.Draft,Is.Empty);
+            Assert.That(model.Current.Frame.Battle!.Reports.Select(r=>r.Round).Distinct().ToArray(),Is.EqualTo(new[]{battle.Round}),"Exactly one reviewed round was committed");
+            Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
+            Key(doc.rootVisualElement.panel.visualTree,KeyCode.Return,true);yield return new ExitPlayMode();
         }
     }
 }

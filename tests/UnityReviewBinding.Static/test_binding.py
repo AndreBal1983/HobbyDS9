@@ -87,6 +87,16 @@ class BindingTests(unittest.TestCase):
         path.write_text(path.read_text().replace("UnbindDemoKeyboard();ReleasePanel();", "UnbindDemoKeyboard();ResetDemoKeyboard();ReleasePanel();"))
         self.assertTrue(any("preserve a held press" in x for x in checker.check(self.root)))
 
+    def test_unfocused_tab_cannot_handle_other_event_targets(self):
+        path = self.assets / "Review/Runtime/ReviewEntry.Keyboard.cs"
+        path.write_text(path.read_text().replace("ReferenceEquals(e.target,keyboardReleaseRoot)", "true"))
+        self.assertTrue(any("Unfocused Tab" in x for x in checker.check(self.root)))
+
+    def test_unfocused_tab_cannot_leave_a_stale_panel_subscription(self):
+        path = self.assets / "Review/Runtime/ReviewEntry.Keyboard.cs"
+        path.write_text(path.read_text().replace("keyboardReleaseRoot?.UnregisterCallback<KeyDownEvent>(DemoUnfocusedTab);", ""))
+        self.assertTrue(any("Unfocused Tab" in x for x in checker.check(self.root)))
+
 
 if __name__ == "__main__":
     unittest.main()
