@@ -315,7 +315,7 @@ namespace HobbyDS9.UnityReview.Tests
             RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
             var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
             var start=doc.rootVisualElement.Q<Button>("demo-start");using(var e=NavigationSubmitEvent.GetPooled()){e.target=start;start.SendEvent(e);}yield return null;
-            var nav=doc.rootVisualElement.Q<Button>("review-nav-FleetOrders");using(var e=NavigationSubmitEvent.GetPooled()){e.target=nav;nav.SendEvent(e);}yield return null;
+            var nav=doc.rootVisualElement.Q<Button>("review-nav-Combat");using(var e=NavigationSubmitEvent.GetPooled()){e.target=nav;nav.SendEvent(e);}yield return null;
             var root=doc.rootVisualElement;var originalPanel=root.panel.visualTree;var frame=entry.Presentation!.Model.Current.Frame;
             var inspection=root.Query<Button>().ToList().Single(b=>b.text=="Inspection");inspection.Focus();Key(inspection,KeyCode.Return);
             Assert.That(root.Contains(inspection),Is.False);Assert.That(inspection.panel,Is.SameAs(originalPanel.panel));
@@ -329,20 +329,49 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(frame));yield return new ExitPlayMode();
         }
 
-        [UnityTest] public IEnumerator QueuedOldPanelReleaseTimestampCannotClearNewerButtonPress()
+        [UnityTest] public IEnumerator PublicDispatchReleaseUsesDeliveryTimeAndPreservesHeldRepeatProtection()
         {
             RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
             var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var root=entry.GetComponent<UIDocument>().rootVisualElement;
             int count=0;var button=Add(entry,root,()=>count++);button.Focus();Key(button,KeyCode.Return);Key(button,KeyCode.Return,true);
-            // Public pooled-event timestamps; no setter/reflection or fabricated time.
-            using(var stale=KeyUpEvent.GetPooled(new Event{type=EventType.KeyUp,keyCode=KeyCode.Return}))
+            // Pooled creation is unstamped. Panel.SendEvent assigns DELIVERY time;
+            // waiting before sending does not create an earlier queued release.
+            // Inspect only our own fields, never private engine state or setters.
+            object? Own(string name)=>typeof(ReviewEntry).GetField(name,BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry);
+            int focusLossSignals=0;
+            void Trace(string stage,long timestamp)=>Debug.Log("KEY-RELEASE-DISPATCH "+stage+" timestamp="+timestamp
+                +" held="+Own("returnHeld")+" started="+Own("returnStarted")
+                +" originMatches="+ReferenceEquals(Own("returnOrigin"),button)+" count="+count
+                +" buttonFocused="+ReferenceEquals(root.panel.focusController.focusedElement,button)
+                +" applicationFocused="+UnityEngine.Application.isFocused+" focusLossSignals="+focusLossSignals
+                +" submitPerformed="+(InputSystem.actions?.FindAction("UI/Submit",false)?.WasPerformedThisFrame()==true));
+            using(var release=KeyUpEvent.GetPooled(new Event{type=EventType.KeyUp,keyCode=KeyCode.Return}))
             {
-                yield return null;yield return null;long started=0;
-                button.RegisterCallback<KeyDownEvent>(e=>started=e.timestamp,TrickleDown.TrickleDown);
-                Key(button,KeyCode.Return);Assert.That(started,Is.GreaterThan(stale.timestamp));
-                stale.target=root.panel.visualTree;root.panel.visualTree.SendEvent(stale);Key(button,KeyCode.Return);
-                Assert.That(count,Is.EqualTo(2),"a queued release from before the current hold cannot release it");
-                Key(button,KeyCode.Return,true);Key(button,KeyCode.Return);Assert.That(count,Is.EqualTo(3));Key(button,KeyCode.Return,true);
+                long created=release.timestamp,started=0,received=-1;var panelRoot=root.panel.visualTree;
+                EventCallback<KeyUpEvent> observe=e=>{if(ReferenceEquals(e,release))received=e.timestamp;Trace(ReferenceEquals(e,release)?"inside-panel-trickle":"other-keyup",e.timestamp);};
+                Action<bool> focusChanged=focused=>{if(!focused)focusLossSignals++;Trace("application-focus-"+focused,release.timestamp);};
+                button.RegisterCallback<KeyDownEvent>(e=>{started=e.timestamp;Trace("button-keydown",e.timestamp);},TrickleDown.TrickleDown);
+                panelRoot.RegisterCallback(observe,TrickleDown.TrickleDown);UnityEngine.Application.focusChanged+=focusChanged;
+                try
+                {
+                    Trace("pooled-before-wait",release.timestamp);Assert.That(created,Is.Zero,"public pooled event has no delivery timestamp yet");
+                    yield return null;yield return null;
+                    Key(button,KeyCode.Return);Trace("after-current-keydown",release.timestamp);
+                    Assert.That(count,Is.EqualTo(2));Assert.That(Own("returnHeld"),Is.EqualTo(true));
+                    Assert.That(Own("returnOrigin"),Is.SameAs(button));Assert.That(Own("returnStarted"),Is.EqualTo(started));
+                    Assert.That(started,Is.GreaterThan(created));Assert.That(release.timestamp,Is.EqualTo(created));
+                    long acceptedStarted=started;
+                    Key(button,KeyCode.Return);Assert.That(count,Is.EqualTo(2),"held repeat is blocked before any release dispatch");
+                    Assert.That(Own("returnStarted"),Is.EqualTo(acceptedStarted),"suppressed repeat cannot replace the accepted hold");
+                    Assert.That(Own("returnOrigin"),Is.SameAs(button));
+                    Trace("before-send",release.timestamp);release.target=panelRoot;panelRoot.SendEvent(release);Trace("after-send",release.timestamp);
+                    Assert.That(received,Is.GreaterThanOrEqualTo(acceptedStarted),"panel assigns current delivery time before callbacks");
+                    Assert.That(release.timestamp,Is.EqualTo(received));Assert.That(release.timestamp,Is.GreaterThan(created));
+                    Assert.That(Own("returnHeld"),Is.EqualTo(false));Assert.That(Own("returnOrigin"),Is.Null);Assert.That(count,Is.EqualTo(2));
+                    Key(button,KeyCode.Return);Key(button,KeyCode.Return);Assert.That(count,Is.EqualTo(3),"one new activation after the delivered release; repeated down remains blocked");
+                    Key(button,KeyCode.Return,true);Trace("after-final-release",release.timestamp);Assert.That(Own("returnHeld"),Is.EqualTo(false));
+                }
+                finally{panelRoot.UnregisterCallback(observe,TrickleDown.TrickleDown);UnityEngine.Application.focusChanged-=focusChanged;}
             }
             yield return new ExitPlayMode();
         }
