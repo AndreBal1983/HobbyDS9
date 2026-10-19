@@ -7,6 +7,7 @@
     <ProjectReference Include="$(RepoRoot)/prototypes/HobbyDS9.TacticalReviewClient/HobbyDS9.TacticalReviewClient.csproj" />
     <Reference Include="Newtonsoft.Json"><HintPath>$(UnityNewtonsoftPath)</HintPath><Private>false</Private></Reference>
     <Reference Include="HobbyDS9.ArtDemo"><HintPath>$(UnityArtDemoPath)</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.InputSystem"><HintPath>$(UnityInputSystemPath)</HintPath><Private>false</Private></Reference>
     <Compile Include="$(RepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/*.cs" Link="ActualUnitySource/%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>
