@@ -49,7 +49,7 @@ namespace HobbyDS9.TacticalReviewClient
             var battle=encounter != null && encounters.Contains(encounter,StringComparer.Ordinal) ? candidate.Observe(encounter,actor) : null;
             var own=battle?.OwnShips ?? candidate.InspectOwnShips(actor);
             var travel=new PhysicalTravelView(candidate.GetOwnTravelOrders(actor),candidate.GetOwnTravelReceipts(actor),candidate.GetKnownContacts(actor));
-            return new ReviewFrame(id,epoch,actor,status,encounters,own,candidate.GetFleetCloakSettings(actor),candidate.GetOwnStrategicFleets(actor),battle,travel,(candidate as ICampaignIntegratedPlaytestSession)?.CaptureStrategy(actor),(candidate as ICampaignSingleplayerDemoSession)?.CaptureDemo());
+            return new ReviewFrame(id,epoch,actor,status,encounters,own,candidate.GetFleetCloakSettings(actor),candidate.GetOwnStrategicFleets(actor),battle,travel,(candidate as ICampaignIntegratedPlaytestSession)?.CaptureStrategy(actor),(candidate as ICampaignSingleplayerDemoSession)?.CaptureDemo(),(candidate as ICampaignFrontierSession)?.CaptureDiscovery(actor));
         }
         public ReviewFrame Read(string actor,string? encounter=null)
         { lock(gate) return Capture(session,actor,encounter,generation); }
@@ -101,6 +101,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(frontierPackage!=null)return SaveFrontierCommitted();
                 if(demoPackage!=null)return SaveDemoCommitted();
                 if(integratedPackage!=null)return SaveIntegratedCommitted();
                 var save=codec.CopySave(session.ExportSave()); var number=checked(nextSave+1);
@@ -112,6 +113,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(frontierPackage!=null)return LoadFrontierCommitted(handle,actor,encounter);
                 if(demoPackage!=null)return LoadDemoCommitted(handle,actor,encounter);
                 if(integratedPackage!=null)return LoadIntegratedCommitted(handle,actor,encounter);
                 if(handle.HostId != id || !saves.TryGetValue(handle.Id,out var save)) throw new ArgumentException("Unknown private physical checkpoint.");
@@ -124,6 +126,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(frontierPackage!=null)return SaveFrontierToSlot(slot,overwrite);
                 if(demoPackage!=null)return SaveDemoToSlot(slot,overwrite);
                 if(integratedPackage!=null)return SaveIntegratedToSlot(slot,overwrite);
                 if(store == null) return new ReviewCheckpointResult(ReviewCheckpointError.NoStore);
@@ -140,6 +143,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(frontierPackage!=null)return LoadFrontierFromSlot(slot,actor,encounter);
                 if(demoPackage!=null)return LoadDemoFromSlot(slot,actor,encounter);
                 if(integratedPackage!=null)return LoadIntegratedFromSlot(slot,actor,encounter);
                 if(store == null) return new ReviewCheckpointResult(ReviewCheckpointError.NoStore);
@@ -174,6 +178,12 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(frontierPackage!=null)
+                {
+                    if(frontierStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var frontierOpened=OpenFrontierFromSlot(frontierPackage,frontierCodec!,frontierStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(frontierOpened.Error,frontierOpened.Host,frontierOpened.Frame);
+                }
                 if(demoPackage!=null)
                 {
                     if(demoStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
