@@ -61,7 +61,7 @@ namespace HobbyDS9.UnityReview
             if(!ships.Contains(selectedShip))selectedShip=ships.FirstOrDefault()??"";
             var ship=demo?LabeledChoice("Inspect ship / contact",ships,selectedShip,id=>readable.Ship(frame,id),id=>{selectedShip=id;Render();}):Choice("Owned or visible ship",ships);
             if(!demo){ship.SetValueWithoutNotify(string.IsNullOrEmpty(selectedShip)?"none":selectedShip);ship.RegisterValueChangedCallback(e=>selectedShip=e.newValue);}ship.name="combat-ship-picker";roster.Add(ship);
-            button(roster,"Inspect selected ship",()=>perform(()=>{model.Inspect(selectedShip);tab="inspection";})).SetEnabled(ships.Count>0);
+            button(roster,demo?"Inspect ship":"Inspect selected ship",()=>perform(()=>{model.Inspect(selectedShip);tab="inspection";})).SetEnabled(ships.Count>0);
             if(frame.Encounters.Count>0)
             {
                 var encounterIds=frame.Encounters.ToList();var selectedEncounter=battle?.EncounterId??encounterIds[0];

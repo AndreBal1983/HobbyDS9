@@ -84,7 +84,7 @@ namespace HobbyDS9.UnityReview
             var text=new StringBuilder(Node(frame,battle.LocationNodeId)+" · "+(battle.Complete?"Battle complete":"Round "+battle.Round+" of up to 3")+"\n");
             foreach(var pair in battle.Relations)text.AppendLine(Fleet(frame,pair.OwnFleetId)+" → "+Fleet(frame,pair.VisibleEnemyFleetId)+": "+pair.Range+" · own facing "+pair.OwnFacing);
             if(battle.VisibleEnemies.Count==0)text.AppendLine("No visible enemy. Proceed cautiously; hidden identities and counts are unavailable.");
-            return text.ToString();
+            return text.ToString().TrimEnd();
         }
         public string Stocks(ReviewFrame frame,string? selected=null)
         {
@@ -112,7 +112,7 @@ namespace HobbyDS9.UnityReview
             var text=new StringBuilder(Ship(frame,selected)+FormattableString.Invariant($" · Hull {ship.Condition.Hull}/{ship.Condition.MaxHull}\n"));
             for(int i=0;i<ship.Condition.Shields.Count;i++){text.Append(FormattableString.Invariant($"{(TacticalSector)i} {ship.Condition.Shields[i]}/{ship.ShieldMaximum[i]}"));text.Append(i%2==1?"\n":" · ");}
             foreach(var w in ship.Weapons.Where(w=>w.Class==TacticalWeaponClass.Torpedo))text.AppendLine(FormattableString.Invariant($"Torpedoes {w.Ammunition}/{w.MagazineCapacity}"));
-            return text.ToString();
+            return text.ToString().TrimEnd();
         }
         public string LatestRound(ReviewFrame frame)
         {

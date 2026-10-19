@@ -32,8 +32,8 @@ namespace HobbyDS9.UnityReview.Tests
                 {
                     var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);target.Create();doc.panelSettings.targetTexture=target;
                     var root=doc.rootVisualElement;root.style.width=size.x;root.style.height=size.y;yield return null;yield return null;yield return null;
-                    verify();Assert.That(root.Q("player-footer").worldBound.yMax,Is.LessThanOrEqualTo(size.y+1));
                     var prior=RenderTexture.active;RenderTexture.active=target;var png=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);png.ReadPixels(new Rect(0,0,size.x,size.y),0,0);png.Apply();File.WriteAllBytes(Path.Combine(output,size.x+"x"+size.y+"-"+name+".png"),png.EncodeToPNG());RenderTexture.active=prior;
+                    verify();Assert.That(root.Q("player-footer").worldBound.yMax,Is.LessThanOrEqualTo(size.y+1));
                     doc.panelSettings.targetTexture=null;target.Release();UnityEngine.Object.Destroy(target);UnityEngine.Object.Destroy(png);
                 }
             }
@@ -64,13 +64,14 @@ namespace HobbyDS9.UnityReview.Tests
                 var root=doc.rootVisualElement;var rail=root.Q("central-fleet-rail");var dock=root.Q("central-order-dock");
                 Assert.That(rail.worldBound.xMax,Is.LessThan(dock.worldBound.xMin));
                 var report=root.Q<ScrollView>("central-combat-details");Assert.That(report.worldBound.yMax,Is.LessThanOrEqualTo(root.Q("central-combat-footer").worldBound.yMin));
+                Debug.Log("COMBAT GEOMETRY root="+root.worldBound+" stage="+root.Q("central-combat-surface").worldBound+" viewer="+root.Q(className:"review-viewer").worldBound+" stocks="+root.Q("combat-own-current-stocks").worldBound+" detail="+report.worldBound+" viewport="+report.contentViewport.worldBound);
                 Assert.That(report.contentViewport.worldBound.height,Is.GreaterThanOrEqualTo(80));
                 var center=root.Q(className:"review-viewer");
                 foreach(var scroll in center.Query<ScrollView>().ToList())
                 {Assert.That(scroll.contentViewport.worldBound.yMax,Is.LessThanOrEqualTo(center.worldBound.yMax+1),"central viewport contained");Assert.That(scroll.contentViewport.worldBound.yMax,Is.LessThanOrEqualTo(root.Q("central-combat-footer").worldBound.yMin),"no body behind actions");}
                 Assert.That(root.Q("combat-own-current-stocks").worldBound.yMax,Is.LessThanOrEqualTo(center.worldBound.yMax));
                 foreach(var id in new[]{"combat-fleet-picker","combat-ship-picker"})
-                {var field=root.Q<DropdownField>(id);var value=field.Q<TextElement>(className:"unity-base-popup-field__text");Assert.That(value,Is.Not.Null,id);var required=value.MeasureTextSize(field.value,0,VisualElement.MeasureMode.Undefined,0,VisualElement.MeasureMode.Undefined);Assert.That(value.worldBound.width+1,Is.GreaterThanOrEqualTo(required.x),id+" caption must fit");}
+                {var field=root.Q<DropdownField>(id);var value=field.Q<TextElement>(className:"unity-base-popup-field__text");Assert.That(value,Is.Not.Null,id);var required=field.choices.Max(caption=>value.MeasureTextSize(caption,0,VisualElement.MeasureMode.Undefined,0,VisualElement.MeasureMode.Undefined).x);Assert.That(value.worldBound.width+1,Is.GreaterThanOrEqualTo(required),id+" all captions must fit");}
                 Assert.That(root.Q<DropdownField>("combat-fleet-picker").choices.Any(s=>s.Contains("fleet.")),Is.False);
                 Assert.That(root.Q<DropdownField>("combat-ship-picker").choices.Any(s=>s.Contains("ship.")||s.Contains("PROVISIONAL")),Is.False);
                 Assert.That(root.Q<Foldout>("combat-technical-details").value,Is.False);
