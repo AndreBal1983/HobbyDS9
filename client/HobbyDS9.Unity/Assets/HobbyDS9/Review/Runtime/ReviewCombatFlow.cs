@@ -99,8 +99,8 @@ namespace HobbyDS9.UnityReview
                     case ReviewCombatStage.AftermathConfirmed:return "Aftermath confirmed — choose a fresh strategic order";
                     case ReviewCombatStage.NoOwnedFleet:return "No owned surviving fleet available for orders";
                     case ReviewCombatStage.SelectEncounter:return "Select an owned encounter";
-                    case ReviewCombatStage.Closed:return "Review closed";
-                    default:return "Physical tactical-v2 review — strategic Planning";
+                    case ReviewCombatStage.Closed:return Model.Current.Frame.Demo!=null?"Campaign closed":"Review closed";
+                    default:return Model.Current.Frame.Demo!=null?"Combat — strategic Planning":"Physical tactical-v2 review — strategic Planning";
                 }
             }
         }
@@ -143,7 +143,7 @@ namespace HobbyDS9.UnityReview
             if(b.VisibleEnemies.Count==0)text.AppendLine("No visible enemy. Proceed cautiously; hidden identities/counts are unavailable.");
             foreach(var enemy in b.VisibleEnemies)
                 text.AppendLine(FormattableString.Invariant($"Visible {enemy.ShipId} ({enemy.Type}) | Hull {enemy.Hull}/{enemy.MaxHull} | shields ")+string.Join(" / ",enemy.Shields));
-            text.AppendLine("Enemy condition precision is the proposed active review policy. Enemy stocks, readiness and fresh orders are not disclosed.");
+            text.AppendLine(Model.Current.Frame.Demo!=null?"Only observed enemy condition is shown. Enemy ammunition and upcoming orders remain hidden.":"Enemy condition precision is the proposed active review policy. Enemy stocks, readiness and fresh orders are not disclosed.");
             return text.ToString();
         }
     }

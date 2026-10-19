@@ -34,19 +34,21 @@ namespace HobbyDS9.UnityReview
         {selectedFleet=fleet;SyncFleetOrder();if(node!=null)destination=node;if(ship!=null)selectedShip=ship;}
         public void Render()
         {
-            root.Clear();var model=flow.Model;var c=model.Current;var frame=c.Frame;var stage=flow.Stage;var battle=frame.Battle;
+            root.Clear();var model=flow.Model;var c=model.Current;var frame=c.Frame;var stage=flow.Stage;var battle=frame.Battle;var demo=frame.Demo!=null;
             if(actor!=frame.Actor){actor=frame.Actor;selectedFleet="";selectedShip="";focus="retain standing focus";tab="stocks";}
             var fleets=(battle!=null?battle.StandingOrders.Select(o=>o.FleetId):frame.OwnStrategicFleets.Select(f=>f.FleetId.Value)).ToList();
             if(!fleets.Contains(selectedFleet)){selectedFleet=fleets.FirstOrDefault()??"";SyncFleetOrder();}
             var title=Text(flow.Heading);title.name="combat-stage-heading";title.AddToClassList("review-heading");root.Add(title);
-            if(stage==ReviewCombatStage.Closed){root.Add(Text("Review closed. No further commands are available."));return;}
+            if(stage==ReviewCombatStage.Closed){root.Add(Text(demo?"Campaign closed. No further commands are available.":"Review closed. No further commands are available."));return;}
             if(!flow.SurfaceOpen&&battle!=null)
             {
                 root.Add(Text("Battle checkpoint retained. Unsent draft preserved; returning does not submit or advance time."));
                 button(root,"Resume battle",()=>perform(()=>flow.Open()));return;
             }
             if(battle==null&&frame.Status.Phase==SessionPhase.Planning)
-                root.Add(Text("OPT-IN PHYSICAL TACTICAL V2. To enter battle: draft Re-engage, review/submit, then advance the strategic turn. Each human actor supplies their own round choice through the labelled test-host controls. No opponent AI is invented."));
+                root.Add(Text(demo?"Use Re-engage to stay and seek combat on End turn, or plot a known route in Fleets. The computer chooses its own orders; you command only your fleets.":"OPT-IN PHYSICAL TACTICAL V2. To enter battle: draft Re-engage, review/submit, then advance the strategic turn. Each human actor supplies their own round choice through the labelled test-host controls. No opponent AI is invented."));
+            else if(demo&&battle!=null)
+                root.Add(Text("The computer supplies opposing orders. Review your fleet maneuver and focus, commit one round at a time, then confirm the aftermath when all battles are complete."));
             var stageRow=new VisualElement{name="central-combat-surface"};stageRow.AddToClassList("review-stage-row");root.Add(stageRow);
             var roster=new ScrollView(ScrollViewMode.Vertical){name="central-fleet-rail"};roster.AddToClassList("review-panel");roster.AddToClassList("review-roster");roster.Add(Text("Owned fleet / ship inspection"));stageRow.Add(roster);
             var fleet=Choice("Owned fleet",fleets);fleet.SetValueWithoutNotify(string.IsNullOrEmpty(selectedFleet)?"none":selectedFleet);
@@ -60,7 +62,7 @@ namespace HobbyDS9.UnityReview
             {
                 var encounters=Choice("Your encounters",frame.Encounters.ToList());encounters.name="owned-encounter-picker";if(battle!=null)encounters.SetValueWithoutNotify(battle.EncounterId);roster.Add(encounters);
                 button(roster,"Open selected encounter",()=>confirm("Change encounter? Explicitly discard unsent edits if present.",()=>perform(()=>model.SelectEncounter(encounters.value,true))));
-                roster.Add(Text("Other human orders, hidden ships/counts and enemy ammunition are unavailable."));
+                roster.Add(Text(demo?"Enemy orders, hidden ships/counts and enemy ammunition are unavailable.":"Other human orders, hidden ships/counts and enemy ammunition are unavailable."));
             }
             var viewer=Panel(stageRow,"Central battle / survivor view");viewer.AddToClassList("review-viewer");
             var stageScroll=new ScrollView(ScrollViewMode.Vertical);stageScroll.AddToClassList("review-schematic-scroll");viewer.Add(stageScroll);
@@ -131,7 +133,7 @@ namespace HobbyDS9.UnityReview
             else dock.Add(Text(stage==ReviewCombatStage.NoOwnedFleet?"No owned surviving fleet can receive a strategic order. Current campaign facts remain inspectable.":"Choose an owned encounter to review its battle. Fresh strategic orders wait for complete-batch aftermath."));
             var footer=new VisualElement{name="central-combat-footer"};footer.AddToClassList("review-footer");root.Add(footer);
             if(battle!=null)button(footer,"Back / keep draft",()=>{flow.Dismiss();Render();});
-            if(stage==ReviewCombatStage.Orders)button(footer,"Review / commit round "+battle!.Round,()=>confirm(flow.OrderReview()+"\nCommit one round for this human actor?",()=>perform(()=>flow.CommitRound(ReviewUiModel.NewCommandId(),true)))).SetEnabled(flow.CanCommitRound);
+            if(stage==ReviewCombatStage.Orders)button(footer,"Review / commit round "+battle!.Round,()=>confirm(flow.OrderReview()+(demo?"\nCommit your orders for one round against the computer?":"\nCommit one round for this human actor?"),()=>perform(()=>flow.CommitRound(ReviewUiModel.NewCommandId(),true)))).SetEnabled(flow.CanCommitRound);
             else if(stage==ReviewCombatStage.RoundResult)button(footer,"Plan next round",()=>perform(()=>flow.PlanNextRound()));
             else if(stage==ReviewCombatStage.AftermathPending)button(footer,"Confirm campaign aftermath",()=>confirm("Apply complete-batch aftermath exactly once? Stocks are retained; no refill or extra movement.",()=>perform(()=>flow.FinalizeAftermath(true)))).SetEnabled(flow.CanFinalize);
             else if(stage==ReviewCombatStage.Waiting)footer.Add(Text("Waiting — no duplicate commitment"));
