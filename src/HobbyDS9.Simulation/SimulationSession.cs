@@ -388,7 +388,7 @@ namespace HobbyDS9.Simulation
             }).ToList()
         };
 
-        private static CommandEnvelope? CopyCommand(CommandEnvelope? source)
+        internal static CommandEnvelope? CopyCommand(CommandEnvelope? source)
         {
             if (source == null) return null;
             return new CommandEnvelope

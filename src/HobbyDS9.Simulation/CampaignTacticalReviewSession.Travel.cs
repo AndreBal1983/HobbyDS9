@@ -25,7 +25,7 @@ namespace HobbyDS9.Simulation
             Require(travel!=null,"Session has no physical profile.");
             var copy=CampaignTacticalTravelData.Copy(travel);copy.Core=Copy(state);return copy;
         }
-        public CampaignTacticalTravelSaveDto ExportTravelSave(){lock(gate){Require(demo==null,"Use ExportDemoSave: bare physical root is incomplete.");return TravelCopy();}}
+        public CampaignTacticalTravelSaveDto ExportTravelSave(){lock(gate){Require(demo==null&&frontier==null,"Use complete profile export: bare physical root is incomplete.");return TravelCopy();}}
         public IReadOnlyList<CampaignKnownContact> KnownContacts(string actor)
         {
             lock(gate)
@@ -83,11 +83,14 @@ namespace HobbyDS9.Simulation
         {
             lock(gate)
             {
+                if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
                 if(DemoMutationBlocked)return Result(CampaignTacticalError.WrongPhase);
                 if(travel==null)return Result(CampaignTacticalError.InvalidOrder);
                 var error=ValidateTravelCommand(command,TravelCopy(),false);if(error!=CampaignTacticalError.None)return Result(error);
                 var next=TravelCopy();ApplyTravelCommand(next,command!);
-                ValidateTravelSave(next);travel=CampaignTacticalTravelData.Copy(next);state=travel.Core;return Result(CampaignTacticalError.None);
+                ValidateTravelSave(next);travel=CampaignTacticalTravelData.Copy(next);state=travel.Core;
+                RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Travel,Travel=command});
+                return Result(CampaignTacticalError.None);
             }
         }
         private CampaignTacticalError ValidateTravelCommand(SubmitCampaignTravelOrderDto? command,CampaignTacticalTravelSaveDto candidate,bool trustedAi)
@@ -161,7 +164,7 @@ namespace HobbyDS9.Simulation
                 void Probe(StrategicTurnPhase phase){if(PhysicalPhaseProbe!=null&&!PhysicalPhaseProbe(phase))throw new InvalidOperationException("Injected phase failure.");}
                 Probe(StrategicTurnPhase.AiPlanning);
                 var beforeAi=SimulationSession.CopyState(next.Core.Campaign.GameState);
-                next.Core.Campaign.GameState=demo==null?Legacy(next.Core).RunPlanningAiForPhysicalReview()
+                next.Core.Campaign.GameState=frontier!=null?SimulationSession.CopyState(next.Core.Campaign.GameState):demo==null?Legacy(next.Core).RunPlanningAiForPhysicalReview()
                     :Legacy(next.Core).RunDemoPlanningAi(demo.OpponentActorId!,constructionTemplates!.Select(t=>t.ShipDesignDefinitionId!).ToList());
                 var game=next.Core.Campaign.GameState;
                 foreach(var order in next.Orders)
@@ -171,6 +174,7 @@ namespace HobbyDS9.Simulation
                     {order.Intent=f.RouteNodeIds!.Count>0?CampaignTravelIntent.Leave:CampaignTravelIntent.Stay;order.ContactFleetId=null;order.ExpectedContactSeenTurn=null;order.RouteNodeIds=new List<string>(f.RouteNodeIds);}
                 }
                 if(demo!=null)PlanDemoTravel(next);
+                if(frontier!=null)PlanFrontierTravel(next);
                 void Phase(StrategicTurnPhase phase,Action action)
                 {
                     Probe(phase);var before=SimulationSession.CopyState(game);action();
@@ -214,10 +218,14 @@ namespace HobbyDS9.Simulation
                     while(b.State.Completion==TacticalCompletion.None&&b.State.Formations.Where(f=>f.Status==TacticalFormationStatus.Active).All(f=>controllers[f.SideId]==ControllerKind.AI))
                     {game.StateRevision=checked(game.StateRevision+1);ResolveJoint(next.Core,b);}
                 }
+                var nextDiscoveries=frontier==null?null:CompleteFrontierPlanning(next);
                 ValidateTravelSave(next);
                 var committed=CampaignTacticalTravelData.Copy(next);
                 if(stagedBuiltShips!=null)builtShips=stagedBuiltShips.Select(CopyBuild).ToList();
-                travel=committed;state=travel.Core;return Result(CampaignTacticalError.None);
+                travel=committed;state=travel.Core;
+                if(nextDiscoveries!=null)discoveries=nextDiscoveries;
+                RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Advance,Turn=turn,Revision=revision});
+                return Result(CampaignTacticalError.None);
             }
             catch(OverflowException){return Result(CampaignTacticalError.Overflow);}
             catch(Exception e)when(e is ArgumentException||e is InvalidOperationException){LastPhysicalFailure=e.ToString();return Result(CampaignTacticalError.InvalidBatch);}

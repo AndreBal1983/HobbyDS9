@@ -5,6 +5,19 @@ using System.Text.Json;
 using HobbyDS9.Contracts;
 using HobbyDS9.Application;
 
+if (args.Length == 1 && args[0] == "--frontier-review")
+{
+    var p=FrontierPackageReader.Read(Path.Combine(AppContext.BaseDirectory,"scenarios/frontier-reconnaissance-v1"));
+    var baseline=JsonSerializer.Serialize(FrontierWalkthrough.Run(p));
+    foreach(var mode in new[]{(true,false),(false,true),(false,false)})
+        if(baseline!=JsonSerializer.Serialize(FrontierWalkthrough.Run(p,mode.Item1,mode.Item2)))throw new InvalidOperationException("Frontier determinism mismatch.");
+    Console.WriteLine("frontier-package-sha256="+p.PackageHash);
+    Console.WriteLine("frontier-save-sha256="+Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(baseline))).ToLowerInvariant());
+    var saved=JsonSerializer.Deserialize<CampaignFrontierSaveDto>(baseline)!;
+    Console.WriteLine("turn="+saved.Integrated!.Physical!.Core.Campaign.GameState.TurnNumber+" first-arrival-receipts="+saved.Discoveries!.Count+" accepted-operations="+saved.Transcript!.Count);
+    Console.WriteLine("Provisional opt-in frontier: actual arrivals, actor-local charting, canonical/reverse/repeated/reload equality; no Unity/native execution.");
+    return;
+}
 if (args.Length == 1 && args[0] == "--singleplayer-demo")
 {
     var package=SingleplayerDemoPackageReader.Read(Path.Combine(AppContext.BaseDirectory,"scenarios/singleplayer-demo-v1"));
