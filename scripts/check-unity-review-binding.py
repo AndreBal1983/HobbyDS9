@@ -48,7 +48,7 @@ def check(root):
             "Modal buttons must use the actual portable one-use permission and lifetime invalidation")
     keyboard = (runtime / "ReviewEntry.Keyboard.cs").read_text(encoding="utf-8-sig")
     require('if(model!.SingleplayerDemo)BindDemoButtonKeyboard(button,guarded);' in entry and
-            'new Button(guarded)' in entry and 'if(SubmitAlreadyPerformed())return;' in keyboard and
+            'new Button(guarded)' in entry and 'if(SubmitAlreadyPerformed()){if(enter)returnHeld=true;else spaceHeld=true;return;}' in keyboard and
             'WasPerformedThisFrame()' in keyboard and 'returnHeld' in keyboard and 'DemoKeyUp' in keyboard,
             "Keyboard buttons must share the guarded click and defer real Submit, with held-key suppression")
     require('tab.wasPressedThisFrame' in keyboard and 'NavigationMoveEvent.GetPooled' in keyboard and

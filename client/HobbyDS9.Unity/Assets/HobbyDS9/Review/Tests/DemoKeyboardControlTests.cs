@@ -112,6 +112,13 @@ namespace HobbyDS9.UnityReview.Tests
                 // hidden Editor/native provider automatically dispatched it.
                 using(var evt=NavigationSubmitEvent.GetPooled()){evt.target=button;button.SendEvent(evt);}
                 Assert.That(count,Is.EqualTo(1));
+                // Advance the real action frame, but deliberately do not send
+                // UI KeyUp: an OS repeat must not become a second activation.
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState());InputSystem.Update();
+                Assert.That(submit.WasPerformedThisFrame(),Is.False);
+                Key(button,KeyCode.Return);Assert.That(count,Is.EqualTo(1),"real-action press must also latch against later OS repeats");
+                Key(button,KeyCode.Return,true);Key(button,KeyCode.Return);Assert.That(count,Is.EqualTo(2),"UI KeyUp permits a distinct new press");
+                Key(button,KeyCode.Return,true);
             }
             finally
             {

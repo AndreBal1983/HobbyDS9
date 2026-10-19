@@ -41,7 +41,7 @@ namespace HobbyDS9.UnityReview
                 if((!enter&&!space)||!Unmodified(e)||!ReferenceEquals(e.target,button)||!LiveDemoFocus(button))return;
                 // InputSystemProvider dispatches KeyDown before its already
                 // queued NavigationSubmit. Let that real action own the press.
-                if(SubmitAlreadyPerformed())return;
+                if(SubmitAlreadyPerformed()){if(enter)returnHeld=true;else spaceHeld=true;return;}
                 if(enter?returnHeld:spaceHeld){e.StopPropagation();return;}
                 if(enter)returnHeld=true;else spaceHeld=true;
                 e.StopPropagation();guarded();

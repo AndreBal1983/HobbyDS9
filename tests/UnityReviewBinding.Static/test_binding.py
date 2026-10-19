@@ -64,7 +64,7 @@ class BindingTests(unittest.TestCase):
 
     def test_duplicate_keyboard_submit_exclusion_cannot_be_removed(self):
         path = self.assets / "Review/Runtime/ReviewEntry.Keyboard.cs"
-        path.write_text(path.read_text().replace("if(SubmitAlreadyPerformed())return;", ""))
+        path.write_text(path.read_text().replace("if(SubmitAlreadyPerformed())", "if(false)"))
         self.assertTrue(any("Keyboard buttons" in x for x in checker.check(self.root)))
 
     def test_keyboard_field_ownership_cannot_be_removed(self):
