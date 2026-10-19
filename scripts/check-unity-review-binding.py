@@ -63,6 +63,9 @@ def check(root):
         require(not any(term in source for term in ("using HobbyDS9.Simulation", "using HobbyDS9.TacticalReviewStorage", "System.Text.Json", "JsonUtility", "Process.Start")),
                 "Forbidden runtime dependency in " + path.name)
         require(Path(str(path) + ".meta").exists(), "Missing runtime source metadata: " + path.name)
+    for path in (runtime / "ReviewEntry.Keyboard.cs.meta", review / "Tests/DemoKeyboardControlTests.cs.meta"):
+        require(re.search(r"^guid: [0-9a-f]{32}$", path.read_text(encoding="utf-8-sig"), re.MULTILINE) is not None,
+                "Invalid keyboard source metadata GUID: " + path.name)
     build = (review / "Editor/ReviewBuild.cs").read_text(encoding="utf-8-sig")
     require("artifacts/unity-review/Windows/HobbyDS9Review.exe" in build and "Review/Scenes/PhysicalReview.unity" in build,
             "Review builder must have disjoint output and explicit scene")

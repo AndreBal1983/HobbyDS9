@@ -72,6 +72,11 @@ class BindingTests(unittest.TestCase):
         path.write_text(path.read_text().replace("element is TextField||element is DropdownField", "false"))
         self.assertTrue(any("field-safe" in x for x in checker.check(self.root)))
 
+    def test_keyboard_fixture_invalid_guid_is_rejected(self):
+        path = self.assets / "Review/Tests/DemoKeyboardControlTests.cs.meta"
+        path.write_text(path.read_text().replace("guid: ", "guid: f"))
+        self.assertTrue(any("Invalid keyboard source metadata" in x for x in checker.check(self.root)))
+
 
 if __name__ == "__main__":
     unittest.main()

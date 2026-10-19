@@ -75,12 +75,20 @@ namespace HobbyDS9.UnityReview.Tests
             var popup=new DropdownField("Fixture",new System.Collections.Generic.List<string>{"One","Two"},0);root.Add(popup);popup.Focus();
             Key((VisualElement)root.panel.focusController.focusedElement,KeyCode.Tab);Assert.That(moves,Is.EqualTo(2),"popup keys are not translated");
             var keyboard=InputSystem.AddDevice<Keyboard>("DemoControlTab");
+            var priorRouting=InputSystem.settings.editorInputBehaviorInPlayMode;
+            var priorBackground=InputSystem.settings.backgroundBehavior;var priorRun=UnityEngine.Application.runInBackground;
             try
             {
+                UnityEngine.Application.runInBackground=true;InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
+                InputSystem.settings.editorInputBehaviorInPlayMode=InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
                 a.Focus();InputSystem.QueueStateEvent(keyboard,new KeyboardState(UnityEngine.InputSystem.Key.Tab));InputSystem.Update();
                 Assert.That(keyboard.tabKey.wasPressedThisFrame,Is.True);Key(a,KeyCode.Tab);Assert.That(moves,Is.EqualTo(2),"raw-input Tab owns navigation");
             }
-            finally{InputSystem.RemoveDevice(keyboard);}
+            finally
+            {
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState());InputSystem.Update();InputSystem.RemoveDevice(keyboard);
+                InputSystem.settings.editorInputBehaviorInPlayMode=priorRouting;InputSystem.settings.backgroundBehavior=priorBackground;UnityEngine.Application.runInBackground=priorRun;
+            }
             yield return new ExitPlayMode();
         }
 
@@ -88,12 +96,15 @@ namespace HobbyDS9.UnityReview.Tests
         {
             RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
             var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var root=entry.GetComponent<UIDocument>().rootVisualElement;
-            var prior=InputSystem.actions;var actions=ScriptableObject.CreateInstance<InputActionAsset>();var map=actions.AddActionMap("UI");
-            var submit=map.AddAction("Submit",InputActionType.Button,"<Keyboard>/enter");
+            var submit=InputSystem.actions.FindAction("UI/Submit",true);var map=submit.actionMap;
+            var priorDevices=map.devices;var priorEnabled=submit.enabled;var priorRouting=InputSystem.settings.editorInputBehaviorInPlayMode;
+            var priorBackground=InputSystem.settings.backgroundBehavior;var priorRun=UnityEngine.Application.runInBackground;
             var keyboard=InputSystem.AddDevice<Keyboard>("DemoControlSubmit");int count=0;var button=Add(entry,root,()=>count++);
             try
             {
-                InputSystem.actions=actions;submit.Enable();button.Focus();
+                UnityEngine.Application.runInBackground=true;InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
+                InputSystem.settings.editorInputBehaviorInPlayMode=InputSettings.EditorInputBehaviorInPlayMode.AllDeviceInputAlwaysGoesToGameView;
+                map.devices=new InputDevice[]{keyboard};if(!priorEnabled)submit.Enable();button.Focus();
                 InputSystem.QueueStateEvent(keyboard,new KeyboardState(UnityEngine.InputSystem.Key.Enter));InputSystem.Update();
                 Assert.That(submit.WasPerformedThisFrame(),Is.True,"actual action signal, not a mock flag");
                 Key(button,KeyCode.Return);Assert.That(count,Is.Zero,"KeyDown precedes queued navigation and must not activate twice");
@@ -104,7 +115,11 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally
             {
-                button.RemoveFromHierarchy();actions.Disable();InputSystem.actions=prior;InputSystem.RemoveDevice(keyboard);UnityEngine.Object.DestroyImmediate(actions);
+                button.RemoveFromHierarchy();
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState());InputSystem.Update();
+                if(!priorEnabled)submit.Disable();map.devices=priorDevices;
+                InputSystem.settings.editorInputBehaviorInPlayMode=priorRouting;InputSystem.RemoveDevice(keyboard);
+                InputSystem.settings.backgroundBehavior=priorBackground;UnityEngine.Application.runInBackground=priorRun;
             }
             yield return new ExitPlayMode();
         }
