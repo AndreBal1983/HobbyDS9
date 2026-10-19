@@ -16,6 +16,7 @@ namespace HobbyDS9.UnityReview
         private readonly Action<string,Action> confirm;
         private readonly ReviewDemoCombatText readable=new ReviewDemoCombatText();
         private long displayedResult=-1;
+        private ReviewAftermathSummary? displayedAftermath;
         private VisualElement root;
         private string selectedFleet="",selectedShip="",tab="stocks",destination="nav.bajor",contact="none",focus="retain standing focus";
         private CampaignTravelIntent travel=CampaignTravelIntent.StayEngage;
@@ -37,6 +38,9 @@ namespace HobbyDS9.UnityReview
         public void Render()
         {
             root.Clear();var model=flow.Model;var c=model.Current;var frame=c.Frame;var stage=flow.Stage;var battle=frame.Battle;var demo=frame.Demo!=null;
+            var aftermath=demo?flow.AftermathSummary:null;
+            if(aftermath==null)displayedAftermath=null;
+            else if(!ReferenceEquals(displayedAftermath,aftermath)){displayedAftermath=aftermath;tab="report";}
             root.EnableInClassList("demo-combat",demo);
             if(demo&&stage==ReviewCombatStage.RoundResult&&battle!=null&&displayedResult!=battle.BoundaryRevision){displayedResult=battle.BoundaryRevision;tab="report";}
             if(actor!=frame.Actor){actor=frame.Actor;selectedFleet="";selectedShip="";focus="retain standing focus";tab="stocks";}
@@ -51,6 +55,8 @@ namespace HobbyDS9.UnityReview
             }
             if(flow.CampaignComplete)
                 root.Add(Text("This campaign is complete. Inspect retained ships and stocks, save the completed campaign, or start a new demo from Menu."));
+            else if(aftermath!=null)
+                root.Add(Text("Aftermath confirmed. Stocks persist; choose a fresh strategic order."));
             else if(battle==null&&frame.Status.Phase==SessionPhase.Planning)
                 root.Add(Text(demo?"Use Re-engage to stay and seek combat on End turn, or plot a known route in Fleets. The computer chooses its own orders; you command only your fleets.":"OPT-IN PHYSICAL TACTICAL V2. To enter battle: draft Re-engage, review/submit, then advance the strategic turn. Each human actor supplies their own round choice through the labelled test-host controls. No opponent AI is invented."));
             else if(demo&&battle!=null)
@@ -73,12 +79,12 @@ namespace HobbyDS9.UnityReview
             }
             var viewer=Panel(stageRow,"Central battle / survivor view");viewer.AddToClassList("review-viewer");
             var stageScroll=new ScrollView(ScrollViewMode.Vertical);stageScroll.AddToClassList("review-schematic-scroll");viewer.Add(stageScroll);
-            var schematic=Text(demo?readable.Diagram(frame):flow.StageDiagram());schematic.name="combat-schematic";stageScroll.Add(schematic);
+            var schematic=Text(demo?(aftermath!=null?"Confirmed aftermath · "+aftermath.Location+" · Planning turn "+aftermath.PlanningTurn:readable.Diagram(frame)):flow.StageDiagram());schematic.name="combat-schematic";stageScroll.Add(schematic);
             if(demo&&frame.OwnShips.Any(s=>s.Condition.ShipId==selectedShip)){var currentStocks=Text(readable.CompactOwn(frame,selectedShip));currentStocks.name="combat-own-current-stocks";currentStocks.AddToClassList("combat-current-stocks");viewer.Add(currentStocks);}
             var tabs=new VisualElement();tabs.AddToClassList("review-tabs");viewer.Add(tabs);
-            foreach(var name in new[]{"stocks","report","inspection"})button(tabs,name=="stocks"?(demo?"Ship status":"Own hull / shields / ammunition"):name=="report"?"Round report":"Inspection",()=>{tab=name;Render();});
+            foreach(var name in new[]{"stocks","report","inspection"})button(tabs,name=="stocks"?(demo?"Ship status":"Own hull / shields / ammunition"):name=="report"?(aftermath!=null?"Battle summary":"Round report"):"Inspection",()=>{tab=name;Render();});
             var details=new ScrollView(ScrollViewMode.Vertical){name="central-combat-details"};details.AddToClassList("review-detail-scroll");viewer.Add(details);
-            details.Add(Text(demo?(tab=="report"?readable.LatestRound(frame):tab=="inspection"?readable.Inspection(frame,selectedShip):readable.Stocks(frame)):tab=="report"?model.Report():tab=="inspection"?model.Inspection():flow.Conditions()));
+            var report=Text(demo?(tab=="report"?(aftermath!=null?readable.Aftermath(aftermath):readable.LatestRound(frame)):tab=="inspection"?readable.Inspection(frame,selectedShip):readable.Stocks(frame)):tab=="report"?model.Report():tab=="inspection"?model.Inspection():flow.Conditions());report.name="combat-current-detail";details.Add(report);
             if(demo){var trace=new Foldout{name="combat-technical-details",text="Technical details",value=false};trace.Add(Text(model.Report()+"\n"+model.Inspection()+"\n"+flow.Conditions()+"\n"+model.Facts()));details.Add(trace);}
             if(stage==ReviewCombatStage.Waiting)
             {

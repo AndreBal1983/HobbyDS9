@@ -117,7 +117,8 @@ namespace HobbyDS9.UnityReview
         public string LatestRound(ReviewFrame frame)
         {
             Observe(frame);var events=frame.Battle?.Reports;
-            if(events==null||events.Count==0)return frame.Demo!=null&&frame.Demo.Outcome!=CampaignDemoOutcome.Active?"Campaign complete. No current-batch round report is available; inspect retained ships and stocks.":"No resolved-round report yet. Review your fleet orders, then commit one round.";
+            if(frame.Battle==null)return (frame.Demo!=null&&frame.Demo.Outcome!=CampaignDemoOutcome.Active?"Campaign complete. ":"")+"No battle summary is retained in this session. Inspect current ships and stocks. A post-battle save preserves current condition, not this session's summary.";
+            if(events==null||events.Count==0)return "No resolved-round report yet. Review your fleet orders, then commit one round.";
             int round=events.Max(e=>e.Round);var latest=events.Where(e=>e.Round==round).ToList();
             BigInteger ownHull=BigInteger.Zero,observedHull=BigInteger.Zero,shieldImpact=BigInteger.Zero;
             foreach(var e in latest)
@@ -132,6 +133,20 @@ namespace HobbyDS9.UnityReview
             if(latest.Any(e=>e.Kind=="IncomingTorpedo"))text.AppendLine("Incoming torpedoes were reported without exposing hidden launchers.");
             if(latest.Any(e=>e.FocusFallbackCause.HasValue))text.AppendLine("Preferred focus was unavailable for a reported opportunity; a visible alternative was used. Your standing preference is retained.");
             return text.Append("Your filtered report only · recorded results, not a firing forecast.").ToString();
+        }
+        public string Aftermath(ReviewAftermathSummary summary)
+        {
+            var text=new StringBuilder("Selected encounter aftermath confirmed · "+summary.Location+"\n");
+            text.AppendLine("Battle turn "+summary.BattleTurn+" → Planning turn "+summary.PlanningTurn);
+            text.AppendLine("Own ships lost: "+summary.LostShipIds.Count+" · own survivors: "+summary.Survivors.Count);
+            foreach(var id in summary.LostShipIds)text.AppendLine(summary.ShipName(id)+": destroyed");
+            foreach(var own in summary.Survivors)
+            {
+                var c=own.Condition;text.AppendLine(summary.ShipName(c.ShipId)+FormattableString.Invariant($" · Hull {c.Hull}/{c.MaxHull}"));
+                for(int i=0;i<c.Shields.Count;i++)text.AppendLine(FormattableString.Invariant($"{(TacticalSector)i} {c.Shields[i]}/{own.ShieldMaximum[i]}"));
+                foreach(var weapon in own.Weapons.Where(w=>w.Class==TacticalWeaponClass.Torpedo))text.AppendLine(FormattableString.Invariant($"Torpedoes {weapon.Ammunition}/{weapon.MagazineCapacity}"));
+            }
+            return text.Append("Retained at confirmed aftermath; no between-battle refill. Selected encounter only. This summary is session-local and is not saved.").ToString();
         }
         public string TravelDraft(ReviewController controller)
         {

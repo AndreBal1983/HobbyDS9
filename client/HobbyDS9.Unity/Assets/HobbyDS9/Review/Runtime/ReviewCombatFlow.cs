@@ -19,12 +19,16 @@ namespace HobbyDS9.UnityReview
         private readonly Dictionary<string,long> reviewedResults=new Dictionary<string,long>(StringComparer.Ordinal);
         private readonly HashSet<string> ownLosses=new HashSet<string>(StringComparer.Ordinal);
         private bool aftermathConfirmed;
+        private ReviewAftermathSummary? aftermathSummary;
+        public ReviewAftermathSummary? AftermathSummary { get {Context();return aftermathSummary;} }
         public bool SurfaceOpen { get; private set; }=true;
         public ReviewCombatFlow(ReviewUiModel model){Model=model;context=model.Current;}
         private void Context()
         {
-            if(ReferenceEquals(context,Model.Current))return;
-            context=Model.Current;reviewedResults.Clear();ownLosses.Clear();aftermathConfirmed=false;SurfaceOpen=true;
+            if(!ReferenceEquals(context,Model.Current))
+            {context=Model.Current;reviewedResults.Clear();ownLosses.Clear();aftermathConfirmed=false;aftermathSummary=null;SurfaceOpen=true;}
+            if(aftermathSummary!=null&&!aftermathSummary.Applies(Model.Current.Frame,Model.Closed))
+            {aftermathSummary=null;aftermathConfirmed=false;}
         }
         public ReviewCombatStage Stage
         {
@@ -72,8 +76,14 @@ namespace HobbyDS9.UnityReview
         {
             if(!confirmed||!CanFinalize){Notice="Aftermath not applied: confirmation and whole-batch readiness required.";return false;}
             Notice="";
+            var controller=Model.Current;var completed=controller.Frame;
             var success=Model.FinalizeBatch();
-            if(success){aftermathConfirmed=true;reviewedResults.Clear();SurfaceOpen=true;}
+            if(success)
+            {
+                aftermathSummary=ReferenceEquals(controller,Model.Current)&&!Model.Current.RefreshRequired
+                    ?ReviewAftermathSummary.Confirmed(completed,Model.Current.Frame):null;
+                aftermathConfirmed=aftermathSummary!=null;reviewedResults.Clear();SurfaceOpen=true;
+            }
             return success;
         }
         public KnownRouteOffer? PreviewRoute(string fleet,string destination)
