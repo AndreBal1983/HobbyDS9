@@ -654,5 +654,101 @@
     "status": "I",
     "statusLabel": "IMPLEMENTED (scoped profile)",
     "scope": "Existing diagnostic utilities; not player actor switching"
+  },
+  {
+    "id": "production-review",
+    "title": "Review construction / exact costs",
+    "family": "Production",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "science-review",
+    "title": "Review six-way Science allocation",
+    "family": "Research",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "split-review",
+    "title": "Review Science / Engineering split",
+    "family": "Research",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "strategic-review",
+    "title": "Review strategic route / explicit submit",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "cloak-review",
+    "title": "Review approach-cloak setting",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "designer-discard",
+    "title": "Discard unsaved local design",
+    "family": "Designer",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "endturn-review",
+    "title": "Review strategic turn / consequences",
+    "family": "Campaign",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Explicit action-specific confirmation; browser concept only"
+  },
+  {
+    "id": "setup-error",
+    "title": "Generation validation / retry retained seed",
+    "family": "Campaign",
+    "status": "P",
+    "statusLabel": "PROPOSED",
+    "scope": "Proposed generator failure state; no campaign replaced"
+  },
+  {
+    "id": "ship-fit",
+    "title": "Own ship / retained installed fit",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Read-only authored-v2 own inspection; separate from local-v1 designer"
+  },
+  {
+    "id": "ship-power",
+    "title": "Own ship / retained power reservation",
+    "family": "Fleets",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Read-only hardware power snapshot; no tactical allocation switches"
+  },
+  {
+    "id": "stalemate",
+    "title": "Stalemate / completed campaign inspection",
+    "family": "Campaign",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Implemented bounded demo outcome; broader victory policies are future"
+  },
+  {
+    "id": "objectives",
+    "title": "Objective / own progress and current scenario",
+    "family": "Campaign",
+    "status": "I",
+    "statusLabel": "IMPLEMENTED (scoped profile)",
+    "scope": "Implemented demo objective projection; alternative victory paths proposed"
   }
 ]
