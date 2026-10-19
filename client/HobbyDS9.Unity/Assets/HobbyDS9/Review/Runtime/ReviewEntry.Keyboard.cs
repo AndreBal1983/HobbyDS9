@@ -21,7 +21,7 @@ namespace HobbyDS9.UnityReview
         private void BindDemoKeyboard()
         {
             UnbindDemoKeyboard();
-            if(!model!.SingleplayerDemo)return;
+            if(!PlayerProfile)return;
             keyboardRoot=root;
             keyboardRoot!.RegisterCallback<KeyDownEvent>(DemoTab);
             keyboardRoot.RegisterCallback<AttachToPanelEvent>(DemoKeyboardAttached);
@@ -57,7 +57,7 @@ namespace HobbyDS9.UnityReview
         {returnHeld=false;spaceHeld=false;returnOrigin=null;spaceOrigin=null;keyboardRetired?.RemoveFromHierarchy();keyboardRetired=null;}
         private void OnApplicationFocus(bool focused){if(!focused)ResetDemoKeyboard();}
         private static bool Unmodified(KeyDownEvent e)=>!e.altKey&&!e.ctrlKey&&!e.commandKey&&!e.shiftKey;
-        private bool LiveDemoFocus(VisualElement element)=>isActiveAndEnabled&&model!=null&&model.SingleplayerDemo&&!model.Closed&&!model.Busy
+        private bool LiveDemoFocus(VisualElement element)=>isActiveAndEnabled&&model!=null&&PlayerProfile&&!model.Closed&&!model.Busy
             &&root!=null&&root.panel!=null&&element.panel==root.panel&&root.Contains(element)&&element.enabledInHierarchy
             &&ReferenceEquals(root.panel.focusController.focusedElement,element);
         private static bool SubmitAlreadyPerformed()=>InputSystem.actions?.FindAction("UI/Submit",false)?.WasPerformedThisFrame()==true;
@@ -83,7 +83,7 @@ namespace HobbyDS9.UnityReview
         }
         private void PreserveDemoKeyOrigins()
         {
-            if(!isActiveAndEnabled||model?.SingleplayerDemo!=true||root?.panel==null)return;
+            if(!isActiveAndEnabled||!PlayerProfile||root?.panel==null)return;
             // The engine can address the previous focused control on KeyUp.
             // A detached control cannot dispatch; retain only held origins on
             // the same panel, hidden/disabled, until release or lifecycle reset.
@@ -139,7 +139,7 @@ namespace HobbyDS9.UnityReview
         {
             if(e.keyCode!=KeyCode.Tab||e.altKey||e.ctrlKey||e.commandKey)return;
             var current=root?.panel;
-            if(!isActiveAndEnabled||model==null||!model.SingleplayerDemo||model.Closed||model.Busy||current==null
+            if(!isActiveAndEnabled||model==null||!PlayerProfile||model.Closed||model.Busy||current==null
                 ||!ReferenceEquals(keyboardRoot,root)||!root!.enabledInHierarchy
                 ||!ReferenceEquals(keyboardReleaseRoot,current.visualTree)||!ReferenceEquals(e.target,keyboardReleaseRoot)
                 ||current.focusController.focusedElement!=null)return;
@@ -153,7 +153,7 @@ namespace HobbyDS9.UnityReview
         {
             var epoch=viewEpoch;
             button.schedule.Execute(()=>{
-                if(epoch!=viewEpoch||confirmation!=null||!isActiveAndEnabled||model==null||!model.SingleplayerDemo||model.Closed
+                if(epoch!=viewEpoch||confirmation!=null||!isActiveAndEnabled||model==null||!PlayerProfile||model.Closed
                     ||root?.panel==null||button.panel!=root.panel||!root.Contains(button)||!button.enabledInHierarchy)return;
                 var focused=root.panel.focusController.focusedElement as VisualElement;
                 if(focused==null||!root.Contains(focused))button.Focus();
