@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
+using HobbyDS9.Contracts;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -243,6 +244,63 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(moves,Is.Zero,"Detached document must not translate panel Tab");
             Key(panelRoot,KeyCode.Tab);Assert.That(moves,Is.EqualTo(1));Assert.That(root.panel.focusController.focusedElement,Is.SameAs(root.Q<Button>("demo-menu")));
             Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(frame));yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator ReleasedReturnAfterFailedLoadDrawAndNavigationCanConfirmCombatRound()
+            =>FailedLoadDrawAndNavigationReturn(true);
+
+        [UnityTest] public IEnumerator HeldReturnAfterFailedLoadDrawAndNavigationCannotConfirmCombatRound()
+            =>FailedLoadDrawAndNavigationReturn(false);
+
+        private static IEnumerator FailedLoadDrawAndNavigationReturn(bool releaseBeforeNavigation)
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            void Click(Button button)
+            {
+                Assert.That(button,Is.Not.Null);Assert.That(button.enabledInHierarchy,Is.True);
+                using(var e=NavigationSubmitEvent.GetPooled()){e.target=button;button.SendEvent(e);}
+            }
+            void Id(string id)=>Click(doc.rootVisualElement.Q<Button>(id));
+            Id("demo-start");yield return null;var model=entry.Presentation!.Model;
+            Assert.That(model.Enqueue("colony.sol","ship-design.source-cruiser",ReviewUiModel.NewCommandId()),Is.True);
+            Assert.That(model.Enqueue("colony.sol","ship-design.source-cruiser",ReviewUiModel.NewCommandId()),Is.True);
+            Assert.That(model.AllocateResearch(450,ReviewUiModel.NewCommandId()),Is.True);
+            while(model.Current.Frame.Status.Turn<5)Assert.That(model.Advance(),Is.True);
+            Assert.That(model.Current.Frame.OwnShips.Count,Is.EqualTo(3));var fleet=model.Current.Frame.OwnStrategicFleets.Single().FleetId.Value;
+            Assert.That(model.DraftTravel(fleet,CampaignTravelIntent.Leave,"nav.bajor",null),Is.True);
+            Assert.That(model.SendTravel(ReviewUiModel.NewCommandId()),Is.True);Assert.That(model.Advance(),Is.True);
+            var battle=model.Current.Frame.Battle;Assert.That(battle,Is.Not.Null);
+            foreach(var order in battle!.StandingOrders.Where(o=>o.CanOrder))
+                Assert.That(model.DraftFleet(order.FleetId,CampaignFleetManeuver.Charge,battle.LegalFocusFleetIds.FirstOrDefault(),false),Is.True);
+            Assert.That(model.HasLocalEdits,Is.True);var controller=model.Current;var frame=controller.Frame;
+            var draft=controller.Draft.Select(o=>o.Fleet+"|"+o.Maneuver+"|"+o.Focus).ToArray();Assert.That(draft,Is.Not.Empty);
+            Invoke(entry,"Build");Id("review-nav-Saves");yield return null;
+            // Unique absent slot; never load, overwrite or inspect an owner's slots.
+            typeof(ReviewEntry).GetField("slotName",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,"missing-"+Guid.NewGuid().ToString("N").Substring(0,8));Invoke(entry,"Draw");
+            var panelBeforeLoad=doc.rootVisualElement.panel.visualTree;Id("player-load");var loadConfirm=Confirm(doc.rootVisualElement);
+            Assert.That(doc.rootVisualElement.panel.focusController.focusedElement,Is.SameAs(loadConfirm));Key(loadConfirm,KeyCode.Return);yield return null;
+            Assert.That(model.Current,Is.SameAs(controller));Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(model.HasLocalEdits,Is.True);
+            Assert.That(controller.Draft.Select(o=>o.Fleet+"|"+o.Maneuver+"|"+o.Focus),Is.EqualTo(draft));
+            Assert.That(doc.rootVisualElement.Q<Label>("save-load-result").text,Does.Contain("empty").And.Contain("unsent edits are unchanged"));
+            Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
+            Assert.That(doc.rootVisualElement.panel.visualTree,Is.SameAs(panelBeforeLoad),"Failed load redraw keeps this panel");
+            if(releaseBeforeNavigation)Key(panelBeforeLoad,KeyCode.Return,true);
+            Id("review-nav-Combat");yield return null;
+            Assert.That(doc.rootVisualElement.panel.visualTree,Is.Not.SameAs(panelBeforeLoad),"Navigation rebuild replaces the panel");
+            var review=doc.rootVisualElement.Query<Button>().ToList().Single(b=>b.text=="Review / commit round "+battle.Round);Click(review);
+            var commitConfirm=Confirm(doc.rootVisualElement);Assert.That(doc.rootVisualElement.panel.focusController.focusedElement,Is.SameAs(commitConfirm));
+            Key(commitConfirm,KeyCode.Return);
+            if(!releaseBeforeNavigation)
+            {
+                Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(model.HasLocalEdits,Is.True);
+                Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null,"Held load-confirm key cannot commit the later round");
+                Key(doc.rootVisualElement.panel.visualTree,KeyCode.Return,true);Key(commitConfirm,KeyCode.Return);
+            }
+            Assert.That(model.Current.Frame,Is.Not.SameAs(frame));Assert.That(model.Current.Draft,Is.Empty);
+            Assert.That(model.Current.Frame.Battle!.Reports.Select(r=>r.Round).Distinct().ToArray(),Is.EqualTo(new[]{battle.Round}),"Exactly one reviewed round was committed");
+            Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
+            Key(doc.rootVisualElement.panel.visualTree,KeyCode.Return,true);yield return new ExitPlayMode();
         }
     }
 }

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../Shared.props" />
+  <PropertyGroup>
+    <AssemblyName>HobbyDS9.NativeInputEvidence</AssemblyName>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Unity.Scripting"><HintPath>$(UnityManagedDir)/UnityEngine/Unity.Scripting.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.InputSystem"><HintPath>$(UnityInputSystemPath)</HintPath><Private>false</Private></Reference>
+    <Compile Include="$(RepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/Diagnostics/NativeInputEvidence/NativeInputEvidence.cs" Link="ActualUnitySource/NativeInputEvidence.cs" />
+  </ItemGroup>
+</Project>
