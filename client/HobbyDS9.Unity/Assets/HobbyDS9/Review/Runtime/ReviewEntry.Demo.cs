@@ -25,11 +25,12 @@ namespace HobbyDS9.UnityReview
             panel.Add(Readout(demo.ObjectiveText));
             panel.Add(Readout("Review your worlds and R&D, build an available ship, and plot a known route. Issue fleet orders in battle, then confirm the aftermath. Hull, shields and ammunition persist."));
             panel.Add(Readout("The computer chooses its own orders. Changes stay unsent until you confirm them. Save whenever you want to return later."));
-            if(demoStarted){var resume=AddButton(panel,"Resume current campaign",()=>{demoLanding=false;viewEpoch++;Build();});resume.name="demo-resume-current";resume.AddToClassList("primary-action");}
+            if(demoStarted){var resume=AddButton(panel,"Resume current campaign",()=>{demoLanding=false;viewEpoch++;Build();});resume.name="demo-resume-current";resume.AddToClassList("primary-action");ScheduleDemoMenuFocus(resume);}
             var start=AddButton(panel,"Start new demo",()=>{
                 if(demoStarted)Confirm("Start a new demo? Unsaved progress and local edits will be lost; your saved slots remain intact.",StartFreshDemo);
                 else StartFreshDemo();
             });start.name="demo-start";start.AddToClassList("primary-action");
+            if(!demoStarted)ScheduleDemoMenuFocus(start);
             panel.Add(Readout("Continue a saved demo"));
             foreach(var slot in new[]{"demo-1","demo-2","demo-3"})
             {

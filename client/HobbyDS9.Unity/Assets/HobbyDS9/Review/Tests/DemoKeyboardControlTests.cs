@@ -1,0 +1,122 @@
+#nullable enable
+using System;
+using System.Collections;
+using System.Linq;
+using System.Reflection;
+using NUnit.Framework;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.LowLevel;
+using UnityEngine.TestTools;
+using UnityEngine.UIElements;
+
+namespace HobbyDS9.UnityReview.Tests
+{
+    // Direct UI-event control tests, NOT physical keyboard/provider acceptance.
+    public sealed class DemoKeyboardControlTests
+    {
+        private static void RequireRun()
+        {if(Array.IndexOf(Environment.GetCommandLineArgs(),"--hobbyds9-demo-render-tests")<0)Assert.Ignore("Dedicated demo control fixture required.");}
+        private static object? Invoke(ReviewEntry entry,string method,params object[] args)=>typeof(ReviewEntry).GetMethod(method,BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entry,args);
+        private static Button Add(ReviewEntry entry,VisualElement root,Action action)=>
+            (Button)Invoke(entry,"AddButton",root,"Keyboard fixture",action,false)!;
+        private static void Key(VisualElement element,KeyCode key,bool up=false,EventModifiers modifiers=EventModifiers.None)
+        {
+            var systemEvent=new Event{type=up?EventType.KeyUp:EventType.KeyDown,keyCode=key,modifiers=modifiers};
+            if(up){using(var evt=KeyUpEvent.GetPooled(systemEvent)){evt.target=element;element.SendEvent(evt);}}
+            else{using(var evt=KeyDownEvent.GetPooled(systemEvent)){evt.target=element;element.SendEvent(evt);}}
+        }
+        private static Button Confirm(VisualElement root)=>root.Q("review-one-use-confirmation").Query<Button>().ToList().Single(b=>b.text=="Confirm");
+
+        [UnityTest] public IEnumerator FocusedButtonKeysRespectDisabledDetachedModifiersAndHeldKeys()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var root=entry.GetComponent<UIDocument>().rootVisualElement;
+            var frame=entry.Presentation!.Model.Current.Frame;int count=0;var button=Add(entry,root,()=>count++);var other=Add(entry,root,()=>{});
+            foreach(var key in new[]{KeyCode.Return,KeyCode.KeypadEnter,KeyCode.Space})
+            {
+                button.Focus();int before=count;Key(button,key);Key(button,key);Assert.That(count,Is.EqualTo(before+1),"one activation per held key");
+                Key(button,key,true);Key(button,key);Assert.That(count,Is.EqualTo(before+2));Key(button,key,true);
+            }
+            int accepted=count;button.Focus();Key(button,KeyCode.Return,false,EventModifiers.Control);Key(button,KeyCode.Return,true);
+            other.Focus();Key(button,KeyCode.Return);Key(other,KeyCode.Return,true);
+            button.SetEnabled(false);Key(button,KeyCode.Return);Key(other,KeyCode.Return,true);
+            button.SetEnabled(true);button.Focus();button.RemoveFromHierarchy();Key(button,KeyCode.Return);
+            Assert.That(count,Is.EqualTo(accepted));Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(frame));
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator HeldEnterCannotConfirmNewModalOrInvokeObsoleteControl()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var root=entry.GetComponent<UIDocument>().rootVisualElement;
+            int first=0,second=0;var opener=Add(entry,root,()=>Invoke(entry,"Confirm","First fixture",(Action)(()=>{
+                first++;Invoke(entry,"Confirm","Second fixture",(Action)(()=>second++));
+            })));
+            opener.Focus();Key(opener,KeyCode.Return);var confirm=Confirm(root);Assert.That(confirm,Is.Not.Null);
+            Key(confirm,KeyCode.Return);Assert.That(first,Is.Zero,"opening key cannot confirm modal");
+            Key(confirm,KeyCode.Return,true);Key(confirm,KeyCode.Return);Assert.That(first,Is.EqualTo(1));
+            var next=Confirm(root);Key(next,KeyCode.Return);Assert.That(second,Is.Zero,"confirming key cannot submit next modal");
+            Key(next,KeyCode.Return,true);Key(next,KeyCode.Return);Assert.That(second,Is.EqualTo(1));Key(root,KeyCode.Return,true);
+            Invoke(entry,"Build");Key(opener,KeyCode.Return);Assert.That(root.Q("review-one-use-confirmation"),Is.Null,"detached old epoch cannot open a modal");
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator TabUsesLocalFocusRingAndLeavesFieldPopupAndRawInputOwnedKeysAlone()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var root=entry.GetComponent<UIDocument>().rootVisualElement;
+            var a=Add(entry,root,()=>{});var b=Add(entry,root,()=>{});int moves=0;
+            root.RegisterCallback<NavigationMoveEvent>(_=>moves++,TrickleDown.TrickleDown);
+            a.Focus();Key(a,KeyCode.Tab);Assert.That(root.panel.focusController.focusedElement,Is.SameAs(b));
+            Key(b,KeyCode.Tab,false,EventModifiers.Shift);Assert.That(root.panel.focusController.focusedElement,Is.SameAs(a));Assert.That(moves,Is.EqualTo(2));
+            var field=new TextField();root.Add(field);field.Focus();var fieldTarget=(VisualElement)root.panel.focusController.focusedElement;
+            Key(fieldTarget,KeyCode.Tab);Assert.That(moves,Is.EqualTo(2),"field keys are not translated");
+            var popup=new DropdownField("Fixture",new System.Collections.Generic.List<string>{"One","Two"},0);root.Add(popup);popup.Focus();
+            Key((VisualElement)root.panel.focusController.focusedElement,KeyCode.Tab);Assert.That(moves,Is.EqualTo(2),"popup keys are not translated");
+            var keyboard=InputSystem.AddDevice<Keyboard>("DemoControlTab");
+            try
+            {
+                a.Focus();InputSystem.QueueStateEvent(keyboard,new KeyboardState(UnityEngine.InputSystem.Key.Tab));InputSystem.Update();
+                Assert.That(keyboard.tabKey.wasPressedThisFrame,Is.True);Key(a,KeyCode.Tab);Assert.That(moves,Is.EqualTo(2),"raw-input Tab owns navigation");
+            }
+            finally{InputSystem.RemoveDevice(keyboard);}
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator AlreadyPerformedSubmitLeavesActivationToStandardNavigationOnly()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var root=entry.GetComponent<UIDocument>().rootVisualElement;
+            var prior=InputSystem.actions;var actions=ScriptableObject.CreateInstance<InputActionAsset>();var map=actions.AddActionMap("UI");
+            var submit=map.AddAction("Submit",InputActionType.Button,"<Keyboard>/enter");
+            var keyboard=InputSystem.AddDevice<Keyboard>("DemoControlSubmit");int count=0;var button=Add(entry,root,()=>count++);
+            try
+            {
+                InputSystem.actions=actions;submit.Enable();button.Focus();
+                InputSystem.QueueStateEvent(keyboard,new KeyboardState(UnityEngine.InputSystem.Key.Enter));InputSystem.Update();
+                Assert.That(submit.WasPerformedThisFrame(),Is.True,"actual action signal, not a mock flag");
+                Key(button,KeyCode.Return);Assert.That(count,Is.Zero,"KeyDown precedes queued navigation and must not activate twice");
+                // Explicitly arranged normal UI route; this is not a claim the
+                // hidden Editor/native provider automatically dispatched it.
+                using(var evt=NavigationSubmitEvent.GetPooled()){evt.target=button;button.SendEvent(evt);}
+                Assert.That(count,Is.EqualTo(1));
+            }
+            finally
+            {
+                button.RemoveFromHierarchy();actions.Disable();InputSystem.actions=prior;InputSystem.RemoveDevice(keyboard);UnityEngine.Object.DestroyImmediate(actions);
+            }
+            yield return new ExitPlayMode();
+        }
+
+        [UnityTest] public IEnumerator InitialMenuFocusIsAttachedPrimaryAndStaleScheduledFocusCannotStealModal()
+        {
+            RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var root=entry.GetComponent<UIDocument>().rootVisualElement;
+            var start=root.Q<Button>("demo-start");Assert.That(root.panel.focusController.focusedElement,Is.SameAs(start));
+            Invoke(entry,"ScheduleDemoMenuFocus",start);Invoke(entry,"Confirm","Focus fixture",(Action)(()=>{}));yield return null;
+            Assert.That(root.panel.focusController.focusedElement,Is.SameAs(Confirm(root)),"scheduled menu focus cannot escape current modal");
+            yield return new ExitPlayMode();
+        }
+    }
+}
