@@ -117,6 +117,8 @@ namespace HobbyDS9.UnityReview
         private void DrawSaves()
         {
             var p=PagePanel("Save & resume");p.Add(Readout("Save your current campaign, or load a compatible save. Saving keeps unsent edits locally; successful loading replaces them."));
+            var result=SaveLoadResult();
+            if(result.Length>0){var banner=Readout(result);banner.name="save-load-result";banner.AddToClassList("console-queue");p.Add(banner);}
             var slots=new VisualElement();slots.AddToClassList("review-field-row");p.Add(slots);
             foreach(var slot in model!.SingleplayerDemo?new[]{"demo-1","demo-2","demo-3"}:new[]{"campaign-1","campaign-2","campaign-3"})
             {var b=AddButton(slots,(model.SingleplayerDemo?"Demo ":"Campaign ")+slot.Substring(slot.Length-1)+(slotName==slot?" · selected":""),()=>{slotName=slot;Draw();});b.name="save-slot-"+slot;}
@@ -124,6 +126,25 @@ namespace HobbyDS9.UnityReview
             var save=AddButton(p,"Save current campaign",()=>Do(()=>{if(!model!.Save(slotName)&&model.Message=="Checkpoint result: SlotOccupied")Confirm("Replace the save in "+slotName+"? Your current campaign will be saved; unsent edits stay local.",()=>Do(()=>model.Save(slotName,true)));}));save.name="player-save";save.AddToClassList("primary-action");
             var load=AddButton(p,"Load selected campaign",()=>Confirm("Load "+slotName+"? Only a validated compatible save can replace this campaign. Unsent edits will be discarded after a successful load.",()=>Do(()=>model!.Load(slotName,true))));load.name="player-load";
             p.Add(Readout(model.SingleplayerDemo?"Format-4 demo saves remain separate from classic, physical and integrated-review saves. Failed loads keep your current session.":"Early campaign saves remain separate from classic and earlier physical-review saves. Failed loads keep your current session."));
+        }
+        private string SaveLoadResult()
+        {
+            var message=model!.Message;
+            if(message=="Checkpoint result: None")return "Last save result: committed campaign state saved. Unsent edits stay local and are not in the save.";
+            if(message=="Validated complete-root checkpoint loaded.")return "Last load result: campaign loaded. Accepted state is restored; previous local edits were discarded.";
+            const string prefix="Checkpoint result: ";
+            if(!message.StartsWith(prefix,StringComparison.Ordinal))return "";
+            var code=message.Substring(prefix.Length);string reason;
+            switch(code)
+            {
+                case "NotFound":reason="This save slot is empty (NotFound).";break;
+                case "InvalidCheckpoint":reason="The save is invalid or incompatible with this campaign (InvalidCheckpoint).";break;
+                case "WriteFailed":reason="The save could not be written (WriteFailed). Your previous valid save is kept.";break;
+                case "SerializationFailed":reason="The campaign could not be prepared for saving (SerializationFailed). Your previous valid save is kept.";break;
+                case "SlotOccupied":reason="This slot already contains a save. Confirm replacement to overwrite it.";break;
+                default:reason="The operation did not complete ("+code+").";break;
+            }
+            return "Last save/load result: "+reason+(model.HasLocalEdits?" Your current campaign and unsent edits are unchanged.":" Your current campaign is unchanged.");
         }
         private void DrawAudio()
         {
