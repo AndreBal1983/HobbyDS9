@@ -8,6 +8,10 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/HobbyDS9.Headless/FrontierPackageReader.cs" Link="FrontierPackageReader.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/IntegratedPlaytestPackageReader.cs" Link="IntegratedPlaytestPackageReader.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/FrontierWalkthrough.cs" Link="FrontierWalkthrough.cs" />
+    <None Include="../../scenarios/frontier-reconnaissance-v1/*.json" Link="scenarios/frontier-reconnaissance-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <ProjectReference Include="../../prototypes/HobbyDS9.UnityReviewAdapter/HobbyDS9.UnityReviewAdapter.csproj" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
