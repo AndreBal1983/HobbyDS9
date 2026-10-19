@@ -79,6 +79,11 @@
 .player-narrow .review-order-dock { width: 280px; }
 .player-narrow .review-schematic-scroll { max-height: 110px; }
 .player-narrow .review-detail-scroll { min-height: 120px; }
+.demo-combat .review-input { min-width: 0; }
+.player-narrow .demo-combat .review-roster { width: 190px; }
+.player-narrow .demo-combat .review-order-dock { width: 248px; }
+.player-narrow .demo-combat .review-tabs .review-action { min-width: 0; padding: 3px 6px; font-size: 16px; }
+.player-narrow .demo-combat .combat-current-stocks { font-size: 16px; }
 .player-console .unity-scroller .unity-scroller__low-button, .player-console .unity-scroller .unity-scroller__high-button { background-color: #263b52; -unity-background-image-tint-color: #c3d4e7; }
 .player-console .lcars-pill { background-image: none; background-color: #9fd8fb; color: #050a10; }
 .player-console .lcars-pill:disabled { background-image: none; background-color: #334456; color: #c3d4e7; }

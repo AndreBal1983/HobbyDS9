@@ -230,7 +230,14 @@ namespace HobbyDS9.UnityReview
                 confirmation.style.marginLeft=0;confirmation.style.marginRight=0;confirmation.style.marginTop=0;confirmation.style.marginBottom=0;
                 confirmation.style.alignItems=Align.Center;confirmation.style.justifyContent=Justify.Center;confirmation.style.backgroundColor=new Color(.02f,.03f,.06f,.96f);
                 var box=new VisualElement{name="player-confirmation-summary"};box.AddToClassList("console-panel");box.style.width=620;box.style.maxWidth=new Length(90,LengthUnit.Percent);box.style.maxHeight=new Length(80,LengthUnit.Percent);
-                var text=Readout(title);text.style.fontSize=22;box.Add(text);var actions=new VisualElement();actions.AddToClassList("review-field-row");box.Add(actions);
+                var text=Readout(title);text.style.fontSize=22;
+                if(model.SingleplayerDemo)
+                {
+                    box.style.height=new Length(70,LengthUnit.Percent);
+                    var body=new ScrollView(ScrollViewMode.Vertical){name="player-confirmation-details"};body.style.flexGrow=1;body.style.minHeight=0;body.Add(text);box.Add(body);
+                }
+                else box.Add(text);
+                var actions=new VisualElement();actions.AddToClassList("review-field-row");actions.style.flexShrink=0;box.Add(actions);
                 AddButton(actions,"Cancel",callbacks.Cancel,true);var yes=AddButton(actions,"Confirm",callbacks.Confirm,true);yes.AddToClassList("primary-action");
                 confirmation.RegisterCallback<KeyDownEvent>(e=>{if(e.keyCode==KeyCode.Escape){callbacks.Cancel();e.StopPropagation();}});
                 confirmation.Add(box);root.Add(confirmation);yes.Focus();return;
