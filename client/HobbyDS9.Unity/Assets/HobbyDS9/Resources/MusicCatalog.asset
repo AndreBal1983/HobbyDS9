@@ -29,3 +29,27 @@ MonoBehaviour:
     order: 1
     crossfadeSeconds: 6
     quietTailSeconds: 0.45
+  - id: music.quiet-frontier
+    displayName: Quiet Frontier
+    clip: {fileID: 8300000, guid: c0e242ee197e4d9d9e2072837dc3186c, type: 3}
+    category: 0
+    loopPolicy: 0
+    order: 2
+    crossfadeSeconds: 6
+    quietTailSeconds: 0
+  - id: music.across-the-stars
+    displayName: Across the Stars
+    clip: {fileID: 8300000, guid: 22b9873a967243259ce547af180f0da1, type: 3}
+    category: 3
+    loopPolicy: 0
+    order: 0
+    crossfadeSeconds: 6
+    quietTailSeconds: 0
+  - id: music.secrets-in-the-courtyard
+    displayName: Secrets in the Courtyard
+    clip: {fileID: 8300000, guid: 106b49eb6ae14ac1af9aa7cfc8b4c852, type: 3}
+    category: 3
+    loopPolicy: 0
+    order: 1
+    crossfadeSeconds: 6
+    quietTailSeconds: 0
