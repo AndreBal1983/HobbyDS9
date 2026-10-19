@@ -99,7 +99,8 @@ namespace HobbyDS9.UnityReview.Tests
             var submit=InputSystem.actions.FindAction("UI/Submit",true);var map=submit.actionMap;
             var priorDevices=map.devices;var priorEnabled=submit.enabled;var priorRouting=InputSystem.settings.editorInputBehaviorInPlayMode;
             var priorBackground=InputSystem.settings.backgroundBehavior;var priorRun=UnityEngine.Application.runInBackground;
-            var keyboard=InputSystem.AddDevice<Keyboard>("DemoControlSubmit");int count=0;var button=Add(entry,root,()=>count++);
+            var keyboard=InputSystem.AddDevice<Keyboard>("DemoControlSubmit");int count=0;
+            var button=Add(entry,root,()=>{count++;Invoke(entry,"Confirm","Action-owned press fixture",(Action)(()=>count++));});
             try
             {
                 UnityEngine.Application.runInBackground=true;InputSystem.settings.backgroundBehavior=InputSettings.BackgroundBehavior.IgnoreFocus;
@@ -111,14 +112,16 @@ namespace HobbyDS9.UnityReview.Tests
                 // Explicitly arranged normal UI route; this is not a claim the
                 // hidden Editor/native provider automatically dispatched it.
                 using(var evt=NavigationSubmitEvent.GetPooled()){evt.target=button;button.SendEvent(evt);}
-                Assert.That(count,Is.EqualTo(1));
+                Assert.That(count,Is.EqualTo(1));var next=Confirm(root);
+                Assert.That(root.panel.focusController.focusedElement,Is.SameAs(next));
                 // Advance the real action frame, but deliberately do not send
                 // UI KeyUp: an OS repeat must not become a second activation.
                 InputSystem.QueueStateEvent(keyboard,new KeyboardState());InputSystem.Update();
                 Assert.That(submit.WasPerformedThisFrame(),Is.False);
-                Key(button,KeyCode.Return);Assert.That(count,Is.EqualTo(1),"real-action press must also latch against later OS repeats");
-                Key(button,KeyCode.Return,true);Key(button,KeyCode.Return);Assert.That(count,Is.EqualTo(2),"UI KeyUp permits a distinct new press");
-                Key(button,KeyCode.Return,true);
+                Key(next,KeyCode.Return);Assert.That(count,Is.EqualTo(1),"real-action press must not confirm the newly opened modal on OS repeat");
+                Assert.That(root.Q("review-one-use-confirmation"),Is.Not.Null);
+                Key(next,KeyCode.Return,true);Key(next,KeyCode.Return);Assert.That(count,Is.EqualTo(2),"UI KeyUp permits a distinct new press");
+                Assert.That(root.Q("review-one-use-confirmation"),Is.Null);Key(root,KeyCode.Return,true);
             }
             finally
             {
