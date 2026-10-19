@@ -16,7 +16,7 @@ using Newtonsoft.Json.Serialization;
 namespace HobbyDS9.UnityReview
 {
     // Actual Unity-compatible codec. Complete physical package/root only; no engine API or net10 dependency.
-    public sealed class ReviewNewtonsoftCodec : ISingleplayerDemoHostCodec
+    public sealed partial class ReviewNewtonsoftCodec : ISingleplayerDemoHostCodec
     {
         private static readonly UTF8Encoding Utf8=new UTF8Encoding(false,true);
         private static JsonSerializerSettings Settings() => new JsonSerializerSettings {
