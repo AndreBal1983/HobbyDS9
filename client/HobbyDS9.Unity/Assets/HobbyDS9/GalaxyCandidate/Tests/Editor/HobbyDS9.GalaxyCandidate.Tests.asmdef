@@ -1,0 +1,20 @@
+{
+  "name": "HobbyDS9.GalaxyCandidate.Tests",
+  "references": [
+    "HobbyDS9.GalaxyCandidate",
+    "HobbyDS9.ArtDemo",
+    "UnityEngine.TestRunner",
+    "UnityEditor.TestRunner"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "overrideReferences": true,
+  "precompiledReferences": [
+    "nunit.framework.dll"
+  ],
+  "defineConstraints": [
+    "UNITY_INCLUDE_TESTS"
+  ],
+  "autoReferenced": false
+}
