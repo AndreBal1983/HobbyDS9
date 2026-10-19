@@ -12,6 +12,8 @@ namespace HobbyDS9.UnityReview
         private readonly CampaignTacticalTravelPackageDto? package;
         private readonly CampaignIntegratedPlaytestPackageDto? integratedPackage;
         private readonly CampaignSingleplayerDemoPackageDto? demoPackage;
+        private readonly CampaignFrontierPackageDto? frontierPackage;
+        private readonly ReviewFrontierSlotStore? frontierSlots;
         private readonly ReviewDemoSlotStore? demoSlots;
         private readonly ReviewIntegratedSlotStore? integratedSlots;
         private readonly ReviewNewtonsoftCodec codec;
@@ -36,8 +38,18 @@ namespace HobbyDS9.UnityReview
             demoPackage=codec.CopyPackage(package);this.codec=codec;demoSlots=slots;
             host=PhysicalReviewHost.StartDemo(demoPackage,codec,slots);Current=Controller(host,demoPackage.HumanActorId!);
         }
-        public bool Integrated=>integratedPackage!=null||demoPackage!=null;
+        public ReviewUiModel(CampaignFrontierPackageDto package,ReviewNewtonsoftCodec codec,ReviewFrontierSlotStore slots)
+        {
+            frontierPackage=codec.CopyPackage(package);this.codec=codec;frontierSlots=slots;
+            host=PhysicalReviewHost.StartFrontier(frontierPackage,codec,slots);
+            var humans=frontierPackage.Integrated!.Physical!.CorePackage!.Campaign!.InitialState.Civilizations!
+                .Where(c=>c.ControllerKind==ControllerKind.Human).ToList();
+            if(humans.Count!=1)throw new ArgumentException("Frontier preview requires exactly one human controller.",nameof(package));
+            Current=Controller(host,humans[0].CivilizationId);
+        }
+        public bool Integrated=>integratedPackage!=null||demoPackage!=null||frontierPackage!=null;
         public bool SingleplayerDemo=>demoPackage!=null;
+        public bool FrontierPreview=>frontierPackage!=null;
         public ReviewResearchDraft? ResearchDraft { get; private set; }
         public bool LocalDesignDirty {get;set;}
         public Action? ResetLocalDesign {get;set;}
@@ -89,6 +101,7 @@ namespace HobbyDS9.UnityReview
             return received&&receipt.Result.Accepted;
         }
         public bool SwitchActor(string actor,bool discard=false)=>Run(()=>{
+            if(FrontierPreview){Message="This frontier preview has one human side. The opponent chooses its own orders.";return false;}
             if(SingleplayerDemo){Message="This demo has one human side. The opponent chooses its own orders.";return false;}
             if(Current.HasPendingWork || HasLocalEdits&&!discard){Message="Explicit discard is required before switching actor.";return false;}
             var next=Controller(host,actor); Current=next;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null; Message="Actor view changed; inspection and local edits cleared."; return true;
@@ -142,7 +155,8 @@ namespace HobbyDS9.UnityReview
         });
         public bool Load(string slot,bool discard=false)=>Run(()=>{
             if(Current.HasPendingWork||HasLocalEdits&&!discard){Message="Explicit discard required before load.";return false;}
-            var opened=demoPackage!=null?PhysicalReviewHost.OpenDemoFromSlot(demoPackage,codec,demoSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+            var opened=frontierPackage!=null?PhysicalReviewHost.OpenFrontierFromSlot(frontierPackage,codec,frontierSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+                :demoPackage!=null?PhysicalReviewHost.OpenDemoFromSlot(demoPackage,codec,demoSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :integratedPackage!=null?PhysicalReviewHost.OpenIntegratedFromSlot(integratedPackage,codec,integratedSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :PhysicalReviewHost.OpenFromSlot(package!,codec,slots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId);
             if(!opened.Succeeded){Message="Checkpoint result: "+opened.Error;return false;}
