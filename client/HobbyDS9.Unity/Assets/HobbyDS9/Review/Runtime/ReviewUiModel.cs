@@ -11,6 +11,8 @@ namespace HobbyDS9.UnityReview
     {
         private readonly CampaignTacticalTravelPackageDto? package;
         private readonly CampaignIntegratedPlaytestPackageDto? integratedPackage;
+        private readonly CampaignSingleplayerDemoPackageDto? demoPackage;
+        private readonly ReviewDemoSlotStore? demoSlots;
         private readonly ReviewIntegratedSlotStore? integratedSlots;
         private readonly ReviewNewtonsoftCodec codec;
         private readonly ReviewUnitySlotStore? slots;
@@ -29,7 +31,13 @@ namespace HobbyDS9.UnityReview
             integratedPackage=codec.CopyPackage(package);this.codec=codec;integratedSlots=slots;
             host=PhysicalReviewHost.StartIntegrated(integratedPackage,codec,slots);Current=Controller(host,actor);
         }
-        public bool Integrated=>integratedPackage!=null;
+        public ReviewUiModel(CampaignSingleplayerDemoPackageDto package,ReviewNewtonsoftCodec codec,ReviewDemoSlotStore slots)
+        {
+            demoPackage=codec.CopyPackage(package);this.codec=codec;demoSlots=slots;
+            host=PhysicalReviewHost.StartDemo(demoPackage,codec,slots);Current=Controller(host,demoPackage.HumanActorId!);
+        }
+        public bool Integrated=>integratedPackage!=null||demoPackage!=null;
+        public bool SingleplayerDemo=>demoPackage!=null;
         public ReviewResearchDraft? ResearchDraft { get; private set; }
         public bool LocalDesignDirty {get;set;}
         public Action? ResetLocalDesign {get;set;}
@@ -76,11 +84,12 @@ namespace HobbyDS9.UnityReview
         private bool Dispatch(ReviewWork? work)
         {
             if(work==null){Message="Command unavailable in the current observation.";return false;}
-            var receipt=host.Execute(work); var received=Current.Receive(receipt);
+            var receipt=Current.ExecutePending(work); var received=Current.Receive(receipt);
             Message="Authoritative result: "+receipt.Result.Error;
             return received&&receipt.Result.Accepted;
         }
         public bool SwitchActor(string actor,bool discard=false)=>Run(()=>{
+            if(SingleplayerDemo){Message="This demo has one human side. The opponent chooses its own orders.";return false;}
             if(Current.HasPendingWork || HasLocalEdits&&!discard){Message="Explicit discard is required before switching actor.";return false;}
             var next=Controller(host,actor); Current=next;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null; Message="Actor view changed; inspection and local edits cleared."; return true;
         });
@@ -133,7 +142,8 @@ namespace HobbyDS9.UnityReview
         });
         public bool Load(string slot,bool discard=false)=>Run(()=>{
             if(Current.HasPendingWork||HasLocalEdits&&!discard){Message="Explicit discard required before load.";return false;}
-            var opened=integratedPackage!=null?PhysicalReviewHost.OpenIntegratedFromSlot(integratedPackage,codec,integratedSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+            var opened=demoPackage!=null?PhysicalReviewHost.OpenDemoFromSlot(demoPackage,codec,demoSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+                :integratedPackage!=null?PhysicalReviewHost.OpenIntegratedFromSlot(integratedPackage,codec,integratedSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :PhysicalReviewHost.OpenFromSlot(package!,codec,slots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId);
             if(!opened.Succeeded){Message="Checkpoint result: "+opened.Error;return false;}
             var next=Controller(opened.Host!,Current.Frame.Actor);host=opened.Host!;Current=next;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null;Message="Validated complete-root checkpoint loaded.";return true;

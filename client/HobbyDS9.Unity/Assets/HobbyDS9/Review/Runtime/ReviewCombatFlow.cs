@@ -8,7 +8,7 @@ using HobbyDS9.TacticalReviewClient;
 
 namespace HobbyDS9.UnityReview
 {
-    public enum ReviewCombatStage { Planning, SelectEncounter, Orders, Waiting, RoundResult, AftermathPending, AftermathConfirmed, NoOwnedFleet, Closed }
+    public enum ReviewCombatStage { Planning, SelectEncounter, Orders, Waiting, RoundResult, AftermathPending, AftermathConfirmed, NoOwnedFleet, Closed, CampaignComplete }
 
     // Presentation state only. Every mutation still passes the actual host/controller validation.
     public sealed class ReviewCombatFlow
@@ -19,12 +19,16 @@ namespace HobbyDS9.UnityReview
         private readonly Dictionary<string,long> reviewedResults=new Dictionary<string,long>(StringComparer.Ordinal);
         private readonly HashSet<string> ownLosses=new HashSet<string>(StringComparer.Ordinal);
         private bool aftermathConfirmed;
+        private ReviewAftermathSummary? aftermathSummary;
+        public ReviewAftermathSummary? AftermathSummary { get {Context();return aftermathSummary;} }
         public bool SurfaceOpen { get; private set; }=true;
         public ReviewCombatFlow(ReviewUiModel model){Model=model;context=model.Current;}
         private void Context()
         {
-            if(ReferenceEquals(context,Model.Current))return;
-            context=Model.Current;reviewedResults.Clear();ownLosses.Clear();aftermathConfirmed=false;SurfaceOpen=true;
+            if(!ReferenceEquals(context,Model.Current))
+            {context=Model.Current;reviewedResults.Clear();ownLosses.Clear();aftermathConfirmed=false;aftermathSummary=null;SurfaceOpen=true;}
+            if(aftermathSummary!=null&&!aftermathSummary.Applies(Model.Current.Frame,Model.Closed))
+            {aftermathSummary=null;aftermathConfirmed=false;}
         }
         public ReviewCombatStage Stage
         {
@@ -32,6 +36,7 @@ namespace HobbyDS9.UnityReview
             {
                 Context();if(Model.Closed)return ReviewCombatStage.Closed;
                 var frame=Model.Current.Frame;var battle=frame.Battle;
+                if(CampaignComplete)return ReviewCombatStage.CampaignComplete;
                 if(battle!=null)
                 {
                     if(battle.Complete)
@@ -51,7 +56,8 @@ namespace HobbyDS9.UnityReview
         }
         public bool CanCommitRound=>Stage==ReviewCombatStage.Orders&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired;
         public bool CanFinalize=>Stage==ReviewCombatStage.AftermathPending&&Model.Current.Frame.Status.CanFinalizeBatch&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired;
-        public bool CanDraftNextOrder=>Model.Current.Frame.Status.Phase==SessionPhase.Planning&&Model.Current.Frame.OwnStrategicFleets.Count>0&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired&&!Model.Closed&&Model.Current.Mode==ReviewMode.Planning;
+        public bool CampaignComplete=>Model.Current.Frame.Demo!=null&&Model.Current.Frame.Demo.Outcome!=CampaignDemoOutcome.Active;
+        public bool CanDraftNextOrder=>!CampaignComplete&&Model.Current.Frame.Status.Phase==SessionPhase.Planning&&Model.Current.Frame.OwnStrategicFleets.Count>0&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired&&!Model.Closed&&Model.Current.Mode==ReviewMode.Planning;
         public IReadOnlyList<string> OwnLosses { get {Context();return ownLosses.OrderBy(s=>s,StringComparer.Ordinal).ToList().AsReadOnly();} }
         public void Open(){Context();SurfaceOpen=true;}
         public void Dismiss(){SurfaceOpen=false;} // No command, discard or time advance.
@@ -70,8 +76,14 @@ namespace HobbyDS9.UnityReview
         {
             if(!confirmed||!CanFinalize){Notice="Aftermath not applied: confirmation and whole-batch readiness required.";return false;}
             Notice="";
+            var controller=Model.Current;var completed=controller.Frame;
             var success=Model.FinalizeBatch();
-            if(success){aftermathConfirmed=true;reviewedResults.Clear();SurfaceOpen=true;}
+            if(success)
+            {
+                aftermathSummary=ReferenceEquals(controller,Model.Current)&&!Model.Current.RefreshRequired
+                    ?ReviewAftermathSummary.Confirmed(completed,Model.Current.Frame):null;
+                aftermathConfirmed=aftermathSummary!=null;reviewedResults.Clear();SurfaceOpen=true;
+            }
             return success;
         }
         public KnownRouteOffer? PreviewRoute(string fleet,string destination)
@@ -99,8 +111,9 @@ namespace HobbyDS9.UnityReview
                     case ReviewCombatStage.AftermathConfirmed:return "Aftermath confirmed — choose a fresh strategic order";
                     case ReviewCombatStage.NoOwnedFleet:return "No owned surviving fleet available for orders";
                     case ReviewCombatStage.SelectEncounter:return "Select an owned encounter";
-                    case ReviewCombatStage.Closed:return "Review closed";
-                    default:return "Physical tactical-v2 review — strategic Planning";
+                    case ReviewCombatStage.Closed:return Model.Current.Frame.Demo!=null?"Campaign closed":"Review closed";
+                    case ReviewCombatStage.CampaignComplete:return "Campaign complete — "+Model.Current.Frame.Demo!.Outcome+" · inspection";
+                    default:return Model.Current.Frame.Demo!=null?"Combat — strategic Planning":"Physical tactical-v2 review — strategic Planning";
                 }
             }
         }
@@ -137,13 +150,13 @@ namespace HobbyDS9.UnityReview
         {
             var text=new StringBuilder("SCHEMATIC STAGING — no steering or authoritative 3D geometry\n");
             var b=Model.Current.Frame.Battle;
-            if(b==null)return text.AppendLine(Model.Current.Frame.Status.Phase==SessionPhase.Planning?"Current campaign boundary; fresh orders use known routes and contacts.":"Select an owned encounter. No hidden participants or identities are inferred.").ToString();
+            if(b==null)return text.AppendLine(CampaignComplete?"Completed campaign boundary; retained ships and stocks are available for inspection.":Model.Current.Frame.Status.Phase==SessionPhase.Planning?"Current campaign boundary; fresh orders use known routes and contacts.":"Select an owned encounter. No hidden participants or identities are inferred.").ToString();
             text.AppendLine(FormattableString.Invariant($"Sector {b.LocationNodeId} | {(b.Complete?"Completed after up to 3 rounds":"Round "+b.Round+" / up to 3")}"));
             foreach(var relation in b.Relations)text.AppendLine(relation.OwnFleetId+" → "+relation.VisibleEnemyFleetId+": "+relation.Range+" | own facing "+relation.OwnFacing);
             if(b.VisibleEnemies.Count==0)text.AppendLine("No visible enemy. Proceed cautiously; hidden identities/counts are unavailable.");
             foreach(var enemy in b.VisibleEnemies)
                 text.AppendLine(FormattableString.Invariant($"Visible {enemy.ShipId} ({enemy.Type}) | Hull {enemy.Hull}/{enemy.MaxHull} | shields ")+string.Join(" / ",enemy.Shields));
-            text.AppendLine("Enemy condition precision is the proposed active review policy. Enemy stocks, readiness and fresh orders are not disclosed.");
+            text.AppendLine(Model.Current.Frame.Demo!=null?"Only observed enemy condition is shown. Enemy ammunition and upcoming orders remain hidden.":"Enemy condition precision is the proposed active review policy. Enemy stocks, readiness and fresh orders are not disclosed.");
             return text.ToString();
         }
     }

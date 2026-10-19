@@ -12,12 +12,16 @@ namespace HobbyDS9.UnityClient.Tests
         {
             var catalog = Resources.Load<MusicCatalog>("MusicCatalog"); Assert.That(catalog, Is.Not.Null);
             Assert.That(MusicCatalogPolicy.Validate(catalog.tracks.Select(t => t.Metadata)), Is.Empty);
-            Assert.That(catalog.tracks.Select(t => t.id), Is.EqualTo(new[] { "music.deep-station", "music.deep-station-1" }));
+            Assert.That(catalog.tracks.Select(t => t.id), Is.Unique);
+            Assert.That(catalog.tracks.Where(t=>t.category==MusicCategory.Strategic).OrderBy(t=>t.order).Select(t=>t.id),
+                Is.EqualTo(new[] { "music.deep-station", "music.deep-station-1", "music.quiet-frontier" }));
+            Assert.That(catalog.tracks.Where(t=>t.category==MusicCategory.Event).OrderBy(t=>t.order).Select(t=>t.id),
+                Is.EqualTo(new[] { "music.across-the-stars", "music.secrets-in-the-courtyard" }));
             foreach (var entry in catalog.tracks)
             {
-                Assert.That(entry.clip, Is.Not.Null); Assert.That(entry.category, Is.EqualTo(MusicCategory.Strategic));
+                Assert.That(entry.clip, Is.Not.Null);
                 Assert.That(entry.loopPolicy, Is.EqualTo(MusicLoopPolicy.FullCue)); Assert.That(entry.crossfadeSeconds, Is.EqualTo(6));
-                Assert.That(entry.clip.length, Is.GreaterThan(180));
+                Assert.That(entry.clip.length, Is.GreaterThan(entry.id=="music.secrets-in-the-courtyard"?79:180));
                 var importer = (AudioImporter)AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(entry.clip));
                 Assert.That(importer.defaultSampleSettings.loadType, Is.EqualTo(AudioClipLoadType.Streaming));
                 Assert.That(importer.defaultSampleSettings.preloadAudioData, Is.False); Assert.That(importer.forceToMono, Is.False);

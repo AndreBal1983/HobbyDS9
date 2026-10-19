@@ -19,7 +19,7 @@ namespace HobbyDS9.UnityReview
         private KnownRouteOffer? route {get=>workspace.RoutePreview;set=>workspace.RoutePreview=value;}
         public ReviewPlayerView(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate,Action<string,string?,string?> selectFleet)
         {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;this.selectFleet=selectFleet;}
-        private bool Editable=>model.Current.Frame.Status.Phase==SessionPhase.Planning&&!model.Current.HasPendingWork&&!model.Current.RefreshRequired&&!model.Current.Dirty&&!model.Busy&&!model.Closed;
+        private bool Editable=>model.Current.Frame.Status.Phase==SessionPhase.Planning&&(model.Current.Frame.Demo==null||model.Current.Frame.Demo.Outcome==CampaignDemoOutcome.Active)&&!model.Current.HasPendingWork&&!model.Current.RefreshRequired&&!model.Current.Dirty&&!model.Busy&&!model.Closed;
         private static Label Text(VisualElement p,string text,string cls="console-copy",string? id=null)
         {var l=new Label(text){name=id??""};l.AddToClassList(cls);p.Add(l);return l;}
         private Button Btn(VisualElement p,string text,string id,Action action,bool enabled=true,bool primary=false)
@@ -44,7 +44,7 @@ namespace HobbyDS9.UnityReview
             var r=facts.Research;var d=model.ResearchInputs()!;bool edit=Editable&&d.Current(model.Current.Frame);
             if(workspace.ResearchTab=="science")
             {
-                Text(main,"Invest in discovery","console-intro");
+                if(!workspace.Compact)Text(main,"Invest in discovery","console-intro");
                 var grid=Row(main,"science-grid");grid.name="six-science-cards";
                 foreach(var card in r.Science)
                 {
@@ -78,10 +78,19 @@ namespace HobbyDS9.UnityReview
                 foreach(var project in r.Engineering)
                 {
                     var card=new VisualElement{name="engineering-project-"+project.Definition.DefinitionId};card.AddToClassList("console-queue");main.Add(card);
-                    Text(card,project.Definition.DisplayName,"console-section");Text(card,project.IsTarget?"Current project":Reason(project.UnavailableReason));
+                    var demo=model.Current.Frame.Demo!=null;
+                    Text(card,project.Definition.DisplayName,"console-section","engineering-project-heading");
+                    if(demo)
+                    {
+                        var designs=string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct());
+                        Text(card,"Demo construction: "+(designs.Length==0?"no ship designs offered":designs+" only")+". Other class unlocks are unavailable here.",id:"engineering-demo-construction");
+                    }
+                    Text(card,project.Band==EngineeringMaturityBand.Mature?"Completed":project.IsTarget?"Current project":Reason(project.UnavailableReason),id:"engineering-project-state");
                     card.Add(new ProgressBar{value=project.MaturityPercent});Text(card,project.MaturityPercent+"% · "+project.Band,"console-metric");
-                    Text(card,"Cost: "+Units(project.Cost)+" research points");Text(card,project.Definition.EffectSummary);
-                    var requirements=new Foldout{text="Requirements & progress",value=false};card.Add(requirements);
+                    Text(card,"Project cost: "+Units(project.Cost)+(demo?" Engineering points":" research points"),id:"engineering-project-cost");
+                    if(!demo){Text(card,project.Definition.EffectSummary);Text(card,"Construction in this preview supports "+string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct())+". Additional class unlocks are not available here yet.");}
+                    var requirements=new Foldout{name="engineering-project-details",text=demo?"Details — authored effect & requirements":"Requirements & progress",value=false};card.Add(requirements);
+                    if(demo){Text(requirements,"Authored effect; the demo construction limits above still apply.",id:"engineering-effect-qualifier");Text(requirements,project.Definition.EffectSummary,id:"engineering-authored-effect");}
                     for(int i=0;i<project.Definition.ScienceRequirements.Count;i++){var q=project.Definition.ScienceRequirements[i];Text(requirements,(project.ScienceSatisfied[i]?"✓ ":"○ ")+q.Discipline+" interval "+q.IntervalStartLevel+" breakthrough "+q.BreakthroughOrdinal);}
                     Btn(card,"Develop project","integrated-develop-"+project.Definition.DefinitionId,()=>confirm("Develop "+project.Definition.DisplayName+"? Earned progress is retained when you change targets. Work progresses on End turn.",()=>perform(()=>model.Engineering(project.Definition.DefinitionId.Value,ReviewUiModel.NewCommandId()))),edit&&project.CanTarget,true);
                 }
@@ -100,10 +109,10 @@ namespace HobbyDS9.UnityReview
             Text(aside,(100m*d.ScienceUnits/600).ToString("0.##")+"% / "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"%","console-metric");
             split.RegisterValueChangedCallback(e=>perform(()=>d.ScienceUnits=e.newValue*30));
             Btn(aside,"Apply R&D split","integrated-apply-split",()=>confirm("Apply "+(100m*d.ScienceUnits/600).ToString("0.##")+"% Science and "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"% Engineering? Other Science-share edits remain unsent.",()=>perform(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()))),edit&&d.SplitChanged);
-            Text(aside,"Science reserve: "+r.ScienceReserveConceptual);Text(aside,"Engineering reserve: "+r.EngineeringReserveConceptual);
+            Text(aside,"Science reserve: "+r.ScienceReserveConceptual);Text(aside,"Engineering reserve: "+r.EngineeringReserveConceptual+(model.Current.Frame.Demo!=null?" Engineering points":""),id:"engineering-reserve");
             Text(aside,"One Engineering project at a time. Progress and eligibility are checked by the campaign.");
             Btn(aside,workspace.ResearchTab=="science"?"Open Engineering":"Open Science","open-other-research",()=>perform(()=>workspace.ResearchTab=workspace.ResearchTab=="science"?"engineering":"science"));
-            if(!edit)Text(aside,"Research changes are unavailable until combat is complete or your view is refreshed.");
+            if(!edit)Text(aside,model.Current.Frame.Demo!=null&&model.Current.Frame.Demo.Outcome!=CampaignDemoOutcome.Active?"Campaign complete. Research is available for inspection; further changes are unavailable.":"Research changes are unavailable at this boundary. Finish pending combat, refresh stale authority, or submit/discard unsent orders before editing.",id:"research-readonly-reason");
         }
         private static string ShipName(ShipDesignSnapshot d)=>d.DefinitionId.Value=="ship-design.source-cruiser"?"Cruiser":d.DisplayName;
         private static string Resource(string id)=>id=="resource.dilithium"?"Dilithium":id.Substring(id.LastIndexOf('.')+1).Replace('-',' ');
@@ -111,9 +120,9 @@ namespace HobbyDS9.UnityReview
         {
             var main=Panel(root,"Production queue");var aside=Panel(root,"Build a ship","console-aside");
             var eligible=facts.Construction.FirstOrDefault(o=>o.CanEnqueue)?.ColonyId.Value;
-            if(colony==null||!facts.Colonies.Any(c=>c.ColonyId.Value==colony))colony=eligible??facts.Colonies.FirstOrDefault()?.ColonyId.Value;
+            if(colony==null||!facts.Colonies.Any(c=>c.ColonyId.Value==colony))colony=facts.Colonies.FirstOrDefault(c=>c.ProductionQueue.Count>0)?.ColonyId.Value??eligible??facts.Colonies.FirstOrDefault()?.ColonyId.Value;
             var selection=Row(main);
-            foreach(var world in facts.Colonies)Btn(selection,world.Environment.DisplayName+(world.ColonyId.Value==colony?" · selected":""),"production-colony-"+world.ColonyId,()=>perform(()=>colony=world.ColonyId.Value));
+            foreach(var world in facts.Colonies)Btn(selection,world.Environment.DisplayName+(world.ProductionQueue.Count>0?" · queue "+world.ProductionQueue.Count:"")+(world.ColonyId.Value==colony?" · selected":""),"production-colony-"+world.ColonyId,()=>perform(()=>colony=world.ColonyId.Value));
             var selected=facts.Colonies.FirstOrDefault(c=>c.ColonyId.Value==colony);
             if(selected==null){Text(main,"You have no owned shipyards.");return;}
             Text(main,selected.Environment.DisplayName+" · Industry "+selected.Economy.Industry,"console-intro");
@@ -143,20 +152,40 @@ namespace HobbyDS9.UnityReview
         private void Map(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
             var main=Panel(root,"Strategic operations");var aside=Panel(root,"Selection / context","console-aside");
+            var ordinaryColor=new Color(.61f,.76f,.87f);var wormholeColor=new Color(.72f,.64f,.9f);
+            var legend=Row(main);legend.name="map-link-legend";
+            foreach(var wormhole in new[]{false,true})
+            {
+                var key=Row(legend);key.style.marginRight=12;key.style.alignItems=Align.Center;
+                var line=new VisualElement();line.style.width=24;line.style.height=wormhole?10:3;line.style.marginRight=6;line.style.borderTopWidth=3;line.style.borderTopColor=wormhole?wormholeColor:ordinaryColor;
+                if(wormhole){line.style.borderBottomWidth=3;line.style.borderBottomColor=wormholeColor;}key.Add(line);
+                Text(key,wormhole?"Double line: wormhole":"Single line: ordinary",id:wormhole?"map-legend-wormhole":"map-legend-ordinary");
+            }
             var map=new VisualElement{name="integrated-known-map"};map.style.flexGrow=1;map.style.minHeight=workspace.Compact?320:500;main.Add(map);
             var sky=new Image{name="map-space-backdrop",image=Resources.Load<Texture2D>("PlayerArt/space-backdrop"),scaleMode=ScaleMode.ScaleAndCrop,pickingMode=PickingMode.Ignore};sky.StretchToParentSize();map.Add(sky);
             var lines=new VisualElement{pickingMode=PickingMode.Ignore};lines.StretchToParentSize();map.Add(lines);
             var nodes=facts.Navigation.Nodes.ToList();
             Vector2 Point(string id){var i=nodes.FindIndex(n=>n.NodeId.Value==id);var angle=2*Mathf.PI*i/Math.Max(1,nodes.Count)-Mathf.PI/2;return new Vector2(map.contentRect.width*.5f+Mathf.Cos(angle)*map.contentRect.width*.32f,map.contentRect.height*.5f+Mathf.Sin(angle)*map.contentRect.height*.34f);}
-            lines.generateVisualContent+=ctx=>{var p=ctx.painter2D;foreach(var link in facts.Navigation.Links){p.strokeColor=link.Kind==GalaxyEdgeKind.Wormhole?new Color(.72f,.64f,.9f):new Color(.61f,.76f,.87f);p.lineWidth=3;p.BeginPath();p.MoveTo(Point(link.EndpointA.Value));p.LineTo(Point(link.EndpointB.Value));p.Stroke();}};
+            lines.generateVisualContent+=ctx=>{
+                var p=ctx.painter2D;
+                foreach(var link in facts.Navigation.Links)
+                {
+                    var wormhole=link.Kind==GalaxyEdgeKind.Wormhole;var a=Point(link.EndpointA.Value);var b=Point(link.EndpointB.Value);
+                    p.strokeColor=wormhole?wormholeColor:ordinaryColor;p.lineWidth=3;
+                    void Stroke(Vector2 offset){p.BeginPath();p.MoveTo(a+offset);p.LineTo(b+offset);p.Stroke();}
+                    // Presentation-only line pattern; endpoints and known links are unchanged.
+                    if(wormhole){var offset=new Vector2(b.y-a.y,a.x-b.x).normalized*3;Stroke(offset);Stroke(-offset);}else Stroke(Vector2.zero);
+                }
+            };
             foreach(var node in nodes)
             {
                 var marker=Btn(map,node.DisplayName,"map-node-"+node.NodeId,()=>perform(()=>workspace.SelectedNode=node.NodeId.Value));marker.style.position=Position.Absolute;marker.style.width=178;marker.style.fontSize=16;marker.style.whiteSpace=WhiteSpace.Normal;
                 map.RegisterCallback<GeometryChangedEvent>(_=>{var p=Point(node.NodeId.Value);marker.style.left=p.x-89;marker.style.top=p.y-22;map.MarkDirtyRepaint();});
             }
             Text(main,"Known navigation · arrangement is schematic. Select your fleet, then a destination to preview its route.");
+            Text(aside,"Your fleets","console-section","map-own-fleets-heading");
             foreach(var fleet in facts.Fleets){var b=Btn(aside,"Your fleet · "+fleet.ShipIds.Count+" ship(s)\n"+NodeName(facts,fleet.LocationNodeId.Value),"map-fleet-orders-"+fleet.FleetId,()=>{workspace.SelectedFleet=fleet.FleetId.Value;selectFleet(fleet.FleetId.Value,workspace.SelectedNode,null);});b.style.whiteSpace=WhiteSpace.Normal;}
-            var selected=nodes.FirstOrDefault(n=>n.NodeId.Value==workspace.SelectedNode);Text(aside,selected?.DisplayName??"Select a sector","console-intro");
+            var selected=nodes.FirstOrDefault(n=>n.NodeId.Value==workspace.SelectedNode);Text(aside,selected==null?"Your worlds — no sector selected":"Selected sector: "+selected.DisplayName,"console-intro","map-worlds-scope");
             foreach(var world in facts.Colonies.Where(c=>selected==null||selected.AssociatedSystemId==c.SystemId))
             {Text(aside,world.Environment.DisplayName,"console-section");Text(aside,"Population "+world.Population+" / "+world.PopulationCapacity);Text(aside,"Food "+world.Food+" · Industry "+world.Economy.Industry+" · R&D "+world.Economy.ResearchOutput);Btn(aside,"Inspect world","world-inspect-"+world.ColonyId,()=>{colony=world.ColonyId.Value;navigate(ReviewWorkspacePage.Worlds);});Btn(aside,"Manage production","world-production-"+world.ColonyId,()=>{colony=world.ColonyId.Value;navigate(ReviewWorkspacePage.Production);});}
             if(facts.Status.Phase!=SessionPhase.Planning)Btn(aside,"Open pending battle","strategy-open-combat",()=>navigate(ReviewWorkspacePage.Combat),true,true);
@@ -168,12 +197,17 @@ namespace HobbyDS9.UnityReview
             foreach(var f in facts.Fleets)Btn(main,"Fleet · "+NodeName(facts,f.LocationNodeId.Value)+" · "+f.ShipIds.Count+" ships"+(f.FleetId.Value==workspace.SelectedFleet?" · selected":""),"fleet-select-"+f.FleetId,()=>perform(()=>{workspace.SelectedFleet=f.FleetId.Value;route=null;}));
             var fleet=facts.Fleets.FirstOrDefault(f=>f.FleetId.Value==workspace.SelectedFleet);
             if(fleet==null){Text(main,"No owned surviving fleet can receive orders. You may build a supported ship if you have an eligible shipyard.");return;}
+            var ships=facts.Ships.Where(s=>s.FleetId==fleet.FleetId).ToList();
+            if(!ships.Any(s=>s.ShipId.Value==workspace.SelectedOwnShip))workspace.SelectedOwnShip=ships.FirstOrDefault()?.ShipId.Value;
+            foreach(var own in ships)Btn(main,"Inspect ship "+(ships.IndexOf(own)+1)+(own.ShipId.Value==workspace.SelectedOwnShip?" · selected":""),"own-ship-select-"+own.ShipId,()=>perform(()=>workspace.SelectedOwnShip=own.ShipId.Value));
+            var selectedShip=ships.FirstOrDefault(s=>s.ShipId.Value==workspace.SelectedOwnShip);
+            if(selectedShip!=null)main.Add(new ReviewShipArtPanel(facts.Civilization.DefinitionId.Value,selectedShip.ShipDesignDefinitionId.Value));
             Text(main,NodeName(facts,fleet.LocationNodeId.Value),"console-intro");Text(main,"Accepted route: "+(fleet.RouteNodeIds.Count==0?"None":string.Join(" → ",fleet.RouteNodeIds.Select(n=>NodeName(facts,n.Value)))));
-            foreach(var ship in model.Current.Frame.OwnShips.Where(s=>s.Condition.FleetId==fleet.FleetId.Value))
-            {var c=new VisualElement();c.AddToClassList("console-queue");main.Add(c);Text(c,ship.Condition.Type,"console-section");Text(c,"Hull "+ship.Condition.Hull+" / "+ship.Condition.MaxHull);Text(c,"Fore / Port / Starboard / Aft: "+string.Join(" / ",ship.Condition.Shields));foreach(var w in ship.Weapons.Where(w=>w.Class==TacticalWeaponClass.Torpedo))Text(c,"Torpedoes "+w.Ammunition+" / "+w.MagazineCapacity);}
+            foreach(var ship in model.Current.Frame.OwnShips.Where(s=>s.Condition.FleetId==fleet.FleetId.Value&&s.Condition.ShipId==workspace.SelectedOwnShip))
+            {var c=new VisualElement();c.AddToClassList("console-queue");main.Add(c);var design=facts.Construction.FirstOrDefault(o=>o.Design.DefinitionId==selectedShip?.ShipDesignDefinitionId)?.Design;Text(c,design==null?"Ship":ShipName(design),"console-section");Text(c,"Hull "+ship.Condition.Hull+" / "+ship.Condition.MaxHull);Text(c,"Fore / Port / Starboard / Aft: "+string.Join(" / ",ship.Condition.Shields));foreach(var w in ship.Weapons.Where(w=>w.Class==TacticalWeaponClass.Torpedo))Text(c,"Torpedoes "+w.Ammunition+" / "+w.MagazineCapacity);}
             Text(aside,"1 · Select fleet","console-section");Text(aside,NodeName(facts,fleet.LocationNodeId.Value)+" · "+fleet.ShipIds.Count+" ships");Text(aside,"2 · Choose destination","console-section");
             Text(aside,workspace.SelectedNode==null?"No destination selected":NodeName(facts,workspace.SelectedNode));
-            var destinations=new Foldout{text="Choose / change destination",value=workspace.DestinationExpanded};aside.Add(destinations);destinations.RegisterValueChangedCallback(e=>workspace.DestinationExpanded=e.newValue);
+            var destinations=new Foldout{name="fleet-route-destination",text="Destination",value=workspace.DestinationExpanded};aside.Add(destinations);destinations.RegisterValueChangedCallback(e=>workspace.DestinationExpanded=e.newValue);
             foreach(var n in facts.Navigation.Nodes)Btn(destinations,n.DisplayName+(n.NodeId.Value==workspace.SelectedNode?" · selected":""),"route-destination-"+n.NodeId,()=>perform(()=>{workspace.SelectedNode=n.NodeId.Value;workspace.DestinationExpanded=false;route=null;}));
             var target=workspace.SelectedNode;
             if(route!=null&&!workspace.RoutePreviewMatchesCurrent)route=null;
@@ -187,7 +221,7 @@ namespace HobbyDS9.UnityReview
             }
             Btn(aside,"Remain here","player-stay",()=>confirm("Keep this fleet in its current sector without requesting combat?",()=>perform(()=>{if(model.DraftTravel(fleet.FleetId.Value,CampaignTravelIntent.Stay,null,null))model.SendTravel(ReviewUiModel.NewCommandId());})),Editable&&!model.HasLocalEdits);
             Btn(aside,"Stay / seek combat","player-stay-engage",()=>confirm("Stay and seek a lawful engagement on the next turn? This does not start an immediate battle.",()=>perform(()=>{if(model.DraftTravel(fleet.FleetId.Value,CampaignTravelIntent.StayEngage,null,null))model.SendTravel(ReviewUiModel.NewCommandId());})),Editable&&!model.HasLocalEdits);
-            var details=new Foldout{text="Contact / advanced order details",value=false};aside.Add(details);
+            var details=new Foldout{text="Contact details",value=false};aside.Add(details);
             foreach(var known in model.Current.Frame.Travel!.KnownContacts)Text(details,"Last seen contact at "+NodeName(facts,known.LastSeenNodeId)+", turn "+known.LastSeenTurn+" · "+(known.Fresh?"fresh":"stale")+". Current destination is unknown.");
             Btn(details,"Open complete order controls","advanced-fleet-orders",()=>navigate(ReviewWorkspacePage.Combat));
         }

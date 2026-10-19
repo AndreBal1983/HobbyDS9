@@ -142,9 +142,12 @@ for folder in (root / "src", root / "tests", runtime, assets / "HobbyDS9/Tests")
 # Audio source integrity/import/reference checks. Never an audible-playback claim.
 music = assets / "HobbyDS9/Audio/Music"
 music_catalog = (assets / "HobbyDS9/Resources/MusicCatalog.asset").read_text(encoding="utf-8-sig")
-for filename, digest, track_id in (
-    ("Deep Station.mp3", "94bd236d2f1c1e6916cae87a240e4d3987bec0bae0f9857a8c502f6b7454a512", "music.deep-station"),
-    ("Deep Station track 1.mp3", "91c3e99e255c6dc5590000e204747ac16de55b342c84fbd2542e9b78d51ce91a", "music.deep-station-1"),
+for filename, digest, track_id, category in (
+    ("Deep Station.mp3", "94bd236d2f1c1e6916cae87a240e4d3987bec0bae0f9857a8c502f6b7454a512", "music.deep-station", 0),
+    ("Deep Station track 1.mp3", "91c3e99e255c6dc5590000e204747ac16de55b342c84fbd2542e9b78d51ce91a", "music.deep-station-1", 0),
+    ("Quiet Frontier.mp3", "11f41a38b16b4a59b7e6c9c2919bd31a9d04384c22f79b4a62523c49cc9153ad", "music.quiet-frontier", 0),
+    ("Across the Stars.mp3", "8449a257fe7322f959e5a24ebb4f1b42a05fa95ac38a7b6d1f4a0cad39d1b32a", "music.across-the-stars", 3),
+    ("Secrets in the Courtyard.mp3", "c6b4ed4cfd02a527fa8f49c2cf759cd7d3052ce9188a0552a3f86487bbec2128", "music.secrets-in-the-courtyard", 3),
 ):
     source_audio = music / filename
     require(source_audio.is_file(), f"Missing original soundtrack: {filename}")
@@ -158,8 +161,8 @@ for filename, digest, track_id in (
     require(entry is not None, f"Missing stable track ID: {track_id}")
     if entry is not None:
         require(guid is not None and f"guid: {guid.group(1)}" in entry.group(1), f"Catalog clip reference missing: {filename}")
-        require("    loopPolicy: 0" in entry.group(1).splitlines() and "    category: 0" in entry.group(1).splitlines(),
-                f"Supplied cue must be FullCue/Strategic: {track_id}")
+        require("    loopPolicy: 0" in entry.group(1).splitlines() and f"    category: {category}" in entry.group(1).splitlines(),
+                f"Supplied cue must retain its FullCue/context policy: {track_id}")
 for name in ("MusicPolicy.cs", "MusicCatalog.cs", "AudioDirector.cs"):
     code = (runtime / name).read_text(encoding="utf-8-sig")
     require(all(term not in code for term in ("HobbyDS9.Application", "HobbyDS9.Contracts", "HobbyDS9.Simulation", "SplitMix64")),

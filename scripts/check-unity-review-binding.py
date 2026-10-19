@@ -18,7 +18,7 @@ def check(root):
     asm = json.loads((runtime / "HobbyDS9.UnityReview.asmdef").read_text(encoding="utf-8-sig"))
     require(asm["name"] == "HobbyDS9.UnityReview" and asm.get("overrideReferences") is True and asm.get("autoReferenced") is False,
             "Review runtime requires the preserved explicit assembly identity")
-    require(asm.get("references") == [] and set(asm.get("precompiledReferences", [])) == {
+    require(asm.get("references") == ["HobbyDS9.ArtDemo", "Unity.InputSystem"] and set(asm.get("precompiledReferences", [])) == {
         "HobbyDS9.Contracts.dll", "HobbyDS9.Application.dll", "HobbyDS9.TacticalReviewClient.dll", "Newtonsoft.Json.dll"},
         "Unexpected review runtime reference; host-only/storage/Simulation imports are forbidden")
     for name in ("Editor", "Tests"):
@@ -46,6 +46,59 @@ def check(root):
     require("modalPermission.TryOpen" in entry and '"Cancel",callbacks.Cancel' in entry and
             '"Confirm",callbacks.Confirm' in entry and "modalPermission.Invalidate()" in entry,
             "Modal buttons must use the actual portable one-use permission and lifetime invalidation")
+    keyboard = (runtime / "ReviewEntry.Keyboard.cs").read_text(encoding="utf-8-sig")
+    require('if(model!.SingleplayerDemo)BindDemoButtonKeyboard(button,guarded);' in entry and
+            'new Button(guarded)' in entry and 'if(SubmitAlreadyPerformed())' in keyboard and
+            'if(!(enter?returnHeld:spaceHeld))LatchDemoKey(button,e.keyCode,e.timestamp);return;' in keyboard and
+            'if(enter?returnHeld:spaceHeld){e.StopPropagation();return;}' in keyboard and
+            'WasPerformedThisFrame()' in keyboard and 'returnHeld' in keyboard and 'DemoKeyUp' in keyboard,
+            "Keyboard buttons must share the guarded click and defer real Submit, with held-key suppression")
+    require('if(model?.SingleplayerDemo!=true||panel==null||doc.panelSettings!=panel)' in entry and
+            'UnbindDemoKeyboard();ReleaseAudio();' in entry and
+            'root=doc.rootVisualElement;root.Clear();' in entry and
+            'PreserveDemoKeyOrigins();' in entry.split('private void Build()',1)[1].split('private void Navigate(',1)[0],
+            "Demo rebuild must preserve its original panel while disposing audio and retaining held origins")
+    require('origin.SetEnabled(false);origin.focusable=false;keyboardRetired.Add(origin);' in keyboard and
+            'keyboardRetired.style.display=DisplayStyle.None;root.panel.visualTree.Add(keyboardRetired);' in keyboard and
+            'new[]{returnHeld?returnOrigin:null,spaceHeld?spaceOrigin:null}' in keyboard and
+            'try{action();}finally{PreserveDemoKeyOrigins();}' in entry and
+            'try{DrawPlayer();}finally{PreserveDemoKeyOrigins();}' in entry,
+            "Removed held origins must stay bounded, hidden and disabled on the original panel after draw/actions")
+    require('e.keyCode==spaceCode&&e.timestamp>=spaceStarted' in keyboard and
+            'e.keyCode==returnCode&&e.timestamp>=returnStarted' in keyboard and
+            'ReferenceEquals(target,origin)' in keyboard and
+            'ReferenceEquals(target,focused)&&keyboardRoot.Contains(target)&&target.enabledInHierarchy' in keyboard,
+            "Release must match the accepted physical key/time and reject obsolete nonfocused panel targets")
+    require('returnOrigin=null;spaceOrigin=null;keyboardRetired?.RemoveFromHierarchy();keyboardRetired=null;' in keyboard and
+            'if(!focused)ResetDemoKeyboard();' in keyboard and
+            'UnbindDemoKeyboard();ResetDemoKeyboard();' in entry and
+            'private void OnDestroy(){ResetDemoKeyboard();ReleasePanel();}' in entry and
+            'RemoveRetiredDemoKeyOrigin(spaceOrigin)' in keyboard and 'RemoveRetiredDemoKeyOrigin(returnOrigin)' in keyboard and
+            'if(returnHeld&&ReferenceEquals(origin,returnOrigin)||spaceHeld&&ReferenceEquals(origin,spaceOrigin))return;' in keyboard,
+            "Release/focus loss/disable/destroy must clean retired origins without removing another held key's origin")
+    require('var next=currentPanel?.visualTree;' in keyboard and
+            'keyboardReleaseRoot?.RegisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);' in keyboard and
+            'keyboardReleaseRoot?.UnregisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);' in keyboard and
+            'RegisterCallback<AttachToPanelEvent>(DemoKeyboardAttached)' in keyboard and
+            'RegisterCallback<DetachFromPanelEvent>(DemoKeyboardDetached)' in keyboard and
+            'UnregisterCallback<AttachToPanelEvent>(DemoKeyboardAttached)' in keyboard and
+            'UnregisterCallback<DetachFromPanelEvent>(DemoKeyboardDetached)' in keyboard,
+            "Keyboard release observation must follow the current panel visual tree and detach with its document")
+    require('keyboardReleaseRoot?.RegisterCallback<KeyDownEvent>(DemoUnfocusedTab);' in keyboard and
+            'keyboardReleaseRoot?.UnregisterCallback<KeyDownEvent>(DemoUnfocusedTab);' in keyboard and
+            'ReferenceEquals(e.target,keyboardReleaseRoot)' in keyboard and
+            'current.focusController.focusedElement!=null' in keyboard and
+            'keyboardReleaseRoot!.SendEvent(navigation)' in keyboard,
+            "Unfocused Tab must own only its live panel-root event and unsubscribe with that panel")
+    build_entry = entry.split('private void Build()', 1)[1].split('private void Navigate(', 1)[0]
+    require('ResetDemoKeyboard()' not in build_entry and
+            'returnHeld=false' not in keyboard.split('private void ResetDemoKeyboard()', 1)[0] and
+            'spaceHeld=false' not in keyboard.split('private void ResetDemoKeyboard()', 1)[0],
+            "Keyboard rebuild/binding must preserve a held press until release, not confirm a new modal")
+    require('tab.wasPressedThisFrame' in keyboard and 'NavigationMoveEvent.GetPooled' in keyboard and
+            'element is TextField||element is DropdownField' in keyboard and 'focused.SendEvent(navigation)' in keyboard and
+            'InputSystem.Update(' not in keyboard and '.Enable(' not in keyboard and 'SetInputSystemProvider' not in keyboard,
+            "Keyboard focus fallback must be local, field-safe and defer raw Tab without changing provider/actions")
     draw = entry.split("private void Draw()", 1)[1].split("private static Label Readout", 1)[0]
     require(not re.search(r"\.(?:CommitRound|SendTravel|Advance|FinalizeBatch|Load|SetCloak|Save|Dispatch|Execute)\(", draw),
             "Painting must not dispatch authoritative work")
@@ -54,6 +107,9 @@ def check(root):
         require(not any(term in source for term in ("using HobbyDS9.Simulation", "using HobbyDS9.TacticalReviewStorage", "System.Text.Json", "JsonUtility", "Process.Start")),
                 "Forbidden runtime dependency in " + path.name)
         require(Path(str(path) + ".meta").exists(), "Missing runtime source metadata: " + path.name)
+    for path in (runtime / "ReviewEntry.Keyboard.cs.meta", review / "Tests/DemoKeyboardControlTests.cs.meta"):
+        require(re.search(r"^guid: [0-9a-f]{32}$", path.read_text(encoding="utf-8-sig"), re.MULTILINE) is not None,
+                "Invalid keyboard source metadata GUID: " + path.name)
     build = (review / "Editor/ReviewBuild.cs").read_text(encoding="utf-8-sig")
     require("artifacts/unity-review/Windows/HobbyDS9Review.exe" in build and "Review/Scenes/PhysicalReview.unity" in build,
             "Review builder must have disjoint output and explicit scene")

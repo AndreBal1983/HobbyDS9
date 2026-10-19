@@ -129,6 +129,8 @@ public sealed class CentralCombatFlowTests
         using var f=new UnityReviewFixture();var ui=new ReviewUiModel(f.Package,f.Codec,f.Store,A);var flow=new ReviewCombatFlow(ui);Pursue(flow);ui.SwitchActor(B);
         Assert.Empty(ui.Current.Frame.Battle!.VisibleEnemies);var text=flow.StageDiagram();Assert.Contains("No visible enemy",text);
         Assert.DoesNotContain("ship.equipment-cruiser",text);Assert.DoesNotContain("Ammunition",text);Assert.DoesNotContain("Powered",text);Assert.DoesNotContain("Random",text);
+        var readable=new ReviewDemoCombatText();var friendly=readable.Diagram(ui.Current.Frame)+readable.Inspection(ui.Current.Frame,"ship.equipment-cruiser")+readable.Stocks(ui.Current.Frame);
+        Assert.Contains("No visible enemy",friendly);Assert.DoesNotContain("ship.equipment-cruiser",friendly);Assert.DoesNotContain("PROVISIONAL",friendly);Assert.DoesNotContain("Powered",friendly);Assert.DoesNotContain("Random",friendly);
         ui.SwitchActor(A);Assert.Empty(flow.OwnLosses);Assert.DoesNotContain("ship.cardassian-scout",flow.Conditions());
     }
     [Fact]

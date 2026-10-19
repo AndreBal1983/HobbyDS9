@@ -5,6 +5,7 @@
     <ProjectReference Include="../HobbyDS9.TacticalReviewClient/HobbyDS9.TacticalReviewClient.csproj" />
     <Reference Include="$(UnityManagedDir)/UnityEngine/*.dll"><Private>false</Private></Reference>
     <Reference Include="Newtonsoft.Json"><HintPath>$(UnityNewtonsoftPath)</HintPath><Private>false</Private></Reference>
+    <Reference Include="HobbyDS9.ArtDemo"><HintPath>$(UnityArtDemoPath)</HintPath><Private>false</Private></Reference>
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/*.cs" Link="UnitySource/%(Filename)%(Extension)" />
     <Compile Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/ReviewBuild.cs" Link="ReviewBuild.cs" />
   </ItemGroup>
@@ -15,5 +16,6 @@
   <Target Name="RequireExplicitUnityReferences" BeforeTargets="ResolveReferences">
     <Error Condition="'$(UnityManagedDir)' == '' or !Exists('$(UnityManagedDir)/UnityEngine/UnityEngine.CoreModule.dll')" Text="Supply UnityManagedDir pointing to pinned Unity 6000.6.5f1 Editor/Data/Managed for this optional compiler-only check." />
     <Error Condition="'$(UnityNewtonsoftPath)' == '' or !Exists('$(UnityNewtonsoftPath)')" Text="Supply UnityNewtonsoftPath pointing to the pinned Unity Newtonsoft package DLL, not the Editor tools DLL." />
+    <Error Condition="'$(UnityArtDemoPath)' == '' or !Exists('$(UnityArtDemoPath)')" Text="Supply UnityArtDemoPath pointing to the receiving project's compiled HobbyDS9.ArtDemo.dll after the pinned Editor import." />
   </Target>
 </Project>

@@ -1,0 +1,14 @@
+<Project DefaultTargets="Prepare">
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))</RepoRoot>
+    <UnityProject>$(RepoRoot)/client/HobbyDS9.Unity</UnityProject>
+    <DemoSource>$(RepoRoot)/scenarios/singleplayer-demo-v1</DemoSource>
+    <DemoOutput>$(UnityProject)/Assets/HobbyDS9/Review/Resources/DemoPackages/v1</DemoOutput>
+  </PropertyGroup>
+  <Target Name="Prepare">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)PrepareUnityIntegrated.proj" Targets="Prepare" />
+    <ItemGroup><RawSource Include="$(DemoSource)/demo.json;$(DemoSource)/package.json;$(DemoSource)/physical.json;$(DemoSource)/core.json;$(DemoSource)/scenario.json" /></ItemGroup>
+    <MakeDir Directories="$(DemoOutput)" />
+    <Copy SourceFiles="@(RawSource)" DestinationFolder="$(DemoOutput)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

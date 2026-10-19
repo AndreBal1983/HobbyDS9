@@ -31,6 +31,7 @@ namespace HobbyDS9.UnityReview
     {
         private ReviewLaunchOptions? options;
         private IntegratedLaunchOptions? integratedOptions;
+        private SingleplayerDemoLaunchOptions? demoOptions;
         private ReviewUiModel? model;
         private ReviewCombatFlow? flow;
         public ReviewCombatFlow? Presentation=>flow;
@@ -49,24 +50,32 @@ namespace HobbyDS9.UnityReview
         private readonly ReviewModalPermission modalPermission=new ReviewModalPermission();
         public void Configure(ReviewLaunchOptions value){if(options==null)options=value;}
         public void ConfigureIntegrated(IntegratedLaunchOptions value){if(options==null&&integratedOptions==null)integratedOptions=value;}
+        public void ConfigureDemo(SingleplayerDemoLaunchOptions value){if(options==null&&integratedOptions==null&&demoOptions==null)demoOptions=value;}
         private void OnEnable()
         {
             viewEpoch++;modalPermission.Invalidate();
             try
             {
-                if(options==null&&integratedOptions==null)throw new InvalidOperationException();
+                if(options==null&&integratedOptions==null&&demoOptions==null)throw new InvalidOperationException();
                 if(model==null)
                 {
                     byte[] Bytes(string name)
                     {
                         string path;
-                        if(integratedOptions!=null)path="IntegratedPackages/v1/"+name;
+                        if(demoOptions!=null)path="DemoPackages/v1/"+name;
+                        else if(integratedOptions!=null)path="IntegratedPackages/v1/"+name;
                         else{if(options==null)throw new InvalidOperationException();path="ReviewPackages/"+options.Profile+"/"+name;}
                         var asset=Resources.Load<TextAsset>(path);
                         if(asset==null)throw new InvalidOperationException();return asset.bytes;
                     }
                     var codec=new ReviewNewtonsoftCodec();
-                    if(integratedOptions!=null)
+                    if(demoOptions!=null)
+                    {
+                        demoSource=ReviewExactPackageLoader.LoadDemo(Bytes("demo"),Bytes("package"),Bytes("physical"),Bytes("core"),Bytes("scenario"),codec);
+                        model=new ReviewUiModel(demoSource,codec,new ReviewDemoSlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9SingleplayerDemoOnly-v4"),codec));
+                        slotName="demo-1";demoLanding=true;
+                    }
+                    else if(integratedOptions!=null)
                     {
                         var package=ReviewExactPackageLoader.LoadIntegrated(Bytes("package"),Bytes("physical"),Bytes("core"),Bytes("scenario"),codec);
                         model=new ReviewUiModel(package,codec,new ReviewIntegratedSlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9IntegratedPlaytestOnly-v3"),codec),integratedOptions.Actor);
@@ -77,7 +86,7 @@ namespace HobbyDS9.UnityReview
                         var package=ReviewExactPackageLoader.Load(Bytes("package"),Bytes("core"),Bytes("scenario"),codec);
                         model=new ReviewUiModel(package,codec,new ReviewUnitySlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9PhysicalReviewOnly-v2"),codec),options!.Actor);
                     }
-                    flow=new ReviewCombatFlow(model);workspace=new ReviewWorkspace(flow);actorInput=integratedOptions?.Actor??options!.Actor;
+                    flow=new ReviewCombatFlow(model);workspace=new ReviewWorkspace(flow);actorInput=model.Current.Frame.Actor;
                 }
                 Build();
             }
@@ -88,8 +97,8 @@ namespace HobbyDS9.UnityReview
                 root=doc.rootVisualElement;root.Clear();root.Add(new Label("OPT-IN PHYSICAL TACTICAL V2 — unavailable. Check profile/resources/preparation; default campaign was not started."));
             }
         }
-        private void OnDisable(){viewEpoch++;modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);confirmation=null;ReleaseAudio();}
-        private void OnDestroy(){ReleasePanel();}
+        private void OnDisable(){viewEpoch++;modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();}
+        private void OnDestroy(){ResetDemoKeyboard();ReleasePanel();}
         private void ReleasePanel()
         {
             ReleaseAudio();
@@ -111,16 +120,21 @@ namespace HobbyDS9.UnityReview
         }
         private void Build()
         {
-            modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);ReleasePanel();
-            panel=ScriptableObject.CreateInstance<PanelSettings>();panel.scaleMode=model!.Integrated?PanelScaleMode.ConstantPixelSize:PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
-            panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=1;panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");
-            var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();doc.panelSettings=panel;
-            root=doc.rootVisualElement;root.Clear();confirmation=null;root.AddToClassList("physical-review-root");
+            modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ReleaseAudio();
+            var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();
+            if(model?.SingleplayerDemo!=true||panel==null||doc.panelSettings!=panel)
+            {
+                ReleasePanel();panel=ScriptableObject.CreateInstance<PanelSettings>();panel.scaleMode=model!.Integrated?PanelScaleMode.ConstantPixelSize:PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
+                panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=1;panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");doc.panelSettings=panel;
+            }
+            root=doc.rootVisualElement;root.Clear();root.styleSheets.Clear();confirmation=null;root.AddToClassList("physical-review-root");
+            PreserveDemoKeyOrigins();
+            BindDemoKeyboard();
             BindAudio();
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.03f,0.05f,0.08f);root.style.color=new Color(0.92f,0.95f,1);root.style.fontSize=16;
             foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ShipDesigner","ReviewControls","ReviewCombat","PlayerConsole"})
             {var sheet=Resources.Load<StyleSheet>(resource);if(sheet!=null)root.styleSheets.Add(sheet);}
-            if(model.Integrated){BuildPlayerShell();root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();return;}
+            if(model.Integrated){workspace!.Compact=Screen.width<1600||Screen.height<850;root.EnableInClassList("player-narrow",workspace.Compact);BuildPlayerShell();root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();return;}
             var identity=Readout((model!.Integrated?"OPT-IN INTEGRATED PLAYTEST | SCENARIO: integrated-playtest-v1":"OPT-IN PHYSICAL TACTICAL V2 | SCENARIO: "+options!.Profile)+" | ACTOR VIEW: "+model.Current.Frame.Actor+" | Proposed policies; default campaign activation disabled");
             identity.name="review-scenario-identity";identity.AddToClassList("review-heading");root.Add(identity);
             root.Add(Readout(workspace!.BoundaryIdentity));
@@ -173,7 +187,7 @@ namespace HobbyDS9.UnityReview
         private void Draw()
         {
             if(model==null||root==null)return;
-            if(model.Integrated){DrawPlayer();return;}
+            if(model.Integrated){try{DrawPlayer();}finally{PreserveDemoKeyOrigins();}return;}
             message!.text=model.Message+" "+flow!.Notice;
             if(workspace!.Page==ReviewWorkspacePage.Combat||workspace.Page==ReviewWorkspacePage.FleetOrders)central?.Render();
             else DrawStrategicPanel();
@@ -200,7 +214,9 @@ namespace HobbyDS9.UnityReview
         private static TextField Field(string title,string value){var f=new TextField(title){value=value};f.AddToClassList("review-input");return f;}
         private Button AddButton(VisualElement parent,string title,Action action,bool dialog=false)
         {
-            var epoch=viewEpoch;var button=new Button(()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();action();}}){text=title};
+            var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
+            var button=new Button(guarded){text=title};
+            if(model!.SingleplayerDemo)BindDemoButtonKeyboard(button,guarded);
             button.AddToClassList("review-action");button.style.minHeight=36;parent.Add(button);return button;
         }
         private void Do(Action action)
@@ -221,7 +237,14 @@ namespace HobbyDS9.UnityReview
                 confirmation.style.marginLeft=0;confirmation.style.marginRight=0;confirmation.style.marginTop=0;confirmation.style.marginBottom=0;
                 confirmation.style.alignItems=Align.Center;confirmation.style.justifyContent=Justify.Center;confirmation.style.backgroundColor=new Color(.02f,.03f,.06f,.96f);
                 var box=new VisualElement{name="player-confirmation-summary"};box.AddToClassList("console-panel");box.style.width=620;box.style.maxWidth=new Length(90,LengthUnit.Percent);box.style.maxHeight=new Length(80,LengthUnit.Percent);
-                var text=Readout(title);text.style.fontSize=22;box.Add(text);var actions=new VisualElement();actions.AddToClassList("review-field-row");box.Add(actions);
+                var text=Readout(title);text.style.fontSize=22;
+                if(model.SingleplayerDemo)
+                {
+                    box.style.height=new Length(70,LengthUnit.Percent);
+                    var body=new ScrollView(ScrollViewMode.Vertical){name="player-confirmation-details"};body.style.flexGrow=1;body.style.minHeight=0;body.Add(text);box.Add(body);
+                }
+                else box.Add(text);
+                var actions=new VisualElement();actions.AddToClassList("review-field-row");actions.style.flexShrink=0;box.Add(actions);
                 AddButton(actions,"Cancel",callbacks.Cancel,true);var yes=AddButton(actions,"Confirm",callbacks.Confirm,true);yes.AddToClassList("primary-action");
                 confirmation.RegisterCallback<KeyDownEvent>(e=>{if(e.keyCode==KeyCode.Escape){callbacks.Cancel();e.StopPropagation();}});
                 confirmation.Add(box);root.Add(confirmation);yes.Focus();return;

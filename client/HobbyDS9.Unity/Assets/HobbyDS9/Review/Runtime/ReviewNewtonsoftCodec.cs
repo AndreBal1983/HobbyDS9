@@ -16,7 +16,7 @@ using Newtonsoft.Json.Serialization;
 namespace HobbyDS9.UnityReview
 {
     // Actual Unity-compatible codec. Complete physical package/root only; no engine API or net10 dependency.
-    public sealed partial class ReviewNewtonsoftCodec : IIntegratedReviewHostCodec
+    public sealed partial class ReviewNewtonsoftCodec : ISingleplayerDemoHostCodec
     {
         private static readonly UTF8Encoding Utf8=new UTF8Encoding(false,true);
         private static JsonSerializerSettings Settings() => new JsonSerializerSettings {
@@ -39,6 +39,15 @@ namespace HobbyDS9.UnityReview
         public CampaignIntegratedPlaytestPackageDto DecodeIntegratedProfile(byte[] bytes)=>Decode<CampaignIntegratedPlaytestPackageDto>(bytes);
         public byte[] EncodeIntegratedRoot(CampaignIntegratedPlaytestSaveDto save)=>Encode(save);
         public CampaignIntegratedPlaytestSaveDto DecodeIntegratedRoot(byte[] bytes)=>Decode<CampaignIntegratedPlaytestSaveDto>(bytes);
+        public CampaignSingleplayerDemoPackageDto CopyPackage(CampaignSingleplayerDemoPackageDto package)=>Decode<CampaignSingleplayerDemoPackageDto>(Encode(package));
+        public CampaignSingleplayerDemoSaveDto CopySave(CampaignSingleplayerDemoSaveDto save)=>DecodeDemoRoot(EncodeDemoRoot(save));
+        public CampaignSingleplayerDemoPackageDto DecodeDemoProfile(byte[] bytes)=>Decode<CampaignSingleplayerDemoPackageDto>(bytes);
+        public byte[] EncodeDemoRoot(CampaignSingleplayerDemoSaveDto save)
+        {CheckDemoCarrier(save);return Encode(save);}
+        public CampaignSingleplayerDemoSaveDto DecodeDemoRoot(byte[] bytes)
+        {var save=Decode<CampaignSingleplayerDemoSaveDto>(bytes);CheckDemoCarrier(save);return save;}
+        private static void CheckDemoCarrier(CampaignSingleplayerDemoSaveDto save)
+        {if(save.FormatVersion!=CampaignSingleplayerDemoIdentity.Format||save.ProfileId!=CampaignSingleplayerDemoIdentity.Profile||save.Integrated==null||save.OpponentPlan==null)throw Invalid();}
         private static byte[] Encode<T>(T value)
         {
             try { return Utf8.GetBytes(JsonConvert.SerializeObject(value,Formatting.None,Settings())); }

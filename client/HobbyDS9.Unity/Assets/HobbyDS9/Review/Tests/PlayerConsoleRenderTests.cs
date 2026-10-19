@@ -171,7 +171,7 @@ namespace HobbyDS9.UnityReview.Tests
             foreach(var actor in new[]{"civ.federation","civ.cardassian"})
             {
                 Click("review-nav-Tools");yield return null;Click("player-switch-"+actor);yield return null;
-                Click("review-nav-FleetOrders");yield return null;root=document.rootVisualElement;root.Query<Foldout>().ToList().Single(f=>f.text=="Choose / change destination").value=true;yield return null;Click("route-destination-nav.bajor");yield return null;
+                Click("review-nav-FleetOrders");yield return null;root=document.rootVisualElement;var destinationPicker=root.Q<Foldout>("fleet-route-destination");Assert.That(destinationPicker,Is.Not.Null);destinationPicker.value=true;yield return null;Click("route-destination-nav.bajor");yield return null;
                 Click("player-preview-route");yield return null;
                 if(actor=="civ.federation")
                 {
