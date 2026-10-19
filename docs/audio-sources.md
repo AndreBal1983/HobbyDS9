@@ -63,3 +63,11 @@ Added at the project owner's request on 2026-10-16.
 - Unity GUID: `106b49eb6ae14ac1af9aa7cfc8b4c852`. Import settings match the existing music assets: Streaming, Vorbis quality 0.85, preserve sample rate/stereo, background loading, preload disabled.
 
 Available as an audio resource; not yet registered in `Resources/MusicCatalog.asset`. Suggested stable ID: `music.secrets-in-the-courtyard`; display name: `Secrets in the Courtyard`; FullCue policy. The integration agent should choose playback context and audition crossfade/quiet-tail values locally. The source is not verified as a seamless loop. Existing playlist behavior is unchanged.
+
+## 19 October catalog integration candidate
+
+The three owner-delivered MP3s and importer GUIDs above are preserved byte for byte. `MusicCatalog.asset` now references all five music files so Unity includes them in a reproducible player. The original Deep Station entries, order and timing hints remain unchanged. Quiet Frontier follows them in the Strategic playlist. Across the Stars and Secrets in the Courtyard are registered in the existing Event category, reserved for explicit future event presentation; this change does not invent discoveries, diplomacy or faction-specific triggers. The current strategic flow does not switch to that category.
+
+All new entries use FullCue, a provisional six-second crossfade and zero assumed quiet tail. No seamless loop or measured silence claim is made. These are reversible presentation settings pending local transition audition. Original Deep Station playback is still first, and the current frozen PR45 executable is unchanged.
+
+Static source hashes, importer settings and catalog GUID/context references are checked for all five cues. The existing receiving Editor catalog test also checks playable imported clips, category order and streaming settings; its updated case has not yet run on this candidate. No Unity import, native playback or human listening acceptance is claimed while native control is stopped.
