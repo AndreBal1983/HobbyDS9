@@ -1,0 +1,24 @@
+# Frontier review concrete JSON and disk persistence
+
+19 October 2026. CPU-only adapter increment from merged main `7dab040`. Uses the [provisional frontier backend](frontier-reconnaissance-v1.md) and [complete-root host seam](frontier-review-client-seam.md). No gameplay, save/content versions, default activation, startup/resources or map/UI binding changes.
+
+## Owned adapter API
+
+Actual Unity-compatible source under `client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime`:
+
+- `ReviewNewtonsoftCodec.Frontier.cs`: partial `ReviewNewtonsoftCodec : IFrontierReviewHostCodec`; typed `CopyPackage(CampaignFrontierPackageDto)` / `CopySave(CampaignFrontierSaveDto)`, `DecodeFrontierProfile(byte[])`, `EncodeFrontierRoot` / `DecodeFrontierRoot`. Reuses the unchanged strict Newtonsoft settings, UTF-8 handling and concrete DTO shape validation. Existing codec declaration changes only to `partial`; all older overloads/settings remain intact. DecodeFrontierProfile is a raw manifest decoder, not an assembled-package validator.
+- `ReviewFrontierSlotStore.cs`: `IFrontierReviewCheckpointStore`, constructed with an injected absolute review-only directory, codec and optional existing `UnityReviewWriteStage` fault probe. No Unity Application or engine API determines its path. Slot filenames are `unity-frontier-review-v5-{slot}.json`, disjoint from physical2, integrated3, demo4 and default saves. No automatic import, fallback, migration, slot discovery or temporary-file recovery.
+
+The JSON adapter requires a complete wrapper5 header, profile/policy/hash carriers, transcript/discovery collections and nested integrated3/physical2/frontier-owned core. Empty initial transcripts/discoveries are valid. The backend host remains the sole package/domain/accepted-history validator; structural decoding is not proof of a lawful campaign. Whole DTOs stay private host persistence carriers, never frame/render/AI inputs.
+
+Disk writes serialize before touching the destination, create a unique same-directory file with CreateNew, flush all bytes, then use atomic File.Replace or File.Move. The last valid slot is never deleted as a fallback. Failure cleans only the temporary path created by that write; unrelated leftovers remain untouched. Overwrite is explicit. Slot names reject separators/traversal/absolute paths and unsafe characters; injected roots must be absolute non-root directories, and reparse/directory slot targets are rejected. The existing single-writer/local-filesystem convention is retained; hostile concurrent filesystem replacement or general network-filesystem durability is not claimed.
+
+## Acceptance
+
+Local actual-source verification: **110 retained adapter cases and 46 new frontier cases passed** (154-case combined run before two final envelope regressions; final 46-case frontier run green). The adapter workflow now requires at least **156** executed/passed cases with zero failures/skips. Existing physical/integrated deterministic golden tests remain green; no schema, payload or old serializer-setting changes were made.
+
+New cases execute the actual codec/store files and real temporary filesystem paths, including initial empty history, complete deterministic final root, pending AI rounds, explicit aftermath and reload equality; full integer/null/false copies; wrong/missing/truncated headers and raw malformed JSON; all three partial-write fault stages preserving original slot bytes and unrelated temporary leftovers; invalid slots/root/directory targets and disjoint old-profile filenames; forged-history loads retaining controller drafts/generation; and stale offers/work after successful load. Semantic forgery is deliberately rejected by the existing backend loader, not by a second adapter rule engine.
+
+Locked restore and zero-warning/error netstandard2.1/C#9 actual-source build passed. The complete actual review runtime also compiled in **Player and Editor symbol variants** against installed Unity **6000.6.5f1** Managed reference DLLs and the pinned Unity Runtime Newtonsoft DLL (`7292d3eb508652d14726749dd27094f2d481aeccf2db6427b62f68a71460897e`), zero warnings/errors. This is compiler-only API evidence: no Editor, scene import, native player or GPU execution. Existing binding source checks plus 7 adversarial binding tests and 6 integrated static tests passed. Integrated static resource checks required ordinary existing resource preparation in the isolated checkout; no frontier resource/startup was added and no tracked resource diff resulted.
+
+Independent persistence/integration review and exact-head CI remain delivery gates. Future normal integration must retain Secondary's separately authored wrapper4 overloads; their absence from this starting main is not a downgrade authorization. Concrete frontier native usability, platform runtime filesystem behavior under Unity/AOT and frontend activation remain separate acceptance work.
