@@ -34,7 +34,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
-                Require(demo==null,"Use ExportDemoSave: nested integrated save omits demo policy/objective.");
+                Require(demo==null&&frontier==null,"Use complete profile export: nested integrated save omits profile authority.");
                 return ExportIntegratedCore();
             }
         }

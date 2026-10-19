@@ -29,9 +29,10 @@ namespace HobbyDS9.Simulation
         private CampaignTacticalReviewSession(CampaignTacticalReviewPackageDto package, CampaignTacticalReviewSaveDto? save,
             CampaignTacticalTravelPackageDto? physicalPackage=null,CampaignTacticalTravelSaveDto? physicalSave=null,
             CampaignIntegratedPlaytestPackageDto? integratedPackage=null,CampaignIntegratedPlaytestSaveDto? integratedSave=null,
-            CampaignSingleplayerDemoPackageDto? demoPackage=null)
+            CampaignSingleplayerDemoPackageDto? demoPackage=null,CampaignFrontierPackageDto? frontierPackage=null)
         {
             demo = demoPackage == null ? null : CopyDemoSettings(demoPackage);
+            frontier = frontierPackage==null?null:CopyFrontierSettings(frontierPackage);
             ValidatePackage(package);
             definitions = SimulationSession.CopyDefinitions(package.Campaign!.Definitions);
             controllers = package.Campaign.InitialState.Civilizations!.ToDictionary(c => c.CivilizationId,c => c.ControllerKind!.Value,StringComparer.Ordinal);
@@ -70,7 +71,7 @@ namespace HobbyDS9.Simulation
                     ScenarioId = compatibility.ScenarioId, RulesVersion = compatibility.RulesVersion, ContentHash = compatibility.ContentHash,
                     GameState = SimulationSession.CopyState(package.Campaign.InitialState) };
                 state = new CampaignTacticalReviewSaveDto { FormatVersion = CampaignTacticalReviewIdentity.SaveFormat,
-                    ProfileId = CampaignTacticalReviewIdentity.Profile, ResolverId = CampaignTacticalReviewIdentity.Resolver,
+                    ProfileId = frontier==null?CampaignTacticalReviewIdentity.Profile:CampaignFrontierIdentity.EmbeddedCoreProfile, ResolverId = CampaignTacticalReviewIdentity.Resolver,
                     ResolverVersion = CampaignTacticalReviewIdentity.ResolverVersion, PackageHash = package.PackageHash!, Campaign = initial,
                     Pools = initial.GameState.Ships!.Select(s => InitialPool(s.ShipId)).ToList(),
                     FleetSettings = initial.GameState.Fleets!.Select(f => new CampaignTacticalFleetSettingDto { FleetId = f.FleetId }).ToList(),
@@ -92,7 +93,7 @@ namespace HobbyDS9.Simulation
         public static CampaignTacticalReviewSession Start(CampaignTacticalReviewPackageDto package) => new CampaignTacticalReviewSession(package, null);
         public static CampaignTacticalReviewSession Load(CampaignTacticalReviewPackageDto package, CampaignTacticalReviewSaveDto save)
         { if (save == null) throw new ArgumentNullException(nameof(save)); return new CampaignTacticalReviewSession(package, save); }
-        public CampaignTacticalReviewSaveDto ExportSave() { lock (gate) {Require(demo==null,"Use ExportDemoSave: bare lifecycle root is incomplete.");return Copy(state);} }
+        public CampaignTacticalReviewSaveDto ExportSave() { lock (gate) {Require(demo==null&&frontier==null,"Use complete profile export: bare lifecycle root is incomplete.");return Copy(state);} }
         internal SessionSnapshot CaptureCampaign() { lock (gate) return Legacy(state).CaptureSnapshot(); }
         private SimulationSession Legacy(CampaignTacticalReviewSaveDto s) => new SimulationSession(s.Campaign, definitions, compatibility);
         private AuthoredTacticalShipProvisionDto Provision(string id) => ResolveProvision(id);
@@ -122,6 +123,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
+                if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
                 if(DemoMutationBlocked)return Result(CampaignTacticalError.WrongPhase);
                 var game = state.Campaign.GameState; var a = Actor(actor); if (a != CampaignTacticalError.None) return Result(a);
                 if (CurrentPhase != SessionPhase.Planning) return Result(CampaignTacticalError.WrongPhase);
@@ -133,13 +135,16 @@ namespace HobbyDS9.Simulation
                 if (revision == long.MaxValue) return Result(CampaignTacticalError.Overflow);
                 var staged = Copy(state); staged.FleetSettings.Single(f => f.FleetId == fleet).ApproachCloak = enabled;
                 staged.AcceptedRoundCommands.Add(commandId); staged.Campaign.GameState.StateRevision++;
-                ValidateSave(staged); state = Copy(staged); return Result(CampaignTacticalError.None);
+                ValidateSave(staged); state = Copy(staged);
+                RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Cloak,ActorId=actor,CommandId=commandId,FleetId=fleet,Enabled=enabled,Turn=turn,Revision=revision});
+                return Result(CampaignTacticalError.None);
             }
         }
         public CampaignTacticalMutationResult SubmitStrategicCommand(CommandEnvelope? command)
         {
             lock (gate)
             {
+                if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
                 if(DemoMutationBlocked||CurrentPhase!=SessionPhase.Planning)return Result(CampaignTacticalError.WrongPhase);
                 if(travel!=null&&command?.Kind==CommandKind.SetFleetRoute)return Result(CampaignTacticalError.InvalidOrder);
                 if (command != null && state.AcceptedRoundCommands.Contains(command.CommandId, StringComparer.Ordinal)) return Result(CampaignTacticalError.DuplicateCommand);
@@ -154,13 +159,16 @@ namespace HobbyDS9.Simulation
                         : result.ErrorCode == CommandErrorCode.ActorNotControlled ? CampaignTacticalError.ActorNotControlled
                         : result.ErrorCode == CommandErrorCode.UnknownActor ? CampaignTacticalError.UnknownActor
                         : result.ErrorCode == CommandErrorCode.RevisionExhausted ? CampaignTacticalError.Overflow : CampaignTacticalError.InvalidOrder);
-                var next = Copy(state); next.Campaign = session.ExportSave(); ValidateSave(next); state = Copy(next); return Result(CampaignTacticalError.None);
+                var next = Copy(state); next.Campaign = session.ExportSave(); ValidateSave(next); state = Copy(next);
+                RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Strategic,Strategic=command});
+                return Result(CampaignTacticalError.None);
             }
         }
         public CampaignTacticalMutationResult AdvanceTurn(int turn, long revision)
         {
             lock (gate)
             {
+                if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
                 if(demo!=null&&DemoSnapshot().Outcome!=CampaignDemoOutcome.Active)return Result(CampaignTacticalError.WrongPhase);
                 if(travel!=null)return AdvancePhysicalTurn(turn,revision);
                 if (state.Campaign.GameState.Phase != SessionPhase.Planning) return Result(CampaignTacticalError.WrongPhase);
@@ -253,6 +261,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
+                if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
                 if (command == null) return Result(CampaignTacticalError.InvalidOrder);
                 command = new CommitCampaignTacticalRoundDto { ActorId = command.ActorId, CommandId = command.CommandId,
                     EncounterId = command.EncounterId, ExpectedTurn = command.ExpectedTurn, ExpectedRound = command.ExpectedRound,
@@ -279,7 +288,9 @@ namespace HobbyDS9.Simulation
                 next.AcceptedRoundCommands.Add(command.CommandId); next.Campaign.GameState.StateRevision++;
                 EnsureAi(next, b2);
                 if (b2.State.Formations.Where(f => f.Status == TacticalFormationStatus.Active).All(f => b2.Commitments.Any(c => c.ActorId == f.SideId))) ResolveJoint(next, b2);
-                ValidateSave(next); state = Copy(next); return Result(CampaignTacticalError.None);
+                ValidateSave(next); state = Copy(next);
+                RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Round,Round=command});
+                return Result(CampaignTacticalError.None);
             }
         }
         private void ResolveJoint(CampaignTacticalReviewSaveDto save, CampaignTacticalBattleCheckpointDto b)
@@ -303,6 +314,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
+                if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
                 var game = state.Campaign.GameState;
                 if (CurrentPhase != SessionPhase.AwaitingCombat) return Result(CampaignTacticalError.WrongPhase);
                 if (turn != game.TurnNumber) return Result(CampaignTacticalError.StaleTurn);
@@ -311,6 +323,7 @@ namespace HobbyDS9.Simulation
                 if (revision == long.MaxValue || turn == int.MaxValue) return Result(CampaignTacticalError.Overflow);
                 var next = Copy(state); var staged = next.Campaign.GameState;
                 CampaignTacticalTravelSaveDto? physicalNext = null;
+                List<CampaignFrontierReceiptDto>? nextDiscoveries = null;
                 try
                 {
                     int index = 0;
@@ -346,12 +359,15 @@ namespace HobbyDS9.Simulation
                         physicalNext.Orders.RemoveAll(o => !staged.Fleets!.Any(f => f.FleetId == o.FleetId));
                         foreach (var o in physicalNext.Orders.Where(o => physicalNext.LastMovement.Any(r => r.FleetId == o.FleetId && r.StoppedByEncounter)))
                         { o.Intent = CampaignTravelIntent.Stay; o.ContactFleetId = null; o.ExpectedContactSeenTurn = null; o.RouteNodeIds.Clear(); }
+                        if(frontier!=null)nextDiscoveries=CompleteFrontierPlanning(physicalNext);
                         ValidateTravelSave(physicalNext);
                     }
                 }
                 catch (Exception e) when (e is ArgumentException || e is InvalidOperationException || e is OverflowException) { return Result(CampaignTacticalError.InvalidBatch); }
                 state = Copy(next);
                 if (physicalNext != null) { travel = CampaignTacticalTravelData.Copy(physicalNext); state = travel.Core; }
+                if(nextDiscoveries!=null)discoveries=nextDiscoveries;
+                RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Finalize,Turn=turn,Revision=revision});
                 return Result(CampaignTacticalError.None);
             }
         }

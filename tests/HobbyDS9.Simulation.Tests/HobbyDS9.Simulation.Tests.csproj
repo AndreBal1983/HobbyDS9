@@ -8,6 +8,9 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../../src/HobbyDS9.Headless/FrontierPackageReader.cs" Link="FrontierPackageReader.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/FrontierWalkthrough.cs" Link="FrontierWalkthrough.cs" />
+    <None Include="../../scenarios/frontier-reconnaissance-v1/*.json" Link="scenarios/frontier-reconnaissance-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/HobbyDS9.Headless/SingleplayerDemoPackageReader.cs" Link="SingleplayerDemoPackageReader.cs" />
     <Compile Include="../../src/HobbyDS9.Headless/SingleplayerDemoWalkthrough.cs" Link="SingleplayerDemoWalkthrough.cs" />
     <None Include="../../scenarios/singleplayer-demo-v1/*.json" Link="scenarios/singleplayer-demo-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
