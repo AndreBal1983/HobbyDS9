@@ -1,0 +1,16 @@
+<Project DefaultTargets="Prepare">
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))</RepoRoot>
+    <UnityProject>$(RepoRoot)/client/HobbyDS9.Unity</UnityProject>
+    <FrontierSource>$(RepoRoot)/scenarios/frontier-reconnaissance-v1</FrontierSource>
+    <FrontierOutput>$(UnityProject)/Assets/HobbyDS9/Review/Resources/FrontierPackages/v1</FrontierOutput>
+  </PropertyGroup>
+  <!-- Resource-only exact-byte preparation. Caller prepares portable binaries separately.
+       Override FrontierOutput for CPU/artifacts checks; no Editor/default activation. -->
+  <Target Name="Prepare">
+    <Error Condition="!Exists('$(FrontierSource)/frontier.json') Or !Exists('$(FrontierSource)/package.json') Or !Exists('$(FrontierSource)/physical.json') Or !Exists('$(FrontierSource)/core.json') Or !Exists('$(FrontierSource)/scenario.json')" Text="The complete five-file authored frontier source is required." />
+    <ItemGroup><RawSource Include="$(FrontierSource)/frontier.json;$(FrontierSource)/package.json;$(FrontierSource)/physical.json;$(FrontierSource)/core.json;$(FrontierSource)/scenario.json" /></ItemGroup>
+    <MakeDir Directories="$(FrontierOutput)" />
+    <Copy SourceFiles="@(RawSource)" DestinationFolder="$(FrontierOutput)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>
