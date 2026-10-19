@@ -100,6 +100,7 @@ namespace HobbyDS9.UnityReview
             if(stage==ReviewCombatStage.AftermathPending&&!frame.Status.CanFinalizeBatch)
                 viewer.Add(Text("This battle is complete. Other battles are not ready; campaign aftermath cannot be finalized yet. Select another owned encounter when available."));
             var dock=new ScrollView(ScrollViewMode.Vertical){name="central-order-dock"};dock.AddToClassList("review-order-dock");stageRow.Add(dock);
+            if(demo){dock.horizontalScrollerVisibility=ScrollerVisibility.Hidden;dock.contentContainer.AddToClassList("combat-order-content");}
             if(flow.CampaignComplete)
             {var completed=Text("Campaign complete — "+frame.Demo!.Outcome+". Fleet orders and turn advancement are unavailable. Inspection and Save / Load remain available.");completed.name="combat-completed-notice";dock.Add(completed);}
             else if(battle!=null)
@@ -107,7 +108,7 @@ namespace HobbyDS9.UnityReview
                 dock.Add(Text(demo?readable.Orders(c):flow.OrderReview()));
                 var row=new VisualElement();row.AddToClassList("review-field-row");dock.Add(row);
                 var maneuvers=battle.LegalManeuvers.Select(m=>m.ToString()).ToList();var move=demo?LabeledChoice("Fleet maneuver",maneuvers,maneuver.ToString(),ReviewDemoCombatText.Maneuver,id=>{if(Enum.TryParse(id,out CampaignFleetManeuver m))maneuver=m;}):Choice("Fleet maneuver",maneuvers);
-                if(!demo){if(maneuvers.Contains(maneuver.ToString()))move.SetValueWithoutNotify(maneuver.ToString());move.RegisterValueChangedCallback(e=>{if(Enum.TryParse(e.newValue,out CampaignFleetManeuver m))maneuver=m;});}row.Add(move);
+                if(!demo){if(maneuvers.Contains(maneuver.ToString()))move.SetValueWithoutNotify(maneuver.ToString());move.RegisterValueChangedCallback(e=>{if(Enum.TryParse(e.newValue,out CampaignFleetManeuver m))maneuver=m;});}move.name="combat-maneuver-picker";row.Add(move);
                 var targets=new[]{"retain standing focus","clear focus"}.Concat(battle.LegalFocusFleetIds).ToList();if(demo&&!targets.Contains(focus))focus="retain standing focus";var target=demo?LabeledChoice("Enemy-fleet preference",targets,focus,id=>readable.Focus(frame,id),id=>focus=id):Choice("Enemy-fleet preference",targets);
                 if(!demo){if(targets.Contains(focus))target.SetValueWithoutNotify(focus);target.RegisterValueChangedCallback(e=>focus=e.newValue);}target.name="combat-focus-picker";row.Add(target);
                 if(demo)target.tooltip="Keep focus retains the standing enemy-fleet preference. No preference clears it. Targets are selected automatically from lawful observations.";
@@ -119,7 +120,7 @@ namespace HobbyDS9.UnityReview
                 dock.Add(Text("FRESH ORDER FOR CURRENT PLANNING TURN "+frame.Status.Turn+" — selecting or previewing does not submit."));
                 var choices=new VisualElement();choices.AddToClassList("review-field-row");dock.Add(choices);
                 foreach(var pair in new[]{(CampaignTravelIntent.Stay,"Remain"),(CampaignTravelIntent.StayEngage,"Re-engage"),(CampaignTravelIntent.Leave,"Move away"),(CampaignTravelIntent.Follow,"Follow known contact")})
-                    button(choices,pair.Item2,()=>{travel=pair.Item1;selectedTravelIsDraft=false;Render();}).SetEnabled(flow.CanDraftNextOrder&&fleets.Count>0&&(pair.Item1!=CampaignTravelIntent.Follow||(frame.Travel?.KnownContacts.Any(k=>k.Fresh)??false)));
+                {var choice=button(choices,pair.Item2,()=>{travel=pair.Item1;selectedTravelIsDraft=false;Render();});choice.name="combat-travel-choice-"+pair.Item1;choice.SetEnabled(flow.CanDraftNextOrder&&fleets.Count>0&&(pair.Item1!=CampaignTravelIntent.Follow||(frame.Travel?.KnownContacts.Any(k=>k.Fresh)??false)));}
                 dock.Add(Text("Selected: "+TravelLabel(travel)+". Move away is strategic travel, not a guaranteed tactical escape. Follow has no catch roll or promised interception."));
                 var cloak=frame.CloakSettings.FirstOrDefault(s=>s.FleetId==selectedFleet);
                 if(cloak!=null)
@@ -134,19 +135,20 @@ namespace HobbyDS9.UnityReview
                     var nodes=frame.Strategy.Navigation.Nodes.ToList();var captions=nodes.Select(n=>demo?n.DisplayName:n.DisplayName+" / "+n.NodeId).ToList();
                     var index=nodes.FindIndex(n=>n.NodeId.Value==destination);if(index<0&&nodes.Count>0){index=0;destination=nodes[0].NodeId.Value;}
                     var dest=new DropdownField("Known destination",captions,Math.Max(0,index)){name="integrated-known-destination"};
+                    if(demo)dest.AddToClassList("review-input");
                     dest.RegisterValueChangedCallback(_=>{destination=nodes[dest.index].NodeId.Value;selectedTravelIsDraft=false;});fields.Add(dest);
                 }
                 else{var dest=Field("Explicit known destination",destination);dest.RegisterValueChangedCallback(e=>{destination=e.newValue;selectedTravelIsDraft=false;});fields.Add(dest);}
                 var known=new[]{"none"}.Concat(frame.Travel?.KnownContacts.Where(k=>k.Fresh).Select(k=>k.FleetId)??Array.Empty<string>()).ToList();
                 if(demo&&!known.Contains(contact))contact="none";
                 var contacts=demo?LabeledChoice("Fresh known contact",known,contact,id=>id=="none"?"None":readable.Fleet(frame,id),id=>{contact=id;selectedTravelIsDraft=false;}):Choice("Fresh known contact",known);
-                if(!demo){if(known.Contains(contact))contacts.SetValueWithoutNotify(contact);else contact="none";contacts.RegisterValueChangedCallback(e=>{contact=e.newValue;selectedTravelIsDraft=false;});}fields.Add(contacts);
+                if(!demo){if(known.Contains(contact))contacts.SetValueWithoutNotify(contact);else contact="none";contacts.RegisterValueChangedCallback(e=>{contact=e.newValue;selectedTravelIsDraft=false;});}contacts.name="combat-known-contact";fields.Add(contacts);
                 button(fields,"Preview known route",()=>perform(()=>{
                     var offer=flow.PreviewRoute(selectedFleet,destination);
                     routeText=offer==null?"Known route unavailable.":offer.Route.Success?"Known route: "+string.Join(" → ",offer.Route.Steps.Select(id=>demo?readable.Node(frame,id):id))+" | cost "+offer.Route.TotalCost:"Route unavailable: "+offer.Route.ErrorCode;
                 })).SetEnabled(flow.CanDraftNextOrder&&fleets.Count>0);
                 dock.Add(Text(routeText));
-                button(dock,"Draft selected next-turn order",()=>perform(()=>selectedTravelIsDraft=flow.DraftNextOrder(selectedFleet,travel,travel==CampaignTravelIntent.Leave||travel==CampaignTravelIntent.Follow?destination:null,travel==CampaignTravelIntent.Follow&&contact!="none"?contact:null))).SetEnabled(flow.CanDraftNextOrder&&fleets.Count>0);
+                if(!demo)DraftTravelButton(dock);
                 var accepted=frame.Travel?.OwnOrders.FirstOrDefault(o=>o.FleetId==selectedFleet);
                 dock.Add(Text("ACCEPTED order: "+(accepted==null?"unavailable":TravelLabel(accepted.Intent)+" | route "+string.Join(" → ",accepted.RouteNodeIds.Select(id=>demo?readable.Node(frame,id):id)))));
                 var draft=c.TravelDraft;dock.Add(Text(draft==null?"No unsent replacement.":demo?"UNSENT draft: "+readable.TravelDraft(c):"UNSENT draft: "+TravelLabel(draft.Intent)+" | route "+string.Join(" → ",draft.Route)));
@@ -154,6 +156,7 @@ namespace HobbyDS9.UnityReview
             }
             else dock.Add(Text(stage==ReviewCombatStage.NoOwnedFleet?"No owned surviving fleet can receive a strategic order. Current campaign facts remain inspectable.":"Choose an owned encounter to review its battle. Fresh strategic orders wait for complete-batch aftermath."));
             var footer=new VisualElement{name="central-combat-footer"};footer.AddToClassList("review-footer");root.Add(footer);
+            if(demo&&!flow.CampaignComplete&&battle==null&&frame.Status.Phase==SessionPhase.Planning&&fleets.Count>0)DraftTravelButton(footer);
             if(battle!=null)button(footer,"Back / keep draft",()=>{flow.Dismiss();Render();});
             if(flow.CampaignComplete)footer.Add(Text("Completed campaign — inspection and saving available"));
             else if(stage==ReviewCombatStage.Orders)button(footer,"Review / commit round "+battle!.Round,()=>confirm((demo?readable.Orders(c):flow.OrderReview())+(demo?"\nCommit your orders for one round against the computer?":"\nCommit one round for this human actor?"),()=>perform(()=>flow.CommitRound(ReviewUiModel.NewCommandId(),true)))).SetEnabled(flow.CanCommitRound);
@@ -165,6 +168,11 @@ namespace HobbyDS9.UnityReview
                 button(footer,"Review / submit next-turn draft",()=>confirm("Submit this UNSENT next-turn order?\n"+(demo?readable.TravelDraft(c):model.Facts()),()=>perform(()=>flow.SubmitNextOrder(ReviewUiModel.NewCommandId(),true)))).SetEnabled(c.TravelDraft!=null&&selectedTravelIsDraft);
                 button(footer,"Advance strategic turn",()=>confirm("Advance once with ACCEPTED strategic orders? No unsubmitted draft will be applied.",()=>perform(()=>flow.AdvancePlanning(true)))).SetEnabled(!c.Dirty);
             }
+        }
+        private void DraftTravelButton(VisualElement parent)
+        {
+            var draft=button(parent,"Draft selected next-turn order",()=>perform(()=>selectedTravelIsDraft=flow.DraftNextOrder(selectedFleet,travel,travel==CampaignTravelIntent.Leave||travel==CampaignTravelIntent.Follow?destination:null,travel==CampaignTravelIntent.Follow&&contact!="none"?contact:null)));
+            draft.name="combat-draft-travel";draft.SetEnabled(flow.CanDraftNextOrder&&flow.Model.Current.Frame.OwnStrategicFleets.Count>0);
         }
         private string routeText="Route costs and steps come from Application; no local ETA or pursuit calculation.";
         private void SyncFleetOrder()

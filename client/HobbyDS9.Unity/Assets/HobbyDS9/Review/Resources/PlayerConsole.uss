@@ -80,6 +80,15 @@
 .player-narrow .review-schematic-scroll { max-height: 110px; }
 .player-narrow .review-detail-scroll { min-height: 120px; }
 .demo-combat .review-input { min-width: 0; }
+/* Keep the order dock within its own viewport; wrap content, never pan to read. */
+.demo-combat .combat-order-content { width: 100%; min-width: 0; max-width: 100%; align-items: stretch; }
+.demo-combat .review-order-dock .review-field-row { flex-direction: column; flex-wrap: nowrap; min-width: 0; max-width: 100%; align-items: stretch; }
+.demo-combat .review-order-dock .review-action { min-width: 0; max-width: 100%; align-self: stretch; white-space: normal; flex-shrink: 0; }
+.demo-combat .review-order-dock .unity-base-field { min-width: 0; max-width: 100%; flex-direction: column; align-self: stretch; flex-shrink: 0; }
+.demo-combat .review-order-dock .unity-base-field__label, .demo-combat .review-order-dock Label { min-width: 0; max-width: 100%; white-space: normal; }
+.demo-combat .review-order-dock .unity-base-field__input { min-width: 0; }
+.demo-combat .review-order-dock .unity-base-popup-field__text { min-width: 0; white-space: normal; flex-shrink: 1; }
+.demo-combat .review-footer .review-action { min-width: 0; max-width: 100%; white-space: normal; flex-basis: 240px; flex-grow: 1; flex-shrink: 1; }
 .player-narrow .demo-combat .review-roster { width: 260px; }
 .player-narrow .demo-combat .review-order-dock { width: 248px; }
 .player-narrow .demo-combat .review-tabs .review-action { min-width: 0; padding: 3px 6px; font-size: 16px; }
