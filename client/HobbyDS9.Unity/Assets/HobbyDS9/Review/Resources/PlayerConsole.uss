@@ -80,7 +80,7 @@
 .player-narrow .review-schematic-scroll { max-height: 110px; }
 .player-narrow .review-detail-scroll { min-height: 120px; }
 .demo-combat .review-input { min-width: 0; }
-.player-narrow .demo-combat .review-roster { width: 224px; }
+.player-narrow .demo-combat .review-roster { width: 260px; }
 .player-narrow .demo-combat .review-order-dock { width: 248px; }
 .player-narrow .demo-combat .review-tabs .review-action { min-width: 0; padding: 3px 6px; font-size: 16px; }
 .player-narrow .demo-combat .combat-current-stocks { font-size: 16px; }
