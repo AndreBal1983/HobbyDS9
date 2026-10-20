@@ -40,3 +40,9 @@ The first actual receiving run at `a0f7e84` passed one control/render test and c
 The separate correction styles inputs/scroll controls, makes graph links optional/default off, and extends actual engine checks for polygon picking, drag, wheel, Fit, raw keyboard/modal exclusion, stale controls, current campaign draft retention, displayed marker alignment and painted route segments. Its results must be recorded when executed; authored assertions alone are not evidence.
 
 The previous fleet candidate's unfinished native aftermath/save-restart/audio checks remain unfinished; generated-map work does not imply their completion.
+
+## Marker-origin correction candidate
+
+The frozen `471922d` receiving result remains one pass and one failure: marker distance 2.0712347 pixels against the unchanged less-than-two-pixel requirement. Its evidence is retained. The correction fits the viewport to the content rectangle, adds its local origin for painter/pointer positions, and subtracts the actual parent border when placing absolute children. Wheel anchors use the inverse conversion. This addresses the border-box versus child-containing-box inconsistency; actual pixel-rounding residuals still require the new engine receipt.
+
+Stars are placed above candidate corner hit targets. Starting candidates remain accessible through the selected star/region inspector as well as their corners. The engine fixture records per-axis marker errors, resolved geometry, borders and padding at all three sizes, saves screenshots before assertions, and exercises actual panel picking with an overlapping candidate target. The threshold is unchanged. Eight pinned-reference compiler outputs pass; runtime/editor review outputs have no warnings, while retained unrelated default/test warnings remain. Engine, native and package acceptance are pending for this correction.

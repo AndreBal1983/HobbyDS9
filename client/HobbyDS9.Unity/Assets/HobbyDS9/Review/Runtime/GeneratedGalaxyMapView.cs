@@ -61,8 +61,10 @@ namespace HobbyDS9.UnityReview
                 bindButton(button,()=>{if(Live())select(candidate.NodeId,GeneratedGalaxySelectionKind.HomeCandidate);});
                 candidateButtons.Add((button,candidate.NodeId));
             }
-            RegisterCallback<GeometryChangedEvent>(e=>{viewport.Resize(e.newRect.width,e.newRect.height);Place();});
-            RegisterCallback<WheelEvent>(e=>{if(!Live())return;viewport.ZoomAt(e.delta.y>0?1/1.2:1.2,e.localMousePosition.x,e.localMousePosition.y);Place();e.StopPropagation();});
+            // Star hit targets win over any overlapping candidate corner. Candidates also have inspector access.
+            foreach(var star in stars)star.button.BringToFront();
+            RegisterCallback<GeometryChangedEvent>(_=>{viewport.Resize(contentRect.width,contentRect.height);Place();});
+            RegisterCallback<WheelEvent>(e=>{if(!Live())return;var p=ToContent(e.localMousePosition);viewport.ZoomAt(e.delta.y>0?1/1.2:1.2,p.x,p.y);Place();e.StopPropagation();});
             RegisterCallback<PointerDownEvent>(e=>{
                 if(!Live()||(e.button!=0&&e.button!=2)||e.button==0&&!ReferenceEquals(e.target,this))return;
                 pointer=e.pointerId;press=last=e.localPosition;moved=false;this.CapturePointer(pointer);e.StopPropagation();
@@ -105,9 +107,18 @@ namespace HobbyDS9.UnityReview
         public void Select(string node,GeneratedGalaxySelectionKind kind){selectedNode=node;selectionKind=kind;Place();}
         public void Route(string? origin,IReadOnlyList<string>? steps){routeOrigin=origin;routeSteps=steps??Array.Empty<string>();Place();}
         public Vector2 Position(string node)=>Point(regions[node].Center);
-        private Vector2 Point(GeneratedGalaxyPointDto point)=>new Vector2((float)viewport.X(point.X),(float)viewport.Y(point.Y));
+        // Painter and pointer coordinates are border-box local; the viewport is content-box local.
+        private Vector2 Point(GeneratedGalaxyPointDto point)=>contentRect.position+new Vector2((float)viewport.X(point.X),(float)viewport.Y(point.Y));
+        private Vector2 ToContent(Vector2 local)=>local-contentRect.position;
+        private void PlaceChild(VisualElement child,Vector2 local)
+        {
+            // Absolute left/top start inside the parent's border, unlike Painter2D/LocalToWorld.
+            child.style.left=local.x-resolvedStyle.borderLeftWidth;
+            child.style.top=local.y-resolvedStyle.borderTopWidth;
+        }
         private GeneratedGalaxyRegionDto? At(Vector2 screen)
         {
+            screen=ToContent(screen);
             double x=viewport.WorldX(screen.x),y=viewport.WorldY(screen.y);
             foreach(var region in document.Regions)
             {
@@ -124,23 +135,24 @@ namespace HobbyDS9.UnityReview
             // Important labels get first choice. Suppression changes labels, never underlying nodes.
             foreach(var star in stars.OrderByDescending(s=>s.region.NodeId==selectedNode||s.candidate||s.region.NodeId==routeOrigin||routeSteps.LastOrDefault()==s.region.NodeId))
             {
-                var point=Point(star.region.Center);bool visible=point.x>=-20&&point.y>=-20&&point.x<=contentRect.width+20&&point.y<=contentRect.height+20;
-                star.button.style.left=point.x-14;star.button.style.top=point.y-14;
+                var point=Point(star.region.Center);var bounds=contentRect;
+                bool visible=point.x>=bounds.xMin-20&&point.y>=bounds.yMin-20&&point.x<=bounds.xMax+20&&point.y<=bounds.yMax+20;
+                PlaceChild(star.button,point-new Vector2(14,14));
                 star.button.style.display=visible?DisplayStyle.Flex:DisplayStyle.None;
                 star.button.EnableInClassList("galaxy-star-selected",star.region.NodeId==selectedNode&&selectionKind==GeneratedGalaxySelectionKind.System);
                 bool important=star.region.NodeId==selectedNode||star.candidate||star.region.NodeId==routeOrigin||routeSteps.LastOrDefault()==star.region.NodeId;
                 bool show=visible&&(important||viewport.Zoom>=1.6);
                 var rect=new Rect(point.x+17,point.y-10,star.candidate?200:120,star.candidate?46:24);
-                if(rect.xMax>contentRect.width-8)rect.x=point.x-rect.width-17;
-                rect.y=Mathf.Clamp(rect.y,6,Mathf.Max(6,contentRect.height-rect.height-6));
+                if(rect.xMax>bounds.xMax-8)rect.x=point.x-rect.width-17;
+                rect.y=Mathf.Clamp(rect.y,bounds.yMin+6,Mathf.Max(bounds.yMin+6,bounds.yMax-rect.height-6));
                 if(!important&&occupied.Any(r=>r.Overlaps(rect)))show=false;
                 if(show)occupied.Add(rect);
-                star.label.style.left=rect.x;star.label.style.top=rect.y;star.label.style.width=rect.width;
+                PlaceChild(star.label,rect.position);star.label.style.width=rect.width;
                 star.label.style.display=show?DisplayStyle.Flex:DisplayStyle.None;
             }
             foreach(var candidate in candidateButtons)
             {
-                var point=Position(candidate.node);candidate.button.style.left=point.x-38;candidate.button.style.top=point.y-38;
+                var point=Position(candidate.node);PlaceChild(candidate.button,point-new Vector2(38,38));
                 candidate.button.EnableInClassList("galaxy-star-selected",candidate.node==selectedNode&&selectionKind==GeneratedGalaxySelectionKind.HomeCandidate);
             }
             MarkDirtyRepaint();

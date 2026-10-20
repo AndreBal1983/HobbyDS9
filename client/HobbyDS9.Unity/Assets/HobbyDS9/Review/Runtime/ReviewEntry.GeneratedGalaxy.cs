@@ -147,7 +147,11 @@ namespace HobbyDS9.UnityReview
                 Text(region.NodeId+(region.SystemId==null?"":"\n"+region.SystemId),"galaxy-inspector-id","galaxy-selection-identity");
                 Text(region.SystemId==null?"Empty navigation region · no star system":"Contains "+GalaxyNodeName(region.NodeId)+".");
                 foreach(var home in document.HomeCandidates.Where(h=>h.NodeId==region.NodeId))
+                {
                     Text(galaxy.CivilizationNames[home.CivilizationDefinitionId]+" starting candidate · unoccupied.");
+                    var inspect=AddButton(target,"Inspect starting candidate",()=>SelectGalaxyNode(region.NodeId,GeneratedGalaxySelectionKind.HomeCandidate));
+                    inspect.name="galaxy-inspect-candidate-"+home.CivilizationDefinitionId;
+                }
                 Text("Bodies and resources are not generated in this milestone.","galaxy-inspector-id");
                 var begin=AddButton(target,"Use as route start",()=>{galaxyRouteStart=region.NodeId;galaxyRouteTarget=null;galaxyRoute=null;galaxyMap!.Route(galaxyRouteStart,null);DrawGalaxyInspector();});
                 begin.name="galaxy-route-start";

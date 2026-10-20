@@ -90,6 +90,11 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(root.Q<Label>("galaxy-selection-kind").text,Is.EqualTo("STARTING CANDIDATE"));
                 Assert.That(root.Q<Label>("galaxy-selection-identity").text,Does.Contain(map.HomeCandidates[0].NodeId));
                 yield return Capture(doc,"seed-"+item.Item1+"-candidate");
+                var candidate=map.HomeCandidates[0];
+                Click(root.Q<Button>("galaxy-star-"+candidate.SystemId));yield return null;
+                Assert.That(root.Q<Label>("galaxy-selection-kind").text,Is.EqualTo("STAR SYSTEM"));
+                Click(root.Q<Button>("galaxy-inspect-candidate-"+candidate.CivilizationDefinitionId));yield return null;
+                Assert.That(root.Q<Label>("galaxy-selection-kind").text,Is.EqualTo("STARTING CANDIDATE"),"candidate remains reachable from its star inspector");
                 Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(campaignBefore));
             }
             var current=workspace.Document!;
@@ -211,6 +216,8 @@ namespace HobbyDS9.UnityReview.Tests
                     Assert.That(map.worldBound.xMax,Is.LessThanOrEqualTo(inspector.worldBound.xMin));
                     RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
                     pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
+                    // Preserve the actual rendered state even when a later geometry assertion fails.
+                    File.WriteAllBytes(Path.Combine(directory,size.x+"x"+size.y+"-"+state+".png"),pixels.EncodeToPNG());
                     if(origin!=null&&route!=null)
                     {
                         var view=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
@@ -235,10 +242,25 @@ namespace HobbyDS9.UnityReview.Tests
                             // The actual star control position must match the declared generator system/region association.
                             var document=(GeneratedGalaxyDocumentDto)typeof(GeneratedGalaxyMapView).GetField("document",BindingFlags.NonPublic|BindingFlags.Instance)!.GetValue(view)!;
                             var node=document.Systems.Single(s=>s.SystemId==systemId).NodeId;
-                            Assert.That(Vector2.Distance(button.worldBound.center,view.LocalToWorld(view.Position(node))),Is.LessThan(2));
+                            var expected=view.LocalToWorld(view.Position(node));var actual=button.worldBound.center;var delta=actual-expected;
+                            var diagnostic=size+" "+state+" system="+systemId+" node="+node+" actual="+actual.ToString("F5")+" expected="+expected.ToString("F5")
+                                +" delta="+delta.ToString("F5")+" mapLayout="+view.layout+" content="+view.contentRect
+                                +" borders="+view.resolvedStyle.borderLeftWidth+","+view.resolvedStyle.borderTopWidth
+                                +" padding="+view.resolvedStyle.paddingLeft+","+view.resolvedStyle.paddingTop+" button="+button.layout;
+                            File.AppendAllText(Path.Combine(directory,"marker-alignment.txt"),diagnostic+Environment.NewLine);
+                            Assert.That(delta.magnitude,Is.LessThan(2),diagnostic);
                         }
+                        // Exercise real panel picking with a candidate bracket deliberately overlapping its star.
+                        var candidateButton=view.Query<Button>().ToList().First(b=>b.name.StartsWith("galaxy-candidate-",StringComparison.Ordinal));
+                        var starButton=view.Query<Button>().ToList().First(b=>b.name.StartsWith("galaxy-star-",StringComparison.Ordinal));
+                        var oldLeft=candidateButton.style.left;var oldTop=candidateButton.style.top;
+                        candidateButton.style.left=starButton.style.left;candidateButton.style.top=starButton.style.top;
+                        yield return null;
+                        var picked=view.panel.Pick(starButton.worldBound.center);
+                        Assert.That(picked==starButton||starButton.Contains(picked),Is.True,"star centre wins actual panel picking over overlapping candidate");
+                        candidateButton.style.left=oldLeft;candidateButton.style.top=oldTop;
+                        yield return null;
                     }
-                    File.WriteAllBytes(Path.Combine(directory,size.x+"x"+size.y+"-"+state+".png"),pixels.EncodeToPNG());
                 }
                 finally{doc.panelSettings.targetTexture=null;RenderTexture.active=prior;target.Release();UnityEngine.Object.Destroy(target);if(pixels!=null)UnityEngine.Object.Destroy(pixels);}
             }
