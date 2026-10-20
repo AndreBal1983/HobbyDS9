@@ -132,8 +132,9 @@ namespace HobbyDS9.UnityReview
             BindDemoKeyboard();
             BindAudio();
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.03f,0.05f,0.08f);root.style.color=new Color(0.92f,0.95f,1);root.style.fontSize=16;
-            foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ShipDesigner","ReviewControls","ReviewCombat","PlayerConsole"})
+            foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ShipDesigner","ReviewControls","ReviewCombat","PlayerConsole","GeneratedGalaxy"})
             {var sheet=Resources.Load<StyleSheet>(resource);if(sheet!=null)root.styleSheets.Add(sheet);}
+            if(generatedGalaxyOpen){BuildGeneratedGalaxy();root.RegisterCallback<GeometryChangedEvent>(Geometry);return;}
             if(model!.Integrated){workspace!.Compact=Screen.width<1600||Screen.height<850;root.EnableInClassList("player-narrow",workspace.Compact);BuildPlayerShell();root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();return;}
             var identity=Readout((model!.Integrated?"OPT-IN INTEGRATED PLAYTEST | SCENARIO: integrated-playtest-v1":"OPT-IN PHYSICAL TACTICAL V2 | SCENARIO: "+options!.Profile)+" | ACTOR VIEW: "+model.Current.Frame.Actor+" | Proposed policies; default campaign activation disabled");
             identity.name="review-scenario-identity";identity.AddToClassList("review-heading");root.Add(identity);
@@ -179,6 +180,7 @@ namespace HobbyDS9.UnityReview
         private void Geometry(GeometryChangedEvent e)
         {
             if(root==null||panel==null)return;
+            if(generatedGalaxyOpen){GalaxyResponsive(e.newRect.width);return;}
             if(model?.Integrated==true){var playerCompact=e.newRect.width<1600||e.newRect.height<850;root.EnableInClassList("player-narrow",playerCompact);if(workspace!.Compact!=playerCompact){workspace.Compact=playerCompact;Draw();}return;}
             var compact=e.newRect.width<1700||e.newRect.height<850;
             root.EnableInClassList("review-compact",compact);
@@ -187,6 +189,7 @@ namespace HobbyDS9.UnityReview
         private void Draw()
         {
             if(model==null||root==null)return;
+            if(generatedGalaxyOpen){DrawGeneratedGalaxyStatus();PreserveDemoKeyOrigins();return;}
             if(model.Integrated){try{DrawPlayer();}finally{PreserveDemoKeyOrigins();}return;}
             message!.text=model.Message+" "+flow!.Notice;
             if(workspace!.Page==ReviewWorkspacePage.Combat||workspace.Page==ReviewWorkspacePage.FleetOrders)central?.Render();

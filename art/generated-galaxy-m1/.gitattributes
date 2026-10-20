@@ -1,0 +1,2 @@
+# Sample-index pins Primary export bytes, including their original line endings.
+samples/*.json -text whitespace=cr-at-eol
