@@ -53,6 +53,8 @@ Owner reference: [Endless Space battle video](https://www.youtube.com/watch?v=U3
 
 Use readable fleet silhouettes, slow three-quarter passes and brief weapon/impact emphasis while keeping the existing command UI and overview option. Combat remains our abstract simultaneous round resolver, **maximum three rounds with early completion**, not a pre-resolved full-battle movie. Do not manufacture a three-round sequence when the battle actually ends sooner.
 
+[Six-panel original framing storyboard](../../art/storyboards/playable-battle-v1.svg): a schematic for camera/UI beats, not rendered Unity evidence or a frame analysis of the unavailable video.
+
 | Beat | Framing and choreography | Authoritative gate / truthful UI |
 | --- | --- | --- |
 | Round1 planning | Wide paused own-fleet establishing shot, selected fleet highlighted; only disclosed opposing ships visible | Distant opening abstract state; no drag-to-place formation, opponent commitment or undisclosed count |
