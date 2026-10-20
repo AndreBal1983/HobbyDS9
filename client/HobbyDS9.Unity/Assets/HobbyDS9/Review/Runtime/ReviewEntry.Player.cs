@@ -105,7 +105,7 @@ namespace HobbyDS9.UnityReview
             if(workspace.Page==ReviewWorkspacePage.Research)
             {
                 var d=model.ResearchInputs()!;
-                if(d.ScienceChanged){Primary("Apply Science allocation",()=>Confirm("Apply all six Science shares?",()=>Do(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
+                if(d.ScienceChanged){Primary("Apply Science allocation",()=>Confirm("Apply this complete Science plan?\n"+string.Join("\n",model.Current.Frame.Strategy!.Research.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%.",()=>Do(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
                 if(d.SplitChanged){Primary("Apply R&D split",()=>Confirm("Apply this Science / Engineering split?",()=>Do(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
             }
             if(model.Current.Frame.Status.Phase!=SessionPhase.Planning){Primary("Open combat",()=>Navigate(ReviewWorkspacePage.Combat));return;}
