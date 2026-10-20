@@ -7,7 +7,7 @@ using HobbyDS9.TacticalReviewClient;
 namespace HobbyDS9.UnityReview
 {
     // Portable actual-code UI host model. Authoritative values and commands come from the existing client.
-    public sealed class ReviewUiModel
+    public sealed partial class ReviewUiModel
     {
         private readonly CampaignTacticalTravelPackageDto? package;
         private readonly CampaignIntegratedPlaytestPackageDto? integratedPackage;
@@ -47,14 +47,15 @@ namespace HobbyDS9.UnityReview
             if(humans.Count!=1)throw new ArgumentException("Frontier preview requires exactly one human controller.",nameof(package));
             Current=Controller(host,humans[0].CivilizationId);
         }
-        public bool Integrated=>integratedPackage!=null||demoPackage!=null||frontierPackage!=null;
+        public bool Integrated=>playableFleetPackage!=null||integratedPackage!=null||demoPackage!=null||frontierPackage!=null;
         public bool SingleplayerDemo=>demoPackage!=null;
         public bool FrontierPreview=>frontierPackage!=null;
+        public bool PlayableFleet=>playableFleetPackage!=null;
         public ReviewResearchDraft? ResearchDraft { get; private set; }
         public bool LocalDesignDirty {get;set;}
         public Action? ResetLocalDesign {get;set;}
         public HobbyDS9.Application.CampaignIntegratedDesignLibrarySnapshot DesignLibrary()=>host.CaptureDesignLibrary(Current.Frame);
-        public bool HasLocalEdits=>Current.Dirty||(ResearchDraft?.Dirty??false)||LocalDesignDirty;
+        public bool HasLocalEdits=>Current.Dirty||(ResearchDraft?.Dirty??false)||LocalDesignDirty||OrganizationDirty;
         public ReviewResearchDraft? ResearchInputs()
         {
             if(Current.Frame.Strategy==null)return null;
@@ -101,7 +102,7 @@ namespace HobbyDS9.UnityReview
             return received&&receipt.Result.Accepted;
         }
         public bool SwitchActor(string actor,bool discard=false)=>Run(()=>{
-            if(FrontierPreview){Message="This frontier preview has one human side. The opponent chooses its own orders.";return false;}
+            if(PlayableFleet||FrontierPreview){Message="This frontier preview has one human side. The opponent chooses its own orders.";return false;}
             if(SingleplayerDemo){Message="This demo has one human side. The opponent chooses its own orders.";return false;}
             if(Current.HasPendingWork || HasLocalEdits&&!discard){Message="Explicit discard is required before switching actor.";return false;}
             var next=Controller(host,actor); Current=next;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null; Message="Actor view changed; inspection and local edits cleared."; return true;
@@ -121,6 +122,13 @@ namespace HobbyDS9.UnityReview
         public bool SendPreviewedTravel(KnownRouteOffer offer,string command)=>Run(()=>{
             if(HasLocalEdits||Current.HasPendingWork)return Unavailable();
             if(!Current.EditTravel(offer.Fleet,CampaignTravelIntent.Leave,offer,null))return Unavailable();
+            return Current.ReviewTravel()?Dispatch(Current.ConfirmTravel(command)):Unavailable();
+        });
+        public bool SendPreviewedFollow(KnownRouteOffer offer,string contact,int seenTurn,string command)=>Run(()=>{
+            if(HasLocalEdits||Current.HasPendingWork)return Unavailable();
+            var known=Current.Frame.Travel?.KnownContacts.SingleOrDefault(c=>c.FleetId==contact&&c.Fresh&&c.LastSeenTurn==seenTurn);
+            if(known==null||offer.Destination!=known.LastSeenNodeId)return Unavailable();
+            if(!Current.EditTravel(offer.Fleet,CampaignTravelIntent.Follow,offer,contact))return Unavailable();
             return Current.ReviewTravel()?Dispatch(Current.ConfirmTravel(command)):Unavailable();
         });
         public bool DraftFleet(string fleet,CampaignFleetManeuver maneuver,string? focus,bool retainFocus=false)=>Run(()=>{
@@ -155,17 +163,18 @@ namespace HobbyDS9.UnityReview
         });
         public bool Load(string slot,bool discard=false)=>Run(()=>{
             if(Current.HasPendingWork||HasLocalEdits&&!discard){Message="Explicit discard required before load.";return false;}
-            var opened=frontierPackage!=null?PhysicalReviewHost.OpenFrontierFromSlot(frontierPackage,codec,frontierSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+            var opened=playableFleetPackage!=null?PhysicalReviewHost.OpenPlayableFleetFromSlot(playableFleetPackage,codec,playableFleetSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+                :frontierPackage!=null?PhysicalReviewHost.OpenFrontierFromSlot(frontierPackage,codec,frontierSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :demoPackage!=null?PhysicalReviewHost.OpenDemoFromSlot(demoPackage,codec,demoSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :integratedPackage!=null?PhysicalReviewHost.OpenIntegratedFromSlot(integratedPackage,codec,integratedSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :PhysicalReviewHost.OpenFromSlot(package!,codec,slots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId);
             if(!opened.Succeeded){Message="Checkpoint result: "+opened.Error;return false;}
-            var next=Controller(opened.Host!,Current.Frame.Actor);host=opened.Host!;Current=next;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null;Message="Validated complete-root checkpoint loaded.";return true;
+            var next=Controller(opened.Host!,Current.Frame.Actor);host=opened.Host!;Current=next;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null;ResetOrganization();Message="Validated complete-root checkpoint loaded.";return true;
         });
         public bool Reset()=>Run(()=>{
             if(Current.HasPendingWork)return Unavailable();
             var r=Current.TravelDraft!=null?Current.ResetTravelDraft():!Current.Dirty||Current.ResetDraft();
-            if(r){ResearchDraft=null;ResetLocalDesign?.Invoke();LocalDesignDirty=false;}
+            if(r){ResearchDraft=null;ResetLocalDesign?.Invoke();LocalDesignDirty=false;ResetOrganization();}
             Message=r?"Local edits cleared; no command submitted.":"Reset unavailable.";return r;
         });
         public bool Close(bool discard=false)=>Run(()=>{

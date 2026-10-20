@@ -18,7 +18,7 @@ namespace HobbyDS9.UnityReview
             var spine=new VisualElement();spine.AddToClassList("console-spine");root.Add(spine);
             var header=new VisualElement{name="player-header"};header.AddToClassList("console-header");root.Add(header);
             var names=new VisualElement();header.Add(names);
-            var identity=Readout((model!.FrontierPreview?"HOBBYDS9 · FRONTIER EXPLORATION PREVIEW · ":model.SingleplayerDemo?"HOBBYDS9 · SINGLE PLAYER DEMO · ":"EARLY CAMPAIGN PREVIEW · ")+OwnerName(model.Current.Frame.Actor));identity.name="review-scenario-identity";identity.AddToClassList("console-kicker");names.Add(identity);
+            var identity=Readout((model!.PlayableFleet?"HOBBYDS9 · FLEET CAMPAIGN · ":model.FrontierPreview?"HOBBYDS9 · FRONTIER EXPLORATION PREVIEW · ":model.SingleplayerDemo?"HOBBYDS9 · SINGLE PLAYER DEMO · ":"EARLY CAMPAIGN PREVIEW · ")+OwnerName(model.Current.Frame.Actor));identity.name="review-scenario-identity";identity.AddToClassList("console-kicker");names.Add(identity);
             playerTitle=Readout(Title(workspace!.Page));playerTitle.AddToClassList("console-title");names.Add(playerTitle);
             if(model.Current.Frame.Demo!=null){var objective=Readout("");objective.name="demo-objective";objective.AddToClassList("console-kicker");names.Add(objective);}
             playerStatus=Readout("");playerStatus.AddToClassList("console-status");header.Add(playerStatus);
@@ -26,7 +26,7 @@ namespace HobbyDS9.UnityReview
             var body=new VisualElement();body.AddToClassList("console-body");root.Add(body);
             var nav=new ScrollView(ScrollViewMode.Vertical){name="review-workspace-navigation"};nav.AddToClassList("console-nav");body.Add(nav);if(PlayerProfile&&(demoLanding||!demoStarted))nav.style.display=DisplayStyle.None;
             if(PlayerProfile){var menu=AddButton(nav,"Menu",OpenDemoMenu);menu.name="demo-menu";}
-            foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Display,ReviewWorkspacePage.Designer,ReviewWorkspacePage.Tools})
+            foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Empire,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Display,ReviewWorkspacePage.Designer,ReviewWorkspacePage.Tools}.Where(p=>p!=ReviewWorkspacePage.Empire||model!.PlayableFleet))
             {
                 var b=AddButton(nav,(page==ReviewWorkspacePage.Map?"Map":Title(page))+(workspace.Page==page?"  ›":""),()=>Navigate(page));b.name="review-nav-"+page;b.SetEnabled(workspace.CanNavigate);b.EnableInClassList("selected-nav",workspace.Page==page);
             }
@@ -34,7 +34,7 @@ namespace HobbyDS9.UnityReview
             if(central==null||!ReferenceEquals(centralContext,model.Current))
             {central=new ReviewCentralView(content,flow!,(p,t,a)=>AddButton(p,t,a),Do,Confirm);centralContext=model.Current;}
             else central.Bind(content);
-            player=new ReviewPlayerView(model,workspace,(p,t,a)=>AddButton(p,t,a),Do,Confirm,Navigate,(fleet,node,ship)=>{workspace.SelectedFleet=fleet;central.SelectStrategicFleet(fleet,node,ship);Navigate(ReviewWorkspacePage.FleetOrders);});
+            player=new ReviewPlayerView(model,workspace,(p,t,a)=>AddButton(p,t,a),Do,Confirm,Navigate,(fleet,node,ship)=>{workspace.SelectedFleet=fleet;central.SelectStrategicFleet(fleet,node,ship);Navigate(ReviewWorkspacePage.FleetOrders);},(b,a)=>BindButton(b,a));
             playerFooter=new VisualElement{name="player-footer"};playerFooter.AddToClassList("console-footer");root.Add(playerFooter);
         }
         private static string OwnerName(string actor)=>actor=="civ.federation"?"Federation":actor=="civ.cardassian"?"Cardassian Union":actor;
@@ -51,6 +51,7 @@ namespace HobbyDS9.UnityReview
                 case ReviewWorkspacePage.Audio:return "Audio";
                 case ReviewWorkspacePage.Designer:return "Ship Design";
                 case ReviewWorkspacePage.Worlds:return "Worlds";
+                case ReviewWorkspacePage.Empire:return "Empire";
                 case ReviewWorkspacePage.Display:return "Display";
                 default:return "Test Tools";
             }
@@ -61,7 +62,7 @@ namespace HobbyDS9.UnityReview
             playerStatus!.text="Turn "+frame.Status.Turn+" · "+(frame.Status.Phase==SessionPhase.Planning?"Planning":"Combat pending")+"\nCredits "+frame.Strategy!.Civilization.Credits;
             if(frame.Demo!=null){var goal=frame.Strategy.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==frame.Demo.ObjectiveNodeId)?.DisplayName??"Objective sector";root!.Q<Label>("demo-objective").text="Objective: "+goal+" · Through turn "+frame.Demo.LastTurn+" · "+frame.Demo.Outcome;}
             playerGuidance!.text=PlayerMessage();
-            if(PlayerProfile&&demoLanding){playerTitle.text=model.FrontierPreview?"Frontier preview":"HobbyDS9 Demo";DrawDemoLanding();}
+            if(PlayerProfile&&demoLanding){playerTitle.text=model.PlayableFleet?"Fleet campaign":model.FrontierPreview?"Frontier preview":"HobbyDS9 Demo";DrawDemoLanding();}
             else if(workspace.Page==ReviewWorkspacePage.Combat)central!.Render();
             else if(workspace.Page==ReviewWorkspacePage.Saves)DrawSaves();
             else if(workspace.Page==ReviewWorkspacePage.Audio)DrawAudio();
@@ -105,7 +106,7 @@ namespace HobbyDS9.UnityReview
             if(workspace.Page==ReviewWorkspacePage.Research)
             {
                 var d=model.ResearchInputs()!;
-                if(d.ScienceChanged){Primary("Apply Science allocation",()=>Confirm("Apply all six Science shares?",()=>Do(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
+                if(d.ScienceChanged){Primary("Apply Science allocation",()=>Confirm("Apply this complete Science plan?\n"+string.Join("\n",model.Current.Frame.Strategy!.Research.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%.",()=>Do(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
                 if(d.SplitChanged){Primary("Apply R&D split",()=>Confirm("Apply this Science / Engineering split?",()=>Do(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
             }
             if(model.Current.Frame.Status.Phase!=SessionPhase.Planning){Primary("Open combat",()=>Navigate(ReviewWorkspacePage.Combat));return;}
@@ -121,12 +122,12 @@ namespace HobbyDS9.UnityReview
             var result=SaveLoadResult();
             if(result.Length>0){var banner=Readout(result);banner.name="save-load-result";banner.AddToClassList("console-queue");p.Add(banner);}
             var slots=new VisualElement();slots.AddToClassList("review-field-row");p.Add(slots);
-            foreach(var slot in model!.FrontierPreview?FrontierPreviewOptions.Slots():model.SingleplayerDemo?new[]{"demo-1","demo-2","demo-3"}:new[]{"campaign-1","campaign-2","campaign-3"})
+            foreach(var slot in model!.PlayableFleet?PlayableFleetOptions.Slots():model.FrontierPreview?FrontierPreviewOptions.Slots():model.SingleplayerDemo?new[]{"demo-1","demo-2","demo-3"}:new[]{"campaign-1","campaign-2","campaign-3"})
             {var b=AddButton(slots,(model.FrontierPreview?"Frontier · format 5 · ":model.SingleplayerDemo?"Demo ":"Campaign ")+slot.Substring(slot.Length-1)+(slotName==slot?" · selected":""),()=>{slotName=slot;Draw();});b.name="save-slot-"+slot;}
             p.Add(Readout("Selected slot: "+slotName));
             var save=AddButton(p,"Save current campaign",()=>Do(()=>{if(!model!.Save(slotName)&&model.Message=="Checkpoint result: SlotOccupied")Confirm("Replace the save in "+slotName+"? Your current campaign will be saved; unsent edits stay local.",()=>Do(()=>model.Save(slotName,true)));}));save.name="player-save";save.AddToClassList("primary-action");
             var load=AddButton(p,"Load selected campaign",()=>Confirm("Load "+slotName+"? Only a validated compatible save can replace this campaign. Unsent edits will be discarded after a successful load.",()=>Do(()=>model!.Load(slotName,true))));load.name="player-load";
-            p.Add(Readout(model.FrontierPreview?"Frontier format-5 saves use their own frontier-1/2/3 slots and directory. Bajor format-4 and older saves are separate; no import or conversion. Failed loads keep your current session.":model.SingleplayerDemo?"Format-4 demo saves remain separate from classic, physical and integrated-review saves. Failed loads keep your current session.":"Early campaign saves remain separate from classic and earlier physical-review saves. Failed loads keep your current session."));
+            p.Add(Readout(model.PlayableFleet?"Fleet campaign saves are separate from other profiles. Saved state includes named fleets, current ship stocks and completed battle reports. Unsent edits remain local; a successful load replaces them.":model.FrontierPreview?"Frontier format-5 saves use their own frontier-1/2/3 slots and directory. Bajor format-4 and older saves are separate; no import or conversion. Failed loads keep your current session.":model.SingleplayerDemo?"Format-4 demo saves remain separate from classic, physical and integrated-review saves. Failed loads keep your current session.":"Early campaign saves remain separate from classic and earlier physical-review saves. Failed loads keep your current session."));
         }
         private string SaveLoadResult()
         {
@@ -156,7 +157,7 @@ namespace HobbyDS9.UnityReview
         private void DrawTools()
         {
             var p=PagePanel("Developer / Test Tools");p.Add(Readout("This early scenario uses two human sides. These host controls are not an opponent AI or an account security boundary."));
-            if(PlayerProfile){p.Clear();p.Add(Readout(model!.FrontierPreview?"Frontier preview: one package-defined human player. The computer owns its decisions. No opponent actor switching is exposed.":"Single-player demo: the computer owns its decisions. No opponent actor switching is exposed."));AddButton(p,"Refresh current view",()=>Do(()=>model.Refresh()));p.Add(Readout(model.Message));return;}
+            if(PlayerProfile){p.Clear();p.Add(Readout(model!.PlayableFleet?"HOBBYDS9 · FLEET CAMPAIGN · ":model.FrontierPreview?"Frontier preview: one package-defined human player. The computer owns its decisions. No opponent actor switching is exposed.":"Single-player demo: the computer owns its decisions. No opponent actor switching is exposed."));AddButton(p,"Refresh current view",()=>Do(()=>model.Refresh()));p.Add(Readout(model.Message));return;}
             foreach(var actor in new[]{"civ.federation","civ.cardassian"}){var b=AddButton(p,"Switch human side to "+OwnerName(actor),()=>{if(model!.HasLocalEdits)Confirm("Switch side and discard unsent edits?",()=>Do(()=>model.SwitchActor(actor,true)));else Do(()=>model.SwitchActor(actor));});b.name="player-switch-"+actor;}
             AddButton(p,"Refresh view",()=>Do(()=>model!.Refresh()));
             p.Add(Readout("Profile integrated-playtest-v1 · proposed numerical policies · default activation disabled"));p.Add(Readout(workspace!.BoundaryIdentity));p.Add(Readout(model!.Message));

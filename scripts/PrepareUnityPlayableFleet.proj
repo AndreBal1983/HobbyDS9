@@ -1,0 +1,16 @@
+<Project DefaultTargets="Prepare">
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))</RepoRoot>
+    <UnityProject>$(RepoRoot)/client/HobbyDS9.Unity</UnityProject>
+    <PlayableFleetSource>$(RepoRoot)/scenarios/playable-fleet-v1</PlayableFleetSource>
+    <PlayableFleetOutput>$(UnityProject)/Assets/HobbyDS9/Review/Resources/PlayableFleetPackages/v1</PlayableFleetOutput>
+  </PropertyGroup>
+  <!-- Resource-only exact-byte preparation. Caller prepares portable binaries separately.
+       Override PlayableFleetOutput for CPU/artifacts checks; no Editor/default activation. -->
+  <Target Name="Prepare">
+    <Error Condition="!Exists('$(PlayableFleetSource)/playable.json') Or !Exists('$(PlayableFleetSource)/package.json') Or !Exists('$(PlayableFleetSource)/physical.json') Or !Exists('$(PlayableFleetSource)/core.json') Or !Exists('$(PlayableFleetSource)/scenario.json')" Text="The complete five-file authored playable fleet source is required." />
+    <ItemGroup><RawSource Include="$(PlayableFleetSource)/playable.json;$(PlayableFleetSource)/package.json;$(PlayableFleetSource)/physical.json;$(PlayableFleetSource)/core.json;$(PlayableFleetSource)/scenario.json" /></ItemGroup>
+    <MakeDir Directories="$(PlayableFleetOutput)" />
+    <Copy SourceFiles="@(RawSource)" DestinationFolder="$(PlayableFleetOutput)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

@@ -214,10 +214,15 @@ namespace HobbyDS9.UnityReview
         private static TextField Field(string title,string value){var f=new TextField(title){value=value};f.AddToClassList("review-input");return f;}
         private Button AddButton(VisualElement parent,string title,Action action,bool dialog=false)
         {
-            var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
-            var button=new Button(guarded){text=title};
-            if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);
+            var button=new Button{text=title};
+            BindButton(button,action,dialog);
             button.AddToClassList("review-action");button.style.minHeight=36;parent.Add(button);return button;
+        }
+        private void BindButton(Button button,Action action,bool dialog=false)
+        {
+            var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
+            button.clicked+=guarded;
+            if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);
         }
         private void Do(Action action)
         {
@@ -238,7 +243,7 @@ namespace HobbyDS9.UnityReview
                 confirmation.style.alignItems=Align.Center;confirmation.style.justifyContent=Justify.Center;confirmation.style.backgroundColor=new Color(.02f,.03f,.06f,.96f);
                 var box=new VisualElement{name="player-confirmation-summary"};box.AddToClassList("console-panel");box.style.width=620;box.style.maxWidth=new Length(90,LengthUnit.Percent);box.style.maxHeight=new Length(80,LengthUnit.Percent);
                 var text=Readout(title);text.style.fontSize=22;
-                if(model.SingleplayerDemo)
+                if(PlayerProfile)
                 {
                     box.style.height=new Length(70,LengthUnit.Percent);
                     var body=new ScrollView(ScrollViewMode.Vertical){name="player-confirmation-details"};body.style.flexGrow=1;body.style.minHeight=0;body.Add(text);box.Add(body);

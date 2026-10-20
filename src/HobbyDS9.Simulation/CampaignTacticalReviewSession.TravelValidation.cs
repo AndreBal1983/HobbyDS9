@@ -78,7 +78,7 @@ namespace HobbyDS9.Simulation
                     &&BigInteger.GreatestCommonDivisor(n,d)==1,"Invalid exact movement receipt.");
                 if(r.StoppedByEncounter)Require(r.TransitTotalCost==0&&r.TransitProgress==0&&r.TransitDestinationId==null&&r.EncounterId!=null,"Invalid participant movement stop.");
                 var current=game.Fleets.SingleOrDefault(f=>f.FleetId==r.FleetId);
-                Require(current==null?s.Phase==SessionPhase.Planning&&r.StoppedByEncounter:
+                Require(current==null?s.Phase==SessionPhase.Planning&&(r.StoppedByEncounter || playableHash!=null&&playableRetiredFleets.Contains(r.FleetId)):
                     current.LocationNodeId==r.EndNodeId&&current.TransitTotalCost==r.TransitTotalCost&&current.TransitProgress==r.TransitProgress
                     &&(current.TransitTotalCost==0?r.TransitDestinationId==null:current.RouteNodeIds!.FirstOrDefault()==r.TransitDestinationId),
                     "Campaign location differs from authoritative physical receipt.");

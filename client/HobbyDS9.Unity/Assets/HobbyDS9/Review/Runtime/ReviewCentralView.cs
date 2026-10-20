@@ -40,12 +40,15 @@ namespace HobbyDS9.UnityReview
             root.Clear();var model=flow.Model;var c=model.Current;var frame=c.Frame;var stage=flow.Stage;var battle=frame.Battle;
             // Both single-human profiles use the readable player presentation.
             // Objective/terminal semantics remain in the authoritative Demo snapshot.
-            var demo=model.SingleplayerDemo||model.FrontierPreview;
+            var demo=model.PlayableFleet||model.SingleplayerDemo||model.FrontierPreview;
             var aftermath=demo?flow.AftermathSummary:null;
             if(aftermath==null)displayedAftermath=null;
             else if(!ReferenceEquals(displayedAftermath,aftermath)){displayedAftermath=aftermath;tab="report";}
             root.EnableInClassList("demo-combat",demo);
-            if(demo&&stage==ReviewCombatStage.RoundResult&&battle!=null&&displayedResult!=battle.BoundaryRevision){displayedResult=battle.BoundaryRevision;tab="report";}
+            if(demo&&(stage==ReviewCombatStage.RoundResult||stage==ReviewCombatStage.AftermathPending)&&battle!=null&&displayedResult!=battle.BoundaryRevision)
+            {displayedResult=battle.BoundaryRevision;tab=model.PlayableFleet&&flow.PendingPlayback!=null?"battle":"report";}
+            var battleViewAvailable=model.PlayableFleet&&battle!=null&&(flow.PendingPlayback!=null||stage==ReviewCombatStage.Orders);
+            if(tab=="battle"&&!battleViewAvailable)tab="report";
             if(actor!=frame.Actor){actor=frame.Actor;selectedFleet="";selectedShip="";focus="retain standing focus";tab="stocks";}
             var fleets=(battle!=null?battle.StandingOrders.Select(o=>o.FleetId):frame.OwnStrategicFleets.Select(f=>f.FleetId.Value)).ToList();
             if(!fleets.Contains(selectedFleet)){selectedFleet=fleets.FirstOrDefault()??"";SyncFleetOrder();}
@@ -83,17 +86,31 @@ namespace HobbyDS9.UnityReview
             var viewer=Panel(stageRow,"Central battle / survivor view");viewer.AddToClassList("review-viewer");
             // The summary already contains location/turn and every own survivor's
             // retained stocks. Avoid duplicating those blocks above its scroller.
-            if(aftermath==null||tab!="report")
+            if(!model.PlayableFleet&&(aftermath==null||tab!="report"))
             {
             var stageScroll=new ScrollView(ScrollViewMode.Vertical);stageScroll.AddToClassList("review-schematic-scroll");viewer.Add(stageScroll);
             var schematic=Text(demo?(aftermath!=null?"Confirmed aftermath · "+aftermath.Location+" · Planning turn "+aftermath.PlanningTurn:readable.Diagram(frame)):flow.StageDiagram());schematic.name="combat-schematic";stageScroll.Add(schematic);
             if(demo&&frame.OwnShips.Any(s=>s.Condition.ShipId==selectedShip)){var currentStocks=Text(readable.CompactOwn(frame,selectedShip));currentStocks.name="combat-own-current-stocks";currentStocks.AddToClassList("combat-current-stocks");viewer.Add(currentStocks);}
             }
             var tabs=new VisualElement();tabs.AddToClassList("review-tabs");viewer.Add(tabs);
-            foreach(var name in new[]{"stocks","report","inspection"})button(tabs,name=="stocks"?(demo?"Ship status":"Own hull / shields / ammunition"):name=="report"?(aftermath!=null?"Battle summary":"Round report"):"Inspection",()=>{tab=name;Render();});
+            foreach(var name in (battleViewAvailable?new[]{"battle","stocks","report","inspection"}:new[]{"stocks","report","inspection"}))
+            {
+                var pick=button(tabs,name=="battle"?"Battle view":name=="stocks"?(demo?"Ship status":"Own hull / shields / ammunition"):name=="report"?(aftermath!=null?"Battle summary":"Round report"):"Inspection",()=>{tab=name;Render();});
+                pick.name="combat-tab-"+name;
+            }
             var details=new ScrollView(ScrollViewMode.Vertical){name="central-combat-details"};details.AddToClassList("review-detail-scroll");viewer.Add(details);
+            if(model.PlayableFleet&&tab=="battle")details.Add(new ReviewBattlePanel(flow,button,perform));
+            else
+            {
             var report=Text(demo?(tab=="report"?(aftermath!=null?readable.Aftermath(aftermath):readable.LatestRound(frame)):tab=="inspection"?readable.Inspection(frame,selectedShip):readable.Stocks(frame)):tab=="report"?model.Report():tab=="inspection"?model.Inspection():flow.Conditions());report.name="combat-current-detail";details.Add(report);
+            if(model.PlayableFleet&&tab=="report")
+            {
+                var playback=flow.Playback;
+                if(playback!=null)ReviewBattlePanel.Statistics(details,playback);
+                else foreach(var historical in model.History().Reverse())ReviewBattlePanel.Statistics(details,historical);
+            }
             if(demo){var trace=new Foldout{name="combat-technical-details",text="Technical details",value=false};trace.Add(Text(model.Report()+"\n"+model.Inspection()+"\n"+flow.Conditions()+"\n"+model.Facts()));details.Add(trace);}
+            }
             if(stage==ReviewCombatStage.Waiting)
             {
                 viewer.Add(Text(demo?"Your round orders are accepted.":"YOUR ACCEPTED RECEIPT: "+battle!.OwnAcceptedCommandId));
@@ -161,9 +178,15 @@ namespace HobbyDS9.UnityReview
             var footer=new VisualElement{name="central-combat-footer"};footer.AddToClassList("review-footer");root.Add(footer);
             if(demo&&!flow.CampaignComplete&&battle==null&&frame.Status.Phase==SessionPhase.Planning&&fleets.Count>0)DraftTravelButton(footer);
             if(battle!=null)button(footer,"Back / keep draft",()=>{flow.Dismiss();Render();});
+            if(model.PlayableFleet&&flow.PendingPlayback!=null)
+            {
+                var playback=flow.Playback!;var pending=flow.PendingPlayback;
+                var skip=button(footer,"Skip playback",()=>perform(()=>flow.AcknowledgePlayback(playback,pending.Round)));
+                skip.name="combat-skip-pending-playback";
+            }
             if(flow.CampaignComplete)footer.Add(Text("Completed campaign — inspection and saving available"));
             else if(stage==ReviewCombatStage.Orders)button(footer,"Review / commit round "+battle!.Round,()=>confirm((demo?readable.Orders(c):flow.OrderReview())+(demo?"\nCommit your orders for one round against the computer?":"\nCommit one round for this human actor?"),()=>perform(()=>flow.CommitRound(ReviewUiModel.NewCommandId(),true)))).SetEnabled(flow.CanCommitRound);
-            else if(stage==ReviewCombatStage.RoundResult)button(footer,"Plan next round",()=>perform(()=>flow.PlanNextRound()));
+            else if(stage==ReviewCombatStage.RoundResult)button(footer,"Plan next round",()=>perform(()=>flow.PlanNextRound())).SetEnabled(flow.PendingPlayback==null);
             else if(stage==ReviewCombatStage.AftermathPending)button(footer,"Confirm campaign aftermath",()=>confirm("Apply complete-batch aftermath exactly once? Stocks are retained; no refill or extra movement.",()=>perform(()=>flow.FinalizeAftermath(true)))).SetEnabled(flow.CanFinalize);
             else if(stage==ReviewCombatStage.Waiting)footer.Add(Text("Waiting — no duplicate commitment"));
             else if(flow.CanDraftNextOrder)

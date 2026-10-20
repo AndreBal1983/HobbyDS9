@@ -19,6 +19,36 @@ namespace HobbyDS9.UnityReview
         private readonly Dictionary<string,long> reviewedResults=new Dictionary<string,long>(StringComparer.Ordinal);
         private readonly HashSet<string> ownLosses=new HashSet<string>(StringComparer.Ordinal);
         private bool aftermathConfirmed;
+        private readonly Dictionary<string,int> playedRounds=new Dictionary<string,int>(StringComparer.Ordinal);
+        private ReviewFrame? playbackFrame;
+        private CampaignBattlePlayback? playback;
+        public CampaignBattlePlayback? Playback
+        {
+            get
+            {
+                Context();
+                var frame=Model.Current.Frame;
+                if(!Model.PlayableFleet||frame.Battle==null)return null;
+                if(!ReferenceEquals(playbackFrame,frame))
+                {playback=Model.Playback(frame.Battle.EncounterId);playbackFrame=frame;}
+                return playback;
+            }
+        }
+        public CampaignRoundPlayback? PendingPlayback
+        {
+            get
+            {
+                var p=Playback;if(p==null)return null;
+                playedRounds.TryGetValue(p.EncounterId,out var last);
+                return p.Rounds.FirstOrDefault(r=>r.Round>last);
+            }
+        }
+        // Acknowledgment changes only presentation. Never resolve/finalize through playback.
+        public bool AcknowledgePlayback(CampaignBattlePlayback source,int round)
+        {
+            if(!ReferenceEquals(source,Playback)||PendingPlayback?.Round!=round)return false;
+            playedRounds[source.EncounterId]=round;return true;
+        }
         private ReviewAftermathSummary? aftermathSummary;
         public ReviewAftermathSummary? AftermathSummary { get {Context();return aftermathSummary;} }
         public bool SurfaceOpen { get; private set; }=true;
@@ -26,7 +56,7 @@ namespace HobbyDS9.UnityReview
         private void Context()
         {
             if(!ReferenceEquals(context,Model.Current))
-            {context=Model.Current;reviewedResults.Clear();ownLosses.Clear();aftermathConfirmed=false;aftermathSummary=null;SurfaceOpen=true;}
+            {context=Model.Current;reviewedResults.Clear();ownLosses.Clear();playedRounds.Clear();playback=null;playbackFrame=null;aftermathConfirmed=false;aftermathSummary=null;SurfaceOpen=true;}
             if(aftermathSummary!=null&&!aftermathSummary.Applies(Model.Current.Frame,Model.Closed))
             {aftermathSummary=null;aftermathConfirmed=false;}
         }
@@ -54,8 +84,8 @@ namespace HobbyDS9.UnityReview
                 return aftermathConfirmed?ReviewCombatStage.AftermathConfirmed:ReviewCombatStage.Planning;
             }
         }
-        public bool CanCommitRound=>Stage==ReviewCombatStage.Orders&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired;
-        public bool CanFinalize=>Stage==ReviewCombatStage.AftermathPending&&Model.Current.Frame.Status.CanFinalizeBatch&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired;
+        public bool CanCommitRound=>Stage==ReviewCombatStage.Orders&&PendingPlayback==null&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired;
+        public bool CanFinalize=>Stage==ReviewCombatStage.AftermathPending&&PendingPlayback==null&&Model.Current.Frame.Status.CanFinalizeBatch&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired;
         public bool CampaignComplete=>Model.Current.Frame.Demo!=null&&Model.Current.Frame.Demo.Outcome!=CampaignDemoOutcome.Active;
         public bool CanDraftNextOrder=>!CampaignComplete&&Model.Current.Frame.Status.Phase==SessionPhase.Planning&&Model.Current.Frame.OwnStrategicFleets.Count>0&&!Model.Busy&&!Model.Current.HasPendingWork&&!Model.Current.RefreshRequired&&!Model.Closed&&Model.Current.Mode==ReviewMode.Planning;
         public IReadOnlyList<string> OwnLosses { get {Context();return ownLosses.OrderBy(s=>s,StringComparer.Ordinal).ToList().AsReadOnly();} }
@@ -63,7 +93,7 @@ namespace HobbyDS9.UnityReview
         public void Dismiss(){SurfaceOpen=false;} // No command, discard or time advance.
         public bool PlanNextRound()
         {
-            if(Stage!=ReviewCombatStage.RoundResult)return false;
+            if(Stage!=ReviewCombatStage.RoundResult||PendingPlayback!=null)return false;
             var b=Model.Current.Frame.Battle!;reviewedResults[b.EncounterId]=b.BoundaryRevision;return true;
         }
         private bool Guard(bool allowed,string reason,Func<bool> action)
@@ -111,9 +141,9 @@ namespace HobbyDS9.UnityReview
                     case ReviewCombatStage.AftermathConfirmed:return "Aftermath confirmed — choose a fresh strategic order";
                     case ReviewCombatStage.NoOwnedFleet:return "No owned surviving fleet available for orders";
                     case ReviewCombatStage.SelectEncounter:return "Select an owned encounter";
-                    case ReviewCombatStage.Closed:return Model.SingleplayerDemo||Model.FrontierPreview?"Campaign closed":"Review closed";
+                    case ReviewCombatStage.Closed:return Model.PlayableFleet||Model.SingleplayerDemo||Model.FrontierPreview?"Campaign closed":"Review closed";
                     case ReviewCombatStage.CampaignComplete:return "Campaign complete — "+Model.Current.Frame.Demo!.Outcome+" · inspection";
-                    default:return Model.SingleplayerDemo||Model.FrontierPreview?"Combat — strategic Planning":"Physical tactical-v2 review — strategic Planning";
+                    default:return Model.PlayableFleet||Model.SingleplayerDemo||Model.FrontierPreview?"Combat — strategic Planning":"Physical tactical-v2 review — strategic Planning";
                 }
             }
         }

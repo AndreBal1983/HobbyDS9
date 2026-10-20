@@ -5,3 +5,8 @@ scenarios/**/*.json text eol=lf
 client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/** -text
 client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/source-manifest.json -text
 client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/runtime-manifest.json -text
+# New campaign identity and original model receipts also depend on exact bytes.
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayableFleetPackages/**/*.json text eol=lf
+art/ships/cardassian-cruiser-v1/** -text
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian/** -text
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian/*.meta text eol=lf
