@@ -1,5 +1,7 @@
 # Generated galaxy M1: backend acceptance
 
+Historical format1 v1/v2 record. The later owner-authorized environment-first implementation and its current gates are recorded in [environment-first backend acceptance](environment-galaxy-backend-acceptance.md). The causal gap and design-alignment hold below describe the earlier scaffold; that hold was superseded by the owner's explicit environment-first M1 authorization.
+
 20 October 2026. Scope: portable generated-map review only. Current owner-requested layout correction: `2fad182e40868b4e3f3e6e99651e4618c3b277b0`. Original implementation: `771a3deadbf600078ee57eff9cd29d4660138c8c`, based on protected playable commit `cc8578c17e919dacaa2975b5cc757bee1bc8befc`. This follow-up acceptance record changes documentation only.
 
 [Draft PR72](https://github.com/AndreBal1983/HobbyDS9/pull/72) contains the [API/geometry contract](generated-galaxy-backend-contract.md) and [actual map/route samples](samples/generated-galaxy-v1/README.md).
