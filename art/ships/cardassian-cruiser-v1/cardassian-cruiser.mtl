@@ -1,0 +1,26 @@
+newmtl CARD_Ochre
+Kd 0.52 0.34 0.16
+Ks .25 .25 .25
+Ns 48
+newmtl CARD_Plate_Gold
+Kd 0.73 0.55 0.29
+Ks .25 .25 .25
+Ns 48
+newmtl CARD_Inset
+Kd 0.16 0.115 0.065
+Ks .25 .25 .25
+Ns 48
+newmtl CARD_RedBrown
+Kd 0.34 0.105 0.065
+Ks .25 .25 .25
+Ns 48
+newmtl CARD_Drive_Amber
+Kd 1 0.26 0.035
+Ks .25 .25 .25
+Ns 48
+Ke 1 0.16 0.015
+newmtl CARD_Windows
+Kd 0.58 0.73 0.8
+Ks .25 .25 .25
+Ns 48
+Ke 0.22 0.32 0.4

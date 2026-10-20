@@ -1,0 +1,50 @@
+{
+  "status": "Presentation handoff only; Secondary owns runtime bindings and native acceptance",
+  "scenarioBaseCommit": "e3e76216c5d1033ae51614e364ccb1717506bb99",
+  "scenario": "singleplayer-demo-v1",
+  "bindings": [
+    {
+      "civilizationDefinitionId": "civilization.federation",
+      "shipDesignDefinitionId": "ship-design.source-cruiser",
+      "visualKey": "fed.exploration-cruiser.v1",
+      "status": "Existing exact binding in ShipVisualCatalog at base; reuse",
+      "resourcePrefab": "ArtDemo/Federation/Prefabs/exploration-cruiser",
+      "existingModelDirectory": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Models",
+      "nominalArtLengthMetres": 620,
+      "lodTriangles": [7700,3542,2004],
+      "measuredExportAnchors": [
+        {"name":"Effect_Deflector","position":[0,-43.51038360595703,69.02584838867188],"use":"Deflector appearance only; not a weapon origin by name"},
+        {"name":"Effect_Torpedo","position":[0,-23.788715362548828,22.803180694580078],"use":"Candidate ordnance origin only for a lawful matching event"},
+        {"name":"Forward_Equipment","position":[0,41.5393180847168,286.58050537109375],"use":"Visual equipment interface, not authoritative gameplay mount"},
+        {"name":"Nacelle_Port","position":[-160.2385711669922,71.121826171875,-158.38966369628906],"use":"Attachment pivot, not measured exhaust point"},
+        {"name":"Nacelle_Starboard","position":[160.2385711669922,71.121826171875,-158.38966369628906],"use":"Attachment pivot, not measured exhaust point"}
+      ],
+      "anchorAxes": "+Y up, +Z forward; positions extracted from existing GLB export, verify FBX receiving hierarchy"
+    },
+    {
+      "civilizationDefinitionId": "civilization.cardassian",
+      "shipDesignDefinitionId": "ship-design.travel-target",
+      "visualKey": "card.cruiser-prototype.v1",
+      "status": "New original Cardassian-style prototype; proposed exact binding, no Unity import/final-art approval",
+      "sourceManifest": "art/ships/cardassian-cruiser-v1/manifest.json",
+      "nativeImportCandidate": "art/ships/cardassian-cruiser-v1/cardassian-cruiser_LOD0.obj",
+      "portableCandidate": "art/ships/cardassian-cruiser-v1/cardassian-cruiser_LOD0.glb",
+      "lodTriangles": [3320,1496,512],
+      "boundsLengthMetres": 480.95,
+      "anchors": "GLB named nodes and source manifest; OBJ does not retain transform anchors"
+    }
+  ],
+  "notAdmittedByThisMapping": [
+    {"shipDesignDefinitionId":"ship-design.scout","reason":"Catalogue existence is not v2 construction admission; no new binding"},
+    {"shipDesignDefinitionId":"ship-design.advanced-scout","reason":"Engineering maturity does not establish supported v2 construction; no new binding"},
+    {"shipDesignDefinitionId":"ship-design.source-surveyor","reason":"Possible separate authored capability, not selected for this first Federation/Cardassian battle binding; require Primary admission before proposing patrol-frigate art"}
+  ],
+  "unboundArt": ["fed.patrol-frigate.v1","fed.compact-escort.v1","Galaxy Meshy v2 source candidate"],
+  "disclosureGate": "Resolve only owned or lawfully visible actor-projected ships. Unknown/hidden designs get a truthful generic permitted fallback, never infer faction/fit from names.",
+  "scalePolicy": "Authoring metres are visual dimensions only. Root scaling for a readable battle stage never changes hull, range, collision, speed or hit rules.",
+  "effectPaletteProposal": {
+    "federation": {"beam":"#FFD080","ordnance":"#FFAA55","shield":"#7BBEFF"},
+    "cardassian": {"beam":"#FFB04F","ordnance":"#FF8944","shield":"#E6BD78"},
+    "status":"Cosmetic proposals only; use actual typed weapon/event class and disclosure, no new capabilities"
+  }
+}
