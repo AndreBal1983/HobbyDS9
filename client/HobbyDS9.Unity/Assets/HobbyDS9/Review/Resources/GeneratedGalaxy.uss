@@ -61,6 +61,12 @@
     background-color: rgba(0,0,0,0); border-width: 1px; border-color: rgba(0,0,0,0);
 }
 .galaxy-candidate-target:hover, .galaxy-candidate-target:focus { border-color: #9fd8fb; }
+.galaxy-feature-target {
+    position: absolute; width: 28px; height: 28px; min-width: 28px; min-height: 28px;
+    margin: 0; padding: 0; color: #75b8b9; font-size: 20px; -unity-text-align: middle-center;
+    background-color: rgba(0,0,0,0); border-width: 1px; border-color: rgba(0,0,0,0); border-radius: 14px;
+}
+.galaxy-feature-target:hover, .galaxy-feature-target:focus { border-color: #9fd8fb; }
 .galaxy-compact { padding: 16px; font-size: 16px; }
 .galaxy-compact .galaxy-inspector { width: 280px; min-width: 280px; }
 .galaxy-compact .galaxy-title { font-size: 24px; }

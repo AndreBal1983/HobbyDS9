@@ -8,6 +8,8 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../docs/samples/generated-galaxy-v1/*.galaxy.json" Link="galaxy-samples/v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/samples/generated-galaxy-v2/*.galaxy.json" Link="galaxy-samples/v2/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/HobbyDS9.Headless/PlayableFleetPackageReader.cs" Link="PlayableFleetPackageReader.cs" />
     <Compile Include="../../src/HobbyDS9.Headless/PlayableFleetWalkthrough.cs" Link="PlayableFleetWalkthrough.cs" />
     <None Include="../../scenarios/playable-fleet-v1/*.json" Link="scenarios/playable-fleet-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

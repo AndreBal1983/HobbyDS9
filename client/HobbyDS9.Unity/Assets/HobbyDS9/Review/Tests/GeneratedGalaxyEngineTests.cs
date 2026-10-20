@@ -189,6 +189,64 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(campaign.HasLocalEdits,Is.True);Assert.That(root.Q<Button>("integrated-apply-science").enabledInHierarchy,Is.True);
             yield return new ExitPlayMode();
         }
+        [UnityTest] public IEnumerator EnvironmentFeaturesAndOldMapFormatsUseDisplayedControls()
+        {
+            yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();var root=doc.rootVisualElement;
+            directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-"+Guid.NewGuid().ToString("N"));
+            var codec=new ReviewNewtonsoftCodec();var scenario=codec.DecodeScenario(Resources.Load<TextAsset>(PlayableFleetOptions.ResourceRoot+"scenario").bytes);
+            var workspace=new GeneratedGalaxyWorkspace(scenario.Definitions.Civilizations!,new GeneratedGalaxyMapStore(directory));
+            typeof(ReviewEntry).GetField("galaxy",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,workspace);
+            Click(root.Q<Button>("generated-galaxy-entry"));yield return null;
+            root.Q<TextField>("galaxy-seed").value="42";Click(root.Q<Button>("galaxy-generate"));yield return null;yield return null;
+            var map=workspace.Document!;var environment=map.Environment!;Assert.That(environment,Is.Not.Null);
+            var bytes=workspace.ExportBytes();var view=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
+            Assert.That(view.Query<Button>().ToList().Count(b=>b.name.StartsWith("galaxy-feature-",StringComparison.Ordinal)),Is.EqualTo(5));
+            foreach(var kind in new[]{GalaxyEnvironmentFeatureKind.BlackHole,GalaxyEnvironmentFeatureKind.Nebula})
+            {
+                var feature=environment.Features.First(f=>f.Kind==kind);
+                Click(root.Q<Button>("galaxy-feature-"+feature.FeatureId));yield return null;
+                Assert.That(root.Q<Label>("galaxy-feature-identity").text,Is.EqualTo(feature.FeatureId));
+                yield return Capture(doc,"environment-"+kind);
+            }
+            Click(root.Q<Button>("galaxy-influence-areas"));Assert.That(view.ShowInfluenceAreas,Is.True);
+            Click(root.Q<Button>("galaxy-density-causes"));
+            var system=map.Systems[0];Click(root.Q<Button>("galaxy-star-"+system.SystemId));yield return null;
+            var influence=environment.RegionInfluences.Single(i=>i.NodeId==system.NodeId);
+            Assert.That(root.Q<Label>("galaxy-density-values").text,Does.Contain("sampled target "+influence.TargetDensity+" /"));
+            foreach(var contribution in influence.Contributions)
+                Assert.That(root.Q<Button>("galaxy-contribution-"+contribution.FeatureId).text,Does.EndWith("+"+contribution.Amount));
+            Click(root.Q<Button>("galaxy-inspect-star-influence"));yield return null;
+            Assert.That(root.Q<Label>("galaxy-feature-identity").text,Is.EqualTo(environment.Features.Single(f=>f.SystemId==system.SystemId).FeatureId));
+            yield return Capture(doc,"environment-influence-density");
+            Click(root.Q<Button>("galaxy-features"));Assert.That(view.ShowFeatures,Is.False);
+            Assert.That(view.Query<Button>().ToList().Where(b=>b.name.StartsWith("galaxy-feature-",StringComparison.Ordinal)).All(b=>b.style.display.value==DisplayStyle.None),Is.True);
+            Assert.That(workspace.Document,Is.SameAs(map));CollectionAssert.AreEqual(bytes,workspace.ExportBytes(),"display toggles cannot change persisted authority");
+            yield return Capture(doc,"environment-features-hidden");
+            Click(root.Q<Button>("galaxy-features"));Click(root.Q<Button>("galaxy-influence-areas"));
+            Click(root.Q<Button>("galaxy-export"));Assert.That(workspace.Unexported,Is.False);
+            var currentPath=Path.Combine(directory,"generated-map-1.json");var saved=File.ReadAllBytes(currentPath);
+            var corrupted=codec.DecodeEnvironmentGalaxy(saved);corrupted.Features[0].Position.X++;
+            File.WriteAllBytes(currentPath,codec.EncodeEnvironmentGalaxy(corrupted));
+            Click(root.Q<Button>("galaxy-open"));Assert.That(workspace.Document,Is.SameAs(map));
+            Assert.That(root.Q<Label>("galaxy-feature-identity"),Is.Not.Null,"failed Open preserves selected feature");
+            File.WriteAllBytes(currentPath,saved);
+            foreach(var version in new[]{"v1","v2"})
+            {
+                var source=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","docs/samples/generated-galaxy-"+version,"seed-42-systems-40.galaxy.json"));
+                var original=File.ReadAllBytes(source);var expected=codec.DecodeGeneratedGalaxy(original);
+                File.WriteAllBytes(Path.Combine(directory,"generated-map-2.json"),original);
+                root.Q<DropdownField>("galaxy-slot").value="2";Click(root.Q<Button>("galaxy-open"));yield return null;yield return null;
+                Assert.That(workspace.Document!.ContentHash,Is.EqualTo(expected.ContentHash));Assert.That(workspace.Document.Environment,Is.Null);
+                Assert.That(root.Q<Button>("galaxy-features"),Is.Null);Assert.That(root.Q<Label>("galaxy-feature-identity"),Is.Null);
+                CollectionAssert.AreEqual(original,File.ReadAllBytes(Path.Combine(directory,"generated-map-2.json")));
+                yield return Capture(doc,"retained-format1-"+version);
+            }
+            root.Q<DropdownField>("galaxy-slot").value="1";Click(root.Q<Button>("galaxy-open"));yield return null;yield return null;
+            Assert.That(workspace.Document!.ContentHash,Is.EqualTo(map.ContentHash));CollectionAssert.AreEqual(bytes,workspace.ExportBytes());
+            yield return Capture(doc,"environment-reopened");
+            yield return new ExitPlayMode();
+        }
         private static IEnumerator Capture(UIDocument doc,string state,string? origin=null,StrategicRouteSnapshot? route=null)
         {
             var directory=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/generated-galaxy/engine-rendered"));
@@ -209,6 +267,12 @@ namespace HobbyDS9.UnityReview.Tests
                         Assert.That(control.worldBound.yMin,Is.GreaterThanOrEqualTo(0),name);
                         Assert.That(control.worldBound.yMax,Is.LessThanOrEqualTo(size.y+1),name);
                     }
+                    foreach(var name in new[]{"galaxy-features","galaxy-influence-areas","galaxy-density-causes"})
+                    {
+                        var control=root.Q(name);if(control==null)continue;
+                        Assert.That(control.worldBound.xMin,Is.GreaterThanOrEqualTo(0),name);Assert.That(control.worldBound.xMax,Is.LessThanOrEqualTo(size.x+1),name);
+                        Assert.That(control.worldBound.yMax,Is.LessThanOrEqualTo(size.y+1),name);
+                    }
                     var map=root.Q("generated-galaxy-map");Assert.That(map.worldBound.height,Is.GreaterThan(250));
                     Assert.That(map.worldBound.width,Is.GreaterThan(600));
                     var inspector=root.Q<ScrollView>("galaxy-inspector");
@@ -218,6 +282,32 @@ namespace HobbyDS9.UnityReview.Tests
                     pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
                     // Preserve the actual rendered state even when a later geometry assertion fails.
                     File.WriteAllBytes(Path.Combine(directory,size.x+"x"+size.y+"-"+state+".png"),pixels.EncodeToPNG());
+                    var featureView=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
+                    foreach(var feature in featureView.Query<Button>().ToList().Where(b=>b.name.StartsWith("galaxy-feature-",StringComparison.Ordinal)&&b.style.display.value!=DisplayStyle.None))
+                    {
+                        var expected=featureView.LocalToWorld(featureView.FeaturePosition(feature.name.Substring("galaxy-feature-".Length)));
+                        Assert.That(Vector2.Distance(feature.worldBound.center,expected),Is.LessThan(2),feature.name);
+                    }
+                    if(state=="environment-influence-density")
+                    {
+                        var data=(GeneratedGalaxyMapData)typeof(GeneratedGalaxyMapView).GetField("document",BindingFlags.NonPublic|BindingFlags.Instance)!.GetValue(featureView)!;
+                        var project=typeof(GeneratedGalaxyMapView).GetMethod("Point",BindingFlags.NonPublic|BindingFlags.Instance)!;
+                        Vector2 Project(int x,int y)=>featureView.LocalToWorld((Vector2)project.Invoke(featureView,new object[]{new GeneratedGalaxyPointDto{X=x,Y=y}})!);
+                        var low=Project(0,0);var high=Project(data.Width,data.Height);int checkedPixels=0;
+                        var controls=featureView.Children().Where(c=>c.resolvedStyle.display!=DisplayStyle.None).Select(c=>c.worldBound).ToArray();
+                        var anchors=data.Environment!.Features.Select(f=>featureView.LocalToWorld(featureView.FeaturePosition(f.FeatureId))).ToArray();
+                        foreach(var fraction in Enumerable.Range(1,19).Select(i=>i/20f))
+                        foreach(var sample in new[]{new Vector2(Mathf.Lerp(low.x,high.x,fraction),low.y-15),new Vector2(Mathf.Lerp(low.x,high.x,fraction),high.y+15),
+                            new Vector2(low.x-15,Mathf.Lerp(low.y,high.y,fraction)),new Vector2(high.x+15,Mathf.Lerp(low.y,high.y,fraction))})
+                        {
+                            if(!featureView.worldBound.Contains(sample)||controls.Any(c=>c.Contains(sample))||anchors.Any(a=>Vector2.Distance(a,sample)<50))continue;
+                            var color=pixels.GetPixel(Mathf.RoundToInt(sample.x),size.y-1-Mathf.RoundToInt(sample.y));
+                            Assert.That(Mathf.Abs(color.r-8/255f)+Mathf.Abs(color.g-18/255f)+Mathf.Abs(color.b-30/255f),Is.LessThan(.025f),
+                                "feature influence must not paint outside exported map extent at "+sample);
+                            checkedPixels++;
+                        }
+                        Assert.That(checkedPixels,Is.GreaterThan(0),"actual exterior clipping samples");
+                    }
                     if(origin!=null&&route!=null)
                     {
                         var view=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
@@ -240,9 +330,9 @@ namespace HobbyDS9.UnityReview.Tests
                         {
                             var systemId=button.name.Substring("galaxy-star-".Length);
                             // The actual star control position must match the declared generator system/region association.
-                            var document=(GeneratedGalaxyDocumentDto)typeof(GeneratedGalaxyMapView).GetField("document",BindingFlags.NonPublic|BindingFlags.Instance)!.GetValue(view)!;
+                            var document=(GeneratedGalaxyMapData)typeof(GeneratedGalaxyMapView).GetField("document",BindingFlags.NonPublic|BindingFlags.Instance)!.GetValue(view)!;
                             var node=document.Systems.Single(s=>s.SystemId==systemId).NodeId;
-                            var expected=view.LocalToWorld(view.Position(node));var actual=button.worldBound.center;var delta=actual-expected;
+                            var expected=view.LocalToWorld(view.SystemPosition(systemId));var actual=button.worldBound.center;var delta=actual-expected;
                             var diagnostic=size+" "+state+" system="+systemId+" node="+node+" actual="+actual.ToString("F5")+" expected="+expected.ToString("F5")
                                 +" delta="+delta.ToString("F5")+" mapLayout="+view.layout+" content="+view.contentRect
                                 +" borders="+view.resolvedStyle.borderLeftWidth+","+view.resolvedStyle.borderTopWidth

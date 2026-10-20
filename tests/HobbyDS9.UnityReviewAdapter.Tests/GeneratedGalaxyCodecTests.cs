@@ -33,4 +33,44 @@ public sealed class GeneratedGalaxyCodecTests
         Assert.Contains(before,text);
         Assert.Throws<InvalidDataException>(()=>codec.DecodeGeneratedGalaxy(Encoding.UTF8.GetBytes(text.Replace(before,after))));
     }
+
+    private static byte[] EnvironmentSample()
+    {
+        var codec=new ReviewNewtonsoftCodec();var catalog=codec.DecodeScenario(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,"scenarios/playable-fleet-v1/scenario.json"))).Definitions.Civilizations!;
+        var map=HobbyDS9.Application.EnvironmentGalaxyApplication.Generate(new EnvironmentGalaxySettingsDto
+        {
+            Map=new(){Seed="42",SystemCount=40,HomeCivilizationDefinitionIds=new(){"civilization.federation","civilization.cardassian"}},
+            StellarInfluenceEnabled=true,BlackHoleInfluenceEnabled=true,NebulaInfluenceEnabled=true
+        },catalog).Export();
+        return codec.EncodeEnvironmentGalaxy(map);
+    }
+
+    [Fact] public void OuterFormatDispatchAndEnvironmentRoundtripRetainAllFields()
+    {
+        var codec=new ReviewNewtonsoftCodec();var bytes=EnvironmentSample();Assert.Equal(2,codec.GeneratedGalaxyFormat(bytes));
+        Assert.Equal(bytes,codec.EncodeEnvironmentGalaxy(codec.DecodeEnvironmentGalaxy(bytes)));
+        Assert.Throws<InvalidDataException>(()=>codec.DecodeGeneratedGalaxy(bytes));
+        Assert.Throws<InvalidDataException>(()=>codec.DecodeEnvironmentGalaxy(codec.EncodeGeneratedGalaxy(Shape())));
+        Assert.Throws<InvalidDataException>(()=>codec.GeneratedGalaxyFormat(Encoding.UTF8.GetBytes("{\"FormatVersion\":\"2\"}")));
+        Assert.Throws<InvalidDataException>(()=>codec.GeneratedGalaxyFormat(Encoding.UTF8.GetBytes("{\"FormatVersion\":2,\"FormatVersion\":1}")));
+    }
+
+    [Theory]
+    [InlineData("boolean-string")]
+    [InlineData("missing-nullable")]
+    [InlineData("extra-field")]
+    [InlineData("feature-bound")]
+    [InlineData("contribution-bound")]
+    [InlineData("integer-string")]
+    public void EnvironmentDecoderRejectsInvalidWireShape(string kind)
+    {
+        var root=Newtonsoft.Json.Linq.JObject.Parse(Encoding.UTF8.GetString(EnvironmentSample()));
+        if(kind=="boolean-string")root["Settings"]!["StellarInfluenceEnabled"]="true";
+        if(kind=="missing-nullable")((Newtonsoft.Json.Linq.JObject)root["Features"]![0]!).Remove("SystemId");
+        if(kind=="extra-field")root["Layout"]!["FormatVersion"]=1;
+        if(kind=="integer-string")root["Features"]![0]!["RadiusX"]="1000";
+        if(kind=="feature-bound"){var rows=(Newtonsoft.Json.Linq.JArray)root["Features"]!;while(rows.Count<56)rows.Add(rows[0].DeepClone());}
+        if(kind=="contribution-bound"){var rows=(Newtonsoft.Json.Linq.JArray)root["RegionInfluences"]![0]!["Contributions"]!;while(rows.Count<56)rows.Add(new Newtonsoft.Json.Linq.JObject{{"FeatureId","unknown"},{"Amount",1}});}
+        Assert.Throws<InvalidDataException>(()=>new ReviewNewtonsoftCodec().DecodeEnvironmentGalaxy(Encoding.UTF8.GetBytes(root.ToString())));
+    }
 }

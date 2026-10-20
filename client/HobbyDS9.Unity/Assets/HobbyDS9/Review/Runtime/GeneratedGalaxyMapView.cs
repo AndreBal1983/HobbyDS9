@@ -12,7 +12,7 @@ namespace HobbyDS9.UnityReview
     // Draws supplied geometry. No generation, pathfinding, contact or ownership rules live here.
     public sealed class GeneratedGalaxyMapView : VisualElement
     {
-        private readonly GeneratedGalaxyDocumentDto document;
+        private readonly GeneratedGalaxyMapData document;
         private readonly Dictionary<string,GeneratedGalaxyRegionDto> regions;
         private readonly Dictionary<string,string> candidateNames;
         private readonly Action<string,GeneratedGalaxySelectionKind> selected;
@@ -23,14 +23,18 @@ namespace HobbyDS9.UnityReview
         private string? selectedNode,routeOrigin;
         private GeneratedGalaxySelectionKind selectionKind;
         private readonly List<(Button button,string node)> candidateButtons=new List<(Button,string)>();
+        private readonly List<(Button button,EnvironmentGalaxyFeatureDto feature)> featureButtons=new List<(Button,EnvironmentGalaxyFeatureDto)>();
+        private string? selectedFeature;
         private IReadOnlyList<string> routeSteps=Array.Empty<string>();
         private int pointer=-1;
         private Vector2 press,last;
         private bool moved;
         public bool ShowGraphLinks { get; private set; }
+        public bool ShowFeatures { get; private set; }=true;
+        public bool ShowInfluenceAreas { get; private set; }
         public double Zoom=>viewport.Zoom;
-        public GeneratedGalaxyMapView(GeneratedGalaxyDocumentDto map,IReadOnlyDictionary<string,string> civilizations,
-            Action<Button,Action> bindButton,Action<string,GeneratedGalaxySelectionKind> select,Action<string> target)
+        public GeneratedGalaxyMapView(GeneratedGalaxyMapData map,IReadOnlyDictionary<string,string> civilizations,
+            Action<Button,Action> bindButton,Action<string,GeneratedGalaxySelectionKind> select,Action<string> target,Action<string>? inspectFeature=null)
         {
             document=map;regions=map.Regions.ToDictionary(r=>r.NodeId,StringComparer.Ordinal);
             candidateNames=map.HomeCandidates.ToDictionary(h=>h.NodeId,h=>civilizations[h.CivilizationDefinitionId],StringComparer.Ordinal);
@@ -60,6 +64,14 @@ namespace HobbyDS9.UnityReview
                 button.AddToClassList("galaxy-candidate-target");Add(button);
                 bindButton(button,()=>{if(Live())select(candidate.NodeId,GeneratedGalaxySelectionKind.HomeCandidate);});
                 candidateButtons.Add((button,candidate.NodeId));
+            }
+            if(map.Environment!=null)foreach(var feature in map.Environment.Features.Where(f=>f.Kind!=GalaxyEnvironmentFeatureKind.Star))
+            {
+                var button=new Button{name="galaxy-feature-"+feature.FeatureId,text=feature.Kind==GalaxyEnvironmentFeatureKind.Nebula?"◇":"",
+                    tooltip=feature.DisplayName+" · inspect generation influence"};
+                button.AddToClassList("galaxy-feature-target");Add(button);
+                bindButton(button,()=>{if(Live())inspectFeature?.Invoke(feature.FeatureId);});
+                featureButtons.Add((button,feature));
             }
             // Star hit targets win over any overlapping candidate corner. Candidates also have inspector access.
             foreach(var star in stars)star.button.BringToFront();
@@ -104,9 +116,14 @@ namespace HobbyDS9.UnityReview
         public void ZoomBy(double factor){viewport.ZoomAt(factor,contentRect.width/2,contentRect.height/2);Place();}
         public void Pan(double x,double y){viewport.Pan(x,y);Place();}
         public void ToggleGraphLinks(){ShowGraphLinks=!ShowGraphLinks;MarkDirtyRepaint();}
+        public void ToggleFeatures(){ShowFeatures=!ShowFeatures;Place();}
+        public void ToggleInfluenceAreas(){ShowInfluenceAreas=!ShowInfluenceAreas;MarkDirtyRepaint();}
+        public void SelectFeature(string? feature){selectedFeature=feature;MarkDirtyRepaint();}
         public void Select(string node,GeneratedGalaxySelectionKind kind){selectedNode=node;selectionKind=kind;Place();}
         public void Route(string? origin,IReadOnlyList<string>? steps){routeOrigin=origin;routeSteps=steps??Array.Empty<string>();Place();}
         public Vector2 Position(string node)=>Point(regions[node].Center);
+        public Vector2 SystemPosition(string systemId)=>Point(document.SystemPosition(systemId));
+        public Vector2 FeaturePosition(string featureId)=>Point(document.Environment!.Features.Single(f=>f.FeatureId==featureId).Position);
         // Painter and pointer coordinates are border-box local; the viewport is content-box local.
         private Vector2 Point(GeneratedGalaxyPointDto point)=>contentRect.position+new Vector2((float)viewport.X(point.X),(float)viewport.Y(point.Y));
         private Vector2 ToContent(Vector2 local)=>local-contentRect.position;
@@ -135,7 +152,7 @@ namespace HobbyDS9.UnityReview
             // Important labels get first choice. Suppression changes labels, never underlying nodes.
             foreach(var star in stars.OrderByDescending(s=>s.region.NodeId==selectedNode||s.candidate||s.region.NodeId==routeOrigin||routeSteps.LastOrDefault()==s.region.NodeId))
             {
-                var point=Point(star.region.Center);var bounds=contentRect;
+                var point=SystemPosition(star.region.SystemId!);var bounds=contentRect;
                 bool visible=point.x>=bounds.xMin-20&&point.y>=bounds.yMin-20&&point.x<=bounds.xMax+20&&point.y<=bounds.yMax+20;
                 PlaceChild(star.button,point-new Vector2(14,14));
                 star.button.style.display=visible?DisplayStyle.Flex:DisplayStyle.None;
@@ -155,11 +172,37 @@ namespace HobbyDS9.UnityReview
                 var point=Position(candidate.node);PlaceChild(candidate.button,point-new Vector2(38,38));
                 candidate.button.EnableInClassList("galaxy-star-selected",candidate.node==selectedNode&&selectionKind==GeneratedGalaxySelectionKind.HomeCandidate);
             }
+            foreach(var feature in featureButtons)
+            {
+                PlaceChild(feature.button,Point(feature.feature.Position)-new Vector2(14,14));
+                feature.button.style.display=ShowFeatures?DisplayStyle.Flex:DisplayStyle.None;
+            }
             MarkDirtyRepaint();
         }
         private void Paint(MeshGenerationContext context)
         {
             var painter=context.painter2D;
+            if(document.Environment!=null)foreach(var feature in document.Environment.Features)
+            {
+                var center=Point(feature.Position);bool nebula=feature.Kind==GalaxyEnvironmentFeatureKind.Nebula;
+                if((nebula&&ShowFeatures)||ShowInfluenceAreas)
+                {
+                    var footprint=InfluencePolygon(feature);if(footprint.Count<3)continue;
+                    painter.BeginPath();painter.MoveTo(footprint[0]);
+                    foreach(var point in footprint.Skip(1))painter.LineTo(point);
+                    painter.ClosePath();
+                    if(nebula&&ShowFeatures){painter.fillColor=new Color(.25f,.63f,.64f,.12f);painter.Fill();}
+                    if(ShowInfluenceAreas){painter.strokeColor=new Color(.60f,.73f,.80f,feature.FeatureId==selectedFeature ? .5f : .22f);painter.lineWidth=1;painter.Stroke();}
+                }
+                if(ShowFeatures&&feature.Kind==GalaxyEnvironmentFeatureKind.BlackHole)
+                {
+                    painter.BeginPath();painter.Arc(center,5,0,360);painter.fillColor=new Color(.015f,.02f,.035f);painter.Fill();
+                    painter.strokeColor=new Color(.72f,.65f,.88f,.85f);painter.lineWidth=2;
+                    painter.BeginPath();painter.Arc(center,9,20,165);painter.Stroke();painter.BeginPath();painter.Arc(center,9,200,345);painter.Stroke();
+                }
+                if(ShowFeatures&&feature.FeatureId==selectedFeature)
+                {painter.strokeColor=new Color(.94f,.69f,.42f);painter.lineWidth=2;painter.BeginPath();painter.Arc(center,17,0,360);painter.Stroke();}
+            }
             foreach(var region in document.Regions)
             {
                 painter.BeginPath();painter.MoveTo(Point(region.Boundary[0]));
@@ -188,6 +231,34 @@ namespace HobbyDS9.UnityReview
                 var p=Position(candidate.NodeId);painter.strokeColor=new Color(.72f,.65f,.88f);painter.lineWidth=2;
                 painter.BeginPath();painter.MoveTo(p+new Vector2(12,20));painter.LineTo(p+new Vector2(20,20));painter.LineTo(p+new Vector2(20,12));painter.Stroke();
             }
+        }
+        private List<Vector2> InfluencePolygon(EnvironmentGalaxyFeatureDto feature)
+        {
+            // Presentation-only ellipse tessellation and clipping to the authoritative map rectangle.
+            // Region boundaries, feature coordinates and influence values are never changed.
+            var points=new List<Vector2>();
+            for(int i=0;i<128;i++)
+            {
+                double angle=i*Math.PI*2/128;
+                points.Add(new Vector2((float)(feature.Position.X+Math.Cos(angle)*feature.RadiusX),
+                    (float)(feature.Position.Y+Math.Sin(angle)*feature.RadiusY)));
+            }
+            for(int edge=0;edge<4;edge++)
+            {
+                if(points.Count==0)break;
+                float limit=edge==1?document.Width:edge==3?document.Height:0;bool vertical=edge<2,lower=edge==0||edge==2;
+                float Axis(Vector2 p)=>vertical?p.x:p.y;
+                bool Inside(Vector2 p)=>lower?Axis(p)>=limit:Axis(p)<=limit;
+                var clipped=new List<Vector2>();var previous=points[points.Count-1];bool priorInside=Inside(previous);
+                foreach(var current in points)
+                {
+                    bool inside=Inside(current);
+                    if(inside!=priorInside)clipped.Add(Vector2.LerpUnclamped(previous,current,(limit-Axis(previous))/(Axis(current)-Axis(previous))));
+                    if(inside)clipped.Add(current);previous=current;priorInside=inside;
+                }
+                points=clipped;
+            }
+            return points.Select(p=>contentRect.position+new Vector2((float)viewport.X(p.x),(float)viewport.Y(p.y))).ToList();
         }
     }
 }
