@@ -17,6 +17,19 @@
 .galaxy-controls .unity-base-popup-field { min-width: 145px; margin-right: 12px; }
 .galaxy-controls .unity-base-field__label { min-width: 45px; }
 .galaxy-controls .unity-base-field__input { min-height: 40px; }
+.galaxy-root .unity-base-field__input {
+    background-color: #172637; color: #eeeaf2; border-width: 1px; border-color: #607993;
+    border-radius: 4px; padding-left: 8px; padding-right: 8px;
+}
+.galaxy-root .unity-base-text-field__input, .galaxy-root .unity-text-field__input, .galaxy-root .unity-text-input {
+    background-color: #172637; color: #eeeaf2; font-size: 16px;
+}
+.galaxy-root .unity-base-popup-field__text { color: #eeeaf2; font-size: 16px; }
+.galaxy-root .unity-base-popup-field__arrow { -unity-background-image-tint-color: #eeeaf2; }
+.galaxy-root .unity-base-field__input:focus { border-color: #9fd8fb; }
+.galaxy-root .unity-scroller { background-color: #101b29; }
+.galaxy-root .unity-scroller__low-button, .galaxy-root .unity-scroller__high-button { background-color: #172637; -unity-background-image-tint-color: #9fd8fb; }
+.galaxy-root .unity-base-slider__dragger { background-color: #607993; border-color: #9fd8fb; }
 .galaxy-status { white-space: normal; color: #9fd8fb; margin-top: 3px; margin-bottom: 10px; flex-shrink: 0; }
 .galaxy-body { flex-direction: row; flex-grow: 1; min-height: 0; }
 .galaxy-map-column { flex-grow: 1; min-width: 0; min-height: 0; margin-right: 16px; }

@@ -27,6 +27,7 @@ namespace HobbyDS9.UnityReview
         private int pointer=-1;
         private Vector2 press,last;
         private bool moved;
+        public bool ShowGraphLinks { get; private set; }
         public double Zoom=>viewport.Zoom;
         public GeneratedGalaxyMapView(GeneratedGalaxyDocumentDto map,IReadOnlyDictionary<string,string> civilizations,
             Action<Button,Action> bindButton,Action<string,GeneratedGalaxySelectionKind> select,Action<string> target)
@@ -100,6 +101,7 @@ namespace HobbyDS9.UnityReview
         public void Fit(){viewport.Fit();Place();}
         public void ZoomBy(double factor){viewport.ZoomAt(factor,contentRect.width/2,contentRect.height/2);Place();}
         public void Pan(double x,double y){viewport.Pan(x,y);Place();}
+        public void ToggleGraphLinks(){ShowGraphLinks=!ShowGraphLinks;MarkDirtyRepaint();}
         public void Select(string node,GeneratedGalaxySelectionKind kind){selectedNode=node;selectionKind=kind;Place();}
         public void Route(string? origin,IReadOnlyList<string>? steps){routeOrigin=origin;routeSteps=steps??Array.Empty<string>();Place();}
         public Vector2 Position(string node)=>Point(regions[node].Center);
@@ -154,8 +156,8 @@ namespace HobbyDS9.UnityReview
                 painter.strokeColor=region.NodeId==selectedNode?new Color(.55f,.85f,.94f,.9f):new Color(.38f,.47f,.58f,.35f);
                 painter.lineWidth=region.NodeId==selectedNode?2:1;painter.Stroke();
             }
-            painter.strokeColor=new Color(.40f,.57f,.68f,.22f);painter.lineWidth=1;
-            foreach(var edge in document.Connections)
+            painter.strokeColor=new Color(.40f,.57f,.68f,.18f);painter.lineWidth=1;
+            if(ShowGraphLinks)foreach(var edge in document.Connections)
             {
                 painter.BeginPath();painter.MoveTo(Position(edge.EndpointA));painter.LineTo(Position(edge.EndpointB));painter.Stroke();
             }
@@ -172,7 +174,6 @@ namespace HobbyDS9.UnityReview
             foreach(var candidate in document.HomeCandidates)
             {
                 var p=Position(candidate.NodeId);painter.strokeColor=new Color(.72f,.65f,.88f);painter.lineWidth=2;
-                painter.BeginPath();painter.MoveTo(p+new Vector2(-20,-12));painter.LineTo(p+new Vector2(-20,-20));painter.LineTo(p+new Vector2(-12,-20));painter.Stroke();
                 painter.BeginPath();painter.MoveTo(p+new Vector2(12,20));painter.LineTo(p+new Vector2(20,20));painter.LineTo(p+new Vector2(20,12));painter.Stroke();
             }
         }

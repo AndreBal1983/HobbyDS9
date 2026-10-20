@@ -1,0 +1,10 @@
+<Project DefaultTargets="Prepare">
+  <!-- Prepare every retained profile before importing the new isolated review build.
+       No Editor, player, save conversion or default activation is performed here. -->
+  <Target Name="Prepare">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)PrepareUnity.proj" Targets="Prepare" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)PrepareUnityDemo.proj" Targets="Prepare" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)PrepareUnityFrontier.proj" Targets="Prepare" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)PrepareUnityPlayableFleet.proj" Targets="Prepare" />
+  </Target>
+</Project>

@@ -49,7 +49,7 @@ namespace HobbyDS9.UnityReview
             var subtitle=Readout("Full generated map · review only · no campaign");subtitle.AddToClassList("galaxy-subtitle");galaxyHost.Add(subtitle);
             var controls=new VisualElement();controls.AddToClassList("galaxy-controls");galaxyHost.Add(controls);
             var epoch=viewEpoch;
-            var seed=new TextField("Seed"){name="galaxy-seed",value=galaxy!.Seed,maxLength=20};controls.Add(seed);
+            var seed=new TextField("Seed"){name="galaxy-seed",value=galaxy!.Seed,maxLength=20,tooltip="Unsigned whole number, without leading zeros; 0 is allowed."};controls.Add(seed);
             seed.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch)galaxy.Seed=e.newValue;});
             var size=new DropdownField("Systems",new List<string>{"30","40","50"},galaxy.Size.ToString(CultureInfo.InvariantCulture)){name="galaxy-size"};controls.Add(size);
             size.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch)galaxy.Size=int.Parse(e.newValue,CultureInfo.InvariantCulture);});
@@ -90,6 +90,8 @@ namespace HobbyDS9.UnityReview
                 AddGalaxyTool(tools,"→","galaxy-pan-right",()=>galaxyMap.Pan(-90,0));
                 AddGalaxyTool(tools,"↑","galaxy-pan-up",()=>galaxyMap.Pan(0,90));
                 AddGalaxyTool(tools,"↓","galaxy-pan-down",()=>galaxyMap.Pan(0,-90));
+                var links=AddButton(tools,"Graph links: off",()=>{galaxyMap.ToggleGraphLinks();root.Q<Button>("galaxy-graph-links").text=galaxyMap.ShowGraphLinks?"Graph links: on":"Graph links: off";});
+                links.name="galaxy-graph-links";
             }
             var hint=Readout("Drag empty space to pan · wheel to zoom · star or region to inspect · right-click for a route preview");
             hint.AddToClassList("galaxy-hint");column.Add(hint);

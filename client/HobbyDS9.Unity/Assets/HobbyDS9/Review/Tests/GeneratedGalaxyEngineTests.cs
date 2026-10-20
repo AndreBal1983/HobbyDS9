@@ -84,7 +84,7 @@ namespace HobbyDS9.UnityReview.Tests
                 var expected=workspace.FindRoute(empty.NodeId,destination.NodeId);
                 Assert.That(root.Q<Label>("galaxy-route-cost").text,Does.StartWith("Graph cost "+expected.TotalCost+" ·"));
                 Assert.That(root.Q<Label>("galaxy-route-target-label").text,Is.EqualTo("To "+destination.DisplayName));
-                yield return Capture(doc,"seed-"+item.Item1+"-empty-route");
+                yield return Capture(doc,"seed-"+item.Item1+"-empty-route",empty.NodeId,expected);
 
                 Click(root.Q<Button>("galaxy-candidate-"+map.HomeCandidates[0].CivilizationDefinitionId));yield return null;
                 Assert.That(root.Q<Label>("galaxy-selection-kind").text,Is.EqualTo("STARTING CANDIDATE"));
@@ -113,7 +113,78 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(workspace.Document,Is.SameAs(restored));
             yield return new ExitPlayMode();
         }
-        private static IEnumerator Capture(UIDocument doc,string state)
+        private static void Key(VisualElement target,KeyCode key,bool up=false)
+        {
+            var source=new Event{type=up?EventType.KeyUp:EventType.KeyDown,keyCode=key};
+            if(up){using(var e=KeyUpEvent.GetPooled(source)){e.target=target;target.SendEvent(e);}}
+            else{using(var e=KeyDownEvent.GetPooled(source)){e.target=target;target.SendEvent(e);}}
+        }
+        private static void Pointer(VisualElement target,EventType type,Vector2 position)
+        {
+            var source=new Event{type=type,button=0,mousePosition=position};
+            if(type==EventType.MouseDown){using(var e=PointerDownEvent.GetPooled(source)){e.target=target;target.SendEvent(e);}}
+            else if(type==EventType.MouseUp){using(var e=PointerUpEvent.GetPooled(source)){e.target=target;target.SendEvent(e);}}
+            else{using(var e=PointerMoveEvent.GetPooled(source)){e.target=target;target.SendEvent(e);}}
+        }
+        private static void Wheel(VisualElement target,Vector2 position)
+        {using(var e=WheelEvent.GetPooled(new Event{type=EventType.ScrollWheel,delta=new Vector2(0,-3),mousePosition=position})){e.target=target;target.SendEvent(e);}}
+
+        [UnityTest] public IEnumerator PointerKeyboardModalAndCampaignDraftRemainIsolated()
+        {
+            yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            Click(doc.rootVisualElement.Q<Button>("playable-fleet-start"));yield return null;
+            Click(doc.rootVisualElement.Q<Button>("review-nav-Research"));yield return null;
+            Click(doc.rootVisualElement.Q<Button>("science-plus-Computing"));yield return null;
+            var campaign=entry.Presentation!.Model;var accepted=campaign.Current.Frame;
+            var draft=campaign.ResearchInputs()!;var weight=draft.Weight(ScienceDiscipline.Computing);
+            Assert.That(campaign.HasLocalEdits,Is.True);
+            Click(doc.rootVisualElement.Q<Button>("demo-menu"));yield return null;
+            directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-"+Guid.NewGuid().ToString("N"));
+            var scenario=new ReviewNewtonsoftCodec().DecodeScenario(Resources.Load<TextAsset>(PlayableFleetOptions.ResourceRoot+"scenario").bytes);
+            var workspace=new GeneratedGalaxyWorkspace(scenario.Definitions.Civilizations!,new GeneratedGalaxyMapStore(directory));
+            typeof(ReviewEntry).GetField("galaxy",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,workspace);
+            Click(doc.rootVisualElement.Q<Button>("generated-galaxy-entry"));yield return null;
+            var root=doc.rootVisualElement;root.Q<TextField>("galaxy-seed").value="42";
+            root.Q<TextField>("galaxy-seed").Focus();Key(root.Q<TextField>("galaxy-seed"),KeyCode.Return);Key(root.panel.visualTree,KeyCode.Return,true);
+            Assert.That(workspace.Document,Is.Null,"Return in seed field cannot generate");
+            Click(root.Q<Button>("galaxy-generate"));yield return null;yield return null;
+            var document=workspace.Document!;var map=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
+            Assert.That(map.ShowGraphLinks,Is.False);Click(root.Q<Button>("galaxy-graph-links"));Assert.That(map.ShowGraphLinks,Is.True);
+            Click(root.Q<Button>("galaxy-graph-links"));Assert.That(map.ShowGraphLinks,Is.False);
+            var empty=document.Regions.First(r=>r.SystemId==null);var point=map.LocalToWorld(map.Position(empty.NodeId));
+            Pointer(map,EventType.MouseDown,point);Pointer(map,EventType.MouseUp,point);yield return null;
+            Assert.That(root.Q<Label>("galaxy-selection-identity").text,Is.EqualTo(empty.NodeId),"actual polygon hit-test selects empty region");
+            var before=map.Position(empty.NodeId);
+            Pointer(map,EventType.MouseDown,point);Pointer(map,EventType.MouseDrag,point+new Vector2(45,20));Pointer(map,EventType.MouseUp,point+new Vector2(45,20));yield return null;
+            Assert.That(Vector2.Distance(before,map.Position(empty.NodeId)),Is.GreaterThan(20));
+            Assert.That(root.Q<Label>("galaxy-selection-identity").text,Is.EqualTo(empty.NodeId),"drag must not select another region");
+            Wheel(map,map.worldBound.center);yield return null;Assert.That(map.Zoom,Is.GreaterThan(1));
+            Click(root.Q<Button>("galaxy-fit"));yield return null;Assert.That(map.Zoom,Is.EqualTo(1));
+            Assert.That(Vector2.Distance(before,map.Position(empty.NodeId)),Is.LessThan(.1f),"Fit resets actual transformed position");
+            var retained=workspace.Document;
+            var generate=root.Q<Button>("galaxy-generate");generate.Focus();Key(generate,KeyCode.Return);
+            var confirm=root.Q("review-one-use-confirmation").Query<Button>().ToList().Single(b=>b.text=="Confirm");
+            var zoom=map.Zoom;Wheel(map,map.worldBound.center);Assert.That(map.Zoom,Is.EqualTo(zoom),"modal disables map input");
+            confirm.Focus();Key(confirm,KeyCode.Return);Assert.That(workspace.Document,Is.SameAs(retained),"held Return cannot confirm replacement");
+            Key(root.panel.visualTree,KeyCode.Return,true);Key(confirm,KeyCode.Escape);yield return null;
+            Assert.That(root.Q("review-one-use-confirmation"),Is.Null);Assert.That(workspace.Document,Is.SameAs(retained));
+            root.Q<TextField>("galaxy-seed").value="43";Click(root.Q<Button>("galaxy-generate"));Confirm(doc);yield return null;
+            Assert.That(workspace.Document!.ContentHash,Is.Not.EqualTo(retained!.ContentHash));
+            Assert.That(root.Q<Label>("galaxy-selection-identity"),Is.Null,"map-scoped selection clears");
+            Assert.That(root.Q<Label>("galaxy-route-origin-label").text,Is.EqualTo("Choose a starting region."));
+            var replaced=workspace.Document;
+            using(var e=NavigationSubmitEvent.GetPooled()){e.target=generate;generate.SendEvent(e);}
+            Assert.That(workspace.Document,Is.SameAs(replaced));Assert.That(root.Q("review-one-use-confirmation"),Is.Null,"detached old control cannot open a new modal");
+            yield return Capture(doc,"pointer-keyboard-isolation");
+            Click(root.Q<Button>("galaxy-back"));yield return null;
+            Click(root.Q<Button>("demo-resume-current"));yield return null;
+            Assert.That(entry.Presentation.Model,Is.SameAs(campaign));Assert.That(campaign.Current.Frame,Is.SameAs(accepted));
+            Assert.That(campaign.ResearchInputs(),Is.SameAs(draft));Assert.That(draft.Weight(ScienceDiscipline.Computing),Is.EqualTo(weight));
+            Assert.That(campaign.HasLocalEdits,Is.True);Assert.That(root.Q<Button>("integrated-apply-science").enabledInHierarchy,Is.True);
+            yield return new ExitPlayMode();
+        }
+        private static IEnumerator Capture(UIDocument doc,string state,string? origin=null,StrategicRouteSnapshot? route=null)
         {
             var directory=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/generated-galaxy/engine-rendered"));
             Directory.CreateDirectory(directory);
@@ -125,7 +196,7 @@ namespace HobbyDS9.UnityReview.Tests
                 {
                     doc.panelSettings.targetTexture=target;var root=doc.rootVisualElement;root.style.width=size.x;root.style.height=size.y;
                     yield return null;yield return null;yield return null;
-                    foreach(var name in new[]{"galaxy-seed","galaxy-size","galaxy-slot","galaxy-generate","galaxy-export","galaxy-open","galaxy-back","galaxy-fit"})
+                    foreach(var name in new[]{"galaxy-seed","galaxy-size","galaxy-slot","galaxy-generate","galaxy-export","galaxy-open","galaxy-back","galaxy-fit","galaxy-graph-links"})
                     {
                         var control=root.Q(name);Assert.That(control,Is.Not.Null,name);
                         Assert.That(control.worldBound.xMin,Is.GreaterThanOrEqualTo(0),name);
@@ -140,6 +211,33 @@ namespace HobbyDS9.UnityReview.Tests
                     Assert.That(map.worldBound.xMax,Is.LessThanOrEqualTo(inspector.worldBound.xMin));
                     RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
                     pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
+                    if(origin!=null&&route!=null)
+                    {
+                        var view=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
+                        var points=new[]{origin}.Concat(route.Steps).Select(n=>view.LocalToWorld(view.Position(n))).ToArray();
+                        for(int i=1;i<points.Length;i++)
+                        {
+                            bool painted=false;
+                            foreach(var fraction in new[]{.25f,.5f,.75f})
+                            {
+                                var p=Vector2.Lerp(points[i-1],points[i],fraction);
+                                for(int dx=-3;dx<=3;dx++)for(int dy=-3;dy<=3;dy++)
+                                {
+                                    var color=pixels.GetPixel(Mathf.Clamp(Mathf.RoundToInt(p.x)+dx,0,size.x-1),Mathf.Clamp(size.y-1-Mathf.RoundToInt(p.y)+dy,0,size.y-1));
+                                    painted|=color.r>.8f&&color.g>.5f&&color.g<.8f&&color.b<.6f;
+                                }
+                            }
+                            Assert.That(painted,Is.True,"actual painted route must follow backend segment "+(i-1));
+                        }
+                        foreach(var button in root.Query<Button>().ToList().Where(b=>b.name.StartsWith("galaxy-star-",StringComparison.Ordinal)))
+                        {
+                            var systemId=button.name.Substring("galaxy-star-".Length);
+                            // The actual star control position must match the declared generator system/region association.
+                            var document=(GeneratedGalaxyDocumentDto)typeof(GeneratedGalaxyMapView).GetField("document",BindingFlags.NonPublic|BindingFlags.Instance)!.GetValue(view)!;
+                            var node=document.Systems.Single(s=>s.SystemId==systemId).NodeId;
+                            Assert.That(Vector2.Distance(button.worldBound.center,view.LocalToWorld(view.Position(node))),Is.LessThan(2));
+                        }
+                    }
                     File.WriteAllBytes(Path.Combine(directory,size.x+"x"+size.y+"-"+state+".png"),pixels.EncodeToPNG());
                 }
                 finally{doc.panelSettings.targetTexture=null;RenderTexture.active=prior;target.Release();UnityEngine.Object.Destroy(target);if(pixels!=null)UnityEngine.Object.Destroy(pixels);}

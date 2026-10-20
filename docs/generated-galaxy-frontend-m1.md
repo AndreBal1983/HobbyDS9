@@ -15,7 +15,7 @@ Unity draws the supplied centres and polygon vertices with a uniform presentatio
 1. Choose **Generated galaxy review** from Start / Continue.
 2. Enter an unsigned whole-number seed, select **30**, **40** (default) or **50** systems, then **Generate**.
 3. Click a star, region or candidate bracket. Inspect actual identities, empty regions and graph neighbours. The region picker provides keyboard access to every region.
-4. Drag empty space or use arrow controls to pan; wheel or +/− to zoom; **Fit** restores the whole map. Labels remain screen-sized and become more detailed as zoom increases.
+4. Drag empty space or use arrow controls to pan; wheel or +/− to zoom; **Fit** restores the whole map. Labels remain screen-sized and become more detailed as zoom increases. Ordinary graph links start hidden and have a separate toggle; region outlines and selected routes remain visible.
 5. Choose **Use as route start**, then right-click another region/star, or select it and choose **Preview route here**. Inspect graph cost and route steps; this is not an ETA or movement order.
 6. Choose map slot 1–3 and **Export**. **Open** validates and reopens that separate document. Back to menu retains the review locally and leaves the fleet campaign intact.
 
@@ -34,5 +34,9 @@ Initial receiving checks: **241 adapter tests passed**, including 20 new generat
 Unity reference compilation, actual Editor control/render acceptance, native input and strict Windows IL2CPP delivery must be reported separately when run. A source-level test or textual layout is not rendered acceptance. The dedicated `GeneratedGalaxyEngineTests` exercise displayed controls, three seed/size pairs, exact counts/selection/routes, candidate and empty-region inspection, export/reopen, failure retention and original campaign identity at 1280×720, 1920×1080 and 3440×1440.
 
 Build target `GeneratedGalaxyBuild.BuildWindowsGeneratedGalaxy` writes a new isolated output under `artifacts/generated-galaxy/Windows`; it does not overwrite the protected fleet package. Final source review, exact CI, resource lease, input provenance and a new versioned deliverable remain required.
+
+The first actual receiving run at `a0f7e84` passed one control/render test and captured 39 images. It exposed pale input text on light default fields during visual review, so it is **not visually accepted**. Its import log also records absent classic resources because only review/profile preparation had run. The follow-up uses `scripts/PrepareUnityGeneratedGalaxy.proj`: base preparation, then Demo (including Integrated/Review dependencies), Frontier and PlayableFleet, before snapshotting inputs and opening Unity. This preserves exact source-package bytes and includes the classic resources.
+
+The separate correction styles inputs/scroll controls, makes graph links optional/default off, and extends actual engine checks for polygon picking, drag, wheel, Fit, raw keyboard/modal exclusion, stale controls, current campaign draft retention, displayed marker alignment and painted route segments. Its results must be recorded when executed; authored assertions alone are not evidence.
 
 The previous fleet candidate's unfinished native aftermath/save-restart/audio checks remain unfinished; generated-map work does not imply their completion.
