@@ -200,6 +200,7 @@ namespace HobbyDS9.UnityReview
         }
         private void Fleets(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
+            if(model.PlayableFleet){new ReviewFleetRoster(model,workspace,button,perform,confirm,navigate).Render(root);return;}
             var main=Panel(root,"Your fleets & ships");var aside=Panel(root,"Plot a course","console-aside");
             if(workspace.SelectedFleet==null||!facts.Fleets.Any(f=>f.FleetId.Value==workspace.SelectedFleet))workspace.SelectedFleet=facts.Fleets.FirstOrDefault()?.FleetId.Value;
             foreach(var f in facts.Fleets)Btn(main,"Fleet · "+NodeName(facts,f.LocationNodeId.Value)+" · "+f.ShipIds.Count+" ships"+(f.FleetId.Value==workspace.SelectedFleet?" · selected":""),"fleet-select-"+f.FleetId,()=>perform(()=>{workspace.SelectedFleet=f.FleetId.Value;route=null;}));

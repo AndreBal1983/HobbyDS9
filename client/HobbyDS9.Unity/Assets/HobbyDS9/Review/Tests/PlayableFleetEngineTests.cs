@@ -65,6 +65,13 @@ namespace HobbyDS9.UnityReview.Tests
             .Query<Button>().ToList().Single(b=>b.text=="Confirm");
         private static void Draw(ReviewEntry entry)=>Invoke(entry,"Draw");
         private static void Page(ReviewEntry entry,ReviewWorkspacePage page)=>Invoke(entry,"Navigate",page);
+        private static Button ActionButton(UIDocument doc,string text)=>doc.rootVisualElement.Query<Button>().ToList().Single(b=>b.text==text);
+        private static IEnumerator Reveal(VisualElement target)
+        {
+            Assert.That(target,Is.Not.Null);
+            for(var parent=target.parent;parent!=null;parent=parent.parent)if(parent is ScrollView scroll)scroll.ScrollTo(target);
+            yield return null;yield return null;
+        }
 
         [UnityTest] public IEnumerator MapKeyboardFamiliesUseGuardedActivationAndKeepHeldOrigins()
         {
@@ -119,22 +126,55 @@ namespace HobbyDS9.UnityReview.Tests
             yield return Capture(entry,doc,"map");
             foreach(var page in new[]{ReviewWorkspacePage.Empire,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders})
             {Page(entry,page);yield return Capture(entry,doc,page.ToString());}
-            Assert.That(model.Enqueue("colony.sol","ship-design.source-cruiser",ReviewUiModel.NewCommandId()),Is.True);
-            Assert.That(model.Enqueue("colony.sol","ship-design.source-cruiser",ReviewUiModel.NewCommandId()),Is.True);
-            for(int i=0;i<4;i++)Assert.That(model.Advance(),Is.True);
-            Assert.That(model.OrganizeFleet(model.Current.Frame,CampaignFleetOrganizationKind.Create,
-                model.Current.Frame.Strategy!.Ships.Select(s=>s.ShipId.Value).ToArray(),null,"Engine task force",ReviewUiModel.NewCommandId()),Is.True);
+            Page(entry,ReviewWorkspacePage.Production);
+            for(int i=0;i<2;i++)
+            {Click(doc.rootVisualElement.Q<Button>("integrated-queue-ship-design.source-cruiser"));Click(Confirm(doc));}
+            for(int i=0;i<4;i++)
+            {Click(doc.rootVisualElement.Q<Button>("player-primary-action"));Click(Confirm(doc));}
+            Page(entry,ReviewWorkspacePage.FleetOrders);yield return null;
+            var initialFleet=model.NamedFleets().Single().Fleet.FleetId.Value;
+            Click(doc.rootVisualElement.Q<Button>("fleet-roster-"+initialFleet));
+            foreach(var ship in model.Current.Frame.Strategy!.Ships)
+                doc.rootVisualElement.Q<Toggle>("fleet-member-"+ship.ShipId.Value).value=true;
+            doc.rootVisualElement.Q<TextField>("fleet-organization-name").value="Engine task force";
+            var beforeAssembly=model.Current.Frame;
+            Click(doc.rootVisualElement.Q<Button>("fleet-create"));
+            Assert.That(model.Current.Frame,Is.SameAs(beforeAssembly));
+            Click(Confirm(doc));
             var fleet=model.NamedFleets().Single().Fleet.FleetId.Value;
+            Assert.That(model.NamedFleets().Single().DisplayName,Is.EqualTo("Engine task force"));
+            Assert.That(fleet,Is.Not.EqualTo(initialFleet));
+            yield return Capture(entry,doc,"assembled-fleet");
+            doc.rootVisualElement.Q<TextField>("fleet-organization-name").value="Named task force";
+            yield return Reveal(doc.rootVisualElement.Q<Button>("fleet-rename"));
+            Click(doc.rootVisualElement.Q<Button>("fleet-rename"));Click(Confirm(doc));
+            Assert.That(model.NamedFleets().Single().DisplayName,Is.EqualTo("Named task force"));
+            var member=model.NamedFleets().Single().Fleet.ShipIds.First().Value;
+            doc.rootVisualElement.Q<Toggle>("fleet-member-"+member).value=true;
+            doc.rootVisualElement.Q<TextField>("fleet-organization-name").value="Transfer fixture";
+            Click(doc.rootVisualElement.Q<Button>("fleet-create"));Click(Confirm(doc));
+            Assert.That(model.NamedFleets().Count,Is.EqualTo(2));
+            doc.rootVisualElement.Q<Toggle>("fleet-member-"+member).value=true;
+            yield return Reveal(doc.rootVisualElement.Q<Button>("fleet-transfer-"+fleet));
+            Click(doc.rootVisualElement.Q<Button>("fleet-transfer-"+fleet));Click(Confirm(doc));
+            Assert.That(model.NamedFleets().Single().Fleet.FleetId.Value,Is.EqualTo(fleet));
             var contact=model.Current.Frame.Travel!.KnownContacts.First(c=>c.Fresh);
-            Assert.That(model.SendPreviewedFollow(model.Current.FindKnownRoute(fleet,contact.LastSeenNodeId)!,contact.FleetId,
-                contact.LastSeenTurn,ReviewUiModel.NewCommandId()),Is.True);
-            for(int i=0;i<12&&model.Current.Frame.Status.Phase==SessionPhase.Planning;i++)Assert.That(model.Advance(),Is.True);
+            Page(entry,ReviewWorkspacePage.Map);yield return null;
+            Assert.That(entry.Workspace!.SelectedFleet,Is.EqualTo(fleet));
+            var marker=doc.rootVisualElement.Q<Button>("map-contact-"+contact.FleetId);marker.Focus();Key(marker,KeyCode.F10,false,true);
+            Click(Confirm(doc));
+            for(int i=0;i<12&&model.Current.Frame.Status.Phase==SessionPhase.Planning;i++)
+            {Click(doc.rootVisualElement.Q<Button>("player-primary-action"));Click(Confirm(doc));}
             Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.AwaitingCombat));Page(entry,ReviewWorkspacePage.Combat);
             var flow=entry.Presentation!;
             while(!model.Current.Frame.Battle!.Complete)
             {
                 yield return Capture(entry,doc,"orders-"+model.Current.Frame.Battle.Round);
-                Assert.That(flow.CommitRound(ReviewUiModel.NewCommandId(),true),Is.True);Draw(entry);yield return null;
+                var maneuver=doc.rootVisualElement.Q<DropdownField>("combat-maneuver-picker");
+                maneuver.index=model.Current.Frame.Battle.Round%maneuver.choices.Count;
+                yield return Reveal(ActionButton(doc,"Apply to local draft"));
+                Click(ActionButton(doc,"Apply to local draft"));
+                Click(ActionButton(doc,"Review / commit round "+model.Current.Frame.Battle.Round));Click(Confirm(doc));yield return null;
                 var before=model.Current.Frame;var count=flow.Playback!.Rounds.Count;
                 Assert.That(flow.CanCommitRound,Is.False);Assert.That(flow.CanFinalize,Is.False);
                 yield return Capture(entry,doc,"playback-"+count);
@@ -150,9 +190,9 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(model.Current.Frame,Is.SameAs(before));Assert.That(flow.Playback.Rounds.Count,Is.EqualTo(count));
                 Assert.That(flow.PendingPlayback,Is.Null);
                 Assert.That(doc.rootVisualElement.Q("combat-current-detail"),Is.Not.Null,"acknowledgment opens the readable report");
-                if(!model.Current.Frame.Battle.Complete){Assert.That(flow.PlanNextRound(),Is.True);Draw(entry);}
+                if(!model.Current.Frame.Battle.Complete){Click(ActionButton(doc,"Plan next round"));Assert.That(flow.CanCommitRound,Is.True);}
             }
-            Assert.That(flow.FinalizeAftermath(true),Is.True);Draw(entry);yield return null;
+            Click(ActionButton(doc,"Confirm campaign aftermath"));Click(Confirm(doc));yield return null;
             yield return Capture(entry,doc,"aftermath");
             Assert.That(model.Save("fleet-1"),Is.True);Assert.That(model.Load("fleet-1"),Is.True);Draw(entry);
             Assert.That(model.History().Count,Is.EqualTo(1));Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning));
@@ -222,6 +262,26 @@ namespace HobbyDS9.UnityReview.Tests
                     doc.panelSettings.targetTexture=target;var root=doc.rootVisualElement;root.style.width=size.x;root.style.height=size.y;
                     yield return null;yield return null;yield return null;
                     var footer=root.Q("player-footer");Assert.That(footer.worldBound.yMax,Is.LessThanOrEqualTo(size.y+1));
+                    if(entry.Workspace!.Page==ReviewWorkspacePage.FleetOrders)
+                    {Assert.That(root.Q<Button>("fleet-create"),Is.Not.Null);Assert.That(root.Q<TextField>("fleet-organization-name"),Is.Not.Null);}
+                    var ledger=root.Q<ScrollView>("world-ledger-scroll");
+                    if(ledger!=null)
+                    {
+                        var original=ledger.horizontalScroller.value;
+                        if(ledger.horizontalScroller.highValue>0)
+                        {
+                            Assert.That(ledger.horizontalScroller.worldBound.width,Is.GreaterThan(100));
+                            ledger.horizontalScroller.value=ledger.horizontalScroller.highValue;yield return null;
+                            Assert.That(ledger.scrollOffset.x,Is.GreaterThan(0),"far ledger columns must be reachable");
+                        }
+                        var last=root.Q<Button>("world-sort-Power");
+                        Assert.That(last.worldBound.xMax,Is.LessThanOrEqualTo(ledger.contentViewport.worldBound.xMax+1));
+                        ledger.ScrollTo(root.Q<Button>("world-sort-Current build"));yield return null;
+                        var construction=root.Q<Button>("world-sort-Current build").worldBound;
+                        Assert.That(construction.xMin,Is.GreaterThanOrEqualTo(ledger.contentViewport.worldBound.xMin-1));
+                        Assert.That(construction.xMax,Is.LessThanOrEqualTo(ledger.contentViewport.worldBound.xMax+1));
+                        ledger.horizontalScroller.value=original;yield return null;
+                    }
                     foreach(var id in new[]{"player-primary-action","combat-skip-pending-playback","combat-tab-battle","combat-tab-stocks","combat-tab-report","combat-tab-inspection"})
                     {
                         var control=root.Q<Button>(id);if(control==null)continue;

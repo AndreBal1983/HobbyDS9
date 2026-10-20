@@ -45,7 +45,7 @@ namespace HobbyDS9.UnityReview
             var backdrop=new Image{image=Resources.Load<Texture2D>("PlayerArt/space-backdrop"),scaleMode=ScaleMode.ScaleAndCrop,pickingMode=PickingMode.Ignore};
             backdrop.StretchToParentSize();map.Add(backdrop);
             var lines=new VisualElement{pickingMode=PickingMode.Ignore};lines.StretchToParentSize();map.Add(lines);
-            var details=new ScrollView(ScrollViewMode.Vertical);details.AddToClassList("console-panel");details.AddToClassList("console-aside");parent.Add(details);
+            var details=new ScrollView(ScrollViewMode.Vertical);details.AddToClassList("console-panel");details.AddToClassList("console-aside");details.AddToClassList("playable-map-aside");parent.Add(details);
             Text(details,"Selection & orders").AddToClassList("console-section");
             Text(details,"Star: system · ring: fleets · diamond: observed contact. Right-click a destination or contact to review an order.");
             var notice=Text(details,"Selection never submits an order.","map-selection-notice");

@@ -25,7 +25,7 @@ namespace HobbyDS9.UnityReview
             string Location(CampaignNamedFleet f)=>facts.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==f.Fleet.LocationNodeId.Value)?.DisplayName??"Known location";
             decimal Damage(CampaignNamedFleet f)=>frame.OwnShips.Where(s=>s.Condition.FleetId==f.Fleet.FleetId.Value).Sum(s=>(decimal)s.Condition.MaxHull-s.Condition.Hull);
             var main=new ScrollView(ScrollViewMode.Vertical);main.AddToClassList("console-panel");main.AddToClassList("console-work");parent.Add(main);
-            var aside=new ScrollView(ScrollViewMode.Vertical);aside.AddToClassList("console-panel");aside.AddToClassList("console-aside");parent.Add(aside);
+            var aside=new ScrollView(ScrollViewMode.Vertical);aside.AddToClassList("console-panel");aside.AddToClassList("console-aside");aside.AddToClassList("fleet-roster-aside");parent.Add(aside);
             Text(main,"Fleet roster","console-section");
             var sorts=new VisualElement();sorts.AddToClassList("review-field-row");main.Add(sorts);
             foreach(var sort in new[]{"Name","System","Hull damage","Ship count"})
@@ -78,6 +78,7 @@ namespace HobbyDS9.UnityReview
             Text(aside,"Choose ships from owned fleets in the same location. Clear routes and use Remain before organizing. No damage, ammunition or hardware is reset.");
             Text(aside,model.OrganizationShips.Count+" selected members · unsent changes");
             var name=new TextField("Fleet name"){value=model.OrganizationName,isDelayed=true,name="fleet-organization-name"};
+            name.AddToClassList("review-input");
             name.SetEnabled(editable);aside.Add(name);name.RegisterValueChangedCallback(e=>perform(()=>model.OrganizationName=e.newValue));
             void Review(CampaignFleetOrganizationKind kind,string? target)
             {

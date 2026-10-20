@@ -111,7 +111,7 @@ namespace HobbyDS9.UnityReview
                 }));sort.name="world-sort-"+column;
                 workspace.WorldFilters.TryGetValue(column,out var filter);
                 var input=new TextField{value=filter??"",isDelayed=true,name="world-filter-"+column,tooltip=Numeric.Contains(column)?"Minimum; blank shows all known and unavailable values.":"Contains; blank shows all."};
-                input.AddToClassList("world-ledger-filter");cell.Add(input);
+                input.AddToClassList("world-ledger-filter");input.AddToClassList("review-input");cell.Add(input);
                 input.RegisterValueChangedCallback(e=>perform(()=>workspace.WorldFilters[column]=e.newValue.Trim()));
             }
             foreach(var group in rows.GroupBy(c=>c.SystemId.Value))
