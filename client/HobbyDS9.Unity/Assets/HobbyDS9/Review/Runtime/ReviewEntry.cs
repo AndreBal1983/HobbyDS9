@@ -238,7 +238,7 @@ namespace HobbyDS9.UnityReview
                 confirmation.style.alignItems=Align.Center;confirmation.style.justifyContent=Justify.Center;confirmation.style.backgroundColor=new Color(.02f,.03f,.06f,.96f);
                 var box=new VisualElement{name="player-confirmation-summary"};box.AddToClassList("console-panel");box.style.width=620;box.style.maxWidth=new Length(90,LengthUnit.Percent);box.style.maxHeight=new Length(80,LengthUnit.Percent);
                 var text=Readout(title);text.style.fontSize=22;
-                if(model.SingleplayerDemo)
+                if(PlayerProfile)
                 {
                     box.style.height=new Length(70,LengthUnit.Percent);
                     var body=new ScrollView(ScrollViewMode.Vertical){name="player-confirmation-details"};body.style.flexGrow=1;body.style.minHeight=0;body.Add(text);box.Add(body);

@@ -40,7 +40,7 @@ namespace HobbyDS9.UnityReview
             root.Clear();var model=flow.Model;var c=model.Current;var frame=c.Frame;var stage=flow.Stage;var battle=frame.Battle;
             // Both single-human profiles use the readable player presentation.
             // Objective/terminal semantics remain in the authoritative Demo snapshot.
-            var demo=model.SingleplayerDemo||model.FrontierPreview;
+            var demo=model.PlayableFleet||model.SingleplayerDemo||model.FrontierPreview;
             var aftermath=demo?flow.AftermathSummary:null;
             if(aftermath==null)displayedAftermath=null;
             else if(!ReferenceEquals(displayedAftermath,aftermath)){displayedAftermath=aftermath;tab="report";}
@@ -81,9 +81,10 @@ namespace HobbyDS9.UnityReview
                 roster.Add(Text(demo?"Enemy orders, hidden ships/counts and enemy ammunition are unavailable.":"Other human orders, hidden ships/counts and enemy ammunition are unavailable."));
             }
             var viewer=Panel(stageRow,"Central battle / survivor view");viewer.AddToClassList("review-viewer");
+            if(model.PlayableFleet&&battle!=null)viewer.Add(new ReviewBattlePanel(flow,button,perform));
             // The summary already contains location/turn and every own survivor's
             // retained stocks. Avoid duplicating those blocks above its scroller.
-            if(aftermath==null||tab!="report")
+            if(!model.PlayableFleet&&(aftermath==null||tab!="report"))
             {
             var stageScroll=new ScrollView(ScrollViewMode.Vertical);stageScroll.AddToClassList("review-schematic-scroll");viewer.Add(stageScroll);
             var schematic=Text(demo?(aftermath!=null?"Confirmed aftermath · "+aftermath.Location+" · Planning turn "+aftermath.PlanningTurn:readable.Diagram(frame)):flow.StageDiagram());schematic.name="combat-schematic";stageScroll.Add(schematic);
@@ -93,6 +94,12 @@ namespace HobbyDS9.UnityReview
             foreach(var name in new[]{"stocks","report","inspection"})button(tabs,name=="stocks"?(demo?"Ship status":"Own hull / shields / ammunition"):name=="report"?(aftermath!=null?"Battle summary":"Round report"):"Inspection",()=>{tab=name;Render();});
             var details=new ScrollView(ScrollViewMode.Vertical){name="central-combat-details"};details.AddToClassList("review-detail-scroll");viewer.Add(details);
             var report=Text(demo?(tab=="report"?(aftermath!=null?readable.Aftermath(aftermath):readable.LatestRound(frame)):tab=="inspection"?readable.Inspection(frame,selectedShip):readable.Stocks(frame)):tab=="report"?model.Report():tab=="inspection"?model.Inspection():flow.Conditions());report.name="combat-current-detail";details.Add(report);
+            if(model.PlayableFleet&&tab=="report")
+            {
+                var playback=flow.Playback;
+                if(playback!=null)ReviewBattlePanel.Statistics(details,playback);
+                else foreach(var historical in model.History().Reverse())ReviewBattlePanel.Statistics(details,historical);
+            }
             if(demo){var trace=new Foldout{name="combat-technical-details",text="Technical details",value=false};trace.Add(Text(model.Report()+"\n"+model.Inspection()+"\n"+flow.Conditions()+"\n"+model.Facts()));details.Add(trace);}
             if(stage==ReviewCombatStage.Waiting)
             {

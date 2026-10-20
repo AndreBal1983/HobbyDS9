@@ -59,8 +59,15 @@ def check(root):
             'PreserveDemoKeyOrigins();' in entry.split('private void Build()',1)[1].split('private void Navigate(',1)[0],
             "Demo rebuild must preserve its original panel while disposing audio and retaining held origins")
     frontier_entry = (runtime / "ReviewEntry.Frontier.cs").read_text(encoding="utf-8-sig")
-    require('private bool PlayerProfile=>model?.SingleplayerDemo==true||model?.FrontierPreview==true;' in frontier_entry,
-            "Player keyboard/panel behavior must be limited to explicit demo/frontier player profiles")
+    require('private bool PlayerProfile=>model?.PlayableFleet==true||model?.SingleplayerDemo==true||model?.FrontierPreview==true;' in frontier_entry,
+            "Player keyboard/panel behavior must be limited to explicit playable/demo/frontier profiles")
+    playable_options = (runtime / "PlayableFleetOptions.cs").read_text(encoding="utf-8-sig")
+    require('SaveDirectory="HobbyDS9PlayableFleetOnly-v6"' in playable_options and
+            'new[]{"fleet-1","fleet-2","fleet-3"}' in playable_options,
+            "Playable fleet saves require their disjoint format6 namespace")
+    visuals = (runtime / "ReviewBattleVisualBinding.cs").read_text(encoding="utf-8-sig")
+    require('boundary.OwnShips.Concat(boundary.VisibleEnemies)' in visuals and 'boundary.ShipIdentities' in visuals,
+            "Visual bindings must use only the same lawful playback boundary")
     frontier_map = (runtime / "ReviewFrontierMap.cs").read_text(encoding="utf-8-sig")
     require('var known=frame.Frontier;' in frontier_map and 'known==null||known.ActorId!=frame.Actor' in frontier_map and
             not any(term in frontier_map for term in ('facts.Navigation', 'CampaignFrontierPackageDto', 'CampaignFrontierSaveDto', 'FrontierPackages/')),

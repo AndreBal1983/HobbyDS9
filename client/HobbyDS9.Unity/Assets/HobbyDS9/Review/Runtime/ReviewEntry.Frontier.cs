@@ -11,7 +11,7 @@ namespace HobbyDS9.UnityReview
     public sealed partial class ReviewEntry
     {
         private string profileMenuNotice="";
-        private bool PlayerProfile=>model?.SingleplayerDemo==true||model?.FrontierPreview==true;
+        private bool PlayerProfile=>model?.PlayableFleet==true||model?.SingleplayerDemo==true||model?.FrontierPreview==true;
         private static bool FrontierResourcesAvailable()=>new[]{"frontier","package","physical","core","scenario"}
             .All(name=>Resources.Load<TextAsset>(FrontierPreviewOptions.ResourceRoot+name)!=null);
         private ReviewUiModel NewFrontierModel()

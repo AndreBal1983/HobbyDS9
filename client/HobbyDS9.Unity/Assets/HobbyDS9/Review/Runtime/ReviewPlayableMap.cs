@@ -32,7 +32,8 @@ namespace HobbyDS9.UnityReview
             var fleets=frame.OwnStrategicFleets.OrderBy(f=>f.FleetId.Value,StringComparer.Ordinal).ToList();
             var contacts=frame.Travel?.KnownContacts.Where(c=>c.Fresh&&nodeIds.Contains(c.LastSeenNodeId)).ToList()??new List<CampaignKnownContact>();
             string Name(string id)=>nodes.FirstOrDefault(n=>n.NodeId.Value==id)?.DisplayName??"Location unavailable";
-            string FleetName(string id)=>"Fleet "+(fleets.FindIndex(f=>f.FleetId.Value==id)+1);
+            var names=model.NamedFleets().ToDictionary(f=>f.Fleet.FleetId.Value,f=>f.DisplayName,StringComparer.Ordinal);
+            string FleetName(string id)=>names.TryGetValue(id,out var value)?value:"Owned fleet";
             bool Editable()=>ReferenceEquals(frame,model.Current.Frame)&&frame.Status.Phase==SessionPhase.Planning
                 &&!model.HasLocalEdits&&!model.Current.RefreshRequired&&!model.Current.HasPendingWork&&!model.Busy&&!model.Closed;
 

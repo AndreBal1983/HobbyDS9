@@ -151,6 +151,7 @@ namespace HobbyDS9.UnityReview
             }
             Text(aside,"Foreign queues, power supply and unexploited deposits are unavailable in this observation; they are not counted as zero.");
             button(aside,"Open this world's production queue",()=>navigate(ReviewWorkspacePage.Production)).name="world-open-exact-queue";
+            button(aside,"Inspect this world's details",()=>navigate(ReviewWorkspacePage.Worlds)).name="world-open-details";
         }
     }
 }

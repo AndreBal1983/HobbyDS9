@@ -22,15 +22,17 @@ namespace HobbyDS9.UnityReview
         private void DrawDemoLanding()
         {
             var panel=PagePanel("HobbyDS9 — Start / Continue");var demo=model!.Current.Frame.Demo;
-            panel.Add(Readout(demo?.ObjectiveText??"Current profile: Frontier exploration preview. Arrival charting only; no military victory or turn deadline is defined by this preview."));
+            panel.Add(Readout(demo?.ObjectiveText??(model.PlayableFleet?"Fleet campaign: build, organize, follow and fight. No deadline or campaign victory objective is defined.":"Current profile: Frontier exploration preview. Arrival charting only; no military victory or turn deadline is defined by this preview.")));
             panel.Add(Readout("Review your worlds and R&D, build an available ship, and plot a known route. Issue fleet orders in battle, then confirm the aftermath. Hull, shields and ammunition persist."));
             panel.Add(Readout("The computer chooses its own orders. Changes stay unsent until you confirm them. Save whenever you want to return later."));
             if(demoStarted){var resume=AddButton(panel,"Resume current campaign",()=>{demoLanding=false;viewEpoch++;Build();});resume.name="demo-resume-current";resume.AddToClassList("primary-action");ScheduleDemoMenuFocus(resume);}
+            DrawPlayableFleetMenu(panel);
+            panel.Add(Readout("Other campaign profiles"));
             var start=AddButton(panel,"Start new demo",()=>{
                 if(demoStarted)Confirm("Start a new demo? Unsaved progress and local edits will be lost; your saved slots remain intact.",StartFreshDemo);
                 else StartFreshDemo();
             });start.name="demo-start";start.AddToClassList("primary-action");
-            if(!demoStarted)ScheduleDemoMenuFocus(start);
+            if(!demoStarted&&!PlayableResourcesAvailable())ScheduleDemoMenuFocus(start);
             panel.Add(Readout("Continue a saved demo"));
             foreach(var slot in new[]{"demo-1","demo-2","demo-3"})
             {
@@ -48,7 +50,7 @@ namespace HobbyDS9.UnityReview
         {
             // Prepare a valid replacement before publishing it; a failed factory keeps the old campaign.
             var codec=new ReviewNewtonsoftCodec();var next=new ReviewUiModel(demoSource!,codec,new ReviewDemoSlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9SingleplayerDemoOnly-v4"),codec));
-            PublishPlayerProfile(next,model?.FrontierPreview==true?"demo-1":slotName);
+            PublishPlayerProfile(next,model?.SingleplayerDemo!=true?"demo-1":slotName);
         }
         private void OpenDemoSettings(ReviewWorkspacePage page)
         {demoLanding=false;workspace!.Navigate(page);viewEpoch++;Build();}

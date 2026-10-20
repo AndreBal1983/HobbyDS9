@@ -140,3 +140,9 @@
 .player-console .unity-scroller .unity-scroller__low-button, .player-console .unity-scroller .unity-scroller__high-button { background-color: #263b52; -unity-background-image-tint-color: #c3d4e7; }
 .player-console .lcars-pill { background-image: none; background-color: #9fd8fb; color: #050a10; }
 .player-console .lcars-pill:disabled { background-image: none; background-color: #334456; color: #c3d4e7; }
+
+.battle-presentation { flex-shrink: 0; margin-bottom: 8px; }
+.battle-viewport { height: 280px; min-height: 140px; flex-shrink: 1; background-color: rgb(3, 6, 11); }
+.battle-presentation Label { white-space: normal; }
+.player-narrow .battle-viewport { height: 140px; min-height: 100px; }
+.player-narrow .battle-presentation Label { font-size: 14px; }

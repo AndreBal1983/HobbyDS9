@@ -31,6 +31,7 @@ namespace HobbyDS9.UnityReview
         {
             root.Clear();var facts=model.Current.Frame.Strategy!;var columns=Row(root,"console-columns");
             if(page==ReviewWorkspacePage.Research)Research(columns,facts);
+            else if(page==ReviewWorkspacePage.Empire&&model.PlayableFleet)new ReviewWorldLedger(model,workspace,button,perform,navigate).Render(columns);
             else if(page==ReviewWorkspacePage.Worlds)Worlds(columns,facts);
             else if(page==ReviewWorkspacePage.Production)Production(columns,facts);
             else if(page==ReviewWorkspacePage.FleetOrders)Fleets(columns,facts);
@@ -233,7 +234,6 @@ namespace HobbyDS9.UnityReview
         }
         private void Worlds(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
-            if(model.PlayableFleet){new ReviewWorldLedger(model,workspace,button,perform,navigate).Render(root);return;}
             var main=Panel(root,"Your worlds");var aside=Panel(root,"Manage selected world","console-aside");
             if(colony==null||!facts.Colonies.Any(c=>c.ColonyId.Value==colony))colony=facts.Colonies.FirstOrDefault()?.ColonyId.Value;
             var choices=Row(main);

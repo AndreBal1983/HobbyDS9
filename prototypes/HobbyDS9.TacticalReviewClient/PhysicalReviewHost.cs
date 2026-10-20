@@ -101,6 +101,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(playableFleetPackage!=null)return SavePlayableFleetCommitted();
                 if(frontierPackage!=null)return SaveFrontierCommitted();
                 if(demoPackage!=null)return SaveDemoCommitted();
                 if(integratedPackage!=null)return SaveIntegratedCommitted();
@@ -113,6 +114,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(playableFleetPackage!=null)return LoadPlayableFleetCommitted(handle,actor,encounter);
                 if(frontierPackage!=null)return LoadFrontierCommitted(handle,actor,encounter);
                 if(demoPackage!=null)return LoadDemoCommitted(handle,actor,encounter);
                 if(integratedPackage!=null)return LoadIntegratedCommitted(handle,actor,encounter);
@@ -126,6 +128,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(playableFleetPackage!=null)return SavePlayableFleetToSlot(slot,overwrite);
                 if(frontierPackage!=null)return SaveFrontierToSlot(slot,overwrite);
                 if(demoPackage!=null)return SaveDemoToSlot(slot,overwrite);
                 if(integratedPackage!=null)return SaveIntegratedToSlot(slot,overwrite);
@@ -143,6 +146,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(playableFleetPackage!=null)return LoadPlayableFleetFromSlot(slot,actor,encounter);
                 if(frontierPackage!=null)return LoadFrontierFromSlot(slot,actor,encounter);
                 if(demoPackage!=null)return LoadDemoFromSlot(slot,actor,encounter);
                 if(integratedPackage!=null)return LoadIntegratedFromSlot(slot,actor,encounter);
@@ -178,6 +182,12 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(playableFleetPackage!=null)
+                {
+                    if(playableFleetStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var openedPlayable=OpenPlayableFleetFromSlot(playableFleetPackage,playableFleetCodec!,playableFleetStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(openedPlayable.Error,openedPlayable.Host,openedPlayable.Frame);
+                }
                 if(frontierPackage!=null)
                 {
                     if(frontierStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
