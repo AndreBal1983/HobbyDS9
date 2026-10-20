@@ -34,7 +34,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
-                Require(demo==null&&frontier==null,"Use complete profile export: nested integrated save omits profile authority.");
+                Require(demo==null&&frontier==null&&playableHash==null,"Use complete profile export: nested integrated save omits profile authority.");
                 return ExportIntegratedCore();
             }
         }
@@ -92,6 +92,7 @@ namespace HobbyDS9.Simulation
             || constructionTemplates != null && BuildRegistry.Any(b => b.ShipId == ship);
         private string? KnownFleetOwner(string fleet)
         {
+            if (playableHash != null && playableCreatedOwners.TryGetValue(fleet, out var createdOwner)) return createdOwner;
             if (authoredFleetOwners != null && authoredFleetOwners.TryGetValue(fleet, out var owner)) return owner;
             return constructionTemplates == null ? null : BuildRegistry.FirstOrDefault(b => b.FleetIdAtConstruction == fleet)?.OwnerCivilizationId;
         }
@@ -120,13 +121,13 @@ namespace HobbyDS9.Simulation
             {
                 var actual = game.Ships!.SingleOrDefault(s => s.ShipId == b.ShipId);
                 Require(actual == null || actual.Blueprint == null && actual.ShipDesignDefinitionId == b.ShipDesignDefinitionId
-                    && actual.OwnerCivilizationId == b.OwnerCivilizationId && actual.FleetId == b.FleetIdAtConstruction,
+                    && actual.OwnerCivilizationId == b.OwnerCivilizationId && (actual.FleetId == b.FleetIdAtConstruction || playableHash != null),
                     "Produced immutable source/owner/fleet substituted.");
                 Require(!game.Colonies!.SelectMany(c => c.ProductionQueue!).Any(q => q.QueueItemId == b.QueueItemId), "Completed production is still queued.");
             }
             Require(records.GroupBy(b => b.FleetIdAtConstruction, StringComparer.Ordinal).All(g => g.Select(b => b.OwnerCivilizationId).Distinct().Count() == 1
                 && (!authoredFleetOwners!.TryGetValue(g.Key!, out var owner) || g.All(b => b.OwnerCivilizationId == owner))), "Forged constructed fleet ownership.");
-            foreach(var group in records.GroupBy(b=>b.FleetIdAtConstruction,StringComparer.Ordinal).Where(g=>!authoredFleetOwners!.ContainsKey(g.Key!)))
+            foreach(var group in records.GroupBy(b=>b.FleetIdAtConstruction,StringComparer.Ordinal).Where(g=>!authoredFleetOwners!.ContainsKey(g.Key!) && !(playableHash != null && playableCreatedOwners.ContainsKey(g.Key!))))
             {
                 Require(group.Key!.StartsWith("fleet.",StringComparison.Ordinal)&&new EntityId(group.Key).TryGetAllocationSequence(out var fleetSequence)
                     &&fleetSequence<game.NextEntitySequence,"Unallocated constructed fleet.");

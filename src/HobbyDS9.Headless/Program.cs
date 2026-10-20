@@ -5,6 +5,20 @@ using System.Text.Json;
 using HobbyDS9.Contracts;
 using HobbyDS9.Application;
 
+if (args.Length == 1 && args[0] == "--playable-fleet")
+{
+    var p = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"));
+    var baseline = JsonSerializer.Serialize(PlayableFleetWalkthrough.Run(p));
+    foreach (var mode in new[] { (true, false), (false, true), (false, false) })
+        if (baseline != JsonSerializer.Serialize(PlayableFleetWalkthrough.Run(p, mode.Item1, mode.Item2)))
+            throw new InvalidOperationException("Playable fleet determinism mismatch.");
+    Console.WriteLine("playable-package-sha256=" + p.PackageHash);
+    Console.WriteLine("playable-save-sha256=" + Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(baseline))).ToLowerInvariant());
+    Console.WriteLine("Paid construction, named assembly, lawful Follow, joint rounds, actor-safe playback/history, aftermath and canonical/reverse/repeated/reload passed.");
+    Console.WriteLine("Provisional explicit wrapper6; no Unity/native execution or default activation.");
+    return;
+}
+
 if (args.Length == 1 && args[0] == "--frontier-review")
 {
     var p=FrontierPackageReader.Read(Path.Combine(AppContext.BaseDirectory,"scenarios/frontier-reconnaissance-v1"));

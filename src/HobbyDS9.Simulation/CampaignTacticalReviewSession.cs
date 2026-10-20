@@ -29,14 +29,19 @@ namespace HobbyDS9.Simulation
         private CampaignTacticalReviewSession(CampaignTacticalReviewPackageDto package, CampaignTacticalReviewSaveDto? save,
             CampaignTacticalTravelPackageDto? physicalPackage=null,CampaignTacticalTravelSaveDto? physicalSave=null,
             CampaignIntegratedPlaytestPackageDto? integratedPackage=null,CampaignIntegratedPlaytestSaveDto? integratedSave=null,
-            CampaignSingleplayerDemoPackageDto? demoPackage=null,CampaignFrontierPackageDto? frontierPackage=null)
+            CampaignSingleplayerDemoPackageDto? demoPackage=null,CampaignFrontierPackageDto? frontierPackage=null,
+            CampaignPlayableFleetPackageDto? playablePackage=null)
         {
+            playableHash = playablePackage?.PackageHash;
+            playableOperationLimit = playablePackage?.ReplayOperationLimit ?? 0;
             demo = demoPackage == null ? null : CopyDemoSettings(demoPackage);
             frontier = frontierPackage==null?null:CopyFrontierSettings(frontierPackage);
             ValidatePackage(package);
             definitions = SimulationSession.CopyDefinitions(package.Campaign!.Definitions);
             controllers = package.Campaign.InitialState.Civilizations!.ToDictionary(c => c.CivilizationId,c => c.ControllerKind!.Value,StringComparer.Ordinal);
             initialTurn = package.Campaign.InitialState.TurnNumber;
+            playableOpponent = playablePackage?.OpponentActorId;
+            playableDefenseNode = playablePackage?.DefenseNodeId;
             if (integratedPackage != null)
             {
                 integratedHash = integratedPackage.PackageHash;
@@ -71,7 +76,7 @@ namespace HobbyDS9.Simulation
                     ScenarioId = compatibility.ScenarioId, RulesVersion = compatibility.RulesVersion, ContentHash = compatibility.ContentHash,
                     GameState = SimulationSession.CopyState(package.Campaign.InitialState) };
                 state = new CampaignTacticalReviewSaveDto { FormatVersion = CampaignTacticalReviewIdentity.SaveFormat,
-                    ProfileId = frontier==null?CampaignTacticalReviewIdentity.Profile:CampaignFrontierIdentity.EmbeddedCoreProfile, ResolverId = CampaignTacticalReviewIdentity.Resolver,
+                    ProfileId = OwnedCoreProfile, ResolverId = CampaignTacticalReviewIdentity.Resolver,
                     ResolverVersion = CampaignTacticalReviewIdentity.ResolverVersion, PackageHash = package.PackageHash!, Campaign = initial,
                     Pools = initial.GameState.Ships!.Select(s => InitialPool(s.ShipId)).ToList(),
                     FleetSettings = initial.GameState.Fleets!.Select(f => new CampaignTacticalFleetSettingDto { FleetId = f.FleetId }).ToList(),
@@ -93,7 +98,7 @@ namespace HobbyDS9.Simulation
         public static CampaignTacticalReviewSession Start(CampaignTacticalReviewPackageDto package) => new CampaignTacticalReviewSession(package, null);
         public static CampaignTacticalReviewSession Load(CampaignTacticalReviewPackageDto package, CampaignTacticalReviewSaveDto save)
         { if (save == null) throw new ArgumentNullException(nameof(save)); return new CampaignTacticalReviewSession(package, save); }
-        public CampaignTacticalReviewSaveDto ExportSave() { lock (gate) {Require(demo==null&&frontier==null,"Use complete profile export: bare lifecycle root is incomplete.");return Copy(state);} }
+        public CampaignTacticalReviewSaveDto ExportSave() { lock (gate) {Require(demo==null&&frontier==null&&playableHash==null,"Use complete profile export: bare lifecycle root is incomplete.");return Copy(state);} }
         internal SessionSnapshot CaptureCampaign() { lock (gate) return Legacy(state).CaptureSnapshot(); }
         private SimulationSession Legacy(CampaignTacticalReviewSaveDto s) => new SimulationSession(s.Campaign, definitions, compatibility);
         private AuthoredTacticalShipProvisionDto Provision(string id) => ResolveProvision(id);
@@ -251,7 +256,7 @@ namespace HobbyDS9.Simulation
                     && f.Ships.Any(s => s.Hull > 0 && !b.HiddenShipIds.Contains(s.ShipId, StringComparer.Ordinal))).OrderBy(f => f.FormationId, StringComparer.Ordinal).FirstOrDefault();
                 var orders = b.State.Formations.Where(f => f.SideId == actor && f.Status == TacticalFormationStatus.Active)
                     .Select(f => new CampaignTacticalFleetOrderDto { FleetId = f.FormationId, Maneuver = CampaignFleetManeuver.Hold, FocusFleetId = visible?.FormationId }).ToList();
-                if(demo!=null)orders=DemoTacticalOrders(b,actor);
+                if(demo!=null || playableHash!=null)orders=DemoTacticalOrders(b,actor);
                 Require(orders.All(o => ValidOrder(b, actor, o)), "Invalid baseline AI commitment.");
                 b.Commitments.Add(new CampaignTacticalCommitmentDto { ActorId = actor,
                     CommandId = "ai-command.review." + actor + "." + b.State.EncounterId + "." + b.State.NextRound, Orders = orders });
@@ -293,7 +298,7 @@ namespace HobbyDS9.Simulation
                 return Result(CampaignTacticalError.None);
             }
         }
-        private void ResolveJoint(CampaignTacticalReviewSaveDto save, CampaignTacticalBattleCheckpointDto b)
+        private void ResolveJoint(CampaignTacticalReviewSaveDto save, CampaignTacticalBattleCheckpointDto b, Action<TacticalRoundV2Result>? capture = null)
         {
             b.ResolvedRounds.Add(new CampaignTacticalResolvedRoundDto { Round = b.State.NextRound,
                 Commitments = b.Commitments.OrderBy(c => c.ActorId,StringComparer.Ordinal).Select(Copy).ToList() });
@@ -305,6 +310,7 @@ namespace HobbyDS9.Simulation
             }
             var caps = b.State.Formations.SelectMany(f => f.Ships).ToDictionary(s => s.ShipId, s => Fit(s.ShipId).Capabilities!, StringComparer.Ordinal);
             var result = new DeterministicTacticalCombatV2Resolver().ResolveCampaignReviewRound(b.State, new CampaignRoundPolicy(b.HiddenShipIds, caps));
+            capture?.Invoke(result);
             AddReports(b, result.Events); b.State = result.NextState;
             if (b.State.NextRound >= 2) b.HiddenShipIds.Clear();
             b.Commitments.Clear(); b.BoundaryRevision = b.State.NextRound - 1;
@@ -321,11 +327,13 @@ namespace HobbyDS9.Simulation
                 if (revision != game.StateRevision) return Result(CampaignTacticalError.StaleRevision);
                 if (state.Battles.Count == 0 || state.Battles.Any(b => b.State.Completion == TacticalCompletion.None)) return Result(CampaignTacticalError.IncompleteBatch);
                 if (revision == long.MaxValue || turn == int.MaxValue) return Result(CampaignTacticalError.Overflow);
+                List<CampaignBattlePlayback>? completedHistory = null;
                 var next = Copy(state); var staged = next.Campaign.GameState;
                 CampaignTacticalTravelSaveDto? physicalNext = null;
                 List<CampaignFrontierReceiptDto>? nextDiscoveries = null;
                 try
                 {
+                    completedHistory = PreparePlayableHistory();
                     int index = 0;
                     foreach (var b in next.Battles.OrderBy(b => b.State.EncounterId, StringComparer.Ordinal))
                     {
@@ -367,6 +375,7 @@ namespace HobbyDS9.Simulation
                 state = Copy(next);
                 if (physicalNext != null) { travel = CampaignTacticalTravelData.Copy(physicalNext); state = travel.Core; }
                 if(nextDiscoveries!=null)discoveries=nextDiscoveries;
+                playableHistory.AddRange(completedHistory!);
                 RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Finalize,Turn=turn,Revision=revision});
                 return Result(CampaignTacticalError.None);
             }
