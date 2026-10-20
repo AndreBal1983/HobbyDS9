@@ -36,9 +36,11 @@ dotnet msbuild scripts/PrepareUnity.proj -t:Prepare
 python scripts/check-unity-integration.py
 ```
 
-Release build: zero warnings/errors. Full suite: 1850 passed, zero failures/skips, including 27 new playable-fleet cases. After normalizing the new outer JSON to the repository LF policy, all 27 focused cases and the CLI determinism variants passed again with the hashes above. All six separately built portable client projects passed: adapter200, UX115, client51, shell23, storage47, travel89 (525 total). PrepareUnity and static integration passed; no Editor or native player was launched.
+Release build: zero warnings/errors. The full suite passed 1854 cases with zero failures/skips, including 31 new playable-fleet cases and the capacity correction. The outer JSON follows the repository LF policy so exact package bytes match across platforms. All six separately built portable client projects passed: adapter200, UX115, client51, shell23, storage47, travel89 (525 total). PrepareUnity and static integration passed; no Editor or native player was launched.
 
 `PlayableFleetTests` covers real construction and later construction into a newly created fleet; create/transfer/rename, source retirement, ownership/stamps, explicit route clearing, partial travel/combat exclusion, allocation exhaustion/late rollback, root forgery, old-loader rejection, waiting-round reload, actual event/condition reconciliation, history rollback/once-only aftermath, hidden-launcher projection, large damage totals, explicit replay budget exhaustion and deterministic walkthrough variants. Hidden-launcher projection uses a clearly isolated raw-event fixture, never imported campaign authority.
+
+Capacity regression cases cover exact-fit and one-slot-short admission, a paid construction completion rolled back with the rejected turn, multiple independent encounters resolved in reverse order, AI-only completed batches, reload before each remaining round/finalization, all combat-phase nonprogress APIs, invalid/stale/duplicate input and Planning rename consumption.
 
 The supplied 2048-rename transcript measured about 967–973 ms to reload and 530693 serialized characters locally. This is diagnostic, not a portable performance assertion or worst-case replay guarantee.
 
@@ -49,3 +51,7 @@ Bind `CampaignPlayableFleetApplication.StartPackage/LoadSave` and the complete n
 Playback event keys are encounter/round/sequence. Before/after relations contain only visible pairs. Condition events identify the affected target; they do not invent an attacker. Incoming hidden torpedoes have null source ship/fleet and range. Damage totals are received damage; source shot/hit/miss counts are observed only. Own final condition includes actual remaining equipment/stocks. Skip/speed/camera controls must only change presentation.
 
 Independent persistence/code review, exact-head cross-platform CI and combined frontend validation remain delivery gates. Secondary owns new6 codec/resources, Unity import/build/native lease, actual paid production/assembly/right-click combat journey, visual model bindings, audio, responsive and load/modal negatives. The prior R8 native gaps remain open until exercised in that combined player. No main merge or validated-pointer promotion is authorized by this milestone.
+
+## Independent-review capacity correction
+
+Candidate 68ad1db is retained as the review baseline. Review found that the technical transcript cap could strand a pending battle. The follow-up only permits a staged advance when the remaining bound accommodates that advance, every remaining human round across the complete actual batch, and once-only finalization. AI-only completed encounters still reserve finalization. A failed admission publishes none of the staged economy/AI/production/movement/IDs/RNG or history. The budget is not raised or exposed as a gameplay statistic. Accepted combat commands must progress a round; all other combat-phase mutations reject without spending capacity. Unsafe pending saves from unreviewed 68ad1db now fail replay validation explicitly; no migration is provided or claimed. Normal walkthrough vectors and older profiles remain unchanged.

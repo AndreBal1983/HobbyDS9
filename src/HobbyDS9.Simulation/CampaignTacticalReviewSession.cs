@@ -293,6 +293,10 @@ namespace HobbyDS9.Simulation
                 next.AcceptedRoundCommands.Add(command.CommandId); next.Campaign.GameState.StateRevision++;
                 EnsureAi(next, b2);
                 if (b2.State.Formations.Where(f => f.Status == TacticalFormationStatus.Active).All(f => b2.Commitments.Any(c => c.ActorId == f.SideId))) ResolveJoint(next, b2);
+                // New6 has one controlled human. A successful combat command must spend its reserved
+                // slot on exactly one actual round, never on a nonprogress commitment.
+                if (playableHash != null)
+                    Require(b2.ResolvedRounds.Count == battle.ResolvedRounds.Count + 1, "Playable round did not progress.");
                 ValidateSave(next); state = Copy(next);
                 RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Round,Round=command});
                 return Result(CampaignTacticalError.None);

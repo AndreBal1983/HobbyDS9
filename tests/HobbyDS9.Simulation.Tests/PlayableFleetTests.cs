@@ -7,7 +7,7 @@ using Xunit;
 
 namespace HobbyDS9.Simulation.Tests;
 
-public sealed class PlayableFleetTests
+public sealed partial class PlayableFleetTests
 {
     const string Human = "civ.federation";
     static string Json<T>(T value) => JsonSerializer.Serialize(value);
@@ -236,7 +236,7 @@ public sealed class PlayableFleetTests
     {
         var o = app.Observe(id, Human);
         Assert.True(app.CommitRound(new CommitCampaignTacticalRoundDto {
-            ActorId = Human, CommandId = "command.round." + o.Round, EncounterId = id, ExpectedTurn = o.Turn,
+            ActorId = Human, CommandId = "command.round." + app.CaptureStatus().CampaignRevision + "." + o.Round, EncounterId = id, ExpectedTurn = o.Turn,
             ExpectedRound = o.Round, ExpectedBoundaryRevision = o.BoundaryRevision,
             Replacements = o.StandingOrders.Select(s => new CampaignTacticalFleetOrderDto { FleetId = s.FleetId,
                 Maneuver = CampaignFleetManeuver.Charge, FocusFleetId = o.LegalFocusFleetIds.FirstOrDefault() }).ToList()

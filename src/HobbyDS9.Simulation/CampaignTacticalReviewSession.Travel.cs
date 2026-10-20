@@ -221,6 +221,7 @@ namespace HobbyDS9.Simulation
                 }
                 var nextDiscoveries=frontier==null?null:CompleteFrontierPlanning(next);
                 ValidateTravelSave(next);
+                if (!CanPublishPlayableAdvance(next)) return Result(CampaignTacticalError.Overflow);
                 var committed=CampaignTacticalTravelData.Copy(next);
                 if(stagedBuiltShips!=null)builtShips=stagedBuiltShips.Select(CopyBuild).ToList();
                 travel=committed;state=travel.Core;
