@@ -26,6 +26,8 @@ namespace HobbyDS9.UnityReview
             panel.Add(Readout("Review your worlds and R&D, build an available ship, and plot a known route. Issue fleet orders in battle, then confirm the aftermath. Hull, shields and ammunition persist."));
             panel.Add(Readout("The computer chooses its own orders. Changes stay unsent until you confirm them. Save whenever you want to return later."));
             if(demoStarted){var resume=AddButton(panel,"Resume current campaign",()=>{demoLanding=false;viewEpoch++;Build();});resume.name="demo-resume-current";resume.AddToClassList("primary-action");ScheduleDemoMenuFocus(resume);}
+            var generated=AddButton(panel,"Generated galaxy review",OpenGeneratedGalaxy);generated.name="generated-galaxy-entry";
+            panel.Add(Readout("Create and inspect a seeded map. Full-map review only; your current campaign stays intact."));
             DrawPlayableFleetMenu(panel);
             panel.Add(Readout("Other campaign profiles"));
             var start=AddButton(panel,"Start new demo",()=>{
