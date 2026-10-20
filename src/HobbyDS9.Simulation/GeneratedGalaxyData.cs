@@ -37,7 +37,7 @@ namespace HobbyDS9.Simulation
         {
             Require(d != null, "Missing generated map.");
             Require(d.FormatVersion == GeneratedGalaxyIdentity.FormatVersion && d.ProfileId == GeneratedGalaxyIdentity.Profile
-                && d.GeneratorVersion == GeneratedGalaxyIdentity.GeneratorVersion && d.TuningVersion == GeneratedGalaxyIdentity.TuningVersion,
+                && GeneratedGalaxyIdentity.Supports(d.GeneratorVersion, d.TuningVersion),
                 "Unsupported generated-map format, profile, generator or tuning version. No migration is available.");
             Require(d.ContentHash != null && d.ContentHash.Length == 64 && d.ContentHash.All(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f'),
                 "Missing or invalid map content hash.");

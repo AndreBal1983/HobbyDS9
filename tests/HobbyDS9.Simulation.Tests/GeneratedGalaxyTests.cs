@@ -28,6 +28,20 @@ public sealed class GeneratedGalaxyTests
             Assert.True(hashes.Add(d.ContentHash));
             Assert.Equal(size, d.Systems.Count); Assert.Equal(size * 2, d.Regions.Count);
             Assert.Equal(size, d.Regions.Count(r => r.SystemId == null));
+            Assert.Equal(GeneratedGalaxyIdentity.GeneratorVersion, d.GeneratorVersion);
+            Assert.Equal(GeneratedGalaxyIdentity.TuningVersion, d.TuningVersion);
+            // v2 must not retain the old one-site-per-100k-cell stratification.
+            Assert.True(d.Regions.Select(r => (r.Center.X / 100000, r.Center.Y / 100000)).Distinct().Count() < d.Regions.Count * 9 / 10);
+            for (int i = 0; i < d.Regions.Count; i++)
+            {
+                var a = d.Regions[i].Center;
+                Assert.InRange(a.X, 15000, d.Width - 15000); Assert.InRange(a.Y, 15000, d.Height - 15000);
+                for (int j = i + 1; j < d.Regions.Count; j++)
+                {
+                    var b = d.Regions[j].Center;
+                    Assert.True((long)(a.X - b.X) * (a.X - b.X) + (long)(a.Y - b.Y) * (a.Y - b.Y) >= 40000L * 40000);
+                }
+            }
             Assert.Equal(d.Regions.Count, d.Regions.Select(r => r.NodeId).Distinct().Count());
             Assert.Equal(size, d.Systems.Select(s => s.SystemId).Distinct().Count());
             foreach (var s in d.Systems) Assert.Equal(s.SystemId, d.Regions.Single(r => r.NodeId == s.NodeId).SystemId);
@@ -187,7 +201,15 @@ public sealed class GeneratedGalaxyTests
     [InlineData("12345", 30, "85dac90f91180327f0fad3b915ca3145fdd8a1d1108d7b4f543c8c300d655884")]
     [InlineData("20261020", 50, "c6d6dfcbee54c17607d5090f47ad403f5ba158a7d96efeadcc764da7a2d8b6cd")]
     public void InitialVersionHasExplicitCrossPlatformGoldenVectors(string seed, int size, string hash)
-        => Assert.Equal(hash, Generate(seed, size).Export().ContentHash);
+    {
+        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "generated-galaxy-v1", $"seed-{seed}-systems-{size}.galaxy.json"));
+        var old = JsonSerializer.Deserialize<GeneratedGalaxyDocumentDto>(json)!;
+        var reopened = GeneratedGalaxyJson.Read(json, Catalog()).Export();
+        Assert.Equal(GeneratedGalaxyIdentity.LegacyGeneratorVersion, reopened.GeneratorVersion);
+        Assert.Equal(hash, reopened.ContentHash);
+        Assert.Equal(Json(old), Json(reopened));
+        Assert.NotEqual(hash, Generate(seed, size).Export().ContentHash);
+    }
 
     [Fact]
     public void GenerationDoesNotConsumeOrRewriteTheExistingPlayableCampaign()
@@ -200,5 +222,49 @@ public sealed class GeneratedGalaxyTests
         Assert.Equal(before, Json(CampaignPlayableFleetApplication.LoadSave(package, campaign.ExportPlayableSave()).ExportPlayableSave()));
         Assert.Equal(6, campaign.ExportPlayableSave().FormatVersion);
         Assert.Equal("87e57e759ad9ddbe0eebcecef86fb04a9c55c025ea28031205ac323c2c9c41c7", package.PackageHash);
+    }
+
+    [Theory]
+    [InlineData("42", 40, "b7f6c3041a330eac4dee6cc2e2e1ad3cfb0e6b77d3c81351835d6a1e6cf0938e")]
+    [InlineData("43", 40, "6f2ae2943bb9dd9e69425dbe5956cbca93958e8e3837d8958414c12aa17b3a9c")]
+    [InlineData("12345", 30, "e86eed4273cfd59419844a6bfb83ccbc86d59b5d825a5306b74bb924c072e781")]
+    [InlineData("20261020", 50, "25a1cc65053574d71648097c6a5d97e4832e5d9112ebb33e51aae71a20b84a25")]
+    public void ScatteredVersionHasSeparateDeterministicGoldenVectors(string seed, int size, string hash)
+        => Assert.Equal(hash, Generate(seed, size).Export().ContentHash);
+
+    [Theory]
+    [InlineData("42", 40)][InlineData("12345", 30)][InlineData("20261020", 50)]
+    public void SameSeedCorrectionHasGreaterAreaVariationWithoutRemappingLegacyExport(string seed, int size)
+    {
+        var text = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "generated-galaxy-v1", $"seed-{seed}-systems-{size}.galaxy.json"));
+        var original = GeneratedGalaxyJson.Read(text, Catalog());
+        var old = original.Export(); var revised = Generate(seed, size).Export();
+        decimal AreaSpread(GeneratedGalaxyDocumentDto map)
+        {
+            var areas = map.Regions.Select(r => Math.Abs(Enumerable.Range(0, r.Boundary.Count).Sum(i => {
+                var a = r.Boundary[i]; var b = r.Boundary[(i + 1) % r.Boundary.Count];
+                return (long)a.X * b.Y - (long)a.Y * b.X;
+            }))).ToList();
+            decimal mean = areas.Average(a => (decimal)a);
+            return areas.Average(a => ((decimal)a - mean) * ((decimal)a - mean)) / (mean * mean);
+        }
+        Assert.True(AreaSpread(revised) > AreaSpread(old) * 2, "Requested sample correction should materially increase cell-area variation.");
+        Assert.NotEqual(Json(old.Regions), Json(revised.Regions));
+        Assert.Equal(old.Width, revised.Width); Assert.Equal(old.Height, revised.Height);
+        Assert.Equal(Json(old), Json(original.Export()));
+        Assert.Equal(Json(old), Json(GeneratedGalaxyApplication.Open(Roundtrip(old), Catalog()).Export()));
+        Assert.Equal(Json(revised), Json(GeneratedGalaxyApplication.Open(Roundtrip(revised), Catalog()).Export()));
+    }
+
+    [Theory]
+    [InlineData(true)][InlineData(false)]
+    public void AlgorithmAndTuningVersionsMustBeAnExactSupportedPair(bool useLegacyAlgorithm)
+    {
+        var current = Generate(); var before = Json(current.Export()); var mixed = current.Export();
+        if (useLegacyAlgorithm) mixed.GeneratorVersion = GeneratedGalaxyIdentity.LegacyGeneratorVersion;
+        else mixed.TuningVersion = GeneratedGalaxyIdentity.LegacyTuningVersion;
+        Assert.False(GeneratedGalaxyIdentity.Supports(mixed.GeneratorVersion, mixed.TuningVersion));
+        Assert.Contains("Unsupported", Assert.Throws<ArgumentException>(() => current = GeneratedGalaxyApplication.Open(mixed, Catalog())).Message);
+        Assert.Equal(before, Json(current.Export()));
     }
 }

@@ -6,8 +6,14 @@ namespace HobbyDS9.Contracts
     {
         public const int FormatVersion = 1;
         public const string Profile = "generated-galaxy-review-v1";
-        public const string GeneratorVersion = "irregular-regions-v1";
-        public const string TuningVersion = "provisional-review-30-40-50-v1";
+        public const string GeneratorVersion = "irregular-regions-v2";
+        public const string TuningVersion = "provisional-scattered-sites-30-40-50-v2";
+        public const string LegacyGeneratorVersion = "irregular-regions-v1";
+        public const string LegacyTuningVersion = "provisional-review-30-40-50-v1";
+
+        public static bool Supports(string generator, string tuning)
+            => generator == GeneratorVersion && tuning == TuningVersion
+                || generator == LegacyGeneratorVersion && tuning == LegacyTuningVersion;
     }
 
     public sealed class GeneratedGalaxySettingsDto
