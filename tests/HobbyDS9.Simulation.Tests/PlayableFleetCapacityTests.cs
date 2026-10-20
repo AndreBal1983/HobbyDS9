@@ -186,4 +186,123 @@ public sealed partial class PlayableFleetTests
         Assert.Equal(CampaignTacticalError.Overflow, app.AdvanceTurn(s.Turn, s.CampaignRevision).Error);
         Assert.Equal(before, Json(app.ExportPlayableSave()));
     }
+    static CampaignPlayableFleetPackageDto ThreeSidePackage(bool eliminate)
+    {
+        var p = MultiEncounterPackage(true); p.ReplayOperationLimit = 5;
+        var physical = p.Integrated!.Physical!; var campaign = physical.CorePackage!.Campaign!;
+        var game = campaign.InitialState;
+        game.Fleets!.Single(f => f.OwnerCivilizationId == Human).LocationNodeId = "nav.bajor";
+        if (eliminate) game.Ships!.Single(s => s.OwnerCivilizationId == Human).CurrentHull = 1;
+        var equipment = campaign.Definitions.AuthoredTacticalEquipment!;
+        if (eliminate) equipment.InitialShipProvisions!.Single(s => s.OwnerCivilizationId == Human).InitialShields!.ForEach(s => s.Current = 0);
+        equipment.Fits!.ForEach(f => { f.EvasionBps = 0; f.Weapons!.ForEach(w => w.AccuracyBps = 10000); });
+        physical.Hostilities!.Add(new CampaignDeclaredHostilityDto { CivilizationA = Human, CivilizationB = "civ.dominion" });
+        foreach (var pair in new[] { (Human, "fleet.cardassian-scout.capacity"), ("civ.dominion", "fleet.federation-scout") })
+            physical.InitialContacts!.Add(new CampaignContactKnowledgeDto {
+                ActorId = pair.Item1, FleetId = pair.Item2, LastSeenNodeId = "nav.bajor", LastSeenTurn = 1,
+                TrackingNodeIds = campaign.Definitions.NavigationRegions!.Select(n => n.NodeId).ToList() });
+        return p;
+    }
+    [Theory]
+    [InlineData(true)][InlineData(false)]
+    public void RemainingAiRoundsAutoResolveOnlyAfterEveryHumanFormationIsEliminated(bool eliminate)
+    {
+        var p = ThreeSidePackage(eliminate);
+        var app = CampaignPlayableFleetApplication.StartPackage(p); Advance(app);
+        var id = Assert.Single(app.GetEncounters(Human)); Round(app, id);
+        var battle = app.ExportPlayableSave().Integrated!.Physical!.Core.Battles.Single();
+        Assert.Equal(eliminate, battle.State.Formations.Single(f => f.SideId == Human).Ships.Single().Hull == 0);
+        Assert.Equal(eliminate, app.Observe(id, Human).Complete);
+        var playback = app.CaptureBattlePlayback(id, Human);
+        Assert.Equal(eliminate ? 3 : 1, playback.Rounds.Count);
+        var known = playback.Initial.OwnShips.Concat(playback.Initial.VisibleEnemies).Select(s => s.ShipId).ToHashSet();
+        Assert.All(playback.Rounds.SelectMany(r => r.Events), e => {
+            if (e.SourceShipId != null) Assert.Contains(e.SourceShipId, known);
+            if (e.TargetShipId != null) Assert.Contains(e.TargetShipId, known);
+        });
+        if (eliminate)
+            Assert.All(playback.Rounds.Skip(1), r => {
+                Assert.All(r.Before.OwnShips, s => Assert.Equal(0, s.Hull));
+                Assert.DoesNotContain(r.Events, e => e.Kind == CampaignPlaybackEventKind.OwnOrderCommitted);
+                Assert.DoesNotContain(r.Events, e => e.SourceFleetId == "fleet.federation-scout");
+            });
+        FinishAtCapacity(p, Reload(p, app));
+    }
+    [Fact]
+    public void AiOnlyRemainderRevisionOverflowRollsBackTheWholeHumanCommand()
+    {
+        var app = CampaignPlayableFleetApplication.StartPackage(ThreeSidePackage(true)); Advance(app);
+        var id = Assert.Single(app.GetEncounters(Human)); var view = app.Observe(id, Human);
+        // Owned-counter fault injection; this intentionally is not a valid imported/replayed save.
+        var owned = (CampaignTacticalReviewSaveDto)typeof(HobbyDS9.Simulation.CampaignTacticalReviewSession)
+            .GetField("state", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!.GetValue(Backend(app))!;
+        owned.Campaign.GameState.StateRevision = long.MaxValue - 1;
+        var before = Json(app.ExportPlayableSave());
+        var command = new CommitCampaignTacticalRoundDto { ActorId = Human, CommandId = "command.near-overflow",
+            EncounterId = id, ExpectedTurn = view.Turn, ExpectedRound = view.Round,
+            ExpectedBoundaryRevision = view.BoundaryRevision, Replacements = new() };
+        Assert.Equal(CampaignTacticalError.Overflow, app.CommitRound(command).Error);
+        Assert.Equal(before, Json(app.ExportPlayableSave()));
+        Assert.Empty(app.CaptureBattlePlayback(id, Human).Rounds);
+        Assert.Empty(app.GetBattleHistory(Human));
+    }
+    [Fact]
+    public void LateAiRemainderFailureDoesNotPublishHumanRoundOrAiDamage()
+    {
+        var p = ThreeSidePackage(true);
+        var app = CampaignPlayableFleetApplication.StartPackage(p); Advance(app);
+        var id = Assert.Single(app.GetEncounters(Human)); var view = app.Observe(id, Human);
+        var before = Json(app.ExportPlayableSave());
+        var command = new CommitCampaignTacticalRoundDto { ActorId = Human, CommandId = "command.remainder-failure",
+            EncounterId = id, ExpectedTurn = view.Turn, ExpectedRound = view.Round,
+            ExpectedBoundaryRevision = view.BoundaryRevision, Replacements = new() };
+        Backend(app).PlayableAiRemainderProbe = () => throw new InvalidOperationException("Late AI remainder fault.");
+        Assert.Equal(CampaignTacticalError.InvalidBatch, app.CommitRound(command).Error);
+        Assert.Equal(before, Json(app.ExportPlayableSave())); Assert.Empty(app.CaptureBattlePlayback(id, Human).Rounds);
+        Backend(app).PlayableAiRemainderProbe = null;
+        Assert.True(app.CommitRound(command).Accepted);
+        Assert.True(app.Observe(id, Human).Complete);
+        FinishAtCapacity(p, Reload(p, app));
+    }
+    [Fact]
+    public void EliminatedHumanEncounterCannotAdvanceAnotherIndependentHumanEncounter()
+    {
+        var p = ThreeSidePackage(true); p.ReplayOperationLimit = 8;
+        var physical = p.Integrated!.Physical!; var campaign = physical.CorePackage!.Campaign!;
+        var game = campaign.InitialState; var equipment = campaign.Definitions.AuthoredTacticalEquipment!;
+        foreach (var actor in new[] { Human, "civ.dominion" })
+        {
+            var original = game.Ships!.Single(s => s.OwnerCivilizationId == actor);
+            var ship = Clone(original); ship.ShipId += ".independent"; ship.FleetId += ".independent";
+            ship.CurrentHull = campaign.Definitions.ShipDesigns!.Single(d => d.DefinitionId == ship.ShipDesignDefinitionId).MaxHull;
+            var fleet = Clone(game.Fleets!.Single(f => f.FleetId == original.FleetId));
+            fleet.FleetId = ship.FleetId; fleet.LocationNodeId = "nav.sol"; fleet.ShipIds = new() { ship.ShipId };
+            game.Ships!.Add(ship); game.Fleets!.Add(fleet);
+            foreach (var pair in new[] { (original.ShipId, ship.ShipId), (original.FleetId, fleet.FleetId) })
+            {
+                var identity = Clone(game.EntityIdentities.Single(i => i.EntityId == pair.Item1));
+                identity.EntityId = pair.Item2; game.EntityIdentities.Add(identity);
+            }
+            var provision = Clone(equipment.InitialShipProvisions!.Single(s => s.ShipId == original.ShipId));
+            provision.ShipId = ship.ShipId; equipment.InitialShipProvisions!.Add(provision);
+            physical.InitialOrders!.Add(new CampaignTravelOrderDto { FleetId = fleet.FleetId,
+                Intent = CampaignTravelIntent.StayEngage, RouteNodeIds = new() });
+            physical.InitialContacts!.Add(new CampaignContactKnowledgeDto {
+                ActorId = actor == Human ? "civ.dominion" : Human, FleetId = fleet.FleetId, LastSeenNodeId = "nav.sol",
+                LastSeenTurn = 1, TrackingNodeIds = campaign.Definitions.NavigationRegions!.Select(n => n.NodeId).ToList() });
+        }
+        var app = CampaignPlayableFleetApplication.StartPackage(p); Advance(app);
+        var battles = app.ExportPlayableSave().Integrated!.Physical!.Core.Battles;
+        Assert.Equal(2, battles.Count);
+        var loss = battles.Single(b => b.State.Formations.Count == 3).State.EncounterId;
+        var independent = battles.Single(b => b.State.Formations.Count == 2).State.EncounterId;
+        var untouched = Json(battles.Single(b => b.State.EncounterId == independent));
+        Round(app, loss);
+        Assert.True(app.Observe(loss, Human).Complete);
+        Assert.False(app.Observe(independent, Human).Complete);
+        Assert.Equal(untouched, Json(app.ExportPlayableSave().Integrated!.Physical!.Core.Battles.Single(b => b.State.EncounterId == independent)));
+        Assert.Empty(app.CaptureBattlePlayback(independent, Human).Rounds);
+        Assert.False(app.CaptureStatus().CanFinalizeBatch);
+        FinishAtCapacity(p, Reload(p, app));
+    }
 }

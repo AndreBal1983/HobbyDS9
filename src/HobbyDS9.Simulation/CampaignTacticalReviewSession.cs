@@ -293,10 +293,28 @@ namespace HobbyDS9.Simulation
                 next.AcceptedRoundCommands.Add(command.CommandId); next.Campaign.GameState.StateRevision++;
                 EnsureAi(next, b2);
                 if (b2.State.Formations.Where(f => f.Status == TacticalFormationStatus.Active).All(f => b2.Commitments.Any(c => c.ActorId == f.SideId))) ResolveJoint(next, b2);
-                // New6 has one controlled human. A successful combat command must spend its reserved
-                // slot on exactly one actual round, never on a nonprogress commitment.
+                // New6 has one controlled human. Its accepted combat command first resolves exactly
+                // one actual human round, never a nonprogress commitment.
                 if (playableHash != null)
+                {
                     Require(b2.ResolvedRounds.Count == battle.ResolvedRounds.Count + 1, "Playable round did not progress.");
+                    // The player can be eliminated before two opposing AI sides finish. Only those
+                    // remaining AI-only rounds auto-resolve; another active human round never does.
+                    try
+                    {
+                        while (b2.State.Completion == TacticalCompletion.None
+                            && b2.State.Formations.Where(f => f.Status == TacticalFormationStatus.Active)
+                                .All(f => controllers[f.SideId] == ControllerKind.AI))
+                        {
+                            next.Campaign.GameState.StateRevision = checked(next.Campaign.GameState.StateRevision + 1);
+                            ResolveJoint(next, b2);
+                            PlayableAiRemainderProbe?.Invoke();
+                        }
+                    }
+                    catch (OverflowException) { return Result(CampaignTacticalError.Overflow); }
+                    catch (Exception e) when (e is ArgumentException || e is InvalidOperationException)
+                    { return Result(CampaignTacticalError.InvalidBatch); }
+                }
                 ValidateSave(next); state = Copy(next);
                 RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Round,Round=command});
                 return Result(CampaignTacticalError.None);
