@@ -48,11 +48,16 @@ def check(root):
             "Modal buttons must use the actual portable one-use permission and lifetime invalidation")
     keyboard = (runtime / "ReviewEntry.Keyboard.cs").read_text(encoding="utf-8-sig")
     require('if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);' in entry and
-            'new Button(guarded)' in entry and 'if(SubmitAlreadyPerformed())' in keyboard and
+            'BindButton(button,action,dialog);' in entry and 'button.clicked+=guarded;' in entry and
+            'if(SubmitAlreadyPerformed())' in keyboard and
             'if(!(enter?returnHeld:spaceHeld))LatchDemoKey(button,e.keyCode,e.timestamp);return;' in keyboard and
             'if(enter?returnHeld:spaceHeld){e.StopPropagation();return;}' in keyboard and
             'WasPerformedThisFrame()' in keyboard and 'returnHeld' in keyboard and 'DemoKeyUp' in keyboard,
             "Keyboard buttons must share the guarded click and defer real Submit, with held-key suppression")
+    playable_map = (runtime / "ReviewPlayableMap.cs").read_text(encoding="utf-8-sig")
+    require(all(f"bindButton({marker}," in playable_map for marker in ("ring", "star", "marker", "moving")) and
+            '(b,a)=>BindButton(b,a)' in (runtime / "ReviewEntry.Player.cs").read_text(encoding="utf-8-sig"),
+            "All playable map marker families must use the shared Entry keyboard/modal/epoch binding")
     require('if(!PlayerProfile||panel==null||doc.panelSettings!=panel)' in entry and
             'UnbindDemoKeyboard();ReleaseAudio();' in entry and
             'root=doc.rootVisualElement;root.Clear();' in entry and

@@ -214,10 +214,15 @@ namespace HobbyDS9.UnityReview
         private static TextField Field(string title,string value){var f=new TextField(title){value=value};f.AddToClassList("review-input");return f;}
         private Button AddButton(VisualElement parent,string title,Action action,bool dialog=false)
         {
-            var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
-            var button=new Button(guarded){text=title};
-            if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);
+            var button=new Button{text=title};
+            BindButton(button,action,dialog);
             button.AddToClassList("review-action");button.style.minHeight=36;parent.Add(button);return button;
+        }
+        private void BindButton(Button button,Action action,bool dialog=false)
+        {
+            var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
+            button.clicked+=guarded;
+            if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);
         }
         private void Do(Action action)
         {

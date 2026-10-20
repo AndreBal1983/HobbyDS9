@@ -52,3 +52,11 @@ New binding tests execute actual UI-model paid construction, fleet assembly, law
 7. Carry the prior R8 native draft/load/keyboard/resize negatives into this new package; verify audio and preserve original owner saves and frozen R7/R8 builds.
 
 No native result, audio confirmation, frame-time budget, visual approval or validated-package promotion is claimed by this source checkpoint. The separate builder is `PlayableFleetBuild.BuildWindowsPlayableFleet`; its output is `artifacts/playable-frontend/Windows/HobbyDS9FleetCampaign.exe`.
+
+## Source review corrections after c49037c
+
+The independent source review identified two receiving issues: the four new map marker families bypassed the existing native KeyDown fallback and action guard; the initial overview camera sizing could clip the outer members of a large formation. These are source findings, not failures reproduced in a new native player.
+
+The corrective delta reuses the existing Entry button guard and held-key binding for system stars, annular fleet rings, contacts and fleets in transit. Ring hit testing stays separate from its center star. Right-click/Shift+F10 review additionally rejects detached, disabled and stale controls; keyboard context review requires focus. Camera framing uses complete visual model/LOD bounds, both maneuver endpoints and rotation envelopes, viewport aspect and suitable clipping planes. It imposes no gameplay fleet cap.
+
+Three new dedicated `PlayableFleetEngineTests` cover actual map keyboard/modal/release/replacement behavior, the paid-fleet round UI with three-resolution captures and presentation-only skip, and 12/32-ship imported-model framing in both cameras at wide/tall aspect ratios with stage disposal. The eight reference-compiler outputs pass with these tests included. **The new tests are authored and reference-compiled only until actual engine results are recorded.** Static binding checks now assert that all four custom marker families use the shared binder. The original c49037c portable evidence remains separately preserved; these corrections do not relabel it as later execution.

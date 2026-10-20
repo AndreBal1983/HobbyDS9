@@ -60,6 +60,7 @@ namespace HobbyDS9.UnityReview
                     poses[pair.Key]=Tuple.Create(before[pair.Key].Item1,before[pair.Key].Item2,pair.Value.transform.localPosition,pair.Value.transform.localRotation);
                     pair.Value.transform.localPosition=before[pair.Key].Item1;pair.Value.transform.localRotation=before[pair.Key].Item2;
                 }
+                Frame();
             }
             Caption=round==null?"Current authoritative boundary · awaiting orders":"Resolved round "+round.Round+" · playback";
             Render();
@@ -189,11 +190,50 @@ namespace HobbyDS9.UnityReview
         }
         private void Frame()
         {
-            var positions=ships.Values.Select(s=>s.transform.localPosition).ToList();
-            var extent=positions.Count==0?15:Mathf.Max(15,positions.Max(p=>Mathf.Abs(p.z))+7);
-            camera.aspect=(float)Texture.width/Texture.height;camera.orthographicSize=extent*.75f;
-            camera.transform.localPosition=overview?new Vector3(0,80,-.1f):new Vector3(-22,32,-30);
-            camera.transform.LookAt(root.transform.position,Vector3.up);
+            // Fit complete visual bounds in camera space, including every LOD and
+            // both endpoints of the schematic maneuver. No gameplay size limit.
+            var points=new List<Vector3>();
+            foreach(var pair in ships)
+            {
+                var group=pair.Value.transform;
+                float radius=0;
+                foreach(var renderer in pair.Value.GetComponentsInChildren<Renderer>(true))
+                {
+                    var bounds=renderer.localBounds;
+                    for(int corner=0;corner<8;corner++)
+                    {
+                        var local=bounds.center+Vector3.Scale(bounds.extents,new Vector3(
+                            (corner&1)==0?-1:1,(corner&2)==0?-1:1,(corner&4)==0?-1:1));
+                        var world=renderer.transform.TransformPoint(local);points.Add(world);
+                        radius=Mathf.Max(radius,Vector3.Distance(world,group.position));
+                        if(poses.TryGetValue(pair.Key,out var pose))
+                        {
+                            var future=root.transform.localToWorldMatrix*Matrix4x4.TRS(pose.Item3,pose.Item4,group.localScale);
+                            points.Add(future.MultiplyPoint3x4(group.InverseTransformPoint(world)));
+                        }
+                    }
+                }
+                // A sphere envelope also contains intermediate rotations.
+                foreach(var center in poses.TryGetValue(pair.Key,out var endpoints)
+                    ?new[]{group.position,root.transform.TransformPoint(endpoints.Item3)}:new[]{group.position})
+                    for(int corner=0;corner<8;corner++)points.Add(center+radius*new Vector3(
+                        (corner&1)==0?-1:1,(corner&2)==0?-1:1,(corner&4)==0?-1:1));
+            }
+            var envelope=new Bounds(points.Count==0?root.transform.position:points[0],Vector3.zero);
+            foreach(var point in points)envelope.Encapsulate(point);
+            var distance=Mathf.Max(50,envelope.extents.magnitude+20);
+            var direction=(overview?new Vector3(0,80,-.1f):new Vector3(-22,32,-30)).normalized;
+            camera.transform.position=envelope.center+direction*distance;
+            camera.transform.LookAt(envelope.center,Vector3.up);
+            camera.aspect=(float)Texture.width/Texture.height;camera.farClipPlane=distance*2+50;
+            float horizontal=0,vertical=0;
+            foreach(var point in points)
+            {
+                var relative=point-envelope.center;
+                horizontal=Mathf.Max(horizontal,Mathf.Abs(Vector3.Dot(relative,camera.transform.right)));
+                vertical=Mathf.Max(vertical,Mathf.Abs(Vector3.Dot(relative,camera.transform.up)));
+            }
+            camera.orthographicSize=Mathf.Max(5,Mathf.Max(vertical,horizontal/camera.aspect)*1.1f+1);
         }
         public void ToggleCamera(){overview=!overview;Frame();Render();}
         private Vector3? Position(string? id)=>id!=null&&ships.TryGetValue(id,out var model)?model.transform.localPosition:(Vector3?)null;

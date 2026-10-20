@@ -15,12 +15,13 @@ namespace HobbyDS9.UnityReview
         private readonly ReviewUiModel model;
         private readonly ReviewWorkspace workspace;
         private readonly Func<VisualElement,string,Action,Button> button;
+        private readonly Action<Button,Action> bindButton;
         private readonly Action<Action> perform;
         private readonly Action<string,Action> confirm;
         private readonly Action<ReviewWorkspacePage> navigate;
         public ReviewPlayableMap(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,
-            Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate)
-        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;}
+            Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate,Action<Button,Action> bindButton)
+        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;this.bindButton=bindButton;}
         private static Label Text(VisualElement parent,string text,string id="")
         {var label=new Label(text){name=id};label.AddToClassList("console-copy");parent.Add(label);return label;}
         public void Render(VisualElement parent)
@@ -126,8 +127,10 @@ namespace HobbyDS9.UnityReview
             }
             void ContextAction(VisualElement target,Action action)
             {
-                target.RegisterCallback<PointerUpEvent>(e=>{if(e.button==1){action();e.StopPropagation();}});
-                target.RegisterCallback<KeyDownEvent>(e=>{if(e.keyCode==KeyCode.F10&&e.shiftKey){action();e.StopPropagation();}});
+                bool Live()=>target.panel!=null&&target.enabledInHierarchy&&ReferenceEquals(frame,model.Current.Frame);
+                target.RegisterCallback<PointerUpEvent>(e=>{if(e.button==1&&Live()){action();e.StopPropagation();}});
+                target.RegisterCallback<KeyDownEvent>(e=>{if(e.keyCode==KeyCode.F10&&e.shiftKey&&Live()
+                    &&ReferenceEquals(target.panel.focusController.focusedElement,target)){action();e.StopPropagation();}});
             }
             void Place(VisualElement element,Func<Vector2> point,float width,float height,Vector2 offset=default)
             {
@@ -140,13 +143,15 @@ namespace HobbyDS9.UnityReview
                 var atNode=fleets.Where(f=>f.LocationNodeId.Value==id&&frame.Travel?.OwnReceipts.LastOrDefault(r=>r.FleetId==f.FleetId.Value)?.TransitDestinationId==null).ToList();
                 if(atNode.Count>0)
                 {
-                    var ring=new ReviewMapRing(()=>perform(()=>{workspace.SelectedNode=id;workspace.SelectedFleet=atNode[0].FleetId.Value;})){name="map-ring-"+id,tooltip=atNode.Count+" own fleets. Select the ring to open the roster."};
+                    var ring=new ReviewMapRing{name="map-ring-"+id,tooltip=atNode.Count+" own fleets. Select the ring to open the roster."};
+                    bindButton(ring,()=>perform(()=>{workspace.SelectedNode=id;workspace.SelectedFleet=atNode[0].FleetId.Value;}));
                     Place(ring,()=>Point(id),74,74);
                     ring.EnableInClassList("selected-map-marker",atNode.Any(f=>f.FleetId.Value==workspace.SelectedFleet));
                     var count=new Label(atNode.Count+" own fleet"+(atNode.Count==1?"":"s")){pickingMode=PickingMode.Ignore};count.AddToClassList("map-own-count");
                     Place(count,()=>Point(id),140,24,new Vector2(0,53));
                 }
-                var star=new Button(()=>perform(()=>workspace.SelectedNode=id)){name="map-star-"+id,text="●",tooltip=node.DisplayName+" · select system; right-click to prepare navigation."};
+                var star=new Button{name="map-star-"+id,text="●",tooltip=node.DisplayName+" · select system; right-click to prepare navigation."};
+                bindButton(star,()=>perform(()=>workspace.SelectedNode=id));
                 star.AddToClassList("map-star");star.EnableInClassList("selected-map-marker",workspace.SelectedNode==id);
                 Place(star,()=>Point(id),38,38);ContextAction(star,()=>Prepare(id));
                 var label=new Label(node.DisplayName){pickingMode=PickingMode.Ignore};label.AddToClassList("map-node-name");
@@ -154,8 +159,8 @@ namespace HobbyDS9.UnityReview
             }
             foreach(var contact in contacts)
             {
-                var marker=new Button(()=>{notice.text="Observed hostile contact at "+Name(contact.LastSeenNodeId)+", turn "+contact.LastSeenTurn+". Current destination and reserves are unavailable.";})
-                    {name="map-contact-"+contact.FleetId,text="◇",tooltip="Observed contact. Right-click or Shift+F10 to review Follow."};
+                var marker=new Button{name="map-contact-"+contact.FleetId,text="◇",tooltip="Observed contact. Right-click or Shift+F10 to review Follow."};
+                bindButton(marker,()=>{notice.text="Observed hostile contact at "+Name(contact.LastSeenNodeId)+", turn "+contact.LastSeenTurn+". Current destination and reserves are unavailable.";});
                 var offset=contacts.Where(c=>c.LastSeenNodeId==contact.LastSeenNodeId).ToList().IndexOf(contact);
                 marker.AddToClassList("map-contact");Place(marker,()=>Point(contact.LastSeenNodeId),44,44,new Vector2(-52,-42-offset*48));
                 ContextAction(marker,()=>Prepare(contact.LastSeenNodeId,contact));
@@ -164,7 +169,8 @@ namespace HobbyDS9.UnityReview
             {
                 var receipt=frame.Travel?.OwnReceipts.LastOrDefault(r=>r.FleetId==fleet.FleetId.Value);
                 if(receipt?.TransitDestinationId==null||receipt.TransitTotalCost<=0||!nodeIds.Contains(receipt.TransitDestinationId))continue;
-                var moving=new Button(()=>perform(()=>workspace.SelectedFleet=fleet.FleetId.Value)){name="map-moving-fleet-"+fleet.FleetId,text="▸",tooltip="Owned fleet in transit: "+receipt.TransitProgress+" / "+receipt.TransitTotalCost};
+                var moving=new Button{name="map-moving-fleet-"+fleet.FleetId,text="▸",tooltip="Owned fleet in transit: "+receipt.TransitProgress+" / "+receipt.TransitTotalCost};
+                bindButton(moving,()=>perform(()=>workspace.SelectedFleet=fleet.FleetId.Value));
                 moving.AddToClassList("map-contact");
                 Place(moving,()=>Vector2.Lerp(Point(receipt.EndNodeId),Point(receipt.TransitDestinationId),(float)((double)receipt.TransitProgress/receipt.TransitTotalCost)),38,38);
             }
@@ -196,7 +202,7 @@ namespace HobbyDS9.UnityReview
     }
     public sealed class ReviewMapRing : Button
     {
-        public ReviewMapRing(Action select):base(select){AddToClassList("map-fleet-ring");}
+        public ReviewMapRing(){AddToClassList("map-fleet-ring");}
         public override bool ContainsPoint(Vector2 localPoint)
         {
             var distance=Vector2.Distance(localPoint,contentRect.center);
