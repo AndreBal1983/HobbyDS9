@@ -6,7 +6,9 @@ Unity implementation waits for reviewed authoritative campaign lifecycle contrac
 
 ## Sources, checkpoints and precedence
 
-This separate documentation branch retains local base 4e1a365fbae52591ddfc593200fae7b1f79a53db. The current accepted combined checkpoint is **53d2e64973d9081a4d0090e771f5e777fc55cf40**, verified by fetching origin/main during this reconciliation. Its tree matches the earlier reviewed combined candidate 22096fb56d81d203f194a6c0407d7de76721d93c. No branch was merged into this documentation branch.
+**Evidence date and scope:** the capability inventory and PR status statements below describe the pinned **13 October 2026** checkpoints. They are not statements about today's main branch or later lifecycle deliveries. The documentation recheck on **20 October 2026** confirmed that the supplied assignment, lifecycle milestone and amended tactical chapter still match the input hashes recorded below. It did not repeat runtime acceptance or verify current remote PR/CI status. Before any later Unity implementation, review the actual accepted campaign lifecycle and reconcile its authoritative projections against this proposal; an implementation prerequisite becoming available does not itself authorize implementation.
+
+This separate documentation branch retains local base 4e1a365fbae52591ddfc593200fae7b1f79a53db. At the 13 October reconciliation, the accepted combined checkpoint was **53d2e64973d9081a4d0090e771f5e777fc55cf40**, verified by fetching origin/main at that time. Its tree matches the earlier reviewed combined candidate 22096fb56d81d203f194a6c0407d7de76721d93c. No branch was merged into this documentation branch.
 
 Read together:
 
@@ -232,6 +234,8 @@ Disable session replacement while a round transaction is in flight; reconcile an
 1. Until finalization, label stocks as staged results. When every encounter is complete, atomic authority applies all survivor pools/destruction and travel stop once in canonical order, clears the batch and opens next Planning. Failure preserves every staged result and the whole pre-finalization campaign; do not re-resolve completed encounters.
 2. Sector retention, travel stop and fresh next-turn orders are **agreed**, no longer an unanswered “return-to-campaign” choice. Old routes are non-executable; optional reference/explicit new-order proposal remains UI detail. Other fleets are unaffected. Finalization does not advance calendar twice, restore movement, heal or replenish.
 3. Follow/leave/stay are proposed presentations of agreed strategic behavior. Physical same-sector/time contact and lawful engagement are required. No departure catch roll, remote route contest, invisible destination, teleport or path-crossing-only encounter. A slower pursuer may fail to reach contact. Both leaving use lawful routes. Mutual stay-and-combat gives a new next-turn encounter, beginning Distant with retained pools and approach cloak applied again.
+
+Completing this battle turn is not completing or winning the campaign. A three-round limit with survivors must not display victory, campaign completion or a conquest reward. Any campaign-completion presentation must reflect a separate authoritative scenario outcome if that contract is later provided; this slice proposes no new victory rule or completion command.
 
 Shared travel timeline, simultaneous arrival/departure, weighted-edge occupancy and precise contact/engagement commands remain backend gates (D1), not a UI minigame or decided formula. Do not present these strategic controls as implemented while that lifecycle is absent.
 
