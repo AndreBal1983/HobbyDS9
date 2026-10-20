@@ -150,7 +150,9 @@ namespace HobbyDS9.UnityReview.Tests
         {
             RequireRun();yield return new EnterPlayMode();yield return null;yield return null;
             var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var root=entry.GetComponent<UIDocument>().rootVisualElement;
-            var start=root.Q<Button>("demo-start");Assert.That(root.panel.focusController.focusedElement,Is.SameAs(start));
+            var fleetStart=root.Q<Button>("playable-fleet-start");
+            var start=fleetStart!=null&&fleetStart.enabledInHierarchy?fleetStart:root.Q<Button>("demo-start");
+            Assert.That(root.panel.focusController.focusedElement,Is.SameAs(start));
             Invoke(entry,"ScheduleDemoMenuFocus",start);Invoke(entry,"Confirm","Focus fixture",(Action)(()=>{}));yield return null;
             Assert.That(root.panel.focusController.focusedElement,Is.SameAs(Confirm(root)),"scheduled menu focus cannot escape current modal");
             yield return new ExitPlayMode();

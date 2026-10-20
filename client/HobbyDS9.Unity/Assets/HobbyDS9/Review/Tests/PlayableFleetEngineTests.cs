@@ -24,11 +24,15 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static object? Invoke(ReviewEntry entry,string name,params object[] args)=>
             typeof(ReviewEntry).GetMethod(name,BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entry,args);
-        private ReviewUiModel Model(ReviewEntry entry)
+        private ReviewUiModel Model(ReviewEntry entry,bool slowTravelFixture=false)
         {
             byte[] Bytes(string name)=>Resources.Load<TextAsset>(PlayableFleetOptions.ResourceRoot+name).bytes;
             var codec=new ReviewNewtonsoftCodec();
             var package=ReviewExactPackageLoader.LoadPlayableFleet(Bytes("playable"),Bytes("package"),Bytes("physical"),Bytes("core"),Bytes("scenario"),codec);
+            // Test-owned source variant so the in-transit marker is actually reachable.
+            // Delivered resources and real campaign saves are never modified.
+            if(slowTravelFixture)package.Integrated!.Physical!.CorePackage!.Campaign!.Definitions.NavigationConnections!
+                .ForEach(connection=>connection.BaseTraversalCost=1000);
             var directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Playable-Engine-"+Guid.NewGuid().ToString("N"));
             directories.Add(directory);
             var model=new ReviewUiModel(package,codec,new ReviewPlayableFleetSlotStore(directory,codec));
@@ -96,10 +100,12 @@ namespace HobbyDS9.UnityReview.Tests
             var after=model.Current.Frame;using(var e=NavigationSubmitEvent.GetPooled()){e.target=primary;primary.SendEvent(e);}
             Assert.That(model.Current.Frame,Is.SameAs(after));
 
+            model=Model(entry,true);yield return null;
             var fleet=model.NamedFleets().First().Fleet.FleetId.Value;
             var offer=model.Current.FindKnownRoute(fleet,"nav.bajor")!;
             Assert.That(model.SendPreviewedTravel(offer,ReviewUiModel.NewCommandId()),Is.True);
             Assert.That(model.Advance(),Is.True);entry.Workspace.SelectedFleet=null;Draw(entry);yield return null;
+            Assert.That(model.Current.Frame.Travel!.OwnReceipts.Any(r=>r.FleetId==fleet&&r.TransitDestinationId!=null),Is.True);
             var moving=doc.rootVisualElement.Query<Button>().ToList().First(b=>b.name.StartsWith("map-moving-fleet-",StringComparison.Ordinal));
             moving.Focus();Key(moving,KeyCode.Space);Assert.That(entry.Workspace.SelectedFleet,Is.EqualTo(fleet));Key(panel,KeyCode.Space,true);
             yield return new ExitPlayMode();
@@ -132,10 +138,18 @@ namespace HobbyDS9.UnityReview.Tests
                 var before=model.Current.Frame;var count=flow.Playback!.Rounds.Count;
                 Assert.That(flow.CanCommitRound,Is.False);Assert.That(flow.CanFinalize,Is.False);
                 yield return Capture(entry,doc,"playback-"+count);
+                foreach(var tab in new[]{"stocks","report","inspection"})
+                {
+                    Click(doc.rootVisualElement.Q<Button>("combat-tab-"+tab));
+                    yield return Capture(entry,doc,"playback-"+count+"-"+tab);
+                    Assert.That(model.Current.Frame,Is.SameAs(before));Assert.That(flow.PendingPlayback,Is.Not.Null);
+                }
+                Click(doc.rootVisualElement.Q<Button>("combat-tab-battle"));yield return null;
                 Click(doc.rootVisualElement.Q<Button>("battle-playback-pause"));
-                Click(doc.rootVisualElement.Q<Button>("battle-playback-skip"));
+                Click(doc.rootVisualElement.Q<Button>("combat-skip-pending-playback"));
                 Assert.That(model.Current.Frame,Is.SameAs(before));Assert.That(flow.Playback.Rounds.Count,Is.EqualTo(count));
                 Assert.That(flow.PendingPlayback,Is.Null);
+                Assert.That(doc.rootVisualElement.Q("combat-current-detail"),Is.Not.Null,"acknowledgment opens the readable report");
                 if(!model.Current.Frame.Battle.Complete){Assert.That(flow.PlanNextRound(),Is.True);Draw(entry);}
             }
             Assert.That(flow.FinalizeAftermath(true),Is.True);Draw(entry);yield return null;
@@ -155,17 +169,24 @@ namespace HobbyDS9.UnityReview.Tests
                 var enemy=new CampaignTacticalCondition("ship.enemy","fleet.enemy","Cruiser",10,10,new long[]{1,1,1,1});
                 var identities=own.Select(s=>new CampaignPlaybackShipIdentity(s.ShipId,"civilization.federation","ship-design.source-cruiser"))
                     .Concat(new[]{new CampaignPlaybackShipIdentity(enemy.ShipId,"civilization.cardassian","ship-design.travel-target")}).ToArray();
-                var boundary=new CampaignPlaybackBoundary(own,new[]{enemy},Array.Empty<CampaignTacticalRelation>(),identities);
+                var boundary=new CampaignPlaybackBoundary(own,new[]{enemy},
+                    new[]{new CampaignTacticalRelation("fleet.own","fleet.enemy",TacticalRange.Distant,TacticalSector.Fore,TacticalSector.Fore)},identities);
+                var after=new CampaignPlaybackBoundary(own,new[]{enemy},
+                    new[]{new CampaignTacticalRelation("fleet.own","fleet.enemy",TacticalRange.Close,TacticalSector.Port,TacticalSector.Starboard)},identities);
                 RenderTexture texture;
-                using(var stage=new ReviewBattleStage(boundary,null,ReviewBattleVisualBinding.Identity))
+                UnityEngine.Object[] ownedResources;
+                using(var stage=new ReviewBattleStage(boundary,new CampaignRoundPlayback(1,boundary,after,Array.Empty<CampaignPlaybackEvent>()),ReviewBattleVisualBinding.Identity))
                 {
                     texture=stage.Texture;Assert.That(stage.GenericMarkers,Is.Zero,"both real imported models must load");
+                    ownedResources=((List<UnityEngine.Object>)typeof(ReviewBattleStage).GetField("owned",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(stage)).ToArray();
                     foreach(var size in new[]{new Vector2Int(1280,600),new Vector2Int(600,1280)})
                     {
                         texture.Release();texture.width=size.x;texture.height=size.y;texture.Create();
                         for(int view=0;view<2;view++)
                         {
                             stage.ToggleCamera();
+                            // Test an actual interpolated pose as well as endpoints.
+                            stage.Tick(.1f);
                             var camera=Resources.FindObjectsOfTypeAll<Camera>().Single(c=>c.name=="Battle camera");
                             var root=camera.transform.parent;
                             foreach(var renderer in root.GetComponentsInChildren<Renderer>(true))
@@ -182,6 +203,7 @@ namespace HobbyDS9.UnityReview.Tests
                     }
                 }
                 yield return null;Assert.That(texture==null,Is.True);
+                Assert.That(ownedResources.All(resource=>resource==null),Is.True,"owned cloned materials/resources must be destroyed");
                 Assert.That(Resources.FindObjectsOfTypeAll<GameObject>().Count(g=>g.name=="Resolved battle presentation"),Is.EqualTo(rootsBefore));
             }
             yield return new ExitPlayMode();
@@ -200,12 +222,26 @@ namespace HobbyDS9.UnityReview.Tests
                     doc.panelSettings.targetTexture=target;var root=doc.rootVisualElement;root.style.width=size.x;root.style.height=size.y;
                     yield return null;yield return null;yield return null;
                     var footer=root.Q("player-footer");Assert.That(footer.worldBound.yMax,Is.LessThanOrEqualTo(size.y+1));
-                    foreach(var id in new[]{"player-primary-action","battle-playback-skip","battle-playback-pause"})
+                    foreach(var id in new[]{"player-primary-action","combat-skip-pending-playback","combat-tab-battle","combat-tab-stocks","combat-tab-report","combat-tab-inspection"})
                     {
                         var control=root.Q<Button>(id);if(control==null)continue;
                         Assert.That(control.worldBound.xMin,Is.GreaterThanOrEqualTo(0));Assert.That(control.worldBound.xMax,Is.LessThanOrEqualTo(size.x+1));
                         Assert.That(control.worldBound.yMin,Is.GreaterThanOrEqualTo(0));Assert.That(control.worldBound.yMax,Is.LessThanOrEqualTo(size.y+1));
+                        for(var ancestor=control.parent;ancestor!=null;ancestor=ancestor.parent)
+                        {
+                            // These actual containers clip their content in the shipped
+                            // stylesheet/UI Toolkit scroll hierarchy.
+                            if(!ancestor.ClassListContains("review-viewer")&&!ancestor.ClassListContains("review-stage-row")
+                                &&!ancestor.ClassListContains("console-main")&&!ancestor.ClassListContains("unity-scroll-view__content-viewport"))continue;
+                            var clip=ancestor.worldBound;var bounds=control.worldBound;
+                            Assert.That(bounds.xMin,Is.GreaterThanOrEqualTo(clip.xMin-1),id+" clipped left");
+                            Assert.That(bounds.xMax,Is.LessThanOrEqualTo(clip.xMax+1),id+" clipped right");
+                            Assert.That(bounds.yMin,Is.GreaterThanOrEqualTo(clip.yMin-1),id+" clipped above");
+                            Assert.That(bounds.yMax,Is.LessThanOrEqualTo(clip.yMax+1),id+" clipped below");
+                        }
                     }
+                    var details=root.Q<ScrollView>("central-combat-details");
+                    if(details!=null)Assert.That(details.contentViewport.worldBound.height,Is.GreaterThan(100),"readable scrolling content required");
                     var viewport=root.Q<Image>("battle-3d-image");
                     if(viewport!=null)
                     {Assert.That(viewport.image,Is.Not.Null);Assert.That(root.Q<Label>("battle-playback-caption").text,Does.Not.Contain("unavailable"));}

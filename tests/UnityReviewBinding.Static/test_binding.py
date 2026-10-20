@@ -139,8 +139,11 @@ class BindingTests(unittest.TestCase):
 
     def test_player_keyboard_gate_cannot_enable_legacy_profiles(self):
         path = self.assets / "Review/Runtime/ReviewEntry.Frontier.cs"
-        path.write_text(path.read_text().replace("model?.SingleplayerDemo==true||model?.FrontierPreview==true", "true"))
-        self.assertTrue(any("explicit demo/frontier" in x for x in checker.check(self.root)))
+        original = "model?.PlayableFleet==true||model?.SingleplayerDemo==true||model?.FrontierPreview==true"
+        source = path.read_text()
+        self.assertIn(original, source, "The mutation must actually remove the current profile gate")
+        path.write_text(source.replace(original, "true"))
+        self.assertTrue(any("explicit playable/demo/frontier" in x for x in checker.check(self.root)))
 
     def test_frontier_map_cannot_ignore_observation_actor(self):
         path = self.assets / "Review/Runtime/ReviewFrontierMap.cs"
