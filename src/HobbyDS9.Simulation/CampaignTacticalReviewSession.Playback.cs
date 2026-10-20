@@ -20,7 +20,12 @@ namespace HobbyDS9.Simulation
                 return new CampaignTacticalRelation(a ? g.FormationA : g.FormationB, a ? g.FormationB : g.FormationA,
                     g.Range, a ? g.FacingA : g.FacingB, a ? g.FacingB : g.FacingA);
             }).Where(g => own.Any(s => s.FleetId == g.OwnFleetId) && enemy.Any(s => s.FleetId == g.VisibleEnemyFleetId));
-            return new CampaignPlaybackBoundary(own, enemy, relations);
+            var identities = own.Concat(enemy).OrderBy(s => s.ShipId, StringComparer.Ordinal).Select(s => {
+                var provision = Provision(s.ShipId);
+                var civilization = state.Campaign.GameState.Civilizations!.Single(c => c.CivilizationId == provision.OwnerCivilizationId);
+                return new CampaignPlaybackShipIdentity(s.ShipId, civilization.DefinitionId, provision.ShipDesignDefinitionId!);
+            });
+            return new CampaignPlaybackBoundary(own, enemy, relations, identities);
         }
         private static IEnumerable<CampaignPlaybackEvent> PlaybackEvents(TacticalEncounterV2Dto before, IReadOnlyCollection<string> hidden,
             string actor, IReadOnlyList<TacticalEventV2> events)

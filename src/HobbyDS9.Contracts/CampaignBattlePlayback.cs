@@ -33,14 +33,30 @@ namespace HobbyDS9.Contracts
             WeaponClass = weaponClass; Sector = sector; Range = range; Amount = amount;
         }
     }
+    public sealed class CampaignPlaybackShipIdentity
+    {
+        public string ShipId { get; }
+        public string CivilizationDefinitionId { get; }
+        public string ShipDesignDefinitionId { get; }
+        public CampaignPlaybackShipIdentity(string ship, string civilizationDefinition, string shipDesignDefinition)
+        { ShipId = ship; CivilizationDefinitionId = civilizationDefinition; ShipDesignDefinitionId = shipDesignDefinition; }
+    }
     public sealed class CampaignPlaybackBoundary
     {
         public IReadOnlyList<CampaignTacticalCondition> OwnShips { get; }
         public IReadOnlyList<CampaignTacticalCondition> VisibleEnemies { get; }
         public IReadOnlyList<CampaignTacticalRelation> Relations { get; }
+        // Exactly this boundary's own + visible ships, never identities from future reveal boundaries.
+        public IReadOnlyList<CampaignPlaybackShipIdentity> ShipIdentities { get; }
         public CampaignPlaybackBoundary(IEnumerable<CampaignTacticalCondition> own, IEnumerable<CampaignTacticalCondition> enemies,
             IEnumerable<CampaignTacticalRelation> relations)
-        { OwnShips = own.ToList().AsReadOnly(); VisibleEnemies = enemies.ToList().AsReadOnly(); Relations = relations.ToList().AsReadOnly(); }
+            : this(own, enemies, relations, Enumerable.Empty<CampaignPlaybackShipIdentity>()) { }
+        public CampaignPlaybackBoundary(IEnumerable<CampaignTacticalCondition> own, IEnumerable<CampaignTacticalCondition> enemies,
+            IEnumerable<CampaignTacticalRelation> relations, IEnumerable<CampaignPlaybackShipIdentity> identities)
+        {
+            OwnShips = own.ToList().AsReadOnly(); VisibleEnemies = enemies.ToList().AsReadOnly();
+            Relations = relations.ToList().AsReadOnly(); ShipIdentities = identities.ToList().AsReadOnly();
+        }
     }
     public sealed class CampaignRoundPlayback
     {
