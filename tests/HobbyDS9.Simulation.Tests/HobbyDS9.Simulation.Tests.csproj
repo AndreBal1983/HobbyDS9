@@ -9,6 +9,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../../src/HobbyDS9.Headless/GeneratedGalaxyJson.cs" Link="GeneratedGalaxyJson.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/EnvironmentGalaxyJson.cs" Link="EnvironmentGalaxyJson.cs" />
     <None Include="../../docs/samples/generated-galaxy-v1/*.galaxy.json" Link="generated-galaxy-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/HobbyDS9.Headless/PlayableFleetPackageReader.cs" Link="PlayableFleetPackageReader.cs" />
     <Compile Include="../../src/HobbyDS9.Headless/PlayableFleetWalkthrough.cs" Link="PlayableFleetWalkthrough.cs" />
