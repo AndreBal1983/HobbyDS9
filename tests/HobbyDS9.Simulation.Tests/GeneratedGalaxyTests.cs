@@ -65,7 +65,7 @@ public sealed class GeneratedGalaxyTests
         }
     }
 
-    static void ValidateGeometryIndependently(GeneratedGalaxyDocumentDto d)
+    internal static void ValidateGeometryIndependently(GeneratedGalaxyDocumentDto d)
     {
         long Cross(GeneratedGalaxyPointDto a, GeneratedGalaxyPointDto b, GeneratedGalaxyPointDto c)
             => (long)(b.X - a.X) * (c.Y - a.Y) - (long)(b.Y - a.Y) * (c.X - a.X);
