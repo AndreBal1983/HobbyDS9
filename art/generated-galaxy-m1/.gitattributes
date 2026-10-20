@@ -1,2 +1,3 @@
 # Sample-index pins Primary export bytes, including their original line endings.
 samples/*.json -text whitespace=cr-at-eol
+scattered-v2/samples/*.json -text whitespace=cr-at-eol

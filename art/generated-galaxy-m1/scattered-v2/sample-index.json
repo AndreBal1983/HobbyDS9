@@ -1,0 +1,43 @@
+{
+  "backendCommit": "2fad182e40868b4e3f3e6e99651e4618c3b277b0",
+  "civilizations": [
+    {
+      "DefinitionId": "civilization.federation",
+      "DisplayName": "Federation"
+    },
+    {
+      "DefinitionId": "civilization.cardassian",
+      "DisplayName": "Cardassian Union"
+    },
+    {
+      "DefinitionId": "civilization.dominion",
+      "DisplayName": "Dominion"
+    }
+  ],
+  "samples": [
+    {
+      "document": "samples/seed-42-systems-40.galaxy.json",
+      "sha256": "7c936eeb84fde3e6b3f1a69a59a367bf4800f45174f7a8b6b3dd8935ed3c271c",
+      "route": "samples/seed-42-systems-40.route.json",
+      "routeSha256": "08129c0070fde1e83061a86cea72fc5b300ce84aed08a50838234dc9435ab5f9"
+    },
+    {
+      "document": "samples/seed-43-systems-40.galaxy.json",
+      "sha256": "3a75e766274a0392ef0966270148926bc3daeff050044b24080b0619675dfb3f",
+      "route": "samples/seed-43-systems-40.route.json",
+      "routeSha256": "029e448e915df98febae35e7431a78cb1c3790d8f10e84eb86b7f07c3b0ce120"
+    },
+    {
+      "document": "samples/seed-12345-systems-30.galaxy.json",
+      "sha256": "64be199335a46bbd959a58d81f030d47a1e2b485f83dfce7840d9b1258e800bc",
+      "route": "samples/seed-12345-systems-30.route.json",
+      "routeSha256": "e584009a1f6186bd3d0bc5bcb16e319ee9a60a24c1d89a44985930810368e6fd"
+    },
+    {
+      "document": "samples/seed-20261020-systems-50.galaxy.json",
+      "sha256": "6370b382aeefcec2b46be5c8ba43598fc875d5798de78c96b8151658318d2725",
+      "route": "samples/seed-20261020-systems-50.route.json",
+      "routeSha256": "57f3ae8726c359d69755005ededdbc2a16b70aa93957079b5a03b75c2114eaca"
+    }
+  ]
+}
