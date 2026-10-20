@@ -1,10 +1,24 @@
 # Generated galaxy M1: backend acceptance
 
-20 October 2026. Scope: portable generated-map review only. Implementation commit `771a3deadbf600078ee57eff9cd29d4660138c8c`, based on protected playable commit `cc8578c17e919dacaa2975b5cc757bee1bc8befc`. This acceptance record is a separate documentation change; generator source, tuning, samples and tests are unchanged.
+20 October 2026. Scope: portable generated-map review only. Current owner-requested layout correction: `2fad182e40868b4e3f3e6e99651e4618c3b277b0`. Original implementation: `771a3deadbf600078ee57eff9cd29d4660138c8c`, based on protected playable commit `cc8578c17e919dacaa2975b5cc757bee1bc8befc`. This follow-up acceptance record changes documentation only.
 
 [Draft PR72](https://github.com/AndreBal1983/HobbyDS9/pull/72) contains the [API/geometry contract](generated-galaxy-backend-contract.md) and [actual map/route samples](samples/generated-galaxy-v1/README.md).
 
-## Completed backend checks
+## Current v2 scattered-layout correction
+
+The owner found the original region distribution too square/row-like. V2 samples sites across the full map without grid slots, retaining minimum spacing and bounded work. Exact polygons, adjacency, costs, counts, empty regions and campaign isolation remain portable authority. Placement tuning is still **provisional**. The budget is pooled `requiredSiteCount * 256` draws per complete attempt, at most8attempts, not a per-site cutoff.
+
+Generate now emits `irregular-regions-v2` / `provisional-scattered-sites-30-40-50-v2`. Open retains the exact original v1 pair and layout; mixed/unknown pairs fail without replacement. Format1/profile/DTO shapes stay unchanged. Original v1 sample bytes/hashes and all campaign identities remain intact. [Four v2 map/route samples](samples/generated-galaxy-v2/README.md) support same-seed comparisons42/40,43/40,12345/30 and20261020/50 with identical Art framing.
+
+Exact correction validation: Release zero warnings/errors; **1,910 .NET tests passed**, including48generator cases; **546 portable client tests passed**; PrepareUnity and static integration passed. No failures/skips. The96representative maps now additionally verify center margins/minimum pair spacing and loss of one-site-per-grid-cell placement. New tests retain original v1 hashes/full reopen equality, pin four separate v2 vectors, compare sample area variation and reject mismatched algorithm/tuning pairs. All eight actual old/new comparison exports reopened with expected hashes. Old playable canonical/reverse/repeated/save-reload hashes below are unchanged.
+
+Independent review approved exact `2fad182` with no consequential blocker. Its delta addendum is in the same local review report cited below. Retained correction receipts: `E:/HobbyDS9/artifacts/generated-galaxy-backend-2fad182-20261020/` (full TRX, build/client/static/determinism logs, eight-sample reopen log and manifest). Manifest SHA256: `ca00d25ce8cfa8afa5318cd4e24dbe8724398ff0db6eaacb140cadc0e97b92c2`. Independent retained-bundle verification is pending at this documentation checkpoint; source approval is separate.
+
+[Correction CI run39476734179](https://github.com/AndreBal1983/HobbyDS9/actions/runs/39476734179) was queued at last query. Final documentation-head CI is tracked in PR72. Neither source review nor these local measurements establishes owner visual acceptance, combined frontend compatibility, Unity/AOT or native acceptance. Those gates remain separate; no M2 work.
+
+**Known causal design gap:** v2 remains a geometry-first scaffold: sites, regions and adjacency are generated before systems are assigned. Stellar features, black holes and nebulae do not influence placement or topology. It does not yet implement the agreed feature-driven relationship between sparse space, dense/disturbed space and crossing density in [time/movement design](design/time-movement-mobilisation.md). Source approval covers the bounded implemented scaffold, not owner M1 design-complete acceptance. Final build/delivery clearance is held for design alignment. An environment-first follow-up needs an agreed feature/placement contract and versioned persisted feature inputs; no influence formulas, hazard effects or new features were implemented in response to the architecture question.
+
+## Original v1 backend checks
 
 | Check | Result on implementation commit |
 | --- | --- |
