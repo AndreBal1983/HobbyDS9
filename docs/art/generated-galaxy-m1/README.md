@@ -1,5 +1,7 @@
 # Generated galaxy M1 / map presentation
 
+Later owner correction: see the separately preserved [v1/v2 irregularity comparison](irregularity-correction.md). That revision improves geometric distribution only. Neither version implements the subsequently clarified stellar-mass/black-hole/nebula causality; final M1 design acceptance remains open.
+
 Current scope: [owner checkpoint](E:/HobbyDS9/docs/generated-galaxy-m1-2026-10-20.md). Art/docs/exports only, based on exact `cc8578c17e919dacaa2975b5cc757bee1bc8befc`. Preserve approved UI7419313, battle art e104143, current packages/saves, owner desktop and open Blender. Secondary owns Unity C#/USS, imports, build and native input; Primary owns all generation, geometry, graph, persistence and validation. Stop after M1 delivery for owner review; do not proceed to sensors, exploration progression, AI or swirling3D.
 
 ## Concrete contract inventory
