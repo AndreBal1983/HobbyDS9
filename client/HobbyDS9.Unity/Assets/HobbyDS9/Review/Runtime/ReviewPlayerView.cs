@@ -155,6 +155,7 @@ namespace HobbyDS9.UnityReview
         }
         private void Map(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
+            if(model.PlayableFleet){new ReviewPlayableMap(model,workspace,button,perform,confirm,navigate).Render(root);return;}
             if(model.FrontierPreview){new ReviewFrontierMap(model,workspace,button,perform,confirm,navigate).Render(root);return;}
             var main=Panel(root,"Strategic operations");var aside=Panel(root,"Selection / context","console-aside");
             var ordinaryColor=new Color(.61f,.76f,.87f);var wormholeColor=new Color(.72f,.64f,.9f);
@@ -232,6 +233,7 @@ namespace HobbyDS9.UnityReview
         }
         private void Worlds(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
+            if(model.PlayableFleet){new ReviewWorldLedger(model,workspace,button,perform,navigate).Render(root);return;}
             var main=Panel(root,"Your worlds");var aside=Panel(root,"Manage selected world","console-aside");
             if(colony==null||!facts.Colonies.Any(c=>c.ColonyId.Value==colony))colony=facts.Colonies.FirstOrDefault()?.ColonyId.Value;
             var choices=Row(main);

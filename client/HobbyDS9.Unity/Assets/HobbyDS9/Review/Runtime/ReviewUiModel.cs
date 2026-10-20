@@ -50,6 +50,7 @@ namespace HobbyDS9.UnityReview
         public bool Integrated=>integratedPackage!=null||demoPackage!=null||frontierPackage!=null;
         public bool SingleplayerDemo=>demoPackage!=null;
         public bool FrontierPreview=>frontierPackage!=null;
+        public bool PlayableFleet { get; private set; }
         public ReviewResearchDraft? ResearchDraft { get; private set; }
         public bool LocalDesignDirty {get;set;}
         public Action? ResetLocalDesign {get;set;}
@@ -121,6 +122,13 @@ namespace HobbyDS9.UnityReview
         public bool SendPreviewedTravel(KnownRouteOffer offer,string command)=>Run(()=>{
             if(HasLocalEdits||Current.HasPendingWork)return Unavailable();
             if(!Current.EditTravel(offer.Fleet,CampaignTravelIntent.Leave,offer,null))return Unavailable();
+            return Current.ReviewTravel()?Dispatch(Current.ConfirmTravel(command)):Unavailable();
+        });
+        public bool SendPreviewedFollow(KnownRouteOffer offer,string contact,int seenTurn,string command)=>Run(()=>{
+            if(HasLocalEdits||Current.HasPendingWork)return Unavailable();
+            var known=Current.Frame.Travel?.KnownContacts.SingleOrDefault(c=>c.FleetId==contact&&c.Fresh&&c.LastSeenTurn==seenTurn);
+            if(known==null||offer.Destination!=known.LastSeenNodeId)return Unavailable();
+            if(!Current.EditTravel(offer.Fleet,CampaignTravelIntent.Follow,offer,contact))return Unavailable();
             return Current.ReviewTravel()?Dispatch(Current.ConfirmTravel(command)):Unavailable();
         });
         public bool DraftFleet(string fleet,CampaignFleetManeuver maneuver,string? focus,bool retainFocus=false)=>Run(()=>{

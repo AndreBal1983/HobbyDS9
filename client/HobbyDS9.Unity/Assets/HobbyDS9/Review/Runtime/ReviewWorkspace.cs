@@ -24,6 +24,13 @@ namespace HobbyDS9.UnityReview
         public HobbyDS9.Contracts.ScienceDiscipline? ScienceDetails { get; set; }
         public string ResearchTab { get; set; }="science";
         public bool Compact { get; set; }
+        public float MapZoom { get; set; }=1;
+        public float MapPanX { get; set; }
+        public float MapPanY { get; set; }
+        public string WorldSort { get; set; }="World";
+        public bool WorldSortDescending { get; set; }
+        public System.Collections.Generic.Dictionary<string,string> WorldFilters { get; }=new System.Collections.Generic.Dictionary<string,string>(StringComparer.Ordinal);
+        public System.Collections.Generic.HashSet<string> CollapsedSystems { get; }=new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
         public bool RoutePreviewMatchesCurrent
         {
             get
@@ -40,7 +47,8 @@ namespace HobbyDS9.UnityReview
         private void Context()
         {
             if(ReferenceEquals(context,Model.Current))return;
-            context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;SelectedOwnShip=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";NavigationEpoch=checked(NavigationEpoch+1);
+            context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;SelectedOwnShip=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";MapZoom=1;MapPanX=MapPanY=0;NavigationEpoch=checked(NavigationEpoch+1);
+            WorldFilters.Clear();CollapsedSystems.Clear();WorldSort="World";WorldSortDescending=false;
         }
         public ReviewWorkspacePage Page { get {Context();return page;} }
         public bool CanNavigate=>!Model.Closed&&!Model.Busy&&!Model.Current.HasPendingWork;
