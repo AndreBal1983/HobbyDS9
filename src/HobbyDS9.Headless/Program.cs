@@ -5,6 +5,32 @@ using System.Text.Json;
 using HobbyDS9.Contracts;
 using HobbyDS9.Application;
 
+if (args.Length == 3 && (args[0] == "--generated-galaxy" || args[0] == "--generated-galaxy-route"))
+{
+    var admitted = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"))
+        .Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
+    var review = GeneratedGalaxyApplication.Generate(new GeneratedGalaxySettingsDto {
+        Seed = args[1], SystemCount = int.Parse(args[2], CultureInfo.InvariantCulture),
+        HomeCivilizationDefinitionIds = new() { "civilization.federation", "civilization.cardassian" } }, admitted);
+    var map = review.Export();
+    if (args[0] == "--generated-galaxy-route")
+        Console.WriteLine(JsonSerializer.Serialize(new { map.Settings.Seed, map.Settings.SystemCount, map.ContentHash,
+            OriginNodeId = map.HomeCandidates[0].NodeId, DestinationNodeId = map.HomeCandidates[1].NodeId,
+            Route = review.FindRoute(map.HomeCandidates[0].NodeId, map.HomeCandidates[1].NodeId) }, new JsonSerializerOptions { WriteIndented = true }));
+    else Console.WriteLine(GeneratedGalaxyJson.Write(review));
+    return;
+}
+if (args.Length == 2 && args[0] == "--generated-galaxy-open")
+{
+    var file = new FileInfo(args[1]);
+    if (file.Length > GeneratedGalaxyJson.MaximumBytes) throw new ArgumentException("Generated-map file exceeds the review size limit.");
+    var admitted = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"))
+        .Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
+    var review = GeneratedGalaxyJson.Read(File.ReadAllText(file.FullName), admitted);
+    Console.WriteLine("generated-map-sha256=" + review.Export().ContentHash);
+    return;
+}
+
 if (args.Length == 1 && args[0] == "--playable-fleet")
 {
     var p = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"));
