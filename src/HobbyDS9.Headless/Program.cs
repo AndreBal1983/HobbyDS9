@@ -5,6 +5,73 @@ using System.Text.Json;
 using HobbyDS9.Contracts;
 using HobbyDS9.Application;
 
+if (ScaledGalaxyCli.Run(args)) return;
+
+if (args.Length == 1 && args[0] == "--environment-galaxy-causality")
+{
+    var catalog = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"))
+        .Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
+    Console.WriteLine(EnvironmentGalaxyCausalDiagnostics.Run(catalog));
+    return;
+}
+
+if ((args.Length == 3 || args.Length == 4) && (args[0] == "--environment-galaxy" || args[0] == "--environment-galaxy-route"))
+{
+    var admitted = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"))
+        .Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
+    var mask = args.Length == 4 ? args[3] : "all";
+    if (!new[] { "all", "none", "no-stars", "no-black-holes", "no-nebulae" }.Contains(mask)) throw new ArgumentException("Unknown environment comparison mode.");
+    var settings = new EnvironmentGalaxySettingsDto { Map = new GeneratedGalaxySettingsDto {
+        Seed = args[1], SystemCount = int.Parse(args[2], CultureInfo.InvariantCulture),
+        HomeCivilizationDefinitionIds = new() { "civilization.federation", "civilization.cardassian" } },
+        StellarInfluenceEnabled = mask != "none" && mask != "no-stars", BlackHoleInfluenceEnabled = mask != "none" && mask != "no-black-holes",
+        NebulaInfluenceEnabled = mask != "none" && mask != "no-nebulae" };
+    var review = EnvironmentGalaxyApplication.Generate(settings, admitted);
+    var map = review.Export();
+    if (args[0] == "--environment-galaxy-route")
+        Console.WriteLine(JsonSerializer.Serialize(new { map.Settings.Map.Seed, map.Settings.Map.SystemCount, map.ContentHash,
+            OriginNodeId = map.Layout.HomeCandidates[0].NodeId, DestinationNodeId = map.Layout.HomeCandidates[1].NodeId,
+            Route = review.FindRoute(map.Layout.HomeCandidates[0].NodeId, map.Layout.HomeCandidates[1].NodeId) }, new JsonSerializerOptions { WriteIndented = true }));
+    else Console.WriteLine(EnvironmentGalaxyJson.Write(review));
+    return;
+}
+if (args.Length == 2 && args[0] == "--environment-galaxy-open")
+{
+    var file = new FileInfo(args[1]);
+    if (file.Length > EnvironmentGalaxyJson.MaximumBytes) throw new ArgumentException("Environment-map file exceeds the review size limit.");
+    var admitted = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"))
+        .Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
+    var review = EnvironmentGalaxyJson.Read(File.ReadAllText(file.FullName), admitted);
+    Console.WriteLine("environment-map-sha256=" + review.Export().ContentHash);
+    return;
+}
+
+if (args.Length == 3 && (args[0] == "--generated-galaxy" || args[0] == "--generated-galaxy-route"))
+{
+    var admitted = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"))
+        .Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
+    var review = GeneratedGalaxyApplication.Generate(new GeneratedGalaxySettingsDto {
+        Seed = args[1], SystemCount = int.Parse(args[2], CultureInfo.InvariantCulture),
+        HomeCivilizationDefinitionIds = new() { "civilization.federation", "civilization.cardassian" } }, admitted);
+    var map = review.Export();
+    if (args[0] == "--generated-galaxy-route")
+        Console.WriteLine(JsonSerializer.Serialize(new { map.Settings.Seed, map.Settings.SystemCount, map.ContentHash,
+            OriginNodeId = map.HomeCandidates[0].NodeId, DestinationNodeId = map.HomeCandidates[1].NodeId,
+            Route = review.FindRoute(map.HomeCandidates[0].NodeId, map.HomeCandidates[1].NodeId) }, new JsonSerializerOptions { WriteIndented = true }));
+    else Console.WriteLine(GeneratedGalaxyJson.Write(review));
+    return;
+}
+if (args.Length == 2 && args[0] == "--generated-galaxy-open")
+{
+    var file = new FileInfo(args[1]);
+    if (file.Length > GeneratedGalaxyJson.MaximumBytes) throw new ArgumentException("Generated-map file exceeds the review size limit.");
+    var admitted = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"))
+        .Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
+    var review = GeneratedGalaxyJson.Read(File.ReadAllText(file.FullName), admitted);
+    Console.WriteLine("generated-map-sha256=" + review.Export().ContentHash);
+    return;
+}
+
 if (args.Length == 1 && args[0] == "--playable-fleet")
 {
     var p = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"));

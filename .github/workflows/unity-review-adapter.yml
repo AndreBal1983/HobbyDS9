@@ -15,6 +15,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-dotnet@v5
@@ -28,7 +29,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Locked restore failed' }
           dotnet build $project -c Release --no-restore -warnaserror
           if ($LASTEXITCODE -ne 0) { throw 'Portable actual-source build failed' }
-          dotnet test $project -c Release --no-build --no-restore --logger 'trx;LogFileName=unity-adapter.trx' --results-directory artifacts/unity-review-adapter
+          dotnet test $project -c Release --no-build --no-restore --blame-hang --blame-hang-timeout 5m --logger 'trx;LogFileName=unity-adapter.trx' --results-directory artifacts/unity-review-adapter
           if ($LASTEXITCODE -ne 0) { throw 'Actual-source tests failed' }
           [xml]$trx = Get-Content -LiteralPath 'artifacts/unity-review-adapter/unity-adapter.trx'
           $c = $trx.TestRun.ResultSummary.Counters
