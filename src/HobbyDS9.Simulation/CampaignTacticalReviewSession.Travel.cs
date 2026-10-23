@@ -33,7 +33,7 @@ namespace HobbyDS9.Simulation
                 Require(travel!=null&&Actor(actor)==CampaignTacticalError.None,"Only a controlled human actor can inspect contact knowledge.");
                 var turn=state.Campaign.GameState.TurnNumber;
                 return travel.Contacts.Where(k=>k.ActorId==actor).OrderBy(k=>k.FleetId,StringComparer.Ordinal)
-                    .Select(k=>new CampaignKnownContact(k,(long)turn-k.LastSeenTurn<=contactFreshness)).ToList().AsReadOnly();
+                    .Select(k=>new CampaignKnownContact(k,generatedMap!=null?GeneratedContactFresh(state.Campaign.GameState,k):(long)turn-k.LastSeenTurn<=contactFreshness)).ToList().AsReadOnly();
             }
         }
         public IReadOnlyList<CampaignOwnTravelReceipt> OwnTravelReceipts(string actor)
@@ -76,7 +76,7 @@ namespace HobbyDS9.Simulation
             var known=contacts.SingleOrDefault(k=>k.ActorId==fleet.OwnerCivilizationId&&k.FleetId==order.ContactFleetId);
             return order.ContactFleetId!=null&&KnownFleetOwner(order.ContactFleetId) is string targetOwner
                 &&CampaignPhysicalMovement.Hostile(declaredHostilities!,fleet.OwnerCivilizationId,targetOwner)
-                &&known!=null&&known.LastSeenTurn==order.ExpectedContactSeenTurn&&(allowStale||(long)game.TurnNumber-known.LastSeenTurn<=contactFreshness)
+                &&known!=null&&known.LastSeenTurn==order.ExpectedContactSeenTurn&&(allowStale||(generatedMap!=null?GeneratedContactFresh(game,known):(long)game.TurnNumber-known.LastSeenTurn<=contactFreshness))
                 &&(order.RouteNodeIds.Count>0||known.TrackingNodeIds.Contains(fleet.LocationNodeId,StringComparer.Ordinal));
         }
         public CampaignTacticalMutationResult SubmitTravelOrder(SubmitCampaignTravelOrderDto? command)
@@ -174,7 +174,8 @@ namespace HobbyDS9.Simulation
                     {order.Intent=f.RouteNodeIds!.Count>0?CampaignTravelIntent.Leave:CampaignTravelIntent.Stay;order.ContactFleetId=null;order.ExpectedContactSeenTurn=null;order.RouteNodeIds=new List<string>(f.RouteNodeIds);}
                 }
                 if(demo!=null)PlanDemoTravel(next);
-                if(playableHash!=null)PlanDefenseTravel(next,playableOpponent!,playableDefenseNode!);
+                if(generatedMap!=null)PlanGeneratedTravel(next);
+                else if(playableHash!=null)PlanDefenseTravel(next,playableOpponent!,playableDefenseNode!);
                 if(frontier!=null)PlanFrontierTravel(next);
                 void Phase(StrategicTurnPhase phase,Action action)
                 {
@@ -210,6 +211,7 @@ namespace HobbyDS9.Simulation
                     next.Core.Battles.Add(Allocate(next.Core,request));
                 }
                 RefreshPhysicalContacts(next.Requests,turn,next.Contacts);
+                if(generatedMap!=null){RefreshGeneratedContacts(game,next.Core.FleetSettings,next.Contacts,turn);RevalidateGeneratedFollow(next);}
                 next.Phase=next.Requests.Count>0?SessionPhase.AwaitingCombat:SessionPhase.Planning;
                 game.StateRevision=checked(game.StateRevision+1);
                 if(next.Phase==SessionPhase.Planning){game.TurnNumber++;game.AcceptedCommandIds!.Clear();}
@@ -219,7 +221,7 @@ namespace HobbyDS9.Simulation
                     while(b.State.Completion==TacticalCompletion.None&&b.State.Formations.Where(f=>f.Status==TacticalFormationStatus.Active).All(f=>controllers[f.SideId]==ControllerKind.AI))
                     {game.StateRevision=checked(game.StateRevision+1);ResolveJoint(next.Core,b);}
                 }
-                var nextDiscoveries=frontier==null?null:CompleteFrontierPlanning(next);
+                var nextDiscoveries=frontier==null&&generatedMap==null?null:CompleteFrontierPlanning(next);
                 ValidateTravelSave(next);
                 if (!CanPublishPlayableAdvance(next)) return Result(CampaignTacticalError.Overflow);
                 var committed=CampaignTacticalTravelData.Copy(next);

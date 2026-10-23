@@ -30,6 +30,9 @@ namespace HobbyDS9.Contracts
         public string MapContentHash { get; set; } = "";
         public int Width { get; set; }
         public int Height { get; set; }
+        public int ObservationTurn { get; set; }
+        // Local coverage means no ordinary contact was detected; it does not disprove stealth.
+        public List<string> ObservedNodeIds { get; set; } = null!;
         public List<GeneratedGalaxyRegionDto> Regions { get; set; } = null!;
         public List<NavigationConnectionDto> Connections { get; set; } = null!;
         public List<EnvironmentGalaxyFeatureDto> Features { get; set; } = null!;

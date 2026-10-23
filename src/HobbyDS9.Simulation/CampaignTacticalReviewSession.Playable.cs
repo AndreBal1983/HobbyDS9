@@ -18,7 +18,7 @@ namespace HobbyDS9.Simulation
         private readonly HashSet<string> playableRetiredFleets = new HashSet<string>(StringComparer.Ordinal);
         internal Action? PlayableOrganizationProbe { get; set; }
         internal Action? PlayableAiRemainderProbe { get; set; }
-        private string OwnedCoreProfile => playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
+        private string OwnedCoreProfile => generatedMap != null ? CampaignGeneratedIdentity.EmbeddedCoreProfile : playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
             : frontier != null ? CampaignFrontierIdentity.EmbeddedCoreProfile : CampaignTacticalReviewIdentity.Profile;
         public int RemainingPlayableOperations { get { lock (gate) return playableOperationLimit - playableTranscript.Count; } }
 
@@ -43,7 +43,7 @@ namespace HobbyDS9.Simulation
             return required <= (long)playableOperationLimit - playableTranscript.Count;
         }
 
-        private static void ValidatePlayablePackage(CampaignPlayableFleetPackageDto p)
+        private static void ValidatePlayablePackage(CampaignPlayableFleetPackageDto p, bool generated = false)
         {
             Require(p != null && p.FormatVersion == CampaignPlayableFleetIdentity.Format
                 && p.ProfileId == CampaignPlayableFleetIdentity.Profile && Hash(p.PackageHash)
@@ -54,7 +54,7 @@ namespace HobbyDS9.Simulation
             var game = p.Integrated!.Physical!.CorePackage!.Campaign!.InitialState;
             Require(game.Civilizations!.Count(c => c.ControllerKind == ControllerKind.Human) == 1
                 && game.Civilizations.Any(c => c.CivilizationId == p.OpponentActorId && c.ControllerKind == ControllerKind.AI)
-                && p.DefenseNodeId != null && game.NavigationKnowledge!.All(k => k.Nodes!.Any(n => n.Id == p.DefenseNodeId && n.Level != NavigationKnowledgeLevel.Unknown)),
+                && p.DefenseNodeId != null && (generated || game.NavigationKnowledge!.All(k => k.Nodes!.Any(n => n.Id == p.DefenseNodeId && n.Level != NavigationKnowledgeLevel.Unknown))),
                 "Playable fixture requires one human, an authored AI opponent and an already-known defense node.");
         }
         public static CampaignTacticalReviewSession StartPlayable(CampaignPlayableFleetPackageDto p)
@@ -77,10 +77,13 @@ namespace HobbyDS9.Simulation
         public static CampaignTacticalReviewSession LoadPlayable(CampaignPlayableFleetPackageDto p, CampaignPlayableFleetSaveDto s)
         {
             ValidatePlayablePackage(p);
+            return ReplayPlayable(p, s, StartPlayable(p));
+        }
+        private static CampaignTacticalReviewSession ReplayPlayable(CampaignPlayableFleetPackageDto p, CampaignPlayableFleetSaveDto s, CampaignTacticalReviewSession replay)
+        {
             Require(s != null && s.FormatVersion == CampaignPlayableFleetIdentity.Format && s.ProfileId == p.ProfileId
                 && s.PackageHash == p.PackageHash && s.Integrated != null && s.Names != null && s.Transcript != null
                 && s.Transcript.Count <= p.ReplayOperationLimit, "Unsupported/incomplete playable save; no migration.");
-            var replay = StartPlayable(p);
             foreach (var operation in s.Transcript!)
             {
                 Require(operation != null && (operation.Common == null) != (operation.Organization == null), "Closed playable operation required.");
@@ -110,10 +113,14 @@ namespace HobbyDS9.Simulation
                 }
                 Require(accepted && FrontierSame(expected, replay.playableTranscript.Last()), "Illegal/reordered/extra playable operation.");
             }
-            Require(FrontierSame(replay.ExportPlayableSave(), s), "Playable checkpoint/names differ from accepted-operation replay.");
+            Require(FrontierSame(replay.ExportPlayableCore(), s), "Playable checkpoint/names differ from accepted-operation replay.");
             return replay;
         }
         public CampaignPlayableFleetSaveDto ExportPlayableSave()
+        {
+            lock (gate) { if(generatedMap != null)throw new InvalidOperationException("Use ExportGeneratedSave: nested playable state omits frozen map and discovery authority."); return ExportPlayableCore(); }
+        }
+        private CampaignPlayableFleetSaveDto ExportPlayableCore()
         {
             lock (gate)
             {
