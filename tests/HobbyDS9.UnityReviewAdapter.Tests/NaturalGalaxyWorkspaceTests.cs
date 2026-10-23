@@ -68,4 +68,56 @@ public sealed class NaturalGalaxyWorkspaceTests : IDisposable
         workspace.NaturalGeneration=true;store.Write(1,Encoding.UTF8.GetBytes("{}"),true);
         Assert.False(workspace.Open());Assert.True(workspace.NaturalGeneration);Assert.Same(map,workspace.Document);
     }
+
+    [Fact] public void QuietTargetDraftChoicesAreInvariantAndNeverMutateTheLoadedMap()
+    {
+        var workspace=Workspace();workspace.NaturalGeneration=true;workspace.Size=250;
+        var oldCulture=System.Globalization.CultureInfo.CurrentCulture;
+        try
+        {
+            System.Globalization.CultureInfo.CurrentCulture=new System.Globalization.CultureInfo("nl-NL");
+            Assert.Equal(new[]{500,750,1000,1250,1500,1750,2000},GeneratedGalaxyWorkspace.QuietTargetChoices(true));
+            Assert.Equal(new[]{"0.50×","0.75×","1.00×","1.25×","1.50×","1.75×","2.00×"},
+                GeneratedGalaxyWorkspace.QuietTargetChoices(true).Select(GeneratedGalaxyWorkspace.QuietTargetLabel));
+            Assert.Equal(new[]{1000,2000,3000},GeneratedGalaxyWorkspace.QuietTargetChoices(false));
+            workspace.QuietEmptyAreaTargetPermille=3000;Assert.False(workspace.CanGenerateQuietTarget);
+            Assert.Contains("retained",workspace.QuietTargetDraftLabel);
+            Assert.False(workspace.Generate());Assert.Null(workspace.Document);
+            workspace.NaturalGeneration=false;Assert.True(workspace.CanGenerateQuietTarget);
+            workspace.QuietEmptyAreaTargetPermille=750;Assert.False(workspace.CanGenerateQuietTarget);
+            Assert.Equal("0.75× (retained)",workspace.QuietTargetDraftLabel);
+            workspace.NaturalGeneration=true;Assert.True(workspace.CanGenerateQuietTarget);
+            workspace.Size=50;workspace.QuietEmptyAreaTargetPermille=3000;Assert.True(workspace.CanGenerateQuietTarget);
+        }
+        finally{System.Globalization.CultureInfo.CurrentCulture=oldCulture;}
+    }
+
+    [Theory][InlineData(500)][InlineData(750)][InlineData(1000)][InlineData(1250)][InlineData(1500)][InlineData(1750)][InlineData(2000)]
+    public void NaturalQuietTargetDraftGeneratesAndRoundTripsExactFractionalSetting(int target)
+    {
+        var workspace=Workspace();workspace.NaturalGeneration=true;workspace.Size=250;workspace.Seed="42";
+        workspace.QuietEmptyAreaTargetPermille=target;
+        Assert.True(workspace.CanGenerateQuietTarget);Assert.True(workspace.Generate(),workspace.Notice);
+        Assert.Equal(target,workspace.Document!.Natural!.Settings.Map.QuietEmptyAreaTargetPermille);
+        var bytes=workspace.ExportBytes();Assert.True(workspace.Export(false));var opened=Workspace();
+        Assert.True(opened.Open(),opened.Notice);Assert.True(opened.NaturalGeneration);
+        Assert.Equal(target,opened.QuietEmptyAreaTargetPermille);Assert.Equal(bytes,opened.ExportBytes());
+        Assert.Equal(workspace.QuietTargetDraftLabel,opened.QuietTargetDraftLabel);
+    }
+    [Fact] public void HistoricalNaturalThreeOpensExactlyButNeedsExplicitNewGenerationChoice()
+    {
+        var source=codec.DecodeNaturalGalaxy(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,"galaxy-samples/natural/seed-42-systems-250.natural.json")));
+        source.Settings.Map.QuietEmptyAreaTargetPermille=3000;
+        var catalog=codec.DecodeScenario(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,"scenarios/playable-fleet-v1/scenario.json"))).Definitions.Civilizations!;
+        var historic=HobbyDS9.Application.NaturalGalaxyApplication.Generate(source.Settings,catalog).Export();
+        var bytes=codec.EncodeNaturalGalaxy(historic);var store=new GeneratedGalaxyMapStore(directory);store.Write(1,bytes,false);
+        var workspace=Workspace();Assert.True(workspace.Open(),workspace.Notice);var map=workspace.Document;
+        Assert.Equal(3000,workspace.QuietEmptyAreaTargetPermille);Assert.Contains("retained",workspace.QuietTargetDraftLabel);
+        Assert.False(workspace.CanGenerateQuietTarget);Assert.False(workspace.Generate());
+        Assert.Same(map,workspace.Document);Assert.Equal(bytes,workspace.ExportBytes());
+        workspace.QuietEmptyAreaTargetPermille=500;Assert.True(workspace.CanGenerateQuietTarget);
+        Assert.Equal(3000,workspace.Document!.Natural!.Settings.Map.QuietEmptyAreaTargetPermille);Assert.Equal(bytes,workspace.ExportBytes());
+        store.Write(1,Encoding.UTF8.GetBytes("{}"),true);Assert.False(workspace.Open());
+        Assert.Equal(500,workspace.QuietEmptyAreaTargetPermille);Assert.Same(map,workspace.Document);Assert.Equal(bytes,workspace.ExportBytes());
+    }
 }

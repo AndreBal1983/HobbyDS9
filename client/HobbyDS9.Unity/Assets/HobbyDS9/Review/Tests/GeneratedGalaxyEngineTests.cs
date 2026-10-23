@@ -51,6 +51,56 @@ namespace HobbyDS9.UnityReview.Tests
             }
             yield return null;yield return null;
         }
+        [UnityTest] public IEnumerator NaturalQuietTargetChoicesPreserveHistoricalMapsAndDraftControls()
+        {
+            yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-"+Guid.NewGuid().ToString("N"));
+            var codec=new ReviewNewtonsoftCodec();var scenario=codec.DecodeScenario(Resources.Load<TextAsset>(PlayableFleetOptions.ResourceRoot+"scenario").bytes);
+            var store=new GeneratedGalaxyMapStore(Path.Combine(directory,"maps"));
+            var historic=HobbyDS9.Application.NaturalGalaxyApplication.Generate(new NaturalGalaxySettingsDto{Map=new ScaledGalaxySettingsDto{
+                Seed="42",SystemCount=250,EmptyRegionCount=250,Width=2500000,Height=2000000,QuietEmptyAreaTargetPermille=3000,
+                HomeCivilizationDefinitionIds=new System.Collections.Generic.List<string>{"civilization.federation","civilization.cardassian"}}},scenario.Definitions.Civilizations!);
+            var historicalBytes=codec.EncodeNaturalGalaxy(historic.Export());store.Write(1,historicalBytes,false);
+            var workspace=new GeneratedGalaxyWorkspace(scenario.Definitions.Civilizations!,store){NaturalGeneration=true,Size=250,Seed="42"};
+            typeof(ReviewEntry).GetField("galaxy",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,workspace);
+            typeof(ReviewEntry).GetField("galaxyDraftStore",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,new GeneratedGalaxyRouteDraftStore(Path.Combine(directory,"drafts")));
+            Click(doc.rootVisualElement.Q<Button>("generated-galaxy-entry"));yield return null;
+            using(var surface=new GalaxyInputSurface(doc))
+            {
+                yield return null;yield return null;var root=doc.rootVisualElement;
+                var expected=new[]{"0.50×","0.75×","1.00×","1.25×","1.50×","1.75×","2.00×"};
+                CollectionAssert.AreEqual(expected,root.Q<DropdownField>("galaxy-quiet-target").choices);
+                foreach(var value in expected){root.Q<DropdownField>("galaxy-quiet-target").value=value;Assert.That(workspace.QuietTargetDraftLabel,Is.EqualTo(value));}
+                root.Q<DropdownField>("galaxy-generation-model").value="Retained scaled v4";
+                CollectionAssert.AreEqual(new[]{"1×","2×","3×"},root.Q<DropdownField>("galaxy-quiet-target").choices);
+                root.Q<DropdownField>("galaxy-quiet-target").value="3×";
+                root.Q<DropdownField>("galaxy-generation-model").value="Natural v5";
+                Assert.That(root.Q<Button>("galaxy-generate").enabledSelf,Is.False);
+                Click(root.Q<Button>("galaxy-open"));yield return WaitForGalaxy(entry);
+                var loaded=workspace.Document;Assert.That(workspace.ExportBytes(),Is.EqualTo(historicalBytes));
+                Assert.That(root.Q<DropdownField>("galaxy-quiet-target").value,Does.Contain("3.00× (retained)"));
+                Assert.That(root.Q<Button>("galaxy-generate").enabledSelf,Is.False);
+                Assert.That(root.Q<Label>("galaxy-quiet-hint").text,Does.Contain("Choose a new quiet-area target"));
+                yield return Capture(doc,"quiet-target-historical3-retained");
+                root.Q<DropdownField>("galaxy-quiet-target").value="0.50×";
+                Assert.That(root.Q<Button>("galaxy-generate").enabledSelf,Is.True);Assert.That(workspace.Document,Is.SameAs(loaded));
+                Assert.That(workspace.ExportBytes(),Is.EqualTo(historicalBytes));root.Q<DropdownField>("galaxy-slot").value="2";
+                Click(root.Q<Button>("galaxy-generate"));yield return WaitForGalaxy(entry);
+                Assert.That(workspace.Document!.Natural!.Settings.Map.QuietEmptyAreaTargetPermille,Is.EqualTo(500));
+                Click(root.Q<Button>("galaxy-export"));var generatedBytes=workspace.ExportBytes();
+                Click(root.Q<Button>("galaxy-open"));yield return WaitForGalaxy(entry);
+                Assert.That(root.Q<DropdownField>("galaxy-quiet-target").value,Is.EqualTo("0.50×"));
+                Assert.That(workspace.ExportBytes(),Is.EqualTo(generatedBytes));
+                var systems=workspace.Document!.Systems;
+                Click(root.Q<Button>("galaxy-star-"+systems[0].SystemId));Click(root.Q<Button>("galaxy-route-start"));yield return null;
+                Click(root.Q<Button>("galaxy-star-"+systems[1].SystemId));Click(root.Q<Button>("galaxy-route-target"));yield return null;
+                var plan=(GalaxyReviewRoutePlanSnapshot)typeof(ReviewEntry).GetField("galaxyPlan",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry)!;
+                Assert.That(plan.Success,Is.True);Assert.That(plan.Legs.Count,Is.EqualTo(1));
+                yield return Capture(doc,"quiet-target-half-opened-route",plan:plan);
+            }
+            yield return new ExitPlayMode();
+        }
         [UnityTest] public IEnumerator OrderedWaypointDraftsNaturalMapsAndCompanionsUseActualControls()
         {
             yield return new EnterPlayMode();yield return null;yield return null;

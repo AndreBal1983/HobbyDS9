@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Globalization;
 using System.Linq;
 using HobbyDS9.Application;
 using HobbyDS9.Contracts;
@@ -82,6 +83,15 @@ namespace HobbyDS9.UnityReview
         public int Size { get; set; }=40;
         public int QuietEmptyAreaTargetPermille { get; set; }=2000;
         public bool NaturalGeneration { get; set; }
+        // Generation controls are drafts, separate from the exact stored map settings.
+        public bool CanGenerateQuietTarget=>Size<250||IsNewQuietTarget(NaturalGeneration,QuietEmptyAreaTargetPermille);
+        public static IReadOnlyList<int> QuietTargetChoices(bool natural)=>Array.AsReadOnly(natural
+            ?new[]{500,750,1000,1250,1500,1750,2000}:new[]{1000,2000,3000});
+        public static bool IsNewQuietTarget(bool natural,int value)=>QuietTargetChoices(natural).Contains(value);
+        public static string QuietTargetLabel(int value)=>((decimal)value/1000).ToString("0.00",CultureInfo.InvariantCulture)+"×";
+        public static string QuietTargetChoiceLabel(bool natural,int value)=>natural||value%1000!=0?QuietTargetLabel(value):(value/1000).ToString(CultureInfo.InvariantCulture)+"×";
+        public string QuietTargetDraftLabel=>QuietTargetChoiceLabel(NaturalGeneration,QuietEmptyAreaTargetPermille)
+            +(IsNewQuietTarget(NaturalGeneration,QuietEmptyAreaTargetPermille)?"":" (retained)");
         public int Slot { get; set; }=1;
         public string Location=>store.Location;
         public IReadOnlyDictionary<string,string> CivilizationNames { get; }
@@ -107,6 +117,7 @@ namespace HobbyDS9.UnityReview
         {
             try
             {
+                if(!CanGenerateQuietTarget){Notice="Choose a new quiet-area target before generating. The loaded map is kept.";return false;}
                 if(Size==250||Size==1000)
                 {
                     var scale=Size==250?1:2;

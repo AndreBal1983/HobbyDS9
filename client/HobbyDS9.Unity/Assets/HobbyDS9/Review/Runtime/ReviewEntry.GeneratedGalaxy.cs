@@ -60,9 +60,7 @@ namespace HobbyDS9.UnityReview
             var seed=new TextField("Seed"){name="galaxy-seed",value=galaxy!.Seed,maxLength=20,tooltip="Unsigned whole number, without leading zeros; 0 is allowed."};controls.Add(seed);
             seed.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch)galaxy.Seed=e.newValue;});
             var size=new DropdownField("Systems",new List<string>{"30","40","50","250","1000"},galaxy.Size.ToString(CultureInfo.InvariantCulture)){name="galaxy-size"};controls.Add(size);
-            size.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch){galaxy.Size=int.Parse(e.newValue,CultureInfo.InvariantCulture);root.Q<DropdownField>("galaxy-quiet-target")?.SetEnabled(galaxy.Size>=250);}});
             var generation=new DropdownField("Large-map model",new List<string>{"Natural v5","Retained scaled v4"},galaxy.NaturalGeneration?0:1){name="galaxy-generation-model"};controls.Add(generation);
-            generation.RegisterValueChangedCallback(_=>{if(epoch==viewEpoch)galaxy.NaturalGeneration=generation.index==0;});
             var generate=AddButton(controls,"Generate",()=>{
                 void Run(){RunGalaxyOperation(draft=>draft.Generate(),"Generating map…");}
                 if(galaxy.Unexported)Confirm("Replace this unexported map? Export it first to keep it. A failed generation keeps the current map.",Run);else Run();
@@ -77,10 +75,25 @@ namespace HobbyDS9.UnityReview
                 void Run(){RunGalaxyOperation(draft=>draft.Open(),"Opening and validating map…");}
                 if(galaxy.Unexported)Confirm("Open map slot "+galaxy.Slot+" and replace this unexported map? Failed validation keeps the current map.",Run);else Run();
             });open.name="galaxy-open";
-            var tuning=new DropdownField("Quiet-area target",new List<string>{"1×","2×","3×"},(galaxy.QuietEmptyAreaTargetPermille/1000)+"×"){name="galaxy-quiet-target",
-                tooltip="Soft quiet-empty/system mean-area target for 250/1000 maps. Disturbed empty regions are exceptions; actual results vary."};controls.Add(tuning);
-            tuning.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch)galaxy.QuietEmptyAreaTargetPermille=(tuning.index+1)*1000;});
-            tuning.SetEnabled(galaxy.Size>=250);
+            var tuning=new DropdownField("Quiet-area target"){name="galaxy-quiet-target",
+                tooltip="New-map draft only: soft quiet-empty/system mean-area target. Actual results vary. A retained value outside the choices needs a new selection before Generate; the loaded map is unchanged."};controls.Add(tuning);
+            var quietHint=Readout("");quietHint.name="galaxy-quiet-hint";quietHint.AddToClassList("galaxy-status");galaxyHost.Add(quietHint);
+            void RefreshQuietTarget()
+            {
+                tuning.choices=GeneratedGalaxyWorkspace.QuietTargetChoices(galaxy.NaturalGeneration).Select(value=>GeneratedGalaxyWorkspace.QuietTargetChoiceLabel(galaxy.NaturalGeneration,value)).ToList();
+                tuning.SetValueWithoutNotify(galaxy.QuietTargetDraftLabel);tuning.SetEnabled(galaxy.Size>=250);
+                generate.SetEnabled(galaxy.CanGenerateQuietTarget);
+                quietHint.text=galaxy.CanGenerateQuietTarget?"":"Retained target "+GeneratedGalaxyWorkspace.QuietTargetLabel(galaxy.QuietEmptyAreaTargetPermille)+". Choose a new quiet-area target before Generate. The loaded map is unchanged.";
+                quietHint.style.display=galaxy.CanGenerateQuietTarget?DisplayStyle.None:DisplayStyle.Flex;
+                generate.tooltip=galaxy.CanGenerateQuietTarget?"Create a new map from these draft settings.":"Choose a new quiet-area target first. The loaded map keeps its original setting.";
+            }
+            tuning.RegisterValueChangedCallback(e=>{
+                if(epoch!=viewEpoch)return;var index=tuning.choices.IndexOf(e.newValue);if(index<0)return;
+                galaxy.QuietEmptyAreaTargetPermille=GeneratedGalaxyWorkspace.QuietTargetChoices(galaxy.NaturalGeneration)[index];RefreshQuietTarget();
+            });
+            size.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch){galaxy.Size=int.Parse(e.newValue,CultureInfo.InvariantCulture);RefreshQuietTarget();}});
+            generation.RegisterValueChangedCallback(_=>{if(epoch==viewEpoch){galaxy.NaturalGeneration=generation.index==0;RefreshQuietTarget();}});
+            RefreshQuietTarget();
             galaxyNotice=Readout(galaxy.Notice);galaxyNotice.name="galaxy-status";galaxyNotice.AddToClassList("galaxy-status");galaxyHost.Add(galaxyNotice);
             var body=new VisualElement();body.AddToClassList("galaxy-body");galaxyHost.Add(body);
             var column=new VisualElement();column.AddToClassList("galaxy-map-column");body.Add(column);
