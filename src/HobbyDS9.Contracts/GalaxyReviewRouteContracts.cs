@@ -9,9 +9,9 @@ namespace HobbyDS9.Contracts
         public const int MaximumTargets = 64;
     }
 
-    public enum GalaxyReviewTargetIntent { RegionTransit = 1, SystemVisit = 2 }
+    public enum GalaxyReviewTargetIntent { RegionTransit = 1, SystemLocation = 2 }
     public enum GalaxyReviewPlanError { None = 0, InvalidRequest = 1, UnsupportedPolicy = 2, StaleMap = 3,
-        InvalidFilter = 4, UnavailableOrigin = 5, UnavailableTarget = 6, InvalidVisitTarget = 7, UnreachableLeg = 8 }
+        InvalidFilter = 4, UnavailableOrigin = 5, UnavailableTarget = 6, InvalidSystemTarget = 7, UnreachableLeg = 8 }
 
     public sealed class GalaxyReviewTargetDto
     {

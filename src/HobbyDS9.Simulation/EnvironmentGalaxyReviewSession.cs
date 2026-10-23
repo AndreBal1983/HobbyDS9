@@ -16,6 +16,8 @@ namespace HobbyDS9.Simulation
         public static EnvironmentGalaxyReviewSession Open(EnvironmentGalaxyDocumentDto document, IEnumerable<CivilizationDefinitionDto> catalog)
             => new EnvironmentGalaxyReviewSession(EnvironmentGalaxyData.ValidateAndReproduce(document, catalog));
         public EnvironmentGalaxyDocumentDto Export() => EnvironmentGalaxyData.Copy(document);
+        public GalaxyReviewRoutePlanSnapshot FindRoutePlan(GalaxyReviewRouteQueryDto query)
+            => GalaxyReviewRouteSearch.Query(document.ContentHash, document.Layout.Regions, document.Layout.Connections, query);
 
         public StrategicRouteSnapshot FindRoute(string originNodeId, string destinationNodeId)
         {
