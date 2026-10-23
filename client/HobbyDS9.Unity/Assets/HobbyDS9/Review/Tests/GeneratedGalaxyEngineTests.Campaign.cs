@@ -31,20 +31,39 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static IEnumerator CampaignPointerRight(UIDocument doc,ReviewEntry entry,Button intended,int button=1)
         {
-            Assert.That(intended,Is.Not.Null);var frame=CampaignModel(entry).Current.Frame;var point=intended.worldBound.center;
-            var panel=doc.rootVisualElement.panel;var down=panel.Pick(point);
-            Assert.That(down,Is.Not.Null,"actual panel hit at "+point);
-            var map=doc.rootVisualElement.Q("playable-known-map");var known=CampaignModel(entry).GeneratedMap();var local=map.WorldToLocal(point);
-            VisualElement? hit=down;while(hit!=null&&hit!=map&&!hit.name.StartsWith("map-",StringComparison.Ordinal))hit=hit.parent;
-            bool contact=hit?.name.StartsWith("map-contact-",StringComparison.Ordinal)==true;
-            Assert.That(hit?.name.StartsWith("map-ring-",StringComparison.Ordinal)==true||hit?.name.StartsWith("map-moving-fleet-",StringComparison.Ordinal)==true,Is.False,"actual fleet/ring target keeps priority; not a node test point");
+            Assert.That(intended,Is.Not.Null);var frame=CampaignModel(entry).Current.Frame;
+            var panel=doc.rootVisualElement.panel;var map=doc.rootVisualElement.Q("playable-known-map");var known=CampaignModel(entry).GeneratedMap();
+            Assert.That(intended.enabledInHierarchy&&intended.visible&&intended.resolvedStyle.display!=DisplayStyle.None&&map.enabledInHierarchy&&map.visible,Is.True,"intended marker and map must be available");
+            bool contact=intended.name.StartsWith("map-contact-",StringComparison.Ordinal);
+            var intendedNode=contact?frame.Travel!.KnownContacts.Single(c=>"map-contact-"+c.FleetId==intended.name).LastSeenNodeId:intended.name.Substring("map-star-".Length);
             var anchors=known.Regions.Select(r=>{var star=known.Features.FirstOrDefault(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star&&f.NodeId==r.NodeId);var at=star?.Position??r.Center;
-                return new GeneratedCampaignNodeAnchor(r.NodeId,(float)CampaignModel(entry).GeneratedViewport.X(at.X),(float)CampaignModel(entry).GeneratedViewport.Y(at.Y));});
-            var expected=contact?frame.Travel!.KnownContacts.Single(c=>"map-contact-"+c.FleetId==hit!.name).LastSeenNodeId:GeneratedCampaignNodePicker.Resolve(anchors,local.x,local.y);
-            Assert.That(expected,Is.Not.Null);
+                return new GeneratedCampaignNodeAnchor(r.NodeId,(float)CampaignModel(entry).GeneratedViewport.X(at.X),(float)CampaignModel(entry).GeneratedViewport.Y(at.Y));}).ToArray();
+            Vector2 point=default;VisualElement? down=null,hit=null;var attempts=new List<string>();
+            // At most25 exposed points; actual priority widgets are never bypassed or retargeted.
+            var offsets=new[]{0f,-.2f,.2f,-.4f,.4f};var bounds=intended.worldBound;
+            foreach(var y in offsets)
+            {
+                foreach(var x in offsets)
+                {
+                    var candidate=bounds.center+new Vector2(x*bounds.width,y*bounds.height);
+                    if(!map.worldBound.Contains(candidate)||!bounds.Contains(candidate)||!intended.ContainsPoint(intended.WorldToLocal(candidate)))continue;
+                    var picked=panel.Pick(candidate);var ancestor=picked;
+                    while(ancestor!=null&&ancestor!=map&&!ancestor.name.StartsWith("map-",StringComparison.Ordinal))ancestor=ancestor.parent;
+                    var local=map.WorldToLocal(candidate);var resolved=GeneratedCampaignNodePicker.Resolve(anchors,local.x,local.y);
+                    bool allowed=contact?picked!=null&&(picked==intended||intended.Contains(picked)):
+                        (ancestor==map||ancestor?.name.StartsWith("map-star-",StringComparison.Ordinal)==true)&&resolved==intendedNode;
+                    attempts.Add(candidate+" hit="+(picked?.name??"null")+" ancestor="+(ancestor?.name??"null")+" resolved="+(resolved??"null"));
+                    if(!allowed)continue;
+                    point=candidate;down=picked;hit=ancestor;break;
+                }
+                if(down!=null)break;
+            }
+            Assert.That(down,Is.Not.Null,"No exposed marker point: "+intended.name+" bounds="+bounds+" map="+map.worldBound+"; "+string.Join("; ",attempts));
+            var expected=intendedNode;
+            TestContext.WriteLine("Exposed campaign pointer "+intended.name+" point="+point+" actual="+down!.name+" resolved="+expected+" candidates="+attempts.Count);
             int id;
             using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,button=button,mousePosition=point}))
-            {id=e.pointerId;e.target=down;down.SendEvent(e);}
+            {id=e.pointerId;e.target=down;down!.SendEvent(e);}
             Assert.That(CampaignModel(entry).Current.Frame,Is.SameAs(frame),"pointer down never submits");
             var capture=panel.GetCapturingElement(id) as VisualElement;
             var up=capture??panel.Pick(point);Assert.That(up,Is.Not.Null);Assert.That(up.panel,Is.SameAs(panel));
