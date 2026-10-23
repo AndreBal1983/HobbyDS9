@@ -1,0 +1,54 @@
+{
+  "status": "Exact raw provenance; renderer input index retained unchanged",
+  "generatorSource": "aa434036462c08eceb323aa581e539d307ca65e0",
+  "files": [
+    {
+      "file": "samples/seed-42-systems-250.scaled.json",
+      "sourceCommit": "aa434036462c08eceb323aa581e539d307ca65e0",
+      "sha256": "c03ebb192c3a29c6c61ca46125945806ae45e995e2e5cbee5158fe77f115ce36",
+      "matchesExactGitBlob": true
+    },
+    {
+      "file": "samples/seed-42-systems-250.report.json",
+      "sourceCommit": "17725f727ddcfc2c03f6a67601f00cfe8f232aa8",
+      "sha256": "598e08b7bcb72879412e45c89108cb5b85c9166fa47a78d2550b30064bfdbadb",
+      "matchesExactGitBlob": true
+    },
+    {
+      "file": "samples/seed-43-systems-250.scaled.json",
+      "sourceCommit": "aa434036462c08eceb323aa581e539d307ca65e0",
+      "sha256": "f7b2d88121ec77959626a4cbb9b6fb9ba640f795722286c05c473d7fe011eaa4",
+      "matchesExactGitBlob": true
+    },
+    {
+      "file": "samples/seed-43-systems-250.report.json",
+      "sourceCommit": "aa434036462c08eceb323aa581e539d307ca65e0",
+      "sha256": "3d04dbfc199f5973f15e53a06d2b5860a814cc3ca28dddf3bc56d6446367d98b",
+      "matchesExactGitBlob": true
+    },
+    {
+      "file": "samples/seed-42-systems-1000.scaled.json",
+      "sourceCommit": "aa434036462c08eceb323aa581e539d307ca65e0",
+      "sha256": "9e1bd2dd4aa60b46341f81f3cbb8778aeb0e894b68df827eb5f7f1ceecdd8290",
+      "matchesExactGitBlob": true
+    },
+    {
+      "file": "samples/seed-42-systems-1000.report.json",
+      "sourceCommit": "aa434036462c08eceb323aa581e539d307ca65e0",
+      "sha256": "76dbba4fda64912b4395352a1ef9b5db89c4a5d6772b215d8dafcc37247e5036",
+      "matchesExactGitBlob": true
+    }
+  ],
+  "retainedEarlierReport": {
+    "file": "seed-42-systems-250.report.json",
+    "changedTopLevelFields": [
+      "FailedOpenPreservedReview",
+      "GenerateMs",
+      "MalformedShapeRejectMs",
+      "PeakWorkingSetBytes",
+      "StrictOpenMs",
+      "ValidShapeWrongHashRejectMs"
+    ],
+    "routeGeometryClassificationFactsUnchanged": true
+  }
+}
