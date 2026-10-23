@@ -1,6 +1,6 @@
 # Environment-first M1 / early art contract
 
-20 October 2026. **Owner-authorized implementation direction; presentation values proposed.** Primary owns the new generator and persisted feature contract. Art owns CPU/browser presentation evidence and tokens. The frontend implementer owns Unity rendering and native acceptance. This early handoff is not evidence that samples or runtime rendering have passed.
+20 October 2026. **Owner-authorized implementation direction; presentation values proposed.** The exact portable DTO was published at `f6316e18b90b32e68dd81354360dfeb7d4390e3b`. Primary owns the new generator and persisted feature contract. Art owns CPU/browser presentation evidence and tokens. The frontend implementer owns Unity rendering and native acceptance. This early handoff is not evidence that samples or runtime rendering have passed.
 
 Use [environment tokens](../../../../art/generated-galaxy-m1/environment-v3/tokens.json) with the existing M1 shell. Preserve the prior v1/v2 source and artifact packages. Do not modify protected campaign packages, saves, runtime rules or old-map geometry.
 
@@ -25,3 +25,5 @@ The map is a full-output generator review, not actor knowledge or live sensors. 
 After Primary publishes the exact committed contract and actual samples: hash-pin the raw documents and route fixtures; render overview/mid/close and each feature/selection/toggle at 1280×720, 1920×1080 and 3440×1440; compare real same-seed influence-on/off fixtures at identical framing; verify unchanged feature anchors, exact projected footprints and actual provenance. This controls for feature inputs, rather than attributing arbitrary v2/v3 differences to physical causes.
 
 Browser evidence does not establish portable generation validity, native alignment/input acceptance, runtime performance or final owner approval. Stop at the new M1 map review; no M2 or swirling 3D.
+
+Delivered 23 October 2026: see the [actual-sample handoff](handoff.md) for the final source, checked outputs, versioned review and limits. The early evidence-to-follow section above records the original handoff plan.
