@@ -1,5 +1,7 @@
 # Procedural nebulae with map parallax / concept approach
 
+**Superseded boundary assumption:** the owner's subsequent freeform direction and the DTO's existing generation-influence semantics supersede this study's physical ellipse clipping/zero-outside-ellipse criterion. See [the revised freeform/galaxy plan](freeform-nebula-galaxy.md). The original local gallery and source pin remain unchanged historical evidence.
+
 23 October 2026. **Owner requested:** an original nebula concept inspired by four supplied astronomy images, visible depth while panning the galaxy map, and a concrete procedural Unity3D plan. **Proposed:** the rendering approach below. **Not implemented:** production Unity rendering or a gameplay change. Existing map build9d0, checkpoint913, ship pack and prior99-file art gallery remain unchanged.
 
 Use dark, sculpted dust as the structure, illuminated thin rims and translucent blue/teal emission as the surrounding volume. Warm gold and restrained pink/magenta are alternative ionization palettes, not ownership or danger colours. Keep broad readable voids and asymmetry; avoid a uniformly bright oval or repeating cloud stamps. The four original attachments were inspected directly; their pixels will not be used as textures.
