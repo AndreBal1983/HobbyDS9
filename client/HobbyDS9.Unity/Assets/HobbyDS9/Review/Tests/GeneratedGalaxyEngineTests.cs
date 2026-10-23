@@ -519,7 +519,30 @@ namespace HobbyDS9.UnityReview.Tests
                             Assert.That(hit!=null&&(ReferenceEquals(hit,control)||control.Contains(hit)),Is.True,"fixed route action must remain hittable: "+name);
                         }
                     }
+                    var editActions=root.Q("galaxy-route-edit-actions");var fileActions=root.Q("galaxy-route-file-actions");
+                    if(editActions!=null&&fileActions!=null)
+                    {
+                        Assert.That(editActions.worldBound.yMax,Is.LessThanOrEqualTo(fileActions.worldBound.yMin),"fixed action rows cannot overlap");
+                        foreach(var row in new[]{editActions,fileActions})
+                        {
+                            var buttons=row.Children().OfType<Button>().ToArray();Assert.That(buttons.Length,Is.EqualTo(2));
+                            Assert.That(buttons[0].worldBound.xMax,Is.LessThanOrEqualTo(buttons[1].worldBound.xMin),"fixed columns cannot overlap");
+                            foreach(var button in buttons)
+                            {
+                                Assert.That(button.worldBound.height,Is.GreaterThanOrEqualTo(36),button.name+" minimum action height");
+                                Assert.That(button.worldBound.yMin,Is.GreaterThanOrEqualTo(row.worldBound.yMin));
+                                Assert.That(button.worldBound.yMax,Is.LessThanOrEqualTo(row.worldBound.yMax));
+                            }
+                        }
+                        var total=root.Q("galaxy-route-cost");Assert.That(total.worldBound.yMax,Is.LessThanOrEqualTo(editActions.worldBound.yMin),"cost cannot overlap action rows");
+                    }
                     var routePanel=root.Q("galaxy-route-preview");
+                    var fixedChildren=routePanel.Children().Where(c=>c.resolvedStyle.display!=DisplayStyle.None).ToArray();
+                    for(int i=0;i<fixedChildren.Length;i++)
+                    {
+                        var child=fixedChildren[i];Assert.That(child.worldBound.yMax,Is.LessThanOrEqualTo(routePanel.worldBound.yMax),"route child including notice/status remains inside panel: "+child.name);
+                        if(i>0)Assert.That(fixedChildren[i-1].worldBound.yMax,Is.LessThanOrEqualTo(child.worldBound.yMin),"route children including notice/status cannot overlap");
+                    }
                     Assert.That(routePanel.worldBound.yMax,Is.LessThanOrEqualTo(inspector.worldBound.yMin),"route and general inspector must not overlap");
                     Assert.That(map.worldBound.xMax,Is.LessThanOrEqualTo(inspector.worldBound.xMin));
                     var featureView=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");

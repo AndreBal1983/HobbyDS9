@@ -256,12 +256,12 @@ namespace HobbyDS9.UnityReview
             var total=Readout(galaxyPlan==null?"Right-click sets a destination. Shift + right-click appends.":galaxyPlan.Success?
                 "Total cost "+galaxyPlan.TotalCost+" · "+galaxyPlan.Steps.Count+" crossings":"Total unavailable · "+galaxyPlan.ErrorCode);
             total.name="galaxy-route-cost";panel.Add(total);
-            var actions=new VisualElement();actions.style.flexDirection=FlexDirection.Row;panel.Add(actions);
+            var actions=new VisualElement{name="galaxy-route-edit-actions"};actions.AddToClassList("galaxy-route-action-row");panel.Add(actions);
             var remove=AddButton(actions,"Remove last",()=>{galaxyDraft.RemoveLast();galaxyDraftNotice=null;RecalculateGalaxyPlan();});remove.name="galaxy-route-remove-last";remove.SetEnabled(pins.Count>0);
             var clear=AddButton(actions,"Clear route",()=>{galaxyDraft.Clear();galaxyDraftNotice=null;RecalculateGalaxyPlan();});clear.name="galaxy-route-clear";clear.SetEnabled(pins.Count>0);
-            var files=new VisualElement();files.style.flexDirection=FlexDirection.Row;panel.Add(files);
-            AddButton(files,"Save route draft",SaveGalaxyRouteDraft).name="galaxy-route-save";
-            AddButton(files,"Restore route draft",RestoreGalaxyRouteDraft).name="galaxy-route-restore";
+            var files=new VisualElement{name="galaxy-route-file-actions"};files.AddToClassList("galaxy-route-action-row");panel.Add(files);
+            var save=AddButton(files,"Save draft",SaveGalaxyRouteDraft);save.name="galaxy-route-save";save.tooltip="Save the ordered route draft separately from the map.";
+            var restore=AddButton(files,"Restore draft",RestoreGalaxyRouteDraft);restore.name="galaxy-route-restore";restore.tooltip="Restore and revalidate this map’s saved route draft.";
             if(galaxyDraftNotice!=null)panel.Add(Readout(galaxyDraftNotice));
             var geometry=galaxyMap?.CertifiedRouteGeometry;
             if(geometry?.HiddenCount>0||geometry?.FallbackCount>0)
