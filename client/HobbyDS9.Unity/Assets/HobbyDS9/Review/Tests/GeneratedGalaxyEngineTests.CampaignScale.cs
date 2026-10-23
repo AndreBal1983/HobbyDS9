@@ -57,13 +57,25 @@ namespace HobbyDS9.UnityReview.Tests
                     yield return null;yield return null;
                     Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-3"));Confirm(doc);yield return WaitCampaign(entry,"fixture250-readability-continue");
                     Assert.That(CampaignModel(entry).Current.Frame.Status.Turn,Is.EqualTo(69));Assert.That(CampaignModel(entry).GeneratedMap().Regions.Count,Is.EqualTo(19));
-                    var knownStar=CampaignModel(entry).GeneratedMap().Features.First(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star);
-                    yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+knownStar.NodeId),0);
-                    var fixtureMap=doc.rootVisualElement.Q("playable-known-map");var vp=CampaignModel(entry).GeneratedViewport;
-                    var hoverPoint=fixtureMap.LocalToWorld(new Vector2((float)vp.X(knownStar.Position.X),(float)vp.Y(knownStar.Position.Y)));
-                    var hoverPick=fixtureMap.panel.Pick(hoverPoint);Assert.That(hoverPick,Is.Not.Null);
-                    using(var e=PointerMoveEvent.GetPooled(new Event{type=EventType.MouseMove,mousePosition=hoverPoint})){e.target=hoverPick;hoverPick.SendEvent(e);}
-                    yield return null;Assert.That(doc.rootVisualElement.Q<Label>("map-label-"+knownStar.NodeId).resolvedStyle.visibility,Is.EqualTo(Visibility.Visible));
+                    IEnumerator SelectAndHover(EnvironmentGalaxyFeatureDto knownStar)
+                    {
+                        yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+knownStar.NodeId),0);
+                        var fixtureMap=doc.rootVisualElement.Q("playable-known-map");var vp=CampaignModel(entry).GeneratedViewport;
+                        var hoverPoint=fixtureMap.LocalToWorld(new Vector2((float)vp.X(knownStar.Position.X),(float)vp.Y(knownStar.Position.Y)));
+                        var hoverPick=fixtureMap.panel.Pick(hoverPoint);Assert.That(hoverPick,Is.Not.Null);
+                        using(var e=PointerMoveEvent.GetPooled(new Event{type=EventType.MouseMove,mousePosition=hoverPoint})){e.target=hoverPick;hoverPick.SendEvent(e);}
+                        yield return null;Assert.That(doc.rootVisualElement.Q<Label>("map-label-"+knownStar.NodeId).resolvedStyle.visibility,Is.EqualTo(Visibility.Visible));
+                        TestContext.WriteLine("Actual selected-hover label visible: "+knownStar.NodeId);
+                    }
+                    var actorMap=CampaignModel(entry).GeneratedMap();yield return SelectAndHover(actorMap.Features.First(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star));
+                    var fixtureFrame=CampaignModel(entry).Current.Frame;var view=CampaignModel(entry).GeneratedViewport;
+                    var ownedNodes=fixtureFrame.OwnStrategicFleets.Where(f=>fixtureFrame.Travel!.OwnReceipts.LastOrDefault(r=>r.FleetId==f.FleetId.Value)?.TransitDestinationId==null).Select(f=>f.LocationNodeId.Value).ToHashSet(StringComparer.Ordinal);
+                    Vector2 Project(string node){var p=actorMap.Features.FirstOrDefault(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star&&f.NodeId==node)?.Position??actorMap.Regions.Single(r=>r.NodeId==node).Center;return new Vector2((float)view.X(p.X),(float)view.Y(p.Y));}
+                    var ringPoints=ownedNodes.Select(Project).ToArray();
+                    var nearRing=actorMap.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star&&!ownedNodes.Contains(f.NodeId!))
+                        .Where(f=>ringPoints.Any(p=>Math.Abs(Project(f.NodeId!).x-p.x)<=37&&Math.Abs(Project(f.NodeId!).y-p.y)<=37))
+                        .OrderBy(f=>ringPoints.Min(p=>(Project(f.NodeId!)-p).sqrMagnitude)).ThenBy(f=>f.NodeId,StringComparer.Ordinal).First();
+                    yield return SelectAndHover(nearRing);
                     yield return CampaignCapture(entry,doc,"fixture250-aftermath-readability",new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080)});
                     Click(doc.rootVisualElement.Q<Button>("demo-menu"));doc.rootVisualElement.Q<DropdownField>("generated-campaign-size").value="1000";
                     doc.rootVisualElement.Q<TextField>("generated-campaign-seed").value="42";doc.rootVisualElement.Q<DropdownField>("generated-campaign-quiet").value="2.00×";
