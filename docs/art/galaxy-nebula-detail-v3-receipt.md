@@ -1,0 +1,15 @@
+# Detailed galaxy and nebula v3 receipt
+
+23 October2026. One approved CPU batch completed:10.965 seconds,201646080 bytes peak working set (192.3 MiB), four1280×800 images. No GPU, Unity, desktop operation, paid service or reference pixels. Existing assets were preserved. [Frozen before-generation contract](galaxy-nebula-detail-v3.md).
+
+Output: `E:/HobbyDS9/artifacts/art/galaxy-nebula-detail-v3-20261023-1/`. Start at `review.html`; `generation.json`, `calibration.json`, `proof.json`, `independent-verification.json` and `payload-manifest.json` retain evidence. Original asset bytes are `galaxy-linear-rgba.png`, `nebula-linear-rgba.raw`, `nebula-particles.json`. Do not import the macro PNG as a conventional alpha-transparent picture: A is dust optical depth, not coverage.
+
+Visual assessment: the macro now has a compact warm core, irregular branching arms, granular light and separate narrow dust lanes. The local field has an asymmetric open shape, thin wisps, knots and cavities. It is still a stylised procedural interpretation; the reference's dense natural dust complexity is not fully matched. At this subdued exposure, the soft particles are subtle. This batch is reviewable receiving material, not final artistic acceptance. Do not silently start further polishing renders. Frontend must evaluate the contract's continuous thickness and optical integration against these original data, without substituting the old48³ soft shared field.
+
+The matched pan pair records near-point movement150.805px and far-point104.089px:46.716px differential. Navigation stays at z0. These are analytic CPU evidence, not measured engine motion or a continuous-video acceptance. The macro proof uses the explicitly labelled integrated fallback; continuous macro thickness is specified for receiving-engine work, not demonstrated as CPU volume here.
+
+Stored seed42/250 topology is unchanged. The overview shows244 actual stars because the proof viewport crops slightly at the top and bottom; this is not a missing-data or generation result. Regional frames show19,23 and16 actual stars. The stored route uses the historical midpoint presentation, not the later frontend funnel. There is one local field in the proof,256 soft points;8fields/256TOTAL are proposed receiving caps, not performance measurements. Raw volume has all six boundary faces zero; atlas edges are zero.
+
+Brightness comparison deliberately records incompatible scenes separately. The accepted5cb seed42/1000 map crop contains route/grid/star/UI pixels; its luminance mean is therefore not an exposure target for the new background-only seed42/250 panels. Reference images are measured locally and identified by hashes only; no image pixels are distributed. Shared dark floor and modest linear emission exposure preserve readable navigation in the proof, but matched native UI evaluation remains necessary.
+
+No gameplay, picking, saves, star population, authoritative class taxonomy or campaign state changed. Runtime import, six-face behaviour at all transforms, temporal aliasing, distance LOD, particle selection across fields, performance and owner visual acceptance remain open.
