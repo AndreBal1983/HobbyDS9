@@ -134,4 +134,16 @@ public sealed class NaturalGalaxyTests
             Targets=new(){new(){NodeId=h[1].NodeId}},Filter=new(){PermittedNodeIds=d.Layout.Regions.Select(r=>r.NodeId).ToList(),PermittedConnectionIds=d.Layout.Connections.Select(e=>e.ConnectionId).ToList()}};
         Assert.True(review.FindRoutePlan(q).Success);Assert.Equal(before,Json(review.Export()));
     }
+
+    [Theory]
+    [InlineData(100,500)][InlineData(300,1500)]
+    public void FiniteDistributionControlExtremesRoundtripWithoutChangingAnchors(int isolation,int spread)
+    {
+        var s=Settings("0");s.Map.SystemCount=30;s.Map.EmptyRegionCount=30;s.Map.Width=1000000;s.Map.Height=600000;
+        s.IsolatedStarSharePermille=isolation;s.AssociationSpreadPermille=spread;
+        var review=NaturalGalaxyApplication.Generate(s,Catalog());var d=review.Export();GroupsAndAnchors(d);Geometry(d);
+        Assert.Equal(Json(d),Json(NaturalGalaxyJson.Read(NaturalGalaxyJson.Write(review),Catalog()).Export()));
+        s.IsolatedStarSharePermille=301;Assert.Throws<ArgumentException>(()=>NaturalGalaxyApplication.Generate(s,Catalog()));
+        s.IsolatedStarSharePermille=isolation;s.AssociationSpreadPermille=1501;Assert.Throws<ArgumentException>(()=>NaturalGalaxyApplication.Generate(s,Catalog()));
+    }
 }
