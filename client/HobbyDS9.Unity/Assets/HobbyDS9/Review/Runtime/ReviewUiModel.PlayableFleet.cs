@@ -25,6 +25,9 @@ namespace HobbyDS9.UnityReview
             Current=Controller(host,humans[0].CivilizationId);
         }
         public IReadOnlyList<CampaignNamedFleet> NamedFleets()=>host.CaptureFleetOrganization(Current.Frame);
+        public bool CanDefendFleet(ReviewFrame reviewed,string fleet)=>PlayableFleet&&ReferenceEquals(reviewed,Current.Frame)
+            &&reviewed.Status.Phase==SessionPhase.Planning&&!Busy&&!Closed&&!HasLocalEdits&&!Current.HasPendingWork&&!Current.RefreshRequired
+            &&reviewed.OwnStrategicFleets.Any(f=>f.FleetId.Value==fleet&&f.TransitTotalCost==0&&f.RouteNodeIds.Count==0);
         public CampaignBattlePlayback Playback(string encounter)=>host.CaptureBattlePlayback(Current.Frame,encounter);
         public IReadOnlyList<CampaignBattlePlayback> History()=>host.CaptureBattleHistory(Current.Frame);
         public bool OrganizeFleet(ReviewFrame reviewed,CampaignFleetOrganizationKind kind,IReadOnlyList<string> ships,

@@ -107,6 +107,10 @@ namespace HobbyDS9.UnityReview
                 var stay=button(aside,"Remain / clear accepted travel",()=>confirm("Replace this fleet's route and intent with Remain? This does not move or repair ships.",()=>perform(()=>{
                     if(model.DraftTravel(selected.Fleet.FleetId.Value,CampaignTravelIntent.Stay,null,null))model.SendTravel(ReviewUiModel.NewCommandId());
                 })));stay.name="fleet-clear-route";stay.SetEnabled(editable&&!model.HasLocalEdits);
+                var defend=button(aside,"Defend this region",()=>confirm("Hold here and engage hostile fleets when a lawful encounter is possible.",()=>perform(()=>{
+                    if(model.CanDefendFleet(frame,selected.Fleet.FleetId.Value)&&model.DraftTravel(selected.Fleet.FleetId.Value,CampaignTravelIntent.StayEngage,null,null))
+                        model.SendTravel(ReviewUiModel.NewCommandId());
+                })));defend.name="player-stay-engage";defend.SetEnabled(model.CanDefendFleet(frame,selected.Fleet.FleetId.Value));
                 var setting=frame.CloakSettings.FirstOrDefault(s=>s.FleetId==selected.Fleet.FleetId.Value);
                 if(setting!=null)
                     button(aside,"Approach cloak: "+(setting.Enabled?"enabled":"disabled"),()=>confirm("Change the selected fleet's approach cloak setting? Only explicitly capable ships can cloak.",()=>perform(()=>model.SetCloak(selected.Fleet.FleetId.Value,!setting.Enabled,ReviewUiModel.NewCommandId()))))
