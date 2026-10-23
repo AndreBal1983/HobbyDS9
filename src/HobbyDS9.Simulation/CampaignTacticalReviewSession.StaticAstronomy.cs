@@ -32,9 +32,8 @@ namespace HobbyDS9.Simulation
             {
                 Require(astronomyIndex != null && Actor(actor) == CampaignTacticalError.None, "Only a controlled static-astronomy actor may capture charted phenomena.");
                 var game = state.Campaign.GameState;
-                var known = game.NavigationKnowledge!.Single(k => k.CivilizationId == actor).Nodes!
-                    .Where(n => n.Level == NavigationKnowledgeLevel.Charted || n.Level == NavigationKnowledgeLevel.Surveyed).Select(n => n.Id);
-                return new CampaignStaticAstronomySnapshot(actor, generatedMap!.ContentHash, game.TurnNumber, game.StateRevision, astronomyIndex.Visible(known));
+                var known = game.NavigationKnowledge!.Single(k => k.CivilizationId == actor).Nodes!;
+                return new CampaignStaticAstronomySnapshot(actor, generatedMap!.ContentHash, game.TurnNumber, game.StateRevision, astronomyIndex.VisibleKnown(known));
             }
         }
     }
