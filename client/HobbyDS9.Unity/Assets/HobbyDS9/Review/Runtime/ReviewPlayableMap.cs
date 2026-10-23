@@ -59,7 +59,7 @@ namespace HobbyDS9.UnityReview
                 catch(Exception){background?.Dispose();background=null;backgroundFailed=true;map.style.backgroundImage=StyleKeyword.None;map.style.backgroundColor=new Color(.003f,.006f,.012f);}
             }
             map.RegisterCallback<DetachFromPanelEvent>(_=>{background?.Dispose();background=null;});
-            var lines=new VisualElement{pickingMode=PickingMode.Ignore};lines.StretchToParentSize();map.Add(lines);
+            var lines=new VisualElement{name="playable-known-lines",pickingMode=PickingMode.Ignore};lines.StretchToParentSize();map.Add(lines);
             var details=new ScrollView(ScrollViewMode.Vertical);details.AddToClassList("console-panel");details.AddToClassList("console-aside");details.AddToClassList("playable-map-aside");parent.Add(details);
             Text(details,"Selection & orders").AddToClassList("console-section");
             Text(details,"Star: system · ring: fleets · diamond: observed contact. Right-click a destination or contact to review an order.");
@@ -71,7 +71,7 @@ namespace HobbyDS9.UnityReview
                 if(generatedStars!.TryGetValue(id,out var star))return new Vector2(star.X,star.Y);
                 var region=generatedRegions![id];return new Vector2(region.Center.X,region.Center.Y);
             }
-            Vector2 Point(string id)
+            Vector2 ContentPoint(string id)
             {
                 if(generated!=null){var world=WorldPoint(id);return new Vector2((float)viewport.X(world.x),(float)viewport.Y(world.y));}
                 var index=nodes.FindIndex(n=>n.NodeId.Value==id);
@@ -83,6 +83,8 @@ namespace HobbyDS9.UnityReview
                 return new Vector2(map.contentRect.width*(.5f+(p.x-.5f)*workspace.MapZoom)+workspace.MapPanX,
                     map.contentRect.height*(.5f+(p.y-.5f)*workspace.MapZoom)+workspace.MapPanY);
             }
+            // Same content/local/CSS convention as GeneratedGalaxyMapView. The lines child paints content coordinates.
+            Vector2 Point(string id)=>generated==null?ContentPoint(id):map.contentRect.position+ContentPoint(id);
             void FitKnown()
             {
                 if(generated==null)return;
@@ -93,17 +95,18 @@ namespace HobbyDS9.UnityReview
             }
             void Reposition()
             {
-                if(generated!=null){viewport.Resize(map.contentRect.width,map.contentRect.height);if(model.GeneratedViewportNeedsFit&&map.contentRect.width>2&&map.contentRect.height>2)FitKnown();}
+                if(generated!=null){viewport.Resize(map.contentRect.width,map.contentRect.height);if(model.GeneratedViewportNeedsFit&&map.contentRect.width>2&&map.contentRect.height>2)FitKnown();
+                    lines.style.left=map.resolvedStyle.paddingLeft;lines.style.top=map.resolvedStyle.paddingTop;lines.style.right=map.resolvedStyle.paddingRight;lines.style.bottom=map.resolvedStyle.paddingBottom;}
                 foreach(var place in placements)place();LayoutLabels();RefreshBackground();lines.MarkDirtyRepaint();
             }
             void LayoutLabels()
             {
                 if(generated==null)return;
                 var candidates=new List<GeneratedLabelCandidate>();var glyphs=new List<GeneratedLabelRect>();
-                var ringAnchors=fleets.Where(f=>frame.Travel?.OwnReceipts.LastOrDefault(r=>r.FleetId==f.FleetId.Value)?.TransitDestinationId==null).Select(f=>Point(f.LocationNodeId.Value)).ToArray();
+                var ringAnchors=fleets.Where(f=>frame.Travel?.OwnReceipts.LastOrDefault(r=>r.FleetId==f.FleetId.Value)?.TransitDestinationId==null).Select(f=>ContentPoint(f.LocationNodeId.Value)).ToArray();
                 foreach(var node in nodes)
                 {
-                    var id=node.NodeId.Value;var p=Point(id);bool system=generatedStars!.ContainsKey(id);
+                    var id=node.NodeId.Value;var p=ContentPoint(id);bool system=generatedStars!.ContainsKey(id);
                     double radius=system?6:3;glyphs.Add(new GeneratedLabelRect(p.x-radius,p.y-radius,radius*2,radius*2));
                     bool owned=fleets.Any(f=>f.LocationNodeId.Value==id&&frame.Travel?.OwnReceipts.LastOrDefault(r=>r.FleetId==f.FleetId.Value)?.TransitDestinationId==null);
                     if(owned){glyphs.Add(new GeneratedLabelRect(p.x-37,p.y-37,74,74));glyphs.Add(new GeneratedLabelRect(p.x-35,p.y+44,70,18));}
@@ -116,13 +119,13 @@ namespace HobbyDS9.UnityReview
                     candidates.Add(new GeneratedLabelCandidate(id,p.x,p.y,width,20,priority,insideRing?42:12));
                 }
                 foreach(var contact in contacts)
-                {var p=Point(contact.LastSeenNodeId);int index=contacts.Where(c=>c.LastSeenNodeId==contact.LastSeenNodeId).ToList().IndexOf(contact);glyphs.Add(new GeneratedLabelRect(p.x-64,p.y-54-index*48,24,24));}
+                {var p=ContentPoint(contact.LastSeenNodeId);int index=contacts.Where(c=>c.LastSeenNodeId==contact.LastSeenNodeId).ToList().IndexOf(contact);glyphs.Add(new GeneratedLabelRect(p.x-64,p.y-54-index*48,24,24));}
                 foreach(var fleet in fleets)
                 {var receipt=frame.Travel?.OwnReceipts.LastOrDefault(r=>r.FleetId==fleet.FleetId.Value);if(receipt?.TransitDestinationId==null||receipt.TransitTotalCost<=0||!nodeIds.Contains(receipt.TransitDestinationId))continue;
-                    var p=Vector2.Lerp(Point(receipt.EndNodeId),Point(receipt.TransitDestinationId),(float)((double)receipt.TransitProgress/receipt.TransitTotalCost));glyphs.Add(new GeneratedLabelRect(p.x-12,p.y-12,24,24));}
+                    var p=Vector2.Lerp(ContentPoint(receipt.EndNodeId),ContentPoint(receipt.TransitDestinationId),(float)((double)receipt.TransitProgress/receipt.TransitTotalCost));glyphs.Add(new GeneratedLabelRect(p.x-12,p.y-12,24,24));}
                 var packed=GeneratedCampaignLabelLayout.Place(candidates,glyphs,map.contentRect.width,map.contentRect.height);
                 foreach(var item in packed)
-                {var label=generatedLabels[item.Key];var r=item.Value;label.style.left=(float)r.X;label.style.top=(float)r.Y;label.style.width=(float)r.Width;label.style.height=(float)r.Height;label.style.visibility=Visibility.Visible;}
+                {var label=generatedLabels[item.Key];var r=item.Value;label.style.left=(float)r.X+map.contentRect.x-map.resolvedStyle.borderLeftWidth;label.style.top=(float)r.Y+map.contentRect.y-map.resolvedStyle.borderTopWidth;label.style.width=(float)r.Width;label.style.height=(float)r.Height;label.style.visibility=Visibility.Visible;}
             }
             void Zoom(float factor){if(generated!=null)viewport.ZoomAt(factor,map.contentRect.width/2,map.contentRect.height/2);else workspace.MapZoom=Mathf.Clamp(workspace.MapZoom*factor,.7f,2.4f);Reposition();}
             button(toolbar,"−",()=>Zoom(.8f)).name="map-zoom-out";
@@ -130,7 +133,7 @@ namespace HobbyDS9.UnityReview
             button(toolbar,generated==null?"Fit":"Fit known",()=>{if(generated!=null)FitKnown();else{workspace.MapZoom=1;workspace.MapPanX=workspace.MapPanY=0;}Reposition();}).name="map-fit";
             if(generated!=null)button(toolbar,"Fit galaxy",()=>{viewport.Fit();Reposition();}).name="map-fit-galaxy";
             Text(toolbar,"Scroll to zoom · middle-drag to pan");
-            map.RegisterCallback<WheelEvent>(e=>{if(generated!=null){var at=map.WorldToLocal(e.mousePosition);viewport.ZoomAt(e.delta.y>0?.9:1.1,at.x,at.y);Reposition();}else Zoom(e.delta.y>0?.9f:1.1f);e.StopPropagation();});
+            map.RegisterCallback<WheelEvent>(e=>{if(generated!=null){var at=map.WorldToLocal(e.mousePosition)-map.contentRect.position;viewport.ZoomAt(e.delta.y>0?.9:1.1,at.x,at.y);Reposition();}else Zoom(e.delta.y>0?.9f:1.1f);e.StopPropagation();});
             int panPointer=-1;Vector2 panStart=default,panOrigin=default;
             map.RegisterCallback<PointerDownEvent>(e=>{
                 if(e.button!=2)return;panPointer=e.pointerId;panStart=e.position;panOrigin=new Vector2(workspace.MapPanX,workspace.MapPanY);
@@ -263,7 +266,7 @@ namespace HobbyDS9.UnityReview
             void Place(VisualElement element,Func<Vector2> point,float width,float height,Vector2 offset=default)
             {
                 element.style.position=Position.Absolute;element.style.width=width;element.style.height=height;map.Add(element);
-                placements.Add(()=>{var p=point()+offset;element.style.left=p.x-width/2;element.style.top=p.y-height/2;});
+                placements.Add(()=>{var p=point()+offset;element.style.left=p.x-width/2-(generated==null?0:map.resolvedStyle.borderLeftWidth);element.style.top=p.y-height/2-(generated==null?0:map.resolvedStyle.borderTopWidth);});
             }
             foreach(var node in nodes)
             {
