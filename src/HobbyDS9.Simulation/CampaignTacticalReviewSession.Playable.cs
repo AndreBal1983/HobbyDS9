@@ -18,7 +18,7 @@ namespace HobbyDS9.Simulation
         private readonly HashSet<string> playableRetiredFleets = new HashSet<string>(StringComparer.Ordinal);
         internal Action? PlayableOrganizationProbe { get; set; }
         internal Action? PlayableAiRemainderProbe { get; set; }
-        private string OwnedCoreProfile => generatedMap != null ? CampaignGeneratedIdentity.EmbeddedCoreProfile : playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
+        private string OwnedCoreProfile => astronomyIndex != null ? CampaignStaticAstronomyIdentity.EmbeddedCoreProfile : generatedMap != null ? CampaignGeneratedIdentity.EmbeddedCoreProfile : playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
             : frontier != null ? CampaignFrontierIdentity.EmbeddedCoreProfile : CampaignTacticalReviewIdentity.Profile;
         public int RemainingPlayableOperations { get { lock (gate) return playableOperationLimit - playableTranscript.Count; } }
 

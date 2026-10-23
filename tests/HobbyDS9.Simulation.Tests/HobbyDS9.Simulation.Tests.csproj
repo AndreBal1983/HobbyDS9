@@ -8,6 +8,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Update="Fixtures/generated-campaign-v1/*.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/HobbyDS9.Headless/GeneratedGalaxyJson.cs" Link="GeneratedGalaxyJson.cs" />
     <Compile Include="../../src/HobbyDS9.Headless/EnvironmentGalaxyJson.cs" Link="EnvironmentGalaxyJson.cs" />
     <Compile Include="../../src/HobbyDS9.Headless/ScaledGalaxyJson.cs" Link="ScaledGalaxyJson.cs" />
