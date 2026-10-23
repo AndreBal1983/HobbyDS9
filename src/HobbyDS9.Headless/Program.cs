@@ -5,6 +5,14 @@ using System.Text.Json;
 using HobbyDS9.Contracts;
 using HobbyDS9.Application;
 
+if (args.Length == 1 && args[0] == "--galaxy-route-intent-examples")
+{
+    var catalog = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"))
+        .Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
+    Console.WriteLine(JsonSerializer.Serialize(GalaxyReviewRouteExamples.Run(catalog), new JsonSerializerOptions { WriteIndented = true }));
+    return;
+}
+
 if (ScaledGalaxyCli.Run(args)) return;
 
 if (args.Length == 1 && args[0] == "--environment-galaxy-causality")
