@@ -22,3 +22,11 @@ The diffuse galactic component is warm off-white light with darker dust; coloure
 6. Root reviews source, actual images, timing availability and restoration before a separate strictWindowsx64IL2CPP plan/lease/new versioned package. Native interaction is another separately backed-up/serialized lease. No main merge/latest promotion/public release implied.
 
 Usage stop policy: fresh included usage before chunks/launches and≤5minutes; stop≥90%, missing/ambiguous data, ordinary denial or purchased balance decrease from2373.8292100000. Broad Goal/hourly automation remain paused.
+
+## First actual render and bounded contrast correction
+
+Exact65ec8b5 engine case passed1/1 with20images and574original inputs restored exact, but visual acceptance was HELD. Actual regional frames had a bright pastel/grey fog wash, poor label contrast and soft cloud bodies. GPU timing returned0.0 and is unavailable, not a performance pass. That650payload evidence bundle remains immutable.
+
+The next source revision keeps the same48³ field,32 optical samples,8cloud cap, output bounds and full receiving case/cameras. Shader-only transfer changes lower the linear-light floor, suppress broad macro ambient/emission, shrink/darken the core with deeper dust, cut the local low-density pedestal and increase density contrast. Local optical depth is halved before the new contrast transfer; blue/teal and restrained magenta replace pastel red/white local accents. Warm off-white remains the macro light. No feature anchor/radius/field-generation API/map/route change.
+
+Essential overlay separation adds an8pixel dark route stroke beneath the unchanged3pixel amber stroke on the same certified vertices; only the selected region gets a5pixel dark separator beneath its unchanged2pixel highlight. Star text gets a dark outline; existing PickingMode.Ignore labels get a subtle dark backing and outline, with no target/layout dimensions changed. All other region strokes remain unchanged. Player reference compile then independent source gate precede a separately leased rerun of ONLY the SAME20images/case for matched visual comparison. Pure CPU field tests need no rerun because their code/API is unchanged. Motion, actual label/route visibility, unchanged picking/cost/hash and full restoration remain required. No strict build/native yet.

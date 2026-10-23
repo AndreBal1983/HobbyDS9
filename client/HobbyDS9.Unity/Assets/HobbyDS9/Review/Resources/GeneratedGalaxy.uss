@@ -50,10 +50,11 @@
     position: absolute; width: 28px; height: 28px; min-width: 28px; min-height: 28px;
     padding: 0; margin: 0; font-size: 12px; color: #d5e6f2; -unity-text-align: middle-center;
     background-color: rgba(0,0,0,0); border-width: 2px; border-color: rgba(0,0,0,0); border-radius: 14px;
+    -unity-text-outline-width: 1.5px; -unity-text-outline-color: #030810;
 }
 .galaxy-star:hover, .galaxy-star:focus { border-color: #9fd8fb; background-color: rgba(159,216,251,0.08); }
 .galaxy-star-selected { border-color: #efb16b; color: #efb16b; }
-.galaxy-system-label { position: absolute; font-size: 15px; color: #a9b8c8; white-space: normal; }
+.galaxy-system-label { position: absolute; font-size: 15px; color: #d5e6f2; white-space: normal; -unity-text-outline-width: 1px; -unity-text-outline-color: #030810; background-color: rgba(3,8,16,0.65); }
 .galaxy-candidate-label { color: #b9ace6; }
 .galaxy-candidate-target {
     position: absolute; width: 22px; height: 22px; min-width: 22px; min-height: 22px;

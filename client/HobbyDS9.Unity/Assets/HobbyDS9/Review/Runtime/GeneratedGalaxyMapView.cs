@@ -309,6 +309,7 @@ namespace HobbyDS9.UnityReview
                 painter.BeginPath();painter.MoveTo(Point(region.Boundary[0]));
                 foreach(var vertex in region.Boundary.Skip(1))painter.LineTo(Point(vertex));painter.ClosePath();
                 if(region.NodeId==selectedNode){painter.fillColor=new Color(.40f,.75f,.87f,.12f);painter.Fill();}
+                if(region.NodeId==selectedNode){painter.strokeColor=new Color(.012f,.024f,.04f,.95f);painter.lineWidth=5;painter.Stroke();}
                 painter.strokeColor=region.NodeId==selectedNode?new Color(.55f,.85f,.94f,.9f):new Color(.38f,.47f,.58f,.35f);
                 painter.lineWidth=region.NodeId==selectedNode?2:1;painter.Stroke();
             }
@@ -322,15 +323,17 @@ namespace HobbyDS9.UnityReview
                 foreach(var leg in planPaths)
                 {
                     if(leg.Count<2)continue;
-                    painter.strokeColor=new Color(.94f,.69f,.42f);painter.lineWidth=3;painter.BeginPath();
-                    painter.MoveTo(Project(leg[0]));foreach(var point in leg.Skip(1))painter.LineTo(Project(point));painter.Stroke();
+                    painter.BeginPath();painter.MoveTo(Project(leg[0]));foreach(var point in leg.Skip(1))painter.LineTo(Project(point));
+                    painter.strokeColor=new Color(.012f,.024f,.04f,.95f);painter.lineWidth=8;painter.Stroke();
+                    painter.strokeColor=new Color(.94f,.69f,.42f);painter.lineWidth=3;painter.Stroke();
                 }
             }
             else if(routeOrigin!=null)
             {
                 var path=RoutePositions();
-                painter.strokeColor=new Color(.94f,.69f,.42f);painter.lineWidth=3;painter.BeginPath();painter.MoveTo(path[0]);
-                foreach(var point in path.Skip(1))painter.LineTo(point);painter.Stroke();
+                painter.BeginPath();painter.MoveTo(path[0]);foreach(var point in path.Skip(1))painter.LineTo(point);
+                painter.strokeColor=new Color(.012f,.024f,.04f,.95f);painter.lineWidth=8;painter.Stroke();
+                painter.strokeColor=new Color(.94f,.69f,.42f);painter.lineWidth=3;painter.Stroke();
             }
             foreach(var node in new[]{routeOrigin}.Concat(pinnedNodes).Concat(planPaths==null?new[]{routeSteps.LastOrDefault()}:Array.Empty<string>()).Where(n=>n!=null).Distinct())
             {
