@@ -30,6 +30,16 @@ namespace HobbyDS9.UnityReview
             offsetX=(worldWidth/2-centerX)*Scale;offsetY=(worldHeight/2-centerY)*Scale;Clamp();
         }
         public void Fit(){Zoom=1;offsetX=0;offsetY=0;}
+        public void FitWorldBounds(double minimumX,double minimumY,double maximumX,double maximumY)
+        {
+            if(!Finite(minimumX)||!Finite(minimumY)||!Finite(maximumX)||!Finite(maximumY)||maximumX<minimumX||maximumY<minimumY)return;
+            Fit();var baseScale=Scale;
+            var spanX=Math.Max(1,maximumX-minimumX);var spanY=Math.Max(1,maximumY-minimumY);
+            var fitted=Math.Min(Math.Max(1,width-Margin*2)/spanX,Math.Max(1,height-Margin*2)/spanY)*.85;
+            Zoom=Math.Max(1,Math.Min(MaximumZoom,fitted/baseScale));
+            offsetX=(worldWidth/2-(minimumX+maximumX)/2)*Scale;
+            offsetY=(worldHeight/2-(minimumY+maximumY)/2)*Scale;Clamp();
+        }
         public void ZoomAt(double factor,double screenX,double screenY)
         {
             if(!Positive(factor)||!Finite(screenX)||!Finite(screenY))return;

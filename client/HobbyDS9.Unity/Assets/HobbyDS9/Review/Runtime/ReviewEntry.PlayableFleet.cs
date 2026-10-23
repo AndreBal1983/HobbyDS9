@@ -11,7 +11,7 @@ namespace HobbyDS9.UnityReview
     {
         private static bool PlayableResourcesAvailable()=>new[]{"playable","package","physical","core","scenario"}
             .All(name=>Resources.Load<TextAsset>(PlayableFleetOptions.ResourceRoot+name)!=null);
-        private ReviewUiModel NewPlayableFleetModel()
+        private HobbyDS9.Contracts.CampaignPlayableFleetPackageDto LoadPlayableFleetTemplate()
         {
             byte[] Bytes(string name)
             {
@@ -20,8 +20,12 @@ namespace HobbyDS9.UnityReview
                 return asset.bytes;
             }
             var codec=new ReviewNewtonsoftCodec();
-            var package=ReviewExactPackageLoader.LoadPlayableFleet(Bytes("playable"),Bytes("package"),Bytes("physical"),Bytes("core"),Bytes("scenario"),codec);
-            return new ReviewUiModel(package,codec,new ReviewPlayableFleetSlotStore(
+            return ReviewExactPackageLoader.LoadPlayableFleet(Bytes("playable"),Bytes("package"),Bytes("physical"),Bytes("core"),Bytes("scenario"),codec);
+        }
+        private ReviewUiModel NewPlayableFleetModel()
+        {
+            var codec=new ReviewNewtonsoftCodec();
+            return new ReviewUiModel(LoadPlayableFleetTemplate(),codec,new ReviewPlayableFleetSlotStore(
                 Path.Combine(UnityEngine.Application.persistentDataPath,PlayableFleetOptions.SaveDirectory),codec));
         }
         private void OpenPlayableFleet(string? slot)

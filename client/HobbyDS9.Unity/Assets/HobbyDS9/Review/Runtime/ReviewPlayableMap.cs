@@ -27,6 +27,10 @@ namespace HobbyDS9.UnityReview
         public void Render(VisualElement parent)
         {
             var frame=model.Current.Frame;var facts=frame.Strategy!;
+            var generated=model.GeneratedCampaign?model.GeneratedMap():null;
+            var generatedRegions=generated?.Regions.ToDictionary(r=>r.NodeId,StringComparer.Ordinal);
+            var generatedStars=generated?.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star).ToDictionary(f=>f.NodeId!,f=>f.Position,StringComparer.Ordinal);
+            var viewport=model.GeneratedViewport;
             var nodes=facts.Navigation.Nodes.OrderBy(n=>n.NodeId.Value,StringComparer.Ordinal).ToList();
             var nodeIds=new HashSet<string>(nodes.Select(n=>n.NodeId.Value),StringComparer.Ordinal);
             var links=facts.Navigation.Links.Where(l=>nodeIds.Contains(l.EndpointA.Value)&&nodeIds.Contains(l.EndpointB.Value)).ToList();
@@ -43,15 +47,31 @@ namespace HobbyDS9.UnityReview
             var toolbar=new VisualElement();toolbar.AddToClassList("review-field-row");main.Add(toolbar);
             var map=new VisualElement{name="playable-known-map"};map.AddToClassList("playable-map");main.Add(map);
             var backdrop=new Image{image=Resources.Load<Texture2D>("PlayerArt/space-backdrop"),scaleMode=ScaleMode.ScaleAndCrop,pickingMode=PickingMode.Ignore};
-            backdrop.StretchToParentSize();map.Add(backdrop);
+            backdrop.StretchToParentSize();if(generated==null)map.Add(backdrop);
+            map.style.overflow=Overflow.Hidden;
+            GeneratedGalaxyVolumeBackground? background=null;bool backgroundFailed=false;
+            var cosmetic=generated==null?null:new GeneratedGalaxyMapData(generated);
+            void RefreshBackground()
+            {
+                if(cosmetic==null||backgroundFailed||map.panel==null||map.contentRect.width<2||map.contentRect.height<2)return;
+                try{if(background==null)background=new GeneratedGalaxyVolumeBackground(cosmetic);background.Render(viewport,map.contentRect.width,map.contentRect.height,true,true);map.style.backgroundImage=Background.FromRenderTexture(background.Texture!);}
+                catch(Exception){background?.Dispose();background=null;backgroundFailed=true;map.style.backgroundImage=StyleKeyword.None;map.style.backgroundColor=new Color(.003f,.006f,.012f);}
+            }
+            map.RegisterCallback<DetachFromPanelEvent>(_=>{background?.Dispose();background=null;});
             var lines=new VisualElement{pickingMode=PickingMode.Ignore};lines.StretchToParentSize();map.Add(lines);
             var details=new ScrollView(ScrollViewMode.Vertical);details.AddToClassList("console-panel");details.AddToClassList("console-aside");details.AddToClassList("playable-map-aside");parent.Add(details);
             Text(details,"Selection & orders").AddToClassList("console-section");
             Text(details,"Star: system · ring: fleets · diamond: observed contact. Right-click a destination or contact to review an order.");
             var notice=Text(details,"Selection never submits an order.","map-selection-notice");
             var placements=new List<Action>();
+            Vector2 WorldPoint(string id)
+            {
+                if(generatedStars!.TryGetValue(id,out var star))return new Vector2(star.X,star.Y);
+                var region=generatedRegions![id];return new Vector2(region.Center.X,region.Center.Y);
+            }
             Vector2 Point(string id)
             {
+                if(generated!=null){var world=WorldPoint(id);return new Vector2((float)viewport.X(world.x),(float)viewport.Y(world.y));}
                 var index=nodes.FindIndex(n=>n.NodeId.Value==id);
                 // A stable sparse visual arrangement; positions never supply travel rules or map knowledge.
                 var positions=new[]{new Vector2(.21f,.54f),new Vector2(.62f,.24f),new Vector2(.79f,.70f),new Vector2(.38f,.83f),
@@ -61,13 +81,26 @@ namespace HobbyDS9.UnityReview
                 return new Vector2(map.contentRect.width*(.5f+(p.x-.5f)*workspace.MapZoom)+workspace.MapPanX,
                     map.contentRect.height*(.5f+(p.y-.5f)*workspace.MapZoom)+workspace.MapPanY);
             }
-            void Reposition(){foreach(var place in placements)place();lines.MarkDirtyRepaint();}
-            void Zoom(float factor){workspace.MapZoom=Mathf.Clamp(workspace.MapZoom*factor,.7f,2.4f);Reposition();}
+            void FitKnown()
+            {
+                if(generated==null)return;
+                viewport.SetMap(generated.Width,generated.Height);viewport.Resize(map.contentRect.width,map.contentRect.height);
+                var points=generated.Regions.SelectMany(r=>r.Boundary).ToArray();
+                if(points.Length>0)viewport.FitWorldBounds(points.Min(p=>p.X),points.Min(p=>p.Y),points.Max(p=>p.X),points.Max(p=>p.Y));
+                model.GeneratedViewportNeedsFit=false;
+            }
+            void Reposition()
+            {
+                if(generated!=null){viewport.Resize(map.contentRect.width,map.contentRect.height);if(model.GeneratedViewportNeedsFit&&map.contentRect.width>2&&map.contentRect.height>2)FitKnown();}
+                foreach(var place in placements)place();RefreshBackground();lines.MarkDirtyRepaint();
+            }
+            void Zoom(float factor){if(generated!=null)viewport.ZoomAt(factor,map.contentRect.width/2,map.contentRect.height/2);else workspace.MapZoom=Mathf.Clamp(workspace.MapZoom*factor,.7f,2.4f);Reposition();}
             button(toolbar,"−",()=>Zoom(.8f)).name="map-zoom-out";
             button(toolbar,"+",()=>Zoom(1.25f)).name="map-zoom-in";
-            button(toolbar,"Fit",()=>{workspace.MapZoom=1;workspace.MapPanX=workspace.MapPanY=0;Reposition();}).name="map-fit";
+            button(toolbar,generated==null?"Fit":"Fit known",()=>{if(generated!=null)FitKnown();else{workspace.MapZoom=1;workspace.MapPanX=workspace.MapPanY=0;}Reposition();}).name="map-fit";
+            if(generated!=null)button(toolbar,"Fit galaxy",()=>{viewport.Fit();Reposition();}).name="map-fit-galaxy";
             Text(toolbar,"Scroll to zoom · middle-drag to pan");
-            map.RegisterCallback<WheelEvent>(e=>{Zoom(e.delta.y>0?.9f:1.1f);e.StopPropagation();});
+            map.RegisterCallback<WheelEvent>(e=>{if(generated!=null){var at=map.WorldToLocal(e.mousePosition);viewport.ZoomAt(e.delta.y>0?.9:1.1,at.x,at.y);Reposition();}else Zoom(e.delta.y>0?.9f:1.1f);e.StopPropagation();});
             int panPointer=-1;Vector2 panStart=default,panOrigin=default;
             map.RegisterCallback<PointerDownEvent>(e=>{
                 if(e.button!=2)return;panPointer=e.pointerId;panStart=e.position;panOrigin=new Vector2(workspace.MapPanX,workspace.MapPanY);
@@ -75,11 +108,26 @@ namespace HobbyDS9.UnityReview
             });
             map.RegisterCallback<PointerMoveEvent>(e=>{
                 if(e.pointerId!=panPointer)return;var delta=(Vector2)e.position-panStart;
-                workspace.MapPanX=panOrigin.x+delta.x;workspace.MapPanY=panOrigin.y+delta.y;Reposition();e.StopPropagation();
+                if(generated!=null){viewport.Pan(delta.x,delta.y);panStart=e.position;}else{workspace.MapPanX=panOrigin.x+delta.x;workspace.MapPanY=panOrigin.y+delta.y;}Reposition();e.StopPropagation();
             });
             map.RegisterCallback<PointerUpEvent>(e=>{if(e.pointerId==panPointer){var id=panPointer;panPointer=-1;map.ReleasePointer(id);e.StopPropagation();}});
             map.RegisterCallback<PointerCaptureOutEvent>(_=>panPointer=-1);
             map.RegisterCallback<GeometryChangedEvent>(_=>Reposition());
+            GeneratedGalaxyCertifiedPath? certifiedRoute=null;
+            void CertifyRoute()
+            {
+                certifiedRoute=null;var offer=workspace.RoutePreview;
+                if(generated==null||offer==null||!workspace.RoutePreviewMatchesCurrent||!offer.Route.Success)return;
+                // Detached known geometry only. Actual star anchors replace presentation
+                // endpoint centres; the authoritative graph, steps and costs stay untouched.
+                var geometry=generated.Regions.ToDictionary(r=>r.NodeId,r=>new GeneratedGalaxyRegionDto{
+                    NodeId=r.NodeId,DisplayName=r.DisplayName,SystemId=r.SystemId,Boundary=r.Boundary,
+                    Center=generatedStars!.TryGetValue(r.NodeId,out var star)?new GeneratedGalaxyPointDto{X=star.X,Y=star.Y}:r.Center},StringComparer.Ordinal);
+                if(!geometry.ContainsKey(offer.Origin)||offer.Route.Steps.Any(id=>!geometry.ContainsKey(id)))return;
+                certifiedRoute=GeneratedGalaxyCorridorPath.Build(geometry,offer.Origin,offer.Route.Steps);
+                if(!certifiedRoute.Certified)notice.text="Route cost is valid; no certified route line: "+certifiedRoute.Reason;
+            }
+            CertifyRoute();
             lines.generateVisualContent+=ctx=>{
                 var p=ctx.painter2D;
                 // Unowned decorative region field. No extra systems, routes, control or sensor facts.
@@ -91,9 +139,11 @@ namespace HobbyDS9.UnityReview
                     return new Vector2(map.contentRect.width*(.5f+(nx-.5f)*workspace.MapZoom)+workspace.MapPanX,
                         map.contentRect.height*(.5f+(ny-.5f)*workspace.MapZoom)+workspace.MapPanY);
                 }
-                for(int y=0;y<5;y++)for(int x=0;x<8;x++)
+                if(generated!=null)foreach(var region in generated.Regions)
+                {p.BeginPath();for(int i=0;i<region.Boundary.Count;i++){var v=region.Boundary[i];var xy=new Vector2((float)viewport.X(v.X),(float)viewport.Y(v.Y));if(i==0)p.MoveTo(xy);else p.LineTo(xy);}p.ClosePath();p.Stroke();}
+                if(generated==null)for(int y=0;y<5;y++)for(int x=0;x<8;x++)
                 {p.BeginPath();p.MoveTo(Corner(x,y));p.LineTo(Corner(x+1,y));p.LineTo(Corner(x+1,y+1));p.LineTo(Corner(x,y+1));p.ClosePath();p.Stroke();}
-                foreach(var link in links)
+                if(generated==null)foreach(var link in links)
                 {
                     var a=Point(link.EndpointA.Value);var b=Point(link.EndpointB.Value);
                     p.strokeColor=link.Kind==GalaxyEdgeKind.Wormhole?new Color(.73f,.67f,.9f,.8f):new Color(.62f,.85f,.98f,.6f);
@@ -103,8 +153,13 @@ namespace HobbyDS9.UnityReview
                 var offer=workspace.RoutePreview;
                 if(offer!=null&&workspace.RoutePreviewMatchesCurrent&&offer.Route.Success)
                 {
+                    if(generated!=null&&certifiedRoute?.Certified==true)
+                    {
+                        foreach(var stroke in new[]{(width:8f,colour:new Color(.005f,.008f,.014f,.95f)),(width:3f,colour:new Color(.94f,.69f,.42f))})
+                        {p.strokeColor=stroke.colour;p.lineWidth=stroke.width;for(int i=1;i<certifiedRoute.Points.Count;i++){var a=certifiedRoute.Points[i-1];var b=certifiedRoute.Points[i];p.BeginPath();p.MoveTo(new Vector2((float)viewport.X(a.X),(float)viewport.Y(a.Y)));p.LineTo(new Vector2((float)viewport.X(b.X),(float)viewport.Y(b.Y)));p.Stroke();}}
+                    }
                     p.strokeColor=new Color(.94f,.69f,.42f);p.lineWidth=4;
-                    for(int i=1;i<offer.Route.Steps.Count;i++)
+                    if(generated==null)for(int i=1;i<offer.Route.Steps.Count;i++)
                     {p.BeginPath();p.MoveTo(Point(offer.Route.Steps[i-1]));p.LineTo(Point(offer.Route.Steps[i]));p.Stroke();}
                 }
             };
@@ -116,7 +171,7 @@ namespace HobbyDS9.UnityReview
                 if(!nodeIds.Contains(destination)){notice.text="No permitted destination here.";return;}
                 var offer=model.Current.FindKnownRoute(fleet.FleetId.Value,destination);
                 if(offer==null||!offer.Route.Success){notice.text="No lawful route is available from this fleet's current position.";return;}
-                workspace.SelectedNode=destination;workspace.RoutePreview=offer;Reposition();
+                workspace.SelectedNode=destination;workspace.RoutePreview=offer;CertifyRoute();Reposition();
                 var summary=(contact==null?"Navigate":"Follow observed contact")+" · "+FleetName(fleet.FleetId.Value)+"\n"+
                     string.Join(" → ",offer.Route.Steps.Select(Name))+"\nTravel cost "+offer.Route.TotalCost+
                     (contact==null?"\nTravel progresses on End turn.":"\nLast seen turn "+contact.LastSeenTurn+". Following uses lawful tracking and physical movement; contact is not guaranteed.");
@@ -150,11 +205,13 @@ namespace HobbyDS9.UnityReview
                     var count=new Label(atNode.Count+" own fleet"+(atNode.Count==1?"":"s")){pickingMode=PickingMode.Ignore};count.AddToClassList("map-own-count");
                     Place(count,()=>Point(id),140,24,new Vector2(0,53));
                 }
-                var star=new Button{name="map-star-"+id,text="●",tooltip=node.DisplayName+" · select system; right-click to prepare navigation."};
+                var isSystem=generated==null||generatedStars!.ContainsKey(id);
+                var star=new Button{name="map-star-"+id,text=isSystem?"●":"·",tooltip=node.DisplayName+(isSystem?" · system":" · empty transit region")+"; right-click to prepare navigation."};
                 bindButton(star,()=>perform(()=>workspace.SelectedNode=id));
                 star.AddToClassList("map-star");star.EnableInClassList("selected-map-marker",workspace.SelectedNode==id);
                 Place(star,()=>Point(id),38,38);ContextAction(star,()=>Prepare(id));
                 var label=new Label(node.DisplayName){pickingMode=PickingMode.Ignore};label.AddToClassList("map-node-name");
+                if(generated!=null){label.style.backgroundColor=new Color(.005f,.009f,.014f,.78f);label.style.unityTextOutlineColor=new Color(.001f,.002f,.004f);label.style.unityTextOutlineWidth=1;}
                 Place(label,()=>Point(id),175,28,new Vector2(103,-2));
             }
             foreach(var contact in contacts)
@@ -174,7 +231,7 @@ namespace HobbyDS9.UnityReview
                 moving.AddToClassList("map-contact");
                 Place(moving,()=>Vector2.Lerp(Point(receipt.EndNodeId),Point(receipt.TransitDestinationId),(float)((double)receipt.TransitProgress/receipt.TransitTotalCost)),38,38);
             }
-            Text(main,"Known lanes · double line: wormhole · amber: unsent route. Schematic spacing does not determine travel cost.");
+            Text(main,generated==null?"Known lanes · double line: wormhole · amber: unsent route. Schematic spacing does not determine travel cost.":"Known generated regions only · borders define crossings · amber: reviewed route. Fit known frames explored space.");
             var selectedNode=nodes.FirstOrDefault(n=>n.NodeId.Value==workspace.SelectedNode);
             if(selectedNode!=null)
             {

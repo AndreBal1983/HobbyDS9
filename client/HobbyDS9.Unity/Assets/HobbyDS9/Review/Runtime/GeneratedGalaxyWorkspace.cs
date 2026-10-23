@@ -27,10 +27,22 @@ namespace HobbyDS9.UnityReview
         public NaturalGalaxyDocumentDto? Natural { get; }
         public bool IsLarge=>Scaled!=null||Natural!=null;
         public ScaledGalaxyPresentationSummary? ScaleSummary { get; }
-        public bool HasEnvironment=>Environment!=null||IsLarge;
-        public IReadOnlyList<EnvironmentGalaxyFeatureDto> Features=>Natural?.Features??Scaled?.Features??Environment?.Features??(IReadOnlyList<EnvironmentGalaxyFeatureDto>)Array.Empty<EnvironmentGalaxyFeatureDto>();
+        private readonly IReadOnlyList<EnvironmentGalaxyFeatureDto>? actorFeatures;
+        public bool HasEnvironment=>actorFeatures!=null||Environment!=null||IsLarge;
+        public IReadOnlyList<EnvironmentGalaxyFeatureDto> Features=>actorFeatures??Natural?.Features??Scaled?.Features??Environment?.Features??(IReadOnlyList<EnvironmentGalaxyFeatureDto>)Array.Empty<EnvironmentGalaxyFeatureDto>();
         public IReadOnlyList<EnvironmentGalaxyRegionInfluenceDto> RegionInfluences=>Natural?.RegionInfluences??Scaled?.RegionInfluences??Environment?.RegionInfluences??(IReadOnlyList<EnvironmentGalaxyRegionInfluenceDto>)Array.Empty<EnvironmentGalaxyRegionInfluenceDto>();
         public int MaximumDensity=>Natural?.Tuning.Environment.MaximumDensity??Scaled?.Tuning.Environment.MaximumDensity??Environment?.Tuning.MaximumDensity??0;
+        // This overload receives ONLY a detached actor observation. It has no private
+        // Natural root, generation seed, hidden home candidates or unknown features.
+        public GeneratedGalaxyMapData(CampaignGeneratedMapDto view)
+        {
+            FormatVersion=0;GeneratorVersion="actor-known-generated-campaign-v1";ContentHash=view.MapContentHash;
+            Settings=new GeneratedGalaxySettingsDto{Seed="0",SystemCount=view.Regions.Count(r=>r.SystemId!=null),HomeCivilizationDefinitionIds=new List<string>()};
+            Width=view.Width;Height=view.Height;Regions=view.Regions;Connections=view.Connections;
+            actorFeatures=view.Features;HomeCandidates=Array.Empty<GeneratedGalaxyHomeCandidateDto>();
+            Systems=view.Regions.Where(r=>r.SystemId!=null).Select(r=>new GeneratedGalaxySystemDto{
+                NodeId=r.NodeId,SystemId=r.SystemId!,DisplayName=view.Features.Single(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star&&f.NodeId==r.NodeId).DisplayName}).ToArray();
+        }
         public GeneratedGalaxyMapData(GeneratedGalaxyDocumentDto map)
         {
             FormatVersion=map.FormatVersion;GeneratorVersion=map.GeneratorVersion;ContentHash=map.ContentHash;Settings=map.Settings;

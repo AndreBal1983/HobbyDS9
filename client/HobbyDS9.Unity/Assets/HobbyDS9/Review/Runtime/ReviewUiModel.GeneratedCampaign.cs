@@ -11,6 +11,8 @@ namespace HobbyDS9.UnityReview
         private readonly CampaignPlayableFleetPackageDto? generatedCampaignTemplate;
         private readonly ReviewGeneratedCampaignSlotStore? generatedCampaignSlots;
         public bool GeneratedCampaign=>generatedCampaignTemplate!=null;
+        public GeneratedGalaxyViewport GeneratedViewport { get; }=new GeneratedGalaxyViewport{MaximumZoom=64};
+        public bool GeneratedViewportNeedsFit { get; set; }=true;
         public ReviewUiModel(CampaignPlayableFleetPackageDto template,NaturalGalaxySettingsDto settings,
             ReviewNewtonsoftCodec codec,ReviewGeneratedCampaignSlotStore slots)
         {

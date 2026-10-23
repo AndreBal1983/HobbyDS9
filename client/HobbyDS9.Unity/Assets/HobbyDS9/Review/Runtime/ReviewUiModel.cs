@@ -170,7 +170,7 @@ namespace HobbyDS9.UnityReview
                 :integratedPackage!=null?PhysicalReviewHost.OpenIntegratedFromSlot(integratedPackage,codec,integratedSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :PhysicalReviewHost.OpenFromSlot(package!,codec,slots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId);
             if(!opened.Succeeded){Message="Checkpoint result: "+opened.Error;return false;}
-            var next=Controller(opened.Host!,Current.Frame.Actor);host=opened.Host!;Current=next;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null;ResetOrganization();Message="Validated complete-root checkpoint loaded.";return true;
+            var next=Controller(opened.Host!,Current.Frame.Actor);host=opened.Host!;Current=next;if(GeneratedCampaign)GeneratedViewportNeedsFit=true;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null;ResetOrganization();Message="Validated complete-root checkpoint loaded.";return true;
         });
         public bool Reset()=>Run(()=>{
             if(Current.HasPendingWork)return Unavailable();
