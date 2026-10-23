@@ -100,6 +100,7 @@ namespace HobbyDS9.UnityReview
             {
                 if(generated==null)return;
                 var candidates=new List<GeneratedLabelCandidate>();var glyphs=new List<GeneratedLabelRect>();
+                var ringAnchors=fleets.Where(f=>frame.Travel?.OwnReceipts.LastOrDefault(r=>r.FleetId==f.FleetId.Value)?.TransitDestinationId==null).Select(f=>Point(f.LocationNodeId.Value)).ToArray();
                 foreach(var node in nodes)
                 {
                     var id=node.NodeId.Value;var p=Point(id);bool system=generatedStars!.ContainsKey(id);
@@ -111,7 +112,8 @@ namespace HobbyDS9.UnityReview
                     if(!system&&priority==0)continue;
                     var measured=label.MeasureTextSize(label.text,0,VisualElement.MeasureMode.Undefined,20,VisualElement.MeasureMode.Exactly);
                     var width=Mathf.Clamp(float.IsNaN(measured.x)||measured.x<1?label.text.Length*8+6:measured.x+6,32,180);
-                    candidates.Add(new GeneratedLabelCandidate(id,p.x,p.y,width,20,priority,owned?42:12));
+                    bool insideRing=ringAnchors.Any(q=>Math.Abs(p.x-q.x)<=37&&Math.Abs(p.y-q.y)<=37);
+                    candidates.Add(new GeneratedLabelCandidate(id,p.x,p.y,width,20,priority,insideRing?42:12));
                 }
                 foreach(var contact in contacts)
                 {var p=Point(contact.LastSeenNodeId);int index=contacts.Where(c=>c.LastSeenNodeId==contact.LastSeenNodeId).ToList().IndexOf(contact);glyphs.Add(new GeneratedLabelRect(p.x-64,p.y-54-index*48,24,24));}
