@@ -52,6 +52,9 @@ namespace HobbyDS9.UnityReview
         public bool Render(GeneratedGalaxyViewport viewport,double width,double height,bool features,bool depth)
         {
             if(disposed)throw new ObjectDisposedException(nameof(GeneratedGalaxyVolumeBackground));
+            // A graphics-context loss can invalidate a previously created target.
+            // Detect this before the unchanged-view cache return as well as publish.
+            if(texture!=null&&!texture.IsCreated())throw new InvalidOperationException("Galaxy background target lost. Flat map retained.");
             var size=GeneratedGalaxyVisualField.TargetSize(width,height);
             double x=viewport.WorldX(0)/map.Width,y=viewport.WorldY(0)/map.Height;
             if(lastX==x&&lastY==y&&lastScale==viewport.Scale&&lastWidth==size.width&&lastHeight==size.height&&lastFeatures==features&&lastDepth==depth)return false;
@@ -83,6 +86,7 @@ namespace HobbyDS9.UnityReview
             material.SetInt("_CloudCount",VisibleCloudCount);material.SetVectorArray("_Clouds",clouds);material.SetVectorArray("_CloudParameters",parameters);
             var prior=RenderTexture.active;
             try{Graphics.Blit(null,texture,material);}finally{RenderTexture.active=prior;}
+            if(!texture.IsCreated())throw new InvalidOperationException("Galaxy background target lost during rendering. Flat map retained.");
             lastX=x;lastY=y;lastScale=viewport.Scale;lastWidth=size.width;lastHeight=size.height;lastFeatures=features;lastDepth=depth;RenderCount++;
             LastSubmissionMilliseconds=watch.Elapsed.TotalMilliseconds;return true; // CPU submission, NOT GPU frame time.
         }
