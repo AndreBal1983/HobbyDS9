@@ -310,7 +310,7 @@ namespace HobbyDS9.UnityReview
             var selectedNode=nodes.FirstOrDefault(n=>n.NodeId.Value==workspace.SelectedNode);
             if(selectedNode!=null)
             {
-                Text(details,selectedNode.DisplayName).AddToClassList("console-section");
+                Text(details,Name(selectedNode.NodeId.Value)).AddToClassList("console-section");
                 foreach(var colony in facts.Colonies.Where(c=>selectedNode.AssociatedSystemId.HasValue&&c.SystemId==selectedNode.AssociatedSystemId.Value))
                 {
                     Text(details,colony.Environment.DisplayName+" · population "+colony.Population);
