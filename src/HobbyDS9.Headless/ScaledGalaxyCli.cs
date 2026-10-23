@@ -30,10 +30,21 @@ internal static class ScaledGalaxyCli
         if(args[0]=="--scaled-galaxy") {Console.WriteLine(json);return true;}
         watch.Restart(); var reopened=ScaledGalaxyJson.Read(json,admitted); double openMs=watch.Elapsed.TotalMilliseconds;
         var d=review.Export(); var homes=d.Layout.HomeCandidates;
+        double Reject(ScaledGalaxyDocumentDto invalid) {
+            watch.Restart();
+            try { ScaledGalaxyApplication.Open(invalid,admitted); }
+            catch(ArgumentException) { return watch.Elapsed.TotalMilliseconds; }
+            throw new InvalidOperationException("Invalid-map failure probe unexpectedly accepted.");
+        }
+        var malformed=review.Export();malformed.Features[0].Position=null!;double shapeRejectMs=Reject(malformed);
+        var wrongHash=review.Export();wrongHash.ContentHash=new string('0',64);double hashRejectMs=Reject(wrongHash);
+        bool failurePreservedReview=json==ScaledGalaxyJson.Write(review);
+        if(!failurePreservedReview)throw new InvalidOperationException("Failed Open changed the existing review.");
         var diagnostics=ScaledGalaxyDiagnostics.Measure(d);
         var process=Process.GetCurrentProcess();process.Refresh();
         Console.WriteLine(JsonSerializer.Serialize(new {SourceStatus="Supported full Generate/strict JSON/Open; no Unity/native claim",d.ContentHash,d.Settings,d.Tuning,
             GenerateMs=generationMs,StrictOpenMs=openMs,IndentedJsonBytes=System.Text.Encoding.UTF8.GetByteCount(json),ReopenedHash=reopened.Export().ContentHash,
+            MalformedShapeRejectMs=shapeRejectMs,ValidShapeWrongHashRejectMs=hashRejectMs,FailedOpenPreservedReview=failurePreservedReview,
             PeakWorkingSetBytes=process.PeakWorkingSet64,OriginNodeId=homes[0].NodeId,DestinationNodeId=homes[1].NodeId,
             Route=review.FindRoute(homes[0].NodeId,homes[1].NodeId),Diagnostics=diagnostics},new JsonSerializerOptions {WriteIndented=true}));return true;
     }

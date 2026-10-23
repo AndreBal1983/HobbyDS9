@@ -14,7 +14,8 @@ public sealed class ScaledGalaxyTests
     static ScaledGalaxySettingsDto Settings(string seed="42",int count=250) => new() {Seed=seed,SystemCount=count,EmptyRegionCount=count,
         Width=count==1000?5000000:2500000,Height=count==1000?4000000:2000000,HomeCivilizationDefinitionIds=Catalog().Select(c=>c.DefinitionId).ToList()};
     static string Json<T>(T d) => JsonSerializer.Serialize(d);
-    static readonly Lazy<ScaledGalaxyDocumentDto> Baseline = new(()=>ScaledGalaxyApplication.Generate(Settings(),Catalog()).Export());
+    static readonly Lazy<ScaledGalaxyReview> HeldReview = new(()=>ScaledGalaxyApplication.Generate(Settings(),Catalog()));
+    static readonly Lazy<ScaledGalaxyDocumentDto> Baseline = new(()=>HeldReview.Value.Export());
     static ScaledGalaxyDocumentDto Clone() => JsonSerializer.Deserialize<ScaledGalaxyDocumentDto>(Json(Baseline.Value))!;
     static GeneratedGalaxyDocumentDto Geometry(ScaledGalaxyDocumentDto d) => new() {Width=d.Layout.Width,Height=d.Layout.Height,
         Regions=d.Layout.Regions,Systems=d.Layout.Systems,Connections=d.Layout.Connections};
@@ -69,13 +70,17 @@ public sealed class ScaledGalaxyTests
         Assert.Equal(expected,Json(review.Export()));Assert.Equal(expected,Json(opened.Export()));
     }
 
-    [Fact]
-    public void ThousandSystemFullGenerateStrictOpenFitsBudgetsAndPreservesExactGeometry()
+    [Theory]
+    [InlineData("42")][InlineData("18446744073709551615")]
+    public void ThousandSystemFullGenerateStrictOpenFitsBudgetsAndPreservesExactGeometry(string seed)
     {
-        var review=ScaledGalaxyApplication.Generate(Settings("42",1000),Catalog());var d=review.Export();
+        var review=ScaledGalaxyApplication.Generate(Settings(seed,1000),Catalog());var d=review.Export();
         Assert.Equal(2000,d.Layout.Regions.Count);Assert.Equal(1100,d.Features.Count);Assert.Equal(40,d.Tuning.Environment.BlackHoleCount);Assert.Equal(60,d.Tuning.Environment.NebulaCount);
         var json=ScaledGalaxyJson.Write(review);Assert.InRange(System.Text.Encoding.UTF8.GetByteCount(json),1,ScaledGalaxyIdentity.MaximumJsonBytes);
-        var reopened=ScaledGalaxyJson.Read(json,Catalog());Assert.Equal(Json(d),Json(reopened.Export()));
+        var reordered=JsonSerializer.Deserialize<ScaledGalaxyDocumentDto>(json)!;
+        reordered.Layout.Regions.Reverse();reordered.Features.Reverse();reordered.RegionInfluences.Reverse();reordered.Settings.HomeCivilizationDefinitionIds.Reverse();
+        var reopened=ScaledGalaxyJson.Read(Json(reordered),Catalog().AsEnumerable().Reverse());Assert.Equal(Json(d),Json(reopened.Export()));
+        if(seed=="42")Assert.Equal("b7a10c946954cfdf51a28e90bccda98ee8a1d4dcbd6e35c23c811fd94878a834",d.ContentHash);
         GeneratedGalaxyTests.ValidateGeometryIndependently(Geometry(d));
         var h=d.Layout.HomeCandidates;var route=review.FindRoute(h[0].NodeId,h[1].NodeId);
         Assert.True(route.Success);Assert.Equal((long)route.Steps.Count,route.TotalCost);Assert.True(route.Steps.Count>=5);
@@ -115,7 +120,7 @@ public sealed class ScaledGalaxyTests
             var hash=typeof(ScaledGalaxyReviewSession).Assembly.GetType("HobbyDS9.Simulation.ScaledGalaxyData")!.GetMethod("Hash",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static)!;
             d.ContentHash=(string)hash.Invoke(null,new object[]{d})!;
         }
-        Assert.Throws<ArgumentException>(()=>ScaledGalaxyApplication.Open(d,Catalog()));Assert.Equal(original,Json(Baseline.Value));
+        Assert.Throws<ArgumentException>(()=>ScaledGalaxyApplication.Open(d,Catalog()));Assert.Equal(original,Json(HeldReview.Value.Export()));
     }
 
     [Fact]
@@ -145,5 +150,54 @@ public sealed class ScaledGalaxyTests
         var review=ScaledGalaxyApplication.Open(Clone(),Catalog());string node=Baseline.Value.Layout.Regions[0].NodeId;
         Assert.Equal(0,review.FindRoute(node,node).TotalCost);Assert.Equal(RouteErrorCode.InvalidSystemId,review.FindRoute("",node).ErrorCode);
         Assert.Equal(RouteErrorCode.UnknownSystem,review.FindRoute("nav.foreign",node).ErrorCode);
+    }
+
+    [Theory]
+    [InlineData(1000)][InlineData(2000)][InlineData(3000)]
+    public void BoundedNonDefaultCountsExtentsAndFeatureDensitiesRoundtrip(int target)
+    {
+        var s=Settings("0");s.SystemCount=30;s.EmptyRegionCount=15;s.Width=1000000;s.Height=600000;
+        s.BlackHolesPerBaselineArea=4;s.NebulaePerBaselineArea=6;s.QuietEmptyAreaTargetPermille=target;
+        var review=ScaledGalaxyApplication.Generate(s,Catalog());var d=review.Export();
+        Assert.Equal(45,d.Layout.Regions.Count);Assert.Equal(2,d.Tuning.Environment.BlackHoleCount);Assert.Equal(4,d.Tuning.Environment.NebulaCount);
+        Assert.Equal(1+target/1000,d.Tuning.StarClusterSize);GeneratedGalaxyTests.ValidateGeometryIndependently(Geometry(d));
+        Assert.Equal(Json(d),Json(ScaledGalaxyJson.Read(ScaledGalaxyJson.Write(review),Catalog()).Export()));
+        s.BlackHolesPerBaselineArea=0;s.NebulaePerBaselineArea=0;s.StellarInfluenceEnabled=false;
+        var empty=ScaledGalaxyApplication.Generate(s,Catalog()).Export();Assert.Equal(30,empty.Features.Count);
+        Assert.All(empty.RegionInfluences,r=>{Assert.Empty(r.Contributions);Assert.Equal(100,r.TargetDensity);});
+    }
+
+    [Theory]
+    [InlineData(false)][InlineData(true)]
+    public void AggregateVertexAndContributionBudgetsRejectBeforeRegeneration(bool contributions)
+    {
+        var d=Clone();
+        if(contributions)foreach(var r in d.RegionInfluences)r.Contributions=Enumerable.Repeat(new EnvironmentGalaxyContributionDto{FeatureId=d.Features[0].FeatureId,Amount=1},49).ToList();
+        else foreach(var r in d.Layout.Regions)r.Boundary=Enumerable.Repeat(r.Boundary[0],41).ToList();
+        Assert.Throws<ArgumentException>(()=>ScaledGalaxyApplication.Open(d,Catalog()));
+        Assert.Throws<ArgumentException>(()=>ScaledGalaxyJson.Read(Json(d),Catalog()));
+    }
+
+    [Fact]
+    public void ControlledFamiliesIncreaseAggregateLocalExtraSiteCountsWithFixedFeatures()
+    {
+        var totals=new Dictionary<GalaxyEnvironmentFeatureKind,(int On,int Off)>();
+        for(int seed=0;seed<4;seed++) {
+            var s=Settings(seed.ToString(CultureInfo.InvariantCulture));var on=ScaledGalaxyApplication.Generate(s,Catalog()).Export();
+            foreach(var kind in new[]{GalaxyEnvironmentFeatureKind.Star,GalaxyEnvironmentFeatureKind.BlackHole,GalaxyEnvironmentFeatureKind.Nebula}) {
+                s.StellarInfluenceEnabled=kind!=GalaxyEnvironmentFeatureKind.Star;s.BlackHoleInfluenceEnabled=kind!=GalaxyEnvironmentFeatureKind.BlackHole;s.NebulaInfluenceEnabled=kind!=GalaxyEnvironmentFeatureKind.Nebula;
+                var off=ScaledGalaxyApplication.Generate(s,Catalog()).Export();Assert.Equal(Json(on.Features),Json(off.Features));
+                var anchors=on.Features.Where(f=>f.NodeId!=null).Select(f=>f.NodeId).ToHashSet();var family=on.Features.Where(f=>f.Kind==kind).ToArray();
+                bool Core(GeneratedGalaxyPointDto p,EnvironmentGalaxyFeatureDto f) {
+                    long dx=p.X-f.Position.X,dy=p.Y-f.Position.Y;
+                    if(Math.Abs(dx)>=f.RadiusX||Math.Abs(dy)>=f.RadiusY)return false;
+                    long q=dx*dx*1000000/((long)f.RadiusX*f.RadiusX)+dy*dy*1000000/((long)f.RadiusY*f.RadiusY);
+                    return q<1000000&&f.DensityWeight*(1000000-q)/1000000*2>=f.DensityWeight;
+                }
+                int Count(ScaledGalaxyDocumentDto d)=>d.Layout.Regions.Count(r=>!anchors.Contains(r.NodeId)&&family.Any(f=>Core(r.Center,f)));
+                var prior=totals.GetValueOrDefault(kind);totals[kind]=(prior.On+Count(on),prior.Off+Count(off));
+            }
+        }
+        Assert.All(totals,t=>Assert.True(t.Value.On>t.Value.Off,$"{t.Key}: {t.Value}"));
     }
 }
