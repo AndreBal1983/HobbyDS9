@@ -257,6 +257,11 @@ namespace HobbyDS9.UnityReview.Tests
                 Click(doc.rootVisualElement.Q<Button>("fleet-create"));Confirm(doc);Assert.That(model.NamedFleets().Any(f=>produced.All(id=>f.Fleet.ShipIds.Any(s=>s.Value==id))),Is.True);
                 CampaignTrace(entry,"fleet-merged",new{Produced=produced});
                 yield return CampaignCapture(entry,doc,"paid-fleet");
+                Assert.That(model.Current.Frame.Status.Turn,Is.EqualTo(5),"four paid-production setup turns");
+                var ownSystem=model.Current.Frame.Strategy!.Colonies.Where(c=>c.OwnerCivilizationId?.Value==model.Current.Frame.Actor)
+                    .OrderBy(c=>c.ColonyId.Value,StringComparer.Ordinal).First().SystemId.Value;
+                var ownHome=model.GeneratedMap().Regions.Single(r=>r.SystemId==ownSystem).NodeId;
+                var guardIssued=new HashSet<string>(StringComparer.Ordinal);
                 var visited=new HashSet<string>(StringComparer.Ordinal);bool travelCaptured=false,contactPriorityChecked=false;
                 for(int turn=0;turn<128&&model.Current.Frame.Status.Phase==SessionPhase.Planning;turn++)
                 {
@@ -264,7 +269,20 @@ namespace HobbyDS9.UnityReview.Tests
                     CampaignPage(doc,ReviewWorkspacePage.Map);yield return null;
                     foreach(var fleet in model.Current.Frame.OwnStrategicFleets.ToArray())
                     {
-                        var node=fleet.LocationNodeId.Value;visited.Add(node);if(fleet.TransitTotalCost>0||fleet.RouteNodeIds.Count>0)continue;
+                        var node=fleet.LocationNodeId.Value;visited.Add(node);if(fleet.TransitTotalCost>0)continue;
+                        if(turn>=8&&node==ownHome)
+                        {
+                            if(!guardIssued.Contains(fleet.FleetId.Value))
+                            {
+                                Click(doc.rootVisualElement.Q<Button>("map-fleet-"+fleet.FleetId.Value));CampaignPage(doc,ReviewWorkspacePage.FleetOrders);
+                                var defend=doc.rootVisualElement.Q<Button>("player-stay-engage");Assert.That(defend,Is.Not.Null);Assert.That(defend.enabledInHierarchy,Is.True);
+                                Click(defend);Confirm(doc);guardIssued.Add(fleet.FleetId.Value);
+                                Assert.That(model.Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==fleet.FleetId.Value).Intent,Is.EqualTo(CampaignTravelIntent.StayEngage));
+                                CampaignTrace(entry,"own-colony-guard-confirmed",new{Fleet=fleet.FleetId.Value,OwnColonyNode=ownHome});
+                            }
+                            continue;
+                        }
+                        if(fleet.RouteNodeIds.Count>0)continue;
                         var known=model.GeneratedMap();var neighbors=known.Regions.ToDictionary(r=>r.NodeId,_=>new List<string>(),StringComparer.Ordinal);
                         foreach(var edge in known.Connections){neighbors[edge.EndpointA].Add(edge.EndpointB);neighbors[edge.EndpointB].Add(edge.EndpointA);}
                         var distance=new Dictionary<string,int>(StringComparer.Ordinal){{node,0}};var queue=new Queue<string>();queue.Enqueue(node);
@@ -272,6 +290,7 @@ namespace HobbyDS9.UnityReview.Tests
                         var target=distance.Where(d=>d.Value>0&&!visited.Contains(d.Key)).OrderBy(d=>d.Value).ThenBy(d=>d.Key,StringComparer.Ordinal).Select(d=>d.Key).FirstOrDefault();
                         var contact=model.Current.Frame.Travel!.KnownContacts.Where(c=>c.Fresh).Select(c=>(Contact:c,Offer:model.Current.FindKnownRoute(fleet.FleetId.Value,c.LastSeenNodeId)))
                             .Where(c=>c.Offer?.Route.Success==true).OrderBy(c=>c.Offer!.Route.TotalCost).ThenBy(c=>c.Contact.FleetId,StringComparer.Ordinal).FirstOrDefault();
+                        if(turn>=8){target=ownHome;contact=default;} // Deliberate defence; no hidden enemy target or Follow override.
                         CampaignTrace(entry,"route-choice",new{Fleet=fleet.FleetId.Value,Origin=node,Target=target,Contact=contact.Contact?.FleetId,
                             ContactNode=contact.Contact?.LastSeenNodeId,ContactTurn=contact.Contact?.LastSeenTurn,Intent=contact.Contact==null?"Leave":"Follow"});
                         Assert.That(target!=null||contact.Contact!=null,Is.True,"bounded known-space driver needs a lawful next target");
@@ -286,9 +305,22 @@ namespace HobbyDS9.UnityReview.Tests
                     if(!travelCaptured){yield return CampaignCapture(entry,doc,"travel");travelCaptured=true;}
                     Click(doc.rootVisualElement.Q<Button>("player-primary-action"));Confirm(doc);yield return null;
                     CampaignTrace(entry,"turn-advanced");
+                    if(turn==7)Assert.That(model.Current.Frame.Status.Turn,Is.EqualTo(13),"eight actor-known exploration turns");
+                    var observed=model.Current.Frame.Travel!.KnownContacts.FirstOrDefault(c=>c.Fresh);
+                    if(observed!=null&&!contactPriorityChecked)
+                    {
+                        CampaignPage(doc,ReviewWorkspacePage.Map);yield return null;yield return null;
+                        var marker=doc.rootVisualElement.Q<Button>("map-contact-"+observed.FleetId);
+                        yield return CampaignPriorityPointer(doc,entry,marker,marker.worldBound.center,0);
+                        if(model.Current.Frame.Status.Phase==SessionPhase.Planning){yield return CampaignPointerRight(doc,entry,marker);Confirm(doc,false);}
+                        else yield return CampaignPriorityPointer(doc,entry,marker,marker.worldBound.center,1);
+                        foreach(var id in guardIssued)Assert.That(model.Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==id).Intent,Is.EqualTo(CampaignTravelIntent.StayEngage),"contact inspection never replaces deliberate guard");
+                        contactPriorityChecked=true;CampaignTrace(entry,"guard-contact-inspected-without-replacing-order");
+                    }
                 }
                 CampaignDiagnosticSnapshot(entry,"before-encounter-bound");
                 Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.AwaitingCombat),"real exploration meets lawful AI within128turns");
+                Assert.That(guardIssued,Is.Not.Empty);Assert.That(contactPriorityChecked,Is.True,"actual observed-contact pointer priority checked");
                 CampaignPage(doc,ReviewWorkspacePage.Combat);yield return null;
                 Assert.That(produced.All(id=>model.Current.Frame.Battle!.OwnShips.Any(s=>s.Condition.ShipId==id)),Is.True,"paid produced fleet participates in the battle");
                 yield return CampaignCapture(entry,doc,"orders");bool firstRound=true;int rounds=0;
