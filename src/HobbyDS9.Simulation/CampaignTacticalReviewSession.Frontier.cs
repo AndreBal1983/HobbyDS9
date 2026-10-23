@@ -150,7 +150,7 @@ namespace HobbyDS9.Simulation
                 foreach(var arrived in fleet.RouteNodeIds!.Take(checked((int)motion.EdgesCompleted)))
                 {
                     if(!visited.Add(fleet.OwnerCivilizationId+"|"+arrived))continue;
-                    var lanes=definitions.NavigationConnections!.Where(e=>frontier!.PublicLaneIds!.Contains(e.ConnectionId,StringComparer.Ordinal)
+                    var lanes=definitions.NavigationConnections!.Where(e=>(generatedMap != null || frontier!.PublicLaneIds!.Contains(e.ConnectionId,StringComparer.Ordinal))
                         &&(e.EndpointA==arrived||e.EndpointB==arrived)).OrderBy(e=>e.ConnectionId,StringComparer.Ordinal).ToList();
                     var nodes=lanes.SelectMany(e=>new[]{e.EndpointA,e.EndpointB}).Distinct(StringComparer.Ordinal).OrderBy(n=>n,StringComparer.Ordinal).ToList();
                     var row=new CampaignFrontierReceiptDto {ActorId=fleet.OwnerCivilizationId,FleetId=fleet.FleetId,ArrivalNodeId=arrived,Turn=proof.Start.TurnNumber,

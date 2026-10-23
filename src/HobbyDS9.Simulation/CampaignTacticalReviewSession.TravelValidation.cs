@@ -25,6 +25,18 @@ namespace HobbyDS9.Simulation
         }
         private void ValidateContactRows(GameStateDto game,IReadOnlyList<CampaignContactKnowledgeDto> rows)
         {
+            if(generatedMap!=null)
+            {
+                // Generated ingress is accepted only through whole-history replay, not this structural check alone.
+                var generatedGraph=new WeightedNavigationGraph(definitions);
+                Require(rows.Select(k=>k.ActorId+"|"+k.FleetId).Distinct(StringComparer.Ordinal).Count()==rows.Count
+                    &&rows.All(k=>controllers.ContainsKey(k.ActorId)&&KnownFleetOwner(k.FleetId) is string owner
+                        &&CampaignPhysicalMovement.Hostile(declaredHostilities!,k.ActorId,owner)
+                        &&k.LastSeenTurn>=initialTurn&&k.LastSeenTurn<=game.TurnNumber
+                        &&generatedGraph.KnownNode(game,k.ActorId,k.LastSeenNodeId)
+                        &&k.TrackingNodeIds.Count==1&&k.TrackingNodeIds[0]==k.LastSeenNodeId),"Invalid generated observed contact row.");
+                return;
+            }
             Require(rows.Count==authoredContactGrids!.Count&&rows.Select(k=>k.ActorId+"|"+k.FleetId).Distinct(StringComparer.Ordinal).Count()==rows.Count,"Missing/duplicate lawful contact grid.");
             var graph=new WeightedNavigationGraph(definitions);
             foreach(var k in rows)
@@ -101,7 +113,9 @@ namespace HobbyDS9.Simulation
                 var expectedRequests=FreezePhysical(replay,motion);
                 var expectedContacts=proof.Contacts.Select(CampaignTacticalTravelData.Copy).ToList();
                 RefreshPhysicalContacts(expectedRequests,proof.Start.TurnNumber,expectedContacts);
-                Require(ContactKeys(expectedContacts).SequenceEqual(ContactKeys(s.Contacts)),"Forged contact freshness/location.");
+                // Format7 contact provenance is re-derived by complete accepted-operation replay on load.
+                // Legacy profiles retain the exact fixed-grid proof check.
+                if(generatedMap==null)Require(ContactKeys(expectedContacts).SequenceEqual(ContactKeys(s.Contacts)),"Forged contact freshness/location.");
                 Require(motion.Receipts.Select(ReceiptKey).SequenceEqual(s.LastMovement.Select(ReceiptKey)),"Forged movement/stop receipts.");
                 if(s.Phase==SessionPhase.AwaitingCombat)
                 {

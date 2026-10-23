@@ -30,8 +30,10 @@ namespace HobbyDS9.Simulation
             CampaignTacticalTravelPackageDto? physicalPackage=null,CampaignTacticalTravelSaveDto? physicalSave=null,
             CampaignIntegratedPlaytestPackageDto? integratedPackage=null,CampaignIntegratedPlaytestSaveDto? integratedSave=null,
             CampaignSingleplayerDemoPackageDto? demoPackage=null,CampaignFrontierPackageDto? frontierPackage=null,
-            CampaignPlayableFleetPackageDto? playablePackage=null)
+            CampaignPlayableFleetPackageDto? playablePackage=null, NaturalGalaxyDocumentDto? generatedMap=null, string? generatedTemplateHash=null)
         {
+            this.generatedMap = generatedMap == null ? null : NaturalGalaxyData.Copy(generatedMap);
+            this.generatedTemplateHash = generatedTemplateHash;
             playableHash = playablePackage?.PackageHash;
             playableOperationLimit = playablePackage?.ReplayOperationLimit ?? 0;
             demo = demoPackage == null ? null : CopyDemoSettings(demoPackage);
@@ -389,7 +391,7 @@ namespace HobbyDS9.Simulation
                         physicalNext.Orders.RemoveAll(o => !staged.Fleets!.Any(f => f.FleetId == o.FleetId));
                         foreach (var o in physicalNext.Orders.Where(o => physicalNext.LastMovement.Any(r => r.FleetId == o.FleetId && r.StoppedByEncounter)))
                         { o.Intent = CampaignTravelIntent.Stay; o.ContactFleetId = null; o.ExpectedContactSeenTurn = null; o.RouteNodeIds.Clear(); }
-                        if(frontier!=null)nextDiscoveries=CompleteFrontierPlanning(physicalNext);
+                        if(frontier!=null||generatedMap!=null)nextDiscoveries=CompleteFrontierPlanning(physicalNext);
                         ValidateTravelSave(physicalNext);
                     }
                 }
