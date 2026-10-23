@@ -33,4 +33,16 @@ public sealed class GeneratedGalaxyMapStoreTests : IDisposable
         var store=new GeneratedGalaxyMapStore(directory);
         Assert.Throws<InvalidDataException>(()=>store.Read(1));Assert.Equal(GeneratedGalaxyMapStore.MaximumBytes+1L,new FileInfo(path).Length);
     }
+    [Fact] public void ExpandedBoundRemainsFiniteAndLargeFailedReplacementRetainsOldSlot()
+    {
+        Assert.Equal(16*1024*1024,GeneratedGalaxyMapStore.MaximumBytes);
+        var store=new GeneratedGalaxyMapStore(directory);var original=new byte[]{1,2,3};store.Write(1,original,false);
+        var large=new byte[GeneratedGalaxyMapStore.LegacyMaximumBytes+1];large[^1]=42;
+        var failing=new GeneratedGalaxyMapStore(directory,stage=>{if(stage==UnityReviewWriteStage.BeforeReplace)throw new IOException("Injected large write failure.");});
+        Assert.Throws<IOException>(()=>failing.Write(1,large,true));Assert.Equal(original,store.Read(1));
+        Assert.Single(Directory.GetFiles(directory));
+        store.Write(1,large,true);Assert.Equal(large,store.Read(1));
+        Assert.Throws<InvalidDataException>(()=>store.Write(1,new byte[GeneratedGalaxyMapStore.MaximumBytes+1],true));
+        Assert.Equal(large,store.Read(1));
+    }
 }

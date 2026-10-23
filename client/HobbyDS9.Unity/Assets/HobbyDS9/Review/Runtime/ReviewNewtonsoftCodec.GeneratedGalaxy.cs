@@ -14,9 +14,14 @@ namespace HobbyDS9.UnityReview
         public byte[] EncodeEnvironmentGalaxy(EnvironmentGalaxyDocumentDto document)=>Encode(document);
         public int GeneratedGalaxyFormat(byte[] bytes)
         {
-            var root=GeneratedRoot(bytes);
+            var root=GeneratedRoot(bytes,GeneratedGalaxyMapStore.MaximumBytes);
             if(root["FormatVersion"]?.Type!=JTokenType.Integer)throw Invalid();
-            try{return root["FormatVersion"]!.Value<int>();}
+            try
+            {
+                var format=root["FormatVersion"]!.Value<int>();
+                if(format!=ScaledGalaxyIdentity.FormatVersion&&bytes.Length>GeneratedGalaxyMapStore.LegacyMaximumBytes)throw Invalid();
+                return format;
+            }
             catch(Exception){throw new InvalidDataException("Invalid generated-map format.");}
         }
         public EnvironmentGalaxyDocumentDto DecodeEnvironmentGalaxy(byte[] bytes)
@@ -62,9 +67,9 @@ namespace HobbyDS9.UnityReview
             }
             catch(Exception){throw new InvalidDataException("Invalid generated-map document.");}
         }
-        private static JToken GeneratedRoot(byte[] bytes)
+        private static JToken GeneratedRoot(byte[] bytes,int maximumBytes=GeneratedGalaxyMapStore.LegacyMaximumBytes)
         {
-            if(bytes==null||bytes.Length==0||bytes.Length>GeneratedGalaxyMapStore.MaximumBytes)
+            if(bytes==null||bytes.Length==0||bytes.Length>maximumBytes)
                 throw new InvalidDataException("Generated map file size unsupported.");
             try
             {

@@ -8,7 +8,8 @@ namespace HobbyDS9.UnityReview
     public sealed class GeneratedGalaxyMapStore
     {
         public const string DirectoryName="HobbyDS9GeneratedGalaxyReviewOnly-v1";
-        public const int MaximumBytes=2*1024*1024;
+        public const int LegacyMaximumBytes=2*1024*1024;
+        public const int MaximumBytes=HobbyDS9.Contracts.ScaledGalaxyIdentity.MaximumJsonBytes;
         private readonly string directory;
         private readonly Action<UnityReviewWriteStage>? probe;
         public GeneratedGalaxyMapStore(string mapDirectory,Action<UnityReviewWriteStage>? writeProbe=null)

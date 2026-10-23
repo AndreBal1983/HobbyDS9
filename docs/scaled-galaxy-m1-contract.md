@@ -29,3 +29,9 @@ Each feature/cluster anchor has a bounded count-scaled candidate budget; additio
 The frontend owns portal drawing using exact shared endpoints from existing detached polygon DTOs. Midpoints use doubled integer coordinates to retain half units. Centre→shared midpoint→next centre stays within the two convex cells; graph route/cost is unchanged. No new portable portal DTO is required. Actual endpoints can be extracted by exact equality, with no epsilon or short-edge threshold.
 
 Publish actual250 maps/routes/settings/hash and quiet/disturbed/component diagnostics before frontend/Art renders; then1000full Generate/Open stress evidence. Native/UI/AOT, source review and exact-head three-platform CI remain separate. Preserve old packages/saves/latest pointer. No default activation, main merge, speed balancing or later milestone.
+
+## Host wire preparation — application binding still pending
+
+The Unity host now has dedicated format3 encode/decode methods with exact required fields, scalar types, depth16, text/seed lengths and individual/aggregate collection budgets. This accepts only a bounded wire shape; the future portable Open must validate its semantic contents, canonical hash and exact regeneration before publication. Tests use explicitly empty wire fixtures, not generated maps or claimed geography.
+
+The isolated map store admits at most16MiB for format3 preparation, retaining atomic replace and failure rollback. Outer dispatch and both legacy decoders preserve the original2MiBformat1/2 bound. The current workspace still rejects format3 without changing its current map, draft, route authority or export; no Generate/Open API is fabricated while the portable implementation and actual samples are pending. This is source/CPU preparation, not engine/AOT/native acceptance.
