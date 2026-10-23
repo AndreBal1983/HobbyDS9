@@ -19,7 +19,7 @@ Keep the map dominant and the route draft in the bounded inspector. Its header i
 
 The published query limit is64ordered targets, including the final destination. Disclose that bound rather than silently dropping pins. Repeated nodes and zero-length legs are valid ordered targets; do not deduplicate them or treat zero cost as a failure. Keep the list scrollable, with at least the active leg and destination reachable at1280×720.
 
-## Transit, pinned positions and visits
+## Transit and pinned system locations
 
 Only **user-chosen** start/via/destination positions receive route-intent markers. Intermediate graph nodes are corridor constraints, not numbered visit stops. A star remains an ordinary star glyph when the route passes through its region; do not add arrival rings, scan flashes, visited ticks or POI action labels.
 
@@ -27,7 +27,7 @@ Distinguish these concepts in data and text:
 
 - A transit-region pin constrains passage through a named region. Display “Via Region…” with an optional “Contains System… · transit only” subline. Whether it pins a local position or only a corridor node must come from the exact contract.
 - A user-pinned star position can legitimately constrain the line to that chosen location. Label it as a location/preview target; it still does not order a visit, survey or other action.
-- The published SystemVisit target expresses an explicit **visit draft**, with the exact associated SystemId, not an executed POI action. When the host offers that intent, label it distinctly as a visit/location draft and pin the actual star position. Never infer a visit from an automatic intermediate system region. Input-to-intent mapping remains the frontend's explicit UX decision; no survey or arrival action is added.
+- The announced replacement name is **SystemLocation**, retaining enum value2 and requiring the exact associated SystemId. It is only a system-position draft target: label it “System location”, not “visit draft”, and pin the actual star position. No actual visit, scout, survey or arrival semantics are introduced. Input-to-intent mapping remains the frontend's explicit UX decision.
 
 Retain the exact supplied start/end anchors and any explicit pin positions. Do not invent a physical ship position in a review that only supplies a node/site. Where the current API offers only a node anchor, describe that honestly; do not draw an arbitrary mouse position as authoritative.
 
@@ -43,7 +43,7 @@ The map document remains authoritative generated geography. Do not insert a loca
 
 ## Contained transit drawing
 
-For this initial binding, use the published **centreless ordered-midpoint chain only**. Ordinary transit must stop returning to each intermediate region centre/star. Preserve actual start/end and explicit anchors, then connect consecutive shared-edge midpoints through their intervening convex cells. RegionTransit is only a region constraint: absent a deliberate valid host-local pin, join incoming/outgoing corridor portions within that region without forcing its star/site. SystemVisit pins the exact associated star. This baseline is contained; it is not globally taut, geometrically shortest or minimum-bend. Any later string-pulling/rounding requires its own verified ordered-corridor contract, not mere containment somewhere in the polygon union.
+For this initial binding, use the published **centreless ordered-midpoint chain only**. Ordinary transit must stop returning to each intermediate region centre/star. Preserve actual start/end and explicit anchors, then connect consecutive shared-edge midpoints through their intervening convex cells. RegionTransit is only a region constraint: absent a deliberate valid host-local pin, join incoming/outgoing corridor portions within that region without forcing its star/site. SystemLocation pins the exact associated star. This baseline is contained; it is not globally taut, geometrically shortest or minimum-bend. Any later string-pulling/rounding requires its own verified ordered-corridor contract, not mere containment somewhere in the polygon union.
 
 Keep every accepted positive shared edge, including short crooked passages. Corner touching is not a new connection, and a drawn shortcut must not appear to omit an accepted crossing or visit a blocked/unknown region. Preserve exact raw corridor/portal diagnostics alongside the visible line. For multiple legs, validate each leg in its own order; repeated regions across different legs are not automatically errors.
 
@@ -51,7 +51,7 @@ Optional gentle rounding comes later and only with verified containment/crossing
 
 ## Markers and legibility
 
-Start uses a small hollow square, via pins use numbered hollow markers and the final destination a distinct double ring. These differ from lavender unoccupied-home brackets, ordinary stars and environmental feature markers. Emphasize the selected leg slightly; retain earlier valid legs at lower contrast without implying a different cost. Automatic transit nodes get no numbered pin glyphs.
+Start uses a small hollow square, via pins use numbered hollow markers and the final destination a distinct double ring. These differ from lavender unoccupied-home brackets, ordinary stars and environmental feature markers. Emphasize the selected leg slightly; other legs of the same current successful plan may use lower contrast. A failed current plan supplies no valid-prefix lines or costs. Automatic transit nodes get no numbered pin glyphs.
 
 Use the existing semantic zoom and nearest-received-pointer policy. When pins coincide or labels overlap, the ordered inspector remains the reliable way to select them. Do not move the actual pin/star positions to separate icons. Numbering is stable in queue order; changing zoom, selection or hover must not renumber the route. Preserve pan/drag suppression, Fit and keyboard focus. The known narrow-overview subpixel ambiguity is resolved by nearest-pointer policy and zoom, not by relaxed alignment tolerances.
 
@@ -62,7 +62,17 @@ Use the existing semantic zoom and nearest-received-pointer policy. When pins co
 
 Use the owner's supplied screenshots only as visual examples; obtain exact map identity and endpoints for numerical assertions. Do not invent an unseen fifth screenshot or assert that a geometrically longer route is wrong when it saves a crossing. Art does not implement another pathfinder to manufacture a baseline.
 
+## Repeated waypoints and per-leg geometry
+
+The independently checked single-simple-corridor painter is not evidence for flattening a multi-leg queue. Paint every leg with its own actual start/end anchors, then retain the shared user waypoint anchor between the legs. A→B→A must visibly reach the deliberately chosen B anchor and return: the portal sequence P→B→P must not collapse to P→P just because the two legs cross the same shared edge.
+
+Resolve a valid host anchor for each explicit user pin, including a RegionTransit waypoint, and keep it consistent between adjacent legs. A deliberate waypoint/site anchor can be fixed by the host; ordinary **automatic** intermediate region centres remain unpinned. Never discard an explicit leg boundary or waypoint through global vertex/path deduplication. Repeated target IDs and zero-length legs stay as separate ordered rows with their actual returned costs. A zero-crossing leg may still have distinct supported local anchors inside one cell; do not invent a travel-time consequence.
+
+Bounded geometry checks must include A→B→A, A→B→B→C, a zero-length first/last leg and repeated shared portals. Verify each leg's ordered positive boundary crossings and anchors, with no line bridge or hidden cost loss after remove-last/replacement. Cross-leg containment in an unordered polygon union is insufficient.
+
 ## Exact query and version binding
+
+Naming status: early `12ce1d5` still uses SystemVisit and InvalidVisitTarget. Primary announced their pre-consumer-release replacements **SystemLocation (value2)** and **InvalidSystemTarget (value7)**; the final implementation pin is still pending. This handoff uses the announced neutral location semantics, not a claim that12cealready contains those symbols.
 
 The early contract at `12ce1d5d188b22a196272a524ae49fb614b9d6c7` adds planned FindRoutePlan to all review wrappers while retaining old FindRoute unchanged. Queries must supply MapContentHash, PolicyVersion, OriginNodeId, ordered Targets and an explicit Filter with known permitted node/connection IDs. Missing filter lists reject; empty lists grant nothing. Full-map review deliberately supplies all map IDs. Persisted draft filters are never trusted permission; re-supply/revalidate on reload.
 
