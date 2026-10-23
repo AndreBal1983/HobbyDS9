@@ -69,5 +69,7 @@ namespace HobbyDS9.Simulation
                 if (byRegion.TryGetValue(node, out var rows)) foreach (var row in rows) visible[row.FeatureId] = row;
             return visible.Values.OrderBy(n => n.FeatureId, StringComparer.Ordinal).ToList().AsReadOnly();
         }
+        internal IReadOnlyList<CampaignNebulaVisualProxy> VisibleKnown(IEnumerable<NavigationKnowledgeEntryDto> knowledge)
+            => Visible(knowledge.Where(n => n.Level == NavigationKnowledgeLevel.Charted || n.Level == NavigationKnowledgeLevel.Surveyed).Select(n => n.Id));
     }
 }

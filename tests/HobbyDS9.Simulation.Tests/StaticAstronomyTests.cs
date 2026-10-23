@@ -133,15 +133,17 @@ public sealed class StaticAstronomyTests
     }
 
     [Theory]
-    [InlineData(0)][InlineData(1)][InlineData(2)][InlineData(3)][InlineData(4)][InlineData(5)][InlineData(6)]
+    [InlineData(0)][InlineData(1)][InlineData(2)][InlineData(3)][InlineData(4)][InlineData(5)][InlineData(6)][InlineData(7)]
     public void MixedProfilesMarkersHashesAndRootsRejectWithoutReplacement(int mutation)
     {
         var app=CampaignStaticAstronomyApplication.StartGame(Template(),Settings());Advance(app);var good=app.ExportGeneratedSave();string original=Json(good);var bad=Clone(good);
         switch(mutation){case 0:bad.ProfileId=CampaignGeneratedIdentity.Profile;break;case 1:bad.PolicyId=CampaignGeneratedIdentity.Policy;break;
             case 2:bad.Campaign.Integrated.Physical!.Core.ProfileId=CampaignGeneratedIdentity.EmbeddedCoreProfile;break;
             case 3:bad.PackageHash=new string('a',64);break;case 4:bad.Map.ContentHash=new string('a',64);break;
-            case 5:bad.Campaign.Transcript.Clear();break;case 6:bad.FormatVersion=8;break;}
+            case 5:bad.Campaign.Transcript.Clear();break;case 6:bad.FormatVersion=8;break;
+            case 7:bad.ProfileId=CampaignGeneratedIdentity.Profile;bad.PolicyId=CampaignGeneratedIdentity.Policy;bad.Campaign.Integrated.Physical!.Core.ProfileId=CampaignGeneratedIdentity.EmbeddedCoreProfile;break;}
         Assert.Throws<ArgumentException>(()=>CampaignStaticAstronomyApplication.LoadSave(Template(),bad));Assert.Equal(original,Json(app.ExportGeneratedSave()));
+        if(mutation==7)Assert.Throws<ArgumentException>(()=>CampaignGeneratedApplication.LoadSave(Template(),bad));
     }
 
     [Fact]
@@ -194,5 +196,24 @@ public sealed class StaticAstronomyTests
         output.WriteLine("Component cap test (not generated-game fixture) ms="+watch.ElapsedMilliseconds+" managedDelta="+(GC.GetTotalMemory(false)-before));
         Assert.Throws<ArgumentException>(()=>GeneratedStaticAstronomyIndex.Build(regions.Append(regions[0]).ToArray(),features,side,side));
         Assert.Throws<ArgumentException>(()=>GeneratedStaticAstronomyIndex.Build(regions,features.Append(features[0]).ToArray(),side,side));
+    }
+
+    [Theory]
+    [InlineData(NavigationKnowledgeLevel.Unknown,0)][InlineData(NavigationKnowledgeLevel.Charted,1)][InlineData(NavigationKnowledgeLevel.Surveyed,1)]
+    public void OnlyChartedOrSurveyedMembershipGrantsStaticKnowledge(NavigationKnowledgeLevel level,int expected)
+    {
+        var index=GeneratedStaticAstronomyIndex.Build(Boxes(),new[]{Nebula("feature.nebula.one",15,5)},20,20);
+        var knowledge=new[]{new NavigationKnowledgeEntryDto{Id="nav.b",Level=level},new NavigationKnowledgeEntryDto{Id="nav.a",Level=NavigationKnowledgeLevel.Unknown}};
+        Assert.Equal(expected,index.VisibleKnown(knowledge).Count);Array.Reverse(knowledge);Assert.Equal(expected,index.VisibleKnown(knowledge).Count);
+    }
+    [Fact]
+    public void LateIndexFailureCannotPublishPartialViewOrReplaceExistingAuthority()
+    {
+        var app=CampaignStaticAstronomyApplication.StartGame(Template(),Settings());string before=Json(app.ExportGeneratedSave()),view=Json(app.CaptureKnownAstronomy(Human));
+        var bad=app.ExportGeneratedSave();var nebula=bad.Map.Features.First(f=>f.Kind==GalaxyEnvironmentFeatureKind.Nebula);
+        var empty=bad.Map.Layout.Regions.First(r=>r.SystemId==null);nebula.NodeId=empty.NodeId;nebula.Position=P(empty.Center.X,empty.Center.Y);
+        bad.Map.ContentHash=NaturalGalaxyData.Hash(bad.Map);bad.PackageHash=GeneratedCampaignFactory.Build(Template(),bad.Map,staticAstronomy:true).PackageHash!;
+        var error=Assert.Throws<ArgumentException>(()=>CampaignStaticAstronomyApplication.LoadSave(Template(),bad));Assert.Contains("static-astronomy geometry",error.Message);
+        Assert.Equal(before,Json(app.ExportGeneratedSave()));Assert.Equal(view,Json(app.CaptureKnownAstronomy(Human)));
     }
 }
