@@ -32,7 +32,9 @@ namespace HobbyDS9.Simulation
             Require(layout.Regions.Select(r => r.NodeId).Distinct(StringComparer.Ordinal).Count() == layout.Regions.Count
                 && layout.Systems.Select(s => s.SystemId).Distinct(StringComparer.Ordinal).Count() == layout.Systems.Count,
                 "Duplicate frozen map identities.");
-            var edges = GeneratedGalaxyGeometry.Connect(layout.Regions, layout.Width, layout.Height);
+            List<NavigationConnectionDto> edges;
+            try { edges = GeneratedGalaxyGeometry.Connect(layout.Regions, layout.Width, layout.Height); }
+            catch(InvalidOperationException e) { throw new ArgumentException("Frozen map geometry is invalid.",nameof(map),e); }
             string Edge(NavigationConnectionDto e) => e.ConnectionId + "|" + e.EndpointA + "|" + e.EndpointB + "|" + (int)e.Kind + "|" + e.BaseTraversalCost;
             Require(edges.Select(Edge).OrderBy(x => x, StringComparer.Ordinal).SequenceEqual(layout.Connections.Select(Edge).OrderBy(x => x, StringComparer.Ordinal)),
                 "Frozen map connections differ from positive shared boundaries.");
@@ -69,6 +71,8 @@ namespace HobbyDS9.Simulation
             Require(selected.Count == 2 && selected.Count(c => c.ControllerKind == ControllerKind.Human) == 1
                 && selected.Count(c => c.ControllerKind == ControllerKind.AI) == 1, "Generated starter requires one human and one equipped AI from the trusted template.");
             var actors = new HashSet<string>(selected.Select(c => c.CivilizationId), StringComparer.Ordinal);
+            var omittedDefinitions=new HashSet<string>(definitions.Civilizations!.Where(c=>!selected.Any(s=>s.DefinitionId==c.DefinitionId)).Select(c=>c.DefinitionId),StringComparer.Ordinal);
+            definitions.Civilizations=definitions.Civilizations!.Where(c=>!omittedDefinitions.Contains(c.DefinitionId)).ToList();
             Require(selected.All(c => game.Fleets!.Any(f => f.OwnerCivilizationId == c.CivilizationId)
                 && game.Colonies!.Any(y => y.OwnerCivilizationId == c.CivilizationId)), "Each generated starter needs an existing fleet and colony.");
             var homes = selected.ToDictionary(c => c.CivilizationId,
@@ -97,7 +101,7 @@ namespace HobbyDS9.Simulation
                 planet.SystemId = game.Colonies.Single(c => c.PlanetId == planet.PlanetId).SystemId;
                 definitions.Planets.Single(p => p.DefinitionId == planet.DefinitionId).SystemDefinitionId = SystemDefinition(planet.SystemId);
             }
-            definitions.DefinitionIds = definitions.DefinitionIds.Where(id => !oldSystemDefinitions.Contains(id) && !oldPlanetDefinitions.Contains(id))
+            definitions.DefinitionIds = definitions.DefinitionIds.Where(id => !oldSystemDefinitions.Contains(id) && !oldPlanetDefinitions.Contains(id)&&!omittedDefinitions.Contains(id))
                 .Concat(definitions.StarSystems.Select(s => s.DefinitionId)).Concat(definitions.Planets.Select(p => p.DefinitionId)).OrderBy(id => id, StringComparer.Ordinal).ToList();
             game.Fleets = game.Fleets!.Where(f => actors.Contains(f.OwnerCivilizationId)).OrderBy(f => f.FleetId, StringComparer.Ordinal).ToList();
             foreach (var fleet in game.Fleets) { fleet.LocationNodeId = homes[fleet.OwnerCivilizationId].NodeId; fleet.RouteNodeIds = new List<string>(); fleet.TransitProgress = 0; fleet.TransitTotalCost = 0; }

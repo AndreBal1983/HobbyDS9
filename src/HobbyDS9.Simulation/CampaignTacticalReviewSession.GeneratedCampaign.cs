@@ -66,8 +66,8 @@ namespace HobbyDS9.Simulation
                 return new CampaignGeneratedMapDto { ActorId = actor, MapContentHash = copy.ContentHash, Width = copy.Layout.Width, Height = copy.Layout.Height,
                     ObservationTurn = state.Campaign.GameState.TurnNumber, ObservedNodeIds = GeneratedCoverage(state.Campaign.GameState, actor),
                     Regions = copy.Layout.Regions.Where(r => known.Contains(r.NodeId)).OrderBy(r => r.NodeId, StringComparer.Ordinal).ToList(),
-                    Connections = copy.Layout.Connections.Where(e => lanes.Contains(e.ConnectionId) && known.Contains(e.EndpointA) && known.Contains(e.EndpointB)).ToList(),
-                    Features = copy.Features.Where(f => f.NodeId != null && known.Contains(f.NodeId)).ToList() };
+                    Connections = copy.Layout.Connections.Where(e => lanes.Contains(e.ConnectionId) && known.Contains(e.EndpointA) && known.Contains(e.EndpointB)).OrderBy(e=>e.ConnectionId,StringComparer.Ordinal).ToList(),
+                    Features = copy.Features.Where(f => f.NodeId != null && known.Contains(f.NodeId)).OrderBy(f=>f.FeatureId,StringComparer.Ordinal).ToList() };
             }
         }
         private void PlanGeneratedTravel(CampaignTacticalTravelSaveDto next)
@@ -84,10 +84,21 @@ namespace HobbyDS9.Simulation
                     .OrderByDescending(c => c.LastSeenTurn).ThenBy(c => c.FleetId, StringComparer.Ordinal).FirstOrDefault();
                 var route = contact == null ? null : graph.FindRoute(game, fleet.OwnerCivilizationId, fleet.LocationNodeId, contact.LastSeenNodeId);
                 if (route == null || !route.Success)
-                    route = game.NavigationKnowledge!.Single(k => k.CivilizationId == fleet.OwnerCivilizationId).Nodes!
-                        .Where(n => n.Level != NavigationKnowledgeLevel.Unknown && n.Id != fleet.LocationNodeId && !visited.Contains(fleet.OwnerCivilizationId + "|" + n.Id))
-                        .OrderBy(n => n.Id, StringComparer.Ordinal).Select(n => graph.FindRoute(game, fleet.OwnerCivilizationId, fleet.LocationNodeId, n.Id))
-                        .Where(r => r.Success && r.Steps.Count > 0).OrderBy(r => r.TotalCost).ThenBy(r => r.Steps.Last(), StringComparer.Ordinal).FirstOrDefault();
+                {
+                    var knowledge=game.NavigationKnowledge!.Single(k=>k.CivilizationId==fleet.OwnerCivilizationId);
+                    var knownNodes=new HashSet<string>(knowledge.Nodes!.Where(n=>n.Level!=NavigationKnowledgeLevel.Unknown).Select(n=>n.Id),StringComparer.Ordinal);
+                    var knownEdges=new HashSet<string>(knowledge.Connections!.Where(n=>n.Level!=NavigationKnowledgeLevel.Unknown).Select(n=>n.Id),StringComparer.Ordinal);
+                    // Generated v1 has unit ordinary crossings and no dynamic cost effects. One lawful BFS
+                    // selects the same nearest/ordinal target; run the shared route solver only once.
+                    var lawful=definitions.NavigationConnections!.Where(e=>knownEdges.Contains(e.ConnectionId)
+                        &&knownNodes.Contains(e.EndpointA)&&knownNodes.Contains(e.EndpointB)).ToList();
+                    var neighbors=knownNodes.ToDictionary(n=>n,_=>new List<string>(),StringComparer.Ordinal);
+                    foreach(var edge in lawful){neighbors[edge.EndpointA].Add(edge.EndpointB);neighbors[edge.EndpointB].Add(edge.EndpointA);}
+                    var distances=GeneratedGalaxyData.Distances(neighbors,fleet.LocationNodeId);
+                    var destination=distances.Where(d=>d.Value>0&&!visited.Contains(fleet.OwnerCivilizationId+"|"+d.Key))
+                        .OrderBy(d=>d.Value).ThenBy(d=>d.Key,StringComparer.Ordinal).Select(d=>d.Key).FirstOrDefault();
+                    route=destination==null?null:graph.FindRoute(game,fleet.OwnerCivilizationId,fleet.LocationNodeId,destination);
+                }
                 if (route == null) continue;
                 var command = new SubmitCampaignTravelOrderDto { ActorId = fleet.OwnerCivilizationId,
                     CommandId = "ai-command.generated.t" + game.TurnNumber.ToString("D10", CultureInfo.InvariantCulture) + "." + fleet.FleetId,

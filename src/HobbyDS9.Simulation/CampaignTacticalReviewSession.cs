@@ -391,6 +391,7 @@ namespace HobbyDS9.Simulation
                         physicalNext.Orders.RemoveAll(o => !staged.Fleets!.Any(f => f.FleetId == o.FleetId));
                         foreach (var o in physicalNext.Orders.Where(o => physicalNext.LastMovement.Any(r => r.FleetId == o.FleetId && r.StoppedByEncounter)))
                         { o.Intent = CampaignTravelIntent.Stay; o.ContactFleetId = null; o.ExpectedContactSeenTurn = null; o.RouteNodeIds.Clear(); }
+                        if(generatedMap!=null){RefreshGeneratedContacts(staged,next.FleetSettings,physicalNext.Contacts,turn);RevalidateGeneratedFollow(physicalNext);}
                         if(frontier!=null||generatedMap!=null)nextDiscoveries=CompleteFrontierPlanning(physicalNext);
                         ValidateTravelSave(physicalNext);
                     }
