@@ -1,6 +1,7 @@
 using System.Numerics;
 using HobbyDS9.Contracts;
 using HobbyDS9.UnityReview;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace HobbyDS9.UnityReviewAdapter.Tests;
@@ -22,7 +23,10 @@ public sealed class GeneratedGalaxyRoutePathTests
         Assert.Equal(ids.Skip(1),route.Steps);Assert.Equal(8,route.TotalCost);
         var regions=document.Regions.ToDictionary(r=>r.NodeId);
         var path=GeneratedGalaxyRoutePath.Build(regions,ids[0],route.Steps);
-        Assert.Equal(17,path.Count);
+        Assert.Equal(10,path.Count);
+        AssertCorridor(regions,ids,path);
+        Assert.DoesNotContain(ids.Skip(1).Take(ids.Length-2),id=>path.Any(p=>
+            p.X2==2L*regions[id].Center.X&&p.Y2==2L*regions[id].Center.Y));
         for(int i=0;i<ids.Length-1;i++)AssertCrossing(regions,ids[i],ids[i+1]);
         // Regression witness: the old centre chord actually enters a non-route cell.
         var oldA=regions[ids[1]].Center;var oldB=regions[ids[2]].Center;
@@ -47,6 +51,26 @@ public sealed class GeneratedGalaxyRoutePathTests
             var before=codec.EncodeGeneratedGalaxy(document);var regions=document.Regions.ToDictionary(r=>r.NodeId);
             foreach(var edge in document.Connections)AssertCrossing(regions,edge.EndpointA,edge.EndpointB);
             Assert.Equal(before,codec.EncodeGeneratedGalaxy(document));
+        }
+    }
+
+    [Fact]
+    public void ScaledSampleCorridorsContainAllTransitSegmentsWithoutChangingMapBytes()
+    {
+        var codec=new ReviewNewtonsoftCodec();
+        foreach(var sample in Directory.GetFiles(Path.Combine(AppContext.BaseDirectory,"galaxy-samples/scaled"),"*.scaled.json"))
+        {
+            var document=new GeneratedGalaxyMapData(codec.DecodeScaledGalaxy(File.ReadAllBytes(sample)));
+            var before=codec.EncodeScaledGalaxy(document.Scaled!);
+            var report=Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(sample.Replace(".scaled.json",".report.json")));
+            string origin=report["OriginNodeId"]!.Value<string>()!;
+            var ids=new[]{origin}.Concat(report["Route"]!["Steps"]!.Values<string>().Select(s=>s!)).ToArray();
+            var regions=document.Regions.ToDictionary(r=>r.NodeId);
+            var path=GeneratedGalaxyRoutePath.Build(regions,origin,ids.Skip(1).ToArray());
+            AssertCorridor(regions,ids,path);
+            var reverse=GeneratedGalaxyRoutePath.Build(regions,ids[^1],ids.Reverse().Skip(1).ToArray());
+            Assert.Equal(path.Select(p=>(p.X2,p.Y2)).Reverse(),reverse.Select(p=>(p.X2,p.Y2)));
+            Assert.Equal(before,codec.EncodeScaledGalaxy(document.Scaled!));
         }
     }
 
@@ -105,6 +129,22 @@ public sealed class GeneratedGalaxyRoutePathTests
             var a=region.Boundary[i];var b=region.Boundary[(i+1)%region.Boundary.Count];
             var cross=(BigInteger)(b.X-a.X)*(p.Y2-2L*a.Y)-(BigInteger)(b.Y-a.Y)*(p.X2-2L*a.X);
             Assert.True(cross>=0,$"Point outside {region.NodeId}");
+        }
+    }
+    private static void AssertCorridor(IReadOnlyDictionary<string,GeneratedGalaxyRegionDto> regions,
+        IReadOnlyList<string> ids,IReadOnlyList<GeneratedGalaxyRoutePoint> path)
+    {
+        Assert.Equal(ids.Count+1,path.Count);
+        for(int segment=0;segment<ids.Count;segment++)
+        {
+            var region=regions[ids[segment]];
+            AssertContained(region,path[segment]);AssertContained(region,path[segment+1]);
+            foreach(var fraction in new[]{.25,.5,.75})
+            {
+                double x=path[segment].X+(path[segment+1].X-path[segment].X)*fraction;
+                double y=path[segment].Y+(path[segment+1].Y-path[segment].Y)*fraction;
+                Assert.Equal(new[]{ids[segment]},regions.Values.Where(r=>StrictlyInside(r,x,y)).Select(r=>r.NodeId));
+            }
         }
     }
     private static bool StrictlyInside(GeneratedGalaxyRegionDto r,double x,double y)

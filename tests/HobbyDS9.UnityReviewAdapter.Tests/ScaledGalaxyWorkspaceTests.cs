@@ -41,7 +41,7 @@ public sealed class ScaledGalaxyWorkspaceTests : IDisposable
         string origin=report["OriginNodeId"]!.Value<string>()!,destination=report["DestinationNodeId"]!.Value<string>()!;
         var route=workspace.FindRoute(origin,destination);Assert.Equal(report["Route"]!["Steps"]!.Values<string>(),route.Steps);
         Assert.Equal(report["Route"]!["TotalCost"]!.Value<long>(),route.TotalCost);
-        var portals=GeneratedGalaxyRoutePath.Build(document.Regions.ToDictionary(r=>r.NodeId),origin,route.Steps);Assert.Equal(1+2*route.Steps.Count,portals.Count);
+        var portals=GeneratedGalaxyRoutePath.Build(document.Regions.ToDictionary(r=>r.NodeId),origin,route.Steps);Assert.Equal(route.Steps.Count==0?1:2+route.Steps.Count,portals.Count);
         Assert.True(workspace.Export(false));var reopened=Workspace();var openTimer=Stopwatch.StartNew();Assert.True(reopened.Open(),reopened.Notice);openTimer.Stop();
         output.WriteLine("Host strict Open {0:F1}ms; compact bytes {1}; hash {2}",openTimer.Elapsed.TotalMilliseconds,workspace.ExportBytes().Length,document.ContentHash);
         Assert.True(openTimer.Elapsed<TimeSpan.FromSeconds(90),"Strict Open exceeded90s bounded CPU preparation ceiling");

@@ -369,7 +369,7 @@ namespace HobbyDS9.UnityReview.Tests
                     {
                         var view=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
                         var points=view.RoutePositions().Select(p=>view.LocalToWorld(p)).ToArray();
-                        Assert.That(points.Length,Is.EqualTo(1+2*route.Steps.Count),"one exact shared-edge portal per accepted crossing");
+                        Assert.That(points.Length,Is.EqualTo(route.Steps.Count==0?1:2+route.Steps.Count),"endpoints plus one exact shared-edge portal per accepted crossing; no intermediate centre detours");
                         // Normal screenshots and marker assertions retain the actual opaque star controls.
                         // A subpixel portal half-segment may be wholly covered by one of those glyphs.
                         // Probe the same Painter2D underlay with child visibility hidden, never changing
@@ -402,7 +402,7 @@ namespace HobbyDS9.UnityReview.Tests
                                     painted|=color.r>.8f&&color.g>.5f&&color.g<.8f&&color.b<.6f;
                                 }
                             }
-                            if(visible)Assert.That(painted,Is.True,"actual Painter2D underlay must follow visible portal half-segment "+(i-1));
+                            if(visible)Assert.That(painted,Is.True,"actual Painter2D underlay must follow visible corridor segment "+(i-1));
                         }
                         }
                         finally
