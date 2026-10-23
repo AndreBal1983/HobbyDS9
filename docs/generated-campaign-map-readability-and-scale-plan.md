@@ -26,6 +26,8 @@ For1000, start from actual New Game controls with seed42/quiet2.00. Assert stamp
 
 Generate/Continue retain90second async bounds; the whole owned process has900second watchdog. Record actual wait observations and managed bytes, with no FPS/GPU-time claim. Keep diagnostics and failures, full before-Prepare Assets/Packages/ProjectSettings/.vsconfig snapshot and complete after-exit restoration/no-extras/hash proof. The existing250 gameplay proof stays separate from this short scale case.
 
+Before each marker's unchanged<2px assertion, retain exact viewport/content/local/world coordinates, actual lines-child painted world point, marker layout/world bounds, parent border/padding, child margins/CSS placement and panel scale. Independently assert the actual lines-child world projection agrees with the map-local world anchor, rather than only agreeing with DOM placement. A capture-local guarded finally writes the private audit and actor map BEFORE restoring a failed render target/style context; the parent coroutine finally alone did not run when the75 nested capture failed. Diagnostic logging must not replace the original assertion. The75 failed bundle remains immutable.
+
 ## Remaining delivery gates
 
 Independent source/CPU/reference compilation and actual engine/image review precede any new strict IL2CPP build. Native acceptance will separately cover fresh NewGame/build/move/Save/Quit/Continue and a clearly labelled lawful aftermath checkpoint Continue→fresh known-map route away→End turn with damage/ammo/history retained. The502 case did not issue a fresh strategic order after aftermath Continue. Continue's observed39.8seconds remains an open responsiveness finding; this visual increment does not silently change backend validation.

@@ -71,7 +71,7 @@ namespace HobbyDS9.UnityReview.Tests
             bool contact=intended.name.StartsWith("map-contact-",StringComparison.Ordinal);
             var intendedNode=contact?frame.Travel!.KnownContacts.Single(c=>"map-contact-"+c.FleetId==intended.name).LastSeenNodeId:intended.name.Substring("map-star-".Length);
             var anchors=known.Regions.Select(r=>{var star=known.Features.FirstOrDefault(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star&&f.NodeId==r.NodeId);var at=star?.Position??r.Center;
-                return new GeneratedCampaignNodeAnchor(r.NodeId,(float)CampaignModel(entry).GeneratedViewport.X(at.X),(float)CampaignModel(entry).GeneratedViewport.Y(at.Y));}).ToArray();
+                return new GeneratedCampaignNodeAnchor(r.NodeId,map.contentRect.x+(float)CampaignModel(entry).GeneratedViewport.X(at.X),map.contentRect.y+(float)CampaignModel(entry).GeneratedViewport.Y(at.Y));}).ToArray();
             Vector2 point=default;VisualElement? down=null,hit=null;var attempts=new List<string>();
             // Pixel rounding can move a button centre out of its nearest-anchor area.
             // Try the actual integer pixel and exact painted anchor before the bounded grid.
@@ -149,9 +149,10 @@ namespace HobbyDS9.UnityReview.Tests
             {
                 var priorTarget=doc.panelSettings.targetTexture;var active=RenderTexture.active;
                 var w=doc.rootVisualElement.style.width;var h=doc.rootVisualElement.style.height;
-                var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);Assert.That(target.Create(),Is.True);Texture2D? pixels=null;
+                var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);Texture2D? pixels=null;bool captured=false;
                 try
                 {
+                    Assert.That(target.Create(),Is.True);
                     doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=size.x;doc.rootVisualElement.style.height=size.y;
                     yield return null;yield return null;yield return null;
                     var fit=doc.rootVisualElement.Q<Button>("map-fit");if(fit!=null){Click(fit);yield return null;yield return null;}
@@ -176,7 +177,21 @@ namespace HobbyDS9.UnityReview.Tests
                         foreach(var feature in observed.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star))
                         {
                             var marker=doc.rootVisualElement.Q<Button>("map-star-"+feature.NodeId);
-                            var expected=map.LocalToWorld(new Vector2((float)model.GeneratedViewport.X(feature.Position.X),(float)model.GeneratedViewport.Y(feature.Position.Y)));
+                            var contentPoint=new Vector2((float)model.GeneratedViewport.X(feature.Position.X),(float)model.GeneratedViewport.Y(feature.Position.Y));
+                            var expected=map.LocalToWorld(map.contentRect.position+contentPoint);
+                            var lines=map.Q("playable-known-lines");Assert.That(lines,Is.Not.Null);
+                            var painted=lines.LocalToWorld(contentPoint);
+                            try
+                            {
+                                object XY(Vector2 p)=>new{x=p.x,y=p.y};object Box(Rect r)=>new{x=r.x,y=r.y,width=r.width,height=r.height};
+                                var record=new{state,size.x,size.y,feature.FeatureId,WorldX=feature.Position.X,WorldY=feature.Position.Y,ContentPoint=XY(contentPoint),ExpectedWorld=XY(expected),ActualWorld=XY(marker.worldBound.center),PaintedWorld=XY(painted),
+                                    MarkerDelta=XY(marker.worldBound.center-expected),PaintDelta=XY(painted-expected),MapContent=Box(map.contentRect),MapLayout=Box(map.layout),MapWorld=Box(map.worldBound),LineLayout=Box(lines.layout),LineWorld=Box(lines.worldBound),MarkerLayout=Box(marker.layout),MarkerWorld=Box(marker.worldBound),
+                                    MapBorder=new{map.resolvedStyle.borderLeftWidth,map.resolvedStyle.borderTopWidth},MapPadding=new{map.resolvedStyle.paddingLeft,map.resolvedStyle.paddingTop},MarkerMargins=new{marker.resolvedStyle.marginLeft,marker.resolvedStyle.marginTop,marker.resolvedStyle.marginRight,marker.resolvedStyle.marginBottom},
+                                    MarkerCss=new{marker.resolvedStyle.left,marker.resolvedStyle.top},PanelScale=doc.panelSettings.scale};
+                                File.AppendAllText(Path.Combine(CampaignOutput(),"generated-anchor-geometry.jsonl"),Newtonsoft.Json.JsonConvert.SerializeObject(record)+Environment.NewLine);
+                            }
+                            catch(Exception error){CampaignDiagnosticError("anchor-geometry",error);}
+                            Assert.That(Vector2.Distance(expected,painted),Is.LessThan(.01f),"actual lines-child painted plane must match map-local world anchor");
                             Assert.That(Vector2.Distance(expected,marker.worldBound.center),Is.LessThan(2),"actual known star anchor "+feature.FeatureId);
                             Assert.That(marker.worldBound.center.x,Is.InRange(map.worldBound.xMin,map.worldBound.xMax));
                             Assert.That(marker.worldBound.center.y,Is.InRange(map.worldBound.yMin,map.worldBound.yMax));
@@ -190,8 +205,9 @@ namespace HobbyDS9.UnityReview.Tests
                     }
                     RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
                     File.WriteAllBytes(Path.Combine(CampaignOutput(),size.x+"x"+size.y+"-campaign-"+state+".png"),pixels.EncodeToPNG());
+                    captured=true;
                 }
-                finally{doc.panelSettings.targetTexture=priorTarget;doc.rootVisualElement.style.width=w;doc.rootVisualElement.style.height=h;RenderTexture.active=active;target.Release();UnityEngine.Object.Destroy(target);if(pixels!=null)UnityEngine.Object.Destroy(pixels);}
+                finally{if(!captured)CampaignDiagnosticSnapshot(entry,"capture-"+state+"-"+size.x+"x"+size.y);doc.panelSettings.targetTexture=priorTarget;doc.rootVisualElement.style.width=w;doc.rootVisualElement.style.height=h;RenderTexture.active=active;target.Release();UnityEngine.Object.Destroy(target);if(pixels!=null)UnityEngine.Object.Destroy(pixels);}
                 yield return null;yield return null;
                 var restoreFit=doc.rootVisualElement.Q<Button>("map-fit");if(restoreFit!=null){Click(restoreFit);yield return null;}
             }

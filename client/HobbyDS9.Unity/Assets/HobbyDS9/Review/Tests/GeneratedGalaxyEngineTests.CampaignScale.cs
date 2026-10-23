@@ -61,7 +61,7 @@ namespace HobbyDS9.UnityReview.Tests
                     {
                         yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+knownStar.NodeId),0);
                         var fixtureMap=doc.rootVisualElement.Q("playable-known-map");var vp=CampaignModel(entry).GeneratedViewport;
-                        var hoverPoint=fixtureMap.LocalToWorld(new Vector2((float)vp.X(knownStar.Position.X),(float)vp.Y(knownStar.Position.Y)));
+                        var hoverPoint=fixtureMap.LocalToWorld(fixtureMap.contentRect.position+new Vector2((float)vp.X(knownStar.Position.X),(float)vp.Y(knownStar.Position.Y)));
                         var hoverPick=fixtureMap.panel.Pick(hoverPoint);Assert.That(hoverPick,Is.Not.Null);
                         using(var e=PointerMoveEvent.GetPooled(new Event{type=EventType.MouseMove,mousePosition=hoverPoint})){e.target=hoverPick;hoverPick.SendEvent(e);}
                         yield return null;Assert.That(doc.rootVisualElement.Q<Label>("map-label-"+knownStar.NodeId).resolvedStyle.visibility,Is.EqualTo(Visibility.Visible));
