@@ -12,6 +12,16 @@ namespace HobbyDS9.UnityReview
 {
     public sealed partial class ReviewEntry
     {
+#if UNITY_EDITOR
+        private string? generatedCampaignTestDirectory=null; // Dedicated engine fixture only; never a player path option.
+#endif
+        private string GeneratedCampaignDirectory()
+        {
+#if UNITY_EDITOR
+            if(generatedCampaignTestDirectory!=null)return generatedCampaignTestDirectory;
+#endif
+            return Path.Combine(UnityEngine.Application.persistentDataPath,GeneratedCampaignOptions.SaveDirectory);
+        }
         private string generatedCampaignSeed="42";
         private int generatedCampaignSize=250,generatedCampaignQuiet=2000;
         private bool generatedCampaignBusy;
@@ -54,7 +64,7 @@ namespace HobbyDS9.UnityReview
             {
                 // Resource access is main-thread only. The portable factory/load and trusted file IO run away from the UI.
                 var template=LoadPlayableFleetTemplate();var codec=new ReviewNewtonsoftCodec();
-                var store=new ReviewGeneratedCampaignSlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,GeneratedCampaignOptions.SaveDirectory),codec);
+                var store=new ReviewGeneratedCampaignSlotStore(GeneratedCampaignDirectory(),codec);
                 var settings=new NaturalGalaxySettingsDto{Map=new ScaledGalaxySettingsDto{Seed=seed,SystemCount=size,EmptyRegionCount=size,
                     Width=size==1000?5000000:2500000,Height=size==1000?4000000:2000000,QuietEmptyAreaTargetPermille=quiet,
                     HomeCivilizationDefinitionIds=new List<string>{"civilization.federation","civilization.cardassian"}}};

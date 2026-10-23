@@ -53,5 +53,16 @@ public sealed class GeneratedCampaignBindingTests : IDisposable
         Assert.Throws<InvalidOperationException>(()=>ReviewUiModel.ContinueGeneratedCampaign(Template(),codec,Store(),"invalid"));
         Assert.True(m.Load("good",true));Assert.False(m.HasLocalEdits);Assert.Equal(bytes,File.ReadAllBytes(path));
     }
+    [Fact] public void MapObservationCannotMixAnOldStrategyBoundaryWithNewKnownGeometry()
+    {
+        var host=PhysicalReviewHost.StartGeneratedCampaign(Template(),Settings(),codec,Store());var frame=host.Read("civ.federation");
+        var before=host.CaptureGeneratedMap(frame);Assert.Equal(frame.Status.CampaignRevision,before.CampaignRevision);
+        var changed=host.SubmitStrategicCommand(frame,new CommandEnvelope{ActorCivilizationId=frame.Actor,
+            CommandId="command.generated.stamp",ExpectedTurn=frame.Status.Turn,ExpectedRevision=frame.Status.CampaignRevision,
+            Kind=CommandKind.SetResearchAllocation,SetResearchAllocation=new(){ScienceAllocationUnits=300}});
+        Assert.True(changed.Accepted);Assert.Throws<InvalidOperationException>(()=>host.CaptureGeneratedMap(frame));
+        var fresh=host.Read(frame.Actor);var map=host.CaptureGeneratedMap(fresh);
+        Assert.Equal(fresh.Status.CampaignRevision,map.CampaignRevision);Assert.Equal(fresh.Status.Turn,map.ObservationTurn);
+    }
     public void Dispose(){if(Directory.Exists(root))Directory.Delete(root,true);}
 }

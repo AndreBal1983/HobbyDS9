@@ -1,0 +1,29 @@
+# Actual generated campaign Unity receiving plan
+
+Status: source proposal, no engine lease implied. Owner resumed the playable demo goal. Existing5cb and older packages/saves remain immutable. Receive backend319b6f metadata atop3f2fb73 runtime; complete generated format7 host/menu/known geometry binding is separate from map-review mode. Detailed Art v3 payloads are pending a later visual increment, not silently integrated here.
+
+Run ONE case only after independent source/receipt review and a fresh Root resource-ledger handoff:
+`HobbyDS9.UnityReview.Tests.GeneratedGalaxyEngineTests.GeneratedCampaignNewGamePaidFleetExplorationBattleAndContinueUseActualControls`
+
+## Actual interaction scope
+
+- Enter the actual player landing menu. Verify seven quiet-area options; capture generated New Game controls. Continue empty test slot and invalid seed must retain the old model. Start a valid generation then navigate into map review before completion: the stale candidate must not replace the old model. Return and start250/seed42/target2.00 through New generated game. This is additional bounded factory work, not a second engine scenario.
+- Only the test-owned temporary `HobbyDS9-Galaxy-Engine-<GUID>/campaign` store is used. A private UNITY_EDITOR-only directory override is set before any New Game/Continue input. No player slot namespace or owner persistence is touched. Runtime Player code has no directory-picker/override field. Existing fixture teardown verifies the temp prefix and parent before cleanup.
+- Actual generated player map must show ONLY actor DTO polygons/nodes/features, no full review document or starting candidates. At all three sizes compare actual button centres against persisted known star anchors, marker error<2pixels; fit known regions with padding, distinct Fit galaxy, preserve inverse pan/zoom math. Empty transit regions use distinct markers. Decorative background uses fixed cosmetic seed0, no private generator seed or hidden local nebulae.
+- Apply real R&D split through controls. Queue TWO eligible existing Cruisers through Production and advance four normal turns. Select actual owned members in Fleet roster and create a named combined fleet. Produced IDs are retained and must appear in the later encounter, so paid construction participates in the fight.
+- Explore with a finite128-turn driver based ONLY on current actor-known polygons/links, visited nodes, shared lawful route offers and fresh observed contacts. The test computes a unit-cost known-node BFS solely to choose the next known destination; authoritative movement/cost/Follow stays in the portable session. Every travel/Follow goes through an actual panel.Pick PointerDown+actual-capture-or-fresh-Pick PointerUp right-click and one-use confirm. No direct command injection or hidden full-map target selection. The first reviewed pointer event must not submit until confirmation. No held Shift/native-input claim.
+- Meet the lawful computer through physical turns on that same session; no injected battle. Choose actual per-round maneuver, apply/review/commit, inspect playback/report and acknowledge playback without changing authority. Confirm campaign aftermath once, Save through actual UI, menu/Continue through the direct frozen-map loader. Require same map hash, turn and history; archive complete test save for trusted identity review only, never renderer input.
+
+## Captures and limits
+
+Maximum24 NORMAL frames =8 states ×1280x720/1920x1080/3440x1440: settings, initial known map, paid fleet, travel, combat orders, resolved playback, round report and continued aftermath. Each temporary capture preserves/restores live input RenderTexture, root StyleLength width/height and RenderTexture.active in finally, then yields layout frames before the next gesture. The existing live1280x720 test input surface remains authoritative for actual picking. No screenshot-only/helper direct target fallback.
+
+Async Generate/Continue each have90second operation bounds and record elapsed observation/yielded frames (not FPS). The exploration loop is finite128turns and battle loop≤16rounds; Root's owned Unity process watchdog is900seconds for the whole receiving attempt. Record actual elapsed times/managed memory/available GPU timing honestly; reference compilation or CPU submission is not GPU performance. If a budget fails, preserve failure and diagnose without automatic rerun or test weakening.
+
+## Preparation, restoration and further gates
+
+Before Prepare, record exact clean source pin, fresh included-usage/purchased balance/process inventory and exclusive ledger lease. No competing Unity/player/Blender/GPU work; owner live sessions require Root's safe handoff. Snapshot ALL original Assets/Packages/ProjectSettings files plus.vsconfig presence BEFORE full scripts/PrepareUnityGeneratedGalaxy.proj. Record hashes/prepared inputs/PID/args/import/test log/XML/screenshots.
+
+After owned engine and child processes exit, archive all automatic changes and extras, restore every original and.vsconfig presence, verify full before/after hash table and no extras/source clean/process absence. Keep every failed bundle immutable. No broad historical engine matrix or old native journey is rerun. The test is actual Unity event/control/render acceptance, not physical mouse/keyboard.
+
+Root and independent reviewer inspect actual images, whole-loop state, privacy, exact source/runtime identity and restoration before any strict IL2CPP build. New versioned package and native fresh-process Save/Quit/Continue require separate leases/backups. Start1000 only after250 functional receiving acceptance. Goal remains active under the owner90percent/unknown/ordinary-denial/purchased-balance-decrease stop policy.

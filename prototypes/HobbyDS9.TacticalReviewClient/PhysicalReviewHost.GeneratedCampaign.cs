@@ -34,7 +34,9 @@ namespace HobbyDS9.TacticalReviewClient
         public CampaignGeneratedMapDto CaptureGeneratedMap(ReviewFrame observed)
         {
             lock(gate){RequireCurrent(observed.HostId,observed.Generation);
-                return ((ICampaignGeneratedSession)session).CaptureGeneratedMap(observed.Actor);}
+                var view=((ICampaignGeneratedSession)session).CaptureGeneratedMap(observed.Actor);
+                if(view.ObservationTurn!=observed.Status.Turn||view.CampaignRevision!=observed.Status.CampaignRevision)throw new InvalidOperationException("Generated map observation is stale.");
+                return view;}
         }
         private CampaignGeneratedSaveDto ExportGenerated()
         {
