@@ -1,10 +1,16 @@
 # M1 topology and scale / early presentation handoff
 
-23 October 2026. **Owner-authorized next M1 increment:** preserve crooked junctions, show accepted routes through their actual shared edges, investigate quiet-empty cells averaging near twice system-cell area with disturbed-space exceptions, review250 systems then validate1000 at a5:4 extent. **Proposed:** the visual policy and thresholds below. **Pending:** Primary's new versioned contract and real samples, Unity performance/input acceptance and owner review.
+23 October 2026. **Owner-authorized next M1 increment:** preserve crooked junctions, show accepted routes through their actual shared edges, investigate quiet-empty cells averaging near twice system-cell area with disturbed-space exceptions, review250 systems then validate1000 at a5:4 extent. **Proposed:** the visual policy and thresholds below. **Published contract:** Primary `24608de10ed8bc4e54552f9419dd39c67fa7a948`. **Pending:** portable implementation/calibration and real new samples, Unity performance/input acceptance and owner review.
 
 This handoff is design/source preparation only. It does not establish public support for larger maps, manufacture geometry, or claim runtime behavior. Preserve the delivered `e47fcc944283db0ee223ec3d23ad78cf87942ae6` art and all immutable review bundles. CPU/browser work only; no engine/GPU/native/desktop lease, paid generation or M2 work. Check the owner's included-usage policy before bounded work chunks and at most five minutes apart; stop on90% or any unavailable/denied/paid-credit-decrease condition.
 
 Proposed reusable values: [scale presentation tokens](../../../../art/generated-galaxy-m1/scale-v4/tokens.json).
+
+## Exact new contract dependency
+
+Primary's `docs/scaled-galaxy-m1-contract.md` and `ScaledGalaxyContracts.cs` at `24608de10ed8bc4e54552f9419dd39c67fa7a948` define format3 / `environment-clustered-regions-v4` / `provisional-quiet-empty-area-v1`. Settings are now directly on `Settings`, without the older format2 `Settings.Map` wrapper; environment tuning is under `Tuning.Environment`. Layout/feature/influence row shapes are retained. A new read-only browser adapter must respect this version dispatch rather than reinterpreting old exports. The contract is early; Generate/Open and calibrated maps are not implemented merely because those DTOs exist.
+
+The declared quiet-empty classification is per-site: no system, not a mandatory black-hole node, and no enabled black-hole or nebula contribution reaching `Tuning.QuietDisturbanceThreshold`. Stellar influence alone does not classify a cell as disturbed. Its entire polygon is not thereby asserted physically quiet. Actual component/area diagnostic samples are still awaited.
 
 ## One connected geography
 
@@ -14,7 +20,7 @@ Keep every crooked/offset junction and every positive-length shared edge, includ
 
 ## Routes through shared-edge portals
 
-The current direct centre-to-centre chords can appear to cross regions that are absent from the accepted node sequence. Replace only their presentation with an exact portal chain. Primary must define the pinned portal contract first; consume its authoritative edge/portal records if supplied. If Primary instead explicitly delegates presentation extraction, derive a portal only from the exact common boundary endpoints of the two accepted adjacent polygons, with no tolerance-based nearest-edge guess.
+The current direct centre-to-centre chords can appear to cross regions that are absent from the accepted node sequence. Replace only their presentation with an exact portal chain. The frontend explicitly owns presentation-only portal extraction from the existing detached polygon DTOs, as confirmed by Root and Primary's contract. No new portable portal DTO is required. Derive the portal from the exact shared boundary endpoints of the two accepted adjacent polygons, with no epsilon, tolerance-based nearest-edge guess or short-edge filter. Store doubled midpoint coordinates to preserve halves.
 
 For route `A, B, C`, the initial truthful construction is `centre(A), portal(A,B), centre(B), portal(B,C), centre(C)`. A portal midpoint lies on the actual common edge; its two adjoining segments stay within their respective convex cells. Keep half-coordinate midpoints exactly when endpoint sums are odd; do not round them to integer map units or snap them to a vertex. The exact portable coordinate representation remains Primary's decision.
 
