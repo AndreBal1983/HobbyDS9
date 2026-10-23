@@ -86,8 +86,14 @@ public sealed class GeneratedGalaxyCorridorPathTests
         var regions=map.Layout.Regions.ToDictionary(r=>r.NodeId);var leg=Assert.Single(plan.Legs);var ids=new[]{leg.OriginNodeId}.Concat(leg.Route.Steps).ToArray();
         var raw=GeneratedGalaxyRoutePath.Build(regions,leg.OriginNodeId,leg.Route.Steps).Select(p=>new GeneratedGalaxyDisplayPoint(p.X2*512,p.Y2*512)).ToArray();
         var path=GeneratedGalaxyCorridorPath.Build(regions,leg.OriginNodeId,leg.Route.Steps);Assert.True(path.Certified,path.Reason);Assert.False(path.UsedFallback,path.Reason);
-        Prove(regions,ids,path.Points);Assert.True(Length(path.Points)<Length(raw));Assert.True(path.Points.Count<raw.Length);
+        Prove(regions,ids,path.Points);Prove(regions,ids,raw);Assert.True(Length(path.Points)<Length(raw));Assert.True(path.Points.Count<raw.Length);
         output.WriteLine("Same map {0}; cost22; midpoint length {1:F6}/vertices{2}; certified inset-funnel length {3:F6}/vertices{4}; fallback {5}; operations {6}",map.ContentHash,Length(raw),raw.Length,Length(path.Points),path.Points.Count,path.UsedFallback,path.Operations);
+        JArray Vertices(IEnumerable<GeneratedGalaxyDisplayPoint> points)=>new(points.Select(p=>new JObject{{"X1024",p.X1024},{"Y1024",p.Y1024}}));
+        output.WriteLine("ART_VERTEX_PAYLOAD="+new JObject{{"GeometryContract","inset-portal-funnel-v1"},{"CoordinateDenominator",1024},
+            {"MapReference","docs/samples/scaled-galaxy-v4/seed-42-systems-250.scaled.json"},{"MapContentHash",map.ContentHash},
+            {"Query",JToken.FromObject(query)},{"Result",JToken.FromObject(plan)},{"RawVertices",Vertices(raw)},{"CertifiedVertices",Vertices(path.Points)},
+            {"Certified",path.Certified},{"UsedFallback",path.UsedFallback},{"Reason",path.Reason},{"Operations",path.Operations},
+            {"RawPresentationLength",Length(raw)},{"CertifiedPresentationLength",Length(path.Points)}}.ToString(Newtonsoft.Json.Formatting.None));
         Assert.Equal(before,codec.EncodeScaledGalaxy(map));Assert.Equal(plan.Steps,review.FindRoutePlan(query).Steps);Assert.Equal(22,review.FindRoutePlan(query).TotalCost);
     }
     [Fact] public void CornerTangencyRepeatedCrossingsAndBoundaryOnlyCellHaveExplicitSafeFailure()

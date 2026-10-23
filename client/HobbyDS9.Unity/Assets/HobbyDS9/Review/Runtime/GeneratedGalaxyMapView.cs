@@ -29,7 +29,8 @@ namespace HobbyDS9.UnityReview
         private string? selectedFeature;
         private IReadOnlyList<string> routeSteps=Array.Empty<string>();
         private IReadOnlyList<GeneratedGalaxyRoutePoint> routePath=Array.Empty<GeneratedGalaxyRoutePoint>();
-        private IReadOnlyList<IReadOnlyList<GeneratedGalaxyRoutePoint>>? planPaths;
+        private IReadOnlyList<IReadOnlyList<GeneratedGalaxyDisplayPoint>>? planPaths;
+        public GeneratedGalaxyCertifiedPlan? CertifiedRouteGeometry { get; private set; }
         private readonly List<(Label label,string node)> pinLabels=new List<(Label,string)>();
         private string[] pinnedNodes=Array.Empty<string>();
         private int pointer=-1;
@@ -148,7 +149,7 @@ namespace HobbyDS9.UnityReview
         public void Select(string node,GeneratedGalaxySelectionKind kind){selectedNode=node;selectionKind=kind;Place();}
         public void Route(string? origin,IReadOnlyList<string>? steps)
         {
-            planPaths=null;pinnedNodes=Array.Empty<string>();foreach(var pin in pinLabels)pin.label.RemoveFromHierarchy();pinLabels.Clear();
+            planPaths=null;CertifiedRouteGeometry=null;pinnedNodes=Array.Empty<string>();foreach(var pin in pinLabels)pin.label.RemoveFromHierarchy();pinLabels.Clear();
             var acceptedSteps=steps??Array.Empty<string>();
             var path=origin==null?Array.Empty<GeneratedGalaxyRoutePoint>():GeneratedGalaxyRoutePath.Build(regions,origin,acceptedSteps);
             routeOrigin=origin;routeSteps=acceptedSteps;routePath=path;Place();
@@ -156,8 +157,8 @@ namespace HobbyDS9.UnityReview
         public void RoutePlan(string? origin,GalaxyReviewRoutePlanSnapshot? plan,IReadOnlyList<GeneratedGalaxyDraftAnchor> targets)
         {
             Route(null,null);routeOrigin=origin;routeSteps=plan?.Success==true?plan.Steps:Array.Empty<string>();
-            planPaths=plan==null?Array.Empty<IReadOnlyList<GeneratedGalaxyRoutePoint>>():GeneratedGalaxyRoutePath.BuildPlan(regions,plan);
-            routePath=planPaths.Count==1?planPaths[0]:Array.Empty<GeneratedGalaxyRoutePoint>();
+            CertifiedRouteGeometry=plan==null?null:GeneratedGalaxyCorridorPath.BuildPlan(regions,plan);
+            planPaths=CertifiedRouteGeometry==null?Array.Empty<IReadOnlyList<GeneratedGalaxyDisplayPoint>>():CertifiedRouteGeometry.Legs.Select(p=>p.Points).ToArray();
             pinnedNodes=targets.Select(t=>t.NodeId).ToArray();
             for(int i=0;i<pinnedNodes.Length;i++)
             {
@@ -166,8 +167,7 @@ namespace HobbyDS9.UnityReview
             }
             Place();
         }
-        public IReadOnlyList<Vector2> RoutePositions()=>routePath.Select(p=>contentRect.position+
-            new Vector2((float)viewport.X(p.X),(float)viewport.Y(p.Y))).ToArray();
+        public IReadOnlyList<Vector2> RoutePositions()=>planPaths?.Count==1?planPaths[0].Select(Project).ToArray():routePath.Select(Project).ToArray();
         public IReadOnlyList<IReadOnlyList<Vector2>> RouteLegPositions()=>planPaths==null?Array.Empty<IReadOnlyList<Vector2>>():
             planPaths.Select(leg=>(IReadOnlyList<Vector2>)leg.Select(Project).ToArray()).ToArray();
         public Vector2 Position(string node)=>Point(regions[node].Center);
@@ -310,6 +310,7 @@ namespace HobbyDS9.UnityReview
             }
         }
         private Vector2 Project(GeneratedGalaxyRoutePoint point)=>contentRect.position+new Vector2((float)viewport.X(point.X),(float)viewport.Y(point.Y));
+        private Vector2 Project(GeneratedGalaxyDisplayPoint point)=>contentRect.position+new Vector2((float)viewport.X(point.X),(float)viewport.Y(point.Y));
         private List<Vector2> InfluencePolygon(EnvironmentGalaxyFeatureDto feature)
         {
             // Presentation-only ellipse tessellation and clipping to the authoritative map rectangle.

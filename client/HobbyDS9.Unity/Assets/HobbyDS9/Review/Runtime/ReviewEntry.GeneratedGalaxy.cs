@@ -263,6 +263,12 @@ namespace HobbyDS9.UnityReview
             AddButton(files,"Save route draft",SaveGalaxyRouteDraft).name="galaxy-route-save";
             AddButton(files,"Restore route draft",RestoreGalaxyRouteDraft).name="galaxy-route-restore";
             if(galaxyDraftNotice!=null)panel.Add(Readout(galaxyDraftNotice));
+            var geometry=galaxyMap?.CertifiedRouteGeometry;
+            if(geometry?.HiddenCount>0||geometry?.FallbackCount>0)
+            {
+                var status=Readout(geometry.HiddenCount>0?"No certified route line · "+geometry.HiddenCount+" legs":"Safe line fallback · "+geometry.FallbackCount+" legs");
+                status.name="galaxy-route-geometry-status";status.tooltip=string.Join("; ",geometry.Legs.Where(l=>!l.Certified||l.UsedFallback).Select(l=>l.Reason).Distinct());panel.Add(status);
+            }
             var note=Readout("Preview · no order or visit.");note.AddToClassList("galaxy-inspector-id");panel.Add(note);
         }
         private void DrawGalaxyInspector()
