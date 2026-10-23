@@ -18,6 +18,14 @@ namespace HobbyDS9.UnityReview
     // Consumes an accepted route; never searches for a route or changes its nodes, costs or polygons.
     public static class GeneratedGalaxyRoutePath
     {
+        // Keep each explicit target as a leg endpoint. Flattening A→B→A removes B's anchor.
+        public static IReadOnlyList<IReadOnlyList<GeneratedGalaxyRoutePoint>> BuildPlan(
+            IReadOnlyDictionary<string,GeneratedGalaxyRegionDto> regions,GalaxyReviewRoutePlanSnapshot plan)
+        {
+            var paths=new List<IReadOnlyList<GeneratedGalaxyRoutePoint>>();
+            if(plan.Success)foreach(var leg in plan.Legs)paths.Add(Build(regions,leg.OriginNodeId,leg.Route.Steps));
+            return paths.AsReadOnly();
+        }
         public static IReadOnlyList<GeneratedGalaxyRoutePoint> Build(
             IReadOnlyDictionary<string,GeneratedGalaxyRegionDto> regions,string origin,IReadOnlyList<string> steps)
         {

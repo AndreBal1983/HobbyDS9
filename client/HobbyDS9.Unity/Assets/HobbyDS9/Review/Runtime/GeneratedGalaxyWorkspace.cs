@@ -169,6 +169,13 @@ namespace HobbyDS9.UnityReview
             if(review==null)throw new InvalidOperationException("No generated map is open.");
             return review.FindRoute(origin,destination);
         }
+        public GalaxyReviewRoutePlanSnapshot FindRoutePlan(GalaxyReviewRouteQueryDto query)
+        {
+            if(scaledReview!=null)return scaledReview.FindRoutePlan(query);
+            if(environmentReview!=null)return environmentReview.FindRoutePlan(query);
+            if(review!=null)return review.FindRoutePlan(query);
+            throw new InvalidOperationException("No generated map is open.");
+        }
         public byte[] ExportBytes()
         {
             if(scaledReview!=null)return codec.EncodeScaledGalaxy(scaledReview.Export());

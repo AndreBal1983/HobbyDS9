@@ -89,6 +89,26 @@ public sealed class GeneratedGalaxyRoutePathTests
     }
 
     [Fact]
+    public void BacktrackingAndZeroLengthLegsKeepEveryExplicitAnchorAndFailuresPaintNothing()
+    {
+        var regions=new Dictionary<string,GeneratedGalaxyRegionDto>{
+            {"a",Region("a",2,5,(0,0),(10,0),(10,10),(0,10))},
+            {"b",Region("b",18,5,(10,0),(20,0),(20,10),(10,10))}};
+        GalaxyReviewLegSnapshot Leg(int index,string from,string to,params string[] steps)=>new(index,from,
+            new GalaxyReviewTargetSnapshot(to,GalaxyReviewTargetIntent.RegionTransit,null),
+            new StrategicRouteSnapshot(RouteErrorCode.None,steps,Array.Empty<NavigationCostSnapshot>(),steps.Length),0);
+        var legs=new[]{Leg(0,"a","b","b"),Leg(1,"b","b"),Leg(2,"b","a","a")};
+        var plan=new GalaxyReviewRoutePlanSnapshot("policy","hash","a",GalaxyReviewPlanError.None,null,legs,new[]{"b","a"},2,0);
+        var paths=GeneratedGalaxyRoutePath.BuildPlan(regions,plan);Assert.Equal(3,paths.Count);
+        Assert.Equal(36,paths[0][^1].X2);Assert.Equal(36,Assert.Single(paths[1]).X2);Assert.Equal(36,paths[2][0].X2);
+        Assert.Equal(4,paths[2][^1].X2);
+        AssertCorridor(regions,new[]{"a","b"},paths[0]);AssertCorridor(regions,new[]{"b","a"},paths[2]);
+        var failed=new GalaxyReviewRoutePlanSnapshot("policy","hash","a",GalaxyReviewPlanError.UnreachableLeg,1,
+            Array.Empty<GalaxyReviewLegSnapshot>(),Array.Empty<string>(),null,null);
+        Assert.Empty(GeneratedGalaxyRoutePath.BuildPlan(regions,failed));
+    }
+
+    [Fact]
     public void CornerOnlyContactDoesNotInventARouteSegment()
     {
         var regions=new Dictionary<string,GeneratedGalaxyRegionDto>{
