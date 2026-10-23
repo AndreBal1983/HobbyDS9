@@ -28,6 +28,8 @@ Before Prepare, record exact clean source pin, fresh included-usage/purchased ba
 
 After owned engine and child processes exit, archive all automatic changes and extras, restore every original and.vsconfig presence, verify full before/after hash table and no extras/source clean/process absence. Keep every failed bundle immutable. No broad historical engine matrix or old native journey is rerun. The test is actual Unity event/control/render acceptance, not physical mouse/keyboard.
 
+Diagnostic-only output records stamped actor-safe map/frame summaries and own fleet/routes/known contacts at setup, production, each exploration turn and intended/confirmed orders. Before the encounter-bound assertion, and again in a guarded finally before teardown, export the last accepted full generated session as a PRIVATE audit save plus its actor-filtered map. These private roots never drive UI or exploration inputs. Diagnostic errors are caught and separately recorded so they cannot mask the original test failure. No routing choices, bounds or runtime behavior change for this instrumentation.
+
 Root and independent reviewer inspect actual images, whole-loop state, privacy, exact source/runtime identity and restoration before any strict IL2CPP build. New versioned package and native fresh-process Save/Quit/Continue require separate leases/backups. Start1000 only after250 functional receiving acceptance. Goal remains active under the owner90percent/unknown/ordinary-denial/purchased-balance-decrease stop policy.
 
 Visual polish backlog from the first actual campaign frames: overlapping label backings and generic region labels crowd known-space views. This test-only correction does not change labels, runtime picking, camera zoom or map geometry.

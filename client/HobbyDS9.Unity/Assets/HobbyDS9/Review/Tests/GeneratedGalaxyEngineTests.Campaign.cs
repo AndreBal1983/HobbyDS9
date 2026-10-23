@@ -22,6 +22,39 @@ namespace HobbyDS9.UnityReview.Tests
         private static Button CampaignButton(UIDocument doc,string text)=>doc.rootVisualElement.Query<Button>().ToList().Single(b=>b.text==text);
         private static string CampaignOutput()
         {var path=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/scaled-galaxy/engine-rendered"));Directory.CreateDirectory(path);return path;}
+        private static void CampaignDiagnosticError(string phase,Exception error)
+        {
+            // Diagnostics must never replace the original assertion/exception.
+            try{File.AppendAllText(Path.Combine(CampaignOutput(),"generated-diagnostic-errors.txt"),phase+": "+error+Environment.NewLine);}catch{}
+        }
+        private static void CampaignTrace(ReviewEntry entry,string phase,object? intent=null)
+        {
+            try
+            {
+                var model=CampaignModel(entry);if(!model.GeneratedCampaign)return;
+                var frame=model.Current.Frame;var known=model.GeneratedMap();
+                var line=Newtonsoft.Json.JsonConvert.SerializeObject(new{phase,intent,frame.Actor,frame.Status.Turn,frame.Status.CampaignRevision,
+                    Phase=frame.Status.Phase.ToString(),known.MapContentHash,known.ObservationTurn,MapRevision=known.CampaignRevision,
+                    KnownRegions=known.Regions.Count,known.ObservedNodeIds,OwnFleets=frame.OwnStrategicFleets,
+                    OwnOrders=frame.Travel?.OwnOrders,Contacts=frame.Travel?.KnownContacts,model.Message});
+                File.AppendAllText(Path.Combine(CampaignOutput(),"generated-player-turn-trace.jsonl"),line+Environment.NewLine);
+            }
+            catch(Exception error){CampaignDiagnosticError(phase,error);}
+        }
+        private static void CampaignDiagnosticSnapshot(ReviewEntry entry,string phase)
+        {
+            CampaignTrace(entry,phase);
+            try
+            {
+                var model=CampaignModel(entry);if(!model.GeneratedCampaign||model.Busy||model.Current.HasPendingWork)return;
+                // Private audit export only. Never supplied to renderer, route selection or player input.
+                var host=(PhysicalReviewHost)typeof(ReviewUiModel).GetField("host",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(model)!;
+                var session=(HobbyDS9.Application.ICampaignGeneratedSession)typeof(PhysicalReviewHost).GetField("session",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(host)!;
+                File.WriteAllBytes(Path.Combine(CampaignOutput(),"generated-private-audit-"+phase+".json"),new ReviewNewtonsoftCodec().EncodeGeneratedCampaignRoot(session.ExportGeneratedSave()));
+                File.WriteAllText(Path.Combine(CampaignOutput(),"generated-actor-map-"+phase+".json"),Newtonsoft.Json.JsonConvert.SerializeObject(model.GeneratedMap()));
+            }
+            catch(Exception error){CampaignDiagnosticError(phase,error);}
+        }
         private static IEnumerator WaitCampaign(ReviewEntry entry,string phase)
         {
             var watch=System.Diagnostics.Stopwatch.StartNew();int frames=0;
@@ -162,6 +195,8 @@ namespace HobbyDS9.UnityReview.Tests
             directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
             typeof(ReviewEntry).GetField("generatedCampaignTestDirectory",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,Path.Combine(directory,"campaign"));
             var before=CampaignModel(entry);
+            try
+            {
             using(var surface=new GalaxyInputSurface(doc))
             {
                 yield return null;yield return null;
@@ -177,6 +212,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Click(doc.rootVisualElement.Q<Button>("galaxy-back"));yield return null;
                 Click(doc.rootVisualElement.Q<Button>("generated-campaign-start"));yield return WaitCampaign(entry,"new-game250");
                 var model=CampaignModel(entry);Assert.That(model.GeneratedCampaign,Is.True);Assert.That(model,Is.Not.SameAs(before));
+                CampaignTrace(entry,"new-game");
                 Assert.That(model.GeneratedMap().Regions.Count,Is.InRange(2,20));var mapHash=model.GeneratedMap().MapContentHash;
                 Assert.That(model.GeneratedMap().Features.All(f=>f.Kind!=GalaxyEnvironmentFeatureKind.Nebula),Is.True,"no undisclosed non-node nebulae in policy v1");
                 yield return CampaignCapture(entry,doc,"known-map");
@@ -208,20 +244,23 @@ namespace HobbyDS9.UnityReview.Tests
                 var initialShips=model.Current.Frame.Strategy!.Ships.Select(s=>s.ShipId.Value).ToHashSet(StringComparer.Ordinal);
                 CampaignPage(doc,ReviewWorkspacePage.Research);doc.rootVisualElement.Q<SliderInt>("integrated-research-split").value=10;
                 Click(doc.rootVisualElement.Q<Button>("integrated-apply-split"));Confirm(doc);
+                CampaignTrace(entry,"research-split-confirmed");
                 CampaignPage(doc,ReviewWorkspacePage.Production);
                 var colony=model.Current.Frame.Strategy!.Construction.First(c=>c.CanEnqueue&&c.Design.DefinitionId.Value=="ship-design.source-cruiser").ColonyId.Value;
                 Click(doc.rootVisualElement.Q<Button>("production-colony-"+colony));
-                for(int i=0;i<2;i++){Click(doc.rootVisualElement.Q<Button>("integrated-queue-ship-design.source-cruiser"));Confirm(doc);}
-                for(int i=0;i<4;i++){Click(doc.rootVisualElement.Q<Button>("player-primary-action"));Confirm(doc);yield return null;}
+                for(int i=0;i<2;i++){Click(doc.rootVisualElement.Q<Button>("integrated-queue-ship-design.source-cruiser"));Confirm(doc);CampaignTrace(entry,"construction-confirmed",new{QueueIndex=i});}
+                for(int i=0;i<4;i++){Click(doc.rootVisualElement.Q<Button>("player-primary-action"));Confirm(doc);yield return null;CampaignTrace(entry,"production-turn-advanced");}
                 var produced=model.Current.Frame.Strategy!.Ships.Select(s=>s.ShipId.Value).Where(s=>!initialShips.Contains(s)).ToArray();Assert.That(produced.Length,Is.GreaterThanOrEqualTo(2));
                 CampaignPage(doc,ReviewWorkspacePage.FleetOrders);
                 foreach(var id in model.Current.Frame.Strategy.Ships.Select(s=>s.ShipId.Value).ToArray())doc.rootVisualElement.Q<Toggle>("fleet-member-"+id).value=true;
                 doc.rootVisualElement.Q<TextField>("fleet-organization-name").value="Generated task force";
                 Click(doc.rootVisualElement.Q<Button>("fleet-create"));Confirm(doc);Assert.That(model.NamedFleets().Any(f=>produced.All(id=>f.Fleet.ShipIds.Any(s=>s.Value==id))),Is.True);
+                CampaignTrace(entry,"fleet-merged",new{Produced=produced});
                 yield return CampaignCapture(entry,doc,"paid-fleet");
                 var visited=new HashSet<string>(StringComparer.Ordinal);bool travelCaptured=false,contactPriorityChecked=false;
                 for(int turn=0;turn<128&&model.Current.Frame.Status.Phase==SessionPhase.Planning;turn++)
                 {
+                    CampaignTrace(entry,"turn-start");
                     CampaignPage(doc,ReviewWorkspacePage.Map);yield return null;
                     foreach(var fleet in model.Current.Frame.OwnStrategicFleets.ToArray())
                     {
@@ -233,6 +272,8 @@ namespace HobbyDS9.UnityReview.Tests
                         var target=distance.Where(d=>d.Value>0&&!visited.Contains(d.Key)).OrderBy(d=>d.Value).ThenBy(d=>d.Key,StringComparer.Ordinal).Select(d=>d.Key).FirstOrDefault();
                         var contact=model.Current.Frame.Travel!.KnownContacts.Where(c=>c.Fresh).Select(c=>(Contact:c,Offer:model.Current.FindKnownRoute(fleet.FleetId.Value,c.LastSeenNodeId)))
                             .Where(c=>c.Offer?.Route.Success==true).OrderBy(c=>c.Offer!.Route.TotalCost).ThenBy(c=>c.Contact.FleetId,StringComparer.Ordinal).FirstOrDefault();
+                        CampaignTrace(entry,"route-choice",new{Fleet=fleet.FleetId.Value,Origin=node,Target=target,Contact=contact.Contact?.FleetId,
+                            ContactNode=contact.Contact?.LastSeenNodeId,ContactTurn=contact.Contact?.LastSeenTurn,Intent=contact.Contact==null?"Leave":"Follow"});
                         Assert.That(target!=null||contact.Contact!=null,Is.True,"bounded known-space driver needs a lawful next target");
                         Click(doc.rootVisualElement.Q<Button>("map-fleet-"+fleet.FleetId.Value));Click(doc.rootVisualElement.Q<Button>("map-fit"));yield return null;yield return null;
                         var marker=doc.rootVisualElement.Q<Button>(contact.Contact==null?"map-star-"+target:"map-contact-"+contact.Contact.FleetId);
@@ -240,10 +281,13 @@ namespace HobbyDS9.UnityReview.Tests
                         yield return CampaignPointerRight(doc,entry,marker);var resolvedNode=entry.Workspace!.SelectedNode;Confirm(doc);yield return null;
                         var actualOrder=model.Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==fleet.FleetId.Value);
                         Assert.That(actualOrder.RouteNodeIds.LastOrDefault()??fleet.LocationNodeId.Value,Is.EqualTo(resolvedNode),"confirmed command uses resolved destination");
+                        CampaignTrace(entry,"order-confirmed");
                     }
                     if(!travelCaptured){yield return CampaignCapture(entry,doc,"travel");travelCaptured=true;}
                     Click(doc.rootVisualElement.Q<Button>("player-primary-action"));Confirm(doc);yield return null;
+                    CampaignTrace(entry,"turn-advanced");
                 }
+                CampaignDiagnosticSnapshot(entry,"before-encounter-bound");
                 Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.AwaitingCombat),"real exploration meets lawful AI within128turns");
                 CampaignPage(doc,ReviewWorkspacePage.Combat);yield return null;
                 Assert.That(produced.All(id=>model.Current.Frame.Battle!.OwnShips.Any(s=>s.Condition.ShipId==id)),Is.True,"paid produced fleet participates in the battle");
@@ -273,6 +317,8 @@ namespace HobbyDS9.UnityReview.Tests
                 File.WriteAllText(Path.Combine(CampaignOutput(),"generated-journey-summary.json"),"{\"visited\":"+visited.Count+",\"rounds\":"+rounds+",\"finalTurn\":"+continued.Current.Frame.Status.Turn+",\"knownRegions\":"+continued.GeneratedMap().Regions.Count+",\"fractionalOnlySelections\":"+campaignFractionalOnlySelections+",\"managedBytes\":"+GC.GetTotalMemory(false)+"}");
                 Assert.That(Directory.GetFiles(CampaignOutput(),"*-campaign-*.png").Length,Is.LessThanOrEqualTo(24));
             }
+            }
+            finally{CampaignDiagnosticSnapshot(entry,"finally");}
             yield return new ExitPlayMode();
         }
     }
