@@ -90,6 +90,7 @@ public sealed class NaturalGalaxyTests
     public void ThousandSystemPublicGenerateStrictOpenAndGeometryAreSupported(string seed)
     {
         var review=NaturalGalaxyApplication.Generate(Settings(seed,1000),Catalog());var d=review.Export();
+        if(seed=="42")Assert.Equal("265f4247468e493e0cab64edd7c28970865ce955efe950880742313a8d857ac4",d.ContentHash);
         Assert.Equal(2000,d.Layout.Regions.Count);Assert.Equal(1100,d.Features.Count);GroupsAndAnchors(d);Geometry(d);
         string json=NaturalGalaxyJson.Write(review);Assert.True(System.Text.Encoding.UTF8.GetByteCount(json)<ScaledGalaxyIdentity.MaximumJsonBytes);
         Assert.Equal(Json(d),Json(NaturalGalaxyJson.Read(json,Catalog().AsEnumerable().Reverse()).Export()));
