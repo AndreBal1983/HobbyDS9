@@ -15,7 +15,7 @@ namespace HobbyDS9.Simulation
         internal static NaturalGalaxySettingsDto Settings(NaturalGalaxySettingsDto s, IEnumerable<CivilizationDefinitionDto> catalog)
         {
             if (s == null || s.Map == null) throw new ArgumentException("Missing natural-map settings.");
-            var map = ScaledGalaxyData.Settings(s.Map, catalog);
+            var map = ScaledGalaxyData.NaturalMapSettings(s.Map, catalog);
             Require(s.IsolatedStarSharePermille >= 100 && s.IsolatedStarSharePermille <= 300
                 && s.AssociationSpreadPermille >= 500 && s.AssociationSpreadPermille <= 1500, "Natural distribution settings exceed bounded review tuning.");
             return new NaturalGalaxySettingsDto { Map = map, IsolatedStarSharePermille = s.IsolatedStarSharePermille,

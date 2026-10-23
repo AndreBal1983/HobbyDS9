@@ -15,6 +15,13 @@ namespace HobbyDS9.Simulation
         { if (!condition) throw new ArgumentException(message); }
 
         internal static ScaledGalaxySettingsDto Settings(ScaledGalaxySettingsDto s, IEnumerable<CivilizationDefinitionDto> catalog)
+            => SettingsCore(s, catalog, naturalQuietTargets: false);
+
+        // Natural format 4 extends only target admission; legacy Scaled generation/Open stays exact.
+        internal static ScaledGalaxySettingsDto NaturalMapSettings(ScaledGalaxySettingsDto s, IEnumerable<CivilizationDefinitionDto> catalog)
+            => SettingsCore(s, catalog, naturalQuietTargets: true);
+
+        private static ScaledGalaxySettingsDto SettingsCore(ScaledGalaxySettingsDto s, IEnumerable<CivilizationDefinitionDto> catalog, bool naturalQuietTargets)
         {
             if (s == null) throw new ArgumentException("Missing scaled-map settings.");
             // Reuse only seed/catalog admission, with a valid legacy-size sentinel; never generate a legacy map.
@@ -29,7 +36,9 @@ namespace HobbyDS9.Simulation
             long area = (long)s.Width * s.Height;
             Require(area >= s.SystemCount * 10000000000L && area <= s.SystemCount * 30000000000L
                 && area >= ((long)s.SystemCount + s.EmptyRegionCount) * 4000000000L, "Scaled-map density exceeds supported bounds.");
-            Require(s.QuietEmptyAreaTargetPermille == 1000 || s.QuietEmptyAreaTargetPermille == 2000 || s.QuietEmptyAreaTargetPermille == 3000,
+            int target = s.QuietEmptyAreaTargetPermille;
+            Require(naturalQuietTargets ? target == 3000 || target >= 500 && target <= 2000 && target % 250 == 0
+                : target == 1000 || target == 2000 || target == 3000,
                 "Unsupported quiet-empty target profile.");
             Require(s.BlackHolesPerBaselineArea >= 0 && s.BlackHolesPerBaselineArea <= 4
                 && s.NebulaePerBaselineArea >= 0 && s.NebulaePerBaselineArea <= 6, "Feature densities exceed supported bounds.");
