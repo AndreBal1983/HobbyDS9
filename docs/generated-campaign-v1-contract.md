@@ -1,6 +1,6 @@
 # Generated campaign v1 — early portable contract
 
-23 October 2026. Owner resumed the playable-demo goal. This scoped increment connects Natural v5 to the existing campaign, rather than extending the map-review harness. Base: `5cb498d54e8b496e31cdbcd58019038ca56bac94`. Implementation/acceptance pending; this document is the early receiving contract.
+23 October 2026. Owner resumed the playable-demo goal. This scoped increment connects Natural v5 to the existing campaign, rather than extending the map-review harness. Base: `5cb498d54e8b496e31cdbcd58019038ca56bac94`. Portable implementation is present; initial complete2078-case .NET acceptance and zero-warning Release passed. Independent review, combined frontend/CI/Unity/native gates remain separate. Exact pins/receipts belong in the delivery report.
 
 ## Public boundary
 
@@ -13,6 +13,8 @@
 New outer format **7**, profile `generated-campaign-v1`, policy `generated-neighbor-exploration-v1`, owns the full Natural-format4 document, exact trusted template package hash, generated package identity, complete playable-shaped owned root and discovery history. Its embedded core marker differs from format6 so truncation cannot be imported as6/3/2/1. Old wrappers1–6/loaders and current Save14/Content11/rules `science-engineering-v1`/compiler `ship-design-compiler-v1` remain unchanged; no migration. Load builds the scenario from the **stored frozen map**, not by running the current generator on its seed. It validates frozen map structure/geometry/hash and exact template identity, replays accepted operations and compares the complete root/history before returning. Only New Game invokes generation.
 
 ## Deterministic factory order and identity
+
+Each map projection also carries `CampaignRevision`, captured under the same session lock as its actor geometry, observation turn and coverage. Connections and features are ordinal by ID. Hosts must use the inherited observed command stamps; a detached map is never command authority.
 
 1. Validate the trusted existing playable template and Natural settings, with no caller mutation. Host verifies the exact template source-byte hash through its existing package reader.
 2. Generate Natural v5 with its existing independent streams, settings, units and map IDs. No art or distribution changes.

@@ -64,7 +64,7 @@ namespace HobbyDS9.Simulation
                 var lanes = new HashSet<string>(knowledge.Connections!.Where(n => n.Level != NavigationKnowledgeLevel.Unknown).Select(n => n.Id), StringComparer.Ordinal);
                 var copy = NaturalGalaxyData.Copy(generatedMap);
                 return new CampaignGeneratedMapDto { ActorId = actor, MapContentHash = copy.ContentHash, Width = copy.Layout.Width, Height = copy.Layout.Height,
-                    ObservationTurn = state.Campaign.GameState.TurnNumber, ObservedNodeIds = GeneratedCoverage(state.Campaign.GameState, actor),
+                    ObservationTurn = state.Campaign.GameState.TurnNumber, CampaignRevision = state.Campaign.GameState.StateRevision, ObservedNodeIds = GeneratedCoverage(state.Campaign.GameState, actor),
                     Regions = copy.Layout.Regions.Where(r => known.Contains(r.NodeId)).OrderBy(r => r.NodeId, StringComparer.Ordinal).ToList(),
                     Connections = copy.Layout.Connections.Where(e => lanes.Contains(e.ConnectionId) && known.Contains(e.EndpointA) && known.Contains(e.EndpointB)).OrderBy(e=>e.ConnectionId,StringComparer.Ordinal).ToList(),
                     Features = copy.Features.Where(f => f.NodeId != null && known.Contains(f.NodeId)).OrderBy(f=>f.FeatureId,StringComparer.Ordinal).ToList() };

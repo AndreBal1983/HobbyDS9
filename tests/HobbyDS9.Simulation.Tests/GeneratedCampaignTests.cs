@@ -61,6 +61,7 @@ public sealed class GeneratedCampaignTests
         Assert.DoesNotContain(game.Civilizations, c => c.CivilizationId == "civ.dominion");
         Assert.Equal(500, save.Map.Layout.Regions.Count);
         var map = app.CaptureGeneratedMap(Human);
+        Assert.Equal(app.CaptureStatus().CampaignRevision,map.CampaignRevision);Assert.Equal(app.CaptureStatus().Turn,map.ObservationTurn);
         Assert.InRange(map.Regions.Count, 2, 20); Assert.Empty(app.GetKnownContacts(Human));
         Assert.All(map.Connections, e => { Assert.Equal(1, e.BaseTraversalCost); Assert.Contains(map.Regions, r => r.NodeId == e.EndpointA); Assert.Contains(map.Regions, r => r.NodeId == e.EndpointB); });
         Assert.All(map.Features, f => Assert.Contains(map.Regions, r => r.NodeId == f.NodeId));
