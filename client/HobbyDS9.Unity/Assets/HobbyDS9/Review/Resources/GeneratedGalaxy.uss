@@ -73,3 +73,12 @@
 .galaxy-compact .galaxy-map-column { margin-right: 12px; }
 .galaxy-wide { padding: 28px; }
 .galaxy-wide .galaxy-inspector { width: 360px; min-width: 360px; }
+.galaxy-inspector-column { width: 320px; min-width: 320px; min-height: 0; flex-shrink: 0; }
+.galaxy-compact .galaxy-inspector-column { width: 280px; min-width: 280px; }
+.galaxy-wide .galaxy-inspector-column { width: 360px; min-width: 360px; }
+.galaxy-inspector-column .galaxy-inspector { width: auto; min-width: 0; flex-grow: 1; flex-shrink: 1; min-height: 80px; }
+.galaxy-route-preview { flex-shrink: 0; padding: 10px; background-color: #101b29; border-radius: 12px; margin-bottom: 6px; }
+.galaxy-route-preview Label { white-space: normal; margin-bottom: 5px; font-size: 14px; }
+.galaxy-route-preview .review-action { min-height: 36px; white-space: normal; flex-grow: 1; font-size: 14px; }
+.galaxy-route-target-list { max-height: 130px; min-height: 0; flex-shrink: 1; }
+.galaxy-route-pin { position: absolute; color: #efb16b; font-size: 16px; -unity-font-style: bold; }
