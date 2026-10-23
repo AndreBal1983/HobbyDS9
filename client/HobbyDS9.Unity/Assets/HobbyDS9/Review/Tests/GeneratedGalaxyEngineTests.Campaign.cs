@@ -16,6 +16,7 @@ namespace HobbyDS9.UnityReview.Tests
 {
     public sealed partial class GeneratedGalaxyEngineTests
     {
+        private static int campaignFractionalOnlySelections;
         private static ReviewUiModel CampaignModel(ReviewEntry entry)=>(ReviewUiModel)typeof(ReviewEntry).GetField("model",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry)!;
         private static void CampaignPage(UIDocument doc,ReviewWorkspacePage page)=>Click(doc.rootVisualElement.Q<Button>("review-nav-"+page));
         private static Button CampaignButton(UIDocument doc,string text)=>doc.rootVisualElement.Query<Button>().ToList().Single(b=>b.text==text);
@@ -39,25 +40,33 @@ namespace HobbyDS9.UnityReview.Tests
             var anchors=known.Regions.Select(r=>{var star=known.Features.FirstOrDefault(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star&&f.NodeId==r.NodeId);var at=star?.Position??r.Center;
                 return new GeneratedCampaignNodeAnchor(r.NodeId,(float)CampaignModel(entry).GeneratedViewport.X(at.X),(float)CampaignModel(entry).GeneratedViewport.Y(at.Y));}).ToArray();
             Vector2 point=default;VisualElement? down=null,hit=null;var attempts=new List<string>();
-            // At most25 exposed points; actual priority widgets are never bypassed or retargeted.
+            // Pixel rounding can move a button centre out of its nearest-anchor area.
+            // Try the actual integer pixel and exact painted anchor before the bounded grid.
             var offsets=new[]{0f,-.2f,.2f,-.4f,.4f};var bounds=intended.worldBound;
-            foreach(var y in offsets)
+            var anchor=anchors.Single(a=>a.NodeId==intendedNode);
+            var exact=contact?bounds.center:map.LocalToWorld(new Vector2((float)anchor.X,(float)anchor.Y));
+            var candidates=new List<(Vector2 Point,string Kind)>{(new Vector2(Mathf.Round(exact.x),Mathf.Round(exact.y)),"rounded-anchor"),(exact,"exact-anchor")};
+            foreach(var y in offsets)foreach(var x in offsets)
+                if(candidates.Count<25)candidates.Add((bounds.center+new Vector2(x*bounds.width,y*bounds.height),"interior-grid"));
+            string chosen="none";
+            foreach(var sample in candidates)
             {
-                foreach(var x in offsets)
-                {
-                    var candidate=bounds.center+new Vector2(x*bounds.width,y*bounds.height);
-                    if(!map.worldBound.Contains(candidate)||!bounds.Contains(candidate)||!intended.ContainsPoint(intended.WorldToLocal(candidate)))continue;
+                    var candidate=sample.Point;
+                    if(!map.worldBound.Contains(candidate)||!bounds.Contains(candidate)||!intended.ContainsPoint(intended.WorldToLocal(candidate)))
+                    {attempts.Add(sample.Kind+" "+candidate+" clipped");continue;}
                     var picked=panel.Pick(candidate);var ancestor=picked;
                     while(ancestor!=null&&ancestor!=map&&!ancestor.name.StartsWith("map-",StringComparison.Ordinal))ancestor=ancestor.parent;
                     var local=map.WorldToLocal(candidate);var resolved=GeneratedCampaignNodePicker.Resolve(anchors,local.x,local.y);
                     bool allowed=contact?picked!=null&&(picked==intended||intended.Contains(picked)):
                         (ancestor==map||ancestor?.name.StartsWith("map-star-",StringComparison.Ordinal)==true)&&resolved==intendedNode;
-                    attempts.Add(candidate+" hit="+(picked?.name??"null")+" ancestor="+(ancestor?.name??"null")+" resolved="+(resolved??"null"));
+                    attempts.Add(sample.Kind+" "+candidate+" hit="+(picked?.name??"null")+" ancestor="+(ancestor?.name??"null")+" resolved="+(resolved??"null"));
                     if(!allowed)continue;
-                    point=candidate;down=picked;hit=ancestor;break;
-                }
-                if(down!=null)break;
+                    point=candidate;down=picked;hit=ancestor;chosen=sample.Kind;break;
             }
+            if(chosen=="exact-anchor")campaignFractionalOnlySelections++;
+            var diagnostic=intended.name+" chosen="+chosen+" fractionalOnlyTotal="+campaignFractionalOnlySelections+"; "+string.Join("; ",attempts);
+            File.AppendAllText(Path.Combine(CampaignOutput(),"generated-pointer-diagnostics.txt"),diagnostic+Environment.NewLine);
+            TestContext.WriteLine(diagnostic);
             Assert.That(down,Is.Not.Null,"No exposed marker point: "+intended.name+" bounds="+bounds+" map="+map.worldBound+"; "+string.Join("; ",attempts));
             var expected=intendedNode;
             TestContext.WriteLine("Exposed campaign pointer "+intended.name+" point="+point+" actual="+down!.name+" resolved="+expected+" candidates="+attempts.Count);
@@ -147,6 +156,7 @@ namespace HobbyDS9.UnityReview.Tests
         }
         [UnityTest] public IEnumerator GeneratedCampaignNewGamePaidFleetExplorationBattleAndContinueUseActualControls()
         {
+            campaignFractionalOnlySelections=0;
             yield return new EnterPlayMode();yield return null;yield return null;
             var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
             directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
@@ -260,7 +270,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(continued.History().Count,Is.EqualTo(model.History().Count));Assert.That(continued.Current.Frame.Status.Turn,Is.EqualTo(model.Current.Frame.Status.Turn));
                 yield return CampaignCapture(entry,doc,"continued-aftermath");
                 File.WriteAllBytes(Path.Combine(CampaignOutput(),"generated-whole-campaign-final.json"),savedBytes);
-                File.WriteAllText(Path.Combine(CampaignOutput(),"generated-journey-summary.json"),"{\"visited\":"+visited.Count+",\"rounds\":"+rounds+",\"finalTurn\":"+continued.Current.Frame.Status.Turn+",\"knownRegions\":"+continued.GeneratedMap().Regions.Count+",\"managedBytes\":"+GC.GetTotalMemory(false)+"}");
+                File.WriteAllText(Path.Combine(CampaignOutput(),"generated-journey-summary.json"),"{\"visited\":"+visited.Count+",\"rounds\":"+rounds+",\"finalTurn\":"+continued.Current.Frame.Status.Turn+",\"knownRegions\":"+continued.GeneratedMap().Regions.Count+",\"fractionalOnlySelections\":"+campaignFractionalOnlySelections+",\"managedBytes\":"+GC.GetTotalMemory(false)+"}");
                 Assert.That(Directory.GetFiles(CampaignOutput(),"*-campaign-*.png").Length,Is.LessThanOrEqualTo(24));
             }
             yield return new ExitPlayMode();
