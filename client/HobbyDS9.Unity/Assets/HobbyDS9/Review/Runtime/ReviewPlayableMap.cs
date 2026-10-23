@@ -30,13 +30,14 @@ namespace HobbyDS9.UnityReview
             var generated=model.GeneratedCampaign?model.GeneratedMap():null;
             var generatedRegions=generated?.Regions.ToDictionary(r=>r.NodeId,StringComparer.Ordinal);
             var generatedStars=generated?.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star).ToDictionary(f=>f.NodeId!,f=>f.Position,StringComparer.Ordinal);
+            var generatedNames=generated?.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star).ToDictionary(f=>f.NodeId!,f=>f.DisplayName,StringComparer.Ordinal);
             var viewport=model.GeneratedViewport;
             var nodes=facts.Navigation.Nodes.OrderBy(n=>n.NodeId.Value,StringComparer.Ordinal).ToList();
             var nodeIds=new HashSet<string>(nodes.Select(n=>n.NodeId.Value),StringComparer.Ordinal);
             var links=facts.Navigation.Links.Where(l=>nodeIds.Contains(l.EndpointA.Value)&&nodeIds.Contains(l.EndpointB.Value)).ToList();
             var fleets=frame.OwnStrategicFleets.OrderBy(f=>f.FleetId.Value,StringComparer.Ordinal).ToList();
             var contacts=frame.Travel?.KnownContacts.Where(c=>c.Fresh&&nodeIds.Contains(c.LastSeenNodeId)).ToList()??new List<CampaignKnownContact>();
-            string Name(string id)=>nodes.FirstOrDefault(n=>n.NodeId.Value==id)?.DisplayName??"Location unavailable";
+            string Name(string id)=>generatedNames!=null&&generatedNames.TryGetValue(id,out var starName)?starName:nodes.FirstOrDefault(n=>n.NodeId.Value==id)?.DisplayName??"Location unavailable";
             var names=model.NamedFleets().ToDictionary(f=>f.Fleet.FleetId.Value,f=>f.DisplayName,StringComparer.Ordinal);
             string FleetName(string id)=>names.TryGetValue(id,out var value)?value:"Owned fleet";
             bool Editable()=>ReferenceEquals(frame,model.Current.Frame)&&frame.Status.Phase==SessionPhase.Planning
@@ -64,6 +65,7 @@ namespace HobbyDS9.UnityReview
             Text(details,"Star: system · ring: fleets · diamond: observed contact. Right-click a destination or contact to review an order.");
             var notice=Text(details,"Selection never submits an order.","map-selection-notice");
             var placements=new List<Action>();
+            var generatedLabels=new Dictionary<string,Label>(StringComparer.Ordinal);string? hoveredNode=null;
             Vector2 WorldPoint(string id)
             {
                 if(generatedStars!.TryGetValue(id,out var star))return new Vector2(star.X,star.Y);
@@ -92,7 +94,33 @@ namespace HobbyDS9.UnityReview
             void Reposition()
             {
                 if(generated!=null){viewport.Resize(map.contentRect.width,map.contentRect.height);if(model.GeneratedViewportNeedsFit&&map.contentRect.width>2&&map.contentRect.height>2)FitKnown();}
-                foreach(var place in placements)place();RefreshBackground();lines.MarkDirtyRepaint();
+                foreach(var place in placements)place();LayoutLabels();RefreshBackground();lines.MarkDirtyRepaint();
+            }
+            void LayoutLabels()
+            {
+                if(generated==null)return;
+                var candidates=new List<GeneratedLabelCandidate>();var glyphs=new List<GeneratedLabelRect>();
+                foreach(var node in nodes)
+                {
+                    var id=node.NodeId.Value;var p=Point(id);bool system=generatedStars!.ContainsKey(id);
+                    double radius=system?6:3;glyphs.Add(new GeneratedLabelRect(p.x-radius,p.y-radius,radius*2,radius*2));
+                    bool owned=fleets.Any(f=>f.LocationNodeId.Value==id&&frame.Travel?.OwnReceipts.LastOrDefault(r=>r.FleetId==f.FleetId.Value)?.TransitDestinationId==null);
+                    if(owned){glyphs.Add(new GeneratedLabelRect(p.x-37,p.y-37,74,74));glyphs.Add(new GeneratedLabelRect(p.x-35,p.y+44,70,18));}
+                    int priority=workspace.SelectedNode==id?100:hoveredNode==id?90:owned?80:contacts.Any(c=>c.LastSeenNodeId==id)?70:0;
+                    var label=generatedLabels[id];label.style.visibility=Visibility.Hidden;
+                    if(!system&&priority==0)continue;
+                    var measured=label.MeasureTextSize(label.text,0,VisualElement.MeasureMode.Undefined,20,VisualElement.MeasureMode.Exactly);
+                    var width=Mathf.Clamp(float.IsNaN(measured.x)||measured.x<1?label.text.Length*8+6:measured.x+6,32,180);
+                    candidates.Add(new GeneratedLabelCandidate(id,p.x,p.y,width,20,priority,owned?42:12));
+                }
+                foreach(var contact in contacts)
+                {var p=Point(contact.LastSeenNodeId);int index=contacts.Where(c=>c.LastSeenNodeId==contact.LastSeenNodeId).ToList().IndexOf(contact);glyphs.Add(new GeneratedLabelRect(p.x-64,p.y-54-index*48,24,24));}
+                foreach(var fleet in fleets)
+                {var receipt=frame.Travel?.OwnReceipts.LastOrDefault(r=>r.FleetId==fleet.FleetId.Value);if(receipt?.TransitDestinationId==null||receipt.TransitTotalCost<=0||!nodeIds.Contains(receipt.TransitDestinationId))continue;
+                    var p=Vector2.Lerp(Point(receipt.EndNodeId),Point(receipt.TransitDestinationId),(float)((double)receipt.TransitProgress/receipt.TransitTotalCost));glyphs.Add(new GeneratedLabelRect(p.x-12,p.y-12,24,24));}
+                var packed=GeneratedCampaignLabelLayout.Place(candidates,glyphs,map.contentRect.width,map.contentRect.height);
+                foreach(var item in packed)
+                {var label=generatedLabels[item.Key];var r=item.Value;label.style.left=(float)r.X;label.style.top=(float)r.Y;label.style.width=(float)r.Width;label.style.height=(float)r.Height;label.style.visibility=Visibility.Visible;}
             }
             void Zoom(float factor){if(generated!=null)viewport.ZoomAt(factor,map.contentRect.width/2,map.contentRect.height/2);else workspace.MapZoom=Mathf.Clamp(workspace.MapZoom*factor,.7f,2.4f);Reposition();}
             button(toolbar,"−",()=>Zoom(.8f)).name="map-zoom-out";
@@ -130,6 +158,16 @@ namespace HobbyDS9.UnityReview
                         return new GeneratedCampaignNodeAnchor(region.NodeId,point.x,point.y);});
                     return GeneratedCampaignNodePicker.Resolve(anchors,local.x,local.y);
                 }
+                map.RegisterCallback<PointerMoveEvent>(e=>{
+                    string? next=null;
+                    for(var at=e.target as VisualElement;at!=null&&at!=map;at=at.parent)
+                    {
+                        if(at.name.StartsWith("map-contact-",StringComparison.Ordinal)){next=contacts.FirstOrDefault(c=>"map-contact-"+c.FleetId==at.name)?.LastSeenNodeId;break;}
+                        if(at.name.StartsWith("map-ring-",StringComparison.Ordinal)){next=at.name.Substring("map-ring-".Length);break;}
+                    }
+                    next=next??Resolve(e.position);if(next==hoveredNode)return;hoveredNode=next;LayoutLabels();
+                });
+                map.RegisterCallback<PointerLeaveEvent>(_=>{if(hoveredNode!=null){hoveredNode=null;LayoutLabels();}});
                 int nodePointer=-1,nodeButton=-1;string? pressedNode=null;
                 map.RegisterCallback<PointerDownEvent>(e=>{
                     if((e.button!=0&&e.button!=1)||!map.enabledInHierarchy||!ReferenceEquals(frame,model.Current.Frame)||Priority(e.target as VisualElement))return;
@@ -236,16 +274,18 @@ namespace HobbyDS9.UnityReview
                     Place(ring,()=>Point(id),74,74);
                     ring.EnableInClassList("selected-map-marker",atNode.Any(f=>f.FleetId.Value==workspace.SelectedFleet));
                     var count=new Label(atNode.Count+" own fleet"+(atNode.Count==1?"":"s")){pickingMode=PickingMode.Ignore};count.AddToClassList("map-own-count");
-                    Place(count,()=>Point(id),140,24,new Vector2(0,53));
+                    if(generated!=null){count.text=atNode.Count+" fleet"+(atNode.Count==1?"":"s");count.style.fontSize=12;Place(count,()=>Point(id),70,18,new Vector2(0,53));}
+                    else Place(count,()=>Point(id),140,24,new Vector2(0,53));
                 }
                 var isSystem=generated==null||generatedStars!.ContainsKey(id);
-                var star=new Button{name="map-star-"+id,text=isSystem?"●":"·",tooltip=node.DisplayName+(isSystem?" · system":" · empty transit region")+"; right-click to prepare navigation."};
+                var star=new Button{name="map-star-"+id,text=isSystem?"●":"·",tooltip=Name(id)+(isSystem?" · system":" · empty transit region")+"; right-click to prepare navigation."};
                 bindButton(star,()=>perform(()=>workspace.SelectedNode=id));
                 star.AddToClassList("map-star");star.EnableInClassList("selected-map-marker",workspace.SelectedNode==id);
+                if(generated!=null)star.AddToClassList("generated-map-node-hit");
                 Place(star,()=>Point(id),38,38);ContextAction(star,()=>Prepare(id));
-                var label=new Label(node.DisplayName){pickingMode=PickingMode.Ignore};label.AddToClassList("map-node-name");
-                if(generated!=null){label.style.backgroundColor=new Color(.005f,.009f,.014f,.78f);label.style.unityTextOutlineColor=new Color(.001f,.002f,.004f);label.style.unityTextOutlineWidth=1;}
-                Place(label,()=>Point(id),175,28,new Vector2(103,-2));
+                var label=new Label(Name(id)){name="map-label-"+id,pickingMode=PickingMode.Ignore,tooltip=Name(id)};label.AddToClassList("map-node-name");
+                if(generated!=null){label.AddToClassList("generated-map-node-label");label.style.position=Position.Absolute;map.Add(label);generatedLabels.Add(id,label);}
+                else Place(label,()=>Point(id),175,28,new Vector2(103,-2));
             }
             foreach(var contact in contacts)
             {
@@ -253,6 +293,7 @@ namespace HobbyDS9.UnityReview
                 bindButton(marker,()=>{notice.text="Observed hostile contact at "+Name(contact.LastSeenNodeId)+", turn "+contact.LastSeenTurn+". Current destination and reserves are unavailable.";});
                 var offset=contacts.Where(c=>c.LastSeenNodeId==contact.LastSeenNodeId).ToList().IndexOf(contact);
                 marker.AddToClassList("map-contact");Place(marker,()=>Point(contact.LastSeenNodeId),44,44,new Vector2(-52,-42-offset*48));
+                if(generated!=null)marker.AddToClassList("generated-map-contact-hit");
                 ContextAction(marker,()=>Prepare(contact.LastSeenNodeId,contact));
             }
             foreach(var fleet in fleets)
@@ -262,6 +303,7 @@ namespace HobbyDS9.UnityReview
                 var moving=new Button{name="map-moving-fleet-"+fleet.FleetId,text="▸",tooltip="Owned fleet in transit: "+receipt.TransitProgress+" / "+receipt.TransitTotalCost};
                 bindButton(moving,()=>perform(()=>workspace.SelectedFleet=fleet.FleetId.Value));
                 moving.AddToClassList("map-contact");
+                if(generated!=null)moving.AddToClassList("generated-map-contact-hit");
                 Place(moving,()=>Vector2.Lerp(Point(receipt.EndNodeId),Point(receipt.TransitDestinationId),(float)((double)receipt.TransitProgress/receipt.TransitTotalCost)),38,38);
             }
             Text(main,generated==null?"Known lanes · double line: wormhole · amber: unsent route. Schematic spacing does not determine travel cost.":"Known generated regions only · borders define crossings · amber: reviewed route. Fit known frames explored space.");
