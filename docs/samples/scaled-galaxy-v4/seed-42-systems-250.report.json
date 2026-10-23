@@ -36,11 +36,14 @@
     "ExtraSiteSeparation": 30000,
     "QuietDisturbanceThreshold": 100
   },
-  "GenerateMs": 819.4651,
-  "StrictOpenMs": 389.3756,
+  "GenerateMs": 542.5941,
+  "StrictOpenMs": 353.2632,
   "IndentedJsonBytes": 1009384,
   "ReopenedHash": "006ab67d08f1cd3c3d9e73da2fa335fb5e4ba1cee1acd824d63dbd44135c1937",
-  "PeakWorkingSetBytes": 84144128,
+  "MalformedShapeRejectMs": 0.2475,
+  "ValidShapeWrongHashRejectMs": 336.1515,
+  "FailedOpenPreservedReview": true,
+  "PeakWorkingSetBytes": 94748672,
   "OriginNodeId": "nav.scaled.0015",
   "DestinationNodeId": "nav.scaled.0189",
   "Route": {
