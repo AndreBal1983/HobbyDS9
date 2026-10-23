@@ -1,0 +1,19 @@
+{
+  "routeFixtureCommit": "f8d72f8eed9f72c0578071264bf608ca8f891a19",
+  "routeImplementationCommit": "c936130740c66c90efd235474de8f6152d754657",
+  "status": "Actual route-only API examples on retained format3 map; not new natural generation",
+  "files": [
+    {
+      "file": "samples/examples.json",
+      "gitPath": "docs/samples/galaxy-route-intent-v1/examples.json",
+      "sourceCommit": "f8d72f8eed9f72c0578071264bf608ca8f891a19",
+      "sha256": "7e9ff8cbd0d08b6097263bebdfa620189290c4cdc0c8f33a1e2fc69aac406a89"
+    },
+    {
+      "file": "samples/seed-42-systems-250.scaled.json",
+      "gitPath": "docs/samples/scaled-galaxy-v4/seed-42-systems-250.scaled.json",
+      "sourceCommit": "f8d72f8eed9f72c0578071264bf608ca8f891a19",
+      "sha256": "c03ebb192c3a29c6c61ca46125945806ae45e995e2e5cbee5158fe77f115ce36"
+    }
+  ]
+}
