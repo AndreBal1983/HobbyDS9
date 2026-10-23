@@ -122,6 +122,8 @@ namespace HobbyDS9.UnityReview
                 AddGalaxyTool(tools,"↓","galaxy-pan-down",()=>galaxyMap.Pan(0,-90));
                 var links=AddButton(tools,"Graph links: off",()=>{galaxyMap.ToggleGraphLinks();root.Q<Button>("galaxy-graph-links").text=galaxyMap.ShowGraphLinks?"Graph links: on":"Graph links: off";});
                 links.name="galaxy-graph-links";
+                var background=AddButton(tools,"Galaxy light: on",()=>{galaxyMap.ToggleBackground();root.Q<Button>("galaxy-background").text=galaxyMap.ShowBackground?"Galaxy light: on":"Galaxy light: off";});
+                background.name="galaxy-background";background.tooltip="Decorative galaxy light and depth; navigation positions remain unchanged.";
                 if(document.HasEnvironment)
                 {
                     var features=AddButton(tools,"Features: on",()=>{galaxyMap.ToggleFeatures();root.Q<Button>("galaxy-features").text=galaxyMap.ShowFeatures?"Features: on":"Features: off";});

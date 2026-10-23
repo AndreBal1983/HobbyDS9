@@ -40,6 +40,12 @@ namespace HobbyDS9.UnityReview
         public bool ShowFeatures { get; private set; }=true;
         public bool ShowInfluenceAreas { get; private set; }
         public double Zoom=>viewport.Zoom;
+        private GeneratedGalaxyVolumeBackground? background;
+        private bool backgroundFailed;
+        public bool ShowBackground { get; private set; }=true;
+        public bool BackgroundDepth { get; private set; }=true;
+        public string BackgroundStatus { get; private set; }="Waiting for attached viewport";
+        public GeneratedGalaxyVolumeBackground? BackgroundRenderer=>background;
         public GeneratedGalaxyMapView(GeneratedGalaxyMapData map,IReadOnlyDictionary<string,string> civilizations,
             Action<Button,Action> bindButton,Action<string,GeneratedGalaxySelectionKind> select,Action<string> target,Action<string>? inspectFeature=null,
             Action<string,bool,GeneratedGalaxyDraftAnchorKind>? targetIntent=null)
@@ -55,6 +61,8 @@ namespace HobbyDS9.UnityReview
             focusable=true;viewport.SetMap(map.Width,map.Height);
             viewport.MaximumZoom=!map.IsLarge?8:32;
             generateVisualContent+=Paint;
+            RegisterCallback<AttachToPanelEvent>(_=>RefreshBackground());
+            RegisterCallback<DetachFromPanelEvent>(_=>{ReleaseBackground();backgroundFailed=false;});
             foreach(var system in map.Systems)
             {
                 var region=regions[system.NodeId];bool candidate=candidateNames.ContainsKey(region.NodeId);
@@ -145,6 +153,33 @@ namespace HobbyDS9.UnityReview
         public void ToggleGraphLinks(){ShowGraphLinks=!ShowGraphLinks;MarkDirtyRepaint();}
         public void ToggleFeatures(){ShowFeatures=!ShowFeatures;Place();}
         public void ToggleInfluenceAreas(){ShowInfluenceAreas=!ShowInfluenceAreas;MarkDirtyRepaint();}
+        public void ToggleBackground(){ShowBackground=!ShowBackground;backgroundFailed=false;if(!ShowBackground)ReleaseBackground();else RefreshBackground();}
+        public void ToggleBackgroundDepth(){BackgroundDepth=!BackgroundDepth;RefreshBackground();}
+        private void ReleaseBackground()
+        {
+            style.backgroundImage=StyleKeyword.None;background?.Dispose();background=null;
+            BackgroundStatus=ShowBackground?"Detached / flat fallback":"Background off";
+        }
+        private void RefreshBackground()
+        {
+            if(!Live()||!ShowBackground||backgroundFailed||contentRect.width<1||contentRect.height<1)return;
+            try
+            {
+                background??=new GeneratedGalaxyVolumeBackground(document);
+                background.Render(viewport,contentRect.width,contentRect.height,ShowFeatures,BackgroundDepth);
+                // A style background is painted BEFORE this element's Painter2D.
+                // No child Image can occlude the region/route paint or intercept input.
+                style.backgroundImage=new StyleBackground(Background.FromRenderTexture(background.Texture!));
+                style.backgroundSize=new BackgroundSize(Length.Percent(100),Length.Percent(100));
+                BackgroundStatus="Continuous depth field · "+background.VisibleCloudCount+" clouds"+
+                    (background.OmittedCloudCount==0?"":" · "+background.OmittedCloudCount+" deferred by visual cap");
+            }
+            catch(Exception e)
+            {
+                ReleaseBackground();backgroundFailed=true;BackgroundStatus="Flat fallback: "+e.GetType().Name;
+                Debug.LogWarning("Galaxy decorative background unavailable: "+e.Message);
+            }
+        }
         public void SelectFeature(string? feature){selectedFeature=feature;MarkDirtyRepaint();}
         public void Select(string node,GeneratedGalaxySelectionKind kind){selectedNode=node;selectionKind=kind;Place();}
         public void Route(string? origin,IReadOnlyList<string>? steps)
@@ -238,7 +273,7 @@ namespace HobbyDS9.UnityReview
                 PlaceChild(feature.button,Point(feature.feature.Position)-new Vector2(14,14));
                 feature.button.style.display=ShowFeatures&&Visible(Point(feature.feature.Position),24)?DisplayStyle.Flex:DisplayStyle.None;
             }
-            MarkDirtyRepaint();
+            RefreshBackground();MarkDirtyRepaint();
         }
         private bool Visible(Vector2 p,float margin)=>p.x>=contentRect.xMin-margin&&p.x<=contentRect.xMax+margin&&p.y>=contentRect.yMin-margin&&p.y<=contentRect.yMax+margin;
         private Rect ScreenBounds(Rect world)=>Rect.MinMaxRect(contentRect.xMin+(float)viewport.X(world.xMin),contentRect.yMin+(float)viewport.Y(world.yMin),
@@ -251,13 +286,12 @@ namespace HobbyDS9.UnityReview
                 var center=Point(feature.Position);bool nebula=feature.Kind==GalaxyEnvironmentFeatureKind.Nebula;
                 var extent=new Rect(feature.Position.X-feature.RadiusX,feature.Position.Y-feature.RadiusY,feature.RadiusX*2,feature.RadiusY*2);
                 if(!Visible(center,24)&&!ScreenBounds(extent).Overlaps(contentRect))continue;
-                if((nebula&&ShowFeatures)||ShowInfluenceAreas)
+                if(ShowInfluenceAreas)
                 {
                     var footprint=InfluencePolygon(feature);if(footprint.Count<3)continue;
                     painter.BeginPath();painter.MoveTo(footprint[0]);
                     foreach(var point in footprint.Skip(1))painter.LineTo(point);
                     painter.ClosePath();
-                    if(nebula&&ShowFeatures){painter.fillColor=new Color(.25f,.63f,.64f,.12f);painter.Fill();}
                     if(ShowInfluenceAreas){painter.strokeColor=new Color(.60f,.73f,.80f,feature.FeatureId==selectedFeature ? .5f : .22f);painter.lineWidth=1;painter.Stroke();}
                 }
                 if(ShowFeatures&&feature.Kind==GalaxyEnvironmentFeatureKind.BlackHole)

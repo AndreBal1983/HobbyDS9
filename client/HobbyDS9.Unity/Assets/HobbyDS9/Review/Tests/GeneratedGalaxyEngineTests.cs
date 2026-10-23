@@ -13,7 +13,7 @@ using UnityEngine.UIElements;
 
 namespace HobbyDS9.UnityReview.Tests
 {
-    public sealed class GeneratedGalaxyEngineTests
+    public sealed partial class GeneratedGalaxyEngineTests
     {
         private string? directory;
         [SetUp] public void DedicatedRunOnly()
