@@ -63,6 +63,9 @@ namespace HobbyDS9.UnityReview.Tests
             GeneratedGalaxyRouteDraft Draft()=>(GeneratedGalaxyRouteDraft)typeof(ReviewEntry).GetField("galaxyDraft",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry)!;
             GalaxyReviewRoutePlanSnapshot Plan()=>(GalaxyReviewRoutePlanSnapshot)typeof(ReviewEntry).GetField("galaxyPlan",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry)!;
             Click(doc.rootVisualElement.Q<Button>("generated-galaxy-entry"));yield return null;var root=doc.rootVisualElement;
+            using(var inputSurface=new GalaxyInputSurface(doc))
+            {
+            yield return null;yield return null;
             foreach(var size in new[]{250,1000})
             {
                 root.Q<TextField>("galaxy-seed").value="42";root.Q<DropdownField>("galaxy-size").value=size.ToString();
@@ -72,25 +75,25 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(map.ContentHash,Is.EqualTo(size==250?"4ea9b0d4581edb60460413e9fee0203257bd47e5b6cb43fc044ee5b2cda01976":"265f4247468e493e0cab64edd7c28970865ce955efe950880742313a8d857ac4"));
                 var original=workspace.ExportBytes();yield return Capture(doc,"natural-"+size+"-overview");
                 var a=map.Systems[0];var b=map.Systems[1];
-                void Target(GeneratedGalaxySystemDto system,bool shift)
+                IEnumerator Target(GeneratedGalaxySystemDto system,bool shift)
                 {
                     var star=root.Q<Button>("galaxy-star-"+system.SystemId);
-                    RightClick(root.Q<GeneratedGalaxyMapView>("generated-galaxy-map"),star.worldBound.center,shift);
+                    yield return RightClick(root.Q<GeneratedGalaxyMapView>("generated-galaxy-map"),star.worldBound.center,shift);
                     Assert.That(Draft().Targets[Draft().Targets.Count-1].Kind,Is.EqualTo(GeneratedGalaxyDraftAnchorKind.StarLocation));
                 }
                 Click(root.Q<Button>("galaxy-star-"+a.SystemId));yield return null;
                 Assert.That(root.Q<Button>("galaxy-route-target").enabledInHierarchy,Is.False);
                 Click(root.Q<Button>("galaxy-route-start"));yield return null;
                 Assert.That(root.Q<Button>("galaxy-route-target").enabledInHierarchy,Is.True,"explicit start must enable existing destination control immediately");
-                Target(b,false);
+                yield return Target(b,false);
                 var view=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
                 var background=map.Regions.Where(r=>r.SystemId==null).First(r=>{
                     var local=view.Position(r.NodeId);var world=view.LocalToWorld(local);
                     return view.contentRect.Contains(local)&&view.NearestStar(local)==null&&ReferenceEquals(view.panel.Pick(world),view);});
-                RightClick(view,view.LocalToWorld(view.Position(background.NodeId)),true);
+                yield return RightClick(view,view.LocalToWorld(view.Position(background.NodeId)),true);
                 Assert.That(Draft().Targets.Count,Is.EqualTo(2));Assert.That(Draft().Targets[1].Kind,Is.EqualTo(GeneratedGalaxyDraftAnchorKind.RegionTransit));
                 Assert.That(Draft().Targets[1].NodeId,Is.EqualTo(background.NodeId));
-                Target(b,false);Target(b,true);Target(a,true);yield return null;
+                yield return Target(b,false);yield return Target(b,true);yield return Target(a,true);
                 Assert.That(Draft().Targets.Count,Is.EqualTo(3));Assert.That(Plan().Success,Is.True);
                 Assert.That(Plan().Legs.Count,Is.EqualTo(3));Assert.That(Plan().Legs[1].Route.Steps.Count,Is.Zero);
                 Assert.That(Plan().Legs[0].Target.NodeId,Is.EqualTo(b.NodeId));Assert.That(Plan().Legs[2].OriginNodeId,Is.EqualTo(b.NodeId));
@@ -100,8 +103,8 @@ namespace HobbyDS9.UnityReview.Tests
                     Click(root.Q<Button>("galaxy-route-save"));Click(root.Q<Button>("galaxy-route-clear"));Assert.That(Draft().Targets.Count,Is.Zero);
                     Click(root.Q<Button>("galaxy-route-restore"));yield return null;Assert.That(Draft().Targets.Count,Is.EqualTo(3));
                     yield return Capture(doc,"natural-250-restored-companion",plan:Plan());
-                    for(int i=3;i<GalaxyReviewRoutePolicy.MaximumTargets;i++)Target(a,true);
-                    Assert.That(Draft().Targets.Count,Is.EqualTo(64));Target(a,true);Assert.That(Draft().Targets.Count,Is.EqualTo(64));
+                    for(int i=3;i<GalaxyReviewRoutePolicy.MaximumTargets;i++)yield return Target(a,true);
+                    Assert.That(Draft().Targets.Count,Is.EqualTo(64));yield return Target(a,true);Assert.That(Draft().Targets.Count,Is.EqualTo(64));
                     var targetList=root.Q<ScrollView>("galaxy-route-target-list");Assert.That(targetList,Is.Not.Null);yield return null;
                     var costPosition=root.Q<Label>("galaxy-route-cost").worldBound;
                     var wheelPoint=targetList.contentViewport.worldBound.center;var picked=targetList.panel.Pick(wheelPoint);Assert.That(picked,Is.Not.Null);
@@ -112,7 +115,7 @@ namespace HobbyDS9.UnityReview.Tests
                     Assert.That(root.Q<Label>("galaxy-route-cost").worldBound,Is.EqualTo(costPosition),"target scrolling cannot move total/actions");
                     yield return Capture(doc,"natural-250-64-pins-fixed-controls");
                     Click(root.Q<Button>("galaxy-route-remove-last"));Assert.That(Draft().Targets.Count,Is.EqualTo(63));
-                    Target(b,false);Assert.That(Draft().Targets.Count,Is.EqualTo(1));
+                    yield return Target(b,false);Assert.That(Draft().Targets.Count,Is.EqualTo(1));
                 }
                 else
                 {
@@ -132,7 +135,7 @@ namespace HobbyDS9.UnityReview.Tests
             var currentMap=workspace.Document!;var originSystem=currentMap.Systems.Single(s=>s.NodeId==query.OriginNodeId);
             Click(root.Q<Button>("galaxy-star-"+originSystem.SystemId));Click(root.Q<Button>("galaxy-route-start"));yield return null;
             var routeView=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");var destination=query.Targets.Single();
-            RightClick(routeView,routeView.LocalToWorld(routeView.Position(destination.NodeId)),false);yield return null;
+            yield return RightClick(routeView,routeView.LocalToWorld(routeView.Position(destination.NodeId)),false);yield return null;
             CollectionAssert.AreEqual(expected.Steps,Plan().Steps);Assert.That(Plan().TotalCost,Is.EqualTo(22));
             var beforeFixture=workspace.ExportBytes();
             foreach(var camera in new[]{"fit","zoom"})
@@ -144,6 +147,7 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return Capture(doc,"f8-"+camera+"-certified",plan:Plan());
             }
             CollectionAssert.AreEqual(beforeFixture,workspace.ExportBytes());
+            }
             yield return new ExitPlayMode();
         }
         [UnityTest] public IEnumerator ExactEightCrossingPortalRouteAndScaledMapsUseActualControls()
@@ -286,14 +290,63 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static void Wheel(VisualElement target,Vector2 position)
         {using(var e=WheelEvent.GetPooled(new Event{type=EventType.ScrollWheel,delta=new Vector2(0,-3),mousePosition=position})){e.target=target;target.SendEvent(e);}}
-        private static void RightClick(GeneratedGalaxyMapView view,Vector2 point,bool shift)
+        // Batch receiving has no dependable desktop input surface. Keep one live panel render target
+        // for real picking; screenshot captures temporarily replace it and restore it exactly.
+        private sealed class GalaxyInputSurface : IDisposable
         {
-            var down=view.panel.Pick(point);Assert.That(down,Is.Not.Null,"actual panel down target");
+            private readonly UIDocument doc;private readonly RenderTexture? priorTarget,priorActive;
+            private readonly StyleLength priorWidth,priorHeight;private readonly RenderTexture target;
+            public GalaxyInputSurface(UIDocument document)
+            {
+                doc=document;priorTarget=doc.panelSettings.targetTexture;priorActive=RenderTexture.active;
+                priorWidth=doc.rootVisualElement.style.width;priorHeight=doc.rootVisualElement.style.height;
+                target=new RenderTexture(1280,720,24,RenderTextureFormat.ARGB32);target.Create();
+                doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=1280;doc.rootVisualElement.style.height=720;
+            }
+            public void Dispose()
+            {
+                doc.panelSettings.targetTexture=priorTarget;doc.rootVisualElement.style.width=priorWidth;doc.rootVisualElement.style.height=priorHeight;
+                RenderTexture.active=priorActive;target.Release();UnityEngine.Object.Destroy(target);
+            }
+        }
+        private static IEnumerator RightClick(GeneratedGalaxyMapView view,Vector2 point,bool shift)
+        {
+            var panel=view.panel;Assert.That(panel,Is.Not.Null,"attached input panel");
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();
+            object? Field(string name)=>typeof(ReviewEntry).GetField(name,BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry);
+            var draft=(GeneratedGalaxyRouteDraft)Field("galaxyDraft")!;var priorTargets=draft.Targets.ToArray();
+            var priorPlan=Field("galaxyPlan");var priorDocument=typeof(GeneratedGalaxyMapView).GetField("document",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(view);
+            var local=view.WorldToLocal(point);var node=view.NearestStar(local);
+            var kind=node==null?GeneratedGalaxyDraftAnchorKind.RegionTransit:GeneratedGalaxyDraftAnchorKind.StarLocation;
+            if(node==null)node=((GeneratedGalaxyMapData)priorDocument!).Regions.Single(r=>IsProjectedCentre(local,view,r)).NodeId;
+            var down=panel.Pick(point);Assert.That(down,Is.Not.Null,"actual panel down target at "+point+" map "+view.worldBound);
+            int pointerId;
             using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,button=1,mousePosition=point,modifiers=shift?EventModifiers.Shift:EventModifiers.None}))
-            {e.target=down;down.SendEvent(e);}
-            var up=view.panel.Pick(point);Assert.That(up,Is.Not.Null,"actual panel up target");
+            {pointerId=e.pointerId;e.target=down;down.SendEvent(e);}
+            CollectionAssert.AreEqual(priorTargets,draft.Targets,"Down must not edit the draft");Assert.That(Field("galaxyPlan"),Is.SameAs(priorPlan));
+            Assert.That(typeof(GeneratedGalaxyMapView).GetField("document",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(view),Is.SameAs(priorDocument));
+            var capture=panel.GetCapturingElement(pointerId);VisualElement up;
+            if(capture!=null)
+            {
+                var captured=capture as VisualElement;Assert.That(captured,Is.Not.Null,"capturer is a visual element");up=captured!;
+                Assert.That(up.panel,Is.SameAs(panel),"capturer stays on input panel");
+                Assert.That(up,Is.SameAs(view),"star arbitration capture belongs to the map");
+            }
+            else{up=panel.Pick(point);Assert.That(up,Is.Not.Null,"fresh uncaptured panel up target at "+point+" map "+view.worldBound);}
+            TestContext.WriteLine("RightClick point="+point+" bounds="+view.worldBound+" pointer="+pointerId+" down="+down.name+" capture="+(capture==null?"none":up.name)+" up="+up.name+" shift="+shift);
             using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,button=1,mousePosition=point,modifiers=shift?EventModifiers.Shift:EventModifiers.None}))
-            {e.target=up;up.SendEvent(e);}
+            {Assert.That(e.pointerId,Is.EqualTo(pointerId));e.target=up;up.SendEvent(e);}
+            yield return null;
+            Assert.That(panel.GetCapturingElement(pointerId),Is.Null,"Up releases map capture");
+            var rejected=shift&&priorTargets.Length==GalaxyReviewRoutePolicy.MaximumTargets;
+            Assert.That(draft.Targets.Count,Is.EqualTo(rejected?priorTargets.Length:shift?priorTargets.Length+1:1));
+            if(rejected)CollectionAssert.AreEqual(priorTargets,draft.Targets,"limit preserves queue");
+            else{Assert.That(draft.Targets.Last().NodeId,Is.EqualTo(node));Assert.That(draft.Targets.Last().Kind,Is.EqualTo(kind));}
+        }
+        private static bool IsProjectedCentre(Vector2 local,GeneratedGalaxyMapView view,GeneratedGalaxyRegionDto region)
+        {
+            // This helper is used only at the already selected empty-region centre.
+            return Vector2.Distance(local,view.Position(region.NodeId))<.01f;
         }
 
         [UnityTest] public IEnumerator PointerKeyboardModalAndCampaignDraftRemainIsolated()
@@ -422,7 +475,8 @@ namespace HobbyDS9.UnityReview.Tests
             foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})
             {
                 var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);target.Create();
-                var prior=RenderTexture.active;Texture2D? pixels=null;
+                var prior=RenderTexture.active;var priorPanelTarget=doc.panelSettings.targetTexture;
+                var priorWidth=doc.rootVisualElement.style.width;var priorHeight=doc.rootVisualElement.style.height;Texture2D? pixels=null;
                 try
                 {
                     doc.panelSettings.targetTexture=target;var root=doc.rootVisualElement;root.style.width=size.x;root.style.height=size.y;
@@ -598,7 +652,8 @@ namespace HobbyDS9.UnityReview.Tests
                         yield return null;
                     }
                 }
-                finally{doc.panelSettings.targetTexture=null;RenderTexture.active=prior;target.Release();UnityEngine.Object.Destroy(target);if(pixels!=null)UnityEngine.Object.Destroy(pixels);}
+                finally{doc.panelSettings.targetTexture=priorPanelTarget;doc.rootVisualElement.style.width=priorWidth;doc.rootVisualElement.style.height=priorHeight;RenderTexture.active=prior;target.Release();UnityEngine.Object.Destroy(target);if(pixels!=null)UnityEngine.Object.Destroy(pixels);}
+                yield return null;yield return null;
             }
         }
     }

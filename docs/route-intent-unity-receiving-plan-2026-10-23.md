@@ -18,6 +18,12 @@ At1280, general inspection must retain a locally scrollable content viewport abo
 
 Companion I/O is injected into a fresh test-owned temporary directory, separate from test map slots and all real persistent data. Save/clear/restore uses the actual controls. Current geography export bytes must remain identical after all camera/input/draft actions. CPU receiving already covers malformed/stale/wrong-map/blocked/denied companions, atomic overwrite and all natural/retained map-format boundaries; do not rerun the old full gameplay journey.
 
+## Batch input surface and capture dispatch
+
+The preserved 1b1 attempt failed after three overview captures: the panel Up pick was null before any waypoint image. This is not playable UI acceptance. The corrected test owns one live1280×720 offscreen panel target for input; each three-size capture restores the exact prior panel target, root StyleLength width/height and active render target in finally, then yields bounded layout frames before another gesture. The scoped input surface likewise restores all prior state and disposes its texture in finally. No desktop surface is assumed in batch mode.
+
+Right-click starts with a fresh actual panel pick and pooled Down, retaining its actual pointer ID. Down must preserve the queue, accepted plan and map. Up goes to the actual same-panel map capturer if present; otherwise a fresh non-null panel pick is mandatory. The helper never blindly reuses the original star/view. Point, right button, Shift and pointer ID remain unchanged; after one layout frame the capture must be released and the precise expected node/intent/count must appear, including an unchanged full64-pin queue when append is rejected. Point/bounds/down/up/capturer/ID diagnostics distinguish picking from capture failures. These are engine-panel event tests, not native desktop-input claims. Runtime geometry, route policy and all existing pixel/bounds tolerances are unchanged.
+
 ## Preparation and restoration
 
 Before any launch, verify included usage/ordinary allowance/purchased balance under the90% policy, source SHA/status, all new metadata GUIDs32hex/unique and absence of competing Unity/player/IL2CPP/bee/GPU processes. Root records sole engine/render lease. Snapshot **before** preparation every file under this new project's Assets, Packages, ProjectSettings and the presence/bytes of .vsconfig; retain full relative-path/size/SHA manifests and actual pinned runtime/Contracts/Application/Simulation inputs. Never reuse the accepted old checkout as an output target.
