@@ -26,6 +26,7 @@ namespace HobbyDS9.UnityReview
         private readonly List<(Button button,EnvironmentGalaxyFeatureDto feature)> featureButtons=new List<(Button,EnvironmentGalaxyFeatureDto)>();
         private string? selectedFeature;
         private IReadOnlyList<string> routeSteps=Array.Empty<string>();
+        private IReadOnlyList<GeneratedGalaxyRoutePoint> routePath=Array.Empty<GeneratedGalaxyRoutePoint>();
         private int pointer=-1;
         private Vector2 press,last;
         private bool moved;
@@ -120,7 +121,14 @@ namespace HobbyDS9.UnityReview
         public void ToggleInfluenceAreas(){ShowInfluenceAreas=!ShowInfluenceAreas;MarkDirtyRepaint();}
         public void SelectFeature(string? feature){selectedFeature=feature;MarkDirtyRepaint();}
         public void Select(string node,GeneratedGalaxySelectionKind kind){selectedNode=node;selectionKind=kind;Place();}
-        public void Route(string? origin,IReadOnlyList<string>? steps){routeOrigin=origin;routeSteps=steps??Array.Empty<string>();Place();}
+        public void Route(string? origin,IReadOnlyList<string>? steps)
+        {
+            var acceptedSteps=steps??Array.Empty<string>();
+            var path=origin==null?Array.Empty<GeneratedGalaxyRoutePoint>():GeneratedGalaxyRoutePath.Build(regions,origin,acceptedSteps);
+            routeOrigin=origin;routeSteps=acceptedSteps;routePath=path;Place();
+        }
+        public IReadOnlyList<Vector2> RoutePositions()=>routePath.Select(p=>contentRect.position+
+            new Vector2((float)viewport.X(p.X),(float)viewport.Y(p.Y))).ToArray();
         public Vector2 Position(string node)=>Point(regions[node].Center);
         public Vector2 SystemPosition(string systemId)=>Point(document.SystemPosition(systemId));
         public Vector2 FeaturePosition(string featureId)=>Point(document.Environment!.Features.Single(f=>f.FeatureId==featureId).Position);
@@ -218,8 +226,9 @@ namespace HobbyDS9.UnityReview
             }
             if(routeOrigin!=null)
             {
-                painter.strokeColor=new Color(.94f,.69f,.42f);painter.lineWidth=3;painter.BeginPath();painter.MoveTo(Position(routeOrigin));
-                foreach(var node in routeSteps)painter.LineTo(Position(node));painter.Stroke();
+                var path=RoutePositions();
+                painter.strokeColor=new Color(.94f,.69f,.42f);painter.lineWidth=3;painter.BeginPath();painter.MoveTo(path[0]);
+                foreach(var point in path.Skip(1))painter.LineTo(point);painter.Stroke();
             }
             foreach(var node in new[]{routeOrigin,routeSteps.LastOrDefault()}.Where(n=>n!=null).Distinct())
             {

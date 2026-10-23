@@ -311,7 +311,8 @@ namespace HobbyDS9.UnityReview.Tests
                     if(origin!=null&&route!=null)
                     {
                         var view=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
-                        var points=new[]{origin}.Concat(route.Steps).Select(n=>view.LocalToWorld(view.Position(n))).ToArray();
+                        var points=view.RoutePositions().Select(p=>view.LocalToWorld(p)).ToArray();
+                        Assert.That(points.Length,Is.EqualTo(1+2*route.Steps.Count),"one exact shared-edge portal per accepted crossing");
                         for(int i=1;i<points.Length;i++)
                         {
                             bool painted=false;
@@ -324,7 +325,7 @@ namespace HobbyDS9.UnityReview.Tests
                                     painted|=color.r>.8f&&color.g>.5f&&color.g<.8f&&color.b<.6f;
                                 }
                             }
-                            Assert.That(painted,Is.True,"actual painted route must follow backend segment "+(i-1));
+                            Assert.That(painted,Is.True,"actual painted route must follow portal half-segment "+(i-1));
                         }
                         foreach(var button in root.Query<Button>().ToList().Where(b=>b.name.StartsWith("galaxy-star-",StringComparison.Ordinal)))
                         {
