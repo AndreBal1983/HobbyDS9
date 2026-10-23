@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "status": "Independent parity of actual diagnostics used by art; not generator acceptance",
+  "results": [
+    {
+      "seed": "42",
+      "systemCount": 250,
+      "rawHashesVerified": true,
+      "quietSites": 132,
+      "disturbedSites": 118,
+      "quietComponents": 19,
+      "largestQuietComponent": 41,
+      "quietSystemAreaRatio": 2.1170846031751074,
+      "reportedClassificationsAndComponentsMatched": true
+    },
+    {
+      "seed": "43",
+      "systemCount": 250,
+      "rawHashesVerified": true,
+      "quietSites": 121,
+      "disturbedSites": 129,
+      "quietComponents": 21,
+      "largestQuietComponent": 23,
+      "quietSystemAreaRatio": 2.123839780489006,
+      "reportedClassificationsAndComponentsMatched": true
+    },
+    {
+      "seed": "42",
+      "systemCount": 1000,
+      "rawHashesVerified": true,
+      "quietSites": 538,
+      "disturbedSites": 462,
+      "quietComponents": 50,
+      "largestQuietComponent": 273,
+      "quietSystemAreaRatio": 2.320438841112525,
+      "reportedClassificationsAndComponentsMatched": true
+    }
+  ]
+}
