@@ -297,7 +297,7 @@ namespace HobbyDS9.UnityReview
                 var summary=document.ScaleSummary!;
                 Text(document.Width.ToString("N0",CultureInfo.InvariantCulture)+" × "+document.Height.ToString("N0",CultureInfo.InvariantCulture)+" map units · format "+document.FormatVersion);
                 Text("Quiet empty "+summary.QuietNodes.Count+" · disturbed empty "+summary.DisturbedNodes.Count+"\nQuiet/system mean area "+
-                    (summary.QuietToSystemMeanArea?.ToString("F2",CultureInfo.InvariantCulture)??"n/a")+"×; target "+((document.Natural?.Settings.Map.QuietEmptyAreaTargetPermille??document.Scaled!.Settings.QuietEmptyAreaTargetPermille)/1000.0).ToString("F1",CultureInfo.InvariantCulture)+"×",null,"galaxy-area-summary");
+                    (summary.QuietToSystemMeanArea?.ToString("F2",CultureInfo.InvariantCulture)??"n/a")+"×; target "+GeneratedGalaxyWorkspace.QuietTargetLabel(document.Natural?.Settings.Map.QuietEmptyAreaTargetPermille??document.Scaled!.Settings.QuietEmptyAreaTargetPermille),null,"galaxy-area-summary");
                 Text("Quiet components "+summary.QuietComponentCount+" · all-empty area "+summary.EmptyAreaShare.ToString("P1",CultureInfo.InvariantCulture)+". No galaxy-spanning corridor guarantee.");
                 Text("Quiet/disturbed classifies sampled site pressure, not whole-cell coverage. The area target is soft.","galaxy-inspector-id");
             }

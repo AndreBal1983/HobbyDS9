@@ -82,22 +82,25 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(root.Q<DropdownField>("galaxy-quiet-target").value,Does.Contain("3.00× (retained)"));
                 Assert.That(root.Q<Button>("galaxy-generate").enabledSelf,Is.False);
                 Assert.That(root.Q<Label>("galaxy-quiet-hint").text,Does.Contain("Choose a new quiet-area target"));
-                yield return Capture(doc,"quiet-target-historical3-retained");
-                root.Q<DropdownField>("galaxy-quiet-target").value="0.50×";
+                Assert.That(root.Q<Label>("galaxy-area-summary").text,Does.Contain("target 3.00×"));
+                yield return Capture(doc,"quiet-target-historical3-exact-summary");
+                root.Q<DropdownField>("galaxy-quiet-target").value="0.75×";
                 Assert.That(root.Q<Button>("galaxy-generate").enabledSelf,Is.True);Assert.That(workspace.Document,Is.SameAs(loaded));
-                Assert.That(workspace.ExportBytes(),Is.EqualTo(historicalBytes));root.Q<DropdownField>("galaxy-slot").value="2";
+                Assert.That(workspace.ExportBytes(),Is.EqualTo(historicalBytes));
+                Assert.That(root.Q<Label>("galaxy-area-summary").text,Does.Contain("target 3.00×"),"Draft edits do not relabel the loaded map");root.Q<DropdownField>("galaxy-slot").value="2";
                 Click(root.Q<Button>("galaxy-generate"));yield return WaitForGalaxy(entry);
-                Assert.That(workspace.Document!.Natural!.Settings.Map.QuietEmptyAreaTargetPermille,Is.EqualTo(500));
+                Assert.That(workspace.Document!.Natural!.Settings.Map.QuietEmptyAreaTargetPermille,Is.EqualTo(750));
                 Click(root.Q<Button>("galaxy-export"));var generatedBytes=workspace.ExportBytes();
                 Click(root.Q<Button>("galaxy-open"));yield return WaitForGalaxy(entry);
-                Assert.That(root.Q<DropdownField>("galaxy-quiet-target").value,Is.EqualTo("0.50×"));
+                Assert.That(root.Q<DropdownField>("galaxy-quiet-target").value,Is.EqualTo("0.75×"));
                 Assert.That(workspace.ExportBytes(),Is.EqualTo(generatedBytes));
+                Assert.That(root.Q<Label>("galaxy-area-summary").text,Does.Contain("target 0.75×"));
                 var systems=workspace.Document!.Systems;
                 Click(root.Q<Button>("galaxy-star-"+systems[0].SystemId));Click(root.Q<Button>("galaxy-route-start"));yield return null;
                 Click(root.Q<Button>("galaxy-star-"+systems[1].SystemId));Click(root.Q<Button>("galaxy-route-target"));yield return null;
                 var plan=(GalaxyReviewRoutePlanSnapshot)typeof(ReviewEntry).GetField("galaxyPlan",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry)!;
                 Assert.That(plan.Success,Is.True);Assert.That(plan.Legs.Count,Is.EqualTo(1));
-                yield return Capture(doc,"quiet-target-half-opened-route",plan:plan);
+                yield return Capture(doc,"quiet-target-075-opened-exact-summary-route",plan:plan);
             }
             yield return new ExitPlayMode();
         }
