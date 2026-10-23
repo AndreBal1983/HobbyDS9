@@ -1,0 +1,2 @@
+samples/*.json -text whitespace=cr-at-eol
+natural/*.json -text whitespace=cr-at-eol
