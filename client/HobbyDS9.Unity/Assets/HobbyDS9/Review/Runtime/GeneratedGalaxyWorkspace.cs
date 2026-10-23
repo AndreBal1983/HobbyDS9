@@ -22,6 +22,12 @@ namespace HobbyDS9.UnityReview
         public IReadOnlyList<NavigationConnectionDto> Connections { get; }
         public IReadOnlyList<GeneratedGalaxyHomeCandidateDto> HomeCandidates { get; }
         public EnvironmentGalaxyDocumentDto? Environment { get; }
+        public ScaledGalaxyDocumentDto? Scaled { get; }
+        public ScaledGalaxyPresentationSummary? ScaleSummary { get; }
+        public bool HasEnvironment=>Environment!=null||Scaled!=null;
+        public IReadOnlyList<EnvironmentGalaxyFeatureDto> Features=>Scaled?.Features??Environment?.Features??(IReadOnlyList<EnvironmentGalaxyFeatureDto>)Array.Empty<EnvironmentGalaxyFeatureDto>();
+        public IReadOnlyList<EnvironmentGalaxyRegionInfluenceDto> RegionInfluences=>Scaled?.RegionInfluences??Environment?.RegionInfluences??(IReadOnlyList<EnvironmentGalaxyRegionInfluenceDto>)Array.Empty<EnvironmentGalaxyRegionInfluenceDto>();
+        public int MaximumDensity=>Scaled?.Tuning.Environment.MaximumDensity??Environment?.Tuning.MaximumDensity??0;
         public GeneratedGalaxyMapData(GeneratedGalaxyDocumentDto map)
         {
             FormatVersion=map.FormatVersion;GeneratorVersion=map.GeneratorVersion;ContentHash=map.ContentHash;Settings=map.Settings;
@@ -35,8 +41,17 @@ namespace HobbyDS9.UnityReview
         }
         public GeneratedGalaxyPointDto SystemPosition(string systemId)
         {
-            if(Environment!=null)return Environment.Features.Single(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star&&f.SystemId==systemId).Position;
+            if(HasEnvironment)return Features.Single(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star&&f.SystemId==systemId).Position;
             return Regions.Single(r=>r.NodeId==Systems.Single(s=>s.SystemId==systemId).NodeId).Center;
+        }
+        public GeneratedGalaxyMapData(ScaledGalaxyDocumentDto map)
+        {
+            Scaled=map;FormatVersion=map.FormatVersion;GeneratorVersion=map.GeneratorVersion;ContentHash=map.ContentHash;
+            ScaleSummary=new ScaledGalaxyPresentationSummary(map);
+            Settings=new GeneratedGalaxySettingsDto{Seed=map.Settings.Seed,SystemCount=map.Settings.SystemCount,
+                HomeCivilizationDefinitionIds=new List<string>(map.Settings.HomeCivilizationDefinitionIds)};
+            Width=map.Layout.Width;Height=map.Layout.Height;Regions=map.Layout.Regions;Systems=map.Layout.Systems;
+            Connections=map.Layout.Connections;HomeCandidates=map.Layout.HomeCandidates;
         }
     }
     // Separate presentation workspace; never holds or advances a campaign session.
@@ -47,11 +62,13 @@ namespace HobbyDS9.UnityReview
         private readonly GeneratedGalaxyMapStore store;
         private GeneratedGalaxyReview? review;
         private EnvironmentGalaxyReview? environmentReview;
+        private ScaledGalaxyReview? scaledReview;
         public GeneratedGalaxyMapData? Document { get; private set; }
         public bool Unexported { get; private set; }
         public string Notice { get; private set; }="Choose a seed and size, then generate a map.";
         public string Seed { get; set; }="20261020";
         public int Size { get; set; }=40;
+        public int QuietEmptyAreaTargetPermille { get; set; }=2000;
         public int Slot { get; set; }=1;
         public string Location=>store.Location;
         public IReadOnlyDictionary<string,string> CivilizationNames { get; }
@@ -61,16 +78,38 @@ namespace HobbyDS9.UnityReview
             CivilizationNames=civilizations.ToDictionary(c=>c.DefinitionId,c=>c.DisplayName,StringComparer.Ordinal);
             store=mapStore;
         }
+        // Background work uses a detached operation workspace. The live review is published by the UI
+        // only after completion and its epoch/document checks; failures carry a notice, never authority.
+        public GeneratedGalaxyWorkspace CaptureOperation()=>new GeneratedGalaxyWorkspace(civilizations,store)
+            {Seed=Seed,Size=Size,Slot=Slot,QuietEmptyAreaTargetPermille=QuietEmptyAreaTargetPermille};
+        public bool PublishOperation(GeneratedGalaxyWorkspace completed,GeneratedGalaxyMapData? expectedCurrent)
+        {
+            if(!ReferenceEquals(Document,expectedCurrent))return false;
+            Notice=completed.Notice;if(completed.Document==null)return false;
+            review=completed.review;environmentReview=completed.environmentReview;scaledReview=completed.scaledReview;
+            Document=completed.Document;Seed=completed.Seed;Size=completed.Size;QuietEmptyAreaTargetPermille=completed.QuietEmptyAreaTargetPermille;
+            Unexported=completed.Unexported;return true;
+        }
         public bool Generate()
         {
             try
             {
+                if(Size==250||Size==1000)
+                {
+                    var scale=Size==250?1:2;
+                    var nextScaled=ScaledGalaxyApplication.Generate(new ScaledGalaxySettingsDto{Seed=Seed,SystemCount=Size,EmptyRegionCount=Size,
+                        Width=2500000*scale,Height=2000000*scale,QuietEmptyAreaTargetPermille=QuietEmptyAreaTargetPermille,
+                        HomeCivilizationDefinitionIds=new List<string>{"civilization.federation","civilization.cardassian"}},civilizations);
+                    var scaledDocument=new GeneratedGalaxyMapData(nextScaled.Export());
+                    scaledReview=nextScaled;environmentReview=null;review=null;Document=scaledDocument;Unexported=true;
+                    Notice="Generated "+Size+" systems · "+scaledDocument.Regions.Count+" regions · not exported.";return true;
+                }
                 var settings=new GeneratedGalaxySettingsDto{Seed=Seed,SystemCount=Size,
                     HomeCivilizationDefinitionIds=new List<string>{"civilization.federation","civilization.cardassian"}};
                 var next=EnvironmentGalaxyApplication.Generate(new EnvironmentGalaxySettingsDto{Map=settings,
                     StellarInfluenceEnabled=true,BlackHoleInfluenceEnabled=true,NebulaInfluenceEnabled=true},civilizations);
                 var document=new GeneratedGalaxyMapData(next.Export());
-                environmentReview=next;review=null;Document=document;Unexported=true;
+                environmentReview=next;scaledReview=null;review=null;Document=document;Unexported=true;
                 Notice="Generated "+document.Systems.Count+" systems · "+document.Regions.Count+" regions · not exported.";
                 return true;
             }
@@ -85,7 +124,7 @@ namespace HobbyDS9.UnityReview
         }
         public bool Export(bool overwrite)
         {
-            if(review==null&&environmentReview==null){Notice="Generate or open a map first.";return false;}
+            if(review==null&&environmentReview==null&&scaledReview==null){Notice="Generate or open a map first.";return false;}
             try
             {
                 store.Write(Slot,ExportBytes(),overwrite);
@@ -98,7 +137,7 @@ namespace HobbyDS9.UnityReview
         {
             try
             {
-                var bytes=store.Read(Slot);GeneratedGalaxyReview? next=null;EnvironmentGalaxyReview? nextEnvironment=null;
+                var bytes=store.Read(Slot);GeneratedGalaxyReview? next=null;EnvironmentGalaxyReview? nextEnvironment=null;ScaledGalaxyReview? nextScaled=null;
                 GeneratedGalaxyMapData document;
                 switch(codec.GeneratedGalaxyFormat(bytes))
                 {
@@ -108,10 +147,14 @@ namespace HobbyDS9.UnityReview
                     case 2:
                         nextEnvironment=EnvironmentGalaxyApplication.Open(codec.DecodeEnvironmentGalaxy(bytes),civilizations);
                         document=new GeneratedGalaxyMapData(nextEnvironment.Export());break;
+                    case 3:
+                        nextScaled=ScaledGalaxyApplication.Open(codec.DecodeScaledGalaxy(bytes),civilizations);
+                        document=new GeneratedGalaxyMapData(nextScaled.Export());break;
                     default:throw new InvalidDataException("Unsupported generated-map format.");
                 }
                 // Commit the replacement only after decoding and portable validation both succeed.
-                review=next;environmentReview=nextEnvironment;Document=document;Seed=document.Settings.Seed;Size=document.Settings.SystemCount;Unexported=false;
+                review=next;environmentReview=nextEnvironment;scaledReview=nextScaled;Document=document;Seed=document.Settings.Seed;Size=document.Settings.SystemCount;Unexported=false;
+                if(document.Scaled!=null)QuietEmptyAreaTargetPermille=document.Scaled.Settings.QuietEmptyAreaTargetPermille;
                 Notice="Opened map slot "+Slot+" · seed "+Seed+" · "+Size+" systems.";return true;
             }
             catch(FileNotFoundException){Notice="Map slot "+Slot+" is empty. Current map is kept.";return false;}
@@ -121,12 +164,14 @@ namespace HobbyDS9.UnityReview
         }
         public StrategicRouteSnapshot FindRoute(string origin,string destination)
         {
+            if(scaledReview!=null)return scaledReview.FindRoute(origin,destination);
             if(environmentReview!=null)return environmentReview.FindRoute(origin,destination);
             if(review==null)throw new InvalidOperationException("No generated map is open.");
             return review.FindRoute(origin,destination);
         }
         public byte[] ExportBytes()
         {
+            if(scaledReview!=null)return codec.EncodeScaledGalaxy(scaledReview.Export());
             if(environmentReview!=null)return codec.EncodeEnvironmentGalaxy(environmentReview.Export());
             if(review!=null)return codec.EncodeGeneratedGalaxy(review.Export());
             throw new InvalidOperationException("No generated map is open.");

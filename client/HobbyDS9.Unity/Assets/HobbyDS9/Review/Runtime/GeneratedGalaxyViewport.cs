@@ -10,6 +10,7 @@ namespace HobbyDS9.UnityReview
         private double offsetX,offsetY;
         private const double Margin=30;
         public double Zoom { get; private set; }=1;
+        public double MaximumZoom { get; set; }=8;
         public double Scale=>Math.Max(.0000001,Math.Min(Math.Max(1,width-Margin*2)/worldWidth,
             Math.Max(1,height-Margin*2)/worldHeight))*Zoom;
         public double X(double worldX)=>width/2+(worldX-worldWidth/2)*Scale+offsetX;
@@ -33,7 +34,7 @@ namespace HobbyDS9.UnityReview
         {
             if(!Positive(factor)||!Finite(screenX)||!Finite(screenY))return;
             var anchorX=WorldX(screenX);var anchorY=WorldY(screenY);
-            Zoom=Math.Max(1,Math.Min(8,Zoom*factor));
+            Zoom=Math.Max(1,Math.Min(MaximumZoom,Zoom*factor));
             offsetX+=screenX-X(anchorX);offsetY+=screenY-Y(anchorY);Clamp();
         }
         public void Pan(double x,double y)

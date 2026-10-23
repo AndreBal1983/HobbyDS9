@@ -34,7 +34,7 @@ public sealed class ScaledGalaxyCodecTests
         Assert.Throws<InvalidDataException>(()=>codec.DecodeEnvironmentGalaxy(bytes));
     }
 
-    [Fact] public void PendingFormat3ApplicationCannotReplaceCurrentMapOrDraft()
+    [Fact] public void InvalidFormat3SemanticsCannotReplaceCurrentMapOrDraft()
     {
         var directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-ScaledWire-"+Guid.NewGuid().ToString("N"));
         try

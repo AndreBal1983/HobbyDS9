@@ -5,6 +5,14 @@ namespace HobbyDS9.UnityReviewAdapter.Tests;
 
 public sealed class GeneratedGalaxyViewportTests
 {
+    [Fact] public void ScaledMapCanReachLocalZoomAndFitRestoresOneUniformExtent()
+    {
+        var view=new GeneratedGalaxyViewport{MaximumZoom=32};view.SetMap(5000000,4000000);view.Resize(900,480);
+        view.ZoomAt(100,450,240);Assert.Equal(32,view.Zoom);Assert.Equal(450,view.X(2500000));
+        view.Pan(100,-70);view.Resize(1500,850);view.Fit();Assert.Equal(1,view.Zoom);
+        Assert.Equal(view.X(100)-view.X(0),view.Y(100)-view.Y(0),8);
+        Assert.InRange(view.X(0),0,750);Assert.InRange(view.X(5000000),750,1500);
+    }
     [Theory]
     [InlineData(900,480,600000)]
     [InlineData(1500,850,800000)]
