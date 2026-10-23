@@ -178,6 +178,7 @@ namespace HobbyDS9.UnityReview
                 }
                 // Commit the replacement only after decoding and portable validation both succeed.
                 review=next;environmentReview=nextEnvironment;scaledReview=nextScaled;naturalReview=nextNatural;Document=document;Seed=document.Settings.Seed;Size=document.Settings.SystemCount;Unexported=false;
+                NaturalGeneration=nextNatural!=null;
                 if(document.Scaled!=null)QuietEmptyAreaTargetPermille=document.Scaled.Settings.QuietEmptyAreaTargetPermille;
                 if(document.Natural!=null)QuietEmptyAreaTargetPermille=document.Natural.Settings.Map.QuietEmptyAreaTargetPermille;
                 Notice="Opened map slot "+Slot+" · seed "+Seed+" · "+Size+" systems.";return true;

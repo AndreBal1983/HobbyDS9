@@ -12,8 +12,11 @@ namespace HobbyDS9.UnityReview
         public const int MaximumBytes=HobbyDS9.Contracts.ScaledGalaxyIdentity.MaximumJsonBytes;
         private readonly string directory;
         private readonly Action<UnityReviewWriteStage>? probe;
-        public GeneratedGalaxyMapStore(string mapDirectory,Action<UnityReviewWriteStage>? writeProbe=null)
+        private readonly int maximumBytes;
+        public GeneratedGalaxyMapStore(string mapDirectory,Action<UnityReviewWriteStage>? writeProbe=null,int maximumFileBytes=MaximumBytes)
         {
+            if(maximumFileBytes<1||maximumFileBytes>MaximumBytes)throw new ArgumentOutOfRangeException(nameof(maximumFileBytes));
+            maximumBytes=maximumFileBytes;
             if(!Path.IsPathFullyQualified(mapDirectory))throw new ArgumentException("Absolute map directory required.");
             directory=Path.GetFullPath(mapDirectory).TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar);
             if(string.Equals(directory,Path.GetPathRoot(directory)?.TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar),StringComparison.OrdinalIgnoreCase))
@@ -44,7 +47,7 @@ namespace HobbyDS9.UnityReview
             CheckDirectory();var path=PathFor(slot);CheckFile(path);
             using(var stream=new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.Read))
             {
-                if(stream.Length<1||stream.Length>MaximumBytes)throw new InvalidDataException("Map file size unsupported.");
+                if(stream.Length<1||stream.Length>maximumBytes)throw new InvalidDataException("Map file size unsupported.");
                 var bytes=new byte[(int)stream.Length];int offset=0;
                 while(offset<bytes.Length)
                 {var read=stream.Read(bytes,offset,bytes.Length-offset);if(read==0)throw new EndOfStreamException();offset+=read;}
@@ -53,7 +56,7 @@ namespace HobbyDS9.UnityReview
         }
         public void Write(int slot,byte[] bytes,bool overwrite)
         {
-            if(bytes==null||bytes.Length==0||bytes.Length>MaximumBytes)throw new InvalidDataException("Map file size unsupported.");
+            if(bytes==null||bytes.Length==0||bytes.Length>maximumBytes)throw new InvalidDataException("Map file size unsupported.");
             CheckDirectory();var path=PathFor(slot);CheckFile(path);
             if(File.Exists(path)&&!overwrite)throw new IOException("Map slot already contains an export.");
             Directory.CreateDirectory(directory);CheckDirectory();

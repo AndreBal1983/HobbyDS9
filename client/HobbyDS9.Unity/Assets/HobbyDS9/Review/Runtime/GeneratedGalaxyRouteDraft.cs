@@ -1,6 +1,8 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using HobbyDS9.Contracts;
 
 namespace HobbyDS9.UnityReview
 {
@@ -13,6 +15,7 @@ namespace HobbyDS9.UnityReview
         public GeneratedGalaxyDraftAnchor(string nodeId,GeneratedGalaxyDraftAnchorKind kind)
         {
             if(string.IsNullOrEmpty(nodeId))throw new ArgumentException("A node is required.",nameof(nodeId));
+            if(kind!=GeneratedGalaxyDraftAnchorKind.RegionTransit&&kind!=GeneratedGalaxyDraftAnchorKind.StarLocation)throw new ArgumentOutOfRangeException(nameof(kind));
             NodeId=nodeId;Kind=kind;
         }
     }
@@ -53,5 +56,14 @@ namespace HobbyDS9.UnityReview
             targets.RemoveAt(targets.Count-1);return true;
         }
         public void Clear()=>targets.Clear();
+        public GalaxyReviewRouteQueryDto Query(GeneratedGalaxyMapData map,GalaxyReviewRouteFilterDto currentFilter)
+        {
+            if(Start==null)throw new InvalidOperationException("Choose a start first.");
+            return new GalaxyReviewRouteQueryDto{MapContentHash=MapIdentity,OriginNodeId=Start.NodeId,
+                Targets=targets.Select(t=>new GalaxyReviewTargetDto{NodeId=t.NodeId,
+                    Intent=t.Kind==GeneratedGalaxyDraftAnchorKind.StarLocation?GalaxyReviewTargetIntent.SystemLocation:GalaxyReviewTargetIntent.RegionTransit,
+                    SystemId=t.Kind==GeneratedGalaxyDraftAnchorKind.StarLocation?map.Regions.FirstOrDefault(r=>r.NodeId==t.NodeId)?.SystemId:null}).ToList(),
+                Filter=currentFilter};
+        }
     }
 }

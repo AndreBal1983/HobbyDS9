@@ -57,4 +57,15 @@ public sealed class NaturalGalaxyWorkspaceTests : IDisposable
         Reject(r=>r["StarGroups"]![0]!["Ignored"]=1);
         Reject(r=>r["FormatVersion"]=3);
     }
+    [Fact] public void GenerationSelectorFollowsSuccessfulFormatSwitchAndFailureKeepsUserDraft()
+    {
+        var workspace=Workspace();var store=new GeneratedGalaxyMapStore(directory);
+        byte[] Sample(string path)=>File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,path));
+        store.Write(1,Sample("galaxy-samples/natural/seed-42-systems-250.natural.json"),false);
+        Assert.False(workspace.NaturalGeneration);Assert.True(workspace.Open());Assert.True(workspace.NaturalGeneration);
+        store.Write(1,Sample("galaxy-samples/scaled/seed-42-systems-250.scaled.json"),true);
+        Assert.True(workspace.Open());Assert.False(workspace.NaturalGeneration);var map=workspace.Document;
+        workspace.NaturalGeneration=true;store.Write(1,Encoding.UTF8.GetBytes("{}"),true);
+        Assert.False(workspace.Open());Assert.True(workspace.NaturalGeneration);Assert.Same(map,workspace.Document);
+    }
 }
