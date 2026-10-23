@@ -29,24 +29,58 @@ namespace HobbyDS9.UnityReview.Tests
             File.AppendAllText(Path.Combine(CampaignOutput(),"generated-operation-timing.txt"),phase+" elapsedMs="+watch.Elapsed.TotalMilliseconds+" yieldedFrames="+frames+" (not FPS)"+Environment.NewLine);
             yield return null;yield return null;
         }
-        private static IEnumerator CampaignPointerRight(UIDocument doc,ReviewEntry entry,Button intended)
+        private static IEnumerator CampaignPointerRight(UIDocument doc,ReviewEntry entry,Button intended,int button=1)
         {
             Assert.That(intended,Is.Not.Null);var frame=CampaignModel(entry).Current.Frame;var point=intended.worldBound.center;
             var panel=doc.rootVisualElement.panel;var down=panel.Pick(point);
-            Assert.That(down,Is.SameAs(intended),"actual pointer hit at "+point+" target "+intended.name);
+            Assert.That(down,Is.Not.Null,"actual panel hit at "+point);
+            var map=doc.rootVisualElement.Q("playable-known-map");var known=CampaignModel(entry).GeneratedMap();var local=map.WorldToLocal(point);
+            VisualElement? hit=down;while(hit!=null&&hit!=map&&!hit.name.StartsWith("map-",StringComparison.Ordinal))hit=hit.parent;
+            bool contact=hit?.name.StartsWith("map-contact-",StringComparison.Ordinal)==true;
+            Assert.That(hit?.name.StartsWith("map-ring-",StringComparison.Ordinal)==true||hit?.name.StartsWith("map-moving-fleet-",StringComparison.Ordinal)==true,Is.False,"actual fleet/ring target keeps priority; not a node test point");
+            var anchors=known.Regions.Select(r=>{var star=known.Features.FirstOrDefault(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star&&f.NodeId==r.NodeId);var at=star?.Position??r.Center;
+                return new GeneratedCampaignNodeAnchor(r.NodeId,(float)CampaignModel(entry).GeneratedViewport.X(at.X),(float)CampaignModel(entry).GeneratedViewport.Y(at.Y));});
+            var expected=contact?frame.Travel!.KnownContacts.Single(c=>"map-contact-"+c.FleetId==hit!.name).LastSeenNodeId:GeneratedCampaignNodePicker.Resolve(anchors,local.x,local.y);
+            Assert.That(expected,Is.Not.Null);
             int id;
-            using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,button=1,mousePosition=point}))
+            using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,button=button,mousePosition=point}))
             {id=e.pointerId;e.target=down;down.SendEvent(e);}
             Assert.That(CampaignModel(entry).Current.Frame,Is.SameAs(frame),"pointer down never submits");
             var capture=panel.GetCapturingElement(id) as VisualElement;
             var up=capture??panel.Pick(point);Assert.That(up,Is.Not.Null);Assert.That(up.panel,Is.SameAs(panel));
-            if(capture!=null)Assert.That(capture==intended||intended.Contains(capture),Is.True,"actual target owns capture");
-            using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,button=1,mousePosition=point}))
+            if(capture!=null)Assert.That(contact?capture==hit||hit!.Contains(capture):capture==map,Is.True,"actual priority target or generated map owns capture");
+            using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,button=button,mousePosition=point}))
             {Assert.That(e.pointerId,Is.EqualTo(id));e.target=up;up.SendEvent(e);}
             yield return null;
-            Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null,"actual right-click review");
+            if(button==1){Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null,"actual right-click review");Assert.That(entry.Workspace!.RoutePreview!.Destination,Is.EqualTo(expected));}
+            else Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
+            Assert.That(entry.Workspace!.SelectedNode,Is.EqualTo(expected),"same projected nearest-node resolution for left/right");
+            Assert.That(panel.GetCapturingElement(id),Is.Null,"pointer capture released");
             Assert.That(CampaignModel(entry).Current.Frame,Is.SameAs(frame),"review is not submission");
-            TestContext.WriteLine("Campaign pointer "+intended.name+" point="+point+" down="+down.name+" up="+up.name+" capture="+(capture?.name??"none"));
+            TestContext.WriteLine("Campaign pointer "+intended.name+" point="+point+" down="+down.name+" up="+up.name+" capture="+(capture?.name??"none")+" resolved="+expected+" button="+button);
+        }
+        private static IEnumerator CampaignPriorityPointer(UIDocument doc,ReviewEntry entry,VisualElement intended,Vector2 point,int button)
+        {
+            var model=CampaignModel(entry);var frame=model.Current.Frame;var node=entry.Workspace!.SelectedNode;var fleet=entry.Workspace.SelectedFleet;
+            var panel=doc.rootVisualElement.panel;var down=panel.Pick(point);var ancestor=down;
+            while(ancestor!=null&&ancestor!=intended)ancestor=ancestor.parent;
+            Assert.That(ancestor,Is.SameAs(intended),"actual priority target pick "+intended.name+" at "+point);
+            int id;using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,button=button,mousePosition=point}))
+            {id=e.pointerId;e.target=down;down.SendEvent(e);}
+            var capture=panel.GetCapturingElement(id) as VisualElement;var up=capture??panel.Pick(point);
+            Assert.That(up,Is.Not.Null);Assert.That(up.panel,Is.SameAs(panel));
+            if(capture!=null)Assert.That(capture==intended||intended.Contains(capture),Is.True,"priority widget retains capture");
+            using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,button=button,mousePosition=point}))
+            {Assert.That(e.pointerId,Is.EqualTo(id));e.target=up;up.SendEvent(e);}yield return null;
+            Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
+            if(button==0&&intended.name.StartsWith("map-ring-",StringComparison.Ordinal))
+                Assert.That(entry.Workspace.SelectedFleet,Is.EqualTo(frame.OwnStrategicFleets.First(f=>f.LocationNodeId.Value==intended.name.Substring("map-ring-".Length)).FleetId.Value));
+            else
+            {
+                Assert.That(entry.Workspace.SelectedNode,Is.EqualTo(node));Assert.That(entry.Workspace.SelectedFleet,Is.EqualTo(fleet));
+                if(button==0)Assert.That(doc.rootVisualElement.Q<Label>("map-selection-notice").text,Does.Contain("Observed hostile contact"));
+            }
+            Assert.That(panel.GetCapturingElement(id),Is.Null);TestContext.WriteLine("Priority pointer "+intended.name+" button="+button+" point="+point+" actual="+down.name);
         }
         private static IEnumerator CampaignCapture(ReviewEntry entry,UIDocument doc,string state)
         {
@@ -117,6 +151,31 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(model.GeneratedMap().Regions.Count,Is.InRange(2,20));var mapHash=model.GeneratedMap().MapContentHash;
                 Assert.That(model.GeneratedMap().Features.All(f=>f.Kind!=GalaxyEnvironmentFeatureKind.Nebula),Is.True,"no undisclosed non-node nebulae in policy v1");
                 yield return CampaignCapture(entry,doc,"known-map");
+                Vector2 RingPoint(VisualElement ring)
+                {
+                    foreach(var delta in new[]{new Vector2(31,0),new Vector2(-31,0),new Vector2(0,31),new Vector2(0,-31)})
+                    {var at=ring.worldBound.center+delta;var picked=ring.panel.Pick(at);for(var v=picked;v!=null;v=v.parent)if(v==ring)return at;}
+                    Assert.Fail("No actual hollow-ring hit point");return default;
+                }
+                var ringNode=model.Current.Frame.OwnStrategicFleets.First().LocationNodeId.Value;
+                var priorityRing=doc.rootVisualElement.Q<Button>("map-ring-"+ringNode);
+                yield return CampaignPriorityPointer(doc,entry,priorityRing,RingPoint(priorityRing),1);
+                yield return CampaignPriorityPointer(doc,entry,priorityRing,RingPoint(priorityRing),0);
+                // Deliberately expose overlap at full-galaxy scale. Use the real panel
+                // pick, not an intended-button event fallback or a test-only zoom fix.
+                Click(doc.rootVisualElement.Q<Button>("map-fleet-"+model.Current.Frame.OwnStrategicFleets.First().FleetId.Value));
+                Button CrowdedPoint()
+                {
+                    var map=doc.rootVisualElement.Q("playable-known-map");
+                    var found=map.Query<Button>().ToList().Where(b=>b.name.StartsWith("map-star-",StringComparison.Ordinal)).FirstOrDefault(b=>{
+                        var actual=map.panel.Pick(b.worldBound.center);while(actual!=null&&actual!=map&&!actual.name.StartsWith("map-",StringComparison.Ordinal))actual=actual.parent;
+                        return actual!=null&&actual!=b&&actual.name.StartsWith("map-star-",StringComparison.Ordinal);});
+                    Assert.That(found,Is.Not.Null,"actual generated crowded-node point at1280");return found!;
+                }
+                Click(doc.rootVisualElement.Q<Button>("map-fit-galaxy"));yield return null;yield return null;
+                yield return CampaignPointerRight(doc,entry,CrowdedPoint(),0);
+                Click(doc.rootVisualElement.Q<Button>("map-fit-galaxy"));yield return null;yield return null;
+                yield return CampaignPointerRight(doc,entry,CrowdedPoint());Confirm(doc,false);Click(doc.rootVisualElement.Q<Button>("map-fit"));yield return null;
                 var initialShips=model.Current.Frame.Strategy!.Ships.Select(s=>s.ShipId.Value).ToHashSet(StringComparer.Ordinal);
                 CampaignPage(doc,ReviewWorkspacePage.Research);doc.rootVisualElement.Q<SliderInt>("integrated-research-split").value=10;
                 Click(doc.rootVisualElement.Q<Button>("integrated-apply-split"));Confirm(doc);
@@ -131,7 +190,7 @@ namespace HobbyDS9.UnityReview.Tests
                 doc.rootVisualElement.Q<TextField>("fleet-organization-name").value="Generated task force";
                 Click(doc.rootVisualElement.Q<Button>("fleet-create"));Confirm(doc);Assert.That(model.NamedFleets().Any(f=>produced.All(id=>f.Fleet.ShipIds.Any(s=>s.Value==id))),Is.True);
                 yield return CampaignCapture(entry,doc,"paid-fleet");
-                var visited=new HashSet<string>(StringComparer.Ordinal);bool travelCaptured=false;
+                var visited=new HashSet<string>(StringComparer.Ordinal);bool travelCaptured=false,contactPriorityChecked=false;
                 for(int turn=0;turn<128&&model.Current.Frame.Status.Phase==SessionPhase.Planning;turn++)
                 {
                     CampaignPage(doc,ReviewWorkspacePage.Map);yield return null;
@@ -148,15 +207,17 @@ namespace HobbyDS9.UnityReview.Tests
                         Assert.That(target!=null||contact.Contact!=null,Is.True,"bounded known-space driver needs a lawful next target");
                         Click(doc.rootVisualElement.Q<Button>("map-fleet-"+fleet.FleetId.Value));Click(doc.rootVisualElement.Q<Button>("map-fit"));yield return null;yield return null;
                         var marker=doc.rootVisualElement.Q<Button>(contact.Contact==null?"map-star-"+target:"map-contact-"+contact.Contact.FleetId);
-                        yield return CampaignPointerRight(doc,entry,marker);Confirm(doc);yield return null;
-                        Assert.That(model.Current.Frame.Travel!.OwnOrders.Any(o=>o.FleetId==fleet.FleetId.Value),Is.True);
+                        if(contact.Contact!=null&&!contactPriorityChecked){yield return CampaignPriorityPointer(doc,entry,marker,marker.worldBound.center,0);contactPriorityChecked=true;}
+                        yield return CampaignPointerRight(doc,entry,marker);var resolvedNode=entry.Workspace!.SelectedNode;Confirm(doc);yield return null;
+                        var actualOrder=model.Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==fleet.FleetId.Value);
+                        Assert.That(actualOrder.RouteNodeIds.LastOrDefault()??fleet.LocationNodeId.Value,Is.EqualTo(resolvedNode),"confirmed command uses resolved destination");
                     }
                     if(!travelCaptured){yield return CampaignCapture(entry,doc,"travel");travelCaptured=true;}
                     Click(doc.rootVisualElement.Q<Button>("player-primary-action"));Confirm(doc);yield return null;
                 }
                 Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.AwaitingCombat),"real exploration meets lawful AI within128turns");
                 CampaignPage(doc,ReviewWorkspacePage.Combat);yield return null;
-                Assert.That(model.Current.Frame.Battle!.OwnShips.Any(s=>produced.Contains(s.Condition.ShipId)),Is.True,"paid produced fleet participates in the battle");
+                Assert.That(produced.All(id=>model.Current.Frame.Battle!.OwnShips.Any(s=>s.Condition.ShipId==id)),Is.True,"paid produced fleet participates in the battle");
                 yield return CampaignCapture(entry,doc,"orders");bool firstRound=true;int rounds=0;
                 while(!model.Current.Frame.Battle!.Complete)
                 {

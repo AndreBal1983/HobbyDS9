@@ -112,6 +112,39 @@ namespace HobbyDS9.UnityReview
             });
             map.RegisterCallback<PointerUpEvent>(e=>{if(e.pointerId==panPointer){var id=panPointer;panPointer=-1;map.ReleasePointer(id);e.StopPropagation();}});
             map.RegisterCallback<PointerCaptureOutEvent>(_=>panPointer=-1);
+            // Resolve only competing generated node hit boxes. Actual contact,
+            // moving-fleet and hollow-ring targets retain their normal priority.
+            if(generated!=null)
+            {
+                bool Priority(VisualElement? target)
+                {
+                    for(var at=target;at!=null&&at!=map;at=at.parent)
+                        if(at.name.StartsWith("map-contact-",StringComparison.Ordinal)||at.name.StartsWith("map-moving-fleet-",StringComparison.Ordinal)||at.name.StartsWith("map-ring-",StringComparison.Ordinal))return true;
+                    return false;
+                }
+                string? Resolve(Vector2 world)
+                {
+                    var local=map.WorldToLocal(world);
+                    var anchors=generated.Regions.Select(region=>{
+                        var point=generatedStars!.TryGetValue(region.NodeId,out var star)?star:region.Center;
+                        return new GeneratedCampaignNodeAnchor(region.NodeId,viewport.X(point.X),viewport.Y(point.Y));});
+                    return GeneratedCampaignNodePicker.Resolve(anchors,local.x,local.y);
+                }
+                int nodePointer=-1,nodeButton=-1;string? pressedNode=null;
+                map.RegisterCallback<PointerDownEvent>(e=>{
+                    if((e.button!=0&&e.button!=1)||!map.enabledInHierarchy||!ReferenceEquals(frame,model.Current.Frame)||Priority(e.target as VisualElement))return;
+                    var node=Resolve(e.position);if(node==null)return;
+                    nodePointer=e.pointerId;nodeButton=e.button;pressedNode=node;map.CapturePointer(nodePointer);e.StopImmediatePropagation();
+                },TrickleDown.TrickleDown);
+                map.RegisterCallback<PointerUpEvent>(e=>{
+                    if(nodePointer!=e.pointerId||nodeButton!=e.button)return;
+                    var down=pressedNode;var node=Resolve(e.position);var id=nodePointer;nodePointer=nodeButton=-1;pressedNode=null;
+                    map.ReleasePointer(id);e.StopImmediatePropagation();
+                    if(node==null||node!=down||!map.enabledInHierarchy||!ReferenceEquals(frame,model.Current.Frame))return;
+                    if(e.button==0)perform(()=>workspace.SelectedNode=node);else Prepare(node);
+                },TrickleDown.TrickleDown);
+                map.RegisterCallback<PointerCaptureOutEvent>(e=>{if(e.pointerId==nodePointer){nodePointer=nodeButton=-1;pressedNode=null;}});
+            }
             map.RegisterCallback<GeometryChangedEvent>(_=>Reposition());
             GeneratedGalaxyCertifiedPath? certifiedRoute=null;
             void CertifyRoute()
