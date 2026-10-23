@@ -30,10 +30,16 @@ namespace HobbyDS9.Simulation
             CampaignTacticalTravelPackageDto? physicalPackage=null,CampaignTacticalTravelSaveDto? physicalSave=null,
             CampaignIntegratedPlaytestPackageDto? integratedPackage=null,CampaignIntegratedPlaytestSaveDto? integratedSave=null,
             CampaignSingleplayerDemoPackageDto? demoPackage=null,CampaignFrontierPackageDto? frontierPackage=null,
-            CampaignPlayableFleetPackageDto? playablePackage=null, NaturalGalaxyDocumentDto? generatedMap=null, string? generatedTemplateHash=null)
+            CampaignPlayableFleetPackageDto? playablePackage=null, NaturalGalaxyDocumentDto? generatedMap=null, string? generatedTemplateHash=null,
+            bool staticAstronomy=false)
         {
             this.generatedMap = generatedMap == null ? null : NaturalGalaxyData.Copy(generatedMap);
             this.generatedTemplateHash = generatedTemplateHash;
+            if(staticAstronomy)
+            {
+                Require(this.generatedMap!=null,"Static astronomy requires a frozen generated map.");
+                astronomyIndex=GeneratedStaticAstronomyIndex.Build(this.generatedMap.Layout.Regions,this.generatedMap.Features,this.generatedMap.Layout.Width,this.generatedMap.Layout.Height);
+            }
             playableHash = playablePackage?.PackageHash;
             playableOperationLimit = playablePackage?.ReplayOperationLimit ?? 0;
             demo = demoPackage == null ? null : CopyDemoSettings(demoPackage);

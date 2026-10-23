@@ -17,13 +17,13 @@ namespace HobbyDS9.Simulation
             var catalog = template.Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
             return StartGeneratedFrozen(template, GeneratedCampaignFactory.Frozen(NaturalGalaxyGenerator.Generate(settings, catalog), catalog));
         }
-        private static CampaignTacticalReviewSession StartGeneratedFrozen(CampaignPlayableFleetPackageDto template, NaturalGalaxyDocumentDto map)
+        private static CampaignTacticalReviewSession StartGeneratedFrozen(CampaignPlayableFleetPackageDto template, NaturalGalaxyDocumentDto map, bool staticAstronomy = false)
         {
-            var package = GeneratedCampaignFactory.Build(template, map);
+            var package = GeneratedCampaignFactory.Build(template, map, staticAstronomy);
             ValidatePlayablePackage(package, generated: true);
             var i = package.Integrated!;
             return new CampaignTacticalReviewSession(i.Physical!.CorePackage!, null, i.Physical, null, i, null, null, null,
-                package, map, template.PackageHash);
+                package, map, template.PackageHash, staticAstronomy);
         }
         public static CampaignTacticalReviewSession LoadGenerated(CampaignPlayableFleetPackageDto template, CampaignGeneratedSaveDto save)
         {
@@ -43,8 +43,8 @@ namespace HobbyDS9.Simulation
             lock (gate)
             {
                 Require(generatedMap != null, "Not a generated campaign.");
-                return new CampaignGeneratedSaveDto { FormatVersion = CampaignGeneratedIdentity.Format, ProfileId = CampaignGeneratedIdentity.Profile,
-                    PolicyId = CampaignGeneratedIdentity.Policy, TemplatePackageHash = generatedTemplateHash!, PackageHash = playableHash!,
+                return new CampaignGeneratedSaveDto { FormatVersion = CampaignGeneratedIdentity.Format, ProfileId = astronomyIndex == null ? CampaignGeneratedIdentity.Profile : CampaignStaticAstronomyIdentity.Profile,
+                    PolicyId = astronomyIndex == null ? CampaignGeneratedIdentity.Policy : CampaignStaticAstronomyIdentity.Policy, TemplatePackageHash = generatedTemplateHash!, PackageHash = playableHash!,
                     Map = NaturalGalaxyData.Copy(generatedMap), Campaign = ExportPlayableCore(), Discoveries = discoveries.Select(CopyDiscovery).ToList() };
             }
         }
