@@ -46,6 +46,34 @@ public sealed class GeneratedGalaxyCorridorPathTests
         var outbound=GeneratedGalaxyCorridorPath.Build(regions,"a",new[]{"b"});var inbound=GeneratedGalaxyCorridorPath.Build(regions,"b",new[]{"a"});
         Assert.Equal(outbound.Points[^1],inbound.Points[0]);Assert.Equal(15,outbound.Points[^1].X);
     }
+    [Fact] public void SelfStepCannotMatchItsOwnPolygonEdgeOrInventOneCrossing()
+    {
+        var regions=Cells(Region("a",5,5,(0,0),(10,0),(10,10),(0,10)));
+        var invalid=GeneratedGalaxyCorridorPath.Build(regions,"a",new[]{"a"});Assert.False(invalid.Certified);Assert.Empty(invalid.Points);Assert.Empty(invalid.RawMidpoints);Assert.Contains("self-step",invalid.Reason);
+    }
+    private static GalaxyReviewRoutePlanSnapshot SyntheticPlan(IEnumerable<(string from,string to,string[] steps)> routes)
+    {
+        var legs=routes.Select((r,i)=>new GalaxyReviewLegSnapshot(i,r.from,new GalaxyReviewTargetSnapshot(r.to,GalaxyReviewTargetIntent.RegionTransit,null),
+            new StrategicRouteSnapshot(RouteErrorCode.None,r.steps,Array.Empty<NavigationCostSnapshot>(),r.steps.Length),0)).ToArray();
+        return new GalaxyReviewRoutePlanSnapshot(GalaxyReviewRoutePolicy.MinimumCrossingsDirectV1,new string('a',64),legs[0].OriginNodeId,GalaxyReviewPlanError.None,null,legs,legs.SelectMany(l=>l.Route.Steps),legs.Sum(l=>l.Route.TotalCost),0);
+    }
+    [Fact] public void AllSixtyFourLegsShareOneBudgetAndExhaustionRetainsLegDiagnostics()
+    {
+        var regions=Cells(Region("a",5,5,(0,0),(10,0),(10,10),(0,10)),Region("b",15,5,(10,0),(20,0),(20,10),(10,10)));
+        var plan=SyntheticPlan(Enumerable.Range(0,64).Select(i=>(i%2==0?"a":"b",i%2==0?"b":"a",new[]{i%2==0?"b":"a"})));
+        var full=GeneratedGalaxyCorridorPath.BuildPlan(regions,plan);Assert.False(full.BudgetExhausted);Assert.Equal(64,full.Legs.Count);Assert.Equal(0,full.HiddenCount);
+        var bounded=GeneratedGalaxyCorridorPath.BuildPlan(regions,plan,100);Assert.True(bounded.BudgetExhausted);Assert.Equal(100,bounded.Operations);Assert.Equal(64,bounded.Legs.Count);Assert.True(bounded.HiddenCount>0);
+        Assert.Equal(bounded.Operations,bounded.Legs.Sum(p=>p.Operations));Assert.All(bounded.Legs.Where(p=>!p.Certified),p=>Assert.Contains("plan operation budget",p.Reason));
+        Assert.Equal(64,plan.TotalCost);Assert.Equal(64,plan.Legs.Count);
+    }
+    [Fact] public void SharedBudgetAlsoChargesCertifiedFallbackWorkAndCanStopItSafely()
+    {
+        var regions=Cells(Region("a",1,3,(0,0),(10,0),(-5,10)),Region("b",-3,0,(0,0),(-5,10),(-5,-10)),Region("c",1,-3,(0,0),(-5,-10),(10,0)));
+        var plan=SyntheticPlan(new[]{("a","a",new[]{"b","c","a"})});var full=GeneratedGalaxyCorridorPath.BuildPlan(regions,plan);
+        Assert.Equal(1,full.FallbackCount);Assert.Equal(0,full.HiddenCount);Prove(regions,new[]{"a","b","c","a"},full.Legs[0].Points);
+        var limited=GeneratedGalaxyCorridorPath.BuildPlan(regions,plan,full.Operations-1);Assert.True(limited.BudgetExhausted);Assert.Equal(1,limited.HiddenCount);Assert.Empty(limited.Legs[0].Points);
+        Assert.Contains("during fallback",limited.Legs[0].Reason);Assert.Equal(full.Operations-1,limited.Operations);
+    }
     [Fact] public void ActualTwentyTwoCrossingDoglegFixtureShortensWithoutChangingMapStepsOrCost()
     {
         var codec=new ReviewNewtonsoftCodec();var bytes=File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,"galaxy-samples/scaled/seed-42-systems-250.scaled.json"));
@@ -149,7 +177,7 @@ public sealed class GeneratedGalaxyCorridorPathTests
         {
             var p=points[segment-1];var q=points[segment];if(p.Equals(q))continue;
             var spans=new List<(F lo,F hi,string id)>();
-            foreach(var id in ids)
+            foreach(var id in ids.Distinct(StringComparer.Ordinal))
             {
                 var cell=regions[id];var lo=new F(0,1);var hi=new F(1,1);bool possible=true;
                 for(int edge=0;edge<cell.Boundary.Count;edge++)

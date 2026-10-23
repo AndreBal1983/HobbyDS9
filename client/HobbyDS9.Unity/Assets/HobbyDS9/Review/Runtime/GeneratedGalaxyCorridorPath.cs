@@ -26,17 +26,37 @@ namespace HobbyDS9.UnityReview
         public bool UsedFallback { get; }
         public string Reason { get; }
         public int Operations { get; }
-        internal GeneratedGalaxyCertifiedPath(IEnumerable<GeneratedGalaxyDisplayPoint> points,bool certified,bool fallback,string reason,int operations)
-        {Points=Array.AsReadOnly(points.ToArray());Certified=certified;UsedFallback=fallback;Reason=reason;Operations=operations;}
+        public IReadOnlyList<GeneratedGalaxyDisplayPoint> RawMidpoints { get; }
+        internal GeneratedGalaxyCertifiedPath(IEnumerable<GeneratedGalaxyDisplayPoint> points,bool certified,bool fallback,string reason,int operations,IEnumerable<GeneratedGalaxyDisplayPoint>? raw=null)
+        {Points=Array.AsReadOnly(points.ToArray());RawMidpoints=Array.AsReadOnly((raw??Array.Empty<GeneratedGalaxyDisplayPoint>()).ToArray());Certified=certified;UsedFallback=fallback;Reason=reason;Operations=operations;}
+    }
+    public sealed class GeneratedGalaxyCertifiedPlan
+    {
+        public IReadOnlyList<GeneratedGalaxyCertifiedPath> Legs { get; }
+        public int Operations { get; }
+        public bool BudgetExhausted { get; }
+        public int FallbackCount=>Legs.Count(p=>p.UsedFallback);
+        public int HiddenCount=>Legs.Count(p=>!p.Certified);
+        internal GeneratedGalaxyCertifiedPlan(IEnumerable<GeneratedGalaxyCertifiedPath> legs,int operations,bool exhausted)
+        {Legs=Array.AsReadOnly(legs.ToArray());Operations=operations;BudgetExhausted=exhausted;}
     }
     public static class GeneratedGalaxyCorridorPath
     {
         public const int MaximumOperations=100000;
+        public const int MaximumPlanOperations=300000;
+        private sealed class LimitException : InvalidOperationException
+        {public LimitException(string message):base(message){}}
+        private sealed class PlanBudget
+        {
+            public int Used;public bool Exhausted;private readonly int limit;
+            public PlanBudget(int limit){this.limit=Math.Max(0,Math.Min(limit,MaximumPlanOperations));}
+            public void Tick(){if(Used>=limit){Exhausted=true;throw new LimitException("plan operation budget");}Used++;}
+        }
         private sealed class Budget
         {
-            public int Used;private readonly int limit;
-            public Budget(int limit){this.limit=limit;}
-            public void Tick(){if(++Used>limit)throw new InvalidOperationException("geometry operation budget");}
+            public int Used;private readonly int limit;private readonly PlanBudget? plan;
+            public Budget(int limit,PlanBudget? plan=null){this.limit=limit;this.plan=plan;}
+            public void Tick(){if(Used>=limit)throw new LimitException("geometry stage operation budget");plan?.Tick();Used++;}
         }
         private readonly struct Portal
         {
@@ -73,15 +93,34 @@ namespace HobbyDS9.UnityReview
         private static BigInteger Turn(GeneratedGalaxyDisplayPoint a,GeneratedGalaxyDisplayPoint b,GeneratedGalaxyDisplayPoint c,Budget budget)
         {budget.Tick();return Cross(b.X1024-a.X1024,b.Y1024-a.Y1024,c.X1024-a.X1024,c.Y1024-a.Y1024);}
 
-        public static GeneratedGalaxyCertifiedPath Build(IReadOnlyDictionary<string,GeneratedGalaxyRegionDto> regions,string origin,IReadOnlyList<string> steps,int operationLimit=MaximumOperations)
+        public static GeneratedGalaxyCertifiedPlan BuildPlan(IReadOnlyDictionary<string,GeneratedGalaxyRegionDto> regions,GalaxyReviewRoutePlanSnapshot plan,int planOperationLimit=MaximumPlanOperations)
         {
-            var budget=new Budget(Math.Max(0,Math.Min(operationLimit,MaximumOperations)));string failure="";
+            var ledger=new PlanBudget(planOperationLimit);var paths=new List<GeneratedGalaxyCertifiedPath>();
+            if(plan.Success&&plan.Legs.Count<=GalaxyReviewRoutePolicy.MaximumTargets)
+                foreach(var leg in plan.Legs)paths.Add(BuildCore(regions,leg.OriginNodeId,leg.Route.Steps,MaximumOperations,ledger));
+            return new GeneratedGalaxyCertifiedPlan(paths,ledger.Used,ledger.Exhausted);
+        }
+        // This optional limit applies only to funnel/certificate stage. BuildPlan's ledger covers ALL stages/legs.
+        public static GeneratedGalaxyCertifiedPath Build(IReadOnlyDictionary<string,GeneratedGalaxyRegionDto> regions,string origin,IReadOnlyList<string> steps,int funnelOperationLimit=MaximumOperations)
+            =>BuildCore(regions,origin,steps,funnelOperationLimit,null);
+        private static GeneratedGalaxyCertifiedPath BuildCore(IReadOnlyDictionary<string,GeneratedGalaxyRegionDto> regions,string origin,IReadOnlyList<string> steps,int funnelOperationLimit,PlanBudget? ledger)
+        {
+            var budget=new Budget(Math.Max(0,Math.Min(funnelOperationLimit,MaximumOperations)),ledger);string failure="";
+            if(steps.Count>=2000)return new GeneratedGalaxyCertifiedPath(Array.Empty<GeneratedGalaxyDisplayPoint>(),false,false,"channel limit",0);
             var ids=new[]{origin}.Concat(steps).ToArray();
-            if(ids.Length>2000)return new GeneratedGalaxyCertifiedPath(Array.Empty<GeneratedGalaxyDisplayPoint>(),false,false,"channel limit",0);
-            Portal[] portals;var extractionBudget=new Budget(MaximumOperations);
-            try{portals=Enumerable.Range(0,steps.Count).Select(i=>Shared(regions[ids[i]],regions[ids[i+1]],extractionBudget)).ToArray();}
+            if(Enumerable.Range(0,steps.Count).Any(i=>StringComparer.Ordinal.Equals(ids[i],ids[i+1])))
+                return new GeneratedGalaxyCertifiedPath(Array.Empty<GeneratedGalaxyDisplayPoint>(),false,false,"self-step is not a crossing; no certified route line",0);
+            Portal[] portals;var extractionBudget=new Budget(MaximumOperations,ledger);var raw=new List<GeneratedGalaxyDisplayPoint>();
+            try
+            {
+                foreach(var _ in ids)extractionBudget.Tick(); // bounded channel admission is charged to the same plan ledger
+                portals=Enumerable.Range(0,steps.Count).Select(i=>Shared(regions[ids[i]],regions[ids[i+1]],extractionBudget)).ToArray();
+                extractionBudget.Tick();raw.Add(Point(regions[origin].Center));
+                foreach(var p in portals){extractionBudget.Tick();raw.Add(new GeneratedGalaxyDisplayPoint((p.A.X1024+p.B.X1024)/2,(p.A.Y1024+p.B.Y1024)/2));}
+                if(steps.Count>0){extractionBudget.Tick();raw.Add(Point(regions[ids[ids.Length-1]].Center));}
+            }
             catch(ArgumentException){return new GeneratedGalaxyCertifiedPath(Array.Empty<GeneratedGalaxyDisplayPoint>(),false,false,"no positive shared edge",extractionBudget.Used);}
-            catch(InvalidOperationException){return new GeneratedGalaxyCertifiedPath(Array.Empty<GeneratedGalaxyDisplayPoint>(),false,false,"portal extraction operation budget; no certified route line",extractionBudget.Used);}
+            catch(LimitException error){return new GeneratedGalaxyCertifiedPath(Array.Empty<GeneratedGalaxyDisplayPoint>(),false,false,error.Message+" during portal extraction; no certified route line",extractionBudget.Used);}
             var start=Point(regions[origin].Center);var end=Point(regions[ids[ids.Length-1]].Center);
             try
             {
@@ -89,20 +128,18 @@ namespace HobbyDS9.UnityReview
                 else
                 {
                     var path=Pull(start,end,portals,budget);
-                    if(Certify(regions,ids,portals,path,budget,out failure))return new GeneratedGalaxyCertifiedPath(path,true,false,"inset-portal certificate",extractionBudget.Used+budget.Used);
+                    if(Certify(regions,ids,portals,path,budget,out failure))return new GeneratedGalaxyCertifiedPath(path,true,false,"inset-portal certificate",extractionBudget.Used+budget.Used,raw);
                 }
             }
-            catch(InvalidOperationException){failure="geometry operation budget";}
+            catch(LimitException error){failure=error.Message;}
             // A separately bounded, linear certificate for raw midpoints; never presume strictness.
-            var fallbackBudget=new Budget(MaximumOperations);var raw=new List<GeneratedGalaxyDisplayPoint>{start};
-            raw.AddRange(portals.Select(p=>new GeneratedGalaxyDisplayPoint((p.A.X1024+p.B.X1024)/2,(p.A.Y1024+p.B.Y1024)/2)));
-            if(steps.Count>0)raw.Add(end);
+            var fallbackBudget=new Budget(MaximumOperations,ledger);
             try
             {
-                if(CertifyMidpoints(regions,ids,raw,fallbackBudget))return new GeneratedGalaxyCertifiedPath(raw,true,true,failure,extractionBudget.Used+budget.Used+fallbackBudget.Used);
+                if(CertifyMidpoints(regions,ids,raw,fallbackBudget))return new GeneratedGalaxyCertifiedPath(raw,true,true,failure,extractionBudget.Used+budget.Used+fallbackBudget.Used,raw);
             }
-            catch(InvalidOperationException){failure+="; fallback operation budget";}
-            return new GeneratedGalaxyCertifiedPath(Array.Empty<GeneratedGalaxyDisplayPoint>(),false,false,failure+"; no certified route line",extractionBudget.Used+budget.Used+fallbackBudget.Used);
+            catch(LimitException error){failure+="; "+error.Message+" during fallback";}
+            return new GeneratedGalaxyCertifiedPath(Array.Empty<GeneratedGalaxyDisplayPoint>(),false,false,failure+"; no certified route line",extractionBudget.Used+budget.Used+fallbackBudget.Used,raw);
         }
         public static bool CertifyCandidate(IReadOnlyDictionary<string,GeneratedGalaxyRegionDto> regions,string origin,IReadOnlyList<string> steps,
             IReadOnlyList<GeneratedGalaxyDisplayPoint> points,out string reason)
@@ -119,6 +156,7 @@ namespace HobbyDS9.UnityReview
         }
         private static Portal Shared(GeneratedGalaxyRegionDto from,GeneratedGalaxyRegionDto to,Budget budget)
         {
+            if(StringComparer.Ordinal.Equals(from.NodeId,to.NodeId))throw new ArgumentException("Self-step is not a crossing.");
             for(int i=0;i<from.Boundary.Count;i++)
             {
                 var a=from.Boundary[i];var b=from.Boundary[(i+1)%from.Boundary.Count];if(a.X==b.X&&a.Y==b.Y)continue;
