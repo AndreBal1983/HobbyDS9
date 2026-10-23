@@ -143,9 +143,9 @@ namespace HobbyDS9.UnityReview.Tests
             }
             Assert.That(panel.GetCapturingElement(id),Is.Null);TestContext.WriteLine("Priority pointer "+intended.name+" button="+button+" point="+point+" actual="+down.name);
         }
-        private static IEnumerator CampaignCapture(ReviewEntry entry,UIDocument doc,string state)
+        private static IEnumerator CampaignCapture(ReviewEntry entry,UIDocument doc,string state,Vector2Int[]? sizes=null)
         {
-            foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})
+            foreach(var size in sizes??new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})
             {
                 var priorTarget=doc.panelSettings.targetTexture;var active=RenderTexture.active;
                 var w=doc.rootVisualElement.style.width;var h=doc.rootVisualElement.style.height;
@@ -163,6 +163,15 @@ namespace HobbyDS9.UnityReview.Tests
                         var observed=model.GeneratedMap();var nodes=observed.Regions.Select(r=>r.NodeId).ToHashSet(StringComparer.Ordinal);
                         var buttons=map.Query<Button>().ToList().Where(b=>b.name.StartsWith("map-star-",StringComparison.Ordinal)).ToArray();
                         CollectionAssert.AreEquivalent(nodes,buttons.Select(b=>b.name.Substring("map-star-".Length)));
+                        foreach(var button in buttons)
+                        {Assert.That(button.layout.width,Is.EqualTo(38));Assert.That(button.layout.height,Is.EqualTo(38));Assert.That(button.resolvedStyle.backgroundColor.a,Is.EqualTo(0));}
+                        var labels=map.Query<Label>().ToList().Where(l=>l.name.StartsWith("map-label-",StringComparison.Ordinal)).ToArray();
+                        Assert.That(labels.All(l=>l.pickingMode==PickingMode.Ignore),Is.True);
+                        var visible=labels.Where(l=>l.resolvedStyle.visibility==Visibility.Visible).ToArray();Assert.That(visible.Length,Is.InRange(1,64));
+                        foreach(var label in visible)
+                        {Assert.That(nodes.Contains(label.name.Substring("map-label-".Length)),Is.True);Assert.That(label.worldBound.xMin,Is.GreaterThanOrEqualTo(map.worldBound.xMin));Assert.That(label.worldBound.xMax,Is.LessThanOrEqualTo(map.worldBound.xMax));
+                            Assert.That(label.worldBound.yMin,Is.GreaterThanOrEqualTo(map.worldBound.yMin));Assert.That(label.worldBound.yMax,Is.LessThanOrEqualTo(map.worldBound.yMax));}
+                        for(int i=0;i<visible.Length;i++)for(int j=i+1;j<visible.Length;j++)Assert.That(visible[i].worldBound.Overlaps(visible[j].worldBound),Is.False,"visible label overlap");
                         Assert.That(map.Query<Button>().ToList().Any(b=>b.name.StartsWith("galaxy-candidate-",StringComparison.Ordinal)),Is.False);
                         foreach(var feature in observed.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star))
                         {
