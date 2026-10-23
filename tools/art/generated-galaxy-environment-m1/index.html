@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Environment-first M1 / actual-sample design review</title><link rel="stylesheet" href="map.css">
+<body><main id="app">
+<header><button id="back">&lsaquo; Menu</button><div><span class="eyebrow">FULL GENERATED MAP / NO CAMPAIGN</span><h1>Environment-first galaxy review</h1></div><span class="review-badge">Sample design viewer</span></header>
+<section class="setup" aria-label="Generated map setup">
+<label>Seed<input id="seed" inputmode="numeric" aria-label="Seed"></label>
+<label>Systems<select id="size" aria-label="System count"><option>30</option><option selected>40</option><option>50</option></select></label>
+<button id="generate" class="primary">View generated sample</button><button id="export" disabled>Export map</button>
+<label>Export fixture<select id="fixture" aria-label="Export fixture"><option value="normal">Normal map</option></select></label>
+<span id="counts" class="muted">No map loaded</span></section>
+<div id="status" role="status">Choose a supplied seed and size to inspect its generated map.</div>
+<section class="workspace"><section class="map-panel">
+<div class="map-controls"><button data-zoom="out" aria-label="Zoom out">&minus;</button><button data-zoom="in" aria-label="Zoom in">+</button><button id="fit">Fit</button><button id="route" disabled>Candidate route</button><button id="lanes" aria-pressed="false">Graph links</button><button id="environment">Environment</button><button id="features-toggle" aria-pressed="true">Features</button><button id="influence-toggle" aria-pressed="false">Influence areas</button><button id="density-toggle" aria-pressed="true">Density causes</button><span id="zoom-level">Overview</span></div>
+<svg id="map" tabindex="0" aria-label="Generated galaxy map"><defs><clipPath id="map-extent"><rect id="extent-rect"/></clipPath></defs><g id="features" clip-path="url(#map-extent)"></g><g id="influence" clip-path="url(#map-extent)"></g><g id="geometry"></g><g id="markers"></g></svg>
+<div id="empty-map">Your map appears here.<small>Generated features, regions, systems and graph routes.</small></div>
+<div class="legend"><span><i class="region-key"></i>Region</span><span>&#10022; Star</span><span>&#9673; Black hole</span><span>&#9671; Nebula influence</span><span>&#8988; Candidate</span><span><i class="route-key"></i>Route</span></div>
+</section><aside id="inspector" aria-label="Map inspector"><h2>Map inspector</h2><p>Select a star, region, black hole, nebula centre or candidate bracket.</p></aside></section>
+<footer><span>Full-output review / normalized generation influence</span><span>Actual pinned exports; generation and Open run in the Unity review.</span></footer>
+</main><script src="samples.js"></script><script src="map.js"></script></body></html>

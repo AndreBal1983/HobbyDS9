@@ -1,0 +1,88 @@
+{
+  "backendCommit": "e37e2e2e376c24b43d279089baede49b94d30f6e",
+  "contractCommit": "f6316e18b90b32e68dd81354360dfeb7d4390e3b",
+  "civilizations": [
+    {
+      "DefinitionId": "civilization.federation",
+      "DisplayName": "Federation"
+    },
+    {
+      "DefinitionId": "civilization.cardassian",
+      "DisplayName": "Cardassian Union"
+    },
+    {
+      "DefinitionId": "civilization.dominion",
+      "DisplayName": "Dominion"
+    }
+  ],
+  "samples": [
+    {
+      "variant": "normal",
+      "label": "Normal map",
+      "document": "samples/seed-42-systems-40-all.environment.json",
+      "sha256": "bc207300f174b623877fd954ced5d0d4a02b6368d4471ffc5eb4870e1b0fe541",
+      "route": "samples/seed-42-systems-40-all.route.json",
+      "routeSha256": "608906a156ab3a26a38ac335cf08f9c64335039aea149fb1f1f976821735e474"
+    },
+    {
+      "variant": "normal",
+      "label": "Normal map",
+      "document": "samples/seed-43-systems-40-all.environment.json",
+      "sha256": "0ddd8b21ed494a830960b9991496b64ff74b23b6028919253f66a746137b4a6f",
+      "route": "samples/seed-43-systems-40-all.route.json",
+      "routeSha256": "5de420f4be28d4a52fa97a70f5fc7be403e90828216a14486a6a5a0cbef0a0a3"
+    },
+    {
+      "variant": "normal",
+      "label": "Normal map",
+      "document": "samples/seed-12345-systems-30-all.environment.json",
+      "sha256": "b61c4cc1f773e343e06b4a1ff108df0ca99c7bdd2461e2fdacbd10eb4acee9c4",
+      "route": "samples/seed-12345-systems-30-all.route.json",
+      "routeSha256": "d427c86ebc38133da2f4b8efbe978c0eddc44805de9bc7901b994eaf0eb24f74"
+    },
+    {
+      "variant": "normal",
+      "label": "Normal map",
+      "document": "samples/seed-20261020-systems-50-all.environment.json",
+      "sha256": "8cf79b51a9f5724351c23d83607670e5415dddf0ff0407ae943680690d797fbe",
+      "route": "samples/seed-20261020-systems-50-all.route.json",
+      "routeSha256": "d85ead8d942d28d479af75439601c16abd3f35139249334ffe396fd23180d106"
+    },
+    {
+      "variant": "no-stars",
+      "label": "No stellar influence",
+      "document": "samples/seed-42-systems-40-no-stars.environment.json",
+      "sha256": "cb343bac99271e54045d086b96c43d27c7375d61d10fcede625dc0047c954eea",
+      "route": "samples/seed-42-systems-40-no-stars.route.json",
+      "routeSha256": "79057caa9f758308f962ab69cc7cfd7143c2f647d4649a693072e7ef64ebf7b2"
+    },
+    {
+      "variant": "no-black-holes",
+      "label": "No black-hole influence",
+      "document": "samples/seed-42-systems-40-no-black-holes.environment.json",
+      "sha256": "acfee5eb7c88b6cbc8004d42e1c060b0da0e3401e4482a65bf0d879c24c4eaf5",
+      "route": "samples/seed-42-systems-40-no-black-holes.route.json",
+      "routeSha256": "1c8a72d9b3bd5aa4f9603d0799e20921da5bb9c1559ab2fdb1f8c3436124ab88"
+    },
+    {
+      "variant": "no-nebulae",
+      "label": "No nebula influence",
+      "document": "samples/seed-42-systems-40-no-nebulae.environment.json",
+      "sha256": "cb8c580c55ee164e2737a1230c14edfb19c9a10c1c681c921bc172e16efbcd4a",
+      "route": "samples/seed-42-systems-40-no-nebulae.route.json",
+      "routeSha256": "676de1e4bf8e82638ccee5f41704250758ab35416757ffac4c9ebbbb3f1c022b"
+    },
+    {
+      "variant": "none",
+      "label": "All influences disabled",
+      "document": "samples/seed-42-systems-40-none.environment.json",
+      "sha256": "76e6681f9484a32040a16dd92d6cf0b31ecbfa383bb9c38bf2bc33149c227f97",
+      "route": "samples/seed-42-systems-40-none.route.json",
+      "routeSha256": "1d6c8828732dfd42ab1f1b0f26b8a49e351c0c828d593aeef3fb18eea38aeda1"
+    }
+  ],
+  "causalReport": {
+    "document": "samples/causal-comparisons.json",
+    "sha256": "ea0a8c7a80b99f7575a3cbf0b9d8e33c280bb0472093388aad815390ee4d9e23"
+  }
+}
