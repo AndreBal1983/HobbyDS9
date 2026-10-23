@@ -35,37 +35,42 @@ namespace HobbyDS9.UnityReview
                     "ExtraSiteSeparation","QuietDisturbanceThreshold");
                 GeneratedObject(root["Tuning"]!["Environment"],"BaseDensity","MaximumDensity","MinimumSiteSeparation","MinimumStarSeparation",
                     "OuterMargin","BlackHoleCount","NebulaCount","CandidateDrawsPerRegion","PlacementAttempts");
-                var layout=root["Layout"]!;
-                GeneratedObject(layout,"Width","Height","Regions","Systems","Connections","HomeCandidates");
-                int vertices=0;
-                foreach(var region in GeneratedRows(layout["Regions"],ScaledGalaxyIdentity.MaximumRegions))
-                {
-                    GeneratedObject(region,"NodeId","DisplayName","SystemId","Center","Boundary");GeneratedObject(region["Center"],"X","Y");
-                    var boundary=GeneratedRows(region["Boundary"],ScaledGalaxyIdentity.MaximumVerticesPerRegion);
-                    vertices+=boundary.Count;if(vertices>ScaledGalaxyIdentity.MaximumTotalVertices)throw Invalid();
-                    foreach(var point in boundary)GeneratedObject(point,"X","Y");
-                }
-                foreach(var system in GeneratedRows(layout["Systems"],ScaledGalaxyIdentity.MaximumSystems))GeneratedObject(system,"SystemId","DisplayName","NodeId");
-                foreach(var edge in GeneratedRows(layout["Connections"],ScaledGalaxyIdentity.MaximumConnections))GeneratedObject(edge,"ConnectionId","EndpointA","EndpointB","Kind","BaseTraversalCost");
-                foreach(var home in GeneratedRows(layout["HomeCandidates"],2))GeneratedObject(home,"CivilizationDefinitionId","SystemId","NodeId");
-                var features=GeneratedRows(root["Features"],ScaledGalaxyIdentity.MaximumFeatures);
-                foreach(var feature in features)
-                {
-                    GeneratedObject(feature,"FeatureId","Kind","DisplayName","Position","RadiusX","RadiusY","DensityWeight","SystemId","NodeId");
-                    GeneratedObject(feature["Position"],"X","Y");
-                }
-                int contributions=0;
-                foreach(var influence in GeneratedRows(root["RegionInfluences"],ScaledGalaxyIdentity.MaximumRegions))
-                {
-                    GeneratedObject(influence,"NodeId","BaseDensity","TargetDensity","Contributions");
-                    var rows=GeneratedRows(influence["Contributions"],features.Count);
-                    contributions+=rows.Count;if(contributions>ScaledGalaxyIdentity.MaximumTotalContributions)throw Invalid();
-                    foreach(var contribution in rows)GeneratedObject(contribution,"FeatureId","Amount");
-                }
+                ValidateScaledLayout(root);
                 CheckScaledText(root);
                 return Decode<ScaledGalaxyDocumentDto>(bytes);
             }
             catch(Exception){throw new InvalidDataException("Invalid scaled-map document.");}
+        }
+
+        private static void ValidateScaledLayout(JToken root)
+        {
+            var layout=root["Layout"]!;
+            GeneratedObject(layout,"Width","Height","Regions","Systems","Connections","HomeCandidates");
+            int vertices=0;
+            foreach(var region in GeneratedRows(layout["Regions"],ScaledGalaxyIdentity.MaximumRegions))
+            {
+                GeneratedObject(region,"NodeId","DisplayName","SystemId","Center","Boundary");GeneratedObject(region["Center"],"X","Y");
+                var boundary=GeneratedRows(region["Boundary"],ScaledGalaxyIdentity.MaximumVerticesPerRegion);
+                vertices+=boundary.Count;if(vertices>ScaledGalaxyIdentity.MaximumTotalVertices)throw Invalid();
+                foreach(var point in boundary)GeneratedObject(point,"X","Y");
+            }
+            foreach(var system in GeneratedRows(layout["Systems"],ScaledGalaxyIdentity.MaximumSystems))GeneratedObject(system,"SystemId","DisplayName","NodeId");
+            foreach(var edge in GeneratedRows(layout["Connections"],ScaledGalaxyIdentity.MaximumConnections))GeneratedObject(edge,"ConnectionId","EndpointA","EndpointB","Kind","BaseTraversalCost");
+            foreach(var home in GeneratedRows(layout["HomeCandidates"],2))GeneratedObject(home,"CivilizationDefinitionId","SystemId","NodeId");
+            var features=GeneratedRows(root["Features"],ScaledGalaxyIdentity.MaximumFeatures);
+            foreach(var feature in features)
+            {
+                GeneratedObject(feature,"FeatureId","Kind","DisplayName","Position","RadiusX","RadiusY","DensityWeight","SystemId","NodeId");
+                GeneratedObject(feature["Position"],"X","Y");
+            }
+            int contributions=0;
+            foreach(var influence in GeneratedRows(root["RegionInfluences"],ScaledGalaxyIdentity.MaximumRegions))
+            {
+                GeneratedObject(influence,"NodeId","BaseDensity","TargetDensity","Contributions");
+                var rows=GeneratedRows(influence["Contributions"],features.Count);
+                contributions+=rows.Count;if(contributions>ScaledGalaxyIdentity.MaximumTotalContributions)throw Invalid();
+                foreach(var contribution in rows)GeneratedObject(contribution,"FeatureId","Amount");
+            }
         }
 
         private static void CheckScaledText(JToken token)

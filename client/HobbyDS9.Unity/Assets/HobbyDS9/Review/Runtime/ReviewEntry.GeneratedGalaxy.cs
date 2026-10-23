@@ -39,7 +39,7 @@ namespace HobbyDS9.UnityReview
                     if(asset==null)throw new InvalidOperationException();
                     var source=new ReviewNewtonsoftCodec().DecodeScenario(asset.bytes);
                     galaxy=new GeneratedGalaxyWorkspace(source.Definitions.Civilizations??throw new InvalidOperationException(),
-                        new GeneratedGalaxyMapStore(Path.Combine(UnityEngine.Application.persistentDataPath,GeneratedGalaxyMapStore.DirectoryName))){Size=250};
+                        new GeneratedGalaxyMapStore(Path.Combine(UnityEngine.Application.persistentDataPath,GeneratedGalaxyMapStore.DirectoryName))){Size=250,NaturalGeneration=true};
                 }
                 catch(Exception){profileMenuNotice="Generated-map review is unavailable. Your campaign and saves are kept.";Draw();return;}
             }
@@ -60,6 +60,8 @@ namespace HobbyDS9.UnityReview
             seed.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch)galaxy.Seed=e.newValue;});
             var size=new DropdownField("Systems",new List<string>{"30","40","50","250","1000"},galaxy.Size.ToString(CultureInfo.InvariantCulture)){name="galaxy-size"};controls.Add(size);
             size.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch){galaxy.Size=int.Parse(e.newValue,CultureInfo.InvariantCulture);root.Q<DropdownField>("galaxy-quiet-target")?.SetEnabled(galaxy.Size>=250);}});
+            var generation=new DropdownField("Large-map model",new List<string>{"Natural v5","Retained scaled v4"},galaxy.NaturalGeneration?0:1){name="galaxy-generation-model"};controls.Add(generation);
+            generation.RegisterValueChangedCallback(_=>{if(epoch==viewEpoch)galaxy.NaturalGeneration=generation.index==0;});
             var generate=AddButton(controls,"Generate",()=>{
                 void Run(){RunGalaxyOperation(draft=>draft.Generate(),"Generating map…");}
                 if(galaxy.Unexported)Confirm("Replace this unexported map? Export it first to keep it. A failed generation keeps the current map.",Run);else Run();
@@ -130,12 +132,12 @@ namespace HobbyDS9.UnityReview
         {
             if(galaxyBusy)return;galaxyBusy=true;var epoch=viewEpoch;
             var live=galaxy!;var prior=live.Document;var draft=live.CaptureOperation();
-            var seed=live.Seed;var size=live.Size;var slot=live.Slot;var target=live.QuietEmptyAreaTargetPermille;
+            var seed=live.Seed;var size=live.Size;var slot=live.Slot;var target=live.QuietEmptyAreaTargetPermille;var natural=live.NaturalGeneration;
             galaxyHost!.SetEnabled(false);galaxyNotice!.text=notice;
             try
             {
                 await Task.Run(()=>operation(draft));
-                if(this==null||epoch!=viewEpoch||!ReferenceEquals(galaxy,live)||live.Seed!=seed||live.Size!=size||live.Slot!=slot||live.QuietEmptyAreaTargetPermille!=target)return;
+                if(this==null||epoch!=viewEpoch||!ReferenceEquals(galaxy,live)||live.Seed!=seed||live.Size!=size||live.Slot!=slot||live.QuietEmptyAreaTargetPermille!=target||live.NaturalGeneration!=natural)return;
                 bool replaced=live.PublishOperation(draft,prior);
                 if(replaced)GalaxyReplaced();else DrawGeneratedGalaxyStatus();
             }
@@ -230,12 +232,12 @@ namespace HobbyDS9.UnityReview
             if(document==null){Text("Generate or open a map to inspect its geography.");return;}
             Text(document.Systems.Count+" systems · "+document.Regions.Count+" regions\n"+document.Regions.Count(r=>r.SystemId==null)+" empty regions",null,"galaxy-counts");
             Text("Seed "+document.Settings.Seed+"\nTwo starting candidates · no ownership");
-            if(document.Scaled!=null)
+            if(document.IsLarge)
             {
                 var summary=document.ScaleSummary!;
-                Text(document.Width.ToString("N0",CultureInfo.InvariantCulture)+" × "+document.Height.ToString("N0",CultureInfo.InvariantCulture)+" map units · format 3");
+                Text(document.Width.ToString("N0",CultureInfo.InvariantCulture)+" × "+document.Height.ToString("N0",CultureInfo.InvariantCulture)+" map units · format "+document.FormatVersion);
                 Text("Quiet empty "+summary.QuietNodes.Count+" · disturbed empty "+summary.DisturbedNodes.Count+"\nQuiet/system mean area "+
-                    (summary.QuietToSystemMeanArea?.ToString("F2",CultureInfo.InvariantCulture)??"n/a")+"×; target "+(document.Scaled.Settings.QuietEmptyAreaTargetPermille/1000.0).ToString("F1",CultureInfo.InvariantCulture)+"×",null,"galaxy-area-summary");
+                    (summary.QuietToSystemMeanArea?.ToString("F2",CultureInfo.InvariantCulture)??"n/a")+"×; target "+((document.Natural?.Settings.Map.QuietEmptyAreaTargetPermille??document.Scaled!.Settings.QuietEmptyAreaTargetPermille)/1000.0).ToString("F1",CultureInfo.InvariantCulture)+"×",null,"galaxy-area-summary");
                 Text("Quiet components "+summary.QuietComponentCount+" · all-empty area "+summary.EmptyAreaShare.ToString("P1",CultureInfo.InvariantCulture)+". No galaxy-spanning corridor guarantee.");
                 Text("Quiet/disturbed classifies sampled site pressure, not whole-cell coverage. The area target is soft.","galaxy-inspector-id");
             }
@@ -283,7 +285,7 @@ namespace HobbyDS9.UnityReview
                         var detail=AddButton(target,feature.DisplayName+" +"+contribution.Amount,()=>SelectGalaxyFeature(feature.FeatureId));detail.name="galaxy-contribution-"+feature.FeatureId;
                     }
                 }
-                var begin=AddButton(target,"Use as route start",()=>{galaxyDraft!.SetStart(new GeneratedGalaxyDraftAnchor(region.NodeId,galaxySelectionKind==GeneratedGalaxySelectionKind.System?GeneratedGalaxyDraftAnchorKind.StarLocation:GeneratedGalaxyDraftAnchorKind.RegionTransit));RecalculateGalaxyPlan();});
+                var begin=AddButton(target,"Use as route start",()=>{galaxyDraft!.SetStart(new GeneratedGalaxyDraftAnchor(region.NodeId,galaxySelectionKind==GeneratedGalaxySelectionKind.System?GeneratedGalaxyDraftAnchorKind.StarLocation:GeneratedGalaxyDraftAnchorKind.RegionTransit));RecalculateGalaxyPlan();DrawGalaxyInspector();});
                 begin.name="galaxy-route-start";
                 var end=AddButton(target,"Preview route here",()=>PreviewGalaxyRoute(region.NodeId));end.name="galaxy-route-target";end.SetEnabled(galaxyRouteStart!=null);
                 Text("CONNECTED REGIONS","galaxy-inspector-heading");

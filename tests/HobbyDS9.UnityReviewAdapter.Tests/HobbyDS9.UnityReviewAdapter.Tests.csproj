@@ -8,6 +8,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../docs/samples/natural-galaxy-v5/*.json" Link="galaxy-samples/natural/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../docs/samples/scaled-galaxy-v4/*.json" Link="galaxy-samples/scaled/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../docs/samples/generated-galaxy-v1/*.galaxy.json" Link="galaxy-samples/v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../docs/samples/generated-galaxy-v2/*.galaxy.json" Link="galaxy-samples/v2/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

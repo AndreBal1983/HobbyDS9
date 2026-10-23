@@ -52,7 +52,7 @@ namespace HobbyDS9.UnityReview
             candidateNames=map.HomeCandidates.ToDictionary(h=>h.NodeId,h=>civilizations[h.CivilizationDefinitionId],StringComparer.Ordinal);
             selected=select;name="generated-galaxy-map";AddToClassList("galaxy-map");
             focusable=true;viewport.SetMap(map.Width,map.Height);
-            viewport.MaximumZoom=map.Scaled==null?8:32;
+            viewport.MaximumZoom=!map.IsLarge?8:32;
             generateVisualContent+=Paint;
             foreach(var system in map.Systems)
             {
@@ -157,6 +157,7 @@ namespace HobbyDS9.UnityReview
         {
             Route(null,null);routeOrigin=origin;routeSteps=plan?.Success==true?plan.Steps:Array.Empty<string>();
             planPaths=plan==null?Array.Empty<IReadOnlyList<GeneratedGalaxyRoutePoint>>():GeneratedGalaxyRoutePath.BuildPlan(regions,plan);
+            routePath=planPaths.Count==1?planPaths[0]:Array.Empty<GeneratedGalaxyRoutePoint>();
             pinnedNodes=targets.Select(t=>t.NodeId).ToArray();
             for(int i=0;i<pinnedNodes.Length;i++)
             {
@@ -203,7 +204,7 @@ namespace HobbyDS9.UnityReview
             var occupied=new List<Rect>();
             var diagonals=regionBounds.Values.Select(ScreenBounds).Where(r=>r.Overlaps(contentRect)).Select(r=>r.size.magnitude).OrderBy(d=>d).ToArray();
             float typical=diagonals.Length==0?0:diagonals[diagonals.Length/2];
-            int labelBudget=document.Scaled==null?int.MaxValue:Math.Min(typical<40?12:typical<90?36:80,
+            int labelBudget=!document.IsLarge?int.MaxValue:Math.Min(typical<40?12:typical<90?36:80,
                 Math.Max(4,(int)(contentRect.width*contentRect.height/18000)));
             // Important labels get first choice. Suppression changes labels, never underlying nodes.
             foreach(var star in stars.OrderBy(s=>s.region.NodeId==selectedNode?0:s.region.NodeId==routeOrigin||routeSteps.LastOrDefault()==s.region.NodeId?1:s.candidate?2:3).ThenBy(s=>s.region.NodeId,StringComparer.Ordinal))
@@ -214,8 +215,8 @@ namespace HobbyDS9.UnityReview
                 star.button.style.display=visible?DisplayStyle.Flex:DisplayStyle.None;
                 star.button.EnableInClassList("galaxy-star-selected",star.region.NodeId==selectedNode&&selectionKind==GeneratedGalaxySelectionKind.System);
                 bool important=star.region.NodeId==selectedNode||star.candidate||star.region.NodeId==routeOrigin||routeSteps.LastOrDefault()==star.region.NodeId;
-                star.button.tabIndex=document.Scaled==null||important?0:-1;
-                bool show=visible&&occupied.Count<labelBudget&&(important||document.Scaled!=null||viewport.Zoom>=1.6);
+                star.button.tabIndex=!document.IsLarge||important?0:-1;
+                bool show=visible&&occupied.Count<labelBudget&&(important||document.IsLarge||viewport.Zoom>=1.6);
                 var rect=new Rect(point.x+17,point.y-10,star.candidate?200:120,star.candidate?46:24);
                 if(rect.xMax>bounds.xMax-8)rect.x=point.x-rect.width-17;
                 rect.y=Mathf.Clamp(rect.y,bounds.yMin+6,Mathf.Max(bounds.yMin+6,bounds.yMax-rect.height-6));
