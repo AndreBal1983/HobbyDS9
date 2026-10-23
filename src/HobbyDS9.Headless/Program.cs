@@ -13,6 +13,7 @@ if (args.Length == 1 && args[0] == "--galaxy-route-intent-examples")
     return;
 }
 
+if (NaturalGalaxyCli.Run(args)) return;
 if (ScaledGalaxyCli.Run(args)) return;
 
 if (args.Length == 1 && args[0] == "--environment-galaxy-causality")
