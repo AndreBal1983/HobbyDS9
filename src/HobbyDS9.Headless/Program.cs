@@ -5,6 +5,8 @@ using System.Text.Json;
 using HobbyDS9.Contracts;
 using HobbyDS9.Application;
 
+if (ScaledGalaxyCli.Run(args)) return;
+
 if (args.Length == 1 && args[0] == "--environment-galaxy-causality")
 {
     var catalog = PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory, "scenarios/playable-fleet-v1"))
