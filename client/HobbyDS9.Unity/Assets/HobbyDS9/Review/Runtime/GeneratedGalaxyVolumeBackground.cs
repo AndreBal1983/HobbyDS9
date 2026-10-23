@@ -33,6 +33,7 @@ namespace HobbyDS9.UnityReview
             var shader=Resources.Load<Shader>("GalaxyPresentation/Volume");
             if(shader==null||!shader.isSupported)throw new NotSupportedException("Galaxy volume shader unavailable; flat map retained.");
             if(!SystemInfo.supports3DTextures)throw new NotSupportedException("Galaxy density textures unsupported; flat map retained.");
+            if(!SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf))throw new NotSupportedException("Galaxy high-precision target unsupported; flat map retained.");
             material=new Material(shader){hideFlags=HideFlags.HideAndDontSave};
             const int n=GeneratedGalaxyVisualField.Resolution;
             field=new Texture3D(n,n,n,TextureFormat.RGBA32,true){name="Galaxy coherent field v1",hideFlags=HideFlags.HideAndDontSave,
@@ -61,7 +62,7 @@ namespace HobbyDS9.UnityReview
             var watch=Stopwatch.StartNew();
             if(texture==null||texture.width!=size.width||texture.height!=size.height)
             {
-                ReleaseTexture();texture=new RenderTexture(size.width,size.height,0,RenderTextureFormat.ARGB32,RenderTextureReadWrite.Linear)
+                ReleaseTexture();texture=new RenderTexture(size.width,size.height,0,RenderTextureFormat.ARGBHalf,RenderTextureReadWrite.Linear)
                     {name="Galaxy half-resolution background",hideFlags=HideFlags.HideAndDontSave,filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp};
                 if(!texture.Create()||!texture.IsCreated())throw new InvalidOperationException("Galaxy background target allocation failed ("+size.width+"x"+size.height+"). Flat map retained.");
             }

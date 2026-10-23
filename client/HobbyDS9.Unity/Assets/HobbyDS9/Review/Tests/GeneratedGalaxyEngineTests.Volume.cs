@@ -36,6 +36,7 @@ namespace HobbyDS9.UnityReview.Tests
                 var root=doc.rootVisualElement;var view=root.Q<GeneratedGalaxyMapView>();
                 Assert.That(view.BackgroundRenderer,Is.Not.Null,view.BackgroundStatus);
                 Assert.That(view.BackgroundRenderer!.Texture!.IsCreated(),Is.True);
+                Assert.That(view.BackgroundRenderer.Texture.format,Is.EqualTo(RenderTextureFormat.ARGBHalf),"Dark gradients require the supported half-float output target");
                 var bytes=workspace.ExportBytes();var data=workspace.Document!;string hash=data.ContentHash;
                 var star=data.Systems[0];Click(root.Q<Button>("galaxy-star-"+star.SystemId));Click(root.Q<Button>("galaxy-route-start"));yield return null;
                 view=root.Q<GeneratedGalaxyMapView>();var next=data.Systems[1];
@@ -112,6 +113,7 @@ namespace HobbyDS9.UnityReview.Tests
                     view.Zoom,view.BackgroundStatus,view.BackgroundDepth,
                     renderer?.RenderCount,renderer?.VisibleCloudCount,renderer?.OmittedCloudCount,
                     renderer?.LastSubmissionMilliseconds,CPUOnly="Submission time is NOT GPU timing",timingCount,
+                    textureFormat=renderer?.Texture?.format.ToString(),
                     gpuWholeFrameMilliseconds=timingCount==0?0:timing[0].gpuFrameTime,
                     timingScope="Whole-engine timing if nonzero; zero/unavailable is not a GPU performance pass",
                     SystemInfo.graphicsDeviceName,SystemInfo.graphicsDeviceType},Formatting.Indented));
