@@ -3,10 +3,11 @@ using System;
 using System.IO;
 using System.Linq;
 using HobbyDS9.Contracts;
+using HobbyDS9.TacticalReviewClient;
 
 namespace HobbyDS9.UnityReview
 {
-    public sealed partial class ReviewNewtonsoftCodec
+    public sealed partial class ReviewNewtonsoftCodec : IGeneratedCampaignReviewHostCodec
     {
         // Shape admission only. Full map identity, scenario and operation replay
         // validation belongs to CampaignGeneratedApplication before publication.

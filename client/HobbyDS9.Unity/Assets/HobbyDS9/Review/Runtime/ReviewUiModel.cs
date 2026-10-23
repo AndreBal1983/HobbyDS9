@@ -47,10 +47,10 @@ namespace HobbyDS9.UnityReview
             if(humans.Count!=1)throw new ArgumentException("Frontier preview requires exactly one human controller.",nameof(package));
             Current=Controller(host,humans[0].CivilizationId);
         }
-        public bool Integrated=>playableFleetPackage!=null||integratedPackage!=null||demoPackage!=null||frontierPackage!=null;
+        public bool Integrated=>GeneratedCampaign||playableFleetPackage!=null||integratedPackage!=null||demoPackage!=null||frontierPackage!=null;
         public bool SingleplayerDemo=>demoPackage!=null;
         public bool FrontierPreview=>frontierPackage!=null;
-        public bool PlayableFleet=>playableFleetPackage!=null;
+        public bool PlayableFleet=>GeneratedCampaign||playableFleetPackage!=null;
         public ReviewResearchDraft? ResearchDraft { get; private set; }
         public bool LocalDesignDirty {get;set;}
         public Action? ResetLocalDesign {get;set;}
@@ -163,7 +163,8 @@ namespace HobbyDS9.UnityReview
         });
         public bool Load(string slot,bool discard=false)=>Run(()=>{
             if(Current.HasPendingWork||HasLocalEdits&&!discard){Message="Explicit discard required before load.";return false;}
-            var opened=playableFleetPackage!=null?PhysicalReviewHost.OpenPlayableFleetFromSlot(playableFleetPackage,codec,playableFleetSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+            var opened=GeneratedCampaign?PhysicalReviewHost.OpenGeneratedCampaignFromSlot(generatedCampaignTemplate!,codec,generatedCampaignSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+                :playableFleetPackage!=null?PhysicalReviewHost.OpenPlayableFleetFromSlot(playableFleetPackage,codec,playableFleetSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :frontierPackage!=null?PhysicalReviewHost.OpenFrontierFromSlot(frontierPackage,codec,frontierSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :demoPackage!=null?PhysicalReviewHost.OpenDemoFromSlot(demoPackage,codec,demoSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :integratedPackage!=null?PhysicalReviewHost.OpenIntegratedFromSlot(integratedPackage,codec,integratedSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)

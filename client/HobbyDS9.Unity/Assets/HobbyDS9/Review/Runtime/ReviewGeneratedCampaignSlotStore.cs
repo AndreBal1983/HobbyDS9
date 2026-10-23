@@ -7,7 +7,7 @@ using HobbyDS9.TacticalReviewClient;
 namespace HobbyDS9.UnityReview
 {
     // Unity/netstandard-compatible trusted adapter. No default v1 slot or net10 storage dependency.
-    public sealed class ReviewGeneratedCampaignSlotStore
+    public sealed class ReviewGeneratedCampaignSlotStore : IGeneratedCampaignReviewCheckpointStore
     {
         private readonly object gate=new object();
         private readonly string directory;
