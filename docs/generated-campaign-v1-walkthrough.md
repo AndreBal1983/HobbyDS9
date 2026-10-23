@@ -18,6 +18,8 @@ The first verified actual run reached a human encounter on **turn70**, after69 h
 
 Frontend may adapt these steps into controls/automation against the actual session. It must not read the backend test's trusted exports to make player choices or use fixed `nav.bajor`/`nav.cardassia` routes. The distinct destroyed-contact regression uses a deliberately damaged no-yard opponent fixture; it proves cleanup, not ordinary demo balance or the250 combat result.
 
+For a bounded local receiving run, setting the test-only `HOBBYDS9_GENERATED_ACCEPTANCE_EXPORT` folder exports the complete actual AwaitingCombat save, human accepted-operation transcript and aftermath save through `CreateNew` files. The default test run writes none of these. These trusted fixtures can seed a test-owned Continue slot to avoid manually grinding70turns, after separately proving actual New Game/movement controls. They contain the full private map and root: only the trusted loader/store may read them, never a renderer, route selector or AI planner. Their hashes/source pin must accompany any later Unity/native evidence; they are not owner saves or a substitute for starting an actual generated campaign.
+
 ## Other verified boundaries
 
 A real route longer than the existing6-crossing budget was submitted using only known geography after20 exploration turns. Its remaining route, frozen geometry and next turn matched after whole-root reload. Ordinary generated unit edges with integer budgets do not naturally produce a partial edge; the existing weighted physical profile remains responsible for those historical regressions. A separate coverage component test verifies that a departed partial-edge fleet's retained origin cannot grant current observation or fresh contact.

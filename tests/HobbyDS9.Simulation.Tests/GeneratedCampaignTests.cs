@@ -15,6 +15,14 @@ public sealed class GeneratedCampaignTests
     const string Human = "civ.federation";
     static string Json<T>(T value) => JsonSerializer.Serialize(value);
     static T Clone<T>(T value) => JsonSerializer.Deserialize<T>(Json(value))!;
+    static void ExportAcceptanceArtifact<T>(string name,T value)
+    {
+        string? folder=Environment.GetEnvironmentVariable("HOBBYDS9_GENERATED_ACCEPTANCE_EXPORT");
+        if(string.IsNullOrEmpty(folder))return;
+        Directory.CreateDirectory(folder);
+        using var file=new FileStream(Path.Combine(folder,name),FileMode.CreateNew,FileAccess.Write,FileShare.None);
+        JsonSerializer.Serialize(file,value);
+    }
     static CampaignPlayableFleetPackageDto Template() => PlayableFleetTests.Package();
     static NaturalGalaxySettingsDto Settings(int count = 250, string seed = "42") => new() { Map = new() {
         Seed = seed, SystemCount = count, EmptyRegionCount = count, Width = count == 1000 ? 5000000 : count==30?750000:2500000, Height = count == 1000 ? 4000000 : count==30?600000:2000000,
@@ -100,6 +108,8 @@ public sealed class GeneratedCampaignTests
         for(int i=0;i<128&&app.CaptureStatus().Phase==SessionPhase.Planning;i++) { Explore(app,visited); Advance(app); }
         Assert.Equal(SessionPhase.AwaitingCombat,app.CaptureStatus().Phase);
         var pending=app.ExportGeneratedSave();
+        ExportAcceptanceArtifact("seed42-250-awaiting-combat.generated.json",pending);
+        ExportAcceptanceArtifact("seed42-250-lawful-human-transcript.json",pending.Campaign.Transcript);
         output.WriteLine("Actual250 encounter turn="+app.CaptureStatus().Turn+" human visited="+visited.Count+" known regions="+app.CaptureGeneratedMap(Human).Regions.Count+" transcript="+pending.Campaign.Transcript.Count);
         var loaded=CampaignGeneratedApplication.LoadSave(Template(),Clone(pending));
         Assert.Equal(Json(pending),Json(loaded.ExportGeneratedSave()));
@@ -121,6 +131,7 @@ public sealed class GeneratedCampaignTests
         Assert.NotEmpty(app.GetBattleHistory(Human));Assert.Equal(Json(app.ExportGeneratedSave()),Json(loaded.ExportGeneratedSave()));
         var aftermath=CampaignGeneratedApplication.LoadSave(Template(),Clone(app.ExportGeneratedSave()));
         Assert.Equal(Json(app.ExportGeneratedSave()),Json(aftermath.ExportGeneratedSave()));
+        ExportAcceptanceArtifact("seed42-250-aftermath.generated.json",aftermath.ExportGeneratedSave());
         output.WriteLine("Actual250 finalized survivor ships="+app.ExportGeneratedSave().Campaign.Integrated.Physical!.Core.Campaign.GameState.Ships!.Count);
     }
 
