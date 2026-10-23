@@ -168,6 +168,8 @@ namespace HobbyDS9.UnityReview
         }
         public IReadOnlyList<Vector2> RoutePositions()=>routePath.Select(p=>contentRect.position+
             new Vector2((float)viewport.X(p.X),(float)viewport.Y(p.Y))).ToArray();
+        public IReadOnlyList<IReadOnlyList<Vector2>> RouteLegPositions()=>planPaths==null?Array.Empty<IReadOnlyList<Vector2>>():
+            planPaths.Select(leg=>(IReadOnlyList<Vector2>)leg.Select(Project).ToArray()).ToArray();
         public Vector2 Position(string node)=>Point(regions[node].Center);
         public Vector2 SystemPosition(string systemId)=>Point(systemPositions[systemId]);
         public string? NearestStar(Vector2 local)

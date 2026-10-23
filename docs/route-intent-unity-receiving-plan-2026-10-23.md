@@ -1,0 +1,25 @@
+# Route-intent Unity receiving plan — NOT launch clearance
+
+Status: source/reference-compiler proposal. **Hold engine pending the ordered-corridor straightening decision and independent review.** Midpoint-only drawing is a containment baseline; Art's actual22-crossing comparison still has conspicuous doglegs and is not accepted as final visual routing. No new native/package claim is made.
+
+Checkout: `C:/Users/ambal/.codex/worktrees/galaxy-route-intent-frontend/HobbyDS9`. Base913a427; reviewed receiving dependencies c936130 route API,5d83888 natural API and930b1ad actual1000 sample. The commit containing this document and its exact final SHA must be reviewed/frozen before any lease. No engine runs against mutable source.
+
+## Bounded input/render case
+
+Run only `HobbyDS9.UnityReview.Tests.GeneratedGalaxyEngineTests.OrderedWaypointDraftsNaturalMapsAndCompanionsUseActualControls` after a fresh Root lease. Maximum21 normal captures: three sizes1280×720,1920×1080,3440×1440 for seven states: natural250 overview;250 three-leg A→B→B→A including explicit backtrack anchor/zero leg;250 restored companion;25064-target list with fixed controls; natural1000 overview;1000 anchored backtrack/zero legs;1000 pan/zoom route. Original failed captures must be retained; never silently retry with weaker bounds.
+
+The case generates actual seed42 natural250/1000 through the controls, matches full identities4ea9b0d…/265f4247…, uses actual right-click/Shift right-click events, asserts immediate Start→enabled target flow, replacement/append/cap/remove/clear, real target-list wheel handling, and independent target scrolling with fixed costs/actions. All numbered markers represent explicit targets only. Per-leg rendering retains each target anchor, including repeated nodes; no flattening that skips B in A→B→A.
+
+For planned routes, normal frames retain opaque marker controls. A separate diagnostic underlay temporarily hides child visibility without layout changes, verifies exact projected points/zoom/cost/steps before/after, checks each painted segment, restores exact visibility in finally, and retains the existing normal-marker alignment tolerance below2pixels. This is no normal-game screenshot substitute or performance claim. Multi-leg arrays retain separate anchors in the actual draw call; flattening is only a diagnostic concatenation at identical adjacent leg endpoints.
+
+At1280, general inspection must retain a locally scrollable content viewport above80pixels while route costs and remove/clear/save/restore remain within the window and actual panel picking reaches their buttons. The independently scrollable target list is bounded; do not weaken control bounds to make a failing layout pass. Timing receipts measure async operation completion/polled frames, not FPS or interaction latency. Each map operation has the existing90-second completion watchdog.
+
+Companion I/O is injected into a fresh test-owned temporary directory, separate from test map slots and all real persistent data. Save/clear/restore uses the actual controls. Current geography export bytes must remain identical after all camera/input/draft actions. CPU receiving already covers malformed/stale/wrong-map/blocked/denied companions, atomic overwrite and all natural/retained map-format boundaries; do not rerun the old full gameplay journey.
+
+## Preparation and restoration
+
+Before any launch, verify included usage/ordinary allowance/purchased balance under the90% policy, source SHA/status, all new metadata GUIDs32hex/unique and absence of competing Unity/player/IL2CPP/bee/GPU processes. Root records sole engine/render lease. Snapshot **before** preparation every file under this new project's Assets, Packages, ProjectSettings and the presence/bytes of .vsconfig; retain full relative-path/size/SHA manifests and actual pinned runtime/Contracts/Application/Simulation inputs. Never reuse the accepted old checkout as an output target.
+
+Full preparation uses `dotnet msbuild scripts/PrepareUnityGeneratedGalaxy.proj -t:Prepare`; archive its log and separately hash every prepared input. Use installed Unity6000.6.5f1, batch EditMode testing with this one exact test filter and the existing dedicated generated-galaxy/demo/frontier receiving switches. Record actual parent/import PIDs, arguments, XML/log, normal screenshots and diagnostic receipts. Existing local rendered output must be archived first, never relabelled as this run.
+
+After owned engine exits, archive changed and extra inputs, restore the complete original snapshot, move only positively identified newly created inputs to evidence, and verify every original hash plus no unexpected extras. Do not restore while any owned engine still writes. Preserve failures and cancellation evidence. Seal source/input/prepared/restoration/results manifests and confirm process absence before requesting further gates. Accepted913 executable/717files/ZIP, owner maps/saves/prefs, main and latest pointer remain untouched. No strict build/native/campaign/M2 lease is implied by this plan.

@@ -50,6 +50,71 @@ namespace HobbyDS9.UnityReview.Tests
             }
             yield return null;yield return null;
         }
+        [UnityTest] public IEnumerator OrderedWaypointDraftsNaturalMapsAndCompanionsUseActualControls()
+        {
+            yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-"+Guid.NewGuid().ToString("N"));
+            var codec=new ReviewNewtonsoftCodec();var scenario=codec.DecodeScenario(Resources.Load<TextAsset>(PlayableFleetOptions.ResourceRoot+"scenario").bytes);
+            var workspace=new GeneratedGalaxyWorkspace(scenario.Definitions.Civilizations!,new GeneratedGalaxyMapStore(Path.Combine(directory,"maps"))){NaturalGeneration=true};
+            typeof(ReviewEntry).GetField("galaxy",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,workspace);
+            typeof(ReviewEntry).GetField("galaxyDraftStore",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,new GeneratedGalaxyRouteDraftStore(Path.Combine(directory,"drafts")));
+            GeneratedGalaxyRouteDraft Draft()=>(GeneratedGalaxyRouteDraft)typeof(ReviewEntry).GetField("galaxyDraft",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry)!;
+            GalaxyReviewRoutePlanSnapshot Plan()=>(GalaxyReviewRoutePlanSnapshot)typeof(ReviewEntry).GetField("galaxyPlan",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry)!;
+            Click(doc.rootVisualElement.Q<Button>("generated-galaxy-entry"));yield return null;var root=doc.rootVisualElement;
+            foreach(var size in new[]{250,1000})
+            {
+                root.Q<TextField>("galaxy-seed").value="42";root.Q<DropdownField>("galaxy-size").value=size.ToString();
+                Click(root.Q<Button>("galaxy-generate"));yield return WaitForGalaxy(entry);
+                if(root.Q("review-one-use-confirmation")!=null)Confirm(doc);yield return WaitForGalaxy(entry);
+                var map=workspace.Document!;Assert.That(map.FormatVersion,Is.EqualTo(4));
+                Assert.That(map.ContentHash,Is.EqualTo(size==250?"4ea9b0d4581edb60460413e9fee0203257bd47e5b6cb43fc044ee5b2cda01976":"265f4247468e493e0cab64edd7c28970865ce955efe950880742313a8d857ac4"));
+                var original=workspace.ExportBytes();yield return Capture(doc,"natural-"+size+"-overview");
+                var a=map.Systems[0];var b=map.Systems[1];
+                void Target(GeneratedGalaxySystemDto system,bool shift)
+                {
+                    var star=root.Q<Button>("galaxy-star-"+system.SystemId);
+                    using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,button=1,mousePosition=star.worldBound.center,
+                        modifiers=shift?EventModifiers.Shift:EventModifiers.None})){e.target=star;star.SendEvent(e);}
+                }
+                Click(root.Q<Button>("galaxy-star-"+a.SystemId));yield return null;
+                Assert.That(root.Q<Button>("galaxy-route-target").enabledInHierarchy,Is.False);
+                Click(root.Q<Button>("galaxy-route-start"));yield return null;
+                Assert.That(root.Q<Button>("galaxy-route-target").enabledInHierarchy,Is.True,"explicit start must enable existing destination control immediately");
+                Target(b,false);Target(b,true);Target(a,true);yield return null;
+                Assert.That(Draft().Targets.Count,Is.EqualTo(3));Assert.That(Plan().Success,Is.True);
+                Assert.That(Plan().Legs.Count,Is.EqualTo(3));Assert.That(Plan().Legs[1].Route.Steps.Count,Is.Zero);
+                Assert.That(Plan().Legs[0].Target.NodeId,Is.EqualTo(b.NodeId));Assert.That(Plan().Legs[2].OriginNodeId,Is.EqualTo(b.NodeId));
+                yield return Capture(doc,"natural-"+size+"-backtrack-zero-leg",plan:Plan());
+                if(size==250)
+                {
+                    Click(root.Q<Button>("galaxy-route-save"));Click(root.Q<Button>("galaxy-route-clear"));Assert.That(Draft().Targets.Count,Is.Zero);
+                    Click(root.Q<Button>("galaxy-route-restore"));yield return null;Assert.That(Draft().Targets.Count,Is.EqualTo(3));
+                    yield return Capture(doc,"natural-250-restored-companion",plan:Plan());
+                    for(int i=3;i<GalaxyReviewRoutePolicy.MaximumTargets;i++)Target(a,true);
+                    Assert.That(Draft().Targets.Count,Is.EqualTo(64));Target(a,true);Assert.That(Draft().Targets.Count,Is.EqualTo(64));
+                    var targetList=root.Q<ScrollView>("galaxy-route-target-list");Assert.That(targetList,Is.Not.Null);yield return null;
+                    var costPosition=root.Q<Label>("galaxy-route-cost").worldBound;
+                    var wheelPoint=targetList.contentViewport.worldBound.center;var picked=targetList.panel.Pick(wheelPoint);Assert.That(picked,Is.Not.Null);
+                    using(var e=WheelEvent.GetPooled(new Event{type=EventType.ScrollWheel,mousePosition=wheelPoint,delta=new Vector2(0,80)}))
+                    {e.target=picked;picked.SendEvent(e);}
+                    yield return null;yield return null;
+                    Assert.That(targetList.scrollOffset.y,Is.GreaterThan(0),"target list receives its own scroll event");
+                    Assert.That(root.Q<Label>("galaxy-route-cost").worldBound,Is.EqualTo(costPosition),"target scrolling cannot move total/actions");
+                    yield return Capture(doc,"natural-250-64-pins-fixed-controls");
+                    Click(root.Q<Button>("galaxy-route-remove-last"));Assert.That(Draft().Targets.Count,Is.EqualTo(63));
+                    Target(b,false);Assert.That(Draft().Targets.Count,Is.EqualTo(1));
+                }
+                else
+                {
+                    Click(root.Q<Button>("galaxy-zoom-in"));Click(root.Q<Button>("galaxy-pan-left"));
+                    yield return Capture(doc,"natural-1000-waypoints-pan-zoom",plan:Plan());
+                    Click(root.Q<Button>("galaxy-fit"));
+                }
+                CollectionAssert.AreEqual(original,workspace.ExportBytes(),"draft/input/camera never change generated geography");
+            }
+            yield return new ExitPlayMode();
+        }
         [UnityTest] public IEnumerator ExactEightCrossingPortalRouteAndScaledMapsUseActualControls()
         {
             yield return new EnterPlayMode();yield return null;yield return null;
@@ -139,8 +204,8 @@ namespace HobbyDS9.UnityReview.Tests
                 {e.target=star;star.SendEvent(e);}
                 yield return null;
                 var expected=workspace.FindRoute(empty.NodeId,destination.NodeId);
-                Assert.That(root.Q<Label>("galaxy-route-cost").text,Does.StartWith("Graph cost "+expected.TotalCost+" ·"));
-                Assert.That(root.Q<Label>("galaxy-route-target-label").text,Is.EqualTo("To "+destination.DisplayName));
+                Assert.That(root.Q<Label>("galaxy-route-cost").text,Does.StartWith("Total cost "+expected.TotalCost+" ·"));
+                Assert.That(root.Q<Button>("galaxy-route-row-1").text,Does.Contain(destination.DisplayName));
                 yield return Capture(doc,"seed-"+item.Item1+"-empty-route",empty.NodeId,expected);
 
                 Click(root.Q<Button>("galaxy-candidate-"+map.HomeCandidates[0].CivilizationDefinitionId));yield return null;
@@ -304,7 +369,7 @@ namespace HobbyDS9.UnityReview.Tests
             yield return Capture(doc,"environment-reopened");
             yield return new ExitPlayMode();
         }
-        private static IEnumerator Capture(UIDocument doc,string state,string? origin=null,StrategicRouteSnapshot? route=null)
+        private static IEnumerator Capture(UIDocument doc,string state,string? origin=null,StrategicRouteSnapshot? route=null,GalaxyReviewRoutePlanSnapshot? plan=null)
         {
             var directory=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/scaled-galaxy/engine-rendered"));
             Directory.CreateDirectory(directory);
@@ -333,7 +398,17 @@ namespace HobbyDS9.UnityReview.Tests
                     var map=root.Q("generated-galaxy-map");Assert.That(map.worldBound.height,Is.GreaterThan(250));
                     Assert.That(map.worldBound.width,Is.GreaterThan(600));
                     var inspector=root.Q<ScrollView>("galaxy-inspector");
-                    Assert.That(inspector.contentViewport.worldBound.height,Is.GreaterThan(250));
+                    Assert.That(inspector.contentViewport.worldBound.height,Is.GreaterThan(80),"general inspection remains locally scrollable beneath fixed route controls");
+                    foreach(var name in new[]{"galaxy-route-cost","galaxy-route-remove-last","galaxy-route-clear","galaxy-route-save","galaxy-route-restore"})
+                    {
+                        var control=root.Q(name);if(control==null)continue;
+                        Assert.That(control.worldBound.yMin,Is.GreaterThanOrEqualTo(0),name);Assert.That(control.worldBound.yMax,Is.LessThanOrEqualTo(size.y+1),name);
+                        if(control is Button)
+                        {
+                            var hit=control.panel.Pick(control.worldBound.center);
+                            Assert.That(hit!=null&&(ReferenceEquals(hit,control)||control.Contains(hit)),Is.True,"fixed route action must remain hittable: "+name);
+                        }
+                    }
                     Assert.That(map.worldBound.xMax,Is.LessThanOrEqualTo(inspector.worldBound.xMin));
                     RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
                     pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
@@ -365,26 +440,36 @@ namespace HobbyDS9.UnityReview.Tests
                         }
                         Assert.That(checkedPixels,Is.GreaterThan(0),"actual exterior clipping samples");
                     }
-                    if(origin!=null&&route!=null)
+                    if(origin!=null&&route!=null||plan?.Success==true)
                     {
                         var view=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
-                        var points=view.RoutePositions().Select(p=>view.LocalToWorld(p)).ToArray();
-                        Assert.That(points.Length,Is.EqualTo(route.Steps.Count==0?1:2+route.Steps.Count),"endpoints plus one exact shared-edge portal per accepted crossing; no intermediate centre detours");
+                        var points=(plan==null?view.RoutePositions():view.RouteLegPositions().SelectMany(p=>p).ToArray()).Select(p=>view.LocalToWorld(p)).ToArray();
+                        Assert.That(points.Length,Is.EqualTo(plan==null?(route!.Steps.Count==0?1:2+route.Steps.Count):plan.Legs.Sum(l=>l.Route.Steps.Count==0?1:2+l.Route.Steps.Count)),"explicit leg anchors plus exact crossing portals; no intermediate centre detours");
+                        if(plan!=null)
+                        {
+                            var legs=view.RouteLegPositions();Assert.That(legs.Count,Is.EqualTo(plan.Legs.Count));
+                            for(int leg=0;leg<legs.Count;leg++)
+                            {
+                                Assert.That(Vector2.Distance(legs[leg][0],view.Position(plan.Legs[leg].OriginNodeId)),Is.LessThan(.001f));
+                                Assert.That(Vector2.Distance(legs[leg][legs[leg].Count-1],view.Position(plan.Legs[leg].Target.NodeId)),Is.LessThan(.001f));
+                            }
+                        }
+                        Vector2[] CurrentPoints()=>(plan==null?view.RoutePositions():view.RouteLegPositions().SelectMany(p=>p).ToArray()).Select(p=>view.LocalToWorld(p)).ToArray();
                         // Normal screenshots and marker assertions retain the actual opaque star controls.
                         // A subpixel portal half-segment may be wholly covered by one of those glyphs.
                         // Probe the same Painter2D underlay with child visibility hidden, never changing
                         // display/layout, route geometry, viewport, costs or normal-game presentation.
                         var priorVisibility=view.Children().Select(c=>(control:c,visibility:c.style.visibility)).ToArray();
                         var priorBounds=view.worldBound;var priorZoom=view.Zoom;
-                        var priorSteps=route.Steps.ToArray();var priorCost=route.TotalCost;
+                        var priorSteps=(plan?.Steps??route!.Steps).ToArray();var priorCost=plan?.TotalCost??route!.TotalCost;
                         Texture2D? routePixels=null;
                         try
                         {
                             foreach(var item in priorVisibility)item.control.style.visibility=Visibility.Hidden;
                             yield return null;yield return null;yield return null;
                             Assert.That(view.worldBound,Is.EqualTo(priorBounds));Assert.That(view.Zoom,Is.EqualTo(priorZoom));
-                            CollectionAssert.AreEqual(points,view.RoutePositions().Select(p=>view.LocalToWorld(p)).ToArray());
-                            CollectionAssert.AreEqual(priorSteps,route.Steps);Assert.That(route.TotalCost,Is.EqualTo(priorCost));
+                            CollectionAssert.AreEqual(points,CurrentPoints());
+                            CollectionAssert.AreEqual(priorSteps,plan?.Steps??route!.Steps);Assert.That(plan?.TotalCost??route!.TotalCost,Is.EqualTo(priorCost));
                             RenderTexture.active=target;routePixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
                             routePixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);routePixels.Apply();
                             File.AppendAllText(Path.Combine(directory,"route-underlay-probes.txt"),size+" "+state+
@@ -412,8 +497,8 @@ namespace HobbyDS9.UnityReview.Tests
                         }
                         yield return null;yield return null;yield return null;
                         Assert.That(view.worldBound,Is.EqualTo(priorBounds));Assert.That(view.Zoom,Is.EqualTo(priorZoom));
-                        CollectionAssert.AreEqual(points,view.RoutePositions().Select(p=>view.LocalToWorld(p)).ToArray());
-                        CollectionAssert.AreEqual(priorSteps,route.Steps);Assert.That(route.TotalCost,Is.EqualTo(priorCost));
+                        CollectionAssert.AreEqual(points,CurrentPoints());
+                        CollectionAssert.AreEqual(priorSteps,plan?.Steps??route!.Steps);Assert.That(plan?.TotalCost??route!.TotalCost,Is.EqualTo(priorCost));
                         foreach(var button in root.Query<Button>().ToList().Where(b=>b.name.StartsWith("galaxy-star-",StringComparison.Ordinal)&&b.resolvedStyle.display!=DisplayStyle.None))
                         {
                             var systemId=button.name.Substring("galaxy-star-".Length);

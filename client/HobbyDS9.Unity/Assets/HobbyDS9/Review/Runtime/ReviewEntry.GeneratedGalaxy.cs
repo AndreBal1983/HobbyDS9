@@ -183,7 +183,7 @@ namespace HobbyDS9.UnityReview
             if(galaxyDraft==null)return;
             if(galaxyDraft.Start==null)
                 galaxyDraft.SetStart(new GeneratedGalaxyDraftAnchor(galaxySelected??target,GeneratedGalaxyDraftAnchorKind.RegionTransit));
-            galaxyDraftNotice=galaxyDraft.SetTarget(new GeneratedGalaxyDraftAnchor(target,kind),append)?null:"Route limit: "+galaxyDraft.MaximumTargets+" targets. Remove the last pin or replace the destination.";
+            galaxyDraftNotice=galaxyDraft.SetTarget(new GeneratedGalaxyDraftAnchor(target,kind),append)?null:"Limit reached ("+galaxyDraft.MaximumTargets+" targets).";
             RecalculateGalaxyPlan();
         }
         private void RecalculateGalaxyPlan()
@@ -205,7 +205,7 @@ namespace HobbyDS9.UnityReview
                 var store=GalaxyDraftStore();var slot=galaxy!.Slot;
                 void Save(bool overwrite)
                 {
-                    try{store.Save(slot,galaxyDraft!,overwrite);galaxyDraftNotice="Saved route draft in slot "+slot+". Map export is separate.";}
+                    try{store.Save(slot,galaxyDraft!,overwrite);galaxyDraftNotice="Saved route draft · slot "+slot;}
                     catch(Exception error)when(error is IOException||error is UnauthorizedAccessException||error is ArgumentException||error is InvalidOperationException)
                     {galaxyDraftNotice="Draft save failed. Previous file and current route are kept.";}
                     DrawGalaxyRoutePanel();
@@ -221,7 +221,7 @@ namespace HobbyDS9.UnityReview
             {
                 var restored=GalaxyDraftStore().Load(galaxy!.Slot,galaxy,GalaxyFullMapFilter());
                 galaxyDraft=restored.Draft;galaxyPlan=restored.Plan;galaxyRouteStart=galaxyDraft.Start!.NodeId;
-                galaxyDraftNotice="Restored draft · slot "+galaxy.Slot+" · all legs revalidated.";
+                galaxyDraftNotice="Restored draft · slot "+galaxy.Slot;
                 galaxyMap!.RoutePlan(galaxyRouteStart,galaxyPlan,galaxyDraft.Targets);DrawGalaxyInspector();
             }
             catch(Exception error)when(error is IOException||error is UnauthorizedAccessException||error is ArgumentException||error is InvalidOperationException)
@@ -230,7 +230,9 @@ namespace HobbyDS9.UnityReview
         }
         private void DrawGalaxyRoutePanel()
         {
-            if(galaxyRoutePanel==null)return;var panel=galaxyRoutePanel;panel.Clear();
+            if(galaxyRoutePanel==null)return;var panel=galaxyRoutePanel;
+            var focus=(panel.panel?.focusController.focusedElement as VisualElement)?.name;
+            var scroll=panel.Q<ScrollView>("galaxy-route-target-list")?.scrollOffset??Vector2.zero;panel.Clear();
             panel.Add(Readout("ROUTE PREVIEW"));
             if(galaxyDraft?.Start==null)
             {
@@ -240,6 +242,7 @@ namespace HobbyDS9.UnityReview
             }
             var start=Readout("Start · "+GalaxyNodeName(galaxyDraft.Start.NodeId));start.name="galaxy-route-origin-label";panel.Add(start);
             var list=new ScrollView(ScrollViewMode.Vertical){name="galaxy-route-target-list"};list.AddToClassList("galaxy-route-target-list");panel.Add(list);
+            list.schedule.Execute(()=>{if(list.panel!=null){list.scrollOffset=scroll;if(!string.IsNullOrEmpty(focus))panel.Q(focus)?.Focus();}});
             var pins=galaxyDraft.Targets;
             for(int i=0;i<pins.Count;i++)
             {
@@ -254,13 +257,13 @@ namespace HobbyDS9.UnityReview
                 "Total cost "+galaxyPlan.TotalCost+" · "+galaxyPlan.Steps.Count+" crossings":"Total unavailable · "+galaxyPlan.ErrorCode);
             total.name="galaxy-route-cost";panel.Add(total);
             var actions=new VisualElement();actions.style.flexDirection=FlexDirection.Row;panel.Add(actions);
-            AddButton(actions,"Remove last",()=>{galaxyDraft.RemoveLast();galaxyDraftNotice=null;RecalculateGalaxyPlan();}).SetEnabled(pins.Count>0);
-            AddButton(actions,"Clear route",()=>{galaxyDraft.Clear();galaxyDraftNotice=null;RecalculateGalaxyPlan();}).SetEnabled(pins.Count>0);
+            var remove=AddButton(actions,"Remove last",()=>{galaxyDraft.RemoveLast();galaxyDraftNotice=null;RecalculateGalaxyPlan();});remove.name="galaxy-route-remove-last";remove.SetEnabled(pins.Count>0);
+            var clear=AddButton(actions,"Clear route",()=>{galaxyDraft.Clear();galaxyDraftNotice=null;RecalculateGalaxyPlan();});clear.name="galaxy-route-clear";clear.SetEnabled(pins.Count>0);
             var files=new VisualElement();files.style.flexDirection=FlexDirection.Row;panel.Add(files);
             AddButton(files,"Save route draft",SaveGalaxyRouteDraft).name="galaxy-route-save";
             AddButton(files,"Restore route draft",RestoreGalaxyRouteDraft).name="galaxy-route-restore";
             if(galaxyDraftNotice!=null)panel.Add(Readout(galaxyDraftNotice));
-            var note=Readout("Full-map draft only · no fleet order or visit.");note.AddToClassList("galaxy-inspector-id");panel.Add(note);
+            var note=Readout("Preview · no order or visit.");note.AddToClassList("galaxy-inspector-id");panel.Add(note);
         }
         private void DrawGalaxyInspector()
         {
