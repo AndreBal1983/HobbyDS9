@@ -32,6 +32,7 @@ public sealed class GeneratedCampaignStorageTests : IDisposable
         Assert.Equal(encoded,codec.EncodeGeneratedCampaignRoot(decoded));decoded.Map.Layout.Regions.Clear();
         Assert.NotEmpty(Store().Read("campaign-1").Map.Layout.Regions);
         Assert.ThrowsAny<Exception>(()=>codec.DecodePlayableFleetRoot(encoded));
+        Assert.ThrowsAny<Exception>(()=>codec.EncodePlayableFleetRoot(root.Campaign)); // Stripping outer7 cannot admit generated owned-core as6.
         Assert.ThrowsAny<Exception>(()=>codec.DecodeDemoRoot(encoded));
         Assert.ThrowsAny<Exception>(()=>codec.DecodeFrontierRoot(encoded));
     }
