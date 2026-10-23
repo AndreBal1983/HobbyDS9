@@ -370,6 +370,25 @@ namespace HobbyDS9.UnityReview.Tests
                         var view=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
                         var points=view.RoutePositions().Select(p=>view.LocalToWorld(p)).ToArray();
                         Assert.That(points.Length,Is.EqualTo(1+2*route.Steps.Count),"one exact shared-edge portal per accepted crossing");
+                        // Normal screenshots and marker assertions retain the actual opaque star controls.
+                        // A subpixel portal half-segment may be wholly covered by one of those glyphs.
+                        // Probe the same Painter2D underlay with child visibility hidden, never changing
+                        // display/layout, route geometry, viewport, costs or normal-game presentation.
+                        var priorVisibility=view.Children().Select(c=>(control:c,visibility:c.style.visibility)).ToArray();
+                        var priorBounds=view.worldBound;var priorZoom=view.Zoom;
+                        var priorSteps=route.Steps.ToArray();var priorCost=route.TotalCost;
+                        Texture2D? routePixels=null;
+                        try
+                        {
+                            foreach(var item in priorVisibility)item.control.style.visibility=Visibility.Hidden;
+                            yield return null;yield return null;yield return null;
+                            Assert.That(view.worldBound,Is.EqualTo(priorBounds));Assert.That(view.Zoom,Is.EqualTo(priorZoom));
+                            CollectionAssert.AreEqual(points,view.RoutePositions().Select(p=>view.LocalToWorld(p)).ToArray());
+                            CollectionAssert.AreEqual(priorSteps,route.Steps);Assert.That(route.TotalCost,Is.EqualTo(priorCost));
+                            RenderTexture.active=target;routePixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
+                            routePixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);routePixels.Apply();
+                            File.AppendAllText(Path.Combine(directory,"route-underlay-probes.txt"),size+" "+state+
+                                " diagnostic-only hidden-child underlay; unchanged points="+points.Length+" cost="+priorCost+Environment.NewLine);
                         for(int i=1;i<points.Length;i++)
                         {
                             bool painted=false,visible=false;
@@ -379,12 +398,22 @@ namespace HobbyDS9.UnityReview.Tests
                                 if(!view.worldBound.Contains(p))continue;visible=true;
                                 for(int dx=-3;dx<=3;dx++)for(int dy=-3;dy<=3;dy++)
                                 {
-                                    var color=pixels.GetPixel(Mathf.Clamp(Mathf.RoundToInt(p.x)+dx,0,size.x-1),Mathf.Clamp(size.y-1-Mathf.RoundToInt(p.y)+dy,0,size.y-1));
+                                    var color=routePixels.GetPixel(Mathf.Clamp(Mathf.RoundToInt(p.x)+dx,0,size.x-1),Mathf.Clamp(size.y-1-Mathf.RoundToInt(p.y)+dy,0,size.y-1));
                                     painted|=color.r>.8f&&color.g>.5f&&color.g<.8f&&color.b<.6f;
                                 }
                             }
-                            if(visible)Assert.That(painted,Is.True,"actual painted route must follow visible portal half-segment "+(i-1));
+                            if(visible)Assert.That(painted,Is.True,"actual Painter2D underlay must follow visible portal half-segment "+(i-1));
                         }
+                        }
+                        finally
+                        {
+                            foreach(var item in priorVisibility)item.control.style.visibility=item.visibility;
+                            if(routePixels!=null)UnityEngine.Object.Destroy(routePixels);
+                        }
+                        yield return null;yield return null;yield return null;
+                        Assert.That(view.worldBound,Is.EqualTo(priorBounds));Assert.That(view.Zoom,Is.EqualTo(priorZoom));
+                        CollectionAssert.AreEqual(points,view.RoutePositions().Select(p=>view.LocalToWorld(p)).ToArray());
+                        CollectionAssert.AreEqual(priorSteps,route.Steps);Assert.That(route.TotalCost,Is.EqualTo(priorCost));
                         foreach(var button in root.Query<Button>().ToList().Where(b=>b.name.StartsWith("galaxy-star-",StringComparison.Ordinal)&&b.resolvedStyle.display!=DisplayStyle.None))
                         {
                             var systemId=button.name.Substring("galaxy-star-".Length);
