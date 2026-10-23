@@ -12,6 +12,8 @@
     <Compile Include="../../src/HobbyDS9.Headless/EnvironmentGalaxyJson.cs" Link="EnvironmentGalaxyJson.cs" />
     <Compile Include="../../src/HobbyDS9.Headless/ScaledGalaxyJson.cs" Link="ScaledGalaxyJson.cs" />
     <Compile Include="../../src/HobbyDS9.Headless/ScaledGalaxyDiagnostics.cs" Link="ScaledGalaxyDiagnostics.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/NaturalGalaxyJson.cs" Link="NaturalGalaxyJson.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/NaturalGalaxyDiagnostics.cs" Link="NaturalGalaxyDiagnostics.cs" />
     <None Include="../../docs/samples/generated-galaxy-v1/*.galaxy.json" Link="generated-galaxy-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/HobbyDS9.Headless/PlayableFleetPackageReader.cs" Link="PlayableFleetPackageReader.cs" />
     <Compile Include="../../src/HobbyDS9.Headless/PlayableFleetWalkthrough.cs" Link="PlayableFleetWalkthrough.cs" />

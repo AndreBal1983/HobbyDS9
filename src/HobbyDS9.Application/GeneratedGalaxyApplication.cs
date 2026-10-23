@@ -18,6 +18,7 @@ namespace HobbyDS9.Application
         private readonly GeneratedGalaxyReviewSession session;
         internal GeneratedGalaxyReview(GeneratedGalaxyReviewSession session) { this.session = session; }
         public GeneratedGalaxyDocumentDto Export() => session.Export();
+        public GalaxyReviewRoutePlanSnapshot FindRoutePlan(GalaxyReviewRouteQueryDto query) => session.FindRoutePlan(query);
         public StrategicRouteSnapshot FindRoute(string originNodeId, string destinationNodeId) => session.FindRoute(originNodeId, destinationNodeId);
     }
 }
