@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using HobbyDS9.Contracts;
+using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -49,6 +50,105 @@ namespace HobbyDS9.UnityReview.Tests
                 File.AppendAllText(Path.Combine(output,"operation-timing.txt"),"ElapsedMs="+timer.Elapsed.TotalMilliseconds+" responsiveFrames="+frames+Environment.NewLine);
             }
             yield return null;yield return null;
+        }
+        [UnityTest] public IEnumerator OrderedWaypointDraftsNaturalMapsAndCompanionsUseActualControls()
+        {
+            yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-"+Guid.NewGuid().ToString("N"));
+            var codec=new ReviewNewtonsoftCodec();var scenario=codec.DecodeScenario(Resources.Load<TextAsset>(PlayableFleetOptions.ResourceRoot+"scenario").bytes);
+            var workspace=new GeneratedGalaxyWorkspace(scenario.Definitions.Civilizations!,new GeneratedGalaxyMapStore(Path.Combine(directory,"maps"))){NaturalGeneration=true};
+            typeof(ReviewEntry).GetField("galaxy",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,workspace);
+            typeof(ReviewEntry).GetField("galaxyDraftStore",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,new GeneratedGalaxyRouteDraftStore(Path.Combine(directory,"drafts")));
+            GeneratedGalaxyRouteDraft Draft()=>(GeneratedGalaxyRouteDraft)typeof(ReviewEntry).GetField("galaxyDraft",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry)!;
+            GalaxyReviewRoutePlanSnapshot Plan()=>(GalaxyReviewRoutePlanSnapshot)typeof(ReviewEntry).GetField("galaxyPlan",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry)!;
+            Click(doc.rootVisualElement.Q<Button>("generated-galaxy-entry"));yield return null;var root=doc.rootVisualElement;
+            using(var inputSurface=new GalaxyInputSurface(doc))
+            {
+            yield return null;yield return null;
+            foreach(var size in new[]{250,1000})
+            {
+                root.Q<TextField>("galaxy-seed").value="42";root.Q<DropdownField>("galaxy-size").value=size.ToString();
+                Click(root.Q<Button>("galaxy-generate"));yield return WaitForGalaxy(entry);
+                if(root.Q("review-one-use-confirmation")!=null)Confirm(doc);yield return WaitForGalaxy(entry);
+                var map=workspace.Document!;Assert.That(map.FormatVersion,Is.EqualTo(4));
+                Assert.That(map.ContentHash,Is.EqualTo(size==250?"4ea9b0d4581edb60460413e9fee0203257bd47e5b6cb43fc044ee5b2cda01976":"265f4247468e493e0cab64edd7c28970865ce955efe950880742313a8d857ac4"));
+                var original=workspace.ExportBytes();yield return Capture(doc,"natural-"+size+"-overview");
+                var a=map.Systems[0];var b=map.Systems[1];
+                IEnumerator Target(GeneratedGalaxySystemDto system,bool shift)
+                {
+                    var star=root.Q<Button>("galaxy-star-"+system.SystemId);
+                    yield return RightClick(root.Q<GeneratedGalaxyMapView>("generated-galaxy-map"),star.worldBound.center,shift);
+                    Assert.That(Draft().Targets[Draft().Targets.Count-1].Kind,Is.EqualTo(GeneratedGalaxyDraftAnchorKind.StarLocation));
+                }
+                Click(root.Q<Button>("galaxy-star-"+a.SystemId));yield return null;
+                Assert.That(root.Q<Button>("galaxy-route-target").enabledInHierarchy,Is.False);
+                Click(root.Q<Button>("galaxy-route-start"));yield return null;
+                Assert.That(root.Q<Button>("galaxy-route-target").enabledInHierarchy,Is.True,"explicit start must enable existing destination control immediately");
+                yield return Target(b,false);
+                var view=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
+                var background=map.Regions.Where(r=>r.SystemId==null).First(r=>{
+                    var local=view.Position(r.NodeId);var world=view.LocalToWorld(local);
+                    return view.contentRect.Contains(local)&&view.NearestStar(local)==null&&ReferenceEquals(view.panel.Pick(world),view);});
+                yield return RightClick(view,view.LocalToWorld(view.Position(background.NodeId)),true);
+                Assert.That(Draft().Targets.Count,Is.EqualTo(2));Assert.That(Draft().Targets[1].Kind,Is.EqualTo(GeneratedGalaxyDraftAnchorKind.RegionTransit));
+                Assert.That(Draft().Targets[1].NodeId,Is.EqualTo(background.NodeId));
+                yield return Target(b,false);yield return Target(b,true);yield return Target(a,true);
+                Assert.That(Draft().Targets.Count,Is.EqualTo(3));Assert.That(Plan().Success,Is.True);
+                Assert.That(Plan().Legs.Count,Is.EqualTo(3));Assert.That(Plan().Legs[1].Route.Steps.Count,Is.Zero);
+                Assert.That(Plan().Legs[0].Target.NodeId,Is.EqualTo(b.NodeId));Assert.That(Plan().Legs[2].OriginNodeId,Is.EqualTo(b.NodeId));
+                yield return Capture(doc,"natural-"+size+"-backtrack-zero-leg",plan:Plan());
+                if(size==250)
+                {
+                    Click(root.Q<Button>("galaxy-route-save"));Click(root.Q<Button>("galaxy-route-clear"));Assert.That(Draft().Targets.Count,Is.Zero);
+                    Click(root.Q<Button>("galaxy-route-restore"));yield return null;Assert.That(Draft().Targets.Count,Is.EqualTo(3));
+                    yield return Capture(doc,"natural-250-restored-companion",plan:Plan());
+                    for(int i=3;i<GalaxyReviewRoutePolicy.MaximumTargets;i++)yield return Target(a,true);
+                    Assert.That(Draft().Targets.Count,Is.EqualTo(64));yield return Target(a,true);Assert.That(Draft().Targets.Count,Is.EqualTo(64));
+                    var targetList=root.Q<ScrollView>("galaxy-route-target-list");Assert.That(targetList,Is.Not.Null);yield return null;
+                    var costPosition=root.Q<Label>("galaxy-route-cost").worldBound;
+                    var wheelPoint=targetList.contentViewport.worldBound.center;var picked=targetList.panel.Pick(wheelPoint);Assert.That(picked,Is.Not.Null);
+                    using(var e=WheelEvent.GetPooled(new Event{type=EventType.ScrollWheel,mousePosition=wheelPoint,delta=new Vector2(0,80)}))
+                    {e.target=picked;picked.SendEvent(e);}
+                    yield return null;yield return null;
+                    Assert.That(targetList.scrollOffset.y,Is.GreaterThan(0),"target list receives its own scroll event");
+                    Assert.That(root.Q<Label>("galaxy-route-cost").worldBound,Is.EqualTo(costPosition),"target scrolling cannot move total/actions");
+                    yield return Capture(doc,"natural-250-64-pins-fixed-controls");
+                    Click(root.Q<Button>("galaxy-route-remove-last"));Assert.That(Draft().Targets.Count,Is.EqualTo(63));
+                    yield return Target(b,false);Assert.That(Draft().Targets.Count,Is.EqualTo(1));
+                }
+                else
+                {
+                    Click(root.Q<Button>("galaxy-zoom-in"));Click(root.Q<Button>("galaxy-pan-left"));
+                    yield return Capture(doc,"natural-1000-waypoints-pan-zoom",plan:Plan());
+                    Click(root.Q<Button>("galaxy-fit"));
+                }
+                CollectionAssert.AreEqual(original,workspace.ExportBytes(),"draft/input/camera never change generated geography");
+            }
+            // Actual f8cost22 fixed topology/query. Raw pictures are explicitly diagnostic baselines,
+            // using retained midpoint vertices; they are never normal-game certified output.
+            var repo=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../.."));
+            new GeneratedGalaxyMapStore(Path.Combine(directory,"maps")).Write(1,File.ReadAllBytes(Path.Combine(repo,"docs/samples/scaled-galaxy-v4/seed-42-systems-250.scaled.json")),false);
+            Click(root.Q<Button>("galaxy-open"));if(root.Q("review-one-use-confirmation")!=null)Confirm(doc);yield return WaitForGalaxy(entry);
+            var fixture=JObject.Parse(File.ReadAllText(Path.Combine(repo,"docs/samples/galaxy-route-intent-v1/examples.json")));
+            var query=fixture["Comparison"]!["Query"]!.ToObject<GalaxyReviewRouteQueryDto>()!;var expected=workspace.FindRoutePlan(query);
+            var currentMap=workspace.Document!;var originSystem=currentMap.Systems.Single(s=>s.NodeId==query.OriginNodeId);
+            Click(root.Q<Button>("galaxy-star-"+originSystem.SystemId));Click(root.Q<Button>("galaxy-route-start"));yield return null;
+            var routeView=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");var destination=query.Targets.Single();
+            yield return RightClick(routeView,routeView.LocalToWorld(routeView.Position(destination.NodeId)),false);yield return null;
+            CollectionAssert.AreEqual(expected.Steps,Plan().Steps);Assert.That(Plan().TotalCost,Is.EqualTo(22));
+            var beforeFixture=workspace.ExportBytes();
+            foreach(var camera in new[]{"fit","zoom"})
+            {
+                var field=typeof(GeneratedGalaxyMapView).GetField("planPaths",BindingFlags.Instance|BindingFlags.NonPublic)!;
+                var certified=field.GetValue(routeView);var raw=routeView.CertifiedRouteGeometry!.Legs.Select(l=>(System.Collections.Generic.IReadOnlyList<GeneratedGalaxyDisplayPoint>)l.RawMidpoints).ToArray();
+                try{field.SetValue(routeView,raw);routeView.MarkDirtyRepaint();yield return Capture(doc,"f8-"+camera+"-raw-midpoint-diagnostic");}
+                finally{field.SetValue(routeView,certified);routeView.MarkDirtyRepaint();}
+                yield return Capture(doc,"f8-"+camera+"-certified",plan:Plan());
+            }
+            CollectionAssert.AreEqual(beforeFixture,workspace.ExportBytes());
+            }
+            yield return new ExitPlayMode();
         }
         [UnityTest] public IEnumerator ExactEightCrossingPortalRouteAndScaledMapsUseActualControls()
         {
@@ -139,8 +239,8 @@ namespace HobbyDS9.UnityReview.Tests
                 {e.target=star;star.SendEvent(e);}
                 yield return null;
                 var expected=workspace.FindRoute(empty.NodeId,destination.NodeId);
-                Assert.That(root.Q<Label>("galaxy-route-cost").text,Does.StartWith("Graph cost "+expected.TotalCost+" ·"));
-                Assert.That(root.Q<Label>("galaxy-route-target-label").text,Is.EqualTo("To "+destination.DisplayName));
+                Assert.That(root.Q<Label>("galaxy-route-cost").text,Does.StartWith("Total cost "+expected.TotalCost+" ·"));
+                Assert.That(root.Q<Button>("galaxy-route-row-1").text,Does.Contain(destination.DisplayName));
                 yield return Capture(doc,"seed-"+item.Item1+"-empty-route",empty.NodeId,expected);
 
                 Click(root.Q<Button>("galaxy-candidate-"+map.HomeCandidates[0].CivilizationDefinitionId));yield return null;
@@ -190,6 +290,64 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static void Wheel(VisualElement target,Vector2 position)
         {using(var e=WheelEvent.GetPooled(new Event{type=EventType.ScrollWheel,delta=new Vector2(0,-3),mousePosition=position})){e.target=target;target.SendEvent(e);}}
+        // Batch receiving has no dependable desktop input surface. Keep one live panel render target
+        // for real picking; screenshot captures temporarily replace it and restore it exactly.
+        private sealed class GalaxyInputSurface : IDisposable
+        {
+            private readonly UIDocument doc;private readonly RenderTexture? priorTarget,priorActive;
+            private readonly StyleLength priorWidth,priorHeight;private readonly RenderTexture target;
+            public GalaxyInputSurface(UIDocument document)
+            {
+                doc=document;priorTarget=doc.panelSettings.targetTexture;priorActive=RenderTexture.active;
+                priorWidth=doc.rootVisualElement.style.width;priorHeight=doc.rootVisualElement.style.height;
+                target=new RenderTexture(1280,720,24,RenderTextureFormat.ARGB32);target.Create();
+                doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=1280;doc.rootVisualElement.style.height=720;
+            }
+            public void Dispose()
+            {
+                doc.panelSettings.targetTexture=priorTarget;doc.rootVisualElement.style.width=priorWidth;doc.rootVisualElement.style.height=priorHeight;
+                RenderTexture.active=priorActive;target.Release();UnityEngine.Object.Destroy(target);
+            }
+        }
+        private static IEnumerator RightClick(GeneratedGalaxyMapView view,Vector2 point,bool shift)
+        {
+            var panel=view.panel;Assert.That(panel,Is.Not.Null,"attached input panel");
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();
+            object? Field(string name)=>typeof(ReviewEntry).GetField(name,BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry);
+            var draft=(GeneratedGalaxyRouteDraft)Field("galaxyDraft")!;var priorTargets=draft.Targets.ToArray();
+            var priorPlan=Field("galaxyPlan");var priorDocument=typeof(GeneratedGalaxyMapView).GetField("document",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(view);
+            var local=view.WorldToLocal(point);var node=view.NearestStar(local);
+            var kind=node==null?GeneratedGalaxyDraftAnchorKind.RegionTransit:GeneratedGalaxyDraftAnchorKind.StarLocation;
+            if(node==null)node=((GeneratedGalaxyMapData)priorDocument!).Regions.Single(r=>IsProjectedCentre(local,view,r)).NodeId;
+            var down=panel.Pick(point);Assert.That(down,Is.Not.Null,"actual panel down target at "+point+" map "+view.worldBound);
+            int pointerId;
+            using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,button=1,mousePosition=point,modifiers=shift?EventModifiers.Shift:EventModifiers.None}))
+            {pointerId=e.pointerId;e.target=down;down.SendEvent(e);}
+            CollectionAssert.AreEqual(priorTargets,draft.Targets,"Down must not edit the draft");Assert.That(Field("galaxyPlan"),Is.SameAs(priorPlan));
+            Assert.That(typeof(GeneratedGalaxyMapView).GetField("document",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(view),Is.SameAs(priorDocument));
+            var capture=panel.GetCapturingElement(pointerId);VisualElement up;
+            if(capture!=null)
+            {
+                var captured=capture as VisualElement;Assert.That(captured,Is.Not.Null,"capturer is a visual element");up=captured!;
+                Assert.That(up.panel,Is.SameAs(panel),"capturer stays on input panel");
+                Assert.That(up,Is.SameAs(view),"star arbitration capture belongs to the map");
+            }
+            else{up=panel.Pick(point);Assert.That(up,Is.Not.Null,"fresh uncaptured panel up target at "+point+" map "+view.worldBound);}
+            TestContext.WriteLine("RightClick point="+point+" bounds="+view.worldBound+" pointer="+pointerId+" down="+down.name+" capture="+(capture==null?"none":up.name)+" up="+up.name+" shift="+shift);
+            using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,button=1,mousePosition=point,modifiers=shift?EventModifiers.Shift:EventModifiers.None}))
+            {Assert.That(e.pointerId,Is.EqualTo(pointerId));e.target=up;up.SendEvent(e);}
+            yield return null;
+            Assert.That(panel.GetCapturingElement(pointerId),Is.Null,"Up releases map capture");
+            var rejected=shift&&priorTargets.Length==GalaxyReviewRoutePolicy.MaximumTargets;
+            Assert.That(draft.Targets.Count,Is.EqualTo(rejected?priorTargets.Length:shift?priorTargets.Length+1:1));
+            if(rejected)CollectionAssert.AreEqual(priorTargets,draft.Targets,"limit preserves queue");
+            else{Assert.That(draft.Targets.Last().NodeId,Is.EqualTo(node));Assert.That(draft.Targets.Last().Kind,Is.EqualTo(kind));}
+        }
+        private static bool IsProjectedCentre(Vector2 local,GeneratedGalaxyMapView view,GeneratedGalaxyRegionDto region)
+        {
+            // This helper is used only at the already selected empty-region centre.
+            return Vector2.Distance(local,view.Position(region.NodeId))<.01f;
+        }
 
         [UnityTest] public IEnumerator PointerKeyboardModalAndCampaignDraftRemainIsolated()
         {
@@ -304,18 +462,34 @@ namespace HobbyDS9.UnityReview.Tests
             yield return Capture(doc,"environment-reopened");
             yield return new ExitPlayMode();
         }
-        private static IEnumerator Capture(UIDocument doc,string state,string? origin=null,StrategicRouteSnapshot? route=null)
+        private static IEnumerator Capture(UIDocument doc,string state,string? origin=null,StrategicRouteSnapshot? route=null,GalaxyReviewRoutePlanSnapshot? plan=null)
         {
             var directory=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/scaled-galaxy/engine-rendered"));
             Directory.CreateDirectory(directory);
+            if(plan==null&&origin!=null&&route!=null)
+            {
+                var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();
+                var current=typeof(ReviewEntry).GetField("galaxyPlan",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry) as GalaxyReviewRoutePlanSnapshot;
+                if(current?.Success==true){Assert.That(current.TotalCost,Is.EqualTo(route.TotalCost),"legacy and current policy retain minimum primary cost");plan=current;}
+            }
             foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})
             {
                 var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);target.Create();
-                var prior=RenderTexture.active;Texture2D? pixels=null;
+                var prior=RenderTexture.active;var priorPanelTarget=doc.panelSettings.targetTexture;
+                var priorWidth=doc.rootVisualElement.style.width;var priorHeight=doc.rootVisualElement.style.height;Texture2D? pixels=null;
                 try
                 {
                     doc.panelSettings.targetTexture=target;var root=doc.rootVisualElement;root.style.width=size.x;root.style.height=size.y;
                     yield return null;yield return null;yield return null;
+                    if(state.StartsWith("f8-",StringComparison.Ordinal))
+                    {
+                        var fixedView=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");fixedView.Fit();
+                        if(state.StartsWith("f8-zoom-",StringComparison.Ordinal)){fixedView.ZoomBy(1.3);fixedView.ZoomBy(1.3);fixedView.Pan(90,0);}
+                        yield return null;yield return null;
+                    }
+                    RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
+                    pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
+                    File.WriteAllBytes(Path.Combine(directory,size.x+"x"+size.y+"-"+state+".png"),pixels.EncodeToPNG());
                     foreach(var name in new[]{"galaxy-seed","galaxy-size","galaxy-slot","galaxy-generate","galaxy-export","galaxy-open","galaxy-back","galaxy-fit","galaxy-graph-links"})
                     {
                         var control=root.Q(name);Assert.That(control,Is.Not.Null,name);
@@ -333,12 +507,44 @@ namespace HobbyDS9.UnityReview.Tests
                     var map=root.Q("generated-galaxy-map");Assert.That(map.worldBound.height,Is.GreaterThan(250));
                     Assert.That(map.worldBound.width,Is.GreaterThan(600));
                     var inspector=root.Q<ScrollView>("galaxy-inspector");
-                    Assert.That(inspector.contentViewport.worldBound.height,Is.GreaterThan(250));
+                    Assert.That(inspector.contentViewport.worldBound.height,Is.GreaterThan(80),"general inspection remains locally scrollable beneath fixed route controls");
+                    foreach(var name in new[]{"galaxy-route-cost","galaxy-route-remove-last","galaxy-route-clear","galaxy-route-save","galaxy-route-restore"})
+                    {
+                        var control=root.Q(name);if(control==null)continue;
+                        Assert.That(control.worldBound.xMin,Is.GreaterThanOrEqualTo(0),name);Assert.That(control.worldBound.xMax,Is.LessThanOrEqualTo(size.x+1),name);
+                        Assert.That(control.worldBound.yMin,Is.GreaterThanOrEqualTo(0),name);Assert.That(control.worldBound.yMax,Is.LessThanOrEqualTo(size.y+1),name);
+                        if(control is Button)
+                        {
+                            var hit=control.panel.Pick(control.worldBound.center);
+                            Assert.That(hit!=null&&(ReferenceEquals(hit,control)||control.Contains(hit)),Is.True,"fixed route action must remain hittable: "+name);
+                        }
+                    }
+                    var editActions=root.Q("galaxy-route-edit-actions");var fileActions=root.Q("galaxy-route-file-actions");
+                    if(editActions!=null&&fileActions!=null)
+                    {
+                        Assert.That(editActions.worldBound.yMax,Is.LessThanOrEqualTo(fileActions.worldBound.yMin),"fixed action rows cannot overlap");
+                        foreach(var row in new[]{editActions,fileActions})
+                        {
+                            var buttons=row.Children().OfType<Button>().ToArray();Assert.That(buttons.Length,Is.EqualTo(2));
+                            Assert.That(buttons[0].worldBound.xMax,Is.LessThanOrEqualTo(buttons[1].worldBound.xMin),"fixed columns cannot overlap");
+                            foreach(var button in buttons)
+                            {
+                                Assert.That(button.worldBound.height,Is.GreaterThanOrEqualTo(36),button.name+" minimum action height");
+                                Assert.That(button.worldBound.yMin,Is.GreaterThanOrEqualTo(row.worldBound.yMin));
+                                Assert.That(button.worldBound.yMax,Is.LessThanOrEqualTo(row.worldBound.yMax));
+                            }
+                        }
+                        var total=root.Q("galaxy-route-cost");Assert.That(total.worldBound.yMax,Is.LessThanOrEqualTo(editActions.worldBound.yMin),"cost cannot overlap action rows");
+                    }
+                    var routePanel=root.Q("galaxy-route-preview");
+                    var fixedChildren=routePanel.Children().Where(c=>c.resolvedStyle.display!=DisplayStyle.None).ToArray();
+                    for(int i=0;i<fixedChildren.Length;i++)
+                    {
+                        var child=fixedChildren[i];Assert.That(child.worldBound.yMax,Is.LessThanOrEqualTo(routePanel.worldBound.yMax),"route child including notice/status remains inside panel: "+child.name);
+                        if(i>0)Assert.That(fixedChildren[i-1].worldBound.yMax,Is.LessThanOrEqualTo(child.worldBound.yMin),"route children including notice/status cannot overlap");
+                    }
+                    Assert.That(routePanel.worldBound.yMax,Is.LessThanOrEqualTo(inspector.worldBound.yMin),"route and general inspector must not overlap");
                     Assert.That(map.worldBound.xMax,Is.LessThanOrEqualTo(inspector.worldBound.xMin));
-                    RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
-                    pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
-                    // Preserve the actual rendered state even when a later geometry assertion fails.
-                    File.WriteAllBytes(Path.Combine(directory,size.x+"x"+size.y+"-"+state+".png"),pixels.EncodeToPNG());
                     var featureView=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
                     foreach(var feature in featureView.Query<Button>().ToList().Where(b=>b.name.StartsWith("galaxy-feature-",StringComparison.Ordinal)&&b.style.display.value!=DisplayStyle.None))
                     {
@@ -365,36 +571,61 @@ namespace HobbyDS9.UnityReview.Tests
                         }
                         Assert.That(checkedPixels,Is.GreaterThan(0),"actual exterior clipping samples");
                     }
-                    if(origin!=null&&route!=null)
+                    if(origin!=null&&route!=null||plan?.Success==true)
                     {
                         var view=root.Q<GeneratedGalaxyMapView>("generated-galaxy-map");
-                        var points=view.RoutePositions().Select(p=>view.LocalToWorld(p)).ToArray();
-                        Assert.That(points.Length,Is.EqualTo(1+2*route.Steps.Count),"one exact shared-edge portal per accepted crossing");
+                        var points=(plan==null?view.RoutePositions():view.RouteLegPositions().SelectMany(p=>p).ToArray()).Select(p=>view.LocalToWorld(p)).ToArray();
+                        if(plan==null)Assert.That(points.Length,Is.EqualTo(route!.Steps.Count==0?1:2+route.Steps.Count),"raw diagnostic path count");
+                        if(plan!=null)
+                        {
+                            var legs=view.RouteLegPositions();Assert.That(legs.Count,Is.EqualTo(plan.Legs.Count));
+                            var certified=view.CertifiedRouteGeometry!;Assert.That(certified.Legs.Count,Is.EqualTo(plan.Legs.Count));
+                            Assert.That(certified.HiddenCount,Is.Zero,"actual fixture needs certified lines");
+                            Assert.That(certified.Operations,Is.LessThanOrEqualTo(GeneratedGalaxyCorridorPath.MaximumPlanOperations));
+                            for(int leg=0;leg<legs.Count;leg++)
+                            {
+                                Assert.That(certified.Legs[leg].Certified,Is.True,certified.Legs[leg].Reason);
+                                Assert.That(legs[leg].Count,Is.EqualTo(certified.Legs[leg].Points.Count),"render exactly certified vertices, not crossing count");
+                                Assert.That(certified.Legs[leg].RawMidpoints.Count,Is.EqualTo(plan.Legs[leg].Route.Steps.Count==0?1:2+plan.Legs[leg].Route.Steps.Count),"retain one raw portal per graph crossing separately");
+                                Assert.That(Vector2.Distance(legs[leg][0],view.Position(plan.Legs[leg].OriginNodeId)),Is.LessThan(.001f));
+                                Assert.That(Vector2.Distance(legs[leg][legs[leg].Count-1],view.Position(plan.Legs[leg].Target.NodeId)),Is.LessThan(.001f));
+                            }
+                            File.AppendAllText(Path.Combine(directory,"route-certified-display.txt"),size+" "+state+" map="+plan.MapContentHash+
+                                " cost="+plan.TotalCost+" work="+certified.Operations+" fallback="+certified.FallbackCount+" hidden="+certified.HiddenCount+
+                                " legs="+string.Join(" | ",certified.Legs.Select(l=>l.Reason+":"+string.Join(";",l.Points.Select(p=>p.X1024+","+p.Y1024))))+Environment.NewLine);
+                        }
+                        Vector2[] CurrentPoints()=>(plan==null?view.RoutePositions():view.RouteLegPositions().SelectMany(p=>p).ToArray()).Select(p=>view.LocalToWorld(p)).ToArray();
                         // Normal screenshots and marker assertions retain the actual opaque star controls.
                         // A subpixel portal half-segment may be wholly covered by one of those glyphs.
                         // Probe the same Painter2D underlay with child visibility hidden, never changing
                         // display/layout, route geometry, viewport, costs or normal-game presentation.
                         var priorVisibility=view.Children().Select(c=>(control:c,visibility:c.style.visibility)).ToArray();
                         var priorBounds=view.worldBound;var priorZoom=view.Zoom;
-                        var priorSteps=route.Steps.ToArray();var priorCost=route.TotalCost;
+                        var priorSteps=(plan?.Steps??route!.Steps).ToArray();var priorCost=plan?.TotalCost??route!.TotalCost;
                         Texture2D? routePixels=null;
                         try
                         {
                             foreach(var item in priorVisibility)item.control.style.visibility=Visibility.Hidden;
                             yield return null;yield return null;yield return null;
                             Assert.That(view.worldBound,Is.EqualTo(priorBounds));Assert.That(view.Zoom,Is.EqualTo(priorZoom));
-                            CollectionAssert.AreEqual(points,view.RoutePositions().Select(p=>view.LocalToWorld(p)).ToArray());
-                            CollectionAssert.AreEqual(priorSteps,route.Steps);Assert.That(route.TotalCost,Is.EqualTo(priorCost));
+                            CollectionAssert.AreEqual(points,CurrentPoints());
+                            CollectionAssert.AreEqual(priorSteps,plan?.Steps??route!.Steps);Assert.That(plan?.TotalCost??route!.TotalCost,Is.EqualTo(priorCost));
                             RenderTexture.active=target;routePixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
                             routePixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);routePixels.Apply();
                             File.AppendAllText(Path.Combine(directory,"route-underlay-probes.txt"),size+" "+state+
                                 " diagnostic-only hidden-child underlay; unchanged points="+points.Length+" cost="+priorCost+Environment.NewLine);
-                        for(int i=1;i<points.Length;i++)
+                        var paintedLegs=plan==null?new[]{points}:view.RouteLegPositions().Select(leg=>leg.Select(p=>view.LocalToWorld(p)).ToArray()).ToArray();
+                        foreach(var legPoints in paintedLegs)for(int i=1;i<legPoints.Length;i++)
                         {
+                            if(legPoints[i]==legPoints[i-1])
+                            {
+                                File.AppendAllText(Path.Combine(directory,"route-underlay-probes.txt"),size+" "+state+" zero projected extent; no pixel-line claim; segment="+i+Environment.NewLine);
+                                continue;
+                            }
                             bool painted=false,visible=false;
                             foreach(var fraction in new[]{.25f,.5f,.75f})
                             {
-                                var p=Vector2.Lerp(points[i-1],points[i],fraction);
+                                var p=Vector2.Lerp(legPoints[i-1],legPoints[i],fraction);
                                 if(!view.worldBound.Contains(p))continue;visible=true;
                                 for(int dx=-3;dx<=3;dx++)for(int dy=-3;dy<=3;dy++)
                                 {
@@ -402,7 +633,7 @@ namespace HobbyDS9.UnityReview.Tests
                                     painted|=color.r>.8f&&color.g>.5f&&color.g<.8f&&color.b<.6f;
                                 }
                             }
-                            if(visible)Assert.That(painted,Is.True,"actual Painter2D underlay must follow visible portal half-segment "+(i-1));
+                            if(visible)Assert.That(painted,Is.True,"actual Painter2D underlay must follow visible corridor segment "+(i-1));
                         }
                         }
                         finally
@@ -412,8 +643,8 @@ namespace HobbyDS9.UnityReview.Tests
                         }
                         yield return null;yield return null;yield return null;
                         Assert.That(view.worldBound,Is.EqualTo(priorBounds));Assert.That(view.Zoom,Is.EqualTo(priorZoom));
-                        CollectionAssert.AreEqual(points,view.RoutePositions().Select(p=>view.LocalToWorld(p)).ToArray());
-                        CollectionAssert.AreEqual(priorSteps,route.Steps);Assert.That(route.TotalCost,Is.EqualTo(priorCost));
+                        CollectionAssert.AreEqual(points,CurrentPoints());
+                        CollectionAssert.AreEqual(priorSteps,plan?.Steps??route!.Steps);Assert.That(plan?.TotalCost??route!.TotalCost,Is.EqualTo(priorCost));
                         foreach(var button in root.Query<Button>().ToList().Where(b=>b.name.StartsWith("galaxy-star-",StringComparison.Ordinal)&&b.resolvedStyle.display!=DisplayStyle.None))
                         {
                             var systemId=button.name.Substring("galaxy-star-".Length);
@@ -444,7 +675,8 @@ namespace HobbyDS9.UnityReview.Tests
                         yield return null;
                     }
                 }
-                finally{doc.panelSettings.targetTexture=null;RenderTexture.active=prior;target.Release();UnityEngine.Object.Destroy(target);if(pixels!=null)UnityEngine.Object.Destroy(pixels);}
+                finally{doc.panelSettings.targetTexture=priorPanelTarget;doc.rootVisualElement.style.width=priorWidth;doc.rootVisualElement.style.height=priorHeight;RenderTexture.active=prior;target.Release();UnityEngine.Object.Destroy(target);if(pixels!=null)UnityEngine.Object.Destroy(pixels);}
+                yield return null;yield return null;
             }
         }
     }

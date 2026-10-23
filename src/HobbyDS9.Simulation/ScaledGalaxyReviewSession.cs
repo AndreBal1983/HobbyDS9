@@ -16,6 +16,8 @@ namespace HobbyDS9.Simulation
         public static ScaledGalaxyReviewSession Open(ScaledGalaxyDocumentDto document, IEnumerable<CivilizationDefinitionDto> catalog)
             => new ScaledGalaxyReviewSession(ScaledGalaxyData.Open(document, catalog));
         public ScaledGalaxyDocumentDto Export() => ScaledGalaxyData.Copy(document);
+        public GalaxyReviewRoutePlanSnapshot FindRoutePlan(GalaxyReviewRouteQueryDto query)
+            => GalaxyReviewRouteSearch.Query(document.ContentHash, document.Layout.Regions, document.Layout.Connections, query);
 
         public StrategicRouteSnapshot FindRoute(string originNodeId, string destinationNodeId)
         {

@@ -18,6 +18,14 @@ namespace HobbyDS9.UnityReview
     // Consumes an accepted route; never searches for a route or changes its nodes, costs or polygons.
     public static class GeneratedGalaxyRoutePath
     {
+        // Keep each explicit target as a leg endpoint. Flattening A→B→A removes B's anchor.
+        public static IReadOnlyList<IReadOnlyList<GeneratedGalaxyRoutePoint>> BuildPlan(
+            IReadOnlyDictionary<string,GeneratedGalaxyRegionDto> regions,GalaxyReviewRoutePlanSnapshot plan)
+        {
+            var paths=new List<IReadOnlyList<GeneratedGalaxyRoutePoint>>();
+            if(plan.Success)foreach(var leg in plan.Legs)paths.Add(Build(regions,leg.OriginNodeId,leg.Route.Steps));
+            return paths.AsReadOnly();
+        }
         public static IReadOnlyList<GeneratedGalaxyRoutePoint> Build(
             IReadOnlyDictionary<string,GeneratedGalaxyRegionDto> regions,string origin,IReadOnlyList<string> steps)
         {
@@ -27,9 +35,10 @@ namespace HobbyDS9.UnityReview
             {
                 var next=regions[node];
                 points.Add(Portal(current,next));
-                points.Add(Center(next));
                 current=next;
             }
+            // Transit constrains the corridor, not a visit to every intermediate centre/POI.
+            if(steps.Count>0)points.Add(Center(current));
             return points.AsReadOnly();
         }
 
@@ -46,8 +55,8 @@ namespace HobbyDS9.UnityReview
                 {
                     var c=to.Boundary[j];var d=to.Boundary[(j+1)%to.Boundary.Count];
                     if(Same(a,c)&&Same(b,d)||Same(a,d)&&Same(b,c))
-                        // A validated region is convex and contains its center. Both half-segments
-                        // therefore stay in their own region, meeting only at this shared boundary.
+                        // Exact interior midpoint, even for a one-unit edge. Consecutive portals
+                        // lie in the same convex region, so the intervening segment stays inside it.
                         return new GeneratedGalaxyRoutePoint((long)a.X+b.X,(long)a.Y+b.Y);
                 }
             }

@@ -16,22 +16,27 @@ namespace HobbyDS9.UnityReview
         public double? QuietToSystemMeanArea { get; }
         public double EmptyAreaShare { get; }
         public ScaledGalaxyPresentationSummary(ScaledGalaxyDocumentDto document)
+            :this(document.Features,document.RegionInfluences,document.Layout,document.Tuning.QuietDisturbanceThreshold){}
+        public ScaledGalaxyPresentationSummary(NaturalGalaxyDocumentDto document)
+            :this(document.Features,document.RegionInfluences,document.Layout,document.Tuning.QuietDisturbanceThreshold){}
+        private ScaledGalaxyPresentationSummary(IReadOnlyList<EnvironmentGalaxyFeatureDto> featureRows,
+            IReadOnlyList<EnvironmentGalaxyRegionInfluenceDto> influenceRows,EnvironmentGalaxyLayoutDto layout,int threshold)
         {
-            var features=document.Features.ToDictionary(f=>f.FeatureId,StringComparer.Ordinal);
-            var influences=document.RegionInfluences.ToDictionary(i=>i.NodeId,StringComparer.Ordinal);
-            var anchors=new HashSet<string>(document.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.BlackHole).Select(f=>f.NodeId!),StringComparer.Ordinal);
+            var features=featureRows.ToDictionary(f=>f.FeatureId,StringComparer.Ordinal);
+            var influences=influenceRows.ToDictionary(i=>i.NodeId,StringComparer.Ordinal);
+            var anchors=new HashSet<string>(featureRows.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.BlackHole).Select(f=>f.NodeId!),StringComparer.Ordinal);
             bool Disturbed(GeneratedGalaxyRegionDto r)=>anchors.Contains(r.NodeId)||influences[r.NodeId].Contributions.Any(c=>
-                features[c.FeatureId].Kind!=GalaxyEnvironmentFeatureKind.Star&&c.Amount>=document.Tuning.QuietDisturbanceThreshold);
-            var systems=document.Layout.Regions.Where(r=>r.SystemId!=null).ToArray();
-            var quiet=document.Layout.Regions.Where(r=>r.SystemId==null&&!Disturbed(r)).ToArray();
-            var disturbed=document.Layout.Regions.Where(r=>r.SystemId==null&&Disturbed(r)).ToArray();
+                features[c.FeatureId].Kind!=GalaxyEnvironmentFeatureKind.Star&&c.Amount>=threshold);
+            var systems=layout.Regions.Where(r=>r.SystemId!=null).ToArray();
+            var quiet=layout.Regions.Where(r=>r.SystemId==null&&!Disturbed(r)).ToArray();
+            var disturbed=layout.Regions.Where(r=>r.SystemId==null&&Disturbed(r)).ToArray();
             QuietNodes=Array.AsReadOnly(quiet.Select(r=>r.NodeId).OrderBy(n=>n,StringComparer.Ordinal).ToArray());
             DisturbedNodes=Array.AsReadOnly(disturbed.Select(r=>r.NodeId).OrderBy(n=>n,StringComparer.Ordinal).ToArray());
             QuietToSystemMeanArea=quiet.Length==0?null:quiet.Average(r=>(double)Area2(r))/systems.Average(r=>(double)Area2(r));
-            EmptyAreaShare=quiet.Concat(disturbed).Sum(Area2)/(2.0*document.Layout.Width*document.Layout.Height);
+            EmptyAreaShare=quiet.Concat(disturbed).Sum(Area2)/(2.0*layout.Width*layout.Height);
             var unseen=new HashSet<string>(QuietNodes,StringComparer.Ordinal);
             var neighbors=QuietNodes.ToDictionary(n=>n,_=>new List<string>(),StringComparer.Ordinal);
-            foreach(var edge in document.Layout.Connections)if(neighbors.ContainsKey(edge.EndpointA)&&neighbors.ContainsKey(edge.EndpointB))
+            foreach(var edge in layout.Connections)if(neighbors.ContainsKey(edge.EndpointA)&&neighbors.ContainsKey(edge.EndpointB))
             {neighbors[edge.EndpointA].Add(edge.EndpointB);neighbors[edge.EndpointB].Add(edge.EndpointA);}
             int components=0;
             foreach(var start in QuietNodes)

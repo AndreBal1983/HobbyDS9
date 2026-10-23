@@ -19,7 +19,7 @@ namespace HobbyDS9.UnityReview
             try
             {
                 var format=root["FormatVersion"]!.Value<int>();
-                if(format!=ScaledGalaxyIdentity.FormatVersion&&bytes.Length>GeneratedGalaxyMapStore.LegacyMaximumBytes)throw Invalid();
+                if(format!=ScaledGalaxyIdentity.FormatVersion&&format!=NaturalGalaxyIdentity.FormatVersion&&bytes.Length>GeneratedGalaxyMapStore.LegacyMaximumBytes)throw Invalid();
                 return format;
             }
             catch(Exception){throw new InvalidDataException("Invalid generated-map format.");}

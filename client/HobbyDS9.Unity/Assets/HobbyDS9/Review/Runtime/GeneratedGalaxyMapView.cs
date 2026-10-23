@@ -19,7 +19,6 @@ namespace HobbyDS9.UnityReview
         private readonly GeneratedGalaxyStarIndex starIndex;
         private readonly Dictionary<string,string> candidateNames;
         private readonly Action<string,GeneratedGalaxySelectionKind> selected;
-        private readonly Action<string> routeTarget;
         private readonly GeneratedGalaxyViewport viewport=new GeneratedGalaxyViewport();
         private readonly List<(Button button,Label label,GeneratedGalaxyRegionDto region,bool candidate)> stars=
             new List<(Button,Label,GeneratedGalaxyRegionDto,bool)>();
@@ -30,6 +29,10 @@ namespace HobbyDS9.UnityReview
         private string? selectedFeature;
         private IReadOnlyList<string> routeSteps=Array.Empty<string>();
         private IReadOnlyList<GeneratedGalaxyRoutePoint> routePath=Array.Empty<GeneratedGalaxyRoutePoint>();
+        private IReadOnlyList<IReadOnlyList<GeneratedGalaxyDisplayPoint>>? planPaths;
+        public GeneratedGalaxyCertifiedPlan? CertifiedRouteGeometry { get; private set; }
+        private readonly List<(Label label,string node)> pinLabels=new List<(Label,string)>();
+        private string[] pinnedNodes=Array.Empty<string>();
         private int pointer=-1;
         private Vector2 press,last;
         private bool moved;
@@ -38,16 +41,19 @@ namespace HobbyDS9.UnityReview
         public bool ShowInfluenceAreas { get; private set; }
         public double Zoom=>viewport.Zoom;
         public GeneratedGalaxyMapView(GeneratedGalaxyMapData map,IReadOnlyDictionary<string,string> civilizations,
-            Action<Button,Action> bindButton,Action<string,GeneratedGalaxySelectionKind> select,Action<string> target,Action<string>? inspectFeature=null)
+            Action<Button,Action> bindButton,Action<string,GeneratedGalaxySelectionKind> select,Action<string> target,Action<string>? inspectFeature=null,
+            Action<string,bool,GeneratedGalaxyDraftAnchorKind>? targetIntent=null)
         {
+            void Target(string node,bool append,GeneratedGalaxyDraftAnchorKind kind)
+            {if(targetIntent!=null)targetIntent(node,append,kind);else target(node);}
             document=map;regions=map.Regions.ToDictionary(r=>r.NodeId,StringComparer.Ordinal);
             systemPositions=map.Systems.ToDictionary(s=>s.SystemId,s=>map.SystemPosition(s.SystemId),StringComparer.Ordinal);
             starIndex=new GeneratedGalaxyStarIndex(map.Systems.Select(s=>(s.NodeId,systemPositions[s.SystemId])),map.Width,map.Height);
             regionBounds=map.Regions.ToDictionary(r=>r.NodeId,r=>Rect.MinMaxRect(r.Boundary.Min(p=>p.X),r.Boundary.Min(p=>p.Y),r.Boundary.Max(p=>p.X),r.Boundary.Max(p=>p.Y)),StringComparer.Ordinal);
             candidateNames=map.HomeCandidates.ToDictionary(h=>h.NodeId,h=>civilizations[h.CivilizationDefinitionId],StringComparer.Ordinal);
-            selected=select;routeTarget=target;name="generated-galaxy-map";AddToClassList("galaxy-map");
+            selected=select;name="generated-galaxy-map";AddToClassList("galaxy-map");
             focusable=true;viewport.SetMap(map.Width,map.Height);
-            viewport.MaximumZoom=map.Scaled==null?8:32;
+            viewport.MaximumZoom=!map.IsLarge?8:32;
             generateVisualContent+=Paint;
             foreach(var system in map.Systems)
             {
@@ -55,10 +61,10 @@ namespace HobbyDS9.UnityReview
                 var button=new Button{name="galaxy-star-"+system.SystemId,text="●",tooltip=system.DisplayName+" · select star; right-click to preview a route."};
                 button.AddToClassList("galaxy-star");button.EnableInClassList("galaxy-candidate",candidate);
                 bindButton(button,()=>{if(Live())select(region.NodeId,GeneratedGalaxySelectionKind.System);});Add(button);
-                button.RegisterCallback<PointerUpEvent>(e=>{if(e.button==1&&Live()){target(region.NodeId);e.StopPropagation();}});
+                button.RegisterCallback<PointerUpEvent>(e=>{if(e.button==1&&Live()){Target(region.NodeId,e.shiftKey,GeneratedGalaxyDraftAnchorKind.StarLocation);e.StopPropagation();}});
                 button.RegisterCallback<KeyDownEvent>(e=>{
                     if(e.keyCode==KeyCode.F10&&e.shiftKey&&Live()
-                        &&ReferenceEquals(panel.focusController.focusedElement,button)){target(region.NodeId);e.StopPropagation();}
+                        &&ReferenceEquals(panel.focusController.focusedElement,button)){Target(region.NodeId,false,GeneratedGalaxyDraftAnchorKind.StarLocation);e.StopPropagation();}
                 });
                 var label=new Label(candidate?system.DisplayName+"\n"+candidateNames[region.NodeId]+" · candidate":system.DisplayName)
                     {name="galaxy-label-"+system.SystemId,pickingMode=PickingMode.Ignore};
@@ -93,7 +99,7 @@ namespace HobbyDS9.UnityReview
                 if(!Live()||(e.button!=0&&e.button!=1)||pointer==e.pointerId&&moved)return;
                 var node=NearestStar(this.WorldToLocal(e.position));if(node==null)return;
                 if(pointer==e.pointerId){this.ReleasePointer(pointer);pointer=-1;}
-                if(e.button==1)routeTarget(node);else selected(node,GeneratedGalaxySelectionKind.System);
+                if(e.button==1)Target(node,e.shiftKey,GeneratedGalaxyDraftAnchorKind.StarLocation);else selected(node,GeneratedGalaxySelectionKind.System);
                 e.StopImmediatePropagation();
             },TrickleDown.TrickleDown);
             RegisterCallback<GeometryChangedEvent>(_=>{viewport.Resize(contentRect.width,contentRect.height);Place();});
@@ -116,7 +122,7 @@ namespace HobbyDS9.UnityReview
                     e.StopPropagation();
                 }
                 else if(e.button==1&&ReferenceEquals(e.target,this))
-                {var region=At(e.localPosition);if(region!=null)target(region.NodeId);e.StopPropagation();}
+                {var region=At(e.localPosition);if(region!=null)Target(region.NodeId,e.shiftKey,GeneratedGalaxyDraftAnchorKind.RegionTransit);e.StopPropagation();}
             });
             RegisterCallback<PointerCaptureOutEvent>(_=>pointer=-1);
             RegisterCallback<KeyDownEvent>(e=>{
@@ -143,12 +149,27 @@ namespace HobbyDS9.UnityReview
         public void Select(string node,GeneratedGalaxySelectionKind kind){selectedNode=node;selectionKind=kind;Place();}
         public void Route(string? origin,IReadOnlyList<string>? steps)
         {
+            planPaths=null;CertifiedRouteGeometry=null;pinnedNodes=Array.Empty<string>();foreach(var pin in pinLabels)pin.label.RemoveFromHierarchy();pinLabels.Clear();
             var acceptedSteps=steps??Array.Empty<string>();
             var path=origin==null?Array.Empty<GeneratedGalaxyRoutePoint>():GeneratedGalaxyRoutePath.Build(regions,origin,acceptedSteps);
             routeOrigin=origin;routeSteps=acceptedSteps;routePath=path;Place();
         }
-        public IReadOnlyList<Vector2> RoutePositions()=>routePath.Select(p=>contentRect.position+
-            new Vector2((float)viewport.X(p.X),(float)viewport.Y(p.Y))).ToArray();
+        public void RoutePlan(string? origin,GalaxyReviewRoutePlanSnapshot? plan,IReadOnlyList<GeneratedGalaxyDraftAnchor> targets)
+        {
+            Route(null,null);routeOrigin=origin;routeSteps=plan?.Success==true?plan.Steps:Array.Empty<string>();
+            CertifiedRouteGeometry=plan==null?null:GeneratedGalaxyCorridorPath.BuildPlan(regions,plan);
+            planPaths=CertifiedRouteGeometry==null?Array.Empty<IReadOnlyList<GeneratedGalaxyDisplayPoint>>():CertifiedRouteGeometry.Legs.Select(p=>p.Points).ToArray();
+            pinnedNodes=targets.Select(t=>t.NodeId).ToArray();
+            for(int i=0;i<pinnedNodes.Length;i++)
+            {
+                var label=new Label((i+1).ToString()){name="galaxy-route-pin-"+(i+1),pickingMode=PickingMode.Ignore};
+                label.AddToClassList("galaxy-route-pin");Add(label);pinLabels.Add((label,pinnedNodes[i]));
+            }
+            Place();
+        }
+        public IReadOnlyList<Vector2> RoutePositions()=>planPaths?.Count==1?planPaths[0].Select(Project).ToArray():routePath.Select(Project).ToArray();
+        public IReadOnlyList<IReadOnlyList<Vector2>> RouteLegPositions()=>planPaths==null?Array.Empty<IReadOnlyList<Vector2>>():
+            planPaths.Select(leg=>(IReadOnlyList<Vector2>)leg.Select(Project).ToArray()).ToArray();
         public Vector2 Position(string node)=>Point(regions[node].Center);
         public Vector2 SystemPosition(string systemId)=>Point(systemPositions[systemId]);
         public string? NearestStar(Vector2 local)
@@ -181,10 +202,11 @@ namespace HobbyDS9.UnityReview
         }
         private void Place()
         {
+            foreach(var pin in pinLabels){var p=Position(pin.node);PlaceChild(pin.label,p+new Vector2(10,-25));pin.label.style.display=Visible(p,20)?DisplayStyle.Flex:DisplayStyle.None;}
             var occupied=new List<Rect>();
             var diagonals=regionBounds.Values.Select(ScreenBounds).Where(r=>r.Overlaps(contentRect)).Select(r=>r.size.magnitude).OrderBy(d=>d).ToArray();
             float typical=diagonals.Length==0?0:diagonals[diagonals.Length/2];
-            int labelBudget=document.Scaled==null?int.MaxValue:Math.Min(typical<40?12:typical<90?36:80,
+            int labelBudget=!document.IsLarge?int.MaxValue:Math.Min(typical<40?12:typical<90?36:80,
                 Math.Max(4,(int)(contentRect.width*contentRect.height/18000)));
             // Important labels get first choice. Suppression changes labels, never underlying nodes.
             foreach(var star in stars.OrderBy(s=>s.region.NodeId==selectedNode?0:s.region.NodeId==routeOrigin||routeSteps.LastOrDefault()==s.region.NodeId?1:s.candidate?2:3).ThenBy(s=>s.region.NodeId,StringComparer.Ordinal))
@@ -195,8 +217,8 @@ namespace HobbyDS9.UnityReview
                 star.button.style.display=visible?DisplayStyle.Flex:DisplayStyle.None;
                 star.button.EnableInClassList("galaxy-star-selected",star.region.NodeId==selectedNode&&selectionKind==GeneratedGalaxySelectionKind.System);
                 bool important=star.region.NodeId==selectedNode||star.candidate||star.region.NodeId==routeOrigin||routeSteps.LastOrDefault()==star.region.NodeId;
-                star.button.tabIndex=document.Scaled==null||important?0:-1;
-                bool show=visible&&occupied.Count<labelBudget&&(important||document.Scaled!=null||viewport.Zoom>=1.6);
+                star.button.tabIndex=!document.IsLarge||important?0:-1;
+                bool show=visible&&occupied.Count<labelBudget&&(important||document.IsLarge||viewport.Zoom>=1.6);
                 var rect=new Rect(point.x+17,point.y-10,star.candidate?200:120,star.candidate?46:24);
                 if(rect.xMax>bounds.xMax-8)rect.x=point.x-rect.width-17;
                 rect.y=Mathf.Clamp(rect.y,bounds.yMin+6,Mathf.Max(bounds.yMin+6,bounds.yMax-rect.height-6));
@@ -261,13 +283,22 @@ namespace HobbyDS9.UnityReview
             {
                 painter.BeginPath();painter.MoveTo(Position(edge.EndpointA));painter.LineTo(Position(edge.EndpointB));painter.Stroke();
             }
-            if(routeOrigin!=null)
+            if(planPaths!=null)
+            {
+                foreach(var leg in planPaths)
+                {
+                    if(leg.Count<2)continue;
+                    painter.strokeColor=new Color(.94f,.69f,.42f);painter.lineWidth=3;painter.BeginPath();
+                    painter.MoveTo(Project(leg[0]));foreach(var point in leg.Skip(1))painter.LineTo(Project(point));painter.Stroke();
+                }
+            }
+            else if(routeOrigin!=null)
             {
                 var path=RoutePositions();
                 painter.strokeColor=new Color(.94f,.69f,.42f);painter.lineWidth=3;painter.BeginPath();painter.MoveTo(path[0]);
                 foreach(var point in path.Skip(1))painter.LineTo(point);painter.Stroke();
             }
-            foreach(var node in new[]{routeOrigin,routeSteps.LastOrDefault()}.Where(n=>n!=null).Distinct())
+            foreach(var node in new[]{routeOrigin}.Concat(pinnedNodes).Concat(planPaths==null?new[]{routeSteps.LastOrDefault()}:Array.Empty<string>()).Where(n=>n!=null).Distinct())
             {
                 var point=Position(node!);painter.strokeColor=new Color(.94f,.69f,.42f);painter.lineWidth=2;
                 painter.BeginPath();painter.Arc(point,19,0,360);painter.Stroke();
@@ -278,6 +309,8 @@ namespace HobbyDS9.UnityReview
                 painter.BeginPath();painter.MoveTo(p+new Vector2(12,20));painter.LineTo(p+new Vector2(20,20));painter.LineTo(p+new Vector2(20,12));painter.Stroke();
             }
         }
+        private Vector2 Project(GeneratedGalaxyRoutePoint point)=>contentRect.position+new Vector2((float)viewport.X(point.X),(float)viewport.Y(point.Y));
+        private Vector2 Project(GeneratedGalaxyDisplayPoint point)=>contentRect.position+new Vector2((float)viewport.X(point.X),(float)viewport.Y(point.Y));
         private List<Vector2> InfluencePolygon(EnvironmentGalaxyFeatureDto feature)
         {
             // Presentation-only ellipse tessellation and clipping to the authoritative map rectangle.
