@@ -126,8 +126,8 @@ namespace HobbyDS9.UnityReview
                 {
                     var local=map.WorldToLocal(world);
                     var anchors=generated.Regions.Select(region=>{
-                        var point=generatedStars!.TryGetValue(region.NodeId,out var star)?star:region.Center;
-                        return new GeneratedCampaignNodeAnchor(region.NodeId,viewport.X(point.X),viewport.Y(point.Y));});
+                        var point=Point(region.NodeId); // Same final projected floats as Place/Paint.
+                        return new GeneratedCampaignNodeAnchor(region.NodeId,point.x,point.y);});
                     return GeneratedCampaignNodePicker.Resolve(anchors,local.x,local.y);
                 }
                 int nodePointer=-1,nodeButton=-1;string? pressedNode=null;
