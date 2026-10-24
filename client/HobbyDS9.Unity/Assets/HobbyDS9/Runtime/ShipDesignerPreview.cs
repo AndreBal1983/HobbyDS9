@@ -24,6 +24,7 @@ namespace HobbyDS9.UnityClient
         private readonly VisualElement schematic = new VisualElement();
         private ShipPreviewStage? stage;
         private VisualElement? viewport;
+        private Vector2 fittedViewportSize=new Vector2(-1,-1);
         private bool disposed;
 
         public static string? ReferenceKey(string? hullVersionId) =>
@@ -37,6 +38,9 @@ namespace HobbyDS9.UnityClient
             foreach(var text in new[]{"MISSION / SENSORS / SCIENCE","CORE / POWER / PROPULSION","DEFENCE / SUPPORT"})
                 schematic.Add(new Label(text){pickingMode=PickingMode.Ignore});
             image.AddToClassList("sd-hull-reference-image");
+            image.style.height=StyleKeyword.Auto;image.style.minHeight=1;image.style.flexBasis=0;image.style.flexGrow=1;image.style.flexShrink=1;
+            image.style.width=Length.Percent(100);image.style.maxWidth=Length.Percent(100);
+            caption.style.flexShrink=0;
             image.tooltip="Drag with left mouse to orbit · wheel to zoom the illustrative model";
             image.RegisterCallback<PointerDownEvent>(e=>
             {
@@ -59,6 +63,7 @@ namespace HobbyDS9.UnityClient
                 zoom=Mathf.Clamp(zoom*Mathf.Exp(-Mathf.Clamp(e.delta.y,-10,10)*.12f),.6f,2.2f);stage.ZoomReference(zoom);e.StopPropagation();
             });
             var controls=new VisualElement {name="designer-reference-controls"};controls.style.flexDirection=FlexDirection.Row;controls.style.flexWrap=Wrap.Wrap;
+            controls.style.flexShrink=0;
             foreach(var view in new[]{DesignerReferenceView.Hull,DesignerReferenceView.Nacelles,DesignerReferenceView.Deflector,DesignerReferenceView.CoreCutaway})
             {
                 var choice=view;var button=new Button(()=>{stage?.SetReferenceView(choice);RefreshCaption();})
@@ -73,7 +78,7 @@ namespace HobbyDS9.UnityClient
             }
             Add(controls);
             nacelleStudies.name="designer-nacelle-studies";deflectorStudies.name="designer-deflector-studies";
-            foreach(var group in new[]{nacelleStudies,deflectorStudies}){group.style.flexDirection=FlexDirection.Row;group.style.flexWrap=Wrap.Wrap;group.style.display=DisplayStyle.None;Add(group);}
+            foreach(var group in new[]{nacelleStudies,deflectorStudies}){group.style.flexDirection=FlexDirection.Row;group.style.flexWrap=Wrap.Wrap;group.style.flexShrink=0;group.style.display=DisplayStyle.None;Add(group);}
             foreach(var choice in new[]{("Classic",DesignerStudyVariant.ClassicNacelles),("Sovereign-style",DesignerStudyVariant.SovereignNacelles),("Blue",DesignerStudyVariant.BlueDeflector),("Amber",DesignerStudyVariant.AmberDeflector),("Survey",DesignerStudyVariant.SurveyDeflector)})
             {
                 var selected=choice;var button=new Button(()=>{stage?.SetStudyVariant(selected.Item2);RefreshCaption();})
@@ -86,10 +91,6 @@ namespace HobbyDS9.UnityClient
             Fallback(visualKey==null ? "Hull schematic · no mapped model reference" : "Illustrative hull reference · equipment shown schematically");
             RegisterCallback<AttachToPanelEvent>(_=>Open());
             RegisterCallback<DetachFromPanelEvent>(_=>Release());
-            image.RegisterCallback<GeometryChangedEvent>(FitViewport);
-            caption.RegisterCallback<GeometryChangedEvent>(FitViewport);
-            controls.RegisterCallback<GeometryChangedEvent>(FitViewport);
-            RegisterCallback<GeometryChangedEvent>(FitViewport);
         }
 
         private static void CompactControl(Button button)
@@ -133,27 +134,21 @@ namespace HobbyDS9.UnityClient
         public void BindViewport(VisualElement value)
         {
             if(viewport!=null)viewport.UnregisterCallback<GeometryChangedEvent>(FitViewport);
-            viewport=value;viewport.RegisterCallback<GeometryChangedEvent>(FitViewport);
+            viewport=value;fittedViewportSize=new Vector2(-1,-1);viewport.RegisterCallback<GeometryChangedEvent>(FitViewport);
         }
 
         private void FitViewport(GeometryChangedEvent change)
         {
             if(disposed || viewport==null || panel==null)return;
-            var availableWidth=viewport.worldBound.xMax-worldBound.xMin-2;
-            if(!float.IsNaN(availableWidth) && !float.IsInfinity(availableWidth) && availableWidth>0)
-            {
-                // A vertical ScrollView does not constrain an Image's intrinsic
-                // texture width. Explicitly break that auto/percent size cycle.
-                if(Mathf.Abs(resolvedStyle.width-availableWidth)>.5f){style.width=availableWidth;style.maxWidth=availableWidth;}
-                var imageWidth=Mathf.Max(1,viewport.worldBound.xMax-image.worldBound.xMin-2);
-                if(Mathf.Abs(image.resolvedStyle.width-imageWidth)>.5f){image.style.width=imageWidth;image.style.maxWidth=imageWidth;}
-            }
-            var available=viewport.worldBound.yMax-image.worldBound.yMin-caption.resolvedStyle.height-12;
-            if(float.IsNaN(available) || float.IsInfinity(available))return;
+            // One-way sizing: only the externally constrained viewport feeds
+            // this box. Child/image/caption positions never feed layout back.
+            var size=viewport.contentRect.size;
+            if(float.IsNaN(size.x)||float.IsInfinity(size.x)||float.IsNaN(size.y)||float.IsInfinity(size.y)||size.x<=0||size.y<=0)return;
+            size=new Vector2(Mathf.Max(1,Mathf.Floor(size.x-2)),Mathf.Max(1,Mathf.Floor(size.y-14)));
+            if(size==fittedViewportSize)return;fittedViewportSize=size;
+            style.width=size.x;style.maxWidth=size.x;style.height=size.y;style.minHeight=0;
             var maximum=GetFirstAncestorOfType<ShipDesignerView>()?.ClassListContains("sd-wide")==true?440:360;
-            var height=Mathf.Min(maximum,Mathf.Max(1,available));
-            if(Mathf.Abs(image.resolvedStyle.height-height)<.5f)return;
-            image.style.minHeight=1;image.style.height=height;
+            image.style.maxHeight=maximum;
         }
 
         private void Fallback(string text)
