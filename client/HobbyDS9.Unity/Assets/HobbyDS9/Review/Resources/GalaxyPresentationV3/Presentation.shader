@@ -91,13 +91,13 @@ Shader "HobbyDS9/GalaxyPresentationV3/Presentation"
                 int i=d.z>0?11-k:k;
                 float t0=(Edges[i]-o.z)/d.z,t1=(Edges[i+1]-o.z)/d.z;
                 float lo=max(nearZ,min(t0,t1)),hi=min(farZ,max(t0,t1));if(lo>=hi)continue;
-                float3 point=o+d*((lo+hi)*.5);
+                float3 diskPoint=o+d*((lo+hi)*.5);
                 float z0=o.z+d.z*lo,z1=o.z+d.z*hi,zlo=min(z0,z1),zhi=max(z0,z1);
                 float thin=(Cdf(zhi,.035)-Cdf(zlo,.035))/mu,core=(Cdf(zhi,.11)-Cdf(zlo,.11))/mu,dust=(Cdf(zhi,.018)-Cdf(zlo,.018))/mu;
-                float2 uv=(point.xy+1.15)/2.3;uv=uv*(2047.0/2048)+.5/2048;
+                float2 uv=(diskPoint.xy+1.15)/2.3;uv=uv*(2047.0/2048)+.5/2048;
                 uv.y=1-uv.y; // ONE authored PNG row-top to imported texture UV correction.
                 float4 data=tex2Dlod(_Atlas,float4(uv,0,_MacroMip));
-                float bulge=1-smoothstep(.08,.16,length(point.xy));
+                float bulge=1-smoothstep(.08,.16,length(diskPoint.xy));
                 float3 source=.12*data.rgb*((1-bulge)*thin+bulge*core);float tau=4*data.a*dust;
                 light+=transmission*source*Ratio(tau);transmission*=exp(-tau);
             }
