@@ -212,8 +212,10 @@ namespace HobbyDS9.UnityReview.Tests
             {
                 Assert.That(renderer.Render(view,1920,1080,true,true),Is.True);Assert.That(renderer.VisibleFieldCount,Is.EqualTo(8));Assert.That(renderer.LocalFetchUpperBound,Is.LessThanOrEqualTo(40000000));
                 Assert.That(renderer.Texture!.width,Is.EqualTo(960));Assert.That(renderer.Texture.height,Is.EqualTo(540));Assert.That(renderer.ParticleCount,Is.LessThanOrEqualTo(256));
-                var material=(Material)typeof(GeneratedGalaxyV3Background).GetField("material",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(renderer)!;
-                var volume=(Texture3D)material.GetTexture("_Volume");Assert.That(volume.mipmapCount,Is.EqualTo(8));Assert.That(GraphicsFormatUtility.IsSRGBFormat(volume.graphicsFormat),Is.False);
+                var uploaded=typeof(GeneratedGalaxyV3Background).GetField("assets",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(renderer)!;
+                // Actual uploaded resource properties; not a GPU sampler-binding query.
+                var volume=(Texture3D)uploaded.GetType().GetField("Volume",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(uploaded)!;
+                Assert.That(volume.mipmapCount,Is.EqualTo(8));Assert.That(GraphicsFormatUtility.IsSRGBFormat(volume.graphicsFormat),Is.False);
                 var mesh=(Mesh)typeof(GeneratedGalaxyV3Background).GetField("mesh",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(renderer)!;var vertices=mesh.vertices;
                 for(int i=0;i<renderer.ParticleCount;i++)
                 {Assert.That((vertices[i*4+1].x-vertices[i*4].x)*renderer.LocalSize.x/2,Is.LessThanOrEqualTo(32.001),"full quad width, final float projection");Assert.That((vertices[i*4].y-vertices[i*4+3].y)*renderer.LocalSize.y/2,Is.LessThanOrEqualTo(32.001),"full quad height");}
