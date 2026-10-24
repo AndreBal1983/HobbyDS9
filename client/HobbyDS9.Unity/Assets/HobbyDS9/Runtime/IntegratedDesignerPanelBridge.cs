@@ -17,7 +17,7 @@ namespace HobbyDS9.UnityClient
             public ShipDesignDraft? Draft; public ShipDesignerView? View;
             public Action<bool> Changed=null!; public Action Back=null!;
             public Func<ShipClassDraftDto,bool> CanPublish=null!,Publish=null!;
-            public Func<CampaignIntegratedDesignLibrarySnapshot?> Refresh=null!;
+            public Func<bool,CampaignIntegratedDesignLibrarySnapshot?> Refresh=null!;
             public Func<CampaignBlueprintSnapshot,ShipClassDraftDto> Edit=null!;
             public Action New=null!; public Func<string> Notice=null!;
             public Func<string> ClassId=null!;
@@ -26,7 +26,7 @@ namespace HobbyDS9.UnityClient
         }
         public static object Create(CampaignIntegratedDesignLibrarySnapshot library,Action<bool> changed,Action back,
             Func<ShipClassDraftDto,bool> canPublish,Func<ShipClassDraftDto,bool> publish,
-            Func<CampaignIntegratedDesignLibrarySnapshot?> refresh,Func<CampaignBlueprintSnapshot,ShipClassDraftDto> edit,Action newClass,
+            Func<bool,CampaignIntegratedDesignLibrarySnapshot?> refresh,Func<CampaignBlueprintSnapshot,ShipClassDraftDto> edit,Action newClass,
             Func<string> notice,ShipClassDraftDto? starter,Func<string> classId)
         {
             var state=new State{Library=library,Changed=changed,Back=back,CanPublish=canPublish,Publish=publish,Refresh=refresh,Edit=edit,New=newClass,Notice=notice,ClassId=classId,TemplateCaption=starter!=null?"Utility starter":"Empty available hull (advanced)"};
@@ -55,9 +55,9 @@ namespace HobbyDS9.UnityClient
             if(s.Update!=null)s.Draft.Changed-=s.Update;s.View?.Dispose();
             var actions=new VisualElement();actions.AddToClassList("sd-buttons");actions.style.flexDirection=FlexDirection.Row;actions.style.flexShrink=0;root.Add(actions);
             var feedback=new Label(){name="integrated-design-feedback"};feedback.style.whiteSpace=WhiteSpace.Normal;root.Add(feedback);
-            var publish=new Button(()=>{if(s.Publish(s.Draft.Current.ToDto())){s.Draft.MarkPublished();var library=s.Refresh();if(library!=null)s.Library=library;Present(root,s);}else s.Update?.Invoke();}){name="integrated-design-publish",text="Publish class revision"};actions.Add(publish);
+            var publish=new Button(()=>{if(s.Publish(s.Draft.Current.ToDto())){s.Draft.MarkPublished();var library=s.Refresh(false);if(library!=null)s.Library=library;Present(root,s);}else s.Update?.Invoke();}){name="integrated-design-publish",text="Publish class revision"};actions.Add(publish);
             actions.Add(new Button(()=>s.Draft.RequestDiscard(()=>{s.New();s.TemplateCaption=s.Draft.Provider.Templates[0].Caption;s.Draft.StartFit(s.Draft.Provider.Templates[0].Fit);s.Update?.Invoke();})){name="integrated-design-new",text="New class"});
-            actions.Add(new Button(()=>{var library=s.Refresh();if(library!=null){s.Library=library;
+            actions.Add(new Button(()=>{var library=s.Refresh(true);if(library!=null){s.Library=library;
                 var provider=new ApplicationShipDesignPreviewProvider(ShipDesignApplication.FromCampaignCatalogue(library.Catalogue!.Catalogue),library.Catalogue.AvailableVersionIds,s.Draft.Provider.Templates,"OWN CAMPAIGN CATALOGUE · custom construction unavailable");s.Draft.RefreshProvider(provider);Present(root,s);}else s.Update?.Invoke();}){name="integrated-design-refresh",text="Refresh campaign"});
             foreach(var button in actions.Children().OfType<Button>())button.AddToClassList("lcars-pill");
             s.View=new ShipDesignerView(s.Draft,s.Back);s.View.Q<Button>("designer-construction").style.display=DisplayStyle.None;

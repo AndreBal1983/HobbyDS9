@@ -75,6 +75,17 @@ public sealed class DesignPublicationTests : IDisposable
         Assert.Single(p.Library.Published,r=>r.Blueprint.BlueprintId==secondId);Assert.Equal(2,p.Library.Published.Count(r=>r.Blueprint.BlueprintId==firstId));
         Assert.True(m.Save("classes"));Assert.True(m.Load("classes",true));Assert.Equal(2,m.DesignLibrary().Published.Select(r=>r.Blueprint.Fit.ClassId).Distinct().Count());
     }
+    [Fact] public void PostPublicationRefreshKeepsSuccessButExplicitRefreshAnnouncesAndStaleRefreshStillRejects()
+    {
+        var m=Model();var p=new ReviewDesignPublication(m);var fit=Fit(p);Assert.True(p.Publish(fit));
+        Assert.Equal("Published revision 1.",p.Notice);var frame=m.Current.Frame;var library=p.Library;
+        Assert.True(p.Refresh(false));Assert.NotSame(frame,m.Current.Frame);Assert.NotSame(library,p.Library);
+        Assert.True(p.Current);Assert.Equal(2,p.NextRevision);Assert.Single(p.Library.Published);Assert.False(p.CanPublish(fit));
+        Assert.Equal("Published revision 1.",p.Notice);
+        Assert.True(p.Refresh());Assert.Equal("Current campaign catalogue refreshed; local fit retained.",p.Notice);
+        Assert.True(m.Save("notice"));Assert.True(m.Load("notice",true));Assert.False(p.Refresh(false));
+        Assert.Equal("Campaign replaced. Open the current campaign designer.",p.Notice);Assert.False(p.CanPublish(fit));
+    }
     public void Dispose(){if(Directory.Exists(directory))Directory.Delete(directory,true);}
 }
 

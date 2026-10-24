@@ -27,13 +27,14 @@ namespace HobbyDS9.UnityReview
         { this.model=model;owner=model.Current;observed=owner.Frame;Library=model.DesignLibrary();NewIdentity(); }
         public void NewIdentity()
         { BlueprintId="blueprint.player."+Guid.NewGuid().ToString("N");ClassId="class."+BlueprintId;NextRevision=1;publishedFit=null; }
-        public bool Refresh()
+        public bool Refresh(bool announce=true)
         {
             if(model.Closed || model.Busy || !ReferenceEquals(model.Current,owner)) { Notice="Campaign replaced. Open the current campaign designer.";return false; }
-            if(!model.Refresh())return false;
+            if(!model.Refresh()){Notice=model.Message;return false;}
             Library=model.DesignLibrary();observed=model.Current.Frame;RefreshRequired=false;
             var latest=Library.Published.Where(p=>p.Blueprint.BlueprintId==BlueprintId).Select(p=>p.Blueprint.Revision).DefaultIfEmpty(0).Max();
-            NextRevision=latest==int.MaxValue?0:latest+1;Notice="Current campaign catalogue refreshed; local fit retained.";return true;
+            NextRevision=latest==int.MaxValue?0:latest+1;
+            if(announce)Notice="Current campaign catalogue refreshed; local fit retained.";return true;
         }
         public bool CanPublish(ShipClassDraftDto draft) => Current && !model.Busy && !RefreshRequired && Library.CanPublish && NextRevision>0
             && !owner.HasPendingWork && !owner.Dirty && !owner.RefreshRequired && draft.ClassId==ClassId && publishedFit!=JsonConvert.SerializeObject(draft) && Valid(Library,draft);
@@ -43,7 +44,7 @@ namespace HobbyDS9.UnityReview
             var accepted=model.PublishDesign(observed,BlueprintId,NextRevision,draft);
             if(!accepted) { RefreshRequired=true;Notice=model.Message+" Local fit retained; refresh before retrying.";return false; }
             publishedFit=JsonConvert.SerializeObject(draft);Library=model.DesignLibrary();observed=model.Current.Frame;
-            Notice="Published revision "+NextRevision+". Custom class construction is not supported in this campaign.";
+            Notice="Published revision "+NextRevision+".";
             NextRevision=NextRevision==int.MaxValue?0:NextRevision+1;return true;
         }
         public ShipClassDraftDto Edit(CampaignBlueprintSnapshot record)
