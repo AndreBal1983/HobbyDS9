@@ -58,10 +58,10 @@ namespace HobbyDS9.UnityReview.Tests
             try{RenderTexture.active=target;image.ReadPixels(new Rect(0,0,target.width,target.height),0,0);image.Apply();return image.GetPixels32();}
             finally{RenderTexture.active=prior;UnityEngine.Object.Destroy(image);}
         }
-        private static void V3Save(RenderTexture target,string name)
+        private static void V3Save(RenderTexture target,string name,bool opaqueDiagnostic=false)
         {
             var image=new Texture2D(target.width,target.height,TextureFormat.RGBA32,false,true);
-            try{image.SetPixels32(V3Read(target));image.Apply();File.WriteAllBytes(Path.Combine(CampaignOutput(),"v3-"+name+".png"),image.EncodeToPNG());}
+            try{var pixels=V3Read(target);if(opaqueDiagnostic)for(int i=0;i<pixels.Length;i++)pixels[i].a=255;image.SetPixels32(pixels);image.Apply();File.WriteAllBytes(Path.Combine(CampaignOutput(),"v3-"+name+".png"),image.EncodeToPNG());}
             finally{UnityEngine.Object.Destroy(image);}
         }
         private static void V3Geometry(ReviewEntry entry,UIDocument doc,string name)
@@ -105,7 +105,7 @@ namespace HobbyDS9.UnityReview.Tests
             File.WriteAllText(Path.Combine(CampaignOutput(),"v3-exterior-"+name+".json"),JsonConvert.SerializeObject(new{name,samples,changed,exteriorChanged,claim="Actual composed 8-bit Color32 UI equality outside charted union, including local shadows; no tolerance; not unquantized-radiance proof"}));
             Assert.That(samples,Is.GreaterThan(1000));Assert.That(changed,Is.GreaterThan(0),"actual local contribution must be visible; blank comparisons cannot pass");Assert.That(exteriorChanged,Is.Zero,"final UI local contribution outside charted union");
         }
-        private static IEnumerator V3Sized(ReviewEntry entry,UIDocument doc,Vector2Int size,string name,bool pair,bool regional)
+        private static IEnumerator V3Sized(ReviewEntry entry,UIDocument doc,Vector2Int size,string name,bool pair,bool regional,bool closeup=false)
         {
             var prior=doc.panelSettings.targetTexture;var w=doc.rootVisualElement.style.width;var h=doc.rootVisualElement.style.height;
             var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);bool success=false;
@@ -121,6 +121,7 @@ namespace HobbyDS9.UnityReview.Tests
                     {
                         // Lawful known proxy centre, not a full-root feature; fractional pan exercises filter support.
                         var proxy=CampaignModel(entry).GeneratedPresentation().Astronomy.Nebulae.First();var vp=CampaignModel(entry).GeneratedViewport;
+                        if(closeup)vp.FitWorldBounds(proxy.CentreX-proxy.VisualReferenceRadiusX,proxy.CentreY-proxy.VisualReferenceRadiusY,proxy.CentreX+proxy.VisualReferenceRadiusX,proxy.CentreY+proxy.VisualReferenceRadiusY);
                         vp.Pan(map.contentRect.width/2-vp.X(proxy.CentreX)+.375,map.contentRect.height/2-vp.Y(proxy.CentreY)-.625);
                         using(var e=GeometryChangedEvent.GetPooled(map.layout,map.layout)){e.target=map;map.SendEvent(e);}yield return null;
                     }
@@ -225,6 +226,31 @@ namespace HobbyDS9.UnityReview.Tests
                 current=false;var texture=renderer.Texture;Assert.Throws<InvalidOperationException>(()=>renderer.Render(view,1920,1080,true,true));Assert.That(renderer.RenderCount,Is.EqualTo(renders));Assert.That(renderer.Texture,Is.SameAs(texture),"stale callback refuses before submission/publication");
             }
         }
+        private static void V3ParticlePlacementProbe()
+        {
+            // Isolated actual shader pass2, not campaign data or a UI stand-in.
+            // White mask prevents the final gate from hiding an incorrectly placed splat.
+            const int width=64,height=48;const float cx=17.28f,cy=14.88f,radius=4;
+            var target=new RenderTexture(width,height,0,RenderTextureFormat.ARGBHalf,RenderTextureReadWrite.Linear);
+            var mask=new Texture2D(1,1,TextureFormat.R8,false,true){filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
+            var material=new Material(Resources.Load<Shader>("GalaxyPresentationV3/Presentation"));var mesh=new Mesh();var prior=RenderTexture.active;
+            try
+            {
+                mask.LoadRawTextureData(new byte[]{255});mask.Apply();material.SetTexture("_Mask",mask);Assert.That(target.Create(),Is.True);
+                var vertices=new Vector3[4];var uv=new Vector2[4];var masks=new Vector2[4];var colours=new Color[4];
+                for(int k=0;k<4;k++){float x=cx+(k==0||k==3?-radius:radius),y=cy+(k<2?-radius:radius);vertices[k]=new Vector3(2*x/width-1,1-2*y/height,0);uv[k]=new Vector2(k==0||k==3?0:1,k<2?0:1);masks[k]=new Vector2(x/width,y/height);colours[k]=new Color(1,1,1,0);}
+                mesh.vertices=vertices;mesh.uv=uv;mesh.uv2=masks;mesh.colors=colours;mesh.triangles=new[]{0,1,2,0,2,3};
+                Graphics.SetRenderTarget(target);GL.Clear(false,true,Color.clear);Assert.That(material.SetPass(2),Is.True);Graphics.DrawMeshNow(mesh,Matrix4x4.identity);
+                var pixels=V3Read(target);double weight=0,xsum=0,ysum=0;
+                for(int y=0;y<height;y++)for(int x=0;x<width;x++){double value=pixels[x+(height-1-y)*width].r;weight+=value;xsum+=(x+.5)*value;ysum+=(y+.5)*value;}
+                Assert.That(weight,Is.GreaterThan(0));double actualX=xsum/weight,actualY=ysum/weight;
+                double error=Math.Sqrt(Math.Pow(actualX-cx,2)+Math.Pow(actualY-cy,2)),reflected=Math.Sqrt(Math.Pow(actualX-cx,2)+Math.Pow(actualY-(height-cy),2));
+                File.WriteAllText(Path.Combine(CampaignOutput(),"v3-particle-placement.json"),JsonConvert.SerializeObject(new{label="Single asymmetric component probe; SAME shader pass2, white mask, no final gate",width,height,expectedX=cx,expectedY=cy,actualX,actualY,error,reflected,centroidTolerancePixels=.35,SystemInfo.graphicsDeviceType,SystemInfo.graphicsUVStartsAtTop}));
+                V3Save(target,"COMPONENT-raw-linear-data-asymmetric-particle-not-campaign",true);
+                Assert.That(error,Is.LessThan(.35),"bounded subpixel centroid only; strict exterior tolerance stays ZERO");Assert.That(reflected,Is.GreaterThan(10),"reject vertically reflected particle placement");
+            }
+            finally{RenderTexture.active=prior;target.Release();UnityEngine.Object.Destroy(target);UnityEngine.Object.Destroy(mask);UnityEngine.Object.Destroy(material);UnityEngine.Object.Destroy(mesh);}
+        }
         [UnityTest] public IEnumerator V3GalaxyAndChartedNebulaePreserveActualCampaignControlsAndComposition()
         {
             yield return new EnterPlayMode();yield return null;yield return null;
@@ -266,10 +292,11 @@ namespace HobbyDS9.UnityReview.Tests
                     CampaignPage(doc,ReviewWorkspacePage.Saves);Click(doc.rootVisualElement.Q<Button>("player-save"));if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);
                     Assert.That(codec.EncodeGeneratedCampaignRoot(v1.Read("generated-3")),Is.EqualTo(legacyBytes));
                     Click(doc.rootVisualElement.Q<Button>("demo-menu"));Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-2"));Confirm(doc);yield return WaitCampaign(entry,"v3-labelled-explore32");
-                    var model=CampaignModel(entry);var pair=model.GeneratedPresentation();Assert.That(pair.Frame.Status.Turn,Is.EqualTo(32));Assert.That(pair.Astronomy.Nebulae.Count,Is.EqualTo(3));V3ImportProbe();
+                    var model=CampaignModel(entry);var pair=model.GeneratedPresentation();Assert.That(pair.Frame.Status.Turn,Is.EqualTo(32));Assert.That(pair.Astronomy.Nebulae.Count,Is.EqualTo(3));V3ImportProbe();V3ParticlePlacementProbe(); //1 component frame
                     V3SyntheticEight(pair,codec); //1 labelled workload frame
                     foreach(var size in V3Sizes)yield return V3Sized(entry,doc,size,"explore32-overview",false,false); //3
                     foreach(var size in V3Sizes)yield return V3Sized(entry,doc,size,"explore32-regional",true,true); //6 on/off
+                    yield return V3Sized(entry,doc,new Vector2Int(1920,1080),"explore32-lawful-proxy-closeup",false,true,true); //1 tighter lawful-proxy view
                     yield return V3Settled(doc);var renderer=V3Renderer(doc);Assert.That(renderer.Texture!.format,Is.EqualTo(RenderTextureFormat.ARGBHalf));
                     var known=pair.KnownMap;var fleet=model.Current.Frame.OwnStrategicFleets.First();Click(doc.rootVisualElement.Q<Button>("map-fleet-"+fleet.FleetId.Value));
                     var target=known.Regions.Select(r=>(r.NodeId,Offer:model.Current.FindKnownRoute(fleet.FleetId.Value,r.NodeId))).Where(p=>p.Offer?.Route.Success==true&&p.Offer.Route.TotalCost>0).OrderBy(p=>p.Offer!.Route.TotalCost).ThenBy(p=>p.NodeId,StringComparer.Ordinal).First().NodeId;
@@ -286,7 +313,7 @@ namespace HobbyDS9.UnityReview.Tests
                     Click(doc.rootVisualElement.Q<Button>("campaign-visual-depth"));yield return null;Assert.That(map.Q<Image>("campaign-v3-content-background").image,Is.Null);Assert.That(GeneratedGalaxyV3Background.LiveInstances,Is.EqualTo(baseline));
                     v2.Write("generated-3",codec.DecodeStaticAstronomyCampaignRoot(b),true);Click(doc.rootVisualElement.Q<Button>("demo-menu"));Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-3"));Confirm(doc);yield return WaitCampaign(entry,"v3-labelled-combat-zero");Assert.That(CampaignModel(entry).IsCurrentGeneratedPresentation(pair),Is.False);
                     CampaignPage(doc,ReviewWorkspacePage.Map);yield return V3Settled(doc);Assert.That(CampaignModel(entry).GeneratedPresentation().Astronomy.Nebulae.Count,Is.Zero);Assert.That(V3Renderer(doc).VisibleFieldCount,Is.Zero);V3Save(doc.panelSettings.targetTexture,"combat-zero-proxy"); //1
-                    Assert.That(Directory.GetFiles(CampaignOutput(),"v3-*.png").Length,Is.EqualTo(17),"explicit17 normal frames, within20 maximum");
+                    Assert.That(Directory.GetFiles(CampaignOutput(),"v3-*.png").Length,Is.EqualTo(19),"explicit19 normal frames, within20 maximum");
                     File.WriteAllText(Path.Combine(CampaignOutput(),"v3-summary.json"),JsonConvert.SerializeObject(new{source="receiving candidate",frames=Directory.GetFiles(CampaignOutput(),"v3-*.png").Length,claim="Labelled separate journeys; no native/FPS/GPU-time claim",ManagedBytes=GC.GetTotalMemory(false)}));
                     Click(doc.rootVisualElement.Q<Button>("demo-menu"));yield return null;Assert.That(GeneratedGalaxyV3Background.LiveInstances,Is.EqualTo(baseline));
                 }

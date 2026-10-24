@@ -107,15 +107,24 @@ Shader "HobbyDS9/GalaxyPresentationV3/Presentation"
         {
             const float3 floorLight=float3(.0015,.0023,.004);
             float3 macro=floorLight+Macro(Plane(input.uv));
-            // Local RT contains the binary mask AFTER volume+additive-particle
-            // composition. Its inward support includes BOTH bilinear stages.
+            // Gate the completed local layer again AFTER its bilinear upsample.
+            // Same point-mask coordinate as LocalLayer; gates opacity AND radiance.
             float4 local=tex2D(_Local,input.uv);
+            float mask=tex2Dlod(_Mask,float4(input.uv.x,1-input.uv.y,0,0)).r;
+            local*=step(.5,mask);
             return float4(macro*(1-saturate(local.a))+local.rgb,1);
         }
         struct ParticleInput{float4 vertex:POSITION;float2 uv:TEXCOORD0;float2 mask:TEXCOORD1;float4 colour:COLOR;};
         struct ParticleOutput{float4 vertex:SV_POSITION;float2 uv:TEXCOORD0;float2 mask:TEXCOORD1;float4 colour:COLOR;};
         ParticleOutput ParticleVertex(ParticleInput input)
-        {ParticleOutput output;output.vertex=input.vertex;output.uv=input.uv;output.mask=input.mask;output.colour=input.colour;return output;}
+        {
+            ParticleOutput output;output.vertex=input.vertex;
+            // Raw clip-space meshes must match Graphics.Blit's RT convention.
+            #if UNITY_UV_STARTS_AT_TOP
+            output.vertex.y=-output.vertex.y;
+            #endif
+            output.uv=input.uv;output.mask=input.mask;output.colour=input.colour;return output;
+        }
         float4 ParticlePixel(ParticleOutput input):SV_Target
         {
             float2 p=input.uv*2-1;float r=dot(p,p);clip(1-r);
