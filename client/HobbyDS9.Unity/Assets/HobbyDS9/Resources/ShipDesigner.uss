@@ -122,3 +122,11 @@
 .sd-short .sd-power-detail { height: 150px; }
 .sd-short .sd-instrument-title { height: 36px; min-height: 36px; }
 #designer-profile-results > .sd-block { max-width: 1100px; }
+.sd-hull-reference { min-width: 0; flex-shrink: 0; background-color: var(--lcars-map); border-top-width: 4px; border-top-color: var(--lcars-lavender); margin-bottom: 12px; }
+.sd-hull-reference-image { height: 360px; min-height: 220px; width: 100%; flex-shrink: 0; }
+.sd-reference-schematic { height: 300px; width: 100%; align-items: center; justify-content: center; }
+.sd-reference-schematic > Label { border-width: 2px; border-color: var(--lcars-lavender); color: var(--lcars-blue); padding: 16px; margin: 8px; }
+#designer-hull-reference-caption { color: var(--lcars-muted); font-size: 13px; padding: 6px 10px; }
+.sd-wide .sd-hull-reference-image { height: 440px; }
+.sd-narrow .sd-hull-reference-image { height: 280px; min-height: 200px; }
+.sd-short .sd-hull-reference-image { height: 240px; min-height: 180px; }

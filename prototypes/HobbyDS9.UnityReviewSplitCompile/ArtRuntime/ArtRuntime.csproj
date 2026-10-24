@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../Shared.props" />
+  <PropertyGroup><AssemblyName>HobbyDS9.ArtDemo</AssemblyName></PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Unity.RenderPipelines.Core.Runtime"><HintPath>$(UnityScriptAssembliesDir)/Unity.RenderPipelines.Core.Runtime.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.RenderPipelines.Universal.Runtime"><HintPath>$(UnityScriptAssembliesDir)/Unity.RenderPipelines.Universal.Runtime.dll</HintPath><Private>false</Private></Reference>
+    <Compile Include="$(RepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Runtime/*.cs" Link="ActualUnitySource/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

@@ -29,6 +29,9 @@ namespace HobbyDS9.UnityClient
         private string? selectedComponent, replacementSource;
         private string? renderedSystem, renderedComponent;
         private bool comparisonOpen;
+        private ShipDesignerPreview? hullPreview;
+        private string? referenceHull;
+        private VisualElement? overviewFacts,overviewInstalled,overviewTail;
         private string? selectedPowerComponent;
         private readonly Dictionary<string,LcarsPowerSlider[]> powerEditors=new Dictionary<string,LcarsPowerSlider[]>();
         public ShipDesignerView(ShipDesignDraft draft,Action closeRequested,ShipDesignerGraphics? graphicCatalogue=null,
@@ -74,7 +77,7 @@ namespace HobbyDS9.UnityClient
             }
             Draft.Changed+=Refresh;RegisterCallback<GeometryChangedEvent>(e=>{ApplyLogicalWidth(e.newRect.width);ApplyLogicalHeight(e.newRect.height);});ApplyLogicalWidth(1700);Refresh();
         }
-        public void Dispose()=>Draft.Changed-=Refresh;
+        public void Dispose() { Draft.Changed-=Refresh; hullPreview?.Dispose(); hullPreview=null; }
         public void RefreshCampaignState()
         {
             publication.SetEnabled(campaign?.CanPublish??false);
@@ -121,6 +124,11 @@ namespace HobbyDS9.UnityClient
             confirmation.style.display=Draft.ConfirmationPending?DisplayStyle.Flex:DisplayStyle.None;this.Q<Button>("designer-global-issues").text=p.Issues.Count+" issues";
             foreach(var id in Systems)navigation.Q<Button>("designer-system-"+id.ToLowerInvariant()).EnableInClassList("sd-selected",id==SelectedSystem);
             systemPicker.SetValueWithoutNotify(Caption(SelectedSystem));
+            if(SelectedSystem=="Overview" && renderedSystem=="Overview" && hullPreview!=null && referenceHull==fit.HullId)
+            {
+                RefreshOverview(p);return;
+            }
+            hullPreview?.Dispose();hullPreview=null;
             workspace.Clear();workspace.EnableInClassList("sd-profile-page",SelectedSystem=="Profiles");workspace.Add(new LcarsSectionHeader(Caption(SelectedSystem).ToUpperInvariant()) {name="designer-workspace-title"});
             if(SelectedSystem=="Overview")Overview(p);else if(SelectedSystem=="Hull")Hull(p);else if(SelectedSystem=="Profiles")Profiles(p);else if(SelectedSystem=="Validation")Validation(p);else SystemPage(p);
             renderedSystem=SelectedSystem;renderedComponent=selectedComponent;
@@ -146,9 +154,22 @@ namespace HobbyDS9.UnityClient
         private void Overview(DesignerPreview p)
         {
             var s=Scroll("designer-overview");workspace.Add(s);var stage=new VisualElement();stage.AddToClassList("sd-overview-stage");s.Add(stage);
-            var art=new VisualElement();art.AddToClassList("sd-overview-art");stage.Add(art);art.Add(Graphic("Overview"));art.Add(new LcarsReadout("Illustrative side view / powered performance shown alongside"));
-            var facts=new VisualElement();facts.AddToClassList("sd-overview-facts");stage.Add(facts);Metrics(facts,"SHIP AT A GLANCE / "+Draft.Profile,Headlines(p,"Overview"));Metrics(facts,"POWER",p.Power);Metrics(facts,"CONSTRUCTION / UPKEEP",p.Costs);
-            foreach(var i in p.Issues.Take(2))Issue(s,i);if(p.Issues.Count>2)s.Add(new LcarsReadout("See Cost / Validation for all "+p.Issues.Count+" issues."));Comparison(s,p,true);
+            var art=new VisualElement();art.AddToClassList("sd-overview-art");stage.Add(art);
+            referenceHull=Draft.Current.HullId;hullPreview=new ShipDesignerPreview(referenceHull);art.Add(hullPreview);
+            overviewInstalled=new VisualElement();art.Add(overviewInstalled);
+            art.Add(new LcarsReadout("Model is an illustrative hull reference. Installed systems, mount compatibility and performance come from this draft's validation."));
+            overviewFacts=new VisualElement();overviewFacts.AddToClassList("sd-overview-facts");stage.Add(overviewFacts);
+            overviewTail=new VisualElement();s.Add(overviewTail);RefreshOverview(p);
+        }
+        private void RefreshOverview(DesignerPreview p)
+        {
+            overviewInstalled!.Clear();var installed=Block(overviewInstalled,"INSTALLED FIT");
+            if(Draft.Current.Installed.Count==0)installed.Add(new LcarsReadout("Empty hull · add required systems"));
+            foreach(var item in Draft.Current.Installed.OrderBy(i=>i.Key,StringComparer.Ordinal))
+                installed.Row(Draft.Provider.Catalogue.FirstOrDefault(c=>c.Id==item.Key)?.Name??item.Key,item.Value.ToString());
+            overviewFacts!.Clear();Metrics(overviewFacts,"SHIP AT A GLANCE / "+Draft.Profile,Headlines(p,"Overview"));Metrics(overviewFacts,"POWER",p.Power);Metrics(overviewFacts,"CONSTRUCTION / UPKEEP",p.Costs);
+            overviewTail!.Clear();foreach(var i in p.Issues.Take(2))Issue(overviewTail,i);
+            if(p.Issues.Count>2)overviewTail.Add(new LcarsReadout("See Cost / Validation for all "+p.Issues.Count+" issues."));Comparison(overviewTail,p,true);
         }
         private void Hull(DesignerPreview p)
         {

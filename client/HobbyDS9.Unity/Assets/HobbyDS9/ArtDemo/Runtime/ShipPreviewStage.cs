@@ -73,6 +73,22 @@ namespace HobbyDS9.ArtDemo
             EnsureAlive();
             Clear();
             if (selection == null || (selection.Disclosure != ShipPreviewDisclosure.Owned && selection.Disclosure != ShipPreviewDisclosure.LawfullyVisible)) return;
+            ShowDefinition(ShipVisualCatalog.Resolve(selection), false);
+        }
+
+        // An explicitly requested art-library reference is not a ship selection
+        // and grants no ownership, equipment, hull or gameplay identity.
+        public void ShowArtReference(string visualKey)
+        {
+            EnsureAlive();
+            Clear();
+            var definition = ShipVisualCatalog.Find(visualKey);
+            if (definition == null) { Label = "No illustrative hull reference available"; return; }
+            ShowDefinition(definition, true);
+        }
+
+        private void ShowDefinition(ShipVisualDefinition definition, bool illustrative)
+        {
             var studio = Resources.Load<Shader>("ArtDemo/PreviewStudio");
             if (studio == null || !studio.isSupported)
             {
@@ -80,7 +96,6 @@ namespace HobbyDS9.ArtDemo
                 Availability = ShipPreviewAvailability.RenderingUnavailable;
                 return;
             }
-            var definition = ShipVisualCatalog.Resolve(selection);
             var prefab = definition?.LoadPrefab();
             if (prefab != null)
             {
@@ -89,7 +104,7 @@ namespace HobbyDS9.ArtDemo
                 ApplyStudioMaterials();
                 model.transform.localScale = Vector3.one * (10 / definition.NominalArtLengthMetres);
                 VisualKey = definition.VisualKey;
-                Label = definition.Label;
+                Label = illustrative ? "Illustrative hull reference · equipment shown schematically" : definition.Label;
                 Availability = ShipPreviewAvailability.Model;
             }
             else
