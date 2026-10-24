@@ -1,5 +1,17 @@
 # Navigation and galaxy review follow-up — 24 October 2026
 
+## Receiving checkpoint (supersedes pending statements below)
+
+Source `b3105c08cd634067f15d66883f6563942bddaa75` now has a separate strict Windows IL2CPP build at `E:/HobbyDS9/artifacts/demos/HobbyDS9-Navigation-Galaxy-20261024-b3105c0`. The older db5b110 package and latest-validated pointer remain preserved. The chronological notes below describe earlier candidate states; their pending receiving statements are superseded here.
+
+Actual Unity navigation receiving passed on1327598 (85.82s); final macro v4 receiving passed on b3105c0 (166.15s,19 images) and temporal residency passed (26.12s,24 rendered observations). Seven retained fields stay at weight1 while departing/incoming fields fade separately. Quantized composed exterior comparisons remain unchanged at all three sizes. These are bounded regressions, not proof of universal flicker elimination or hardware performance. Full portable2110 and travel-client90 tests pass; old pending68, aftermath69 and native1000 roots replay and encode byte-exact.
+
+Native desktop observations at `E:/HobbyDS9/artifacts/navigation-galaxy-native-b3105c0-20261024` show three combat rounds across3440x1440,1920x1080 and1280x720; confirmed aftermath69 retains Cruiser1 hull57/220 and torpedoes3/12. Blank-polygon right-click queues travel immediately; replacing travel also has no modal. After normal quit and fresh-process Continue2, the accepted pale-blue route remains visible. Native resave is byte-exact (SHA256 `076f3c229a8d8c01654f11e01ed7810ed01ad9f496cab9eb63dc280d3260b185`). End Turn70 moves the fleet to Star0157 and charts additional space. Native held-Shift is unproven; actual pooled Unity modifier-event coverage passes. Activity-replacement Cancel is covered by receiving, not claimed as a native observation in this run.
+
+The player was closed normally. Fresh pre-native restoration verified all50 original files with zero mismatches/extras and restored the recorded preference states. Owner Continue1 and intentional combat Continue3 remain protected; disposable test Continue2 is archived outside the owner namespace. Independent source/evidence review supports a navigation and visual-progress checkpoint, not full-goal completion.
+
+Remaining limits: confirmed save/load blocks the interface for seconds; art is still softer than the supplied references; battle models/effects remain provisional; no native audio/FPS/GPU-timing acceptance. Generated AI planning still uses persisted edges while human route queries can infer known-known adjacency; a versioned AI correction remains open. The broader goal remains unfinished. Usage60%, purchased balance unchanged,90% stop retained.
+
 Status: the owner resumed the delivery goal on 24 October after the focused follow-up. This remains a source/CPU candidate until actual receiving passes. The protected db5b110 executable, package, ZIP and latest-validated pointer are unchanged. Never interrupt an owner game or discard unsaved work; inspect live processes before receiving.
 
 Owner requests: retain accepted route lines; ordinary right-click queues travel without a popup; Shift-right-click extends the queued route; right-click works across the tile; known but unvisited systems do not force detours. Only replacing an actual committed engage/follow action asks for confirmation. Pending combat remains an authoritative phase gate. Fleet invasion/science missions are not implemented and no invented cancellation is claimed.
