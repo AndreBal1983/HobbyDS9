@@ -289,7 +289,8 @@ namespace HobbyDS9.UnityReview.Tests
                     for(int frame=0;frame<24;frame++)
                     {
                         if(frame<8)view.Pan(-1,0);
-                        Assert.That(renderer.Render(view,320,180,true,true),Is.EqualTo(frame<8||renderer.NeedsTransition||frame==0));
+                        bool redraw=frame<8||renderer.NeedsTransition;
+                        Assert.That(renderer.Render(view,320,180,true,true),Is.EqualTo(redraw));
                         var fields=(Array)typeof(GeneratedGalaxyV3Background).GetField("displayed",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(renderer)!;
                         var ids=fields.Cast<object>().Select(f=>((CampaignNebulaVisualProxy)f.GetType().GetField("Proxy",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f)!).FeatureId).ToArray();
                         var parameters=(Vector4[])typeof(GeneratedGalaxyV3Background).GetField("fieldParameters",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(renderer)!;
