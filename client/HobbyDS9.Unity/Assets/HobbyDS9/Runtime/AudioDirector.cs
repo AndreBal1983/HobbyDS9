@@ -90,7 +90,7 @@ namespace HobbyDS9.UnityClient
         public bool PlayTrack(string id)
         {
             var track=playerTracks.FirstOrDefault(t=>t.Id==id&&Available(t));
-            if(track==null)return false;
+            if(track==null){Status="Track unavailable. Choose another song.";return false;}
             StopSources();manualPlaylist=true;paused=false;transportPaused=false;
             waiting=track;requestedStart=AudioSettings.dspTime+.25;loadDeadline=AudioSettings.dspTime+5;
             var clip=clips[track.Id];
@@ -112,7 +112,11 @@ namespace HobbyDS9.UnityClient
             var delay=Math.Max(0,AudioSettings.dspTime-pausedDsp);
             fadeStart+=delay;requestedStart+=delay;loadDeadline+=delay;retryAfter+=delay;
             for(var i=0;i<sources.Length;i++)
-            {if(timings[i]!=null&&sourceTracks[i]!=null&&sources[i].clip!=null){cueStarts[i]+=delay;timings[i]=new MusicCueTiming(cueStarts[i],sources[i].clip.length,sourceTracks[i]!);}sources[i].UnPause();}
+            {
+                var scheduled=timings[i]!=null&&pausedDsp<cueStarts[i];
+                if(timings[i]!=null&&sourceTracks[i]!=null&&sources[i].clip!=null){cueStarts[i]+=delay;timings[i]=new MusicCueTiming(cueStarts[i],sources[i].clip.length,sourceTracks[i]!);}
+                if(scheduled){sources[i].Stop();sources[i].PlayScheduled(cueStarts[i]);}else sources[i].UnPause();
+            }
             transportPaused=false;
         }
         // Explicit service transitions, not mute: mute leaves DSP playback running.
