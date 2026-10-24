@@ -254,7 +254,7 @@ namespace HobbyDS9.UnityReview.Tests
                     using(var submit=NavigationSubmitEvent.GetPooled()){submit.target=foldToggle;foldToggle.SendEvent(submit);}yield return null;Assert.That(fold.value,Is.False);
                     Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-1"));Confirm(doc);yield return WaitCampaign(entry,"v3-empty-v2");Assert.That(CampaignModel(entry),Is.SameAs(initial));
                     Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-3"));Confirm(doc);yield return WaitCampaign(entry,"v3-wrong-profile");Assert.That(CampaignModel(entry),Is.SameAs(initial));Assert.That(File.ReadAllBytes(wrong),Is.EqualTo(old));
-                    Click(start);if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);yield return WaitCampaign(entry,"v3-new250");
+                    Click(doc.rootVisualElement.Q<Button>("generated-campaign-start"));if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);yield return WaitCampaign(entry,"v3-new250");
                     var fresh=CampaignModel(entry);Assert.That(fresh.StaticAstronomyCampaign,Is.True);var freshPair=fresh.GeneratedPresentation();
                     CampaignPage(doc,ReviewWorkspacePage.Saves);Click(doc.rootVisualElement.Q<Button>("player-save"));var saved=codec.EncodeStaticAstronomyCampaignRoot(v2.Read("generated-1"));
                     Click(doc.rootVisualElement.Q<Button>("demo-menu"));Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-1"));Confirm(doc);yield return WaitCampaign(entry,"v3-continue-fresh");
