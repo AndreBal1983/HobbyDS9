@@ -19,6 +19,10 @@ namespace HobbyDS9.Simulation
         internal static GeneratedStaticAstronomyIndex Build(IReadOnlyList<GeneratedGalaxyRegionDto> regions,
             IReadOnlyList<EnvironmentGalaxyFeatureDto> features, int width, int height)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var cpuProfileScope = CpuProfile.Measure("astronomy.index");
+#endif
+
             void Require([DoesNotReturnIf(false)] bool condition) { if (!condition) throw new ArgumentException("Invalid or over-budget frozen static-astronomy geometry."); }
             Require(regions != null && features != null && width > 0 && height > 0
                 && width <= ScaledGalaxyIdentity.MaximumCoordinate && height <= ScaledGalaxyIdentity.MaximumCoordinate

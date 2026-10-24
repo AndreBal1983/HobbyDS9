@@ -33,6 +33,10 @@ namespace HobbyDS9.Simulation
             CampaignPlayableFleetPackageDto? playablePackage=null, NaturalGalaxyDocumentDto? generatedMap=null, string? generatedTemplateHash=null,
             bool staticAstronomy=false)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var cpuProfileScope = CpuProfile.Measure("session.constructor");
+#endif
+
             this.generatedMap = generatedMap == null ? null : NaturalGalaxyData.Copy(generatedMap);
             this.generatedTemplateHash = generatedTemplateHash;
             if(staticAstronomy)

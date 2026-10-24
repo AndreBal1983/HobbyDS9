@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition="'$(HobbyCpuProfile)' == 'true'">
+    <DefineConstants>$(DefineConstants);HOBBYDS9_CPU_PROFILE</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../HobbyDS9.Contracts/HobbyDS9.Contracts.csproj" />
   </ItemGroup>

@@ -11,6 +11,10 @@ namespace HobbyDS9.Simulation
         // real frozen campaign request/pools. This never draws from the campaign RNG.
         private void ValidateReplay(CampaignTacticalReviewSaveDto save, CampaignTacticalBattleCheckpointDto actual, CombatRequestDto request)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var cpuProfileScope = CpuProfile.Measure("validation.battle-replay");
+#endif
+
             Require(actual.ResolvedRounds != null && actual.ResolvedRounds.Count == actual.State.NextRound - 1
                 && actual.ResolvedRounds.All(r => r != null && r.Commitments != null), "Missing private resolution provenance.");
             var replay = Allocate(save,request);

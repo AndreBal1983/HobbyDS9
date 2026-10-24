@@ -31,6 +31,10 @@ namespace HobbyDS9.Simulation
         // Load validates and uses the persisted geometry. It never reruns generation from a seed.
         internal static NaturalGalaxyDocumentDto Frozen(NaturalGalaxyDocumentDto map, IEnumerable<CivilizationDefinitionDto> catalog)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var cpuProfileScope = CpuProfile.Measure("map.frozen");
+#endif
+
             NaturalGalaxyData.Shape(map);
             NaturalGalaxyData.Settings(map.Settings, catalog);
             Require(NaturalGalaxyData.Hash(map) == map.ContentHash, "Frozen generated map hash mismatch.");
@@ -70,6 +74,10 @@ namespace HobbyDS9.Simulation
 
         internal static CampaignPlayableFleetPackageDto Build(CampaignPlayableFleetPackageDto template, NaturalGalaxyDocumentDto map, bool staticAstronomy = false)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var cpuProfileScope = CpuProfile.Measure("package.build");
+#endif
+
             // Existing template reader supplies the trusted exact raw-source identity.
             CampaignTacticalReviewSession.StartPlayable(template);
             var source = template.Integrated!.Physical!.CorePackage!;

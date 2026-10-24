@@ -108,6 +108,9 @@ namespace HobbyDS9.Simulation
                 try {while(x.MoveNext()){if(!y.MoveNext()||!FrontierSame(x.Current,y.Current))return false;}return !y.MoveNext();}
                 finally {(x as IDisposable)?.Dispose();(y as IDisposable)?.Dispose();}
             }
+            #if HOBBYDS9_CPU_PROFILE
+            CpuProfile.Count("equality.reflection-object-visits");
+#endif
             return type.GetProperties().OrderBy(p=>p.Name,StringComparer.Ordinal).All(p=>FrontierSame(p.GetValue(a),p.GetValue(b)));
         }
         public CampaignFrontierSaveDto ExportFrontierSave()

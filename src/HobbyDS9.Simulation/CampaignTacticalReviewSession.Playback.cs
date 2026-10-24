@@ -92,6 +92,10 @@ namespace HobbyDS9.Simulation
         }
         public CampaignBattlePlayback CaptureBattlePlayback(string encounter, string actor)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var cpuProfileScope = CpuProfile.Measure("history.capture-playback");
+#endif
+
             lock (gate)
             {
                 Require(playableHash != null && Actor(actor) == CampaignTacticalError.None, "Only the controlled playable actor can request playback.");
@@ -135,9 +139,15 @@ namespace HobbyDS9.Simulation
                 return playableHistory.Where(b => b.ActorId == actor).ToList().AsReadOnly();
             }
         }
-        private List<CampaignBattlePlayback> PreparePlayableHistory() => playableHash == null ? new List<CampaignBattlePlayback>()
+        private List<CampaignBattlePlayback> PreparePlayableHistory()
+        {
+#if HOBBYDS9_CPU_PROFILE
+            using var historyProfile = CpuProfile.Measure("history.prepare");
+#endif
+            return playableHash == null ? new List<CampaignBattlePlayback>()
             : state.Battles.OrderBy(b => b.State.EncounterId, StringComparer.Ordinal).SelectMany(b =>
                 b.State.Formations.Select(f => f.SideId).Distinct(StringComparer.Ordinal).OrderBy(a => a, StringComparer.Ordinal)
                     .Where(a => controllers[a] == ControllerKind.Human).Select(a => CaptureBattlePlayback(b.State.EncounterId, a))).ToList();
+        }
     }
 }

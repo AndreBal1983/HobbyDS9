@@ -48,6 +48,10 @@ namespace HobbyDS9.Simulation
         }
         private void ValidateTravelSave(CampaignTacticalTravelSaveDto s)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var cpuProfileScope = CpuProfile.Measure("validation.travel");
+#endif
+
             RequireTravelShape(s);
             var game=s.Core.Campaign.GameState;
             ValidateContactRows(game,s.Contacts);
@@ -100,6 +104,9 @@ namespace HobbyDS9.Simulation
                 &&ContactKeys(s.Contacts).SequenceEqual(ContactKeys(authoredContactGrids!)),"Missing authoritative movement/contact proof.");
             else
             {
+                #if HOBBYDS9_CPU_PROFILE
+                using var proofProfile = CpuProfile.Measure("validation.movement-proof");
+#endif
                 var proof=s.MovementProof;
                 FoundationValidator.ValidateGameState(proof.Start,definitions).ThrowIfInvalid(nameof(proof));
                 Require((long)proof.Start.TurnNumber+(s.Phase==SessionPhase.Planning?1:0)==game.TurnNumber,

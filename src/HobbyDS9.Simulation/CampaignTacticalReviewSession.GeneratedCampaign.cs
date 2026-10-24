@@ -40,6 +40,10 @@ namespace HobbyDS9.Simulation
         }
         public CampaignGeneratedSaveDto ExportGeneratedSave()
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var cpuProfileScope = CpuProfile.Measure("export.generated");
+#endif
+
             lock (gate)
             {
                 Require(generatedMap != null, "Not a generated campaign.");
@@ -56,6 +60,10 @@ namespace HobbyDS9.Simulation
             => (long)game.TurnNumber-contact.LastSeenTurn<=1&&GeneratedCoverage(game,contact.ActorId).Contains(contact.LastSeenNodeId,StringComparer.Ordinal);
         public CampaignGeneratedMapDto CaptureGeneratedMap(string actor)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var cpuProfileScope = CpuProfile.Measure("actor.map");
+#endif
+
             lock (gate)
             {
                 Require(generatedMap != null && Actor(actor) == CampaignTacticalError.None, "Only a controlled generated actor may capture its known map.");

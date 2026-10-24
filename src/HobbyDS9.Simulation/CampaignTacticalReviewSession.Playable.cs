@@ -81,11 +81,18 @@ namespace HobbyDS9.Simulation
         }
         private static CampaignTacticalReviewSession ReplayPlayable(CampaignPlayableFleetPackageDto p, CampaignPlayableFleetSaveDto s, CampaignTacticalReviewSession replay)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var cpuProfileScope = CpuProfile.Measure("replay.total");
+#endif
+
             Require(s != null && s.FormatVersion == CampaignPlayableFleetIdentity.Format && s.ProfileId == p.ProfileId
                 && s.PackageHash == p.PackageHash && s.Integrated != null && s.Names != null && s.Transcript != null
                 && s.Transcript.Count <= p.ReplayOperationLimit, "Unsupported/incomplete playable save; no migration.");
             foreach (var operation in s.Transcript!)
             {
+#if HOBBYDS9_CPU_PROFILE
+                using var operationProfile = CpuProfile.Measure("operation."+(operation?.Organization != null ? "Organization" : operation?.Common?.Kind.ToString()));
+#endif
                 Require(operation != null && (operation.Common == null) != (operation.Organization == null), "Closed playable operation required.");
                 var expected = CopyPlayableOperation(operation);
                 bool accepted;
@@ -113,7 +120,11 @@ namespace HobbyDS9.Simulation
                 }
                 Require(accepted && FrontierSame(expected, replay.playableTranscript.Last()), "Illegal/reordered/extra playable operation.");
             }
+            #if HOBBYDS9_CPU_PROFILE
+            Require(CpuProfile.Compare("equality.playable-root", () => FrontierSame(replay.ExportPlayableCore(), s)), "Playable checkpoint/names differ from accepted-operation replay.");
+#else
             Require(FrontierSame(replay.ExportPlayableCore(), s), "Playable checkpoint/names differ from accepted-operation replay.");
+#endif
             return replay;
         }
         public CampaignPlayableFleetSaveDto ExportPlayableSave()
@@ -122,6 +133,10 @@ namespace HobbyDS9.Simulation
         }
         private CampaignPlayableFleetSaveDto ExportPlayableCore()
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var cpuProfileScope = CpuProfile.Measure("export.playable");
+#endif
+
             lock (gate)
             {
                 Require(playableHash != null, "Not a playable-fleet session.");
