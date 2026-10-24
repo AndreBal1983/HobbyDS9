@@ -108,7 +108,7 @@ namespace HobbyDS9.UnityClient
         public void UseAutomaticPlaylist(){manualPlaylist=false;}
         public bool Seek(float fraction)
         {
-            if(float.IsNaN(fraction)||float.IsInfinity(fraction)||current<0||sources[current].clip==null)return false;
+            if(paused||float.IsNaN(fraction)||float.IsInfinity(fraction)||current<0||sources[current].clip==null)return false;
             var source=sources[current];var now=AudioSettings.dspTime;
             var position=Mathf.Clamp01(fraction)*Math.Max(0,source.clip.length-.1f);
             // Cancel an already prepared overlap before repositioning the current decoder.
@@ -128,7 +128,7 @@ namespace HobbyDS9.UnityClient
             fadeStart+=delay;requestedStart+=delay;loadDeadline+=delay;retryAfter+=delay;
             for(var i=0;i<sources.Length;i++)
             {
-                var scheduled=timings[i]!=null&&pausedDsp<cueStarts[i];
+                var scheduled=sources[i].clip!=null&&sourceTracks[i]!=null&&timings[i]!=null&&pausedDsp<cueStarts[i];
                 if(timings[i]!=null&&sourceTracks[i]!=null&&sources[i].clip!=null){cueStarts[i]+=delay;timings[i]=new MusicCueTiming(cueStarts[i],sources[i].clip.length,sourceTracks[i]!);}
                 if(scheduled){sources[i].Stop();sources[i].PlayScheduled(cueStarts[i]);}else sources[i].UnPause();
             }
