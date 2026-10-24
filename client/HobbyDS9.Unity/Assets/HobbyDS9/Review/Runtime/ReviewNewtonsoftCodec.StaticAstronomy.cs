@@ -2,13 +2,19 @@
 using System;
 using System.IO;
 using System.Linq;
+using HobbyDS9.Application;
 using HobbyDS9.Contracts;
 using HobbyDS9.TacticalReviewClient;
 
 namespace HobbyDS9.UnityReview
 {
-    public sealed partial class ReviewNewtonsoftCodec : IStaticAstronomyReviewHostCodec
+    public sealed partial class ReviewNewtonsoftCodec : IStaticAstronomyReviewHostCodec, IStaticAstronomyOwnedExportValidator
     {
+        // Used only after the host's first closed-codec copy, while its gate is held.
+        // Load still validates frozen geometry, identity, replay and exact equality;
+        // its detached candidate is deliberately discarded before any slot write.
+        public void ValidateOwnedStaticAstronomyExport(CampaignPlayableFleetPackageDto template, CampaignGeneratedSaveDto ownedRoot)
+            =>CampaignStaticAstronomyApplication.LoadSave(template,ownedRoot);
         public CampaignGeneratedMapDto CopyKnownGeneratedMap(CampaignGeneratedMapDto map)=>Decode<CampaignGeneratedMapDto>(Encode(map));
         // Shape admission only. Full map identity, scenario and operation replay
         // validation belongs to CampaignStaticAstronomyApplication before publication.
