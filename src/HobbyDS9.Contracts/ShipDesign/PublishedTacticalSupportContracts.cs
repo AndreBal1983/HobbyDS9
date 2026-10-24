@@ -6,8 +6,8 @@ namespace HobbyDS9.Contracts.ShipDesign
     // Standalone derivation inputs only. No catalogue here enables a campaign profile.
     public static class PublishedTacticalSupportIdentity
     {
-        public const int Format=1;
-        public const string Schema="published-tactical-support-v1", Compiler="published-tactical-support-compiler-v1";
+        public const int Format=2;
+        public const string Schema="published-tactical-support-v2", Compiler="published-tactical-support-compiler-v2";
         public const string NoCloak="unsupported-no-cloak-v1";
     }
     public enum TacticalComponentSupportKind { Reactor=1, LifeSupport=2, Command=3, Propulsion=4, Beam=5, TargetingSensors=6 }
@@ -20,8 +20,6 @@ namespace HobbyDS9.Contracts.ShipDesign
         public string? SourceCompilerId {get;set;}
         public string? BalanceStatus {get;set;}
         public string? CloakPolicyId {get;set;}
-        // Explicit split of an existing command allocation; never additional free power.
-        public long? TargetingPowerFromCommandWhenArmed {get;set;}
         public List<TacticalHullSupportDto>? Hulls {get;set;}
         public List<TacticalComponentSupportDto>? Components {get;set;}
     }

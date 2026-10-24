@@ -1,9 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using HobbyDS9.Contracts;
@@ -21,15 +19,21 @@ namespace HobbyDS9.Simulation
             PublishedTacticalSupportResult Rejected()=>new PublishedTacticalSupportResult(issues);
             try
             {
-                if(catalogue==null||publication==null||access==null){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
-                var ordinary=new ShipDesignCompiler(catalogue).Publish(Draft(publication.Fit),access,publication.BlueprintId,publication.Revision);
+                if(catalogue==null||catalogue.FormatVersion!=ShipDesignVersions.CatalogueFormat||publication==null||access==null||publication.Fit==null||publication.Hull==null||publication.Components==null||publication.Performance==null||publication.Performance.Cost==null||publication.Performance.Compiled==null){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
+                ShipBlueprintPublicationResult ordinary;
+                try{ordinary=new ShipDesignCompiler(catalogue).Publish(Draft(publication.Fit),access,publication.BlueprintId,publication.Revision);}
+                catch(ArgumentException){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
+                catch(InvalidOperationException){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
                 if(!ordinary.Published){Error(TacticalSupportIssueCode.OrdinaryDesignRejected,"$.Publication");return new PublishedTacticalSupportResult(issues,null,ordinary.Preview.Issues);}
                 // Public snapshot constructors are not an authority bypass: independently recompile.
-                if(Hash(publication)!=Hash(ordinary.Blueprint!)){Error(TacticalSupportIssueCode.IdentityMismatch,"$.Publication");return Rejected();}
+                var encodingBudget=new PublishedTacticalSupportEncoding.Budget();
+                var suppliedSourceHash=PublishedTacticalSupportEncoding.Publication(publication,encodingBudget);
+                var sourceHash=PublishedTacticalSupportEncoding.Publication(ordinary.Blueprint!,encodingBudget);
+                if(suppliedSourceHash!=sourceHash){Error(TacticalSupportIssueCode.IdentityMismatch,"$.Publication");return Rejected();}
                 if(support==null||support.FormatVersion!=PublishedTacticalSupportIdentity.Format||support.SchemaId!=PublishedTacticalSupportIdentity.Schema
                     ||!DefinitionId.TryParse(support.CatalogueId,out _)||support.Revision==null||support.Revision<1
                     ||support.SourceCompilerId!=ShipDesignVersions.Compiler||support.BalanceStatus!="provisional-test-only"
-                    ||support.CloakPolicyId!=PublishedTacticalSupportIdentity.NoCloak||support.TargetingPowerFromCommandWhenArmed==null||support.TargetingPowerFromCommandWhenArmed<0
+                    ||support.CloakPolicyId!=PublishedTacticalSupportIdentity.NoCloak
                     ||support.Hulls==null||support.Hulls.Count==0||support.Hulls.Count>64||support.Components==null||support.Components.Count==0||support.Components.Count>256)
                 {Error(TacticalSupportIssueCode.InvalidMetadata,"$.Support");return Rejected();}
                 var hulls=new Dictionary<string,TacticalHullSupportDto>(StringComparer.Ordinal);
@@ -99,22 +103,20 @@ namespace HobbyDS9.Simulation
                     if(!power.ContainsKey(kind))Error(TacticalSupportIssueCode.UnsupportedComponent,"$.Publication.Core."+kind);
                 if(actual.Performance.Compiled!.Combat.ShieldCapacity!=0)Error(TacticalSupportIssueCode.UnsupportedComponent,"$.Publication.Shields");
                 if(issues.Count>0)return Rejected();
-                long commandTargeting=weapons.Count==0?0:support.TargetingPowerFromCommandWhenArmed.Value;
                 var command=power[TacticalComponentSupportKind.Command];
-                if((weapons.Count>0&&commandTargeting<=0)||commandTargeting>=command){Error(TacticalSupportIssueCode.CombatPower,"$.Support.TargetingPowerFromCommandWhenArmed");return Rejected();}
-                power.TryGetValue(TacticalComponentSupportKind.TargetingSensors,out var sensorPower);
-                long targeting=checked(commandTargeting+sensorPower);
+                power.TryGetValue(TacticalComponentSupportKind.TargetingSensors,out var targeting);
+                if(weapons.Count>0&&targeting<=0){Error(TacticalSupportIssueCode.CombatPower,"$.Publication.TargetingSensors");return Rejected();}
                 int sensorRating=hull.Capabilities!.Sensors!.Value;
                 foreach(var i in actual.Fit.Installations.Where(i=>components[i.ComponentVersionId].Kind==TacticalComponentSupportKind.TargetingSensors))
                     sensorRating=Math.Max(sensorRating,components[i.ComponentVersionId].TacticalSensorRating!.Value);
-                var supportHash=Hash(support);var sourceHash=Hash(actual);var fitId="fit.support."+HashText(PublishedTacticalSupportIdentity.Compiler+":"+supportHash+":"+sourceHash);
+                var supportHash=PublishedTacticalSupportEncoding.Support(support,encodingBudget);var fitId="fit.support."+HashText(PublishedTacticalSupportIdentity.Compiler+":"+supportHash+":"+sourceHash);
                 AuthoredTacticalEssentialPowerDto Reserve(TacticalEssentialSystem system,long amount)=>new AuthoredTacticalEssentialPowerDto {System=system,RequiredPower=amount,AllocatedPower=amount};
                 var fit=new AuthoredTacticalFitDto {DefinitionId=fitId,Revision=publication.Revision,ProvenanceId=support.CatalogueId,
                     MaxHull=actual.Performance.Compiled.MaxHull,Armor=hull.Armor,EvasionBps=actual.Performance.Compiled.Combat.EvasionBps,Role=hull.TacticalRole,
                     Capabilities=new AuthoredTacticalCapabilitiesDto {Speed=hull.Capabilities.Speed,Agility=hull.Capabilities.Agility,Sensors=sensorRating,Command=hull.Capabilities.Command,Cohesion=hull.Capabilities.Cohesion},
                     ReactorOutput=actual.Performance.ReactorPower,DistributionLimit=actual.Performance.DistributionLimit,
                     EssentialReservations=new List<AuthoredTacticalEssentialPowerDto>{Reserve(TacticalEssentialSystem.LifeSupport,power[TacticalComponentSupportKind.LifeSupport]),
-                        Reserve(TacticalEssentialSystem.Command,command-commandTargeting),Reserve(TacticalEssentialSystem.Propulsion,power[TacticalComponentSupportKind.Propulsion]),Reserve(TacticalEssentialSystem.Targeting,targeting)},
+                        Reserve(TacticalEssentialSystem.Command,command),Reserve(TacticalEssentialSystem.Propulsion,power[TacticalComponentSupportKind.Propulsion]),Reserve(TacticalEssentialSystem.Targeting,targeting)},
                     ShieldRechargeRequiredPower=0,ShieldRechargeAllocatedPower=0,ShieldRechargePerRound=0,
                     ShieldLimits=Enum.GetValues(typeof(TacticalSector)).Cast<TacticalSector>().Select(s=>new AuthoredTacticalShieldLimitDto {Sector=s,Maximum=0}).ToList(),Mounts=usedMounts.Values.ToList(),Weapons=weapons};
                 // Reuse all actual tactical field/power/mount validators without any ship/provision.
@@ -128,7 +130,6 @@ namespace HobbyDS9.Simulation
             }
             catch(OverflowException){Error(TacticalSupportIssueCode.InvalidMetadata,"$.Arithmetic");return Rejected();}
             catch(ArgumentException){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
-            catch(InvalidOperationException){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
         }
         private static bool Capabilities(AuthoredTacticalCapabilitiesDto? c)=>c!=null&&Rating(c.Speed)&&Rating(c.Agility)&&Rating(c.Sensors)&&Rating(c.Command)&&Rating(c.Cohesion);
         private static bool Rating(int? n)=>n.HasValue&&n>=0&&n<=100;
@@ -145,26 +146,5 @@ namespace HobbyDS9.Simulation
             Installations=d.Installations.Select(i=>new ShipInstallationDto {InstallationId=i.InstallationId,ComponentVersionId=i.ComponentVersionId,Quantity=i.Quantity}).ToList(),
             Profiles=d.Profiles.Select(p=>new ShipOperatingProfileDto {Kind=p.Kind,Allocations=p.Allocations.Select(a=>new ProfilePowerAllocationDto {InstallationId=a.InstallationId,RequestedPower=a.RequestedPower,AllocatedPower=a.AllocatedPower}).ToList()}).ToList()};
         private static string HashText(string text){using(var sha=SHA256.Create())return string.Concat(sha.ComputeHash(Encoding.UTF8.GetBytes(text)).Select(b=>b.ToString("x2",CultureInfo.InvariantCulture)));}
-        // Only sealed public source snapshots/metadata and scalar/list properties enter here.
-        // Order-independent lists and length prefixes give a bounded semantic fingerprint, not JSON persistence.
-        private static string Hash(object value)
-        {
-            int work=0;
-            string Encode(object? v,int depth)
-            {
-                if(++work>100000||depth>32)throw new ArgumentException("Source fingerprint budget exceeded.");
-                string Token(string s)=>s.Length.ToString(CultureInfo.InvariantCulture)+":"+s;
-                if(v==null)return "null";
-                if(v is string s)return "s"+Token(s);
-                var t=v.GetType();
-                if(t.IsEnum)return "e"+Token(t.FullName!)+Token(Convert.ToInt64(v,CultureInfo.InvariantCulture).ToString(CultureInfo.InvariantCulture));
-                if(v is bool flag)return flag?"true":"false";
-                if(v is IFormattable scalar&&t.IsPrimitive)return "n"+Token(t.FullName!)+Token(scalar.ToString(null,CultureInfo.InvariantCulture));
-                if(v is IEnumerable sequence){var entries=new List<string>();foreach(var x in sequence)entries.Add(Encode(x,depth+1));entries.Sort(StringComparer.Ordinal);return "["+string.Concat(entries.Select(Token))+"]";}
-                if(!t.IsSealed||t.Namespace==null||!t.Namespace.StartsWith("HobbyDS9.Contracts",StringComparison.Ordinal))throw new ArgumentException("Unsupported fingerprint type.");
-                return "o"+Token(t.FullName!)+string.Concat(t.GetProperties(BindingFlags.Instance|BindingFlags.Public).OrderBy(p=>p.Name,StringComparer.Ordinal).Select(p=>Token(p.Name)+Token(Encode(p.GetValue(v),depth+1))));
-            }
-            return HashText(Encode(value,0));
-        }
     }
 }

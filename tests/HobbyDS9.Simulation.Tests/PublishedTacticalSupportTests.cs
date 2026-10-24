@@ -24,8 +24,8 @@ public sealed class PublishedTacticalSupportTests
     {
         var hull=f.Catalogue.Hulls!.Single(h=>h.VersionId=="hull.utility.v1");var mount=hull.Mounts!.Single(m=>m.Kind==MountKind.EnergyBank);
         var beam=f.Catalogue.Components!.Single(c=>c.VersionId=="component.energy-bank.v1");
-        return new(){FormatVersion=1,SchemaId=PublishedTacticalSupportIdentity.Schema,CatalogueId="support.test.utility",Revision=1,SourceCompilerId=ShipDesignVersions.Compiler,
-            BalanceStatus="provisional-test-only",CloakPolicyId=PublishedTacticalSupportIdentity.NoCloak,TargetingPowerFromCommandWhenArmed=1,
+        return new(){FormatVersion=2,SchemaId=PublishedTacticalSupportIdentity.Schema,CatalogueId="support.test.utility",Revision=1,SourceCompilerId=ShipDesignVersions.Compiler,
+            BalanceStatus="provisional-test-only",CloakPolicyId=PublishedTacticalSupportIdentity.NoCloak,
             Hulls=new(){new(){HullVersionId=hull.VersionId,Armor=0,TacticalRole=TacticalShipRole.Line,SupportedRoleIds=new(){"role.escort","role.surveyor"},
                 Capabilities=new(){Speed=30,Agility=20,Sensors=20,Command=20,Cohesion=30},Mounts=new(){new(){SourceMountId=mount.Id,SourceCoverageTag=mount.CoverageTag,Coverage=TacticalArc.Fore,Slots=(int)mount.Count}}}},
             Components=new(){new(){ComponentVersionId="component.reactor.v1",Kind=TacticalComponentSupportKind.Reactor},new(){ComponentVersionId="component.life-support.v1",Kind=TacticalComponentSupportKind.LifeSupport},
@@ -39,6 +39,10 @@ public sealed class PublishedTacticalSupportTests
     static PublishedTacticalSupportResult Evaluate(Fixture f,PublishedShipBlueprint p,TacticalSupportCatalogueDto s)=>PublishedTacticalSupportApplication.Evaluate(Designer(f).Catalogue,p,f.Access,s);
     static void Rejected(PublishedTacticalSupportResult r,TacticalSupportIssueCode? code=null)
     {Assert.False(r.IsSupportedByCompiler);Assert.Null(r.Fit);Assert.NotEmpty(r.Issues);if(code!=null)Assert.Contains(r.Issues,x=>x.Code==code);}
+    static ShipDesignPreview PreviewCopy(ShipDesignPreview p,ShipDesignCostSnapshot? cost,IEnumerable<ProfilePerformance>? profiles=null,IEnumerable<DesignIssue>? issues=null)=>
+        new(issues??p.Issues,p.CapacityUsed,p.CapacityLimit,p.RequiredCrew,p.ReactorPower,p.DistributionLimit,p.Mounts,cost,profiles??p.Profiles,p.Compiled,p.Envelopes);
+    static PublishedShipBlueprint Copy(PublishedShipBlueprint p,ShipDesignPreview? performance=null,IEnumerable<ComponentVersionSnapshot>? components=null,HullVersionSnapshot? hull=null)=>
+        new(p.BlueprintId,p.Revision,p.Fit,hull??p.Hull,components??p.Components,performance??p.Performance);
     [Fact] public void UnarmedDerivationKeepsExactOrdinaryCostMovementAndExplicitNoCloakZeroStockPolicy()
     {
         var f=Load();var p=Publish(f,Draft(f));var s=Support(f);var before=JsonSerializer.Serialize(s);var r=Evaluate(f,p,s);Assert.True(r.IsSupportedByCompiler,JsonSerializer.Serialize(r.Issues));var fit=r.Fit!;
@@ -48,15 +52,17 @@ public sealed class PublishedTacticalSupportTests
         Assert.Empty(fit.Weapons);Assert.Empty(fit.Mounts);Assert.Equal(Enum.GetValues<TacticalSector>(),fit.ZeroShieldSectors);Assert.Equal(0,fit.ShieldRechargePerRound);
         Assert.Equal(0,fit.EssentialReservations.Single(x=>x.System==TacticalEssentialSystem.Targeting).AllocatedPower);Assert.Equal(before,JsonSerializer.Serialize(s));
     }
-    [Fact] public void BeamUsesAuthoredSemanticsAndPartitionsExistingCommandPowerWithoutFreeAllocation()
+    [Fact] public void BeamUsesAuthoredSemanticsAndPreservesEntireRequiredCommandAllocation()
     {
         var f=Load();var p=Publish(f,Draft(f,true));var r=Evaluate(f,p,Support(f));Assert.True(r.IsSupportedByCompiler,JsonSerializer.Serialize(r.Issues));var fit=r.Fit!;var w=Assert.Single(fit.Weapons);
         Assert.Equal((7L,6500,4200,2,2,1),(w.Damage,w.AccuracyBps,w.TrackingBps,w.OpportunitiesPerRound,w.CadenceRounds,w.InitialNextFireRound));
         Assert.Equal(TacticalWeaponClass.Beam,w.Class);Assert.Equal("",w.AmmunitionDefinitionId);Assert.Equal(0,w.MagazineCapacity);Assert.Equal(0,w.InitialAmmunition);Assert.True(w.Powered);
         var combat=p.Performance.Profiles.Single(x=>x.Kind==OperatingProfileKind.Combat);
         Assert.Equal(combat.AllocatedPower,fit.EssentialReservations.Sum(x=>x.AllocatedPower)+w.AllocatedPower);
-        Assert.Equal(7,fit.EssentialReservations.Single(x=>x.System==TacticalEssentialSystem.Targeting).AllocatedPower);Assert.Equal(40,fit.Capabilities.Sensors);
-        Assert.Equal(3,fit.EssentialReservations.Single(x=>x.System==TacticalEssentialSystem.Command).AllocatedPower);
+        Assert.Equal(6,fit.EssentialReservations.Single(x=>x.System==TacticalEssentialSystem.Targeting).AllocatedPower);Assert.Equal(40,fit.Capabilities.Sensors);
+        var command=fit.EssentialReservations.Single(x=>x.System==TacticalEssentialSystem.Command);
+        var originalCommand=p.Components.Single(c=>c.Kind==ComponentKind.Command).Modes.Single(m=>m.Profile==OperatingProfileKind.Combat);
+        Assert.Equal(4,command.AllocatedPower);Assert.Equal(originalCommand.FullPower,command.RequiredPower);Assert.Equal(originalCommand.MinimumPower,command.RequiredPower);
     }
     [Theory][InlineData("missing")][InlineData("shield")][InlineData("sensor")]
     public void NoInstalledComponentMayBeSilentlyIgnoredOrReclassified(string kind)
@@ -97,9 +103,8 @@ public sealed class PublishedTacticalSupportTests
         if(mutation=="slots")mount.Slots=3;else if(mutation=="coverage")b.Coverage=TacticalArc.Aft;else if(mutation=="requirement")b.SlotsRequired=2;else b.SourceMountId="mount.invented";
         Rejected(Evaluate(f,Publish(f,Draft(f,true)),s),TacticalSupportIssueCode.MountBinding);
     }
-    [Theory][InlineData(0)][InlineData(4)][InlineData(long.MaxValue)]
-    public void ArmedTargetingMustBeARealPositivePartitionWithPositiveCommandRemainder(long amount)
-    {var f=Load();var s=Support(f);s.TargetingPowerFromCommandWhenArmed=amount;Rejected(Evaluate(f,Publish(f,Draft(f,true)),s),TacticalSupportIssueCode.CombatPower);}
+    [Fact] public void ArmedTargetingRequiresAnExplicitInstalledSensorMapping()
+    {var f=Load();var s=Support(f);s.Components!.RemoveAll(c=>c.Kind==TacticalComponentSupportKind.TargetingSensors);Rejected(Evaluate(f,Publish(f,Draft(f,true)),s),TacticalSupportIssueCode.MissingMapping);}
     [Theory][InlineData("schema")][InlineData("compiler")][InlineData("cloak")][InlineData("missing-capability")][InlineData("duplicate")][InlineData("role")]
     public void MissingOrAmbiguousSupportSemanticsAreNeverDefaulted(string mutation)
     {
@@ -115,6 +120,35 @@ public sealed class PublishedTacticalSupportTests
         Rejected(Evaluate(f,new PublishedShipBlueprint(p.BlueprintId,p.Revision,p.Fit,p.Hull,p.Components,forged),Support(f)),TacticalSupportIssueCode.IdentityMismatch);
         f.Catalogue.Components!.Single(x=>x.VersionId=="component.command.v1").DisplayName="Changed exact version";
         Rejected(Evaluate(f,p,Support(f)),TacticalSupportIssueCode.IdentityMismatch);
+    }
+    [Fact] public void ExplicitSourceEncodingRejectsForgedCostComponentPowerAndSourceVersionIdentity()
+    {
+        var f=Load();var p=Publish(f,Draft(f));var cost=p.Performance.Cost!;
+        var changedCost=new ShipDesignCostSnapshot(new(){Credits=cost.Credits+1,Industry=cost.Industry,Maintenance=cost.Maintenance,
+            Resources=cost.Resources.Select(r=>new ResourceAmountDto {ResourceDefinitionId=r.ResourceDefinitionId,Amount=r.Amount}).ToList()});
+        Rejected(Evaluate(f,Copy(p,PreviewCopy(p.Performance,changedCost)),Support(f)),TacticalSupportIssueCode.IdentityMismatch);
+        var power=JsonSerializer.Deserialize<ComponentVersionDto>(JsonSerializer.Serialize(f.Catalogue.Components!.Single(c=>c.Kind==ComponentKind.Reactor)))!;power.PowerSupply++;
+        Rejected(Evaluate(f,Copy(p,components:p.Components.Where(c=>c.Kind!=ComponentKind.Reactor).Concat(new[]{new ComponentVersionSnapshot(power)})),Support(f)),TacticalSupportIssueCode.IdentityMismatch);
+        var hull=JsonSerializer.Deserialize<HullVersionDto>(JsonSerializer.Serialize(f.Catalogue.Hulls!.Single()))!;hull.VersionId="hull.test.substituted";
+        Rejected(Evaluate(f,Copy(p,hull:new HullVersionSnapshot(hull)),Support(f)),TacticalSupportIssueCode.IdentityMismatch);
+        var profiles=p.Performance.Profiles.Select(q=>new ProfilePerformance(q.Kind,q.AvailablePower,q.InstalledPeakPower,q.RequestedPower,q.AllocatedPower,
+            q.Installations.Select(i=>new InstallationPowerPreview(i.InstallationId,i.FullPower,i.MinimumPower,i.RequestedPower,i.AllocatedPower+(q.Kind==OperatingProfileKind.Combat?1:0),i.Essential,i.Outputs)),q.Outputs));
+        Rejected(Evaluate(f,Copy(p,PreviewCopy(p.Performance,p.Performance.Cost,profiles)),Support(f)),TacticalSupportIssueCode.IdentityMismatch);
+    }
+    [Theory][InlineData("fit")][InlineData("hull")][InlineData("cost")][InlineData("profiles")]
+    public void MalformedNullablePublicPublicationSnapshotsRejectWithoutDereferencingNull(string missing)
+    {
+        var f=Load();var p=Publish(f,Draft(f));var malformed=missing=="fit"?new PublishedShipBlueprint(p.BlueprintId,p.Revision,null!,p.Hull,p.Components,p.Performance):
+            missing=="hull"?new PublishedShipBlueprint(p.BlueprintId,p.Revision,p.Fit,null!,p.Components,p.Performance):
+            missing=="cost"?Copy(p,PreviewCopy(p.Performance,null)):Copy(p,PreviewCopy(p.Performance,p.Performance.Cost,Array.Empty<ProfilePerformance>()));
+        Rejected(Evaluate(f,malformed,Support(f)));
+    }
+    [Theory][InlineData(false)][InlineData(true)]
+    public void EntireEvaluationSharesEncodedWorkAndUtf8ByteBudgets(bool multibyte)
+    {
+        var f=Load();f.Catalogue.Components!.Single(c=>c.Kind==ComponentKind.Command).DisplayName=new string(multibyte?'界':'x',multibyte?24000:50000);
+        // Ordinary design validation accepts these names; fingerprint admission is separately bounded.
+        var p=Publish(f,Draft(f));Rejected(Evaluate(f,p,Support(f)),TacticalSupportIssueCode.InvalidPublication);
     }
     [Fact] public void MutationCannotChangeReturnedFitAndChangedMetadataChangesItsSemanticIdentity()
     {
