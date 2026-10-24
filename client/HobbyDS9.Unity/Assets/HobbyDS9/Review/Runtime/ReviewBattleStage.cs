@@ -237,6 +237,19 @@ namespace HobbyDS9.UnityReview
                     for(int corner=0;corner<8;corner++)points.Add(center+radius*new Vector3(
                         (corner&1)==0?-1:1,(corner&2)==0?-1:1,(corner&4)==0?-1:1));
             }
+            if(!overview&&round!=null)
+            {
+                // Fit the existing anonymous incoming cue too. It is a schematic
+                // screen-edge source, never an inferred hidden ship position.
+                foreach(var e in round.Events.Where(e=>e.Kind==CampaignPlaybackEventKind.IncomingTorpedo))
+                {
+                    var target=Position(e.TargetShipId);
+                    if(Position(e.SourceShipId).HasValue||!target.HasValue)continue;
+                    points.Add(root.transform.TransformPoint(new Vector3(24,2,target.Value.z+5)));
+                    if(e.TargetShipId!=null&&poses.TryGetValue(e.TargetShipId,out var p))
+                        points.Add(root.transform.TransformPoint(new Vector3(24,2,p.Item3.z+5)));
+                }
+            }
             var envelope=new Bounds(points.Count==0?root.transform.position:points[0],Vector3.zero);
             foreach(var point in points)envelope.Encapsulate(point);
             var distance=Mathf.Max(50,envelope.extents.magnitude+20);
@@ -244,6 +257,28 @@ namespace HobbyDS9.UnityReview
             camera.transform.position=envelope.center+direction*distance;
             camera.transform.LookAt(envelope.center,Vector3.up);
             camera.aspect=(float)Texture.width/Texture.height;camera.farClipPlane=distance*2+50;
+            camera.orthographic=overview;
+            if(!overview)
+            {
+                // One fixed three-quarter perspective per boundary. Solve every
+                // lawful envelope corner against both frustum axes instead of
+                // changing choreography or chasing an individual ship/event.
+                camera.fieldOfView=35;
+                float tanY=Mathf.Tan(camera.fieldOfView*Mathf.Deg2Rad*.5f)*.86f;
+                float tanX=tanY*camera.aspect;
+                distance=12;float far=0;
+                foreach(var point in points)
+                {
+                    var relative=point-envelope.center;float z=Vector3.Dot(relative,camera.transform.forward);
+                    distance=Mathf.Max(distance,Mathf.Max(Mathf.Abs(Vector3.Dot(relative,camera.transform.right))/tanX-z,
+                        Mathf.Abs(Vector3.Dot(relative,camera.transform.up))/tanY-z));
+                    distance=Mathf.Max(distance,camera.nearClipPlane+2-z);
+                    far=Mathf.Max(far,z);
+                }
+                camera.transform.position=envelope.center+direction*distance;
+                camera.farClipPlane=Mathf.Max(50,distance+far+10);
+                return;
+            }
             float horizontal=0,vertical=0;
             foreach(var point in points)
             {

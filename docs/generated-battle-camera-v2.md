@@ -1,0 +1,9 @@
+# Battle camera presentation candidate
+
+24 October 2026. Source preparation only; do not describe this as actual Unity or native acceptance. The safe ba943 V2 and current separate battle/save receiving pin remain unchanged.
+
+The existing Overview/Cinematic toggle keeps a top-down orthographic Overview. Cinematic now uses a stable 35-degree perspective at the existing three-quarter direction. Both modes fit only lawful visible ship geometry, every LOD and the sphere envelopes spanning schematic maneuver endpoints. Cinematic solves the distance required to contain each corner against both frustum axes with a 14% margin, keeping corners in front of the near plane. The existing anonymous incoming-torpedo cue and target endpoint are included when that recorded event is present; the cue never supplies an actual hidden launcher position. Far clipping follows the fitted envelope. No per-event camera chase or automatic mode switch is added.
+
+The RenderTexture, abstract-to-display poses, identities, event order/timing, weapon effects, outcomes, pause/skip semantics, materials and resources remain unchanged. The camera is cosmetic and cannot submit an order or determine a hit. No new model, lighting, star backdrop, depth-of-field, bloom or high-detail asset intake is included.
+
+Before receiving: independently inspect frustum math and immutable boundary use. Actual Unity must check finite camera parameters, all lawful bounds and maneuver endpoints inside the frustum with positive near/far depths in both modes, unchanged canonical campaign root through toggle/pause/skip, actual small-fleet images, camera stability during playback, and the anonymous cue. Preserve unknown-identity fallback and disposal. Compare the genuine painted scene at the three supported viewports; the fixed 1280-by-600 texture alone is not a readability claim. Perspective does not guarantee that every individual ship in a large fleet stays large on screen.
