@@ -46,6 +46,10 @@ namespace HobbyDS9.Simulation
             IReadOnlyList<CampaignTravelOrderDto> orders,IReadOnlyList<CampaignContactKnowledgeDto> contacts,
             IReadOnlyList<CampaignDeclaredHostilityDto> hostilities,int freshness)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("movement.execute");
+#endif
+
             var graph=new WeightedNavigationGraph(definitions);
             var plans=new Dictionary<string,Plan>(StringComparer.Ordinal);
             foreach(var fleet in game.Fleets!.OrderBy(f=>f.FleetId,StringComparer.Ordinal))

@@ -9,6 +9,10 @@ namespace HobbyDS9.Simulation
     {
         internal GameStateDto RunDemoPlanningAi(string actorId,IReadOnlyList<string> admitted)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("ai.strategic-planning");
+#endif
+
             var staged=CopyState(state);
             var actor=staged.Civilizations!.Single(c=>c.CivilizationId==actorId);
             if(actor.ControllerKind!=ControllerKind.AI)throw new ArgumentException("Demo planner requires AI ownership.");

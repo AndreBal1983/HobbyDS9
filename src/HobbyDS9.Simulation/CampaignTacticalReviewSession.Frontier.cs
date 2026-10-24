@@ -139,6 +139,10 @@ namespace HobbyDS9.Simulation
         }
         private List<CampaignFrontierReceiptDto> CompleteFrontierPlanning(CampaignTacticalTravelSaveDto next)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("knowledge.complete");
+#endif
+
             var history=discoveries.Select(CopyDiscovery).ToList();
             if(next.Phase!=SessionPhase.Planning||next.MovementProof==null)return history;
             var proof=next.MovementProof;var before=SimulationSession.CopyState(next.Core.Campaign.GameState);

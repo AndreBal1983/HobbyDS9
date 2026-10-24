@@ -80,6 +80,10 @@ namespace HobbyDS9.Simulation
         }
         private void PlanGeneratedTravel(CampaignTacticalTravelSaveDto next)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("ai.generated-route-planning");
+#endif
+
             var game = next.Core.Campaign.GameState; var graph = new WeightedNavigationGraph(definitions);
             var visited = new HashSet<string>(discoveries.Select(r => r.ActorId + "|" + r.ArrivalNodeId), StringComparer.Ordinal);
             foreach (var home in generatedMap!.Layout.HomeCandidates)

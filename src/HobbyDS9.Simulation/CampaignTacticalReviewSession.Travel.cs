@@ -22,6 +22,10 @@ namespace HobbyDS9.Simulation
         }
         private CampaignTacticalTravelSaveDto TravelCopy()
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("copy.travel");
+#endif
+
             Require(travel!=null,"Session has no physical profile.");
             var copy=CampaignTacticalTravelData.Copy(travel);copy.Core=Copy(state);return copy;
         }
@@ -153,6 +157,10 @@ namespace HobbyDS9.Simulation
         }
         private CampaignTacticalMutationResult AdvancePhysicalTurn(int turn,long revision)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("total");
+#endif
+
             if(CurrentPhase!=SessionPhase.Planning)return Result(CampaignTacticalError.WrongPhase);
             if(turn!=state.Campaign.GameState.TurnNumber)return Result(CampaignTacticalError.StaleTurn);
             if(revision!=state.Campaign.GameState.StateRevision)return Result(CampaignTacticalError.StaleRevision);
@@ -179,7 +187,15 @@ namespace HobbyDS9.Simulation
                 if(frontier!=null)PlanFrontierTravel(next);
                 void Phase(StrategicTurnPhase phase,Action action)
                 {
-                    Probe(phase);var before=SimulationSession.CopyState(game);action();
+                    #if HOBBYDS9_CPU_PROFILE
+                    using var phaseProfile = CpuProfile.Measure("advance.phase."+phase);
+#endif
+                    Probe(phase);var before=SimulationSession.CopyState(game);
+#if HOBBYDS9_CPU_PROFILE
+                    using(CpuProfile.Measure("advance.phase-work."+phase))action();
+#else
+                    action();
+#endif
                     FoundationValidator.ValidateGameState(game,definitions).ThrowIfInvalid(nameof(game));
                     SimulationSession.RequirePhaseChanges(before,SimulationSession.CopyState(game),allowEconomy:phase==StrategicTurnPhase.Economy,
                         allowResearch:phase==StrategicTurnPhase.Research,allowProduction:phase==StrategicTurnPhase.Production);

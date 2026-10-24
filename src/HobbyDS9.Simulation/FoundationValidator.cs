@@ -26,6 +26,10 @@ namespace HobbyDS9.Simulation
 
         public static ValidationReport ValidateGameState(GameStateDto? dto, DefinitionCatalogDto? definitions)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("foundation.game-state");
+#endif
+
             var issues = new List<ValidationIssue>();
             var ids = ValidateDefinitions(definitions, "$.Definitions", issues);
             ValidateState(dto, ids, false, "$.GameState", issues);
@@ -103,6 +107,10 @@ namespace HobbyDS9.Simulation
 
         private static HashSet<DefinitionId> ValidateDefinitions(DefinitionCatalogDto? dto, string path, List<ValidationIssue> issues)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("foundation.definitions");
+#endif
+
             var ids = new HashSet<DefinitionId>();
             if (dto == null || dto.DefinitionIds == null) { Add(issues, ValidationCode.MissingField, path); return ids; }
             for (var i = 0; i < dto.DefinitionIds.Count; i++)

@@ -15,7 +15,11 @@ namespace HobbyDS9.Simulation
         internal static CampaignFleetTravelReceiptDto Copy(CampaignFleetTravelReceiptDto r)=>new CampaignFleetTravelReceiptDto { FleetId=r.FleetId,OwnerId=r.OwnerId,
             Turn=r.Turn,EndNodeId=r.EndNodeId,TransitDestinationId=r.TransitDestinationId,TransitTotalCost=r.TransitTotalCost,TransitProgress=r.TransitProgress,
             CostPaid=r.CostPaid,EdgesCompleted=r.EdgesCompleted,StoppedByEncounter=r.StoppedByEncounter,StopTimeNumerator=r.StopTimeNumerator,StopTimeDenominator=r.StopTimeDenominator,EncounterId=r.EncounterId };
-        internal static CampaignTacticalTravelSaveDto Copy(CampaignTacticalTravelSaveDto s)=>new CampaignTacticalTravelSaveDto {
+        internal static CampaignTacticalTravelSaveDto Copy(CampaignTacticalTravelSaveDto s){
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("copy.travel-dto");
+#endif
+            return new CampaignTacticalTravelSaveDto {
             FormatVersion=s.FormatVersion,ProfileId=s.ProfileId,PackageHash=s.PackageHash,Phase=s.Phase,Core=CampaignTacticalReviewData.Copy(s.Core),
             Requests=s.Requests.OrderBy(r=>r.EncounterId,StringComparer.Ordinal).Select(CombatEncounterScaffold.CopyRequest).ToList(),
             Orders=s.Orders.OrderBy(o=>o.FleetId,StringComparer.Ordinal).Select(Copy).ToList(),
@@ -24,6 +28,7 @@ namespace HobbyDS9.Simulation
             MovementProof=s.MovementProof==null?null:new CampaignPhysicalMovementProofDto { Start=SimulationSession.CopyState(s.MovementProof.Start),
                 Orders=s.MovementProof.Orders.OrderBy(o=>o.FleetId,StringComparer.Ordinal).Select(Copy).ToList(),
                 Contacts=s.MovementProof.Contacts.OrderBy(k=>k.ActorId,StringComparer.Ordinal).ThenBy(k=>k.FleetId,StringComparer.Ordinal).Select(Copy).ToList() } };
+        }
         internal static void ValidatePackage(CampaignTacticalTravelPackageDto p)
         {
             Require(p!=null&&p.FormatVersion==CampaignTacticalTravelIdentity.PackageFormat&&p.ProfileId==CampaignTacticalTravelIdentity.Profile&&Hash(p.PackageHash)

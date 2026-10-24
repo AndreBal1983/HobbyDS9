@@ -44,6 +44,11 @@ namespace HobbyDS9.Simulation
         internal static void Reset() { if(frames.Count!=0)throw new InvalidOperationException("Open profile scope");metrics.Clear();counters.Clear(); }
         internal static IDisposable Measure(string name) { if(!Enabled)return empty;var f=new Frame(name);frames.Push(f);return f; }
         internal static void Count(string name,long count=1) { if(Enabled)counters[name]=counters.TryGetValue(name,out var old)?old+count:count; }
+        internal static IDisposable MeasureAdvance(string name)
+        {
+            if(!Enabled)return empty;
+            return Measure((frames.Any(f=>f.Name=="operation.Advance")?"advance.":"nonadvance.")+name);
+        }
         internal static bool Compare(string name,Func<bool> comparison) { using(Measure(name))return comparison(); }
         internal static object Snapshot() => new { Stages=metrics.Values.OrderByDescending(m=>m.ExclusiveMs).ToArray(), Counters=new Dictionary<string,long>(counters) };
     }

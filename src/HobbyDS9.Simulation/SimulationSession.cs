@@ -29,6 +29,10 @@ namespace HobbyDS9.Simulation
             IReadOnlyDictionary<CommandKind, ICommandHandler> commandHandlers,
             Func<StrategicTurnPhase, GameStateDto, bool>? turnPhaseProbe = null, Func<GameStateDto, bool>? combatCheckpointProbe = null, Action<int, GameStateDto>? combatApplicationProbe = null, Action<GameStateDto>? combatFinalizationProbe = null)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("legacy.constructor");
+#endif
+
             FoundationValidator.ValidateSave(save, definitions, compatibility).ThrowIfInvalid(nameof(save));
             this.compatibility = compatibility;
             this.turnPhaseProbe = turnPhaseProbe;
@@ -194,6 +198,10 @@ namespace HobbyDS9.Simulation
         // Economy and Research each have a distinct allowed mutation surface.
         internal static void RequirePhaseChanges(GameStateDto state, GameStateDto candidate, bool allowEconomy, bool allowResearch = false, bool allowProduction = false, bool allowMovement = false)
         {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("validation.phase-guard");
+#endif
+
             if (!state.Blueprints!.Zip(candidate.Blueprints!, (a,b) => BlueprintCopies.Same(a,b)).All(v => v) || state.Blueprints!.Count != candidate.Blueprints!.Count || !ScienceData.Same(state,candidate,allowResearch) || candidate.Phase != state.Phase || candidate.TurnNumber != state.TurnNumber
                 || candidate.StateRevision != state.StateRevision || (!allowProduction && !allowEconomy && candidate.NextEntitySequence != state.NextEntitySequence)
                 || candidate.RngState.AlgorithmId != state.RngState.AlgorithmId
@@ -257,7 +265,11 @@ namespace HobbyDS9.Simulation
             }
         }
 
-        internal static DefinitionCatalogDto CopyDefinitions(DefinitionCatalogDto source) => new DefinitionCatalogDto
+        internal static DefinitionCatalogDto CopyDefinitions(DefinitionCatalogDto source) {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("copy.definitions");
+#endif
+            return new DefinitionCatalogDto
         {
             ContentFormatVersion = source.ContentFormatVersion,
             AuthoredTacticalEquipment = source.AuthoredTacticalEquipment == null ? null : AuthoredTacticalEquipmentCopies.Copy(source.AuthoredTacticalEquipment),
@@ -300,6 +312,7 @@ namespace HobbyDS9.Simulation
             GalaxyEdges = source.GalaxyEdges!.Select(GalaxyGraph.CanonicalEdge).OrderBy(e => e.EndpointA).ThenBy(e => e.EndpointB)
                 .Select(e => new GalaxyEdgeDto { EndpointA = e.EndpointA.Value, EndpointB = e.EndpointB.Value, Kind = e.Kind }).ToList()
         };
+        }
 
         private static bool IsKnownKind(CommandKind kind) => kind == CommandKind.PublishShipBlueprint || kind == CommandKind.EnqueueBlueprintConstruction || kind == CommandKind.EnqueueProduction
             || kind == CommandKind.CancelProduction || kind == CommandKind.SetEngineeringTarget || kind == CommandKind.SetFleetRoute || kind == CommandKind.SetWorldGovernancePolicy || kind == CommandKind.SetResearchAllocation || kind == CommandKind.SetScienceAllocation;
@@ -334,7 +347,11 @@ namespace HobbyDS9.Simulation
             }
         }
 
-        internal static GameStateDto CopyState(GameStateDto source) => new GameStateDto
+        internal static GameStateDto CopyState(GameStateDto source) {
+#if HOBBYDS9_CPU_PROFILE
+            using var advanceProfileScope = CpuProfile.MeasureAdvance("copy.state");
+#endif
+            return new GameStateDto
         {
             Blueprints = source.Blueprints!.OrderBy(b => b.BlueprintId, StringComparer.Ordinal).ThenBy(b => b.Revision).Select(BlueprintCopies.Copy).ToList(),
             PendingCombats = source.PendingCombats!.OrderBy(c => c.Request.LocationNodeId, StringComparer.Ordinal).ThenBy(c => c.Request.EncounterId, StringComparer.Ordinal)
@@ -387,6 +404,7 @@ namespace HobbyDS9.Simulation
                 RouteNodeIds = new List<string>(f.RouteNodeIds!)
             }).ToList()
         };
+        }
 
         internal static CommandEnvelope? CopyCommand(CommandEnvelope? source)
         {
