@@ -244,7 +244,14 @@ namespace HobbyDS9.UnityReview.Tests
                     foreach(var size in V3Sizes)yield return V3Sized(entry,doc,size,"menu",false,false); //3
                     var fold=doc.rootVisualElement.Q<Foldout>("other-campaign-profiles");var start=doc.rootVisualElement.Q<Button>("generated-campaign-start");start.Focus();yield return null;
                     for(int i=0;i<10;i++){Key(doc.rootVisualElement.panel.focusController.focusedElement as VisualElement??start,KeyCode.Tab);Key(doc.rootVisualElement.panel.visualTree,KeyCode.Tab,true);yield return null;var focused=doc.rootVisualElement.panel.focusController.focusedElement as VisualElement;Assert.That(focused==null||!fold.Contains(focused)||focused==fold.Q<Toggle>(),Is.True,"collapsed older controls cannot receive Tab focus");}
-                    var foldToggle=fold.Q<Toggle>();foldToggle.Focus();Key(foldToggle,KeyCode.Space);Key(foldToggle,KeyCode.Space,true);yield return null;Assert.That(fold.value,Is.True,"keyboard Space expands older profiles");Key(foldToggle,KeyCode.Space);Key(foldToggle,KeyCode.Space,true);yield return null;Assert.That(fold.value,Is.False);
+                    var foldToggle=fold.Q<Toggle>();foldToggle.Focus();yield return null;
+                    Assert.That(doc.rootVisualElement.panel.focusController.focusedElement,Is.SameAs(foldToggle));
+                    // BaseBoolField consumes navigation-submit. Pooled KeyDown does
+                    // not reproduce the input module's Space-to-submit translation.
+                    // This proves focused navigation activation, NOT native Space.
+                    using(var submit=NavigationSubmitEvent.GetPooled()){submit.target=foldToggle;foldToggle.SendEvent(submit);}yield return null;
+                    Assert.That(fold.value,Is.True,"focused navigation submit expands older profiles");
+                    using(var submit=NavigationSubmitEvent.GetPooled()){submit.target=foldToggle;foldToggle.SendEvent(submit);}yield return null;Assert.That(fold.value,Is.False);
                     Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-1"));Confirm(doc);yield return WaitCampaign(entry,"v3-empty-v2");Assert.That(CampaignModel(entry),Is.SameAs(initial));
                     Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-3"));Confirm(doc);yield return WaitCampaign(entry,"v3-wrong-profile");Assert.That(CampaignModel(entry),Is.SameAs(initial));Assert.That(File.ReadAllBytes(wrong),Is.EqualTo(old));
                     Click(start);if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);yield return WaitCampaign(entry,"v3-new250");
