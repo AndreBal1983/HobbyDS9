@@ -73,12 +73,17 @@ namespace HobbyDS9.UnityReview
             {
                 if(presentation!=null)
                 {
-                    if(backgroundFailed||map.panel==null||map.contentRect.width<2||map.contentRect.height<2)return;
+                    if(backgroundFailed||map.panel==null)return;
                     try
                     {
                         if(!model.IsCurrentGeneratedPresentation(presentation))throw new InvalidOperationException("The visual observation is obsolete.");
+                        var rect=map.contentRect;
+                        double left=rect.x-map.resolvedStyle.borderLeftWidth,top=rect.y-map.resolvedStyle.borderTopWidth;
+                        bool finite(double value)=>!double.IsNaN(value)&&!double.IsInfinity(value)&&Math.Abs(value)<=float.MaxValue;
+                        if(!finite(rect.x)||!finite(rect.y)||!finite(left)||!finite(top)||rect.width<2||rect.height<2
+                            ||!GeneratedGalaxyV3Background.HasRenderableGeometry(viewport,rect.width,rect.height,generated!.Width,generated.Height))return;
                         if(backgroundV3==null)backgroundV3=new GeneratedGalaxyV3Background(presentation,()=>model.IsCurrentGeneratedPresentation(presentation));
-                        backgroundV3.Render(viewport,map.contentRect.width,map.contentRect.height,effectsV3,depthV3);
+                        backgroundV3.Render(viewport,rect.width,rect.height,effectsV3,depthV3);
                         if(!model.IsCurrentGeneratedPresentation(presentation))throw new InvalidOperationException("The visual observation changed before publication.");
                         v3Image!.style.left=map.contentRect.x-map.resolvedStyle.borderLeftWidth;v3Image.style.top=map.contentRect.y-map.resolvedStyle.borderTopWidth;
                         v3Image.style.width=map.contentRect.width;v3Image.style.height=map.contentRect.height;v3Image.image=backgroundV3.Texture;v3Image.userData=backgroundV3;

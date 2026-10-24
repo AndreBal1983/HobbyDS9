@@ -211,6 +211,7 @@ namespace HobbyDS9.UnityReview.Tests
             bool current=true;
             using(var renderer=new GeneratedGalaxyV3Background(synthetic,()=>current))
             {
+                var initialActive=RenderTexture.active;Assert.That(renderer.Render(view,double.NaN,1080,true,true),Is.False);Assert.That(renderer.Texture,Is.Null);Assert.That(renderer.RenderCount,Is.Zero);Assert.That(RenderTexture.active,Is.SameAs(initialActive));
                 Assert.That(renderer.Render(view,1920,1080,true,true),Is.True);Assert.That(renderer.VisibleFieldCount,Is.EqualTo(8));Assert.That(renderer.LocalFetchUpperBound,Is.LessThanOrEqualTo(40000000));
                 Assert.That(renderer.Texture!.width,Is.EqualTo(960));Assert.That(renderer.Texture.height,Is.EqualTo(540));Assert.That(renderer.ParticleCount,Is.LessThanOrEqualTo(256));
                 var uploaded=typeof(GeneratedGalaxyV3Background).GetField("assets",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(renderer)!;
@@ -223,7 +224,19 @@ namespace HobbyDS9.UnityReview.Tests
                 V3Save(renderer.Texture,"SYNTHETIC-eight-known-fields-not-campaign");
                 File.WriteAllText(Path.Combine(CampaignOutput(),"v3-synthetic-workload.json"),JsonConvert.SerializeObject(new{label="Synthetic eight-field overlap; no campaign observation claim",renderer.VisibleFieldCount,renderer.ParticleCount,renderer.LocalFetchUpperBound,renderer.LocalSize,renderer.LocalStatus,MacroWidth=renderer.Texture.width,MacroHeight=renderer.Texture.height,ParticleFullQuadPixelCap=32,ParticleFragmentUpperBound=renderer.ParticleCount*32*32}));
                 int renders=renderer.RenderCount;Assert.That(renderer.Render(view,1920,1080,true,true),Is.False);Assert.That(renderer.RenderCount,Is.EqualTo(renders));
-                current=false;var texture=renderer.Texture;Assert.Throws<InvalidOperationException>(()=>renderer.Render(view,1920,1080,true,true));Assert.That(renderer.RenderCount,Is.EqualTo(renders));Assert.That(renderer.Texture,Is.SameAs(texture),"stale callback refuses before submission/publication");
+                var retained=renderer.Texture;var active=RenderTexture.active;int fields=renderer.VisibleFieldCount,particles=renderer.ParticleCount;bool transition=renderer.NeedsTransition;
+                foreach(double invalid in new[]{double.NaN,double.PositiveInfinity,double.NegativeInfinity,0.0,-1.0,double.MaxValue})
+                {
+                    Assert.That(renderer.Render(view,invalid,1080,true,true),Is.False);Assert.That(renderer.Render(view,1920,invalid,true,true),Is.False);
+                    Assert.That(renderer.RenderCount,Is.EqualTo(renders));Assert.That(renderer.Texture,Is.SameAs(retained));Assert.That(RenderTexture.active,Is.SameAs(active));
+                    Assert.That(renderer.VisibleFieldCount,Is.EqualTo(fields));Assert.That(renderer.ParticleCount,Is.EqualTo(particles));Assert.That(renderer.NeedsTransition,Is.EqualTo(transition));
+                }
+                var invalidCamera=new GeneratedGalaxyViewport{MaximumZoom=double.NaN};invalidCamera.ZoomAt(2,1,1);
+                Assert.That(renderer.Render(invalidCamera,1920,1080,true,true),Is.False);Assert.That(renderer.RenderCount,Is.EqualTo(renders));Assert.That(renderer.Texture,Is.SameAs(retained));Assert.That(RenderTexture.active,Is.SameAs(active));
+                Assert.That(renderer.Render(view,1920,1080,true,true),Is.False,"valid cached geometry still works after deferral");
+                view.Pan(1,0);Assert.That(renderer.Render(view,1920,1080,true,true),Is.True,"valid changed geometry recovers");renders=renderer.RenderCount;
+                current=false;var texture=renderer.Texture;Assert.Throws<InvalidOperationException>(()=>renderer.Render(view,double.NaN,1080,true,true));Assert.That(renderer.RenderCount,Is.EqualTo(renders));Assert.That(renderer.Texture,Is.SameAs(texture),"stale callback refuses before submission/publication");
+                current=true;texture!.Release();Assert.Throws<InvalidOperationException>(()=>renderer.Render(view,double.NaN,1080,true,true),"lost context precedes geometry deferral");
             }
         }
         private static void V3ParticlePlacementProbe()
@@ -299,6 +312,9 @@ namespace HobbyDS9.UnityReview.Tests
                     yield return V3Sized(entry,doc,new Vector2Int(1920,1080),"explore32-lawful-proxy-closeup",false,true,true); //1 tighter lawful-proxy view
                     yield return V3Settled(doc);var renderer=V3Renderer(doc);Assert.That(renderer.Texture!.format,Is.EqualTo(RenderTextureFormat.ARGBHalf));
                     var known=pair.KnownMap;var fleet=model.Current.Frame.OwnStrategicFleets.First();Click(doc.rootVisualElement.Q<Button>("map-fleet-"+fleet.FleetId.Value));
+                    // Fleet selection redraws the map; wait for the fresh actual attached layout, as native picking does.
+                    double layoutDeadline=Time.realtimeSinceStartupAsDouble+5;
+                    while(true){var laidOutMap=doc.rootVisualElement.Q("playable-known-map");var rect=laidOutMap?.contentRect??default;bool valid=laidOutMap?.panel!=null&&!float.IsNaN(rect.x)&&!float.IsInfinity(rect.x)&&!float.IsNaN(rect.y)&&!float.IsInfinity(rect.y)&&!float.IsNaN(rect.width)&&!float.IsInfinity(rect.width)&&!float.IsNaN(rect.height)&&!float.IsInfinity(rect.height)&&rect.width>2&&rect.height>2;if(valid)break;Assert.That(Time.realtimeSinceStartupAsDouble,Is.LessThan(layoutDeadline),"fresh attached finite layout before Fit");yield return null;}
                     var target=known.Regions.Select(r=>(r.NodeId,Offer:model.Current.FindKnownRoute(fleet.FleetId.Value,r.NodeId))).Where(p=>p.Offer?.Route.Success==true&&p.Offer.Route.TotalCost>0).OrderBy(p=>p.Offer!.Route.TotalCost).ThenBy(p=>p.NodeId,StringComparer.Ordinal).First().NodeId;
                     var beforeCancel=codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model));
                     Click(doc.rootVisualElement.Q<Button>("map-fit"));yield return null;yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+target),0);yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+target));Confirm(doc,false);

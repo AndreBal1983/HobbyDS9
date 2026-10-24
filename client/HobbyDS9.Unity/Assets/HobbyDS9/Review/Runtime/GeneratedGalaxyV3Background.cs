@@ -128,10 +128,23 @@ namespace HobbyDS9.UnityReview
             if(!rt.Create()||!rt.IsCreated()){rt.Release();Destroy(rt);throw new InvalidOperationException("V3 render target allocation failed.");}return rt;
         }
         private static void Release(ref RenderTexture? rt){if(rt!=null){rt.Release();Destroy(rt);rt=null;}}
+        private static bool Finite(double value)=>!double.IsNaN(value)&&!double.IsInfinity(value);
+        private static bool ShaderFinite(double value)=>Finite(value)&&Math.Abs(value)<=float.MaxValue;
+        internal static bool HasRenderableGeometry(GeneratedGalaxyViewport view,double width,double height,int mapWidth,int mapHeight)
+        {
+            if(!ShaderFinite(width)||!ShaderFinite(height)||width<=0||height<=0||!ShaderFinite(view.Scale)||view.Scale<=0)return false;
+            double x=view.WorldX(0),y=view.WorldY(0);
+            return ShaderFinite(x)&&ShaderFinite(y)&&ShaderFinite(view.WorldX(width))&&ShaderFinite(view.WorldY(height))
+                &&ShaderFinite(view.X(0))&&ShaderFinite(view.Y(0))&&ShaderFinite(view.X(mapWidth))&&ShaderFinite(view.Y(mapHeight))
+                &&ShaderFinite((x-mapWidth*.5)/mapWidth)&&ShaderFinite((y-mapHeight*.5)/mapWidth)
+                &&ShaderFinite(width/view.Scale/mapWidth)&&ShaderFinite(height/view.Scale/mapWidth);
+        }
         public bool Render(GeneratedGalaxyViewport view,double width,double height,bool effects,bool depth)
         {
             if(disposed||!isCurrent())throw new InvalidOperationException("V3 observation is obsolete.");
             if(final!=null&&!final.IsCreated()||local!=null&&!local.IsCreated())throw new InvalidOperationException("V3 graphics context was lost.");
+            // Pending UI layout is ordinary: preserve all cached/rendering state and retry later.
+            if(!HasRenderableGeometry(view,width,height,mapWidth,mapHeight))return false;
             double x=view.WorldX(0),y=view.WorldY(0);
             if(lastX==x&&lastY==y&&lastScale==view.Scale&&lastWidth==width&&lastHeight==height&&lastEffects==effects&&lastDepth==depth&&!NeedsTransition)return false;
             var size=GeneratedGalaxyVisualField.TargetSize(width,height);
@@ -182,8 +195,10 @@ namespace HobbyDS9.UnityReview
                 var p=Project(field,point.X,point.Y,point.Z,view,width,height,depth);
                 double q=depth?4/(4-point.Z*.8):1;
                 double diameter=Math.Min(32,2*point.Radius*Math.Max(field.Proxy.VisualReferenceRadiusX,field.Proxy.VisualReferenceRadiusY)*view.Scale*q*Math.Max(local!.width/width,local.height/height));
+                if(!Finite(p.x)||!Finite(p.y)||!Finite(diameter)||diameter<=0)continue;
                 double gain=Math.Max(0,Math.Min(1,(diameter-.5)/1.5))*fade;if(gain<=0)continue;
                 double px=p.x*local!.width/width,py=p.y*local.height/height,r=diameter/2;if(px+r<0||py+r<0||px-r>local.width||py-r>local.height)continue;
+                if(!ShaderFinite((px-r)/local.width)||!ShaderFinite((px+r)/local.width)||!ShaderFinite((py-r)/local.height)||!ShaderFinite((py+r)/local.height))continue;
                 int at=ParticleCount++*4;
                 for(int k=0;k<4;k++)
                 {
