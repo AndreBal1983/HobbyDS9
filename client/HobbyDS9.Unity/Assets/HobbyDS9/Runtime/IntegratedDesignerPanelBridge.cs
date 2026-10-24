@@ -61,11 +61,15 @@ namespace HobbyDS9.UnityClient
                 var provider=new ApplicationShipDesignPreviewProvider(ShipDesignApplication.FromCampaignCatalogue(library.Catalogue!.Catalogue),library.Catalogue.AvailableVersionIds,s.Draft.Provider.Templates,"OWN CAMPAIGN CATALOGUE · custom construction unavailable");s.Draft.RefreshProvider(provider);Present(root,s);}else s.Update?.Invoke();}){name="integrated-design-refresh",text="Refresh campaign"});
             foreach(var button in actions.Children().OfType<Button>())button.AddToClassList("lcars-pill");
             s.View=new ShipDesignerView(s.Draft,s.Back);s.View.Q<Button>("designer-construction").style.display=DisplayStyle.None;
-            s.View.style.flexGrow=1;s.View.style.minHeight=0;root.Add(s.View);
-            var history=new Foldout{text="Published class revisions — edit a copy",value=false,name="integrated-design-history"};root.Add(history);
-            if(s.Library.Published.Count==0)history.Add(new Label("No published revisions. Refresh after publishing to review history."));
+            var provenance=s.View.Q<VisualElement>(className:"sd-provenance");if(provenance!=null)provenance.style.display=DisplayStyle.None;
+            s.View.style.flexGrow=1;s.View.style.flexShrink=1;s.View.style.flexBasis=0;s.View.style.minHeight=0;root.Add(s.View);
+            var history=new Foldout{text="Published class revisions — edit a copy",value=false,name="integrated-design-history"};
+            history.style.flexShrink=0;history.style.overflow=Overflow.Hidden;root.Add(history);
+            var revisions=new ScrollView(ScrollViewMode.Vertical){name="integrated-design-history-scroll"};
+            revisions.style.maxHeight=108;revisions.style.minHeight=0;revisions.style.flexShrink=0;history.Add(revisions);
+            if(s.Library.Published.Count==0)revisions.Add(new Label("No published revisions. Refresh after publishing to review history."));
             foreach(var record in s.Library.Published){var r=record;var button=new Button(()=>s.Draft.RequestDiscard(()=>{var fit=s.Edit(r);s.TemplateCaption="Revision "+r.Blueprint.Revision+" (local copy)";s.Draft.StartFit(new DesignerFit(fit));s.Update?.Invoke();}))
-                {name="integrated-design-edit-"+r.Blueprint.BlueprintId+"-"+r.Blueprint.Revision,text=r.Blueprint.Fit.DisplayName+" · revision "+r.Blueprint.Revision};button.AddToClassList("lcars-pill");button.SetEnabled(CanEdit(r));history.Add(button);}
+                {name="integrated-design-edit-"+r.Blueprint.BlueprintId+"-"+r.Blueprint.Revision,text=r.Blueprint.Fit.DisplayName+" · revision "+r.Blueprint.Revision};button.AddToClassList("lcars-pill");button.style.flexShrink=0;button.SetEnabled(CanEdit(r));revisions.Add(button);}
             s.Update=()=>{publish.SetEnabled(s.CanPublish(s.Draft.Current.ToDto()));feedback.text=s.Notice();s.View.Q<DropdownField>("designer-template").SetValueWithoutNotify(s.TemplateCaption);};s.Draft.Changed+=s.Update;s.Update();
         }
         public static void Reset(object context){var s=(State)context;if(s.Draft!=null)s.Draft.StartFit(s.Draft.Starting);}
