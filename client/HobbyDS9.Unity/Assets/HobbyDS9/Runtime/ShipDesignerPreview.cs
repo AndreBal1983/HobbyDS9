@@ -14,6 +14,7 @@ namespace HobbyDS9.UnityClient
         private readonly Label caption = new Label { name="designer-hull-reference-caption", pickingMode=PickingMode.Ignore };
         private readonly VisualElement schematic = new VisualElement();
         private ShipPreviewStage? stage;
+        private VisualElement? viewport;
         private bool disposed;
 
         public static string? ReferenceKey(string? hullVersionId) =>
@@ -31,6 +32,25 @@ namespace HobbyDS9.UnityClient
             Fallback(visualKey==null ? "Hull schematic · no mapped model reference" : "Illustrative hull reference · equipment shown schematically");
             RegisterCallback<AttachToPanelEvent>(_=>Open());
             RegisterCallback<DetachFromPanelEvent>(_=>Release());
+            image.RegisterCallback<GeometryChangedEvent>(FitViewport);
+            caption.RegisterCallback<GeometryChangedEvent>(FitViewport);
+        }
+
+        public void BindViewport(VisualElement value)
+        {
+            if(viewport!=null)viewport.UnregisterCallback<GeometryChangedEvent>(FitViewport);
+            viewport=value;viewport.RegisterCallback<GeometryChangedEvent>(FitViewport);
+        }
+
+        private void FitViewport(GeometryChangedEvent change)
+        {
+            if(disposed || viewport==null || panel==null)return;
+            var available=viewport.worldBound.yMax-image.worldBound.yMin-caption.resolvedStyle.height-12;
+            if(float.IsNaN(available) || float.IsInfinity(available) || available<=0)return;
+            var maximum=GetFirstAncestorOfType<ShipDesignerView>()?.ClassListContains("sd-wide")==true?440:360;
+            var height=Mathf.Min(maximum,Mathf.Max(32,available));
+            if(Mathf.Abs(image.resolvedStyle.height-height)<.5f)return;
+            image.style.minHeight=32;image.style.height=height;
         }
 
         private void Fallback(string text)
@@ -63,6 +83,11 @@ namespace HobbyDS9.UnityClient
         {
             image.image=null;stage?.Dispose();stage=null;
         }
-        public void Dispose() { if(disposed)return; disposed=true;Release(); }
+        public void Dispose()
+        {
+            if(disposed)return; disposed=true;
+            if(viewport!=null)viewport.UnregisterCallback<GeometryChangedEvent>(FitViewport);
+            viewport=null;Release();
+        }
     }
 }

@@ -155,7 +155,7 @@ namespace HobbyDS9.UnityClient
         {
             var s=Scroll("designer-overview");workspace.Add(s);var stage=new VisualElement();stage.AddToClassList("sd-overview-stage");s.Add(stage);
             var art=new VisualElement();art.AddToClassList("sd-overview-art");stage.Add(art);
-            referenceHull=Draft.Current.HullId;hullPreview=new ShipDesignerPreview(referenceHull);art.Add(hullPreview);
+            referenceHull=Draft.Current.HullId;hullPreview=new ShipDesignerPreview(referenceHull);art.Add(hullPreview);hullPreview.BindViewport(s.contentViewport);
             overviewInstalled=new VisualElement();art.Add(overviewInstalled);
             art.Add(new LcarsReadout("Model is an illustrative hull reference. Installed systems, mount compatibility and performance come from this draft's validation."));
             overviewFacts=new VisualElement();overviewFacts.AddToClassList("sd-overview-facts");stage.Add(overviewFacts);

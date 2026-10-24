@@ -130,3 +130,4 @@
 .sd-wide .sd-hull-reference-image { height: 440px; }
 .sd-narrow .sd-hull-reference-image { height: 280px; min-height: 200px; }
 .sd-short .sd-hull-reference-image { height: 240px; min-height: 180px; }
+.sd-short #designer-workspace-title { display: none; }

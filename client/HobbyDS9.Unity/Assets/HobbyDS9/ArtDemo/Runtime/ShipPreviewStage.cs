@@ -130,7 +130,45 @@ namespace HobbyDS9.ArtDemo
             // Bounding sphere fits both axes even for narrow textures.
             camera.aspect = (float)Texture.width / Texture.height;
             camera.orthographicSize = Mathf.Max(.5f, bounds.extents.magnitude * 1.15f / Mathf.Min(1, camera.aspect));
+            if (illustrative)
+            {
+                var right = camera.transform.right;
+                var up = camera.transform.up;
+                float minX = float.PositiveInfinity, maxX = float.NegativeInfinity;
+                float minY = float.PositiveInfinity, maxY = float.NegativeInfinity;
+                foreach (var filter in filters)
+                {
+                    var b = filter.sharedMesh.bounds;
+                    for (int x = -1; x <= 1; x += 2)
+                    for (int y = -1; y <= 1; y += 2)
+                    for (int z = -1; z <= 1; z += 2)
+                    {
+                        var point = filter.transform.TransformPoint(b.center + Vector3.Scale(b.extents, new Vector3(x,y,z))) - centre;
+                        var px = Vector3.Dot(point,right); var py = Vector3.Dot(point,up);
+                        minX = Mathf.Min(minX,px); maxX = Mathf.Max(maxX,px);
+                        minY = Mathf.Min(minY,py); maxY = Mathf.Max(maxY,py);
+                    }
+                }
+                var halfExtents = new Vector2((maxX-minX)*.5f,(maxY-minY)*.5f);
+                var size = ReferenceFrameSize(halfExtents,camera.aspect);
+                // Translate in the existing image basis; LookAt again would
+                // rotate that basis and invalidate the projected fit.
+                camera.transform.position += right*((minX+maxX)*.5f) + up*((minY+maxY)*.5f);
+                camera.orthographicSize = size;
+            }
             Render();
+        }
+
+        // Pure geometric fit for the illustrative stage, not actual ship views.
+        public static float ReferenceFrameSize(Vector2 projectedHalfExtents, float aspect)
+        {
+            if (float.IsNaN(aspect) || float.IsInfinity(aspect) || aspect<=0
+                || float.IsNaN(projectedHalfExtents.x) || float.IsInfinity(projectedHalfExtents.x) || projectedHalfExtents.x<0
+                || float.IsNaN(projectedHalfExtents.y) || float.IsInfinity(projectedHalfExtents.y) || projectedHalfExtents.y<0)
+                throw new ArgumentOutOfRangeException(nameof(projectedHalfExtents),"Reference bounds and aspect must be finite and nonnegative, with positive aspect.");
+            var size = Math.Max(.5,Math.Max(projectedHalfExtents.y,projectedHalfExtents.x/aspect)*1.12);
+            if (double.IsInfinity(size) || size>float.MaxValue)throw new ArgumentOutOfRangeException(nameof(projectedHalfExtents));
+            return (float)size;
         }
 
         public void Clear()
