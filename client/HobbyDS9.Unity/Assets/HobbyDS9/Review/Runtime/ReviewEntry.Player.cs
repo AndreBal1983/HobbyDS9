@@ -63,13 +63,7 @@ namespace HobbyDS9.UnityReview
             playerStatus!.text=demoLanding?"":"Turn "+frame.Status.Turn+" · "+(frame.Status.Phase==SessionPhase.Planning?"Planning":"Combat pending")+"\nCredits "+frame.Strategy!.Civilization.Credits;
             if(frame.Demo!=null&&!demoLanding){var goal=frame.Strategy!.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==frame.Demo.ObjectiveNodeId)?.DisplayName??"Objective sector";var objective=root!.Q<Label>("demo-objective");if(objective!=null)objective.text="Objective: "+goal+" · Through turn "+frame.Demo.LastTurn+" · "+frame.Demo.Outcome;}
             playerGuidance!.text=demoLanding?(generatedCampaignBusy?"Preparing campaign…":"Start a new galaxy or continue a saved campaign."):PlayerMessage();
-            if(checkpointUiOperation!=null&&ReferenceEquals(checkpointOwner,model))
-            {
-                // Replace interactive draft controls and detach map callbacks while work is active.
-                // The UI continues pumping layout/render/input; no live host is replayed here.
-                content!.Clear();playerFooter!.Clear();playerGuidance.text=model.Message;
-                content.Add(Readout(model.Message));return;
-            }
+            if(DrawCampaignBusy())return;
             if(PlayerProfile&&demoLanding){playerTitle.text="Start / Continue";DrawDemoLanding();}
             else if(workspace.Page==ReviewWorkspacePage.Combat)central!.Render();
             else if(workspace.Page==ReviewWorkspacePage.Saves)DrawSaves();
@@ -160,6 +154,7 @@ namespace HobbyDS9.UnityReview
         private void AbandonPlayerCheckpoint()
         {
             if(checkpointUiOperation!=null)checkpointOwner?.AbandonStaticCheckpointOperation(checkpointUiOperation);
+            if(checkpointUiOperation!=null)HideCampaignBusy(checkpointUiOperation);
             checkpointUiOperation=null;checkpointOwner=null;
         }
         private async void RunPlayerCheckpoint(bool loading,string requestedSlot,bool overwrite=false,Action? occupied=null)
@@ -167,13 +162,15 @@ namespace HobbyDS9.UnityReview
             var owner=model!;var epoch=viewEpoch;var before=owner.Current.Frame;
             var operation=owner.BeginStaticCheckpointOperation(requestedSlot,loading,overwrite,discard:true);
             if(operation==null){Draw();return;}
-            checkpointOwner=owner;checkpointUiOperation=operation;Draw();
+            checkpointOwner=owner;checkpointUiOperation=operation;
+            ShowCampaignBusy(operation,loading?"Loading and validating campaign…":"Saving and validating campaign…");
             try
             {
                 var completion=await Task.Run(()=>operation.Execute());
                 if(this==null||!isActiveAndEnabled||viewEpoch!=epoch||!ReferenceEquals(model,owner))
                 {owner.AbandonStaticCheckpointOperation(operation);return;}
                 var accepted=owner.CompleteStaticCheckpointOperation(operation,completion);
+                HideCampaignBusy(operation);
                 checkpointUiOperation=null;checkpointOwner=null;
                 if(!ReferenceEquals(before,owner.Current.Frame)){viewEpoch++;Build();}else Draw();
                 if(!accepted&&!loading&&owner.Message=="Checkpoint result: SlotOccupied")occupied?.Invoke();
@@ -181,6 +178,7 @@ namespace HobbyDS9.UnityReview
             finally
             {
                 owner.AbandonStaticCheckpointOperation(operation);
+                HideCampaignBusy(operation);
                 if(ReferenceEquals(checkpointUiOperation,operation))
                 {
                     checkpointUiOperation=null;checkpointOwner=null;

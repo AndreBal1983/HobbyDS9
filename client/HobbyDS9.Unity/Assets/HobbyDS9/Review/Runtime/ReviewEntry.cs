@@ -97,7 +97,7 @@ namespace HobbyDS9.UnityReview
                 root=doc.rootVisualElement;root.Clear();root.Add(new Label("OPT-IN PHYSICAL TACTICAL V2 — unavailable. Check profile/resources/preparation; default campaign was not started."));
             }
         }
-        private void OnDisable(){viewEpoch++;modalPermission.Invalidate();AbandonPlayerCheckpoint();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();}
+        private void OnDisable(){viewEpoch++;modalPermission.Invalidate();AbandonPlayerCheckpoint();campaignBusyToken=null;root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();}
         private void OnDestroy(){ResetDemoKeyboard();ReleasePanel();}
         private void ReleasePanel()
         {
@@ -223,7 +223,7 @@ namespace HobbyDS9.UnityReview
         }
         private void BindButton(Button button,Action action,bool dialog=false)
         {
-            var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
+            var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&campaignBusyToken==null&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
             button.clicked+=guarded;
             if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);
         }

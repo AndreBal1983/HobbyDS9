@@ -70,12 +70,15 @@ namespace HobbyDS9.UnityReview
             }
             controls.SetEnabled(!generatedCampaignBusy&&PlayableResourcesAvailable());
         }
+        private object? generatedCampaignOperationToken;
         private async void RunGeneratedCampaignOperation(string? slot,bool legacy=false)
         {
             if(generatedCampaignBusy)return;
             generatedCampaignBusy=true;var epoch=viewEpoch;var prior=model;
+            var operationToken=new object();generatedCampaignOperationToken=operationToken;
             var seed=generatedCampaignSeed;var size=generatedCampaignSize;var quiet=generatedCampaignQuiet;
             generatedCampaignControls?.SetEnabled(false);legacyGeneratedCampaignControls?.SetEnabled(false);if(generatedCampaignNotice!=null)generatedCampaignNotice.text=slot==null?"Generating and validating campaign…":"Loading the saved galaxy and campaign…";
+            ShowCampaignBusy(operationToken,slot==null?"Generating galaxy and validating campaign…":"Loading and validating campaign…");
             try
             {
                 // Resource access is main-thread only. The portable factory/load and trusted file IO run away from the UI.
@@ -94,6 +97,7 @@ namespace HobbyDS9.UnityReview
                     return slot==null?new ReviewUiModel(template,settings,codec,store):ReviewUiModel.ContinueStaticAstronomyCampaign(template,codec,store,slot);
                 });
                 if(this==null||!isActiveAndEnabled||viewEpoch!=epoch||!ReferenceEquals(model,prior)||generatedGalaxyOpen)return;
+                HideCampaignBusy(operationToken);
                 PublishPlayerProfile(next,slot??GeneratedCampaignOptions.Slots()[0]);
             }
             catch(Exception)
@@ -102,9 +106,11 @@ namespace HobbyDS9.UnityReview
             }
             finally
             {
-                generatedCampaignBusy=false;
-                if(this!=null&&viewEpoch==epoch){generatedCampaignControls?.SetEnabled(PlayableResourcesAvailable());legacyGeneratedCampaignControls?.SetEnabled(PlayableResourcesAvailable());}
-                else if(this!=null&&demoLanding&&!generatedGalaxyOpen)Draw();
+                if(ReferenceEquals(generatedCampaignOperationToken,operationToken))
+                {generatedCampaignOperationToken=null;generatedCampaignBusy=false;}
+                var hidden=HideCampaignBusy(operationToken);
+                if(this!=null&&viewEpoch==epoch){generatedCampaignControls?.SetEnabled(PlayableResourcesAvailable());legacyGeneratedCampaignControls?.SetEnabled(PlayableResourcesAvailable());if(hidden)Draw();}
+                else if(this!=null&&demoLanding&&!generatedGalaxyOpen&&campaignBusyToken==null)Draw();
             }
         }
     }
