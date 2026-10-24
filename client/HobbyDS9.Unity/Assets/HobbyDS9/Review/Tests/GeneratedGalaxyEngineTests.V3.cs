@@ -319,6 +319,12 @@ namespace HobbyDS9.UnityReview.Tests
                     var beforeCancel=codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model));
                     Click(doc.rootVisualElement.Q<Button>("map-fit"));yield return null;yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+target),0);yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+target));Confirm(doc,false);
                     Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(beforeCancel),"actual route review Cancel preserves canonical campaign");
+                    // Cancel redraws the actual map. Settle its fresh layout before genuine panel picking.
+                    yield return V3Settled(doc);
+                    var pickMap=doc.rootVisualElement.Q("playable-known-map");Assert.That(pickMap.panel,Is.Not.Null);
+                    var pickBounds=pickMap.worldBound;
+                    foreach(float coordinate in new[]{pickBounds.x,pickBounds.y,pickBounds.width,pickBounds.height})Assert.That(!float.IsNaN(coordinate)&&!float.IsInfinity(coordinate),Is.True,"finite fresh map world bounds before actual pick");
+                    Assert.That(pickBounds.width,Is.GreaterThan(2));Assert.That(pickBounds.height,Is.GreaterThan(2));
                     yield return CampaignZoomPan(doc,entry);yield return V3Settled(doc);V3Save(doc.panelSettings.targetTexture,"motion-pan");
                     Click(doc.rootVisualElement.Q<Button>("campaign-visual-depth"));yield return V3Settled(doc);V3Save(doc.panelSettings.targetTexture,"motion-depth-off");
                     Click(doc.rootVisualElement.Q<Button>("campaign-visual-depth"));yield return V3Settled(doc);V3Save(doc.panelSettings.targetTexture,"motion-depth-on"); //3
