@@ -10,6 +10,40 @@ namespace HobbyDS9.UnityReviewAdapter.Tests;
 
 public sealed class StaticAstronomyBindingTests : IDisposable
 {
+    private static PhysicalReviewHost ControllerHost(ReviewController controller)=>(PhysicalReviewHost)typeof(ReviewController)
+        .GetField("host",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.GetValue(controller)!;
+    [Fact] public void ControllerInterfaceReopenUsesV2AndProtectsOldHandlesAndFailedDraft()
+    {
+        Store().Write("one",Root(),false);
+        var opened=PhysicalReviewHost.OpenStaticAstronomyCampaignFromSlot(Template(),codec,Store(),"one","civ.federation");
+        var oldHost=opened.Host!;var c=new ReviewController(oldHost,"civ.federation");var oldFrame=c.Frame;
+        var oldHandle=oldHost.SaveCommitted();var oldPair=oldHost.CaptureGeneratedPresentation(oldFrame);
+        // Public controller invokes the actual internal ITacticalClientHost.Reopen seam.
+        Assert.True(c.ReopenFromSlot("one").Succeeded);var next=ControllerHost(c);
+        Assert.NotSame(oldHost,next);Assert.NotSame(oldFrame,c.Frame);
+        var pair=next.CaptureGeneratedPresentation(c.Frame);next.ValidateGeneratedPresentation(c.Frame,pair);
+        Assert.Throws<InvalidOperationException>(()=>next.ValidateGeneratedPresentation(c.Frame,oldPair));
+        Assert.Throws<ArgumentException>(()=>next.LoadCommitted(oldHandle,c.Frame.Actor,null));
+        oldHost.ValidateGeneratedPresentation(oldFrame,oldPair); // Old host was not mutated.
+        Assert.True(c.SaveCommittedToSlot("after-reopen").Succeeded);
+        Assert.Equal(CampaignStaticAstronomyIdentity.Profile,Store().Read("after-reopen").ProfileId);
+        var fleet=c.Frame.OwnStrategicFleets.First().FleetId.Value;
+        Assert.True(c.EditTravel(fleet,CampaignTravelIntent.StayEngage,null));
+        var frame=c.Frame;var draft=c.TravelDraft;
+        Assert.False(c.ReopenFromSlot("missing",true).Succeeded);Assert.Same(frame,c.Frame);Assert.Same(draft,c.TravelDraft);
+        Assert.Same(next,ControllerHost(c));next.ValidateGeneratedPresentation(frame,pair);
+    }
+    [Fact] public void ControllerInterfaceReopenKeepsV1FactoryAndExactSaveBytes()
+    {
+        var oldBytes=File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,"static-v1/aftermath.json"));
+        var store=new ReviewGeneratedCampaignSlotStore(directory,codec);store.Write("old",codec.DecodeGeneratedCampaignRoot(oldBytes),false);
+        var opened=PhysicalReviewHost.OpenGeneratedCampaignFromSlot(Template(),codec,store,"old","civ.federation");
+        var c=new ReviewController(opened.Host!,"civ.federation");Assert.True(c.ReopenFromSlot("old").Succeeded);
+        var next=ControllerHost(c);Assert.NotSame(opened.Host,next);
+        Assert.Throws<InvalidOperationException>(()=>next.CaptureGeneratedPresentation(c.Frame));
+        Assert.True(c.SaveCommittedToSlot("copied").Succeeded);
+        Assert.Equal(oldBytes,File.ReadAllBytes(Path.Combine(directory,"unity-generated-campaign-v7-copied.json")));
+    }
     private readonly string directory=Path.Combine(Path.GetTempPath(),"hobby-static-binding-"+Guid.NewGuid().ToString("N"));
     private readonly ReviewNewtonsoftCodec codec=new();
     private static CampaignPlayableFleetPackageDto Template()=>PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory,"scenarios/playable-fleet-v1"));

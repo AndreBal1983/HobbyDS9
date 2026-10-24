@@ -9,6 +9,7 @@ namespace HobbyDS9.TacticalReviewClient
         private sealed class StaticStoreAdapter : IGeneratedCampaignReviewCheckpointStore
         {
             private readonly IStaticAstronomyReviewCheckpointStore store;
+            internal IStaticAstronomyReviewCheckpointStore Original=>store;
             internal StaticStoreAdapter(IStaticAstronomyReviewCheckpointStore store){this.store=store;}
             public void Write(string slot,CampaignGeneratedSaveDto root,bool overwrite)=>store.Write(slot,root,overwrite);
             public CampaignGeneratedSaveDto Read(string slot)=>store.Read(slot);

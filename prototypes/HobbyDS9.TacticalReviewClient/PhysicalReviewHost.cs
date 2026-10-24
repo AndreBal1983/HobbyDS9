@@ -189,7 +189,9 @@ namespace HobbyDS9.TacticalReviewClient
                 if(generatedTemplate!=null)
                 {
                     if(generatedStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
-                    var openedGenerated=OpenGeneratedCampaignFromSlot(generatedTemplate,generatedCodec!,generatedStore,slot,actor,encounter);
+                    var openedGenerated=staticAstronomy
+                        ?OpenStaticAstronomyCampaignFromSlot(generatedTemplate,(IStaticAstronomyReviewHostCodec)generatedCodec!,((StaticStoreAdapter)generatedStore).Original,slot,actor,encounter)
+                        :OpenGeneratedCampaignFromSlot(generatedTemplate,generatedCodec!,generatedStore,slot,actor,encounter);
                     return new ClientHostReopenResult(openedGenerated.Error,openedGenerated.Host,openedGenerated.Frame);
                 }
                 if(playableFleetPackage!=null)
