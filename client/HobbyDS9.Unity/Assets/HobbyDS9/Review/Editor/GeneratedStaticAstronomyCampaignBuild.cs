@@ -18,6 +18,10 @@ namespace HobbyDS9.UnityReview.Editor
         public static void BuildWindowsPlayableProgressCheckpoint()
             => BuildWindows("Windows-PlayableProgress-20261024");
 
+        [MenuItem("HobbyDS9/Generated campaign v2/Build navigation and galaxy checkpoint")]
+        public static void BuildWindowsNavigationGalaxyCheckpoint()
+            => BuildWindows("Windows-NavigationGalaxy-20261024");
+
         private static void BuildWindows(string stageName)
         {
             if (UnityEngine.Application.unityVersion != "6000.6.5f1")
@@ -93,7 +97,7 @@ namespace HobbyDS9.UnityReview.Editor
             "PLAYABLE GENERATED CAMPAIGN V2\r\n" +
             "1. Set seed 42, Systems 250 and Quiet area 2.00x, then New generated game. The separate Generated galaxy review tool does not start or advance a campaign.\r\n" +
             "2. Use Research to review/apply allocations. In Production, queue existing cruisers at your owned colony. Production spends real campaign resources; End turn progresses construction.\r\n" +
-            "3. Inspect/combine compatible stationary own fleets in Fleets. Select an own fleet on Map, right-click a known destination, review and confirm. End turn advances movement and observations. Wheel zooms; middle-drag pans. Fit known frames charted space; Fit galaxy shows the whole extent.\r\n" +
+            "3. Inspect/combine compatible stationary own fleets in Fleets. Select an own fleet on Map, then right-click anywhere inside a known tile to set its route. Shift-right-click appends a waypoint. Only replacing an engage/follow activity asks for confirmation. Accepted routes stay visible; End turn advances movement and observations. Wheel zooms; middle-drag pans. Fit known frames charted space; Fit galaxy shows the whole extent.\r\n" +
             "4. Explore neighboring regions to chart space. A contact records an observation, not a permanent enemy location. Current observation of an empty region clears its contact; following a lost contact does not guarantee interception.\r\n" +
             "5. A stationary own fleet can Defend this region through its roster entry. Confirm the order and advance turns. This seeks a lawful encounter without forcing a battle or exposing hidden enemy movement.\r\n" +
             "6. Open Combat when a battle is pending. Review maneuver/focus and commit each round. Playback animates resolved events; reports show accepted conditions. Confirm the completed aftermath to resume strategy.\r\n" +

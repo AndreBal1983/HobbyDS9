@@ -277,7 +277,7 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return null;yield return null;Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-2"));Confirm(doc);yield return WaitCampaign(entry,"residency-explore32");
                 var actual=CampaignModel(entry).GeneratedPresentation();var at=actual.Astronomy.Nebulae.First();var map=actual.KnownMap;
                 // Explicit synthetic nine-field workload exercises the eight-field cap.
-                var proxies=Enumerable.Range(0,9).Select(i=>new CampaignNebulaVisualProxy("synthetic-residency-"+i,at.CentreX+(i-4)*at.VisualReferenceRadiusX*.08,at.CentreY,at.VisualReferenceRadiusX,at.VisualReferenceRadiusY));
+                var proxies=Enumerable.Range(0,9).Select(i=>new CampaignNebulaVisualProxy("synthetic-residency-"+i,at.CentreX+(int)Math.Round((i-4)*at.VisualReferenceRadiusX*.08),at.CentreY,at.VisualReferenceRadiusX,at.VisualReferenceRadiusY));
                 var astronomy=new CampaignStaticAstronomySnapshot(actual.Actor,actual.MapContentHash,actual.Frame.Status.Turn,actual.Frame.Status.CampaignRevision,proxies);
                 var constructor=typeof(GeneratedCampaignPresentation).GetConstructors(BindingFlags.Instance|BindingFlags.NonPublic).Single();
                 var synthetic=(GeneratedCampaignPresentation)constructor.Invoke(new object[]{actual.Frame,map,astronomy,codec});
