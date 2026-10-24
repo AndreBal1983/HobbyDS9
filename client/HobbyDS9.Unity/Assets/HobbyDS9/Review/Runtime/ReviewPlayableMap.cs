@@ -38,6 +38,7 @@ namespace HobbyDS9.UnityReview
             var links=facts.Navigation.Links.Where(l=>nodeIds.Contains(l.EndpointA.Value)&&nodeIds.Contains(l.EndpointB.Value)).ToList();
             var fleets=frame.OwnStrategicFleets.OrderBy(f=>f.FleetId.Value,StringComparer.Ordinal).ToList();
             var contacts=frame.Travel?.KnownContacts.Where(c=>c.Fresh&&nodeIds.Contains(c.LastSeenNodeId)).ToList()??new List<CampaignKnownContact>();
+            var sensorStatus=generated==null?null:new GeneratedObservationStatus(generated,frame.Actor,frame.Travel?.KnownContacts??Array.Empty<CampaignKnownContact>());
             string Name(string id)=>generatedNames!=null&&generatedNames.TryGetValue(id,out var starName)?starName:nodes.FirstOrDefault(n=>n.NodeId.Value==id)?.DisplayName??"Location unavailable";
             var names=model.NamedFleets().ToDictionary(f=>f.Fleet.FleetId.Value,f=>f.DisplayName,StringComparer.Ordinal);
             string FleetName(string id)=>names.TryGetValue(id,out var value)?value:"Owned fleet";
@@ -394,6 +395,8 @@ namespace HobbyDS9.UnityReview
             if(selectedNode!=null)
             {
                 Text(details,Name(selectedNode.NodeId.Value)).AddToClassList("console-section");
+                var observation=sensorStatus?.Describe(selectedNode.NodeId.Value);
+                if(observation!=null)Text(details,observation,"map-sensor-status").tooltip=GeneratedObservationStatus.CoverageHelp;
                 foreach(var colony in facts.Colonies.Where(c=>selectedNode.AssociatedSystemId.HasValue&&c.SystemId==selectedNode.AssociatedSystemId.Value))
                 {
                     Text(details,colony.Environment.DisplayName+" · population "+colony.Population);
