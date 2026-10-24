@@ -178,7 +178,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(panel.GetCapturingElement(id),Is.Null);Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
                 var accepted=model.Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==fleet.FleetId.Value);
                 Assert.That(accepted.RouteNodeIds.Last(),Is.EqualTo(blankNode));Assert.That(model.Current.Frame.Status.CampaignRevision,Is.GreaterThan(prior.Status.CampaignRevision));
-                var route=accepted.RouteNodeIds.ToArray();CampaignPage(doc,ReviewWorkspacePage.Saves);Click(doc.rootVisualElement.Q<Button>("player-save"));
+                var route=accepted.RouteNodeIds.ToArray();CampaignPage(doc,ReviewWorkspacePage.Saves);Click(doc.rootVisualElement.Q<Button>("save-slot-generated-1"));Click(doc.rootVisualElement.Q<Button>("player-save"));
                 Click(doc.rootVisualElement.Q<Button>("demo-menu"));Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-1"));Confirm(doc);yield return WaitCampaign(entry,"navigation-reload-orders");
                 CollectionAssert.AreEqual(route,CampaignModel(entry).Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==fleet.FleetId.Value).RouteNodeIds);
                 yield return CampaignCapture(entry,doc,"navigation-accepted-reloaded");
