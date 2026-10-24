@@ -44,7 +44,7 @@ namespace HobbyDS9.UnityClient
             state.Draft=new ShipDesignDraft(provider);
             var first=state.Draft.Current.ToDto();first.ClassId=state.ClassId();state.Draft.StartFit(new DesignerFit(first));
             state.Draft.Changed+=()=>{if(state.Draft.TemplateId.Length>0)state.TemplateCaption=state.Draft.Provider.Templates.Single(t=>t.Id==state.Draft.TemplateId).Caption;
-                if(state.Draft.Current.ToDto().ClassId!=state.ClassId()){var fit=state.Draft.Current.ToDto();fit.ClassId=state.ClassId();state.Draft.StartFit(new DesignerFit(fit));return;}state.Changed(state.Draft.Modified);};return state;
+                if(state.Draft.Current.ToDto().ClassId!=state.ClassId()){var fit=state.Draft.Current.ToDto();fit.ClassId=state.ClassId();state.Draft.StartFit(new DesignerFit(fit));return;}state.Changed(state.Draft.Modified || state.Draft.HasPendingFit);};return state;
         }
         private static bool CanEdit(CampaignBlueprintSnapshot r)=>r.Blueprint.Fit.Installations.All(i=>i.Quantity<=int.MaxValue)
             && r.Blueprint.Fit.Installations.Select(i=>i.ComponentVersionId).Distinct(StringComparer.Ordinal).Count()==r.Blueprint.Fit.Installations.Count;
@@ -55,7 +55,7 @@ namespace HobbyDS9.UnityClient
             if(s.Update!=null)s.Draft.Changed-=s.Update;s.View?.Dispose();
             var actions=new VisualElement();actions.AddToClassList("sd-buttons");actions.style.flexDirection=FlexDirection.Row;actions.style.flexShrink=0;root.Add(actions);
             var feedback=new Label(){name="integrated-design-feedback"};feedback.style.whiteSpace=WhiteSpace.Normal;root.Add(feedback);
-            var publish=new Button(()=>{if(s.Publish(s.Draft.Current.ToDto())){s.Draft.MarkPublished();var library=s.Refresh(false);if(library!=null)s.Library=library;Present(root,s);}else s.Update?.Invoke();}){name="integrated-design-publish",text="Publish class revision"};actions.Add(publish);
+            var publish=new Button(()=>{if(s.Draft.HasPendingFit)return;if(s.Publish(s.Draft.Current.ToDto())){s.Draft.MarkPublished();var library=s.Refresh(false);if(library!=null)s.Library=library;Present(root,s);}else s.Update?.Invoke();}){name="integrated-design-publish",text="Publish class revision"};actions.Add(publish);
             actions.Add(new Button(()=>s.Draft.RequestDiscard(()=>{s.New();s.TemplateCaption=s.Draft.Provider.Templates[0].Caption;s.Draft.StartFit(s.Draft.Provider.Templates[0].Fit);s.Update?.Invoke();})){name="integrated-design-new",text="New class"});
             actions.Add(new Button(()=>{var library=s.Refresh(true);if(library!=null){s.Library=library;
                 var provider=new ApplicationShipDesignPreviewProvider(ShipDesignApplication.FromCampaignCatalogue(library.Catalogue!.Catalogue),library.Catalogue.AvailableVersionIds,s.Draft.Provider.Templates,"OWN CAMPAIGN CATALOGUE · custom construction unavailable");s.Draft.RefreshProvider(provider);Present(root,s);}else s.Update?.Invoke();}){name="integrated-design-refresh",text="Refresh campaign"});
@@ -70,7 +70,7 @@ namespace HobbyDS9.UnityClient
             if(s.Library.Published.Count==0)revisions.Add(new Label("No published revisions. Refresh after publishing to review history."));
             foreach(var record in s.Library.Published){var r=record;var button=new Button(()=>s.Draft.RequestDiscard(()=>{var fit=s.Edit(r);s.TemplateCaption="Revision "+r.Blueprint.Revision+" (local copy)";s.Draft.StartFit(new DesignerFit(fit));s.Update?.Invoke();}))
                 {name="integrated-design-edit-"+r.Blueprint.BlueprintId+"-"+r.Blueprint.Revision,text=r.Blueprint.Fit.DisplayName+" · revision "+r.Blueprint.Revision};button.AddToClassList("lcars-pill");button.style.flexShrink=0;button.SetEnabled(CanEdit(r));revisions.Add(button);}
-            s.Update=()=>{publish.SetEnabled(s.CanPublish(s.Draft.Current.ToDto()));feedback.text=s.Notice();s.View.Q<DropdownField>("designer-template").SetValueWithoutNotify(s.TemplateCaption);};s.Draft.Changed+=s.Update;s.Update();
+            s.Update=()=>{publish.SetEnabled(!s.Draft.HasPendingFit && s.CanPublish(s.Draft.Current.ToDto()));feedback.text=s.Notice();s.View.Q<DropdownField>("designer-template").SetValueWithoutNotify(s.TemplateCaption);};s.Draft.Changed+=s.Update;s.Update();
         }
         public static void Reset(object context){var s=(State)context;if(s.Draft!=null)s.Draft.StartFit(s.Draft.Starting);}
     }

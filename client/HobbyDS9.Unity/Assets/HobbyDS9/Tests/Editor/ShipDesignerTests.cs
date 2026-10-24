@@ -17,7 +17,7 @@ namespace HobbyDS9.UnityClient.Tests
             var invoke=typeof(Clickable).GetMethod("Invoke",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
             Assert.That(invoke,Is.Not.Null);invoke.Invoke(button.clickable,new object[]{null});
         }
-        [TestCase("hull.utility.v1","fed.exploration-cruiser.v1")]
+        [TestCase("hull.utility.v1","reference.galaxy.precision.v3")]
         [TestCase("hull.utility.v1-extra",null)]
         [TestCase("HULL.UTILITY.V1",null)]
         [TestCase("hull.cruiser.v1",null)]
@@ -98,7 +98,7 @@ namespace HobbyDS9.UnityClient.Tests
             finally {UnityEngine.Object.DestroyImmediate(image);UnityEngine.Object.DestroyImmediate(catalogue);}
         }
         [Test]
-        public void AttachedComponentActionsAddReplaceAndRemoveThroughLocalDraft()
+        public void AttachedComponentActionsPreviewBeforeFittingAndCancelWithoutInstalling()
         {
             var draft=new ShipDesignDraft(ShipDesignFixtureLoader.Load());draft.RequestTemplate("class.escort");
             var window=ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();
@@ -109,11 +109,17 @@ namespace HobbyDS9.UnityClient.Tests
                     window.Show();window.rootVisualElement.Add(view);view.SelectSystem("Shields");
                     Click(view.Q<Button>("select-component-component.small-shield.v1"));
                     Click(view.Q<Button>("designer-replace"));
+                    Assert.That(draft.Current.Installed.ContainsKey("component.escort-shield.v1"),Is.True);
+                    Assert.That(draft.HasPendingFit,Is.True);Click(view.Q<Button>("designer-cancel-fit"));
+                    Assert.That(draft.Current.Installed.ContainsKey("component.escort-shield.v1"),Is.True);
+                    Click(view.Q<Button>("designer-replace"));Click(view.Q<Button>("designer-fit-package"));
                     Assert.That(draft.Current.Installed.ContainsKey("component.escort-shield.v1"),Is.False);
                     Assert.That(draft.Current.Installed["component.small-shield.v1"],Is.EqualTo(1));
                     Click(view.Q<Button>("designer-add"));
+                    Assert.That(draft.Current.Installed["component.small-shield.v1"],Is.EqualTo(1));Click(view.Q<Button>("designer-fit-package"));
                     Assert.That(draft.Current.Installed["component.small-shield.v1"],Is.EqualTo(2));
                     Click(view.Q<Button>("remove-component.small-shield.v1"));
+                    Assert.That(draft.Current.Installed.ContainsKey("component.small-shield.v1"),Is.True);Click(view.Q<Button>("designer-fit-package"));
                     Assert.That(draft.Current.Installed.ContainsKey("component.small-shield.v1"),Is.False);
                 }
                 finally{window.Close();}

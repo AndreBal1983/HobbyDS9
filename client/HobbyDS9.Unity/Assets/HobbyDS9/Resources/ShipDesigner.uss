@@ -131,3 +131,22 @@
 .sd-narrow .sd-hull-reference-image { height: 280px; min-height: 200px; }
 .sd-short .sd-hull-reference-image { height: 240px; min-height: 180px; }
 .sd-short #designer-workspace-title { display: none; }
+/* Art workbench: persistent hull reference, actual-catalogue inspector and explicit fit boundary. */
+.sd-workbench { flex-direction: row; flex-grow: 1; flex-basis: 0; min-width: 0; min-height: 0; }
+.sd-live-viewer { flex-grow: 6; flex-basis: 0; min-width: 160px; min-height: 0; margin-right: 12px; background-color: var(--lcars-map); border-bottom-width: 5px; border-bottom-color: var(--lcars-amber); }
+.sd-workbench > .sd-workspace { flex-grow: 5; flex-basis: 0; min-width: 280px; }
+.sd-workbench .sd-focus-columns { flex-direction: column; }
+.sd-workbench .sd-detail { width: auto; max-width: none; max-height: 300px; flex-grow: 1; flex-shrink: 1; flex-basis: 0; border-left-width: 0; border-top-width: 3px; border-top-color: var(--lcars-lavender); }
+.sd-workbench .sd-system-content { flex-grow: 1; flex-shrink: 1; flex-basis: 0; }
+.sd-workbench .sd-block { margin-bottom: 8px; }
+.sd-fit-actions { flex-shrink: 0; padding: 4px 10px; border-top-width: 3px; border-top-color: var(--lcars-amber); }
+.sd-fit-actions > Label { font-size: 14px; }
+.sd-workbench .sd-profile-actions { flex-wrap: wrap; }
+.sd-workbench .sd-power-detail { max-height: 136px; height: 116px; }
+.sd-workbench .sd-profile-row { width: 100%; }
+.sd-workbench .sd-power-totals Label { font-size: 14px; }
+.sd-workbench .sd-profile-caption { display: none; }
+.sd-narrow .sd-workbench .sd-hull-reference-image { min-height: 100px; }
+.sd-short .sd-workbench .sd-hull-reference-image { min-height: 80px; }.sd-workbench .sd-power-bank > .sd-profile-row { width: 100%; min-width: 0; max-width: none; }
+.sd-workbench .sd-profile-row > Label { font-size: 15px; }
+.sd-workbench .sd-power-detail .unity-base-field { min-width: 120px; width: 170px; }

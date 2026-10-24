@@ -83,7 +83,9 @@ namespace HobbyDS9.UnityClient
         public DesignerStatus Severity { get; }
         public string Explanation { get; }
         public DesignerProfile? Profile { get; }
-        public DesignerIssue(string systemId,DesignerStatus severity,string explanation,DesignerProfile? profile=null) { SystemId=systemId; Severity=severity; Explanation=explanation; Profile=profile; }
+        public string Field { get; }
+        public string SourcePath { get; }
+        public DesignerIssue(string systemId,DesignerStatus severity,string explanation,DesignerProfile? profile=null,string field="",string sourcePath="") { SystemId=systemId; Severity=severity; Explanation=explanation; Profile=profile;Field=field;SourcePath=sourcePath; }
     }
     public sealed class DesignerMetric
     {
@@ -145,10 +147,17 @@ namespace HobbyDS9.UnityClient
         public DesignerFit Current => new DesignerFit(edit);
         public bool Modified => !Current.SameAs(Starting);
         public bool ConfirmationPending => pending!=null;
+        public DesignerFit? PendingFit => proposed;
+        public bool HasPendingFit => proposed!=null;
+        public bool CanUndo => undo!=null;
+        public bool CanReleaseUnusedPower => !HasPendingFit && edit.Profiles!.Single(p=>p.Kind==DesignerFit.Kind(Profile)).Allocations!.Any(a=>a.RequestedPower>=0 && a.AllocatedPower>a.RequestedPower);
         public event Action? Changed;
         private ShipClassDraftDto edit=null!;
         private readonly Dictionary<string,string> knownIds=new Dictionary<string,string>(StringComparer.Ordinal);
         private Action? pending;
+        private DesignerFit? proposed;
+        private ShipClassDraftDto? undo;
+        private void Remember() { if(HasPendingFit)throw new InvalidOperationException("Fit or cancel the package preview first.");undo=Current.ToDto(); }
         public ShipDesignDraft(IShipDesignPreviewProvider provider) { Provider=provider; StartTemplate(provider.Templates.First().Id); }
         private void Notify() => Changed?.Invoke();
         private void CopyStarting() { edit=Starting.ToDto(); }
@@ -157,36 +166,37 @@ namespace HobbyDS9.UnityClient
         {
             Starting=new DesignerFit(fit.ToDto()); CopyStarting(); TemplateId="";
             knownIds.Clear(); foreach(var i in edit.Installations!)knownIds.Add(i.ComponentVersionId,i.InstallationId);
-            pending=null; Notify();
+            pending=null; proposed=null; undo=null; Notify();
         }
         public void SetClassId(string id) { edit.ClassId=id; Notify(); }
-        public void MarkPublished() { Starting=Current; Notify(); }
+        public void MarkPublished() { Starting=Current; undo=null; Notify(); }
         private void StartTemplate(string id)
         {
             TemplateId=id; Starting=new DesignerFit(Provider.Templates.Single(t=>t.Id==id).Fit.ToDto()); CopyStarting();
             knownIds.Clear(); foreach(var i in edit.Installations!) knownIds.Add(i.ComponentVersionId,i.InstallationId);
-            Profile=DesignerProfile.Cruise; pending=null; Notify();
+            Profile=DesignerProfile.Cruise; pending=null; proposed=null; undo=null; Notify();
         }
-        public void Rename(string value) { if(edit.DisplayName==value)return; edit.DisplayName=value; Notify(); }
-        public void SetRole(string value) { if(edit.RoleId==value)return; edit.RoleId=value; Notify(); }
-        public void SetCrew(long value) { edit.EmbarkedCrew=value; Notify(); }
+        public void Rename(string value) { if(edit.DisplayName==value)return; Remember();edit.DisplayName=value; Notify(); }
+        public void SetRole(string value) { if(edit.RoleId==value)return; Remember();edit.RoleId=value; Notify(); }
+        public void SetCrew(long value) { if(edit.EmbarkedCrew==value)return;Remember();edit.EmbarkedCrew=value; Notify(); }
         public void SetHull(string value)
         {
             if(!Provider.Hulls.Any(h=>h.Id==value))throw new ArgumentException("Unknown hull version.",nameof(value));
-            edit.HullVersionId=value; Notify();
+            if(edit.HullVersionId==value)return;Remember();edit.HullVersionId=value; Notify();
         }
         public void SelectProfile(DesignerProfile value) { Profile=value; Notify(); }
         public void SetPower(string component,long requested,long allocated)
         {
             var id=edit.Installations!.Single(i=>i.ComponentVersionId==component).InstallationId;
             var a=edit.Profiles!.Single(p=>p.Kind==DesignerFit.Kind(Profile)).Allocations!.Single(x=>x.InstallationId==id);
-            a.RequestedPower=requested; a.AllocatedPower=allocated; Notify(); // Never clamp or auto-allocate.
+            if(a.RequestedPower==requested && a.AllocatedPower==allocated)return;Remember();a.RequestedPower=requested; a.AllocatedPower=allocated; Notify(); // Never clamp or auto-allocate.
         }
         public void SetQuantity(string componentId,int quantity)
         {
             if(quantity<0)throw new ArgumentOutOfRangeException(nameof(quantity));
             if(!Provider.Catalogue.Any(c=>c.Id==componentId))throw new ArgumentException("Unknown catalogue item.",nameof(componentId));
             var item=edit.Installations!.SingleOrDefault(i=>i.ComponentVersionId==componentId);
+            if((item?.Quantity??0)==quantity)return;Remember();
             if(quantity==0)
             {
                 if(item!=null) { edit.Installations!.Remove(item); foreach(var p in edit.Profiles!)p.Allocations!.RemoveAll(a=>a.InstallationId==item.InstallationId); }
@@ -208,23 +218,50 @@ namespace HobbyDS9.UnityClient
             if(!Provider.Catalogue.Any(c=>c.Id==replacementId))throw new ArgumentException("Unknown replacement.",nameof(replacementId));
             var item=edit.Installations!.SingleOrDefault(i=>i.ComponentVersionId==oldId) ?? throw new ArgumentException("Select an installed item first.",nameof(oldId));
             var existing=edit.Installations!.SingleOrDefault(i=>i.ComponentVersionId==replacementId);
-            if(existing!=null) { var total=checked((int)(existing.Quantity+item.Quantity)); Remove(oldId); SetQuantity(replacementId,total); }
+            if(existing!=null)
+            {
+                var total=checked((int)(existing.Quantity+item.Quantity));
+                var combined=edit.Profiles!.Select(p=>{var a=p.Allocations!.Single(x=>x.InstallationId==item.InstallationId);var b=p.Allocations!.Single(x=>x.InstallationId==existing.InstallationId);
+                    return (Profile:p,Requested:checked(a.RequestedPower+b.RequestedPower),Allocated:checked(a.AllocatedPower+b.AllocatedPower));}).ToList();
+                Remember();edit.Installations!.Remove(item);
+                foreach(var p in combined){p.Profile.Allocations!.RemoveAll(a=>a.InstallationId==item.InstallationId);var allocation=p.Profile.Allocations!.Single(a=>a.InstallationId==existing.InstallationId);allocation.RequestedPower=p.Requested;allocation.AllocatedPower=p.Allocated;}
+                existing.Quantity=total;Notify();
+            }
             else
             {
+                Remember();
                 item.ComponentVersionId=replacementId; knownIds[replacementId]=item.InstallationId;
-                foreach(var p in edit.Profiles!) { var a=p.Allocations!.Single(x=>x.InstallationId==item.InstallationId); a.RequestedPower=0; a.AllocatedPower=0; }
+                // Retain explicit profile allocations; Application reports whether the replacement can use them.
                 Notify();
             }
+        }
+        public void PreviewAdd(string component) { var copy=PreviewCopy();copy.Add(component);proposed=copy.Current;Notify(); }
+        public void PreviewReplace(string oldComponent,string component) { var copy=PreviewCopy();copy.Replace(oldComponent,component);proposed=copy.Current;Notify(); }
+        public void PreviewQuantity(string component,int quantity) { var copy=PreviewCopy();copy.SetQuantity(component,quantity);proposed=copy.Current;Notify(); }
+        public DesignerPreview PreviewProposed()
+        {
+            try{return proposed==null?Preview():Provider.Preview(proposed,Profile);}
+            catch{return new DesignerPreview(DesignerStatus.NotEvaluated,"Package preview unavailable. Installed fit is unchanged.");}
+        }
+        public void CancelFit() { proposed=null;Notify(); }
+        public void FitProposed() { if(proposed==null)return;var next=proposed;proposed=null;Remember();edit=next.ToDto();foreach(var i in edit.Installations!)knownIds[i.ComponentVersionId]=i.InstallationId;Notify(); }
+        public void Undo() { if(undo==null || HasPendingFit)return;edit=new DesignerFit(undo).ToDto();undo=null;Notify(); }
+        public void ReleaseUnusedPower()
+        {
+            if(!CanReleaseUnusedPower)return;Remember();
+            foreach(var a in edit.Profiles!.Single(p=>p.Kind==DesignerFit.Kind(Profile)).Allocations!)
+                if(a.RequestedPower>=0 && a.AllocatedPower>a.RequestedPower)a.AllocatedPower=a.RequestedPower;
+            Notify();
         }
         public void RequestTemplate(string id)
         {
             if(!Provider.Templates.Any(t=>t.Id==id))throw new ArgumentException("Unknown template.",nameof(id));
             RequestDiscard(()=>StartTemplate(id));
         }
-        public void RequestReset() => RequestDiscard(()=> { CopyStarting(); Notify(); });
-        public void RequestDiscard(Action afterDiscard) { if(Modified) { pending=afterDiscard; Notify(); } else afterDiscard(); }
+        public void RequestReset() => RequestDiscard(()=> { CopyStarting();proposed=null;undo=null; Notify(); });
+        public void RequestDiscard(Action afterDiscard) { if(Modified || HasPendingFit) { pending=afterDiscard; Notify(); } else afterDiscard(); }
         public void CancelDiscard() { pending=null; Notify(); }
-        public void ConfirmDiscard() { var action=pending; if(action==null)return; pending=null; CopyStarting(); action(); Notify(); }
+        public void ConfirmDiscard() { var action=pending; if(action==null)return; pending=null;proposed=null;undo=null; CopyStarting(); action(); Notify(); }
         public DesignerPreview Preview(bool starting=false)
         {
             try { return Provider.Preview(starting?Starting:Current,Profile); }
