@@ -16,6 +16,77 @@ namespace HobbyDS9.UnityReview.Tests
 {
     public sealed partial class GeneratedGalaxyEngineTests
     {
+        private static ReviewBattleStage BattleStage(UIDocument doc)=>(ReviewBattleStage)typeof(ReviewBattlePanel).GetField("stage",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(doc.rootVisualElement.Q<ReviewBattlePanel>())!;
+        private static void BattleCameraContainment(ReviewBattleStage stage,string label)
+        {
+            var flags=BindingFlags.Instance|BindingFlags.NonPublic;var type=typeof(ReviewBattleStage);
+            var camera=(Camera)type.GetField("camera",flags)!.GetValue(stage)!;var root=(GameObject)type.GetField("root",flags)!.GetValue(stage)!;
+            var ships=(System.Collections.Generic.Dictionary<string,GameObject>)type.GetField("ships",flags)!.GetValue(stage)!;
+            var poses=(System.Collections.Generic.Dictionary<string,Tuple<Vector3,Quaternion,Vector3,Quaternion>>)type.GetField("poses",flags)!.GetValue(stage)!;
+            var round=(CampaignRoundPlayback?)type.GetField("round",flags)!.GetValue(stage);int checkedPoints=0,cues=0;
+            void Inside(Vector3 world,string reason)
+            {
+                var projected=camera.WorldToViewportPoint(world);checkedPoints++;
+                foreach(float n in new[]{projected.x,projected.y,projected.z})Assert.That(float.IsNaN(n)||float.IsInfinity(n),Is.False,label+reason);
+                Assert.That(projected.x,Is.InRange(0f,1f),label+reason+" horizontal");Assert.That(projected.y,Is.InRange(0f,1f),label+reason+" vertical");
+                Assert.That(projected.z,Is.GreaterThan(camera.nearClipPlane),label+reason+" near");Assert.That(projected.z,Is.LessThan(camera.farClipPlane),label+reason+" far");
+            }
+            foreach(var pair in ships)
+            {
+                var group=pair.Value.transform;var localCorners=new System.Collections.Generic.List<Vector3>();float radius=0;
+                foreach(var renderer in pair.Value.GetComponentsInChildren<Renderer>(true))
+                {
+                    var bounds=renderer.localBounds;
+                    foreach(int corner in Enumerable.Range(0,8))
+                    {
+                        var sign=new Vector3((corner&1)==0?-1:1,(corner&2)==0?-1:1,(corner&4)==0?-1:1);
+                        var world=renderer.transform.TransformPoint(bounds.center+Vector3.Scale(bounds.extents,sign));
+                        Inside(world,pair.Key+" actualLOD");localCorners.Add(group.InverseTransformPoint(world));radius=Math.Max(radius,Vector3.Distance(world,group.position));
+                    }
+                }
+                foreach(float t in new[]{0f,.25f,.5f,.75f,1f})
+                {
+                    Vector3 centre;Matrix4x4 matrix;
+                    if(poses.TryGetValue(pair.Key,out var pose))
+                    {var position=Vector3.Lerp(pose.Item1,pose.Item3,t);centre=root.transform.TransformPoint(position);matrix=root.transform.localToWorldMatrix*Matrix4x4.TRS(position,Quaternion.Slerp(pose.Item2,pose.Item4,t),group.localScale);}
+                    else{centre=group.position;matrix=group.localToWorldMatrix;}
+                    foreach(var corner in localCorners)Inside(matrix.MultiplyPoint3x4(corner),pair.Key+" independent interpolatedLOD t="+t);
+                    // Independently project a rotation-invariant sphere's enclosing cube.
+                    // This tests actual Camera projection, not the production fit inequalities.
+                    foreach(int corner in Enumerable.Range(0,8))Inside(centre+radius*new Vector3((corner&1)==0?-1:1,(corner&2)==0?-1:1,(corner&4)==0?-1:1),pair.Key+" rotationEnvelope t="+t);
+                }
+            }
+            if(round!=null)foreach(var e in round.Events.Where(e=>e.Kind==CampaignPlaybackEventKind.IncomingTorpedo&&(e.SourceShipId==null||!ships.ContainsKey(e.SourceShipId))&&e.TargetShipId!=null&&ships.ContainsKey(e.TargetShipId)))
+            {
+                var target=ships[e.TargetShipId!].transform;
+                foreach(float t in new[]{0f,.25f,.5f,.75f,1f})
+                {float z=poses.TryGetValue(e.TargetShipId!,out var p)?Mathf.Lerp(p.Item1.z,p.Item3.z,t):target.localPosition.z;Inside(root.transform.TransformPoint(new Vector3(24,2,z+5))," anonymous recorded incoming cue");cues++;}
+            }
+            Assert.That(checkedPoints,Is.GreaterThan(0));
+            foreach(float value in new[]{camera.fieldOfView,camera.aspect,camera.nearClipPlane,camera.farClipPlane,camera.orthographicSize})Assert.That(float.IsNaN(value)||float.IsInfinity(value),Is.False);
+            Assert.That(camera.aspect,Is.EqualTo(1280f/600));
+            if(!camera.orthographic)Assert.That(camera.fieldOfView,Is.EqualTo(35f));
+            File.AppendAllText(Path.Combine(CampaignOutput(),"battle-camera-containment.jsonl"),JsonConvert.SerializeObject(new{label,camera.orthographic,camera.fieldOfView,camera.nearClipPlane,camera.farClipPlane,checkedPoints,cues,claim="actual Unity WorldToViewport of everyLOD/before/after/intermediate/sphere envelope; no pixel readability claim"})+Environment.NewLine);
+        }
+        private static void BattleAnonymousCameraProbe(CampaignRoundPlayback knownRound)
+        {
+            var target=knownRound.Before.OwnShips.First(s=>s.Hull>0);
+            var incoming=new CampaignPlaybackEvent("component-anonymous-cue",knownRound.Round,0,CampaignPlaybackEventKind.IncomingTorpedo,null,null,target.ShipId,target.FleetId,TacticalWeaponClass.Torpedo,null,null,0);
+            var synthetic=new CampaignRoundPlayback(knownRound.Round,knownRound.Before,knownRound.After,new[]{incoming});
+            using(var stage=new ReviewBattleStage(synthetic.Before,synthetic,ReviewBattleVisualBinding.Identity))
+            {
+                var camera=(Camera)typeof(ReviewBattleStage).GetField("camera",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(stage)!;
+                for(int mode=0;mode<2;mode++)
+                {
+                    Assert.That(camera.orthographic,Is.EqualTo(mode==1));BattleCameraContainment(stage,"COMPONENT synthetic anonymous cue mode"+mode);
+                    var position=camera.transform.position;var rotation=camera.transform.rotation;float fov=camera.fieldOfView,near=camera.nearClipPlane,far=camera.farClipPlane,ortho=camera.orthographicSize;
+                    stage.Paused=true;stage.Tick(.1f);stage.Paused=false;
+                    for(int tick=0;tick<3;tick++)
+                    {stage.Tick(.1f);Assert.That(camera.transform.position,Is.EqualTo(position));Assert.That(camera.transform.rotation,Is.EqualTo(rotation));Assert.That(camera.fieldOfView,Is.EqualTo(fov));Assert.That(camera.nearClipPlane,Is.EqualTo(near));Assert.That(camera.farClipPlane,Is.EqualTo(far));Assert.That(camera.orthographicSize,Is.EqualTo(ortho));}
+                    BattleCameraContainment(stage,"COMPONENT synthetic anonymous cue after controlledTick mode"+mode);if(mode==0)stage.ToggleCamera();
+                }
+            }
+        }
         private static void BattleLayoutAudit(UIDocument doc,Vector2Int size,string state)
         {
             try
@@ -61,6 +132,7 @@ namespace HobbyDS9.UnityReview.Tests
                 foreach(var action in doc.rootVisualElement.Query<Button>().ToList().Where(b=>b.text.StartsWith("Review / commit round ",StringComparison.Ordinal)||b.name=="combat-skip-pending-playback"))BattleVisible(action,size);
                 if(scene)
                 {
+                    BattleCameraContainment(BattleStage(doc),state+"-"+size.x);
                     var image=doc.rootVisualElement.Q<Image>("battle-3d-image");Assert.That(image,Is.Not.Null);BattleVisible(image,size);
                     Assert.That(image.image,Is.TypeOf<RenderTexture>());Assert.That(image.image.width,Is.EqualTo(1280));Assert.That(image.image.height,Is.EqualTo(600));
                     float scale=Math.Min(image.contentRect.width/1280,image.contentRect.height/600);float paintedWidth=1280*scale,paintedHeight=600*scale;
@@ -167,8 +239,19 @@ namespace HobbyDS9.UnityReview.Tests
                     {
                         Assert.That(++rounds,Is.LessThanOrEqualTo(16));int round=model.Current.Frame.Battle.Round;
                         Click(CampaignButton(doc,"Review / commit round "+round));Confirm(doc);yield return null;yield return null;
-                        if(rounds==1)foreach(var size in V3Sizes)yield return BattleSized(entry,doc,size,"resolved-playback",true); //3
+                        byte[]? rootBeforeCamera=null;
+                        if(rounds==1)
+                        {
+                            rootBeforeCamera=codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model));var playbackStage=BattleStage(doc);
+                            BattleAnonymousCameraProbe(entry.Presentation!.PendingPlayback!);
+                            Click(doc.rootVisualElement.Q<Button>("battle-playback-pause"));Assert.That(playbackStage.Paused,Is.True);
+                            for(int i=0;i<V3Sizes.Length;i++)
+                            {if(i>0)Click(CampaignButton(doc,"Overview / cinematic"));yield return BattleSized(entry,doc,V3Sizes[i],"resolved-playback",true);} //3: Cinematic/Overview/Cinematic
+                            Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(rootBeforeCamera),"actual camera/pause controls cannot change accepted campaign");
+                            Click(doc.rootVisualElement.Q<Button>("battle-playback-pause"));Assert.That(playbackStage.Paused,Is.False);
+                        }
                         var accepted=model.Current.Frame;Click(doc.rootVisualElement.Q<Button>("combat-skip-pending-playback"));Assert.That(model.Current.Frame,Is.SameAs(accepted));yield return null;yield return null;
+                        if(rootBeforeCamera!=null)Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(rootBeforeCamera),"actual skip/acknowledgment cannot change accepted campaign");
                         if(rounds==1)yield return BattleSized(entry,doc,V3Sizes[0],"round-report",false); //1
                         if(!model.Current.Frame.Battle.Complete)Click(CampaignButton(doc,"Plan next round"));
                     }
