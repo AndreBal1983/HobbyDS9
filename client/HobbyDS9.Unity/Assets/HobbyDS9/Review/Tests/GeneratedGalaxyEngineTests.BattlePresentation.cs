@@ -143,6 +143,7 @@ namespace HobbyDS9.UnityReview.Tests
                     CampaignPage(doc,ReviewWorkspacePage.Saves);Click(doc.rootVisualElement.Q<Button>("save-slot-generated-3"));Click(doc.rootVisualElement.Q<Button>("player-save"));if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);
                     var saved=codec.EncodeStaticAstronomyCampaignRoot(store.Read("generated-3"));Click(doc.rootVisualElement.Q<Button>("demo-menu"));Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-3"));Confirm(doc);yield return WaitCampaign(entry,"battle-v2-continue-aftermath");
                     Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(CampaignModel(entry))),Is.EqualTo(saved));CampaignPage(doc,ReviewWorkspacePage.Combat);Click(doc.rootVisualElement.Q<Button>("combat-tab-report"));yield return null;
+                    Assert.That(doc.rootVisualElement.Query<Label>().ToList().Any(l=>l.text.StartsWith("Battle statistics",StringComparison.Ordinal)&&l.text.Contains("turn 68")),Is.True,"actual reloaded historical statistics, not merely a reachable empty tab");
                     yield return BattleSized(entry,doc,V3Sizes[1],"continued-history",false); //1 =>12
                     Assert.That(Directory.GetFiles(CampaignOutput(),"battle-v2-*.png").Length,Is.EqualTo(12));
                     Click(doc.rootVisualElement.Q<Button>("demo-menu"));yield return null;yield return null;
