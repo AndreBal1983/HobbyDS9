@@ -40,6 +40,10 @@ namespace HobbyDS9.UnityReview.Tests
                 var bounds=doc.rootVisualElement.worldBound;
                 Assert.That(bounds.Contains(publish.worldBound.min+Vector2.one),Is.True,"publication action begins inside viewport");
                 Assert.That(bounds.Contains(publish.worldBound.max-Vector2.one),Is.True,"publication action ends inside viewport");
+                var preview=doc.rootVisualElement.Q<Image>("designer-hull-reference-image");
+                var overview=doc.rootVisualElement.Q<ScrollView>("designer-overview").contentViewport.worldBound;
+                Assert.That(overview.Contains(preview.worldBound.min+Vector2.one),Is.True,"whole model image begins inside overview viewport");
+                Assert.That(overview.Contains(preview.worldBound.max-Vector2.one),Is.True,"whole model image ends inside overview viewport");
                 RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
                 pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
                 File.WriteAllBytes(Path.Combine(CampaignOutput(),"designer-"+label+"-"+size.x+"x"+size.y+".png"),pixels.EncodeToPNG());
@@ -88,7 +92,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Click(doc.rootVisualElement.Q<Button>("generated-campaign-start"));yield return DesignerIdle(entry);
                 var model=CampaignModel(entry);var codec=new ReviewNewtonsoftCodec();
                 CampaignPage(doc,ReviewWorkspacePage.Designer);yield return null;yield return null;
-                Assert.That(doc.rootVisualElement.Q<Label>("integrated-design-scope").text,Does.Contain("construction is not supported"));
+                Assert.That(doc.rootVisualElement.Q<Label>("integrated-design-scope").text,Does.Contain("Building custom classes is not available"));
                 Assert.That(doc.rootVisualElement.Q<Button>("integrated-design-publish").enabledInHierarchy,Is.True,"real campaign starter is valid and publishable");
                 var modelImage=doc.rootVisualElement.Q<Image>("designer-hull-reference-image");
                 Assert.That(modelImage,Is.Not.Null);Assert.That(modelImage.image,Is.TypeOf<RenderTexture>(),"actual bounded 3D model reference rendered");
@@ -108,12 +112,13 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(model.LocalDesignDirty,Is.True);Click(doc.rootVisualElement.Q<Button>("integrated-design-publish"));yield return null;
                 var first=model.DesignLibrary().Published.Single();string blueprint=first.Blueprint.BlueprintId;
                 Assert.That(first.Blueprint.Revision,Is.EqualTo(1));Assert.That(first.Blueprint.Fit.DisplayName,Is.EqualTo("Nightwatch"));
-                var frozen=JsonConvert.SerializeObject(first);Assert.That(model.LocalDesignDirty,Is.False);
+                var frozen=JsonConvert.SerializeObject(first.Blueprint);Assert.That(model.LocalDesignDirty,Is.False);
                 Assert.That(doc.rootVisualElement.Q<Button>("integrated-design-publish").enabledInHierarchy,Is.False,"unchanged fit cannot duplicate publication");
                 doc.rootVisualElement.Q<TextField>("designer-name").value="Nightwatch Mk II";yield return null;
                 Click(doc.rootVisualElement.Q<Button>("integrated-design-publish"));yield return null;
                 var history=model.DesignLibrary().Published.Where(r=>r.Blueprint.BlueprintId==blueprint).OrderBy(r=>r.Blueprint.Revision).ToArray();
-                Assert.That(history.Length,Is.EqualTo(2));Assert.That(JsonConvert.SerializeObject(history[0]),Is.EqualTo(frozen));
+                Assert.That(history.Length,Is.EqualTo(2));Assert.That(JsonConvert.SerializeObject(history[0].Blueprint),Is.EqualTo(frozen));
+                Assert.That(history[0].IsLatestRevision,Is.False);Assert.That(history[1].IsLatestRevision,Is.True);
                 Assert.That(history[1].Blueprint.Fit.DisplayName,Is.EqualTo("Nightwatch Mk II"));
                 doc.rootVisualElement.Q<Foldout>("integrated-design-history").value=true;yield return null;
                 Click(doc.rootVisualElement.Q<Button>("integrated-design-edit-"+blueprint+"-1"));yield return null;
