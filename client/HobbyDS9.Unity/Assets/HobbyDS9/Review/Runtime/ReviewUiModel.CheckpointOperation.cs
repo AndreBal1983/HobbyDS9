@@ -83,7 +83,8 @@ namespace HobbyDS9.UnityReview
             if(!ReferenceEquals(checkpointOperation,operation)||!ReferenceEquals(completion.Operation,operation))return false;
             checkpointOperation=null;Busy=false;
             if(Closed||!ReferenceEquals(Current,operation.Source)||!ReferenceEquals(Current.Frame,operation.Frame)
-                ||!host.IsCurrentStaticCheckpointSource(operation.Frame))return false;
+                ||!host.IsCurrentStaticCheckpointSource(operation.Frame))
+            {Message="Checkpoint result: Busy";return false;}
             if(!operation.Loading)
             {
                 if(completion.SaveWork!=null&&!Current.ReceiveStaticCheckpointSave(completion.SaveWork))return false;
@@ -97,8 +98,8 @@ namespace HobbyDS9.UnityReview
         }
         public void AbandonStaticCheckpointOperation(ReviewCheckpointOperation operation)
         {
-            operation.Cancel();
             if(!ReferenceEquals(checkpointOperation,operation))return;
+            operation.Cancel();
             checkpointOperation=null;Busy=false;
         }
     }

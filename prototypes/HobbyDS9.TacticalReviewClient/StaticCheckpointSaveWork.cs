@@ -5,6 +5,10 @@ using HobbyDS9.Contracts;
 
 namespace HobbyDS9.TacticalReviewClient
 {
+    // Explicit opt-in: implementations must support concurrent independent private operations.
+    // Existing custom codec/store contracts do NOT imply background safety.
+    public interface IBackgroundStaticCheckpointCodec : IStaticAstronomyReviewHostCodec { }
+    public interface IBackgroundStaticCheckpointStore : IStaticAstronomyReviewCheckpointStore { }
     // Trusted, one-use private checkpoint work. Neither the root nor template is a player view.
     public sealed class StaticCheckpointSaveWork
     {
@@ -39,6 +43,9 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 if(!IsCurrentStaticCheckpointSource(observed))throw new InvalidOperationException("Checkpoint observation changed.");
+                if(generatedCodec is not IBackgroundStaticCheckpointCodec
+                    ||generatedStore is not StaticStoreAdapter adapter||adapter.Original is not IBackgroundStaticCheckpointStore)
+                    throw new InvalidOperationException("Checkpoint adapters have not opted into background work.");
                 // The portable export is detached. Only this capture holds the live host gate;
                 // JSON copies, authoritative replay and file IO below never hold it.
                 var root=((ICampaignGeneratedSession)session).ExportGeneratedSave();

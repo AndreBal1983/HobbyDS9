@@ -8,9 +8,9 @@ using HobbyDS9.TacticalReviewClient;
 
 namespace HobbyDS9.UnityReview
 {
-    public sealed partial class ReviewNewtonsoftCodec : IStaticAstronomyReviewHostCodec, IStaticAstronomyOwnedExportValidator
+    public sealed partial class ReviewNewtonsoftCodec : IStaticAstronomyReviewHostCodec, IStaticAstronomyOwnedExportValidator, IBackgroundStaticCheckpointCodec
     {
-        // Used only after the host's first closed-codec copy, while its gate is held.
+        // Used only after the host's first closed-codec copy of a privately owned root.
         // Load still validates frozen geometry, identity, replay and exact equality;
         // its detached candidate is deliberately discarded before any slot write.
         public void ValidateOwnedStaticAstronomyExport(CampaignPlayableFleetPackageDto template, CampaignGeneratedSaveDto ownedRoot)

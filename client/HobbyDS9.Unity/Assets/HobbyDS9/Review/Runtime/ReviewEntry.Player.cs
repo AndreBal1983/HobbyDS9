@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using HobbyDS9.Contracts;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -62,6 +63,13 @@ namespace HobbyDS9.UnityReview
             playerStatus!.text=demoLanding?"":"Turn "+frame.Status.Turn+" · "+(frame.Status.Phase==SessionPhase.Planning?"Planning":"Combat pending")+"\nCredits "+frame.Strategy!.Civilization.Credits;
             if(frame.Demo!=null&&!demoLanding){var goal=frame.Strategy!.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==frame.Demo.ObjectiveNodeId)?.DisplayName??"Objective sector";var objective=root!.Q<Label>("demo-objective");if(objective!=null)objective.text="Objective: "+goal+" · Through turn "+frame.Demo.LastTurn+" · "+frame.Demo.Outcome;}
             playerGuidance!.text=demoLanding?(generatedCampaignBusy?"Preparing campaign…":"Start a new galaxy or continue a saved campaign."):PlayerMessage();
+            if(checkpointUiOperation!=null&&ReferenceEquals(checkpointOwner,model))
+            {
+                // Replace interactive draft controls and detach map callbacks while work is active.
+                // The UI continues pumping layout/render/input; no live host is replayed here.
+                content!.Clear();playerFooter!.Clear();playerGuidance.text=model.Message;
+                content.Add(Readout(model.Message));return;
+            }
             if(PlayerProfile&&demoLanding){playerTitle.text="Start / Continue";DrawDemoLanding();}
             else if(workspace.Page==ReviewWorkspacePage.Combat)central!.Render();
             else if(workspace.Page==ReviewWorkspacePage.Saves)DrawSaves();
@@ -126,18 +134,59 @@ namespace HobbyDS9.UnityReview
             {var b=AddButton(slots,(model.FrontierPreview?"Frontier · format 5 · ":model.SingleplayerDemo?"Demo ":"Campaign ")+slot.Substring(slot.Length-1)+(slotName==slot?" · selected":""),()=>{slotName=slot;Draw();});b.name="save-slot-"+slot;}
             p.Add(Readout("Selected slot: "+slotName));
             var save=AddButton(p,"Save current campaign",RequestPlayerSave);save.name="player-save";save.AddToClassList("primary-action");
-            var load=AddButton(p,"Load selected campaign",()=>Confirm("Load "+slotName+"? Only a validated compatible save can replace this campaign. Unsent edits will be discarded after a successful load.",()=>Do(()=>model!.Load(slotName,true))));load.name="player-load";
+            var requestedLoadSlot=slotName;
+            var load=AddButton(p,"Load selected campaign",()=>Confirm("Load "+requestedLoadSlot+"? Only a validated compatible save can replace this campaign. Unsent edits will be discarded after a successful load.",()=>{
+                if(model!.StaticAstronomyCampaign)RunPlayerCheckpoint(true,requestedLoadSlot);
+                else Do(()=>model.Load(requestedLoadSlot,true));
+            }));load.name="player-load";
             p.Add(Readout(model.GeneratedCampaign?"Generated format-7 saves retain this exact galaxy, discoveries and accepted campaign together. Old profile saves stay separate. Failed loading keeps the current game and drafts.":model.PlayableFleet?"Fleet campaign saves are separate from other profiles. Saved state includes named fleets, current ship stocks and completed battle reports. Unsent edits remain local; a successful load replaces them.":model.FrontierPreview?"Frontier format-5 saves use their own frontier-1/2/3 slots and directory. Bajor format-4 and older saves are separate; no import or conversion. Failed loads keep your current session.":model.SingleplayerDemo?"Format-4 demo saves remain separate from classic, physical and integrated-review saves. Failed loads keep your current session.":"Early campaign saves remain separate from classic and earlier physical-review saves. Failed loads keep your current session."));
         }
         private void RequestPlayerSave()
         {
             var owner=model!;var controller=owner.Current;var epoch=viewEpoch;var requestedSlot=slotName;
             bool CurrentRequest()=>ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&viewEpoch==epoch&&!owner.Busy&&!owner.Closed;
-            void Replace()=>Confirm("Replace the save in "+requestedSlot+"? Your current campaign will be saved; unsent edits stay local.",()=>{if(CurrentRequest())Do(()=>owner.Save(requestedSlot,true));});
+            void Replace()=>Confirm("Replace the save in "+requestedSlot+"? Your current campaign will be saved; unsent edits stay local.",()=>{if(CurrentRequest()){
+                if(owner.StaticAstronomyCampaign)RunPlayerCheckpoint(false,requestedSlot,true);
+                else Do(()=>owner.Save(requestedSlot,true));
+            }});
             if(owner.TryCheckWriteAdmission(requestedSlot,out var error)&&error==HobbyDS9.TacticalReviewClient.ReviewCheckpointError.SlotOccupied){Replace();return;}
             // Advisory errors/unsupported stores retain the original Save API and error ordering.
             // A file created after an empty probe is still refused by the final atomic Write(false).
-            Do(()=>{if(!owner.Save(requestedSlot)&&owner.Message=="Checkpoint result: SlotOccupied")Replace();});
+            if(owner.StaticAstronomyCampaign)RunPlayerCheckpoint(false,requestedSlot,false,Replace);
+            else Do(()=>{if(!owner.Save(requestedSlot)&&owner.Message=="Checkpoint result: SlotOccupied")Replace();});
+        }
+        private ReviewCheckpointOperation? checkpointUiOperation;
+        private ReviewUiModel? checkpointOwner;
+        private void AbandonPlayerCheckpoint()
+        {
+            if(checkpointUiOperation!=null)checkpointOwner?.AbandonStaticCheckpointOperation(checkpointUiOperation);
+            checkpointUiOperation=null;checkpointOwner=null;
+        }
+        private async void RunPlayerCheckpoint(bool loading,string requestedSlot,bool overwrite=false,Action? occupied=null)
+        {
+            var owner=model!;var epoch=viewEpoch;var before=owner.Current.Frame;
+            var operation=owner.BeginStaticCheckpointOperation(requestedSlot,loading,overwrite,discard:true);
+            if(operation==null){Draw();return;}
+            checkpointOwner=owner;checkpointUiOperation=operation;Draw();
+            try
+            {
+                var completion=await Task.Run(()=>operation.Execute());
+                if(this==null||!isActiveAndEnabled||viewEpoch!=epoch||!ReferenceEquals(model,owner))
+                {owner.AbandonStaticCheckpointOperation(operation);return;}
+                var accepted=owner.CompleteStaticCheckpointOperation(operation,completion);
+                checkpointUiOperation=null;checkpointOwner=null;
+                if(!ReferenceEquals(before,owner.Current.Frame)){viewEpoch++;Build();}else Draw();
+                if(!accepted&&!loading&&owner.Message=="Checkpoint result: SlotOccupied")occupied?.Invoke();
+            }
+            finally
+            {
+                owner.AbandonStaticCheckpointOperation(operation);
+                if(ReferenceEquals(checkpointUiOperation,operation))
+                {
+                    checkpointUiOperation=null;checkpointOwner=null;
+                    if(this!=null&&isActiveAndEnabled&&ReferenceEquals(model,owner))Draw();
+                }
+            }
         }
         private string SaveLoadResult()
         {

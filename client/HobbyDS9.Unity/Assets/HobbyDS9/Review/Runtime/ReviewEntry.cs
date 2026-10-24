@@ -97,7 +97,7 @@ namespace HobbyDS9.UnityReview
                 root=doc.rootVisualElement;root.Clear();root.Add(new Label("OPT-IN PHYSICAL TACTICAL V2 — unavailable. Check profile/resources/preparation; default campaign was not started."));
             }
         }
-        private void OnDisable(){viewEpoch++;modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();}
+        private void OnDisable(){viewEpoch++;modalPermission.Invalidate();AbandonPlayerCheckpoint();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();}
         private void OnDestroy(){ResetDemoKeyboard();ReleasePanel();}
         private void ReleasePanel()
         {
