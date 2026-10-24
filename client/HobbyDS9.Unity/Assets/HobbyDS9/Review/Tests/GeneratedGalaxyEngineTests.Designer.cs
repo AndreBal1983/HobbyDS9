@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using HobbyDS9.Contracts;
+using HobbyDS9.Contracts.ShipDesign;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using UnityEngine;
@@ -16,6 +17,24 @@ namespace HobbyDS9.UnityReview.Tests
 {
     public sealed partial class GeneratedGalaxyEngineTests
     {
+        private static object DesignerDraft(ReviewEntry entry)
+        {
+            var context=CheckpointField(entry,"designState")!;
+            return context.GetType().GetField("Draft",BindingFlags.Instance|BindingFlags.Public)!.GetValue(context)!;
+        }
+        private static ShipClassDraftDto DesignerDto(ReviewEntry entry)
+        {
+            var draft=DesignerDraft(entry);var fit=draft.GetType().GetProperty("Current")!.GetValue(draft)!;
+            return (ShipClassDraftDto)fit.GetType().GetMethod("ToDto")!.Invoke(fit,null)!;
+        }
+        private static string DesignerPixels(Image image)
+        {
+            var target=(RenderTexture)image.image;var previous=RenderTexture.active;
+            var pixels=new Texture2D(target.width,target.height,TextureFormat.RGBA32,false);
+            try{RenderTexture.active=target;pixels.ReadPixels(new Rect(0,0,target.width,target.height),0,0);pixels.Apply();
+                using(var sha=System.Security.Cryptography.SHA256.Create())return Convert.ToBase64String(sha.ComputeHash(pixels.GetRawTextureData<byte>().ToArray()));}
+            finally{RenderTexture.active=previous;UnityEngine.Object.DestroyImmediate(pixels);}
+        }
         private static IEnumerator DesignerIdle(ReviewEntry entry)
         {
             var clock=System.Diagnostics.Stopwatch.StartNew();
@@ -58,7 +77,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(bounds.Contains(publish.worldBound.min+Vector2.one),Is.True,"publication action begins inside viewport");
                 Assert.That(bounds.Contains(publish.worldBound.max-Vector2.one),Is.True,"publication action ends inside viewport");
                 var preview=doc.rootVisualElement.Q<Image>("designer-hull-reference-image");
-                var overview=doc.rootVisualElement.Q<ScrollView>("designer-overview").contentViewport.worldBound;
+                var overview=doc.rootVisualElement.Q<ScrollView>("designer-viewer-scroll").contentViewport.worldBound;
                 Assert.That(overview.Contains(preview.worldBound.min+Vector2.one),Is.True,"whole model image begins inside overview viewport");
                 Assert.That(overview.Contains(preview.worldBound.max-Vector2.one),Is.True,"whole model image ends inside overview viewport");
                 RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
@@ -122,6 +141,81 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(doc.rootVisualElement.Q<Label>("designer-state").text,Does.Contain("HARD ERROR"));
                 Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(untouched));
                 templates=doc.rootVisualElement.Q<DropdownField>("designer-template");templates.value=templates.choices.Single(c=>c.Contains("starter"));yield return null;
+                // Real UI candidate editing remains local until publication, including all profiles.
+                var original=JsonConvert.SerializeObject(DesignerDto(entry));
+                var beforeOrbit=DesignerPixels(doc.rootVisualElement.Q<Image>("designer-hull-reference-image"));
+                Click(doc.rootVisualElement.Q<Button>("designer-orbit-left"));yield return null;yield return null;
+                var afterOrbit=DesignerPixels(doc.rootVisualElement.Q<Image>("designer-hull-reference-image"));
+                Assert.That(afterOrbit,Is.Not.EqualTo(beforeOrbit),"orbit control changes actual rendered geometry");
+                Assert.That(JsonConvert.SerializeObject(DesignerDto(entry)),Is.EqualTo(original));
+                Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(untouched),"camera is cosmetic");
+                Click(doc.rootVisualElement.Q<Button>("designer-view-corecutaway"));yield return null;yield return null;
+                Assert.That(DesignerPixels(doc.rootVisualElement.Q<Image>("designer-hull-reference-image")),Is.Not.EqualTo(afterOrbit),"internal control changes the rendered view");
+                Click(doc.rootVisualElement.Q<Button>("designer-view-hull"));yield return null;
+                Click(doc.rootVisualElement.Q<Button>("designer-system-propulsion"));yield return null;
+                Click(doc.rootVisualElement.Q<Button>("select-component-component.propulsion.v1"));yield return null;
+                var assembled=DesignerPixels(doc.rootVisualElement.Q<Image>("designer-hull-reference-image"));
+                Click(doc.rootVisualElement.Q<Button>("quantity-minus-component.propulsion.v1"));yield return null;yield return null;
+                Assert.That(DesignerPixels(doc.rootVisualElement.Q<Image>("designer-hull-reference-image")),Is.Not.EqualTo(assembled),"pending propulsion quantity changes the visible nacelle assembly");
+                Assert.That(JsonConvert.SerializeObject(DesignerDto(entry)),Is.EqualTo(original));
+                Click(doc.rootVisualElement.Q<Button>("designer-cancel-fit"));yield return null;yield return null;
+                Assert.That(DesignerPixels(doc.rootVisualElement.Q<Image>("designer-hull-reference-image")),Is.EqualTo(assembled),"Cancel restores the installed assembly image");
+                Click(doc.rootVisualElement.Q<Button>("designer-system-sensors"));yield return null;
+                Click(doc.rootVisualElement.Q<Button>("select-component-component.escort-sensors.v1"));yield return null;
+                Click(doc.rootVisualElement.Q<Button>("designer-add"));yield return null;
+                Assert.That(JsonConvert.SerializeObject(DesignerDto(entry)),Is.EqualTo(original),"candidate must not install on preview");
+                Assert.That(doc.rootVisualElement.Q<Button>("integrated-design-publish").enabledInHierarchy,Is.False,"pending candidate cannot publish");
+                Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(untouched));
+                Click(doc.rootVisualElement.Q<Button>("designer-cancel-fit"));yield return null;
+                Assert.That(JsonConvert.SerializeObject(DesignerDto(entry)),Is.EqualTo(original),"Cancel retains every explicit profile");
+                Click(doc.rootVisualElement.Q<Button>("designer-add"));yield return null;
+                Click(doc.rootVisualElement.Q<Button>("designer-fit-package"));yield return null;
+                Assert.That(DesignerDto(entry).Installations!.Any(i=>i.ComponentVersionId=="component.escort-sensors.v1"),Is.True);
+                Click(doc.rootVisualElement.Q<Button>("designer-undo"));yield return null;
+                Assert.That(JsonConvert.SerializeObject(DesignerDto(entry)),Is.EqualTo(original),"Undo restores exact installation identity and all profiles");
+                Click(doc.rootVisualElement.Q<Button>("designer-system-profiles"));yield return null;
+                Click(doc.rootVisualElement.Q<Button>("designer-profile-combat"));yield return null;
+                var beforePower=DesignerDto(entry);var commandId=beforePower.Installations!.Single(i=>i.ComponentVersionId=="component.command.v1").InstallationId;
+                doc.rootVisualElement.Q<LongField>("power-allocated-component.command.v1").value=0;yield return null;
+                var invalid=DesignerDto(entry);
+                Assert.That(invalid.Profiles!.Single(p=>p.Kind==OperatingProfileKind.Combat).Allocations!.Single(a=>a.InstallationId==commandId).AllocatedPower,Is.Zero);
+                Assert.That(JsonConvert.SerializeObject(invalid.Profiles.Where(p=>p.Kind!=OperatingProfileKind.Combat)),Is.EqualTo(JsonConvert.SerializeObject(beforePower.Profiles!.Where(p=>p.Kind!=OperatingProfileKind.Combat))),"Combat edit cannot change Cruise/Survey");
+                Assert.That(doc.rootVisualElement.Q<Button>("integrated-design-publish").enabledInHierarchy,Is.False);
+                var library=model.DesignLibrary();var actual=HobbyDS9.Application.ShipDesignApplication.FromCampaignCatalogue(library.Catalogue!.Catalogue)
+                    .Preview(invalid,new ShipDesignAccessDto{AvailableVersionIds=library.Catalogue.AvailableVersionIds.ToList()});
+                Assert.That(actual.IsValid,Is.False,"real Application agrees the retained invalid allocation fails");
+                var combatErrors=actual.Issues.Count(i=>i.Severity==DesignIssueSeverity.Error && i.Path.Contains("$.Profiles[Combat]"));
+                Assert.That(combatErrors,Is.GreaterThan(0));
+                Assert.That(doc.rootVisualElement.Q<Button>("designer-profile-combat").text,Is.EqualTo("Combat · "+combatErrors+" errors"),"individual error count agrees with the authoritative preview");
+                Assert.That(actual.Issues.Any(i=>i.Code==DesignIssueCode.EssentialPowerInsufficient && i.Path.Contains("["+commandId+"]")),Is.True);
+                Click(doc.rootVisualElement.Q<Button>("designer-profile-survey"));yield return null;
+                Click(doc.rootVisualElement.Q<Button>("designer-system-validation"));yield return null;
+                var route=doc.rootVisualElement.Query<Button>().ToList().First(b=>b.name.StartsWith("issue-route-",StringComparison.Ordinal) && b.text=="Review Combat / Command / Computing");
+                Click(route);yield return null;yield return null;
+                var focused=doc.rootVisualElement.Q<LongField>("power-allocated-component.command.v1");
+                Assert.That(focused.value,Is.Zero);Assert.That(doc.rootVisualElement.Q<Label>("designer-workspace-title").text,Does.Contain("COMBAT"));
+                var focusedElement=focused.panel.focusController.focusedElement as VisualElement;
+                Assert.That(focusedElement!=null && (ReferenceEquals(focusedElement,focused) || focused.Contains(focusedElement)),Is.True,"inactive profile issue focuses the exact invalid allocation");
+                Click(doc.rootVisualElement.Q<Button>("designer-undo"));yield return null;
+                Assert.That(JsonConvert.SerializeObject(DesignerDto(entry)),Is.EqualTo(original));
+                var commandPower=beforePower.Profiles!.Single(p=>p.Kind==OperatingProfileKind.Combat).Allocations!.Single(a=>a.InstallationId==commandId);
+                doc.rootVisualElement.Q<LongField>("power-allocated-component.command.v1").value=commandPower.RequestedPower+3;yield return null;
+                var excess=JsonConvert.SerializeObject(DesignerDto(entry));
+                Assert.That(doc.rootVisualElement.Q<Button>("designer-release-unused-power").enabledInHierarchy,Is.True);
+                Click(doc.rootVisualElement.Q<Button>("designer-release-unused-power"));yield return null;
+                Assert.That(JsonConvert.SerializeObject(DesignerDto(entry)),Is.EqualTo(original),"explicit release removes only excess and never tops up another profile");
+                Click(doc.rootVisualElement.Q<Button>("designer-undo"));yield return null;
+                Assert.That(JsonConvert.SerializeObject(DesignerDto(entry)),Is.EqualTo(excess),"release is exactly undoable");
+                doc.rootVisualElement.Q<LongField>("power-allocated-component.command.v1").value=commandPower.AllocatedPower;yield return null;
+                Assert.That(JsonConvert.SerializeObject(DesignerDto(entry)),Is.EqualTo(original));
+                Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(untouched),"local art/editor operations submit no campaign command");
+                Click(doc.rootVisualElement.Q<Button>("designer-system-overview"));yield return null;
+                var retired=(RenderTexture)doc.rootVisualElement.Q<Image>("designer-hull-reference-image").image;
+                CampaignPage(doc,ReviewWorkspacePage.Map);yield return null;yield return null;
+                Assert.That(retired==null || !retired.IsCreated(),Is.True,"leaving designer releases reference render target");
+                CampaignPage(doc,ReviewWorkspacePage.Designer);yield return null;yield return null;
+                Assert.That(doc.rootVisualElement.Q<Image>("designer-hull-reference-image").image,Is.TypeOf<RenderTexture>(),"re-entry reattaches a fresh bounded renderer");
+                Assert.That(JsonConvert.SerializeObject(DesignerDto(entry)),Is.EqualTo(original),"renderer lifecycle does not mutate the retained design");
                 foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return DesignerCapture(doc,size,"starter");
                 reference=doc.rootVisualElement.Q<Image>("designer-hull-reference-image").image;
                 doc.rootVisualElement.Q<TextField>("designer-name").value="Nightwatch";yield return null;
@@ -155,7 +249,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Click(doc.rootVisualElement.Q<Button>("integrated-design-edit-"+blueprint+"-2"));yield return null;
                 Assert.That(doc.rootVisualElement.Q<TextField>("designer-name").value,Is.EqualTo("Nightwatch Mk II"));
                 yield return DesignerCapture(doc,new Vector2Int(1280,720),"continued");
-                File.WriteAllText(Path.Combine(CampaignOutput(),"designer-results.json"),JsonConvert.SerializeObject(new{passed=true,revisions=2,blankRejected=true,firstImmutable=true,menuContinueExact=true,captures=5,customConstruction=false,nativeInput=false}));
+                File.WriteAllText(Path.Combine(CampaignOutput(),"designer-results.json"),JsonConvert.SerializeObject(new{passed=true,revisions=2,blankRejected=true,firstImmutable=true,menuContinueExact=true,captures=5,orbitPixelsChanged=true,internalGeometryChanged=true,candidateCancelExact=true,fitUndoExact=true,profileIsolation=true,releaseUndoExact=true,rendererReentry=true,customConstruction=false,nativeInput=false}));
             }
         }
     }
