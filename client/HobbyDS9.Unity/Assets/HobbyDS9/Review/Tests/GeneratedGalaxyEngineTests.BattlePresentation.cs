@@ -113,7 +113,7 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(r.xMin,Is.GreaterThanOrEqualTo(0));Assert.That(r.yMin,Is.GreaterThanOrEqualTo(0));Assert.That(r.xMax,Is.LessThanOrEqualTo(size.x));Assert.That(r.yMax,Is.LessThanOrEqualTo(size.y));
             var hit=control.panel.Pick(r.center);Assert.That(hit==control||(hit!=null&&control.Contains(hit)),Is.True,"actual panel hit at "+control.name);
         }
-        private static IEnumerator BattleSized(ReviewEntry entry,UIDocument doc,Vector2Int size,string state,bool scene)
+        private static IEnumerator BattleSized(ReviewEntry entry,UIDocument doc,Vector2Int size,string state,bool scene,bool? desiredOverview=null,bool? desiredPaused=null)
         {
             var old=doc.panelSettings.targetTexture;var w=doc.rootVisualElement.style.width;var h=doc.rootVisualElement.style.height;var active=RenderTexture.active;
             var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);Texture2D? pixels=null;bool complete=false;
@@ -121,6 +121,15 @@ namespace HobbyDS9.UnityReview.Tests
             {
                 Assert.That(target.Create(),Is.True);doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=size.x;doc.rootVisualElement.style.height=size.y;
                 yield return null;yield return null;yield return null;
+                if(scene&&(desiredOverview.HasValue||desiredPaused.HasValue))
+                {
+                    // Geometry rebuilds the panel. Operate ONLY on fresh actual controls
+                    // after that sized surface is laid out, never a retained old stage.
+                    var current=BattleStage(doc);var camera=(Camera)typeof(ReviewBattleStage).GetField("camera",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(current)!;
+                    if(desiredOverview.HasValue&&camera.orthographic!=desiredOverview.Value)Click(CampaignButton(doc,"Overview / cinematic"));
+                    if(desiredPaused.HasValue&&BattleStage(doc).Paused!=desiredPaused.Value)Click(doc.rootVisualElement.Q<Button>("battle-playback-pause"));
+                    yield return null;yield return null;
+                }
                 BattleLayoutAudit(doc,size,state);
                 // Preserve this SAME intended state before asserting its bounds.
                 // A failed layout remains failed; outcome metadata distinguishes the PNG.
@@ -132,7 +141,10 @@ namespace HobbyDS9.UnityReview.Tests
                 foreach(var action in doc.rootVisualElement.Query<Button>().ToList().Where(b=>b.text.StartsWith("Review / commit round ",StringComparison.Ordinal)||b.name=="combat-skip-pending-playback"))BattleVisible(action,size);
                 if(scene)
                 {
-                    BattleCameraContainment(BattleStage(doc),state+"-"+size.x);
+                    var current=BattleStage(doc);var camera=(Camera)typeof(ReviewBattleStage).GetField("camera",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(current)!;
+                    if(desiredOverview.HasValue)Assert.That(camera.orthographic,Is.EqualTo(desiredOverview.Value),"actual mode on current sized panel");
+                    if(desiredPaused.HasValue)Assert.That(current.Paused,Is.EqualTo(desiredPaused.Value),"actual pause on current sized panel");
+                    BattleCameraContainment(current,state+"-"+size.x);
                     var image=doc.rootVisualElement.Q<Image>("battle-3d-image");Assert.That(image,Is.Not.Null);BattleVisible(image,size);
                     Assert.That(image.image,Is.TypeOf<RenderTexture>());Assert.That(image.image.width,Is.EqualTo(1280));Assert.That(image.image.height,Is.EqualTo(600));
                     float scale=Math.Min(image.contentRect.width/1280,image.contentRect.height/600);float paintedWidth=1280*scale,paintedHeight=600*scale;
@@ -206,7 +218,8 @@ namespace HobbyDS9.UnityReview.Tests
                     CampaignPage(doc,ReviewWorkspacePage.Combat);yield return null;yield return null;
                     Assert.That(doc.rootVisualElement.Q("combat-tab-battle").ClassListContains("selected-tab"),Is.True);
                     Assert.That(doc.rootVisualElement.Q("central-fleet-rail").resolvedStyle.display,Is.EqualTo(DisplayStyle.None));
-                    foreach(var size in V3Sizes)yield return BattleSized(entry,doc,size,"initial",true); //3
+                    Assert.That(((Camera)typeof(ReviewBattleStage).GetField("camera",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(BattleStage(doc))!).orthographic,Is.False,"new encounter defaults to Cinematic");
+                    foreach(var size in V3Sizes)yield return BattleSized(entry,doc,size,"initial",true,false); //3
                     var boundary=codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model));
                     var panel=doc.rootVisualElement.Q<ReviewBattlePanel>();var stage=(ReviewBattleStage)typeof(ReviewBattlePanel).GetField("stage",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(panel)!;BattleMaterialProbe(stage);
                     var oldResources=((System.Collections.Generic.List<UnityEngine.Object>)typeof(ReviewBattleStage).GetField("owned",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(stage)!).ToArray();
@@ -247,13 +260,15 @@ namespace HobbyDS9.UnityReview.Tests
                         byte[]? rootBeforeCamera=null;
                         if(rounds==1)
                         {
-                            rootBeforeCamera=codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model));var playbackStage=BattleStage(doc);
+                            rootBeforeCamera=codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model));
                             BattleAnonymousCameraProbe(entry.Presentation!.PendingPlayback!);
-                            Click(doc.rootVisualElement.Q<Button>("battle-playback-pause"));Assert.That(playbackStage.Paused,Is.True);
                             for(int i=0;i<V3Sizes.Length;i++)
-                            {if(i>0)Click(CampaignButton(doc,"Overview / cinematic"));yield return BattleSized(entry,doc,V3Sizes[i],"resolved-playback",true);} //3: Cinematic/Overview/Cinematic
+                                yield return BattleSized(entry,doc,V3Sizes[i],"resolved-playback",true,i==1,true); //3: Cinematic/Overview/Cinematic, actual fresh controls after each layout
                             Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(rootBeforeCamera),"actual camera/pause controls cannot change accepted campaign");
-                            Click(doc.rootVisualElement.Q<Button>("battle-playback-pause"));Assert.That(playbackStage.Paused,Is.False);
+                            // Returning to the live surface can rebuild once more. Reacquire
+                            // and exercise resume on that current stage through the UI.
+                            if(!BattleStage(doc).Paused)Click(doc.rootVisualElement.Q<Button>("battle-playback-pause"));Assert.That(BattleStage(doc).Paused,Is.True);
+                            Click(doc.rootVisualElement.Q<Button>("battle-playback-pause"));Assert.That(BattleStage(doc).Paused,Is.False);
                         }
                         var accepted=model.Current.Frame;Click(doc.rootVisualElement.Q<Button>("combat-skip-pending-playback"));Assert.That(model.Current.Frame,Is.SameAs(accepted));yield return null;yield return null;
                         if(rootBeforeCamera!=null)Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(rootBeforeCamera),"actual skip/acknowledgment cannot change accepted campaign");
