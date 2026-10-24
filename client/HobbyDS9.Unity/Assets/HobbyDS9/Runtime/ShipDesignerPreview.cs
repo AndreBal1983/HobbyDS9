@@ -63,13 +63,13 @@ namespace HobbyDS9.UnityClient
             {
                 var choice=view;var button=new Button(()=>{stage?.SetReferenceView(choice);RefreshCaption();})
                     {name="designer-view-"+view.ToString().ToLowerInvariant(),text=view==DesignerReferenceView.CoreCutaway?"Internal core":view.ToString()};
-                button.AddToClassList("lcars-pill");controls.Add(button);
+                CompactControl(button);controls.Add(button);
             }
             foreach(var step in new[]{("◀",-20f,0f),("▶",20f,0f),("↑",0f,15f),("↓",0f,-15f)})
             {
                 var turn=step;var button=new Button(()=>{yaw+=turn.Item2;pitch=Mathf.Clamp(pitch+turn.Item3,-75,75);stage?.OrbitReference(yaw,pitch);RefreshCaption();})
                     {name="designer-orbit-"+(turn.Item2<0?"left":turn.Item2>0?"right":turn.Item3>0?"up":"down"),text=turn.Item1,tooltip="Rotate illustrative reference"};
-                button.AddToClassList("lcars-pill");controls.Add(button);
+                CompactControl(button);controls.Add(button);
             }
             Add(controls);
             nacelleStudies.name="designer-nacelle-studies";deflectorStudies.name="designer-deflector-studies";
@@ -78,7 +78,7 @@ namespace HobbyDS9.UnityClient
             {
                 var selected=choice;var button=new Button(()=>{stage?.SetStudyVariant(selected.Item2);RefreshCaption();})
                     {name="designer-study-"+choice.Item2.ToString().ToLowerInvariant(),text=choice.Item1+" · art study",tooltip="Changes reference artwork only; does not fit equipment or change technology."};
-                button.AddToClassList("lcars-pill");
+                CompactControl(button);
                 (choice.Item2==DesignerStudyVariant.ClassicNacelles || choice.Item2==DesignerStudyVariant.SovereignNacelles?nacelleStudies:deflectorStudies).Add(button);
             }
             Add(image); Add(schematic); Add(caption);
@@ -88,6 +88,15 @@ namespace HobbyDS9.UnityClient
             RegisterCallback<DetachFromPanelEvent>(_=>Release());
             image.RegisterCallback<GeometryChangedEvent>(FitViewport);
             caption.RegisterCallback<GeometryChangedEvent>(FitViewport);
+            controls.RegisterCallback<GeometryChangedEvent>(FitViewport);
+            RegisterCallback<GeometryChangedEvent>(FitViewport);
+        }
+
+        private static void CompactControl(Button button)
+        {
+            button.AddToClassList("lcars-pill");button.style.height=28;button.style.minHeight=28;
+            button.style.fontSize=12;button.style.paddingTop=2;button.style.paddingBottom=2;
+            button.style.paddingLeft=7;button.style.paddingRight=7;button.style.marginTop=1;button.style.marginBottom=1;
         }
 
         public void SetFit(string hullVersionId,IReadOnlyDictionary<string,int> quantities,bool isPendingPreview)
@@ -105,7 +114,17 @@ namespace HobbyDS9.UnityClient
         public void UpdateFacts(string text) { caption.tooltip=text+"\n"+ArtCredit; }
         private void RefreshCaption()
         {
-            if(stage!=null)caption.text=(pendingPreview?"PREVIEW · ":"DRAFT FIT · ")+stage.Label;
+            if(stage!=null)
+            {
+                var text=stage.Label;
+                if(stage.IsDesignerReference && stage.ReferenceView==DesignerReferenceView.Hull)
+                    text="Illustrative Galaxy · propulsion "+ShipPreviewStage.DesignerModuleQuantity(installed,DesignerReferenceView.Nacelles)
+                        +" / reactor "+ShipPreviewStage.DesignerModuleQuantity(installed,DesignerReferenceView.CoreCutaway)+" · art only";
+                else if(stage.IsDesignerReference && stage.ReferenceView==DesignerReferenceView.Deflector)text="Uninstalled deflector art study";
+                if(stage.Label.Contains("missing art:"))text+=" · some fitting art unavailable";
+                caption.text=(pendingPreview?"PREVIEW · ":"DRAFT FIT · ")+text;
+                caption.tooltip=stage.Label+"\n"+ArtCredit;
+            }
             nacelleStudies.style.display=stage?.ReferenceView==DesignerReferenceView.Nacelles?DisplayStyle.Flex:DisplayStyle.None;
             deflectorStudies.style.display=stage?.ReferenceView==DesignerReferenceView.Deflector?DisplayStyle.Flex:DisplayStyle.None;
         }
@@ -119,12 +138,21 @@ namespace HobbyDS9.UnityClient
         private void FitViewport(GeometryChangedEvent change)
         {
             if(disposed || viewport==null || panel==null)return;
+            var availableWidth=viewport.worldBound.xMax-worldBound.xMin-2;
+            if(!float.IsNaN(availableWidth) && !float.IsInfinity(availableWidth) && availableWidth>0)
+            {
+                // A vertical ScrollView does not constrain an Image's intrinsic
+                // texture width. Explicitly break that auto/percent size cycle.
+                if(Mathf.Abs(resolvedStyle.width-availableWidth)>.5f){style.width=availableWidth;style.maxWidth=availableWidth;}
+                var imageWidth=Mathf.Max(1,viewport.worldBound.xMax-image.worldBound.xMin-2);
+                if(Mathf.Abs(image.resolvedStyle.width-imageWidth)>.5f){image.style.width=imageWidth;image.style.maxWidth=imageWidth;}
+            }
             var available=viewport.worldBound.yMax-image.worldBound.yMin-caption.resolvedStyle.height-12;
-            if(float.IsNaN(available) || float.IsInfinity(available) || available<=0)return;
+            if(float.IsNaN(available) || float.IsInfinity(available))return;
             var maximum=GetFirstAncestorOfType<ShipDesignerView>()?.ClassListContains("sd-wide")==true?440:360;
-            var height=Mathf.Min(maximum,Mathf.Max(32,available));
+            var height=Mathf.Min(maximum,Mathf.Max(1,available));
             if(Mathf.Abs(image.resolvedStyle.height-height)<.5f)return;
-            image.style.minHeight=32;image.style.height=height;
+            image.style.minHeight=1;image.style.height=height;
         }
 
         private void Fallback(string text)
