@@ -34,9 +34,9 @@ namespace HobbyDS9.UnityReview
             button(controls,"Overview / cinematic",()=>stage?.ToggleCamera()).SetEnabled(stage!=null);
             if(pending!=null)
             {
-                var skip=button(controls,"Skip round playback",()=>{stage?.Skip();perform(()=>flow.AcknowledgePlayback(playback,pending.Round));});
+                var skip=button(controls,"Skip animation",()=>{stage?.Skip();perform(()=>flow.AcknowledgePlayback(playback,pending.Round));});
                 skip.name="battle-playback-skip";
-                var done=button(controls,"Review round "+pending.Round+" result",()=>perform(()=>flow.AcknowledgePlayback(playback,pending.Round)));
+                var done=button(controls,"Round "+pending.Round+" report",()=>perform(()=>flow.AcknowledgePlayback(playback,pending.Round)));
                 done.name="battle-playback-done";done.SetEnabled(stage?.Complete??false);
                 lastTime=Time.realtimeSinceStartup;
                 schedule.Execute(()=>{
@@ -46,7 +46,7 @@ namespace HobbyDS9.UnityReview
                     done.SetEnabled(stage.Complete);
                 }).Every(33);
             }
-            Add(new Label("Presentation spacing and timing are schematic. Only resolved events are played; camera, pause and skip do not change combat."){name="battle-presentation-boundary"});
+            Add(new Label("Resolved events · visual scale is schematic"){name="battle-presentation-boundary",tooltip="Presentation spacing and timing are schematic. Camera, pause and skip do not change combat."});
             RegisterCallback<DetachFromPanelEvent>(_=>{image.image=null;stage?.Dispose();stage=null;});
         }
         public static void Statistics(VisualElement parent,CampaignBattlePlayback playback)
