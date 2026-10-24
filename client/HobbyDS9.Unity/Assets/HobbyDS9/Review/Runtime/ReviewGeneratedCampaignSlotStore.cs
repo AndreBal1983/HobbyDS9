@@ -7,7 +7,7 @@ using HobbyDS9.TacticalReviewClient;
 namespace HobbyDS9.UnityReview
 {
     // Unity/netstandard-compatible trusted adapter. No default v1 slot or net10 storage dependency.
-    public sealed class ReviewGeneratedCampaignSlotStore : IGeneratedCampaignReviewCheckpointStore
+    public sealed class ReviewGeneratedCampaignSlotStore : IGeneratedCampaignReviewCheckpointStore,IReviewCheckpointWriteAdmission
     {
         private readonly object gate=new object();
         private readonly string directory;
@@ -55,6 +55,20 @@ namespace HobbyDS9.UnityReview
         {
             try { if((File.GetAttributes(path)&(FileAttributes.ReparsePoint|FileAttributes.Directory))!=0) throw Fail(ReviewCheckpointError.InvalidSlot); }
             catch(FileNotFoundException) { } catch(DirectoryNotFoundException) { }
+        }
+        public bool TryCheckWriteAdmission(string slot,out ReviewCheckpointError error)
+        {
+            lock(gate)
+            {
+                try
+                {
+                    var destination=PathFor(slot);CheckDirectory();CheckFile(destination);
+                    error=File.Exists(destination)?ReviewCheckpointError.SlotOccupied:ReviewCheckpointError.None;
+                }
+                catch(ReviewCheckpointStoreException e){error=e.Error;}
+                catch(Exception){error=ReviewCheckpointError.WriteFailed;}
+                return true;
+            }
         }
         public void Write(string slot,CampaignGeneratedSaveDto root,bool overwrite)
         {

@@ -5,6 +5,16 @@ using HobbyDS9.Contracts;
 
 namespace HobbyDS9.TacticalReviewClient
 {
+    // Advisory only: successful admission is never permission to skip final write checks.
+    // False means this optional capability is unsupported, not that the slot is empty.
+    public interface IReviewCheckpointWriteAdmission
+    {
+        bool TryCheckWriteAdmission(string slot, out ReviewCheckpointError error);
+    }
+    public interface IReviewCheckpointWriteAdmissionHost
+    {
+        bool TryCheckWriteAdmission(ReviewFrame observed, string slot, out ReviewCheckpointError error);
+    }
     // This is a TRUSTED HOST seam. Private payloads do not belong in a player view.
     public interface IReviewCheckpointStore
     {
