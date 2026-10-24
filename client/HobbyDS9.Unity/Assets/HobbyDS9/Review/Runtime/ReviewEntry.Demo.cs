@@ -19,35 +19,37 @@ namespace HobbyDS9.UnityReview
     {
         private CampaignSingleplayerDemoPackageDto? demoSource;
         private bool demoLanding,demoStarted;
+        private bool otherCampaignProfilesOpen;
         private void DrawDemoLanding()
         {
-            var panel=PagePanel("HobbyDS9 — Start / Continue");var demo=model!.Current.Frame.Demo;
-            panel.Add(Readout(demo?.ObjectiveText??(model.PlayableFleet?"Fleet campaign: build, organize, follow and fight. No deadline or campaign victory objective is defined.":"Current profile: Frontier exploration preview. Arrival charting only; no military victory or turn deadline is defined by this preview.")));
-            panel.Add(Readout("Review your worlds and R&D, build an available ship, and plot a known route. Issue fleet orders in battle, then confirm the aftermath. Hull, shields and ammunition persist."));
-            panel.Add(Readout("The computer chooses its own orders. Changes stay unsent until you confirm them. Save whenever you want to return later."));
+            var panel=PagePanel("HobbyDS9 — Start / Continue");
+            panel.Add(Readout("Explore a galaxy, build fleets and command each battle round. Survivors carry their damage and ammunition into the next turn."));
             if(demoStarted){var resume=AddButton(panel,"Resume current campaign",()=>{demoLanding=false;viewEpoch++;Build();});resume.name="demo-resume-current";resume.AddToClassList("primary-action");ScheduleDemoMenuFocus(resume);}
             DrawGeneratedCampaignMenu(panel);
-            var generated=AddButton(panel,"Generated galaxy review",OpenGeneratedGalaxy);generated.name="generated-galaxy-entry";
-            panel.Add(Readout("Create and inspect a seeded map. Full-map review only; your current campaign stays intact."));
-            DrawPlayableFleetMenu(panel);
-            panel.Add(Readout("Other campaign profiles"));
-            var start=AddButton(panel,"Start new demo",()=>{
+            var other=new Foldout{text="Other scenarios & review tools",value=otherCampaignProfilesOpen,name="other-campaign-profiles"};panel.Add(other);
+            var epoch=viewEpoch;
+            other.RegisterValueChangedCallback(e=>{if(e.target==other&&epoch==viewEpoch)otherCampaignProfilesOpen=e.newValue;});
+            DrawLegacyGeneratedCampaignMenu(other);
+            var generated=AddButton(other,"Generated galaxy review",OpenGeneratedGalaxy);generated.name="generated-galaxy-entry";
+            other.Add(Readout("Inspect a full seeded map without replacing your campaign."));
+            DrawPlayableFleetMenu(other,false);
+            var start=AddButton(other,"Start new demo",()=>{
                 if(demoStarted)Confirm("Start a new demo? Unsaved progress and local edits will be lost; your saved slots remain intact.",StartFreshDemo);
                 else StartFreshDemo();
             });start.name="demo-start";start.AddToClassList("primary-action");
-            if(!demoStarted&&!PlayableResourcesAvailable())ScheduleDemoMenuFocus(start);
-            panel.Add(Readout("Continue a saved demo"));
+            other.Add(Readout("Continue a saved demo"));
             foreach(var slot in new[]{"demo-1","demo-2","demo-3"})
             {
-                var load=AddButton(panel,"Continue Demo "+slot.Substring(slot.Length-1),()=>Confirm("Load this saved demo? Only a validated compatible format-4 save can replace your current campaign.",()=>{
+                var load=AddButton(other,"Continue Demo "+slot.Substring(slot.Length-1),()=>Confirm("Load this saved demo? Only a validated compatible format-4 save can replace your current campaign.",()=>{
                     ContinuePlayerProfile(false,slot);
                 }));load.name="demo-continue-"+slot;
             }
-            panel.Add(Readout("Demo saves are separate from classic and previous review saves. Empty or incompatible slots leave this session unchanged."));
-            DrawFrontierMenu(panel);
-            AddButton(panel,"Audio",()=>OpenDemoSettings(ReviewWorkspacePage.Audio));
-            AddButton(panel,"Display",()=>OpenDemoSettings(ReviewWorkspacePage.Display));
-            AddButton(panel,"Quit",()=>Confirm("Quit without automatic saving? Any unsaved progress will be lost.",()=>{if(model.Close(true))UnityEngine.Application.Quit();}));
+            other.Add(Readout("Earlier scenarios keep their original saves. Empty or incompatible slots leave the current game intact."));
+            DrawFrontierMenu(other);
+            var settings=new VisualElement();settings.AddToClassList("review-field-row");panel.Add(settings);
+            AddButton(settings,"Audio",()=>OpenDemoSettings(ReviewWorkspacePage.Audio));
+            AddButton(settings,"Display",()=>OpenDemoSettings(ReviewWorkspacePage.Display));
+            AddButton(settings,"Quit",()=>Confirm("Quit without automatic saving? Any unsaved progress will be lost.",()=>{if(model!.Close(true))UnityEngine.Application.Quit();}));
         }
         private void StartFreshDemo()
         {

@@ -18,9 +18,9 @@ namespace HobbyDS9.UnityReview
             var spine=new VisualElement();spine.AddToClassList("console-spine");root.Add(spine);
             var header=new VisualElement{name="player-header"};header.AddToClassList("console-header");root.Add(header);
             var names=new VisualElement();header.Add(names);
-            var identity=Readout((model!.GeneratedCampaign?"HOBBYDS9 · GENERATED CAMPAIGN · ":model.PlayableFleet?"HOBBYDS9 · FLEET CAMPAIGN · ":model.FrontierPreview?"HOBBYDS9 · FRONTIER EXPLORATION PREVIEW · ":model.SingleplayerDemo?"HOBBYDS9 · SINGLE PLAYER DEMO · ":"EARLY CAMPAIGN PREVIEW · ")+OwnerName(model.Current.Frame.Actor));identity.name="review-scenario-identity";identity.AddToClassList("console-kicker");names.Add(identity);
+            var identity=Readout(PlayerProfile&&demoLanding?"HOBBYDS9 · GALACTIC CAMPAIGNS":(model!.GeneratedCampaign?"HOBBYDS9 · GENERATED CAMPAIGN · ":model.PlayableFleet?"HOBBYDS9 · FLEET CAMPAIGN · ":model.FrontierPreview?"HOBBYDS9 · FRONTIER EXPLORATION PREVIEW · ":model.SingleplayerDemo?"HOBBYDS9 · SINGLE PLAYER DEMO · ":"EARLY CAMPAIGN PREVIEW · ")+OwnerName(model.Current.Frame.Actor));identity.name="review-scenario-identity";identity.AddToClassList("console-kicker");names.Add(identity);
             playerTitle=Readout(Title(workspace!.Page));playerTitle.AddToClassList("console-title");names.Add(playerTitle);
-            if(model.Current.Frame.Demo!=null){var objective=Readout("");objective.name="demo-objective";objective.AddToClassList("console-kicker");names.Add(objective);}
+            if(model!.Current.Frame.Demo!=null&&!demoLanding){var objective=Readout("");objective.name="demo-objective";objective.AddToClassList("console-kicker");names.Add(objective);}
             playerStatus=Readout("");playerStatus.AddToClassList("console-status");header.Add(playerStatus);
             playerGuidance=Readout("");playerGuidance.name="player-guidance";playerGuidance.AddToClassList("console-guidance");root.Add(playerGuidance);
             var body=new VisualElement();body.AddToClassList("console-body");root.Add(body);
@@ -59,10 +59,10 @@ namespace HobbyDS9.UnityReview
         private void DrawPlayer()
         {
             var frame=model!.Current.Frame;playerTitle!.text=Title(workspace!.Page);
-            playerStatus!.text="Turn "+frame.Status.Turn+" · "+(frame.Status.Phase==SessionPhase.Planning?"Planning":"Combat pending")+"\nCredits "+frame.Strategy!.Civilization.Credits;
-            if(frame.Demo!=null){var goal=frame.Strategy.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==frame.Demo.ObjectiveNodeId)?.DisplayName??"Objective sector";root!.Q<Label>("demo-objective").text="Objective: "+goal+" · Through turn "+frame.Demo.LastTurn+" · "+frame.Demo.Outcome;}
-            playerGuidance!.text=PlayerMessage();
-            if(PlayerProfile&&demoLanding){playerTitle.text=model.PlayableFleet?"Fleet campaign":model.FrontierPreview?"Frontier preview":"HobbyDS9 Demo";DrawDemoLanding();}
+            playerStatus!.text=demoLanding?"":"Turn "+frame.Status.Turn+" · "+(frame.Status.Phase==SessionPhase.Planning?"Planning":"Combat pending")+"\nCredits "+frame.Strategy!.Civilization.Credits;
+            if(frame.Demo!=null&&!demoLanding){var goal=frame.Strategy!.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==frame.Demo.ObjectiveNodeId)?.DisplayName??"Objective sector";var objective=root!.Q<Label>("demo-objective");if(objective!=null)objective.text="Objective: "+goal+" · Through turn "+frame.Demo.LastTurn+" · "+frame.Demo.Outcome;}
+            playerGuidance!.text=demoLanding?(generatedCampaignBusy?"Preparing campaign…":"Start a new galaxy or continue a saved campaign."):PlayerMessage();
+            if(PlayerProfile&&demoLanding){playerTitle.text="Start / Continue";DrawDemoLanding();}
             else if(workspace.Page==ReviewWorkspacePage.Combat)central!.Render();
             else if(workspace.Page==ReviewWorkspacePage.Saves)DrawSaves();
             else if(workspace.Page==ReviewWorkspacePage.Audio)DrawAudio();

@@ -41,7 +41,7 @@ namespace HobbyDS9.UnityReview
             catch(Exception){profileMenuNotice="Fleet campaign unavailable. Current progress, edits and saves remain intact.";Draw();return;}
             PublishPlayerProfile(next,slot??"fleet-1");
         }
-        private void DrawPlayableFleetMenu(VisualElement parent)
+        private void DrawPlayableFleetMenu(VisualElement parent,bool initialFocus=true)
         {
             parent.Add(Readout("Fleet campaign · Federation / Cardassian"));
             parent.Add(Readout("Build existing Cruisers, assemble a named fleet, follow a known enemy and choose orders for each battle round. Survivors retain damage and ammunition."));
@@ -50,7 +50,7 @@ namespace HobbyDS9.UnityReview
                 else OpenPlayableFleet(null);
             });
             start.name="playable-fleet-start";start.AddToClassList("primary-action");start.SetEnabled(PlayableResourcesAvailable());
-            if(!demoStarted&&PlayableResourcesAvailable())ScheduleDemoMenuFocus(start);
+            if(initialFocus&&!demoStarted&&PlayableResourcesAvailable())ScheduleDemoMenuFocus(start);
             foreach(var slot in PlayableFleetOptions.Slots())
             {
                 var load=AddButton(parent,"Continue fleet campaign "+slot.Substring(slot.Length-1),()=>Confirm(
