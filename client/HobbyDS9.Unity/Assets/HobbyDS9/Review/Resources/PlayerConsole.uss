@@ -155,3 +155,12 @@
 .battle-presentation Label { white-space: normal; }
 .player-narrow .battle-viewport { height: 140px; min-height: 100px; }
 .player-narrow .battle-presentation Label { font-size: 14px; }
+/* Playable battle uses the available viewer height; reports retain their scroller. */
+.playable-combat .battle-detail-host { flex-grow: 1; flex-shrink: 1; min-height: 0; }
+.playable-combat .battle-presentation { flex-grow: 1; flex-shrink: 1; min-height: 0; margin-bottom: 0; }
+.playable-combat .battle-viewport { height: auto; flex-grow: 1; flex-shrink: 1; min-height: 180px; }
+.player-narrow .playable-combat .battle-viewport { height: auto; min-height: 150px; }
+.playable-combat .battle-presentation .review-action { min-height: 32px; padding: 4px 8px; font-size: 14px; }
+.playable-combat .battle-presentation Label { font-size: 14px; flex-shrink: 0; }
+.playable-combat .review-tabs .selected-tab { background-color: #3f3548; border-bottom-color: #efb16b; border-bottom-width: 3px; }
+.player-narrow .playable-combat .review-order-dock { width: 224px; }

@@ -22,6 +22,8 @@ namespace HobbyDS9.UnityReview
         private CampaignTravelIntent travel=CampaignTravelIntent.StayEngage;
         private CampaignFleetManeuver maneuver=CampaignFleetManeuver.Hold;
         private string actor="";
+        private string? enteredPlayableBattle;
+        private bool showFleetDetails;
         private bool selectedTravelIsDraft;
         public ReviewCentralView(VisualElement root,ReviewCombatFlow flow,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<string,Action> confirm)
         {
@@ -41,6 +43,11 @@ namespace HobbyDS9.UnityReview
             // Both single-human profiles use the readable player presentation.
             // Objective/terminal semantics remain in the authoritative Demo snapshot.
             var demo=model.PlayableFleet||model.SingleplayerDemo||model.FrontierPreview;
+            if(actor!=frame.Actor){actor=frame.Actor;selectedFleet="";selectedShip="";focus="retain standing focus";tab="stocks";enteredPlayableBattle=null;showFleetDetails=false;}
+            var playableBattle=model.PlayableFleet&&battle!=null;
+            root.EnableInClassList("playable-combat",playableBattle);
+            if(playableBattle&&enteredPlayableBattle!=battle!.EncounterId){enteredPlayableBattle=battle.EncounterId;tab="battle";}
+            else if(!playableBattle)enteredPlayableBattle=null;
             var aftermath=demo?flow.AftermathSummary:null;
             if(aftermath==null)displayedAftermath=null;
             else if(!ReferenceEquals(displayedAftermath,aftermath)){displayedAftermath=aftermath;tab="report";}
@@ -49,7 +56,6 @@ namespace HobbyDS9.UnityReview
             {displayedResult=battle.BoundaryRevision;tab=model.PlayableFleet&&flow.PendingPlayback!=null?"battle":"report";}
             var battleViewAvailable=model.PlayableFleet&&battle!=null&&(flow.PendingPlayback!=null||stage==ReviewCombatStage.Orders);
             if(tab=="battle"&&!battleViewAvailable)tab="report";
-            if(actor!=frame.Actor){actor=frame.Actor;selectedFleet="";selectedShip="";focus="retain standing focus";tab="stocks";}
             var fleets=(battle!=null?battle.StandingOrders.Select(o=>o.FleetId):frame.OwnStrategicFleets.Select(f=>f.FleetId.Value)).ToList();
             if(!fleets.Contains(selectedFleet)){selectedFleet=fleets.FirstOrDefault()??"";SyncFleetOrder();}
             var title=Text(flow.Heading);title.name="combat-stage-heading";title.AddToClassList("review-heading");root.Add(title);
@@ -69,6 +75,7 @@ namespace HobbyDS9.UnityReview
             {var context=Text("The computer supplies opposing orders. Review your fleet maneuver and focus, commit one round at a time, then confirm the aftermath when all battles are complete.");context.AddToClassList("combat-context-copy");root.Add(context);}
             var stageRow=new VisualElement{name="central-combat-surface"};stageRow.AddToClassList("review-stage-row");root.Add(stageRow);
             var roster=new ScrollView(ScrollViewMode.Vertical){name="central-fleet-rail"};roster.AddToClassList("review-panel");roster.AddToClassList("review-roster");roster.Add(Text("Owned fleet / ship inspection"));stageRow.Add(roster);
+            if(playableBattle&&!showFleetDetails)roster.style.display=DisplayStyle.None;
             var fleet=demo?LabeledChoice("Your fleet",fleets,selectedFleet,id=>readable.Fleet(frame,id),id=>{selectedFleet=id;SyncFleetOrder();Render();}):Choice("Owned fleet",fleets);
             if(!demo){fleet.SetValueWithoutNotify(string.IsNullOrEmpty(selectedFleet)?"none":selectedFleet);fleet.RegisterValueChangedCallback(e=>{selectedFleet=e.newValue;SyncFleetOrder();Render();});}fleet.name="combat-fleet-picker";roster.Add(fleet);
             var ships=frame.OwnShips.Where(s=>!demo||s.Condition.FleetId==selectedFleet).Select(s=>s.Condition.ShipId).Concat(battle?.VisibleEnemies.Select(s=>s.ShipId)??Array.Empty<string>()).ToList();
@@ -83,7 +90,7 @@ namespace HobbyDS9.UnityReview
                 button(roster,"Open selected encounter",()=>confirm("Change encounter? Explicitly discard unsent edits if present.",()=>perform(()=>model.SelectEncounter(demo?selectedEncounter:encounters.value,true))));
                 roster.Add(Text(demo?"Enemy orders, hidden ships/counts and enemy ammunition are unavailable.":"Other human orders, hidden ships/counts and enemy ammunition are unavailable."));
             }
-            var viewer=Panel(stageRow,"Central battle / survivor view");viewer.AddToClassList("review-viewer");
+            var viewer=Panel(stageRow,playableBattle?"Battle":"Central battle / survivor view");viewer.AddToClassList("review-viewer");
             // The summary already contains location/turn and every own survivor's
             // retained stocks. Avoid duplicating those blocks above its scroller.
             if(!model.PlayableFleet&&(aftermath==null||tab!="report"))
@@ -97,8 +104,15 @@ namespace HobbyDS9.UnityReview
             {
                 var pick=button(tabs,name=="battle"?"Battle view":name=="stocks"?(demo?"Ship status":"Own hull / shields / ammunition"):name=="report"?(aftermath!=null?"Battle summary":"Round report"):"Inspection",()=>{tab=name;Render();});
                 pick.name="combat-tab-"+name;
+                pick.EnableInClassList("selected-tab",tab==name);
             }
-            var details=new ScrollView(ScrollViewMode.Vertical){name="central-combat-details"};details.AddToClassList("review-detail-scroll");viewer.Add(details);
+            if(playableBattle)
+            {
+                var fleetDetails=button(tabs,showFleetDetails?"Hide fleet details":"Fleet details",()=>{showFleetDetails=!showFleetDetails;Render();});
+                fleetDetails.name="combat-toggle-fleet-details";fleetDetails.EnableInClassList("selected-tab",showFleetDetails);
+            }
+            VisualElement details=model.PlayableFleet&&tab=="battle"?new VisualElement():new ScrollView(ScrollViewMode.Vertical);
+            details.name="central-combat-details";details.AddToClassList("review-detail-scroll");details.EnableInClassList("battle-detail-host",model.PlayableFleet&&tab=="battle");viewer.Add(details);
             if(model.PlayableFleet&&tab=="battle")details.Add(new ReviewBattlePanel(flow,button,perform));
             else
             {
