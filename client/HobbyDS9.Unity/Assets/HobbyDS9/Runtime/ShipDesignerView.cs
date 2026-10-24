@@ -12,6 +12,7 @@ namespace HobbyDS9.UnityClient
         public ShipDesignDraft Draft { get; }
         public Button ResetButton { get; }
         public Button CloseButton { get; }
+        public VisualElement InspectorFooter { get; }=new VisualElement{name="designer-inspector-footer"};
         public string SelectedSystem { get; private set; }="Overview";
         public static readonly string[] Systems={"Overview","Hull","Power","Propulsion","Crew","Command","Sensors","Science","Shields","Weapons","Support","Profiles","Validation"};
         private static readonly string[] Captions={"Overview","Hull","Power","Propulsion","Crew / Life support","Command / Computing","Sensors","Science","Shields","Weapons","Mission / Support","Operating profiles","Cost / Validation"};
@@ -54,7 +55,7 @@ namespace HobbyDS9.UnityClient
             templates=new DropdownField("Template",draft.Provider.Templates.Select(t=>t.Caption).ToList(),0) {name="designer-template"};identity.Add(templates);
             templates.RegisterValueChangedCallback(_=>{if(campaign==null)Draft.RequestTemplate(Draft.Provider.Templates[templates.index].Id);else {campaign.NewClass();Refresh();}});
             var actions=Buttons(header);actions.AddToClassList("sd-actions");
-            state.name="designer-state";actions.Add(state);capacity.name="designer-capacity";actions.Add(capacity);cost.name="designer-cost-summary";actions.Add(cost);actions.Add(hullCaption);
+            state.name="designer-state";actions.Add(state);capacity.name="designer-capacity";actions.Add(capacity);cost.name="designer-cost-summary";actions.Add(cost);hullCaption.name="designer-hull-caption";actions.Add(hullCaption);
             ResetButton=new LcarsPillButton("Reset",Draft.RequestReset) {name="designer-reset"};actions.Add(ResetButton);
             CloseButton=new LcarsPillButton("Back",()=>RequestLeave(closeRequested)) {name="designer-close"};actions.Add(CloseButton);
             actions.Add(new LcarsPillButton("Review issues",()=>SelectSystem("Validation")) {name="designer-global-issues"});
@@ -68,8 +69,10 @@ namespace HobbyDS9.UnityClient
             systemPicker.RegisterValueChangedCallback(_=>SelectSystem(Systems[systemPicker.index]));
             var workbench=new VisualElement{name="designer-workbench"};workbench.AddToClassList("sd-workbench");body.Add(workbench);
             liveViewer.name="designer-live-viewer";liveViewer.AddToClassList("sd-live-viewer");workbench.Add(liveViewer);
-            workspace.name="designer-workspace";workspace.AddToClassList("sd-workspace");workbench.Add(workspace);
-            fitActions.name="designer-fit-actions";fitActions.AddToClassList("sd-fit-actions");Add(fitActions);
+            var inspector=new VisualElement{name="designer-inspector"};inspector.AddToClassList("sd-inspector");workbench.Add(inspector);
+            workspace.name="designer-workspace";workspace.AddToClassList("sd-workspace");inspector.Add(workspace);
+            fitActions.name="designer-fit-actions";fitActions.AddToClassList("sd-fit-actions");inspector.Add(fitActions);
+            InspectorFooter.AddToClassList("sd-inspector-footer");inspector.Add(InspectorFooter);
             var provenance=Buttons(this);provenance.AddToClassList("sd-provenance");provenance.Add(new LcarsReadout(draft.Provider.StatusLabel) {name="designer-provider-status"});
             publication=new LcarsPillButton("Blueprint publication integration pending",()=> {
                 if(campaign==null || !campaign.CanPublish)return;

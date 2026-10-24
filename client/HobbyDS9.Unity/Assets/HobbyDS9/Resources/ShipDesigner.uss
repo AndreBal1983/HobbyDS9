@@ -149,4 +149,16 @@
 .sd-narrow .sd-workbench .sd-hull-reference-image { min-height: 100px; }
 .sd-short .sd-workbench .sd-hull-reference-image { min-height: 80px; }.sd-workbench .sd-power-bank > .sd-profile-row { width: 100%; min-width: 0; max-width: none; }
 .sd-workbench .sd-profile-row > Label { font-size: 15px; }
-.sd-workbench .sd-power-detail .unity-base-field { min-width: 120px; width: 170px; }
+.sd-workbench .sd-power-detail .unity-base-field { min-width: 120px; width: 170px; }/* Keep revision history and pending-fit actions in the inspector, never below the model. */
+.sd-inspector { flex-grow: 5; flex-basis: 0; min-width: 280px; min-height: 0; }
+.sd-inspector > .sd-workspace { flex-grow: 1; flex-basis: 0; min-height: 0; }
+.sd-inspector-footer { flex-shrink: 0; min-height: 0; }
+.sd-inspector-footer > Foldout { margin: 0; }
+.sd-inspector-footer .lcars-pill { min-height: 36px; margin-top: 2px; margin-bottom: 2px; }
+.sd-narrow .sd-shell { padding: 2px 6px; border-bottom-width: 3px; }
+.sd-narrow .sd-identity > .unity-base-field { margin-right: 6px; margin-top: 2px; margin-bottom: 2px; }
+.sd-narrow .sd-actions > Label { margin-right: 8px; font-size: 14px; }
+.sd-narrow .sd-actions > .lcars-pill { min-width: 64px; min-height: 34px; margin-right: 5px; margin-bottom: 2px; padding-left: 10px; padding-right: 10px; font-size: 14px; }
+.sd-narrow #designer-cost-summary, .sd-narrow #designer-hull-caption { display: none; }
+.sd-narrow .sd-body { padding-top: 4px; }
+.sd-narrow .sd-system-picker { margin-bottom: 4px; }
