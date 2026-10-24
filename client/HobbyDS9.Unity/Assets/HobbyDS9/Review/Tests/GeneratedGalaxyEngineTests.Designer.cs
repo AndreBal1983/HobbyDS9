@@ -34,6 +34,23 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(target.Create(),Is.True);doc.panelSettings.targetTexture=target;
                 doc.rootVisualElement.style.width=size.x;doc.rootVisualElement.style.height=size.y;
                 yield return null;yield return null;yield return null;
+                if(label!="starter")
+                {
+                    doc.rootVisualElement.Q<Foldout>("integrated-design-history").value=true;
+                    yield return null;yield return null;yield return null;
+                    var scroller=doc.rootVisualElement.Q<ScrollView>("integrated-design-history-scroll");
+                    Assert.That(scroller,Is.Not.Null,"expanded revision library has its own bounded scrolling area");
+                    var viewport=scroller.contentViewport.worldBound;
+                    Assert.That(viewport.height,Is.GreaterThan(30));
+                    Assert.That(viewport.yMax,Is.LessThanOrEqualTo(doc.rootVisualElement.Q("player-footer").worldBound.yMin));
+                    var revisions=scroller.Query<Button>().ToList().Where(b=>b.name.StartsWith("integrated-design-edit-",StringComparison.Ordinal)).ToArray();
+                    Assert.That(revisions.Length,Is.EqualTo(2));
+                    foreach(var revision in revisions)
+                    {
+                        Assert.That(viewport.Contains(revision.worldBound.min+Vector2.one),Is.True,"revision begins inside history viewport: "+revision.name);
+                        Assert.That(viewport.Contains(revision.worldBound.max-Vector2.one),Is.True,"revision ends inside history viewport: "+revision.name);
+                    }
+                }
                 var publish=doc.rootVisualElement.Q<Button>("integrated-design-publish");
                 Assert.That(publish,Is.Not.Null);Assert.That(publish.worldBound.width,Is.GreaterThan(20));
                 Assert.That(publish.worldBound.height,Is.GreaterThan(15));
