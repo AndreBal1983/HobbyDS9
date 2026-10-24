@@ -123,6 +123,18 @@ namespace HobbyDS9.UnityReview.Tests
                     Click(doc.rootVisualElement.Q<Button>("combat-tab-stocks"));Click(doc.rootVisualElement.Q<Button>("combat-toggle-fleet-details"));yield return null;yield return null;
                     Assert.That(doc.rootVisualElement.Q("combat-tab-stocks").ClassListContains("selected-tab"),Is.True,"same boundary redraw retains user tab");
                     Assert.That(JsonConvert.SerializeObject(model.Current.Draft),Is.EqualTo(draft));yield return BattleSized(entry,doc,V3Sizes[0],"status-retained",false); //1
+                    CampaignPage(doc,ReviewWorkspacePage.Saves);Click(doc.rootVisualElement.Q<Button>("save-slot-generated-3"));yield return null;yield return null;
+                    var filePath=Path.Combine(storePath,"unity-generated-static-astronomy-v2-generated-3.json");var fileBefore=File.ReadAllBytes(filePath);
+                    var frameBefore=model.Current.Frame;var rootBefore=codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model));var draftBefore=JsonConvert.SerializeObject(model.Current.Draft);
+                    var promptWatch=System.Diagnostics.Stopwatch.StartNew();Click(doc.rootVisualElement.Q<Button>("player-save"));var prompt=doc.rootVisualElement.Q("review-one-use-confirmation");promptWatch.Stop();
+                    Assert.That(prompt,Is.Not.Null);Assert.That(prompt.Query<Label>().ToList().Any(l=>l.text.Contains("Replace the save in generated-3?")),Is.True,"captured requested slot, not the empty default slot1");
+                    File.WriteAllText(Path.Combine(CampaignOutput(),"battle-occupied-slot-prompt.json"),JsonConvert.SerializeObject(new{elapsedMs=promptWatch.Elapsed.TotalMilliseconds,slot="generated-3",measurement="synchronous Click to actual modal query ONLY; private audit comparisons outside timer",exportCounter="No shipping test-only counter added; no-export path separately source/CPU reviewed"}));
+                    Assert.That(promptWatch.Elapsed.TotalSeconds,Is.LessThan(1),"occupied-slot advisory must not run the expensive export/replay before asking");
+                    Confirm(doc,false);yield return null;yield return null;
+                    Assert.That(model.Current.Frame,Is.SameAs(frameBefore));Assert.That(JsonConvert.SerializeObject(model.Current.Draft),Is.EqualTo(draftBefore));
+                    Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(rootBefore));Assert.That(File.ReadAllBytes(filePath),Is.EqualTo(fileBefore));
+                    Assert.That(File.Exists(Path.Combine(storePath,"unity-generated-static-astronomy-v2-generated-1.json")),Is.False,"no accidental save to default slot");
+                    CampaignPage(doc,ReviewWorkspacePage.Combat);yield return null;yield return null;
                     // Restore the accepted fixture's standing maneuver through the actual UI;
                     // the inspection regression above still exercised a genuinely edited draft.
                     doc.rootVisualElement.Q<DropdownField>("combat-maneuver-picker").index=standingManeuver;Click(CampaignButton(doc,"Apply to local draft"));
@@ -141,7 +153,7 @@ namespace HobbyDS9.UnityReview.Tests
                     Click(CampaignButton(doc,"Confirm campaign aftermath"));Confirm(doc);yield return null;yield return null;
                     Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning));Assert.That(model.History().Count,Is.GreaterThan(0));yield return BattleSized(entry,doc,V3Sizes[0],"aftermath",false); //1
                     CampaignPage(doc,ReviewWorkspacePage.Saves);Click(doc.rootVisualElement.Q<Button>("save-slot-generated-3"));Click(doc.rootVisualElement.Q<Button>("player-save"));if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);
-                    var saved=codec.EncodeStaticAstronomyCampaignRoot(store.Read("generated-3"));Click(doc.rootVisualElement.Q<Button>("demo-menu"));Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-3"));Confirm(doc);yield return WaitCampaign(entry,"battle-v2-continue-aftermath");
+                    Assert.That(model.Message,Is.EqualTo("Checkpoint result: None"));var saved=codec.EncodeStaticAstronomyCampaignRoot(store.Read("generated-3"));Click(doc.rootVisualElement.Q<Button>("demo-menu"));Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-3"));Confirm(doc);yield return WaitCampaign(entry,"battle-v2-continue-aftermath");
                     Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(CampaignModel(entry))),Is.EqualTo(saved));CampaignPage(doc,ReviewWorkspacePage.Combat);Click(doc.rootVisualElement.Q<Button>("combat-tab-report"));yield return null;
                     Assert.That(doc.rootVisualElement.Query<Label>().ToList().Any(l=>l.text.StartsWith("Battle statistics",StringComparison.Ordinal)&&l.text.Contains("turn 68")),Is.True,"actual reloaded historical statistics, not merely a reachable empty tab");
                     yield return BattleSized(entry,doc,V3Sizes[1],"continued-history",false); //1 =>12
