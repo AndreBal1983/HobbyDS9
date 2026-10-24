@@ -237,7 +237,7 @@ namespace HobbyDS9.UnityReview
                     for(int corner=0;corner<8;corner++)points.Add(center+radius*new Vector3(
                         (corner&1)==0?-1:1,(corner&2)==0?-1:1,(corner&4)==0?-1:1));
             }
-            if(!overview&&round!=null)
+            if(round!=null)
             {
                 // Fit the existing anonymous incoming cue too. It is a schematic
                 // screen-edge source, never an inferred hidden ship position.
