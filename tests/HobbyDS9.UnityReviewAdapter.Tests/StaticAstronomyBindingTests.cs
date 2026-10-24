@@ -1,0 +1,133 @@
+using System.Text;
+using System.Text.Json;
+using HobbyDS9.Application;
+using HobbyDS9.Contracts;
+using HobbyDS9.TacticalReviewClient;
+using HobbyDS9.UnityReview;
+using Xunit;
+
+namespace HobbyDS9.UnityReviewAdapter.Tests;
+
+public sealed class StaticAstronomyBindingTests : IDisposable
+{
+    private readonly string directory=Path.Combine(Path.GetTempPath(),"hobby-static-binding-"+Guid.NewGuid().ToString("N"));
+    private readonly ReviewNewtonsoftCodec codec=new();
+    private static CampaignPlayableFleetPackageDto Template()=>PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory,"scenarios/playable-fleet-v1"));
+    private static NaturalGalaxySettingsDto Settings()=>new(){Map=new(){Seed="42",SystemCount=250,EmptyRegionCount=250,Width=2500000,Height=2000000,
+        QuietEmptyAreaTargetPermille=2000,HomeCivilizationDefinitionIds=new(){"civilization.federation","civilization.cardassian"}}};
+    private static readonly Lazy<byte[]> Initial=new(()=>new ReviewNewtonsoftCodec().EncodeStaticAstronomyCampaignRoot(
+        CampaignStaticAstronomyApplication.StartGame(Template(),Settings()).ExportGeneratedSave()));
+    private CampaignGeneratedSaveDto Root()=>codec.DecodeStaticAstronomyCampaignRoot(Initial.Value);
+    private ReviewStaticAstronomyCampaignSlotStore Store(Action<UnityReviewWriteStage>? probe=null)=>new(directory,codec,probe);
+    private ReviewUiModel Model(){Store().Write("initial",Root(),false);return ReviewUiModel.ContinueStaticAstronomyCampaign(Template(),codec,Store(),"initial");}
+    private static string Json<T>(T value)=>JsonSerializer.Serialize(value);
+    [Fact] public void NewModelStartsExplicitV2AndSavesOnlyItsOwnProfile()
+    {
+        var m=new ReviewUiModel(Template(),Settings(),codec,Store());
+        Assert.True(m.StaticAstronomyCampaign);Assert.True(m.GeneratedCampaign);
+        Assert.True(m.IsCurrentGeneratedPresentation(m.GeneratedPresentation()));Assert.True(m.Save("new"));
+        var root=Store().Read("new");Assert.Equal(CampaignStaticAstronomyIdentity.Profile,root.ProfileId);
+        Assert.Equal(CampaignStaticAstronomyIdentity.Policy,root.PolicyId);
+        Assert.ThrowsAny<Exception>(()=>codec.EncodeGeneratedCampaignRoot(root));
+        Assert.Single(Directory.GetFiles(directory));
+    }
+    private sealed class FaultCodec : IStaticAstronomyReviewHostCodec
+    {
+        private readonly ReviewNewtonsoftCodec inner=new();
+        public bool FailKnownCopy;
+        public CampaignGeneratedMapDto CopyKnownGeneratedMap(CampaignGeneratedMapDto map)=>FailKnownCopy?throw new IOException("late presentation copy"):inner.CopyKnownGeneratedMap(map);
+        public CampaignGeneratedSaveDto CopyStaticAstronomySave(CampaignGeneratedSaveDto root)=>inner.CopyStaticAstronomySave(root);
+        public CampaignGeneratedSaveDto CopySave(CampaignGeneratedSaveDto root)=>inner.CopySave(root);
+        public CampaignPlayableFleetPackageDto CopyPackage(CampaignPlayableFleetPackageDto value)=>inner.CopyPackage(value);
+        public CampaignPlayableFleetSaveDto CopySave(CampaignPlayableFleetSaveDto value)=>inner.CopySave(value);
+        public CampaignIntegratedPlaytestPackageDto CopyPackage(CampaignIntegratedPlaytestPackageDto value)=>inner.CopyPackage(value);
+        public CampaignIntegratedPlaytestSaveDto CopySave(CampaignIntegratedPlaytestSaveDto value)=>inner.CopySave(value);
+        public CampaignTacticalTravelPackageDto CopyPackage(CampaignTacticalTravelPackageDto value)=>inner.CopyPackage(value);
+        public CampaignTacticalTravelSaveDto CopySave(CampaignTacticalTravelSaveDto value)=>inner.CopySave(value);
+    }
+    [Fact] public void LatePresentationFailureCannotPublishCandidateAtEitherReopenBoundary()
+    {
+        Store().Write("one",Root(),false);var faulty=new FaultCodec();
+        var opened=PhysicalReviewHost.OpenStaticAstronomyCampaignFromSlot(Template(),faulty,Store(),"one","civ.federation");
+        Assert.True(opened.Succeeded);var host=opened.Host!;var before=host.Read("civ.federation");var pair=host.CaptureGeneratedPresentation(before);
+        var checkpoint=host.SaveCommitted();faulty.FailKnownCopy=true;
+        Assert.Throws<IOException>(()=>host.LoadCommitted(checkpoint,before.Actor,null));
+        Assert.Equal(ReviewCheckpointError.InvalidCheckpoint,host.LoadCommittedFromSlot("one",before.Actor).Error);
+        Assert.False(PhysicalReviewHost.OpenStaticAstronomyCampaignFromSlot(Template(),faulty,Store(),"one",before.Actor).Succeeded);
+        faulty.FailKnownCopy=false;Assert.Equal(before.Generation,host.Read(before.Actor).Generation);
+        host.ValidateGeneratedPresentation(before,pair);
+    }
+
+    [Fact] public void DirectContinueSaveReopenIsExactAndPresentationCannotBeMutatedOrUsedAfterAdvance()
+    {
+        var m=Model();Assert.True(m.StaticAstronomyCampaign);Assert.True(m.GeneratedCampaign);
+        var pair=m.GeneratedPresentation();Assert.True(m.IsCurrentGeneratedPresentation(pair));
+        Assert.Equal(pair.Actor,pair.Astronomy.ActorId);Assert.Equal(pair.MapContentHash,pair.Astronomy.MapContentHash);
+        var map=pair.KnownMap;var original=Json(map);map.Regions.Clear();Assert.Equal(original,Json(pair.KnownMap));
+        Assert.True(m.Save("again"));Assert.Equal(Initial.Value,File.ReadAllBytes(Path.Combine(directory,"unity-generated-static-astronomy-v2-again.json")));
+        var fresh=ReviewUiModel.ContinueStaticAstronomyCampaign(Template(),codec,Store(),"again");
+        Assert.Equal(original,Json(fresh.GeneratedPresentation().KnownMap));Assert.Equal(Json(pair.Astronomy),Json(fresh.GeneratedPresentation().Astronomy));
+        Assert.False(fresh.IsCurrentGeneratedPresentation(pair)); // Different host, identical state.
+        Assert.True(m.Advance());Assert.False(m.IsCurrentGeneratedPresentation(pair));
+        Assert.True(m.Load("initial",true));Assert.False(m.IsCurrentGeneratedPresentation(pair));
+    }
+    [Fact] public void ForeignActorAndOldFrameCannotAuthorizePresentation()
+    {
+        Store().Write("one",Root(),false);
+        var opened=PhysicalReviewHost.OpenStaticAstronomyCampaignFromSlot(Template(),codec,Store(),"one","civ.federation");
+        Assert.True(opened.Succeeded);var host=opened.Host!;var frame=opened.Frame!;var pair=host.CaptureGeneratedPresentation(frame);
+        Assert.Throws<ArgumentException>(()=>host.Read("civ.cardassian")); // AI actor cannot obtain a player frame at all.
+        var checkpoint=host.SaveCommitted();var reloaded=host.LoadCommitted(checkpoint,frame.Actor,null);
+        Assert.Throws<InvalidOperationException>(()=>host.CaptureGeneratedPresentation(frame));
+        host.ValidateGeneratedPresentation(reloaded,host.CaptureGeneratedPresentation(reloaded));
+    }
+    [Fact] public void LateInvalidMapLoadRetainsLiveFrameDraftPresentationAndSavedFile()
+    {
+        var m=Model();Assert.True(m.Save("good"));var original=File.ReadAllBytes(Path.Combine(directory,"unity-generated-static-astronomy-v2-good.json"));
+        var broken=Root();broken.Map.Settings.Map.Seed="43";Store().Write("bad",broken,false);
+        var current=m.Current;var pair=m.GeneratedPresentation();var draft=m.ResearchInputs()!;draft.Adjust(ScienceDiscipline.Biotech,6);
+        Assert.False(m.Load("bad",true));Assert.Same(current,m.Current);Assert.Same(draft,m.ResearchDraft);Assert.True(m.HasLocalEdits);
+        Assert.True(m.IsCurrentGeneratedPresentation(pair));Assert.Equal(original,File.ReadAllBytes(Path.Combine(directory,"unity-generated-static-astronomy-v2-good.json")));
+        Assert.Throws<InvalidOperationException>(()=>ReviewUiModel.ContinueStaticAstronomyCampaign(Template(),codec,Store(),"bad"));
+    }
+    [Theory] [InlineData(0)] [InlineData(1)] [InlineData(2)]
+    public void MixedV1V2IdentityNeverFallsBack(int field)
+    {
+        var v2=Root();var v1=codec.DecodeGeneratedCampaignRoot(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,"static-v1/aftermath.json")));
+        Assert.ThrowsAny<Exception>(()=>codec.EncodeGeneratedCampaignRoot(v2));Assert.ThrowsAny<Exception>(()=>codec.EncodeStaticAstronomyCampaignRoot(v1));
+        if(field==0){v2.ProfileId=v1.ProfileId;v1.ProfileId=CampaignStaticAstronomyIdentity.Profile;}
+        if(field==1){v2.PolicyId=v1.PolicyId;v1.PolicyId=CampaignStaticAstronomyIdentity.Policy;}
+        if(field==2){v2.Campaign.Integrated!.Physical!.Core!.ProfileId=CampaignGeneratedIdentity.EmbeddedCoreProfile;v1.Campaign.Integrated!.Physical!.Core!.ProfileId=CampaignStaticAstronomyIdentity.EmbeddedCoreProfile;}
+        Assert.ThrowsAny<Exception>(()=>codec.EncodeStaticAstronomyCampaignRoot(v2));Assert.ThrowsAny<Exception>(()=>codec.EncodeGeneratedCampaignRoot(v1));
+    }
+    [Fact] public void ClosedShapeRejectsMalformedDuplicateUnknownAndStrippedRoots()
+    {
+        var bytes=Initial.Value;var json=Encoding.UTF8.GetString(bytes);
+        foreach(var text in new[]{json[..^1],json.Insert(1,"\"Unknown\":true,"),json.Replace("\"FormatVersion\":7","\"FormatVersion\":7,\"FormatVersion\":7")})
+            Assert.ThrowsAny<Exception>(()=>codec.DecodeStaticAstronomyCampaignRoot(Encoding.UTF8.GetBytes(text)));
+        Assert.ThrowsAny<Exception>(()=>codec.EncodePlayableFleetRoot(Root().Campaign));
+        Assert.ThrowsAny<Exception>(()=>codec.DecodeStaticAstronomyCampaignRoot(new byte[ReviewStaticAstronomyCampaignSlotStore.MaximumBytes+1]));
+    }
+    [Theory] [InlineData(UnityReviewWriteStage.BeforeWrite)] [InlineData(UnityReviewWriteStage.AfterPartialWrite)] [InlineData(UnityReviewWriteStage.BeforeReplace)]
+    public void FaultedWriteKeepsPriorRootAndOtherProfileSlot(UnityReviewWriteStage stage)
+    {
+        Store().Write("one",Root(),false);var path=Path.Combine(directory,"unity-generated-static-astronomy-v2-one.json");var before=File.ReadAllBytes(path);
+        var old=File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,"static-v1/aftermath.json"));
+        var v1=new ReviewGeneratedCampaignSlotStore(directory,codec);v1.Write("one",codec.DecodeGeneratedCampaignRoot(old),false);
+        var oldPath=Path.Combine(directory,"unity-generated-campaign-v7-one.json");var oldBytes=File.ReadAllBytes(oldPath);
+        var failing=Store(s=>{if(s==stage)throw new IOException("injected");});
+        Assert.Throws<ReviewCheckpointStoreException>(()=>failing.Write("one",Root(),true));
+        Assert.Equal(before,File.ReadAllBytes(path));Assert.Equal(oldBytes,File.ReadAllBytes(oldPath));Assert.Equal(2,Directory.GetFiles(directory).Length);
+        Assert.Throws<ReviewCheckpointStoreException>(()=>Store().Write("v1",v1.Read("one"),false));
+        Assert.Throws<ReviewCheckpointStoreException>(()=>v1.Write("v2",Root(),false));
+    }
+    [Fact] public void V1GoldenBytesDirectContinueAndProfileRemainUnchanged()
+    {
+        var oldBytes=File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,"static-v1/aftermath.json"));var root=codec.DecodeGeneratedCampaignRoot(oldBytes);
+        Assert.Equal(oldBytes,codec.EncodeGeneratedCampaignRoot(root));var oldStore=new ReviewGeneratedCampaignSlotStore(directory,codec);oldStore.Write("old",root,false);
+        var old=ReviewUiModel.ContinueGeneratedCampaign(Template(),codec,oldStore,"old");Assert.False(old.StaticAstronomyCampaign);
+        Assert.Throws<InvalidOperationException>(()=>old.GeneratedPresentation());Assert.True(old.Save("copy"));
+        Assert.Equal(oldBytes,File.ReadAllBytes(Path.Combine(directory,"unity-generated-campaign-v7-copy.json")));
+    }
+    public void Dispose(){if(Directory.Exists(directory))Directory.Delete(directory,true);}
+}

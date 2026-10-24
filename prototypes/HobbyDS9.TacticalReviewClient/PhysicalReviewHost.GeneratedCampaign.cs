@@ -20,14 +20,20 @@ namespace HobbyDS9.TacticalReviewClient
         private readonly IGeneratedCampaignReviewHostCodec? generatedCodec;
         private readonly IGeneratedCampaignReviewCheckpointStore? generatedStore;
         private readonly Dictionary<long,CampaignGeneratedSaveDto> generatedSaves=new Dictionary<long,CampaignGeneratedSaveDto>();
+        private readonly bool staticAstronomy;
         private PhysicalReviewHost(CampaignPlayableFleetPackageDto template,IGeneratedCampaignReviewHostCodec codec,
-            IGeneratedCampaignReviewCheckpointStore? store,NaturalGalaxySettingsDto? settings,CampaignGeneratedSaveDto? saved)
+            IGeneratedCampaignReviewCheckpointStore? store,NaturalGalaxySettingsDto? settings,CampaignGeneratedSaveDto? saved,bool staticAstronomy=false)
         {
+            this.staticAstronomy=staticAstronomy;
             this.codec=codec;generatedCodec=codec;generatedTemplate=codec.CopyPackage(template);generatedStore=store;
             // Continue goes straight through complete frozen-map validation; never StartGame/Generate.
-            session=saved!=null?CampaignGeneratedApplication.LoadSave(generatedTemplate,codec.CopySave(saved))
+            session=saved!=null?LoadGeneratedCandidate(saved)
+                :staticAstronomy?CampaignStaticAstronomyApplication.StartGame(generatedTemplate,settings??throw new ArgumentNullException(nameof(settings)))
                 :CampaignGeneratedApplication.StartGame(generatedTemplate,settings??throw new ArgumentNullException(nameof(settings)));
         }
+        private ICampaignGeneratedSession LoadGeneratedCandidate(CampaignGeneratedSaveDto saved)
+            =>staticAstronomy?CampaignStaticAstronomyApplication.LoadSave(generatedTemplate!,((IStaticAstronomyReviewHostCodec)generatedCodec!).CopyStaticAstronomySave(saved))
+                :CampaignGeneratedApplication.LoadSave(generatedTemplate!,generatedCodec!.CopySave(saved));
         public static PhysicalReviewHost StartGeneratedCampaign(CampaignPlayableFleetPackageDto template,NaturalGalaxySettingsDto settings,
             IGeneratedCampaignReviewHostCodec codec,IGeneratedCampaignReviewCheckpointStore? store=null)
             =>new PhysicalReviewHost(template,codec,store,settings,null);
@@ -40,8 +46,9 @@ namespace HobbyDS9.TacticalReviewClient
         }
         private CampaignGeneratedSaveDto ExportGenerated()
         {
-            var save=generatedCodec!.CopySave(((ICampaignGeneratedSession)session).ExportGeneratedSave());
-            CampaignGeneratedApplication.LoadSave(generatedTemplate!,save);return save;
+            var exported=((ICampaignGeneratedSession)session).ExportGeneratedSave();
+            var save=staticAstronomy?((IStaticAstronomyReviewHostCodec)generatedCodec!).CopyStaticAstronomySave(exported):generatedCodec!.CopySave(exported);
+            LoadGeneratedCandidate(save);return save;
         }
         private ReviewSaveHandle SaveGeneratedCommitted()
         {
@@ -51,8 +58,9 @@ namespace HobbyDS9.TacticalReviewClient
         private ReviewFrame LoadGeneratedCommitted(ReviewSaveHandle handle,string actor,string? encounter)
         {
             if(handle.HostId!=id||!generatedSaves.TryGetValue(handle.Id,out var save))throw new ArgumentException("Unknown generated checkpoint.");
-            var candidate=CampaignGeneratedApplication.LoadSave(generatedTemplate!,generatedCodec!.CopySave(save));
+            var candidate=LoadGeneratedCandidate(save);
             var epoch=checked(generation+1);var frame=Capture(candidate,actor,encounter,epoch);
+            if(staticAstronomy)CaptureStaticCandidate(candidate,frame);
             session=candidate;generation=epoch;return frame;
         }
         private ReviewCheckpointResult SaveGeneratedToSlot(string slot,bool overwrite)
@@ -75,8 +83,9 @@ namespace HobbyDS9.TacticalReviewClient
             catch(Exception){return new ReviewCheckpointResult(ReviewCheckpointError.ReadFailed);}
             try
             {
-                var candidate=CampaignGeneratedApplication.LoadSave(generatedTemplate!,generatedCodec!.CopySave(save));
+                var candidate=LoadGeneratedCandidate(save);
                 var epoch=checked(generation+1);var frame=Capture(candidate,actor,encounter,epoch);
+                if(staticAstronomy)CaptureStaticCandidate(candidate,frame);
                 var metadata=new ReviewSlotCheckpoint(slot,frame.Status);session=candidate;generation=epoch;
                 return new ReviewCheckpointResult(ReviewCheckpointError.None,metadata,frame);
             }
