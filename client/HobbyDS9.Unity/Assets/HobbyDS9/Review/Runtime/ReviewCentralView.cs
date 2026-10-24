@@ -90,7 +90,7 @@ namespace HobbyDS9.UnityReview
                 button(roster,"Open selected encounter",()=>confirm("Change encounter? Explicitly discard unsent edits if present.",()=>perform(()=>model.SelectEncounter(demo?selectedEncounter:encounters.value,true))));
                 roster.Add(Text(demo?"Enemy orders, hidden ships/counts and enemy ammunition are unavailable.":"Other human orders, hidden ships/counts and enemy ammunition are unavailable."));
             }
-            var viewer=Panel(stageRow,playableBattle?"Battle":"Central battle / survivor view");viewer.AddToClassList("review-viewer");
+            var viewer=Panel(stageRow,playableBattle?null:"Central battle / survivor view");viewer.name="central-battle-viewer";viewer.AddToClassList("review-viewer");
             // The summary already contains location/turn and every own survivor's
             // retained stocks. Avoid duplicating those blocks above its scroller.
             if(!model.PlayableFleet&&(aftermath==null||tab!="report"))
@@ -217,7 +217,7 @@ namespace HobbyDS9.UnityReview
         private string routeText="Route costs and steps come from Application; no local ETA or pursuit calculation.";
         private void SyncFleetOrder()
         {var o=flow.Model.Current.Frame.Battle?.StandingOrders.FirstOrDefault(x=>x.FleetId==selectedFleet);var edit=flow.Model.Current.Draft.FirstOrDefault(x=>x.Fleet==selectedFleet);if(edit!=null)maneuver=edit.Maneuver;else if(o!=null)maneuver=o.Maneuver;focus="retain standing focus";selectedTravelIsDraft=false;routeText="Choose an explicit known route.";}
-        private static VisualElement Panel(VisualElement parent,string title){var p=new VisualElement();p.AddToClassList("review-panel");p.Add(Text(title));parent.Add(p);return p;}
+        private static VisualElement Panel(VisualElement parent,string? title){var p=new VisualElement();p.AddToClassList("review-panel");if(title!=null)p.Add(Text(title));parent.Add(p);return p;}
         private static Label Text(string value){var l=new Label(value);l.style.whiteSpace=WhiteSpace.Normal;return l;}
         private static TextField Field(string label,string value){var f=new TextField(label){value=value};f.AddToClassList("review-input");return f;}
         private static DropdownField Choice(string label,List<string> values){if(values.Count==0)values.Add("none");var f=new DropdownField(label,values,0);f.AddToClassList("review-input");return f;}

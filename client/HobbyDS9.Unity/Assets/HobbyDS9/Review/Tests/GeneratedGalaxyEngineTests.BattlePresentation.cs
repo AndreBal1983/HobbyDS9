@@ -16,6 +16,24 @@ namespace HobbyDS9.UnityReview.Tests
 {
     public sealed partial class GeneratedGalaxyEngineTests
     {
+        private static void BattleLayoutAudit(UIDocument doc,Vector2Int size,string state)
+        {
+            try
+            {
+                object Box(Rect r)=>new{x=r.x,y=r.y,width=r.width,height=r.height};
+                var chain=new System.Collections.Generic.List<object>();
+                for(VisualElement? element=doc.rootVisualElement.Q<Image>("battle-3d-image");element!=null;element=element.parent)
+                {
+                    var s=element.resolvedStyle;chain.Add(new{element.name,classes=string.Join(" ",element.GetClasses()),layout=Box(element.layout),content=Box(element.contentRect),world=Box(element.worldBound),
+                        s.flexGrow,s.flexShrink,basis=s.flexBasis.ToString(),height=s.height.ToString(),minHeight=s.minHeight.ToString(),display=s.display.ToString(),
+                        padding=new{s.paddingLeft,s.paddingRight,s.paddingTop,s.paddingBottom},border=new{s.borderLeftWidth,s.borderRightWidth,s.borderTopWidth,s.borderBottomWidth},margin=new{s.marginTop,s.marginBottom}});
+                }
+                var controls=doc.rootVisualElement.Query<Button>().ToList().Where(b=>b.name.StartsWith("combat-",StringComparison.Ordinal)||b.text.StartsWith("Review / commit round ",StringComparison.Ordinal))
+                    .Select(b=>new{b.name,b.text,b.enabledInHierarchy,world=Box(b.worldBound),display=b.resolvedStyle.display.ToString()}).ToArray();
+                File.AppendAllText(Path.Combine(CampaignOutput(),"battle-ancestor-layout.jsonl"),JsonConvert.SerializeObject(new{state,size.x,size.y,chain,controls})+Environment.NewLine);
+            }
+            catch(Exception error){CampaignDiagnosticError("battle-layout-audit",error);}
+        }
         private static void BattleVisible(VisualElement control,Vector2Int size)
         {
             Assert.That(control.panel,Is.Not.Null,control.name);var r=control.worldBound;
@@ -32,6 +50,7 @@ namespace HobbyDS9.UnityReview.Tests
             {
                 Assert.That(target.Create(),Is.True);doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=size.x;doc.rootVisualElement.style.height=size.y;
                 yield return null;yield return null;yield return null;
+                BattleLayoutAudit(doc,size,state);
                 var rail=doc.rootVisualElement.Q("central-combat-surface").Q(className:"review-order-dock");BattleVisible(rail,size);
                 foreach(var id in new[]{"combat-tab-battle","combat-tab-stocks","combat-tab-report","combat-tab-inspection","combat-toggle-fleet-details"})
                 {var item=doc.rootVisualElement.Q(id);if(item!=null)BattleVisible(item,size);}
@@ -45,6 +64,7 @@ namespace HobbyDS9.UnityReview.Tests
                     if(size.x==1280)Assert.That(paintedHeight,Is.GreaterThanOrEqualTo(220),"actual ScaleToFit scene, not black surround");
                     Assert.That(image.worldBound.Overlaps(rail.worldBound),Is.False,"scene/order rail nonoverlap");
                     BattleVisible(doc.rootVisualElement.Q("battle-playback-pause"),size);
+                    foreach(var control in doc.rootVisualElement.Q("resolved-battle-presentation").Query<Button>().ToList())BattleVisible(control,size);
                 }
                 RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
                 File.WriteAllBytes(Path.Combine(CampaignOutput(),"battle-v2-"+state+"-"+size.x+"x"+size.y+".png"),pixels.EncodeToPNG());complete=true;

@@ -18,12 +18,12 @@ namespace HobbyDS9.UnityReview
             name="resolved-battle-presentation";AddToClassList("battle-presentation");
             var playback=flow.Playback!;var pending=flow.PendingPlayback;
             var boundary=pending?.Before??playback.Rounds.LastOrDefault()?.After??playback.Initial;
-            image=new Image{name="battle-3d-image",scaleMode=ScaleMode.ScaleToFit};image.AddToClassList("battle-viewport");Add(image);
+            image=new Image{name="battle-3d-image",scaleMode=ScaleMode.ScaleToFit,tooltip="Resolved events; visual scale is schematic. Camera, pause and skip do not change combat."};image.AddToClassList("battle-viewport");Add(image);
             caption=new Label{name="battle-playback-caption"};caption.AddToClassList("console-copy");Add(caption);
             try
             {
                 // Exact actor-filtered identities are supplied by the receiving projection.
-                stage=new ReviewBattleStage(boundary,pending,ReviewBattleVisualBinding.Identity);image.image=stage.Texture;caption.text=stage.Caption;
+                stage=new ReviewBattleStage(boundary,pending,ReviewBattleVisualBinding.Identity);image.image=stage.Texture;caption.text=stage.Caption;caption.tooltip=caption.text;
             }
             catch(Exception)
             {stage?.Dispose();stage=null;caption.text="3D presentation unavailable. The resolved report is still available; playback can be skipped.";}
@@ -43,6 +43,7 @@ namespace HobbyDS9.UnityReview
                     if(stage==null||panel==null)return;
                     var now=Time.realtimeSinceStartup;stage.Tick(now-lastTime);lastTime=now;
                     caption.text=stage.Caption+(stage.GenericMarkers>0?" · Some models unavailable; generic markers shown":"");
+                    caption.tooltip=caption.text;
                     done.SetEnabled(stage.Complete);
                 }).Every(33);
             }
