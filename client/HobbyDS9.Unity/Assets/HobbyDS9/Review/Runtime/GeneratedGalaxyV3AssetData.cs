@@ -15,6 +15,36 @@ namespace HobbyDS9.UnityReview
         internal GalaxyV3Particle(int i,double x,double y,double z,double radius,double brightness)
         {Index=i;X=x;Y=y;Z=z;Radius=radius;Brightness=brightness;}
     }
+    // A replacement fades only outgoing/incoming fields. Retained nebulae stay
+    // fully visible, and a score-order change is not a residency change.
+    public sealed class GalaxyV3Residency
+    {
+        private string[] visible=Array.Empty<string>(),pending=Array.Empty<string>();
+        private readonly HashSet<string> retained=new HashSet<string>(StringComparer.Ordinal);
+        private int phase=-1;private double since;private bool initialized;
+        public IReadOnlyList<string> Visible=>Array.AsReadOnly(visible);
+        public bool NeedsTransition=>phase>=0;
+        public void Reset(){visible=pending=Array.Empty<string>();retained.Clear();phase=-1;initialized=false;}
+        public void Update(IEnumerable<string> desired,double now)
+        {
+            if(double.IsNaN(now)||double.IsInfinity(now))throw new ArgumentOutOfRangeException(nameof(now));
+            var next=desired.Take(9).OrderBy(id=>id,StringComparer.Ordinal).ToArray();
+            if(next.Length>8||next.Any(string.IsNullOrEmpty)||next.Distinct(StringComparer.Ordinal).Count()!=next.Length)throw new ArgumentException("Invalid nebula residency.",nameof(desired));
+            if(!initialized){visible=next;initialized=true;return;}
+            if(phase<0&&!visible.SequenceEqual(next)){pending=next;phase=0;since=now;}
+            else if(phase==0)pending=next;
+            if(phase==0&&now-since>=.15)
+            {retained.Clear();foreach(var id in visible.Intersect(pending,StringComparer.Ordinal))retained.Add(id);visible=pending;phase=1;since=now;}
+            else if(phase==1&&now-since>=.15)
+            {phase=-1;if(!visible.SequenceEqual(next)){pending=next;phase=0;since=now;}}
+        }
+        public float Weight(string id,double now)
+        {
+            if(!visible.Contains(id,StringComparer.Ordinal))return 0;
+            double t=Math.Max(0,Math.Min(1,(now-since)/.15));
+            return phase==0&&!pending.Contains(id,StringComparer.Ordinal)?(float)(1-t):phase==1&&!retained.Contains(id)?(float)t:1;
+        }
+    }
     public static class GeneratedGalaxyV3AssetData
     {
         public const string Version="galaxy-nebula-detail-v3";

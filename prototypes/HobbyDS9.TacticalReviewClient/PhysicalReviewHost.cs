@@ -57,14 +57,29 @@ namespace HobbyDS9.TacticalReviewClient
         { if(host != id || epoch != generation) throw new InvalidOperationException("Obsolete or foreign physical host request."); }
         bool ITacticalClientHost.IsCurrent(ReviewWork work)
         { lock(gate) return work.HostId == id && work.Generation == generation; }
-        public KnownRouteOffer FindKnownRoute(ReviewFrame observed,string fleet,string destination)
+        public KnownRouteOffer FindKnownRoute(ReviewFrame observed,string fleet,string destination,bool append=false)
         {
             lock(gate)
             {
                 RequireCurrent(observed.HostId,observed.Generation);
                 var own=session.GetOwnStrategicFleets(observed.Actor).Single(f=>f.FleetId.Value == fleet);
                 var status=session.CaptureStatus();
-                var route=session.FindKnownRoute(observed.Actor,own.LocationNodeId.Value,destination);
+                KnownRouteOffer Fail(RouteErrorCode error)=>new KnownRouteOffer(id,generation,observed.Actor,fleet,own.LocationNodeId.Value,destination,status,
+                    new StrategicRouteSnapshot(error,Array.Empty<string>(),Array.Empty<NavigationCostSnapshot>(),null));
+                var prefix=append?session.GetOwnTravelOrders(observed.Actor).Single(o=>o.FleetId==fleet).RouteNodeIds:Array.Empty<string>();
+                var steps=new List<string>();var costs=new List<NavigationCostSnapshot>();long total=0;var origin=own.LocationNodeId.Value;
+                foreach(var next in prefix)
+                {
+                    var leg=session.FindKnownRoute(observed.Actor,origin,next);
+                    if(!leg.Success||leg.Steps.Count!=1||leg.Steps[0]!=next)
+                        return Fail(RouteErrorCode.Unreachable);
+                    if(leg.TotalCost!.Value>long.MaxValue-total)return Fail(RouteErrorCode.CostOverflow);
+                    steps.Add(next);costs.AddRange(leg.Costs);total+=leg.TotalCost.Value;origin=next;
+                }
+                var tail=session.FindKnownRoute(observed.Actor,origin,destination);
+                var route=tail;
+                if(prefix.Count>0&&tail.Success)
+                {if(tail.TotalCost!.Value>long.MaxValue-total)return Fail(RouteErrorCode.CostOverflow);steps.AddRange(tail.Steps);costs.AddRange(tail.Costs);total+=tail.TotalCost.Value;route=new StrategicRouteSnapshot(RouteErrorCode.None,steps,costs,total);}
                 return new KnownRouteOffer(id,generation,observed.Actor,fleet,own.LocationNodeId.Value,destination,status,route);
             }
         }

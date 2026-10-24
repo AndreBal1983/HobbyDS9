@@ -53,6 +53,43 @@ public sealed class GeneratedCampaignTests
     }
 
     [Fact]
+    public void VisibleUnvisitedBordersPermitTransitWithoutRevealingUnknownRegionsAndReplayExactly()
+    {
+        var app=Start(30);var initial=app.ExportGeneratedSave();var game=initial.Campaign.Integrated.Physical!.Core.Campaign.GameState;
+        var knowledge=game.NavigationKnowledge!.Single(k=>k.CivilizationId==Human);
+        var known=new HashSet<string>(knowledge.Nodes!.Select(n=>n.Id),StringComparer.Ordinal);
+        var recorded=new HashSet<string>(knowledge.Connections!.Select(n=>n.Id),StringComparer.Ordinal);
+        var border=app.CaptureGeneratedMap(Human).Connections.First(e=>!recorded.Contains(e.ConnectionId));
+        var before=Json(initial);
+        var route=app.FindKnownRoute(Human,border.EndpointA,border.EndpointB);
+        Assert.True(route.Success);Assert.Equal(1,route.TotalCost);Assert.Equal(new[]{border.EndpointB},route.Steps);
+        Assert.Equal(before,Json(app.ExportGeneratedSave()));
+        var fleet=Assert.Single(app.GetOwnStrategicFleets(Human));var status=app.CaptureStatus();
+        var command=new SubmitCampaignTravelOrderDto{ActorId=Human,CommandId="command.visible.border",ExpectedTurn=status.Turn,ExpectedRevision=status.CampaignRevision,
+            Order=new(){FleetId=fleet.FleetId.Value,Intent=CampaignTravelIntent.Leave,RouteNodeIds=new(){border.EndpointA,border.EndpointB}}};
+        Assert.True(app.SubmitTravelOrder(command).Accepted);
+        var saved=app.ExportGeneratedSave();
+        Assert.Equal(known.OrderBy(n=>n),saved.Campaign.Integrated.Physical!.Core.Campaign.GameState.NavigationKnowledge!.Single(k=>k.CivilizationId==Human).Nodes!.Select(n=>n.Id).OrderBy(n=>n));
+        Assert.Empty(app.GetKnownContacts(Human));
+        var reopened=CampaignGeneratedApplication.LoadSave(Template(),Clone(saved));Assert.Equal(Json(saved),Json(reopened.ExportGeneratedSave()));
+        Advance(app);Advance(reopened);Assert.Equal(Json(app.ExportGeneratedSave()),Json(reopened.ExportGeneratedSave()));
+    }
+
+    [Fact]
+    public void UnknownRegionAndFailedGeneratedTransitCannotPublishInferredBorders()
+    {
+        var app=Start(30);var initial=app.ExportGeneratedSave();var map=app.CaptureGeneratedMap(Human);
+        var known=new HashSet<string>(map.Regions.Select(r=>r.NodeId),StringComparer.Ordinal);
+        var unknown=initial.Map.Layout.Regions.First(r=>!known.Contains(r.NodeId)).NodeId;
+        var fleet=Assert.Single(app.GetOwnStrategicFleets(Human));var status=app.CaptureStatus();var before=Json(initial);
+        Assert.False(app.FindKnownRoute(Human,fleet.LocationNodeId.Value,unknown).Success);
+        var border=map.Connections.First(e=>e.EndpointA!=fleet.LocationNodeId.Value&&e.EndpointB!=fleet.LocationNodeId.Value);
+        Assert.False(app.SubmitTravelOrder(new(){ActorId=Human,CommandId="command.invalid.border",ExpectedTurn=status.Turn,ExpectedRevision=status.CampaignRevision,
+            Order=new(){FleetId=fleet.FleetId.Value,Intent=CampaignTravelIntent.Leave,RouteNodeIds=new(){border.EndpointA,border.EndpointB,unknown}}}).Accepted);
+        Assert.Equal(before,Json(app.ExportGeneratedSave()));
+    }
+
+    [Fact]
     public void Actual250StartsWithGeneratedGraphAndDetachedKnownGeometryAndWholeSave()
     {
         var app = Start(); var save = app.ExportGeneratedSave();

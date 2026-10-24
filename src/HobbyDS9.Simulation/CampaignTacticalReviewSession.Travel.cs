@@ -58,7 +58,9 @@ namespace HobbyDS9.Simulation
             lock(gate)
             {
                 Require(travel!=null&&Actor(actor)==CampaignTacticalError.None,"Only a controlled human actor can query known routes.");
-                return new WeightedNavigationGraph(definitions).FindRoute(state.Campaign.GameState,actor,origin,destination);
+                var query=state.Campaign.GameState;
+                if(generatedMap!=null){query=SimulationSession.CopyState(query);ChartGeneratedBorders(query,actor);}
+                return new WeightedNavigationGraph(definitions).FindRoute(query,actor,origin,destination);
             }
         }
         private bool ValidTravelOrder(GameStateDto game,CampaignTravelOrderDto? order,IReadOnlyList<CampaignContactKnowledgeDto> contacts,bool allowStale=false)
@@ -86,8 +88,9 @@ namespace HobbyDS9.Simulation
                 if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
                 if(DemoMutationBlocked)return Result(CampaignTacticalError.WrongPhase);
                 if(travel==null)return Result(CampaignTacticalError.InvalidOrder);
-                var error=ValidateTravelCommand(command,TravelCopy(),false);if(error!=CampaignTacticalError.None)return Result(error);
-                var next=TravelCopy();ApplyTravelCommand(next,command!);
+                var next=TravelCopy();
+                var error=ValidateTravelCommand(command,next,false);if(error!=CampaignTacticalError.None)return Result(error);
+                ApplyTravelCommand(next,command!);
                 ValidateTravelSave(next);travel=CampaignTacticalTravelData.Copy(next);state=travel.Core;
                 RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Travel,Travel=command});
                 return Result(CampaignTacticalError.None);
@@ -105,8 +108,13 @@ namespace HobbyDS9.Simulation
             if(!EntityId.TryParse(command.CommandId,out _)||command.CommandId.StartsWith("ai-command.",StringComparison.Ordinal)!=trustedAi)return CampaignTacticalError.InvalidOrder;
             if(candidate.Core.AcceptedRoundCommands.Contains(command.CommandId,StringComparer.Ordinal)||game.AcceptedCommandIds!.Contains(command.CommandId))return CampaignTacticalError.DuplicateCommand;
             if(command.ExpectedRevision!=game.StateRevision)return CampaignTacticalError.StaleRevision;
-            if(!game.Fleets!.Any(f=>f.FleetId==command.Order.FleetId&&f.OwnerCivilizationId==command.ActorId)
-                ||!ValidTravelOrder(game,command.Order,candidate.Contacts))return CampaignTacticalError.InvalidOrder;
+            var own=game.Fleets!.SingleOrDefault(f=>f.FleetId==command.Order.FleetId&&f.OwnerCivilizationId==command.ActorId);
+            if(own==null)return CampaignTacticalError.InvalidOrder;
+            // Candidate is a detached command/turn transaction for both humans and AI.
+            // Failed validation never publishes these inferred ordinary borders.
+            if(generatedMap!=null&&command.Order.RouteNodeIds!=null)
+                ChartGeneratedBorders(game,command.ActorId,command.Order.RouteNodeIds,own.LocationNodeId);
+            if(!ValidTravelOrder(game,command.Order,candidate.Contacts))return CampaignTacticalError.InvalidOrder;
             return game.StateRevision==long.MaxValue?CampaignTacticalError.Overflow:CampaignTacticalError.None;
         }
         private static void ApplyTravelCommand(CampaignTacticalTravelSaveDto next,SubmitCampaignTravelOrderDto command)

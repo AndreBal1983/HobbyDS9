@@ -8,6 +8,33 @@ namespace HobbyDS9.UnityReviewAdapter.Tests;
 public sealed class MapOrderPreviewTests
 {
     [Fact]
+    public void AppendedWaypointRetainsAcceptedPrefixAndSurvivesSaveContinue()
+    {
+        using var fixture=new UnityReviewFixture();var model=new ReviewUiModel(fixture.Package,fixture.Codec,fixture.Store,A);
+        var first=model.Current.FindKnownRoute(FA,"nav.bajor")!;
+        Assert.True(model.SendPreviewedTravel(first,ReviewUiModel.NewCommandId()));
+        var frame=model.Current.Frame;var prefix=Assert.Single(frame.Travel!.OwnOrders).RouteNodeIds.ToArray();
+        var append=model.Current.FindKnownRoute(FA,"nav.sol",true)!;
+        Assert.True(append.Route.Success);Assert.Equal(prefix,append.Route.Steps.Take(prefix.Length));Assert.Equal("nav.sol",append.Destination);
+        Assert.Same(frame,model.Current.Frame);Assert.True(model.SendPreviewedTravel(append,ReviewUiModel.NewCommandId()));
+        Assert.Equal(append.Route.Steps,Assert.Single(model.Current.Frame.Travel!.OwnOrders).RouteNodeIds);
+        Assert.True(model.Save("waypoints"));Assert.True(model.Load("waypoints",true));
+        Assert.Equal(append.Route.Steps,Assert.Single(model.Current.Frame.Travel!.OwnOrders).RouteNodeIds);
+        Assert.False(model.SendPreviewedTravel(append,ReviewUiModel.NewCommandId()));
+    }
+
+    [Fact]
+    public void PlainDestinationReplacesRatherThanAppendsAndBadWaypointLeavesOrderUntouched()
+    {
+        using var fixture=new UnityReviewFixture();var model=new ReviewUiModel(fixture.Package,fixture.Codec,fixture.Store,A);
+        var first=model.Current.FindKnownRoute(FA,"nav.bajor")!;Assert.True(model.SendPreviewedTravel(first,ReviewUiModel.NewCommandId()));
+        var frame=model.Current.Frame;var bad=model.Current.FindKnownRoute(FA,"nav.missing",true)!;
+        Assert.False(bad.Route.Success);Assert.False(model.SendPreviewedTravel(bad,ReviewUiModel.NewCommandId()));Assert.Same(frame,model.Current.Frame);
+        var replace=model.Current.FindKnownRoute(FA,"nav.bajoran-wormhole")!;Assert.True(replace.Route.Success);
+        Assert.True(model.SendPreviewedTravel(replace,ReviewUiModel.NewCommandId()));Assert.Equal(replace.Route.Steps,Assert.Single(model.Current.Frame.Travel!.OwnOrders).RouteNodeIds);
+    }
+
+    [Fact]
     public void PreviewIsReadOnlyAndConfirmedFollowUsesTheExactObservedContactAndRoute()
     {
         using var fixture=new UnityReviewFixture();

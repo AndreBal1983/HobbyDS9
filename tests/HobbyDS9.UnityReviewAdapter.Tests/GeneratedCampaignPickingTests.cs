@@ -1,9 +1,24 @@
 using HobbyDS9.UnityReview;
+using HobbyDS9.Contracts;
 using Xunit;
 
 namespace HobbyDS9.UnityReviewAdapter.Tests;
 public sealed class GeneratedCampaignPickingTests
 {
+    [Fact] public void WholeTilePickingUsesOnlyKnownPolygonsAndStableBoundaryTies()
+    {
+        GeneratedGalaxyRegionDto Tile(string id,int x)=>new(){NodeId=id,Boundary=new(){new(){X=x,Y=0},new(){X=x+1000,Y=0},new(){X=x+1000,Y=1000},new(){X=x,Y=1000}}};
+        var a=Tile("nav.a",0);var b=Tile("nav.b",1000);var known=new[]{b,a};
+        Assert.Equal("nav.a",GeneratedCampaignNodePicker.ResolveRegion(known,50,900));
+        Assert.Equal("nav.b",GeneratedCampaignNodePicker.ResolveRegion(known,1950,900));
+        Assert.Equal("nav.a",GeneratedCampaignNodePicker.ResolveRegion(known,1000,500));
+        Assert.Equal("nav.a",GeneratedCampaignNodePicker.ResolveRegion(known.Reverse(),1000,500));
+        Assert.Null(GeneratedCampaignNodePicker.ResolveRegion(known,2050,500));
+        Assert.Null(GeneratedCampaignNodePicker.ResolveRegion(known,double.NaN,500));
+        Assert.Null(GeneratedCampaignNodePicker.ResolveRegion(new[]{a},1500,500));
+        var view=new GeneratedGalaxyViewport();view.SetMap(2000,1000);view.Resize(840,480);view.ZoomAt(2,420,240);view.Pan(83,-31);
+        Assert.Equal("nav.b",GeneratedCampaignNodePicker.ResolveRegion(known,view.WorldX(view.X(1750)),view.WorldY(view.Y(750))));
+    }
     [Theory]
     [InlineData(1,1)]
     [InlineData(3,5)]

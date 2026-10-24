@@ -7,6 +7,24 @@ namespace HobbyDS9.UnityReviewAdapter.Tests;
 
 public sealed class GalaxyV3GeometryTests
 {
+    [Fact] public void NebulaPriorityReorderingDoesNotFadeTheVisibleSet()
+    {
+        var state=new GalaxyV3Residency();var ids=Enumerable.Range(0,8).Select(i=>"field."+i).ToArray();
+        state.Update(ids,0);state.Update(ids.Reverse(),1);
+        Assert.False(state.NeedsTransition);Assert.Equal(8,state.Visible.Count);Assert.All(ids,id=>Assert.Equal(1,state.Weight(id,1)));
+    }
+    [Fact] public void ResidencyReplacementFadesOnlyTheChangedFieldWithinTheEightFieldCap()
+    {
+        var state=new GalaxyV3Residency();var first=Enumerable.Range(0,8).Select(i=>"field."+i).ToArray();var next=first.Skip(1).Append("field.8").ToArray();
+        state.Update(first,0);state.Update(next,1);state.Update(next,1.075);
+        Assert.True(state.NeedsTransition);Assert.InRange(state.Weight("field.0",1.075),.499f,.501f);
+        Assert.All(first.Skip(1),id=>Assert.Equal(1,state.Weight(id,1.075)));Assert.Equal(0,state.Weight("field.8",1.075));
+        state.Update(next,1.151);Assert.Equal(8,state.Visible.Count);Assert.DoesNotContain("field.0",state.Visible);Assert.Equal(0,state.Weight("field.8",1.151));
+        state.Update(next,1.226);Assert.InRange(state.Weight("field.8",1.226),.499f,.501f);Assert.All(first.Skip(1),id=>Assert.Equal(1,state.Weight(id,1.226)));
+        state.Update(next,1.302);Assert.False(state.NeedsTransition);Assert.All(next,id=>Assert.Equal(1,state.Weight(id,1.302)));
+        Assert.Throws<ArgumentException>(()=>state.Update(first.Append("field.9"),2));Assert.Equal(next.OrderBy(id=>id),state.Visible);
+        state.Reset();Assert.Empty(state.Visible);Assert.False(state.NeedsTransition);
+    }
     private readonly ITestOutputHelper output;
     public GalaxyV3GeometryTests(ITestOutputHelper output){this.output=output;}
     private static GeneratedGalaxyRegionDto Box(int x0,int y0,int x1,int y1)=>new(){NodeId=$"{x0}-{y0}",Boundary=new(){P(x0,y0),P(x1,y0),P(x1,y1),P(x0,y1)}};

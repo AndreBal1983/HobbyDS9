@@ -54,6 +54,29 @@ namespace HobbyDS9.Simulation
                 .Distinct(StringComparer.Ordinal).OrderBy(n => n, StringComparer.Ordinal).ToList();
         private bool GeneratedContactFresh(GameStateDto game, CampaignContactKnowledgeDto contact)
             => (long)game.TurnNumber-contact.LastSeenTurn<=1&&GeneratedCoverage(game,contact.ActorId).Contains(contact.LastSeenNodeId,StringComparer.Ordinal);
+        // Visible generated region boundaries already disclose ordinary adjacency.
+        // Unvisited contents are not an access restriction. Never infer a node or
+        // connection beyond the actor's known region footprint.
+        private void ChartGeneratedBorders(GameStateDto game,string actor,IReadOnlyList<string>? route=null,string? origin=null)
+        {
+            if(generatedMap==null)return;
+            var knowledge=game.NavigationKnowledge!.SingleOrDefault(k=>k.CivilizationId==actor);
+            if(knowledge==null)return;
+            var nodes=new HashSet<string>(knowledge.Nodes!.Where(n=>n.Level!=NavigationKnowledgeLevel.Unknown).Select(n=>n.Id),StringComparer.Ordinal);
+            var known=new HashSet<string>(knowledge.Connections!.Where(n=>n.Level!=NavigationKnowledgeLevel.Unknown).Select(n=>n.Id),StringComparer.Ordinal);
+            var pairs=new HashSet<string>(StringComparer.Ordinal);
+            string Pair(string a,string b)=>StringComparer.Ordinal.Compare(a,b)<0?a+"|"+b:b+"|"+a;
+            if(route!=null)
+            {if(origin==null)return;foreach(var next in route){pairs.Add(Pair(origin,next));origin=next;}}
+            foreach(var edge in definitions.NavigationConnections!.OrderBy(e=>e.ConnectionId,StringComparer.Ordinal))
+            {
+                if(known.Contains(edge.ConnectionId)||!nodes.Contains(edge.EndpointA)||!nodes.Contains(edge.EndpointB)
+                    ||route!=null&&!pairs.Contains(Pair(edge.EndpointA,edge.EndpointB)))continue;
+                var entry=knowledge.Connections!.SingleOrDefault(n=>n.Id==edge.ConnectionId);
+                if(entry==null)knowledge.Connections!.Add(new NavigationKnowledgeEntryDto{Id=edge.ConnectionId,Level=NavigationKnowledgeLevel.Charted});
+                else entry.Level=NavigationKnowledgeLevel.Charted;
+            }
+        }
         public CampaignGeneratedMapDto CaptureGeneratedMap(string actor)
         {
             lock (gate)
@@ -61,12 +84,11 @@ namespace HobbyDS9.Simulation
                 Require(generatedMap != null && Actor(actor) == CampaignTacticalError.None, "Only a controlled generated actor may capture its known map.");
                 var knowledge = state.Campaign.GameState.NavigationKnowledge!.Single(k => k.CivilizationId == actor);
                 var known = new HashSet<string>(knowledge.Nodes!.Where(n => n.Level != NavigationKnowledgeLevel.Unknown).Select(n => n.Id), StringComparer.Ordinal);
-                var lanes = new HashSet<string>(knowledge.Connections!.Where(n => n.Level != NavigationKnowledgeLevel.Unknown).Select(n => n.Id), StringComparer.Ordinal);
                 var copy = NaturalGalaxyData.Copy(generatedMap);
                 return new CampaignGeneratedMapDto { ActorId = actor, MapContentHash = copy.ContentHash, Width = copy.Layout.Width, Height = copy.Layout.Height,
                     ObservationTurn = state.Campaign.GameState.TurnNumber, CampaignRevision = state.Campaign.GameState.StateRevision, ObservedNodeIds = GeneratedCoverage(state.Campaign.GameState, actor),
                     Regions = copy.Layout.Regions.Where(r => known.Contains(r.NodeId)).OrderBy(r => r.NodeId, StringComparer.Ordinal).ToList(),
-                    Connections = copy.Layout.Connections.Where(e => lanes.Contains(e.ConnectionId) && known.Contains(e.EndpointA) && known.Contains(e.EndpointB)).OrderBy(e=>e.ConnectionId,StringComparer.Ordinal).ToList(),
+                    Connections = copy.Layout.Connections.Where(e => known.Contains(e.EndpointA) && known.Contains(e.EndpointB)).OrderBy(e=>e.ConnectionId,StringComparer.Ordinal).ToList(),
                     Features = copy.Features.Where(f => f.NodeId != null && known.Contains(f.NodeId)).OrderBy(f=>f.FeatureId,StringComparer.Ordinal).ToList() };
             }
         }

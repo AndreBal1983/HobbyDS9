@@ -42,7 +42,7 @@ Shader "HobbyDS9/GalaxyPresentationV3/Presentation"
         {
             float2 maskUv=float2(input.uv.x,1-input.uv.y);
             float mask=tex2Dlod(_Mask,float4(maskUv,0,0)).r;
-            if(mask<.5||_Effects<.5||_FieldCount==0)return 0;
+            if(mask<=0||_Effects<.5||_FieldCount==0)return 0;
             float2 plane=Plane(input.uv),camera=_View.xy+_View.zw*.5;
             float2 slope=(camera-plane)*(_Depth/4);
             float2 intervals[8];
@@ -97,8 +97,14 @@ Shader "HobbyDS9/GalaxyPresentationV3/Presentation"
                 float2 uv=(diskPoint.xy+1.15)/2.3;uv=uv*(2047.0/2048)+.5/2048;
                 uv.y=1-uv.y; // ONE authored PNG row-top to imported texture UV correction.
                 float4 data=tex2Dlod(_Atlas,float4(uv,0,_MacroMip));
-                float bulge=1-smoothstep(.08,.16,length(diskPoint.xy));
-                float3 source=.12*data.rgb*((1-bulge)*thin+bulge*core);float tau=4*data.a*dust;
+                float radius=length(diskPoint.xy);
+                float bulge=1-smoothstep(.035,.32,radius);
+                float coreLight=.15*exp(-radius*radius/.045)+.045*exp(-radius*radius/.002);
+                float3 warmWhite=float3(1,.97,.91);
+                // A broad stellar bulge and compact nucleus replace the narrow
+                // atlas swirl at the centre. Dust contrast decreases in the bulge.
+                float3 source=(1-bulge)*.12*data.rgb*thin+bulge*warmWhite*coreLight*core;
+                float tau=4*data.a*dust*(1-.85*bulge);
                 light+=transmission*source*Ratio(tau);transmission*=exp(-tau);
             }
             return light;
@@ -108,10 +114,11 @@ Shader "HobbyDS9/GalaxyPresentationV3/Presentation"
             const float3 floorLight=float3(.0015,.0023,.004);
             float3 macro=floorLight+Macro(Plane(input.uv));
             // Gate the completed local layer again AFTER its bilinear upsample.
-            // Same point-mask coordinate as LocalLayer; gates opacity AND radiance.
+            // Conservative bilinear coverage gates opacity AND radiance. Its
+            // entire filter footprint is guarded inside the charted union.
             float4 local=tex2D(_Local,input.uv);
             float mask=tex2Dlod(_Mask,float4(input.uv.x,1-input.uv.y,0,0)).r;
-            local*=step(.5,mask);
+            local*=mask;
             return float4(macro*(1-saturate(local.a))+local.rgb,1);
         }
         struct ParticleInput{float4 vertex:POSITION;float2 uv:TEXCOORD0;float2 mask:TEXCOORD1;float4 colour:COLOR;};
@@ -128,7 +135,7 @@ Shader "HobbyDS9/GalaxyPresentationV3/Presentation"
         float4 ParticlePixel(ParticleOutput input):SV_Target
         {
             float2 p=input.uv*2-1;float r=dot(p,p);clip(1-r);
-            float mask=tex2Dlod(_Mask,float4(input.mask,0,0)).r;clip(mask-.5);
+            float mask=tex2Dlod(_Mask,float4(input.mask,0,0)).r;clip(mask-1e-6);
             return float4(input.colour.rgb*exp(-3*r)*mask,0); // Additive radiance; retains volume opacity.
         }
         float4 AtlasProbe(v2f_img input):SV_Target{return tex2Dlod(_Atlas,float4(_ProbeUv.xy,0,0));}

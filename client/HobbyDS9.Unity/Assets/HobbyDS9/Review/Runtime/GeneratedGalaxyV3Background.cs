@@ -56,12 +56,12 @@ namespace HobbyDS9.UnityReview
         private readonly Field[] lawfulFields;
         private readonly Vector4[] fieldVectors=new Vector4[8],fieldParameters=new Vector4[8];
         private readonly Vector3[] vertices=new Vector3[1024];private readonly Vector2[] uv=new Vector2[1024],maskUv=new Vector2[1024];private readonly Color[] colours=new Color[1024];private readonly int[] indices=new int[1536];
-        private Field[] displayed=Array.Empty<Field>(),pending=Array.Empty<Field>();private int transition=-1;private double transitionAt;
+        private Field[] displayed=Array.Empty<Field>();private readonly GalaxyV3Residency residency=new GalaxyV3Residency();
         private RenderTexture? final,local;private Texture2D? mask;
         private bool disposed;private double lastX=double.NaN,lastY,lastScale,lastWidth,lastHeight;
         private bool lastEffects,lastDepth;private string maskKey="";
         public RenderTexture? Texture=>final;
-        public bool NeedsTransition=>transition>=0;
+        public bool NeedsTransition=>residency.NeedsTransition;
         public int RenderCount { get; private set; }
         public int VisibleFieldCount=>displayed.Length;
         public int ParticleCount { get; private set; }
@@ -109,17 +109,12 @@ namespace HobbyDS9.UnityReview
                 if(displayed.Any(f=>f.Proxy.FeatureId==field.Proxy.FeatureId))score*=.85; // Bounded retention hysteresis.
                 candidates.Add((field,score));
             }
-            return candidates.OrderBy(p=>p.score).ThenBy(p=>p.field.Proxy.FeatureId,StringComparer.Ordinal).Take(8).Select(p=>p.field).ToArray();
+            return candidates.OrderBy(p=>p.score).ThenBy(p=>p.field.Proxy.FeatureId,StringComparer.Ordinal).Take(8).Select(p=>p.field).OrderBy(f=>f.Proxy.FeatureId,StringComparer.Ordinal).ToArray();
         }
-        private static bool Same(Field[] a,Field[] b)=>a.Select(f=>f.Proxy.FeatureId).SequenceEqual(b.Select(f=>f.Proxy.FeatureId));
         private float UpdateFields(Field[] next)
         {
-            double now=Time.realtimeSinceStartupAsDouble;
-            if(RenderCount==0){displayed=next;return 1;}
-            if(transition<0&&!Same(displayed,next)){pending=next;transition=0;transitionAt=now;}
-            else if(transition==0)pending=next;
-            if(transition==0){float t=(float)((now-transitionAt)/.15);if(t<1)return Mathf.Clamp01(1-t);displayed=pending;transition=1;transitionAt=now;return 0;}
-            if(transition==1){float t=(float)((now-transitionAt)/.15);if(t<1)return Mathf.Clamp01(t);transition=-1;}
+            residency.Update(next.Select(f=>f.Proxy.FeatureId),Time.realtimeSinceStartupAsDouble);
+            displayed=residency.Visible.Select(id=>lawfulFields.First(f=>f.Proxy.FeatureId==id)).ToArray();
             return 1;
         }
         private static RenderTexture Target(int width,int height,string name)
@@ -149,17 +144,24 @@ namespace HobbyDS9.UnityReview
             if(lastX==x&&lastY==y&&lastScale==view.Scale&&lastWidth==width&&lastHeight==height&&lastEffects==effects&&lastDepth==depth&&!NeedsTransition)return false;
             var size=GeneratedGalaxyVisualField.TargetSize(width,height);
             float fade;
-            if(!effects){displayed=Array.Empty<Field>();pending=Array.Empty<Field>();transition=-1;fade=0;}
+            if(!effects){displayed=Array.Empty<Field>();residency.Reset();fade=0;}
             else fade=UpdateFields(Select(view,width,height,depth));
             var localSize=GeneratedGalaxyV3AssetData.LocalTarget(size.width,size.height,displayed.Length);LocalFetchUpperBound=48*displayed.Length*localSize.width*localSize.height;
             if(final==null||final.width!=size.width||final.height!=size.height){Release(ref final);final=Target(size.width,size.height,"V3 final full-resolution macro");}
             if(local==null||local.width!=localSize.width||local.height!=localSize.height)
-            {Release(ref local);local=Target(localSize.width,localSize.height,"V3 adaptive local accumulation");if(mask!=null)Destroy(mask);mask=new Texture2D(local.width,local.height,TextureFormat.R8,false,true){name="V3 conservative charted union",hideFlags=HideFlags.HideAndDontSave,filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};maskKey="";}
-            string key=x.ToString("R",System.Globalization.CultureInfo.InvariantCulture)+"/"+y.ToString("R",System.Globalization.CultureInfo.InvariantCulture)+"/"+view.Scale.ToString("R",System.Globalization.CultureInfo.InvariantCulture)+"/"+width+"/"+height+"/"+local.width+"/"+local.height;
+            {Release(ref local);local=Target(localSize.width,localSize.height,"V3 adaptive local accumulation");}
+            // The border mask has stable final-target resolution, independent of
+            // how many volumes share the ray budget. Changes at the field cap
+            // must not change the mask's pixel grid.
+            if(mask==null||mask.width!=final.width||mask.height!=final.height)
+            {if(mask!=null)Destroy(mask);mask=new Texture2D(final.width,final.height,TextureFormat.R8,false,true){name="V3 conservative charted union",hideFlags=HideFlags.HideAndDontSave,filterMode=FilterMode.Bilinear,wrapMode=TextureWrapMode.Clamp};maskKey="";}
+            string key=x.ToString("R",System.Globalization.CultureInfo.InvariantCulture)+"/"+y.ToString("R",System.Globalization.CultureInfo.InvariantCulture)+"/"+view.Scale.ToString("R",System.Globalization.CultureInfo.InvariantCulture)+"/"+width+"/"+height+"/"+mask.width+"/"+mask.height;
             if(maskKey!=key)
             {
-                var guard=GeneratedGalaxyV3AssetData.MaskGuard(local.width,local.height,final.width,final.height,width,height);
-                var result=GeneratedGalaxyChartedMask.Build(regions,view,width,height,local.width,local.height,guard.x,guard.y);
+                var guard=GeneratedGalaxyV3AssetData.MaskGuard(mask.width,mask.height,final.width,final.height,width,height);
+                // One extra mask texel covers its bilinear footprint. Feathering
+                // remains inside the certified union, never into unknown space.
+                var result=GeneratedGalaxyChartedMask.Build(regions,view,width,height,mask.width,mask.height,guard.x+1,guard.y+1);
                 mask!.LoadRawTextureData(result.Pixels);mask.Apply(false,false);LocalStatus=result.Succeeded?"charted-union":"local disabled: "+result.Reason;maskKey=key;
             }
             material.SetVector("_View",new Vector4((float)((x-mapWidth*.5)/mapWidth),(float)((y-mapHeight*.5)/mapWidth),(float)(width/view.Scale/mapWidth),(float)(height/view.Scale/mapWidth)));
@@ -170,7 +172,7 @@ namespace HobbyDS9.UnityReview
                 var f=displayed[i];fieldVectors[i]=new Vector4((float)((f.Proxy.CentreX-mapWidth*.5)/mapWidth),(float)((f.Proxy.CentreY-mapHeight*.5)/mapWidth),(float)f.Proxy.VisualReferenceRadiusX/mapWidth,(float)f.Proxy.VisualReferenceRadiusY/mapWidth);
                 double spanX=5*f.Proxy.VisualReferenceRadiusX*view.Scale*local.width/width,spanY=3.3*f.Proxy.VisualReferenceRadiusY*view.Scale*local.height/height;
                 float mip=(float)Math.Max(Math.Log(64.0/48,2),Math.Max(0,Math.Log(Math.Max(128/Math.Max(1,spanX),96/Math.Max(1,spanY)),2)));
-                fieldParameters[i]=new Vector4(f.Cos,f.Sin,mip,fade);
+                fieldParameters[i]=new Vector4(f.Cos,f.Sin,mip,fade*residency.Weight(f.Proxy.FeatureId,Time.realtimeSinceStartupAsDouble));
             }
             material.SetVectorArray("_Fields",fieldVectors);material.SetVectorArray("_FieldParameters",fieldParameters);
             float macroMip=(float)Math.Max(0,Math.Log(2048/Math.Max(1,.47*2.3*Math.Cos(48*Math.PI/180)*mapWidth*view.Scale*Math.Min(final.width/width,final.height/height)*.85),2));material.SetFloat("_MacroMip",macroMip);
@@ -196,7 +198,7 @@ namespace HobbyDS9.UnityReview
                 double q=depth?4/(4-point.Z*.8):1;
                 double diameter=Math.Min(32,2*point.Radius*Math.Max(field.Proxy.VisualReferenceRadiusX,field.Proxy.VisualReferenceRadiusY)*view.Scale*q*Math.Max(local!.width/width,local.height/height));
                 if(!Finite(p.x)||!Finite(p.y)||!Finite(diameter)||diameter<=0)continue;
-                double gain=Math.Max(0,Math.Min(1,(diameter-.5)/1.5))*fade;if(gain<=0)continue;
+                double gain=Math.Max(0,Math.Min(1,(diameter-.5)/1.5))*fade*residency.Weight(field.Proxy.FeatureId,Time.realtimeSinceStartupAsDouble);if(gain<=0)continue;
                 double px=p.x*local!.width/width,py=p.y*local.height/height,r=diameter/2;if(px+r<0||py+r<0||px-r>local.width||py-r>local.height)continue;
                 if(!ShaderFinite((px-r)/local.width)||!ShaderFinite((px+r)/local.width)||!ShaderFinite((py-r)/local.height)||!ShaderFinite((py+r)/local.height))continue;
                 int at=ParticleCount++*4;
