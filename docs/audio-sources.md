@@ -1,5 +1,18 @@
 # Audio sources — personal development prototype
 
+## Owner music-folder additions — 24 October 2026
+
+The owner requested the other four songs from `E:/HobbyDS9/Music` and a music player in the menu. Federation1 is already the exact `Deep Station track1` asset; Federation2 is already `Deep Station`. The four additions are copied without editing or re-encoding. Their original creation/rights details were not supplied; no new generation or download was performed.
+
+| Local source / imported filename | SHA256 |
+| --- | --- |
+| Bajor 1.mp3 | `23ebb2d7f52496f455b569557b25eb204021757d830aad543cc98751a9fcfcc5` |
+| Bajor 2.mp3 | `1efdecdd7ca669286a9172acd939ffd08a13ae3352a2056522368ad7cfb0eb6a` |
+| Cardassia 1.mp3 | `1011fdaf46f77d871e19fac804e656de40865b44d4a2aa847dea3bc1fad40c85` |
+| Klingon 1 - no' wIqaw.mp3 | `ebec1cb813a4d637079143a03698d419a4a76933bedf1a510e55b5d11e4fcd4b` |
+
+Each uses the existing streaming stereo/background-load importer settings, FullCue policy, six-second provisional crossfade and no assumed quiet tail. All four join Strategic playback after the existing three cues. The menu and Audio page share one persistent director and expose all nine catalog tracks, selection, previous/next, pause/resume, automatic-playlist return, elapsed/duration and music volume. Manual selection advances through all available tracks; automatic mode retains existing context selection. Player controls and preferences do not enter campaign saves. Source/reference checks are separate from actual imported/audio receiving; no physical audition is implied by this entry.
+
 The cloud attempts on 2026-10-11 to https://www.trekcore.com/audio/ and https://www.stdimension.org/MediaLib/computere.htm failed at the proxy with tunnel HTTP 403. The user subsequently supplied the six Federation WAVs locally, committed in accepted handoff `34c2c6660d2901de2257d808e1b852504bd38b50`. Consolidation preserves their exact bytes and metadata GUIDs; no downloads, substitutes or re-encoding occurred.
 
 All six assets are under `client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/`. Intended source site: **Star Trek Dimension**, page https://www.stdimension.org/MediaLib/computere.htm, Federation group. Displayed item names below come from the supplied milestone prompt; the page was not independently accessible. Exact direct download URLs and original retrieval dates were not supplied and remain unverified. Hashes identify the accepted user-supplied bytes, not an independently verified source download.

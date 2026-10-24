@@ -26,6 +26,8 @@ namespace HobbyDS9.UnityReview
             panel.Add(Readout("Explore a galaxy, build fleets and command each battle round. Survivors carry their damage and ammunition into the next turn."));
             if(demoStarted){var resume=AddButton(panel,"Resume current campaign",()=>{demoLanding=false;viewEpoch++;Build();});resume.name="demo-resume-current";resume.AddToClassList("primary-action");ScheduleDemoMenuFocus(resume);}
             DrawGeneratedCampaignMenu(panel);
+            try{Type.GetType("HobbyDS9.UnityClient.IntegratedAudioPanelBridge, HobbyDS9.UnityClient",false)?.GetMethod("PresentPlayer")?.Invoke(null,new object[]{panel});}
+            catch(Exception){panel.Add(Readout("Music player unavailable."));}
             var other=new Foldout{text="Other scenarios & review tools",value=otherCampaignProfilesOpen,name="other-campaign-profiles"};panel.Add(other);
             var epoch=viewEpoch;
             other.RegisterValueChangedCallback(e=>{if(e.target==other&&epoch==viewEpoch)otherCampaignProfilesOpen=e.newValue;});
