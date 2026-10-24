@@ -146,7 +146,7 @@ namespace HobbyDS9.UnityReview.Tests
                     yield return BattleSized(entry,doc,V3Sizes[1],"continued-history",false); //1 =>12
                     Assert.That(Directory.GetFiles(CampaignOutput(),"battle-v2-*.png").Length,Is.EqualTo(12));
                     Click(doc.rootVisualElement.Q<Button>("demo-menu"));yield return null;yield return null;
-                    Assert.That(UnityEngine.Object.FindObjectsByType<Camera>().Any(c=>c.name=="Battle camera"),Is.False,"detached stages release their owned objects after deferred destruction");
+                    Assert.That(UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsInactive.Include).Any(c=>c.name=="Battle camera"),Is.False,"detached stages release even their normally inactive owned objects after deferred destruction");
                 }
             }
             finally{V3Audit(entry,"battle-finally");}
