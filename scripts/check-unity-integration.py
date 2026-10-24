@@ -148,6 +148,10 @@ for filename, digest, track_id, category in (
     ("Quiet Frontier.mp3", "11f41a38b16b4a59b7e6c9c2919bd31a9d04384c22f79b4a62523c49cc9153ad", "music.quiet-frontier", 0),
     ("Across the Stars.mp3", "8449a257fe7322f959e5a24ebb4f1b42a05fa95ac38a7b6d1f4a0cad39d1b32a", "music.across-the-stars", 3),
     ("Secrets in the Courtyard.mp3", "c6b4ed4cfd02a527fa8f49c2cf759cd7d3052ce9188a0552a3f86487bbec2128", "music.secrets-in-the-courtyard", 3),
+    ("Bajor 1.mp3", "23ebb2d7f52496f455b569557b25eb204021757d830aad543cc98751a9fcfcc5", "music.bajor-1", 0),
+    ("Bajor 2.mp3", "1efdecdd7ca669286a9172acd939ffd08a13ae3352a2056522368ad7cfb0eb6a", "music.bajor-2", 0),
+    ("Cardassia 1.mp3", "1011fdaf46f77d871e19fac804e656de40865b44d4a2aa847dea3bc1fad40c85", "music.cardassia-1", 0),
+    ("Klingon 1 - no' wIqaw.mp3", "ebec1cb813a4d637079143a03698d419a4a76933bedf1a510e55b5d11e4fcd4b", "music.klingon-1", 0),
 ):
     source_audio = music / filename
     require(source_audio.is_file(), f"Missing original soundtrack: {filename}")
