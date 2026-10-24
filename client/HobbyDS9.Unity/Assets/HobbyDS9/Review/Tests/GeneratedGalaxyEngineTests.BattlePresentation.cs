@@ -82,7 +82,8 @@ namespace HobbyDS9.UnityReview.Tests
                 var fallback=renderer.sharedMaterial;Assert.That(fallback.GetColor("_BaseColor"),Is.EqualTo(new Color(.62f,.67f,.72f)));Assert.That(fallback.GetColor("_EmissionColor"),Is.EqualTo(Color.black));
                 Assert.That(fallback.GetFloat("_Smoothness"),Is.EqualTo(.4f));Assert.That(Snapshot(a),Is.EqualTo(invalidBefore));
                 var effect=typeof(ReviewBattleStage).GetMethod("Material",flags,null,new[]{typeof(Color),typeof(bool)},null)!.Invoke(stage,new object[]{colour,true}) as Material;
-                Assert.That(effect!.shader,Is.SameAs(Resources.Load<Shader>("BattlePresentation/Effect")));Assert.That(effect.GetColor("_EmissionColor"),Is.EqualTo(colour));
+                Assert.That(effect!.shader,Is.SameAs(Resources.Load<Shader>("BattlePresentation/Effect")));Assert.That(effect.GetColor("_BaseColor"),Is.EqualTo(colour));
+                Assert.That(effect.HasProperty("_EmissionColor"),Is.False,"existing unlit effect consumes BaseColor directly");
                 File.WriteAllText(Path.Combine(CampaignOutput(),"battle-material-probe.json"),JsonConvert.SerializeObject(new{authoredHdr=hdr.r,cacheDistinct=true,sourceUnchanged=true,nullMissingNonfiniteFallback=true,effectsPreserved=true,claim="isolated component receiving, source assets read only"}));
             }
             finally{UnityEngine.Object.Destroy(host);UnityEngine.Object.Destroy(a);UnityEngine.Object.Destroy(b);}
