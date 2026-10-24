@@ -35,6 +35,29 @@ namespace HobbyDS9.UnityReview.Tests
                 using(var sha=System.Security.Cryptography.SHA256.Create())return Convert.ToBase64String(sha.ComputeHash(pixels.GetRawTextureData<byte>().ToArray()));}
             finally{RenderTexture.active=previous;UnityEngine.Object.DestroyImmediate(pixels);}
         }
+        private static void DesignerImportedAssets()
+        {
+            const string path="ArtDemo/Designer/Galaxy/";
+            var inventory=Newtonsoft.Json.Linq.JObject.Parse(Resources.Load<TextAsset>(path+"receiving-inventory").text);
+            long triangles=0;var usedMaterials=new HashSet<Material>();
+            foreach(var part in ((Newtonsoft.Json.Linq.JObject)inventory["selectedParts"]!).Properties())
+            {
+                var asset=Resources.Load<GameObject>(path+"Models/"+part.Name+"_LOD"+(int)part.Value);
+                Assert.That(asset,Is.Not.Null,"actual Unity imported model: "+part.Name);
+                foreach(var mesh in asset.GetComponentsInChildren<MeshFilter>(true).Select(f=>f.sharedMesh).Where(m=>m!=null))
+                    for(int sub=0;sub<mesh.subMeshCount;sub++)triangles+=(long)mesh.GetIndexCount(sub)/3;
+                foreach(var material in asset.GetComponentsInChildren<Renderer>(true).SelectMany(r=>r.sharedMaterials))usedMaterials.Add(material);
+            }
+            Assert.That(triangles,Is.EqualTo((long)inventory["allSelectedResourceTriangles"]!),"native importer preserves declared topology budget");
+            Assert.That(triangles,Is.LessThan(100000));
+            Assert.That(usedMaterials.Count,Is.EqualTo((int)inventory["materials"]!),"shared roles avoid per-part material duplication");
+            Assert.That(usedMaterials.All(m=>m!=null && m.shader.isSupported),Is.True);
+            Assert.That(usedMaterials.Count(m=>m.HasProperty("_BaseMap") && m.GetTexture("_BaseMap")!=null),Is.GreaterThan(0),"portable hull UV textures are actually bound");
+            var textures=Resources.LoadAll<Texture2D>(path+"Textures");
+            Assert.That(textures.Length,Is.EqualTo((int)inventory["textures"]!));
+            Assert.That(textures.All(t=>t.width==2048 && t.height==2048),Is.True);
+            File.WriteAllText(Path.Combine(CampaignOutput(),"designer-imported-assets.json"),JsonConvert.SerializeObject(new{triangles,materials=usedMaterials.Count,textures=textures.Select(t=>new{t.name,t.width,t.height,format=t.format.ToString(),runtimeMemoryBytes=UnityEngine.Profiling.Profiler.GetRuntimeMemorySizeLong(t)}),gpuVramMeasured=false}));
+        }
         private static IEnumerator DesignerIdle(ReviewEntry entry)
         {
             var clock=System.Diagnostics.Stopwatch.StartNew();
@@ -70,6 +93,9 @@ namespace HobbyDS9.UnityReview.Tests
                         Assert.That(viewport.Contains(revision.worldBound.max-Vector2.one),Is.True,"revision ends inside history viewport: "+revision.name);
                     }
                 }
+                RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
+                pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
+                File.WriteAllBytes(Path.Combine(CampaignOutput(),"designer-"+label+"-"+size.x+"x"+size.y+".png"),pixels.EncodeToPNG());
                 var publish=doc.rootVisualElement.Q<Button>("integrated-design-publish");
                 Assert.That(publish,Is.Not.Null);Assert.That(publish.worldBound.width,Is.GreaterThan(20));
                 Assert.That(publish.worldBound.height,Is.GreaterThan(15));
@@ -78,11 +104,9 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(bounds.Contains(publish.worldBound.max-Vector2.one),Is.True,"publication action ends inside viewport");
                 var preview=doc.rootVisualElement.Q<Image>("designer-hull-reference-image");
                 var overview=doc.rootVisualElement.Q<ScrollView>("designer-viewer-scroll").contentViewport.worldBound;
+                File.WriteAllText(Path.Combine(CampaignOutput(),"layout-"+label+"-"+size.x+".json"),JsonConvert.SerializeObject(new{viewport=overview.ToString(),image=preview.worldBound.ToString(),root=doc.rootVisualElement.worldBound.ToString()}));
                 Assert.That(overview.Contains(preview.worldBound.min+Vector2.one),Is.True,"whole model image begins inside overview viewport");
-                Assert.That(overview.Contains(preview.worldBound.max-Vector2.one),Is.True,"whole model image ends inside overview viewport");
-                RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);
-                pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
-                File.WriteAllBytes(Path.Combine(CampaignOutput(),"designer-"+label+"-"+size.x+"x"+size.y+".png"),pixels.EncodeToPNG());
+                Assert.That(overview.Contains(preview.worldBound.max-Vector2.one),Is.True,"whole model image ends inside overview viewport: image="+preview.worldBound+" viewport="+overview);
             }
             finally
             {
@@ -134,6 +158,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(modelImage,Is.Not.Null);Assert.That(modelImage.image,Is.TypeOf<RenderTexture>(),"actual bounded 3D model reference rendered");
                 var reference=modelImage.image;Assert.That(reference.width,Is.EqualTo(768));Assert.That(reference.height,Is.EqualTo(480));
                 Assert.That(doc.rootVisualElement.Q<Label>("designer-hull-reference-caption").text,Does.Contain("Illustrative"));
+                DesignerImportedAssets();
                 var untouched=codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model));
                 var templates=doc.rootVisualElement.Q<DropdownField>("designer-template");
                 templates.value=templates.choices.Single(c=>c.Contains("advanced"));yield return null;
