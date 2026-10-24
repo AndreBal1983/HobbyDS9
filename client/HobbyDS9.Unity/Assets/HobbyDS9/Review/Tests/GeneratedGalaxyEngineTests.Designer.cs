@@ -254,8 +254,9 @@ namespace HobbyDS9.UnityReview.Tests
                 Click(doc.rootVisualElement.Q<Button>("integrated-design-edit-"+blueprint+"-2"));yield return null;
                 Assert.That(doc.rootVisualElement.Q<TextField>("designer-name").value,Is.EqualTo("Nightwatch Mk II"));
                 yield return DesignerCapture(doc,new Vector2Int(1280,720),"continued");
-                File.WriteAllText(Path.Combine(CampaignOutput(),"designer-results.json"),JsonConvert.SerializeObject(new{passed=true,revisions=2,blankRejected=true,firstImmutable=true,menuContinueExact=true,captures=5,orbitPixelsChanged=true,internalGeometryChanged=true,candidateCancelExact=true,fitUndoExact=true,profileIsolation=true,releaseUndoExact=true,rendererReentry=true,customConstruction=false,nativeInput=false}));
+                File.WriteAllText(Path.Combine(CampaignOutput(),"designer-results.json"),JsonConvert.SerializeObject(new{passed=true,revisions=2,blankRejected=true,firstImmutable=true,menuContinueExact=true,captures=5,orbitPixelsChanged=true,internalViewChanged=true,candidateCancelExact=true,fitUndoExact=true,profileIsolation=true,releaseUndoExact=true,rendererReentry=true,customConstruction=false,nativeInput=false}));
             }
         }
     }
 }
+
