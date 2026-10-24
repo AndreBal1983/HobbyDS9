@@ -10,11 +10,15 @@ At perspective depth Z, inverse ray XY=Cxy+(S-Cxy)*(1-Z/4), where S is the scree
 
 Named receiving approximation: g_h(z)=exp(-(z/h)^2)/(h*sqrt(pi)*erf(3)), truncated at ±3h. Twelve bins use the union edges [-.33,-.165,-.105,-.054,-.0525,-.027,0,.027,.0525,.054,.105,.165,.33]. Intersect actual disk support, order by ray distance and evaluate one midpoint atlas fetch per bin; weight each kernel by exact CDF differences divided by |dz/ds| once. No clipped-ray renormalisation. Constant columns integrate to1 face-on or1/cos48=1.49447655 obliquely. Kernel convention and bin approximation are receiver choices, not original asset metadata.
 
+Here s is AUTHORED isotropic disk arclength, sDisk=sMapWidth/.47. Equivalently a world-arclength implementation uses W=CDFdifference/(.47*abs(dzDisk/dsMapWidth)). The central orthographic48degree column has the stated secant; off-axis perspective directions use their actual normalized inverse-ray disk direction. Numerical CDF evaluation uses the named error-function approximation (about1.5e-7 maximum erf error), not midpoint-density weights.
+
 E=.12*atlasRGB already includes the core. Cosmetic partition wB=1-smoothstep(.08,.16,r), Eb=wB*E, Ed=(1-wB)*E preserves total emission; never add a second bulge. Per-bin J=Ed*W.035+Eb*W.11, tau=4*A*W.018. Accumulate L+=T*J*(1-exp(-tau))/tau, T*=exp(-tau), with stable ratio→1. No RGB*A, alpha premultiplication or fallback .65 dust multiplier in this optical path. Floor is applied once and exposure is separate.
 
 ## Local fields, mask and composition
 
 Use the original128×96×64 linear independent emission/extinction data and its authored padded bounds, no additional2.4 padding. Local positions derive only from coarse proxy centre/reference radii and FeatureId+assetversion cosmetic variation. The actor-known pair has no Seed: this receiver explicitly chooses ID/version-only variants across campaigns. Map hash is identity/cache invalidation only. Local visual depth=.8*zLocal in the same map-width metric; particles share that camera/projection.
+
+Local optical measure follows Art's clarified original recipe: projected local-Z, dzLocal=abs(deltaZworld)/.8, NOT Euclidean inverse-ray arclength under the anisotropic XY radii. tau=4*A*dzLocal and J=.30*RGB*dzLocal; direct local-z stepping2/N has no further.8/secant factor. Use correct centres1-(i+.5)*2/N. The original CPU proof accidentally reused64-sample endpoint offsets for48 nodes; retain its immutable images and disclose this small comparison difference. Depth-off retains local optical weights. Local accumulation stores integrated radiance L and opacity1-T (not asset extinction A); after composition mask M the final is macro*(1-M*opacity)+M*L. Particles are additive radiance within the masked local layer.
 
 At most8 ray-box-culled lawful field instances, footprint mips, early mask,256 particles TOTAL, soft splats at most32 half-resolution pixels. Stable ID/candidate selection, hysteresis/fade, no continuous reseeding, temporal noise or stacked cards. Only known proxies may instantiate fields; no hidden feature recovery or hidden total.
 
