@@ -22,6 +22,7 @@ namespace HobbyDS9.UnityReview.Tests
             foreach(var n in new[]{r.x,r.y,r.width,r.height})Assert.That(float.IsNaN(n)||float.IsInfinity(n),Is.False,control.name);
             Assert.That(control.resolvedStyle.display,Is.Not.EqualTo(DisplayStyle.None));Assert.That(r.width,Is.GreaterThan(1));Assert.That(r.height,Is.GreaterThan(1));
             Assert.That(r.xMin,Is.GreaterThanOrEqualTo(0));Assert.That(r.yMin,Is.GreaterThanOrEqualTo(0));Assert.That(r.xMax,Is.LessThanOrEqualTo(size.x));Assert.That(r.yMax,Is.LessThanOrEqualTo(size.y));
+            var hit=control.panel.Pick(r.center);Assert.That(hit==control||(hit!=null&&control.Contains(hit)),Is.True,"actual panel hit at "+control.name);
         }
         private static IEnumerator BattleSized(ReviewEntry entry,UIDocument doc,Vector2Int size,string state,bool scene)
         {
@@ -65,7 +66,8 @@ namespace HobbyDS9.UnityReview.Tests
             {
                 a.SetColor("_BaseColor",colour);a.SetColor("_EmissionColor",hdr);a.SetFloat("_Metallic",.8f);a.SetFloat("_Smoothness",.15f);
                 b.SetColor("_BaseColor",colour);b.SetColor("_EmissionColor",Color.black);b.SetFloat("_Metallic",.1f);b.SetFloat("_Smoothness",.85f);
-                string Snapshot(Material m)=>JsonConvert.SerializeObject(new{Base=m.GetColor("_BaseColor"),Emission=m.GetColor("_EmissionColor"),Metallic=m.GetFloat("_Metallic"),Smoothness=m.GetFloat("_Smoothness"),Shader=m.shader.name});
+                float[] Channels(Color c)=>new[]{c.r,c.g,c.b,c.a};
+                string Snapshot(Material m)=>JsonConvert.SerializeObject(new{Base=Channels(m.GetColor("_BaseColor")),Emission=Channels(m.GetColor("_EmissionColor")),Metallic=m.GetFloat("_Metallic"),Smoothness=m.GetFloat("_Smoothness"),Shader=m.shader.name});
                 var beforeA=Snapshot(a);var beforeB=Snapshot(b);renderer.sharedMaterials=new[]{a,b,a};
                 typeof(ReviewBattleStage).GetMethod("Materials",flags)!.Invoke(stage,new object[]{host,false});var clones=renderer.sharedMaterials;
                 Assert.That(clones[0],Is.Not.SameAs(a));Assert.That(clones[0],Is.SameAs(clones[2]));Assert.That(clones[0],Is.Not.SameAs(clones[1]));
