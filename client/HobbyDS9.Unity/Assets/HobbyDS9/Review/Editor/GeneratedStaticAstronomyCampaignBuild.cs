@@ -26,6 +26,10 @@ namespace HobbyDS9.UnityReview.Editor
         public static void BuildWindowsClassicMusicCheckpoint()
             => BuildWindows("Windows-ClassicMusic-20261024");
 
+        [MenuItem("HobbyDS9/Generated campaign v2/Build responsive campaign checkpoint")]
+        public static void BuildWindowsResponsiveCampaignCheckpoint()
+            => BuildWindows("Windows-ResponsiveCampaign-20261024");
+
         private static void BuildWindows(string stageName)
         {
             if (UnityEngine.Application.unityVersion != "6000.6.5f1")
