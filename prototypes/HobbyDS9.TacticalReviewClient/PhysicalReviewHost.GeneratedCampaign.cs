@@ -14,8 +14,24 @@ namespace HobbyDS9.TacticalReviewClient
         void Write(string slot,CampaignGeneratedSaveDto root,bool overwrite);
         CampaignGeneratedSaveDto Read(string slot);
     }
-    public sealed partial class PhysicalReviewHost
+    public sealed partial class PhysicalReviewHost : IReviewCheckpointWriteAdmissionHost
     {
+        public bool TryCheckWriteAdmission(ReviewFrame observed,string slot,out ReviewCheckpointError error)
+        {
+            lock(gate)
+            {
+                error=ReviewCheckpointError.Busy;
+                if(observed.HostId!=id||observed.Generation!=generation)return true;
+                var status=session.CaptureStatus();
+                if(observed.Status.Turn!=status.Turn||observed.Status.CampaignRevision!=status.CampaignRevision)return true;
+                if(generatedStore is IReviewCheckpointWriteAdmission admission)
+                {
+                    try{return admission.TryCheckWriteAdmission(slot,out error);}
+                    catch(Exception){error=ReviewCheckpointError.WriteFailed;return true;}
+                }
+                error=ReviewCheckpointError.None;return false;
+            }
+        }
         private readonly CampaignPlayableFleetPackageDto? generatedTemplate;
         private readonly IGeneratedCampaignReviewHostCodec? generatedCodec;
         private readonly IGeneratedCampaignReviewCheckpointStore? generatedStore;

@@ -158,6 +158,11 @@ namespace HobbyDS9.UnityReview
             var r=host.SetApproachCloak(Current.Frame,command,fleet,enabled);Message="Authoritative result: "+r.Error;
             if(r.Accepted)Current.Refresh();return r.Accepted;
         });
+        public bool TryCheckWriteAdmission(string slot,out ReviewCheckpointError error)
+        {
+            error=ReviewCheckpointError.Busy;
+            return Busy||Closed||Current.TryCheckWriteAdmission(slot,out error);
+        }
         public bool Save(string slot,bool overwrite=false)=>Run(()=>{
             var r=Current.SaveCommittedToSlot(slot,overwrite);Message="Checkpoint result: "+r.Error;return r.Succeeded;
         });

@@ -6,13 +6,18 @@ namespace HobbyDS9.TacticalReviewClient
 {
     public sealed partial class PhysicalReviewHost
     {
-        private sealed class StaticStoreAdapter : IGeneratedCampaignReviewCheckpointStore
+        private sealed class StaticStoreAdapter : IGeneratedCampaignReviewCheckpointStore,IReviewCheckpointWriteAdmission
         {
             private readonly IStaticAstronomyReviewCheckpointStore store;
             internal IStaticAstronomyReviewCheckpointStore Original=>store;
             internal StaticStoreAdapter(IStaticAstronomyReviewCheckpointStore store){this.store=store;}
             public void Write(string slot,CampaignGeneratedSaveDto root,bool overwrite)=>store.Write(slot,root,overwrite);
             public CampaignGeneratedSaveDto Read(string slot)=>store.Read(slot);
+            public bool TryCheckWriteAdmission(string slot,out ReviewCheckpointError error)
+            {
+                if(store is IReviewCheckpointWriteAdmission admission)return admission.TryCheckWriteAdmission(slot,out error);
+                error=ReviewCheckpointError.None;return false;
+            }
         }
         public static PhysicalReviewHost StartStaticAstronomyCampaign(CampaignPlayableFleetPackageDto template,NaturalGalaxySettingsDto settings,
             IStaticAstronomyReviewHostCodec codec,IStaticAstronomyReviewCheckpointStore? store=null)

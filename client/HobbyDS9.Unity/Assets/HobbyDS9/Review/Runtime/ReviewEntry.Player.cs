@@ -125,9 +125,19 @@ namespace HobbyDS9.UnityReview
             foreach(var slot in model!.GeneratedCampaign?GeneratedCampaignOptions.Slots():model.PlayableFleet?PlayableFleetOptions.Slots():model.FrontierPreview?FrontierPreviewOptions.Slots():model.SingleplayerDemo?new[]{"demo-1","demo-2","demo-3"}:new[]{"campaign-1","campaign-2","campaign-3"})
             {var b=AddButton(slots,(model.FrontierPreview?"Frontier · format 5 · ":model.SingleplayerDemo?"Demo ":"Campaign ")+slot.Substring(slot.Length-1)+(slotName==slot?" · selected":""),()=>{slotName=slot;Draw();});b.name="save-slot-"+slot;}
             p.Add(Readout("Selected slot: "+slotName));
-            var save=AddButton(p,"Save current campaign",()=>Do(()=>{if(!model!.Save(slotName)&&model.Message=="Checkpoint result: SlotOccupied")Confirm("Replace the save in "+slotName+"? Your current campaign will be saved; unsent edits stay local.",()=>Do(()=>model.Save(slotName,true)));}));save.name="player-save";save.AddToClassList("primary-action");
+            var save=AddButton(p,"Save current campaign",RequestPlayerSave);save.name="player-save";save.AddToClassList("primary-action");
             var load=AddButton(p,"Load selected campaign",()=>Confirm("Load "+slotName+"? Only a validated compatible save can replace this campaign. Unsent edits will be discarded after a successful load.",()=>Do(()=>model!.Load(slotName,true))));load.name="player-load";
             p.Add(Readout(model.GeneratedCampaign?"Generated format-7 saves retain this exact galaxy, discoveries and accepted campaign together. Old profile saves stay separate. Failed loading keeps the current game and drafts.":model.PlayableFleet?"Fleet campaign saves are separate from other profiles. Saved state includes named fleets, current ship stocks and completed battle reports. Unsent edits remain local; a successful load replaces them.":model.FrontierPreview?"Frontier format-5 saves use their own frontier-1/2/3 slots and directory. Bajor format-4 and older saves are separate; no import or conversion. Failed loads keep your current session.":model.SingleplayerDemo?"Format-4 demo saves remain separate from classic, physical and integrated-review saves. Failed loads keep your current session.":"Early campaign saves remain separate from classic and earlier physical-review saves. Failed loads keep your current session."));
+        }
+        private void RequestPlayerSave()
+        {
+            var owner=model!;var controller=owner.Current;var epoch=viewEpoch;var requestedSlot=slotName;
+            bool CurrentRequest()=>ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&viewEpoch==epoch&&!owner.Busy&&!owner.Closed;
+            void Replace()=>Confirm("Replace the save in "+requestedSlot+"? Your current campaign will be saved; unsent edits stay local.",()=>{if(CurrentRequest())Do(()=>owner.Save(requestedSlot,true));});
+            if(owner.TryCheckWriteAdmission(requestedSlot,out var error)&&error==HobbyDS9.TacticalReviewClient.ReviewCheckpointError.SlotOccupied){Replace();return;}
+            // Advisory errors/unsupported stores retain the original Save API and error ordering.
+            // A file created after an empty probe is still refused by the final atomic Write(false).
+            Do(()=>{if(!owner.Save(requestedSlot)&&owner.Message=="Checkpoint result: SlotOccupied")Replace();});
         }
         private string SaveLoadResult()
         {

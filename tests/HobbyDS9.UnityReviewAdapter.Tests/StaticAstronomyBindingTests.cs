@@ -163,5 +163,56 @@ public sealed class StaticAstronomyBindingTests : IDisposable
         Assert.Throws<InvalidOperationException>(()=>old.GeneratedPresentation());Assert.True(old.Save("copy"));
         Assert.Equal(oldBytes,File.ReadAllBytes(Path.Combine(directory,"unity-generated-campaign-v7-copy.json")));
     }
+    [Fact] public void AdvisoryProbePreservesModelDraftsErrorsAndProfileSeparation()
+    {
+        var m=Model();var controller=m.Current;var frame=controller.Frame;var pair=m.GeneratedPresentation();
+        var draft=m.ResearchInputs()!;draft.Adjust(ScienceDiscipline.Biotech,6);
+        var message=m.Message;var last=controller.LastCheckpointError;var original=File.ReadAllBytes(Path.Combine(directory,"unity-generated-static-astronomy-v2-initial.json"));
+        Assert.True(m.TryCheckWriteAdmission("initial",out var error));Assert.Equal(ReviewCheckpointError.SlotOccupied,error);
+        Assert.Same(controller,m.Current);Assert.Same(frame,m.Current.Frame);Assert.Same(draft,m.ResearchDraft);Assert.True(m.HasLocalEdits);
+        Assert.Equal(message,m.Message);Assert.Equal(last,controller.LastCheckpointError);Assert.False(m.Busy);Assert.True(m.IsCurrentGeneratedPresentation(pair));
+        Assert.Equal(original,File.ReadAllBytes(Path.Combine(directory,"unity-generated-static-astronomy-v2-initial.json")));
+        var v1=new ReviewGeneratedCampaignSlotStore(directory,codec);
+        Assert.True(v1.TryCheckWriteAdmission("initial",out var v1Empty));Assert.Equal(ReviewCheckpointError.None,v1Empty);
+        Assert.True(m.Close(true));var closedMessage=m.Message;
+        Assert.True(m.TryCheckWriteAdmission("initial",out var closed));Assert.Equal(ReviewCheckpointError.Busy,closed);Assert.Equal(closedMessage,m.Message);
+    }
+    [Fact] public void StaticAdmissionHasNoWriteAndKeepsFinalRaceAndSerializationChecks()
+    {
+        var store=Store();Assert.True(store.TryCheckWriteAdmission("one",out var empty));Assert.Equal(ReviewCheckpointError.None,empty);
+        Assert.False(Directory.Exists(directory));Assert.True(store.TryCheckWriteAdmission("../escape",out var invalid));Assert.Equal(ReviewCheckpointError.InvalidSlot,invalid);
+        Directory.CreateDirectory(directory);var path=Path.Combine(directory,"unity-generated-static-astronomy-v2-one.json");
+        var racing=Encoding.UTF8.GetBytes("unrelated racing file");File.WriteAllBytes(path,racing);
+        Assert.True(store.TryCheckWriteAdmission("one",out var occupied));Assert.Equal(ReviewCheckpointError.SlotOccupied,occupied);
+        Assert.Equal(ReviewCheckpointError.SerializationFailed,Assert.Throws<ReviewCheckpointStoreException>(()=>store.Write("one",null!,false)).Error);
+        Assert.Equal(ReviewCheckpointError.SlotOccupied,Assert.Throws<ReviewCheckpointStoreException>(()=>store.Write("one",Root(),false)).Error);
+        Assert.Equal(racing,File.ReadAllBytes(path));Assert.Single(Directory.GetFiles(directory));
+    }
+    [Fact] public void StaleFrameAndPendingWorkCannotProbeTheStore()
+    {
+        var store=new CountingAdmissionStore();var host=PhysicalReviewHost.StartStaticAstronomyCampaign(Template(),Settings(),codec,store);
+        var controller=new ReviewController(host,"civ.federation");var old=controller.Frame;
+        Assert.True(controller.TryCheckWriteAdmission("one",out var occupied));Assert.Equal(ReviewCheckpointError.SlotOccupied,occupied);Assert.Equal(1,store.Probes);
+        store.Throw=true;Assert.True(controller.TryCheckWriteAdmission("one",out var fault));Assert.Equal(ReviewCheckpointError.WriteFailed,fault);
+        Assert.Equal(ReviewCheckpointError.None,controller.LastCheckpointError);Assert.Equal(2,store.Probes);store.Throw=false;
+        var fleet=old.OwnStrategicFleets.First().FleetId.Value;Assert.True(controller.EditTravel(fleet,CampaignTravelIntent.StayEngage));Assert.True(controller.ReviewTravel());
+        Assert.NotNull(controller.ConfirmTravel("probe-pending"));Assert.True(controller.TryCheckWriteAdmission("one",out var busy));Assert.Equal(ReviewCheckpointError.Busy,busy);Assert.Equal(2,store.Probes);
+        Assert.True(host.AdvancePlanning(old).Accepted);
+        Assert.True(host.TryCheckWriteAdmission(old,"one",out var stale));Assert.Equal(ReviewCheckpointError.Busy,stale);Assert.Equal(2,store.Probes);
+        var unsupported=PhysicalReviewHost.StartStaticAstronomyCampaign(Template(),Settings(),codec,new UnsupportedAdmissionStore());
+        Assert.False(new ReviewController(unsupported,"civ.federation").TryCheckWriteAdmission("one",out _));
+    }
+    private sealed class CountingAdmissionStore : IStaticAstronomyReviewCheckpointStore,IReviewCheckpointWriteAdmission
+    {
+        public int Probes;public bool Throw;
+        public bool TryCheckWriteAdmission(string slot,out ReviewCheckpointError error){Probes++;if(Throw)throw new IOException();error=ReviewCheckpointError.SlotOccupied;return true;}
+        public void Write(string slot,CampaignGeneratedSaveDto root,bool overwrite)=>throw new IOException();
+        public CampaignGeneratedSaveDto Read(string slot)=>throw new IOException();
+    }
+    private sealed class UnsupportedAdmissionStore : IStaticAstronomyReviewCheckpointStore
+    {
+        public void Write(string slot,CampaignGeneratedSaveDto root,bool overwrite)=>throw new IOException();
+        public CampaignGeneratedSaveDto Read(string slot)=>throw new IOException();
+    }
     public void Dispose(){if(Directory.Exists(directory))Directory.Delete(directory,true);}
 }

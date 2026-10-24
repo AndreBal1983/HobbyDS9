@@ -64,5 +64,25 @@ public sealed class GeneratedCampaignStorageTests : IDisposable
         var huge=Path.Combine(directory,"unity-generated-campaign-v7-huge.json");using(var f=new FileStream(huge,FileMode.CreateNew)){f.SetLength(ReviewGeneratedCampaignSlotStore.MaximumBytes+1L);}
         Assert.Throws<ReviewCheckpointStoreException>(()=>Store().Read("huge"));Assert.Equal(saved,File.ReadAllBytes(path));
     }
+    [Fact] public void AdvisoryAdmissionDoesNotCreateOrEncodeAndOriginalWriteErrorOrderingRemains()
+    {
+        var store=Store();Assert.True(store.TryCheckWriteAdmission("one",out var empty));Assert.Equal(ReviewCheckpointError.None,empty);
+        Assert.False(Directory.Exists(directory));
+        Assert.True(store.TryCheckWriteAdmission("../escape",out var invalid));Assert.Equal(ReviewCheckpointError.InvalidSlot,invalid);
+        Assert.False(Directory.Exists(directory));
+        Directory.CreateDirectory(directory);var path=Path.Combine(directory,"unity-generated-campaign-v7-one.json");
+        File.WriteAllText(path,"existing bytes need not be decoded to ask for replacement");var before=File.ReadAllBytes(path);
+        Assert.True(store.TryCheckWriteAdmission("one",out var occupied));Assert.Equal(ReviewCheckpointError.SlotOccupied,occupied);
+        Assert.Equal(ReviewCheckpointError.SerializationFailed,Assert.Throws<ReviewCheckpointStoreException>(()=>store.Write("one",null!,false)).Error);
+        Assert.Equal(before,File.ReadAllBytes(path));Assert.Single(Directory.GetFiles(directory));
+    }
+    [Fact] public void EmptyAdmissionIsNotPermissionToReplaceARacingFile()
+    {
+        var store=Store();Assert.True(store.TryCheckWriteAdmission("race",out var error));Assert.Equal(ReviewCheckpointError.None,error);
+        Directory.CreateDirectory(directory);var path=Path.Combine(directory,"unity-generated-campaign-v7-race.json");
+        var racing=Encoding.UTF8.GetBytes("created after advisory check");File.WriteAllBytes(path,racing);
+        Assert.Equal(ReviewCheckpointError.SlotOccupied,Assert.Throws<ReviewCheckpointStoreException>(()=>store.Write("race",Carrier(),false)).Error);
+        Assert.Equal(racing,File.ReadAllBytes(path));Assert.Single(Directory.GetFiles(directory));
+    }
     public void Dispose(){if(Directory.Exists(directory))Directory.Delete(directory,true);}
 }
