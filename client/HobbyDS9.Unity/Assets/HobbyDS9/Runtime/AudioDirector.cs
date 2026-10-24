@@ -24,6 +24,7 @@ namespace HobbyDS9.UnityClient
         private bool initialized, fading, stopping, paused;
         private readonly List<MusicTrack> playerTracks = new List<MusicTrack>();
         private bool transportPaused, manualPlaylist;
+        private string? stoppedTrackId;
         private double pausedDsp;
         private readonly double[] cueStarts = new double[2];
         public IReadOnlyList<MusicTrack> Tracks => playerTracks.AsReadOnly();
@@ -91,7 +92,7 @@ namespace HobbyDS9.UnityClient
         {
             var track=playerTracks.FirstOrDefault(t=>t.Id==id&&Available(t));
             if(track==null){Status="Track unavailable. Choose another song.";return false;}
-            StopSources();manualPlaylist=true;paused=false;transportPaused=false;
+            StopSources();stoppedTrackId=null;manualPlaylist=true;paused=false;transportPaused=false;
             waiting=track;requestedStart=AudioSettings.dspTime+.25;loadDeadline=AudioSettings.dspTime+5;
             var clip=clips[track.Id];
             if(clip.loadType!=AudioClipLoadType.Streaming&&clip.loadState==AudioDataLoadState.Unloaded)clip.LoadAudioData();
@@ -105,6 +106,20 @@ namespace HobbyDS9.UnityClient
             PlayTrack(available[next].Id);
         }
         public void UseAutomaticPlaylist(){manualPlaylist=false;}
+        public bool Seek(float fraction)
+        {
+            if(float.IsNaN(fraction)||float.IsInfinity(fraction)||current<0||sources[current].clip==null)return false;
+            var source=sources[current];var now=AudioSettings.dspTime;
+            var position=Mathf.Clamp01(fraction)*Math.Max(0,source.clip.length-.1f);
+            // Cancel an already prepared overlap before repositioning the current decoder.
+            for(var i=0;i<sources.Length;i++)if(i!=current){sources[i].Stop();sources[i].clip=null;gains[i]=0;timings[i]=null;sourceTracks[i]=null;}
+            waiting=null;outgoing=-1;fading=stopping=false;
+            source.Stop();source.time=position;source.Play();
+            cueStarts[current]=now-position;timings[current]=new MusicCueTiming(cueStarts[current],source.clip.length,sourceTracks[current]!);
+            gains[current]=1;ApplyVolumes();
+            if(transportPaused){source.Pause();pausedDsp=now;}
+            return true;
+        }
         public void TogglePause()
         {
             if(paused){ResumeMusic();return;}
@@ -122,12 +137,18 @@ namespace HobbyDS9.UnityClient
         // Explicit service transitions, not mute: mute leaves DSP playback running.
         public void StopMusic(double seconds = 2)
         {
+            stoppedTrackId=waiting?.Id??CurrentTrackId;transportPaused=false;
             paused = true; waiting = null;
             if (seconds <= 0 || double.IsNaN(seconds) || double.IsInfinity(seconds)) { StopSources(); return; }
             stopStart = AudioSettings.dspTime; stopSeconds = seconds;
             Array.Copy(gains, stopGains, 2); stopping = true;
         }
-        public void ResumeMusic() { StopSources(); paused = false; transportPaused=false; retryAfter = 0; }
+        public void ResumeMusic()
+        {
+            var id=stoppedTrackId;var manual=manualPlaylist;
+            if(id!=null&&PlayTrack(id)){manualPlaylist=manual;return;}
+            StopSources();paused=false;transportPaused=false;retryAfter=0;
+        }
         private void Update()
         {
             if (!initialized || !UnityEngine.Application.isPlaying || sources.Length != 2) return;

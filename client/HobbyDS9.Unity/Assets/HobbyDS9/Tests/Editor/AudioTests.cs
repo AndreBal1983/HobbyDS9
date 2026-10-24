@@ -50,6 +50,11 @@ namespace HobbyDS9.UnityClient.Tests
                 IntegratedAudioPanelBridge.PresentPlayer(root);
                 Assert.That(root.Q<UnityEngine.UIElements.DropdownField>("music-track-select").choices.Count,Is.EqualTo(9));
                 Assert.That(root.Q<UnityEngine.UIElements.Button>("music-pause"),Is.Not.Null);
+                Assert.That(root.Q<Slider>("music-seek"),Is.Not.Null);
+                Assert.That(root.Q<Button>("music-stop"),Is.Not.Null);
+                Assert.That(director.Seek(float.NaN),Is.False);
+                director.PlayTrack("music.bajor-1");director.StopMusic(0);Assert.That(director.IsPaused,Is.True);
+                director.TogglePause();Assert.That(director.CurrentTrackName,Is.EqualTo("Bajor 1"));
                 Assert.That(AudioDirector.TryGetOrCreate(),Is.SameAs(director));
                 Assert.That(director.GetComponents<AudioSource>().Length,Is.EqualTo(2));
             }
