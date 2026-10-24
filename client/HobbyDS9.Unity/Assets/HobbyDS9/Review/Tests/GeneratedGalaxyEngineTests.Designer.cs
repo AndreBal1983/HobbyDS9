@@ -105,6 +105,15 @@ namespace HobbyDS9.UnityReview.Tests
                 var preview=doc.rootVisualElement.Q<Image>("designer-hull-reference-image");
                 var overview=doc.rootVisualElement.Q<ScrollView>("designer-viewer-scroll").contentViewport.worldBound;
                 File.WriteAllText(Path.Combine(CampaignOutput(),"layout-"+label+"-"+size.x+".json"),JsonConvert.SerializeObject(new{viewport=overview.ToString(),image=preview.worldBound.ToString(),root=doc.rootVisualElement.worldBound.ToString()}));
+                var reference=doc.rootVisualElement.Q("designer-hull-reference");
+                var snapshot=reference.GetType().GetMethod("CaptureArtDiagnostics")!.Invoke(reference,null);
+                Assert.That(snapshot,Is.Not.Null,"actual imported art diagnostics");
+                var art=Newtonsoft.Json.Linq.JObject.FromObject(snapshot!);
+                File.WriteAllText(Path.Combine(CampaignOutput(),"art-"+label+"-"+size.x+".json"),art.ToString());
+                var span=art["AssembledBoundsSize"]!.Values<float>().Max();
+                Assert.That(span,Is.InRange(5f,20f),"metre-exported Galaxy assembly normalizes to roughly ten stage units without importer scaling loss");
+                Assert.That((float)art["VisibleMinDepth"]!,Is.GreaterThan((float)art["CameraNear"]!),"whole imported assembly is beyond near clip");
+                Assert.That((float)art["VisibleMaxDepth"]!,Is.LessThan((float)art["CameraFar"]!),"whole imported assembly is before far clip");
                 Assert.That(preview.worldBound.height,Is.GreaterThanOrEqualTo(150),"persistent ship image remains useful at every supported window size, including expanded revision history");
                 Assert.That(overview.Contains(preview.worldBound.min+Vector2.one),Is.True,"whole model image begins inside overview viewport");
                 Assert.That(overview.Contains(preview.worldBound.max-Vector2.one),Is.True,"whole model image ends inside overview viewport: image="+preview.worldBound+" viewport="+overview);
