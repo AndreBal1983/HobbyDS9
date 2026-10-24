@@ -143,6 +143,11 @@ namespace HobbyDS9.UnityReview.Tests
                 templates=doc.rootVisualElement.Q<DropdownField>("designer-template");templates.value=templates.choices.Single(c=>c.Contains("starter"));yield return null;
                 // Real UI candidate editing remains local until publication, including all profiles.
                 var original=JsonConvert.SerializeObject(DesignerDto(entry));
+                var sovereignStudy=DesignerPixels(doc.rootVisualElement.Q<Image>("designer-hull-reference-image"));
+                Click(doc.rootVisualElement.Q<Button>("designer-study-classicnacelles"));yield return null;yield return null;
+                Assert.That(DesignerPixels(doc.rootVisualElement.Q<Image>("designer-hull-reference-image")),Is.Not.EqualTo(sovereignStudy),"art study selector changes the actual nacelle reference");
+                Assert.That(JsonConvert.SerializeObject(DesignerDto(entry)),Is.EqualTo(original),"art study variant is not a technology or fitted-version change");
+                Click(doc.rootVisualElement.Q<Button>("designer-study-sovereignnacelles"));yield return null;
                 var beforeOrbit=DesignerPixels(doc.rootVisualElement.Q<Image>("designer-hull-reference-image"));
                 Click(doc.rootVisualElement.Q<Button>("designer-orbit-left"));yield return null;yield return null;
                 var afterOrbit=DesignerPixels(doc.rootVisualElement.Q<Image>("designer-hull-reference-image"));
