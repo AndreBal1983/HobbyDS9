@@ -98,13 +98,12 @@ Shader "HobbyDS9/GalaxyPresentationV3/Presentation"
                 uv.y=1-uv.y; // ONE authored PNG row-top to imported texture UV correction.
                 float4 data=tex2Dlod(_Atlas,float4(uv,0,_MacroMip));
                 float radius=length(diskPoint.xy);
-                float bulge=1-smoothstep(.035,.32,radius);
-                float coreLight=.15*exp(-radius*radius/.045)+.045*exp(-radius*radius/.002);
-                float3 warmWhite=float3(1,.97,.91);
-                // A broad stellar bulge and compact nucleus replace the narrow
-                // atlas swirl at the centre. Dust contrast decreases in the bulge.
-                float3 source=(1-bulge)*.12*data.rgb*thin+bulge*warmWhite*coreLight*core;
-                float tau=4*data.a*dust*(1-.85*bulge);
+                float bulge=1-smoothstep(.08,.30,radius);
+                // The original v4 atlas already contains the stellar disk,
+                // elliptical bulge and nucleus. Partition their depth kernels
+                // without adding a second analytical light source.
+                float3 source=.12*data.rgb*lerp(thin,core,bulge);
+                float tau=4*data.a*dust;
                 light+=transmission*source*Ratio(tau);transmission*=exp(-tau);
             }
             return light;

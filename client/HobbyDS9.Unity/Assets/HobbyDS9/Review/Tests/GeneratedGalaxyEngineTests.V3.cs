@@ -285,6 +285,7 @@ namespace HobbyDS9.UnityReview.Tests
                 using(var renderer=new GeneratedGalaxyV3Background(synthetic,()=>true))
                 {
                     var receipts=new List<object>();var seen=new HashSet<string>(StringComparer.Ordinal);bool transitioning=false;
+                    Assert.That(renderer.Render(view,320,180,true,true),Is.True);
                     for(int frame=0;frame<24;frame++)
                     {
                         if(frame<8)view.Pan(-1,0);
