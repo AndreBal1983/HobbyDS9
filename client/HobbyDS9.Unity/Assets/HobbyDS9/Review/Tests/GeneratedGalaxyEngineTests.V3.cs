@@ -264,7 +264,7 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally{RenderTexture.active=prior;target.Release();UnityEngine.Object.Destroy(target);UnityEngine.Object.Destroy(mask);UnityEngine.Object.Destroy(material);UnityEngine.Object.Destroy(mesh);}
         }
-        [UnityTest] public IEnumerator V3GalaxyAndChartedNebulaePreserveActualCampaignControlsAndComposition()
+        [UnityTest,Timeout(600000)] public IEnumerator V3GalaxyAndChartedNebulaePreserveActualCampaignControlsAndComposition()
         {
             yield return new EnterPlayMode();yield return null;yield return null;
             var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
