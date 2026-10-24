@@ -94,9 +94,9 @@ namespace HobbyDS9.UnityReview.Tests
                         .OrderBy(r=>r.Offer!.Route.TotalCost).ThenByDescending(r=>r.Region.Boundary.Count-known.Connections.Count(e=>e.EndpointA==r.Region.NodeId||e.EndpointB==r.Region.NodeId))
                         .ThenBy(r=>r.Region.NodeId,StringComparer.Ordinal).First().Region.NodeId;
                     yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+target),0);
-                    yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+target));Confirm(doc,false);
+                    yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+target));
                     yield return CampaignCapture(entry,doc,"scale1000-route-preview");
-                    yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+target));Confirm(doc);
+                    yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+target));
                     Click(doc.rootVisualElement.Q<Button>("player-primary-action"));Confirm(doc);yield return null;
                     Assert.That(model.GeneratedMap().ObservedNodeIds,Does.Contain(target));Assert.That(model.GeneratedMap().Regions.Count,Is.GreaterThan(initialCount),"arrival charts new neighbor space");
                     CampaignTrace(entry,"scale1000-after-move");

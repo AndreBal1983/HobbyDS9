@@ -63,7 +63,7 @@ namespace HobbyDS9.UnityReview.Tests
             File.AppendAllText(Path.Combine(CampaignOutput(),"generated-operation-timing.txt"),phase+" elapsedMs="+watch.Elapsed.TotalMilliseconds+" yieldedFrames="+frames+" (not FPS)"+Environment.NewLine);
             yield return null;yield return null;
         }
-        private static IEnumerator CampaignPointerRight(UIDocument doc,ReviewEntry entry,Button intended,int button=1)
+        private static IEnumerator CampaignPointerRight(UIDocument doc,ReviewEntry entry,Button intended,int button=1,bool shift=false)
         {
             Assert.That(intended,Is.Not.Null);var frame=CampaignModel(entry).Current.Frame;
             var panel=doc.rootVisualElement.panel;var map=doc.rootVisualElement.Q("playable-known-map");var known=CampaignModel(entry).GeneratedMap();
@@ -103,22 +103,88 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(down,Is.Not.Null,"No exposed marker point: "+intended.name+" bounds="+bounds+" map="+map.worldBound+"; "+string.Join("; ",attempts));
             var expected=intendedNode;
             TestContext.WriteLine("Exposed campaign pointer "+intended.name+" point="+point+" actual="+down!.name+" resolved="+expected+" candidates="+attempts.Count);
+            var standing=frame.Travel?.OwnOrders.FirstOrDefault(o=>o.FleetId==entry.Workspace!.SelectedFleet);
+            bool replacement=standing?.Intent==CampaignTravelIntent.StayEngage||standing?.Intent==CampaignTravelIntent.Follow;
             int id;
-            using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,button=button,mousePosition=point}))
+            using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,button=button,mousePosition=point,modifiers=shift?EventModifiers.Shift:EventModifiers.None}))
             {id=e.pointerId;e.target=down;down!.SendEvent(e);}
             Assert.That(CampaignModel(entry).Current.Frame,Is.SameAs(frame),"pointer down never submits");
             var capture=panel.GetCapturingElement(id) as VisualElement;
             var up=capture??panel.Pick(point);Assert.That(up,Is.Not.Null);Assert.That(up.panel,Is.SameAs(panel));
             if(capture!=null)Assert.That(contact?capture==hit||hit!.Contains(capture):capture==map,Is.True,"actual priority target or generated map owns capture");
-            using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,button=button,mousePosition=point}))
+            using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,button=button,mousePosition=point,modifiers=shift?EventModifiers.Shift:EventModifiers.None}))
             {Assert.That(e.pointerId,Is.EqualTo(id));e.target=up;up.SendEvent(e);}
             yield return null;
-            if(button==1){Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null,"actual right-click review");Assert.That(entry.Workspace!.RoutePreview!.Destination,Is.EqualTo(expected));}
+            if(button==1&&replacement){Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null,"replacing a committed activity asks first");Assert.That(entry.Workspace!.RoutePreview!.Destination,Is.EqualTo(expected));}
             else Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
             Assert.That(entry.Workspace!.SelectedNode,Is.EqualTo(expected),"same projected nearest-node resolution for left/right");
             Assert.That(panel.GetCapturingElement(id),Is.Null,"pointer capture released");
-            Assert.That(CampaignModel(entry).Current.Frame,Is.SameAs(frame),"review is not submission");
+            if(button==0||replacement)Assert.That(CampaignModel(entry).Current.Frame,Is.SameAs(frame),"selection and replacement review never submit");
+            else
+            {
+                var accepted=CampaignModel(entry).Current.Frame;
+                Assert.That(accepted.Status.CampaignRevision,Is.GreaterThan(frame.Status.CampaignRevision),"ordinary right-click queues an authoritative order");
+                Assert.That(accepted.Travel!.OwnOrders.Single(o=>o.FleetId==entry.Workspace!.SelectedFleet).RouteNodeIds.LastOrDefault()??accepted.OwnStrategicFleets.Single(f=>f.FleetId.Value==entry.Workspace.SelectedFleet).LocationNodeId.Value,Is.EqualTo(expected));
+            }
             TestContext.WriteLine("Campaign pointer "+intended.name+" point="+point+" down="+down.name+" up="+up.name+" capture="+(capture?.name??"none")+" resolved="+expected+" button="+button);
+        }
+        [UnityTest,Timeout(180000)] public IEnumerator GeneratedNavigationQueuesBlankTilesAndAppendsShiftWaypoints()
+        {
+            yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
+            var storePath=Path.Combine(directory,"campaign");typeof(ReviewEntry).GetField("generatedCampaignTestDirectory",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,storePath);
+            var codec=new ReviewNewtonsoftCodec();var store=new ReviewStaticAstronomyCampaignSlotStore(storePath,codec);
+            store.Write("generated-2",codec.DecodeStaticAstronomyCampaignRoot(V3Fixture("HOBBYDS9_V3_EXPLORE","d7b332383b726607209067a5c89085a4979814b12c35a5fd717a41ebd3ecdddc")),false);
+            using(var surface=new GalaxyInputSurface(doc))
+            {
+                yield return null;yield return null;
+                Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-2"));Confirm(doc);yield return WaitCampaign(entry,"navigation-load-explore32");
+                var model=CampaignModel(entry);var fleet=model.Current.Frame.OwnStrategicFleets.First(f=>f.TransitTotalCost==0);
+                Click(doc.rootVisualElement.Q<Button>("map-fleet-"+fleet.FleetId.Value));yield return null;yield return null;
+                // Begin with an actual committed activity, then prove Cancel preserves it.
+                CampaignPage(doc,ReviewWorkspacePage.FleetOrders);Click(doc.rootVisualElement.Q<Button>("player-stay-engage"));Confirm(doc);
+                CampaignPage(doc,ReviewWorkspacePage.Map);yield return null;yield return null;Click(doc.rootVisualElement.Q<Button>("map-fit"));yield return null;
+                var known=model.GeneratedMap();
+                var destination=known.Regions.Select(r=>(r.NodeId,Offer:model.Current.FindKnownRoute(fleet.FleetId.Value,r.NodeId)))
+                    .Where(p=>p.Offer?.Route.Success==true&&p.Offer.Route.TotalCost>0).OrderBy(p=>p.Offer!.Route.TotalCost).ThenBy(p=>p.NodeId,StringComparer.Ordinal).First().NodeId;
+                var before=codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model));
+                yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+destination));Confirm(doc,false);
+                Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(before));
+                yield return null;yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+destination));Confirm(doc);yield return null;
+                var prefix=model.Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==fleet.FleetId.Value).RouteNodeIds.ToArray();
+                var extension=known.Regions.Select(r=>(r.NodeId,Offer:model.Current.FindKnownRoute(fleet.FleetId.Value,r.NodeId,true)))
+                    .Where(p=>p.Offer?.Route.Success==true&&p.Offer.Route.Steps.Count>prefix.Length&&p.Offer.Route.Steps.Distinct(StringComparer.Ordinal).Count()==p.Offer.Route.Steps.Count)
+                    .OrderBy(p=>p.Offer!.Route.TotalCost).ThenBy(p=>p.NodeId,StringComparer.Ordinal).First();
+                yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+extension.NodeId),1,true);
+                var appended=model.Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==fleet.FleetId.Value).RouteNodeIds.ToArray();
+                CollectionAssert.AreEqual(prefix,appended.Take(prefix.Length));CollectionAssert.AreEqual(extension.Offer!.Route.Steps,appended);
+                // Click a genuinely blank polygon interior, outside every glyph hit box.
+                yield return null;yield return null;var map=doc.rootVisualElement.Q("playable-known-map");var panel=map.panel;var viewport=model.GeneratedViewport;
+                var anchors=known.Regions.Select(r=>{var at=known.Features.FirstOrDefault(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star&&f.NodeId==r.NodeId)?.Position??r.Center;
+                    return new GeneratedCampaignNodeAnchor(r.NodeId,map.contentRect.x+viewport.X(at.X),map.contentRect.y+viewport.Y(at.Y));}).ToArray();
+                Vector2 blank=default;string? blankNode=null;
+                for(float y=map.contentRect.yMin+8;y<map.contentRect.yMax&&blankNode==null;y+=8)for(float x=map.contentRect.xMin+8;x<map.contentRect.xMax;x+=8)
+                {
+                    if(GeneratedCampaignNodePicker.Resolve(anchors,x,y)!=null)continue;
+                    var node=GeneratedCampaignNodePicker.ResolveRegion(known.Regions,viewport.WorldX(x-map.contentRect.x),viewport.WorldY(y-map.contentRect.y));
+                    if(node==null||node==fleet.LocationNodeId.Value||model.Current.FindKnownRoute(fleet.FleetId.Value,node)?.Route.Success!=true)continue;
+                    var point=map.LocalToWorld(new Vector2(x,y));if(panel.Pick(point)!=map)continue;blank=point;blankNode=node;break;
+                }
+                Assert.That(blankNode,Is.Not.Null,"exposed blank known polygon interior");var prior=model.Current.Frame;
+                int id;using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,button=1,mousePosition=blank})){id=e.pointerId;e.target=map;map.SendEvent(e);}
+                Assert.That(model.Current.Frame,Is.SameAs(prior));Assert.That(panel.GetCapturingElement(id),Is.SameAs(map));
+                using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,button=1,mousePosition=blank})){e.target=map;map.SendEvent(e);}yield return null;
+                Assert.That(panel.GetCapturingElement(id),Is.Null);Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
+                var accepted=model.Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==fleet.FleetId.Value);
+                Assert.That(accepted.RouteNodeIds.Last(),Is.EqualTo(blankNode));Assert.That(model.Current.Frame.Status.CampaignRevision,Is.GreaterThan(prior.Status.CampaignRevision));
+                var route=accepted.RouteNodeIds.ToArray();CampaignPage(doc,ReviewWorkspacePage.Saves);Click(doc.rootVisualElement.Q<Button>("player-save"));
+                Click(doc.rootVisualElement.Q<Button>("demo-menu"));Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-1"));Confirm(doc);yield return WaitCampaign(entry,"navigation-reload-orders");
+                CollectionAssert.AreEqual(route,CampaignModel(entry).Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==fleet.FleetId.Value).RouteNodeIds);
+                yield return CampaignCapture(entry,doc,"navigation-accepted-reloaded");
+                File.WriteAllText(Path.Combine(CampaignOutput(),"navigation-feedback-summary.json"),Newtonsoft.Json.JsonConvert.SerializeObject(new{blankNode,prefix,appended,route,pooledPanelPointerEvents=true,nativeDesktopInput=false}));
+            }
+            yield return new ExitPlayMode();
         }
         private static IEnumerator CampaignPriorityPointer(UIDocument doc,ReviewEntry entry,VisualElement intended,Vector2 point,int button)
         {
@@ -265,7 +331,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Click(doc.rootVisualElement.Q<Button>("map-fit-galaxy"));yield return null;yield return null;
                 yield return CampaignPointerRight(doc,entry,CrowdedPoint(),0);
                 Click(doc.rootVisualElement.Q<Button>("map-fit-galaxy"));yield return null;yield return null;
-                yield return CampaignPointerRight(doc,entry,CrowdedPoint());Confirm(doc,false);Click(doc.rootVisualElement.Q<Button>("map-fit"));yield return null;
+                yield return CampaignPointerRight(doc,entry,CrowdedPoint());if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc,false);Click(doc.rootVisualElement.Q<Button>("map-fit"));yield return null;
                 var initialShips=model.Current.Frame.Strategy!.Ships.Select(s=>s.ShipId.Value).ToHashSet(StringComparer.Ordinal);
                 CampaignPage(doc,ReviewWorkspacePage.Research);doc.rootVisualElement.Q<SliderInt>("integrated-research-split").value=10;
                 Click(doc.rootVisualElement.Q<Button>("integrated-apply-split"));Confirm(doc);
@@ -322,7 +388,7 @@ namespace HobbyDS9.UnityReview.Tests
                         Click(doc.rootVisualElement.Q<Button>("map-fleet-"+fleet.FleetId.Value));Click(doc.rootVisualElement.Q<Button>("map-fit"));yield return null;yield return null;
                         var marker=doc.rootVisualElement.Q<Button>(contact.Contact==null?"map-star-"+target:"map-contact-"+contact.Contact.FleetId);
                         if(contact.Contact!=null&&!contactPriorityChecked){yield return CampaignPriorityPointer(doc,entry,marker,marker.worldBound.center,0);contactPriorityChecked=true;}
-                        yield return CampaignPointerRight(doc,entry,marker);var resolvedNode=entry.Workspace!.SelectedNode;Confirm(doc);yield return null;
+                        yield return CampaignPointerRight(doc,entry,marker);var resolvedNode=entry.Workspace!.SelectedNode;if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);yield return null;
                         var actualOrder=model.Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==fleet.FleetId.Value);
                         Assert.That(actualOrder.RouteNodeIds.LastOrDefault()??fleet.LocationNodeId.Value,Is.EqualTo(resolvedNode),"confirmed command uses resolved destination");
                         CampaignTrace(entry,"order-confirmed");

@@ -63,6 +63,25 @@ namespace HobbyDS9.Simulation
                 return new WeightedNavigationGraph(definitions).FindRoute(query,actor,origin,destination);
             }
         }
+        public StrategicRouteSnapshot EvaluateKnownTravelRoute(string actor,string origin,IReadOnlyList<string> steps)
+        {
+            lock(gate)
+            {
+                Require(travel!=null&&Actor(actor)==CampaignTacticalError.None,"Only a controlled human actor can query known routes.");
+                var route=steps.ToArray();var query=state.Campaign.GameState;
+                if(generatedMap!=null){query=SimulationSession.CopyState(query);ChartGeneratedBorders(query,actor);}
+                var graph=new WeightedNavigationGraph(definitions);
+                if(!graph.ValidateRoute(query,actor,origin,route))return new StrategicRouteSnapshot(RouteErrorCode.Unreachable,Array.Empty<string>(),Array.Empty<NavigationCostSnapshot>(),null);
+                var costs=new List<NavigationCostSnapshot>();long total=0;var from=origin;
+                foreach(var next in route)
+                {
+                    var cost=graph.Cost(query,from,next);
+                    if(cost.EffectiveCost>long.MaxValue-total)return new StrategicRouteSnapshot(RouteErrorCode.CostOverflow,Array.Empty<string>(),Array.Empty<NavigationCostSnapshot>(),null);
+                    total+=cost.EffectiveCost;costs.Add(cost);from=next;
+                }
+                return new StrategicRouteSnapshot(RouteErrorCode.None,route,costs,total);
+            }
+        }
         private bool ValidTravelOrder(GameStateDto game,CampaignTravelOrderDto? order,IReadOnlyList<CampaignContactKnowledgeDto> contacts,bool allowStale=false)
         {
             if(order==null||order.RouteNodeIds==null||!Enum.IsDefined(typeof(CampaignTravelIntent),order.Intent))return false;

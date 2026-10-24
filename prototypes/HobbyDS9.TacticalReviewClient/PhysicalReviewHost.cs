@@ -68,13 +68,12 @@ namespace HobbyDS9.TacticalReviewClient
                     new StrategicRouteSnapshot(error,Array.Empty<string>(),Array.Empty<NavigationCostSnapshot>(),null));
                 var prefix=append?session.GetOwnTravelOrders(observed.Actor).Single(o=>o.FleetId==fleet).RouteNodeIds:Array.Empty<string>();
                 var steps=new List<string>();var costs=new List<NavigationCostSnapshot>();long total=0;var origin=own.LocationNodeId.Value;
-                foreach(var next in prefix)
+                if(prefix.Count>0)
                 {
-                    var leg=session.FindKnownRoute(observed.Actor,origin,next);
-                    if(!leg.Success||leg.Steps.Count!=1||leg.Steps[0]!=next)
-                        return Fail(RouteErrorCode.Unreachable);
-                    if(leg.TotalCost!.Value>long.MaxValue-total)return Fail(RouteErrorCode.CostOverflow);
-                    steps.Add(next);costs.AddRange(leg.Costs);total+=leg.TotalCost.Value;origin=next;
+                    // Preserve the chosen crossings even when a cheaper alternative exists.
+                    var accepted=session.EvaluateKnownRoute(observed.Actor,origin,prefix);
+                    if(!accepted.Success)return Fail(accepted.ErrorCode);
+                    steps.AddRange(accepted.Steps);costs.AddRange(accepted.Costs);total=accepted.TotalCost!.Value;origin=prefix[prefix.Count-1];
                 }
                 var tail=session.FindKnownRoute(observed.Actor,origin,destination);
                 var route=tail;
