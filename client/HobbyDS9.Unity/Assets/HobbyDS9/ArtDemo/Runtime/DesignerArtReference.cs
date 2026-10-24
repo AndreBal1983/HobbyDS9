@@ -6,6 +6,18 @@ namespace HobbyDS9.ArtDemo
 {
     public enum DesignerReferenceView { Hull, Nacelles, Deflector, CoreCutaway }
     public enum DesignerStudyVariant { SovereignNacelles, ClassicNacelles, BlueDeflector, AmberDeflector, SurveyDeflector }
+    public sealed class DesignerArtPartSnapshot
+    {
+        public string Name;
+        public float[] SocketPosition,ImportedRootPosition,ImportedRootScale,ImportedRootRotation;
+    }
+    public sealed class DesignerArtSnapshot
+    {
+        public string View;
+        public float[] AssembledBoundsSize;
+        public float CameraOrthographicSize,CameraNear,CameraFar,VisibleMinDepth,VisibleMaxDepth;
+        public List<DesignerArtPartSnapshot> Parts;
+    }
 
     public sealed partial class ShipPreviewStage
     {
@@ -20,6 +32,7 @@ namespace HobbyDS9.ArtDemo
         private string missingDesignerArt="";
         private bool classicNacelles;
         private DesignerStudyVariant deflectorVariant=DesignerStudyVariant.BlueDeflector;
+        private DesignerArtSnapshot lastArtSnapshot;
         public bool IsDesignerReference => designerReference;
         public DesignerReferenceView ReferenceView => designerView;
 
@@ -116,10 +129,13 @@ namespace HobbyDS9.ArtDemo
 
         private GameObject InstantiateDesignerPart(GameObject prefab)
         {
-            var instance=UnityEngine.Object.Instantiate(prefab,model.transform,false);
-            instance.transform.localPosition=Vector3.zero;instance.transform.localRotation=Quaternion.identity;instance.transform.localScale=Vector3.one;
-            foreach(var part in instance.GetComponentsInChildren<Transform>(true))part.gameObject.layer=PreviewLayer;
-            return instance;
+            // Identity applies to the SOCKET, not the imported FBX root. Unity's
+            // root TRS may carry mandatory file-unit and axis conversion.
+            var socket=new GameObject(prefab.name+" socket"){hideFlags=HideFlags.DontSave,layer=PreviewLayer};
+            socket.transform.SetParent(model.transform,false);
+            var imported=UnityEngine.Object.Instantiate(prefab,socket.transform,false);
+            foreach(var part in imported.GetComponentsInChildren<Transform>(true))part.gameObject.layer=PreviewLayer;
+            return socket;
         }
 
         private void UpdateDesignerVisibility()
@@ -189,7 +205,10 @@ namespace HobbyDS9.ArtDemo
             if(points.Count==0){ClearTexture();Label+=" · selected reference art unavailable";return;}
             var bounds=new Bounds(points[0],Vector3.zero);foreach(var point in points)bounds.Encapsulate(point);
             var centre=bounds.center;var yaw=referenceYaw*Mathf.Deg2Rad;var pitch=referencePitch*Mathf.Deg2Rad;
-            camera.transform.position=centre+new Vector3(Mathf.Sin(yaw)*Mathf.Cos(pitch),Mathf.Sin(pitch),Mathf.Cos(yaw)*Mathf.Cos(pitch))*20;
+            var distance=Mathf.Max(20,bounds.extents.magnitude*2+1);
+            camera.transform.position=centre+new Vector3(Mathf.Sin(yaw)*Mathf.Cos(pitch),Mathf.Sin(pitch),Mathf.Cos(yaw)*Mathf.Cos(pitch))*distance;
+            camera.nearClipPlane=Mathf.Max(.01f,distance-bounds.extents.magnitude*1.5f);
+            camera.farClipPlane=distance+bounds.extents.magnitude*1.5f+1;
             camera.transform.LookAt(centre,Vector3.up);camera.aspect=(float)Texture.width/Texture.height;
             float minX=float.PositiveInfinity,maxX=float.NegativeInfinity,minY=float.PositiveInfinity,maxY=float.NegativeInfinity;
             foreach(var point in points)
@@ -199,13 +218,30 @@ namespace HobbyDS9.ArtDemo
             }
             camera.orthographicSize=ReferenceFrameSize(new Vector2((maxX-minX)*.5f,(maxY-minY)*.5f),camera.aspect)/referenceZoom;
             camera.transform.position+=camera.transform.right*((minX+maxX)*.5f)+camera.transform.up*((minY+maxY)*.5f);
+            float minDepth=float.PositiveInfinity,maxDepth=float.NegativeInfinity;
+            foreach(var point in points){var depth=Vector3.Dot(point-camera.transform.position,camera.transform.forward);minDepth=Mathf.Min(minDepth,depth);maxDepth=Mathf.Max(maxDepth,depth);}
+            var parts=new List<DesignerArtPartSnapshot>();
+            foreach(var transform in model.GetComponentsInChildren<Transform>(true))
+            {
+                if(!transform.name.EndsWith(" socket",StringComparison.Ordinal) || transform.childCount==0)continue;
+                var imported=transform.GetChild(0);
+                parts.Add(new DesignerArtPartSnapshot{Name=transform.name,SocketPosition=ArtVector(transform.localPosition),ImportedRootPosition=ArtVector(imported.localPosition),ImportedRootScale=ArtVector(imported.localScale),ImportedRootRotation=ArtVector(imported.localEulerAngles)});
+            }
+            lastArtSnapshot=new DesignerArtSnapshot{View=designerView.ToString(),AssembledBoundsSize=ArtVector(bounds.size),CameraOrthographicSize=camera.orthographicSize,CameraNear=camera.nearClipPlane,CameraFar=camera.farClipPlane,VisibleMinDepth=minDepth,VisibleMaxDepth=maxDepth,Parts=parts};
         }
+
+        private static float[] ArtVector(Vector3 value)=>new[]{value.x,value.y,value.z};
+        public DesignerArtSnapshot CaptureArtDiagnostics()=>lastArtSnapshot;
 
         private void ResetDesignerReference()
         {
             designerParts.Clear();designerCounts.Clear();designerCutawayHull=null;designerReference=false;designerView=DesignerReferenceView.Hull;
             missingDesignerArt="";referenceYaw=37.57f;referencePitch=26f;referenceZoom=1;
             classicNacelles=false;deflectorVariant=DesignerStudyVariant.BlueDeflector;
+            lastArtSnapshot=null;
+            // A later lawful Show(selection) on the same stage keeps its
+            // original clipping contract after leaving a reference view.
+            camera.nearClipPlane=.1f;camera.farClipPlane=80;
         }
     }
 }

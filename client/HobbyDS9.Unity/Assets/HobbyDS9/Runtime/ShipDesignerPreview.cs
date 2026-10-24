@@ -112,6 +112,7 @@ namespace HobbyDS9.UnityClient
         }
 
         public void UpdateFacts(string text) { caption.tooltip=text+"\n"+ArtCredit; }
+        public DesignerArtSnapshot? CaptureArtDiagnostics()=>stage?.CaptureArtDiagnostics();
         private void RefreshCaption()
         {
             if(stage!=null)
