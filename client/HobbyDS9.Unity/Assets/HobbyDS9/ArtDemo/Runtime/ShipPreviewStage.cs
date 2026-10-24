@@ -8,7 +8,7 @@ namespace HobbyDS9.ArtDemo
 {
     // Caller owns this instance and must Dispose when its panel is removed.
     // Manual render only: no Update, animation, listener, simulation or input.
-    public sealed class ShipPreviewStage : IDisposable
+    public sealed partial class ShipPreviewStage : IDisposable
     {
         private const int PreviewLayer = 31;
         private static readonly HashSet<int> Slots = new HashSet<int>();
@@ -19,6 +19,7 @@ namespace HobbyDS9.ArtDemo
         private Mesh fallbackMesh;
         private Material fallbackMaterial;
         private readonly List<Material> previewMaterials = new List<Material>();
+        private readonly Dictionary<Material,Material> studioMaterialCache = new Dictionary<Material,Material>();
         private static readonly Color Background = new Color(.018f, .028f, .045f, 1);
         private bool disposed;
         public RenderTexture Texture { get; private set; }
@@ -174,6 +175,7 @@ namespace HobbyDS9.ArtDemo
         public void Clear()
         {
             EnsureAlive();
+            ResetDesignerReference();
             // Deferred destruction in play mode must not leave old visible mesh
             // during a same-frame replacement render.
             if (model != null) { model.SetActive(false); Destroy(model); model = null; }
@@ -181,6 +183,7 @@ namespace HobbyDS9.ArtDemo
             Destroy(fallbackMaterial); fallbackMaterial = null;
             foreach (var material in previewMaterials) Destroy(material);
             previewMaterials.Clear();
+            studioMaterialCache.Clear();
             VisualKey = null;
             Label = "No visible ship selected";
             Availability = ShipPreviewAvailability.Empty;
@@ -217,25 +220,31 @@ namespace HobbyDS9.ArtDemo
             model.AddComponent<MeshRenderer>().sharedMaterial = fallbackMaterial;
         }
 
-        private void ApplyStudioMaterials()
+        private void ApplyStudioMaterials(GameObject selected=null)
         {
             // Fixed normal-based studio shading ignores unrelated scene lighting,
             // ambient probes, fog and volumes. Never alter shared URP materials.
             var shader = Resources.Load<Shader>("ArtDemo/PreviewStudio");
-            var cache = new Dictionary<Material, Material>();
-            foreach (var renderer in model.GetComponentsInChildren<Renderer>(true))
+            var cache = studioMaterialCache;
+            foreach (var renderer in (selected??model).GetComponentsInChildren<Renderer>(true))
             {
                 var materials = renderer.sharedMaterials;
                 for (int i = 0; i < materials.Length; ++i)
                 {
                     var source = materials[i];
+                    if(previewMaterials.Contains(source))continue;
                     if (!cache.TryGetValue(source, out var target))
                     {
                         target = new Material(shader) { name = source.name + " preview", hideFlags = HideFlags.DontSave };
-                        target.SetColor("_BaseColor", source.GetColor("_BaseColor"));
-                        target.SetColor("_EmissionColor", source.GetColor("_EmissionColor"));
-                        target.SetFloat("_Metallic", source.GetFloat("_Metallic"));
-                        target.SetFloat("_Smoothness", source.GetFloat("_Smoothness"));
+                        target.SetColor("_BaseColor", source.HasProperty("_BaseColor")?source.GetColor("_BaseColor"):source.HasProperty("_Color")?source.GetColor("_Color"):Color.white);
+                        target.SetColor("_EmissionColor", source.HasProperty("_EmissionColor")?source.GetColor("_EmissionColor"):Color.black);
+                        target.SetFloat("_Metallic", source.HasProperty("_Metallic")?source.GetFloat("_Metallic"):.2f);
+                        target.SetFloat("_Smoothness", source.HasProperty("_Smoothness")?source.GetFloat("_Smoothness"):.35f);
+                        CopyTexture(source,target,source.HasProperty("_BaseMap")?"_BaseMap":"_MainTex","_BaseMap");
+                        CopyTexture(source,target,"_BumpMap","_BumpMap");
+                        CopyTexture(source,target,"_EmissionMap","_EmissionMap");
+                        target.SetFloat("_BumpScale",source.HasProperty("_BumpScale")?source.GetFloat("_BumpScale"):1);
+                        target.SetFloat("_UseNormalMap",source.HasProperty("_BumpMap") && source.GetTexture("_BumpMap")!=null?1:0);
                         cache.Add(source, target);
                         previewMaterials.Add(target);
                     }
@@ -243,6 +252,13 @@ namespace HobbyDS9.ArtDemo
                 }
                 renderer.sharedMaterials = materials;
             }
+        }
+
+        private static void CopyTexture(Material source,Material target,string from,string to)
+        {
+            if(!source.HasProperty(from) || source.GetTexture(from)==null)return;
+            target.SetTexture(to,source.GetTexture(from));
+            target.SetTextureScale(to,source.GetTextureScale(from));target.SetTextureOffset(to,source.GetTextureOffset(from));
         }
 
         private void ClearTexture()
