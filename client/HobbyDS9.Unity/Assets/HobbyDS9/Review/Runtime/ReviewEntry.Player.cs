@@ -167,7 +167,8 @@ namespace HobbyDS9.UnityReview
             try
             {
                 var completion=await Task.Run(()=>operation.Execute());
-                if(this==null||!isActiveAndEnabled||viewEpoch!=epoch||!ReferenceEquals(model,owner))
+                if(this==null||!isActiveAndEnabled||viewEpoch!=epoch||!ReferenceEquals(model,owner)
+                    ||!ReferenceEquals(checkpointUiOperation,operation)||!ReferenceEquals(checkpointOwner,owner))
                 {owner.AbandonStaticCheckpointOperation(operation);return;}
                 var accepted=owner.CompleteStaticCheckpointOperation(operation,completion);
                 HideCampaignBusy(operation);

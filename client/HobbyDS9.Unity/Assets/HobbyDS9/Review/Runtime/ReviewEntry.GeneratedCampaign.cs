@@ -106,11 +106,12 @@ namespace HobbyDS9.UnityReview
             }
             finally
             {
-                if(ReferenceEquals(generatedCampaignOperationToken,operationToken))
+                var owned=ReferenceEquals(generatedCampaignOperationToken,operationToken);
+                if(owned)
                 {generatedCampaignOperationToken=null;generatedCampaignBusy=false;}
                 var hidden=HideCampaignBusy(operationToken);
-                if(this!=null&&viewEpoch==epoch){generatedCampaignControls?.SetEnabled(PlayableResourcesAvailable());legacyGeneratedCampaignControls?.SetEnabled(PlayableResourcesAvailable());if(hidden)Draw();}
-                else if(this!=null&&demoLanding&&!generatedGalaxyOpen&&campaignBusyToken==null)Draw();
+                if(owned&&this!=null&&viewEpoch==epoch&&campaignBusyToken==null){generatedCampaignControls?.SetEnabled(PlayableResourcesAvailable());legacyGeneratedCampaignControls?.SetEnabled(PlayableResourcesAvailable());if(hidden)Draw();}
+                else if(owned&&this!=null&&demoLanding&&!generatedGalaxyOpen&&campaignBusyToken==null)Draw();
             }
         }
     }
