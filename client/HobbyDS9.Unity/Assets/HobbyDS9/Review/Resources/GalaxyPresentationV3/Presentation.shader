@@ -106,7 +106,6 @@ Shader "HobbyDS9/GalaxyPresentationV3/Presentation"
         float4 FinalLayer(v2f_img input):SV_Target
         {
             const float3 floorLight=float3(.0015,.0023,.004);
-            if(_Effects<.5)return float4(floorLight,1);
             float3 macro=floorLight+Macro(Plane(input.uv));
             // Local RT contains the binary mask AFTER volume+additive-particle
             // composition. Its inward support includes BOTH bilinear stages.
