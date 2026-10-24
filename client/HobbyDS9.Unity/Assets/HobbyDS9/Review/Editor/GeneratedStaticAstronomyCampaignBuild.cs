@@ -12,12 +12,19 @@ namespace HobbyDS9.UnityReview.Editor
     {
         [MenuItem("HobbyDS9/Generated campaign v2/Build Windows IL2CPP")]
         public static void BuildWindowsStaticAstronomyCampaign()
+            => BuildWindows("Windows");
+
+        [MenuItem("HobbyDS9/Generated campaign v2/Build playable progress checkpoint")]
+        public static void BuildWindowsPlayableProgressCheckpoint()
+            => BuildWindows("Windows-PlayableProgress-20261024");
+
+        private static void BuildWindows(string stageName)
         {
             if (UnityEngine.Application.unityVersion != "6000.6.5f1")
                 throw new InvalidOperationException("Unity 6000.6.5f1 is required.");
 
             var repository = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "../../.."));
-            var stage = Path.GetFullPath(Path.Combine(repository, "artifacts/generated-static-astronomy-v2/Windows"));
+            var stage = Path.GetFullPath(Path.Combine(repository, "artifacts/generated-static-astronomy-v2", stageName));
             var expectedParent = Path.GetFullPath(Path.Combine(repository, "artifacts/generated-static-astronomy-v2"));
             if (!string.Equals(Path.GetDirectoryName(stage), expectedParent, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Campaign build stage must remain inside this checkout.");
