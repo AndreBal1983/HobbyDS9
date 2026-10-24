@@ -92,7 +92,7 @@ namespace HobbyDS9.UnityReview.Tests
         {
             yield return new EnterPlayMode();yield return null;yield return null;
             var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
-            directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Battle-V2-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
+            directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-Battle-V2-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
             var storePath=Path.Combine(directory,"campaign");typeof(ReviewEntry).GetField("generatedCampaignTestDirectory",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,storePath);
             var codec=new ReviewNewtonsoftCodec();var store=new ReviewStaticAstronomyCampaignSlotStore(storePath,codec);
             var pending=V3Fixture("HOBBYDS9_V3_COMBAT","e3be33bf1fae4bcf9de27a73aef4b628c8419e0c5194f806cf39684ab32e46bc");store.Write("generated-3",codec.DecodeStaticAstronomyCampaignRoot(pending),false);
