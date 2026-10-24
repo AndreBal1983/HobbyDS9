@@ -45,6 +45,9 @@
 .player-console .unity-progress-bar__title { display: none; }
 .player-console .unity-base-field { font-size: 18px; min-height: 38px; white-space: normal; }
 .player-console .unity-base-field__label { min-width: 0; }
+.player-console .generated-campaign-seed { min-width: 180px; flex-grow: 1; }
+.player-console .generated-campaign-seed .unity-base-text-field__input { background-color: #182431; color: #eeeaf2; border-width: 1px; border-color: #65798e; padding: 6px; --unity-cursor-color: #ffe0b9; --unity-selection-color: #3d506a; }
+.player-console .generated-campaign-seed .unity-text-element { color: #eeeaf2; }
 .player-console .unity-base-popup-field__input { background-color: #182431; color: #eeeaf2; border-width: 1px; border-color: #65798e; min-height: 40px; }
 .player-narrow { padding: 8px 12px 8px 28px; }
 .player-narrow .console-spine { width: 12px; left: 4px; }
