@@ -27,7 +27,8 @@ namespace HobbyDS9.UnityReview
         public void Render(VisualElement parent)
         {
             var frame=model.Current.Frame;var facts=frame.Strategy!;
-            var generated=model.GeneratedCampaign?model.GeneratedMap():null;
+            var presentation=model.StaticAstronomyCampaign?model.GeneratedPresentation():null;
+            var generated=presentation?.KnownMap??(model.GeneratedCampaign?model.GeneratedMap():null);
             var generatedRegions=generated?.Regions.ToDictionary(r=>r.NodeId,StringComparer.Ordinal);
             var generatedStars=generated?.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star).ToDictionary(f=>f.NodeId!,f=>f.Position,StringComparer.Ordinal);
             var generatedNames=generated?.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star).ToDictionary(f=>f.NodeId!,f=>f.DisplayName,StringComparer.Ordinal);
@@ -51,14 +52,52 @@ namespace HobbyDS9.UnityReview
             backdrop.StretchToParentSize();if(generated==null)map.Add(backdrop);
             map.style.overflow=Overflow.Hidden;
             GeneratedGalaxyVolumeBackground? background=null;bool backgroundFailed=false;
-            var cosmetic=generated==null?null:new GeneratedGalaxyMapData(generated);
+            GeneratedGalaxyV3Background? backgroundV3=null;Image? v3Image=null;IVisualElementScheduledItem? transitionTick=null;
+            bool effectsV3=true,depthV3=true;
+            var cosmetic=generated==null||presentation!=null?null:new GeneratedGalaxyMapData(generated);
+            Label? visualStatus=null;
+            if(presentation!=null)
+            {
+                var controls=new VisualElement();controls.AddToClassList("review-field-row");main.Insert(main.IndexOf(map),controls);
+                Button? depthButton=null,effectsButton=null;
+                depthButton=button(controls,"Depth: on",()=>{depthV3=!depthV3;depthButton!.text=depthV3?"Depth: on":"Depth: off";RefreshBackground();});depthButton.name="campaign-visual-depth";
+                effectsButton=button(controls,"Visuals: on",()=>{effectsV3=!effectsV3;effectsButton!.text=effectsV3?"Visuals: on":"Visuals: off";RefreshBackground();});effectsButton.name="campaign-visual-effects";
+                visualStatus=Text(controls,"","campaign-visual-status");
+                v3Image=new Image{name="campaign-v3-content-background",pickingMode=PickingMode.Ignore,scaleMode=ScaleMode.StretchToFill};
+                v3Image.style.position=Position.Absolute;v3Image.style.marginLeft=0;v3Image.style.marginTop=0;
+                v3Image.style.borderLeftWidth=0;v3Image.style.borderTopWidth=0;v3Image.style.borderRightWidth=0;v3Image.style.borderBottomWidth=0;
+                v3Image.style.paddingLeft=0;v3Image.style.paddingTop=0;v3Image.style.paddingRight=0;v3Image.style.paddingBottom=0;
+                map.Add(v3Image);v3Image.SendToBack();
+            }
             void RefreshBackground()
             {
+                if(presentation!=null)
+                {
+                    if(backgroundFailed||map.panel==null||map.contentRect.width<2||map.contentRect.height<2)return;
+                    try
+                    {
+                        if(!model.IsCurrentGeneratedPresentation(presentation))throw new InvalidOperationException("The visual observation is obsolete.");
+                        if(backgroundV3==null)backgroundV3=new GeneratedGalaxyV3Background(presentation,()=>model.IsCurrentGeneratedPresentation(presentation));
+                        backgroundV3.Render(viewport,map.contentRect.width,map.contentRect.height,effectsV3,depthV3);
+                        if(!model.IsCurrentGeneratedPresentation(presentation))throw new InvalidOperationException("The visual observation changed before publication.");
+                        v3Image!.style.left=map.contentRect.x-map.resolvedStyle.borderLeftWidth;v3Image.style.top=map.contentRect.y-map.resolvedStyle.borderTopWidth;
+                        v3Image.style.width=map.contentRect.width;v3Image.style.height=map.contentRect.height;v3Image.image=backgroundV3.Texture;
+                        visualStatus!.text=backgroundV3.LocalStatus.StartsWith("local disabled",StringComparison.Ordinal)?"Local effects unavailable":"";
+                        visualStatus.tooltip=backgroundV3.LocalStatus;
+                    }
+                    catch(Exception e){backgroundV3?.Dispose();backgroundV3=null;v3Image!.image=null;backgroundFailed=true;visualStatus!.text="Visual effects unavailable";visualStatus.tooltip=e.Message;}
+                    return;
+                }
                 if(cosmetic==null||backgroundFailed||map.panel==null||map.contentRect.width<2||map.contentRect.height<2)return;
                 try{if(background==null)background=new GeneratedGalaxyVolumeBackground(cosmetic);background.Render(viewport,map.contentRect.width,map.contentRect.height,true,true);map.style.backgroundImage=Background.FromRenderTexture(background.Texture!);}
                 catch(Exception){background?.Dispose();background=null;backgroundFailed=true;map.style.backgroundImage=StyleKeyword.None;map.style.backgroundColor=new Color(.003f,.006f,.012f);}
             }
-            map.RegisterCallback<DetachFromPanelEvent>(_=>{background?.Dispose();background=null;});
+            map.RegisterCallback<DetachFromPanelEvent>(_=>{background?.Dispose();background=null;backgroundV3?.Dispose();backgroundV3=null;if(v3Image!=null)v3Image.image=null;transitionTick?.Pause();});
+            if(presentation!=null)
+            {
+                transitionTick=map.schedule.Execute(()=>{if(backgroundV3?.NeedsTransition==true)RefreshBackground();}).Every(33);
+                map.RegisterCallback<AttachToPanelEvent>(_=>{transitionTick.Resume();RefreshBackground();});
+            }
             var lines=new VisualElement{name="playable-known-lines",pickingMode=PickingMode.Ignore};lines.StretchToParentSize();map.Add(lines);
             var details=new ScrollView(ScrollViewMode.Vertical);details.AddToClassList("console-panel");details.AddToClassList("console-aside");details.AddToClassList("playable-map-aside");parent.Add(details);
             Text(details,"Selection & orders").AddToClassList("console-section");

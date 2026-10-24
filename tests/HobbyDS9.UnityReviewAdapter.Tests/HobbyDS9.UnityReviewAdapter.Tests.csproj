@@ -8,6 +8,8 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentationV3/nebula.bytes" Link="galaxy-v3/nebula.bytes" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentationV3/particles.json" Link="galaxy-v3/particles.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../HobbyDS9.Simulation.Tests/Fixtures/generated-campaign-v1/aftermath.json" Link="static-v1/aftermath.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../docs/samples/galaxy-route-intent-v1/examples.json" Link="galaxy-samples/route-intent/examples.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../docs/samples/natural-galaxy-v5/*.json" Link="galaxy-samples/natural/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
