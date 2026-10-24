@@ -110,7 +110,7 @@ namespace HobbyDS9.UnityReview.Tests
                     var panel=doc.rootVisualElement.Q<ReviewBattlePanel>();var stage=(ReviewBattleStage)typeof(ReviewBattlePanel).GetField("stage",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(panel)!;BattleMaterialProbe(stage);
                     var oldResources=((System.Collections.Generic.List<UnityEngine.Object>)typeof(ReviewBattleStage).GetField("owned",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(stage)!).ToArray();
                     // Actual local draft, then inspection/roster redraws must preserve it and authority.
-                    var maneuver=doc.rootVisualElement.Q<DropdownField>("combat-maneuver-picker");maneuver.index=(maneuver.index+1)%maneuver.choices.Count;
+                    var maneuver=doc.rootVisualElement.Q<DropdownField>("combat-maneuver-picker");int standingManeuver=maneuver.index;maneuver.index=(maneuver.index+1)%maneuver.choices.Count;
                     Click(CampaignButton(doc,"Apply to local draft"));var draft=JsonConvert.SerializeObject(model.Current.Draft);
                     Click(doc.rootVisualElement.Q<Button>("combat-toggle-fleet-details"));yield return null;yield return null;
                     var oldCache=(System.Collections.IDictionary)typeof(ReviewBattleStage).GetField("materialCache",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(stage)!;
@@ -123,6 +123,9 @@ namespace HobbyDS9.UnityReview.Tests
                     Click(doc.rootVisualElement.Q<Button>("combat-tab-stocks"));Click(doc.rootVisualElement.Q<Button>("combat-toggle-fleet-details"));yield return null;yield return null;
                     Assert.That(doc.rootVisualElement.Q("combat-tab-stocks").ClassListContains("selected-tab"),Is.True,"same boundary redraw retains user tab");
                     Assert.That(JsonConvert.SerializeObject(model.Current.Draft),Is.EqualTo(draft));yield return BattleSized(entry,doc,V3Sizes[0],"status-retained",false); //1
+                    // Restore the accepted fixture's standing maneuver through the actual UI;
+                    // the inspection regression above still exercised a genuinely edited draft.
+                    doc.rootVisualElement.Q<DropdownField>("combat-maneuver-picker").index=standingManeuver;Click(CampaignButton(doc,"Apply to local draft"));
                     Click(doc.rootVisualElement.Q<Button>("combat-tab-battle"));int rounds=0;
                     while(!model.Current.Frame.Battle!.Complete)
                     {
@@ -133,6 +136,7 @@ namespace HobbyDS9.UnityReview.Tests
                         if(rounds==1)yield return BattleSized(entry,doc,V3Sizes[0],"round-report",false); //1
                         if(!model.Current.Frame.Battle.Complete)Click(CampaignButton(doc,"Plan next round"));
                     }
+                    Assert.That(rounds,Is.EqualTo(3),"accepted fixed B68 standing-order fixture");
                     yield return BattleSized(entry,doc,V3Sizes[1],"final-report",false); //1
                     Click(CampaignButton(doc,"Confirm campaign aftermath"));Confirm(doc);yield return null;yield return null;
                     Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning));Assert.That(model.History().Count,Is.GreaterThan(0));yield return BattleSized(entry,doc,V3Sizes[0],"aftermath",false); //1
