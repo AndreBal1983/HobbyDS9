@@ -9,7 +9,7 @@ public sealed class PublishedBuiltSourceTests
 {
     static T Clone<T>(T x)=>JsonSerializer.Deserialize<T>(JsonSerializer.Serialize(x))!;
     // Test-only authored support; no new live content or integrated admission.
-    static (CampaignPublishedBuiltShipDto Record,GameStateDto Before,GameStateDto After,TacticalSupportCatalogueDto Support) Completion()
+    internal static (CampaignPublishedBuiltShipDto Record,GameStateDto Before,GameStateDto After,TacticalSupportCatalogueDto Support) Completion()
     {
         var f=PublishedTacticalSupportTests.Load();var support=PublishedTacticalSupportTests.Support(f);var package=IntegratedPlaytestTests.Package();var scenario=package.Physical!.CorePackage!.Campaign!;
         var game=Clone(scenario.InitialState);var draft=PublishedTacticalSupportTests.Draft(f,true);

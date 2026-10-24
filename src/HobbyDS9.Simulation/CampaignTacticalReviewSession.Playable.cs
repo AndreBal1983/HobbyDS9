@@ -25,21 +25,7 @@ namespace HobbyDS9.Simulation
         private bool CanPublishPlayableAdvance(CampaignTacticalTravelSaveDto next)
         {
             if (playableHash == null) return true;
-            // The accepted advance itself costs one slot. Reserve from the complete staged batch,
-            // after AI-only resolution, without committing any production, movement, IDs or RNG.
-            long required = 1;
-            if (next.Phase == SessionPhase.AwaitingCombat)
-            {
-                required++; // Once-only batch aftermath, including an AI-only completed batch.
-                foreach (var battle in next.Core.Battles.Where(b => b.State.Completion == TacticalCompletion.None))
-                {
-                    Require(battle.State.NextRound >= 1 && battle.State.NextRound <= 3,
-                        "Invalid playable continuation boundary.");
-                    Require(battle.State.Formations.Any(f => f.Status == TacticalFormationStatus.Active
-                        && controllers[f.SideId] == ControllerKind.Human), "Unresolved AI-only playable encounter.");
-                    required = checked(required + 4 - battle.State.NextRound);
-                }
-            }
+            var required = PlayableAdvanceCapacity.RequiredSlots(next, controllers);
             return required <= (long)playableOperationLimit - playableTranscript.Count;
         }
 
