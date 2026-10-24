@@ -51,6 +51,10 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(target.Create(),Is.True);doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=size.x;doc.rootVisualElement.style.height=size.y;
                 yield return null;yield return null;yield return null;
                 BattleLayoutAudit(doc,size,state);
+                // Preserve this SAME intended state before asserting its bounds.
+                // A failed layout remains failed; outcome metadata distinguishes the PNG.
+                RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
+                File.WriteAllBytes(Path.Combine(CampaignOutput(),"battle-v2-"+state+"-"+size.x+"x"+size.y+".png"),pixels.EncodeToPNG());
                 var rail=doc.rootVisualElement.Q("central-combat-surface").Q(className:"review-order-dock");BattleVisible(rail,size);
                 foreach(var id in new[]{"combat-tab-battle","combat-tab-stocks","combat-tab-report","combat-tab-inspection","combat-toggle-fleet-details"})
                 {var item=doc.rootVisualElement.Q(id);if(item!=null)BattleVisible(item,size);}
@@ -66,11 +70,11 @@ namespace HobbyDS9.UnityReview.Tests
                     BattleVisible(doc.rootVisualElement.Q("battle-playback-pause"),size);
                     foreach(var control in doc.rootVisualElement.Q("resolved-battle-presentation").Query<Button>().ToList())BattleVisible(control,size);
                 }
-                RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
-                File.WriteAllBytes(Path.Combine(CampaignOutput(),"battle-v2-"+state+"-"+size.x+"x"+size.y+".png"),pixels.EncodeToPNG());complete=true;
+                complete=true;
             }
             finally
             {
+                try{File.AppendAllText(Path.Combine(CampaignOutput(),"battle-capture-outcomes.jsonl"),JsonConvert.SerializeObject(new{state,size.x,size.y,assertionsPassed=complete,imageWritten=pixels!=null,claim="Same intended normal state; PNG is not a passing-layout claim"})+Environment.NewLine);}catch(Exception error){CampaignDiagnosticError("battle-capture-outcome",error);}
                 if(!complete)V3Audit(entry,"battle-capture-failed-"+state);
                 doc.panelSettings.targetTexture=old;doc.rootVisualElement.style.width=w;doc.rootVisualElement.style.height=h;RenderTexture.active=active;
                 target.Release();UnityEngine.Object.Destroy(target);if(pixels!=null)UnityEngine.Object.Destroy(pixels);
