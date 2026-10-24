@@ -19,7 +19,7 @@ namespace HobbyDS9.UnityReview
         private readonly Dictionary<string,GameObject> ships=new Dictionary<string,GameObject>(StringComparer.Ordinal);
         private readonly List<UnityEngine.Object> owned=new List<UnityEngine.Object>();
         private readonly List<GameObject> effects=new List<GameObject>();
-        private readonly Dictionary<Tuple<Color,bool>,Material> materialCache=new Dictionary<Tuple<Color,bool>,Material>();
+        private readonly Dictionary<Tuple<Color,Color,float,float,bool>,Material> materialCache=new Dictionary<Tuple<Color,Color,float,float,bool>,Material>();
         private readonly Dictionary<string,Tuple<Vector3,Quaternion,Vector3,Quaternion>> poses=new Dictionary<string,Tuple<Vector3,Quaternion,Vector3,Quaternion>>(StringComparer.Ordinal);
         private Mesh? markerMesh;
         private GameObject? projectile;
@@ -71,12 +71,25 @@ namespace HobbyDS9.UnityReview
         {var child=new GameObject(name){hideFlags=HideFlags.DontSave,layer=Layer};child.transform.SetParent(parent.transform,false);return child;}
         private Material Material(Color color,bool emissive=false)
         {
-            var key=Tuple.Create(color,emissive);if(materialCache.TryGetValue(key,out var cached))return cached;
+            return Material(color,emissive?color:Color.black,.3f,.4f,emissive);
+        }
+        private Material Material(Color color,Color emission,float metallic,float smoothness,bool emissive=false)
+        {
+            var key=Tuple.Create(color,emission,metallic,smoothness,emissive);if(materialCache.TryGetValue(key,out var cached))return cached;
             var shader=Resources.Load<Shader>(emissive?"BattlePresentation/Effect":"ArtDemo/PreviewStudio");
             if(shader==null)throw new InvalidOperationException("Battle presentation shader unavailable.");
             var m=new Material(shader){hideFlags=HideFlags.DontSave};m.SetColor("_BaseColor",color);
-            if(m.HasProperty("_EmissionColor"))m.SetColor("_EmissionColor",emissive?color:Color.black);
+            if(m.HasProperty("_EmissionColor"))m.SetColor("_EmissionColor",emission);
+            if(m.HasProperty("_Metallic"))m.SetFloat("_Metallic",metallic);
+            if(m.HasProperty("_Smoothness"))m.SetFloat("_Smoothness",smoothness);
             owned.Add(m);materialCache.Add(key,m);return m;
+        }
+        private static bool Finite(float value)=>!float.IsNaN(value)&&!float.IsInfinity(value);
+        private static bool Finite(Color value)=>Finite(value.r)&&Finite(value.g)&&Finite(value.b)&&Finite(value.a);
+        private static float Surface(Material? source,string property,float fallback)
+        {
+            if(source==null||!source.HasProperty(property))return fallback;
+            var value=source.GetFloat(property);return Finite(value)?Mathf.Clamp01(value):fallback;
         }
         private static Color CardColor(string name)
         {
@@ -96,7 +109,12 @@ namespace HobbyDS9.UnityReview
                     if(original!=null&&cache.TryGetValue(original,out var prior))return prior;
                     var color=cardassian?CardColor(original?.name??""):original!=null&&original.HasProperty("_BaseColor")?
                         original.GetColor("_BaseColor"):original!=null&&original.HasProperty("_Color")?original.color:new Color(.62f,.67f,.72f);
-                    var clone=Material(color);
+                    if(!Finite(color))color=cardassian?CardColor(original?.name??""):new Color(.62f,.67f,.72f);
+                    // Preserve authored surface response; PreviewStudio consumes these properties
+                    // directly, so unrelated source shader keywords are deliberately not copied.
+                    var emission=original!=null&&original.HasProperty("_EmissionColor")?original.GetColor("_EmissionColor"):Color.black;
+                    if(!Finite(emission))emission=Color.black;
+                    var clone=Material(color,emission,Surface(original,"_Metallic",.3f),Surface(original,"_Smoothness",.4f));
                     if(original!=null)cache[original]=clone;
                     return clone;
                 }).ToArray();
@@ -345,7 +363,7 @@ namespace HobbyDS9.UnityReview
         public void Dispose()
         {
             if(disposed)return;disposed=true;camera.targetTexture=null;root.SetActive(false);
-            Destroy(root);foreach(var item in owned)Destroy(item);owned.Clear();Texture.Release();Destroy(Texture);
+            Destroy(root);foreach(var item in owned)Destroy(item);owned.Clear();materialCache.Clear();Texture.Release();Destroy(Texture);
         }
     }
 }
