@@ -102,7 +102,7 @@ namespace HobbyDS9.UnityReview.Tests
                 var local=map.WorldToLocal(new Vector2(x+.5f,y+.5f))-map.contentRect.position;double wx=vp.WorldX(local.x),wy=vp.WorldY(local.y);
                 if(!boxes.Any(b=>wx>=b.Left&&wx<=b.Right&&wy>=b.Top&&wy<=b.Bottom&&V3Inside(b.Region,wx,wy)))exteriorChanged++;
             }
-            File.WriteAllText(Path.Combine(CampaignOutput(),"v3-exterior-"+name+".json"),JsonConvert.SerializeObject(new{name,samples,changed,exteriorChanged,claim="Actual composed UI colour equality outside charted union, including local shadows; no tolerance"}));
+            File.WriteAllText(Path.Combine(CampaignOutput(),"v3-exterior-"+name+".json"),JsonConvert.SerializeObject(new{name,samples,changed,exteriorChanged,claim="Actual composed 8-bit Color32 UI equality outside charted union, including local shadows; no tolerance; not unquantized-radiance proof"}));
             Assert.That(samples,Is.GreaterThan(1000));Assert.That(changed,Is.GreaterThan(0),"actual local contribution must be visible; blank comparisons cannot pass");Assert.That(exteriorChanged,Is.Zero,"final UI local contribution outside charted union");
         }
         private static IEnumerator V3Sized(ReviewEntry entry,UIDocument doc,Vector2Int size,string name,bool pair,bool regional)
@@ -207,7 +207,8 @@ namespace HobbyDS9.UnityReview.Tests
             var constructor=typeof(GeneratedCampaignPresentation).GetConstructors(BindingFlags.Instance|BindingFlags.NonPublic).Single();
             var synthetic=(GeneratedCampaignPresentation)constructor.Invoke(new object[]{actual.Frame,map,astronomy,codec});
             var view=new GeneratedGalaxyViewport();view.SetMap(map.Width,map.Height);view.Resize(1920,1080);view.FitWorldBounds(at.CentreX-at.VisualReferenceRadiusX*3,at.CentreY-at.VisualReferenceRadiusY*3,at.CentreX+at.VisualReferenceRadiusX*3,at.CentreY+at.VisualReferenceRadiusY*3);
-            using(var renderer=new GeneratedGalaxyV3Background(synthetic,()=>true))
+            bool current=true;
+            using(var renderer=new GeneratedGalaxyV3Background(synthetic,()=>current))
             {
                 Assert.That(renderer.Render(view,1920,1080,true,true),Is.True);Assert.That(renderer.VisibleFieldCount,Is.EqualTo(8));Assert.That(renderer.LocalFetchUpperBound,Is.LessThanOrEqualTo(40000000));
                 Assert.That(renderer.Texture!.width,Is.EqualTo(960));Assert.That(renderer.Texture.height,Is.EqualTo(540));Assert.That(renderer.ParticleCount,Is.LessThanOrEqualTo(256));
@@ -219,6 +220,7 @@ namespace HobbyDS9.UnityReview.Tests
                 V3Save(renderer.Texture,"SYNTHETIC-eight-known-fields-not-campaign");
                 File.WriteAllText(Path.Combine(CampaignOutput(),"v3-synthetic-workload.json"),JsonConvert.SerializeObject(new{label="Synthetic eight-field overlap; no campaign observation claim",renderer.VisibleFieldCount,renderer.ParticleCount,renderer.LocalFetchUpperBound,renderer.LocalSize,renderer.LocalStatus,MacroWidth=renderer.Texture.width,MacroHeight=renderer.Texture.height,ParticleFullQuadPixelCap=32,ParticleFragmentUpperBound=renderer.ParticleCount*32*32}));
                 int renders=renderer.RenderCount;Assert.That(renderer.Render(view,1920,1080,true,true),Is.False);Assert.That(renderer.RenderCount,Is.EqualTo(renders));
+                current=false;var texture=renderer.Texture;Assert.Throws<InvalidOperationException>(()=>renderer.Render(view,1920,1080,true,true));Assert.That(renderer.RenderCount,Is.EqualTo(renders));Assert.That(renderer.Texture,Is.SameAs(texture),"stale callback refuses before submission/publication");
             }
         }
         [UnityTest] public IEnumerator V3GalaxyAndChartedNebulaePreserveActualCampaignControlsAndComposition()
@@ -242,6 +244,7 @@ namespace HobbyDS9.UnityReview.Tests
                     foreach(var size in V3Sizes)yield return V3Sized(entry,doc,size,"menu",false,false); //3
                     var fold=doc.rootVisualElement.Q<Foldout>("other-campaign-profiles");var start=doc.rootVisualElement.Q<Button>("generated-campaign-start");start.Focus();yield return null;
                     for(int i=0;i<10;i++){Key(doc.rootVisualElement.panel.focusController.focusedElement as VisualElement??start,KeyCode.Tab);Key(doc.rootVisualElement.panel.visualTree,KeyCode.Tab,true);yield return null;var focused=doc.rootVisualElement.panel.focusController.focusedElement as VisualElement;Assert.That(focused==null||!fold.Contains(focused)||focused==fold.Q<Toggle>(),Is.True,"collapsed older controls cannot receive Tab focus");}
+                    var foldToggle=fold.Q<Toggle>();foldToggle.Focus();Key(foldToggle,KeyCode.Space);Key(foldToggle,KeyCode.Space,true);yield return null;Assert.That(fold.value,Is.True,"keyboard Space expands older profiles");Key(foldToggle,KeyCode.Space);Key(foldToggle,KeyCode.Space,true);yield return null;Assert.That(fold.value,Is.False);
                     Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-1"));Confirm(doc);yield return WaitCampaign(entry,"v3-empty-v2");Assert.That(CampaignModel(entry),Is.SameAs(initial));
                     Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-3"));Confirm(doc);yield return WaitCampaign(entry,"v3-wrong-profile");Assert.That(CampaignModel(entry),Is.SameAs(initial));Assert.That(File.ReadAllBytes(wrong),Is.EqualTo(old));
                     Click(start);if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);yield return WaitCampaign(entry,"v3-new250");
@@ -261,7 +264,9 @@ namespace HobbyDS9.UnityReview.Tests
                     yield return V3Settled(doc);var renderer=V3Renderer(doc);Assert.That(renderer.Texture!.format,Is.EqualTo(RenderTextureFormat.ARGBHalf));
                     var known=pair.KnownMap;var fleet=model.Current.Frame.OwnStrategicFleets.First();Click(doc.rootVisualElement.Q<Button>("map-fleet-"+fleet.FleetId.Value));
                     var target=known.Regions.Select(r=>(r.NodeId,Offer:model.Current.FindKnownRoute(fleet.FleetId.Value,r.NodeId))).Where(p=>p.Offer?.Route.Success==true&&p.Offer.Route.TotalCost>0).OrderBy(p=>p.Offer!.Route.TotalCost).ThenBy(p=>p.NodeId,StringComparer.Ordinal).First().NodeId;
+                    var beforeCancel=codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model));
                     Click(doc.rootVisualElement.Q<Button>("map-fit"));yield return null;yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+target),0);yield return CampaignPointerRight(doc,entry,doc.rootVisualElement.Q<Button>("map-star-"+target));Confirm(doc,false);
+                    Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(beforeCancel),"actual route review Cancel preserves canonical campaign");
                     yield return CampaignZoomPan(doc,entry);yield return V3Settled(doc);V3Save(doc.panelSettings.targetTexture,"motion-pan");
                     Click(doc.rootVisualElement.Q<Button>("campaign-visual-depth"));yield return V3Settled(doc);V3Save(doc.panelSettings.targetTexture,"motion-depth-off");
                     Click(doc.rootVisualElement.Q<Button>("campaign-visual-depth"));yield return V3Settled(doc);V3Save(doc.panelSettings.targetTexture,"motion-depth-on"); //3
