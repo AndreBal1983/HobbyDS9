@@ -186,6 +186,8 @@ namespace HobbyDS9.UnityReview.Tests
                 while(model.Busy){Assert.That(timer.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}yield return null;
                 Assert.That(load.Thread,Is.EqualTo(mainThread));Assert.That(model.Current,Is.Not.SameAs(beforeController));Assert.That(model.HasLocalEdits,Is.False);
                 Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(model)),Is.EqualTo(initial));
+                Assert.That(entry.Workspace!.Page,Is.EqualTo(ReviewWorkspacePage.Map),"new controller intentionally resets workspace context");
+                CampaignPage(doc,ReviewWorkspacePage.Saves);Click(doc.rootVisualElement.Q<Button>("save-slot-generated-2"));yield return null;yield return null;
                 Click(doc.rootVisualElement.Q<Button>("player-save"));var resave=CheckpointActivate(state,()=>Confirm(doc));timer.Restart();while(model.Busy){Assert.That(timer.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}
                 yield return null;Assert.That(resave.Thread,Is.EqualTo(mainThread));Assert.That(File.ReadAllBytes(file2),Is.EqualTo(initial));CheckpointCapture(doc,"reloaded-byte-exact");
                 // Disable while an old atomic write is already underway; a new independently
