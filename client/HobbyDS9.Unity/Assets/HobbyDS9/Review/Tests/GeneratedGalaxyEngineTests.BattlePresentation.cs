@@ -157,7 +157,7 @@ namespace HobbyDS9.UnityReview.Tests
         {
             var flags=BindingFlags.Instance|BindingFlags.NonPublic;var shader=Resources.Load<Shader>("ArtDemo/PreviewStudio");Assert.That(shader,Is.Not.Null);
             var a=new Material(shader);var b=new Material(shader);var host=new GameObject("test-only source material probe");host.SetActive(false);
-            var renderer=host.AddComponent<MeshRenderer>();var hdr=new Color(2.4f,.7f,.2f,1);var colour=new Color(.3f,.4f,.5f,1);
+            var renderer=host.AddComponent<MeshRenderer>();var hdr=new Color(2.4f,.7f,.2f,1);var colour=new Color(.3f,.4f,.5f,1);Material? nativeEffectBaseline=null;
             try
             {
                 a.SetColor("_BaseColor",colour);a.SetColor("_EmissionColor",hdr);a.SetFloat("_Metallic",.8f);a.SetFloat("_Smoothness",.15f);
@@ -178,11 +178,16 @@ namespace HobbyDS9.UnityReview.Tests
                 var fallback=renderer.sharedMaterial;Assert.That(fallback.GetColor("_BaseColor"),Is.EqualTo(new Color(.62f,.67f,.72f)));Assert.That(fallback.GetColor("_EmissionColor"),Is.EqualTo(Color.black));
                 Assert.That(fallback.GetFloat("_Smoothness"),Is.EqualTo(.4f));Assert.That(Snapshot(a),Is.EqualTo(invalidBefore));
                 var effect=typeof(ReviewBattleStage).GetMethod("Material",flags,null,new[]{typeof(Color),typeof(bool)},null)!.Invoke(stage,new object[]{colour,true}) as Material;
-                Assert.That(effect!.shader,Is.SameAs(Resources.Load<Shader>("BattlePresentation/Effect")));Assert.That(effect.GetColor("_BaseColor"),Is.EqualTo(colour));
+                var effectShader=Resources.Load<Shader>("BattlePresentation/Effect");nativeEffectBaseline=new Material(effectShader);nativeEffectBaseline.SetColor("_BaseColor",colour);
+                var baselineColour=nativeEffectBaseline.GetColor("_BaseColor");var actualColour=effect!.GetColor("_BaseColor");
+                int[] Bits(Color value)=>Channels(value).Select(n=>BitConverter.ToInt32(BitConverter.GetBytes(n),0)).ToArray();
+                object Exact(Color value)=>new{roundTrip=Channels(value).Select(n=>n.ToString("R",System.Globalization.CultureInfo.InvariantCulture)).ToArray(),rawBits=Bits(value).Select(n=>n.ToString("X8",System.Globalization.CultureInfo.InvariantCulture)).ToArray()};
+                File.WriteAllText(Path.Combine(CampaignOutput(),"battle-effect-native-colour-roundtrip.json"),JsonConvert.SerializeObject(new{requested=Exact(colour),baseline=Exact(baselineColour),actual=Exact(actualColour),shader=effectShader.name,property="_BaseColor",baselineHasProperty=nativeEffectBaseline.HasProperty("_BaseColor"),actualHasProperty=effect.HasProperty("_BaseColor"),claim="Independent fresh Material native Set/Get oracle; exact RGBA float bits, no epsilon"}));
+                Assert.That(effect.shader,Is.SameAs(effectShader));CollectionAssert.AreEqual(Bits(baselineColour),Bits(actualColour),"adapter must preserve native property roundtrip exactly");
                 Assert.That(effect.HasProperty("_EmissionColor"),Is.False,"existing unlit effect consumes BaseColor directly");
                 File.WriteAllText(Path.Combine(CampaignOutput(),"battle-material-probe.json"),JsonConvert.SerializeObject(new{authoredHdr=hdr.r,cacheDistinct=true,sourceUnchanged=true,nullMissingNonfiniteFallback=true,effectsPreserved=true,claim="isolated component receiving, source assets read only"}));
             }
-            finally{UnityEngine.Object.Destroy(host);UnityEngine.Object.Destroy(a);UnityEngine.Object.Destroy(b);}
+            finally{UnityEngine.Object.Destroy(host);UnityEngine.Object.Destroy(a);UnityEngine.Object.Destroy(b);if(nativeEffectBaseline!=null)UnityEngine.Object.Destroy(nativeEffectBaseline);}
         }
         [UnityTest,Timeout(600000)] public IEnumerator PlayableBattleLayoutAndAuthoredMaterialsUseActualControls()
         {
