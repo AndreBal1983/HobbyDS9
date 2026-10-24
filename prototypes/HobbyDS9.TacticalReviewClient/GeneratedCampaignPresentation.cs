@@ -15,6 +15,14 @@ namespace HobbyDS9.TacticalReviewClient
         CampaignGeneratedSaveDto Read(string slot);
     }
 
+    // Optional save-only capability. The host supplies its private closed-codec
+    // snapshot; implementations must run complete authoritative load validation.
+    // This is never an admission path for a caller-owned or file-owned root.
+    public interface IStaticAstronomyOwnedExportValidator
+    {
+        void ValidateOwnedStaticAstronomyExport(CampaignPlayableFleetPackageDto template, CampaignGeneratedSaveDto ownedRoot);
+    }
+
     // Constructed only by the host while holding its observation gate. Map access
     // returns a fresh detached actor-known DTO; callers cannot mutate the cached pair.
     public sealed class GeneratedCampaignPresentation

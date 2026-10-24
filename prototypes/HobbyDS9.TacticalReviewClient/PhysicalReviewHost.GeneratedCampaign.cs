@@ -60,11 +60,14 @@ namespace HobbyDS9.TacticalReviewClient
                 if(view.ObservationTurn!=observed.Status.Turn||view.CampaignRevision!=observed.Status.CampaignRevision)throw new InvalidOperationException("Generated map observation is stale.");
                 return view;}
         }
-        private CampaignGeneratedSaveDto ExportGenerated()
+        private CampaignGeneratedSaveDto ExportGenerated(bool ownedStaticSlotExport = false)
         {
             var exported=((ICampaignGeneratedSession)session).ExportGeneratedSave();
             var save=staticAstronomy?((IStaticAstronomyReviewHostCodec)generatedCodec!).CopyStaticAstronomySave(exported):generatedCodec!.CopySave(exported);
-            LoadGeneratedCandidate(save);return save;
+            if(ownedStaticSlotExport && staticAstronomy && generatedCodec is IStaticAstronomyOwnedExportValidator validator)
+                validator.ValidateOwnedStaticAstronomyExport(generatedTemplate!,save);
+            else LoadGeneratedCandidate(save);
+            return save;
         }
         private ReviewSaveHandle SaveGeneratedCommitted()
         {
@@ -83,7 +86,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             if(generatedStore==null)return new ReviewCheckpointResult(ReviewCheckpointError.NoStore);
             CampaignGeneratedSaveDto save;
-            try{save=ExportGenerated();}catch(Exception){return new ReviewCheckpointResult(ReviewCheckpointError.SerializationFailed);}
+            try{save=ExportGenerated(ownedStaticSlotExport:true);}catch(Exception){return new ReviewCheckpointResult(ReviewCheckpointError.SerializationFailed);}
             var metadata=new ReviewSlotCheckpoint(slot,session.CaptureStatus());
             try{generatedStore.Write(slot,save,overwrite);}
             catch(ReviewCheckpointStoreException e){return new ReviewCheckpointResult(e.Error);}
