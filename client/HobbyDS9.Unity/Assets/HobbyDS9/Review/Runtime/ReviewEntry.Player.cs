@@ -228,7 +228,13 @@ namespace HobbyDS9.UnityReview
             if(designState==null||!ReferenceEquals(designContext,model!.Current))
             {
                 designContext=model!.Current;var owner=designContext;
-                designState=bridge.GetMethod("Create")!.Invoke(null,new object[]{model.DesignLibrary(),new Action<bool>(dirty=>{if(!ReferenceEquals(model.Current,owner)||model.Closed)return;model.LocalDesignDirty=dirty;playerGuidance!.text=PlayerMessage();DrawPlayerFooter();}),new Action(()=>{if(ReferenceEquals(model.Current,owner)&&confirmation==null&&!model.Busy&&!model.Closed)Navigate(ReviewWorkspacePage.Map);})});
+                var publication=new ReviewDesignPublication(model);
+                designState=bridge.GetMethod("Create")!.Invoke(null,new object?[]{publication.Library,new Action<bool>(dirty=>{if(!ReferenceEquals(model.Current,owner)||model.Closed)return;model.LocalDesignDirty=dirty;playerGuidance!.text=PlayerMessage();DrawPlayerFooter();}),new Action(()=>{if(ReferenceEquals(model.Current,owner)&&confirmation==null&&!model.Busy&&!model.Closed)Navigate(ReviewWorkspacePage.Map);}),
+                    new Func<HobbyDS9.Contracts.ShipDesign.ShipClassDraftDto,bool>(publication.CanPublish),
+                    new Func<HobbyDS9.Contracts.ShipDesign.ShipClassDraftDto,bool>(publication.Publish),
+                    new Func<HobbyDS9.Application.CampaignIntegratedDesignLibrarySnapshot?>(()=>publication.Refresh()?publication.Library:null),
+                    new Func<HobbyDS9.Contracts.CampaignBlueprintSnapshot,HobbyDS9.Contracts.ShipDesign.ShipClassDraftDto>(publication.Edit),
+                    new Action(publication.NewIdentity),new Func<string>(()=>publication.Notice),ReviewDesignPublication.Starter(publication.Library),new Func<string>(()=>publication.ClassId)});
                 var state=designState;model.ResetLocalDesign=()=>bridge.GetMethod("Reset")!.Invoke(null,new[]{state});
             }
             bridge.GetMethod("Present")!.Invoke(null,new[]{content,designState});
