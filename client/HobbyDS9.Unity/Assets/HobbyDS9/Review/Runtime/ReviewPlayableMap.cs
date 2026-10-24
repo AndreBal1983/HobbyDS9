@@ -81,18 +81,18 @@ namespace HobbyDS9.UnityReview
                         backgroundV3.Render(viewport,map.contentRect.width,map.contentRect.height,effectsV3,depthV3);
                         if(!model.IsCurrentGeneratedPresentation(presentation))throw new InvalidOperationException("The visual observation changed before publication.");
                         v3Image!.style.left=map.contentRect.x-map.resolvedStyle.borderLeftWidth;v3Image.style.top=map.contentRect.y-map.resolvedStyle.borderTopWidth;
-                        v3Image.style.width=map.contentRect.width;v3Image.style.height=map.contentRect.height;v3Image.image=backgroundV3.Texture;
+                        v3Image.style.width=map.contentRect.width;v3Image.style.height=map.contentRect.height;v3Image.image=backgroundV3.Texture;v3Image.userData=backgroundV3;
                         visualStatus!.text=backgroundV3.LocalStatus.StartsWith("local disabled",StringComparison.Ordinal)?"Local effects unavailable":"";
                         visualStatus.tooltip=backgroundV3.LocalStatus;
                     }
-                    catch(Exception e){backgroundV3?.Dispose();backgroundV3=null;v3Image!.image=null;backgroundFailed=true;visualStatus!.text="Visual effects unavailable";visualStatus.tooltip=e.Message;}
+                    catch(Exception e){v3Image!.userData=null;backgroundV3?.Dispose();backgroundV3=null;v3Image.image=null;backgroundFailed=true;visualStatus!.text="Visual effects unavailable";visualStatus.tooltip=e.Message;}
                     return;
                 }
                 if(cosmetic==null||backgroundFailed||map.panel==null||map.contentRect.width<2||map.contentRect.height<2)return;
                 try{if(background==null)background=new GeneratedGalaxyVolumeBackground(cosmetic);background.Render(viewport,map.contentRect.width,map.contentRect.height,true,true);map.style.backgroundImage=Background.FromRenderTexture(background.Texture!);}
                 catch(Exception){background?.Dispose();background=null;backgroundFailed=true;map.style.backgroundImage=StyleKeyword.None;map.style.backgroundColor=new Color(.003f,.006f,.012f);}
             }
-            map.RegisterCallback<DetachFromPanelEvent>(_=>{background?.Dispose();background=null;backgroundV3?.Dispose();backgroundV3=null;if(v3Image!=null)v3Image.image=null;transitionTick?.Pause();});
+            map.RegisterCallback<DetachFromPanelEvent>(_=>{background?.Dispose();background=null;if(v3Image!=null){v3Image.userData=null;v3Image.image=null;}backgroundV3?.Dispose();backgroundV3=null;transitionTick?.Pause();});
             if(presentation!=null)
             {
                 transitionTick=map.schedule.Execute(()=>{if(backgroundV3?.NeedsTransition==true)RefreshBackground();}).Every(33);
