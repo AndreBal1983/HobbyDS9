@@ -264,6 +264,47 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally{RenderTexture.active=prior;target.Release();UnityEngine.Object.Destroy(target);UnityEngine.Object.Destroy(mask);UnityEngine.Object.Destroy(material);UnityEngine.Object.Destroy(mesh);}
         }
+        [UnityTest,Timeout(180000)] public IEnumerator V3NebulaResidencyKeepsRetainedFieldsVisibleAcrossPan()
+        {
+            yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
+            var storePath=Path.Combine(directory,"campaign");typeof(ReviewEntry).GetField("generatedCampaignTestDirectory",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,storePath);
+            var codec=new ReviewNewtonsoftCodec();var store=new ReviewStaticAstronomyCampaignSlotStore(storePath,codec);
+            store.Write("generated-2",codec.DecodeStaticAstronomyCampaignRoot(V3Fixture("HOBBYDS9_V3_EXPLORE","d7b332383b726607209067a5c89085a4979814b12c35a5fd717a41ebd3ecdddc")),false);
+            using(var surface=new GalaxyInputSurface(doc))
+            {
+                yield return null;yield return null;Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-2"));Confirm(doc);yield return WaitCampaign(entry,"residency-explore32");
+                var actual=CampaignModel(entry).GeneratedPresentation();var at=actual.Astronomy.Nebulae.First();var map=actual.KnownMap;
+                // Explicit synthetic nine-field workload exercises the eight-field cap.
+                var proxies=Enumerable.Range(0,9).Select(i=>new CampaignNebulaVisualProxy("synthetic-residency-"+i,at.CentreX+(i-4)*at.VisualReferenceRadiusX*.08,at.CentreY,at.VisualReferenceRadiusX,at.VisualReferenceRadiusY));
+                var astronomy=new CampaignStaticAstronomySnapshot(actual.Actor,actual.MapContentHash,actual.Frame.Status.Turn,actual.Frame.Status.CampaignRevision,proxies);
+                var constructor=typeof(GeneratedCampaignPresentation).GetConstructors(BindingFlags.Instance|BindingFlags.NonPublic).Single();
+                var synthetic=(GeneratedCampaignPresentation)constructor.Invoke(new object[]{actual.Frame,map,astronomy,codec});
+                var view=new GeneratedGalaxyViewport();view.SetMap(map.Width,map.Height);view.Resize(320,180);view.FitWorldBounds(at.CentreX-at.VisualReferenceRadiusX*3,at.CentreY-at.VisualReferenceRadiusY*3,at.CentreX+at.VisualReferenceRadiusX*3,at.CentreY+at.VisualReferenceRadiusY*3);
+                using(var renderer=new GeneratedGalaxyV3Background(synthetic,()=>true))
+                {
+                    var receipts=new List<object>();var seen=new HashSet<string>(StringComparer.Ordinal);bool transitioning=false;
+                    for(int frame=0;frame<24;frame++)
+                    {
+                        if(frame<8)view.Pan(-1,0);
+                        Assert.That(renderer.Render(view,320,180,true,true),Is.EqualTo(frame<8||renderer.NeedsTransition||frame==0));
+                        var fields=(Array)typeof(GeneratedGalaxyV3Background).GetField("displayed",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(renderer)!;
+                        var ids=fields.Cast<object>().Select(f=>((CampaignNebulaVisualProxy)f.GetType().GetField("Proxy",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(f)!).FeatureId).ToArray();
+                        var parameters=(Vector4[])typeof(GeneratedGalaxyV3Background).GetField("fieldParameters",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(renderer)!;
+                        int full=parameters.Take(ids.Length).Count(p=>p.w>=.999f);foreach(var id in ids)seen.Add(id);transitioning|=renderer.NeedsTransition;
+                        Assert.That(ids.Length,Is.EqualTo(8));Assert.That(full,Is.GreaterThanOrEqualTo(7),"retained volumes never share an all-field fade");
+                        Assert.That(renderer.LocalFetchUpperBound,Is.LessThanOrEqualTo(40000000));Assert.That(renderer.ParticleCount,Is.LessThanOrEqualTo(256));
+                        receipts.Add(new{frame,ids,weights=parameters.Take(ids.Length).Select(p=>p.w).ToArray(),renderer.NeedsTransition,renderer.LocalStatus});
+                        if(frame==0||frame==5||frame==12||frame==23)V3Save(renderer.Texture!,"SYNTHETIC-residency-pan-"+frame);
+                        yield return new WaitForSecondsRealtime(.025f);
+                    }
+                    Assert.That(transitioning,Is.True,"camera movement actually crosses the selection rank boundary");Assert.That(seen.Count,Is.EqualTo(9));Assert.That(renderer.NeedsTransition,Is.False);
+                    File.WriteAllText(Path.Combine(CampaignOutput(),"v3-residency-temporal.json"),JsonConvert.SerializeObject(new{label="Synthetic nine known visual proxies; actual bounded GPU renders, no campaign observation or native-video claim",receipts}));
+                }
+            }
+            yield return new ExitPlayMode();
+        }
         [UnityTest,Timeout(600000)] public IEnumerator V3GalaxyAndChartedNebulaePreserveActualCampaignControlsAndComposition()
         {
             yield return new EnterPlayMode();yield return null;yield return null;
