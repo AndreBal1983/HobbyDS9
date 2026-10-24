@@ -233,7 +233,7 @@ namespace HobbyDS9.UnityReview
                 }
                 // A sphere envelope also contains intermediate rotations.
                 foreach(var center in poses.TryGetValue(pair.Key,out var endpoints)
-                    ?new[]{group.position,root.transform.TransformPoint(endpoints.Item3)}:new[]{group.position})
+                    ?new[]{group.position,root.transform.TransformPoint(endpoints.Item1),root.transform.TransformPoint(endpoints.Item3)}:new[]{group.position})
                     for(int corner=0;corner<8;corner++)points.Add(center+radius*new Vector3(
                         (corner&1)==0?-1:1,(corner&2)==0?-1:1,(corner&4)==0?-1:1));
             }

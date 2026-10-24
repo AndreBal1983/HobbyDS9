@@ -6,4 +6,6 @@ The existing Overview/Cinematic toggle keeps a top-down orthographic Overview. C
 
 The RenderTexture, abstract-to-display poses, identities, event order/timing, weapon effects, outcomes, pause/skip semantics, materials and resources remain unchanged. The camera is cosmetic and cannot submit an order or determine a hit. No new model, lighting, star backdrop, depth-of-field, bloom or high-detail asset intake is included.
 
+Refitting during a mode toggle includes the original start as well as the current and future endpoint sphere centres. Returning to a mode midway through a round therefore still fits the complete maneuver, instead of dropping its already-played start from the framing contract.
+
 Before receiving: independently inspect frustum math and immutable boundary use. Actual Unity must check finite camera parameters, all lawful bounds and maneuver endpoints inside the frustum with positive near/far depths in both modes, unchanged canonical campaign root through toggle/pause/skip, actual small-fleet images, camera stability during playback, and the anonymous cue. Preserve unknown-identity fallback and disposal. Compare the genuine painted scene at the three supported viewports; the fixed 1280-by-600 texture alone is not a readability claim. Perspective does not guarantee that every individual ship in a large fleet stays large on screen.
