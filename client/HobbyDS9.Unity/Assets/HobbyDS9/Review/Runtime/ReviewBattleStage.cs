@@ -247,7 +247,10 @@ namespace HobbyDS9.UnityReview
                     if(Position(e.SourceShipId).HasValue||!target.HasValue)continue;
                     points.Add(root.transform.TransformPoint(new Vector3(24,2,target.Value.z+5)));
                     if(e.TargetShipId!=null&&poses.TryGetValue(e.TargetShipId,out var p))
+                    {
+                        points.Add(root.transform.TransformPoint(new Vector3(24,2,p.Item1.z+5)));
                         points.Add(root.transform.TransformPoint(new Vector3(24,2,p.Item3.z+5)));
+                    }
                 }
             }
             var envelope=new Bounds(points.Count==0?root.transform.position:points[0],Vector3.zero);
