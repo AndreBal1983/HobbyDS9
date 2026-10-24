@@ -109,14 +109,10 @@ namespace HobbyDS9.Simulation
         public CampaignTacticalReviewSaveDto ExportSave() { lock (gate) {Require(demo==null&&frontier==null&&playableHash==null,"Use complete profile export: bare lifecycle root is incomplete.");return Copy(state);} }
         internal SessionSnapshot CaptureCampaign() { lock (gate) return Legacy(state).CaptureSnapshot(); }
         private SimulationSession Legacy(CampaignTacticalReviewSaveDto s) => new SimulationSession(s.Campaign, definitions, compatibility);
+        private CampaignEquipmentSource Equipment(string id) => CampaignEquipmentSourceResolver.ResolveAuthored(definitions,cloak,constructionTemplates,BuildRegistry,id);
         private AuthoredTacticalShipProvisionDto Provision(string id) => ResolveProvision(id);
-        private AuthoredTacticalFitDto Fit(string ship) { var p = Provision(ship); return definitions.AuthoredTacticalEquipment!.Fits!.Single(f => f.DefinitionId == p.FitDefinitionId && f.Revision == p.FitRevision); }
-        private CampaignTacticalPoolDto InitialPool(string ship)
-        {
-            var p = Provision(ship); var f = Fit(ship);
-            return Copy(new CampaignTacticalPoolDto { ShipId = ship, FitId = f.DefinitionId!, FitRevision = f.Revision!.Value, ProvenanceId = f.ProvenanceId!,
-                Shields = p.InitialShields!, Ammunition = p.InitialAmmunition! });
-        }
+        private AuthoredTacticalFitDto Fit(string ship) => Equipment(ship).Fit;
+        private CampaignTacticalPoolDto InitialPool(string ship) => Equipment(ship).InitialPool();
         private CampaignTacticalMutationResult Result(CampaignTacticalError error) => new CampaignTacticalMutationResult(error, state.Campaign.GameState.StateRevision);
         private CampaignTacticalError Actor(string id, bool human = true)
         {
@@ -234,7 +230,7 @@ namespace HobbyDS9.Simulation
                 battle.Geometry.Add(new TacticalGeometryV2Dto { FormationA = a.FormationId, FormationB = b.FormationId,
                     Range = TacticalRange.Distant, FacingA = TacticalSector.Fore, FacingB = TacticalSector.Fore });
             var hidden = battle.Formations.Where(f => save.FleetSettings.Single(s => s.FleetId == f.FormationId).ApproachCloak)
-                .SelectMany(f => f.Ships).Where(s => cloak.Single(c => c.FitId == Fit(s.ShipId).DefinitionId).Capable == true).Select(s => s.ShipId).ToList();
+                .SelectMany(f => f.Ships).Where(s => Equipment(s.ShipId).CloakCapable).Select(s => s.ShipId).ToList();
             return new CampaignTacticalBattleCheckpointDto { State = TacticalCombatV2State.Copy(battle), HiddenShipIds = hidden,
                 BoundaryRevision = 0, Commitments = new List<CampaignTacticalCommitmentDto>(), Reports = new List<CampaignTacticalActorReportDto>(),
                 ResolvedRounds = new List<CampaignTacticalResolvedRoundDto>() };

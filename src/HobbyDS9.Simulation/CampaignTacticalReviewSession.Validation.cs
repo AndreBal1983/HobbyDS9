@@ -39,7 +39,7 @@ namespace HobbyDS9.Simulation
                     var limit = fit.ShieldLimits!.SingleOrDefault(p => p.Sector == q.Sector);
                     Require(limit != null && q.Current >= 0 && q.Current <= limit.Maximum, "Shield stock exceeds exact fit.");
                 }
-                var initial = Provision(pool.ShipId).InitialAmmunition!;
+                var initial = Equipment(pool.ShipId).InitialAmmunition;
                 Require(pool.Ammunition != null && pool.Ammunition.Count == initial.Count && pool.Ammunition.All(a => a != null)
                     && pool.Ammunition.Select(a => a.WeaponId).Distinct(StringComparer.Ordinal).Count() == pool.Ammunition.Count, "Invalid current ammunition.");
                 foreach (var a in pool.Ammunition)
@@ -95,14 +95,14 @@ namespace HobbyDS9.Simulation
                 {
                     var fleet = b.State.Formations.SingleOrDefault(f => f.Ships.Any(p => p.ShipId == id));
                     Require(fleet != null && s.FleetSettings.Single(f => f.FleetId == fleet.FormationId).ApproachCloak
-                        && cloak.Single(c => c.FitId == Fit(id).DefinitionId).Capable == true, "Hidden ship lacks authored cloak.");
+                        && Equipment(id).CloakCapable, "Hidden ship lacks authored cloak.");
                 }
                 if (b.State.NextRound == 1)
                 {
                     Require(b.State.RandomState == frozen.RandomState, "Initial seed was not allocated by the campaign.");
                     Require(b.State.Geometry.All(g => g.Range == TacticalRange.Distant && g.FacingA == TacticalSector.Fore && g.FacingB == TacticalSector.Fore), "Changed opening geometry.");
                     var expectedHidden = b.State.Formations.Where(f => s.FleetSettings.Single(p => p.FleetId == f.FormationId).ApproachCloak)
-                        .SelectMany(f => f.Ships).Where(p => cloak.Single(c => c.FitId == Fit(p.ShipId).DefinitionId).Capable == true).Select(p => p.ShipId).OrderBy(id => id, StringComparer.Ordinal);
+                        .SelectMany(f => f.Ships).Where(p => Equipment(p.ShipId).CloakCapable).Select(p => p.ShipId).OrderBy(id => id, StringComparer.Ordinal);
                     Require(expectedHidden.SequenceEqual(b.HiddenShipIds.OrderBy(id => id, StringComparer.Ordinal)), "Missing initial cloak state.");
                 }
                 Require(b.Commitments.All(c => c != null && c.Orders != null && game.Civilizations!.Any(a => a.CivilizationId == c.ActorId)
@@ -145,7 +145,7 @@ namespace HobbyDS9.Simulation
                             var fleet = b.State.Formations.SingleOrDefault(f => f.Ships.Any(p => p.ShipId == id));
                             Require(fleet != null, "Unknown report participant.");
                             if (fleet.SideId != r.ActorId) Require(!s.FleetSettings.Single(f => f.FleetId == fleet.FormationId).ApproachCloak
-                                || cloak.Single(c => c.FitId == Fit(id!).DefinitionId).Capable != true, "Hidden round-one identity in saved report.");
+                                || !Equipment(id!).CloakCapable, "Hidden round-one identity in saved report.");
                         }
                 }
                 foreach (var actor in b.Reports.Select(r => r.ActorId).Distinct(StringComparer.Ordinal))

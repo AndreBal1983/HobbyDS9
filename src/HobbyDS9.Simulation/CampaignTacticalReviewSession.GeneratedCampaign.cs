@@ -138,7 +138,7 @@ namespace HobbyDS9.Simulation
                 var detected = game.Fleets!.Where(f => CampaignPhysicalMovement.Hostile(declaredHostilities!, actor.CivilizationId, f.OwnerCivilizationId)
                     && f.TransitTotalCost == 0 && covered.Contains(f.LocationNodeId, StringComparer.Ordinal)
                     && (!settings.Single(s => s.FleetId == f.FleetId).ApproachCloak
-                        || f.ShipIds!.Any(id => cloak.Single(c => c.FitId == Fit(id).DefinitionId).Capable != true)))
+                        || f.ShipIds!.Any(id => !Equipment(id).CloakCapable)))
                     .OrderBy(f => f.FleetId, StringComparer.Ordinal).ToList();
                 contacts.RemoveAll(c => c.ActorId == actor.CivilizationId && covered.Contains(c.LastSeenNodeId, StringComparer.Ordinal)
                     && !detected.Any(f => f.FleetId == c.FleetId)); // No detection clears an obsolete track; it does not disprove stealth.

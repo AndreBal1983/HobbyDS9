@@ -21,9 +21,9 @@ namespace HobbyDS9.Simulation
                     g.Range, a ? g.FacingA : g.FacingB, a ? g.FacingB : g.FacingA);
             }).Where(g => own.Any(s => s.FleetId == g.OwnFleetId) && enemy.Any(s => s.FleetId == g.VisibleEnemyFleetId));
             var identities = own.Concat(enemy).OrderBy(s => s.ShipId, StringComparer.Ordinal).Select(s => {
-                var provision = Provision(s.ShipId);
-                var civilization = state.Campaign.GameState.Civilizations!.Single(c => c.CivilizationId == provision.OwnerCivilizationId);
-                return new CampaignPlaybackShipIdentity(s.ShipId, civilization.DefinitionId, provision.ShipDesignDefinitionId!);
+                var source = Equipment(s.ShipId);
+                var civilization = state.Campaign.GameState.Civilizations!.Single(c => c.CivilizationId == source.Owner);
+                return new CampaignPlaybackShipIdentity(s.ShipId, civilization.DefinitionId, source.PlaybackDesignId);
             });
             return new CampaignPlaybackBoundary(own, enemy, relations, identities);
         }

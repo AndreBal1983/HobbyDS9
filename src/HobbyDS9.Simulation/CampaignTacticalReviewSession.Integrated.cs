@@ -75,19 +75,7 @@ namespace HobbyDS9.Simulation
                 && p.ConstructionTemplates.Any(t => t.ShipDesignDefinitionId == q.ShipDesignDefinitionId)), "Unadmitted initial construction queue.");
         }
 
-        private AuthoredTacticalShipProvisionDto ResolveProvision(string id)
-        {
-            var source = definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.SingleOrDefault(p => p.ShipId == id);
-            if (source != null) return source;
-            var record = BuildRegistry.SingleOrDefault(b => b.ShipId == id);
-            Require(constructionTemplates != null && record != null, "Unbound produced ship source.");
-            var template = constructionTemplates!.Single(t => t.ShipDesignDefinitionId == record!.ShipDesignDefinitionId
-                && t.SourceProvisionShipId == record.SourceProvisionShipId);
-            var original = definitions.AuthoredTacticalEquipment.InitialShipProvisions.Single(p => p.ShipId == template.SourceProvisionShipId);
-            return new AuthoredTacticalShipProvisionDto { ShipId = id, OwnerCivilizationId = record!.OwnerCivilizationId,
-                ShipDesignDefinitionId = original.ShipDesignDefinitionId, FitDefinitionId = original.FitDefinitionId, FitRevision = original.FitRevision,
-                InitialShields = original.InitialShields, InitialAmmunition = original.InitialAmmunition };
-        }
+        private AuthoredTacticalShipProvisionDto ResolveProvision(string id) => Equipment(id).AuthoredProvision;
         private bool KnownSource(string ship) => definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Any(p => p.ShipId == ship)
             || constructionTemplates != null && BuildRegistry.Any(b => b.ShipId == ship);
         private string? KnownFleetOwner(string fleet)

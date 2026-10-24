@@ -9,9 +9,9 @@ public sealed class PublishedTacticalSupportTests
 {
     // Explicitly test-only source catalogue and support semantics; never live campaign content.
     public sealed class Fixture {public ShipDesignCatalogueDto Catalogue {get;set;}=null!;public ShipDesignAccessDto Access {get;set;}=null!;}
-    static Fixture Load()=>JsonSerializer.Deserialize<Fixture>(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"scenarios/ship-design-fixtures/fixture.json")))!;
+    internal static Fixture Load()=>JsonSerializer.Deserialize<Fixture>(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"scenarios/ship-design-fixtures/fixture.json")))!;
     static ShipDesigner Designer(Fixture f)=>ShipDesignApplication.Create(f.Catalogue).Designer!;
-    static ShipClassDraftDto Draft(Fixture f,bool beam=false,string? extra=null)
+    internal static ShipClassDraftDto Draft(Fixture f,bool beam=false,string? extra=null)
     {
         var ids=new List<string>{"component.reactor.v1","component.life-support.v1","component.command.v1","component.propulsion.v1"};if(beam){ids.Add("component.energy-bank.v1");ids.Add("component.escort-sensors.v1");}if(extra!=null)ids.Add(extra);
         return new(){ClassId="class.test.support",DisplayName="Test-only supported utility",HullVersionId="hull.utility.v1",RoleId="role.escort",EmbarkedCrew=30,
@@ -20,7 +20,7 @@ public sealed class PublishedTacticalSupportTests
                 var full=f.Catalogue.Components!.Single(c=>c.VersionId==id).Modes!.Single(m=>m.Profile==p).FullPower;
                 return new ProfilePowerAllocationDto {InstallationId="fit."+id,RequestedPower=full,AllocatedPower=full};}).ToList()}).ToList()};
     }
-    static TacticalSupportCatalogueDto Support(Fixture f)
+    internal static TacticalSupportCatalogueDto Support(Fixture f)
     {
         var hull=f.Catalogue.Hulls!.Single(h=>h.VersionId=="hull.utility.v1");var mount=hull.Mounts!.Single(m=>m.Kind==MountKind.EnergyBank);
         var beam=f.Catalogue.Components!.Single(c=>c.VersionId=="component.energy-bank.v1");
