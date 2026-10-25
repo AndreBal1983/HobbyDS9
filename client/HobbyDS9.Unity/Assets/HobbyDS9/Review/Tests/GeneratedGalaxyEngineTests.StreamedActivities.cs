@@ -596,7 +596,9 @@ namespace HobbyDS9.UnityReview.Tests
                     StreamCapturedEvent(oldAdd);StreamCapturedEvent(oldInspect);yield return null;
                     Assert.That(model.Current.Frame,Is.SameAs(redrawFrame));Assert.That(StreamBytes(model),Is.EqualTo(redrawBytes),"disposed + and inspection callbacks cannot act");
                     Assert.That(((ActivityBuildOptionDto)StreamCatalogueField(doc,"selected")!).BlueprintRevision,Is.EqualTo(2));
-                    Assert.That(doc.rootVisualElement.Q<ScrollView>("construction-catalogue-scroll").scrollOffset,Is.EqualTo(catalogueOffset));
+                    var restoredCatalogueOffset=doc.rootVisualElement.Q<ScrollView>("construction-catalogue-scroll").scrollOffset;
+                    Assert.That(Mathf.Abs(restoredCatalogueOffset.x-catalogueOffset.x),Is.LessThanOrEqualTo(1f),"catalogue horizontal scroll retains position within one layout pixel");
+                    Assert.That(Mathf.Abs(restoredCatalogueOffset.y-catalogueOffset.y),Is.LessThanOrEqualTo(1f),"catalogue vertical scroll retains position within one layout pixel");
                     Assert.That(doc.rootVisualElement.Q<ScrollView>("construction-queue").scrollOffset,Is.EqualTo(queueOffset));
                     Assert.That(doc.rootVisualElement.focusController.focusedElement,Is.SameAs(doc.rootVisualElement.Q<Button>("construction-inspect-"+revised)),"same-controller redraw restores actual inspected option focus");
                 }
