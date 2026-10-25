@@ -175,6 +175,7 @@ namespace HobbyDS9.UnityReview
         private void Navigate(ReviewWorkspacePage page)
         {
             if(workspace==null||confirmation!=null||!workspace.Navigate(page))return;
+            frontierCommissionOpen=false;
             viewEpoch++;Build(); // Old detached controls/modal permissions cannot act on another panel.
         }
         private static string PageLabel(ReviewWorkspacePage page)=>page==ReviewWorkspacePage.Research?"R&D":page==ReviewWorkspacePage.FleetOrders?"Fleet orders":page.ToString();

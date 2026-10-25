@@ -27,6 +27,7 @@ namespace HobbyDS9.UnityReview
             var body=new VisualElement();body.AddToClassList("console-body");root.Add(body);
             var nav=new ScrollView(ScrollViewMode.Vertical){name="review-workspace-navigation"};nav.AddToClassList("console-nav");body.Add(nav);if(PlayerProfile&&(demoLanding||!demoStarted))nav.style.display=DisplayStyle.None;
             if(PlayerProfile){var menu=AddButton(nav,"Menu",OpenDemoMenu);menu.name="demo-menu";}
+            AddFrontierCommissionNavigation(nav);
             foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Empire,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Display,ReviewWorkspacePage.Designer,ReviewWorkspacePage.Tools}.Where(p=>p!=ReviewWorkspacePage.Empire||model!.PlayableFleet))
             {
                 var b=AddButton(nav,(page==ReviewWorkspacePage.Map?"Map":model!.ActivitiesCampaign&&page==ReviewWorkspacePage.Production?"Activities":Title(page))+(workspace.Page==page?"  ›":""),()=>Navigate(page));b.name="review-nav-"+page;b.SetEnabled(workspace.CanNavigate);b.EnableInClassList("selected-nav",workspace.Page==page);
@@ -64,7 +65,9 @@ namespace HobbyDS9.UnityReview
             if(frame.Demo!=null&&!demoLanding){var goal=frame.Strategy!.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==frame.Demo.ObjectiveNodeId)?.DisplayName??"Objective sector";var objective=root!.Q<Label>("demo-objective");if(objective!=null)objective.text="Objective: "+goal+" · Through turn "+frame.Demo.LastTurn+" · "+frame.Demo.Outcome;}
             playerGuidance!.text=demoLanding?(generatedCampaignBusy?"Preparing campaign…":"Start a new galaxy or continue a saved campaign."):PlayerMessage();
             if(DrawCampaignBusy())return;
+            var commission=UpdateFrontierCommissionSummary();
             if(PlayerProfile&&demoLanding){playerTitle.text="Start / Continue";DrawDemoLanding();}
+            else if(frontierCommissionOpen&&commission!=null)DrawFrontierCommission(commission);
             else if(workspace.Page==ReviewWorkspacePage.Combat)central!.Render();
             else if(workspace.Page==ReviewWorkspacePage.Saves)DrawSaves();
             else if(workspace.Page==ReviewWorkspacePage.Audio)DrawAudio();

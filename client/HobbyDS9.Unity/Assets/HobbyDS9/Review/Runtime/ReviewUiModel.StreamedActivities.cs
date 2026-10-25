@@ -32,6 +32,8 @@ namespace HobbyDS9.UnityReview
          return new ReviewUiModel(package,codec,slots,opened.Host!,actor);}
         public CampaignStreamedActivityObservationDto StreamedActivities()
         {if(!StreamedActivitiesCampaign||Busy||Closed)throw new InvalidOperationException("Activity observation unavailable.");return host.CaptureStreamedActivities(Current.Frame);}
+        public FrontierCommissionSnapshot FrontierCommission()
+        {if(!StreamedActivitiesCampaign||Busy||Closed)throw new InvalidOperationException("Commission observation unavailable.");return host.CaptureFrontierCommission(Current.Frame);}
         public CampaignActivityEligibilityDto StreamedActivityEligibility(CampaignActivityCommandDto command)
         {if(!StreamedActivitiesCampaign||Busy||Closed||Current.HasPendingWork)throw new InvalidOperationException("Activity eligibility unavailable.");return host.EvaluateStreamedActivity(Current.Frame,command);}
         public bool SubmitStreamedActivity(CampaignActivityCommandDto command)=>Run(()=>{

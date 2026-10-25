@@ -10,6 +10,7 @@ namespace HobbyDS9.Application
         CampaignStaticAstronomySnapshot CaptureKnownAstronomy(string actor);
         CampaignStreamedActivitiesSaveDto ExportStreamedActivitiesSave();
         CampaignStreamedActivityObservationDto CaptureStreamedActivities(string actor);
+        FrontierCommissionSnapshot CaptureFrontierCommission(string actor);
         CampaignActivityEligibilityDto EvaluateActivity(CampaignActivityCommandDto command);
         CampaignTacticalMutationResult SubmitActivity(CampaignActivityCommandDto? command);
     }
@@ -25,6 +26,7 @@ namespace HobbyDS9.Application
         public CampaignStaticAstronomySnapshot CaptureKnownAstronomy(string actor)=>session.CaptureKnownAstronomy(actor);
         public CampaignStreamedActivitiesSaveDto ExportStreamedActivitiesSave()=>session.ExportStreamedActivitiesSave();
         public CampaignStreamedActivityObservationDto CaptureStreamedActivities(string actor)=>session.CaptureStreamedActivities(actor);
+        public FrontierCommissionSnapshot CaptureFrontierCommission(string actor)=>session.CaptureFrontierCommission(actor);
         public CampaignActivityEligibilityDto EvaluateActivity(CampaignActivityCommandDto command)=>session.EvaluateActivity(command);
         public CampaignTacticalMutationResult SubmitActivity(CampaignActivityCommandDto? command)=>session.SubmitActivity(command);
         public int RemainingPlayableOperations=>session.RemainingPlayableOperations;

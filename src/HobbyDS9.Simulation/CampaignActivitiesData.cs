@@ -68,14 +68,20 @@ namespace HobbyDS9.Simulation
                 p.BaseTemplate.ReplayOperationLimit!.Value.ToString(CultureInfo.InvariantCulture),p.RecordBudget.ToString(CultureInfo.InvariantCulture),
                 PublishedTacticalSupportEncoding.ActivityCatalogue(new ShipDesignCatalogueSnapshot(p.Catalogue!)),p.Content!.ContentId,p.Content.Revision.ToString(CultureInfo.InvariantCulture)};
             foreach(var pair in ready.OrderBy(x=>x.Key,StringComparer.Ordinal)){parts.Add(pair.Key);parts.Add(pair.Value.SupportHash);parts.Add(pair.Value.Tactical.SourceHash);}
+            parts.Add(Convert.ToBase64String(ContentEncoding(p.Content!)));
+            return Identity(parts.ToArray());
+        }
+        // Same explicit canonical bytes used by the existing package identity.
+        internal static byte[] ContentEncoding(CampaignActivityContentDto content)
+        {
             using(var bytes=new MemoryStream())using(var w=new BinaryWriter(bytes,Encoding.UTF8,true))
             {
                 void S(string s){var data=Encoding.UTF8.GetBytes(s);w.Write(data.Length);w.Write(data);}
-                foreach(var s in p.Content.Structures!.OrderBy(x=>x.DefinitionId,StringComparer.Ordinal))
+                foreach(var s in content.Structures!.OrderBy(x=>x.DefinitionId,StringComparer.Ordinal))
                 {S(s.DefinitionId);S(s.DisplayName);w.Write(s.Cost!.Credits);w.Write(s.Cost.Industry);w.Write(s.Cost.Maintenance);w.Write(s.Cost.Resources!.Count);
                  foreach(var r in s.Cost.Resources.OrderBy(x=>x.ResourceDefinitionId,StringComparer.Ordinal)){S(r.ResourceDefinitionId);w.Write(r.Amount);}
                  w.Write(s.Industry);w.Write(s.Research);w.Write(s.FoodOutput);w.Write(s.PowerDemand);}
-                foreach(var s in p.Content.Sites!.Concat(p.Content.Minors!.Select(m=>m.Encounter!)).OrderBy(x=>x.DefinitionId,StringComparer.Ordinal))
+                foreach(var s in content.Sites!.Concat(content.Minors!.Select(m=>m.Encounter!)).OrderBy(x=>x.DefinitionId,StringComparer.Ordinal))
                 {S(s.DefinitionId);S(s.Title);S(s.DiscoveryText);w.Write(s.Choices!.Count);
                  foreach(var c in s.Choices.OrderBy(x=>x.ChoiceId,StringComparer.Ordinal))
                  {S(c.ChoiceId);S(c.FindingId);S(c.Caption);S(c.Report);w.Write(c.RequiredStudy);w.Write(c.RequiredContact);w.Write(c.Work);w.Write(c.Deadline);w.Write(c.Credits);
@@ -83,12 +89,13 @@ namespace HobbyDS9.Simulation
                   w.Write(c.RequiredRelation.HasValue);if(c.RequiredRelation.HasValue)w.Write((int)c.RequiredRelation.Value);
                   w.Write(c.AcceptedRelation.HasValue);if(c.AcceptedRelation.HasValue)w.Write((int)c.AcceptedRelation.Value);
                   w.Write(c.RefusedRelation.HasValue);if(c.RefusedRelation.HasValue)w.Write((int)c.RefusedRelation.Value);w.Write(c.ConsentChanceBps);}}
-                foreach(var m in p.Content.Minors.OrderBy(x=>x.DefinitionId,StringComparer.Ordinal)){S(m.DefinitionId);S(m.DisplayName);S(m.SpeciesId);S(m.SpeciesName);w.Write(m.WarpCapable);S(m.Encounter!.DefinitionId);}
-                foreach(var s in p.Content.Species!.OrderBy(x=>x.SpeciesId,StringComparer.Ordinal)){S(s.SpeciesId);S(s.DisplayName);}
-                w.Flush();Require(bytes.Length<=128*1024,"Activity content encoding budget.");parts.Add(Convert.ToBase64String(bytes.ToArray()));
+                foreach(var m in content.Minors.OrderBy(x=>x.DefinitionId,StringComparer.Ordinal)){S(m.DefinitionId);S(m.DisplayName);S(m.SpeciesId);S(m.SpeciesName);w.Write(m.WarpCapable);S(m.Encounter!.DefinitionId);}
+                foreach(var s in content.Species!.OrderBy(x=>x.SpeciesId,StringComparer.Ordinal)){S(s.SpeciesId);S(s.DisplayName);}
+                w.Flush();Require(bytes.Length<=128*1024,"Activity content encoding budget.");return bytes.ToArray();
             }
-            return Identity(parts.ToArray());
         }
+        internal static string CommissionContentFingerprint(CampaignActivityContentDto content)
+            =>Identity("frontier-commission-content-v1",content.ContentId,content.Revision.ToString(CultureInfo.InvariantCulture),Convert.ToBase64String(ContentEncoding(content)));
         internal static CampaignActivityContentDto Copy(CampaignActivityContentDto c)=>new CampaignActivityContentDto{ContentId=c.ContentId,Revision=c.Revision,
             Structures=c.Structures!.Select(s=>new ActivityStructureDefinitionDto{DefinitionId=s.DefinitionId,DisplayName=s.DisplayName,Cost=BlueprintCopies.Copy(s.Cost!),Industry=s.Industry,Research=s.Research,FoodOutput=s.FoodOutput,PowerDemand=s.PowerDemand}).ToList(),
             Sites=c.Sites!.Select(Copy).ToList(),Minors=c.Minors!.Select(m=>new ActivityMinorDefinitionDto{DefinitionId=m.DefinitionId,DisplayName=m.DisplayName,SpeciesId=m.SpeciesId,SpeciesName=m.SpeciesName,WarpCapable=m.WarpCapable,Encounter=Copy(m.Encounter!)}).ToList(),
