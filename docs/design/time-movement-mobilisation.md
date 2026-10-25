@@ -73,6 +73,30 @@ Episode dialogue/reference estimates do not provide one consistent normal Sol–
 
 ## Expedited work and construction buyout
 
+### Normal production and material supply — agreed 25 October 2026
+
+The owner clarified that normal construction is a streaming resource queue. Industry
+and required materials are consumed as construction progresses; a normal order does
+not charge credits up front. Credits serve separately supported purposes such as
+construction buyouts, diplomacy and black-market trade. This agreement does not
+claim those other systems or a buyout formula are already implemented.
+
+Materials such as dilithium must actually be available through a trade network able
+to supply the construction location before work can begin. They are consumed
+gradually, not purchased or deducted in full when the order is queued. Delivery
+interruptions pause construction while retaining completed work; supply restoration
+allows it to resume. Availability elsewhere in the empire is insufficient without
+a usable supply connection and actual delivery. Existing stock, delivery capacity
+and blockade rules must remain authoritative rather than inventing an empire-wide
+warehouse or silently importing resources during Planning.
+
+**Implementation status:** this supersedes the upfront-credit/material payment
+assumption for the next activities campaign. Earlier implemented campaigns and their
+saves retain their versioned rules. The exact discrete material apportionment,
+construction demand priority and new profile/persistence contract require a scoped
+implementation review; the accepted older paid-construction source checkpoint is
+not evidence that this streaming behavior is implemented.
+
 Credits fund additional shifts, contractors, procurement, transport, housing or security effort where the relevant system supports it. Every eligible project defines normal work, available acceleration, incremental cost, constraints and earliest completion.
 
 General expediting has diminishing returns/capacity limits. A completed ship buyout may be a special, explicitly supported full acceleration option; do not make every social or scientific process instantly purchasable.
