@@ -239,23 +239,47 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static IEnumerator StreamRejectedCatalogue(UIDocument doc,ReviewEntry entry,int shipIndex)
         {
-            var model=CampaignModel(entry);var own=model.Activities();
-            var world=model.Current.Frame.Strategy!.Colonies.Where(c=>!c.Economy.Shipbuilding).OrderBy(c=>c.ColonyId.Value,StringComparer.Ordinal).FirstOrDefault();
-            Assert.That(world,Is.Not.Null,"official campaign has a naturally observed own world without shipbuilding; no private fixture substitution");
-            doc.rootVisualElement.Q<DropdownField>("activity-colony-selector").index=own.Colonies.FindIndex(c=>c.ColonyId==world!.ColonyId.Value);yield return null;yield return null;
-            var before=StreamBytes(model);var frame=model.Current.Frame;var old=doc.rootVisualElement.Q<ReviewActivitiesPanel>();var add=old.Q<Button>("construction-add-"+shipIndex);
-            Assert.That(add.enabledInHierarchy,Is.True,"supported ship + is naturally enabled; authoritative yard check still happens at submission");
-            yield return StreamClick(doc,add.name);Assert.That(doc.rootVisualElement.Q("activity-order-confirm"),Is.Null);
-            Assert.That(StreamBytes(model),Is.EqualTo(before));Assert.That(model.Current.Frame,Is.SameAs(frame));
-            var fresh=doc.rootVisualElement.Q<ReviewActivitiesPanel>();Assert.That(fresh,Is.Not.SameAs(old));
-            var status=fresh.Q<Label>("construction-command-status");Assert.That(status.text,Is.EqualTo("That class or construction site is not supported here."));
-            PublishedReceivingContained(doc.rootVisualElement.worldBound,status,"actual fresh construction rejection label");Assert.That(status.worldBound.yMax,Is.LessThanOrEqualTo(doc.rootVisualElement.Q("player-footer").worldBound.yMin));
-            Assert.That(status.resolvedStyle.display,Is.Not.EqualTo(DisplayStyle.None));Assert.That(status.resolvedStyle.fontSize,Is.GreaterThanOrEqualTo(16));
-            StreamCapturedEvent(add);yield return null;Assert.That(StreamBytes(model),Is.EqualTo(before),"disposed rejected + cannot silently retry");
-            yield return StreamCapture(doc,new Vector2Int(1280,720),"catalogue-rejected-inspector",inspectId:"construction-inspect-"+shipIndex);
-            Assert.That(doc.rootVisualElement.Q<Label>("construction-command-status").text,Is.EqualTo(status.text),"same-owner resize redraw retains actual rejection text");
-            File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-catalogue-rejection.json"),JsonConvert.SerializeObject(new{world=world!.ColonyId.Value,text=status.text,wholeRootUnchanged=true,actualVisibleFreshLabel=true}));
-            yield return StreamPage(doc);Assert.That(doc.rootVisualElement.Q<Label>("construction-command-status").text,Is.Not.EqualTo(status.text),"another own world cannot inherit the rejection");
+            // Real public host mutation intentionally makes the displayed observation
+            // stale. This proves Begin refusal/visible feedback, not UnsupportedSource.
+            var previous=doc.panelSettings.targetTexture;var width=doc.rootVisualElement.style.width;var height=doc.rootVisualElement.style.height;
+            var target=new RenderTexture(1280,720,24,RenderTextureFormat.ARGB32);
+            try
+            {
+                Assert.That(target.Create(),Is.True);doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=1280;doc.rootVisualElement.style.height=720;
+                yield return null;yield return null;yield return null;
+                var model=CampaignModel(entry);var controller=model.Current;var frame=controller.Frame;
+                var panel=doc.rootVisualElement.Q<ReviewActivitiesPanel>();var add=panel.Q<Button>("construction-add-"+shipIndex);
+                yield return StreamReachButton(doc,add);
+                var colony=model.Activities().Colonies[doc.rootVisualElement.Q<DropdownField>("activity-colony-selector").index].ColonyId;
+                var host=StreamHost(model);int units=frame.Strategy!.Research.ScienceAllocationUnits==300?400:300;
+                var command=model.StrategicEnvelope(CommandKind.SetResearchAllocation,ReviewUiModel.NewCommandId());
+                command.SetResearchAllocation=new SetResearchAllocationPayload{ScienceAllocationUnits=units};
+                var changed=host.SubmitStrategicCommand(frame,command);Assert.That(changed.Accepted,Is.True,"real research command creates the stale presentation");
+                var actual=host.Read(frame.Actor);Assert.That(actual.Status.CampaignRevision,Is.GreaterThan(frame.Status.CampaignRevision));
+                Assert.That(actual.Strategy!.Research.ScienceAllocationUnits,Is.EqualTo(units));
+                Assert.That(model.Current,Is.SameAs(controller));Assert.That(model.Current.Frame,Is.SameAs(frame));
+                var afterResearch=StreamBytes(model);
+                Assert.That(add.enabledInHierarchy,Is.True);var picked=doc.rootVisualElement.panel.Pick(add.worldBound.center);
+                Assert.That(picked==add||(picked!=null&&add.Contains(picked)),Is.True,"real attached stale + remains the actual pick target");
+                Click(add);yield return StreamUiIdle(entry,"stale-construction-begin-refusal");
+                Assert.That(model.Busy,Is.False);Assert.That(CheckpointField(entry,"streamedUiWork"),Is.Null);Assert.That(doc.rootVisualElement.Q("activity-order-confirm"),Is.Null);
+                Assert.That(doc.rootVisualElement.Q<ReviewActivitiesPanel>(),Is.SameAs(panel),"null Begin refreshes only the current owned feedback, without stale recapture");
+                Assert.That(model.Current,Is.SameAs(controller));Assert.That(model.Current.Frame,Is.SameAs(frame));
+                var status=panel.Q<Label>("construction-command-status");const string refusal="The campaign changed. Refresh before adding construction.";
+                Assert.That(status.text,Is.EqualTo(refusal));PublishedReceivingContained(doc.rootVisualElement.worldBound,status,"actual current stale-observation rejection label");
+                Assert.That(status.worldBound.yMax,Is.LessThanOrEqualTo(doc.rootVisualElement.Q("player-footer").worldBound.yMin));
+                Assert.That(status.resolvedStyle.display,Is.Not.EqualTo(DisplayStyle.None));Assert.That(status.resolvedStyle.fontSize,Is.GreaterThanOrEqualTo(16));
+                Assert.That(StreamBytes(model),Is.EqualTo(afterResearch),"rejected + changes no post-research root, order, payment or counter");
+                StreamCapturedEvent(add);yield return null;Assert.That(StreamBytes(model),Is.EqualTo(afterResearch),"latched stale + cannot retry");
+                // Do not resize or query the intentionally stale observation for capture.
+                CheckpointCapture(doc,"streamed-catalogue-stale-observation-1280x720");
+                File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-catalogue-stale-observation.json"),JsonConvert.SerializeObject(new{colony,text=status.text,observedRevision=frame.Status.CampaignRevision,actualRevision=actual.Status.CampaignRevision,postResearchWholeRootUnchanged=true,currentVisibleLabel=true,beginRefused=true,sharedSimulationRejection=false,freshReplacementPanel=false}));
+                Assert.That(model.Refresh(),Is.True);typeof(ReviewEntry).GetMethod("Draw",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entry,null);yield return null;yield return null;
+                Assert.That(model.Current.Frame.Status.CampaignRevision,Is.EqualTo(actual.Status.CampaignRevision));Assert.That(StreamBytes(model),Is.EqualTo(afterResearch));
+                Assert.That(doc.rootVisualElement.Q<Label>("construction-command-status").text,Is.Not.EqualTo(refusal),"fresh observation cannot inherit stale-frame feedback");
+            }
+            finally{doc.panelSettings.targetTexture=previous;doc.rootVisualElement.style.width=width;doc.rootVisualElement.style.height=height;target.Release();UnityEngine.Object.DestroyImmediate(target);}
+            yield return null;yield return null;yield return null;yield return StreamPage(doc);
         }
         private static IEnumerator StreamCatalogueReachable(UIDocument doc,string? inspectId)
         {
@@ -619,7 +643,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(CampaignModel(entry).StreamedActivitiesCampaign,Is.False);Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(CampaignModel(entry))),Is.EqualTo(codec.EncodeStaticAstronomyCampaignRoot(legacy)));
                 yield return StreamCapture(doc,new Vector2Int(1280,720),"separate-v2-explore");
                 int captures=Directory.GetFiles(CampaignOutput(),"streamed-*.png").Length+Directory.GetFiles(CampaignOutput(),"checkpoint-streamed-*.png").Length;Assert.That(captures,Is.EqualTo(23));
-                File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-results.json"),JsonConvert.SerializeObject(new{passed=true,captures,normalConstructionCredits=false,gradualMaterials=true,mixedFifo=true,frozenR1=true,r2Published=true,scienceAndMinor=true,directAddExactlyOnce=true,visibleRejectedAdd=true,consumedCancellation=true,heldCancellationPreviewSubmitAdvance=true,disableCancelledPreviewThenNewLease=true,commissionCompleted=true,commissionReportSaveContinueExact=true,continuedSandbox=true,typedContinueExact=true,threeOwnReadyHullComponentProof=true,departureAbortBranchThenOfficialSavedActiveRestore=true,continuousAbortAndClaimHistory=false,nativeInput=false}));
+                File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-results.json"),JsonConvert.SerializeObject(new{passed=true,captures,normalConstructionCredits=false,gradualMaterials=true,mixedFifo=true,frozenR1=true,r2Published=true,scienceAndMinor=true,directAddExactlyOnce=true,visibleStaleObservationRejectedAdd=true,consumedCancellation=true,heldCancellationPreviewSubmitAdvance=true,disableCancelledPreviewThenNewLease=true,commissionCompleted=true,commissionReportSaveContinueExact=true,continuedSandbox=true,typedContinueExact=true,threeOwnReadyHullComponentProof=true,departureAbortBranchThenOfficialSavedActiveRestore=true,continuousAbortAndClaimHistory=false,nativeInput=false}));
             }
         }
         private IEnumerator StreamExpedition(PublishedReceivingState state,UIDocument doc,ReviewEntry entry,bool minor)
