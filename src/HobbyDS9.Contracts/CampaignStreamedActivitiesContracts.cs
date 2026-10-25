@@ -67,6 +67,34 @@ namespace HobbyDS9.Contracts
         public List<StreamedProductionItemDto> Production {get;set;}=new List<StreamedProductionItemDto>();
         public List<StreamedOwnColonySupplyDto> Supply {get;set;}=new List<StreamedOwnColonySupplyDto>();
         public List<StreamedProductionAvailabilityDto> Availability {get;set;}=new List<StreamedProductionAvailabilityDto>();
+        // Derived own-colony UI facts only; never part of a saved root or command authority.
+        public List<StreamedColonyConstructionDto> Construction {get;set;}=new List<StreamedColonyConstructionDto>();
+    }
+    public enum StreamedConstructionProjectionStatus { Available=1, ArithmeticOverflow=2 }
+    public enum StreamedBuildingUnavailable { None=0, AlreadyBuilt=1, AlreadyQueued=2 }
+    public sealed class StreamedConstructionOutputDto
+    {public long Industry {get;set;}public long Research {get;set;}public long Food {get;set;}}
+    public sealed class StreamedConstructionProjectionDto
+    {
+        public StreamedConstructionProjectionStatus Status {get;set;}
+        public StreamedConstructionOutputDto? Output {get;set;}
+        public string Reason {get;set;}="";
+    }
+    public sealed class StreamedBuildingConstructionDto
+    {
+        public string DefinitionId {get;set;}="";
+        public int BuiltCount {get;set;}public int QueuedCount {get;set;}
+        public StreamedBuildingUnavailable Unavailable {get;set;}
+        // Null means the existing unique-building rule makes another inapplicable.
+        public StreamedConstructionProjectionDto? AfterOne {get;set;}
+        public StreamedConstructionProjectionDto? AfterPendingAndOne {get;set;}
+    }
+    public sealed class StreamedColonyConstructionDto
+    {
+        public string ColonyId {get;set;}="";
+        public StreamedConstructionOutputDto Current {get;set;}=new StreamedConstructionOutputDto();
+        public StreamedConstructionProjectionDto AfterPendingStructures {get;set;}=new StreamedConstructionProjectionDto();
+        public List<StreamedBuildingConstructionDto> Buildings {get;set;}=new List<StreamedBuildingConstructionDto>();
     }
     public sealed class StreamedProductionAvailabilityDto
     {

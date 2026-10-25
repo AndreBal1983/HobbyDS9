@@ -72,7 +72,7 @@ namespace HobbyDS9.Simulation
                 var game=state.Campaign.GameState;var own=game.Colonies!.Where(c=>c.OwnerCivilizationId==actor).ToList();
                 // The ordinary immutable class valuation remains in authority; normal production costs zero credits here.
                 foreach(var option in observation.BuildOptions)option.Cost.Credits=0;
-                var result=new CampaignStreamedActivityObservationDto{Activities=observation,
+                var result=new CampaignStreamedActivityObservationDto{Activities=observation,Construction=CaptureStreamedConstruction(own,game),
                     Production=Streams!.Production.Where(q=>q.OwnerId==actor).Select(CampaignStreamedActivitiesData.Copy).ToList(),
                     Supply=own.Select(c=>new StreamedOwnColonySupplyDto{ColonyId=c.ColonyId,Stocks=c.Stockpiles!.Select(PopulationData.Copy).ToList(),
                         Deliveries=game.LastDeliveries!.Where(d=>d.DestinationPlanetId==c.PlanetId).Select(PopulationData.Copy).ToList()}).ToList()};
