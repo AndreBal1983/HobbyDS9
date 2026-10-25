@@ -49,6 +49,23 @@ public sealed class PublishedConstructionBindingTests : IDisposable
         Assert.Throws<ArgumentException>(()=>Host(controller).LoadCommitted(handle,Human,null));
         Assert.True(controller.SaveCommittedToSlot("three").Succeeded);Assert.Equal(bytes,File.ReadAllBytes(FileFor("three")));
     }
+    [Fact] public void SameFrameRedrawDoesNotInvalidateCapturedConfirmationButUnissuedCopiesAreRejected()
+    {
+        var model=Model();var p=Publish(model);
+        var captured=model.ConstructionEligibility(p.BlueprintId,1,"colony.sol");
+        var frame=model.Current.Frame;var money=frame.Strategy!.Civilization.Credits;
+        var redraw=model.ConstructionEligibility(p.BlueprintId,1,"colony.sol");
+        Assert.NotSame(captured,redraw);Assert.Same(frame,model.Current.Frame);
+        var forged=new CampaignPublishedConstructionEligibility(captured.ActorId,captured.Turn,captured.CampaignRevision,
+            captured.BlueprintId,captured.BlueprintRevision,captured.ColonyId,captured.Cost,captured.OrdinaryReason,captured.SupportIssues,captured.CommandResult);
+        Assert.False(model.EnqueuePublished(forged,ReviewUiModel.NewCommandId()));
+        Assert.Equal(money,model.Current.Frame.Strategy!.Civilization.Credits);
+        Assert.True(model.EnqueuePublished(captured,ReviewUiModel.NewCommandId()),model.Message);
+        Assert.Equal(money-captured.Cost.Credits,model.Current.Frame.Strategy!.Civilization.Credits);
+        var after=model.Current.Frame;
+        Assert.False(model.EnqueuePublished(redraw,ReviewUiModel.NewCommandId()));
+        Assert.Same(after,model.Current.Frame);
+    }
     [Fact] public void StrictCarrierRejectsWrongOrStrippedMarkersButReplayStillRejectsAdmittedForgeryAtomically()
     {
         var model=Model();Assert.True(model.Save("one"));var root=Store().Read("one");

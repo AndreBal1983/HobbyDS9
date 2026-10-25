@@ -170,8 +170,18 @@ namespace HobbyDS9.UnityReview.Tests
                 Click(CampaignButton(doc,"Discard changes"));Confirm(doc);yield return null;
                 CampaignPage(doc,ReviewWorkspacePage.Designer);Click(doc.rootVisualElement.Q<Button>("integrated-design-refresh"));yield return null;
                 PublishedReceivingSelect(doc,"Checkpoint Escort",colony);yield return null;var cost=revision1.Blueprint.Performance.Cost!;
-                cash=model.Current.Frame.Strategy!.Civilization.Credits;Click(doc.rootVisualElement.Q<Button>("published-construction-queue"));Confirm(doc);yield return null;
-                Assert.That(model.Current.Frame.Strategy!.Civilization.Credits,Is.EqualTo(cash-cost.Credits));
+                var queueButton=doc.rootVisualElement.Q<Button>("published-construction-queue");
+                var eligibilityText=doc.rootVisualElement.Q<Label>("published-construction-eligibility").text;
+                cash=model.Current.Frame.Strategy!.Civilization.Credits;
+                File.WriteAllText(Path.Combine(CampaignOutput(),"construction-before-payment.json"),JsonConvert.SerializeObject(new{
+                    enabled=queueButton.enabledInHierarchy,eligibilityText,selectedRevision=doc.rootVisualElement.Q<DropdownField>("published-construction-revision").value,
+                    colony,cash,cost,model.Message,model.Current.Dirty,model.Current.RefreshRequired,model.Current.Frame.Status.Turn,model.Current.Frame.Status.CampaignRevision}));
+                Assert.That(queueButton.enabledInHierarchy,Is.True,eligibilityText);Assert.That(eligibilityText,Does.Contain("eligible"));
+                Click(queueButton);Confirm(doc);yield return null;
+                File.WriteAllText(Path.Combine(CampaignOutput(),"construction-after-payment.json"),JsonConvert.SerializeObject(new{
+                    cash=model.Current.Frame.Strategy!.Civilization.Credits,model.Message,model.Current.Dirty,model.Current.RefreshRequired,
+                    model.Current.Frame.Status.Turn,model.Current.Frame.Status.CampaignRevision}));
+                Assert.That(model.Current.Frame.Strategy!.Civilization.Credits,Is.EqualTo(cash-cost.Credits),model.Message);
                 Click(doc.rootVisualElement.Q<Button>("integrated-design-refresh"));yield return null;doc.rootVisualElement.Q<TextField>("designer-name").value="Checkpoint Escort II";yield return null;Click(doc.rootVisualElement.Q<Button>("integrated-design-publish"));yield return null;
                 Assert.That(JsonConvert.SerializeObject(model.DesignLibrary().Published.Single(r=>r.Blueprint.BlueprintId==blueprint&&r.Blueprint.Revision==1).Blueprint),Is.EqualTo(frozen));
                 PublishedReceivingSelect(doc,"Checkpoint Escort II",colony);

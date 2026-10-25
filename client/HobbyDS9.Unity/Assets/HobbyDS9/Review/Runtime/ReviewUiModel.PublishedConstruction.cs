@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Runtime.CompilerServices;
 using HobbyDS9.Contracts;
 using HobbyDS9.TacticalReviewClient;
 
@@ -10,7 +11,9 @@ namespace HobbyDS9.UnityReview
         private readonly CampaignPublishedConstructionPackageDto? publishedConstructionPackage;
         private readonly ReviewPublishedConstructionSlotStore? publishedConstructionSlots;
         public bool PublishedConstructionCampaign=>publishedConstructionPackage!=null;
-        private CampaignPublishedConstructionEligibility? constructionObservation;
+        // Multiple views/modal redraws may observe the same frame. Issuance is reference-keyed,
+        // weakly held, and scoped to that exact controller/frame, never to the latest redraw.
+        private ConditionalWeakTable<CampaignPublishedConstructionEligibility,object> constructionObservations=new();
         private ReviewController? constructionObserver;
         private ReviewFrame? constructionFrame;
         public ReviewUiModel(CampaignPublishedConstructionPackageDto package,NaturalGalaxySettingsDto settings,
@@ -35,11 +38,13 @@ namespace HobbyDS9.UnityReview
         public CampaignPublishedConstructionEligibility ConstructionEligibility(string blueprint,int revision,string colony)
         {if(!PublishedConstructionCampaign||Busy||Closed)throw new InvalidOperationException("Construction observation unavailable.");
          var result=host.CaptureConstructionEligibility(Current.Frame,blueprint,revision,colony);
-         constructionObservation=result;constructionObserver=Current;constructionFrame=Current.Frame;return result;}
+         if(!ReferenceEquals(constructionObserver,Current)||!ReferenceEquals(constructionFrame,Current.Frame))
+             constructionObservations=new ConditionalWeakTable<CampaignPublishedConstructionEligibility,object>();
+         constructionObserver=Current;constructionFrame=Current.Frame;constructionObservations.Add(result,new object());return result;}
         public bool EnqueuePublished(CampaignPublishedConstructionEligibility observed,string command)
         {
             if(!PublishedConstructionCampaign||Busy||Closed||Current.HasPendingWork||Current.Dirty||Current.RefreshRequired
-                ||!ReferenceEquals(observed,constructionObservation)||!ReferenceEquals(Current,constructionObserver)||!ReferenceEquals(Current.Frame,constructionFrame)
+                ||observed==null||!constructionObservations.TryGetValue(observed,out _)||!ReferenceEquals(Current,constructionObserver)||!ReferenceEquals(Current.Frame,constructionFrame)
                 ||observed.ActorId!=Current.Frame.Actor||observed.Turn!=Current.Frame.Status.Turn||observed.CampaignRevision!=Current.Frame.Status.CampaignRevision)
             {Message="Construction observation changed. Refresh before retrying; no payment made.";return false;}
             var c=StrategicEnvelope(CommandKind.EnqueueBlueprintConstruction,command);c.EnqueueBlueprintConstruction=new EnqueueBlueprintConstructionPayload{
