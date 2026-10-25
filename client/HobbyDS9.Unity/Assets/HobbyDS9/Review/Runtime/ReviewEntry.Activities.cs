@@ -13,7 +13,9 @@ namespace HobbyDS9.UnityReview
         {
             // Build replaces the entire shell after an accepted command. Capture
             // only the live old panel of this exact session before root.Clear.
-            activitiesRebuildSelection=model!=null&&ReferenceEquals(activitiesPanelOwner,model)
+            activitiesRebuildSelection=!demoLanding&&workspace!=null
+                &&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds)
+                &&model!=null&&ReferenceEquals(activitiesPanelOwner,model)
                 &&ReferenceEquals(activitiesPanelController,model.Current)?root?.Q<ReviewActivitiesPanel>()?.CaptureSelection():null;
         }
         private void DrawActivitiesMenu(VisualElement parent)
