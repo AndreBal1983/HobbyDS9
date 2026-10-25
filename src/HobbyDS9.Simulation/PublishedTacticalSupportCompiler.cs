@@ -11,31 +11,29 @@ namespace HobbyDS9.Simulation
     // Pure opt-in inspection only: never called by a live campaign/profile in this packet.
     public static class PublishedTacticalSupportCompiler
     {
-        public static PublishedTacticalSupportResult Evaluate(ShipDesignCatalogueSnapshot catalogue,PublishedShipBlueprint publication,
-            ShipDesignAccessDto access,TacticalSupportCatalogueDto support)
+        private sealed class SupportMappings
+        {
+            internal readonly Dictionary<string,TacticalHullSupportDto> Hulls;
+            internal readonly Dictionary<string,TacticalComponentSupportDto> Components;
+            internal SupportMappings(Dictionary<string,TacticalHullSupportDto> hulls,Dictionary<string,TacticalComponentSupportDto> components)
+            { Hulls=hulls;Components=components; }
+        }
+        // Same metadata validation used by standalone derivation and explicit package ingress.
+        internal static string ValidateMetadata(ShipDesignCatalogueSnapshot catalogue,TacticalSupportCatalogueDto support)
         {
             var issues=new List<TacticalSupportIssue>();
-            void Error(TacticalSupportIssueCode c,string p)=>issues.Add(new TacticalSupportIssue(c,p));
-            PublishedTacticalSupportResult Rejected()=>new PublishedTacticalSupportResult(issues);
-            try
-            {
-                if(catalogue==null||catalogue.FormatVersion!=ShipDesignVersions.CatalogueFormat||publication==null||access==null||publication.Fit==null||publication.Hull==null||publication.Components==null||publication.Performance==null||publication.Performance.Cost==null||publication.Performance.Compiled==null){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
-                ShipBlueprintPublicationResult ordinary;
-                try{ordinary=new ShipDesignCompiler(catalogue).Publish(Draft(publication.Fit),access,publication.BlueprintId,publication.Revision);}
-                catch(ArgumentException){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
-                catch(InvalidOperationException){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
-                if(!ordinary.Published){Error(TacticalSupportIssueCode.OrdinaryDesignRejected,"$.Publication");return new PublishedTacticalSupportResult(issues,null,ordinary.Preview.Issues);}
-                // Public snapshot constructors are not an authority bypass: independently recompile.
-                var encodingBudget=new PublishedTacticalSupportEncoding.Budget();
-                var suppliedSourceHash=PublishedTacticalSupportEncoding.Publication(publication,encodingBudget);
-                var sourceHash=PublishedTacticalSupportEncoding.Publication(ordinary.Blueprint!,encodingBudget);
-                if(suppliedSourceHash!=sourceHash){Error(TacticalSupportIssueCode.IdentityMismatch,"$.Publication");return Rejected();}
+            var mappings=MapMetadata(catalogue,support,(c,p)=>issues.Add(new TacticalSupportIssue(c,p)));
+            if(mappings==null||issues.Count!=0)throw new ArgumentException("Unsupported tactical support metadata.");
+            return PublishedTacticalSupportEncoding.Support(support,new PublishedTacticalSupportEncoding.Budget());
+        }
+        private static SupportMappings? MapMetadata(ShipDesignCatalogueSnapshot catalogue,TacticalSupportCatalogueDto support,Action<TacticalSupportIssueCode,string> Error)
+        {
                 if(support==null||support.FormatVersion!=PublishedTacticalSupportIdentity.Format||support.SchemaId!=PublishedTacticalSupportIdentity.Schema
                     ||!DefinitionId.TryParse(support.CatalogueId,out _)||support.Revision==null||support.Revision<1
                     ||support.SourceCompilerId!=ShipDesignVersions.Compiler||support.BalanceStatus!="provisional-test-only"
                     ||support.CloakPolicyId!=PublishedTacticalSupportIdentity.NoCloak
                     ||support.Hulls==null||support.Hulls.Count==0||support.Hulls.Count>64||support.Components==null||support.Components.Count==0||support.Components.Count>256)
-                {Error(TacticalSupportIssueCode.InvalidMetadata,"$.Support");return Rejected();}
+                {Error(TacticalSupportIssueCode.InvalidMetadata,"$.Support");return null;}
                 var hulls=new Dictionary<string,TacticalHullSupportDto>(StringComparer.Ordinal);
                 foreach(var h in support.Hulls)
                 {
@@ -64,7 +62,31 @@ namespace HobbyDS9.Simulation
                         ||(c.Kind==TacticalComponentSupportKind.Beam&&!Beam(c.Beam)))
                         Error(TacticalSupportIssueCode.InvalidMetadata,"$.Support.Components."+c.ComponentVersionId);
                 }
-                if(issues.Count>0)return Rejected();
+                return new SupportMappings(hulls,components);
+
+        }
+        public static PublishedTacticalSupportResult Evaluate(ShipDesignCatalogueSnapshot catalogue,PublishedShipBlueprint publication,
+            ShipDesignAccessDto access,TacticalSupportCatalogueDto support)
+        {
+            var issues=new List<TacticalSupportIssue>();
+            void Error(TacticalSupportIssueCode c,string p)=>issues.Add(new TacticalSupportIssue(c,p));
+            PublishedTacticalSupportResult Rejected()=>new PublishedTacticalSupportResult(issues);
+            try
+            {
+                if(catalogue==null||catalogue.FormatVersion!=ShipDesignVersions.CatalogueFormat||publication==null||access==null||publication.Fit==null||publication.Hull==null||publication.Components==null||publication.Performance==null||publication.Performance.Cost==null||publication.Performance.Compiled==null){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
+                ShipBlueprintPublicationResult ordinary;
+                try{ordinary=new ShipDesignCompiler(catalogue).Publish(Draft(publication.Fit),access,publication.BlueprintId,publication.Revision);}
+                catch(ArgumentException){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
+                catch(InvalidOperationException){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
+                if(!ordinary.Published){Error(TacticalSupportIssueCode.OrdinaryDesignRejected,"$.Publication");return new PublishedTacticalSupportResult(issues,null,ordinary.Preview.Issues);}
+                // Public snapshot constructors are not an authority bypass: independently recompile.
+                var encodingBudget=new PublishedTacticalSupportEncoding.Budget();
+                var suppliedSourceHash=PublishedTacticalSupportEncoding.Publication(publication,encodingBudget);
+                var sourceHash=PublishedTacticalSupportEncoding.Publication(ordinary.Blueprint!,encodingBudget);
+                if(suppliedSourceHash!=sourceHash){Error(TacticalSupportIssueCode.IdentityMismatch,"$.Publication");return Rejected();}
+                var mappings=MapMetadata(catalogue,support,Error);
+                if(mappings==null||issues.Count>0)return Rejected();
+                var hulls=mappings.Hulls;var components=mappings.Components;
                 if(!hulls.TryGetValue(publication.Fit.HullVersionId,out var hull)){Error(TacticalSupportIssueCode.MissingMapping,"$.Publication.Hull");return Rejected();}
                 if(!hull.SupportedRoleIds!.Contains(publication.Fit.RoleId,StringComparer.Ordinal))Error(TacticalSupportIssueCode.UnsupportedRole,"$.Publication.Role");
                 var actual=ordinary.Blueprint!;var combat=actual.Performance.Profiles.Single(p=>p.Kind==OperatingProfileKind.Combat);

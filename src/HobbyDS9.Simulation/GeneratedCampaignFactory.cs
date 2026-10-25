@@ -69,9 +69,15 @@ namespace HobbyDS9.Simulation
         }
 
         internal static CampaignPlayableFleetPackageDto Build(CampaignPlayableFleetPackageDto template, NaturalGalaxyDocumentDto map, bool staticAstronomy = false)
+            => BuildFacts(template,map,staticAstronomy,null);
+        internal static CampaignPlayableFleetPackageDto BuildPublished(CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash)
+            => BuildFacts(template,map,true,wrapperHash);
+        private static CampaignPlayableFleetPackageDto BuildFacts(CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,bool staticAstronomy,string? wrapperHash)
         {
             // Existing template reader supplies the trusted exact raw-source identity.
             CampaignTacticalReviewSession.StartPlayable(template);
+            string Domain(string domain)=>wrapperHash==null?Identity(domain,template.PackageHash!,map.ContentHash,staticAstronomy)
+                :CampaignPublishedConstructionData.Identity(domain,wrapperHash,map.ContentHash);
             var source = template.Integrated!.Physical!.CorePackage!;
             var definitions = SimulationSession.CopyDefinitions(source.Campaign!.Definitions);
             var game = SimulationSession.CopyState(source.Campaign.InitialState);
@@ -128,16 +134,16 @@ namespace HobbyDS9.Simulation
                     Connections = edges.OrderBy(e => e.ConnectionId, StringComparer.Ordinal).Select(e => new NavigationKnowledgeEntryDto { Id = e.ConnectionId, Level = NavigationKnowledgeLevel.Charted }).ToList() };
             }).ToList();
             game.RngState.State = ulong.Parse(map.Settings.Map.Seed, CultureInfo.InvariantCulture) ^ 0x47454e43414d5031UL;
-            var scenario = new ScenarioDto { ScenarioId = staticAstronomy ? "scenario.generated-campaign-v2" : "scenario.generated-campaign-v1", RulesVersion = source.Campaign.RulesVersion,
-                ContentHash = Identity("scenario", template.PackageHash!, map.ContentHash, staticAstronomy), Definitions = definitions, InitialState = game };
+            var scenario = new ScenarioDto { ScenarioId = wrapperHash!=null?"scenario.generated-published-construction-v1":staticAstronomy ? "scenario.generated-campaign-v2" : "scenario.generated-campaign-v1", RulesVersion = source.Campaign.RulesVersion,
+                ContentHash = Domain("scenario"), Definitions = definitions, InitialState = game };
             FoundationValidator.ValidateScenario(scenario).ThrowIfInvalid(nameof(scenario));
             var core = new CampaignTacticalReviewPackageDto { FormatVersion = source.FormatVersion, ProfileId = source.ProfileId,
-                PackageHash = Identity("core", template.PackageHash!, map.ContentHash, staticAstronomy), PolicyStatus = source.PolicyStatus, DefaultActivationAllowed = false,
+                PackageHash = Domain("core"), PolicyStatus = source.PolicyStatus, DefaultActivationAllowed = false,
                 Campaign = scenario, Rules = CopyRules(source.Rules!), CloakSources = source.CloakSources!.Select(c => new CampaignTacticalCloakSourceDto {
                     FitId = c.FitId, FitRevision = c.FitRevision, Capable = c.Capable, ConcurrentPowerRequired = c.ConcurrentPowerRequired }).ToList() };
             var physicalSource = template.Integrated.Physical;
             var physical = new CampaignTacticalTravelPackageDto { FormatVersion = physicalSource.FormatVersion, ProfileId = physicalSource.ProfileId,
-                PackageHash = Identity("physical", template.PackageHash!, map.ContentHash, staticAstronomy), PolicyStatus = physicalSource.PolicyStatus, DefaultActivationAllowed = false,
+                PackageHash = Domain("physical"), PolicyStatus = physicalSource.PolicyStatus, DefaultActivationAllowed = false,
                 BoundaryPolicy = physicalSource.BoundaryPolicy, SharedStartPolicy = physicalSource.SharedStartPolicy, LaterArrivalPolicy = physicalSource.LaterArrivalPolicy,
                 ContactFreshnessTurns = physicalSource.ContactFreshnessTurns, CorePackage = core,
                 Hostilities = physicalSource.Hostilities!.Where(h => actors.Contains(h.CivilizationA) && actors.Contains(h.CivilizationB))
@@ -145,11 +151,11 @@ namespace HobbyDS9.Simulation
                 InitialContacts = new List<CampaignContactKnowledgeDto>(), InitialOrders = game.Fleets.Select(f => new CampaignTravelOrderDto {
                     FleetId = f.FleetId, Intent = CampaignTravelIntent.Stay, RouteNodeIds = new List<string>() }).ToList() };
             return new CampaignPlayableFleetPackageDto { FormatVersion = template.FormatVersion, ProfileId = template.ProfileId,
-                PackageHash = Identity("package", template.PackageHash!, map.ContentHash, staticAstronomy), PolicyStatus = template.PolicyStatus, DefaultActivationAllowed = false,
+                PackageHash = Domain("package"), PolicyStatus = template.PolicyStatus, DefaultActivationAllowed = false,
                 ReplayOperationLimit = template.ReplayOperationLimit, OpponentActorId = selected.Single(c => c.ControllerKind == ControllerKind.AI).CivilizationId,
                 DefenseNodeId = homes[selected[0].CivilizationId].NodeId, // Not used by generated policy; legacy package metadata only.
                 Integrated = new CampaignIntegratedPlaytestPackageDto { FormatVersion = template.Integrated.FormatVersion, ProfileId = template.Integrated.ProfileId,
-                    PackageHash = Identity("integrated", template.PackageHash!, map.ContentHash, staticAstronomy), PolicyStatus = template.Integrated.PolicyStatus, DefaultActivationAllowed = false,
+                    PackageHash = Domain("integrated"), PolicyStatus = template.Integrated.PolicyStatus, DefaultActivationAllowed = false,
                     Physical = physical, ConstructionTemplates = template.Integrated.ConstructionTemplates!.Select(t => new CampaignIntegratedConstructionTemplateDto {
                         ShipDesignDefinitionId = t.ShipDesignDefinitionId, SourceProvisionShipId = t.SourceProvisionShipId }).ToList() } };
         }
