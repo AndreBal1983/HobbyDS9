@@ -101,8 +101,9 @@ Review exact costs, powered capabilities and current eligibility in Activities.
 This is provisional demo content, not final balance. Read PLAY-STREAMED-ACTIVITIES.txt.
 ";
         private const string StreamedActivitiesWalkthrough=@"1. Start a campaign (seed 42 / 250 systems is the receiving baseline).
-2. In Activities, choose an owned world and review a structure or ready class.
-   Confirm the order. Industry works on one mixed FIFO head; materials are consumed
+2. In Activities, choose an owned world and use a tile's + to add one construction order.
+   Inspect tiles separately; the queue is on the right. No construction confirmation is needed.
+   Industry works on one mixed FIFO head; materials are consumed
    as work advances. End a week to see actual work, consumption, delivery and supply status.
    Fabrication, research and food structures alter the actual world economy on completion.
 3. Use the map to send an owned ship along a known route. Exploration reveals finite
