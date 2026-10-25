@@ -80,7 +80,7 @@ namespace HobbyDS9.UnityReview.Tests
             else Assert.That(confirm,Is.Not.EqualTo(false),"expected interruption warning is a real modal");
             yield return V3Settled(doc);
         }
-        private static IEnumerator StreamCapture(UIDocument doc,Vector2Int size,string label,bool review=false,bool expedition=false)
+        private static IEnumerator StreamCapture(UIDocument doc,Vector2Int size,string label,bool review=false,bool expedition=false,string? reviewId=null)
         {
             var previous=doc.panelSettings.targetTexture;var active=RenderTexture.active;var w=doc.rootVisualElement.style.width;var h=doc.rootVisualElement.style.height;
             var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);Texture2D? image=null;
@@ -88,6 +88,9 @@ namespace HobbyDS9.UnityReview.Tests
             {
                 Assert.That(target.Create(),Is.True);doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=size.x;doc.rootVisualElement.style.height=size.y;
                 yield return null;yield return null;yield return null;
+                // Resize can rebuild the surface and correctly dispose its old review.
+                // Review again through the current observed option, never a retained control.
+                if(review){Assert.That(reviewId,Is.Not.Null);yield return StreamClick(doc,reviewId!);}
                 var scroll=doc.rootVisualElement.Q<ScrollView>("activity-scroll");
                 if(scroll!=null){var item=doc.rootVisualElement.Q(expedition?"activity-known-sites":"activity-production-queue");if(item!=null)scroll.ScrollTo(item);yield return null;yield return null;}
                 RenderTexture.active=target;image=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);image.ReadPixels(new Rect(0,0,size.x,size.y),0,0);image.Apply();
@@ -117,6 +120,8 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally{doc.panelSettings.targetTexture=previous;doc.rootVisualElement.style.width=w;doc.rootVisualElement.style.height=h;RenderTexture.active=active;if(image!=null)UnityEngine.Object.DestroyImmediate(image);target.Release();UnityEngine.Object.DestroyImmediate(target);}
             yield return null;yield return null;yield return null;
+            // Surface restoration is another resize; leave a current review for Back.
+            if(review)yield return StreamClick(doc,reviewId!);
         }
         private static void StreamHullComponent(ActivityBuildOptionDto option)
         {
@@ -196,14 +201,14 @@ namespace HobbyDS9.UnityReview.Tests
                     Click(oldConfirm);yield return null;Assert.That(model.Current.Frame,Is.SameAs(redrawFrame));Assert.That(StreamBytes(model),Is.EqualTo(redrawBytes),"retained disposed Confirm cannot enqueue, spend or redraw state");
                     yield return StreamClick(doc,"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
                 }
-                foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"pending-review",true);
+                foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"pending-review",true,reviewId:"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
                 yield return StreamClick(doc,"activity-order-back",false);CampaignPage(doc,ReviewWorkspacePage.Designer);yield return null;doc.rootVisualElement.Q<TextField>("designer-name").value="Unsent local class edit";yield return null;Assert.That(model.LocalDesignDirty,Is.True);yield return StreamSaveContinue(state,doc,"pending");model=CampaignModel(entry);
                 bool progressed=false;for(int i=0;i<48&&model.StreamedActivities().Production.Count>0;i++)
                 {yield return StreamAdvance(doc,entry);var orders=model.StreamedActivities().Production;progressed|=orders.Any(q=>q.CompletedIndustry>0&&q.ConsumedResources!.Any(r=>r.Amount>0));}
                 var completed=StreamAudit(model);Assert.That(progressed,Is.True,"actual gradual work/material consumption observed");Assert.That(completed.Production,Is.Empty);Assert.That(completed.ProductionHistory!.Count(r=>r.Completed&&r.Order!.OwnerId==model.Activities().ActorId),Is.EqualTo(2));
                 Assert.That(completed.PublishedBuiltShips!.Single(r=>r.OwnerCivilizationId==model.Activities().ActorId).BlueprintRevision,Is.EqualTo(1));Assert.That(model.Activities().Structures.Count,Is.EqualTo(1));
                 yield return StreamSaveContinue(state,doc,"completed");model=CampaignModel(entry);yield return StreamPage(doc);yield return StreamClick(doc,"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
-                foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"continued-review",true);
+                foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"continued-review",true,reviewId:"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
                 yield return StreamClick(doc,"activity-order-back",false);
                 yield return StreamExpedition(doc,entry,false);yield return StreamExpedition(doc,entry,true);
                 yield return StreamSaveContinue(state,doc,"findings");model=CampaignModel(entry);
