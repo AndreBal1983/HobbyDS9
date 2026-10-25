@@ -12,7 +12,8 @@ public sealed partial class PublishedConstructionProfileTests
     static string Json<T>(T value)=>JsonSerializer.Serialize(value);
     static T Clone<T>(T value)=>JsonSerializer.Deserialize<T>(Json(value))!;
     internal static CampaignPublishedConstructionPackageDto Package()
-    {var p=PlayableFleetTests.Package();p.ReplayOperationLimit=65536;return CampaignPublishedConstructionApplication.CreatePackage(p,PublishedTacticalSupportTests.Support(PublishedTacticalSupportTests.Load()),512);}
+    {var p=PlayableFleetTests.Package();p.ReplayOperationLimit=65536;return CampaignPublishedConstructionApplication.CreatePackage(p,
+        JsonSerializer.Deserialize<HobbyDS9.Contracts.ShipDesign.TacticalSupportCatalogueDto>(File.ReadAllText(Path.Combine(AppContext.BaseDirectory,"scenarios/published-construction-v1/support.json")))!,512);}
     internal static NaturalGalaxySettingsDto Settings(int size=30)=>new(){Map=new(){Seed="42",SystemCount=size,EmptyRegionCount=size,Width=size==30?750000:2500000,Height=size==30?600000:2000000,
         HomeCivilizationDefinitionIds=new(){"civilization.federation","civilization.cardassian"}}};
     static void Publish(ICampaignPublishedConstructionSession app,int revision)
