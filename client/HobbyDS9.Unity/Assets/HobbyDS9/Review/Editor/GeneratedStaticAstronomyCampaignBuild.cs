@@ -78,6 +78,10 @@ namespace HobbyDS9.UnityReview.Editor
         public static void BuildWindowsStreamedActivitiesStabilisationCandidate()
             =>BuildStreamedActivitiesCheckpoint("Windows-StreamedActivities-StabilisationCandidate-20261025");
 
+        [MenuItem("HobbyDS9/Campaign/Build navigation responsiveness checkpoint")]
+        public static void BuildWindowsStreamedActivitiesNavigationIndices()
+            =>BuildStreamedActivitiesCheckpoint("Windows-StreamedActivities-NavigationIndices-20261025");
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName)
         {
             BuildWindows(stageName);
