@@ -18,11 +18,15 @@ namespace HobbyDS9.Simulation
             internal readonly Dictionary<string,ActivityModuleSupportDto> Modules;
             internal readonly string Hash;
             internal readonly string CatalogueId;internal readonly int Revision;
-            internal ActivityCompilation(Dictionary<string,ActivityModuleSupportDto> modules,string hash,string catalogueId,int revision)
-            {Modules=modules;Hash=hash;CatalogueId=catalogueId;Revision=revision;}
+            internal readonly string CompilerId;internal readonly SettlerModuleSupportDto? Settlers;
+            internal ActivityCompilation(Dictionary<string,ActivityModuleSupportDto> modules,string hash,string catalogueId,int revision,SettlerModuleSupportDto? settlers=null,string compilerId=ActivityTacticalSupportIdentity.Compiler)
+            {Modules=modules;Hash=hash;CatalogueId=catalogueId;Revision=revision;Settlers=settlers;CompilerId=compilerId;}
         }
         public static ActivitySupportResult EvaluateActivities(ShipDesignCatalogueSnapshot catalogue,PublishedShipBlueprint publication,
             ShipDesignAccessDto access,ActivityTacticalSupportCatalogueDto support)
+            =>EvaluateActivitiesCore(catalogue,publication,access,support,null);
+        private static ActivitySupportResult EvaluateActivitiesCore(ShipDesignCatalogueSnapshot catalogue,PublishedShipBlueprint publication,
+            ShipDesignAccessDto access,ActivityTacticalSupportCatalogueDto support,ColonisationCompilation? colonisation)
         {
             var issues=new List<TacticalSupportIssue>();
             void Error(string path)=>issues.Add(new TacticalSupportIssue(TacticalSupportIssueCode.InvalidMetadata,path));
@@ -74,7 +78,8 @@ namespace HobbyDS9.Simulation
                 if(issues.Count>0)return Reject();
                 var hash=ActivityHash(support,innerHash,modules.Values);
                 // Recompile the COMPLETE ordinary publication, source facts and costs before any successful result.
-                var tactical=EvaluateCore(catalogue,publication,access,support.Tactical,new ActivityCompilation(modules,hash,support.CatalogueId,support.Revision),out var canonical);
+                var tactical=EvaluateCore(catalogue,publication,access,support.Tactical,colonisation==null?new ActivityCompilation(modules,hash,support.CatalogueId,support.Revision):
+                    new ActivityCompilation(modules,ColonisationHash(colonisation.Support,hash),colonisation.Support.CatalogueId,colonisation.Support.Revision,colonisation.Installed,ColonisationSupportIdentity.Compiler),out var canonical);
                 if(!tactical.IsSupportedByCompiler)return new ActivitySupportResult(null,tactical.Issues);
                 // Inspect independently compiled Survey power too; input allocations alone are not output evidence.
                 var survey=canonical!.Performance.Profiles.Single(p=>p.Kind==OperatingProfileKind.Survey);

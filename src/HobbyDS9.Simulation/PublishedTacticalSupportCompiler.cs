@@ -101,7 +101,7 @@ namespace HobbyDS9.Simulation
                 foreach(var install in actual.Fit.Installations)
                 {
                     var path="$.Publication.Installations."+install.InstallationId;
-                    if(activity!=null&&activity.Modules.ContainsKey(install.ComponentVersionId))continue; // Exact v3 validation already checked all profile allocations.
+                    if(activity!=null&&(activity.Modules.ContainsKey(install.ComponentVersionId)||activity.Settlers?.ComponentVersionId==install.ComponentVersionId))continue; // Exact v3 validation already checked all profile allocations.
                     if(!components.TryGetValue(install.ComponentVersionId,out var mapped)){Error(TacticalSupportIssueCode.MissingMapping,path);continue;}
                     if(install.Quantity!=1){Error(TacticalSupportIssueCode.UnsupportedQuantity,path);continue;}
                     var source=actual.Components.Single(c=>c.VersionId==install.ComponentVersionId);
@@ -138,13 +138,13 @@ namespace HobbyDS9.Simulation
                 int sensorRating=hull.Capabilities!.Sensors!.Value;
                 foreach(var i in actual.Fit.Installations.Where(i=>components.TryGetValue(i.ComponentVersionId,out var c)&&c.Kind==TacticalComponentSupportKind.TargetingSensors))
                     sensorRating=Math.Max(sensorRating,components[i.ComponentVersionId].TacticalSensorRating!.Value);
-                var supportHash=activity?.Hash??PublishedTacticalSupportEncoding.Support(support,encodingBudget);var fitId="fit.support."+HashText((activity==null?PublishedTacticalSupportIdentity.Compiler:ActivityTacticalSupportIdentity.Compiler)+":"+supportHash+":"+sourceHash);
+                var supportHash=activity?.Hash??PublishedTacticalSupportEncoding.Support(support,encodingBudget);var fitId="fit.support."+HashText((activity?.CompilerId??PublishedTacticalSupportIdentity.Compiler)+":"+supportHash+":"+sourceHash);
                 AuthoredTacticalEssentialPowerDto Reserve(TacticalEssentialSystem system,long amount)=>new AuthoredTacticalEssentialPowerDto {System=system,RequiredPower=amount,AllocatedPower=amount};
                 var fit=new AuthoredTacticalFitDto {DefinitionId=fitId,Revision=publication.Revision,ProvenanceId=activity?.CatalogueId??support.CatalogueId,
                     MaxHull=actual.Performance.Compiled.MaxHull,Armor=hull.Armor,EvasionBps=actual.Performance.Compiled.Combat.EvasionBps,Role=hull.TacticalRole,
                     Capabilities=new AuthoredTacticalCapabilitiesDto {Speed=hull.Capabilities.Speed,Agility=hull.Capabilities.Agility,Sensors=sensorRating,Command=hull.Capabilities.Command,Cohesion=hull.Capabilities.Cohesion},
                     ReactorOutput=actual.Performance.ReactorPower,DistributionLimit=actual.Performance.DistributionLimit,
-                    EssentialReservations=new List<AuthoredTacticalEssentialPowerDto>{Reserve(TacticalEssentialSystem.LifeSupport,power[TacticalComponentSupportKind.LifeSupport]),
+                    EssentialReservations=new List<AuthoredTacticalEssentialPowerDto>{Reserve(TacticalEssentialSystem.LifeSupport,checked(power[TacticalComponentSupportKind.LifeSupport]+(activity?.Settlers?.RequiredPower??0))),
                         Reserve(TacticalEssentialSystem.Command,command),Reserve(TacticalEssentialSystem.Propulsion,power[TacticalComponentSupportKind.Propulsion]),Reserve(TacticalEssentialSystem.Targeting,targeting)},
                     ShieldRechargeRequiredPower=0,ShieldRechargeAllocatedPower=0,ShieldRechargePerRound=0,
                     ShieldLimits=Enum.GetValues(typeof(TacticalSector)).Cast<TacticalSector>().Select(s=>new AuthoredTacticalShieldLimitDto {Sector=s,Maximum=0}).ToList(),Mounts=usedMounts.Values.ToList(),Weapons=weapons};
@@ -157,7 +157,7 @@ namespace HobbyDS9.Simulation
                 if(issues.Count>0)return Rejected();
                 var boundSupport=activity==null?support:new TacticalSupportCatalogueDto{CatalogueId=activity.CatalogueId,Revision=activity.Revision};
                 return new PublishedTacticalSupportResult(issues,new SupportedPublishedTacticalFit(actual,boundSupport,supportHash,sourceHash,fit,
-                    activity==null?PublishedTacticalSupportIdentity.Compiler:ActivityTacticalSupportIdentity.Compiler));
+                    activity?.CompilerId??PublishedTacticalSupportIdentity.Compiler));
             }
             catch(OverflowException){Error(TacticalSupportIssueCode.InvalidMetadata,"$.Arithmetic");return Rejected();}
             catch(ArgumentException){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
