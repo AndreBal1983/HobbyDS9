@@ -56,7 +56,7 @@ namespace HobbyDS9.TacticalReviewClient
         private void RequireCurrent(Guid host,long epoch)
         { RequireNoStreamedInteraction();if(host != id || epoch != generation) throw new InvalidOperationException("Obsolete or foreign physical host request."); }
         bool ITacticalClientHost.IsCurrent(ReviewWork work)
-        { lock(gate) return streamedInteraction==null && work.HostId == id && work.Generation == generation; }
+        { lock(gate) return streamedInteraction==null && colonisationInteraction==null && work.HostId == id && work.Generation == generation; }
         public KnownRouteOffer FindKnownRoute(ReviewFrame observed,string fleet,string destination,bool append=false)
         {
             lock(gate)
@@ -116,6 +116,7 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 RequireNoStreamedInteraction();
+                if(colonisationPackage!=null)return SaveColonisationCommitted();
                 if(streamedActivitiesPackage!=null)return SaveStreamedActivitiesCommitted();
                 if(activitiesPackage!=null)return SaveActivitiesCommitted();
                 if(publishedPackage!=null)return SavePublishedCommitted();
@@ -134,6 +135,7 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 RequireNoStreamedInteraction();
+                if(colonisationPackage!=null)return LoadColonisationCommitted(handle,actor,encounter);
                 if(streamedActivitiesPackage!=null)return LoadStreamedActivitiesCommitted(handle,actor,encounter);
                 if(activitiesPackage!=null)return LoadActivitiesCommitted(handle,actor,encounter);
                 if(publishedPackage!=null)return LoadPublishedCommitted(handle,actor,encounter);
@@ -153,6 +155,7 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 RequireNoStreamedInteraction();
+                if(colonisationPackage!=null)return SaveColonisationToSlot(slot,overwrite);
                 if(streamedActivitiesPackage!=null)return SaveStreamedActivitiesToSlot(slot,overwrite);
                 if(activitiesPackage!=null)return SaveActivitiesToSlot(slot,overwrite);
                 if(publishedPackage!=null)return SavePublishedToSlot(slot,overwrite);
@@ -176,6 +179,7 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 RequireNoStreamedInteraction();
+                if(colonisationPackage!=null)return LoadColonisationFromSlot(slot,actor,encounter);
                 if(streamedActivitiesPackage!=null)return LoadStreamedActivitiesFromSlot(slot,actor,encounter);
                 if(activitiesPackage!=null)return LoadActivitiesFromSlot(slot,actor,encounter);
                 if(publishedPackage!=null)return LoadPublishedFromSlot(slot,actor,encounter);
@@ -217,6 +221,12 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 RequireNoStreamedInteraction();
+                if(colonisationPackage!=null)
+                {
+                    if(colonisationStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var opened=OpenColonisationFromSlot(colonisationPackage,colonisationCodec!,colonisationStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
+                }
                 if(streamedActivitiesPackage!=null)
                 {
                     if(streamedActivitiesStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);

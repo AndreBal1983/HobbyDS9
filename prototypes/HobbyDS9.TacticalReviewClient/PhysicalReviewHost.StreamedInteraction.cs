@@ -53,7 +53,7 @@ namespace HobbyDS9.TacticalReviewClient
         private ReviewFrame? streamedCommissionFrame;
         internal Action<string>? StreamedInteractionProbe {get;set;}
         private void RequireNoStreamedInteraction()
-        {if(streamedInteraction!=null)throw new InvalidOperationException("Wait for the current streamed interaction.");}
+        {if(streamedInteraction!=null||colonisationInteraction!=null)throw new InvalidOperationException("Wait for the current streamed interaction.");}
         public StreamedInteractionWork PrepareStreamedInteraction(ReviewFrame frame,StreamedInteractionKind kind,CampaignActivityCommandDto? command=null)
         {
             lock(gate)

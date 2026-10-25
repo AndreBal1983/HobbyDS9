@@ -21,9 +21,14 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 error=ReviewCheckpointError.Busy;
-                if(streamedInteraction!=null||observed.HostId!=id||observed.Generation!=generation)return true;
+                if(streamedInteraction!=null||colonisationInteraction!=null||observed.HostId!=id||observed.Generation!=generation)return true;
                 var status=session.CaptureStatus();
                 if(observed.Status.Turn!=status.Turn||observed.Status.CampaignRevision!=status.CampaignRevision)return true;
+                if(colonisationStore is IReviewCheckpointWriteAdmission colonisationAdmission)
+                {
+                    try{return colonisationAdmission.TryCheckWriteAdmission(slot,out error);}
+                    catch(Exception){error=ReviewCheckpointError.WriteFailed;return true;}
+                }
                 if(streamedActivitiesStore is IReviewCheckpointWriteAdmission streamedAdmission)
                 {
                     try{return streamedAdmission.TryCheckWriteAdmission(slot,out error);}

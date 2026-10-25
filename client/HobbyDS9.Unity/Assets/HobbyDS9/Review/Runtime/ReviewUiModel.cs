@@ -168,7 +168,8 @@ namespace HobbyDS9.UnityReview
         });
         public bool Load(string slot,bool discard=false)=>Run(()=>{
             if(Current.HasPendingWork||HasLocalEdits&&!discard){Message="Explicit discard required before load.";return false;}
-            var opened=StreamedActivitiesCampaign?PhysicalReviewHost.OpenStreamedActivitiesFromSlot(streamedActivitiesPackage!,codec,streamedActivitiesSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+            var opened=ColonisationCampaign?PhysicalReviewHost.OpenColonisationFromSlot(colonisationPackage!,codec,colonisationSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+                :StreamedActivitiesCampaign?PhysicalReviewHost.OpenStreamedActivitiesFromSlot(streamedActivitiesPackage!,codec,streamedActivitiesSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :ActivitiesCampaign?PhysicalReviewHost.OpenActivitiesFromSlot(activitiesPackage!,codec,activitiesSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :PublishedConstructionCampaign?PhysicalReviewHost.OpenPublishedConstructionFromSlot(publishedConstructionPackage!,codec,publishedConstructionSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :StaticAstronomyCampaign?PhysicalReviewHost.OpenStaticAstronomyCampaignFromSlot(generatedCampaignTemplate!,codec,staticAstronomySlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)

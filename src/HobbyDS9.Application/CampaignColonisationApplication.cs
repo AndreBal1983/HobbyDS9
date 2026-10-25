@@ -22,6 +22,9 @@ namespace HobbyDS9.Application
     public sealed class CampaignColonisationApplication:CampaignIntegratedPlaytestApplication,ICampaignColonisationSession
     {
         private CampaignColonisationApplication(CampaignTacticalReviewSession backend):base(backend){}
+        public static CampaignColonisationPackageDto CreatePackage(CampaignActivitiesPackageDto activities,HobbyDS9.Contracts.ShipDesign.ShipDesignCatalogueDto catalogue,
+            IReadOnlyList<HobbyDS9.Contracts.ShipDesign.ShipClassDraftDto> ready,HobbyDS9.Contracts.ShipDesign.ColonisationSupportCatalogueDto support,ColonisationPolicyDto policy)
+            =>CampaignTacticalReviewSession.CreateColonisationPackage(activities,catalogue,ready,support,policy);
         public static ICampaignColonisationSession StartGame(CampaignColonisationPackageDto package,NaturalGalaxySettingsDto settings)
             =>new CampaignColonisationApplication(CampaignTacticalReviewSession.StartColonisation(package,settings));
         public static ICampaignColonisationSession LoadSave(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root)

@@ -52,7 +52,8 @@ namespace HobbyDS9.TacticalReviewClient
         public FrontierCommissionSnapshot CaptureFrontierCommission(ReviewFrame frame)
         {
             lock(gate){RequireCurrent(frame.HostId,frame.Generation);var status=session.CaptureStatus();
-                if(streamedActivitiesPackage==null||frame.Status.Turn!=status.Turn||frame.Status.CampaignRevision!=status.CampaignRevision)throw new InvalidOperationException("Commission observation changed.");
+                if(streamedActivitiesPackage==null&&colonisationPackage==null||frame.Status.Turn!=status.Turn||frame.Status.CampaignRevision!=status.CampaignRevision)throw new InvalidOperationException("Commission observation changed.");
+                if(colonisationPackage!=null){if(colonisationCommittedCommission!=null&&ReferenceEquals(colonisationCommissionFrame,frame))return colonisationCommittedCommission;return ((ICampaignColonisationSession)session).CaptureFrontierCommission(frame.Actor);}
                 if(streamedCommittedCommission!=null&&ReferenceEquals(streamedCommissionFrame,frame))return streamedCommittedCommission;
                 return ((ICampaignStreamedActivitiesSession)session).CaptureFrontierCommission(frame.Actor);}
         }

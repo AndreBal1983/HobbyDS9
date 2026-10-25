@@ -39,6 +39,11 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(colonisationInteraction!=null)
+                {
+                    if(ReferenceEquals(session,colonisationInteraction.Source)&&ReferenceEquals(session,colonisationPresentationSource)&&ReferenceEquals(observed,colonisationInteraction.SourceFrame)&&colonisationCommittedPresentation!=null&&ReferenceEquals(colonisationCommittedPresentation.Frame,observed))return colonisationCommittedPresentation;
+                    throw new InvalidOperationException("Wait for the current colonisation interaction.");
+                }
                 if(streamedInteraction!=null)
                 {
                     if(ReferenceEquals(session,streamedInteraction.Source)&&ReferenceEquals(session,streamedPresentationSource)&&ReferenceEquals(observed,streamedInteraction.SourceFrame)&&streamedCommittedPresentation!=null&&ReferenceEquals(streamedCommittedPresentation.Frame,observed))return streamedCommittedPresentation;
@@ -52,6 +57,9 @@ namespace HobbyDS9.TacticalReviewClient
                 }
                 if(streamedActivitiesPackage!=null&&ReferenceEquals(session,streamedPresentationSource)&&streamedCommittedPresentation!=null&&ReferenceEquals(streamedCommittedPresentation.Frame,observed))return streamedCommittedPresentation;
                 if(streamedActivitiesPackage!=null){streamedPresentationSource=(ICampaignStreamedActivitiesSession)session;return streamedCommittedPresentation=CaptureStreamedActivitiesCandidate((ICampaignStreamedActivitiesSession)session,observed);}
+                if(colonisationPackage!=null){RequireColonisationFrame(observed);
+                    if(ReferenceEquals(session,colonisationPresentationSource)&&colonisationCommittedPresentation!=null&&ReferenceEquals(colonisationCommittedPresentation.Frame,observed))return colonisationCommittedPresentation;
+                    colonisationPresentationSource=(ICampaignColonisationSession)session;return colonisationCommittedPresentation=CaptureColonisationCandidate((ICampaignColonisationSession)session,observed);}
                 if(activitiesPackage!=null)return CaptureActivitiesCandidate((ICampaignActivitiesSession)session,observed);
                 if(publishedPackage!=null)return CapturePublishedCandidate((ICampaignPublishedConstructionSession)session,observed);
                 if(!staticAstronomy || session is not ICampaignStaticAstronomySession current)
@@ -69,6 +77,11 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(colonisationInteraction!=null)
+                {
+                    if(ReferenceEquals(session,colonisationInteraction.Source)&&ReferenceEquals(session,colonisationPresentationSource)&&ReferenceEquals(presentation,colonisationCommittedPresentation)&&ReferenceEquals(observed,colonisationInteraction.SourceFrame)&&ReferenceEquals(presentation.Frame,observed)&&presentation.HostId==id&&presentation.Generation==generation)return;
+                    throw new InvalidOperationException("Stale generated presentation.");
+                }
                 if(streamedInteraction!=null)
                 {
                     if(ReferenceEquals(session,streamedInteraction.Source)&&ReferenceEquals(session,streamedPresentationSource)&&ReferenceEquals(presentation,streamedCommittedPresentation)&&ReferenceEquals(observed,streamedInteraction.SourceFrame)&&ReferenceEquals(presentation.Frame,observed)&&presentation.HostId==id&&presentation.Generation==generation)return;
@@ -76,7 +89,7 @@ namespace HobbyDS9.TacticalReviewClient
                 }
                 RequireCurrent(observed.HostId,observed.Generation);
                 RequireCurrent(presentation.HostId,presentation.Generation);
-                if(!staticAstronomy&&publishedPackage==null&&activitiesPackage==null&&streamedActivitiesPackage==null)throw new InvalidOperationException("Wrong campaign profile.");
+                if(!staticAstronomy&&publishedPackage==null&&activitiesPackage==null&&streamedActivitiesPackage==null&&colonisationPackage==null)throw new InvalidOperationException("Wrong campaign profile.");
                 var status=session.CaptureStatus();
                 if(presentation.Actor!=observed.Actor || presentation.Frame.Status.Turn!=status.Turn
                     || presentation.Frame.Status.CampaignRevision!=status.CampaignRevision

@@ -11,7 +11,7 @@ namespace HobbyDS9.UnityReview
     {
         private readonly CampaignActivitiesPackageDto? activitiesPackage;
         private readonly ReviewActivitiesSlotStore? activitiesSlots;
-        public bool ActivitiesCampaign=>activitiesPackage!=null||StreamedActivitiesCampaign;
+        public bool ActivitiesCampaign=>activitiesPackage!=null||StreamedActivitiesCampaign||ColonisationCampaign;
         public bool DepartureInterruptsExpedition(KnownRouteOffer offer)
         {
             if(!ActivitiesCampaign||Busy||Closed||!offer.Route.Success||offer.Route.Steps.Count==0||offer.Actor!=Current.Frame.Actor
@@ -39,13 +39,13 @@ namespace HobbyDS9.UnityReview
          if(!opened.Succeeded)throw new InvalidOperationException("Activity campaign checkpoint unavailable.");
          return new ReviewUiModel(package,codec,slots,opened.Host!,actor);}
         public CampaignActivityObservationDto Activities()
-        {if(!ActivitiesCampaign||Busy||Closed)throw new InvalidOperationException("Activity observation unavailable.");return StreamedActivitiesCampaign?StreamedActivities().Activities:host.CaptureActivities(Current.Frame);}
+        {if(!ActivitiesCampaign||Busy||Closed)throw new InvalidOperationException("Activity observation unavailable.");return ColonisationCampaign?ColonisationActivities():StreamedActivitiesCampaign?StreamedActivities().Activities:host.CaptureActivities(Current.Frame);}
         public CampaignActivityEligibilityDto ActivityEligibility(CampaignActivityCommandDto command)
-        {if(!ActivitiesCampaign||Busy||Closed||Current.HasPendingWork)throw new InvalidOperationException("Activity eligibility unavailable.");return StreamedActivitiesCampaign?host.EvaluateStreamedActivity(Current.Frame,command):host.EvaluateActivity(Current.Frame,command);}
+        {if(!ActivitiesCampaign||Busy||Closed||Current.HasPendingWork)throw new InvalidOperationException("Activity eligibility unavailable.");return ColonisationCampaign?host.EvaluateColonisationActivity(Current.Frame,command):StreamedActivitiesCampaign?host.EvaluateStreamedActivity(Current.Frame,command):host.EvaluateActivity(Current.Frame,command);}
         public bool SubmitActivity(CampaignActivityCommandDto command)=>Run(()=>{
             if(!ActivitiesCampaign||Current.HasPendingWork||Current.Dirty||Current.RefreshRequired)return Unavailable();
             CampaignTacticalMutationResult result;
-            if(StreamedActivitiesCampaign)host.SubmitStreamedActivity(Current.Frame,command,out result);else host.SubmitActivity(Current.Frame,command,out result);
+            if(ColonisationCampaign)host.SubmitColonisationActivity(Current.Frame,command,out result);else if(StreamedActivitiesCampaign)host.SubmitStreamedActivity(Current.Frame,command,out result);else host.SubmitActivity(Current.Frame,command,out result);
             Message=result.Accepted?"Activity order accepted.":"Activity order unavailable: "+result.Error;
             if(!result.Accepted)return false;
             var refreshed=Current.Refresh();if(refreshed&&ResearchDraft!=null)ResearchDraft=ResearchDraft.PreserveUnsubmittedEdits(Current.Frame);return refreshed;

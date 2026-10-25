@@ -10,7 +10,7 @@ namespace HobbyDS9.UnityReview
         private ReviewUiModel? frontierCommissionOwner;
         private void AddFrontierCommissionNavigation(VisualElement nav)
         {
-            if(model?.StreamedActivitiesCampaign!=true)return;
+            if((model?.StreamedActivitiesCampaign!=true&&model?.ColonisationCampaign!=true))return;
             var owner=model;
             var button=AddButton(nav,"Mission",()=>{
                 if(!ReferenceEquals(model,owner)||workspace==null||confirmation!=null||!workspace.Navigate(workspace.Page))return;
@@ -20,7 +20,7 @@ namespace HobbyDS9.UnityReview
         }
         private FrontierCommissionSnapshot? UpdateFrontierCommissionSummary()
         {
-            if(demoLanding||model?.StreamedActivitiesCampaign!=true){frontierCommissionOpen=false;return null;}
+            if(demoLanding||(model?.StreamedActivitiesCampaign!=true&&model?.ColonisationCampaign!=true)){frontierCommissionOpen=false;return null;}
             if(!ReferenceEquals(frontierCommissionOwner,model)){frontierCommissionOpen=false;frontierCommissionOwner=model;}
             var report=model.FrontierCommission();var button=root!.Q<Button>("frontier-commission-summary");
             if(button!=null){button.text=report.Availability==FrontierCommissionAvailability.Available?"Mission "+report.CompletedObjectives+"/4":"Mission";button.tooltip=report.Completed?"Frontier Commission completed. You can continue exploring.":"Review your frontier mission and its actual reports.";}

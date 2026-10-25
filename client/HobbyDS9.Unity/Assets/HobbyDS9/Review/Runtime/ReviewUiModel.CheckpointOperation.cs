@@ -33,15 +33,17 @@ namespace HobbyDS9.UnityReview
         internal StaticCheckpointSaveWork? SaveWork { get; }
         internal PublishedCheckpointSaveWork? PublishedSaveWork { get; }
         internal ActivitiesCheckpointSaveWork? ActivitiesSaveWork { get; }
+        internal ColonisationCheckpointSaveWork? ColonisationSaveWork { get; }
         internal StreamedActivitiesCheckpointSaveWork? StreamedActivitiesSaveWork { get; }
-        internal ReviewCheckpointCompletion(ReviewCheckpointError error,PhysicalReviewHost? host=null,ReviewController? controller=null,StaticCheckpointSaveWork? saveWork=null,PublishedCheckpointSaveWork? publishedSaveWork=null,ActivitiesCheckpointSaveWork? activitiesSaveWork=null,StreamedActivitiesCheckpointSaveWork? streamedActivitiesSaveWork=null)
-        {Error=error;Host=host;Controller=controller;SaveWork=saveWork;PublishedSaveWork=publishedSaveWork;ActivitiesSaveWork=activitiesSaveWork;StreamedActivitiesSaveWork=streamedActivitiesSaveWork;}
+        internal ReviewCheckpointCompletion(ReviewCheckpointError error,PhysicalReviewHost? host=null,ReviewController? controller=null,StaticCheckpointSaveWork? saveWork=null,PublishedCheckpointSaveWork? publishedSaveWork=null,ActivitiesCheckpointSaveWork? activitiesSaveWork=null,StreamedActivitiesCheckpointSaveWork? streamedActivitiesSaveWork=null,ColonisationCheckpointSaveWork? colonisationSaveWork=null)
+        {Error=error;Host=host;Controller=controller;SaveWork=saveWork;PublishedSaveWork=publishedSaveWork;ActivitiesSaveWork=activitiesSaveWork;StreamedActivitiesSaveWork=streamedActivitiesSaveWork;ColonisationSaveWork=colonisationSaveWork;}
     }
     public sealed partial class ReviewUiModel
     {
         private ReviewCheckpointOperation? checkpointOperation;
         public ReviewCheckpointOperation? BeginStaticCheckpointOperation(string slot,bool loading,bool overwrite=false,bool discard=false)
         {
+            if(ColonisationCampaign)return BeginColonisationCheckpointOperation(slot,loading,overwrite,discard);
             if(StreamedActivitiesCampaign)return BeginStreamedActivitiesCheckpointOperation(slot,loading,overwrite,discard);
             if(ActivitiesCampaign)return BeginActivitiesCheckpointOperation(slot,loading,overwrite,discard);
             if(PublishedConstructionCampaign)return BeginPublishedCheckpointOperation(slot,loading,overwrite,discard);
@@ -89,10 +91,11 @@ namespace HobbyDS9.UnityReview
             if(!ReferenceEquals(checkpointOperation,operation)||!ReferenceEquals(completion.Operation,operation))return false;
             checkpointOperation=null;Busy=false;
             if(Closed||!ReferenceEquals(Current,operation.Source)||!ReferenceEquals(Current.Frame,operation.Frame)
-                ||!(StreamedActivitiesCampaign?host.IsCurrentStreamedActivitiesCheckpointSource(operation.Frame):ActivitiesCampaign?host.IsCurrentActivitiesCheckpointSource(operation.Frame):PublishedConstructionCampaign?host.IsCurrentPublishedCheckpointSource(operation.Frame):host.IsCurrentStaticCheckpointSource(operation.Frame)))
+                ||!(ColonisationCampaign?host.IsCurrentColonisationCheckpointSource(operation.Frame):StreamedActivitiesCampaign?host.IsCurrentStreamedActivitiesCheckpointSource(operation.Frame):ActivitiesCampaign?host.IsCurrentActivitiesCheckpointSource(operation.Frame):PublishedConstructionCampaign?host.IsCurrentPublishedCheckpointSource(operation.Frame):host.IsCurrentStaticCheckpointSource(operation.Frame)))
             {Message="Checkpoint result: Busy";return false;}
             if(!operation.Loading)
             {
+                if(completion.ColonisationSaveWork!=null&&!Current.ReceiveColonisationCheckpointSave(completion.ColonisationSaveWork))return false;
                 if(completion.SaveWork!=null&&!Current.ReceiveStaticCheckpointSave(completion.SaveWork))return false;
                 if(completion.PublishedSaveWork!=null&&!Current.ReceivePublishedCheckpointSave(completion.PublishedSaveWork))return false;
                 if(completion.ActivitiesSaveWork!=null&&!Current.ReceiveActivitiesCheckpointSave(completion.ActivitiesSaveWork))return false;
