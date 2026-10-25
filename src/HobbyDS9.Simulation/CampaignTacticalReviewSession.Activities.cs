@@ -17,10 +17,11 @@ namespace HobbyDS9.Simulation
             internal CampaignActivityStateDto State=new CampaignActivityStateDto();
             internal List<CampaignActivityOperationDto> Journal=new List<CampaignActivityOperationDto>();
             internal Dictionary<string,string> AuthoredActivityBlueprints=new Dictionary<string,string>(StringComparer.Ordinal);
+            internal StreamedActivitiesContext? Streamed;
             internal ActivitiesContext(ActivityTacticalSupportCatalogueDto support,CampaignActivityContentDto content)
             {Support=ActivitySupportCopies.Copy(support);Content=CampaignActivitiesData.Copy(content);}
             internal ActivitiesContext Copy()
-            {var copy=new ActivitiesContext(Support,Content){State=CampaignActivitiesData.Copy(State),Journal=Journal.Select(CopyActivityOperation).ToList(),AuthoredActivityBlueprints=new Dictionary<string,string>(AuthoredActivityBlueprints,StringComparer.Ordinal)};return copy;}
+            {var copy=new ActivitiesContext(Support,Content){State=CampaignActivitiesData.Copy(State),Journal=Journal.Select(CopyActivityOperation).ToList(),AuthoredActivityBlueprints=new Dictionary<string,string>(AuthoredActivityBlueprints,StringComparer.Ordinal),Streamed=Streamed?.Copy()};return copy;}
         }
         private ActivitiesContext? activities;
         private static CampaignActivityOperationDto CopyActivityOperation(CampaignActivityOperationDto o)=>new CampaignActivityOperationDto{
@@ -40,9 +41,10 @@ namespace HobbyDS9.Simulation
         }
         private static void RequireActivitiesPackage(CampaignActivitiesPackageDto p)
         {Require(p!=null&&p.PackageHash==CampaignActivitiesData.PackageHash(p),"Different or incomplete activity package.");}
-        private static CampaignTacticalReviewSession StartActivitiesFrozen(CampaignActivitiesPackageDto p,NaturalGalaxyDocumentDto map)
+        private static CampaignTacticalReviewSession StartActivitiesFrozen(CampaignActivitiesPackageDto p,NaturalGalaxyDocumentDto map,CampaignStreamedActivitiesPackageDto? streamed=null)
         {
-            var ready=CampaignActivitiesData.Ready(p);var built=GeneratedCampaignFactory.BuildActivities(p.BaseTemplate!,map,p.PackageHash);
+            var ready=CampaignActivitiesData.Ready(p);var built=streamed==null?GeneratedCampaignFactory.BuildActivities(p.BaseTemplate!,map,p.PackageHash)
+                :GeneratedCampaignFactory.BuildStreamedActivities(p.BaseTemplate!,map,streamed.PackageHash);
             var physical=built.Integrated!.Physical!;var core=physical.CorePackage!;var scenario=core.Campaign!;var game=scenario.InitialState;var d=scenario.Definitions;
             var previous=d.ShipDesignCatalogue!;var oldVersions=previous.Hulls!.Select(h=>h.VersionId).Concat(previous.Components!.Select(c=>c.VersionId)).ToHashSet(StringComparer.Ordinal);
             d.ShipDesignCatalogue=BlueprintCopies.Copy(p.Catalogue!);
@@ -85,10 +87,11 @@ namespace HobbyDS9.Simulation
                 built.Integrated.ConstructionTemplates.Add(new CampaignIntegratedConstructionTemplateDto{ShipDesignDefinitionId=ai.ShipDesignDefinitionId,SourceProvisionShipId=aiProvision.ShipId});
             }
             ValidatePlayablePackage(built,true);
-            var context=new PublishedConstructionContext(built,CampaignPublishedConstructionData.CopySupport(p.Support!.Tactical!),p.PackageHash,ready.First().Value.SupportHash,p.RecordBudget);
+            var context=new PublishedConstructionContext(built,CampaignPublishedConstructionData.CopySupport(p.Support!.Tactical!),streamed?.PackageHash??p.PackageHash,ready.First().Value.SupportHash,p.RecordBudget);
             var activity=new ActivitiesContext(p.Support,p.Content);SeedActivitySites(activity,map);
+            if(streamed!=null)activity.Streamed=new StreamedActivitiesContext(streamed.PackageHash);
             activity.AuthoredActivityBlueprints.Add(ship.ShipId,explorer.Tactical.BlueprintId);
-            var session=new CampaignTacticalReviewSession(core,null,physical,null,built.Integrated,null,null,null,built,map,p.PackageHash,true,context,activity);
+            var session=new CampaignTacticalReviewSession(core,null,physical,null,built.Integrated,null,null,null,built,map,streamed?.PackageHash??p.PackageHash,true,context,activity);
             session.ObserveActivitySites(session.state.Campaign.GameState);return session;
         }
         private static void SeedActivitySites(ActivitiesContext context,NaturalGalaxyDocumentDto map)

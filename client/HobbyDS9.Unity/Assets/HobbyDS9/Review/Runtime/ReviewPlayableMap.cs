@@ -330,7 +330,9 @@ namespace HobbyDS9.UnityReview
                     else model.SendPreviewedFollow(offer,contact.FleetId,contact.LastSeenTurn,ReviewUiModel.NewCommandId());
                 });
                 var standing=frame.Travel?.OwnOrders.FirstOrDefault(o=>o.FleetId==fleet.FleetId.Value);
-                if(standing?.Intent==CampaignTravelIntent.StayEngage||standing?.Intent==CampaignTravelIntent.Follow)
+                if(model.DepartureInterruptsExpedition(offer))
+                    confirm("Leaving ends this expedition; consumed funding is not refunded.\n"+summary,submit);
+                else if(standing?.Intent==CampaignTravelIntent.StayEngage||standing?.Intent==CampaignTravelIntent.Follow)
                     confirm("Replace this fleet's "+(standing.Intent==CampaignTravelIntent.StayEngage?"engage":"follow")+" order?\n"+summary,submit);
                 else submit();
             }

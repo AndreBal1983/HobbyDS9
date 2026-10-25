@@ -24,6 +24,11 @@ namespace HobbyDS9.TacticalReviewClient
                 if(observed.HostId!=id||observed.Generation!=generation)return true;
                 var status=session.CaptureStatus();
                 if(observed.Status.Turn!=status.Turn||observed.Status.CampaignRevision!=status.CampaignRevision)return true;
+                if(streamedActivitiesStore is IReviewCheckpointWriteAdmission streamedAdmission)
+                {
+                    try{return streamedAdmission.TryCheckWriteAdmission(slot,out error);}
+                    catch(Exception){error=ReviewCheckpointError.WriteFailed;return true;}
+                }
                 if(activitiesStore is IReviewCheckpointWriteAdmission activitiesAdmission)
                 {
                     try{return activitiesAdmission.TryCheckWriteAdmission(slot,out error);}
@@ -66,7 +71,8 @@ namespace HobbyDS9.TacticalReviewClient
         public CampaignGeneratedMapDto CaptureGeneratedMap(ReviewFrame observed)
         {
             lock(gate){RequireCurrent(observed.HostId,observed.Generation);
-                var view=activitiesPackage!=null?((ICampaignActivitiesSession)session).CaptureGeneratedMap(observed.Actor)
+                var view=streamedActivitiesPackage!=null?((ICampaignStreamedActivitiesSession)session).CaptureGeneratedMap(observed.Actor)
+                    :activitiesPackage!=null?((ICampaignActivitiesSession)session).CaptureGeneratedMap(observed.Actor)
                     :publishedPackage!=null?((ICampaignPublishedConstructionSession)session).CaptureGeneratedMap(observed.Actor)
                     :((ICampaignGeneratedSession)session).CaptureGeneratedMap(observed.Actor);
                 if(view.ObservationTurn!=observed.Status.Turn||view.CampaignRevision!=observed.Status.CampaignRevision)throw new InvalidOperationException("Generated map observation is stale.");

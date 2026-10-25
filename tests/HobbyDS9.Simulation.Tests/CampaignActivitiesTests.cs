@@ -68,17 +68,17 @@ public sealed class CampaignActivitiesTests
         Assert.Equal(CampaignTacticalError.Overflow,s.SubmitActivity(command).Error);Assert.Equal(before,Json(Root(s)));
         Assert.Equal(CampaignTacticalError.Overflow,s.EvaluateActivity(command).Error);Assert.Equal(before,Json(Root(s)));
     }
-    static void Travel(CampaignTacticalReviewSession s,string fleet,List<string> route)
+    internal static void Travel(CampaignTacticalReviewSession s,string fleet,List<string> route)
     {var status=s.CaptureStatus();var r=s.SubmitTravelOrder(new(){ActorId=Human,CommandId="command.activity.travel."+status.CampaignRevision,ExpectedTurn=status.Turn,ExpectedRevision=status.CampaignRevision,
         Order=new(){FleetId=fleet,Intent=CampaignTravelIntent.Leave,RouteNodeIds=route}});Assert.True(r.Accepted,r.Error+" "+s.LastPhysicalFailure);}
-    static List<string> KnownPath(CampaignGeneratedMapDto map,string origin,string target)
+    internal static List<string> KnownPath(CampaignGeneratedMapDto map,string origin,string target)
     {
         var previous=new Dictionary<string,string?>{{origin,null}};var pending=new Queue<string>();pending.Enqueue(origin);
         while(pending.Count>0){var current=pending.Dequeue();foreach(var edge in map.Connections.Where(e=>e.EndpointA==current||e.EndpointB==current).OrderBy(e=>e.ConnectionId))
             {var next=edge.EndpointA==current?edge.EndpointB:edge.EndpointA;if(previous.TryAdd(next,current))pending.Enqueue(next);}}
         if(!previous.ContainsKey(target))return new();var path=new List<string>();for(string? n=target;n!=origin;n=previous[n!])path.Add(n!);path.Reverse();return path;
     }
-    static ActivityKnownSiteDto Discover(CampaignTacticalReviewSession s,bool minor)
+    internal static ActivityKnownSiteDto Discover(CampaignTacticalReviewSession s,bool minor)
     {
         var visited=new HashSet<string>();
         for(int i=0;i<48;i++)

@@ -18,7 +18,7 @@ namespace HobbyDS9.Simulation
         private HashSet<string> playableRetiredFleets = new HashSet<string>(StringComparer.Ordinal);
         internal Action? PlayableOrganizationProbe { get; set; }
         internal Action? PlayableAiRemainderProbe { get; set; }
-        private string OwnedCoreProfile => activities!=null?CampaignActivitiesIdentity.EmbeddedCoreProfile:published!=null?CampaignPublishedConstructionIdentity.EmbeddedCoreProfile:astronomyIndex != null ? CampaignStaticAstronomyIdentity.EmbeddedCoreProfile : generatedMap != null ? CampaignGeneratedIdentity.EmbeddedCoreProfile : playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
+        private string OwnedCoreProfile => Streams!=null?CampaignStreamedActivitiesIdentity.EmbeddedCoreProfile:activities!=null?CampaignActivitiesIdentity.EmbeddedCoreProfile:published!=null?CampaignPublishedConstructionIdentity.EmbeddedCoreProfile:astronomyIndex != null ? CampaignStaticAstronomyIdentity.EmbeddedCoreProfile : generatedMap != null ? CampaignGeneratedIdentity.EmbeddedCoreProfile : playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
             : frontier != null ? CampaignFrontierIdentity.EmbeddedCoreProfile : CampaignTacticalReviewIdentity.Profile;
         public int RemainingPlayableOperations { get { lock (gate) return playableOperationLimit - UsedPlayableOperations; } }
 
@@ -26,6 +26,7 @@ namespace HobbyDS9.Simulation
         {
             if (playableHash == null) return true;
             var required = PlayableAdvanceCapacity.RequiredSlots(next, controllers);
+            if(Streams!=null)required=checked(required+Streams.Production.Count+activities!.State.Findings!.Count(f=>f.Stage==ActivityProgressStage.Active||f.Stage==ActivityProgressStage.AwaitingClaim));
             return required <= (long)playableOperationLimit - UsedPlayableOperations;
         }
 

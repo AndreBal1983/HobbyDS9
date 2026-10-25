@@ -15,6 +15,7 @@ namespace HobbyDS9.UnityReview
     public sealed class ReviewActivitiesPanel : VisualElement, IDisposable
     {
         private readonly CampaignActivityObservationDto observation;
+        private readonly CampaignStreamedActivityObservationDto? streamed;
         private readonly Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto> evaluate;
         private readonly Action<CampaignActivityCommandDto> submit;
         private readonly string actor;
@@ -34,7 +35,16 @@ namespace HobbyDS9.UnityReview
         public ReviewActivitiesPanel(CampaignActivityObservationDto observation,
             Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto> evaluate,
             Action<CampaignActivityCommandDto> submit)
+            :this(observation,evaluate,submit,null){}
+        public ReviewActivitiesPanel(CampaignStreamedActivityObservationDto observation,
+            Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto> evaluate,
+            Action<CampaignActivityCommandDto> submit)
+            :this(observation.Activities,evaluate,submit,observation){}
+        private ReviewActivitiesPanel(CampaignActivityObservationDto observation,
+            Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto> evaluate,
+            Action<CampaignActivityCommandDto> submit,CampaignStreamedActivityObservationDto? streamed)
         {
+            this.streamed=streamed;
             this.observation=observation??throw new ArgumentNullException(nameof(observation));
             this.evaluate=evaluate??throw new ArgumentNullException(nameof(evaluate));
             this.submit=submit??throw new ArgumentNullException(nameof(submit));
@@ -79,7 +89,7 @@ namespace HobbyDS9.UnityReview
         }
         private static Button Button(VisualElement parent,string caption,string id,Action action)
         {
-            var button=new Button(action){text=caption,name=id};button.style.minHeight=30;button.style.whiteSpace=WhiteSpace.Normal;
+            var button=new Button(action){text=caption,name=id};button.style.minHeight=36;button.style.fontSize=16;button.style.whiteSpace=WhiteSpace.Normal;
             button.style.marginRight=6;button.style.marginBottom=4;parent.Add(button);return button;
         }
         private static DropdownField Picker(VisualElement parent,string label,IReadOnlyList<string> labels,string id,Action<int> changed)
@@ -124,19 +134,21 @@ namespace HobbyDS9.UnityReview
             {
                 var option=observation.BuildOptions[index];var item=Card(options,Friendly(option.DisplayName,option.Kind==ActivityProductionKind.Infrastructure?"Infrastructure":"Ready ship class"));
                 Text(item,(option.Kind==ActivityProductionKind.Infrastructure?"Infrastructure":"Ship · revision "+option.BlueprintRevision)
-                    +" · "+N(option.Cost.Credits)+" credits · "+N(option.Cost.Industry)+" Industry work");
+                    +(streamed==null?" · "+N(option.Cost.Credits)+" credits":" · No normal credit charge")+" · "+N(option.Cost.Industry)+" Industry work");
                 if(option.Cost.Maintenance>0)Text(item,"Maintenance: "+N(option.Cost.Maintenance));
                 if(option.Cost.Resources!=null && option.Cost.Resources.Count>0)
                     Text(item,"Materials: "+string.Join(" · ",option.Cost.Resources.Select((r,i)=>(r.ResourceDefinitionId=="resource.dilithium"?"Dilithium":"Material "+(i+1))+": "+N(r.Amount))));
                 if(!option.Supported)Text(item,Friendly(option.Reason,"Construction is unsupported in this campaign."));
                 var colonyId=colony.ColonyId;var definition=option.DefinitionId;var blueprint=option.BlueprintRevision;
                 var kind=option.Kind==ActivityProductionKind.Infrastructure?CampaignActivityCommandKind.EnqueueStructure:CampaignActivityCommandKind.EnqueueShip;
-                Button(item,"Review construction","activity-build-review-"+index,()=>Review(Command(kind,colonyId,definition,blueprint),Friendly(option.DisplayName,"Construction")+" · "+N(option.Cost.Credits)+" credits paid now"));
+                Button(item,"Review construction","activity-build-review-"+index,()=>Review(Command(kind,colonyId,definition,blueprint),Friendly(option.DisplayName,"Construction")
+                    +(streamed==null?" · "+N(option.Cost.Credits)+" credits paid now":" · Materials are consumed locally as work progresses. Supply interruptions pause work.")));
             }
-            var queue=Card(queueList,"Paid construction queue","activity-queue");
+            var queue=Card(queueList,streamed==null?"Paid construction queue":"Construction queue","activity-queue");
             var items=observation.Production.Where(p=>p.ColonyId==colony.ColonyId).ToList();
-            if(items.Count==0)Text(queue,"No paid work queued.");
-            for(int i=0;i<items.Count;i++)
+            if(streamed==null&&items.Count==0)Text(queue,"No paid work queued.");
+            if(streamed!=null)DrawStreamedQueue(queue,colony.ColonyId);
+            else for(int i=0;i<items.Count;i++)
             {
                 var item=items[i];var paid=item.Paid;if(paid==null){Text(queue,"A queue receipt is unavailable.");continue;}
                 var option=observation.BuildOptions.FirstOrDefault(o=>o.DefinitionId==item.DefinitionId);
@@ -159,6 +171,30 @@ namespace HobbyDS9.UnityReview
             }
         }
 
+        private void DrawStreamedQueue(VisualElement queue,string colonyId)
+        {
+            var orders=streamed!.Production.Where(q=>q.ColonyId==colonyId).ToList();
+            if(orders.Count==0)Text(queue,"No construction orders at this world.");
+            var supply=streamed.Supply.SingleOrDefault(s=>s.ColonyId==colonyId);
+            if(supply!=null)
+            {
+                Text(queue,"Local stock: "+string.Join(" · ",supply.Stocks.Select(r=>(r.ResourceDefinitionId=="resource.dilithium"?"Dilithium":r.ResourceDefinitionId)+" "+N(r.Amount))));
+                foreach(var delivery in supply.Deliveries.Where(d=>d.ResourceDefinitionId!="resource.food"))
+                    Text(queue,"Last delivery: "+N(delivery.Delivered)+" · "+(delivery.RouteIntegrity==0?"Route blocked or unavailable":delivery.Delivered==0?"No shipment available":"Physical stock delivered"));
+            }
+            for(int i=0;i<orders.Count;i++)
+            {
+                var order=orders[i];var option=observation.BuildOptions.FirstOrDefault(o=>o.DefinitionId==order.DefinitionId&&o.BlueprintRevision==(order.Blueprint?.Revision??0));
+                var available=streamed.Availability.SingleOrDefault(a=>a.QueueItemId==order.QueueItemId);
+                var item=Card(queue,Friendly(option?.DisplayName,"Construction")+" · "+(i==0?available?.Status??"Awaiting materials":"Queued"));
+                Text(item,N(order.CompletedIndustry)+" / "+N(order.RequiredIndustry)+" Industry · no credits charged");
+                Text(item,"Consumed: "+string.Join(" · ",order.RequiredResources!.Select(r=>(r.ResourceDefinitionId=="resource.dilithium"?"Dilithium":r.ResourceDefinitionId)+" "+N(order.ConsumedResources!.Single(c=>c.ResourceDefinitionId==r.ResourceDefinitionId).Amount)+" / "+N(r.Amount))));
+                if(available!=null)Text(item,"Current stocks allow "+N(available.WorkWithCurrentStocks)+" Industry; next deliveries may change this.");
+                var progress=new ProgressBar{lowValue=0,highValue=100,value=(float)(100d*order.CompletedIndustry/order.RequiredIndustry)};progress.style.height=14;item.Add(progress);
+                var id=order.QueueItemId;
+                Button(item,"Review cancellation","activity-queue-cancel-"+i,()=>Review(Command(CampaignActivityCommandKind.CancelProduction,id),"Cancel this order? Completed work and consumed materials are lost. Unused local stock stays here."));
+            }
+        }
         private void BuildExpeditions()
         {
             var own=Card(expeditions,"Expedition ship","activity-owned-ship");

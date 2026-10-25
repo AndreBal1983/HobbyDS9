@@ -15,12 +15,12 @@ namespace HobbyDS9.UnityReview
 #if UNITY_EDITOR
         private string? generatedCampaignTestDirectory=null; // Dedicated engine fixture only; never a player path option.
 #endif
-        private string GeneratedCampaignDirectory(bool legacy=false,bool published=false,bool activities=false)
+        private string GeneratedCampaignDirectory(bool legacy=false,bool published=false,bool activities=false,bool streamed=false)
         {
 #if UNITY_EDITOR
             if(generatedCampaignTestDirectory!=null)return generatedCampaignTestDirectory;
 #endif
-            return Path.Combine(UnityEngine.Application.persistentDataPath,activities?ReviewActivitiesSlotStore.Namespace:published?ReviewPublishedConstructionSlotStore.Namespace:legacy?GeneratedCampaignOptions.SaveDirectory:ReviewStaticAstronomyCampaignSlotStore.Namespace);
+            return Path.Combine(UnityEngine.Application.persistentDataPath,streamed?ReviewStreamedActivitiesSlotStore.Namespace:activities?ReviewActivitiesSlotStore.Namespace:published?ReviewPublishedConstructionSlotStore.Namespace:legacy?GeneratedCampaignOptions.SaveDirectory:ReviewStaticAstronomyCampaignSlotStore.Namespace);
         }
         private string generatedCampaignSeed="42";
         private int generatedCampaignSize=250,generatedCampaignQuiet=2000;
@@ -42,22 +42,23 @@ namespace HobbyDS9.UnityReview
             seed.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch)generatedCampaignSeed=e.newValue;});
             size.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch)generatedCampaignSize=int.Parse(e.newValue,CultureInfo.InvariantCulture);});
             quiet.RegisterValueChangedCallback(_=>{if(epoch==viewEpoch&&quiet.index>=0)generatedCampaignQuiet=values[quiet.index];});
-            var start=AddButton(controls,"New generated game",()=>{
+            DrawStreamedActivitiesMenu(controls);
+            var earlier=new Foldout{text="Earlier campaigns · original rules",value=false,name="earlier-generated-campaign-menu"};controls.Add(earlier);
+            var start=AddButton(earlier,"New earlier campaign · original rules",()=>{
                 void Start(){RunGeneratedCampaignOperation(null);}
                 if(demoStarted||model!.HasLocalEdits)Confirm("Start a generated campaign? Your current unsaved progress is replaced only after the new game validates. Existing saves remain intact.",Start);else Start();
-            });start.name="generated-campaign-start";start.AddToClassList("primary-action");
-            if(!demoStarted&&PlayableResourcesAvailable())ScheduleDemoMenuFocus(start);
-            controls.Add(Readout("Continue a saved campaign"));
-            var saved=new VisualElement();saved.AddToClassList("review-field-row");controls.Add(saved);
+            });start.name="generated-campaign-start";
+            earlier.Add(Readout("Continue an earlier campaign without changing its rules"));
+            var saved=new VisualElement();saved.AddToClassList("review-field-row");earlier.Add(saved);
             foreach(var slot in GeneratedCampaignOptions.Slots())
             {
                 var captured=slot;
-                var load=AddButton(saved,"Continue "+slot.Substring(slot.Length-1),()=>Confirm("Continue this campaign? Unsaved progress is replaced only after the save is validated.",()=>RunGeneratedCampaignOperation(captured)));
+                var load=AddButton(saved,"Earlier campaign · Continue "+slot.Substring(slot.Length-1),()=>Confirm("Continue this earlier campaign under its original rules? Unsaved progress is replaced only after the save is validated.",()=>RunGeneratedCampaignOperation(captured)));
                 load.name="generated-campaign-continue-"+slot;
             }
             generatedCampaignNotice=Readout(generatedCampaignBusy?"Preparing and validating campaign…":profileMenuNotice);generatedCampaignNotice.name="generated-campaign-notice";controls.Add(generatedCampaignNotice);
-            DrawPublishedConstructionMenu(controls);
-            DrawActivitiesMenu(controls);
+            DrawPublishedConstructionMenu(earlier);
+            DrawActivitiesMenu(earlier);
             controls.SetEnabled(!generatedCampaignBusy&&PlayableResourcesAvailable());
         }
         private void DrawLegacyGeneratedCampaignMenu(VisualElement parent)
@@ -73,7 +74,7 @@ namespace HobbyDS9.UnityReview
             controls.SetEnabled(!generatedCampaignBusy&&PlayableResourcesAvailable());
         }
         private object? generatedCampaignOperationToken;
-        private async void RunGeneratedCampaignOperation(string? slot,bool legacy=false,bool published=false,bool activities=false)
+        private async void RunGeneratedCampaignOperation(string? slot,bool legacy=false,bool published=false,bool activities=false,bool streamed=false)
         {
             if(generatedCampaignBusy)return;
             generatedCampaignBusy=true;var epoch=viewEpoch;var prior=model;
@@ -85,9 +86,9 @@ namespace HobbyDS9.UnityReview
             {
                 // Resource access is main-thread only. The portable factory/load and trusted file IO run away from the UI.
                 var template=LoadPlayableFleetTemplate();var codec=new ReviewNewtonsoftCodec();
-                var directory=GeneratedCampaignDirectory(legacy,published,activities);
+                var directory=GeneratedCampaignDirectory(legacy,published,activities,streamed);
                 byte[][]? activityBytes=null;
-                if(activities)
+                if(activities||streamed)
                 {
                     activityBytes=new byte[4][];var names=new[]{"catalogue","ready-classes","support","activities"};
                     for(int i=0;i<names.Length;i++){var asset=Resources.Load<TextAsset>("ActivitiesV1/"+names[i]);if(asset==null)throw new InvalidOperationException("Activity campaign content unavailable.");activityBytes[i]=asset.bytes;}
@@ -98,6 +99,13 @@ namespace HobbyDS9.UnityReview
                     Width=size==1000?5000000:2500000,Height=size==1000?4000000:2000000,QuietEmptyAreaTargetPermille=quiet,
                     HomeCivilizationDefinitionIds=new List<string>{"civilization.federation","civilization.cardassian"}}};
                 var next=await Task.Run(()=>{
+                    if(streamed)
+                    {
+                        if(legacy||published||activities)throw new InvalidOperationException("Distinct streamed campaign profile required.");
+                        var content=ActivitiesPlaytestOptions.CreatePackage(template,activityBytes!,codec);
+                        var package=HobbyDS9.Application.CampaignStreamedActivitiesApplication.CreatePackage(content);var activityStore=new ReviewStreamedActivitiesSlotStore(directory,codec);
+                        return slot==null?new ReviewUiModel(package,settings,codec,activityStore):ReviewUiModel.ContinueStreamedActivities(package,codec,activityStore,slot);
+                    }
                     if(activities)
                     {
                         if(legacy||published)throw new InvalidOperationException("Distinct activity campaign profile required.");

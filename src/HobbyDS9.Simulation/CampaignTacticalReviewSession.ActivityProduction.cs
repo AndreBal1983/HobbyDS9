@@ -14,10 +14,11 @@ namespace HobbyDS9.Simulation
             foreach(var actor in staged.Civilizations!.Where(a=>a.ControllerKind==ControllerKind.AI).OrderBy(a=>a.CivilizationId,StringComparer.Ordinal))
             {
                 if(staged.Ships!.Count(s=>s.OwnerCivilizationId==actor.CivilizationId)
-                    +activities!.State.Production!.Count(q=>q.Kind==ActivityProductionKind.PublishedShip&&staged.Colonies!.Single(c=>c.ColonyId==q.ColonyId).OwnerCivilizationId==actor.CivilizationId)>=3)continue;
+                    +(Streams?.Production.Count(q=>q.Kind==ActivityProductionKind.PublishedShip&&q.OwnerId==actor.CivilizationId)
+                    ??activities!.State.Production!.Count(q=>q.Kind==ActivityProductionKind.PublishedShip&&staged.Colonies!.Single(c=>c.ColonyId==q.ColonyId).OwnerCivilizationId==actor.CivilizationId))>=3)continue;
                 foreach(var colony in staged.Colonies!.Where(c=>c.OwnerCivilizationId==actor.CivilizationId).OrderBy(c=>c.ColonyId,StringComparer.Ordinal))
                 {
-                    if(activities.State.Production.Any(q=>q.ColonyId==colony.ColonyId))continue;
+                    if(Streams!=null?Streams.Production.Any(q=>q.ColonyId==colony.ColonyId):activities!.State.Production!.Any(q=>q.ColonyId==colony.ColonyId))continue;
                     foreach(var blueprint in staged.Blueprints!.Where(b=>b.OwnerCivilizationId==actor.CivilizationId)
                         .GroupBy(b=>b.BlueprintId,StringComparer.Ordinal).Select(g=>g.OrderByDescending(b=>b.Revision).First())
                         .OrderBy(b=>b.CompiledDesign!.CreditCost).ThenBy(b=>b.BlueprintId,StringComparer.Ordinal))
@@ -75,6 +76,7 @@ namespace HobbyDS9.Simulation
 
         private CampaignTacticalError EnqueueActivity(GameStateDto game,CampaignActivityCommandDto command,ControllerKind controller)
         {
+            if(Streams!=null)return EnqueueStreamed(game,command,controller);
             var colony=game.Colonies!.SingleOrDefault(c=>c.ColonyId==command.TargetId&&c.OwnerCivilizationId==command.ActorId);
             if(colony==null)return CampaignTacticalError.InvalidOrder;
             Require(colony.ProductionQueue!.Count==0,"Activity boundaries never expose a second production queue.");
@@ -105,6 +107,7 @@ namespace HobbyDS9.Simulation
 
         private CampaignTacticalError CancelActivityProduction(GameStateDto game,CampaignActivityCommandDto command)
         {
+            if(Streams!=null)return CancelStreamed(game,command);
             var entry=activities!.State.Production!.SingleOrDefault(q=>q.Paid!.QueueItemId==command.TargetId);
             if(entry==null)return CampaignTacticalError.InvalidOrder;
             var colony=game.Colonies!.Single(c=>c.ColonyId==entry.ColonyId);
@@ -119,6 +122,7 @@ namespace HobbyDS9.Simulation
 
         private void ExecuteActivityProduction(CampaignTacticalTravelSaveDto next)
         {
+            if(Streams!=null){ExecuteStreamedProduction(next);return;}
             var game=next.Core.Campaign.GameState;
             var heads=game.Colonies!.OrderBy(c=>c.ColonyId,StringComparer.Ordinal)
                 .Select(c=>(Colony:c,Head:activities!.State.Production!.FirstOrDefault(q=>q.ColonyId==c.ColonyId)))

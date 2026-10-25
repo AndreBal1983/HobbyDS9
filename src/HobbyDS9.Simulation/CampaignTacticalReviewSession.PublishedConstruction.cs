@@ -193,7 +193,7 @@ namespace HobbyDS9.Simulation
                 &&combined.Select(r=>r.QueueItemId).Distinct(StringComparer.Ordinal).Count()==combined.Count
                 &&combined.All(r=>!definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Any(p=>p.ShipId==r.ShipId)
                     &&!game.Colonies!.SelectMany(c=>c.ProductionQueue!).Any(q=>q.QueueItemId==r.QueueItemId)),"Mixed source/queue identity overlap.");
-            if(combined.Count+(activities==null?game.Colonies!.Sum(c=>c.ProductionQueue!.Count):activities.State.Production!.Count+activities.State.Structures!.Count+activities.State.Findings!.Count)>ctx.RecordBudget)throw new PublishedRecordCapacityException();
+            if(combined.Count+(activities==null?game.Colonies!.Sum(c=>c.ProductionQueue!.Count):(Streams?.Production.Count??activities.State.Production!.Count)+activities.State.Structures!.Count+activities.State.Findings!.Count+(Streams?.History.Count??0))>ctx.RecordBudget)throw new PublishedRecordCapacityException();
             foreach(var group in combined.GroupBy(r=>r.FleetIdAtConstruction,StringComparer.Ordinal))
             {
                 Require(group.Select(r=>r.OwnerCivilizationId).Distinct(StringComparer.Ordinal).Count()==1,"Mixed construction fleet ownership.");

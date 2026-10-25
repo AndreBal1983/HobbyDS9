@@ -40,6 +40,7 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 RequireCurrent(observed.HostId,observed.Generation);
+                if(streamedActivitiesPackage!=null)return CaptureStreamedActivitiesCandidate((ICampaignStreamedActivitiesSession)session,observed);
                 if(activitiesPackage!=null)return CaptureActivitiesCandidate((ICampaignActivitiesSession)session,observed);
                 if(publishedPackage!=null)return CapturePublishedCandidate((ICampaignPublishedConstructionSession)session,observed);
                 if(!staticAstronomy || session is not ICampaignStaticAstronomySession current)
@@ -59,7 +60,7 @@ namespace HobbyDS9.TacticalReviewClient
             {
                 RequireCurrent(observed.HostId,observed.Generation);
                 RequireCurrent(presentation.HostId,presentation.Generation);
-                if(!staticAstronomy&&publishedPackage==null&&activitiesPackage==null)throw new InvalidOperationException("Wrong campaign profile.");
+                if(!staticAstronomy&&publishedPackage==null&&activitiesPackage==null&&streamedActivitiesPackage==null)throw new InvalidOperationException("Wrong campaign profile.");
                 var status=session.CaptureStatus();
                 if(presentation.Actor!=observed.Actor || presentation.Frame.Status.Turn!=status.Turn
                     || presentation.Frame.Status.CampaignRevision!=status.CampaignRevision

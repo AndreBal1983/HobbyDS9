@@ -5,7 +5,7 @@ namespace HobbyDS9.Simulation
 {
     internal static class EconomyPhase
     {
-        internal static void Execute(GameStateDto s, DefinitionCatalogDto d)
+        internal static void Execute(GameStateDto s, DefinitionCatalogDto d,System.Collections.Generic.IReadOnlyDictionary<string,System.Collections.Generic.IReadOnlyList<ResourceAmountDto>>? constructionDemand=null)
         {
             foreach (var c in s.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal))
             {
@@ -19,7 +19,7 @@ namespace HobbyDS9.Simulation
                         s.PopulationStatistics!.ResourceExtracted = checked(s.PopulationStatistics!.ResourceExtracted + amount);
                     }
             }
-            PopulationLogistics.Execute(s, d);
+            PopulationLogistics.Execute(s, d,constructionDemand);
             foreach (var c in s.Colonies.OrderBy(c => c.ColonyId, StringComparer.Ordinal))
             {
                 var facts = WorldEconomy.Project(c, s, d); var sufficient = c.Food >= facts.FoodDemand;

@@ -214,7 +214,7 @@ namespace HobbyDS9.Simulation
                     SimulationSession.RequirePhaseChanges(before,SimulationSession.CopyState(game),allowEconomy:phase==StrategicTurnPhase.Economy,
                         allowResearch:phase==StrategicTurnPhase.Research,allowProduction:phase==StrategicTurnPhase.Production);
                 }
-                Phase(StrategicTurnPhase.Economy,()=>EconomyPhase.Execute(game,definitions));
+                Phase(StrategicTurnPhase.Economy,()=>EconomyPhase.Execute(game,definitions,Streams==null?null:StreamedDemand(game)));
                 Phase(StrategicTurnPhase.Research,()=>ResearchPhase.Execute(game,definitions));
                 var beforeProduction=SimulationSession.CopyState(game);
                 if(activities!=null)

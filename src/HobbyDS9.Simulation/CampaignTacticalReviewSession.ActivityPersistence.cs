@@ -11,7 +11,7 @@ namespace HobbyDS9.Simulation
         {
             lock(gate)
             {
-                Require(activities!=null&&published!=null,"Explicit activity campaign required.");
+                Require(activities!=null&&activities.Streamed==null&&published!=null,"Explicit prepaid activity campaign required; no streamed conversion.");
                 ValidateActivityState();
                 return new CampaignActivitiesSaveDto{TemplatePackageHash=published!.WrapperHash,PackageHash=playableHash!,SupportHash=published.SupportHash,
                     Map=NaturalGalaxyData.Copy(generatedMap!),Campaign=ExportPlayableCore(),Discoveries=discoveries.Select(CopyDiscovery).ToList(),

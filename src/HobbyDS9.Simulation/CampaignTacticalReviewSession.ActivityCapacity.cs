@@ -14,6 +14,7 @@ namespace HobbyDS9.Simulation
         // is deliberately never used for this profile.
         private bool ActivityCapacity(int proposedDelta)
         {
+            if(Streams!=null)return StreamedCapacity(proposedDelta);
             var game=state.Campaign.GameState;var ctx=activities!;
             bool Fail(string reason){LastPhysicalFailure=reason;return false;}
             if(proposedDelta<0||proposedDelta>1||playableOperationLimit<1||playableOperationLimit>65536)return Fail("Activity journal domain.");
@@ -73,6 +74,7 @@ namespace HobbyDS9.Simulation
             var ctx=activities!;var game=state.Campaign.GameState;var a=ctx.State;
             Require(a.Production!=null&&a.Structures!=null&&a.Findings!=null&&a.Sites!=null&&a.Minors!=null&&a.Bodies!=null&&a.Relations!=null&&a.Observations!=null,"Complete activity state.");
             Require(game.Colonies!.All(c=>c.ProductionQueue!.Count==0),"Mixed production is the sole published queue.");
+            if(Streams!=null)ValidateStreamedProduction(game);
             var ids=new HashSet<string>(StringComparer.Ordinal);
             foreach(var entry in a.Production!)
             {
