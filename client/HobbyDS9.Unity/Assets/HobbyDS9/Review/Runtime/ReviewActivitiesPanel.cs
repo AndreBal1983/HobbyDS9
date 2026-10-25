@@ -89,11 +89,23 @@ namespace HobbyDS9.UnityReview
             this.submit=submit??throw new ArgumentNullException(nameof(submit));
             actor=observation.ActorId;turn=observation.Turn;revision=observation.Revision;
             name="campaign-activities-panel";style.flexGrow=1;style.minHeight=0;style.minWidth=0;
-            Text(this,"Worlds & expeditions","console-section");
-            Text(this,"Week "+turn+" · "+N(observation.Credits)+" credits","console-copy","activity-observation-summary");
+            if(streamed==null)
+            {
+                Text(this,"Worlds & expeditions","console-section");
+                Text(this,"Week "+turn+" · "+N(observation.Credits)+" credits","console-copy","activity-observation-summary");
+            }
             var tabs=Row(this);
-            Button(tabs,"World construction","activity-tab-worlds",()=>SelectPage(false));
-            Button(tabs,"Expeditions & contact","activity-tab-expeditions",()=>SelectPage(true));
+            var worldTab=Button(tabs,"World construction","activity-tab-worlds",()=>SelectPage(false));
+            var expeditionTab=Button(tabs,"Expeditions & contact","activity-tab-expeditions",()=>SelectPage(true));
+            if(streamed!=null)
+            {
+                // Keep the catalogue viewport useful on short displays without
+                // removing the observed week/credits or shrinking action targets.
+                tabs.AddToClassList("activities-streamed-header");
+                worldTab.style.minHeight=44;expeditionTab.style.minHeight=44;
+                var summary=Text(tabs,"Week "+turn+" · "+N(observation.Credits)+" credits","console-copy","activity-observation-summary");
+                summary.style.marginBottom=0;
+            }
             pageScroll=new ScrollView(ScrollViewMode.Vertical){name="activity-scroll"};pageScroll.style.flexGrow=1;pageScroll.style.minHeight=0;
             worlds=new VisualElement{name="activity-worlds"};
             if(streamed!=null){worlds.style.flexGrow=1;worlds.style.minHeight=0;Add(worlds);Add(pageScroll);}else{Add(pageScroll);pageScroll.Add(worlds);}
@@ -157,10 +169,16 @@ namespace HobbyDS9.UnityReview
 
         private void BuildWorlds()
         {
-            var own=Card(worlds,"Owned world","activity-owned-world");
+            var own=streamed==null?Card(worlds,"Owned world","activity-owned-world"):new VisualElement{name="activity-owned-world"};
+            if(streamed!=null){own.AddToClassList("activities-streamed-world-selector");worlds.Add(own);}
             if(observation.Colonies.Count==0){Text(own,"No owned world is available in this observation.");return;}
-            Picker(own,"World",observation.Colonies.Select(c=>Friendly(c.DisplayName,"Owned world")).ToList(),"activity-colony-selector",i=>{colonyIndex=i;DismissReview();RefreshWorld();});
+            var picker=Picker(own,"World",observation.Colonies.Select(c=>Friendly(c.DisplayName,"Owned world")).ToList(),"activity-colony-selector",i=>{colonyIndex=i;DismissReview();RefreshWorld();});
             colonyFacts=Text(own,"",id:"activity-world-economy");
+            if(streamed!=null)
+            {
+                picker.AddToClassList("activities-streamed-world-picker");picker.style.minHeight=44;
+                colonyFacts.AddToClassList("activities-streamed-world-output");colonyFacts.style.marginBottom=0;
+            }
             buildList=new VisualElement{name="activity-build-options"};worlds.Add(buildList);
             queueList=new VisualElement{name="activity-production-queue"};worlds.Add(queueList);
             RefreshWorld();
