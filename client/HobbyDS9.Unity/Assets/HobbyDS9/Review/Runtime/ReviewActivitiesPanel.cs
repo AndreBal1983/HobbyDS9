@@ -32,6 +32,31 @@ namespace HobbyDS9.UnityReview
         private ShipPreviewStage? stage;
         private float yaw=37.57f;
 
+        // Ephemeral presentation only: no observed payload, pending order or
+        // callback survives replacement. The shell separately binds the session.
+        internal sealed class Selection
+        {
+            internal readonly string Actor;
+            internal readonly bool Expeditions;
+            internal readonly string? Colony,Ship,Site;
+            internal Selection(string actor,bool expeditions,string? colony,string? ship,string? site)
+            {Actor=actor;Expeditions=expeditions;Colony=colony;Ship=ship;Site=site;}
+        }
+        internal Selection? CaptureSelection()=>disposed?null:new Selection(actor,expeditionsSelected,Colony?.ColonyId,Ship?.ShipId,Site?.Site.SiteId);
+        internal void RestoreSelection(Selection? saved)
+        {
+            if(disposed||saved==null||saved.Actor!=actor)return;
+            var colony=observation.Colonies.FindIndex(c=>c.ColonyId==saved.Colony);
+            var ship=observation.Ships.FindIndex(s=>s.ShipId==saved.Ship);
+            var site=observation.Sites.FindIndex(s=>s.Site.SiteId==saved.Site);
+            // Current fields run their normal view callbacks; missing IDs keep
+            // the new observation's default selection independently.
+            if(colony>=0)this.Q<DropdownField>("activity-colony-selector").index=colony;
+            if(ship>=0)this.Q<DropdownField>("activity-ship-selector").index=ship;
+            if(site>=0)this.Q<DropdownField>("activity-site-selector").index=site;
+            SelectPage(saved.Expeditions);
+        }
+
         public ReviewActivitiesPanel(CampaignActivityObservationDto observation,
             Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto> evaluate,
             Action<CampaignActivityCommandDto> submit)

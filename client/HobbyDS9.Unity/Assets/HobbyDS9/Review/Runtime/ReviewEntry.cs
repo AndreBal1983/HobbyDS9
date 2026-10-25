@@ -120,6 +120,7 @@ namespace HobbyDS9.UnityReview
         }
         private void Build()
         {
+            CaptureActivitiesSelectionForRebuild();
             modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ReleaseAudio();
             var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();
             if(!PlayerProfile||panel==null||doc.panelSettings!=panel)

@@ -82,12 +82,15 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static IEnumerator StreamCapture(UIDocument doc,Vector2Int size,string label,bool review=false,bool expedition=false,string? reviewId=null)
         {
+            var selections=StreamSelectedIds(doc);
+            bool hadActivities=doc.rootVisualElement.Q<ReviewActivitiesPanel>()!=null;
             var previous=doc.panelSettings.targetTexture;var active=RenderTexture.active;var w=doc.rootVisualElement.style.width;var h=doc.rootVisualElement.style.height;
             var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);Texture2D? image=null;
             try
             {
                 Assert.That(target.Create(),Is.True);doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=size.x;doc.rootVisualElement.style.height=size.y;
                 yield return null;yield return null;yield return null;
+                if(hadActivities)StreamSelectionRetained(doc,selections,expedition);
                 // Resize can rebuild the surface and correctly dispose its old review.
                 // Review again through the current observed option, never a retained control.
                 if(review){Assert.That(reviewId,Is.Not.Null);yield return StreamClick(doc,reviewId!);}
@@ -120,8 +123,24 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally{doc.panelSettings.targetTexture=previous;doc.rootVisualElement.style.width=w;doc.rootVisualElement.style.height=h;RenderTexture.active=active;if(image!=null)UnityEngine.Object.DestroyImmediate(image);target.Release();UnityEngine.Object.DestroyImmediate(target);}
             yield return null;yield return null;yield return null;
+            if(hadActivities)StreamSelectionRetained(doc,selections,expedition);
             // Surface restoration is another resize; leave a current review for Back.
             if(review)yield return StreamClick(doc,reviewId!);
+        }
+        private static Dictionary<string,string?> StreamSelectedIds(UIDocument doc)
+        {
+            var result=new Dictionary<string,string?>();var model=CampaignModel(doc.GetComponent<ReviewEntry>());
+            if(doc.rootVisualElement.Q<ReviewActivitiesPanel>()==null)return result;
+            var own=model.Activities();var colony=doc.rootVisualElement.Q<DropdownField>("activity-colony-selector");
+            var ship=doc.rootVisualElement.Q<DropdownField>("activity-ship-selector");var site=doc.rootVisualElement.Q<DropdownField>("activity-site-selector");
+            result["activity-colony-selector"]=colony!=null&&colony.index>=0?own.Colonies[colony.index].ColonyId:null;
+            result["activity-ship-selector"]=ship!=null&&ship.index>=0?own.Ships[ship.index].ShipId:null;
+            result["activity-site-selector"]=site!=null&&site.index>=0?own.Sites[site.index].Site.SiteId:null;return result;
+        }        private static void StreamSelectionRetained(UIDocument doc,Dictionary<string,string?> selections,bool expedition)
+        {
+            Assert.That(doc.rootVisualElement.Query<ReviewActivitiesPanel>().ToList().Count,Is.EqualTo(1));
+            Assert.That(doc.rootVisualElement.Q(expedition?"activity-expeditions":"activity-worlds").resolvedStyle.display,Is.Not.EqualTo(DisplayStyle.None),"actual selected activity page survives redraw");
+            var actual=StreamSelectedIds(doc);foreach(var selected in selections)if(selected.Value!=null)Assert.That(actual[selected.Key],Is.EqualTo(selected.Value),selected.Key+" exact actor-known ID survives same-session redraw");
         }
         private static void StreamHullComponent(ActivityBuildOptionDto option)
         {
@@ -204,9 +223,11 @@ namespace HobbyDS9.UnityReview.Tests
                 for(int redraw=0;redraw<3;redraw++)
                 {
                     var previous=doc.rootVisualElement.Q<ReviewActivitiesPanel>();var oldConfirm=previous.Q<Button>("activity-order-confirm");
+                    var selectedColony=previous.Q<DropdownField>("activity-colony-selector").value;
                     Assert.That(oldConfirm,Is.Not.Null,"capture a real pending control before same-frame redraw");
                     typeof(ReviewEntry).GetMethod("Draw",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entry,null);yield return null;yield return null;
                     Assert.That(doc.rootVisualElement.Query<ReviewActivitiesPanel>().ToList().Count,Is.EqualTo(1));Assert.That(doc.rootVisualElement.Q<ReviewActivitiesPanel>(),Is.Not.SameAs(previous));Assert.That(previous.panel,Is.Null);
+                    Assert.That(doc.rootVisualElement.Q<DropdownField>("activity-colony-selector").value,Is.EqualTo(selectedColony));
                     Assert.That((bool)typeof(ReviewActivitiesPanel).GetField("disposed",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(previous)!,Is.True,"the old captured callbacks are disposed, not merely hidden");
                     Click(oldConfirm);yield return null;Assert.That(model.Current.Frame,Is.SameAs(redrawFrame));Assert.That(StreamBytes(model),Is.EqualTo(redrawBytes),"retained disposed Confirm cannot enqueue, spend or redraw state");
                     yield return StreamClick(doc,"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
@@ -294,7 +315,9 @@ namespace HobbyDS9.UnityReview.Tests
             }
             for(int i=0;i<8&&model.Activities().Findings.Last().Stage==ActivityProgressStage.Active;i++)yield return StreamAdvance(doc,entry);
             Assert.That(model.Activities().Findings.Last().Stage,Is.EqualTo(ActivityProgressStage.AwaitingClaim));yield return StreamPage(doc,true);
+            var beforeClaimSelections=StreamSelectedIds(doc);
             int finding=model.Activities().Findings.Count-1;yield return StreamOrder(doc,"activity-finding-claim-"+finding);Assert.That(model.Activities().Findings.Last().Stage,Is.EqualTo(ActivityProgressStage.Completed));
+            StreamSelectionRetained(doc,beforeClaimSelections,true);
             var resolved=model.Activities().Findings.Last();if(minor)Assert.That(model.Activities().Sites.Single(s=>s.Site.SiteId==found.Site.SiteId).Relation,Is.EqualTo(ActivityMinorRelation.Accepted).Or.EqualTo(ActivityMinorRelation.Refused));else Assert.That(resolved.InsightApplied,Is.GreaterThan(0));
             yield return StreamCapture(doc,new Vector2Int(1280,720),minor?"minor-consent":"science-claim-restored-active-branch",false,true);
 
