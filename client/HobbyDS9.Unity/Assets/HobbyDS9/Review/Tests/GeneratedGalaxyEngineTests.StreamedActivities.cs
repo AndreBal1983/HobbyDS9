@@ -192,7 +192,7 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(doc.rootVisualElement.Query<ScrollView>("frontier-commission-report").ToList().Count,Is.EqualTo(1));
             var footer=doc.rootVisualElement.Q("player-footer").worldBound;
             Assert.That(report.contentViewport.worldBound.height,Is.GreaterThanOrEqualTo(100));Assert.That(report.contentViewport.worldBound.yMax,Is.LessThanOrEqualTo(footer.yMin));
-            Assert.That(doc.rootVisualElement.Q<Button>("frontier-commission-summary").text,Is.EqualTo("Commission 4/4"));
+            Assert.That(doc.rootVisualElement.Q<Button>("frontier-commission-summary").text,Is.EqualTo("Mission 4/4"));
             Assert.That(report.Q<Label>("frontier-commission-outcome").text,Does.Contain("Commission completed"));
             foreach(var id in new[]{"infrastructure","ship","science","society"})
             {

@@ -12,7 +12,7 @@ namespace HobbyDS9.UnityReview
         {
             if(model?.StreamedActivitiesCampaign!=true)return;
             var owner=model;
-            var button=AddButton(nav,"Commission",()=>{
+            var button=AddButton(nav,"Mission",()=>{
                 if(!ReferenceEquals(model,owner)||workspace==null||confirmation!=null||!workspace.Navigate(workspace.Page))return;
                 frontierCommissionOwner=owner;frontierCommissionOpen=true;viewEpoch++;Build();
             });
@@ -23,7 +23,7 @@ namespace HobbyDS9.UnityReview
             if(demoLanding||model?.StreamedActivitiesCampaign!=true){frontierCommissionOpen=false;return null;}
             if(!ReferenceEquals(frontierCommissionOwner,model)){frontierCommissionOpen=false;frontierCommissionOwner=model;}
             var report=model.FrontierCommission();var button=root!.Q<Button>("frontier-commission-summary");
-            if(button!=null){button.text=report.Availability==FrontierCommissionAvailability.Available?"Commission "+report.CompletedObjectives+"/4":"Commission";button.tooltip=report.Completed?"Frontier Commission completed. You can continue exploring.":"Review your frontier mission and its actual reports.";}
+            if(button!=null){button.text=report.Availability==FrontierCommissionAvailability.Available?"Mission "+report.CompletedObjectives+"/4":"Mission";button.tooltip=report.Completed?"Frontier Commission completed. You can continue exploring.":"Review your frontier mission and its actual reports.";}
             return report;
         }
         private void DrawFrontierCommission(FrontierCommissionSnapshot report)
