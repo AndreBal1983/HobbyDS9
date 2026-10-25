@@ -76,11 +76,29 @@ namespace HobbyDS9.Simulation
             => BuildFacts(template,map,true,wrapperHash,true);
         internal static CampaignPlayableFleetPackageDto BuildStreamedActivities(CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash)
             => BuildFacts(template,map,true,wrapperHash,true,true);
-        private static CampaignPlayableFleetPackageDto BuildFacts(CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,bool staticAstronomy,string? wrapperHash,bool activities=false,bool streamed=false)
+        internal static (CampaignPlayableFleetPackageDto Package,CampaignColonisationStateDto Inventory,FrozenColonisationPlanetsDto Frozen) BuildColonisation(
+            CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash,CampaignActivityStateDto seededActivities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained=null)
+        {
+            var input=new ColonisationGenerationInput(seededActivities,policy,retained);
+            var package=BuildFacts(template,map,true,wrapperHash,true,true,input);
+            return(package,input.Inventory!,input.Frozen!);
+        }
+        private sealed class ColonisationGenerationInput
+        {
+            internal readonly CampaignActivityStateDto Activities;
+            internal readonly ColonisationPolicyDto Policy;
+            internal CampaignColonisationStateDto? Inventory;
+            internal FrozenColonisationPlanetsDto? Frozen;
+            internal readonly FrozenColonisationPlanetsDto? Retained;
+            internal ColonisationGenerationInput(CampaignActivityStateDto activities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained)
+            {Activities=CampaignActivitiesData.Copy(activities);Policy=ColonisationData.Copy(policy);Retained=retained;}
+        }
+        private static CampaignPlayableFleetPackageDto BuildFacts(CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,bool staticAstronomy,string? wrapperHash,bool activities=false,bool streamed=false,ColonisationGenerationInput? colonisation=null)
         {
             // Existing template reader supplies the trusted exact raw-source identity.
             CampaignTacticalReviewSession.StartPlayable(template);
             string Domain(string domain)=>wrapperHash==null?Identity(domain,template.PackageHash!,map.ContentHash,staticAstronomy)
+                :colonisation!=null?CampaignActivitiesData.Identity(CampaignColonisationIdentity.Profile,CampaignColonisationIdentity.InventoryAuthoring,colonisation.Frozen!.ContentHash,domain,wrapperHash,map.ContentHash)
                 :activities?CampaignActivitiesData.Identity(streamed?CampaignStreamedActivitiesIdentity.Profile:CampaignActivitiesIdentity.Profile,domain,wrapperHash,map.ContentHash)
                 :CampaignPublishedConstructionData.Identity(domain,wrapperHash,map.ContentHash);
             var source = template.Integrated!.Physical!.CorePackage!;
@@ -139,9 +157,27 @@ namespace HobbyDS9.Simulation
                     Connections = edges.OrderBy(e => e.ConnectionId, StringComparer.Ordinal).Select(e => new NavigationKnowledgeEntryDto { Id = e.ConnectionId, Level = NavigationKnowledgeLevel.Charted }).ToList() };
             }).ToList();
             game.RngState.State = ulong.Parse(map.Settings.Map.Seed, CultureInfo.InvariantCulture) ^ 0x47454e43414d5031UL;
-            var scenario = new ScenarioDto { ScenarioId = streamed?"scenario.generated-activities-streamed-v1":activities?"scenario.generated-activities-v1":wrapperHash!=null?"scenario.generated-published-construction-v1":staticAstronomy ? "scenario.generated-campaign-v2" : "scenario.generated-campaign-v1", RulesVersion = source.Campaign.RulesVersion,
+            if(colonisation!=null)
+            {
+                colonisation.Inventory=ColonisationPlanetInventory.Populate(definitions,game,map,colonisation.Activities,colonisation.Policy);
+                colonisation.Frozen=ColonisationData.Freeze(definitions,game,colonisation.Inventory);
+                if(colonisation.Retained!=null)
+                {
+                    Require(colonisation.Retained.ContentHash==ColonisationData.InventoryHash(colonisation.Retained)
+                        &&colonisation.Retained.ContentHash==colonisation.Frozen.ContentHash,"Different frozen physical planet genesis.");
+                    colonisation.Frozen=ColonisationData.Copy(colonisation.Retained);
+                    // Consume the retained frozen definitions/facts after verifying their exact pinned policy genesis.
+                    definitions.Planets=colonisation.Frozen.Definitions!.Select(PopulationData.Copy).ToList();
+                    game.Planets=colonisation.Frozen.InitialPlanets!.Select(PopulationData.Copy).ToList();
+                    colonisation.Inventory.Bodies=colonisation.Frozen.Bodies!.Select(ColonisationData.Copy).ToList();
+                    colonisation.Inventory.PlanetControls=colonisation.Frozen.GenesisControls!.Select(ColonisationData.Copy).ToList();
+                }
+            }
+            var scenario = new ScenarioDto { ScenarioId = colonisation!=null?"scenario.generated-colonisation-v1":streamed?"scenario.generated-activities-streamed-v1":activities?"scenario.generated-activities-v1":wrapperHash!=null?"scenario.generated-published-construction-v1":staticAstronomy ? "scenario.generated-campaign-v2" : "scenario.generated-campaign-v1", RulesVersion = colonisation!=null?CampaignColonisationIdentity.Rules:source.Campaign.RulesVersion,
                 ContentHash = Domain("scenario"), Definitions = definitions, InitialState = game };
-            FoundationValidator.ValidateScenario(scenario).ThrowIfInvalid(nameof(scenario));
+            if(colonisation==null)FoundationValidator.ValidateScenario(scenario).ThrowIfInvalid(nameof(scenario));
+            else FoundationValidator.ValidatePlanetaryScenario(scenario,PlanetaryOwnershipContext.CreateForColonisation(definitions,game,
+                colonisation.Inventory!.PlanetControls!,colonisation.Activities.Minors!)).ThrowIfInvalid(nameof(scenario));
             var core = new CampaignTacticalReviewPackageDto { FormatVersion = source.FormatVersion, ProfileId = source.ProfileId,
                 PackageHash = Domain("core"), PolicyStatus = source.PolicyStatus, DefaultActivationAllowed = false,
                 Campaign = scenario, Rules = CopyRules(source.Rules!), CloakSources = source.CloakSources!.Select(c => new CampaignTacticalCloakSourceDto {

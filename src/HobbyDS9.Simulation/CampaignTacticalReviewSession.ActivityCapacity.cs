@@ -14,6 +14,7 @@ namespace HobbyDS9.Simulation
         // is deliberately never used for this profile.
         private bool ActivityCapacity(int proposedDelta)
         {
+            if(colonisation!=null)return ColonisationCapacity(proposedDelta);
             if(Streams!=null)return StreamedCapacity(proposedDelta);
             var game=state.Campaign.GameState;var ctx=activities!;
             bool Fail(string reason){LastPhysicalFailure=reason;return false;}
@@ -72,9 +73,11 @@ namespace HobbyDS9.Simulation
         private void ValidateActivityState()
         {
             var ctx=activities!;var game=state.Campaign.GameState;var a=ctx.State;
+            if(colonisation!=null)ValidateColonisationState(game);
             Require(a.Production!=null&&a.Structures!=null&&a.Findings!=null&&a.Sites!=null&&a.Minors!=null&&a.Bodies!=null&&a.Relations!=null&&a.Observations!=null,"Complete activity state.");
             Require(game.Colonies!.All(c=>c.ProductionQueue!.Count==0),"Mixed production is the sole published queue.");
-            if(Streams!=null)ValidateStreamedProduction(game);
+            if(colonisation!=null)ValidateColonisationProduction(game);
+            else if(Streams!=null)ValidateStreamedProduction(game);
             var ids=new HashSet<string>(StringComparer.Ordinal);
             foreach(var entry in a.Production!)
             {
@@ -101,15 +104,15 @@ namespace HobbyDS9.Simulation
             {
                 var colony=game.Colonies.Single(c=>c.ColonyId==receipt.ColonyId);
                 Require(ids.Add(receipt.QueueItemId)&&receipt.OwnerId==colony.OwnerCivilizationId&&receipt.CompletedTurn>=initialTurn&&receipt.CompletedTurn<=game.TurnNumber
-                    &&ctx.Content.Structures!.Any(s=>s.DefinitionId==receipt.DefinitionId)&&colony.Infrastructure!.Single(i=>i.DefinitionId==receipt.DefinitionId).Count==1,"Completed structure receipt.");
+                    &&(ctx.Content.Structures!.Any(s=>s.DefinitionId==receipt.DefinitionId)||colonisation!=null&&ColonisationStructureCost(receipt.DefinitionId)!=null)&&colony.Infrastructure!.Single(i=>i.DefinitionId==receipt.DefinitionId).Count==1,"Completed structure receipt.");
             }
             var original=published!.Package.Integrated!.Physical!.CorePackage!.Campaign!.InitialState;
             foreach(var colony in game.Colonies!)
             {
                 var first=original.Colonies!.Single(c=>c.ColonyId==colony.ColonyId);
                 Require(colony.OwnerCivilizationId==first.OwnerCivilizationId&&colony.Automation==first.Automation&&colony.SystemId==first.SystemId&&colony.PlanetId==first.PlanetId,"Activity fixed world identity.");
-                Require(FrontierSame(colony.Infrastructure!.Where(i=>!ctx.Content.Structures!.Any(s=>s.DefinitionId==i.DefinitionId)).ToList(),first.Infrastructure)
-                    &&colony.Infrastructure.Count(i=>ctx.Content.Structures!.Any(s=>s.DefinitionId==i.DefinitionId))==a.Structures.Count(s=>s.ColonyId==colony.ColonyId),"Only receipted infrastructure additions.");
+                Require(FrontierSame(colony.Infrastructure!.Where(i=>!(ctx.Content.Structures!.Any(s=>s.DefinitionId==i.DefinitionId)||colonisation!=null&&ColonisationStructureCost(i.DefinitionId)!=null)).ToList(),first.Infrastructure)
+                    &&colony.Infrastructure.Count(i=>ctx.Content.Structures!.Any(s=>s.DefinitionId==i.DefinitionId)||colonisation!=null&&ColonisationStructureCost(i.DefinitionId)!=null)==a.Structures.Count(s=>s.ColonyId==colony.ColonyId),"Only receipted infrastructure additions.");
             }
             Require(a.Sites!.Count==6&&a.Minors!.Count==2&&a.Bodies!.Count==6
                 &&a.Sites.Select(s=>s.SiteId).Distinct(StringComparer.Ordinal).Count()==6

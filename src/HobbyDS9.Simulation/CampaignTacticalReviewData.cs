@@ -12,12 +12,13 @@ namespace HobbyDS9.Simulation
         internal static void Require([DoesNotReturnIf(false)] bool condition, string message)
         { if (!condition) throw new ArgumentException(message); }
         internal static bool Hash(string? hash) => hash != null && hash.Length == 64 && hash.All(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f');
-        internal static void ValidatePackage(CampaignTacticalReviewPackageDto p)
+        internal static void ValidatePackage(CampaignTacticalReviewPackageDto p,PlanetaryOwnershipContext? ownership=null)
         {
             Require(p != null && p.FormatVersion == CampaignTacticalReviewIdentity.PackageFormat && Hash(p.PackageHash)
                 && p.ProfileId == CampaignTacticalReviewIdentity.Profile && p.PolicyStatus == "proposed"
                 && p.DefaultActivationAllowed == false && p.Campaign != null && p.Rules != null && p.CloakSources != null, "Unknown or ungated review package.");
-            FoundationValidator.ValidateScenario(p.Campaign!).ThrowIfInvalid(nameof(p));
+            if(ownership==null)FoundationValidator.ValidateScenario(p.Campaign!).ThrowIfInvalid(nameof(p));
+            else FoundationValidator.ValidatePlanetaryScenario(p.Campaign!,ownership).ThrowIfInvalid(nameof(p));
             Require(p.Campaign!.Definitions.ContentFormatVersion == AuthoredTacticalEquipmentIdentity.ContentFormatVersion, "Review requires explicit authored equipment content.");
             var fits = p.Campaign.Definitions.AuthoredTacticalEquipment!.Fits!;
             Require(p.CloakSources!.Count == fits.Count && p.CloakSources.All(c => c != null)

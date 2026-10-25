@@ -14,11 +14,11 @@ namespace HobbyDS9.Simulation
             foreach(var actor in staged.Civilizations!.Where(a=>a.ControllerKind==ControllerKind.AI).OrderBy(a=>a.CivilizationId,StringComparer.Ordinal))
             {
                 if(staged.Ships!.Count(s=>s.OwnerCivilizationId==actor.CivilizationId)
-                    +(Streams?.Production.Count(q=>q.Kind==ActivityProductionKind.PublishedShip&&q.OwnerId==actor.CivilizationId)
+                    +(colonisation?.Production.Count(q=>q.Kind==ColonisationProductionKind.PublishedShip&&q.OwnerId==actor.CivilizationId)??Streams?.Production.Count(q=>q.Kind==ActivityProductionKind.PublishedShip&&q.OwnerId==actor.CivilizationId)
                     ??activities!.State.Production!.Count(q=>q.Kind==ActivityProductionKind.PublishedShip&&staged.Colonies!.Single(c=>c.ColonyId==q.ColonyId).OwnerCivilizationId==actor.CivilizationId))>=3)continue;
                 foreach(var colony in staged.Colonies!.Where(c=>c.OwnerCivilizationId==actor.CivilizationId).OrderBy(c=>c.ColonyId,StringComparer.Ordinal))
                 {
-                    if(Streams!=null?Streams.Production.Any(q=>q.ColonyId==colony.ColonyId):activities!.State.Production!.Any(q=>q.ColonyId==colony.ColonyId))continue;
+                    if(colonisation!=null?colonisation.Production.Any(q=>q.ColonyId==colony.ColonyId):Streams!=null?Streams.Production.Any(q=>q.ColonyId==colony.ColonyId):activities!.State.Production!.Any(q=>q.ColonyId==colony.ColonyId))continue;
                     foreach(var blueprint in staged.Blueprints!.Where(b=>b.OwnerCivilizationId==actor.CivilizationId)
                         .GroupBy(b=>b.BlueprintId,StringComparer.Ordinal).Select(g=>g.OrderByDescending(b=>b.Revision).First())
                         .OrderBy(b=>b.CompiledDesign!.CreditCost).ThenBy(b=>b.BlueprintId,StringComparer.Ordinal))
@@ -32,8 +32,8 @@ namespace HobbyDS9.Simulation
                         candidate.ValidateActivityState();
                         // AI procurement is part of the upcoming advance, not a free
                         // journal entry. Reserve that actual advance before payment commits.
-                        if(!candidate.ActivityCapacity(1))continue;
-                        activities=candidate.activities;staged=SimulationSession.CopyState(candidate.state.Campaign.GameState);break;
+                        if(candidate.colonisation!=null?!candidate.ColonisationCapacity(1,null,1):!candidate.ActivityCapacity(1))continue;
+                        activities=candidate.activities;colonisation=candidate.colonisation;staged=SimulationSession.CopyState(candidate.state.Campaign.GameState);break;
                     }
                     break;
                 }
@@ -76,6 +76,7 @@ namespace HobbyDS9.Simulation
 
         private CampaignTacticalError EnqueueActivity(GameStateDto game,CampaignActivityCommandDto command,ControllerKind controller)
         {
+            if(colonisation!=null)return EnqueueColonisation(game,command,controller);
             if(Streams!=null)return EnqueueStreamed(game,command,controller);
             var colony=game.Colonies!.SingleOrDefault(c=>c.ColonyId==command.TargetId&&c.OwnerCivilizationId==command.ActorId);
             if(colony==null)return CampaignTacticalError.InvalidOrder;
@@ -107,6 +108,7 @@ namespace HobbyDS9.Simulation
 
         private CampaignTacticalError CancelActivityProduction(GameStateDto game,CampaignActivityCommandDto command)
         {
+            if(colonisation!=null)return CancelColonisationProduction(game,command);
             if(Streams!=null)return CancelStreamed(game,command);
             var entry=activities!.State.Production!.SingleOrDefault(q=>q.Paid!.QueueItemId==command.TargetId);
             if(entry==null)return CampaignTacticalError.InvalidOrder;
@@ -122,6 +124,7 @@ namespace HobbyDS9.Simulation
 
         private void ExecuteActivityProduction(CampaignTacticalTravelSaveDto next)
         {
+            if(colonisation!=null){ExecuteColonisationProduction(next);return;}
             if(Streams!=null){ExecuteStreamedProduction(next);return;}
             var game=next.Core.Campaign.GameState;
             var heads=game.Colonies!.OrderBy(c=>c.ColonyId,StringComparer.Ordinal)

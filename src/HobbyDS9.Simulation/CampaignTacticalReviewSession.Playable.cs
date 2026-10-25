@@ -18,26 +18,27 @@ namespace HobbyDS9.Simulation
         private HashSet<string> playableRetiredFleets = new HashSet<string>(StringComparer.Ordinal);
         internal Action? PlayableOrganizationProbe { get; set; }
         internal Action? PlayableAiRemainderProbe { get; set; }
-        private string OwnedCoreProfile => Streams!=null?CampaignStreamedActivitiesIdentity.EmbeddedCoreProfile:activities!=null?CampaignActivitiesIdentity.EmbeddedCoreProfile:published!=null?CampaignPublishedConstructionIdentity.EmbeddedCoreProfile:astronomyIndex != null ? CampaignStaticAstronomyIdentity.EmbeddedCoreProfile : generatedMap != null ? CampaignGeneratedIdentity.EmbeddedCoreProfile : playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
+        private string OwnedCoreProfile => colonisation!=null?CampaignColonisationIdentity.EmbeddedCoreProfile:Streams!=null?CampaignStreamedActivitiesIdentity.EmbeddedCoreProfile:activities!=null?CampaignActivitiesIdentity.EmbeddedCoreProfile:published!=null?CampaignPublishedConstructionIdentity.EmbeddedCoreProfile:astronomyIndex != null ? CampaignStaticAstronomyIdentity.EmbeddedCoreProfile : generatedMap != null ? CampaignGeneratedIdentity.EmbeddedCoreProfile : playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
             : frontier != null ? CampaignFrontierIdentity.EmbeddedCoreProfile : CampaignTacticalReviewIdentity.Profile;
         public int RemainingPlayableOperations { get { lock (gate) return playableOperationLimit - UsedPlayableOperations; } }
 
         private bool CanPublishPlayableAdvance(CampaignTacticalTravelSaveDto next)
         {
             if (playableHash == null) return true;
+            if(colonisation!=null)return ColonisationCapacity(1,next);
             var required = PlayableAdvanceCapacity.RequiredSlots(next, controllers);
             if(Streams!=null)required=checked(required+Streams.Production.Count+activities!.State.Findings!.Count(f=>f.Stage==ActivityProgressStage.Active||f.Stage==ActivityProgressStage.AwaitingClaim));
             return required <= (long)playableOperationLimit - UsedPlayableOperations;
         }
 
-        private static void ValidatePlayablePackage(CampaignPlayableFleetPackageDto p, bool generated = false)
+        private static void ValidatePlayablePackage(CampaignPlayableFleetPackageDto p, bool generated = false,PlanetaryOwnershipContext? ownership=null)
         {
             Require(p != null && p.FormatVersion == CampaignPlayableFleetIdentity.Format
                 && p.ProfileId == CampaignPlayableFleetIdentity.Profile && Hash(p.PackageHash)
                 && p.PolicyStatus == "proposed" && p.DefaultActivationAllowed == false
                 && p.ReplayOperationLimit.HasValue && p.ReplayOperationLimit > 0 && p.ReplayOperationLimit <= 65536
                 && p.Integrated != null, "Unsupported playable-fleet package or explicit technical replay budget.");
-            ValidateIntegratedPackage(p.Integrated!);
+            ValidateIntegratedPackage(p.Integrated!,ownership);
             var game = p.Integrated!.Physical!.CorePackage!.Campaign!.InitialState;
             Require(game.Civilizations!.Count(c => c.ControllerKind == ControllerKind.Human) == 1
                 && game.Civilizations.Any(c => c.CivilizationId == p.OpponentActorId && c.ControllerKind == ControllerKind.AI)

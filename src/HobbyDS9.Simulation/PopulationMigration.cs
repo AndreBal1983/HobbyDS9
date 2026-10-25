@@ -36,10 +36,11 @@ namespace HobbyDS9.Simulation
         private static long Opportunity(ColonyStateDto c, WorldEconomySnapshot f) => Math.Min(10000, PopulationRules.ScaleBy(Math.Min(100, Math.Min(100, f.Industry) + Math.Min(100, f.ResearchOutput)), 100, 1)) + c.Prosperity;
         private static bool Habitable(PopulationCohortDto cohort, ColonyStateDto destination, GameStateDto state, DefinitionCatalogDto definitions) =>
             Fit(cohort, destination, state, definitions) > 0 || WorldEconomy.Installed(destination, definitions, i => i.ArtificialCapacity) > 0;
-        internal static void Execute(GameStateDto s, DefinitionCatalogDto d)
+        internal static void Execute(GameStateDto s, DefinitionCatalogDto d,PlanetaryOwnershipContext? ownership=null)
         {
-            var graph = PopulationLogistics.Graph(s, d); var colonies = s.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal).ToList();
-            var facts = colonies.ToDictionary(c => c.ColonyId, c => WorldEconomy.Project(c, s, d));
+            ownership?.RequireOwner(d,s);
+            var graph = PopulationLogistics.Graph(s, d); var colonies = s.Colonies!.Where(c=>ownership==null||ownership.IsEstablished(c.ColonyId)&&PopulationRules.Population(c)>0).OrderBy(c => c.ColonyId, StringComparer.Ordinal).ToList();
+            var facts = colonies.ToDictionary(c => c.ColonyId, c => WorldEconomy.Project(c, s, d,ownership));
             var capacity = colonies.ToDictionary(c => c.ColonyId, c => Math.Max(0, facts[c.ColonyId].EffectiveCapacity - facts[c.ColonyId].Population));
             var identities = colonies.ToDictionary(c => c.ColonyId, c => c.Cohorts!.Select(PopulationRules.Identity).ToHashSet(StringComparer.Ordinal));
             bool HasIdentitySlot(ColonyStateDto to, PopulationCohortDto cohort, LegalStatus status) => identities[to.ColonyId].Contains(cohort.SpeciesDefinitionId + "|" + (int)status + "|" + cohort.OriginCivilizationId) || identities[to.ColonyId].Count < PopulationRules.CohortCeiling;

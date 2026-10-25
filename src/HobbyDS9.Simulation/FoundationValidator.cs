@@ -25,17 +25,25 @@ namespace HobbyDS9.Simulation
         }
 
         public static ValidationReport ValidateGameState(GameStateDto? dto, DefinitionCatalogDto? definitions)
+            =>ValidateGameStateCore(dto,definitions,null);
+        internal static ValidationReport ValidatePlanetaryGameState(GameStateDto? dto, DefinitionCatalogDto? definitions,PlanetaryOwnershipContext ownership)
+            =>ValidateGameStateCore(dto,definitions,ownership??throw new ArgumentNullException(nameof(ownership)));
+        private static ValidationReport ValidateGameStateCore(GameStateDto? dto, DefinitionCatalogDto? definitions,PlanetaryOwnershipContext? ownership)
         {
             var issues = new List<ValidationIssue>();
             var ids = ValidateDefinitions(definitions, "$.Definitions", issues);
             ValidateState(dto, ids, false, "$.GameState", issues);
-            ValidateTypedState(dto, definitions, "$.GameState", issues);
+            ValidateTypedState(dto, definitions, "$.GameState", issues,ownership);
             ValidateCampaignCombat(dto, definitions, null, null, "$.GameState", issues);
             ValidateCombatTopology(dto, definitions, "$.GameState", issues);
             return new ValidationReport(issues);
         }
 
         public static ValidationReport ValidateScenario(ScenarioDto? dto)
+            =>ValidateScenarioCore(dto,null);
+        internal static ValidationReport ValidatePlanetaryScenario(ScenarioDto? dto,PlanetaryOwnershipContext ownership)
+            =>ValidateScenarioCore(dto,ownership??throw new ArgumentNullException(nameof(ownership)));
+        private static ValidationReport ValidateScenarioCore(ScenarioDto? dto,PlanetaryOwnershipContext? ownership)
         {
             var issues = new List<ValidationIssue>();
             if (dto == null) Add(issues, ValidationCode.MissingField, "$.Scenario");
@@ -44,7 +52,7 @@ namespace HobbyDS9.Simulation
                 ValidateMetadata(dto.ScenarioId, dto.RulesVersion, dto.ContentHash, "$", issues);
                 var ids = ValidateDefinitions(dto.Definitions, "$.Definitions", issues);
                 ValidateState(dto.InitialState, ids, true, "$.InitialState", issues);
-                ValidateTypedState(dto.InitialState, dto.Definitions, "$.InitialState", issues);
+                ValidateTypedState(dto.InitialState, dto.Definitions, "$.InitialState", issues,ownership);
                 ValidateAuthoredTacticalEquipmentBindings(dto.InitialState, dto.Definitions, true, issues);
                 ValidateCampaignCombat(dto.InitialState, dto.Definitions, dto.RulesVersion, dto.ContentHash, "$.InitialState", issues);
                 ValidateCombatTopology(dto.InitialState, dto.Definitions, "$.InitialState", issues);
@@ -57,6 +65,10 @@ namespace HobbyDS9.Simulation
         }
 
         public static ValidationReport ValidateSave(SaveEnvelopeDto? dto, DefinitionCatalogDto? definitions, SaveCompatibility expected)
+            =>ValidateSaveCore(dto,definitions,expected,null);
+        internal static ValidationReport ValidatePlanetarySave(SaveEnvelopeDto? dto, DefinitionCatalogDto? definitions, SaveCompatibility expected,PlanetaryOwnershipContext ownership)
+            =>ValidateSaveCore(dto,definitions,expected,ownership??throw new ArgumentNullException(nameof(ownership)));
+        private static ValidationReport ValidateSaveCore(SaveEnvelopeDto? dto, DefinitionCatalogDto? definitions, SaveCompatibility expected,PlanetaryOwnershipContext? ownership)
         {
             if (expected == null) throw new ArgumentNullException(nameof(expected));
             var issues = new List<ValidationIssue>();
@@ -71,7 +83,7 @@ namespace HobbyDS9.Simulation
                 if (!StringComparer.Ordinal.Equals(dto.ContentHash, expected.ContentHash)) Add(issues, ValidationCode.ContentMismatch, "$.ContentHash");
                 var ids = ValidateDefinitions(definitions, "$.Definitions", issues);
                 ValidateState(dto.GameState, ids, false, "$.GameState", issues);
-                ValidateTypedState(dto.GameState, definitions, "$.GameState", issues);
+                ValidateTypedState(dto.GameState, definitions, "$.GameState", issues,ownership);
                 ValidateCampaignCombat(dto.GameState, definitions, dto.RulesVersion, dto.ContentHash, "$.GameState", issues);
                 ValidateCombatTopology(dto.GameState, definitions, "$.GameState", issues);
             }

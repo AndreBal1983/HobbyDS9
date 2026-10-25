@@ -13,7 +13,8 @@ namespace HobbyDS9.Simulation
             Require(s != null && s.FormatVersion == CampaignTacticalReviewIdentity.SaveFormat && s.ProfileId == OwnedCoreProfile
                 && Hash(s.PackageHash) && s.ResolverId == CampaignTacticalReviewIdentity.Resolver && s.ResolverVersion == CampaignTacticalReviewIdentity.ResolverVersion
                 && s.Campaign != null && s.Pools != null && s.FleetSettings != null && s.Battles != null && s.AcceptedRoundCommands != null, "Invalid review save envelope.");
-            FoundationValidator.ValidateSave(s.Campaign, definitions, compatibility).ThrowIfInvalid(nameof(s));
+            if(colonisation==null)FoundationValidator.ValidateSave(s.Campaign, definitions, compatibility).ThrowIfInvalid(nameof(s));
+            else FoundationValidator.ValidatePlanetarySave(s.Campaign,definitions,compatibility,PlanetaryOwner(s.Campaign.GameState)).ThrowIfInvalid(nameof(s));
             var game = s.Campaign.GameState;
             ValidateBuiltShips(game);
             if(travel!=null)Require(game.Phase==SessionPhase.Planning&&game.PendingCombats!.Count==0,"Physical core cannot carry legacy pending encounters.");

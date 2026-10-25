@@ -33,9 +33,9 @@ namespace HobbyDS9.Simulation
             CampaignIntegratedPlaytestPackageDto? integratedPackage=null,CampaignIntegratedPlaytestSaveDto? integratedSave=null,
             CampaignSingleplayerDemoPackageDto? demoPackage=null,CampaignFrontierPackageDto? frontierPackage=null,
             CampaignPlayableFleetPackageDto? playablePackage=null, NaturalGalaxyDocumentDto? generatedMap=null, string? generatedTemplateHash=null,
-            bool staticAstronomy=false,PublishedConstructionContext? publishedContext=null,ActivitiesContext? activitiesContext=null)
+            bool staticAstronomy=false,PublishedConstructionContext? publishedContext=null,ActivitiesContext? activitiesContext=null,ColonisationContext? colonisationContext=null)
         {
-            published=publishedContext;activities=activitiesContext;
+            published=publishedContext;activities=activitiesContext;colonisation=colonisationContext?.Copy();
             this.generatedMap = generatedMap == null ? null : NaturalGalaxyData.Copy(generatedMap);
             this.generatedTemplateHash = generatedTemplateHash;
             if(staticAstronomy)
@@ -47,7 +47,9 @@ namespace HobbyDS9.Simulation
             playableOperationLimit = playablePackage?.ReplayOperationLimit ?? 0;
             demo = demoPackage == null ? null : CopyDemoSettings(demoPackage);
             frontier = frontierPackage==null?null:CopyFrontierSettings(frontierPackage);
-            ValidatePackage(package);
+            var inputOwnership=colonisation==null?null:PlanetaryOwnershipContext.CreateForColonisation(package.Campaign!.Definitions,package.Campaign.InitialState,
+                colonisation.State.PlanetControls!,activities!.State.Minors!);
+            ValidatePackage(package,inputOwnership);
             definitions = SimulationSession.CopyDefinitions(package.Campaign!.Definitions);
             controllers = package.Campaign.InitialState.Civilizations!.ToDictionary(c => c.CivilizationId,c => c.ControllerKind!.Value,StringComparer.Ordinal);
             initialTurn = package.Campaign.InitialState.TurnNumber;
@@ -67,7 +69,7 @@ namespace HobbyDS9.Simulation
                 FitId = c.FitId, FitRevision = c.FitRevision, Capable = c.Capable, ConcurrentPowerRequired = c.ConcurrentPowerRequired }).ToList();
             if(physicalPackage!=null)
             {
-                CampaignTacticalTravelData.ValidatePackage(physicalPackage);
+                CampaignTacticalTravelData.ValidatePackage(physicalPackage,inputOwnership);
                 physicalNavigation=new WeightedNavigationGraph(definitions);
                 declaredHostilities=physicalPackage.Hostilities!.Select(h=>new CampaignDeclaredHostilityDto { CivilizationA=h.CivilizationA,CivilizationB=h.CivilizationB }).ToList();
                 authoredContactGrids=physicalPackage.InitialContacts!.Select(CampaignTacticalTravelData.Copy).ToList();
@@ -112,7 +114,8 @@ namespace HobbyDS9.Simulation
         { if (save == null) throw new ArgumentNullException(nameof(save)); return new CampaignTacticalReviewSession(package, save); }
         public CampaignTacticalReviewSaveDto ExportSave() { lock (gate) {Require(demo==null&&frontier==null&&playableHash==null,"Use complete profile export: bare lifecycle root is incomplete.");return Copy(state);} }
         internal SessionSnapshot CaptureCampaign() { lock (gate) return Legacy(state).CaptureSnapshot(); }
-        private SimulationSession Legacy(CampaignTacticalReviewSaveDto s) => new SimulationSession(s.Campaign, definitions, compatibility);
+        private SimulationSession Legacy(CampaignTacticalReviewSaveDto s) => colonisation==null?new SimulationSession(s.Campaign, definitions, compatibility)
+            :new SimulationSession(s.Campaign,definitions,compatibility,PlanetaryOwner(s.Campaign.GameState));
         private CampaignEquipmentSource Equipment(string id) => published!=null&&published.Sources.TryGetValue(id,out var source)?source:CampaignEquipmentSourceResolver.ResolveAuthored(definitions,cloak,constructionTemplates,BuildRegistry,id);
         private AuthoredTacticalShipProvisionDto Provision(string id) => ResolveProvision(id);
         private AuthoredTacticalFitDto Fit(string ship) => Equipment(ship).Fit;
@@ -395,6 +398,7 @@ namespace HobbyDS9.Simulation
                     foreach (var fleet in staged.Fleets!.Where(f => f.ShipIds!.Count == 0).ToList())
                     { staged.Fleets!.Remove(fleet); staged.EntityIdentities.RemoveAll(e => e.EntityId == fleet.FleetId); next.FleetSettings.RemoveAll(f => f.FleetId == fleet.FleetId); }
                     staged.PendingCombats!.Clear(); staged.ResolvedCombats!.Clear(); staged.Phase = SessionPhase.Planning;
+                    CompleteColonisationWeek(staged);
                     staged.TurnNumber++; staged.StateRevision++; staged.AcceptedCommandIds!.Clear(); next.Battles.Clear();
                     ValidateSave(next,travel!=null?Array.Empty<CombatRequestDto>():null);
                     if (travel != null)

@@ -46,7 +46,7 @@ namespace HobbyDS9.Simulation
             var unique = new HashSet<string>(StringComparer.Ordinal);
             foreach (var r in values) if (r == null || r.Amount < 0 || !DefinitionId.TryParse(r.ResourceDefinitionId, out _) || !unique.Add(r.ResourceDefinitionId) || d?.Resources == null || !d.Resources.Any(v => v != null && v.DefinitionId == r.ResourceDefinitionId)) Add(issues, ValidationCode.InvalidEconomicValue, path);
         }
-        private static void ValidateColonies(GameStateDto s, DefinitionCatalogDto? d, Dictionary<string, EntityIdentityDto> headers, HashSet<string> typed, HashSet<string> civs, string path, List<ValidationIssue> issues)
+        private static void ValidateColonies(GameStateDto s, DefinitionCatalogDto? d, Dictionary<string, EntityIdentityDto> headers, HashSet<string> typed, HashSet<string> civs, string path, List<ValidationIssue> issues,PlanetaryOwnershipContext? ownership=null)
         {
             void Check(bool ok, string p) { if (!ok) Add(issues, ValidationCode.InvalidEconomicValue, path + "." + p); }
             void Identity(string id, string? definition)
@@ -71,7 +71,7 @@ namespace HobbyDS9.Simulation
                 if (c == null) { Check(false, "Colonies"); continue; }
                 Identity(c.ColonyId, null); ValidatePolitics(c,s,d,path+"."+c.ColonyId,issues);
                 Check(occupied.Add(c.PlanetId) && s.Planets.Any(p => p != null && p.PlanetId == c.PlanetId && p.SystemId == c.SystemId), c.ColonyId + ".Planet");
-                Check(s.StarSystems != null && s.StarSystems.Any(n => n != null && n.SystemId == c.SystemId && n.OwnerCivilizationId == c.OwnerCivilizationId), c.ColonyId + ".Ownership");
+                Check(ownership==null?s.StarSystems != null && s.StarSystems.Any(n => n != null && n.SystemId == c.SystemId && n.OwnerCivilizationId == c.OwnerCivilizationId):c.OwnerCivilizationId!=null&&ownership.EmpireControls(c.PlanetId,c.OwnerCivilizationId), c.ColonyId + ".Ownership");
                 Check(c.OwnerCivilizationId == null || civs.Contains(c.OwnerCivilizationId), c.ColonyId + ".Owner");
                 Check(c.Stability >= 0 && c.Stability <= 10000 && c.Prosperity >= 0 && c.Prosperity <= 10000 && c.Automation >= 0 && c.Automation <= 10000 && c.Food >= 0 && c.FoodShortageTurns >= 0, c.ColonyId);
                 ValidateResources(c.Stockpiles, d, c.ColonyId + ".Stockpiles", issues); ValidateResources(c.DesiredStockpiles, d, c.ColonyId + ".DesiredStockpiles", issues);

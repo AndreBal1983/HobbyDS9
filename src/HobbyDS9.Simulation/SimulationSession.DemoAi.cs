@@ -47,7 +47,7 @@ namespace HobbyDS9.Simulation
                     Execute(command); // Same yard/resources/prerequisite validator, no free stocks.
                 }
             }
-            FoundationValidator.ValidateGameState(staged,definitions).ThrowIfInvalid(nameof(staged));
+            ValidateOwnedState(staged).ThrowIfInvalid(nameof(staged));
             return CopyState(staged);
         }
     }

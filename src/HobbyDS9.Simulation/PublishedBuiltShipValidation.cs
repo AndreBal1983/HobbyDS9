@@ -21,7 +21,7 @@ namespace HobbyDS9.Simulation
     internal static class PublishedBuiltShipValidation
     {
         internal static IReadOnlyList<ValidatedPublishedBuiltSource> ValidateRetained(IReadOnlyList<CampaignPublishedBuiltShipDto> records,
-            GameStateDto game,TacticalSupportCatalogueDto support,int initialTurn,ActivityTacticalSupportCatalogueDto? activitySupport=null)
+            GameStateDto game,TacticalSupportCatalogueDto support,int initialTurn,ActivityTacticalSupportCatalogueDto? activitySupport=null,ColonisationSupportCatalogueDto? colonisationSupport=null)
         {
             Require(records!=null && records.Count<=4096 && game!=null && game.Ships!=null && game.Blueprints!=null && game.Civilizations!=null
                 && initialTurn>=1 && game.TurnNumber>=initialTurn,"Missing or excessive detached inputs.");
@@ -52,8 +52,9 @@ namespace HobbyDS9.Simulation
                     && BlueprintCopies.Same(BlueprintCopies.Copy(publication.Cost!),new ShipDesignCostDto{Credits=restored!.Performance.Cost!.Credits,
                         Industry=restored.Performance.Cost.Industry,Maintenance=restored.Performance.Cost.Maintenance,
                         Resources=restored.Performance.Cost.Resources.Select(x=>new ResourceAmountDto{ResourceDefinitionId=x.ResourceDefinitionId,Amount=x.Amount}).ToList()}),"Forged compiled source or cost.");
-                var activity=activitySupport==null?null:PublishedTacticalSupportCompiler.EvaluateActivities(frozen,restored!,CampaignBlueprints.FrozenAccess(publication.FrozenCatalogue!),activitySupport);
-                var compiled=activity==null?PublishedTacticalSupportCompiler.Evaluate(frozen,restored!,CampaignBlueprints.FrozenAccess(publication.FrozenCatalogue!),support)
+                var activity=activitySupport==null||colonisationSupport!=null?null:PublishedTacticalSupportCompiler.EvaluateActivities(frozen,restored!,CampaignBlueprints.FrozenAccess(publication.FrozenCatalogue!),activitySupport);
+                var colonisation=colonisationSupport==null?null:PublishedTacticalSupportCompiler.EvaluateColonisation(frozen,restored!,CampaignBlueprints.FrozenAccess(publication.FrozenCatalogue!),colonisationSupport);
+                var compiled=colonisation!=null?new PublishedTacticalSupportResult(colonisation.Issues,colonisation.Ship?.Tactical):activity==null?PublishedTacticalSupportCompiler.Evaluate(frozen,restored!,CampaignBlueprints.FrozenAccess(publication.FrozenCatalogue!),support)
                     :new PublishedTacticalSupportResult(activity.Issues,activity.Ship?.Tactical);
                 Require(compiled.IsSupportedByCompiler,"Unsupported frozen tactical source.");var fit=compiled.Fit!;
                 Require(r.SourceCompilerId==publication.CompilerVersion && r.SourceRulesVersion==publication.RulesVersion && r.SourceContentHash==publication.SourceContentHash

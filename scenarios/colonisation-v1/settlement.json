@@ -47,5 +47,33 @@
   },
   "EstablishedFoodOutput": 2,
   "MaximumValidationVisits": 2000000,
-  "MaximumCanonicalRootBytes": 67108864
+  "MaximumCanonicalRootBytes": 67108864,
+  "Mine": {
+    "Infrastructure": {
+      "DefinitionId": "infrastructure.frontier-mine.v1",
+      "DisplayName": "Frontier dilithium mine",
+      "FoodOutput": 0,
+      "Industry": 0,
+      "PowerSupply": 0,
+      "PowerDemand": 3,
+      "Research": 0,
+      "LogisticsCapacity": 0,
+      "Shipbuilding": false,
+      "Extraction": [
+        {
+          "ResourceDefinitionId": "resource.dilithium",
+          "Amount": 3
+        }
+      ],
+      "AccessibleHabitats": [],
+      "ArtificialCapacity": 0,
+      "ArtificialHabitability": 0
+    },
+    "Cost": {
+      "Credits": 0,
+      "Industry": 60,
+      "Maintenance": 0,
+      "Resources": []
+    }
+  }
 }

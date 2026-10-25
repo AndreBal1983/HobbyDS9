@@ -210,27 +210,30 @@ namespace HobbyDS9.Simulation
                 void Phase(StrategicTurnPhase phase,Action action)
                 {
                     Probe(phase);var before=SimulationSession.CopyState(game);action();
-                    FoundationValidator.ValidateGameState(game,definitions).ThrowIfInvalid(nameof(game));
-                    SimulationSession.RequirePhaseChanges(before,SimulationSession.CopyState(game),allowEconomy:phase==StrategicTurnPhase.Economy,
-                        allowResearch:phase==StrategicTurnPhase.Research,allowProduction:phase==StrategicTurnPhase.Production);
+                    ValidateOwnedGame(game);
+                    RequireOwnedChanges(before,SimulationSession.CopyState(game),economy:phase==StrategicTurnPhase.Economy,
+                        research:phase==StrategicTurnPhase.Research,production:phase==StrategicTurnPhase.Production);
                 }
-                Phase(StrategicTurnPhase.Economy,()=>EconomyPhase.Execute(game,definitions,Streams==null?null:StreamedDemand(game)));
-                Phase(StrategicTurnPhase.Research,()=>ResearchPhase.Execute(game,definitions));
+                Phase(StrategicTurnPhase.Economy,()=>EconomyPhase.Execute(game,definitions,colonisation!=null?ColonisationDemand(game):Streams==null?null:StreamedDemand(game),colonisation==null?null:PlanetaryOwner(game)));
+                Phase(StrategicTurnPhase.Research,()=>ResearchPhase.Execute(game,definitions,colonisation==null?null:PlanetaryOwner(game)));
                 var beforeProduction=SimulationSession.CopyState(game);
                 if(activities!=null)
-                {Probe(StrategicTurnPhase.Production);ExecuteActivityProduction(next);FoundationValidator.ValidateGameState(game,definitions).ThrowIfInvalid(nameof(game));}
+                {Probe(StrategicTurnPhase.Production);ExecuteActivityProduction(next);ValidateOwnedGame(game);}
                 else
                 {Phase(StrategicTurnPhase.Production,()=>ProductionPhase.Execute(game,definitions));ProvisionCompletedShips(next,beforeProduction);}
                 if(game.Ships!.Any(s=>!next.Core.Pools.Any(p=>p.ShipId==s.ShipId)))return Result(CampaignTacticalError.UnsupportedSource);
                 Probe(StrategicTurnPhase.Movement);
                 next.MovementProof=new CampaignPhysicalMovementProofDto { Start=SimulationSession.CopyState(game),
                     Orders=next.Orders.Select(CampaignTacticalTravelData.Copy).ToList(),Contacts=next.Contacts.Select(CampaignTacticalTravelData.Copy).ToList() };
+                if(colonisation!=null)colonisation.MovementOwnership=new ColonisationMovementOwnershipDto{Turn=game.TurnNumber,Revision=game.StateRevision,
+                    PlanetControls=colonisation.State.PlanetControls!.Select(ColonisationData.Copy).ToList(),
+                    ColonyStages=colonisation.State.CampSources!.Select(c=>new ColonisationColonyStageDto{ColonyId=c.ColonyId,Stage=c.Stage}).ToList()};
                 var movement=CampaignPhysicalMovement.Execute(game,definitions,next.Orders,next.Contacts,declaredHostilities!,contactFreshness,physicalNavigation!);
                 var movementGuard=SimulationSession.CopyState(game);
                 foreach(var receipt in movement.Receipts.Where(r=>r.StoppedByEncounter))
                     movementGuard.Fleets!.Single(f=>f.FleetId==receipt.FleetId).RouteNodeIds=next.MovementProof.Start.Fleets!
                         .Single(f=>f.FleetId==receipt.FleetId).RouteNodeIds!.Skip((int)receipt.EdgesCompleted).ToList();
-                SimulationSession.RequirePhaseChanges(next.MovementProof.Start,movementGuard,allowEconomy:false,allowMovement:true);
+                RequireOwnedChanges(next.MovementProof.Start,movementGuard,economy:false,movement:true);
                 if(activities!=null)TickActivityFindings(game);
                 Probe(StrategicTurnPhase.EncounterCreation);next.Requests=FreezePhysical(game,movement);next.LastMovement=movement.Receipts;
                 foreach(var o in next.Orders)
@@ -246,6 +249,7 @@ namespace HobbyDS9.Simulation
                 RefreshPhysicalContacts(next.Requests,turn,next.Contacts);
                 if(generatedMap!=null){RefreshGeneratedContacts(game,next.Core.FleetSettings,next.Contacts,turn);RevalidateGeneratedFollow(next);}
                 next.Phase=next.Requests.Count>0?SessionPhase.AwaitingCombat:SessionPhase.Planning;
+                if(next.Phase==SessionPhase.Planning)CompleteColonisationWeek(game);
                 game.StateRevision=checked(game.StateRevision+1);
                 if(next.Phase==SessionPhase.Planning){game.TurnNumber++;game.AcceptedCommandIds!.Clear();}
                 foreach(var b in next.Core.Battles)

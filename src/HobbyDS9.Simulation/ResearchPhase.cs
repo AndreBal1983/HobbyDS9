@@ -6,12 +6,13 @@ namespace HobbyDS9.Simulation
 {
     internal static class ResearchPhase
     {
-        internal static void Execute(GameStateDto staging,DefinitionCatalogDto definitions)
+        internal static void Execute(GameStateDto staging,DefinitionCatalogDto definitions,PlanetaryOwnershipContext? ownership=null)
         {
+            ownership?.RequireOwner(definitions,staging);
             var receipts=new List<ResearchReceiptDto>();var pace=staging.ResearchPaceFactor!.Value;
             foreach(var civilization in staging.Civilizations!.OrderBy(c=>c.CivilizationId,StringComparer.Ordinal))
             {
-                long output=0;foreach(var colony in staging.Colonies!.OrderBy(c=>c.ColonyId,StringComparer.Ordinal))if(colony.OwnerCivilizationId==civilization.CivilizationId)output=checked(output+WorldEconomy.Project(colony,staging,definitions).ResearchOutput);
+                long output=0;foreach(var colony in staging.Colonies!.OrderBy(c=>c.ColonyId,StringComparer.Ordinal))if(colony.OwnerCivilizationId==civilization.CivilizationId)output=checked(output+WorldEconomy.Project(colony,staging,definitions,ownership).ResearchOutput);
                 ScienceRules.Allocate(civilization,output);
                 if(output>0) {
                     receipts.Add(new ResearchReceiptDto{CivilizationId=civilization.CivilizationId,Category="allocation",Amount=ScienceRules.InternalUnits(output)});

@@ -9,6 +9,8 @@ namespace HobbyDS9.Contracts
         public const string Profile="generated-campaign-colonisation-v1",Policy="planetary-settlement-streamed-v1";
         public const string PackageProfile="generated-colonisation-package-v1",EmbeddedCoreProfile="generated-campaign-owned-core-colonisation-v1";
         public const string PopulationPolicy="conserved-settler-transport-v1",InventoryPolicy="planetary-inventory-all-systems-v1";
+        public const string Rules="strategic-colonisation-planetary-v1";
+        public const string InventoryAuthoring="colonisation-planets-v1;temperate-arid-oceanic-frozen-vacuum;natural=1000,1000,1000,1000,0;dilithium=0,120,240;four-nearby-primaries=240;ilex=wetland;namar=temperate;minor-gravity=100;pressure=100;radiation=10;atmosphere=oxygen";
     }
     public enum PlanetControllerKind { Unclaimed=0,Empire=1,IndependentGovernment=2 }
     public enum ColonyEstablishmentStage { Founding=1,Established=2,EmptyOutpost=3 }
@@ -24,10 +26,25 @@ namespace HobbyDS9.Contracts
     }
     public sealed class PlanetBodyBindingDto
     {public string PlanetId {get;set;}="";public string BodyId {get;set;}="";public string SystemId {get;set;}="";public string? MinorActorId {get;set;}}
+    public sealed class FrozenColonisationPlanetsDto
+    {
+        public string PolicyId {get;set;}=CampaignColonisationIdentity.InventoryPolicy;
+        public string ContentHash {get;set;}="";
+        public List<PlanetDefinitionDto>? Definitions {get;set;}=new List<PlanetDefinitionDto>();
+        public List<PlanetStateDto>? InitialPlanets {get;set;}=new List<PlanetStateDto>();
+        public List<PlanetBodyBindingDto>? Bodies {get;set;}=new List<PlanetBodyBindingDto>();
+        public List<PlanetControlDto>? GenesisControls {get;set;}=new List<PlanetControlDto>();
+    }
     public sealed class PlanetSurveyDto
     {
         public string SurveyId {get;set;}="";public string ActorId {get;set;}="";public string PlanetId {get;set;}="";public string ShipId {get;set;}="";
         public PlanetSurveyStage Stage {get;set;}public int CompletedWeeks {get;set;}public int StartedTurn {get;set;}public int? ResolvedTurn {get;set;}
+    }
+    public sealed class ColonisationPlanetObservationDto
+    {
+        public string PlanetId {get;set;}="";public string BodyId {get;set;}="";public string SystemId {get;set;}="";public string DisplayName {get;set;}="";
+        public bool Surveyed {get;set;}public PlanetDefinitionDto? Environment {get;set;}public PlanetControlDto? KnownControl {get;set;}
+        public string? ActiveSurveyId {get;set;}public int CompletedSurveyWeeks {get;set;}
     }
     public sealed class SettlerManifestDto
     {
@@ -95,11 +112,14 @@ namespace HobbyDS9.Contracts
         public int Settlers {get;set;}public int SourcePopulationFloor {get;set;}public int MaximumSourceCohortBps {get;set;}public int MinimumFood {get;set;}public int MaximumFood {get;set;}
         public string EquipmentResourceId {get;set;}="";public long KitIndustry {get;set;}public List<ResourceAmountDto>? KitResources {get;set;}=new List<ResourceAmountDto>();
         public long EstablishmentIndustry {get;set;}public int MinimumFedWeeks {get;set;}public InfrastructureDefinitionDto? Camp {get;set;}public long EstablishedFoodOutput {get;set;}
+        public ColonisationInfrastructureRecipeDto? Mine {get;set;}
     }
+    public sealed class ColonisationInfrastructureRecipeDto
+    {public InfrastructureDefinitionDto? Infrastructure {get;set;}public ShipDesignCostDto? Cost {get;set;}}
     public sealed class CampaignColonisationPackageDto
     {
         public int FormatVersion {get;set;}=1;public string ProfileId {get;set;}=CampaignColonisationIdentity.PackageProfile;public string PackageHash {get;set;}="";
-        public CampaignActivitiesPackageDto? Activities {get;set;}public ColonisationSupportCatalogueDto? Support {get;set;}public ColonisationPolicyDto? Settlement {get;set;}
+        public CampaignActivitiesPackageDto? Activities {get;set;}public ShipDesignCatalogueDto? Catalogue {get;set;}public List<ShipClassDraftDto>? ReadyClasses {get;set;}public ColonisationSupportCatalogueDto? Support {get;set;}public ColonisationPolicyDto? Settlement {get;set;}
     }
     public enum ColonisationProductionKind { PublishedShip=1,Infrastructure=2,SettlementKit=3 }
     public sealed class ColonisationProductionItemDto
@@ -137,7 +157,9 @@ namespace HobbyDS9.Contracts
     {public ColonisationCommandDto? Colonisation {get;set;}public CampaignActivityOperationDto? Existing {get;set;}}
     // Exact ownership ERA of the already retained physical MovementProof.Start.
     public sealed class ColonisationMovementOwnershipDto
-    {public int Turn {get;set;}public long Revision {get;set;}public List<PlanetControlDto>? PlanetControls {get;set;}=new List<PlanetControlDto>();}
+    {public int Turn {get;set;}public long Revision {get;set;}public List<PlanetControlDto>? PlanetControls {get;set;}=new List<PlanetControlDto>();public List<ColonisationColonyStageDto>? ColonyStages {get;set;}=new List<ColonisationColonyStageDto>();}
+    public sealed class ColonisationColonyStageDto
+    {public string ColonyId {get;set;}="";public ColonyEstablishmentStage Stage {get;set;}}
     public enum DeploymentBoundaryOutcome { Deployed=1,Disputed=2,Interrupted=3 }
     public sealed class ColonisationDeploymentReceiptDto
     {
@@ -160,6 +182,7 @@ namespace HobbyDS9.Contracts
         public int FormatVersion {get;set;}=CampaignColonisationIdentity.Format;public string ProfileId {get;set;}=CampaignColonisationIdentity.Profile;public string PolicyId {get;set;}=CampaignColonisationIdentity.Policy;
         public string TemplatePackageHash {get;set;}="";public string PackageHash {get;set;}="";public string SupportHash {get;set;}="";
         public NaturalGalaxyDocumentDto? Map {get;set;}public CampaignPlayableFleetSaveDto? Campaign {get;set;}
+        public FrozenColonisationPlanetsDto? FrozenPlanets {get;set;}
         public List<CampaignFrontierReceiptDto>? Discoveries {get;set;}public List<CampaignPublishedBuiltShipDto>? PublishedBuiltShips {get;set;}
         public CampaignActivityStateDto? Activities {get;set;}public CampaignColonisationStateDto? Colonisation {get;set;}
         public List<ColonisationProductionItemDto>? Production {get;set;}public List<ColonisationProductionReceiptDto>? ProductionHistory {get;set;}

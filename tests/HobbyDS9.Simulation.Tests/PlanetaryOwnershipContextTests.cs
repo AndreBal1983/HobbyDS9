@@ -55,4 +55,27 @@ public sealed class PlanetaryOwnershipContextTests
         }
         Assert.Throws<ArgumentException>(()=>PlanetaryOwnershipContext.CreateForColonisation(x.scenario.Definitions,state,x.controls,Array.Empty<ActivityMinorStateDto>()));
     }
+    [Fact] public void ClosedPlanetaryValidationReusesEveryOtherFoundationCheckAndBindsActualCopies()
+    {
+        var x=Mixed();var game=x.scenario.InitialState;var ctx=PlanetaryOwnershipContext.CreateForColonisation(x.scenario.Definitions,game,x.controls,Array.Empty<ActivityMinorStateDto>());
+        var report=FoundationValidator.ValidatePlanetaryGameState(game,x.scenario.Definitions,ctx);
+        Assert.True(report.IsValid,JsonSerializer.Serialize(report.Issues));
+        var detached=SimulationSession.CopyState(game);Assert.Throws<ArgumentException>(()=>FoundationValidator.ValidatePlanetaryGameState(detached,x.scenario.Definitions,ctx));
+        var owned=ctx.CopyForState(detached);detached.Colonies![0].Food=-1;
+        Assert.False(FoundationValidator.ValidatePlanetaryGameState(detached,x.scenario.Definitions,owned).IsValid);
+        var retained=ctx.CopyDefinitionsForState(SimulationSession.CopyState(game));
+        Assert.NotSame(x.scenario.Definitions,retained.Definitions);Assert.Throws<ArgumentException>(()=>retained.Ownership.RequireOwner(x.scenario.Definitions,game));
+        ctx.RequireOwner(x.scenario.Definitions,game);
+    }
+    [Fact] public void InternalSessionRetainsOwnedDefinitionsAndStateWhileOldPublicSessionRejectsMixedOwnership()
+    {
+        var x=Mixed();var game=x.scenario.InitialState;var ctx=PlanetaryOwnershipContext.CreateForColonisation(x.scenario.Definitions,game,x.controls,Array.Empty<ActivityMinorStateDto>());
+        var save=new SaveEnvelopeDto{SaveFormatVersion=FoundationVersions.SaveFormatVersion,ScenarioId=x.scenario.ScenarioId,RulesVersion=x.scenario.RulesVersion,ContentHash=x.scenario.ContentHash,GameState=game};
+        var compatibility=new SaveCompatibility(save.ScenarioId,save.RulesVersion,save.ContentHash);
+        Assert.Throws<ArgumentException>(()=>new SimulationSession(save,x.scenario.Definitions,compatibility));
+        var owned=new SimulationSession(save,x.scenario.Definitions,compatibility,ctx);var before=JsonSerializer.Serialize(owned.ExportSave());
+        game.Colonies![0].Food=0;x.scenario.Definitions.Planets![0].Habitats![0].NaturalCapacity=0;
+        Assert.Equal(before,JsonSerializer.Serialize(owned.ExportSave()));
+    }
+
 }

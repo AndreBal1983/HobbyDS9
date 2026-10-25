@@ -49,13 +49,13 @@ namespace HobbyDS9.Simulation
             ShipId=b.ShipId,ShipDesignDefinitionId=b.ShipDesignDefinitionId,SourceProvisionShipId=b.SourceProvisionShipId,
             OwnerCivilizationId=b.OwnerCivilizationId,FleetIdAtConstruction=b.FleetIdAtConstruction,QueueItemId=b.QueueItemId,TurnBuilt=b.TurnBuilt };
 
-        private static void ValidateIntegratedPackage(CampaignIntegratedPlaytestPackageDto p)
+        private static void ValidateIntegratedPackage(CampaignIntegratedPlaytestPackageDto p,PlanetaryOwnershipContext? ownership=null)
         {
             Require(p != null && p.FormatVersion == CampaignIntegratedPlaytestIdentity.PackageFormat
                 && p.ProfileId == CampaignIntegratedPlaytestIdentity.Profile && Hash(p.PackageHash) && p.PolicyStatus == "proposed"
                 && p.DefaultActivationAllowed == false && p.Physical != null && p.ConstructionTemplates != null
                 && p.ConstructionTemplates.Count > 0, "Unsupported/ungated integrated package.");
-            CampaignTacticalTravelData.ValidatePackage(p.Physical!);
+            CampaignTacticalTravelData.ValidatePackage(p.Physical!,ownership);
             var campaign = p.Physical!.CorePackage!.Campaign!;
             Require(p.ConstructionTemplates!.All(t => t != null && DefinitionId.TryParse(t.ShipDesignDefinitionId, out _)
                 && EntityId.TryParse(t.SourceProvisionShipId, out _)) && p.ConstructionTemplates.Select(t => t.ShipDesignDefinitionId)
@@ -97,7 +97,8 @@ namespace HobbyDS9.Simulation
                 :constructionTemplates.Any(t=>t.ShipDesignDefinitionId==q.ShipDesignDefinitionId)),
                 "Unsupported construction queue in integrated root.");
             Require(game.PopulationStatistics!.ProductionCompleted >= initialProductionCompleted
-                && game.PopulationStatistics.ProductionCompleted-initialProductionCompleted==records.Count+(published?.Records.Count??0)+(activities?.State.Structures!.Count??0), "Produced-source history/completion counter mismatch.");
+                && game.PopulationStatistics.ProductionCompleted-initialProductionCompleted==records.Count+(published?.Records.Count??0)+(activities?.State.Structures!.Count??0)
+                    +(colonisation?.History.Count(r=>r.Completed&&r.Order!.Kind==ColonisationProductionKind.SettlementKit)??0), "Produced-source history/completion counter mismatch.");
             Require(records.All(b => b != null && EntityId.TryParse(b.ShipId, out var id) && b.ShipId!.StartsWith("ship.",StringComparison.Ordinal) && id.TryGetAllocationSequence(out var n)
                     && n < game.NextEntitySequence && !definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Any(p => p.ShipId == b.ShipId)
                     && EntityId.TryParse(b.QueueItemId, out var queue) && b.QueueItemId!.StartsWith("queue-item.",StringComparison.Ordinal) && queue.TryGetAllocationSequence(out var q) && q < n

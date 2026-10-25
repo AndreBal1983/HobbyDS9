@@ -12,9 +12,13 @@ namespace HobbyDS9.Simulation
         private readonly GameStateDto state;
         private readonly Dictionary<string,PlanetControlDto> controls;
         private readonly HashSet<string> independentActors;
-        private PlanetaryOwnershipContext(DefinitionCatalogDto ownedDefinitions,GameStateDto ownedState,IEnumerable<PlanetControlDto> ownedControls,IEnumerable<string> minors)
+        private readonly Dictionary<string,ColonyEstablishmentStage> stages;
+        private PlanetaryOwnershipContext(DefinitionCatalogDto ownedDefinitions,GameStateDto ownedState,IEnumerable<PlanetControlDto> ownedControls,IEnumerable<string> minors,IEnumerable<ColonisationColonyStageDto>? camps=null)
         {
             definitions=ownedDefinitions;state=ownedState;independentActors=new HashSet<string>(minors,StringComparer.Ordinal);
+            stages=new Dictionary<string,ColonyEstablishmentStage>(StringComparer.Ordinal);
+            if(camps!=null)foreach(var camp in camps)
+            {if(camp==null||!Enum.IsDefined(typeof(ColonyEstablishmentStage),camp.Stage)||stages.ContainsKey(camp.ColonyId))throw new ArgumentException("Invalid closed colony establishment stage.");stages.Add(camp.ColonyId,camp.Stage);}
             controls=new Dictionary<string,PlanetControlDto>(StringComparer.Ordinal);
             foreach(var row in ownedControls)
             {
@@ -32,6 +36,21 @@ namespace HobbyDS9.Simulation
                 ||minors.Select(m=>m.ActorId).Distinct(StringComparer.Ordinal).Count()!=minors.Count)throw new ArgumentException("Complete owned planetary context required.");
             return new PlanetaryOwnershipContext(ownedDefinitions,ownedState,controls,minors.Select(m=>m.ActorId));
         }
+        internal static PlanetaryOwnershipContext CreateForColonisation(DefinitionCatalogDto ownedDefinitions,GameStateDto ownedState,
+            CampaignColonisationStateDto context,IReadOnlyList<ActivityMinorStateDto> minors)
+        {
+            if(context?.PlanetControls==null||context.CampSources==null||minors==null||minors.Any(m=>m==null))throw new ArgumentException("Complete private colonisation context required.");
+            return new PlanetaryOwnershipContext(ownedDefinitions,ownedState,context.PlanetControls,minors.Select(m=>m.ActorId),context.CampSources.Select(c=>c==null?null!:new ColonisationColonyStageDto{ColonyId=c.ColonyId,Stage=c.Stage}));
+        }
+        internal static PlanetaryOwnershipContext CreateForColonisationEra(DefinitionCatalogDto definitions,GameStateDto state,IReadOnlyList<PlanetControlDto> controls,
+            IReadOnlyList<ActivityMinorStateDto> minors,IReadOnlyList<ColonisationColonyStageDto> stages)
+        {
+            if(controls==null||minors==null||stages==null||minors.Any(m=>m==null))throw new ArgumentException("Complete historical planetary era required.");
+            return new PlanetaryOwnershipContext(definitions,state,controls,minors.Select(m=>m.ActorId),stages);
+        }
+        private IEnumerable<ColonisationColonyStageDto> StageRows()=>stages.Select(s=>new ColonisationColonyStageDto{ColonyId=s.Key,Stage=s.Value});
+        internal bool IsFounding(string colony)=>stages.TryGetValue(colony,out var stage)&&stage==ColonyEstablishmentStage.Founding;
+        internal bool IsEstablished(string colony)=>!stages.TryGetValue(colony,out var stage)||stage==ColonyEstablishmentStage.Established;
         internal void RequireOwner(DefinitionCatalogDto candidateDefinitions,GameStateDto candidateState)
         {
             if(!ReferenceEquals(definitions,candidateDefinitions)||!ReferenceEquals(state,candidateState))throw new ArgumentException("Different planetary context era or definition owner.");
@@ -40,7 +59,19 @@ namespace HobbyDS9.Simulation
         {
             if(detachedState==null)throw new ArgumentNullException(nameof(detachedState));
             // Definition ownership is fixed; never accept a replacement caller definition catalogue.
-            return new PlanetaryOwnershipContext(definitions,detachedState,controls.Values,independentActors);
+            return new PlanetaryOwnershipContext(definitions,detachedState,controls.Values,independentActors,StageRows());
+        }
+        internal (DefinitionCatalogDto Definitions,PlanetaryOwnershipContext Ownership) CopyDefinitionsForState(GameStateDto detachedState)
+        {
+            // The definition copy is created HERE from our retained owner, never accepted from a caller.
+            var owned=SimulationSession.CopyDefinitions(definitions);
+            return(owned,new PlanetaryOwnershipContext(owned,detachedState,controls.Values,independentActors,StageRows()));
+        }
+        internal void RequireSameControls(PlanetaryOwnershipContext other)
+        {
+            if(!ReferenceEquals(definitions,other.definitions)||!independentActors.SetEquals(other.independentActors)||!stages.OrderBy(s=>s.Key,StringComparer.Ordinal).SequenceEqual(other.stages.OrderBy(s=>s.Key,StringComparer.Ordinal))||!controls.Values.OrderBy(c=>c.PlanetId,StringComparer.Ordinal).Select(c=>(c.PlanetId,c.Kind,c.ActorId))
+                .SequenceEqual(other.controls.Values.OrderBy(c=>c.PlanetId,StringComparer.Ordinal).Select(c=>(c.PlanetId,c.Kind,c.ActorId))))
+                throw new InvalidOperationException("Ordinary phase changed planetary control or its definition owner.");
         }
         internal IReadOnlyList<PlanetControlDto> CopyControls()=>controls.Values.OrderBy(c=>c.PlanetId,StringComparer.Ordinal).Select(Copy).ToList().AsReadOnly();
         internal bool EmpireControls(string planetId,string actor)=>controls.TryGetValue(planetId,out var c)&&c.Kind==PlanetControllerKind.Empire&&c.ActorId==actor;
@@ -51,6 +82,7 @@ namespace HobbyDS9.Simulation
                 ||state.Planets.Select(p=>p.PlanetId).Distinct(StringComparer.Ordinal).Count()!=state.Planets.Count
                 ||controls.Count!=state.Planets.Count||state.Planets.Any(p=>!controls.ContainsKey(p.PlanetId)))throw new ArgumentException("Different planetary ownership inventory.");
             var empires=new HashSet<string>(state.Civilizations.Select(c=>c.CivilizationId),StringComparer.Ordinal);
+            if(stages.Keys.Any(id=>state.Colonies.Count(c=>c.ColonyId==id)!=1))throw new ArgumentException("Establishment stage lacks its exact retained colony.");
             if(independentActors.Overlaps(empires))throw new ArgumentException("Independent and empire identities overlap.");
             foreach(var c in controls.Values)
             {

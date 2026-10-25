@@ -101,7 +101,8 @@ namespace HobbyDS9.Simulation
             else
             {
                 var proof=s.MovementProof;
-                FoundationValidator.ValidateGameState(proof.Start,definitions).ThrowIfInvalid(nameof(proof));
+                if(colonisation==null)FoundationValidator.ValidateGameState(proof.Start,definitions).ThrowIfInvalid(nameof(proof));
+                else FoundationValidator.ValidatePlanetaryGameState(proof.Start,definitions,MovementOwner(proof.Start)).ThrowIfInvalid(nameof(proof));
                 Require((long)proof.Start.TurnNumber+(s.Phase==SessionPhase.Planning?1:0)==game.TurnNumber,
                     "Movement proof belongs to a different strategic turn.");
                 ValidateContactRows(proof.Start,proof.Contacts);
@@ -122,7 +123,8 @@ namespace HobbyDS9.Simulation
                     Require(expectedRequests.Count==s.Requests.Count&&expectedRequests.Zip(s.Requests.OrderBy(r=>r.EncounterId,StringComparer.Ordinal),SameRequest).All(v=>v),
                         "Unlawful/forged physical encounter batch.");
                     var adjusted=SimulationSession.CopyState(game);adjusted.StateRevision=replay.StateRevision;
-                    SimulationSession.RequirePhaseChanges(replay,adjusted,allowEconomy:false);
+                    if(colonisation==null)SimulationSession.RequirePhaseChanges(replay,adjusted,allowEconomy:false);
+                    else SimulationSession.RequirePlanetaryPhaseChanges(replay,adjusted,definitions,MovementOwner(proof.Start).CopyForState(replay),MovementOwner(proof.Start).CopyForState(adjusted),false);
                 }
             }
         }

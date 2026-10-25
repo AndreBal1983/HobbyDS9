@@ -25,7 +25,7 @@ namespace HobbyDS9.Simulation
                 {
                     var colony=PopulationData.Copy(game.Colonies!.Single(c=>c.ColonyId==command.TargetId&&c.OwnerCivilizationId==command.ActorId));
                     colony.Infrastructure!.Add(new InfrastructureStateDto{DefinitionId=command.DefinitionId,Count=1});
-                    var projected=WorldEconomy.Project(colony,game,definitions);observation.IndustryAfterCompletion=projected.Industry;
+                    var projected=ProjectOwnedWorld(colony,game);observation.IndustryAfterCompletion=projected.Industry;
                     observation.ResearchAfterCompletion=projected.ResearchOutput;observation.FoodAfterCompletion=projected.FoodOutput;
                 }
                 return observation;
@@ -33,7 +33,12 @@ namespace HobbyDS9.Simulation
         }
         private ActivitySiteDefinitionDto ActivityDefinition(string id)=>activities!.Content.Sites!
             .Concat(activities.Content.Minors!.Select(m=>m.Encounter!)).Single(d=>d.DefinitionId==id);
-        private ActivitySupportedShip? ActivityCapability(GameStateDto game,ShipStateDto ship)
+        private sealed class ActivityCapabilityFacts
+        {
+            internal readonly int StudyWork,ContactCapacity;
+            internal ActivityCapabilityFacts(int study,int contact){StudyWork=study;ContactCapacity=contact;}
+        }
+        private ActivityCapabilityFacts? ActivityCapability(GameStateDto game,ShipStateDto ship)
         {
             var reference=ship.Blueprint;
             if(reference==null&&activities!.AuthoredActivityBlueprints.TryGetValue(ship.ShipId,out var blueprint))reference=new BlueprintReferenceDto{BlueprintId=blueprint,Revision=1};
@@ -42,8 +47,15 @@ namespace HobbyDS9.Simulation
             if(record==null||record.OwnerCivilizationId!=ship.OwnerCivilizationId)return null;
             // No caller snapshot is accepted as capability. Recompile the exact frozen
             // publication against the complete private v3 support package.
-            return PublishedTacticalSupportCompiler.EvaluateActivities(new ShipDesignCatalogueSnapshot(record.FrozenCatalogue!),CampaignBlueprints.Restore(record),
+            if(colonisation!=null)
+            {
+                var shipFacts=PublishedTacticalSupportCompiler.EvaluateColonisation(new ShipDesignCatalogueSnapshot(record.FrozenCatalogue!),CampaignBlueprints.Restore(record),
+                    CampaignBlueprints.FrozenAccess(record.FrozenCatalogue!),colonisation.Support).Ship;
+                return shipFacts==null?null:new ActivityCapabilityFacts(shipFacts.StudyWork,shipFacts.ContactCapacity);
+            }
+            var activityFacts=PublishedTacticalSupportCompiler.EvaluateActivities(new ShipDesignCatalogueSnapshot(record.FrozenCatalogue!),CampaignBlueprints.Restore(record),
                 CampaignBlueprints.FrozenAccess(record.FrozenCatalogue!),activities!.Support).Ship;
+            return activityFacts==null?null:new ActivityCapabilityFacts(activityFacts.StudyWork,activityFacts.ContactCapacity);
         }
         private void ObserveActivitySites(GameStateDto game)
         {
@@ -67,7 +79,7 @@ namespace HobbyDS9.Simulation
                     Production=copy.Production!.Where(q=>colonies.Contains(q.ColonyId)).ToList(),Structures=copy.Structures!.Where(q=>q.OwnerId==actor).ToList(),
                     Findings=copy.Findings!.Where(f=>f.ActorId==actor).ToList(),Credits=game.Civilizations!.Single(c=>c.CivilizationId==actor).Credits};
                 foreach(var colony in game.Colonies!.Where(c=>c.OwnerCivilizationId==actor).OrderBy(c=>c.ColonyId,StringComparer.Ordinal))
-                {var output=WorldEconomy.Project(colony,game,definitions);result.Colonies.Add(new ActivityOwnColonyDto{ColonyId=colony.ColonyId,
+                {var output=ProjectOwnedWorld(colony,game);result.Colonies.Add(new ActivityOwnColonyDto{ColonyId=colony.ColonyId,
                     DisplayName=definitions.StarSystems!.Single(s=>s.DefinitionId==game.StarSystems!.Single(s=>s.SystemId==colony.SystemId).DefinitionId).DisplayName,
                     Industry=output.Industry,Research=output.ResearchOutput,Food=output.FoodOutput});}
                 foreach(var ship in game.Ships!.Where(s=>s.OwnerCivilizationId==actor).OrderBy(s=>s.ShipId,StringComparer.Ordinal))
@@ -89,6 +101,8 @@ namespace HobbyDS9.Simulation
                 }
                 foreach(var structure in activities.Content.Structures!)result.BuildOptions.Add(new ActivityBuildOptionDto{Kind=ActivityProductionKind.Infrastructure,
                     DefinitionId=structure.DefinitionId,DisplayName=structure.DisplayName,Cost=BlueprintCopies.Copy(structure.Cost!),Supported=true});
+                if(colonisation!=null)result.BuildOptions.Add(new ActivityBuildOptionDto{Kind=ActivityProductionKind.Infrastructure,DefinitionId=colonisation.Policy.Mine!.Infrastructure!.DefinitionId,
+                    DisplayName=colonisation.Policy.Mine.Infrastructure.DisplayName,Cost=BlueprintCopies.Copy(colonisation.Policy.Mine.Cost!),Supported=true});
                 foreach(var site in copy.Sites!.Where(s=>known.Contains(s.SiteId)).OrderBy(s=>s.SiteId,StringComparer.Ordinal))
                 {
                     var minor=site.MinorActorId==null?null:copy.Minors!.Single(m=>m.ActorId==site.MinorActorId);

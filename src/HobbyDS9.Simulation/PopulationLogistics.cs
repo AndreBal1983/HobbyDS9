@@ -21,11 +21,12 @@ namespace HobbyDS9.Simulation
             return (path, Math.Min(interference, path.Select(graph.LogisticsFactor).Min()), route.TotalCost!.Value);
         }
         private static string Edge(string a, string b) => StringComparer.Ordinal.Compare(a, b) < 0 ? a + "|" + b : b + "|" + a;
-        internal static void Execute(GameStateDto s, DefinitionCatalogDto d,IReadOnlyDictionary<string,IReadOnlyList<ResourceAmountDto>>? constructionDemand=null)
+        internal static void Execute(GameStateDto s, DefinitionCatalogDto d,IReadOnlyDictionary<string,IReadOnlyList<ResourceAmountDto>>? constructionDemand=null,PlanetaryOwnershipContext? ownership=null)
         {
+            ownership?.RequireOwner(d,s);
             s.LastDeliveries!.Clear(); var graph = Graph(s, d);
-            var colonies = s.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal).ToList();
-            var facts = colonies.ToDictionary(c => c.ColonyId, c => WorldEconomy.Project(c, s, d), StringComparer.Ordinal);
+            var colonies = s.Colonies!.Where(c=>ownership==null||PopulationRules.Population(c)>0).OrderBy(c => c.ColonyId, StringComparer.Ordinal).ToList();
+            var facts = colonies.ToDictionary(c => c.ColonyId, c => WorldEconomy.Project(c, s, d,ownership), StringComparer.Ordinal);
             var endpoints = colonies.ToDictionary(c => c.ColonyId, c => facts[c.ColonyId].LogisticsCapacity, StringComparer.Ordinal);
             var edges = graph.Connections.ToDictionary(e => Edge(e.EndpointA, e.EndpointB), e => TransitCapacity, StringComparer.Ordinal);
             foreach (var resource in new[] { "resource.food" }.Concat(d.Resources!.Select(r => r.DefinitionId).Where(id => id != "resource.food").OrderBy(id => id, StringComparer.Ordinal)))

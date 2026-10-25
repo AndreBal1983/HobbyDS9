@@ -26,7 +26,7 @@ namespace HobbyDS9.Simulation
         private ActivitiesContext? activities;
         private static CampaignActivityOperationDto CopyActivityOperation(CampaignActivityOperationDto o)=>new CampaignActivityOperationDto{
             Common=o.Common==null?null:CopyPlayableOperation(o.Common),Activity=o.Activity==null?null:CampaignActivitiesData.Copy(o.Activity)};
-        private int UsedPlayableOperations=>activities?.Journal.Count??playableTranscript.Count;
+        private int UsedPlayableOperations=>colonisation?.Journal.Count??activities?.Journal.Count??playableTranscript.Count;
         public static CampaignActivitiesPackageDto CreateActivitiesPackage(CampaignPlayableFleetPackageDto template,ShipDesignCatalogueDto catalogue,
             IReadOnlyList<ShipClassDraftDto> ready,ActivityTacticalSupportCatalogueDto support,CampaignActivityContentDto content,int recordBudget)
         {
@@ -41,31 +41,52 @@ namespace HobbyDS9.Simulation
         }
         private static void RequireActivitiesPackage(CampaignActivitiesPackageDto p)
         {Require(p!=null&&p.PackageHash==CampaignActivitiesData.PackageHash(p),"Different or incomplete activity package.");}
-        private static CampaignTacticalReviewSession StartActivitiesFrozen(CampaignActivitiesPackageDto p,NaturalGalaxyDocumentDto map,CampaignStreamedActivitiesPackageDto? streamed=null)
+        private sealed class ReadyShip
         {
-            var ready=CampaignActivitiesData.Ready(p);var built=streamed==null?GeneratedCampaignFactory.BuildActivities(p.BaseTemplate!,map,p.PackageHash)
+            internal readonly SupportedPublishedTacticalFit Tactical;
+            internal string SupportHash=>Tactical.SupportHash;
+            internal ReadyShip(SupportedPublishedTacticalFit tactical){Tactical=tactical;}
+        }
+        private static CampaignTacticalReviewSession StartActivitiesFrozen(CampaignActivitiesPackageDto p,NaturalGalaxyDocumentDto map,CampaignStreamedActivitiesPackageDto? streamed=null,CampaignColonisationPackageDto? colonisationPackage=null,FrozenColonisationPlanetsDto? retainedPlanets=null)
+        {
+            var ready=colonisationPackage==null?CampaignActivitiesData.Ready(p).ToDictionary(r=>r.Key,r=>new ReadyShip(r.Value.Tactical),StringComparer.Ordinal)
+                :ColonisationData.Ready(colonisationPackage).ToDictionary(r=>r.Key,r=>new ReadyShip(r.Value.Tactical),StringComparer.Ordinal);
+            var catalogue=colonisationPackage?.Catalogue??p.Catalogue!;var readyClasses=colonisationPackage?.ReadyClasses??p.ReadyClasses!;
+            CampaignColonisationStateDto? inventory=null;FrozenColonisationPlanetsDto? frozenPlanets=null;CampaignActivityStateDto? seeded=null;CampaignPlayableFleetPackageDto built;
+            if(colonisationPackage!=null)
+            {seeded=SeedColonisationActivities(p,map);var facts=GeneratedCampaignFactory.BuildColonisation(p.BaseTemplate!,map,colonisationPackage.PackageHash,seeded,colonisationPackage.Settlement!,retainedPlanets);built=facts.Package;inventory=facts.Inventory;frozenPlanets=facts.Frozen;}
+            else built=streamed==null?GeneratedCampaignFactory.BuildActivities(p.BaseTemplate!,map,p.PackageHash)
                 :GeneratedCampaignFactory.BuildStreamedActivities(p.BaseTemplate!,map,streamed.PackageHash);
             var physical=built.Integrated!.Physical!;var core=physical.CorePackage!;var scenario=core.Campaign!;var game=scenario.InitialState;var d=scenario.Definitions;
             var previous=d.ShipDesignCatalogue!;var oldVersions=previous.Hulls!.Select(h=>h.VersionId).Concat(previous.Components!.Select(c=>c.VersionId)).ToHashSet(StringComparer.Ordinal);
-            d.ShipDesignCatalogue=BlueprintCopies.Copy(p.Catalogue!);
-            var versions=p.Catalogue!.Hulls!.Select(h=>h.VersionId).Concat(p.Catalogue.Components!.Select(c=>c.VersionId)).ToList();
+            d.ShipDesignCatalogue=BlueprintCopies.Copy(catalogue);
+            var versions=catalogue.Hulls!.Select(h=>h.VersionId).Concat(catalogue.Components!.Select(c=>c.VersionId)).ToList();
             d.ShipDesignVersionAccess=versions.Select(id=>new ShipDesignVersionAccessDto{VersionId=id,RequiredEngineeringApplicationDefinitionIds=new List<string>()}).ToList();
             // This explicit new package authors the ready catalogue's baseline access. No old campaign is upgraded.
             d.DefinitionIds=d.DefinitionIds.Where(id=>!oldVersions.Contains(id)).Concat(versions).Distinct(StringComparer.Ordinal).OrderBy(id=>id,StringComparer.Ordinal).ToList();
             foreach(var s in p.Content!.Structures!)
             {d.Infrastructure!.Add(new InfrastructureDefinitionDto{DefinitionId=s.DefinitionId,DisplayName=s.DisplayName,Industry=s.Industry,Research=s.Research,FoodOutput=s.FoodOutput,
                 PowerDemand=s.PowerDemand,Extraction=new List<ResourceAmountDto>(),AccessibleHabitats=new List<HabitatKind>()});d.DefinitionIds.Add(s.DefinitionId);}
+            if(colonisationPackage!=null)
+            {
+                var policy=colonisationPackage.Settlement!;
+                d.Resources!.Add(new ResourceDefinitionDto{DefinitionId=policy.EquipmentResourceId,DisplayName="Settlement equipment"});d.DefinitionIds.Add(policy.EquipmentResourceId);
+                d.Infrastructure!.Add(PopulationData.Copy(policy.Camp!));d.DefinitionIds.Add(policy.Camp!.DefinitionId);
+                var hub=PopulationData.Copy(policy.Camp);hub.DefinitionId="infrastructure.settlement-hub.v1";hub.DisplayName="Settlement hub";hub.FoodOutput=policy.EstablishedFoodOutput;
+                d.Infrastructure.Add(hub);d.DefinitionIds.Add(hub.DefinitionId);
+                d.Infrastructure.Add(PopulationData.Copy(policy.Mine!.Infrastructure!));d.DefinitionIds.Add(policy.Mine.Infrastructure!.DefinitionId);
+            }
             var human=game.Civilizations!.Single(c=>c.ControllerKind==ControllerKind.Human).CivilizationId;
             var compatibility=new SaveCompatibility(scenario.ScenarioId,scenario.RulesVersion,scenario.ContentHash);
             var publisher=new PublishShipBlueprintHandler(d,compatibility);
-            foreach(var actor in game.Civilizations.OrderBy(a=>a.CivilizationId,StringComparer.Ordinal))foreach(var draft in p.ReadyClasses!)
+            foreach(var actor in game.Civilizations.OrderBy(a=>a.CivilizationId,StringComparer.Ordinal))foreach(var draft in readyClasses)
             {
                 var id=CampaignActivitiesData.ReadyId(draft)+(actor.CivilizationId==human?"":".ai");
                 Require(publisher.Execute(game,new CommandEnvelope{ActorCivilizationId=actor.CivilizationId,Kind=CommandKind.PublishShipBlueprint,
                     PublishShipBlueprint=new PublishShipBlueprintPayload{BlueprintId=id,Revision=1,Draft=BlueprintCopies.Copy(draft)}})==CommandErrorCode.None,"Ready publication unavailable in actual campaign catalogue.");
             }
             // A truthful authored starting Explorer, not a fictional paid/completed queue.
-            var explorerDraft=p.ReadyClasses!.Single(draft=>draft.ClassId=="class.constitution-explorer.v1"&&draft.HullVersionId=="hull.constitution-explorer.v1");
+            var explorerDraft=readyClasses.Single(draft=>draft.ClassId=="class.constitution-explorer.v1"&&draft.HullVersionId=="hull.constitution-explorer.v1");
             var explorer=ready[CampaignActivitiesData.ReadyId(explorerDraft)];
             var ship=game.Ships!.Where(s=>s.OwnerCivilizationId==human).OrderBy(s=>s.ShipId,StringComparer.Ordinal).First();
             var source=d.AuthoredTacticalEquipment!.InitialShipProvisions!.Single(s=>s.ShipId==ship.ShipId);
@@ -86,13 +107,21 @@ namespace HobbyDS9.Simulation
                 var aiProvision=d.AuthoredTacticalEquipment.InitialShipProvisions.Single(s=>s.ShipId==ai.ShipId);
                 built.Integrated.ConstructionTemplates.Add(new CampaignIntegratedConstructionTemplateDto{ShipDesignDefinitionId=ai.ShipDesignDefinitionId,SourceProvisionShipId=aiProvision.ShipId});
             }
-            ValidatePlayablePackage(built,true);
-            var context=new PublishedConstructionContext(built,CampaignPublishedConstructionData.CopySupport(p.Support!.Tactical!),streamed?.PackageHash??p.PackageHash,ready.First().Value.SupportHash,p.RecordBudget);
-            var activity=new ActivitiesContext(p.Support,p.Content);SeedActivitySites(activity,map);
+            var inputOwnership=colonisationPackage==null?null:PlanetaryOwnershipContext.CreateForColonisation(d,game,inventory!.PlanetControls!,seeded!.Minors!);
+            ValidatePlayablePackage(built,true,inputOwnership);
+            var wrapper=colonisationPackage?.PackageHash??streamed?.PackageHash??p.PackageHash;
+            var context=new PublishedConstructionContext(built,CampaignPublishedConstructionData.CopySupport(p.Support!.Tactical!),wrapper,ready.First().Value.SupportHash,colonisationPackage?.Settlement!.RecordBudget??p.RecordBudget);
+            var activity=new ActivitiesContext(p.Support,p.Content);if(seeded==null)SeedActivitySites(activity,map);else activity.State=seeded;
             if(streamed!=null)activity.Streamed=new StreamedActivitiesContext(streamed.PackageHash);
             activity.AuthoredActivityBlueprints.Add(ship.ShipId,explorer.Tactical.BlueprintId);
-            var session=new CampaignTacticalReviewSession(core,null,physical,null,built.Integrated,null,null,null,built,map,streamed?.PackageHash??p.PackageHash,true,context,activity);
+            var colony=colonisationPackage==null?null:new ColonisationContext(wrapper,colonisationPackage.Settlement!,colonisationPackage.Support!,inventory!,frozenPlanets!);
+            var session=new CampaignTacticalReviewSession(core,null,physical,null,built.Integrated,null,null,null,built,map,wrapper,true,context,activity,colony);
             session.ObserveActivitySites(session.state.Campaign.GameState);return session;
+        }
+        internal static CampaignActivityStateDto SeedColonisationActivities(CampaignActivitiesPackageDto package,NaturalGalaxyDocumentDto map)
+        {
+            var context=new ActivitiesContext(package.Support!,package.Content!);
+            SeedActivitySites(context,map);return context.State;
         }
         private static void SeedActivitySites(ActivitiesContext context,NaturalGalaxyDocumentDto map)
         {
