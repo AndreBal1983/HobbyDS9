@@ -48,7 +48,10 @@ namespace HobbyDS9.UnityReview
                     queue.SetEnabled(observed.CanQueue&&!controller.HasPendingWork&&!controller.Dirty&&!controller.RefreshRequired);}
                 catch(Exception){status.text="Construction observation unavailable. Refresh before retrying.";}
             }
-            parent.Insert(0,revisions);parent.Insert(1,yards);parent.Insert(2,status);
+            var selection=new VisualElement{name="published-construction-selection"};selection.AddToClassList("sd-construction-selection");
+            selection.Add(revisions);selection.Add(yards);
+            var reasons=new ScrollView(ScrollViewMode.Vertical){name="published-construction-reason-scroll"};reasons.Add(status);
+            parent.Insert(0,selection);parent.Insert(1,reasons);
             revisions.RegisterValueChangedCallback(_=>Refresh());yards.RegisterValueChangedCallback(_=>Refresh());Refresh();
         }
     }
