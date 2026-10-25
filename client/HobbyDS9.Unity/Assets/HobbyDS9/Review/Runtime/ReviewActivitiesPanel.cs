@@ -59,6 +59,7 @@ namespace HobbyDS9.UnityReview
         }
 
         private static string N(long value)=>value.ToString("N0",CultureInfo.InvariantCulture);
+        private static string ResearchPoints(long internalUnits)=>(internalUnits/(decimal)ResearchUnits.Scale).ToString("0.##",CultureInfo.InvariantCulture);
         private static string Friendly(string? value,string fallback)=>string.IsNullOrWhiteSpace(value)?fallback:value!;
         private static Label Text(VisualElement parent,string value,string cls="console-copy",string id="")
         {
@@ -203,8 +204,8 @@ namespace HobbyDS9.UnityReview
                     var choice=site.Choices[i];var card=Card(siteDetails,Friendly(choice.Caption,"Study opportunity"));
                     Text(card,N(choice.Credits)+" credits · "+choice.Work+" work · "+choice.Deadline+" weekly advances");
                     Text(card,"Requires study "+choice.RequiredStudy+" · contact "+choice.RequiredContact);
-                    Text(card,choice.Discipline+" insight: "+N(choice.LearnableInsightInternalUnits)+" learnable units"
-                        +(choice.UnlearnableInsightInternalUnits>0?" · "+N(choice.UnlearnableInsightInternalUnits)+" unavailable to current research":""));
+                    Text(card,choice.Discipline+" insight: "+ResearchPoints(choice.LearnableInsightInternalUnits)+" learnable research points"
+                        +(choice.UnlearnableInsightInternalUnits>0?" · "+ResearchPoints(choice.UnlearnableInsightInternalUnits)+" research points unavailable to current research":""));
                     if(choice.HullRiskBps>0 || choice.HullDamage>0)
                         Text(card,"Hull risk "+(choice.HullRiskBps/100m).ToString("0.##",CultureInfo.InvariantCulture)+"% · potential damage "+choice.HullDamage);
                     var siteId=site.Site.SiteId;var choiceId=choice.ChoiceId;
@@ -228,7 +229,7 @@ namespace HobbyDS9.UnityReview
                 if(!string.IsNullOrWhiteSpace(finding.Report))Text(card,finding.Report);
                 if(!string.IsNullOrWhiteSpace(finding.ContactOutcome))Text(card,finding.ContactOutcome);
                 if(finding.InsightApplied>0 || finding.InsightUnlearnable>0)
-                    Text(card,"Research insight applied "+N(finding.InsightApplied)+" · unavailable "+N(finding.InsightUnlearnable));
+                    Text(card,"Research points applied "+ResearchPoints(finding.InsightApplied)+" · unavailable "+ResearchPoints(finding.InsightUnlearnable));
                 var siteId=finding.SiteId;var choice=finding.ChoiceId;var shipId=finding.ShipId;
                 if(finding.Stage==ActivityProgressStage.AwaitingClaim)
                     Button(card,"Review finding","activity-finding-claim-"+i,()=>Review(Command(CampaignActivityCommandKind.ClaimFinding,siteId,choice,ship:shipId),"Claim the completed finding"));
