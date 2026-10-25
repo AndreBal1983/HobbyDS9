@@ -104,7 +104,8 @@ namespace HobbyDS9.UnityReview.Tests
                     root=root.ToString(),footer=footer.ToString(),panel=doc.rootVisualElement.Q("campaign-activities-panel")?.worldBound.ToString(),
                     scroll=scroll?.contentViewport.worldBound.ToString(),confirm=doc.rootVisualElement.Q("activity-order-confirm")?.worldBound.ToString(),
                     commissionScroll=doc.rootVisualElement.Q<ScrollView>("frontier-commission-report")?.scrollOffset.ToString(),
-                    commissionViewport=doc.rootVisualElement.Q<ScrollView>("frontier-commission-report")?.contentViewport.worldBound.ToString()}));
+                    commissionViewport=doc.rootVisualElement.Q<ScrollView>("frontier-commission-report")?.contentViewport.worldBound.ToString(),
+                    commissionCaption=commission?StreamCommissionCaptionMetrics(doc):null}));
                 if(scroll!=null)
                 {
                     Assert.That(doc.rootVisualElement.Query<ReviewActivitiesPanel>().ToList().Count,Is.EqualTo(1),"one current activities surface after redraw/resize");
@@ -192,7 +193,9 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(doc.rootVisualElement.Query<ScrollView>("frontier-commission-report").ToList().Count,Is.EqualTo(1));
             var footer=doc.rootVisualElement.Q("player-footer").worldBound;
             Assert.That(report.contentViewport.worldBound.height,Is.GreaterThanOrEqualTo(100));Assert.That(report.contentViewport.worldBound.yMax,Is.LessThanOrEqualTo(footer.yMin));
-            Assert.That(doc.rootVisualElement.Q<Button>("frontier-commission-summary").text,Is.EqualTo("Mission 4/4"));
+            var missionButton=doc.rootVisualElement.Q<Button>("frontier-commission-summary");Assert.That(missionButton.text,Is.EqualTo("Mission 4/4"));
+            var measured=missionButton.MeasureTextSize(missionButton.text,0,VisualElement.MeasureMode.Undefined,0,VisualElement.MeasureMode.Undefined).x;
+            Assert.That(measured,Is.LessThanOrEqualTo(missionButton.contentRect.width),"actual styled mission caption must fit its real content width without clipping");
             Assert.That(report.Q<Label>("frontier-commission-outcome").text,Does.Contain("Commission completed"));
             foreach(var id in new[]{"infrastructure","ship","science","society"})
             {
@@ -210,6 +213,12 @@ namespace HobbyDS9.UnityReview.Tests
             // every historical evidence row and link. Do not capture the linked Activities page.
             report.scrollOffset=Vector2.zero;yield return null;yield return null;
             PublishedReceivingContained(report.contentViewport.worldBound,report.Q("frontier-commission-outcome"),"completed outcome visible in screenshot");
+        }
+        private static object StreamCommissionCaptionMetrics(UIDocument doc)
+        {
+            var button=doc.rootVisualElement.Q<Button>("frontier-commission-summary");
+            return new{text=button.text,measuredWidth=button.MeasureTextSize(button.text,0,VisualElement.MeasureMode.Undefined,0,VisualElement.MeasureMode.Undefined).x,
+                availableWidth=button.contentRect.width,previousCaptionWidth=button.MeasureTextSize("Commission 4/4",0,VisualElement.MeasureMode.Undefined,0,VisualElement.MeasureMode.Undefined).x};
         }
         private IEnumerator StreamSaveContinue(PublishedReceivingState state,UIDocument doc,string label)
         {
