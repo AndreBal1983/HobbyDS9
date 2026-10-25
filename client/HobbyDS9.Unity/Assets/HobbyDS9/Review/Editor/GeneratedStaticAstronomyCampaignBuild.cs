@@ -62,6 +62,10 @@ namespace HobbyDS9.UnityReview.Editor
         public static void BuildWindowsStreamedActivitiesNebulaEdges()
             =>BuildStreamedActivitiesCheckpoint("Windows-StreamedActivities-NebulaEdges-20261025");
 
+        [MenuItem("HobbyDS9/Campaign/Build Frontier Commission checkpoint")]
+        public static void BuildWindowsStreamedActivitiesFrontierCommission()
+            =>BuildStreamedActivitiesCheckpoint("Windows-StreamedActivities-FrontierCommission-20261025");
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName)
         {
             BuildWindows(stageName);

@@ -1,7 +1,7 @@
 # Frontier Commission v1
 
-Status: source/CPU candidate. Actual Unity layout, navigation and playable mission
-receiving remain pending. This adds a finite mission outcome to the existing
+Status: source/CPU and actual Unity receiving accepted. Separate Windows build
+and native mission acceptance remain pending. This adds a finite mission outcome to the existing
 [streamed campaign](campaign-activities-streamed-v1.md), with continued sandbox
 play after completion. It does not add a campaign terminal state or rewards.
 
@@ -55,3 +55,12 @@ and distant-study outcomes, partial/completed exact replay, terminal research,
 actual tactical destruction after construction, automatic-AI receipt isolation,
 custom-content rejection, query purity and host/model lifecycle guards. These
 are portable/.NET checks, not native play or Unity rendering claims.
+
+Actual Unity receiving at `1ca42ea` passed the full streamed campaign case in
+260.608 seconds with 17 captures: mission progress 0/2/3/4, identical reports
+across Save/Continue, scrolling/navigation at three resolutions and continued
+sandbox play. The initial run exposed a clipped sidebar caption; the shorter
+“Mission 4/4” measures 93 pixels within 102 pixels of available space, compared
+with 130 pixels for the old caption. Exact campaign validation remains in place;
+mature checkpoint latency is still substantial. See the separate evidence at
+`E:/HobbyDS9/artifacts/frontier-commission-engine-r2-20261025`.
