@@ -52,8 +52,14 @@ namespace HobbyDS9.UnityReview.Editor
 
         [MenuItem("HobbyDS9/Campaign/Build streamed construction and exploration checkpoint")]
         public static void BuildWindowsStreamedActivitiesCheckpoint()
+            =>BuildStreamedActivitiesCheckpoint("Windows-StreamedActivities-20261025");
+
+        [MenuItem("HobbyDS9/Campaign/Build activities checkpoint update")]
+        public static void BuildWindowsStreamedActivitiesUpdate()
+            =>BuildStreamedActivitiesCheckpoint("Windows-StreamedActivities-Update-20261025");
+
+        private static void BuildStreamedActivitiesCheckpoint(string stageName)
         {
-            const string stageName="Windows-StreamedActivities-20261025";
             BuildWindows(stageName);
             var stage=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,
                 "../../../artifacts/generated-static-astronomy-v2",stageName));
