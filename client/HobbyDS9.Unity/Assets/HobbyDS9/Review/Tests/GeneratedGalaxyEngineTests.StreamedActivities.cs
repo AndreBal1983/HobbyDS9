@@ -312,7 +312,6 @@ namespace HobbyDS9.UnityReview.Tests
                 foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"commission-completed",commission:true);
                 Assert.That(StreamBytes(CampaignModel(entry)),Is.EqualTo(missionRoot),"report queries, scrolling, resizing and normal links never mutate campaign");
                 Assert.That(JsonConvert.SerializeObject(CampaignModel(entry).FrontierCommission()),Is.EqualTo(missionReport));
-                yield return StreamAdvance(doc,entry);model=CampaignModel(entry);StreamCommission(model,4);
                 // Hold the actual slot store on a worker, never a semaphore on the UI thread.
                 CampaignPage(doc,ReviewWorkspacePage.Saves);yield return null;Click(doc.rootVisualElement.Q<Button>("save-slot-generated-1"));
                 var store=typeof(ReviewUiModel).GetField("streamedActivitiesSlots",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(model)!;var gate=store.GetType().GetField("gate",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(store)!;
@@ -322,6 +321,7 @@ namespace HobbyDS9.UnityReview.Tests
                 int ticks=0;var heartbeat=doc.rootVisualElement.schedule.Execute(()=>ticks++).Every(10);var positions=new HashSet<float>();clock.Restart();
                 while(clock.Elapsed.TotalSeconds<.3){positions.Add(doc.rootVisualElement.Q("campaign-operation-indicator").style.left.value.value);yield return null;}
                 Assert.That(ticks,Is.GreaterThanOrEqualTo(3));Assert.That(positions.Count,Is.GreaterThan(1));CheckpointCapture(doc,"streamed-loading-responsive");heartbeat.Pause();state.Release.Set();yield return PublishedReceivingIdle(state,"streamed-held-load");model=CampaignModel(entry);Assert.That(StreamBytes(model),Is.EqualTo(expected));
+                yield return StreamAdvance(doc,entry);model=CampaignModel(entry);StreamCommission(model,4);
                 // Separate, accepted actual-engine V2 Explore32 fixture through official typed store.
                 var legacyPath=Environment.GetEnvironmentVariable("HOBBYDS9_V3_EXPLORE");Assert.That(File.Exists(legacyPath),Is.True);var legacyBytes=File.ReadAllBytes(legacyPath!);
                 using(var sha=System.Security.Cryptography.SHA256.Create())Assert.That(BitConverter.ToString(sha.ComputeHash(legacyBytes)).Replace("-","").ToLowerInvariant(),Is.EqualTo("d7b332383b726607209067a5c89085a4979814b12c35a5fd717a41ebd3ecdddc"));
