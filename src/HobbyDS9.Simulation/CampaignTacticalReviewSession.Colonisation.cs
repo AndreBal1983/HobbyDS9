@@ -28,7 +28,7 @@ namespace HobbyDS9.Simulation
                 MovementOwnership=MovementOwnership==null?null:ColonisationData.Copy(MovementOwnership),SettlementProof=SettlementProof==null?null:ColonisationData.Copy(SettlementProof)};
         }
         private ColonisationContext? colonisation;
-        private bool EstablishedColony(string colonyId)=>!colonisation!.State.CampSources!.Any(c=>c.ColonyId==colonyId&&c.Stage!=ColonyEstablishmentStage.Established);
+        private bool EstablishedColony(string colonyId)=>CurrentCamp(colonisation!.State,colonyId) is not SettlementCampDto camp||camp.Stage==ColonyEstablishmentStage.Established;
         public static CampaignColonisationPackageDto CreateColonisationPackage(CampaignActivitiesPackageDto activitiesPackage,ShipDesignCatalogueDto catalogue,
             IReadOnlyList<ShipClassDraftDto> ready,ColonisationSupportCatalogueDto support,ColonisationPolicyDto policy)
         {

@@ -214,7 +214,7 @@ namespace HobbyDS9.Simulation
                     RequireOwnedChanges(before,SimulationSession.CopyState(game),economy:phase==StrategicTurnPhase.Economy,
                         research:phase==StrategicTurnPhase.Research,production:phase==StrategicTurnPhase.Production);
                 }
-                Phase(StrategicTurnPhase.Economy,()=>EconomyPhase.Execute(game,definitions,colonisation!=null?ColonisationDemand(game):Streams==null?null:StreamedDemand(game),colonisation==null?null:PlanetaryOwner(game)));
+                Phase(StrategicTurnPhase.Economy,()=>{if(colonisation!=null)ExecuteColonisationEconomy(game);else EconomyPhase.Execute(game,definitions,Streams==null?null:StreamedDemand(game));});
                 Phase(StrategicTurnPhase.Research,()=>ResearchPhase.Execute(game,definitions,colonisation==null?null:PlanetaryOwner(game)));
                 var beforeProduction=SimulationSession.CopyState(game);
                 if(activities!=null)
@@ -227,7 +227,8 @@ namespace HobbyDS9.Simulation
                     Orders=next.Orders.Select(CampaignTacticalTravelData.Copy).ToList(),Contacts=next.Contacts.Select(CampaignTacticalTravelData.Copy).ToList() };
                 if(colonisation!=null)colonisation.MovementOwnership=new ColonisationMovementOwnershipDto{Turn=game.TurnNumber,Revision=game.StateRevision,
                     PlanetControls=colonisation.State.PlanetControls!.Select(ColonisationData.Copy).ToList(),
-                    ColonyStages=colonisation.State.CampSources!.Select(c=>new ColonisationColonyStageDto{ColonyId=c.ColonyId,Stage=c.Stage}).ToList()};
+                    ColonyStages=colonisation.State.CampSources!.GroupBy(c=>c.ColonyId,StringComparer.Ordinal).Select(g=>g.OrderByDescending(c=>c.DeployedTurn).First())
+                        .Select(c=>new ColonisationColonyStageDto{ColonyId=c.ColonyId,Stage=c.Stage}).ToList()};
                 var movement=CampaignPhysicalMovement.Execute(game,definitions,next.Orders,next.Contacts,declaredHostilities!,contactFreshness,physicalNavigation!);
                 var movementGuard=SimulationSession.CopyState(game);
                 foreach(var receipt in movement.Receipts.Where(r=>r.StoppedByEncounter))

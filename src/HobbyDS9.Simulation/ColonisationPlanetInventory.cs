@@ -97,6 +97,16 @@ namespace HobbyDS9.Simulation
             foreach(var planet in game.Planets.OrderBy(p=>p.PlanetId,StringComparer.Ordinal))
                 if(!result.Bodies!.Any(b=>b.PlanetId==planet.PlanetId))result.Bodies!.Add(new PlanetBodyBindingDto{
                     PlanetId=planet.PlanetId,SystemId=planet.SystemId,BodyId="body.physical."+planet.PlanetId});
+            foreach(var system in map.Layout.Systems)
+            {
+                var local=game.Planets.Where(p=>p.SystemId==system.SystemId).OrderBy(p=>p.PlanetId,StringComparer.Ordinal).ToList();
+                for(int ordinal=0;ordinal<local.Count;ordinal++)
+                {
+                    var planet=local[ordinal];if(originals.Any(p=>p.PlanetId==planet.PlanetId))continue;
+                    var body=result.Bodies!.Single(b=>b.PlanetId==planet.PlanetId);var authored=activities.Bodies.SingleOrDefault(b=>b.BodyId==body.BodyId);
+                    definitions.Planets!.Single(p=>p.DefinitionId==planet.DefinitionId).DisplayName=authored?.DisplayName??system.DisplayName+" "+(ordinal<3?new[]{"I","II","III"}[ordinal]:(ordinal+1).ToString(CultureInfo.InvariantCulture));
+                }
+            }
             foreach(var system in game.StarSystems!)system.OwnerCivilizationId=null;
             foreach(var planet in game.Planets.OrderBy(p=>p.PlanetId,StringComparer.Ordinal))
             {

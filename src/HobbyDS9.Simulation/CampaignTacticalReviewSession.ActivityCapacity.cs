@@ -107,7 +107,8 @@ namespace HobbyDS9.Simulation
                     &&(ctx.Content.Structures!.Any(s=>s.DefinitionId==receipt.DefinitionId)||colonisation!=null&&ColonisationStructureCost(receipt.DefinitionId)!=null)&&colony.Infrastructure!.Single(i=>i.DefinitionId==receipt.DefinitionId).Count==1,"Completed structure receipt.");
             }
             var original=published!.Package.Integrated!.Physical!.CorePackage!.Campaign!.InitialState;
-            foreach(var colony in game.Colonies!)
+            if(colonisation!=null)ValidateColonisationWorlds(game,original);
+            else foreach(var colony in game.Colonies!)
             {
                 var first=original.Colonies!.Single(c=>c.ColonyId==colony.ColonyId);
                 Require(colony.OwnerCivilizationId==first.OwnerCivilizationId&&colony.Automation==first.Automation&&colony.SystemId==first.SystemId&&colony.PlanetId==first.PlanetId,"Activity fixed world identity.");

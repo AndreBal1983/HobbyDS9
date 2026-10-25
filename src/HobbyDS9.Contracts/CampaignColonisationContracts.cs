@@ -10,7 +10,7 @@ namespace HobbyDS9.Contracts
         public const string PackageProfile="generated-colonisation-package-v1",EmbeddedCoreProfile="generated-campaign-owned-core-colonisation-v1";
         public const string PopulationPolicy="conserved-settler-transport-v1",InventoryPolicy="planetary-inventory-all-systems-v1";
         public const string Rules="strategic-colonisation-planetary-v1";
-        public const string InventoryAuthoring="colonisation-planets-v1;temperate-arid-oceanic-frozen-vacuum;natural=1000,1000,1000,1000,0;dilithium=0,120,240;four-nearby-primaries=240;ilex=wetland;namar=temperate;minor-gravity=100;pressure=100;radiation=10;atmosphere=oxygen";
+        public const string InventoryAuthoring="colonisation-planets-v1;temperate-arid-oceanic-frozen-vacuum;natural=1000,1000,1000,1000,0;dilithium=0,120,240;four-nearby-primaries=240;ilex=wetland;namar=temperate;minor-gravity=100;pressure=100;radiation=10;atmosphere=oxygen;names=system-local-ordinal-preserve-home-and-activity";
     }
     public enum PlanetControllerKind { Unclaimed=0,Empire=1,IndependentGovernment=2 }
     public enum ColonyEstablishmentStage { Founding=1,Established=2,EmptyOutpost=3 }
@@ -39,11 +39,13 @@ namespace HobbyDS9.Contracts
     {
         public string SurveyId {get;set;}="";public string ActorId {get;set;}="";public string PlanetId {get;set;}="";public string ShipId {get;set;}="";
         public PlanetSurveyStage Stage {get;set;}public int CompletedWeeks {get;set;}public int StartedTurn {get;set;}public int? ResolvedTurn {get;set;}
+        public PlanetControlDto? LastObservedControl {get;set;}public int? ControlObservedTurn {get;set;}
     }
     public sealed class ColonisationPlanetObservationDto
     {
         public string PlanetId {get;set;}="";public string BodyId {get;set;}="";public string SystemId {get;set;}="";public string DisplayName {get;set;}="";
         public bool Surveyed {get;set;}public PlanetDefinitionDto? Environment {get;set;}public PlanetControlDto? KnownControl {get;set;}
+        public int? ControlObservedTurn {get;set;}
         public string? ActiveSurveyId {get;set;}public int CompletedSurveyWeeks {get;set;}
     }
     public sealed class SettlerManifestDto
@@ -104,6 +106,7 @@ namespace HobbyDS9.Contracts
         public List<SettlementCampTerminalDto>? CampTerminals {get;set;}=new List<SettlementCampTerminalDto>();
         public List<SettlementDeploymentIntentDto>? DeploymentIntents {get;set;}=new List<SettlementDeploymentIntentDto>();
         public int LastSettlementTurn {get;set;}
+        public long FoodProduced {get;set;}public long FoodConsumed {get;set;}
     }
     public sealed class ColonisationPolicyDto
     {

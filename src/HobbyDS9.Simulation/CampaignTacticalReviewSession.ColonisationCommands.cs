@@ -13,18 +13,27 @@ namespace HobbyDS9.Simulation
             lock(gate)
             {
                 Require(colonisation!=null&&Actor(actor)==CampaignTacticalError.None,"Controlled colonisation actor required.");
-                var game=state.Campaign.GameState;
-                return game.Planets!.Where(p=>physicalNavigation!.KnownNode(game,actor,definitions.NavigationRegions!.Single(r=>r.AssociatedSystemId==p.SystemId).NodeId))
+                return ColonisationPlanetsForActor(state.Campaign.GameState,actor);
+            }
+        }
+        private IReadOnlyList<ColonisationPlanetObservationDto> ColonisationPlanetsForActor(GameStateDto game,string actor)
+        {
+                // Star-chart adjacency is not body discovery. Only actual presence,
+                // retained arrival receipts and owned worlds disclose a body's existence.
+                var coverage=GeneratedCoverage(game,actor).ToHashSet(StringComparer.Ordinal);
+                var arrivals=coverage.Concat(discoveries.Where(d=>d.ActorId==actor).Select(d=>d.ArrivalNodeId)).ToHashSet(StringComparer.Ordinal);
+                return game.Planets!.Where(p=>arrivals.Contains(definitions.NavigationRegions!.Single(r=>r.AssociatedSystemId==p.SystemId).NodeId))
                     .OrderBy(p=>p.PlanetId,StringComparer.Ordinal).Select(p=>{
                         var survey=colonisation!.State.Surveys!.SingleOrDefault(s=>s.ActorId==actor&&s.PlanetId==p.PlanetId);
                         var known=survey?.Stage==PlanetSurveyStage.Completed||game.Colonies!.Any(c=>c.PlanetId==p.PlanetId&&c.OwnerCivilizationId==actor);
                         return new ColonisationPlanetObservationDto{PlanetId=p.PlanetId,BodyId=colonisation.State.Bodies!.Single(b=>b.PlanetId==p.PlanetId).BodyId,SystemId=p.SystemId,
                             DisplayName=definitions.Planets!.Single(d=>d.DefinitionId==p.DefinitionId).DisplayName,Surveyed=known,
                             Environment=known?PopulationData.Copy(definitions.Planets.Single(d=>d.DefinitionId==p.DefinitionId)):null,
-                            KnownControl=known?ColonisationData.Copy(colonisation.State.PlanetControls!.Single(c=>c.PlanetId==p.PlanetId)):null,
+                            KnownControl=!known?null:coverage.Contains(definitions.NavigationRegions!.Single(r=>r.AssociatedSystemId==p.SystemId).NodeId)
+                                ?ColonisationData.Copy(colonisation.State.PlanetControls!.Single(c=>c.PlanetId==p.PlanetId)):survey?.LastObservedControl==null?null:ColonisationData.Copy(survey.LastObservedControl),
+                            ControlObservedTurn=!known?null:coverage.Contains(definitions.NavigationRegions!.Single(r=>r.AssociatedSystemId==p.SystemId).NodeId)?game.TurnNumber:survey?.ControlObservedTurn,
                             ActiveSurveyId=survey?.Stage==PlanetSurveyStage.Active?survey.SurveyId:null,CompletedSurveyWeeks=survey?.CompletedWeeks??0};
                     }).ToList().AsReadOnly();
-            }
         }
         public CampaignTacticalMutationResult SubmitColonisation(ColonisationCommandDto? command)
         {
@@ -46,6 +55,13 @@ namespace HobbyDS9.Simulation
                     case ColonisationAction.StartPlanetSurvey when command.StartSurvey!=null:error=StartPlanetSurvey(game,command.ActorId,command.StartSurvey);break;
                     case ColonisationAction.CancelPlanetSurvey when command.CancelSurvey!=null:error=CancelPlanetSurvey(game,command.ActorId,command.CancelSurvey);break;
                     case ColonisationAction.EnqueueKit when command.EnqueueKit!=null:error=EnqueueSettlementKit(game,command.ActorId,command.EnqueueKit);break;
+                    case ColonisationAction.EmbarkSettlers when command.Embark!=null:error=EmbarkSettlers(game,command.ActorId,command.Embark);break;
+                    case ColonisationAction.LoadCarriedSupplies when command.LoadSupplies!=null:error=LoadCarriedSupplies(game,command.ActorId,command.LoadSupplies);break;
+                    case ColonisationAction.UnloadTransport when command.Unload!=null:error=UnloadTransport(game,command.ActorId,command.Unload);break;
+                    case ColonisationAction.DeliverCarriedSupplies when command.Deliver!=null:error=DeliverSupplies(game,command.ActorId,command.Deliver);break;
+                    case ColonisationAction.RequestDeployment when command.Deploy!=null:error=RequestDeployment(game,command.ActorId,command.Deploy);break;
+                    case ColonisationAction.WithdrawDeployment when command.Withdraw!=null:error=WithdrawDeployment(game,command.ActorId,command.Withdraw);break;
+                    case ColonisationAction.EvacuateColony when command.Evacuate!=null:error=EvacuateFounding(game,command.ActorId,command.Evacuate);break;
                     default:return Result(CampaignTacticalError.UnsupportedSource);
                 }
                 if(error!=CampaignTacticalError.None)return Result(error);
@@ -99,6 +115,19 @@ namespace HobbyDS9.Simulation
                 {survey.Stage=PlanetSurveyStage.Interrupted;survey.CompletedWeeks=0;survey.ResolvedTurn=game.TurnNumber;game.EntityIdentities.RemoveAll(e=>e.EntityId==survey.SurveyId);continue;}
                 survey.CompletedWeeks++;
                 if(survey.CompletedWeeks==2){survey.Stage=PlanetSurveyStage.Completed;survey.ResolvedTurn=game.TurnNumber;game.EntityIdentities.RemoveAll(e=>e.EntityId==survey.SurveyId);}
+            }
+        }
+        private void ObserveSurveyControls(GameStateDto game,CampaignColonisationStateDto a)
+        {
+            foreach(var actor in game.Civilizations!.OrderBy(c=>c.CivilizationId,StringComparer.Ordinal))
+            {
+                var coverage=GeneratedCoverage(game,actor.CivilizationId).ToHashSet(StringComparer.Ordinal);
+                foreach(var survey in a.Surveys!.Where(s=>s.ActorId==actor.CivilizationId&&s.Stage==PlanetSurveyStage.Completed))
+                {
+                    var planet=game.Planets!.Single(p=>p.PlanetId==survey.PlanetId);
+                    if(!coverage.Contains(definitions.NavigationRegions!.Single(n=>n.AssociatedSystemId==planet.SystemId).NodeId))continue;
+                    survey.LastObservedControl=ColonisationData.Copy(a.PlanetControls!.Single(c=>c.PlanetId==planet.PlanetId));survey.ControlObservedTurn=game.TurnNumber;
+                }
             }
         }
     }

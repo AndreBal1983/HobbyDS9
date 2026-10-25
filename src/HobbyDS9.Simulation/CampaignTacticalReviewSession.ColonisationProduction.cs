@@ -15,7 +15,7 @@ namespace HobbyDS9.Simulation
         {
             var colony=game.Colonies!.SingleOrDefault(c=>c.ColonyId==command.TargetId&&c.OwnerCivilizationId==command.ActorId);
             var actor=game.Civilizations!.SingleOrDefault(c=>c.CivilizationId==command.ActorId&&c.ControllerKind==controller);
-            if(colony==null||actor==null||game.Phase!=SessionPhase.Planning||!EstablishedColony(colony.ColonyId))return CampaignTacticalError.InvalidOrder;
+            if(colony==null||actor==null||game.Phase!=SessionPhase.Planning||!EstablishedColony(colony.ColonyId)||PopulationRules.Population(colony)==0)return CampaignTacticalError.InvalidOrder;
             long work;List<ResourceAmountDto> resources;BlueprintReferenceDto? reference=null;
             if(command.Kind==CampaignActivityCommandKind.EnqueueShip)
             {
@@ -55,6 +55,7 @@ namespace HobbyDS9.Simulation
             foreach(var group in colonisation!.Production.GroupBy(q=>q.ColonyId,StringComparer.Ordinal))
             {
                 var q=group.First();var colony=game.Colonies!.Single(c=>c.ColonyId==q.ColonyId);
+                if(!EstablishedColony(colony.ColonyId)||PopulationRules.Population(colony)==0)continue;
                 var industry=Math.Max(1,ProjectOwnedWorld(colony,game).Industry);
                 var next=q.CompletedIndustry+Math.Min(q.RequiredIndustry-q.CompletedIndustry,industry);
                 result.Add(q.ColonyId,q.RequiredResources!.Select(r=>new ResourceAmountDto{ResourceDefinitionId=r.ResourceDefinitionId,
@@ -67,7 +68,8 @@ namespace HobbyDS9.Simulation
             var game=next.Core.Campaign.GameState;
             var phaseBefore=SimulationSession.CopyState(game);var historyBefore=colonisation!.History.Count;
             var cycleConsumption=new List<(string ColonyId,string ResourceDefinitionId,long Amount)>();
-            var heads=colonisation!.Production.GroupBy(q=>q.ColonyId,StringComparer.Ordinal).Select(g=>g.First()).OrderBy(q=>q.ColonyId,StringComparer.Ordinal).ToList();
+            var heads=colonisation!.Production.GroupBy(q=>q.ColonyId,StringComparer.Ordinal).Select(g=>g.First())
+                .Where(q=>EstablishedColony(q.ColonyId)&&PopulationRules.Population(game.Colonies!.Single(c=>c.ColonyId==q.ColonyId))>0).OrderBy(q=>q.ColonyId,StringComparer.Ordinal).ToList();
             var outputs=heads.ToDictionary(q=>q.ColonyId,q=>ProjectOwnedWorld(game.Colonies!.Single(c=>c.ColonyId==q.ColonyId),game).Industry,StringComparer.Ordinal);
             foreach(var q in heads)
             {

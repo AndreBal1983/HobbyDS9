@@ -39,8 +39,9 @@ namespace HobbyDS9.Simulation
         internal static PlanetaryOwnershipContext CreateForColonisation(DefinitionCatalogDto ownedDefinitions,GameStateDto ownedState,
             CampaignColonisationStateDto context,IReadOnlyList<ActivityMinorStateDto> minors)
         {
-            if(context?.PlanetControls==null||context.CampSources==null||minors==null||minors.Any(m=>m==null))throw new ArgumentException("Complete private colonisation context required.");
-            return new PlanetaryOwnershipContext(ownedDefinitions,ownedState,context.PlanetControls,minors.Select(m=>m.ActorId),context.CampSources.Select(c=>c==null?null!:new ColonisationColonyStageDto{ColonyId=c.ColonyId,Stage=c.Stage}));
+            if(context?.PlanetControls==null||context.CampSources==null||context.CampSources.Any(c=>c==null)||minors==null||minors.Any(m=>m==null))throw new ArgumentException("Complete private colonisation context required.");
+            return new PlanetaryOwnershipContext(ownedDefinitions,ownedState,context.PlanetControls,minors.Select(m=>m.ActorId),context.CampSources.GroupBy(c=>c.ColonyId,StringComparer.Ordinal)
+                .Select(g=>g.OrderByDescending(c=>c.DeployedTurn).First()).Select(c=>new ColonisationColonyStageDto{ColonyId=c.ColonyId,Stage=c.Stage}));
         }
         internal static PlanetaryOwnershipContext CreateForColonisationEra(DefinitionCatalogDto definitions,GameStateDto state,IReadOnlyList<PlanetControlDto> controls,
             IReadOnlyList<ActivityMinorStateDto> minors,IReadOnlyList<ColonisationColonyStageDto> stages)
