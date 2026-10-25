@@ -38,6 +38,18 @@ namespace HobbyDS9.UnityReview.Editor
         public static void BuildWindowsDesignerArtCheckpoint()
             => BuildWindows("Windows-DesignerArt-20261024");
 
+        [MenuItem("HobbyDS9/Generated campaign v2/Build published construction checkpoint")]
+        public static void BuildWindowsPublishedConstructionCheckpoint()
+        {
+            const string stageName="Windows-PublishedConstruction-20261025";
+            BuildWindows(stageName);
+            // Emit playtest-specific guidance only after the unchanged strict builder succeeds.
+            var stage=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,
+                "../../../artifacts/generated-static-astronomy-v2",stageName));
+            File.WriteAllText(Path.Combine(stage,"README.txt"),PublishedConstructionReadme);
+            File.WriteAllText(Path.Combine(stage,"PLAY-PUBLISHED-CONSTRUCTION.txt"),PublishedConstructionWalkthrough);
+        }
+
         private static void BuildWindows(string stageName)
         {
             if (UnityEngine.Application.unityVersion != "6000.6.5f1")
@@ -99,6 +111,25 @@ namespace HobbyDS9.UnityReview.Editor
                 PlayerSettings.resizableWindow = resizable;
             }
         }
+
+        private const string PublishedConstructionReadme =
+            "HobbyDS9 - published construction provisional playtest checkpoint\r\n" +
+            "Launch Start-Generated-Campaign.cmd or HobbyDS9GeneratedCampaign.exe. For designer-built ships, expand Published construction - provisional playtest on the landing menu and choose New construction playtest. The ordinary main New generated game still uses its original rules.\r\n" +
+            "Start with seed 42, Systems 250 and Quiet area 2.00x. See PLAY-PUBLISHED-CONSTRUCTION.txt for the supported starter, power profiles, publication and paid construction steps.\r\n" +
+            "This explicit mode uses separate construction-playtest saves and Continue playtest 1/2/3 controls. Original v2 main Continue and earlier v1 Continue remain separate; no conversion or fallback is performed.\r\n" +
+            "Only the named utility/core/beam/targeting-sensor support table is enabled for construction. Other valid classes remain publishable but may be unbuildable. Tactical ratings are provisional playtest tuning, not final balance; catalogue costs, access, power and mount rules remain authoritative. Illustrative ship art does not grant equipment or capabilities.\r\n" +
+            "See the accompanying validation record for actual receiving/native coverage. A strict build alone does not establish gameplay acceptance.\r\n";
+
+        private const string PublishedConstructionWalkthrough =
+            "PUBLISHED CONSTRUCTION - PROVISIONAL PLAYTEST\r\n" +
+            "1. On the landing menu set seed 42, Systems 250 and Quiet area 2.00x. Expand Published construction - provisional playtest and choose New construction playtest. Wait for generation and validation to finish. The ordinary New generated game and Generated galaxy review tools do not enable this construction policy.\r\n" +
+            "2. Open Designer. Use the valid Utility starter: utility hull, reactor, command, life support and propulsion, with the starter crew and allocations. For an armed escort, select the available escort targeting sensors in Sensors and the energy bank in Weapons, preview each candidate and Fit package. Cancel leaves the fit unchanged; Undo can reverse a fitted change.\r\n" +
+            "3. In Power profiles, inspect EVERY operating profile. Give the installed escort targeting sensors and energy bank their actual full requested AND allocated power shown by the catalogue/preview in each profile. Keep the core systems' required allocations. Resolve every reported preview error before publishing; do not treat the overall power total as proof that each required system is powered.\r\n" +
+            "4. Name the class and Publish. In the construction foldout choose that exact published revision and an owned colony. Review the displayed cost and eligibility, then Pay and queue this revision and Confirm. Credits and materials are paid immediately; End turn advances actual colony production. Unsupported fittings show a reason and cannot be paid queued.\r\n" +
+            "5. Later edits publish a NEW revision. A paid R1 order remains frozen to R1 when R2 is published; history remains available. After completion, inspect the new own ship/fleet and use ordinary known-map movement and lawful combat controls. No cloak, torpedo stock, shields or unmapped equipment are added for free.\r\n" +
+            "6. Save through the campaign controls using a fresh construction-playtest slot. Quit normally, reopen the game and use the matching Continue playtest button in the same landing-menu foldout. Saving, loading and full validation may take time; wait for the busy panel to finish. Never overwrite a save you want to keep.\r\n" +
+            "7. The main v2 Continue controls and earlier v1 Continue under Other scenarios & review tools retain their own namespaces and rules. Existing campaigns are not upgraded to published construction. PLAY-GENERATED-CAMPAIGN.txt describes the separate ordinary v2 campaign.\r\n" +
+            "Known limits: support is deliberately restricted and tuning provisional; published-but-unsupported designs cannot be built. Displayed art is illustrative, not a tactical fit. Consult the external validation record for the exact build's tested scope; do not infer unobserved native or performance coverage.\r\n";
 
         private const string Readme =
             "HobbyDS9 - generated playable campaign v2 review candidate\r\n" +
