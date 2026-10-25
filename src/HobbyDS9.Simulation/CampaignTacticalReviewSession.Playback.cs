@@ -23,9 +23,22 @@ namespace HobbyDS9.Simulation
             var identities = own.Concat(enemy).OrderBy(s => s.ShipId, StringComparer.Ordinal).Select(s => {
                 var source = Equipment(s.ShipId);
                 var civilization = state.Campaign.GameState.Civilizations!.Single(c => c.CivilizationId == source.Owner);
-                return new CampaignPlaybackShipIdentity(s.ShipId, civilization.DefinitionId, source.PlaybackDesignId);
+                return new CampaignPlaybackShipIdentity(s.ShipId, civilization.DefinitionId, source.PlaybackDesignId,
+                    source.Owner==actor&&own.Any(c=>c.ShipId==s.ShipId)?PlaybackOwnHull(s.ShipId,actor):null);
             });
             return new CampaignPlaybackBoundary(own, enemy, relations, identities);
+        }
+        private string? PlaybackOwnHull(string ship,string actor)
+        {
+            if(activities==null)return null;
+            // Retained provenance, not latest publication or surviving live ship:
+            // playback must keep the frozen R1 hull even after destruction.
+            var built=published!.Records.SingleOrDefault(r=>r.ShipId==ship&&r.OwnerCivilizationId==actor);
+            BlueprintReferenceDto? reference=built==null?null:new BlueprintReferenceDto{BlueprintId=built.BlueprintId!,Revision=built.BlueprintRevision!.Value};
+            if(reference==null&&activities.AuthoredActivityBlueprints.TryGetValue(ship,out var authored))
+                reference=new BlueprintReferenceDto{BlueprintId=authored,Revision=1};
+            var publication=reference==null?null:CampaignBlueprints.Find(state.Campaign.GameState,reference);
+            return publication?.OwnerCivilizationId==actor?publication.Fit!.HullVersionId:null;
         }
         private static IEnumerable<CampaignPlaybackEvent> PlaybackEvents(TacticalEncounterV2Dto before, IReadOnlyCollection<string> hidden,
             string actor, IReadOnlyList<TacticalEventV2> events)

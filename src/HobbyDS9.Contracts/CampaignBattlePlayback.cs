@@ -38,8 +38,12 @@ namespace HobbyDS9.Contracts
         public string ShipId { get; }
         public string CivilizationDefinitionId { get; }
         public string ShipDesignDefinitionId { get; }
+        // Actor-owned frozen source identity only; foreign disclosure is unchanged.
+        public string? OwnHullVersionId { get; }
         public CampaignPlaybackShipIdentity(string ship, string civilizationDefinition, string shipDesignDefinition)
-        { ShipId = ship; CivilizationDefinitionId = civilizationDefinition; ShipDesignDefinitionId = shipDesignDefinition; }
+            : this(ship,civilizationDefinition,shipDesignDefinition,null) { }
+        public CampaignPlaybackShipIdentity(string ship, string civilizationDefinition, string shipDesignDefinition,string? ownHullVersionId)
+        { ShipId = ship; CivilizationDefinitionId = civilizationDefinition; ShipDesignDefinitionId = shipDesignDefinition; OwnHullVersionId=ownHullVersionId; }
     }
     public sealed class CampaignPlaybackBoundary
     {

@@ -178,6 +178,7 @@ namespace HobbyDS9.ArtDemo
             ResetDesignerReference();
             // Deferred destruction in play mode must not leave old visible mesh
             // during a same-frame replacement render.
+            if(activityModel!=null){activityModel.Dispose();activityModel=null;model=null;}
             if (model != null) { model.SetActive(false); Destroy(model); model = null; }
             Destroy(fallbackMesh); fallbackMesh = null;
             Destroy(fallbackMaterial); fallbackMaterial = null;

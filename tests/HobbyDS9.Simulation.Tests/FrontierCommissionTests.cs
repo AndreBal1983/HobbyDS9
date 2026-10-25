@@ -115,13 +115,19 @@ public sealed class FrontierCommissionTests
   var root=s.ExportStreamedActivitiesSave();Assert.Contains(root.ProductionHistory!,h=>h.Completed&&h.Order!.OwnerId!=Human);Assert.Contains(root.PublishedBuiltShips!,r=>r.OwnerCivilizationId!=Human);
   Assert.DoesNotContain(root.ProductionHistory!,h=>h.Completed&&h.Order!.OwnerId==Human);var before=Json(root);var report=s.CaptureFrontierCommission(Human);Assert.Equal(0,report.CompletedObjectives);Assert.All(report.Objectives,o=>Assert.Null(o.Evidence));Assert.Equal(before,Json(s.ExportStreamedActivitiesSave()));
  }
- [Fact] public void HistoricalLaunchSurvivesActualLawfulTacticalLossAndReplay()
+ [Theory] [InlineData("constitution-explorer")] [InlineData("defiant-combat")]
+ public void HistoricalLaunchSurvivesActualLawfulTacticalLossAndReplay(string role)
  {
   var p=Package();var app=CampaignStreamedActivitiesApplication.StartGame(p,PublishedConstructionProfileTests.Settings());
-  var f=app.CaptureStatus();Assert.True(app.SubmitActivity(new(){ActorId=Human,CommandId="command.commission.loss-build",ExpectedTurn=f.Turn,ExpectedRevision=f.CampaignRevision,Kind=CampaignActivityCommandKind.EnqueueShip,TargetId="colony.sol",DefinitionId="blueprint.ready.constitution-explorer",BlueprintRevision=1}).Accepted);
+  var f=app.CaptureStatus();Assert.True(app.SubmitActivity(new(){ActorId=Human,CommandId="command.commission.loss-build",ExpectedTurn=f.Turn,ExpectedRevision=f.CampaignRevision,Kind=CampaignActivityCommandKind.EnqueueShip,TargetId="colony.sol",DefinitionId="blueprint.ready."+role,BlueprintRevision=1}).Accepted);
+  var starter=app.CaptureStreamedActivities(Human).Activities.Ships.Single().ShipId;
   void Step(){var stamp=app.CaptureStatus();var result=app.AdvanceTurn(stamp.Turn,stamp.CampaignRevision);Assert.True(result.Accepted,result.Error.ToString());}
   for(int i=0;i<30&&!app.ExportStreamedActivitiesSave().PublishedBuiltShips!.Any(x=>x.OwnerCivilizationId==Human);i++)Step();
-  var born=app.ExportStreamedActivitiesSave().PublishedBuiltShips!.Single(x=>x.OwnerCivilizationId==Human);var launch=app.CaptureFrontierCommission(Human).Objectives.Single(o=>o.Id=="ship");Assert.NotNull(launch.Evidence);
+  var revised=ActivityReadyClassTests.Ready().Single(d=>d.ClassId=="class."+(role=="constitution-explorer"?"defiant-combat":"constitution-explorer")+".v1");
+  revised.ClassId="class."+role+".v1";revised.DisplayName="Different hull after frozen R1 construction";
+  f=app.CaptureStatus();Assert.True(app.SubmitStrategicCommand(new(){ActorCivilizationId=Human,CommandId="command.battle-hull.r2",ExpectedTurn=f.Turn,ExpectedRevision=f.CampaignRevision,Kind=CommandKind.PublishShipBlueprint,PublishShipBlueprint=new(){BlueprintId="blueprint.ready."+role,Revision=2,Draft=revised}}).Accepted);
+  var library=app.CaptureDesignLibrary(Human);Assert.NotEqual(library.Published.Single(x=>x.Blueprint.BlueprintId=="blueprint.ready."+role&&x.Blueprint.Revision==1).Blueprint.Fit.HullVersionId,library.Published.Single(x=>x.Blueprint.BlueprintId=="blueprint.ready."+role&&x.Blueprint.Revision==2).Blueprint.Fit.HullVersionId);
+  var born=app.ExportStreamedActivitiesSave().PublishedBuiltShips!.Single(x=>x.OwnerCivilizationId==Human);Assert.Equal(1,born.BlueprintRevision);var launch=app.CaptureFrontierCommission(Human).Objectives.Single(o=>o.Id=="ship");Assert.NotNull(launch.Evidence);
   var system=app.CaptureStrategy(Human).Colonies.Single(c=>c.ColonyId.Value=="colony.sol").SystemId;var home=app.CaptureGeneratedMap(Human).Regions.Single(r=>r.SystemId==system.Value).NodeId;
   void Order(string fleet,CampaignTravelIntent intent,IReadOnlyList<string> steps){var stamp=app.CaptureStatus();Assert.True(app.SubmitTravelOrder(new(){ActorId=Human,CommandId="command.commission.guard."+stamp.CampaignRevision,ExpectedTurn=stamp.Turn,ExpectedRevision=stamp.CampaignRevision,Order=new(){FleetId=fleet,Intent=intent,RouteNodeIds=steps.ToList()}}).Accepted);}
   var visited=new HashSet<string>();
@@ -145,7 +151,26 @@ public sealed class FrontierCommissionTests
   }
   var root=app.ExportStreamedActivitiesSave();Assert.True(fought);Assert.DoesNotContain(root.Campaign!.Integrated!.Physical!.Core.Campaign.GameState.Ships!,s=>s.ShipId==born.ShipId);Assert.Contains(root.PublishedBuiltShips!,x=>x.ShipId==born.ShipId);
   Assert.Equal(Json(launch),Json(app.CaptureFrontierCommission(Human).Objectives.Single(o=>o.Id=="ship")));
-  var restored=CampaignStreamedActivitiesApplication.LoadSave(p,root);Assert.Equal(Json(root),Json(restored.ExportStreamedActivitiesSave()));Assert.Equal(Json(app.CaptureFrontierCommission(Human)),Json(restored.CaptureFrontierCommission(Human)));
+  void CheckHulls(ICampaignStreamedActivitiesSession current)
+  {
+   var before=Json(current.ExportStreamedActivitiesSave());var history=current.GetBattleHistory(Human);Assert.NotEmpty(history);
+   var seen=new HashSet<string>();
+   foreach(var battle in history)foreach(var boundary in new[]{battle.Initial}.Concat(battle.Rounds.SelectMany(r=>new[]{r.Before,r.After})))
+   {
+    foreach(var identity in boundary.ShipIdentities)
+    {
+     if(boundary.OwnShips.Any(o=>o.ShipId==identity.ShipId))
+     {
+      if(identity.ShipId==starter){Assert.Equal("hull.constitution-explorer.v1",identity.OwnHullVersionId);seen.Add(starter);}
+      else if(identity.ShipId==born.ShipId){Assert.Equal("hull."+role+".v1",identity.OwnHullVersionId);Assert.Equal(born.BlueprintId,identity.ShipDesignDefinitionId);seen.Add(born.ShipId!);}
+     }
+     else Assert.Null(identity.OwnHullVersionId);
+    }
+   }
+   Assert.Contains(starter,seen);Assert.Contains(born.ShipId!,seen);Assert.Equal(before,Json(current.ExportStreamedActivitiesSave()));
+  }
+  CheckHulls(app);
+  var restored=CampaignStreamedActivitiesApplication.LoadSave(p,root);Assert.Equal(Json(root),Json(restored.ExportStreamedActivitiesSave()));Assert.Equal(Json(app.CaptureFrontierCommission(Human)),Json(restored.CaptureFrontierCommission(Human)));CheckHulls(restored);
  }
 
 }

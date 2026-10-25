@@ -161,6 +161,21 @@ public sealed class PlayableFleetBindingTests : IDisposable
         var inconsistent=new CampaignPlaybackBoundary(new[]{own},Array.Empty<CampaignTacticalCondition>(),Array.Empty<CampaignTacticalRelation>(),new[]{identity});
         Assert.Null(ReviewBattleVisualBinding.Identity(inconsistent,enemy.ShipId));
     }
+    [Fact] public void OwnHullBindingRequiresExactOwnBoundaryEvenWhenForeignIdentityClaimsAHull()
+    {
+        var own=new CampaignTacticalCondition("ship.own","fleet.own","Defiant mutable name",10,10,new long[]{0,0,0,0});
+        var enemy=new CampaignTacticalCondition("ship.enemy","fleet.enemy","Explorer",10,10,new long[]{0,0,0,0});
+        var ownIdentity=new CampaignPlaybackShipIdentity(own.ShipId,"civilization.federation","blueprint.frozen", "hull.constitution-explorer.v1");
+        var foreignIdentity=new CampaignPlaybackShipIdentity(enemy.ShipId,"civilization.cardassian","blueprint.foreign","hull.defiant-combat.v1");
+        var boundary=new CampaignPlaybackBoundary(new[]{own},new[]{enemy},Array.Empty<CampaignTacticalRelation>(),new[]{ownIdentity,foreignIdentity});
+        Assert.Equal("hull.constitution-explorer.v1",ReviewBattleVisualBinding.OwnHullVersion(boundary,own.ShipId));
+        Assert.Null(ReviewBattleVisualBinding.OwnHullVersion(boundary,enemy.ShipId));Assert.Null(ReviewBattleVisualBinding.OwnHullVersion(boundary,"ship.unknown"));
+        var absent=new CampaignPlaybackBoundary(Array.Empty<CampaignTacticalCondition>(),new[]{enemy},Array.Empty<CampaignTacticalRelation>(),new[]{ownIdentity,foreignIdentity});
+        Assert.Null(ReviewBattleVisualBinding.OwnHullVersion(absent,own.ShipId));
+        var legacy=new CampaignPlaybackShipIdentity(own.ShipId,"civilization.federation","ship-design.source-cruiser");
+        Assert.Null(legacy.OwnHullVersionId);
+        Assert.Null(ReviewBattleVisualBinding.OwnHullVersion(new CampaignPlaybackBoundary(new[]{own},Array.Empty<CampaignTacticalCondition>(),Array.Empty<CampaignTacticalRelation>(),new[]{legacy}),own.ShipId));
+    }
     private static T Clone<T>(T value)=>JsonSerializer.Deserialize<T>(Json(value))!;
     static CampaignPlayableFleetPackageDto MultiEncounterPackage(bool aiOnly)
     {

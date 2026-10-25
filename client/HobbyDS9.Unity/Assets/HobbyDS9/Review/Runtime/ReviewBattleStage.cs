@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HobbyDS9.Contracts;
+using HobbyDS9.ArtDemo;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Newtonsoft.Json.Linq;
@@ -18,6 +19,8 @@ namespace HobbyDS9.UnityReview
         private readonly Camera camera;
         private readonly Dictionary<string,GameObject> ships=new Dictionary<string,GameObject>(StringComparer.Ordinal);
         private readonly List<UnityEngine.Object> owned=new List<UnityEngine.Object>();
+        private readonly Dictionary<string,ActivityHullModel> hullModels=new Dictionary<string,ActivityHullModel>(StringComparer.Ordinal);
+        private readonly Func<CampaignPlaybackBoundary,string,string?>? ownHull;
         private readonly List<GameObject> effects=new List<GameObject>();
         private readonly Dictionary<Tuple<Color,Color,float,float,bool>,Material> materialCache=new Dictionary<Tuple<Color,Color,float,float,bool>,Material>();
         private readonly Dictionary<string,Tuple<Vector3,Quaternion,Vector3,Quaternion>> poses=new Dictionary<string,Tuple<Vector3,Quaternion,Vector3,Quaternion>>(StringComparer.Ordinal);
@@ -38,9 +41,9 @@ namespace HobbyDS9.UnityReview
         public int GenericMarkers { get; private set; }
         private static readonly Color Space=new Color(.012f,.022f,.042f,1);
         public ReviewBattleStage(CampaignPlaybackBoundary boundary,CampaignRoundPlayback? round,
-            Func<CampaignPlaybackBoundary,string,Tuple<string,string>?> identity)
+            Func<CampaignPlaybackBoundary,string,Tuple<string,string>?> identity,Func<CampaignPlaybackBoundary,string,string?>? ownHull=null)
         {
-            this.boundary=boundary;this.round=round;this.identity=identity;
+            this.boundary=boundary;this.round=round;this.identity=identity;this.ownHull=ownHull;
             root=new GameObject("Resolved battle presentation"){hideFlags=HideFlags.DontSave,layer=Layer};
             root.transform.position=new Vector3(0,-24000,0);
             camera=Child(root,"Battle camera").AddComponent<Camera>();camera.enabled=false;camera.cullingMask=1<<Layer;
@@ -62,7 +65,7 @@ namespace HobbyDS9.UnityReview
                 }
                 Frame();
             }
-            Caption=round==null?"Current authoritative boundary · awaiting orders":"Resolved round "+round.Round+" · playback";
+            Caption=round==null?"Current authoritative boundary Â· awaiting orders":"Resolved round "+round.Round+" Â· playback";
             Render();
             }
             catch{Dispose();throw;}
@@ -125,7 +128,18 @@ namespace HobbyDS9.UnityReview
         {
             var group=Child(root,"Visible ship "+condition.ShipId);var pair=identity(source,condition.ShipId);
             GameObject? model=null;
-            if(pair?.Item1=="civilization.federation"&&pair.Item2=="ship-design.source-cruiser")
+            // Membership is enforced again here even if a caller supplied a delegate.
+            var hull=source.OwnShips.Any(s=>s.ShipId==condition.ShipId)?ownHull?.Invoke(source,condition.ShipId):null;
+            var activity=hull==null?null:ActivityHullModel.Create(group.transform,hull);
+            // Gallery preview may label partial art; battle must not silently
+            // present an incomplete fixed hull as a complete model.
+            if(activity!=null&&activity.MissingArt.Length>0){activity.Dispose();activity=null;}
+            if(activity!=null)
+            {
+                hullModels.Add(condition.ShipId,activity);model=activity.Root;
+                model.transform.localScale=Vector3.one*(4f/activity.Definition.NominalArtLengthMetres);
+            }
+            else if(pair?.Item1=="civilization.federation"&&pair.Item2=="ship-design.source-cruiser")
             {
                 var prefab=Resources.Load<GameObject>("ArtDemo/Federation/Prefabs/exploration-cruiser");
                 if(prefab!=null){model=UnityEngine.Object.Instantiate(prefab,group.transform,false);model.transform.localScale=Vector3.one*(4f/620f);Materials(model,false);}
@@ -181,7 +195,7 @@ namespace HobbyDS9.UnityReview
         {
             var lawful=value.OwnShips.Concat(value.VisibleEnemies).Where(c=>c.Hull>0).OrderBy(c=>c.ShipId,StringComparer.Ordinal).ToList();
             var ids=new HashSet<string>(lawful.Select(c=>c.ShipId),StringComparer.Ordinal);
-            foreach(var gone in ships.Keys.Where(id=>!ids.Contains(id)).ToArray()){Destroy(ships[gone]);ships.Remove(gone);}
+            foreach(var gone in ships.Keys.Where(id=>!ids.Contains(id)).ToArray()){if(hullModels.TryGetValue(gone,out var hull)){hull.Dispose();hullModels.Remove(gone);}Destroy(ships[gone]);ships.Remove(gone);}
             foreach(var c in lawful)if(!ships.ContainsKey(c.ShipId))ships.Add(c.ShipId,Spawn(value,c));
         }
         private void Pose(CampaignPlaybackBoundary value)
@@ -317,7 +331,7 @@ namespace HobbyDS9.UnityReview
         private void Event(CampaignPlaybackEvent e)
         {
             ClearEffects();var source=Origin(e.SourceShipId,e.WeaponClass);var target=Position(e.TargetShipId);
-            Caption="Round "+e.Round+" · "+e.Kind+(e.Amount>0?" · "+e.Amount:"")+(e.Sector.HasValue?" · "+e.Sector:"");
+            Caption="Round "+e.Round+" Â· "+e.Kind+(e.Amount>0?" Â· "+e.Amount:"")+(e.Sector.HasValue?" Â· "+e.Sector:"");
             switch(e.Kind)
             {
                 case CampaignPlaybackEventKind.Maneuver:
@@ -369,7 +383,7 @@ namespace HobbyDS9.UnityReview
             if(nextEvent>=round.Events.Count&&clock>=.8f)
             {
                 ClearEffects();boundary=round.After;Populate(boundary);Pose(boundary);Frame();
-                Caption="Round "+round.Round+" complete · authoritative result";
+                Caption="Round "+round.Round+" complete Â· authoritative result";
             }
             Render();
         }
@@ -377,7 +391,7 @@ namespace HobbyDS9.UnityReview
         {
             if(disposed||round==null)return;
             nextEvent=round.Events.Count;maneuverTime=1;clock=.8f;ClearEffects();boundary=round.After;Populate(boundary);Pose(boundary);Frame();
-            Caption="Round "+round.Round+" result · playback skipped";Render();
+            Caption="Round "+round.Round+" result Â· playback skipped";Render();
         }
         private void Render()
         {
@@ -401,6 +415,7 @@ namespace HobbyDS9.UnityReview
         public void Dispose()
         {
             if(disposed)return;disposed=true;camera.targetTexture=null;root.SetActive(false);
+            foreach(var hull in hullModels.Values)hull.Dispose();hullModels.Clear();
             Destroy(root);foreach(var item in owned)Destroy(item);owned.Clear();materialCache.Clear();Texture.Release();Destroy(Texture);
         }
     }
