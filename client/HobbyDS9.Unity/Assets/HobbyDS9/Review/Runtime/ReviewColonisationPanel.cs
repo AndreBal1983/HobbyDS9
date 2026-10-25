@@ -24,7 +24,8 @@ namespace HobbyDS9.UnityReview
         private ReviewActivitiesPanel? science;
         private ShipPreviewStage? hullPreview;
         private string inspectedBlueprint="";private int inspectedRevision;
-        private bool disposed,submitted;private int controlEpoch;private bool inspectedOpen;
+        private bool disposed,submitted;private int controlEpoch,reviewEpoch;private bool inspectedOpen;
+        private Foldout? currentInspector;
         private string page="Worlds",world="",ship="",planet="",surveyShip="";
         internal sealed class Selection
         {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly ReviewActivitiesPanel.Selection? Science;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science){Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;}}
@@ -72,7 +73,7 @@ namespace HobbyDS9.UnityReview
         private void SendActivity(CampaignActivityCommandDto command){if(!Live)return;submitted=true;submitActivity(command);}
         private void Show(string selected)
         {
-            if(disposed)return;controlEpoch++;page=new[]{"Worlds","Planets","Transports","Science"}.Contains(selected)?selected:"Worlds";
+            if(disposed)return;controlEpoch++;reviewEpoch++;currentInspector=null;page=new[]{"Worlds","Planets","Transports","Science"}.Contains(selected)?selected:"Worlds";
             science?.Dispose();science=null;ReleaseHull();body.Clear();review.Clear();review.style.display=DisplayStyle.None;
             if(page=="Worlds")Worlds();else if(page=="Planets")Planets();else if(page=="Transports")Transports();else
             {science=new ReviewActivitiesPanel(activities,reviewActivity,submitActivity,true);body.Add(science);}
@@ -116,18 +117,21 @@ namespace HobbyDS9.UnityReview
         private void ReleaseHull(){hullPreview?.Dispose();hullPreview=null;}
         private void InspectHull(VisualElement parent,ActivityBuildOptionDto option)
         {
-            ReleaseHull();parent.Q("colonisation-hull-inspector")?.RemoveFromHierarchy();
+            currentInspector=null;ReleaseHull();parent.Q("colonisation-hull-inspector")?.RemoveFromHierarchy();
             var fold=new Foldout{text="Inspect "+option.DisplayName+" R"+option.BlueprintRevision,value=inspectedOpen,name="colonisation-hull-inspector"};fold.style.flexShrink=0;fold.style.fontSize=16;parent.Add(fold);
+            currentInspector=fold;var inspectorEpoch=controlEpoch;
+            bool OwnInspector()=>Live&&inspectorEpoch==controlEpoch&&ReferenceEquals(currentInspector,fold);
             Text(fold,"Exact published hull art. This image supplies no statistics or unlocks.");
             var image=new Image{name="colonisation-hull-image",scaleMode=ScaleMode.ScaleToFit};image.style.height=180;image.style.minHeight=180;image.style.flexShrink=0;fold.Add(image);
             var label=Text(fold,"Expand to inspect exact hull art.");
             void Refresh()
             {
-                if(!Live||!fold.value||fold.panel==null){image.image=null;ReleaseHull();return;}
+                if(!OwnInspector())return;
+                if(!fold.value||fold.panel==null){image.image=null;ReleaseHull();return;}
                 if(ActivityHullCatalog.Find(option.HullVersionId)==null){label.text="No exact hull art binding is available.";return;}
                 ReleaseHull();hullPreview=new ShipPreviewStage(512,320);hullPreview.ShowActivityHull(option.HullVersionId);image.image=hullPreview.Texture;label.text=hullPreview.Label;
             }
-            fold.RegisterValueChangedCallback(_=>{inspectedOpen=fold.value;Refresh();});fold.RegisterCallback<AttachToPanelEvent>(_=>Refresh());
+            fold.RegisterValueChangedCallback(_=>{if(!OwnInspector())return;inspectedOpen=fold.value;Refresh();});fold.RegisterCallback<AttachToPanelEvent>(_=>Refresh());
             Button(fold,"Rotate hull","colonisation-hull-orbit",()=>hullPreview?.OrbitReference(80,26));
         }
         private void Planets()
@@ -165,7 +169,12 @@ namespace HobbyDS9.UnityReview
             {
                 Picker(body,"Source cohort",w.Cohorts,x=>x.Id,x=>x.SpeciesName+" "+x.Population,w.Cohorts.FirstOrDefault()?.Id??"",_=>{},"colonisation-cohort");
                 var cohorts=body.Q<DropdownField>("colonisation-cohort");
-                Button(body,"Review embark 100 settlers + kit","colonisation-embark",()=>{var c=Command(ColonisationAction.EmbarkSettlers);c.Embark=new EmbarkSettlersDto{ShipId=t.ShipId,ColonyId=w.Id,CohortId=cohorts.index>=0?w.Cohorts[cohorts.index].Id:"",Population=100,Food=food.value,Materials=MaterialsInput()};Check(c,"Move 100 actual people from the selected cohort (remaining "+(w.Cohorts[cohorts.index].Population-100)+"), one locally manufactured kit, "+c.Embark.Food+" food and "+string.Join(", ",c.Embark.Materials!.Select(x=>MaterialName(x.ResourceDefinitionId)+" "+x.Amount))+" onto this transport. Source safeguards apply.");});
+                bool ValidCohort()=>w.Stage==ColonyEstablishmentStage.Established&&cohorts.index>=0&&cohorts.index<w.Cohorts.Count;
+                var embark=Button(body,"Review embark 100 settlers + kit","colonisation-embark",()=>{
+                    if(!ValidCohort()){PresentStatus("Choose an active established source world and a resident cohort before embarking settlers.");return;}
+                    var cohort=w.Cohorts[cohorts.index];var c=Command(ColonisationAction.EmbarkSettlers);c.Embark=new EmbarkSettlersDto{ShipId=t.ShipId,ColonyId=w.Id,CohortId=cohort.Id,Population=100,Food=food.value,Materials=MaterialsInput()};
+                    Check(c,"Move 100 actual people from the selected cohort (remaining "+(cohort.Population-100)+"), one locally manufactured kit, "+c.Embark.Food+" food and "+string.Join(", ",c.Embark.Materials!.Select(x=>MaterialName(x.ResourceDefinitionId)+" "+x.Amount))+" onto this transport. Source safeguards apply.");});
+                embark.SetEnabled(ValidCohort());if(!ValidCohort())Text(body,"No eligible source cohort. Embarking settlers requires an active established owned world with residents; supply delivery and founding evacuation remain separate actions.");
                 Button(body,"Review load supplies only","colonisation-load-supplies",()=>{var c=Command(ColonisationAction.LoadCarriedSupplies);c.LoadSupplies=new LoadCarriedSuppliesDto{ShipId=t.ShipId,SourceColonyId=w.Id,Food=food.value,Materials=MaterialsInput()};Check(c,"Load "+c.LoadSupplies.Food+" local food and "+string.Join(", ",c.LoadSupplies.Materials!.Select(x=>MaterialName(x.ResourceDefinitionId)+" "+x.Amount))+" without passengers or a kit.");});
                 if(w.Stage==ColonyEstablishmentStage.Founding&&w.CampId!=null)Button(body,"Review founding evacuation","colonisation-evacuate",()=>{var c=Command(ColonisationAction.EvacuateColony);c.Evacuate=new EvacuateFoundingColonyDto{CampId=w.CampId,ShipId=t.ShipId};Check(c,"Evacuate the remaining founding cohort to this present transport; return passengers may unload only at an active established owned world.");});
             }
@@ -184,12 +193,13 @@ namespace HobbyDS9.UnityReview
         internal void PresentReviewedOrder(ColonisationCommandDto command,string caption,ColonisationEligibilitySnapshot eligibility)
         {
             if(!Live||eligibility.Actor!=observation.Actor||eligibility.Turn!=observation.Turn||eligibility.Revision!=observation.Revision||command.ActorId!=observation.Actor||command.Turn!=observation.Turn||command.Revision!=observation.Revision||eligibility.Action!=command.Action)return;
-            review.Clear();review.style.display=DisplayStyle.Flex;Text(review,caption);Text(review,eligibility.Available?"Available at the observed campaign state. Confirm revalidates the order.":eligibility.Reason);
-            if(eligibility.Available)Button(review,"Confirm order","colonisation-order-confirm",()=>Send(command));Button(review,"Back","colonisation-order-back",()=>{review.Clear();review.style.display=DisplayStyle.None;});
+            var token=++reviewEpoch;review.Clear();review.style.display=DisplayStyle.Flex;Text(review,caption);Text(review,eligibility.Available?"Available at the observed campaign state. Confirm revalidates the order.":eligibility.Reason);
+            if(eligibility.Available)Button(review,"Confirm order","colonisation-order-confirm",()=>{if(token==reviewEpoch)Send(command);});Button(review,"Back","colonisation-order-back",()=>DismissReview(token));
         }
         internal void PresentReviewedActivity(CampaignActivityCommandDto command,string caption,CampaignActivityEligibilityDto eligibility)
         {if(science!=null){science.PresentReviewedOrder(command,caption,eligibility);return;}if(!Live||eligibility.ActorId!=observation.Actor||eligibility.Turn!=observation.Turn||eligibility.Revision!=observation.Revision)return;
-         review.Clear();review.style.display=DisplayStyle.Flex;Text(review,caption);Text(review,eligibility.Accepted?"Available at this observed state.":eligibility.Reason);if(eligibility.Accepted)Button(review,"Confirm order","colonisation-order-confirm",()=>SendActivity(command));Button(review,"Back","colonisation-order-back",()=>review.style.display=DisplayStyle.None);}
-        public void Dispose(){if(disposed)return;disposed=true;science?.Dispose();science=null;ReleaseHull();review.Clear();}
+         var token=++reviewEpoch;review.Clear();review.style.display=DisplayStyle.Flex;Text(review,caption);Text(review,eligibility.Accepted?"Available at this observed state.":eligibility.Reason);if(eligibility.Accepted)Button(review,"Confirm order","colonisation-order-confirm",()=>{if(token==reviewEpoch)SendActivity(command);});Button(review,"Back","colonisation-order-back",()=>DismissReview(token));}
+        private void DismissReview(int token){if(token!=reviewEpoch)return;reviewEpoch++;review.Clear();review.style.display=DisplayStyle.None;}
+        public void Dispose(){if(disposed)return;disposed=true;reviewEpoch++;currentInspector=null;science?.Dispose();science=null;ReleaseHull();review.Clear();}
     }
 }
