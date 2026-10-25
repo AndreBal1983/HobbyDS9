@@ -1,7 +1,9 @@
 # Activities campaign with streamed construction
 
-Status: source/CPU candidate. Actual Unity, player-build and native acceptance are
-pending. Provisional content remains reversible playtest tuning, not final balance.
+Status: scoped playable content milestone accepted on 25 October 2026. Source
+`022ec6edd1127a2bbc1a73a2193f79855fc96c9e` passed actual Unity receiving,
+strict Windows IL2CPP packaging and the native checks described below.
+Provisional content remains reversible playtest tuning, not final balance.
 The owner's [normal production agreement](design/time-movement-mobilisation.md#normal-production-and-material-supply--agreed-25-october-2026)
 supersedes upfront construction payment for this new path.
 
@@ -111,9 +113,44 @@ late rollback, exact full replay and legacy production; actual lawful combat
 through rounds/aftermath with an unfinished order; actual 250-system actor-known
 science and minor consent; strict carrier/store rejection; typed host/model
 save/reopen, dirty drafts and nonblocking held-IO/stale-operation behavior.
-The deferred popup test proves model/root behavior; actual pointer/button Cancel
-and Confirm, readable three-size panels, imported hulls and a new player package
-still require separate Unity/native receiving evidence.
+Actual Unity receiving at that source passed in 274.815 seconds. It exercised
+streamed ship/structure completion, frozen R1 after R2 publication, three viewport
+sizes (1280×720, 1920×1080 and 3440×1440), exact pending/completed/active/finding
+Save/MenuContinue, expedition cancellation and claim, science consequences,
+minor refusal, animated checkpoint feedback and a separate historical V2 load.
+The abort and successful claim are explicitly separate branches restored from
+an actual saved active expedition. The three hull captures show actor-owned ready
+class component renders; they do not claim that all three ships were constructed.
+
+The separate `HobbyDS9-Streamed-Activities-20261025` package passed strict Win64
+IL2CPP in 127.269 seconds. Root and an independent reviewer rehashed its 747 files
+(1,634,130,905 bytes); a post-native recheck also found zero mismatches. Existing
+packages and the earlier validated pointer remain preserved.
+
+Native mouse input in the actual executable exercised New250/seed42, queued an
+Explorer and fabrication annex without changing 300 credits, advanced actual
+delivery/work, saved, quit normally, restarted and continued the same week-2
+campaign with 307 credits, Explorer work 18/108, one dilithium consumed and the
+annex still queued. A separately labelled unmodified Unity-produced findings save
+was continued through the normal native loader to check the explicit Namar site,
+pre-warp narrative, refusal and science reports. This fixture-derived presentation
+check is not a continuous manual new-game expedition journey. Native screenshots,
+logs, save identity, provenance and restoration receipts are in
+`E:/HobbyDS9/artifacts/streamed-activities-native-022ec6e-20261025/CHECKPOINT.md`.
+
+All three native sessions quit normally. Their 36 probe windows reported one
+enabled audio listener; audio played. Focused CPU frame intervals at 1920×1080
+had a largest window P95 of 13.481 ms, but an initial-session longest frame of
+598.814 ms. These measurements are not GPU execution timings or a guarantee of
+smoothness throughout the campaign. Fresh owner files and preferences were
+restored and independently verified with zero mismatches or extra files.
+
+Full replay validation remains deliberately enabled. In the actual 20-week
+Unity journey, findings save/load took 26.27/28.60 seconds while busy feedback
+continued. This latency, plain activity-control styling and stale historical
+save-helper prose remain follow-ups. This scoped milestone does not establish
+the entire broad demo objective, a 1000-system performance gate, three-size
+native tactical acceptance, final content balance or full diplomacy/freighters.
 
 The prior [Format9 contract](campaign-activities-v1.md) describes that preserved
 prepaid source checkpoint and must not be read as this streamed policy.
