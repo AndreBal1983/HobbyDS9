@@ -45,39 +45,7 @@ namespace HobbyDS9.UnityReview
             {
                 var wire = GeneratedRoot(bytes, ReviewActivitiesSlotStore.MaximumBytes);
                 ActivitiesObject(wire, typeof(CampaignActivitiesSaveDto));
-                // New required lists may have DTO initializers: require their actual
-                // wire presence so omission never silently becomes an empty history.
-                var state = wire["Activities"];
-                ActivitiesObject(state, typeof(CampaignActivityStateDto));
-                ActivityWireRows(state!, "Production", typeof(ActivityProductionItemDto));
-                foreach (var item in GeneratedRows(state!["Production"], ActivityCarrierRows))
-                    ActivitiesObject(item["Paid"], typeof(ProductionQueueItemDto));
-                ActivityWireRows(state!, "Structures", typeof(ActivityStructureReceiptDto));
-                ActivityWireRows(state!, "Sites", typeof(ActivitySiteStateDto));
-                ActivityWireRows(state!, "Minors", typeof(ActivityMinorStateDto));
-                ActivityWireRows(state!, "Bodies", typeof(ActivityBodyDto));
-                ActivityWireRows(state!, "Relations", typeof(ActivityMinorRelationDto));
-                ActivityWireRows(state!, "Observations", typeof(ActivitySiteObservationDto));
-                foreach (var finding in GeneratedRows(state!["Findings"], ActivityCarrierRows))
-                {
-                    ActivitiesObject(finding, typeof(ActivityFindingDto));
-                    foreach (var receipt in GeneratedRows(finding["ResearchReceipts"], 256))
-                        ActivitiesObject(receipt, typeof(ResearchReceiptDto));
-                }
-                foreach (var operation in GeneratedRows(wire["Journal"], ActivityCarrierRows))
-                {
-                    ActivitiesObject(operation, typeof(CampaignActivityOperationDto));
-                    bool activity = operation["Activity"]?.Type != JTokenType.Null;
-                    bool common = operation["Common"]?.Type != JTokenType.Null;
-                    if (activity == common) throw Invalid();
-                    if (activity) ActivitiesObject(operation["Activity"], typeof(CampaignActivityCommandDto));
-                    else
-                    {
-                        var entry = operation["Common"]!;
-                        ActivitiesObject(entry, typeof(CampaignPlayableOperationDto));
-                        if ((entry["Common"]!.Type == JTokenType.Null) == (entry["Organization"]!.Type == JTokenType.Null)) throw Invalid();
-                    }
-                }
+                ActivityFactsWire(wire["Activities"], wire["Journal"]);
                 // Preserve the established strict Natural wire shape. Geometry and
                 // content identity are still validated by authoritative full replay.
                 DecodeNaturalGalaxy(Utf8.GetBytes(wire["Map"]!.ToString(Formatting.None)));
@@ -86,6 +54,41 @@ namespace HobbyDS9.UnityReview
                 return root;
             }
             catch (Exception) { throw new InvalidDataException("Invalid activity campaign carrier."); }
+        }
+        private static void ActivityFactsWire(JToken? state, JToken? journal)
+        {
+            // New required lists may have DTO initializers: require their actual
+            // wire presence so omission never silently becomes an empty history.
+            ActivitiesObject(state, typeof(CampaignActivityStateDto));
+            ActivityWireRows(state!, "Production", typeof(ActivityProductionItemDto));
+            foreach (var item in GeneratedRows(state!["Production"], ActivityCarrierRows))
+                ActivitiesObject(item["Paid"], typeof(ProductionQueueItemDto));
+            ActivityWireRows(state!, "Structures", typeof(ActivityStructureReceiptDto));
+            ActivityWireRows(state!, "Sites", typeof(ActivitySiteStateDto));
+            ActivityWireRows(state!, "Minors", typeof(ActivityMinorStateDto));
+            ActivityWireRows(state!, "Bodies", typeof(ActivityBodyDto));
+            ActivityWireRows(state!, "Relations", typeof(ActivityMinorRelationDto));
+            ActivityWireRows(state!, "Observations", typeof(ActivitySiteObservationDto));
+            foreach (var finding in GeneratedRows(state!["Findings"], ActivityCarrierRows))
+            {
+                ActivitiesObject(finding, typeof(ActivityFindingDto));
+                foreach (var receipt in GeneratedRows(finding["ResearchReceipts"], 256))
+                    ActivitiesObject(receipt, typeof(ResearchReceiptDto));
+            }
+            foreach (var operation in GeneratedRows(journal, ActivityCarrierRows))
+            {
+                ActivitiesObject(operation, typeof(CampaignActivityOperationDto));
+                bool activity = operation["Activity"]?.Type != JTokenType.Null;
+                bool common = operation["Common"]?.Type != JTokenType.Null;
+                if (activity == common) throw Invalid();
+                if (activity) ActivitiesObject(operation["Activity"], typeof(CampaignActivityCommandDto));
+                else
+                {
+                    var entry = operation["Common"]!;
+                    ActivitiesObject(entry, typeof(CampaignPlayableOperationDto));
+                    if ((entry["Common"]!.Type == JTokenType.Null) == (entry["Organization"]!.Type == JTokenType.Null)) throw Invalid();
+                }
+            }
         }
         private static void ActivitiesObject(JToken? token, Type type)
             => GeneratedObject(token, type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -115,7 +118,10 @@ namespace HobbyDS9.UnityReview
                 || root.Campaign.Integrated.Physical.Core.ProfileId != CampaignActivitiesIdentity.EmbeddedCoreProfile
                 || root.Campaign.Integrated.Physical.Core.Campaign?.GameState == null || root.Activities == null)
                 throw Invalid();
-            var state = root.Activities;
+            RequireActivityFacts(root.Activities, root.Journal!);
+        }
+        private static void RequireActivityFacts(CampaignActivityStateDto state, List<CampaignActivityOperationDto> journal)
+        {
             if (!ActivityRows(state.Production) || !ActivityRows(state.Structures) || !ActivityRows(state.Sites)
                 || !ActivityRows(state.Minors) || !ActivityRows(state.Findings) || !ActivityRows(state.Bodies)
                 || !ActivityRows(state.Relations) || !ActivityRows(state.Observations)) throw Invalid();
@@ -148,7 +154,7 @@ namespace HobbyDS9.UnityReview
                     if (!ActivityText(receipt.CivilizationId) || !ActivityText(receipt.Category)
                         || receipt.ApplicationDefinitionId != null && !ActivityText(receipt.ApplicationDefinitionId)
                         || receipt.Discipline != null && !Enum.IsDefined(typeof(ScienceDiscipline), receipt.Discipline.Value)) throw Invalid();
-            foreach (var operation in root.Journal!)
+            foreach (var operation in journal)
             {
                 if ((operation.Activity == null) == (operation.Common == null)) throw Invalid();
                 if (operation.Common != null && (operation.Common.Common == null) == (operation.Common.Organization == null)) throw Invalid();
