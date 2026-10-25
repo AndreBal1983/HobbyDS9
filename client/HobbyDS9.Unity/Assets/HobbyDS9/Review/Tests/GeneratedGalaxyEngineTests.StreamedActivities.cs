@@ -56,6 +56,12 @@ namespace HobbyDS9.UnityReview.Tests
             internal bool Pending=>Holds.Any(h=>h.Work!=null&&(!h.Work.Settled||h.Context!=null&&Volatile.Read(ref h.Context.Finished)==0));
         }
         private static PhysicalReviewHost StreamHost(ReviewUiModel model)=>(PhysicalReviewHost)typeof(ReviewUiModel).GetField("host",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(model)!;
+        private static void StreamCapturedEvent(Button button)
+        {
+            // Deliver a retained event without pretending that a disabled or
+            // detached control is currently an accessible user action.
+            using(var e=NavigationSubmitEvent.GetPooled()){e.target=button;button.SendEvent(e);}
+        }
         private static void StreamProbe(PhysicalReviewHost host,Action<string>? action)=>typeof(PhysicalReviewHost).GetProperty("StreamedInteractionProbe",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(host,action);
         private static StreamedUiHold StreamStartHold(StreamedUiProof proof,ReviewEntry entry,Action activate,bool holdContinuation=false)
         {
@@ -110,11 +116,26 @@ namespace HobbyDS9.UnityReview.Tests
             finally{heartbeat?.Pause();doc.panelSettings.targetTexture=prior;doc.rootVisualElement.style.width=width;doc.rootVisualElement.style.height=height;target.Release();UnityEngine.Object.DestroyImmediate(target);}
             yield return null;yield return null;yield return null;
         }
-        private static IEnumerator StreamHeldReviewAndSubmit(PublishedReceivingState state,StreamedUiProof proof,UIDocument doc,ReviewEntry entry,string reviewId)
+        private static IEnumerator StreamHeldDirectSubmit(PublishedReceivingState state,StreamedUiProof proof,UIDocument doc,ReviewEntry entry,string addId)
         {
+            var model=CampaignModel(entry);var sourceRoot=StreamBytes(model);var sourceFrame=model.Current.Frame;
+            var button=doc.rootVisualElement.Q<Button>(addId);Assert.That(button,Is.Not.Null);yield return StreamReachButton(doc,button);
+            var submit=StreamStartHold(proof,entry,()=>Click(button));yield return StreamEntered(submit,doc,"Applying");
+            Assert.That(submit.Work!.Kind,Is.EqualTo(StreamedInteractionKind.Submission));Assert.That(doc.rootVisualElement.Q("activity-order-confirm"),Is.Null,"+ never opens construction review/Confirm");
+            Assert.That(button.enabledSelf,Is.False,"direct + disables before callback");StreamCapturedEvent(button);Assert.That(CheckpointField(entry,"streamedUiWork"),Is.SameAs(submit.Work));
+            yield return StreamBusyProof(state,doc,submit,model,sourceFrame,sourceRoot,"Applying",new Vector2Int(1920,1080),"streamed-submit-responsive-1920x1080");
+            submit.Release.Set();yield return StreamUiIdle(entry,"held-direct-add-complete");Assert.That(submit.Context!.Thread,Is.EqualTo(Thread.CurrentThread.ManagedThreadId));
+            Assert.That(submit.Hits,Is.EqualTo(1));Assert.That(model.StreamedActivities().Production.Count,Is.EqualTo(1),"one actual + adds exactly one own order");
+            Assert.That(model.Current.Frame,Is.Not.SameAs(sourceFrame));var committed=StreamBytes(model);StreamCapturedEvent(button);yield return null;
+            Assert.That(StreamBytes(model),Is.EqualTo(committed),"disposed old + cannot enqueue again");StreamProbe(StreamHost(model),null);
+            Assert.That(doc.rootVisualElement.Q<Label>("construction-command-status").text,Is.EqualTo("Construction order added."));
+        }
+        private static IEnumerator StreamHeldCancellationPreview(PublishedReceivingState state,StreamedUiProof proof,UIDocument doc,ReviewEntry entry)
+        {
+            const string reviewId="activity-queue-cancel-0";
             var model=CampaignModel(entry);var sourceRoot=StreamBytes(model);var sourceFrame=model.Current.Frame;var selected=StreamSelectedIds(doc);
             var oldPanel=doc.rootVisualElement.Q<ReviewActivitiesPanel>();var oldButton=oldPanel.Q<Button>(reviewId);Assert.That(oldButton,Is.Not.Null);
-            oldPanel.Q<ScrollView>("activity-scroll").ScrollTo(oldButton);yield return null;yield return null;
+            yield return StreamReachButton(doc,oldButton);
             var cancelled=StreamStartHold(proof,entry,()=>Click(oldButton),true);yield return StreamEntered(cancelled,doc,"Checking");
             entry.enabled=false;Assert.That(model.Busy,Is.True,"source-reading cancelled worker must drain");entry.enabled=true;yield return null;yield return null;
             CheckpointBusy(doc,"Checking");Assert.That(model.Current.Frame,Is.SameAs(sourceFrame));Assert.That(StreamBytes(model),Is.EqualTo(sourceRoot));
@@ -126,7 +147,7 @@ namespace HobbyDS9.UnityReview.Tests
             entry.enabled=false;entry.enabled=true;yield return null;yield return null;
             Assert.That(model.Busy,Is.False);Assert.That(StreamBytes(model),Is.EqualTo(sourceRoot));Assert.That(doc.rootVisualElement.Q("activity-order-confirm"),Is.Null);
             var fresh=doc.rootVisualElement.Q<ReviewActivitiesPanel>();Assert.That(fresh,Is.Not.SameAs(oldPanel));StreamSelectionRetained(doc,selected,false);
-            var button=fresh.Q<Button>(reviewId);fresh.Q<ScrollView>("activity-scroll").ScrollTo(button);yield return null;yield return null;
+            var button=fresh.Q<Button>(reviewId);yield return StreamReachButton(doc,button);
             var preview=StreamStartHold(proof,entry,()=>Click(button));yield return StreamEntered(preview,doc,"Checking");
             var token=CheckpointField(entry,"campaignBusyToken");cancelled.Continuation.Forward();timer.Restart();
             while(Volatile.Read(ref cancelled.Context!.Finished)==0){Assert.That(timer.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}
@@ -139,13 +160,10 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(StreamBytes(model),Is.EqualTo(sourceRoot));Assert.That(model.Current.Frame,Is.SameAs(sourceFrame));StreamSelectionRetained(doc,selected,false);
             var current=doc.rootVisualElement.Q<ReviewActivitiesPanel>();Assert.That(current,Is.Not.SameAs(fresh));
             var confirm=current.Q<Button>("activity-order-confirm");Assert.That(confirm,Is.Not.Null,"new current panel presents exact eligibility after worker");
-            var submit=StreamStartHold(proof,entry,()=>Click(confirm));yield return StreamEntered(submit,doc,"Applying");
-            Click(confirm);Assert.That(CheckpointField(entry,"streamedUiWork"),Is.SameAs(submit.Work));
-            yield return StreamBusyProof(state,doc,submit,model,sourceFrame,sourceRoot,"Applying",new Vector2Int(1920,1080),"streamed-submit-responsive-1920x1080");
-            submit.Release.Set();yield return StreamUiIdle(entry,"held-submit-complete");Assert.That(submit.Context!.Thread,Is.EqualTo(Thread.CurrentThread.ManagedThreadId));
-            Assert.That(submit.Hits,Is.EqualTo(1));Assert.That(model.StreamedActivities().Production.Count,Is.EqualTo(1),"the actual Confirm committed exactly once");
+            var wording=string.Join(" ",current.Q("activity-order-review").Query<Label>().ToList().Select(l=>l.text));Assert.That(wording,Does.Contain("consumed materials are lost"));
+            yield return StreamClick(doc,"activity-order-confirm",false);var after=StreamBytes(model);Click(confirm);yield return null;Assert.That(StreamBytes(model),Is.EqualTo(after),"disposed cancellation Confirm cannot resolve twice");
             Assert.That(model.Current.Frame,Is.Not.SameAs(sourceFrame));StreamProbe(StreamHost(model),null);
-            state.Timings.Add(new{phase="actual-held-preview-cancel-newlease-submit",cancelledNotPublished=true,oldContinuationMainThread=cancelled.Context.Thread,newContinuationMainThread=preview.Context.Thread,submitContinuationMainThread=submit.Context.Thread,wholeRootBeforeCommit=true});
+            state.Timings.Add(new{phase="actual-held-cancellation-preview-disable-newlease",cancelledNotPublished=true,oldContinuationMainThread=cancelled.Context.Thread,newContinuationMainThread=preview.Context.Thread,wholeRootBeforeCommit=true});
         }
         private static IEnumerator StreamHeldAdvance(PublishedReceivingState state,StreamedUiProof proof,UIDocument doc,ReviewEntry entry)
         {
@@ -166,22 +184,23 @@ namespace HobbyDS9.UnityReview.Tests
         private static byte[] StreamBytes(ReviewUiModel model)=>new ReviewNewtonsoftCodec().EncodeStreamedActivitiesRoot(StreamAudit(model));
         private static string StreamYard(ReviewUiModel model)
         {
-            var own=model.Activities();var ship=own.BuildOptions.First(o=>o.Kind==ActivityProductionKind.PublishedShip&&o.Supported);
-            // The same actor-safe, non-mutating eligibility projection used by the panel;
-            // old upfront-paid production availability is not authority for this profile.
-            return own.Colonies.OrderBy(c=>c.ColonyId,StringComparer.Ordinal).First(c=>model.ActivityEligibility(new CampaignActivityCommandDto{
-                ActorId=own.ActorId,ExpectedTurn=own.Turn,ExpectedRevision=own.Revision,CommandId="command.receiving.yard-probe",Kind=CampaignActivityCommandKind.EnqueueShip,
-                TargetId=c.ColonyId,DefinitionId=ship.DefinitionId,BlueprintRevision=ship.BlueprintRevision}).Accepted).ColonyId;
+            // This is the actual controlled actor's existing economy projection,
+            // not legacy cost admission or private world/package inspection.
+            return model.Current.Frame.Strategy!.Colonies.Where(c=>c.Economy.Shipbuilding).OrderBy(c=>c.ColonyId.Value,StringComparer.Ordinal).First().ColonyId.Value;
+        }
+        private static IEnumerator StreamReachButton(UIDocument doc,Button button)
+        {
+            Assert.That(button,Is.Not.Null);
+            foreach(var id in new[]{"construction-catalogue-scroll","construction-queue","activity-scroll"})
+            {var view=doc.rootVisualElement.Q<ScrollView>(id);if(view!=null&&view.Contains(button)){view.ScrollTo(button);break;}}
+            yield return null;yield return null;
+            Assert.That(button.panel,Is.SameAs(doc.rootVisualElement.panel));Assert.That(button.enabledInHierarchy,Is.True,button.name);
+            var picked=doc.rootVisualElement.panel.Pick(button.worldBound.center);Assert.That(picked==button||(picked!=null&&button.Contains(picked)),Is.True,button.name+" actual pick reaches button");
         }
         private static IEnumerator StreamClick(UIDocument doc,string id,bool scroll=true)
         {
-            if(id.StartsWith("activity-build-review-",StringComparison.Ordinal))
-            {
-                var model=CampaignModel(doc.GetComponent<ReviewEntry>());var yard=StreamYard(model);
-                doc.rootVisualElement.Q<DropdownField>("activity-colony-selector").index=model.Activities().Colonies.FindIndex(c=>c.ColonyId==yard);yield return null;
-            }
             var button=doc.rootVisualElement.Q<Button>(id);Assert.That(button,Is.Not.Null,id);
-            var view=doc.rootVisualElement.Q<ScrollView>("activity-scroll");if(scroll&&view!=null&&view.Contains(button))view.ScrollTo(button);
+            if(scroll)yield return StreamReachButton(doc,button);
             yield return null;yield return null;
             Assert.That(button.panel,Is.SameAs(doc.rootVisualElement.panel),id+" must be attached");
             Assert.That(button.enabledInHierarchy,Is.True,id);var clock=System.Diagnostics.Stopwatch.StartNew();Click(button);
@@ -197,6 +216,98 @@ namespace HobbyDS9.UnityReview.Tests
             var yard=StreamYard(model);
             doc.rootVisualElement.Q<DropdownField>("activity-colony-selector").index=observation.Colonies.FindIndex(c=>c.ColonyId==yard);yield return null;
             if(expeditions)yield return StreamClick(doc,"activity-tab-expeditions",false);
+        }
+        private static object? StreamCatalogueField(UIDocument doc,string name)
+        {var view=doc.rootVisualElement.Q("construction-catalogue");return view?.GetType().GetField(name,BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(view);}
+        private static void StreamBuildingCounts(UIDocument doc,string definition,int built,int queued)
+        {
+            var model=CampaignModel(doc.GetComponent<ReviewEntry>());var observed=model.StreamedActivities();var selected=doc.rootVisualElement.Q<DropdownField>("activity-colony-selector").index;
+            var colony=observed.Activities.Colonies[selected].ColonyId;var fact=observed.Construction.Single(c=>c.ColonyId==colony).Buildings.Single(b=>b.DefinitionId==definition);
+            Assert.That(fact.BuiltCount,Is.EqualTo(built));Assert.That(fact.QueuedCount,Is.EqualTo(queued));
+            var index=observed.Activities.BuildOptions.FindIndex(o=>o.Kind==ActivityProductionKind.Infrastructure&&o.DefinitionId==definition);
+            var tile=doc.rootVisualElement.Q("construction-tile-"+index);Assert.That(tile,Is.Not.Null);
+            Assert.That(tile.Query<Label>().ToList().Any(l=>l.text==built+" built · "+queued+" queued"),Is.True,"visible tile counts bind actual installed and queued facts");
+            Assert.That(tile.Q<Button>("construction-add-"+index).enabledSelf,Is.EqualTo(built==0&&queued==0),"unique building + eligibility remains honest");
+        }
+        private static IEnumerator StreamCatalogueInactive(UIDocument doc,ReviewEntry entry,string addId)
+        {
+            var model=CampaignModel(entry);var root=StreamBytes(model);var frame=model.Current.Frame;var old=doc.rootVisualElement.Q<Button>(addId);
+            yield return StreamClick(doc,"activity-tab-expeditions",false);StreamCapturedEvent(old);yield return null;yield return null;
+            Assert.That(model.Busy,Is.False);Assert.That(CheckpointField(entry,"streamedUiWork"),Is.Null);Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(StreamBytes(model),Is.EqualTo(root));
+            Assert.That(doc.rootVisualElement.Q("activity-order-confirm"),Is.Null,"inactive world tile cannot submit or open review");
+            yield return StreamClick(doc,"activity-tab-worlds",false);
+        }
+        private static IEnumerator StreamRejectedCatalogue(UIDocument doc,ReviewEntry entry,int shipIndex)
+        {
+            var model=CampaignModel(entry);var own=model.Activities();
+            var world=model.Current.Frame.Strategy!.Colonies.Where(c=>!c.Economy.Shipbuilding).OrderBy(c=>c.ColonyId.Value,StringComparer.Ordinal).FirstOrDefault();
+            Assert.That(world,Is.Not.Null,"official campaign has a naturally observed own world without shipbuilding; no private fixture substitution");
+            doc.rootVisualElement.Q<DropdownField>("activity-colony-selector").index=own.Colonies.FindIndex(c=>c.ColonyId==world!.ColonyId.Value);yield return null;yield return null;
+            var before=StreamBytes(model);var frame=model.Current.Frame;var old=doc.rootVisualElement.Q<ReviewActivitiesPanel>();var add=old.Q<Button>("construction-add-"+shipIndex);
+            Assert.That(add.enabledInHierarchy,Is.True,"supported ship + is naturally enabled; authoritative yard check still happens at submission");
+            yield return StreamClick(doc,add.name);Assert.That(doc.rootVisualElement.Q("activity-order-confirm"),Is.Null);
+            Assert.That(StreamBytes(model),Is.EqualTo(before));Assert.That(model.Current.Frame,Is.SameAs(frame));
+            var fresh=doc.rootVisualElement.Q<ReviewActivitiesPanel>();Assert.That(fresh,Is.Not.SameAs(old));
+            var status=fresh.Q<Label>("construction-command-status");Assert.That(status.text,Is.EqualTo("That class or construction site is not supported here."));
+            PublishedReceivingContained(doc.rootVisualElement.worldBound,status,"actual fresh construction rejection label");Assert.That(status.worldBound.yMax,Is.LessThanOrEqualTo(doc.rootVisualElement.Q("player-footer").worldBound.yMin));
+            Assert.That(status.resolvedStyle.display,Is.Not.EqualTo(DisplayStyle.None));Assert.That(status.resolvedStyle.fontSize,Is.GreaterThanOrEqualTo(16));
+            StreamCapturedEvent(add);yield return null;Assert.That(StreamBytes(model),Is.EqualTo(before),"disposed rejected + cannot silently retry");
+            yield return StreamCapture(doc,new Vector2Int(1280,720),"catalogue-rejected-inspector",inspectId:"construction-inspect-"+shipIndex);
+            Assert.That(doc.rootVisualElement.Q<Label>("construction-command-status").text,Is.EqualTo(status.text),"same-owner resize redraw retains actual rejection text");
+            File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-catalogue-rejection.json"),JsonConvert.SerializeObject(new{world=world!.ColonyId.Value,text=status.text,wholeRootUnchanged=true,actualVisibleFreshLabel=true}));
+            yield return StreamPage(doc);Assert.That(doc.rootVisualElement.Q<Label>("construction-command-status").text,Is.Not.EqualTo(status.text),"another own world cannot inherit the rejection");
+        }
+        private static IEnumerator StreamCatalogueReachable(UIDocument doc,string? inspectId)
+        {
+            var root=doc.rootVisualElement;var model=CampaignModel(doc.GetComponent<ReviewEntry>());var before=StreamBytes(model);var frame=model.Current.Frame;
+            var catalogue=root.Q<ScrollView>("construction-catalogue-scroll");var queue=root.Q<ScrollView>("construction-queue");var footer=root.Q("player-footer").worldBound;
+            Assert.That(root.Query<ReviewActivitiesPanel>().ToList().Count,Is.EqualTo(1));
+            foreach(var view in new[]{catalogue,queue})
+            {Assert.That(view,Is.Not.Null);Assert.That(view.contentViewport.worldBound.height,Is.GreaterThanOrEqualTo(100));PublishedReceivingContained(root.worldBound,view,"independent construction viewport");Assert.That(view.worldBound.yMax,Is.LessThanOrEqualTo(footer.yMin));}
+            Assert.That(catalogue.worldBound.xMax,Is.LessThanOrEqualTo(queue.worldBound.xMin),"queue is independently docked at the right");
+            PublishedReceivingContained(root.worldBound,root.Q("activity-colony-selector"),"actual own-world selector");
+            foreach(var id in new[]{"construction-section-ships","construction-section-buildings","construction-section-projects","construction-section-system"})
+            {
+                var section=root.Q(id);Assert.That(section,Is.Not.Null,id);var heading=section.Q<Label>();catalogue.ScrollTo(heading);yield return null;yield return null;
+                PublishedReceivingContained(catalogue.contentViewport.worldBound,heading,id+" is scroll reachable");Assert.That(heading.resolvedStyle.fontSize,Is.GreaterThanOrEqualTo(16));
+            }
+            foreach(var id in new[]{"construction-section-projects","construction-section-system"})
+                Assert.That(root.Q(id).Query<Button>().ToList(),Is.Empty,"unimplemented sections invent no production buttons");
+            var own=model.Activities();
+            for(int i=0;i<own.BuildOptions.Count;i++)
+            {
+                var add=root.Q<Button>("construction-add-"+i);Assert.That(add,Is.Not.Null);catalogue.ScrollTo(add);yield return null;yield return null;
+                PublishedReceivingContained(catalogue.contentViewport.worldBound,add,add.name);Assert.That(add.worldBound.height,Is.GreaterThanOrEqualTo(44));Assert.That(add.worldBound.width,Is.GreaterThanOrEqualTo(44));
+                Assert.That(add.worldBound.yMax,Is.LessThanOrEqualTo(footer.yMin));
+                if(add.enabledInHierarchy){var pick=root.panel.Pick(add.worldBound.center);Assert.That(pick==add||(pick!=null&&add.Contains(pick)),Is.True,add.name+" real + hit");}
+            }
+            var offset=catalogue.scrollOffset;
+            foreach(var cancel in queue.Query<Button>().ToList())
+            {queue.ScrollTo(cancel);yield return null;yield return null;PublishedReceivingContained(queue.contentViewport.worldBound,cancel,"actual queue cancellation");Assert.That(cancel.worldBound.height,Is.GreaterThanOrEqualTo(44));Assert.That(cancel.resolvedStyle.fontSize,Is.GreaterThanOrEqualTo(16));Assert.That(cancel.worldBound.yMax,Is.LessThanOrEqualTo(footer.yMin));}
+            Assert.That(catalogue.scrollOffset,Is.EqualTo(offset),"queue scrolling does not move catalogue");
+            if(inspectId!=null)
+            {
+                yield return StreamClick(doc,inspectId);var selected=(ActivityBuildOptionDto)StreamCatalogueField(doc,"selected")!;
+                Assert.That(own.BuildOptions.Any(o=>o.DefinitionId==selected.DefinitionId&&o.BlueprintRevision==selected.BlueprintRevision&&o.Kind==selected.Kind),Is.True,"inspector binds only an own known option");
+                var fold=root.Q<Foldout>("construction-inspector-toggle");Assert.That(fold.value,Is.True);
+                var toggle=fold.Q<Toggle>();catalogue.ScrollTo(toggle);yield return null;yield return null;PublishedReceivingContained(catalogue.contentViewport.worldBound,toggle,"inspector collapse control");
+                var picked=root.panel.Pick(toggle.worldBound.center);Assert.That(picked==toggle||(picked!=null&&toggle.Contains(picked)),Is.True,"inspector toggle is actually reachable");
+                using(var e=NavigationSubmitEvent.GetPooled()){e.target=toggle;toggle.SendEvent(e);}yield return null;yield return null;
+                Assert.That(fold.value,Is.False);Assert.That(StreamCatalogueField(doc,"stage"),Is.Null,"collapsing inspection disposes its sole hull stage");
+                using(var e=NavigationSubmitEvent.GetPooled()){e.target=toggle;toggle.SendEvent(e);}yield return null;yield return null;
+                Assert.That(fold.value,Is.True);
+                if(selected.Kind==ActivityProductionKind.PublishedShip)
+                {
+                    var stage=StreamCatalogueField(doc,"stage");Assert.That(stage,Is.Not.Null,"attached exact-hull inspection creates one stage");var type=stage!.GetType();
+                    Assert.That(type.GetProperty("IsActivityHull")!.GetValue(stage),Is.EqualTo(true));Assert.That(type.GetProperty("Availability")!.GetValue(stage)!.ToString(),Is.EqualTo("Model"));
+                    var catalog=Type.GetType("HobbyDS9.ArtDemo.ActivityHullCatalog, HobbyDS9.ArtDemo",true)!;var definition=catalog.GetMethod("Find")!.Invoke(null,new object[]{selected.HullVersionId});Assert.That(definition,Is.Not.Null);
+                    Assert.That(type.GetProperty("VisualKey")!.GetValue(stage),Is.EqualTo(definition!.GetType().GetProperty("VisualKey")!.GetValue(definition)));
+                    var image=root.Q<Image>("construction-hull-model");Assert.That(image.image,Is.SameAs(type.GetProperty("Texture")!.GetValue(stage)));
+                    catalogue.ScrollTo(image);yield return null;yield return null;Assert.That(image.worldBound.height,Is.GreaterThanOrEqualTo(150));PublishedReceivingContained(catalogue.contentViewport.worldBound,image,"usable exact hull inspector image");
+                    Assert.That(root.Q<Label>("construction-hull-caption").text,Does.Contain((string)definition.GetType().GetProperty("Label")!.GetValue(definition)!));
+                }
+            }
+            Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(StreamBytes(model),Is.EqualTo(before),"all section scrolling/inspection/collapse are non-command actions");
         }
         private static IEnumerator StreamAdvance(UIDocument doc,ReviewEntry entry)
         {
@@ -222,8 +333,9 @@ namespace HobbyDS9.UnityReview.Tests
             else Assert.That(confirm,Is.Not.EqualTo(false),"expected interruption warning is a real modal");
             yield return V3Settled(doc);
         }
-        private static IEnumerator StreamCapture(UIDocument doc,Vector2Int size,string label,bool review=false,bool expedition=false,string? reviewId=null,bool commission=false)
+        private static IEnumerator StreamCapture(UIDocument doc,Vector2Int size,string label,bool expedition=false,bool commission=false,string? inspectId=null)
         {
+            if(inspectId!=null)yield return StreamClick(doc,inspectId);
             var selections=StreamSelectedIds(doc);
             bool hadActivities=doc.rootVisualElement.Q<ReviewActivitiesPanel>()!=null;
             var previous=doc.panelSettings.targetTexture;var active=RenderTexture.active;var w=doc.rootVisualElement.style.width;var h=doc.rootVisualElement.style.height;
@@ -234,44 +346,39 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return null;yield return null;yield return null;
                 if(hadActivities)StreamSelectionRetained(doc,selections,expedition);
                 if(commission)yield return StreamCommissionReachable(doc);
-                // Resize can rebuild the surface and correctly dispose its old review.
-                // Review again through the current observed option, never a retained control.
-                if(review){Assert.That(reviewId,Is.Not.Null);yield return StreamClick(doc,reviewId!);}
-                var scroll=doc.rootVisualElement.Q<ScrollView>("activity-scroll");
-                if(scroll!=null){var item=doc.rootVisualElement.Q(expedition?"activity-known-sites":"activity-production-queue");if(item!=null)scroll.ScrollTo(item);yield return null;yield return null;}
+                var scroll=doc.rootVisualElement.Q<ScrollView>(expedition?"activity-scroll":"construction-catalogue-scroll");
+                if(hadActivities&&!expedition&&inspectId!=null)
+                {
+                    var selected=(ActivityBuildOptionDto)StreamCatalogueField(doc,"selected")!;
+                    Assert.That("construction-inspect-"+CampaignModel(doc.GetComponent<ReviewEntry>()).Activities().BuildOptions.FindIndex(o=>o.Kind==selected.Kind&&o.DefinitionId==selected.DefinitionId&&o.BlueprintRevision==selected.BlueprintRevision),Is.EqualTo(inspectId),"inspector exact revision survives same-controller resize");
+                    Assert.That(doc.rootVisualElement.Q<Foldout>("construction-inspector-toggle").value,Is.True);
+                }
+                if(scroll!=null&&hadActivities)
+                {var item=doc.rootVisualElement.Q(expedition?"activity-known-sites":"construction-hull-model");if(item!=null)scroll.ScrollTo(item);yield return null;yield return null;}
+                // Capture the intended state before assertions so a real layout failure remains visible.
                 RenderTexture.active=target;image=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);image.ReadPixels(new Rect(0,0,size.x,size.y),0,0);image.Apply();
                 File.WriteAllBytes(Path.Combine(CampaignOutput(),"streamed-"+label+"-"+size.x+"x"+size.y+".png"),image.EncodeToPNG());
                 var root=doc.rootVisualElement.worldBound;var footer=doc.rootVisualElement.Q("player-footer").worldBound;
                 File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-layout-"+label+"-"+size.x+".json"),JsonConvert.SerializeObject(new{
                     root=root.ToString(),footer=footer.ToString(),panel=doc.rootVisualElement.Q("campaign-activities-panel")?.worldBound.ToString(),
-                    scroll=scroll?.contentViewport.worldBound.ToString(),confirm=doc.rootVisualElement.Q("activity-order-confirm")?.worldBound.ToString(),
+                    scroll=scroll?.contentViewport.worldBound.ToString(),queue=doc.rootVisualElement.Q<ScrollView>("construction-queue")?.contentViewport.worldBound.ToString(),
+                    inspector=doc.rootVisualElement.Q("construction-inspector")?.worldBound.ToString(),hull=doc.rootVisualElement.Q("construction-hull-model")?.worldBound.ToString(),
+                    status=doc.rootVisualElement.Q<Label>("construction-command-status")?.text,
                     commissionScroll=doc.rootVisualElement.Q<ScrollView>("frontier-commission-report")?.scrollOffset.ToString(),
                     commissionViewport=doc.rootVisualElement.Q<ScrollView>("frontier-commission-report")?.contentViewport.worldBound.ToString(),
                     commissionCaption=commission?StreamCommissionCaptionMetrics(doc):null}));
-                if(scroll!=null)
+                if(hadActivities&&!expedition)yield return StreamCatalogueReachable(doc,inspectId);
+                if(hadActivities&&expedition)
                 {
-                    Assert.That(doc.rootVisualElement.Query<ReviewActivitiesPanel>().ToList().Count,Is.EqualTo(1),"one current activities surface after redraw/resize");
-                    Assert.That(scroll.contentViewport.worldBound.height,Is.GreaterThanOrEqualTo(100),"usable activity viewport");
-                    foreach(var id in expedition?new[]{"activity-ship-selector","activity-site-selector"}:new[]{"activity-colony-selector","activity-build-review-0"})
-                    {
-                        var item=doc.rootVisualElement.Q(id);Assert.That(item,Is.Not.Null,id);scroll.ScrollTo(item);yield return null;yield return null;
-                        PublishedReceivingContained(scroll.contentViewport.worldBound,item,id+" must be genuinely scroll reachable");
-                        Assert.That(item.worldBound.yMax,Is.LessThanOrEqualTo(footer.yMin),id+" must not cover footer");
-                    }
-                    if(!expedition){var cancel=doc.rootVisualElement.Q<Button>("activity-queue-cancel-0");if(cancel!=null){scroll.ScrollTo(cancel);yield return null;yield return null;PublishedReceivingContained(scroll.contentViewport.worldBound,cancel,"queue cancellation remains genuinely scroll reachable");}}
-                }
-                if(review)
-                {
-                    var confirm=doc.rootVisualElement.Q<Button>("activity-order-confirm");PublishedReceivingContained(root,confirm,"actual order Confirm");
-                    Assert.That(confirm.worldBound.yMax,Is.LessThanOrEqualTo(footer.yMin));Assert.That(confirm.worldBound.height,Is.GreaterThanOrEqualTo(36));Assert.That(confirm.resolvedStyle.fontSize,Is.GreaterThanOrEqualTo(16));
-                    var picked=doc.rootVisualElement.panel.Pick(confirm.worldBound.center);Assert.That(picked==confirm||(picked!=null&&confirm.Contains(picked)),Is.True,"actual panel pick reaches Confirm, not an overlay");
+                    Assert.That(doc.rootVisualElement.Query<ReviewActivitiesPanel>().ToList().Count,Is.EqualTo(1));
+                    Assert.That(scroll!.contentViewport.worldBound.height,Is.GreaterThanOrEqualTo(100),"usable activity viewport");
+                    foreach(var id in new[]{"activity-ship-selector","activity-site-selector"})
+                    {var item=doc.rootVisualElement.Q(id);Assert.That(item,Is.Not.Null,id);scroll.ScrollTo(item);yield return null;yield return null;PublishedReceivingContained(scroll.contentViewport.worldBound,item,id);Assert.That(item.worldBound.yMax,Is.LessThanOrEqualTo(footer.yMin));}
                 }
             }
             finally{doc.panelSettings.targetTexture=previous;doc.rootVisualElement.style.width=w;doc.rootVisualElement.style.height=h;RenderTexture.active=active;if(image!=null)UnityEngine.Object.DestroyImmediate(image);target.Release();UnityEngine.Object.DestroyImmediate(target);}
             yield return null;yield return null;yield return null;
             if(hadActivities)StreamSelectionRetained(doc,selections,expedition);
-            // Surface restoration is another resize; leave a current review for Back.
-            if(review)yield return StreamClick(doc,reviewId!);
         }
         private static Dictionary<string,string?> StreamSelectedIds(UIDocument doc)
         {
@@ -420,42 +527,67 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return StreamCommissionLink(doc,"commission-open-worlds");Assert.That(doc.rootVisualElement.Q("activity-worlds"),Is.Not.Null);
                 var ready=model.Activities().BuildOptions.Where(o=>o.Kind==ActivityProductionKind.PublishedShip&&o.Supported).ToList();Assert.That(ready.Select(o=>o.HullVersionId).Distinct().Count(),Is.EqualTo(3));foreach(var option in ready)StreamHullComponent(option);
                 var blueprint=ready.Single(o=>o.HullVersionId=="hull.constitution-explorer.v1").DefinitionId;
-                yield return StreamPage(doc);var credits=model.Activities().Credits;var stock=JsonConvert.SerializeObject(model.StreamedActivities().Supply);
+                yield return StreamPage(doc);
                 int structure=model.Activities().BuildOptions.FindIndex(o=>o.Kind==ActivityProductionKind.Infrastructure&&o.DefinitionId=="infrastructure.fabrication-annex.v1");Assert.That(structure,Is.GreaterThanOrEqualTo(0));
-                yield return StreamHeldReviewAndSubmit(state,interactions,doc,entry,"activity-build-review-"+structure);Assert.That(model.Activities().Credits,Is.EqualTo(credits));Assert.That(JsonConvert.SerializeObject(model.StreamedActivities().Supply),Is.EqualTo(stock));
-                int ship=model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==1);yield return StreamOrder(doc,"activity-build-review-"+ship);
-                Assert.That(model.StreamedActivities().Production.Count,Is.EqualTo(2));Assert.That(model.Activities().Credits,Is.EqualTo(credits));Assert.That(model.StreamedActivities().Production.All(q=>q.CompletedIndustry==0&&q.ConsumedResources!.All(r=>r.Amount==0)),Is.True);
+                int ship=model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==1);
+                yield return StreamRejectedCatalogue(doc,entry,ship);yield return StreamPage(doc);
+                StreamBuildingCounts(doc,"infrastructure.fabrication-annex.v1",0,0);
+                yield return StreamCatalogueInactive(doc,entry,"construction-add-"+structure);
+                var credits=model.Activities().Credits;var stock=JsonConvert.SerializeObject(model.StreamedActivities().Supply);
+                yield return StreamHeldDirectSubmit(state,interactions,doc,entry,"construction-add-"+structure);
+                Assert.That(model.Activities().Credits,Is.EqualTo(credits));Assert.That(JsonConvert.SerializeObject(model.StreamedActivities().Supply),Is.EqualTo(stock));
+                StreamBuildingCounts(doc,"infrastructure.fabrication-annex.v1",0,1);
+                yield return StreamHeldAdvance(state,interactions,doc,entry);yield return StreamPage(doc);
+                var partial=model.StreamedActivities().Production.Single();
+                Assert.That(partial.CompletedIndustry,Is.GreaterThan(0).And.LessThan(partial.RequiredIndustry));Assert.That(partial.ConsumedResources!.Any(r=>r.Amount>0),Is.True,"cancellation uses actual gradual consumption, not an untouched order");
+                var partialBytes=JsonConvert.SerializeObject(partial);var cancelCredits=model.Activities().Credits;var cancelStocks=JsonConvert.SerializeObject(model.StreamedActivities().Supply);
+                yield return StreamHeldCancellationPreview(state,interactions,doc,entry);
+                Assert.That(model.StreamedActivities().Production,Is.Empty);var cancelled=StreamAudit(model).ProductionHistory!.Single(r=>r.Order!.QueueItemId==partial.QueueItemId);
+                Assert.That(cancelled.Completed,Is.False);Assert.That(JsonConvert.SerializeObject(cancelled.Order),Is.EqualTo(partialBytes));
+                Assert.That(model.Activities().Credits,Is.EqualTo(cancelCredits));Assert.That(JsonConvert.SerializeObject(model.StreamedActivities().Supply),Is.EqualTo(cancelStocks),"cancellation refunds neither consumed material nor credits");
+                StreamBuildingCounts(doc,"infrastructure.fabrication-annex.v1",0,0);StreamCommission(model,0);
+                File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-consumed-cancellation.json"),JsonConvert.SerializeObject(new{order=cancelled,creditsUnchanged=true,localStocksUnchanged=true}));
+                credits=model.Activities().Credits;stock=JsonConvert.SerializeObject(model.StreamedActivities().Supply);
+                yield return StreamClick(doc,"construction-add-"+structure);Assert.That(doc.rootVisualElement.Q<Button>("activity-order-confirm"),Is.Null);
+                yield return StreamClick(doc,"construction-add-"+ship);Assert.That(doc.rootVisualElement.Q<Button>("activity-order-confirm"),Is.Null);
+                Assert.That(model.StreamedActivities().Production.Count,Is.EqualTo(2));Assert.That(model.Activities().Credits,Is.EqualTo(credits));Assert.That(JsonConvert.SerializeObject(model.StreamedActivities().Supply),Is.EqualTo(stock));
+                Assert.That(model.StreamedActivities().Production.All(q=>q.CompletedIndustry==0&&q.ConsumedResources!.All(r=>r.Amount==0)),Is.True);
                 var ownActor=model.Activities().ActorId;var ownOrders=model.StreamedActivities().Production.Select(q=>q.QueueItemId).ToArray();
                 CampaignPage(doc,ReviewWorkspacePage.Designer);yield return null;yield return null;doc.rootVisualElement.Q<Foldout>("integrated-design-history").value=true;
                 yield return StreamClick(doc,"integrated-design-edit-"+blueprint+"-1",false);doc.rootVisualElement.Q<TextField>("designer-name").value="Explorer revised after queue";yield return null;yield return StreamClick(doc,"integrated-design-publish",false);
                 Assert.That(model.DesignLibrary().Published.Any(r=>r.Blueprint.BlueprintId==blueprint&&r.Blueprint.Revision==2),Is.True);Assert.That(model.StreamedActivities().Production.Last().Blueprint!.Revision,Is.EqualTo(1));
-                yield return StreamPage(doc);yield return StreamClick(doc,"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
+                yield return StreamPage(doc);int revised=model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2);
+                yield return StreamClick(doc,"construction-inspect-"+revised);
                 var redrawBytes=StreamBytes(model);var redrawFrame=model.Current.Frame;
                 for(int redraw=0;redraw<3;redraw++)
                 {
-                    var previous=doc.rootVisualElement.Q<ReviewActivitiesPanel>();var oldConfirm=previous.Q<Button>("activity-order-confirm");
+                    var previous=doc.rootVisualElement.Q<ReviewActivitiesPanel>();var oldAdd=previous.Q<Button>("construction-add-"+revised);var oldInspect=previous.Q<Button>("construction-inspect-"+revised);
                     var selectedColony=previous.Q<DropdownField>("activity-colony-selector").value;
-                    Assert.That(oldConfirm,Is.Not.Null,"capture a real pending control before same-frame redraw");
+                    var oldCatalogue=previous.Q<ScrollView>("construction-catalogue-scroll");var oldQueue=previous.Q<ScrollView>("construction-queue");
+                    oldInspect.Focus();yield return null;var catalogueOffset=oldCatalogue.scrollOffset;var queueOffset=oldQueue.scrollOffset;
                     typeof(ReviewEntry).GetMethod("Draw",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entry,null);yield return null;yield return null;
                     Assert.That(doc.rootVisualElement.Query<ReviewActivitiesPanel>().ToList().Count,Is.EqualTo(1));Assert.That(doc.rootVisualElement.Q<ReviewActivitiesPanel>(),Is.Not.SameAs(previous));Assert.That(previous.panel,Is.Null);
                     Assert.That(doc.rootVisualElement.Q<DropdownField>("activity-colony-selector").value,Is.EqualTo(selectedColony));
-                    Assert.That((bool)typeof(ReviewActivitiesPanel).GetField("disposed",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(previous)!,Is.True,"the old captured callbacks are disposed, not merely hidden");
-                    Click(oldConfirm);yield return null;Assert.That(model.Current.Frame,Is.SameAs(redrawFrame));Assert.That(StreamBytes(model),Is.EqualTo(redrawBytes),"retained disposed Confirm cannot enqueue, spend or redraw state");
-                    yield return StreamClick(doc,"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
+                    Assert.That((bool)typeof(ReviewActivitiesPanel).GetField("disposed",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(previous)!,Is.True);
+                    StreamCapturedEvent(oldAdd);StreamCapturedEvent(oldInspect);yield return null;
+                    Assert.That(model.Current.Frame,Is.SameAs(redrawFrame));Assert.That(StreamBytes(model),Is.EqualTo(redrawBytes),"disposed + and inspection callbacks cannot act");
+                    Assert.That(((ActivityBuildOptionDto)StreamCatalogueField(doc,"selected")!).BlueprintRevision,Is.EqualTo(2));
+                    Assert.That(doc.rootVisualElement.Q<ScrollView>("construction-catalogue-scroll").scrollOffset,Is.EqualTo(catalogueOffset));
+                    Assert.That(doc.rootVisualElement.Q<ScrollView>("construction-queue").scrollOffset,Is.EqualTo(queueOffset));
+                    Assert.That(doc.rootVisualElement.focusController.focusedElement,Is.SameAs(doc.rootVisualElement.Q<Button>("construction-inspect-"+revised)),"same-controller redraw restores actual inspected option focus");
                 }
-                foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"pending-review",true,reviewId:"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
-                yield return StreamClick(doc,"activity-order-back",false);CampaignPage(doc,ReviewWorkspacePage.Designer);yield return null;doc.rootVisualElement.Q<TextField>("designer-name").value="Unsent local class edit";yield return null;Assert.That(model.LocalDesignDirty,Is.True);yield return StreamSaveContinue(state,doc,"pending");model=CampaignModel(entry);
+                foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"pending-catalogue",inspectId:"construction-inspect-"+revised);
+                CampaignPage(doc,ReviewWorkspacePage.Designer);yield return null;doc.rootVisualElement.Q<TextField>("designer-name").value="Unsent local class edit";yield return null;Assert.That(model.LocalDesignDirty,Is.True);yield return StreamSaveContinue(state,doc,"pending");model=CampaignModel(entry);
                 bool progressed=false;for(int i=0;i<48&&model.StreamedActivities().Production.Count>0;i++)
-                {if(i==0)yield return StreamHeldAdvance(state,interactions,doc,entry);else yield return StreamAdvance(doc,entry);var orders=model.StreamedActivities().Production;progressed|=orders.Any(q=>q.CompletedIndustry>0&&q.ConsumedResources!.Any(r=>r.Amount>0));}
+                {yield return StreamAdvance(doc,entry);var orders=model.StreamedActivities().Production;progressed|=orders.Any(q=>q.CompletedIndustry>0&&q.ConsumedResources!.Any(r=>r.Amount>0));}
                 var completed=StreamAudit(model);Assert.That(progressed,Is.True,"actual gradual work/material consumption observed");
                 Assert.That(completed.Production!.Where(q=>q.OwnerId==ownActor),Is.Empty,"only the controlled actor's orders must have completed; independent AI work may remain");
                 Assert.That(completed.ProductionHistory!.Where(r=>r.Completed&&r.Order!.OwnerId==ownActor).Select(r=>r.Order!.QueueItemId),Is.EquivalentTo(ownOrders),"both exact captured owned orders completed");
                 Assert.That(completed.PublishedBuiltShips!.Single(r=>r.OwnerCivilizationId==model.Activities().ActorId).BlueprintRevision,Is.EqualTo(1));Assert.That(model.Activities().Structures.Count,Is.EqualTo(1));StreamCommission(model,2);
                 yield return StreamCommissionOpen(doc);Assert.That(doc.rootVisualElement.Q<Label>("frontier-commission-outcome").text,Does.Contain("2 of 4"));
                 yield return StreamCommissionLink(doc,"commission-open-worlds");
-                yield return StreamSaveContinue(state,doc,"completed");model=CampaignModel(entry);yield return StreamPage(doc);yield return StreamClick(doc,"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
-                foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"continued-review",true,reviewId:"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
-                yield return StreamClick(doc,"activity-order-back",false);
+                yield return StreamSaveContinue(state,doc,"completed");model=CampaignModel(entry);yield return StreamPage(doc);StreamBuildingCounts(doc,"infrastructure.fabrication-annex.v1",1,0);
+                foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"continued-catalogue",inspectId:"construction-inspect-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
                 yield return StreamExpedition(state,doc,entry,false);StreamCommission(CampaignModel(entry),3);
                 yield return StreamExpedition(state,doc,entry,true);StreamCommission(CampaignModel(entry),4);
                 yield return StreamSaveContinue(state,doc,"findings");model=CampaignModel(entry);StreamCommission(model,4);
@@ -486,8 +618,8 @@ namespace HobbyDS9.UnityReview.Tests
                 Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-3"));Confirm(doc);yield return PublishedReceivingIdle(state,"separate-official-v2-explore");
                 Assert.That(CampaignModel(entry).StreamedActivitiesCampaign,Is.False);Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(CampaignModel(entry))),Is.EqualTo(codec.EncodeStaticAstronomyCampaignRoot(legacy)));
                 yield return StreamCapture(doc,new Vector2Int(1280,720),"separate-v2-explore");
-                int captures=Directory.GetFiles(CampaignOutput(),"streamed-*.png").Length+Directory.GetFiles(CampaignOutput(),"checkpoint-streamed-*.png").Length;Assert.That(captures,Is.EqualTo(22));
-                File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-results.json"),JsonConvert.SerializeObject(new{passed=true,captures,normalConstructionCredits=false,gradualMaterials=true,mixedFifo=true,frozenR1=true,r2Published=true,scienceAndMinor=true,heldPreviewSubmitAdvance=true,disableCancelledPreviewThenNewLease=true,commissionCompleted=true,commissionReportSaveContinueExact=true,continuedSandbox=true,typedContinueExact=true,threeOwnReadyHullComponentProof=true,departureAbortBranchThenOfficialSavedActiveRestore=true,continuousAbortAndClaimHistory=false,nativeInput=false}));
+                int captures=Directory.GetFiles(CampaignOutput(),"streamed-*.png").Length+Directory.GetFiles(CampaignOutput(),"checkpoint-streamed-*.png").Length;Assert.That(captures,Is.EqualTo(23));
+                File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-results.json"),JsonConvert.SerializeObject(new{passed=true,captures,normalConstructionCredits=false,gradualMaterials=true,mixedFifo=true,frozenR1=true,r2Published=true,scienceAndMinor=true,directAddExactlyOnce=true,visibleRejectedAdd=true,consumedCancellation=true,heldCancellationPreviewSubmitAdvance=true,disableCancelledPreviewThenNewLease=true,commissionCompleted=true,commissionReportSaveContinueExact=true,continuedSandbox=true,typedContinueExact=true,threeOwnReadyHullComponentProof=true,departureAbortBranchThenOfficialSavedActiveRestore=true,continuousAbortAndClaimHistory=false,nativeInput=false}));
             }
         }
         private IEnumerator StreamExpedition(PublishedReceivingState state,UIDocument doc,ReviewEntry entry,bool minor)
@@ -543,7 +675,7 @@ namespace HobbyDS9.UnityReview.Tests
             int finding=model.Activities().Findings.Count-1;yield return StreamOrder(doc,"activity-finding-claim-"+finding);Assert.That(model.Activities().Findings.Last().Stage,Is.EqualTo(ActivityProgressStage.Completed));
             StreamSelectionRetained(doc,beforeClaimSelections,true);
             var resolved=model.Activities().Findings.Last();if(minor)Assert.That(model.Activities().Sites.Single(s=>s.Site.SiteId==found.Site.SiteId).Relation,Is.EqualTo(ActivityMinorRelation.Accepted).Or.EqualTo(ActivityMinorRelation.Refused));else Assert.That(resolved.InsightApplied,Is.GreaterThan(0));
-            yield return StreamCapture(doc,new Vector2Int(1280,720),minor?"minor-consent":"science-claim-restored-active-branch",false,true);
+            yield return StreamCapture(doc,new Vector2Int(1280,720),minor?"minor-consent":"science-claim-restored-active-branch",expedition:true);
 
         }
     }
