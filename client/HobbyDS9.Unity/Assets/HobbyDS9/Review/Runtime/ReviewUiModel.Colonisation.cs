@@ -1,6 +1,6 @@
 #nullable enable
 using System;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using HobbyDS9.Contracts;
 using HobbyDS9.TacticalReviewClient;
 
@@ -30,12 +30,21 @@ namespace HobbyDS9.UnityReview
         {var actor=GeneratedHuman(package.Activities!.BaseTemplate!);var opened=PhysicalReviewHost.OpenColonisationFromSlot(package,codec,slots,slot,actor);
          if(!opened.Succeeded)throw new InvalidOperationException("Colonisation campaign checkpoint unavailable.");
          return new ReviewUiModel(package,codec,slots,opened.Host!,actor);}
-        public ColonisationCampaignSnapshot Colonisation()
-        {if(!ColonisationCampaign||Busy||Closed)throw new InvalidOperationException("Colonisation observation unavailable.");return host.CaptureColonisation(Current.Frame);}
-        public System.Collections.Generic.IReadOnlyList<ColonisationPlanetObservationDto> ColonisationPlanets()
-        {if(!ColonisationCampaign||Busy||Closed)throw new InvalidOperationException("Planet observation unavailable.");return host.CaptureColonisationPlanets(Current.Frame);}
+        private ReviewFrame? colonisationObservationFrame;
+        private ColonisationCampaignSnapshot? colonisationObservation;
+        private System.Collections.Generic.IReadOnlyList<ColonisationPlanetSnapshot>? colonisationPlanets;
+        private void PrepareColonisationObservation()
+        {
+            if(!ColonisationCampaign||Busy||Closed)throw new InvalidOperationException("Colonisation observation unavailable.");
+            if(ReferenceEquals(Current.Frame,colonisationObservationFrame))return;
+            var frame=Current.Frame;var observation=host.CaptureColonisation(frame);
+            var planets=host.CaptureColonisationPlanets(frame).Select(x=>new ColonisationPlanetSnapshot(x)).ToList().AsReadOnly();
+            colonisationObservation=observation;colonisationPlanets=planets;colonisationObservationFrame=frame;
+        }
+        public ColonisationCampaignSnapshot Colonisation(){PrepareColonisationObservation();return colonisationObservation!;}
+        public System.Collections.Generic.IReadOnlyList<ColonisationPlanetSnapshot> ColonisationPlanets(){PrepareColonisationObservation();return colonisationPlanets!;}
         public CampaignActivityObservationDto ColonisationActivities()
-        {if(!ColonisationCampaign||Busy||Closed)throw new InvalidOperationException("Activity observation unavailable.");return host.CaptureColonisationActivities(Current.Frame);}
+        {PrepareColonisationObservation();return host.CaptureColonisationActivities(Current.Frame);}
         private ReviewCheckpointOperation? BeginColonisationCheckpointOperation(string slot,bool loading,bool overwrite,bool discard)
         {
             if(Busy||Closed||Current.HasPendingWork)return null;

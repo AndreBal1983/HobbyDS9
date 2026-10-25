@@ -123,7 +123,7 @@ namespace HobbyDS9.UnityReview
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.enter");
             viewEpoch++;modalPermission.Invalidate();
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.begin");
-            AbandonPlayerCheckpoint();CancelStreamedUiWork();
+            AbandonPlayerCheckpoint();CancelStreamedUiWork();CancelColonisationUiWork();
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.return");
             campaignBusyToken=null;root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.return");
@@ -153,7 +153,7 @@ namespace HobbyDS9.UnityReview
         }
         private void Build()
         {
-            CaptureActivitiesSelectionForRebuild();
+            CaptureActivitiesSelectionForRebuild();CaptureColonisationSelectionForRebuild();
             modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ReleaseAudio();
             var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();
             if(!PlayerProfile||panel==null||doc.panelSettings!=panel)

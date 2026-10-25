@@ -2,10 +2,22 @@ using System.Collections.Generic;
 
 namespace HobbyDS9.Contracts
 {
+    public sealed class ColonisationPlanetSnapshot
+    {
+        public string PlanetId {get;}public string BodyId {get;}public string SystemId {get;}public string DisplayName {get;}public bool Surveyed {get;}
+        public string? PlanetClass {get;}public string? Atmosphere {get;}public int Gravity {get;}public int Pressure {get;}public int Radiation {get;}
+        public IReadOnlyList<ResourceAmountSnapshot> InitialDeposits {get;}public PlanetControllerKind? KnownControl {get;}public string? KnownActor {get;}public int? ControlObservedTurn {get;}
+        public string? ActiveSurveyId {get;}public int CompletedSurveyWeeks {get;}
+        public ColonisationPlanetSnapshot(ColonisationPlanetObservationDto value)
+        {PlanetId=value.PlanetId;BodyId=value.BodyId;SystemId=value.SystemId;DisplayName=value.DisplayName;Surveyed=value.Surveyed;
+         PlanetClass=value.Environment?.PlanetClass;Atmosphere=value.Environment?.Atmosphere;Gravity=value.Environment?.Gravity??0;Pressure=value.Environment?.Pressure??0;Radiation=value.Environment?.Radiation??0;
+         InitialDeposits=ResourceAmountSnapshot.Copy(value.Environment?.Deposits??new List<ResourceAmountDto>());KnownControl=value.KnownControl?.Kind;KnownActor=value.KnownControl?.ActorId;ControlObservedTurn=value.ControlObservedTurn;
+         ActiveSurveyId=value.ActiveSurveyId;CompletedSurveyWeeks=value.CompletedSurveyWeeks;}
+    }
     public sealed class ColonisationCohortSnapshot
     {
-        public string Id {get;}public string SpeciesId {get;}public long Population {get;}
-        public ColonisationCohortSnapshot(string id,string species,long population){Id=id;SpeciesId=species;Population=population;}
+        public string Id {get;}public string SpeciesId {get;}public string SpeciesName {get;}public long Population {get;}
+        public ColonisationCohortSnapshot(string id,string species,long population,string? name=null){Id=id;SpeciesId=species;SpeciesName=name??species;Population=population;}
     }
     public sealed class ColonisationWorldSnapshot
     {
@@ -48,19 +60,25 @@ namespace HobbyDS9.Contracts
         public string Caption=>KnownActors.Count==0?"Unknown presence":KnownActors.Count>1?"Known mixed presence":"Known presence";
         public ColonisationPresenceSnapshot(string system,int turn,IEnumerable<string> actors){SystemId=system;ObservationTurn=turn;KnownActors=new List<string>(actors).AsReadOnly();}
     }
+    public sealed class ColonisationOwnShipSourceSnapshot
+    {
+        public string ShipId {get;}public string BlueprintId {get;}public int Revision {get;}
+        public ColonisationOwnShipSourceSnapshot(string ship,string blueprint,int revision){ShipId=ship;BlueprintId=blueprint;Revision=revision;}
+    }
     public sealed class ColonisationCampaignSnapshot
     {
         public string Actor {get;}public int Turn {get;}public long Revision {get;}public string PackageHash {get;}
         public IReadOnlyList<ColonisationWorldSnapshot> Worlds {get;}public IReadOnlyList<ColonisationTransportSnapshot> Transports {get;}
+        public IReadOnlyList<ColonisationOwnShipSourceSnapshot> OwnShipSources {get;}
         public IReadOnlyList<ColonisationQueueSnapshot> Production {get;}public IReadOnlyList<ColonisationPresenceSnapshot> Presence {get;}
         public IReadOnlyList<ColonisationManifestReport> Reports {get;}public IReadOnlyList<ColonisationSurveySnapshot> Surveys {get;}public IReadOnlyList<ColonisationIntentSnapshot> Intents {get;}
         public long KitIndustry {get;}public IReadOnlyList<ResourceAmountSnapshot> KitResources {get;}
         public ColonisationCampaignSnapshot(string actor,int turn,long revision,string hash,IEnumerable<ColonisationWorldSnapshot> worlds,IEnumerable<ColonisationTransportSnapshot> ships,
             IEnumerable<ColonisationQueueSnapshot> queue,IEnumerable<ColonisationPresenceSnapshot> presence,IEnumerable<ColonisationManifestReport> reports,IEnumerable<ColonisationSurveySnapshot> surveys,
-            IEnumerable<ColonisationIntentSnapshot> intents,long kitIndustry,IEnumerable<ResourceAmountSnapshot> kitResources)
+            IEnumerable<ColonisationIntentSnapshot> intents,long kitIndustry,IEnumerable<ResourceAmountSnapshot> kitResources,IEnumerable<ColonisationOwnShipSourceSnapshot>? ownShipSources=null)
         {Actor=actor;Turn=turn;Revision=revision;PackageHash=hash;Worlds=new List<ColonisationWorldSnapshot>(worlds).AsReadOnly();Transports=new List<ColonisationTransportSnapshot>(ships).AsReadOnly();
          Production=new List<ColonisationQueueSnapshot>(queue).AsReadOnly();Presence=new List<ColonisationPresenceSnapshot>(presence).AsReadOnly();Reports=new List<ColonisationManifestReport>(reports).AsReadOnly();
-         Surveys=new List<ColonisationSurveySnapshot>(surveys).AsReadOnly();Intents=new List<ColonisationIntentSnapshot>(intents).AsReadOnly();KitIndustry=kitIndustry;KitResources=new List<ResourceAmountSnapshot>(kitResources).AsReadOnly();}
+         Surveys=new List<ColonisationSurveySnapshot>(surveys).AsReadOnly();Intents=new List<ColonisationIntentSnapshot>(intents).AsReadOnly();OwnShipSources=new List<ColonisationOwnShipSourceSnapshot>(ownShipSources??System.Array.Empty<ColonisationOwnShipSourceSnapshot>()).AsReadOnly();KitIndustry=kitIndustry;KitResources=new List<ResourceAmountSnapshot>(kitResources).AsReadOnly();}
     }
     public sealed class ColonisationManifestReport
     {
@@ -83,6 +101,20 @@ namespace HobbyDS9.Contracts
     {
         public string Actor {get;}public int Turn {get;}public long Revision {get;}public ColonisationAction Action {get;}public CampaignTacticalError Error {get;}
         public bool Available=>Error==CampaignTacticalError.None;
+        public string Reason=>Describe(Error);
+        public static string Describe(CampaignTacticalError error)
+        {
+            switch(error)
+            {
+                case CampaignTacticalError.None:return "Available at this observed campaign state.";
+                case CampaignTacticalError.StaleTurn:case CampaignTacticalError.StaleRevision:case CampaignTacticalError.StaleBoundary:return "The campaign changed. Refresh before reviewing this order again.";
+                case CampaignTacticalError.WrongPhase:return "Resolve the pending combat before issuing this order.";
+                case CampaignTacticalError.Overflow:return "The campaign has reached a technical recording or arithmetic limit. This order was not applied; the last valid campaign is unchanged.";
+                case CampaignTacticalError.UnsupportedSource:return "This ship or construction option is outside the supported playtest content.";
+                case CampaignTacticalError.DuplicateCommand:return "This exact order was already submitted.";
+                default:return "This order is unavailable here. Check current position, survey, ownership, local supplies, capacity and receiving-world stage.";
+            }
+        }
         public ColonisationEligibilitySnapshot(ColonisationCommandDto command,CampaignTacticalError error){Actor=command.ActorId;Turn=command.Turn;Revision=command.Revision;Action=command.Action;Error=error;}
     }
 }

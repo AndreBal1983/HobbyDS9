@@ -76,7 +76,8 @@ namespace HobbyDS9.TacticalReviewClient
         public CampaignGeneratedMapDto CaptureGeneratedMap(ReviewFrame observed)
         {
             lock(gate){RequireCurrent(observed.HostId,observed.Generation);
-                var view=streamedActivitiesPackage!=null?((ICampaignStreamedActivitiesSession)session).CaptureGeneratedMap(observed.Actor)
+                var view=colonisationPackage!=null?((ICampaignColonisationSession)session).CaptureGeneratedMap(observed.Actor)
+                    :streamedActivitiesPackage!=null?((ICampaignStreamedActivitiesSession)session).CaptureGeneratedMap(observed.Actor)
                     :activitiesPackage!=null?((ICampaignActivitiesSession)session).CaptureGeneratedMap(observed.Actor)
                     :publishedPackage!=null?((ICampaignPublishedConstructionSession)session).CaptureGeneratedMap(observed.Actor)
                     :((ICampaignGeneratedSession)session).CaptureGeneratedMap(observed.Actor);

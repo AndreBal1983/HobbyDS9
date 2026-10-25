@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using System.Linq;
 using HobbyDS9.Application;
 using HobbyDS9.Contracts;
 
@@ -15,12 +16,14 @@ namespace HobbyDS9.TacticalReviewClient
         internal FrontierCommissionSnapshot? Commission;
         internal bool Published;
         internal ColonisationCampaignSnapshot? Observation;
-        internal System.Collections.Generic.IReadOnlyList<ColonisationPlanetObservationDto>? Planets;
+        internal System.Collections.Generic.IReadOnlyList<ColonisationPlanetSnapshot>? Planets;
         internal CampaignActivityObservationDto? Activities;
         public ColonisationEligibilitySnapshot? ColonisationEligibility {get;internal set;}
         public CampaignActivityEligibilityDto? Eligibility {get;internal set;}
         public CampaignTacticalMutationResult? Result {get;internal set;}
         public bool Failed {get;internal set;}
+        public ColonisationCampaignSnapshot? PreparedObservation=>Observation;
+        public System.Collections.Generic.IReadOnlyList<ColonisationPlanetSnapshot>? PreparedPlanets=>Planets;
         public bool Committed=>Published;
         public ReviewFrame? PreparedFrame=>Frame;
         internal ColonisationInteractionCompletion(ColonisationInteractionWork work,ICampaignColonisationSession? candidate=null){Work=work;Candidate=candidate;}
@@ -89,7 +92,7 @@ namespace HobbyDS9.TacticalReviewClient
             {
                 var frame=Capture(candidate,work.SourceFrame.Actor,work.SourceFrame.Battle?.EncounterId,work.SourceFrame.Generation);
                 if(work.Kind==ColonisationInteractionKind.PlanningAdvance&&frame.Encounters.Count==1)frame=Capture(candidate,frame.Actor,frame.Encounters[0],frame.Generation);
-                completion.Frame=frame;completion.Presentation=CaptureColonisationCandidate(candidate,frame);completion.Commission=candidate.CaptureFrontierCommission(frame.Actor);completion.Observation=candidate.CaptureColonisation(frame.Actor);completion.Planets=candidate.CaptureColonisationPlanets(frame.Actor);completion.Activities=candidate.CaptureActivities(frame.Actor);
+                completion.Frame=frame;completion.Presentation=CaptureColonisationCandidate(candidate,frame);completion.Commission=candidate.CaptureFrontierCommission(frame.Actor);completion.Observation=candidate.CaptureColonisation(frame.Actor);completion.Planets=candidate.CaptureColonisationPlanets(frame.Actor).Select(p=>new ColonisationPlanetSnapshot(p)).ToList().AsReadOnly();completion.Activities=candidate.CaptureActivities(frame.Actor);
             }
             ColonisationInteractionProbe?.Invoke("after-capture");return completion;
         }

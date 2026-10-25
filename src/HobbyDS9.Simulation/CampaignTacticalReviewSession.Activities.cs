@@ -116,7 +116,9 @@ namespace HobbyDS9.Simulation
             activity.AuthoredActivityBlueprints.Add(ship.ShipId,explorer.Tactical.BlueprintId);
             var colony=colonisationPackage==null?null:new ColonisationContext(wrapper,colonisationPackage.Settlement!,colonisationPackage.Support!,inventory!,frozenPlanets!);
             var session=new CampaignTacticalReviewSession(core,null,physical,null,built.Integrated,null,null,null,built,map,wrapper,true,context,activity,colony);
-            session.ObserveActivitySites(session.state.Campaign.GameState);return session;
+            session.ObserveActivitySites(session.state.Campaign.GameState);
+            if(colonisationPackage!=null)session.WarmColonisationViews(session.state.Campaign.GameState);
+            return session;
         }
         internal static CampaignActivityStateDto SeedColonisationActivities(CampaignActivitiesPackageDto package,NaturalGalaxyDocumentDto map)
         {

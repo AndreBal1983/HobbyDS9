@@ -35,7 +35,7 @@ public sealed class ColonisationInteractionTests:IDisposable
         var advance=m.BeginColonisationInteraction(ColonisationInteractionKind.PlanningAdvance)!;Assert.True(m.CompleteColonisationInteraction(advance,await Task.Run(advance.Execute)),m.Message);
         var stamp=sync.CaptureStatus();Assert.True(sync.AdvanceTurn(stamp.Turn,stamp.CampaignRevision).Accepted);Assert.Equal(codec.EncodeColonisationRoot(sync.ExportColonisationSave()),Root(m));
         var save=m.BeginStaticCheckpointOperation("typed",false)!;Assert.True(m.CompleteStaticCheckpointOperation(save,await Task.Run(save.Execute)),m.Message);
-        var reopened=ReviewUiModel.ContinueColonisation(Package(),codec,Store(),"typed");Assert.Equal(Root(m),Root(reopened));Assert.Equal(m.FrontierCommission().CompletedObjectives,reopened.FrontierCommission().CompletedObjectives);
+        var reopened=ReviewUiModel.ContinueColonisation(Package(),codec,Store(),"typed");Assert.Equal(Root(m),Root(reopened));Assert.Equal(3,Assert.Single(reopened.ColonisationActivities().Ships).StudyWork);Assert.Equal(1,Assert.Single(reopened.ColonisationActivities().Ships).ContactCapacity);Assert.Equal(m.FrontierCommission().CompletedObjectives,reopened.FrontierCommission().CompletedObjectives);
     }
     [Fact]public async Task CancelledSourceReaderKeepsBusyPairAndBlocksEveryWriterUntilDrain()
     {
@@ -60,6 +60,41 @@ public sealed class ColonisationInteractionTests:IDisposable
         Probe(m,p=>{if(p=="before-publication"){m.AbandonColonisationInteraction(old);newer=m.BeginColonisationInteraction(ColonisationInteractionKind.Preview,colonyCommand:Kit(m));}});
         Assert.False(m.CompleteColonisationInteraction(old,completion));Assert.NotNull(newer);Assert.True(m.Busy);Probe(m,null);m.AbandonColonisationInteraction(old);Assert.True(m.Busy);
         Assert.True(m.CompleteColonisationInteraction(newer!,await Task.Run(newer!.Execute)));Assert.Equal(before,Root(m));
+    }
+    [Fact]public async Task TypedMapCurrentStampCachedViewsAndRejectedLoadPreserveLiveOwnerAndDrafts()
+    {
+        var m=Model();var frame=m.Current.Frame;Assert.Equal(3,Assert.Single(m.ColonisationActivities().Ships).StudyWork);Assert.Equal(1,Assert.Single(m.ColonisationActivities().Ships).ContactCapacity);Assert.Equal(frame.Status.Turn,m.GeneratedMap().ObservationTurn);
+        var first=m.Colonisation();Assert.Equal("blueprint.ready.constitution-explorer",Assert.Single(first.OwnShipSources).BlueprintId);Assert.Equal(1,Assert.Single(first.OwnShipSources).Revision);Assert.Same(first,m.Colonisation());Assert.Same(m.ColonisationPlanets(),m.ColonisationPlanets());
+        var command=Kit(m);var work=m.BeginColonisationInteraction(ColonisationInteractionKind.Submission,colonyCommand:command)!;
+        Assert.True(m.CompleteColonisationInteraction(work,await Task.Run(work.Execute)));Assert.Throws<InvalidOperationException>(()=>Host(m).CaptureGeneratedMap(frame));
+        Assert.Equal(m.Current.Frame.Status.CampaignRevision,m.GeneratedMap().CampaignRevision);Assert.NotSame(first,m.Colonisation());
+        var before=Root(m);var controller=m.Current;var current=m.Current.Frame;Assert.True(m.Save("good"));
+        var invalid=Store().Read("good");invalid.Production![0].CompletedIndustry++;Store().Write("forged",invalid,false);
+        m.LocalDesignDirty=true;Assert.Null(m.BeginStaticCheckpointOperation("forged",true));Assert.True(m.LocalDesignDirty);
+        var load=m.BeginStaticCheckpointOperation("forged",true,discard:true)!;Assert.False(m.CompleteStaticCheckpointOperation(load,await Task.Run(load.Execute)));
+        Assert.Same(controller,m.Current);Assert.Same(current,m.Current.Frame);Assert.True(m.LocalDesignDirty);Assert.Equal(before,Root(m));
+        m.LocalDesignDirty=false;m.Current.MarkStrategicFailure(CampaignTacticalError.InvalidBatch);
+        Assert.Null(m.BeginColonisationInteraction(ColonisationInteractionKind.Submission,colonyCommand:Kit(m)));Assert.Equal(before,Root(m));
+    }
+    [Fact]public async Task SurveyDepartureWarningUsesOwnActiveSurveyAndOrdinaryKnownRouteOnly()
+    {
+        var m=Model();var ships=m.ColonisationActivities().Ships;Assert.True(ships.Any(s=>s.StudyWork>0&&s.Stationary),Newtonsoft.Json.JsonConvert.SerializeObject(ships));var scout=ships.First(s=>s.StudyWork>0&&s.Stationary);var bodies=m.ColonisationPlanets();Assert.True(bodies.Any(p=>p.SystemId==m.Colonisation().Worlds.Single(w=>w.Id=="colony.sol").SystemId),Newtonsoft.Json.JsonConvert.SerializeObject(bodies));var home=bodies.First(p=>p.SystemId==m.Colonisation().Worlds.Single(w=>w.Id=="colony.sol").SystemId);
+        var command=new ColonisationCommandDto{ActorId=m.Current.Frame.Actor,CommandId="command.player.survey",Turn=m.Current.Frame.Status.Turn,Revision=m.Current.Frame.Status.CampaignRevision,Action=ColonisationAction.StartPlanetSurvey,StartSurvey=new(){ShipId=scout.ShipId,PlanetId=home.PlanetId}};
+        var work=m.BeginColonisationInteraction(ColonisationInteractionKind.Submission,colonyCommand:command)!;var result=await Task.Run(work.Execute);Assert.True(m.CompleteColonisationInteraction(work,result));Assert.True(result.Committed);
+        var node=m.Current.Frame.Strategy!.Navigation.Nodes.First(n=>n.NodeId.Value!=scout.NodeId);
+        var offer=Host(m).FindKnownRoute(m.Current.Frame,scout.FleetId,node.NodeId.Value);Assert.True(offer.Route.Success);Assert.True(m.DepartureInterruptsPlanetSurvey(offer));Assert.True(m.DepartureInterruptsExpedition(offer));
+        var before=Root(m);Assert.True(m.DepartureInterruptsPlanetSurvey(offer));Assert.Equal(before,Root(m));
+        var survey=m.Colonisation().Surveys.Single(x=>x.Stage==PlanetSurveyStage.Active);var cancel=new ColonisationCommandDto{ActorId=m.Current.Frame.Actor,CommandId="command.player.survey.cancel",Turn=m.Current.Frame.Status.Turn,Revision=m.Current.Frame.Status.CampaignRevision,Action=ColonisationAction.CancelPlanetSurvey,CancelSurvey=new(){SurveyId=survey.Id}};
+        var cancelWork=m.BeginColonisationInteraction(ColonisationInteractionKind.Submission,colonyCommand:cancel)!;Assert.True(m.CompleteColonisationInteraction(cancelWork,await Task.Run(cancelWork.Execute)));Assert.False(m.DepartureInterruptsPlanetSurvey(offer));
+    }
+    [Fact]public void PinnedCompositionAndImmutablePlanetViewsRejectChangedBytesAndCallerAliasing()
+    {
+        var original=Package();var bytes=new[]{"catalogue","ready-classes","support","settlement"}.Select(n=>File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,"scenarios/colonisation-v1",n+".json"))).ToArray();
+        var composed=ColonisationPlaytestOptions.CreatePackage(original.Activities!,bytes,codec);Assert.Equal(original.PackageHash,composed.PackageHash);
+        bytes[0][0]^=1;Assert.Throws<ArgumentException>(()=>ColonisationPlaytestOptions.CreatePackage(original.Activities!,bytes,codec));
+        var dto=new ColonisationPlanetObservationDto{DisplayName="Known body",Environment=new(){PlanetClass="temperate",Deposits=new(){new(){ResourceDefinitionId="resource.dilithium",Amount=120}}},KnownControl=new(){Kind=PlanetControllerKind.Unclaimed}};
+        var view=new ColonisationPlanetSnapshot(dto);dto.Environment.Deposits![0].Amount=999;dto.Environment.PlanetClass="changed";dto.KnownControl.Kind=PlanetControllerKind.Empire;
+        Assert.Equal("temperate",view.PlanetClass);Assert.Equal(120,Assert.Single(view.InitialDeposits).Amount);Assert.Equal(PlanetControllerKind.Unclaimed,view.KnownControl);
     }
     public void Dispose(){if(Directory.Exists(directory))Directory.Delete(directory,true);}
 }

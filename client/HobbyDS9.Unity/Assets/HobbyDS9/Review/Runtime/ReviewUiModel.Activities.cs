@@ -16,8 +16,15 @@ namespace HobbyDS9.UnityReview
         {
             if(!ActivitiesCampaign||Busy||Closed||!offer.Route.Success||offer.Route.Steps.Count==0||offer.Actor!=Current.Frame.Actor
                 ||offer.Turn!=Current.Frame.Status.Turn||offer.CampaignRevision!=Current.Frame.Status.CampaignRevision)return false;
-            return Activities().Findings.Any(f=>f.ActorId==offer.Actor&&f.FleetId==offer.Fleet
+            return DepartureInterruptsPlanetSurvey(offer)||Activities().Findings.Any(f=>f.ActorId==offer.Actor&&f.FleetId==offer.Fleet
                 &&(f.Stage==ActivityProgressStage.Active||f.Stage==ActivityProgressStage.AwaitingClaim));
+        }
+        public bool DepartureInterruptsPlanetSurvey(KnownRouteOffer offer)
+        {
+            if(!ColonisationCampaign||Busy||Closed||!offer.Route.Success||offer.Route.Steps.Count==0||offer.Actor!=Current.Frame.Actor
+                ||offer.Turn!=Current.Frame.Status.Turn||offer.CampaignRevision!=Current.Frame.Status.CampaignRevision)return false;
+            var ownShips=ColonisationActivities().Ships.Where(s=>s.FleetId==offer.Fleet).Select(s=>s.ShipId).ToHashSet(StringComparer.Ordinal);
+            return Colonisation().Surveys.Any(s=>s.Stage==PlanetSurveyStage.Active&&ownShips.Contains(s.ShipId));
         }
         public ReviewUiModel(CampaignActivitiesPackageDto package,NaturalGalaxySettingsDto settings,
             ReviewNewtonsoftCodec codec,ReviewActivitiesSlotStore slots)

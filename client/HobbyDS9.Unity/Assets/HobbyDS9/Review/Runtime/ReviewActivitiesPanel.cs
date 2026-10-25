@@ -28,7 +28,7 @@ namespace HobbyDS9.UnityReview
         private Func<string,string?>? constructionStatus;
         private readonly Label status;
         private CampaignActivityCommandDto? pending;
-        private bool disposed,expeditionsSelected,submitted;
+        private bool disposed,expeditionsSelected,submitted,largeActionTargets;
         private int colonyIndex,shipIndex,siteIndex;
         private VisualElement? buildList,queueList,siteDetails,history;
         private Label? colonyFacts,shipFacts,previewCaption;
@@ -79,6 +79,9 @@ namespace HobbyDS9.UnityReview
             Action<CampaignActivityCommandDto,string> requestReview,Action<CampaignActivityCommandDto> submit)
             :this(observation.Activities,null,submit,observation)
         {this.requestReview=requestReview??throw new ArgumentNullException(nameof(requestReview));}
+        public ReviewActivitiesPanel(CampaignActivityObservationDto observation,Action<CampaignActivityCommandDto,string> requestReview,Action<CampaignActivityCommandDto> submit,bool scienceOnly)
+            :this(observation,null,submit,null)
+        {this.requestReview=requestReview??throw new ArgumentNullException(nameof(requestReview));if(scienceOnly){largeActionTargets=true;this.Q<Button>("activity-tab-worlds").style.display=DisplayStyle.None;foreach(var button in this.Query<Button>().ToList()){button.style.minHeight=44;button.style.fontSize=16;}foreach(var field in this.Query<DropdownField>().ToList()){field.style.minHeight=44;field.style.fontSize=16;}SelectPage(true);}}
         private ReviewActivitiesPanel(CampaignActivityObservationDto observation,
             Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto>? evaluate,
             Action<CampaignActivityCommandDto> submit,CampaignStreamedActivityObservationDto? streamed)
@@ -139,18 +142,18 @@ namespace HobbyDS9.UnityReview
             card.style.paddingLeft=10;card.style.paddingRight=10;card.style.paddingTop=8;card.style.paddingBottom=8;
             card.style.marginBottom=8;card.style.minWidth=0;parent.Add(card);Text(card,title,"console-section");return card;
         }
-        private static Button Button(VisualElement parent,string caption,string id,Action action)
+        private Button Button(VisualElement parent,string caption,string id,Action action)
         {
-            var button=new Button(action){text=caption,name=id};button.style.minHeight=36;button.style.fontSize=16;button.style.whiteSpace=WhiteSpace.Normal;
+            var button=new Button(action){text=caption,name=id};button.style.minHeight=largeActionTargets?44:36;button.style.fontSize=16;button.style.whiteSpace=WhiteSpace.Normal;
             button.style.marginRight=6;button.style.marginBottom=4;parent.Add(button);return button;
         }
-        private static DropdownField Picker(VisualElement parent,string label,IReadOnlyList<string> labels,string id,Action<int> changed)
+        private DropdownField Picker(VisualElement parent,string label,IReadOnlyList<string> labels,string id,Action<int> changed)
         {
             // Stable ordinal suffixes disambiguate identical display names without
             // exposing entity IDs or looking up a hidden name catalogue.
             var choices=labels.Select((s,i)=>s+" · "+(i+1)).ToList();
             var field=new DropdownField(label,choices,choices.Count==0?-1:0){name=id};
-            field.style.minHeight=30;field.style.flexShrink=0;parent.Add(field);
+            field.style.minHeight=largeActionTargets?44:30;if(largeActionTargets)field.style.fontSize=16;field.style.flexShrink=0;parent.Add(field);
             field.RegisterValueChangedCallback(_=>changed(field.index));field.SetEnabled(choices.Count>0);return field;
         }
         private void SelectPage(bool expedition)

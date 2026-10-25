@@ -60,7 +60,7 @@ namespace HobbyDS9.UnityReview
         }
         private void DrawPlayer()
         {
-            RestoreStreamedBusy();var frame=model!.Current.Frame;playerTitle!.text=Title(workspace!.Page);
+            RestoreStreamedBusy();RestoreColonisationBusy();var frame=model!.Current.Frame;playerTitle!.text=Title(workspace!.Page);
             playerStatus!.text=demoLanding?"":"Turn "+frame.Status.Turn+" · "+(frame.Status.Phase==SessionPhase.Planning?"Planning":"Combat pending")+"\nCredits "+frame.Strategy!.Civilization.Credits;
             if(frame.Demo!=null&&!demoLanding){var goal=frame.Strategy!.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==frame.Demo.ObjectiveNodeId)?.DisplayName??"Objective sector";var objective=root!.Q<Label>("demo-objective");if(objective!=null)objective.text="Objective: "+goal+" · Through turn "+frame.Demo.LastTurn+" · "+frame.Demo.Outcome;}
             playerGuidance!.text=demoLanding?(generatedCampaignBusy?"Preparing campaign…":"Start a new galaxy or continue a saved campaign."):PlayerMessage();
@@ -74,6 +74,7 @@ namespace HobbyDS9.UnityReview
             else if(workspace.Page==ReviewWorkspacePage.Display)DrawDisplay();
             else if(workspace.Page==ReviewWorkspacePage.Tools)DrawTools();
             else if(workspace.Page==ReviewWorkspacePage.Designer)DrawDesigner();
+            else if(model.ColonisationCampaign&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds))DrawColonisationPanel(content!);
             else if(model.ActivitiesCampaign&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds))DrawActivitiesPanel(content!);
             else player!.Render(content!,workspace.Page);
             DrawPlayerFooter();
@@ -99,7 +100,7 @@ namespace HobbyDS9.UnityReview
             if(model.HasLocalEdits)return "Unsent changes · apply or discard them before ending the turn. Navigation keeps your edits.";
             if(model.Current.Frame.Status.Phase!=SessionPhase.Planning)return "A battle needs your attention. Open Combat, resolve its rounds, then confirm the aftermath.";
             if(model.FrontierPreview&&workspace!.Page==ReviewWorkspacePage.Map)return "Frontier preview: select your fleet and a known node, preview/review the route, then end turns. Actual arrivals chart branches at the next Planning boundary.";
-            return workspace!.Page==ReviewWorkspacePage.Map?"Select a fleet to plot a course, visit Research, or build a ship in Production.":workspace.Page==ReviewWorkspacePage.Research?"Science and Engineering progress when you end a turn. Changes apply only when you confirm them.":workspace.Page==ReviewWorkspacePage.Production?(model!.StreamedActivitiesCampaign?"Choose a world and use + to add an order. Industry and delivered materials advance construction each week.":"Choose a shipyard, inspect the cost, then build. Industry progresses on End turn."):"Inspection and navigation never submit an order.";
+            return workspace!.Page==ReviewWorkspacePage.Map?"Select a fleet to plot a course, visit Research, or build a ship in Production.":workspace.Page==ReviewWorkspacePage.Research?"Science and Engineering progress when you end a turn. Changes apply only when you confirm them.":workspace.Page==ReviewWorkspacePage.Production?((model!.StreamedActivitiesCampaign||model.ColonisationCampaign)?"Choose a world and use + to add an order. Industry and delivered materials advance construction each week.":"Choose a shipyard, inspect the cost, then build. Industry progresses on End turn."):"Inspection and navigation never submit an order.";
         }
         private void DrawPlayerFooter()
         {
@@ -116,7 +117,7 @@ namespace HobbyDS9.UnityReview
                 if(d.SplitChanged){Primary("Apply R&D split",()=>Confirm("Apply this Science / Engineering split?",()=>Do(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
             }
             if(model.Current.Frame.Status.Phase!=SessionPhase.Planning){Primary("Open combat",()=>Navigate(ReviewWorkspacePage.Combat));return;}
-            Primary("End turn →",()=>Confirm("End turn with your accepted orders? Research and Industry will progress. Unsent edits must be applied or discarded first.",()=>{if(model.StreamedActivitiesCampaign)RunStreamedInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.PlanningAdvance);else Do(()=>model.Advance());}),CanPlan()&&!model.HasLocalEdits);
+            Primary("End turn →",()=>Confirm("End turn with your accepted orders? Research and Industry will progress. Unsent edits must be applied or discarded first.",()=>{if(model.ColonisationCampaign)RunColonisationInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.ColonisationInteractionKind.PlanningAdvance);else if(model.StreamedActivitiesCampaign)RunStreamedInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.PlanningAdvance);else Do(()=>model.Advance());}),CanPlan()&&!model.HasLocalEdits);
         }
         private bool CanPlan()=>model!.Current.Frame.Status.Phase==SessionPhase.Planning&&(model.Current.Frame.Demo==null||model.Current.Frame.Demo.Outcome==CampaignDemoOutcome.Active)&&!model.Current.RefreshRequired&&!model.Current.HasPendingWork&&!model.Busy&&!model.Closed;
         private Button Primary(string label,Action action,bool enabled=true){var b=AddButton(playerFooter!,label,action);b.AddToClassList("primary-action");b.name="player-primary-action";b.SetEnabled(enabled);return b;}

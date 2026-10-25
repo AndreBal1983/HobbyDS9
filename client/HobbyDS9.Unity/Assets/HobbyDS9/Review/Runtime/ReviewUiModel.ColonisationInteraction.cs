@@ -80,13 +80,14 @@ namespace HobbyDS9.UnityReview
                 }
                 if(!host.CompleteColonisationInteraction(work,completion,update))
                 {Message="Interaction cancelled or unavailable.";if(IsColonisationConstruction(work.Kind,command))ColonisationFeedbackFor(work,command!,"The construction request was not applied. No order was added.");return false;}
-                if(completion.Committed)ResearchDraft=research;
+                if(completion.Committed){ResearchDraft=research;colonisationObservation=completion.PreparedObservation;colonisationPlanets=completion.PreparedPlanets;colonisationObservationFrame=Current.Frame;}
                 Message=completion.Failed?"Interaction unavailable.":work.Kind==ColonisationInteractionKind.Preview?"Order checked at the observed campaign state.":completion.Result?.Accepted==true?"Activity order accepted.":"Activity order unavailable: "+completion.Result?.Error;
                 if(IsColonisationConstruction(work.Kind,command))
                 {
                     if(completion.Result?.Accepted==false)Message=ColonisationConstructionRejection(completion.Result.Error);
                     ColonisationFeedbackFor(work,command!,completion.Committed?"Construction order added.":Message);
                 }
+                if(work.Kind==ColonisationInteractionKind.Submission&&completion.Result?.Accepted==false)Message=ColonisationEligibilitySnapshot.Describe(completion.Result.Error);
                 SetColonisationStatus(Message);return true;
             }
             catch(Exception)
