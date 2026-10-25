@@ -127,6 +127,13 @@ namespace HobbyDS9.Simulation
                     ExpectedTurn = game.TurnNumber, ExpectedRevision = game.StateRevision, Order = new CampaignTravelOrderDto {
                         FleetId = fleet.FleetId, Intent = route.Steps.Count == 0 ? CampaignTravelIntent.StayEngage : CampaignTravelIntent.Leave, RouteNodeIds = route.Steps.ToList() } };
                 Require(ValidateTravelCommand(command, next, true) == CampaignTacticalError.None, "Invalid lawful generated AI route.");
+                if(colonisation!=null)
+                {
+                    // This optional AI order must leave the enclosing mandatory
+                    // Advance's journal/revision and all terminal escape debt intact.
+                    var candidate=CampaignTacticalTravelData.Copy(next);ApplyTravelCommand(candidate,command);
+                    if(!ColonisationCapacity(1,candidate,unstagedAdvanceRevision:1))continue;
+                }
                 ApplyTravelCommand(next, command);
             }
         }

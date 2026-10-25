@@ -32,8 +32,11 @@ namespace HobbyDS9.Simulation
         public static CampaignColonisationPackageDto CreateColonisationPackage(CampaignActivitiesPackageDto activitiesPackage,ShipDesignCatalogueDto catalogue,
             IReadOnlyList<ShipClassDraftDto> ready,ColonisationSupportCatalogueDto support,ColonisationPolicyDto policy)
         {
-            var package=new CampaignColonisationPackageDto{Activities=activitiesPackage,Catalogue=BlueprintCopies.Copy(catalogue),ReadyClasses=ready.Select(BlueprintCopies.Copy).ToList(),Support=ColonisationSupportCopies.Copy(support),Settlement=ColonisationData.Copy(policy)};
-            package.PackageHash=ColonisationData.PackageHash(package);return package;
+            CampaignTacticalReviewData.Require(activitiesPackage!=null&&catalogue!=null&&ready!=null&&support!=null&&policy!=null,"Complete colonisation authoring required.");
+            // Validate the closed source before any copy helper traverses caller DTOs.
+            var source=new CampaignColonisationPackageDto{Activities=activitiesPackage,Catalogue=catalogue,ReadyClasses=ready!.ToList(),Support=support,Settlement=policy};
+            var hash=ColonisationData.PackageHash(source);
+            return new CampaignColonisationPackageDto{PackageHash=hash,Activities=activitiesPackage,Catalogue=BlueprintCopies.Copy(catalogue!),ReadyClasses=ready.Select(BlueprintCopies.Copy).ToList(),Support=ColonisationSupportCopies.Copy(support!),Settlement=ColonisationData.Copy(policy!)};
         }
         public static CampaignTacticalReviewSession StartColonisation(CampaignColonisationPackageDto package,NaturalGalaxySettingsDto settings)
         {

@@ -10,6 +10,7 @@ namespace HobbyDS9.Simulation
         public static CampaignTacticalReviewSession LoadColonisation(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root)
         {
             Require(package!=null&&package.PackageHash==ColonisationData.PackageHash(package),"Different approved colonisation package.");
+            ColonisationRootBudget.Validate(root,package!.Settlement!);
             Require(root!=null&&root.FormatVersion==CampaignColonisationIdentity.Format&&root.ProfileId==CampaignColonisationIdentity.Profile&&root.PolicyId==CampaignColonisationIdentity.Policy
                 &&root.TemplatePackageHash==package!.PackageHash&&root.Map!=null&&root.FrozenPlanets!=null&&root.Campaign!=null&&root.Colonisation!=null&&root.Activities!=null
                 &&root.Production!=null&&root.ProductionHistory!=null&&root.Discoveries!=null&&root.PublishedBuiltShips!=null&&root.Journal!=null&&root.Journal.Count<=package.Settlement!.JournalBudget,
@@ -29,6 +30,23 @@ namespace HobbyDS9.Simulation
             }
             Require(FrontierSame(root,replay.ExportColonisationSave()),"Colonisation checkpoint differs from complete ordered operation replay.");
             return replay;
+        }
+        // Private borrowed view under the session transaction lock. No DTO escapes,
+        // no state is copied before the portable bound is checked, and the canonical
+        // current core is used even while an ordinary command replaced state.
+        private void ValidateColonisationRootBudget()
+        {
+            var c=colonisation!;var physical=travel!;
+            var view=new CampaignColonisationSaveDto{TemplatePackageHash=c.PackageHash,PackageHash=playableHash!,SupportHash=published!.SupportHash,
+                Map=generatedMap,FrozenPlanets=c.FrozenPlanets,Discoveries=discoveries,PublishedBuiltShips=published.Records,
+                Activities=activities!.State,Colonisation=c.State,Production=c.Production,ProductionHistory=c.History,
+                MovementOwnership=c.MovementOwnership,LastSettlementProof=c.SettlementProof,Journal=c.Journal,
+                Campaign=new CampaignPlayableFleetSaveDto{FormatVersion=CampaignPlayableFleetIdentity.Format,ProfileId=CampaignPlayableFleetIdentity.Profile,PackageHash=playableHash!,
+                    Names=playableNames.Select(n=>new CampaignFleetNameDto{FleetId=n.Key,DisplayName=n.Value}).ToList(),Transcript=playableTranscript,
+                    Integrated=new CampaignIntegratedPlaytestSaveDto{FormatVersion=CampaignIntegratedPlaytestIdentity.SaveFormat,ProfileId=CampaignIntegratedPlaytestIdentity.Profile,PackageHash=integratedHash!,BuiltShips=builtShips,
+                        Physical=new CampaignTacticalTravelSaveDto{FormatVersion=physical.FormatVersion,ProfileId=physical.ProfileId,PackageHash=physical.PackageHash,Core=state,
+                            Phase=physical.Phase,Requests=physical.Requests,Orders=physical.Orders,Contacts=physical.Contacts,LastMovement=physical.LastMovement,MovementProof=physical.MovementProof}}}};
+            ColonisationRootBudget.Validate(view,c.Policy);
         }
         public CampaignColonisationSaveDto ExportColonisationSave()
         {

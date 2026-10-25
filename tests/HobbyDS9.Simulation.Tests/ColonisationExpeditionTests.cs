@@ -53,6 +53,14 @@ public sealed class ColonisationExpeditionTests
         var landed=s.ExportColonisationSave();var camp=Assert.Single(landed.Colonisation!.CampSources!);Assert.Equal(ColonyEstablishmentStage.Founding,camp.Stage);
         Assert.Equal(destination.PlanetId,Game(landed).Colonies!.Single(c=>c.ColonyId==camp.ColonyId).PlanetId);Assert.All(Game(landed).StarSystems!,s=>Assert.Null(s.OwnerCivilizationId));
         Assert.Equal(Json(landed),Json(CampaignTacticalReviewSession.LoadColonisation(x.Package,landed).ExportColonisationSave()));
+        foreach(var removeIntent in new[]{true,false})
+        {
+            var wrong=System.Text.Json.JsonSerializer.Deserialize<CampaignColonisationSaveDto>(Json(landed))!;
+            if(removeIntent)wrong.LastSettlementProof!.BeforeColonisation!.DeploymentIntents!.Clear();
+            else wrong.MovementOwnership!.ColonyStages!.Add(new(){ColonyId=camp.ColonyId,Stage=ColonyEstablishmentStage.Founding});
+            Assert.Throws<ArgumentException>(()=>CampaignTacticalReviewSession.LoadColonisation(x.Package,wrong));
+            Assert.Equal(Json(landed),Json(s.ExportColonisationSave()));
+        }
         // A separate official replay branch proves return-only evacuation and reuse;
         // the original branch below continues establishment without pretending both histories occurred.
         EvacuateAndRecommission(x.Package,landed,x.Ship,home.ColonyId,node!);
@@ -92,6 +100,8 @@ public sealed class ColonisationExpeditionTests
         var world=Game(s.ExportColonisationSave()).Colonies!.Single(c=>c.ColonyId==home);var embark=Command(s,ColonisationAction.EmbarkSettlers);
         embark.Embark=new(){ShipId=ship,ColonyId=home,CohortId=world.Cohorts!.First(c=>c.Population>=400).CohortId,Population=100,Food=20,Materials=new()};Assert.True(s.SubmitColonisation(embark).Accepted,s.LastPhysicalFailure);
         Move(s,ship,targetNode);var m=s.ExportColonisationSave().Colonisation!.ManifestRecords!.Single(m=>m.Stage==SettlerManifestStage.Loaded);
+        var reject=Command(s,ColonisationAction.UnloadTransport);reject.Unload=new(){ManifestId=m.ManifestId,ColonyId=camp.ColonyId};var beforeReject=Json(s.ExportColonisationSave());
+        Assert.False(s.SubmitColonisation(reject).Accepted);Assert.Equal(beforeReject,Json(s.ExportColonisationSave()));
         var deploy=Command(s,ColonisationAction.RequestDeployment);deploy.Deploy=new(){ManifestId=m.ManifestId,PlanetId=camp.ColonyId==""?"":Game(landed).Colonies!.Single(c=>c.ColonyId==camp.ColonyId).PlanetId};
         Assert.True(s.SubmitColonisation(deploy).Accepted,s.LastPhysicalFailure);Advance(s);var restored=s.ExportColonisationSave();
         Assert.Single(restored.Colonisation!.ColonyOrigins!);Assert.Equal(2,restored.Colonisation.CampSources!.Count);Assert.Single(Game(restored).Colonies!,c=>c.ColonyId==camp.ColonyId);

@@ -58,6 +58,7 @@ namespace HobbyDS9.Simulation
             using(var bytes=new MemoryStream())using(var writer=new BinaryWriter(bytes,new UTF8Encoding(false,true),true))
             {
                 writer.Write(policy.Identity);writer.Write(policy.PlanetInventoryPolicy);writer.Write(CampaignColonisationIdentity.InventoryAuthoring);
+                writer.Write(ColonisationRootBudget.AlgorithmIdentity);writer.Write(ColonisationRootBudget.SchemaFingerprint);
                 writer.Write(policy.MaximumPlanets);writer.Write(policy.MaximumStarterPlanets);writer.Write(policy.MaximumValidationVisits);writer.Write(policy.MaximumCanonicalRootBytes);
                 writer.Write(policy.RecordBudget);writer.Write(policy.JournalBudget);writer.Write(policy.Settlers);writer.Write(policy.SourcePopulationFloor);writer.Write(policy.MaximumSourceCohortBps);
                 writer.Write(policy.MinimumFood);writer.Write(policy.MaximumFood);writer.Write(policy.EquipmentResourceId);writer.Write(policy.KitIndustry);

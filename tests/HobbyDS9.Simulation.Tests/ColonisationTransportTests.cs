@@ -25,11 +25,16 @@ public sealed class ColonisationTransportTests
     }
     [Fact] public void ActualManufacturedTransportSplitsAndReturnsPopulationAndReloadsOnlyPhysicalSupplies()
     {
-        var x=Manufacture();var s=x.Session;var before=s.ExportColonisationSave();var home=Game(before).Colonies!.Single(c=>c.ColonyId=="colony.sol");
+        var x=Manufacture();var s=x.Session;var stamp=s.CaptureStatus();var replacement=BlueprintCopies.Copy(x.Package.ReadyClasses!.Single(d=>d.ClassId.Contains("defiant",StringComparison.Ordinal)));replacement.ClassId="class.galaxy-colony-transport.v1";
+        Assert.True(s.SubmitStrategicCommand(new(){ActorCivilizationId=Human,CommandId="command.transport.different-r2",ExpectedTurn=stamp.Turn,ExpectedRevision=stamp.CampaignRevision,
+            Kind=CommandKind.PublishShipBlueprint,PublishShipBlueprint=new(){BlueprintId="blueprint.ready.galaxy-colony-transport",Revision=2,Draft=replacement}}).Accepted,s.LastPhysicalFailure);
+        var before=s.ExportColonisationSave();var revisions=Game(before).Blueprints!.Where(b=>b.BlueprintId=="blueprint.ready.galaxy-colony-transport").ToList();
+        Assert.NotEqual(revisions.Single(b=>b.Revision==1).Fit!.HullVersionId,revisions.Single(b=>b.Revision==2).Fit!.HullVersionId);
+        var home=Game(before).Colonies!.Single(c=>c.ColonyId=="colony.sol");
         var cohort=home.Cohorts!.First(c=>c.Population>=400);var command=Command(s,ColonisationAction.EmbarkSettlers);
         command.Embark=new(){ShipId=x.Ship,ColonyId=home.ColonyId,CohortId=cohort.CohortId,Population=100,Food=20,Materials=new(){new(){ResourceDefinitionId="resource.dilithium",Amount=2}}};
         Assert.True(s.SubmitColonisation(command).Accepted,s.LastPhysicalFailure);var loaded=s.ExportColonisationSave();var manifest=Assert.Single(loaded.Colonisation!.ManifestRecords!);
-        Assert.Equal(100,manifest.Passengers!.Population);Assert.Equal(home.Cohorts!.Sum(c=>c.Population)-100,Game(loaded).Colonies!.Single(c=>c.ColonyId==home.ColonyId).Cohorts!.Sum(c=>c.Population));
+        Assert.Equal(1,manifest.Blueprint!.Revision);Assert.Equal(100,manifest.Passengers!.Population);Assert.Equal(home.Cohorts!.Sum(c=>c.Population)-100,Game(loaded).Colonies!.Single(c=>c.ColonyId==home.ColonyId).Cohorts!.Sum(c=>c.Population));
         Assert.Equal(home.Food-20,Game(loaded).Colonies!.Single(c=>c.ColonyId==home.ColonyId).Food);
         Assert.Equal(Json(loaded),Json(CampaignTacticalReviewSession.LoadColonisation(x.Package,loaded).ExportColonisationSave()));
         var unload=Command(s,ColonisationAction.UnloadTransport);unload.Unload=new(){ManifestId=manifest.ManifestId,ColonyId=home.ColonyId};Assert.True(s.SubmitColonisation(unload).Accepted,s.LastPhysicalFailure);
