@@ -23,7 +23,39 @@ namespace HobbyDS9.UnityReview.Tests
         {{"hull.constitution-explorer.v1","activity.constitution-explorer.v1"},{"hull.defiant-combat.v1","activity.defiant-combat.v1"}};
         private static object HullProperty(object value,string name)=>value.GetType().GetProperty(name)!.GetValue(value)!;
         private static IDictionary HullInstances(ReviewBattleStage stage)=>(IDictionary)typeof(ReviewBattleStage).GetField("hullModels",HullPrivate)!.GetValue(stage)!;
-        private static string HullSourceMaterial(Material value)=>JsonUtility.ToJson(value);
+        private static string HullSourceMaterial(Material value)
+        {
+            // Serialize managed values only: JsonUtility does not support engine Material objects.
+            int Bits(float x)=>BitConverter.SingleToInt32Bits(x);
+            int[] Vector(Vector4 v)=>new[]{Bits(v.x),Bits(v.y),Bits(v.z),Bits(v.w)};
+            var shader=value.shader;Assert.That(shader,Is.Not.Null,"imported material shader");
+            var properties=new List<object>();
+            foreach(var index in Enumerable.Range(0,shader.GetPropertyCount()).OrderBy(shader.GetPropertyName,StringComparer.Ordinal))
+            {
+                var name=shader.GetPropertyName(index);var type=shader.GetPropertyType(index);object data;
+                switch(type)
+                {
+                    case UnityEngine.Rendering.ShaderPropertyType.Color:
+                        var colour=value.GetColor(name);data=new[]{Bits(colour.r),Bits(colour.g),Bits(colour.b),Bits(colour.a)};break;
+                    case UnityEngine.Rendering.ShaderPropertyType.Vector:data=Vector(value.GetVector(name));break;
+                    case UnityEngine.Rendering.ShaderPropertyType.Float:
+                    case UnityEngine.Rendering.ShaderPropertyType.Range:data=Bits(value.GetFloat(name));break;
+                    case UnityEngine.Rendering.ShaderPropertyType.Int:data=value.GetInteger(name);break;
+                    case UnityEngine.Rendering.ShaderPropertyType.Texture:
+                        var texture=value.GetTexture(name);var scale=value.GetTextureScale(name);var offset=value.GetTextureOffset(name);
+                        data=new{Reference=texture==null?null:texture.GetEntityId().ToString(),Type=texture==null?null:texture.GetType().FullName,
+                            Name=texture==null?null:texture.name,Scale=new[]{Bits(scale.x),Bits(scale.y)},Offset=new[]{Bits(offset.x),Bits(offset.y)}};break;
+                    default:throw new InvalidOperationException("Unrecorded shader property type: "+type);
+                }
+                properties.Add(new{Name=name,Type=type.ToString(),Value=data});
+            }
+            return JsonConvert.SerializeObject(new{Reference=value.GetEntityId().ToString(),value.name,HideFlags=(int)value.hideFlags,
+                ShaderReference=shader.GetEntityId().ToString(),Shader=shader.name,Properties=properties,
+                Keywords=value.shaderKeywords.OrderBy(x=>x,StringComparer.Ordinal).ToArray(),value.renderQueue,value.enableInstancing,
+                value.doubleSidedGI,GlobalIlluminationFlags=(int)value.globalIlluminationFlags,
+                RenderType=value.GetTag("RenderType",false),Queue=value.GetTag("Queue",false),
+                Passes=Enumerable.Range(0,value.passCount).Select(i=>new{Name=value.GetPassName(i),Enabled=value.GetShaderPassEnabled(value.GetPassName(i))}).ToArray()});
+        }
         private static Dictionary<Material,string> HullImportedMaterials()
         {
             var result=new Dictionary<Material,string>();
