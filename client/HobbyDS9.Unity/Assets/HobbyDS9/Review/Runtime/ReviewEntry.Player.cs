@@ -29,7 +29,7 @@ namespace HobbyDS9.UnityReview
             if(PlayerProfile){var menu=AddButton(nav,"Menu",OpenDemoMenu);menu.name="demo-menu";}
             foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Empire,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Display,ReviewWorkspacePage.Designer,ReviewWorkspacePage.Tools}.Where(p=>p!=ReviewWorkspacePage.Empire||model!.PlayableFleet))
             {
-                var b=AddButton(nav,(page==ReviewWorkspacePage.Map?"Map":model!.ActivitiesCampaign&&page==ReviewWorkspacePage.Production?"Activities / build":Title(page))+(workspace.Page==page?"  ›":""),()=>Navigate(page));b.name="review-nav-"+page;b.SetEnabled(workspace.CanNavigate);b.EnableInClassList("selected-nav",workspace.Page==page);
+                var b=AddButton(nav,(page==ReviewWorkspacePage.Map?"Map":model!.ActivitiesCampaign&&page==ReviewWorkspacePage.Production?"Activities":Title(page))+(workspace.Page==page?"  ›":""),()=>Navigate(page));b.name="review-nav-"+page;b.SetEnabled(workspace.CanNavigate);b.EnableInClassList("selected-nav",workspace.Page==page);
             }
             content=new VisualElement{name="review-central-content"};content.AddToClassList("console-main");body.Add(content);
             if(central==null||!ReferenceEquals(centralContext,model.Current))

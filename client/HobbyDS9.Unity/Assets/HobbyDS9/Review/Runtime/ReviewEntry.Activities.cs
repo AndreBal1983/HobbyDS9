@@ -15,6 +15,11 @@ namespace HobbyDS9.UnityReview
         }
         private void DrawActivitiesPanel(VisualElement parent)
         {
+            // This renderer owns the central surface just like the other pages.
+            // Redrawing an unchanged frame must replace, not stack, subscriptions
+            // and captured order controls; detached controls cannot submit later.
+            foreach(var previous in parent.Query<ReviewActivitiesPanel>().ToList())previous.Dispose();
+            parent.Clear();
             var owner=model!;var controller=owner.Current;var frame=controller.Frame;
             var observation=owner.Activities();
             Func<HobbyDS9.Contracts.CampaignActivityCommandDto,HobbyDS9.Contracts.CampaignActivityEligibilityDto> evaluate=command=>{
@@ -25,6 +30,7 @@ namespace HobbyDS9.UnityReview
                 if(ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&ReferenceEquals(controller.Frame,frame))Do(()=>owner.SubmitActivity(command));
             };
             var panel=owner.StreamedActivitiesCampaign?new ReviewActivitiesPanel(owner.StreamedActivities(),evaluate,submit):new ReviewActivitiesPanel(observation,evaluate,submit);
+            panel.RegisterCallback<DetachFromPanelEvent>(e=>{if(ReferenceEquals(e.target,panel))panel.Dispose();});
             parent.Add(panel);
         }
     }

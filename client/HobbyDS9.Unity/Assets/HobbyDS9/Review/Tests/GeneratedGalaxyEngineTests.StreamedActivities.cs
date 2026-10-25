@@ -98,6 +98,7 @@ namespace HobbyDS9.UnityReview.Tests
                     scroll=scroll?.contentViewport.worldBound.ToString(),confirm=doc.rootVisualElement.Q("activity-order-confirm")?.worldBound.ToString()}));
                 if(scroll!=null)
                 {
+                    Assert.That(doc.rootVisualElement.Query<ReviewActivitiesPanel>().ToList().Count,Is.EqualTo(1),"one current activities surface after redraw/resize");
                     Assert.That(scroll.contentViewport.worldBound.height,Is.GreaterThanOrEqualTo(100),"usable activity viewport");
                     foreach(var id in expedition?new[]{"activity-ship-selector","activity-site-selector"}:new[]{"activity-colony-selector","activity-build-review-0"})
                     {
@@ -184,6 +185,17 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return StreamClick(doc,"integrated-design-edit-"+blueprint+"-1",false);doc.rootVisualElement.Q<TextField>("designer-name").value="Explorer revised after queue";yield return null;yield return StreamClick(doc,"integrated-design-publish",false);
                 Assert.That(model.DesignLibrary().Published.Any(r=>r.Blueprint.BlueprintId==blueprint&&r.Blueprint.Revision==2),Is.True);Assert.That(model.StreamedActivities().Production.Last().Blueprint!.Revision,Is.EqualTo(1));
                 yield return StreamPage(doc);yield return StreamClick(doc,"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
+                var redrawBytes=StreamBytes(model);var redrawFrame=model.Current.Frame;
+                for(int redraw=0;redraw<3;redraw++)
+                {
+                    var previous=doc.rootVisualElement.Q<ReviewActivitiesPanel>();var oldConfirm=previous.Q<Button>("activity-order-confirm");
+                    Assert.That(oldConfirm,Is.Not.Null,"capture a real pending control before same-frame redraw");
+                    typeof(ReviewEntry).GetMethod("Draw",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entry,null);yield return null;yield return null;
+                    Assert.That(doc.rootVisualElement.Query<ReviewActivitiesPanel>().ToList().Count,Is.EqualTo(1));Assert.That(doc.rootVisualElement.Q<ReviewActivitiesPanel>(),Is.Not.SameAs(previous));Assert.That(previous.panel,Is.Null);
+                    Assert.That((bool)typeof(ReviewActivitiesPanel).GetField("disposed",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(previous)!,Is.True,"the old captured callbacks are disposed, not merely hidden");
+                    Click(oldConfirm);yield return null;Assert.That(model.Current.Frame,Is.SameAs(redrawFrame));Assert.That(StreamBytes(model),Is.EqualTo(redrawBytes),"retained disposed Confirm cannot enqueue, spend or redraw state");
+                    yield return StreamClick(doc,"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
+                }
                 foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"pending-review",true);
                 yield return StreamClick(doc,"activity-order-back",false);CampaignPage(doc,ReviewWorkspacePage.Designer);yield return null;doc.rootVisualElement.Q<TextField>("designer-name").value="Unsent local class edit";yield return null;Assert.That(model.LocalDesignDirty,Is.True);yield return StreamSaveContinue(state,doc,"pending");model=CampaignModel(entry);
                 bool progressed=false;for(int i=0;i<48&&model.StreamedActivities().Production.Count>0;i++)

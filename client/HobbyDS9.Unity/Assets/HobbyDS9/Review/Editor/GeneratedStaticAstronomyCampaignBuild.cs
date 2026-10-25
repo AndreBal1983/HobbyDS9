@@ -75,11 +75,11 @@ Credits still fund expeditions and society approaches. No buyout feature is incl
 
 The three ready classes have distinct authored hulls and provisional playtest capabilities:
 Constitution Explorer, Galaxy Cruiser and Defiant Combat. Art does not determine statistics.
-Review exact costs, powered capabilities and current eligibility in Activities / build.
+Review exact costs, powered capabilities and current eligibility in Activities.
 This is provisional demo content, not final balance. Read PLAY-STREAMED-ACTIVITIES.txt.
 ";
         private const string StreamedActivitiesWalkthrough=@"1. Start a campaign (seed 42 / 250 systems is the receiving baseline).
-2. In Activities / build, choose an owned world and review a structure or ready class.
+2. In Activities, choose an owned world and review a structure or ready class.
    Confirm the order. Industry works on one mixed FIFO head; materials are consumed
    as work advances. End a week to see actual work, consumption, delivery and supply status.
    Fabrication, research and food structures alter the actual world economy on completion.
