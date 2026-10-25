@@ -47,6 +47,8 @@ namespace HobbyDS9.UnityReview
             internal readonly CampaignNebulaVisualProxy Proxy;internal readonly float Cos,Sin;
             internal Field(CampaignNebulaVisualProxy proxy){Proxy=proxy;double angle=GeneratedGalaxyV3Math.Variant(proxy.FeatureId)/(double)uint.MaxValue*Math.PI*2;Cos=(float)Math.Cos(angle);Sin=(float)Math.Sin(angle);}
         }
+        // Provisional visual tuning; support is never expanded by this inward attenuation.
+        private const double InwardMaskFeatherUiPixels=8;
         private static Assets? shared;
         public static int LiveInstances { get; private set; }
         public static int SharedReferences=>shared?.References??0;
@@ -161,7 +163,7 @@ namespace HobbyDS9.UnityReview
                 var guard=GeneratedGalaxyV3AssetData.MaskGuard(mask.width,mask.height,final.width,final.height,width,height);
                 // One extra mask texel covers its bilinear footprint. Feathering
                 // remains inside the certified union, never into unknown space.
-                var result=GeneratedGalaxyChartedMask.Build(regions,view,width,height,mask.width,mask.height,guard.x+1,guard.y+1);
+                var result=GeneratedGalaxyChartedMask.Build(regions,view,width,height,mask.width,mask.height,guard.x+1,guard.y+1,inwardFeatherUiPixels:InwardMaskFeatherUiPixels);
                 mask!.LoadRawTextureData(result.Pixels);mask.Apply(false,false);LocalStatus=result.Succeeded?"charted-union":"local disabled: "+result.Reason;maskKey=key;
             }
             material.SetVector("_View",new Vector4((float)((x-mapWidth*.5)/mapWidth),(float)((y-mapHeight*.5)/mapWidth),(float)(width/view.Scale/mapWidth),(float)(height/view.Scale/mapWidth)));

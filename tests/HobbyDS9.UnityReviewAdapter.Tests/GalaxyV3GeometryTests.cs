@@ -96,12 +96,13 @@ public sealed class GalaxyV3GeometryTests
         var corner=GeneratedGalaxyChartedMask.Build(new[]{Box(0,0,40,40),Box(40,40,80,80)},view,400,300,400,300);
         Assert.True(corner.Succeeded,corner.Reason);Assert.Equal(0,corner.Pixels[(int)view.X(40)+(int)view.Y(40)*400]);
     }
-    [Theory] [InlineData(1280,720)] [InlineData(1920,1080)] [InlineData(3440,1440)]
-    public void BilinearFinalImageHasZeroExteriorUnderFractionalPanAndProjection(int uiWidth,int uiHeight)
+    [Theory] [InlineData(1280,720,false)] [InlineData(1920,1080,false)] [InlineData(3440,1440,false)]
+    [InlineData(1280,720,true)] [InlineData(1920,1080,true)] [InlineData(3440,1440,true)]
+    public void BilinearFinalImageHasZeroExteriorUnderFractionalPanAndProjection(int uiWidth,int uiHeight,bool feather)
     {
         int width=Math.Min(960,uiWidth/2),height=Math.Min(540,uiHeight/2);var view=View(uiWidth,uiHeight);view.Pan(.375,-.625);view.ZoomAt(1.1,uiWidth*.45,uiHeight*.55);
         var triangle=new GeneratedGalaxyRegionDto{NodeId="triangle",Boundary=new(){P(0,0),P(100,0),P(0,100)}};
-        var mask=GeneratedGalaxyChartedMask.Build(new[]{triangle},view,uiWidth,uiHeight,width,height);Assert.True(mask.Succeeded,mask.Reason);
+        var mask=GeneratedGalaxyChartedMask.Build(new[]{triangle},view,uiWidth,uiHeight,width,height,inwardFeatherUiPixels:feather?8:0);Assert.True(mask.Succeeded,mask.Reason);
         // Actual bilinear reconstruction mathematics, not comparison to the mask's edge extractor.
         double Sample(int x,int y)=>mask.Pixels[Math.Clamp(x,0,width-1)+Math.Clamp(y,0,height-1)*width]/255.0;
         int exterior=0;

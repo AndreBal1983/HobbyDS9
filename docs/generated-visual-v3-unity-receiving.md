@@ -22,3 +22,24 @@ The actual116219a run failed strict exterior equality at four pixels. An asymmet
 
 The e46 case passed particle placement/all three strict exterior gates, then map Fit immediately after fleet-selection redraw reached NaN layout dimensions and emitted invalid particle mesh bounds. The renderer now defers nonfinite/nonpositive dimensions, scale/origins or non-float-representable camera/extents before cache/residency/target/material/GPU changes. Stale observation and lost context checks retain precedence. The binding validates the captured content rectangle and placement before construction/publication, after stale-pair validation; pending layout does not latch permanent fallback and GeometryChanged retries. Defensive particle projection/quad checks reject nonfinite candidates before mesh writes. The component verifies invalid dimensions/derived camera preserve target/counts/active RT, valid recovery, stale/lost-context precedence. Actual control testing awaits a bounded fresh attached finite layout after fleet selection, then reacquires Fit. Cameras, optical coefficients, exact exterior tolerance and19-frame budget remain unchanged.
 
+
+
+## Narrow inward-edge smoothing gate
+
+Do not repeat the old menu/combat matrix for this presentation-only change.
+Use the real actor-known Explore32 presentation and actual V3 Image at1280x720,
+1920x1080 and3440x1440. Retain actual content-plane/lines alignment and strict
+UI-composed8-bit NebulaeON-minus-OFF exteriorZERO, including opacity and particles,
+with settled residency, the same camera and a fractional pan/zoom. Save matched
+regional pairs at three sizes plus at mosttwo zoomed oblique-edge closeups for
+Root/art assessment (eight frames proposed). Confirm several intermediate alpha
+levels in the actual uploaded mask; an isolated synthetic coverage probe is
+permitted only if clearly labelled component evidence, not campaign play.
+
+Judge smooth taper at diagonal/curved explored contours and pan/depth extremes,
+no internal charted seam or window-edge vignette, no new unknown detail and no
+objectionable flicker. Show the remaining conservative inset honestly. CPU
+zero-support proof and distance math do not establish actual visual success.
+Retain current field/particle/fetch/texture caps, mask-grid stability and
+stale/dispose/no-idle checks; no shader/optics or gameplay changes. A separate
+source-reviewed test and explicit physical lease precede this narrow run.

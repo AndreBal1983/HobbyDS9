@@ -41,3 +41,27 @@ First CPU gates cover forward/inverse projection, z0 identity, depth-off, Gaussi
 ## Raw particle target convention
 
 Raw clip-space particle meshes apply a conditional clip-Y flip under UNITY_UV_STARTS_AT_TOP to match Graphics.Blit target orientation. Their authored projected position, mask coordinate, optics and brightness are unchanged. The receiving asymmetric actual-pass probe must reject reflected placement independently of final masking; the full UI enabled-minus-off exterior gate remains exact zero. Raw component PNGs encode linear-data channels without display conversion and must not be judged as display previews. The actual UI transfer is unchanged.
+
+
+## Inward explored-edge feather candidate (25 October 2026)
+
+Source/CPU candidate, pending narrow actual-render acceptance. The unchanged
+binary union/guard certificate is followed by an optional exact separable squared
+Euclidean distance transform from its zero texel centres. Distances use logical
+UI units independently on X and Y. Runtime requests8 logical pixels, with a
+minimum transition width of3 times the larger UI-per-mask-texel spacing. A
+smoothstep of that inward distance is floor-quantized to R8. Every old zero
+remains exactlyzero and no output byte exceeds the certified input; default0
+retains previous bytes and work. Existing shader gates compound this mask
+through local volume, particles and final upsampling; the effective appearance
+is not a single unmodified smoothstep. Optical coefficients/exposure/macro,
+resident volume count and final-target resolution are unchanged.
+
+No artificial viewport-edge seed is added: an all255 certificate stays255,
+without a window-edge vignette. Narrow known islands may fade nearly away.
+The existing conservative inset remains; this change smooths its contrast and
+does not reclaim uncertain support. One double distance plane plus bounded line,
+envelope and cut scratch is under4.1MiB CPU scratch at960x540, allocated only on
+mask rebuild. All new scans/comparisons/envelope pushes/pops/evaluation/conversion
+consume the SAME10M budget. Failure still clears the entire local mask. No
+new GPU target, texture, shader fetch or idle submission is introduced.

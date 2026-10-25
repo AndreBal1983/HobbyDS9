@@ -36,14 +36,14 @@ public sealed class GalaxyV3AssetTests
         if(fields==1){Assert.Equal(960,local.width);Assert.Equal(540,local.height);}
         output.WriteLine($"Fields={fields}, finalMacro=960x540, local={local.width}x{local.height}, conservativeFetchBound={upper}");
     }
-    [Theory] [InlineData(1)] [InlineData(8)]
-    public void BothBilinearStagesPreserveFinalExteriorZeroWithAdaptiveLocalResolution(int fields)
+    [Theory] [InlineData(1,false)] [InlineData(8,false)] [InlineData(1,true)] [InlineData(8,true)]
+    public void BothBilinearStagesPreserveFinalExteriorZeroWithAdaptiveLocalResolution(int fields,bool feather)
     {
         const int fw=960,fh=540,uw=1280,uh=720;var size=GeneratedGalaxyV3AssetData.LocalTarget(fw,fh,fields);
         var guard=GeneratedGalaxyV3AssetData.MaskGuard(size.width,size.height,fw,fh,uw,uh);
         var view=new GeneratedGalaxyViewport();view.SetMap(100,100);view.Resize(uw,uh);view.Fit();view.Pan(.375,-.625);
         var region=new GeneratedGalaxyRegionDto{NodeId="triangle",Boundary=new(){new(){X=0,Y=0},new(){X=100,Y=0},new(){X=0,Y=100}}};
-        var mask=GeneratedGalaxyChartedMask.Build(new[]{region},view,uw,uh,size.width,size.height,guard.x,guard.y);Assert.True(mask.Succeeded,mask.Reason);
+        var mask=GeneratedGalaxyChartedMask.Build(new[]{region},view,uw,uh,size.width,size.height,guard.x,guard.y,inwardFeatherUiPixels:feather?8:0);Assert.True(mask.Succeeded,mask.Reason);
         double Local(int x,int y)=>mask.Pixels[Math.Clamp(x,0,size.width-1)+Math.Clamp(y,0,size.height-1)*size.width]/255.0;
         double Final(int x,int y)
         {

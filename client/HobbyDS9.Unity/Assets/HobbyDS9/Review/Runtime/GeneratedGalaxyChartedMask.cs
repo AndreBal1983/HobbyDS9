@@ -40,14 +40,66 @@ namespace HobbyDS9.UnityReview
         }
         private sealed class Lines:IEqualityComparer<Line>
         {private readonly Budget budget;internal Lines(Budget budget){this.budget=budget;}public bool Equals(Line x,Line y){budget.Add();return x.Equals(y);}public int GetHashCode(Line x){budget.Add();return x.GetHashCode();}}
+        // Exact separable squared-distance transform in logical UI pixels. Only
+        // existing zero texel centres are seeds: the viewport is not a charted edge.
+        private static void FeatherInward(byte[] pixels,int width,int height,double uiWidth,double uiHeight,double requested,Budget budget)
+        {
+            bool zero=false,inside=false;
+            foreach(byte value in pixels){budget.Add();zero|=value==0;inside|=value!=0;}
+            if(!zero||!inside)return;
+            double dx=uiWidth/width,dy=uiHeight/height,feather=Math.Max(requested,3*Math.Max(dx,dy));
+            var distances=new double[pixels.Length];int length=Math.Max(width,height);
+            var input=new double[length];var vertices=new int[length];var cuts=new double[length+1];
+            for(int y=0;y<height;y++)
+            {
+                for(int x=0;x<width;x++){budget.Add();input[x]=pixels[x+y*width]==0?0:double.PositiveInfinity;}
+                DistanceLine(input,width,dx*dx,vertices,cuts,distances,y*width,1,budget);
+            }
+            for(int x=0;x<width;x++)
+            {
+                for(int y=0;y<height;y++){budget.Add();input[y]=distances[x+y*width];}
+                DistanceLine(input,height,dy*dy,vertices,cuts,distances,x,width,budget);
+            }
+            for(int i=0;i<pixels.Length;i++)
+            {
+                budget.Add();if(pixels[i]==0)continue;
+                double t=Math.Min(1,Math.Sqrt(distances[i])/feather);
+                // Floor quantization never creates support or rounds a zero upward.
+                pixels[i]=(byte)Math.Floor(255*t*t*(3-2*t));
+            }
+        }
+        private static void DistanceLine(double[] input,int length,double spacingSquared,int[] vertices,double[] cuts,double[] output,int offset,int stride,Budget budget)
+        {
+            int k=-1;
+            for(int q=0;q<length;q++)
+            {
+                budget.Add();if(double.IsPositiveInfinity(input[q]))continue;
+                double crossing=double.NegativeInfinity;
+                while(k>=0)
+                {
+                    budget.Add();int v=vertices[k];
+                    crossing=((input[q]-input[v])/spacingSquared+(double)q*q-(double)v*v)/(2*(q-v));
+                    if(crossing>cuts[k])break;k--;
+                }
+                budget.Add();k++;vertices[k]=q;cuts[k]=k==0?double.NegativeInfinity:crossing;cuts[k+1]=double.PositiveInfinity;
+            }
+            int count=k,index=0;
+            for(int q=0;q<length;q++)
+            {
+                budget.Add();if(count<0){output[offset+q*stride]=double.PositiveInfinity;continue;}
+                while(index<count){budget.Add();if(cuts[index+1]>=q)break;index++;}
+                int delta=q-vertices[index];output[offset+q*stride]=input[vertices[index]]+spacingSquared*delta*delta;
+            }
+        }
         public static GeneratedGalaxyMaskResult Build(IReadOnlyList<GeneratedGalaxyRegionDto> regions,GeneratedGalaxyViewport view,
-            double uiWidth,double uiHeight,int width,int height,double guardX=3,double guardY=3,int operationLimit=10000000)
+            double uiWidth,double uiHeight,int width,int height,double guardX=3,double guardY=3,int operationLimit=10000000,double inwardFeatherUiPixels=0)
         {
             if(width<1||width>960||height<1||height>540)throw new ArgumentOutOfRangeException(nameof(width));
             var pixels=new byte[width*height];var budget=new Budget(Math.Max(0,operationLimit));
             try
             {
                 if(!(uiWidth>=2&&uiHeight>=2&&uiWidth<=100000&&uiHeight<=100000&&guardX>=3&&guardY>=3&&guardX<=64&&guardY<=64))throw new Limit("invalid-mask-view");
+                if(!(inwardFeatherUiPixels>=0&&inwardFeatherUiPixels<=64))throw new Limit("invalid-mask-feather");
                 if(regions.Count>2000)throw new Limit("region-cap");
                 var groups=new Dictionary<Line,List<Event>>(new Lines(budget));int edges=0;
                 foreach(var region in regions)
@@ -124,6 +176,7 @@ namespace HobbyDS9.UnityReview
                         for(int x=x0;x<=x1;x++){budget.Add();pixels[x+y*width]=0;}
                     }
                 }
+                if(inwardFeatherUiPixels>0)FeatherInward(pixels,width,height,uiWidth,uiHeight,inwardFeatherUiPixels,budget);
                 return new GeneratedGalaxyMaskResult(pixels,true,"certified-union-support",budget.Used);
             }
             catch(Exception e) when(e is Limit||e.InnerException is Limit)
