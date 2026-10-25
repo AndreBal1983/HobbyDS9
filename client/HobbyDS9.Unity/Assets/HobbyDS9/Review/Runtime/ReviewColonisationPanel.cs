@@ -132,7 +132,7 @@ namespace HobbyDS9.UnityReview
                 ReleaseHull();hullPreview=new ShipPreviewStage(512,320);hullPreview.ShowActivityHull(option.HullVersionId);image.image=hullPreview.Texture;label.text=hullPreview.Label;
             }
             fold.RegisterValueChangedCallback(_=>{if(!OwnInspector())return;inspectedOpen=fold.value;Refresh();});fold.RegisterCallback<AttachToPanelEvent>(_=>Refresh());
-            Button(fold,"Rotate hull","colonisation-hull-orbit",()=>hullPreview?.OrbitReference(80,26));
+            Button(fold,"Rotate hull","colonisation-hull-orbit",()=>{if(OwnInspector())hullPreview?.OrbitReference(80,26);});
         }
         private void Planets()
         {
