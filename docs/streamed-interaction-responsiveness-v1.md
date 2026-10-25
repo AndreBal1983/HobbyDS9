@@ -77,3 +77,9 @@ assertion is relaxed by this source packet.
 Actual Unity receiving at source 9cdbf378 passed the existing complete 250-system campaign case in 279.940187 seconds, with 22 captures. Controlled holds demonstrated scheduler updates and moving busy indicators during preview, submission and Planning advance, including cancellation and stale-continuation rejection. These controlled waits are not FPS or native/1000-system responsiveness evidence. Mature findings Save/Continue still took approximately 25/27 seconds; synchronous design publication remains outside this change. No rules, content, save or profile change.
 
 The separate ResponsiveOrders Editor entry uses the unchanged strict builder and a fresh stage; actual package/native acceptance remains pending.
+
+## Responsive Orders playable checkpoint
+
+Separate local package: E:/HobbyDS9/artifacts/demos/HobbyDS9-Responsive-Orders-20261025, built4744ca2d3991c344dca21b0cb767817af9143bbf. Strict Windows IL2CPP65,819ms/747files, independently rehashed. Actual executable New1000, streamed Explorer/laboratory orders, weekly progress, Save2, normal Quit, new-process Continue2 at1280 and further18→36 work passed scoped independent review. See E:/HobbyDS9/artifacts/streamed-interaction-native-4744ca2-20261025/CHECKPOINT.md. Fresh51ownerfiles/preferences and unchanged package independently verified after testing.
+
+Thirty-seven positive native probe windows had a longest sampled frame106.674ms, versus the earlier short1000run's5759.96ms. This supports the bounded early responsiveness improvement; it is not universal smoothness, mature campaign, tactical, native3440 or audio-quality acceptance. All old packages/saves remain preserved; the broader playable-demo Goal remains unfinished.
