@@ -115,7 +115,7 @@ namespace HobbyDS9.ArtDemo
         public void SetStudyVariant(DesignerStudyVariant variant)
         {
             EnsureAlive();if(!Enum.IsDefined(typeof(DesignerStudyVariant),variant))throw new ArgumentOutOfRangeException(nameof(variant));
-            if(!designerReference)return;
+            if(!designerReference || IsActivityHull)return;
             bool nacelles=variant==DesignerStudyVariant.ClassicNacelles || variant==DesignerStudyVariant.SovereignNacelles;
             if(nacelles && classicNacelles==(variant==DesignerStudyVariant.ClassicNacelles))return;
             if(!nacelles && deflectorVariant==variant)return;
@@ -163,7 +163,7 @@ namespace HobbyDS9.ArtDemo
         public void SetReferenceView(DesignerReferenceView view)
         {
             EnsureAlive();if(!Enum.IsDefined(typeof(DesignerReferenceView),view))throw new ArgumentOutOfRangeException(nameof(view));
-            if(!designerReference || designerView==view)return;
+            if(!designerReference || IsActivityHull || designerView==view)return;
             designerView=view;UpdateDesignerVisibility();FrameDesignerReference();Render();
         }
 
@@ -235,7 +235,7 @@ namespace HobbyDS9.ArtDemo
 
         private void ResetDesignerReference()
         {
-            designerParts.Clear();designerCounts.Clear();designerCutawayHull=null;designerReference=false;designerView=DesignerReferenceView.Hull;
+            activityHullVersionId=null;designerParts.Clear();designerCounts.Clear();designerCutawayHull=null;designerReference=false;designerView=DesignerReferenceView.Hull;
             missingDesignerArt="";referenceYaw=37.57f;referencePitch=26f;referenceZoom=1;
             classicNacelles=false;deflectorVariant=DesignerStudyVariant.BlueDeflector;
             lastArtSnapshot=null;

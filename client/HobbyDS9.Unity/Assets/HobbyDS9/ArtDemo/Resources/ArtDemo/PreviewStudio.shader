@@ -11,6 +11,8 @@ Shader "HobbyDS9/ArtDemo/PreviewStudio"
         [HDR] _EmissionColor ("Emission", Color) = (0,0,0,0)
         _Metallic ("Metallic", Range(0,1)) = 0.3
         _Smoothness ("Smoothness", Range(0,1)) = 0.4
+        _MetallicRoughnessMap ("Linear roughness G / metallic B", 2D) = "white" {}
+        _UseMetallicRoughnessMap ("Use authored metallic roughness", Float) = 0
     }
     SubShader
     {
@@ -29,6 +31,7 @@ Shader "HobbyDS9/ArtDemo/PreviewStudio"
             TEXTURE2D(_BaseMap); SAMPLER(sampler_BaseMap);
             TEXTURE2D(_BumpMap); SAMPLER(sampler_BumpMap);
             TEXTURE2D(_EmissionMap); SAMPLER(sampler_EmissionMap);
+            TEXTURE2D(_MetallicRoughnessMap); SAMPLER(sampler_MetallicRoughnessMap);
             CBUFFER_START(UnityPerMaterial)
                 float4 _BaseColor;
                 float4 _EmissionColor;
@@ -39,6 +42,8 @@ Shader "HobbyDS9/ArtDemo/PreviewStudio"
                 float _UseNormalMap;
                 float _Metallic;
                 float _Smoothness;
+                float4 _MetallicRoughnessMap_ST;
+                float _UseMetallicRoughnessMap;
             CBUFFER_END
             struct Attributes { float4 positionOS : POSITION; float3 normalOS : NORMAL; float4 tangentOS : TANGENT; float2 uv : TEXCOORD0; };
             struct Varyings { float4 positionCS : SV_POSITION; float3 normalWS : TEXCOORD0; float3 positionWS : TEXCOORD1; float4 tangentWS : TEXCOORD2; float2 uv : TEXCOORD3; };
@@ -66,10 +71,17 @@ Shader "HobbyDS9/ArtDemo/PreviewStudio"
                 float3 fill = normalize(float3(-.6,.25,-.4));
                 float diffuse = .24 + .66 * saturate(dot(n,key)) + .2 * saturate(dot(n,fill));
                 float3 view = GetWorldSpaceNormalizeViewDir(input.positionWS);
-                float specular = pow(saturate(dot(n,normalize(key + view))), lerp(8,96,_Smoothness));
+                float metallic=_Metallic, smoothness=_Smoothness;
+                if(_UseMetallicRoughnessMap>.5)
+                {
+                    float3 mr=SAMPLE_TEXTURE2D(_MetallicRoughnessMap,sampler_MetallicRoughnessMap,input.uv*_MetallicRoughnessMap_ST.xy+_MetallicRoughnessMap_ST.zw).rgb;
+                    metallic*=mr.b;
+                    smoothness=1-mr.g;
+                }
+                float specular = pow(saturate(dot(n,normalize(key + view))), lerp(8,96,smoothness));
                 float3 albedo=SAMPLE_TEXTURE2D(_BaseMap,sampler_BaseMap,input.uv*_BaseMap_ST.xy+_BaseMap_ST.zw).rgb*_BaseColor.rgb;
                 float3 emission=SAMPLE_TEXTURE2D(_EmissionMap,sampler_EmissionMap,input.uv*_EmissionMap_ST.xy+_EmissionMap_ST.zw).rgb*_EmissionColor.rgb;
-                float3 colour = albedo * diffuse + specular * lerp(.12,.3,_Metallic) + emission * .45;
+                float3 colour = albedo * diffuse + specular * lerp(.12,.3,metallic) + emission * .45;
                 return half4(colour,1);
             }
             ENDHLSL
