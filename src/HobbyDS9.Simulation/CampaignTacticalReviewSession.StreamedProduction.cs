@@ -202,7 +202,9 @@ namespace HobbyDS9.Simulation
             // Each retained cancel/claim/abort and remaining round/finalization needs
             // its real revision increment, independently of journal slot capacity.
             if((BigInteger)game.StateRevision+proposedDelta+terminals+combat>long.MaxValue)return Fail("Streamed terminal/combat revision liability.");
-            var records=(BigInteger)BuildRegistry.Count()+published!.Records.Count+stream.Production.Count+stream.History.Count+activities.State.Structures!.Count+activities.State.Findings!.Count;
+            // A pending order becomes history plus one built/structure source on
+            // completion. Reserve that actual extra record at admission, not later.
+            var records=(BigInteger)BuildRegistry.Count()+published!.Records.Count+2*(BigInteger)stream.Production.Count+stream.History.Count+activities.State.Structures!.Count+activities.State.Findings!.Count;
             if(records>published.RecordBudget)return Fail("Streamed retained record budget.");
             // No Industry/supply horizon: blockades and deposit exhaustion may stall forever.
             // Existing checked transactional phases remain responsible for actual arithmetic.

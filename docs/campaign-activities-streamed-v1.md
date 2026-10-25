@@ -77,6 +77,10 @@ not need a new future advance reserve; its action releases its own liability.
 Revision headroom protects those actual increments separately. Trusted scenario
 starts require revision zero; a defensive counter-edge test is explicitly fault
 injected, not evidence of a reachable full-replay near-long-max campaign.
+Retained-record admission reserves two records per pending order: the order's
+terminal history and its eventual built/structure source. Completing conserves
+that reservation; cancel retains only the terminal history and releases the extra
+completion record. Actual stored-ledger validation still counts actual records.
 
 Technical journal exhaustion may stop further advances. Reserving slots for an
 AI order does not grant the human control over it, and this increment does not

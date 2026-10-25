@@ -102,6 +102,27 @@ public sealed class CampaignStreamedActivitiesTests
         }
         Assert.Fail("No streamed completion reached the deliberate late fault.");
     }
+    [Fact] public void ExactRecordBoundaryReservesBothStructureAndShipCompletionAndReleasesCanceledReservation()
+    {
+        var p=Package();p.ContentPackage!.RecordBudget=32;Rehash(p);
+        var s=CampaignTacticalReviewSession.StartStreamedActivities(p,PublishedConstructionProfileTests.Settings(250));
+        Assert.True(s.SubmitActivity(Cmd(s,CampaignActivityCommandKind.EnqueueStructure,"colony.sol","infrastructure.fabrication-annex.v1")).Accepted,s.LastPhysicalFailure);
+        for(int i=0;i<15;i++)Assert.True(s.SubmitActivity(Cmd(s,CampaignActivityCommandKind.EnqueueShip,"colony.sol","blueprint.ready.constitution-explorer",1)).Accepted,s.LastPhysicalFailure);
+        var full=s.ExportStreamedActivitiesSave();Assert.Equal(16,full.Production!.Count);
+        Assert.Equal(CampaignTacticalError.Overflow,s.SubmitActivity(Cmd(s,CampaignActivityCommandKind.EnqueueShip,"colony.sol","blueprint.ready.defiant-combat",1)).Error);
+        Assert.Equal(Json(full),Json(s.ExportStreamedActivitiesSave()));
+        long Reserved(CampaignStreamedActivitiesSaveDto r)=>2L*r.Production!.Count+r.ProductionHistory!.Count+r.PublishedBuiltShips!.Count+r.Activities!.Structures!.Count+r.Activities.Findings!.Count;
+        Assert.Equal(32,Reserved(full));
+        for(int i=0;i<40&&s.ExportStreamedActivitiesSave().Activities!.Structures!.Count==0;i++)Advance(s);
+        var structure=s.ExportStreamedActivitiesSave();Assert.Single(structure.Activities!.Structures!);Assert.Equal(32,Reserved(structure));
+        for(int i=0;i<40&&s.ExportStreamedActivitiesSave().PublishedBuiltShips!.Count==0;i++)Advance(s);
+        var ship=s.ExportStreamedActivitiesSave();Assert.Single(ship.PublishedBuiltShips!);Assert.Equal(32,Reserved(ship));
+        foreach(var q in ship.Production!.Take(2))Assert.True(s.SubmitActivity(Cmd(s,CampaignActivityCommandKind.CancelProduction,q.QueueItemId)).Accepted,s.LastPhysicalFailure);
+        Assert.Equal(30,Reserved(s.ExportStreamedActivitiesSave()));
+        Assert.True(s.SubmitActivity(Cmd(s,CampaignActivityCommandKind.EnqueueShip,"colony.sol","blueprint.ready.defiant-combat",1)).Accepted,s.LastPhysicalFailure);
+        var final=s.ExportStreamedActivitiesSave();Assert.Equal(32,Reserved(final));
+        Assert.Equal(Json(final),Json(CampaignTacticalReviewSession.LoadStreamedActivities(p,final).ExportStreamedActivitiesSave()));
+    }
     [Fact] public void ActualLawfulCombatConsumesReservedRoundsAndAftermathWhileStalledOrderRemainsCancelable()
     {
         var p=Package();p.ContentPackage!.Content!.Structures![0].Cost!.Industry=1000000;Rehash(p);
