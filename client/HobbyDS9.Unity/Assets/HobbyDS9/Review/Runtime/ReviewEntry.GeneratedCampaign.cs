@@ -15,12 +15,12 @@ namespace HobbyDS9.UnityReview
 #if UNITY_EDITOR
         private string? generatedCampaignTestDirectory=null; // Dedicated engine fixture only; never a player path option.
 #endif
-        private string GeneratedCampaignDirectory(bool legacy=false)
+        private string GeneratedCampaignDirectory(bool legacy=false,bool published=false)
         {
 #if UNITY_EDITOR
             if(generatedCampaignTestDirectory!=null)return generatedCampaignTestDirectory;
 #endif
-            return Path.Combine(UnityEngine.Application.persistentDataPath,legacy?GeneratedCampaignOptions.SaveDirectory:ReviewStaticAstronomyCampaignSlotStore.Namespace);
+            return Path.Combine(UnityEngine.Application.persistentDataPath,published?ReviewPublishedConstructionSlotStore.Namespace:legacy?GeneratedCampaignOptions.SaveDirectory:ReviewStaticAstronomyCampaignSlotStore.Namespace);
         }
         private string generatedCampaignSeed="42";
         private int generatedCampaignSize=250,generatedCampaignQuiet=2000;
@@ -56,6 +56,7 @@ namespace HobbyDS9.UnityReview
                 load.name="generated-campaign-continue-"+slot;
             }
             generatedCampaignNotice=Readout(generatedCampaignBusy?"Preparing and validating campaign…":profileMenuNotice);generatedCampaignNotice.name="generated-campaign-notice";controls.Add(generatedCampaignNotice);
+            DrawPublishedConstructionMenu(controls);
             controls.SetEnabled(!generatedCampaignBusy&&PlayableResourcesAvailable());
         }
         private void DrawLegacyGeneratedCampaignMenu(VisualElement parent)
@@ -71,7 +72,7 @@ namespace HobbyDS9.UnityReview
             controls.SetEnabled(!generatedCampaignBusy&&PlayableResourcesAvailable());
         }
         private object? generatedCampaignOperationToken;
-        private async void RunGeneratedCampaignOperation(string? slot,bool legacy=false)
+        private async void RunGeneratedCampaignOperation(string? slot,bool legacy=false,bool published=false)
         {
             if(generatedCampaignBusy)return;
             generatedCampaignBusy=true;var epoch=viewEpoch;var prior=model;
@@ -83,11 +84,20 @@ namespace HobbyDS9.UnityReview
             {
                 // Resource access is main-thread only. The portable factory/load and trusted file IO run away from the UI.
                 var template=LoadPlayableFleetTemplate();var codec=new ReviewNewtonsoftCodec();
-                var directory=GeneratedCampaignDirectory(legacy);
+                var directory=GeneratedCampaignDirectory(legacy,published);
+                byte[]? supportBytes=null;
+                if(published){var supportAsset=Resources.Load<TextAsset>("PublishedConstructionV1/support");if(supportAsset==null)throw new InvalidOperationException("Published playtest support unavailable.");supportBytes=supportAsset.bytes;}
                 var settings=new NaturalGalaxySettingsDto{Map=new ScaledGalaxySettingsDto{Seed=seed,SystemCount=size,EmptyRegionCount=size,
                     Width=size==1000?5000000:2500000,Height=size==1000?4000000:2000000,QuietEmptyAreaTargetPermille=quiet,
                     HomeCivilizationDefinitionIds=new List<string>{"civilization.federation","civilization.cardassian"}}};
                 var next=await Task.Run(()=>{
+                    if(published)
+                    {
+                        if(legacy)throw new InvalidOperationException("Distinct campaign profiles required.");
+                        var package=PublishedConstructionPlaytestOptions.CreatePackage(template,supportBytes!,codec);
+                        var publishedStore=new ReviewPublishedConstructionSlotStore(directory,codec);
+                        return slot==null?new ReviewUiModel(package,settings,codec,publishedStore):ReviewUiModel.ContinuePublishedConstruction(package,codec,publishedStore,slot);
+                    }
                     if(legacy)
                     {
                         if(slot==null)throw new InvalidOperationException("An earlier campaign requires an explicit saved slot.");

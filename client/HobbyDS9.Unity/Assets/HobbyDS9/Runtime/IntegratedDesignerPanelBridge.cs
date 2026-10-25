@@ -23,6 +23,7 @@ namespace HobbyDS9.UnityClient
             public Func<string> ClassId=null!;
             public string TemplateCaption="";
             public Action? Update;
+            public Action<VisualElement>? Construction;
         }
         public static object Create(CampaignIntegratedDesignLibrarySnapshot library,Action<bool> changed,Action back,
             Func<ShipClassDraftDto,bool> canPublish,Func<ShipClassDraftDto,bool> publish,
@@ -48,9 +49,10 @@ namespace HobbyDS9.UnityClient
         }
         private static bool CanEdit(CampaignBlueprintSnapshot r)=>r.Blueprint.Fit.Installations.All(i=>i.Quantity<=int.MaxValue)
             && r.Blueprint.Fit.Installations.Select(i=>i.ComponentVersionId).Distinct(StringComparer.Ordinal).Count()==r.Blueprint.Fit.Installations.Count;
+        public static void SetConstructionPanel(object context,Action<VisualElement>? draw)=>((State)context).Construction=draw;
         public static void Present(VisualElement root,object context)
         {
-            var s=(State)context;root.Clear();var scope=new Label("Design and publish class revisions. Building custom classes is not available yet."){name="integrated-design-scope"};scope.style.whiteSpace=WhiteSpace.Normal;root.Add(scope);
+            var s=(State)context;root.Clear();var scope=new Label(s.Construction==null?"Design and publish class revisions. Building custom classes is not available yet.":"Provisional construction playtest · publish a class, then build an eligible revision at your colony."){name="integrated-design-scope"};scope.style.whiteSpace=WhiteSpace.Normal;root.Add(scope);
             if(s.Draft==null){root.Add(new Label("No available ship-design hull for this actor."));return;}
             if(s.Update!=null)s.Draft.Changed-=s.Update;s.View?.Dispose();
             var actions=new VisualElement();actions.AddToClassList("sd-buttons");actions.style.flexDirection=FlexDirection.Row;actions.style.flexShrink=0;root.Add(actions);
@@ -67,6 +69,7 @@ namespace HobbyDS9.UnityClient
             history.style.flexShrink=0;history.style.overflow=Overflow.Hidden;s.View.InspectorFooter.Add(history);
             var revisions=new ScrollView(ScrollViewMode.Vertical){name="integrated-design-history-scroll"};
             revisions.style.maxHeight=108;revisions.style.minHeight=0;revisions.style.flexShrink=0;history.Add(revisions);
+            if(s.Construction!=null){var build=new Foldout{text="Build a published class",name="integrated-design-construction",value=false};build.style.flexShrink=0;s.View.InspectorFooter.Add(build);s.Construction(build);}
             if(s.Library.Published.Count==0)revisions.Add(new Label("No published revisions. Refresh after publishing to review history."));
             foreach(var record in s.Library.Published){var r=record;var button=new Button(()=>s.Draft.RequestDiscard(()=>{var fit=s.Edit(r);s.TemplateCaption="Revision "+r.Blueprint.Revision+" (local copy)";s.Draft.StartFit(new DesignerFit(fit));s.Update?.Invoke();}))
                 {name="integrated-design-edit-"+r.Blueprint.BlueprintId+"-"+r.Blueprint.Revision,text=r.Blueprint.Fit.DisplayName+" · revision "+r.Blueprint.Revision};button.AddToClassList("lcars-pill");button.style.flexShrink=0;button.SetEnabled(CanEdit(r));revisions.Add(button);}

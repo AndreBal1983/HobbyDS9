@@ -4,10 +4,13 @@ using HobbyDS9.Contracts;
 namespace HobbyDS9.TacticalReviewClient
 {
     // Explicit capability: v1 codecs/stores are never probed as a fallback.
-    public interface IStaticAstronomyReviewHostCodec : IGeneratedCampaignReviewHostCodec
+    public interface IKnownGeneratedMapCodec
+    {
+        CampaignGeneratedMapDto CopyKnownGeneratedMap(CampaignGeneratedMapDto map);
+    }
+    public interface IStaticAstronomyReviewHostCodec : IGeneratedCampaignReviewHostCodec,IKnownGeneratedMapCodec
     {
         CampaignGeneratedSaveDto CopyStaticAstronomySave(CampaignGeneratedSaveDto root);
-        CampaignGeneratedMapDto CopyKnownGeneratedMap(CampaignGeneratedMapDto map);
     }
     public interface IStaticAstronomyReviewCheckpointStore
     {
@@ -28,7 +31,7 @@ namespace HobbyDS9.TacticalReviewClient
     public sealed class GeneratedCampaignPresentation
     {
         private readonly CampaignGeneratedMapDto map;
-        private readonly IStaticAstronomyReviewHostCodec codec;
+        private readonly IKnownGeneratedMapCodec codec;
         internal Guid HostId { get; }
         public ReviewFrame Frame { get; }
         public long Generation => Frame.Generation;
@@ -37,7 +40,7 @@ namespace HobbyDS9.TacticalReviewClient
         public CampaignGeneratedMapDto KnownMap => codec.CopyKnownGeneratedMap(map);
         public CampaignStaticAstronomySnapshot Astronomy { get; }
         internal GeneratedCampaignPresentation(ReviewFrame frame, CampaignGeneratedMapDto knownMap,
-            CampaignStaticAstronomySnapshot astronomy, IStaticAstronomyReviewHostCodec codec)
+            CampaignStaticAstronomySnapshot astronomy, IKnownGeneratedMapCodec codec)
         {
             if(knownMap.ActorId!=frame.Actor || astronomy.ActorId!=frame.Actor
                 ||knownMap.MapContentHash!=astronomy.MapContentHash

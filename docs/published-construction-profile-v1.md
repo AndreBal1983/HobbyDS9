@@ -1,10 +1,11 @@
 # Explicit portable published-construction profile
 
-Status: **proposed portable implementation for review**, not a shipping content or
-Unity activation. The separate typed `CampaignPublishedConstructionApplication`
-accepts an explicitly supplied base template and support catalogue. No menu,
-host, slot store, JSON codec or default factory registers this profile. Existing
-V1/V2 roots and their `UnsupportedSource` decisions remain unchanged.
+Status: **provisional playtest source implementation for review**, not a validated
+Unity/player delivery. The separate typed `CampaignPublishedConstructionApplication`
+accepts an explicitly supplied base template and support catalogue. A separate
+opt-in menu, typed host, strict codec and distinct slot store now provide source
+integration. Existing default campaigns, V1/V2 roots and their `UnsupportedSource`
+decisions remain unchanged. No package has been rebuilt for this increment.
 
 ## Identity and replay
 
@@ -17,9 +18,13 @@ metadata hash, retained-record budget, actual replay-operation limit, closed jou
 rules and compiler version. The actual limit is encoded explicitly even when the
 supplied historical base-template hash is identical.
 Each generated package domain additionally binds the frozen Natural map hash.
-These hashes establish consistency, **not authority**: a future caller must supply
+These hashes establish consistency, **not authority**: the composition root must supply
 the approved external template/support package. Saved metadata cannot approve
-itself. No support ratings in the tests are adopted as live playtest balance.
+itself. The explicitly reviewed provisional playtest table is authored in
+[`scenarios/published-construction-v1`](../scenarios/published-construction-v1/README.md).
+Its exact Unity resource copy uses the same bytes; no test helper is a runtime
+content factory. The support compiler's historical `provisional-test-only` wire
+label remains unchanged; this is reversible playtest tuning, not final balance.
 
 Load validates the stored geometry and reconstructs this new domain from that
 geometry; it never regenerates a map from its seed. It replays the complete
@@ -79,12 +84,36 @@ and a new strategic order. Full roots are used only for audit/replay assertions.
 
 This is CPU evidence, not Unity/AOT, visual, native interaction or responsiveness
 acceptance. Full replay remains expensive; no validation was removed to reduce
-its time. A strict outer codec/store and explicit host integration would require
-their own reviewed increment before player activation.
-The actor-scoped projection of current tactical support and capacity eligibility
-is also deferred and must precede host/UI activation. Existing construction/design
-snapshots do not yet advertise the new queue eligibility; command validation is
-authoritative, but that alone is not a complete player-facing admission display.
+its time. Actual Unity import/receiving, strict build and native validation are
+still required before delivering this source increment to a player.
+
+## Explicit player boundary
+
+The construction-playtest foldout uses the existing seed/settings and a distinct
+`HobbyDS9PublishedConstructionOnly-v1` namespace with
+`unity-published-construction-v1-` filenames. The original New/Continue controls
+retain their profiles. There is no fallback, conversion or outer-root adapter.
+Strict Format8 carrier admission requires the embedded construction marker; all
+host Load/Reopen paths additionally complete external-package validation and
+authoritative replay before publishing a new host/frame/presentation.
+
+The designer's optional construction foldout lists only this actor's published
+revisions and own colonies. Its detached eligibility observation includes the
+actual shared validator's reason/cost, tactical support and the result of running
+the paid command on a detached canonical post-payment candidate. Capturing it
+changes no money, IDs, transcript or RNG. UI admission binds the exact returned
+object, controller and frame as well as actor/turn/revision; the command still
+revalidates all current rules. Unsupported fits remain publishable with a clear
+build refusal. This API does not expose foreign costs or support details.
+
+The new concrete background save work captures only a detached export under the
+live gate. Complete replay, codec copies and file I/O then run outside that gate;
+render-current checks never wait on worker validation. Background load prepares
+the entire new host/controller/known presentation before UI publication. Existing
+token-owned busy state, captured slots, dirty-draft retention, cancellation and
+stale-finally guards apply. Final store writes retain overwrite race checks and
+atomic replacement. Once an atomic write begins, later UI cancellation may still
+leave a valid point-in-time save, without publishing stale UI completion.
 
 Related contracts: [ship design](design/ship-design.md),
 [architecture](architecture.md),

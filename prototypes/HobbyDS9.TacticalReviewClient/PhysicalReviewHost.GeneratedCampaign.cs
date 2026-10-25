@@ -24,6 +24,11 @@ namespace HobbyDS9.TacticalReviewClient
                 if(observed.HostId!=id||observed.Generation!=generation)return true;
                 var status=session.CaptureStatus();
                 if(observed.Status.Turn!=status.Turn||observed.Status.CampaignRevision!=status.CampaignRevision)return true;
+                if(publishedStore is IReviewCheckpointWriteAdmission publishedAdmission)
+                {
+                    try{return publishedAdmission.TryCheckWriteAdmission(slot,out error);}
+                    catch(Exception){error=ReviewCheckpointError.WriteFailed;return true;}
+                }
                 if(generatedStore is IReviewCheckpointWriteAdmission admission)
                 {
                     try{return admission.TryCheckWriteAdmission(slot,out error);}
@@ -56,7 +61,8 @@ namespace HobbyDS9.TacticalReviewClient
         public CampaignGeneratedMapDto CaptureGeneratedMap(ReviewFrame observed)
         {
             lock(gate){RequireCurrent(observed.HostId,observed.Generation);
-                var view=((ICampaignGeneratedSession)session).CaptureGeneratedMap(observed.Actor);
+                var view=publishedPackage!=null?((ICampaignPublishedConstructionSession)session).CaptureGeneratedMap(observed.Actor)
+                    :((ICampaignGeneratedSession)session).CaptureGeneratedMap(observed.Actor);
                 if(view.ObservationTurn!=observed.Status.Turn||view.CampaignRevision!=observed.Status.CampaignRevision)throw new InvalidOperationException("Generated map observation is stale.");
                 return view;}
         }

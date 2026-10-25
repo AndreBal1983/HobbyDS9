@@ -237,6 +237,7 @@ namespace HobbyDS9.UnityReview
                     new Action(publication.NewIdentity),new Func<string>(()=>publication.Notice),ReviewDesignPublication.Starter(publication.Library),new Func<string>(()=>publication.ClassId)});
                 var state=designState;model.ResetLocalDesign=()=>bridge.GetMethod("Reset")!.Invoke(null,new[]{state});
             }
+            bridge.GetMethod("SetConstructionPanel")!.Invoke(null,new object?[]{designState,model!.PublishedConstructionCampaign?new Action<VisualElement>(DrawPublishedConstructionPanel):null});
             bridge.GetMethod("Present")!.Invoke(null,new[]{content,designState});
         }
     }
