@@ -222,6 +222,8 @@ namespace HobbyDS9.UnityReview
             }).StartingIn(1);
         }
         internal void SetActive(bool value){active=value;if(!value)ReleaseStage();else if(panel!=null&&inspector.value)RefreshInspector();}
+        internal void PresentStatus(string? text)
+        {if(!disposed)feedback.text=string.IsNullOrEmpty(text)?"Normal construction charges no credits. Work consumes delivered materials; interruptions pause progress.":text;}
         private void ReleaseStage(){if(preview!=null)preview.image=null;stage?.Dispose();stage=null;}
         public void Dispose(){if(disposed)return;disposed=true;ReleaseStage();}
     }

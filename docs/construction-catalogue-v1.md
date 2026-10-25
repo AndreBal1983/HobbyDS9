@@ -21,6 +21,16 @@ dirty drafts and late completion retain the accepted interaction-worker behavior
 Expedition and destructive cancellation actions still have their existing review.
 Earlier profiles retain their original panels and command behavior.
 
+Construction feedback is a separate scoped presentation string, not a general
+echo of the model message. It binds exact current controller/frame, world and
+operation ID; weak identities retain no old session. Fresh catalogue redraw and
+same-controller resize show its actual status label. Another world/session/frame
+does not inherit it. Starting a new operation clears it; stale completion and
+Busy Begin rejection cannot overwrite newer feedback. A nonbusy rejected Begin
+updates the current owned label without recapturing a potentially stale frame.
+No rejection is automatically retried. Actual visible negative feedback remains
+part of the later Unity receiving gate.
+
 Each authored structure is unique per colony under the existing rule: its tile
 shows actual installed and queued counts, and + is disabled when built or queued.
 Material shortage does not prevent queueing. No credits are charged for normal

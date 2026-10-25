@@ -25,6 +25,7 @@ namespace HobbyDS9.UnityReview
         private readonly VisualElement worlds,expeditions,review;
         private readonly ScrollView pageScroll;
         private ReviewConstructionCatalogue? construction;
+        private Func<string,string?>? constructionStatus;
         private readonly Label status;
         private CampaignActivityCommandDto? pending;
         private bool disposed,expeditionsSelected,submitted;
@@ -61,6 +62,10 @@ namespace HobbyDS9.UnityReview
             SelectPage(saved.Expeditions);
             construction?.RestoreSelection(saved.Construction);
         }
+        internal void BindConstructionStatus(Func<string,string?> currentStatus)
+        {if(disposed)return;constructionStatus=currentStatus;RefreshConstructionStatus();}
+        internal void RefreshConstructionStatus()
+        {if(!disposed&&Colony!=null)construction?.PresentStatus(constructionStatus?.Invoke(Colony.ColonyId));}
 
         public ReviewActivitiesPanel(CampaignActivityObservationDto observation,
             Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto> evaluate,
@@ -174,6 +179,7 @@ namespace HobbyDS9.UnityReview
                     if(disposed||submitted)return;
                     submitted=true;submit(Copy(command));
                 },id=>Review(Command(CampaignActivityCommandKind.CancelProduction,id),"Cancel this order? Completed work and consumed materials are lost. Unused local stock stays here."));
+                construction.PresentStatus(constructionStatus?.Invoke(colony.ColonyId));
                 buildList.style.flexGrow=1;buildList.style.minHeight=0;buildList.Add(construction);queueList.style.display=DisplayStyle.None;
                 return;
             }
@@ -385,6 +391,6 @@ namespace HobbyDS9.UnityReview
             if(previewImage!=null){previewImage.image=null;previewImage.style.display=DisplayStyle.None;}
             stage?.Dispose();stage=null;
         }
-        public void Dispose(){if(disposed)return;disposed=true;pending=null;construction?.Dispose();ReleasePreview();}
+        public void Dispose(){if(disposed)return;disposed=true;pending=null;constructionStatus=null;construction?.Dispose();ReleasePreview();}
     }
 }

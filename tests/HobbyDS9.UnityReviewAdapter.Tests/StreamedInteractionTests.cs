@@ -59,6 +59,44 @@ public sealed class StreamedInteractionTests : IDisposable
         }
         finally{release.Set();await task.WaitAsync(TimeSpan.FromSeconds(20));Probe(m,null);m.AbandonStreamedInteraction(work);}
     }
+    [Fact] public async Task ConstructionFeedbackBindsFreshCurrentWorldAndClearsAcrossNewWorkAndLoad()
+    {
+        var m=Model();var other=Model();var original=Root(m);var frame=m.Current.Frame;var bad=Queue(m,"command.feedback.reject");bad.DefinitionId="blueprint.unavailable";
+        var rejected=m.BeginStreamedInteraction(StreamedInteractionKind.Submission,bad)!;var result=await Task.Run(rejected.Execute);
+        Assert.True(m.CompleteStreamedInteraction(rejected,result));Assert.False(result.Committed);Assert.Equal(original,Root(m));
+        var text=m.ConstructionStatusFor(m.Current,frame,"colony.sol");Assert.Equal("That class or construction site is not supported here.",text);
+        Assert.Null(m.ConstructionStatusFor(m.Current,frame,"colony.mars"));Assert.Null(m.ConstructionStatusFor(other.Current,other.Current.Frame,"colony.sol"));
+        Assert.Equal(text,m.ConstructionStatusFor(m.Current,frame,"colony.sol")); // same current redraw
+        Assert.Null(other.ConstructionStatusFor(other.Current,other.Current.Frame,"colony.sol"));
+        var stale=Queue(m,"command.feedback.stale");stale.ExpectedRevision--;
+        Assert.Null(m.BeginStreamedInteraction(StreamedInteractionKind.Submission,stale));Assert.Equal(original,Root(m));
+        Assert.Equal("The campaign changed. Refresh before adding construction.",m.ConstructionStatusFor(m.Current,frame,"colony.sol"));
+        var preview=m.BeginStreamedInteraction(StreamedInteractionKind.Preview,Queue(m,"command.feedback.preview"))!;
+        Assert.Null(m.BeginStreamedInteraction(StreamedInteractionKind.Submission,bad)); // Busy must not store a new rejected notice
+        Assert.True(m.CompleteStreamedInteraction(preview,await Task.Run(preview.Execute)));Assert.Null(m.ConstructionStatusFor(m.Current,frame,"colony.sol"));
+        var accepted=m.BeginStreamedInteraction(StreamedInteractionKind.Submission,Queue(m,"command.feedback.accepted"))!;
+        Assert.True(m.CompleteStreamedInteraction(accepted,await Task.Run(accepted.Execute)));var current=m.Current.Frame;
+        Assert.Equal("Construction order added.",m.ConstructionStatusFor(m.Current,current,"colony.sol"));
+        Assert.False(m.CompleteStreamedInteraction(rejected,result));Assert.Null(m.ConstructionStatusFor(m.Current,frame,"colony.sol"));
+        Assert.Equal("Construction order added.",m.ConstructionStatusFor(m.Current,current,"colony.sol")); // stale read/completion cannot clear newer text
+        Assert.True(m.Save("feedback"));Assert.True(m.Load("feedback",true));Assert.Null(m.ConstructionStatusFor(m.Current,m.Current.Frame,"colony.sol"));
+        m.Current.MarkStrategicFailure(CampaignTacticalError.InvalidBatch);
+        Assert.Null(m.BeginStreamedInteraction(StreamedInteractionKind.Submission,Queue(m,"command.feedback.refresh")));
+        Assert.Equal("The campaign changed. Refresh before adding construction.",m.ConstructionStatusFor(m.Current,m.Current.Frame,"colony.sol"));
+    }
+    [Fact] public async Task ReentrantCancelledCompletionCannotPublishFeedbackIntoNewerPreviewAndLateFailureKeepsRoot()
+    {
+        var m=Model();var before=Root(m);var old=m.BeginStreamedInteraction(StreamedInteractionKind.Submission,Queue(m,"command.feedback.old"))!;
+        var prepared=await Task.Run(old.Execute);StreamedInteractionWork? newer=null;
+        Probe(m,phase=>{if(phase=="before-publication"){m.AbandonStreamedInteraction(old);newer=m.BeginStreamedInteraction(StreamedInteractionKind.Preview,Queue(m,"command.feedback.new"));}});
+        Assert.False(m.CompleteStreamedInteraction(old,prepared));Assert.NotNull(newer);Assert.True(m.Busy);Probe(m,null);
+        Assert.True(m.CompleteStreamedInteraction(newer!,await Task.Run(newer!.Execute)));Assert.Equal(before,Root(m));
+        Assert.Null(m.ConstructionStatusFor(m.Current,m.Current.Frame,"colony.sol"));
+        Probe(m,phase=>{if(phase=="after-capture")throw new InvalidOperationException("late feedback test failure");});
+        var failed=m.BeginStreamedInteraction(StreamedInteractionKind.Submission,Queue(m,"command.feedback.failed"))!;var failure=await Task.Run(failed.Execute);
+        Assert.False(m.CompleteStreamedInteraction(failed,failure));Assert.Equal(before,Root(m));Assert.False(m.Busy);
+        Assert.Equal("The construction request was not applied. No order was added.",m.ConstructionStatusFor(m.Current,m.Current.Frame,"colony.sol"));Probe(m,null);
+    }
     [Fact] public async Task DetachedPreviewSubmissionAndTurnExactlyMatchSyncRootsWithoutReplayOrDoubleExecution()
     {
         var sync=Model();var asyncModel=Model();var command=Queue(sync);var original=Root(asyncModel);var frame=asyncModel.Current.Frame;

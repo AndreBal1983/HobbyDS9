@@ -26,7 +26,17 @@ namespace HobbyDS9.UnityReview
             StreamedInteractionKind kind,CampaignActivityCommandDto? command=null,string caption="",ReviewActivitiesPanel.Selection? selection=null)
         {
             if(!ReferenceEquals(model,owner)||!ReferenceEquals(owner.Current,controller)||!ReferenceEquals(controller.Frame,frame)||!isActiveAndEnabled)return;
-            var work=owner.BeginStreamedInteraction(kind,command);if(work==null){Draw();return;}
+            var work=owner.BeginStreamedInteraction(kind,command);
+            if(work==null)
+            {
+                // A rejected Begin can mean the source stamp changed. Show the
+                // current owned notice without trying to recapture that stale
+                // frame, and never overwrite a running newer operation's UI.
+                if(kind==StreamedInteractionKind.Submission&&(command?.Kind==CampaignActivityCommandKind.EnqueueShip||command?.Kind==CampaignActivityCommandKind.EnqueueStructure)
+                    &&!owner.Busy&&streamedUiWork==null&&ReferenceEquals(activitiesPanelOwner,owner)&&ReferenceEquals(activitiesPanelController,controller))
+                {root?.Q<ReviewActivitiesPanel>()?.RefreshConstructionStatus();return;}
+                Draw();return;
+            }
             var epoch=viewEpoch;streamedUiWork=work;streamedUiOwner=owner;
             streamedUiTitle=kind==StreamedInteractionKind.Preview?"Checking order…":kind==StreamedInteractionKind.Submission?"Applying order…":"Advancing week…";
             try

@@ -47,6 +47,8 @@ namespace HobbyDS9.UnityReview
                 if(ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&ReferenceEquals(controller.Frame,frame)){if(owner.StreamedActivitiesCampaign)RunStreamedInteraction(owner,controller,frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.Submission,command,selection:root?.Q<ReviewActivitiesPanel>()?.CaptureSelection());else Do(()=>owner.SubmitActivity(command));}
             };
             var panel=streamed!=null?new ReviewActivitiesPanel(streamed,(command,caption)=>{if(ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&ReferenceEquals(controller.Frame,frame))RunStreamedInteraction(owner,controller,frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.Preview,command,caption,root?.Q<ReviewActivitiesPanel>()?.CaptureSelection());},submit):new ReviewActivitiesPanel(observation,evaluate,submit);
+            if(streamed!=null)panel.BindConstructionStatus(colony=>ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&ReferenceEquals(controller.Frame,frame)
+                ?owner.ConstructionStatusFor(controller,frame,colony):null);
             panel.RestoreSelection(selection);
             panel.RegisterCallback<DetachFromPanelEvent>(e=>{if(ReferenceEquals(e.target,panel))panel.Dispose();});
             activitiesPanelOwner=owner;activitiesPanelController=controller;
