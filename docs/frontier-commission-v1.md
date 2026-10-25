@@ -1,7 +1,7 @@
 # Frontier Commission v1
 
-Status: source/CPU and actual Unity receiving accepted. Separate Windows build
-and native mission acceptance remain pending. This adds a finite mission outcome to the existing
+Status: source/CPU, actual Unity receiving and scoped Windows/native mission
+acceptance passed. This adds a finite mission outcome to the existing
 [streamed campaign](campaign-activities-streamed-v1.md), with continued sandbox
 play after completion. It does not add a campaign terminal state or rewards.
 
@@ -64,3 +64,14 @@ sandbox play. The initial run exposed a clipped sidebar caption; the shorter
 with 130 pixels for the old caption. Exact campaign validation remains in place;
 mature checkpoint latency is still substantial. See the separate evidence at
 `E:/HobbyDS9/artifacts/frontier-commission-engine-r2-20261025`.
+
+The separate Windows IL2CPP package at
+`E:/HobbyDS9/artifacts/demos/HobbyDS9-Frontier-Commission-20261025`
+was built from `3cdaceab` and independently verified. Normal executable testing
+covered New250/Mission0, then a separate unmodified receiving-derived campaign
+continued through Mission4, turn21, Save/Quit/cold Continue with completion
+retained. This is not a manually played twenty-week expedition or new native
+combat acceptance. All current owner files/preferences were restored against a
+fresh baseline and independently verified. Detailed scope and remaining broad
+demo gaps are recorded in
+`E:/HobbyDS9/artifacts/frontier-commission-native-3cdacea-20261025/CHECKPOINT.md`.
