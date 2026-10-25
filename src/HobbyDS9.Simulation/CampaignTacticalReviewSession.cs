@@ -12,6 +12,8 @@ namespace HobbyDS9.Simulation
     {
         private readonly object gate = new object();
         private readonly DefinitionCatalogDto definitions;
+        // Fixed topology belongs to these privately copied definitions; dynamic state is never retained here.
+        private readonly WeightedNavigationGraph? physicalNavigation;
         private readonly SaveCompatibility compatibility;
         private readonly TacticalRulesV2Dto rules;
         private readonly List<CampaignTacticalCloakSourceDto> cloak;
@@ -66,6 +68,7 @@ namespace HobbyDS9.Simulation
             if(physicalPackage!=null)
             {
                 CampaignTacticalTravelData.ValidatePackage(physicalPackage);
+                physicalNavigation=new WeightedNavigationGraph(definitions);
                 declaredHostilities=physicalPackage.Hostilities!.Select(h=>new CampaignDeclaredHostilityDto { CivilizationA=h.CivilizationA,CivilizationB=h.CivilizationB }).ToList();
                 authoredContactGrids=physicalPackage.InitialContacts!.Select(CampaignTacticalTravelData.Copy).ToList();
                 authoredFleetOwners=package.Campaign.InitialState.Fleets!.ToDictionary(f=>f.FleetId,f=>f.OwnerCivilizationId,StringComparer.Ordinal);

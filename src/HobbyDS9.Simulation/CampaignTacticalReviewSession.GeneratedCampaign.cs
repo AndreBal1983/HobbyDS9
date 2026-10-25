@@ -94,7 +94,7 @@ namespace HobbyDS9.Simulation
         }
         private void PlanGeneratedTravel(CampaignTacticalTravelSaveDto next)
         {
-            var game = next.Core.Campaign.GameState; var graph = new WeightedNavigationGraph(definitions);
+            var game = next.Core.Campaign.GameState; var graph = physicalNavigation!;
             var visited = new HashSet<string>(discoveries.Select(r => r.ActorId + "|" + r.ArrivalNodeId), StringComparer.Ordinal);
             foreach (var home in generatedMap!.Layout.HomeCandidates)
                 foreach (var actor in game.Civilizations!.Where(c => c.DefinitionId == home.CivilizationDefinitionId)) visited.Add(actor.CivilizationId + "|" + home.NodeId);

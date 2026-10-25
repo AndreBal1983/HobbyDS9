@@ -105,7 +105,7 @@ namespace HobbyDS9.Simulation
             Require(source.published!=null,"Published fork only.");
             // These are privately owned fixed metadata, never returned as mutable DTOs
             // and never modified by commands. No caller-owned package/map is shared.
-            definitions=source.definitions;compatibility=source.compatibility;rules=source.rules;cloak=source.cloak;controllers=source.controllers;
+            definitions=source.definitions;physicalNavigation=source.physicalNavigation;compatibility=source.compatibility;rules=source.rules;cloak=source.cloak;controllers=source.controllers;
             initialTurn=source.initialTurn;generatedMap=source.generatedMap;generatedTemplateHash=source.generatedTemplateHash;astronomyIndex=source.astronomyIndex;
             declaredHostilities=source.declaredHostilities;authoredContactGrids=source.authoredContactGrids;contactFreshness=source.contactFreshness;authoredFleetOwners=source.authoredFleetOwners;
             playableHash=source.playableHash;playableOperationLimit=source.playableOperationLimit;playableOpponent=source.playableOpponent;playableDefenseNode=source.playableDefenseNode;

@@ -28,7 +28,7 @@ namespace HobbyDS9.Simulation
             if(generatedMap!=null)
             {
                 // Generated ingress is accepted only through whole-history replay, not this structural check alone.
-                var generatedGraph=new WeightedNavigationGraph(definitions);
+                var generatedGraph=physicalNavigation!;
                 Require(rows.Select(k=>k.ActorId+"|"+k.FleetId).Distinct(StringComparer.Ordinal).Count()==rows.Count
                     &&rows.All(k=>controllers.ContainsKey(k.ActorId)&&KnownFleetOwner(k.FleetId) is string owner
                         &&CampaignPhysicalMovement.Hostile(declaredHostilities!,k.ActorId,owner)
@@ -38,7 +38,7 @@ namespace HobbyDS9.Simulation
                 return;
             }
             Require(rows.Count==authoredContactGrids!.Count&&rows.Select(k=>k.ActorId+"|"+k.FleetId).Distinct(StringComparer.Ordinal).Count()==rows.Count,"Missing/duplicate lawful contact grid.");
-            var graph=new WeightedNavigationGraph(definitions);
+            var graph=physicalNavigation!;
             foreach(var k in rows)
             {
                 var source=authoredContactGrids.SingleOrDefault(p=>p.ActorId==k.ActorId&&p.FleetId==k.FleetId);
@@ -109,7 +109,7 @@ namespace HobbyDS9.Simulation
                     &&proof.Orders.All(o=>ValidTravelOrder(proof.Start,o,proof.Contacts,allowStale:true)
                         &&o.RouteNodeIds.SequenceEqual(proof.Start.Fleets.Single(f=>f.FleetId==o.FleetId).RouteNodeIds!)),"Invalid movement input provenance.");
                 var replay=SimulationSession.CopyState(proof.Start);
-                var motion=CampaignPhysicalMovement.Execute(replay,definitions,proof.Orders,proof.Contacts,declaredHostilities!,contactFreshness);
+                var motion=CampaignPhysicalMovement.Execute(replay,definitions,proof.Orders,proof.Contacts,declaredHostilities!,contactFreshness,physicalNavigation!);
                 var expectedRequests=FreezePhysical(replay,motion);
                 var expectedContacts=proof.Contacts.Select(CampaignTacticalTravelData.Copy).ToList();
                 RefreshPhysicalContacts(expectedRequests,proof.Start.TurnNumber,expectedContacts);

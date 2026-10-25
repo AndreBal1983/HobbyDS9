@@ -8,6 +8,7 @@ namespace HobbyDS9.Simulation
     // Immutable authored topology. Dynamic cost and knowledge come from owned state.
     public sealed class WeightedNavigationGraph
     {
+        private readonly DefinitionCatalogDto owner;
         private readonly Dictionary<string,NavigationRegionDefinitionDto> nodes;
         private readonly Dictionary<string,NavigationConnectionDto> edges;
         private readonly Dictionary<string,PhenomenonDefinitionDto> phenomena;
@@ -16,6 +17,7 @@ namespace HobbyDS9.Simulation
         public WeightedNavigationGraph(DefinitionCatalogDto definitions)
         {
             Validate(definitions).ThrowIfInvalid(nameof(definitions));
+            owner=definitions;
             nodes=definitions.NavigationRegions!.ToDictionary(n=>n.NodeId,PopulationData.Copy,StringComparer.Ordinal);
             edges=definitions.NavigationConnections!.ToDictionary(e=>e.ConnectionId,PopulationData.Copy,StringComparer.Ordinal);
             phenomena=definitions.Phenomena!.ToDictionary(p=>p.DefinitionId,PopulationData.Copy,StringComparer.Ordinal);
@@ -25,7 +27,11 @@ namespace HobbyDS9.Simulation
         public string? NodeForSystem(string system)=>Regions.SingleOrDefault(n=>n.AssociatedSystemId==system)?.NodeId;
         public string? SystemForNode(string node)=>nodes.TryGetValue(node,out var region)?region.AssociatedSystemId:null;
         public IReadOnlyList<string> Neighbors(string node)=>Connections.Where(e=>e.EndpointA==node||e.EndpointB==node).Select(e=>e.EndpointA==node?e.EndpointB:e.EndpointA).OrderBy(n=>n,StringComparer.Ordinal).ToList().AsReadOnly();
-        internal NavigationConnectionDto? Edge(string from,string to)=>edges.Values.FirstOrDefault(e=>(e.EndpointA==from&&e.EndpointB==to)||(e.EndpointB==from&&e.EndpointA==to));
+        // A retained graph may be shared by detached session forks. Never expose its mutable DTOs.
+        internal NavigationConnectionDto? Edge(string from,string to)
+        {var edge=edges.Values.FirstOrDefault(e=>(e.EndpointA==from&&e.EndpointB==to)||(e.EndpointB==from&&e.EndpointA==to));return edge==null?null:PopulationData.Copy(edge);}
+        internal void RequireOwner(DefinitionCatalogDto definitions)
+        {if(!ReferenceEquals(owner,definitions))throw new ArgumentException("Navigation topology belongs to different definitions.",nameof(definitions));}
         internal bool KnownNode(GameStateDto state,string actor,string node)=>state.NavigationKnowledge!.Single(k=>k.CivilizationId==actor).Nodes!.Any(k=>k.Id==node&&k.Level!=NavigationKnowledgeLevel.Unknown);
         internal bool KnownEdge(GameStateDto state,string actor,string connection)=>state.NavigationKnowledge!.Single(k=>k.CivilizationId==actor).Connections!.Any(k=>k.Id==connection&&k.Level!=NavigationKnowledgeLevel.Unknown);
         internal IEnumerable<TraversalEffectDto> Effects(GameStateDto state,long? atTurn=null)=>state.TraversalEffects!.Where(e=>e.StartTurn<=(atTurn??state.TurnNumber)&&(atTurn??state.TurnNumber)<=e.EndTurn).OrderBy(e=>e.EffectId,StringComparer.Ordinal);

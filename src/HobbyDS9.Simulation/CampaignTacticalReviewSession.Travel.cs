@@ -60,7 +60,7 @@ namespace HobbyDS9.Simulation
                 Require(travel!=null&&Actor(actor)==CampaignTacticalError.None,"Only a controlled human actor can query known routes.");
                 var query=state.Campaign.GameState;
                 if(generatedMap!=null){query=SimulationSession.CopyState(query);ChartGeneratedBorders(query,actor);}
-                return new WeightedNavigationGraph(definitions).FindRoute(query,actor,origin,destination);
+                return physicalNavigation!.FindRoute(query,actor,origin,destination);
             }
         }
         public StrategicRouteSnapshot EvaluateKnownTravelRoute(string actor,string origin,IReadOnlyList<string> steps)
@@ -70,7 +70,7 @@ namespace HobbyDS9.Simulation
                 Require(travel!=null&&Actor(actor)==CampaignTacticalError.None,"Only a controlled human actor can query known routes.");
                 var route=steps.ToArray();var query=state.Campaign.GameState;
                 if(generatedMap!=null){query=SimulationSession.CopyState(query);ChartGeneratedBorders(query,actor);}
-                var graph=new WeightedNavigationGraph(definitions);
+                var graph=physicalNavigation!;
                 if(!graph.ValidateRoute(query,actor,origin,route))return new StrategicRouteSnapshot(RouteErrorCode.Unreachable,Array.Empty<string>(),Array.Empty<NavigationCostSnapshot>(),null);
                 var costs=new List<NavigationCostSnapshot>();long total=0;var from=origin;
                 foreach(var next in route)
@@ -86,7 +86,7 @@ namespace HobbyDS9.Simulation
         {
             if(order==null||order.RouteNodeIds==null||!Enum.IsDefined(typeof(CampaignTravelIntent),order.Intent))return false;
             var fleet=game.Fleets!.SingleOrDefault(f=>f.FleetId==order.FleetId);if(fleet==null)return false;
-            var graph=new WeightedNavigationGraph(definitions);
+            var graph=physicalNavigation!;
             if(fleet.TransitTotalCost>0&&!order.RouteNodeIds.SequenceEqual(fleet.RouteNodeIds!))return false;
             if(!graph.ValidateRoute(game,fleet.OwnerCivilizationId,fleet.LocationNodeId,order.RouteNodeIds,
                 fleet.TransitTotalCost>0?fleet.TransitTotalCost-fleet.TransitProgress:0))return false;
@@ -225,7 +225,7 @@ namespace HobbyDS9.Simulation
                 Probe(StrategicTurnPhase.Movement);
                 next.MovementProof=new CampaignPhysicalMovementProofDto { Start=SimulationSession.CopyState(game),
                     Orders=next.Orders.Select(CampaignTacticalTravelData.Copy).ToList(),Contacts=next.Contacts.Select(CampaignTacticalTravelData.Copy).ToList() };
-                var movement=CampaignPhysicalMovement.Execute(game,definitions,next.Orders,next.Contacts,declaredHostilities!,contactFreshness);
+                var movement=CampaignPhysicalMovement.Execute(game,definitions,next.Orders,next.Contacts,declaredHostilities!,contactFreshness,physicalNavigation!);
                 var movementGuard=SimulationSession.CopyState(game);
                 foreach(var receipt in movement.Receipts.Where(r=>r.StoppedByEncounter))
                     movementGuard.Fleets!.Single(f=>f.FleetId==receipt.FleetId).RouteNodeIds=next.MovementProof.Start.Fleets!
