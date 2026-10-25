@@ -141,6 +141,9 @@ namespace HobbyDS9.Simulation
                 {
                     var candidate=ForkPublished();var result=action(candidate);
                     if(!result.Accepted){LastPhysicalFailure=candidate.LastPhysicalFailure;return Result(result.Error);}
+                    // Strategic commands replace state; physical commands replace both.
+                    // Certify the canonical post-command core, never the fork's old core.
+                    candidate.travel=candidate.TravelCopy();
                     PublishedTransactionProbe?.Invoke("after-command");candidate.ValidateTravelSave(candidate.travel!);
                     var facts=candidate.PublishedCapacity(ConstructionJournalOperation.AlreadyStagedBoundary,candidate.playableTranscript.Count);
                     if(!facts.Certified){LastPhysicalFailure=facts.UncertifiableReason;return Result(CampaignTacticalError.Overflow);}

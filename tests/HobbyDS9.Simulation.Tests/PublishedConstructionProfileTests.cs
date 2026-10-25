@@ -91,6 +91,27 @@ public sealed class PublishedConstructionProfileTests
             EnqueueBlueprintConstruction=new(){ColonyId="colony.sol",BlueprintId=Id,Revision=1}});
         Assert.Equal(CampaignTacticalError.Overflow,r.Error);Assert.Equal(before,Json(app.ExportPublishedConstructionSave()));
     }
+    [Fact] public void ExactJournalBoundaryChecksPostPaymentQueueAndRejectsWithoutPublishingAnyState()
+    {
+        var source=Package();source.BaseTemplate!.ReplayOperationLimit=2;
+        var p=CampaignPublishedConstructionApplication.CreatePackage(source.BaseTemplate,source.Support!,512);
+        var app=CampaignPublishedConstructionApplication.StartGame(p,Settings());Publish(app,1);
+        var before=Json(app.ExportPublishedConstructionSave());var stamp=app.CaptureStatus();
+        var facts=(ConstructionJournalFacts)typeof(CampaignTacticalReviewSession).GetMethod("PublishedCapacity",
+            System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic)!.Invoke(Backend(app),
+                new object[]{ConstructionJournalOperation.AlreadyStagedBoundary,1L})!;
+        Assert.True(facts.Certified);Assert.Equal(0,facts.Pending);Assert.Equal(0,facts.ReservedSlots);
+        Assert.Equal(stamp.CampaignRevision,facts.Revision);
+        var result=app.SubmitStrategicCommand(new(){ActorCivilizationId=Human,CommandId="command.optin.exact-journal",
+            ExpectedTurn=stamp.Turn,ExpectedRevision=stamp.CampaignRevision,Kind=CommandKind.EnqueueBlueprintConstruction,
+            EnqueueBlueprintConstruction=new(){ColonyId="colony.sol",BlueprintId=Id,Revision=1}});
+        Assert.Equal(CampaignTacticalError.Overflow,result.Error);Assert.Equal(before,Json(app.ExportPublishedConstructionSave()));
+        Assert.Equal(1,app.RemainingPlayableOperations);
+        // A second immutable revision has no paid queue debt and still fits exactly.
+        Publish(app,2);Assert.Equal(0,app.RemainingPlayableOperations);
+        var root=app.ExportPublishedConstructionSave();Assert.Equal(2,app.CaptureDesignLibrary(Human).Published.Count);
+        Assert.Equal(Json(root),Json(CampaignPublishedConstructionApplication.LoadSave(p,Clone(root)).ExportPublishedConstructionSave()));
+    }
     [Fact] public void MixedStaticAndPublishedSourcesReplayAndRejectForgedProvenanceAndPackageMetadata()
     {
         var p=Package();var app=CampaignPublishedConstructionApplication.StartGame(p,Settings());Publish(app,1);Queue(app);
