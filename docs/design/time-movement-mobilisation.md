@@ -90,12 +90,13 @@ a usable supply connection and actual delivery. Existing stock, delivery capacit
 and blockade rules must remain authoritative rather than inventing an empire-wide
 warehouse or silently importing resources during Planning.
 
-**Implementation status:** this supersedes the upfront-credit/material payment
-assumption for the next activities campaign. Earlier implemented campaigns and their
-saves retain their versioned rules. The exact discrete material apportionment,
-construction demand priority and new profile/persistence contract require a scoped
-implementation review; the accepted older paid-construction source checkpoint is
-not evidence that this streaming behavior is implemented.
+**Implementation status:** the separate [Format10 streamed activities campaign](../campaign-activities-streamed-v1.md)
+implements this rule with cumulative integer material consumption, actual local
+stocks/deliveries and a shared ship/infrastructure queue. Its documented acceptance
+records distinguish portable, engine and executable evidence. Earlier campaigns
+and saves retain their versioned upfront-payment rules; they are not silently
+converted. Full freight transport and production buyout remain outside this
+implemented slice.
 
 Credits fund additional shifts, contractors, procurement, transport, housing or security effort where the relevant system supports it. Every eligible project defines normal work, available acceleration, incremental cost, constraints and earliest completion.
 
