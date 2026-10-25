@@ -48,6 +48,7 @@ namespace HobbyDS9.Simulation
             var catalogue=new ShipDesignCatalogueSnapshot(template.Integrated!.Physical!.CorePackage!.Campaign!.Definitions.ShipDesignCatalogue!);
             string hash=PublishedTacticalSupportCompiler.ValidateMetadata(catalogue,support);
             return Identity("wrapper",template.PackageHash!,hash,records.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                template.ReplayOperationLimit!.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
                 ConstructionJournalFacts.ClosedRules,PublishedTacticalSupportIdentity.Compiler,"single-entry-operations-v1");
         }
     }

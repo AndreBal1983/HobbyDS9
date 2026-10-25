@@ -13,7 +13,9 @@ The new outer DTO uses Format 8 and
 `generated-static-centres-published-support-v1`; the embedded core has its own
 `generated-campaign-owned-core-published-construction-v1` marker. The wrapper
 identity binds the supplied template identity, exact explicitly encoded support
-metadata hash, retained-record budget, closed journal rules and compiler version.
+metadata hash, retained-record budget, actual replay-operation limit, closed journal
+rules and compiler version. The actual limit is encoded explicitly even when the
+supplied historical base-template hash is identical.
 Each generated package domain additionally binds the frozen Natural map hash.
 These hashes establish consistency, **not authority**: a future caller must supply
 the approved external template/support package. Saved metadata cannot approve
@@ -79,6 +81,10 @@ This is CPU evidence, not Unity/AOT, visual, native interaction or responsivenes
 acceptance. Full replay remains expensive; no validation was removed to reduce
 its time. A strict outer codec/store and explicit host integration would require
 their own reviewed increment before player activation.
+The actor-scoped projection of current tactical support and capacity eligibility
+is also deferred and must precede host/UI activation. Existing construction/design
+snapshots do not yet advertise the new queue eligibility; command validation is
+authoritative, but that alone is not a complete player-facing admission display.
 
 Related contracts: [ship design](design/ship-design.md),
 [architecture](architecture.md),

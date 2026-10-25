@@ -56,6 +56,20 @@ public sealed class PublishedConstructionProfileTests
         var bytes=Json(root);p.Support!.Components!.Clear();p.BaseTemplate!.Integrated!.Physical!.CorePackage!.Campaign!.InitialState.Colonies!.Clear();
         root.Map!.Layout.Regions.Clear();Assert.Equal(bytes,Json(app.ExportPublishedConstructionSave()));
     }
+    [Fact] public void JournalLimitBindsWrapperAndGeneratedIdentityEvenBeforeAnyOperation()
+    {
+        var first=Package();var template=Clone(first.BaseTemplate!);template.ReplayOperationLimit=65535;
+        var second=CampaignPublishedConstructionApplication.CreatePackage(template,first.Support!,first.RetainedRecordBudget!.Value);
+        Assert.Equal(first.BaseTemplate!.PackageHash,second.BaseTemplate!.PackageHash);
+        Assert.Equal(Json(first.Support),Json(second.Support));Assert.Equal(first.RetainedRecordBudget,second.RetainedRecordBudget);
+        Assert.NotEqual(first.PackageHash,second.PackageHash);
+        var a=CampaignPublishedConstructionApplication.StartGame(first,Settings()).ExportPublishedConstructionSave();
+        var b=CampaignPublishedConstructionApplication.StartGame(second,Settings()).ExportPublishedConstructionSave();
+        Assert.Equal(a.Map!.ContentHash,b.Map!.ContentHash);Assert.NotEqual(a.PackageHash,b.PackageHash);
+        Assert.Empty(a.Campaign!.Transcript);Assert.Empty(b.Campaign!.Transcript);
+        Assert.Throws<ArgumentException>(()=>CampaignPublishedConstructionApplication.LoadSave(second,Clone(a)));
+        Assert.Throws<ArgumentException>(()=>CampaignPublishedConstructionApplication.LoadSave(first,Clone(b)));
+    }
     [Theory][InlineData("after-command")][InlineData("before-copy")][InlineData("after-transcript-copy")][InlineData("after-cache-copy")]
     public void LatePublicationCopyTranscriptAndCacheFailuresPublishNothing(string stage)
     {
