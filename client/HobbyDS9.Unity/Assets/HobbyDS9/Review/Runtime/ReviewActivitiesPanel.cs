@@ -23,6 +23,8 @@ namespace HobbyDS9.UnityReview
         private readonly int turn;
         private readonly long revision;
         private readonly VisualElement worlds,expeditions,review;
+        private readonly ScrollView pageScroll;
+        private ReviewConstructionCatalogue? construction;
         private readonly Label status;
         private CampaignActivityCommandDto? pending;
         private bool disposed,expeditionsSelected,submitted;
@@ -40,10 +42,11 @@ namespace HobbyDS9.UnityReview
             internal readonly string Actor;
             internal readonly bool Expeditions;
             internal readonly string? Colony,Ship,Site;
-            internal Selection(string actor,bool expeditions,string? colony,string? ship,string? site)
-            {Actor=actor;Expeditions=expeditions;Colony=colony;Ship=ship;Site=site;}
+            internal readonly ReviewConstructionCatalogue.Selection? Construction;
+            internal Selection(string actor,bool expeditions,string? colony,string? ship,string? site,ReviewConstructionCatalogue.Selection? construction=null)
+            {Actor=actor;Expeditions=expeditions;Colony=colony;Ship=ship;Site=site;Construction=construction;}
         }
-        internal Selection? CaptureSelection()=>disposed?null:new Selection(actor,expeditionsSelected,Colony?.ColonyId,Ship?.ShipId,Site?.Site.SiteId);
+        internal Selection? CaptureSelection()=>disposed?null:new Selection(actor,expeditionsSelected,Colony?.ColonyId,Ship?.ShipId,Site?.Site.SiteId,construction?.CaptureSelection());
         internal void RestoreSelection(Selection? saved)
         {
             if(disposed||saved==null||saved.Actor!=actor)return;
@@ -56,6 +59,7 @@ namespace HobbyDS9.UnityReview
             if(ship>=0)this.Q<DropdownField>("activity-ship-selector").index=ship;
             if(site>=0)this.Q<DropdownField>("activity-site-selector").index=site;
             SelectPage(saved.Expeditions);
+            construction?.RestoreSelection(saved.Construction);
         }
 
         public ReviewActivitiesPanel(CampaignActivityObservationDto observation,
@@ -85,9 +89,10 @@ namespace HobbyDS9.UnityReview
             var tabs=Row(this);
             Button(tabs,"World construction","activity-tab-worlds",()=>SelectPage(false));
             Button(tabs,"Expeditions & contact","activity-tab-expeditions",()=>SelectPage(true));
-            var scroll=new ScrollView(ScrollViewMode.Vertical){name="activity-scroll"};scroll.style.flexGrow=1;scroll.style.minHeight=0;Add(scroll);
-            worlds=new VisualElement{name="activity-worlds"};scroll.Add(worlds);
-            expeditions=new VisualElement{name="activity-expeditions"};scroll.Add(expeditions);
+            pageScroll=new ScrollView(ScrollViewMode.Vertical){name="activity-scroll"};pageScroll.style.flexGrow=1;pageScroll.style.minHeight=0;
+            worlds=new VisualElement{name="activity-worlds"};
+            if(streamed!=null){worlds.style.flexGrow=1;worlds.style.minHeight=0;Add(worlds);Add(pageScroll);}else{Add(pageScroll);pageScroll.Add(worlds);}
+            expeditions=new VisualElement{name="activity-expeditions"};pageScroll.Add(expeditions);
             BuildWorlds();BuildExpeditions();
             review=Card(this,"Order review","activity-order-review");review.style.display=DisplayStyle.None;
             review.style.flexShrink=0;review.style.maxHeight=240;
@@ -135,7 +140,10 @@ namespace HobbyDS9.UnityReview
         {
             expeditionsSelected=expedition;worlds.style.display=expedition?DisplayStyle.None:DisplayStyle.Flex;
             expeditions.style.display=expedition?DisplayStyle.Flex:DisplayStyle.None;
+            if(streamed!=null)pageScroll.style.display=expedition?DisplayStyle.Flex:DisplayStyle.None;
+            construction?.SetActive(!expedition);
             DismissReview();
+            if(streamed!=null)status.text=expedition?"Select an expedition or contact action to review it.":"Inspect a tile, or use + to add one order.";
             if(expedition && panel!=null)UpdateShipPreview();else ReleasePreview();
         }
         private ActivityOwnColonyDto? Colony=>colonyIndex>=0 && colonyIndex<observation.Colonies.Count?observation.Colonies[colonyIndex]:null;
@@ -158,6 +166,17 @@ namespace HobbyDS9.UnityReview
             var colony=Colony;
             colonyFacts!.text="Per week: Industry "+N(colony.Industry)+" · Research "+N(colony.Research)+" · Food "+N(colony.Food);
             buildList.Clear();queueList.Clear();
+            if(streamed!=null)
+            {
+                construction?.Dispose();
+                construction=new ReviewConstructionCatalogue(streamed,colony.ColonyId,command=>
+                {
+                    if(disposed||submitted)return;
+                    submitted=true;submit(Copy(command));
+                },id=>Review(Command(CampaignActivityCommandKind.CancelProduction,id),"Cancel this order? Completed work and consumed materials are lost. Unused local stock stays here."));
+                buildList.style.flexGrow=1;buildList.style.minHeight=0;buildList.Add(construction);queueList.style.display=DisplayStyle.None;
+                return;
+            }
             var options=Card(buildList,"Build at this world");
             if(observation.BuildOptions.Count==0)Text(options,"No construction options are supplied.");
             for(int index=0;index<observation.BuildOptions.Count;index++)
@@ -366,6 +385,6 @@ namespace HobbyDS9.UnityReview
             if(previewImage!=null){previewImage.image=null;previewImage.style.display=DisplayStyle.None;}
             stage?.Dispose();stage=null;
         }
-        public void Dispose(){if(disposed)return;disposed=true;pending=null;ReleasePreview();}
+        public void Dispose(){if(disposed)return;disposed=true;pending=null;construction?.Dispose();ReleasePreview();}
     }
 }

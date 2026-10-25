@@ -38,10 +38,26 @@ namespace HobbyDS9.UnityReview
                 if(!host.CompleteStreamedInteraction(work,completion,update)){Message="Interaction cancelled or unavailable.";return false;}
                 if(completion.Committed)ResearchDraft=research;
                 Message=completion.Failed?"Interaction unavailable.":work.Kind==StreamedInteractionKind.Preview?"Order checked at the observed campaign state.":completion.Result?.Accepted==true?"Activity order accepted.":"Activity order unavailable: "+completion.Result?.Error;
+                if(work.Kind==StreamedInteractionKind.Submission&&completion.Result?.Accepted==false
+                    &&(work.Command?.Kind==CampaignActivityCommandKind.EnqueueShip||work.Command?.Kind==CampaignActivityCommandKind.EnqueueStructure))
+                    Message=ConstructionRejection(completion.Result.Error);
                 return true;
             }
             catch(Exception){Message="Interaction unavailable; campaign publication did not complete.";return false;}
             finally{AbandonStreamedInteraction(work);}
+        }
+        private static string ConstructionRejection(CampaignTacticalError error)
+        {
+            switch(error)
+            {
+                case CampaignTacticalError.StaleTurn:case CampaignTacticalError.StaleRevision:case CampaignTacticalError.StaleBoundary:
+                    return "The campaign changed. Choose the construction order again.";
+                case CampaignTacticalError.UnsupportedSource:return "That class or construction site is not supported here.";
+                case CampaignTacticalError.WrongPhase:return "Construction orders are available during Planning.";
+                case CampaignTacticalError.Overflow:return "The campaign has no safe room for another construction order.";
+                case CampaignTacticalError.DuplicateCommand:return "This construction order was already submitted.";
+                default:return "This construction order is no longer available at the selected world.";
+            }
         }
         public void AbandonStreamedInteraction(StreamedInteractionWork work)
         {

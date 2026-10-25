@@ -37,7 +37,8 @@ namespace HobbyDS9.UnityReview
             // and captured order controls; detached controls cannot submit later.
             foreach(var previous in parent.Query<ReviewActivitiesPanel>().ToList())previous.Dispose();
             parent.Clear();
-            var observation=owner.Activities();
+            var streamed=owner.StreamedActivitiesCampaign?owner.StreamedActivities():null;
+            var observation=streamed?.Activities??owner.Activities();
             Func<HobbyDS9.Contracts.CampaignActivityCommandDto,HobbyDS9.Contracts.CampaignActivityEligibilityDto> evaluate=command=>{
                 if(!ReferenceEquals(model,owner)||!ReferenceEquals(owner.Current,controller)||!ReferenceEquals(controller.Frame,frame))throw new InvalidOperationException("Activity observation changed.");
                 return owner.ActivityEligibility(command);
@@ -45,7 +46,7 @@ namespace HobbyDS9.UnityReview
             Action<HobbyDS9.Contracts.CampaignActivityCommandDto> submit=command=>{
                 if(ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&ReferenceEquals(controller.Frame,frame)){if(owner.StreamedActivitiesCampaign)RunStreamedInteraction(owner,controller,frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.Submission,command,selection:root?.Q<ReviewActivitiesPanel>()?.CaptureSelection());else Do(()=>owner.SubmitActivity(command));}
             };
-            var panel=owner.StreamedActivitiesCampaign?new ReviewActivitiesPanel(owner.StreamedActivities(),(command,caption)=>{if(ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&ReferenceEquals(controller.Frame,frame))RunStreamedInteraction(owner,controller,frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.Preview,command,caption,root?.Q<ReviewActivitiesPanel>()?.CaptureSelection());},submit):new ReviewActivitiesPanel(observation,evaluate,submit);
+            var panel=streamed!=null?new ReviewActivitiesPanel(streamed,(command,caption)=>{if(ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&ReferenceEquals(controller.Frame,frame))RunStreamedInteraction(owner,controller,frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.Preview,command,caption,root?.Q<ReviewActivitiesPanel>()?.CaptureSelection());},submit):new ReviewActivitiesPanel(observation,evaluate,submit);
             panel.RestoreSelection(selection);
             panel.RegisterCallback<DetachFromPanelEvent>(e=>{if(ReferenceEquals(e.target,panel))panel.Dispose();});
             activitiesPanelOwner=owner;activitiesPanelController=controller;

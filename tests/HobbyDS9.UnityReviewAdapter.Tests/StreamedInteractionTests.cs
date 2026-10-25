@@ -32,6 +32,33 @@ public sealed class StreamedInteractionTests : IDisposable
         var work=m.BeginStreamedInteraction(kind,command)!;Assert.NotNull(work);var result=await Task.Run(work.Execute);
         Assert.False(result.Failed);Assert.True(m.CompleteStreamedInteraction(work,result),m.Message);return result;
     }
+    [Fact] public async Task DirectEnqueueWithoutPreviewCommitsOnceAndPreservesWholeRootAcrossTypedContinue()
+    {
+        var m=Model();var sync=Model();var command=Queue(m,"command.catalogue.direct");var before=Root(m);
+        var money=m.Current.Frame.Strategy!.Civilization.Credits;
+        string LocalStocks()=>Newtonsoft.Json.JsonConvert.SerializeObject(Session(m).ExportStreamedActivitiesSave().Campaign!.Integrated!.Physical!.Core.Campaign.GameState.Colonies!.Single(c=>c.ColonyId=="colony.sol").Stockpiles);
+        var stocks=LocalStocks();
+        using var entered=new ManualResetEventSlim();using var release=new ManualResetEventSlim();
+        Probe(m,phase=>{if(phase=="before-action"){entered.Set();if(!release.Wait(TimeSpan.FromSeconds(20)))throw new TimeoutException();}});
+        var work=m.BeginStreamedInteraction(StreamedInteractionKind.Submission,command)!;Assert.NotNull(work);var task=Task.Run(work.Execute);
+        try
+        {
+            Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));Assert.True(m.Busy);Assert.Null(m.BeginStreamedInteraction(StreamedInteractionKind.Submission,command));
+            Assert.Equal(before,Root(m));Assert.Equal(stocks,LocalStocks());
+            release.Set();var completion=await task.WaitAsync(TimeSpan.FromSeconds(20));Assert.True(m.CompleteStreamedInteraction(work,completion),m.Message);
+            Assert.True(completion.Committed);Assert.False(m.CompleteStreamedInteraction(work,completion));Assert.Equal(money,m.Current.Frame.Strategy!.Civilization.Credits);
+            var queued=Assert.Single(m.StreamedActivities().Production);Assert.All(queued.ConsumedResources!,r=>Assert.Equal(0,r.Amount));Assert.Equal(stocks,LocalStocks());
+            Assert.True(sync.SubmitActivity(command),sync.Message);Assert.Equal(Root(sync),Root(m));var committed=Root(m);
+            Assert.Null(m.BeginStreamedInteraction(StreamedInteractionKind.Submission,command));Assert.Equal(committed,Root(m));
+            Assert.True(m.Save("catalogue"),m.Message);var reopened=ReviewUiModel.ContinueStreamedActivities(Package(),codec,Store(),"catalogue");
+            Assert.Equal(committed,Root(reopened));Assert.Equal(m.StreamedActivities().Construction.Count,reopened.StreamedActivities().Construction.Count);
+            Probe(m,null);var rejectedCommand=Queue(m,"command.catalogue.rejected");rejectedCommand.TargetId="colony.unavailable";
+            var rejected=m.BeginStreamedInteraction(StreamedInteractionKind.Submission,rejectedCommand)!;var unavailable=await Task.Run(rejected.Execute);
+            Assert.True(m.CompleteStreamedInteraction(rejected,unavailable));Assert.False(unavailable.Committed);Assert.False(unavailable.Result!.Accepted);
+            Assert.Equal(committed,Root(m));Assert.Equal("This construction order is no longer available at the selected world.",m.Message);
+        }
+        finally{release.Set();await task.WaitAsync(TimeSpan.FromSeconds(20));Probe(m,null);m.AbandonStreamedInteraction(work);}
+    }
     [Fact] public async Task DetachedPreviewSubmissionAndTurnExactlyMatchSyncRootsWithoutReplayOrDoubleExecution()
     {
         var sync=Model();var asyncModel=Model();var command=Queue(sync);var original=Root(asyncModel);var frame=asyncModel.Current.Frame;

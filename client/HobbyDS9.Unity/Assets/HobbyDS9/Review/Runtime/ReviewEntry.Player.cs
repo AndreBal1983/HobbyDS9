@@ -99,7 +99,7 @@ namespace HobbyDS9.UnityReview
             if(model.HasLocalEdits)return "Unsent changes · apply or discard them before ending the turn. Navigation keeps your edits.";
             if(model.Current.Frame.Status.Phase!=SessionPhase.Planning)return "A battle needs your attention. Open Combat, resolve its rounds, then confirm the aftermath.";
             if(model.FrontierPreview&&workspace!.Page==ReviewWorkspacePage.Map)return "Frontier preview: select your fleet and a known node, preview/review the route, then end turns. Actual arrivals chart branches at the next Planning boundary.";
-            return workspace!.Page==ReviewWorkspacePage.Map?"Select a fleet to plot a course, visit Research, or build a ship in Production.":workspace.Page==ReviewWorkspacePage.Research?"Science and Engineering progress when you end a turn. Changes apply only when you confirm them.":workspace.Page==ReviewWorkspacePage.Production?"Choose a shipyard, inspect the cost, then build. Industry progresses on End turn.":"Inspection and navigation never submit an order.";
+            return workspace!.Page==ReviewWorkspacePage.Map?"Select a fleet to plot a course, visit Research, or build a ship in Production.":workspace.Page==ReviewWorkspacePage.Research?"Science and Engineering progress when you end a turn. Changes apply only when you confirm them.":workspace.Page==ReviewWorkspacePage.Production?(model!.StreamedActivitiesCampaign?"Choose a world and use + to add an order. Industry and delivered materials advance construction each week.":"Choose a shipyard, inspect the cost, then build. Industry progresses on End turn."):"Inspection and navigation never submit an order.";
         }
         private void DrawPlayerFooter()
         {
