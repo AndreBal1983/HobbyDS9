@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using HobbyDS9.Application;
 using HobbyDS9.Contracts;
 using HobbyDS9.TacticalReviewClient;
@@ -18,6 +19,143 @@ namespace HobbyDS9.UnityReview.Tests
 {
     public sealed partial class GeneratedGalaxyEngineTests
     {
+        private sealed class StreamedContinuationHold : SynchronizationContext
+        {
+            private readonly CheckpointContext target;
+            private readonly object gate=new object();
+            private readonly List<Action> queued=new List<Action>();
+            private bool held=true;
+            internal int Queued {get{lock(gate)return queued.Count;}}
+            internal StreamedContinuationHold(CheckpointContext target){this.target=target;}
+            public override void Post(SendOrPostCallback callback,object? state)
+            {lock(gate){if(held){queued.Add(()=>target.Post(callback,state));return;}}target.Post(callback,state);}
+            public override void Send(SendOrPostCallback callback,object? state)=>target.Send(callback,state);
+            public override SynchronizationContext CreateCopy()=>this;
+            internal void Forward()
+            {Action[] pending;lock(gate){held=false;pending=queued.ToArray();queued.Clear();}foreach(var action in pending)action();}
+        }
+        private sealed class StreamedUiHold
+        {
+            internal readonly ManualResetEventSlim Entered=new ManualResetEventSlim(),Release=new ManualResetEventSlim();
+            internal StreamedInteractionWork? Work;
+            internal CheckpointContext? Context;
+            internal StreamedContinuationHold? Continuation;
+            internal int Hits,WorkerThread;
+            internal long Epoch;
+        }
+        private sealed class StreamedUiProof
+        {
+            internal readonly List<StreamedUiHold> Holds=new List<StreamedUiHold>();
+            internal readonly List<PhysicalReviewHost> Hosts=new List<PhysicalReviewHost>();
+            internal Exception? ReleaseAll()
+            {
+                foreach(var hold in Holds)hold.Release.Set();Exception? failure=null;
+                foreach(var hold in Holds)try{hold.Continuation?.Forward();}catch(Exception error){failure=failure??error;}
+                return failure;
+            }
+            internal bool Pending=>Holds.Any(h=>h.Work!=null&&(!h.Work.Settled||h.Context!=null&&Volatile.Read(ref h.Context.Finished)==0));
+        }
+        private static PhysicalReviewHost StreamHost(ReviewUiModel model)=>(PhysicalReviewHost)typeof(ReviewUiModel).GetField("host",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(model)!;
+        private static void StreamProbe(PhysicalReviewHost host,Action<string>? action)=>typeof(PhysicalReviewHost).GetProperty("StreamedInteractionProbe",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(host,action);
+        private static StreamedUiHold StreamStartHold(StreamedUiProof proof,ReviewEntry entry,Action activate,bool holdContinuation=false)
+        {
+            var hold=new StreamedUiHold();proof.Holds.Add(hold);
+            var host=StreamHost(CampaignModel(entry));if(!proof.Hosts.Contains(host))proof.Hosts.Add(host);
+            StreamProbe(host,phase=>{if(phase!="before-action")return;Interlocked.Increment(ref hold.Hits);hold.WorkerThread=Thread.CurrentThread.ManagedThreadId;hold.Entered.Set();if(!hold.Release.Wait(TimeSpan.FromSeconds(90)))throw new TimeoutException("Receiving interaction hold timed out.");});
+            var prior=SynchronizationContext.Current;Assert.That(prior,Is.Not.Null,"real Unity synchronization context");
+            var tracked=new CheckpointContext(prior!);hold.Context=tracked;
+            if(holdContinuation){hold.Continuation=new StreamedContinuationHold(tracked);SynchronizationContext.SetSynchronizationContext(hold.Continuation);}
+            else SynchronizationContext.SetSynchronizationContext(tracked);
+            try{activate();}finally{SynchronizationContext.SetSynchronizationContext(prior);}
+            hold.Epoch=(long)CheckpointField(entry,"viewEpoch")!;
+            hold.Work=(StreamedInteractionWork?)CheckpointField(entry,"streamedUiWork");Assert.That(hold.Work,Is.Not.Null,"real UI started streamed worker");return hold;
+        }
+        private static IEnumerator StreamEntered(StreamedUiHold hold,UIDocument doc,string title)
+        {
+            var clock=System.Diagnostics.Stopwatch.StartNew();
+            while(!hold.Entered.IsSet){Assert.That(clock.Elapsed.TotalSeconds,Is.LessThan(90),title);yield return null;}
+            Assert.That(hold.WorkerThread,Is.Not.EqualTo(Thread.CurrentThread.ManagedThreadId));Assert.That(hold.Hits,Is.EqualTo(1));CheckpointBusy(doc,title);
+        }
+        private static IEnumerator StreamUiIdle(ReviewEntry entry,string phase)
+        {
+            var clock=System.Diagnostics.Stopwatch.StartNew();int frames=0;
+            while(CampaignModel(entry).Busy||CheckpointField(entry,"streamedUiWork")!=null||CheckpointField(entry,"checkpointUiOperation")!=null||(bool)CheckpointField(entry,"generatedCampaignBusy")!)
+            {Assert.That(clock.Elapsed.TotalSeconds,Is.LessThan(90),phase);frames++;yield return null;}
+            File.AppendAllText(Path.Combine(CampaignOutput(),"streamed-interaction-waits.jsonl"),JsonConvert.SerializeObject(new{phase,observedWallMs=clock.Elapsed.TotalMilliseconds,yieldedFrames=frames,notFps=true})+Environment.NewLine);
+            yield return null;yield return null;
+        }
+        private static IEnumerator StreamBusyProof(PublishedReceivingState state,UIDocument doc,StreamedUiHold hold,ReviewUiModel model,ReviewFrame frame,byte[] expected,string title,Vector2Int size,string? capture)
+        {
+            var prior=doc.panelSettings.targetTexture;var width=doc.rootVisualElement.style.width;var height=doc.rootVisualElement.style.height;
+            var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);IVisualElementScheduledItem? heartbeat=null;
+            try
+            {
+                Assert.That(target.Create(),Is.True);doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=size.x;doc.rootVisualElement.style.height=size.y;
+                yield return null;yield return null;yield return null;CheckpointBusy(doc,title);
+                int ticks=0,frames=0;var positions=new HashSet<float>();heartbeat=doc.rootVisualElement.schedule.Execute(()=>ticks++).Every(10);var clock=System.Diagnostics.Stopwatch.StartNew();
+                while(frames<8||clock.Elapsed.TotalSeconds<.3){positions.Add(doc.rootVisualElement.Q("campaign-operation-indicator").style.left.value.value);frames++;yield return null;}
+                Assert.That(ticks,Is.GreaterThanOrEqualTo(3));Assert.That(positions.Count,Is.GreaterThan(1));Assert.That(model.Busy,Is.True);Assert.That(model.Current.Frame,Is.SameAs(frame));
+                Assert.That(CheckpointField(state.Entry!,"streamedUiWork"),Is.SameAs(hold.Work));Assert.That((long)CheckpointField(state.Entry!,"viewEpoch")!,Is.EqualTo(hold.Epoch),"resize does not cancel the observed operation");
+                // before-action is after the source fork has released its lock;
+                // this private source audit cannot block on a held source fork.
+                Assert.That(StreamBytes(model),Is.EqualTo(expected));
+                var page=state.Entry!.Workspace!.Page;Click(doc.rootVisualElement.Q<Button>("demo-menu"));Click(doc.rootVisualElement.Q<Button>("review-nav-Map"));
+                Assert.That(state.Entry.Workspace.Page,Is.EqualTo(page));Assert.That(CheckpointField(state.Entry,"streamedUiWork"),Is.SameAs(hold.Work));
+                Assert.That(model.BeginStreamedInteraction(StreamedInteractionKind.PlanningAdvance),Is.Null);Assert.That(model.Advance(),Is.False);
+                if(hold.Work!.Command!=null)Assert.That(model.SubmitActivity(hold.Work.Command),Is.False,"duplicate synchronous command admission blocked while UI work owns lease");
+                Assert.That(StreamBytes(model),Is.EqualTo(expected));
+                if(capture!=null)CheckpointCapture(doc,capture);
+                state.Timings.Add(new{phase="controlled-held-"+title,size=size.ToString(),ticks,frames,indicatorPositions=positions.Count,hold.WorkerThread,mainThread=Thread.CurrentThread.ManagedThreadId,notUnheldLatency=true});
+            }
+            finally{heartbeat?.Pause();doc.panelSettings.targetTexture=prior;doc.rootVisualElement.style.width=width;doc.rootVisualElement.style.height=height;target.Release();UnityEngine.Object.DestroyImmediate(target);}
+            yield return null;yield return null;yield return null;
+        }
+        private static IEnumerator StreamHeldReviewAndSubmit(PublishedReceivingState state,StreamedUiProof proof,UIDocument doc,ReviewEntry entry,string reviewId)
+        {
+            var model=CampaignModel(entry);var sourceRoot=StreamBytes(model);var sourceFrame=model.Current.Frame;var selected=StreamSelectedIds(doc);
+            var oldPanel=doc.rootVisualElement.Q<ReviewActivitiesPanel>();var oldButton=oldPanel.Q<Button>(reviewId);Assert.That(oldButton,Is.Not.Null);
+            oldPanel.Q<ScrollView>("activity-scroll").ScrollTo(oldButton);yield return null;yield return null;
+            var cancelled=StreamStartHold(proof,entry,()=>Click(oldButton),true);yield return StreamEntered(cancelled,doc,"Checking");
+            entry.enabled=false;Assert.That(model.Busy,Is.True,"source-reading cancelled worker must drain");entry.enabled=true;yield return null;yield return null;
+            CheckpointBusy(doc,"Checking");Assert.That(model.Current.Frame,Is.SameAs(sourceFrame));Assert.That(StreamBytes(model),Is.EqualTo(sourceRoot));
+            cancelled.Release.Set();var timer=System.Diagnostics.Stopwatch.StartNew();
+            while(!cancelled.Work!.Settled||cancelled.Continuation!.Queued==0){Assert.That(timer.Elapsed.TotalSeconds,Is.LessThan(90),"old cancelled worker/queued real continuation settles");yield return null;}
+            // The old real Unity continuation is deliberately queued, not run or
+            // blocked on the UI thread. A second actual lifecycle boundary clears
+            // the now-settled cancellation; it must not publish its old review.
+            entry.enabled=false;entry.enabled=true;yield return null;yield return null;
+            Assert.That(model.Busy,Is.False);Assert.That(StreamBytes(model),Is.EqualTo(sourceRoot));Assert.That(doc.rootVisualElement.Q("activity-order-confirm"),Is.Null);
+            var fresh=doc.rootVisualElement.Q<ReviewActivitiesPanel>();Assert.That(fresh,Is.Not.SameAs(oldPanel));StreamSelectionRetained(doc,selected,false);
+            var button=fresh.Q<Button>(reviewId);fresh.Q<ScrollView>("activity-scroll").ScrollTo(button);yield return null;yield return null;
+            var preview=StreamStartHold(proof,entry,()=>Click(button));yield return StreamEntered(preview,doc,"Checking");
+            var token=CheckpointField(entry,"campaignBusyToken");cancelled.Continuation.Forward();timer.Restart();
+            while(Volatile.Read(ref cancelled.Context!.Finished)==0){Assert.That(timer.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}
+            Assert.That(cancelled.Context.Thread,Is.EqualTo(Thread.CurrentThread.ManagedThreadId));Assert.That(model.Busy,Is.True);
+            Assert.That(CheckpointField(entry,"streamedUiWork"),Is.SameAs(preview.Work));Assert.That(CheckpointField(entry,"campaignBusyToken"),Is.SameAs(token),"old finally cannot clear newer busy ownership");
+            Click(oldButton);Assert.That(CheckpointField(entry,"streamedUiWork"),Is.SameAs(preview.Work),"disposed old panel callback cannot submit");
+            foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})
+                yield return StreamBusyProof(state,doc,preview,model,sourceFrame,sourceRoot,"Checking",size,"streamed-preview-responsive-"+size.x+"x"+size.y);
+            preview.Release.Set();yield return StreamUiIdle(entry,"held-preview-complete");Assert.That(preview.Context!.Thread,Is.EqualTo(Thread.CurrentThread.ManagedThreadId));
+            Assert.That(StreamBytes(model),Is.EqualTo(sourceRoot));Assert.That(model.Current.Frame,Is.SameAs(sourceFrame));StreamSelectionRetained(doc,selected,false);
+            var current=doc.rootVisualElement.Q<ReviewActivitiesPanel>();Assert.That(current,Is.Not.SameAs(fresh));
+            var confirm=current.Q<Button>("activity-order-confirm");Assert.That(confirm,Is.Not.Null,"new current panel presents exact eligibility after worker");
+            var submit=StreamStartHold(proof,entry,()=>Click(confirm));yield return StreamEntered(submit,doc,"Applying");
+            Click(confirm);Assert.That(CheckpointField(entry,"streamedUiWork"),Is.SameAs(submit.Work));
+            yield return StreamBusyProof(state,doc,submit,model,sourceFrame,sourceRoot,"Applying",new Vector2Int(1920,1080),"streamed-submit-responsive-1920x1080");
+            submit.Release.Set();yield return StreamUiIdle(entry,"held-submit-complete");Assert.That(submit.Context!.Thread,Is.EqualTo(Thread.CurrentThread.ManagedThreadId));
+            Assert.That(submit.Hits,Is.EqualTo(1));Assert.That(model.StreamedActivities().Production.Count,Is.EqualTo(1),"the actual Confirm committed exactly once");
+            Assert.That(model.Current.Frame,Is.Not.SameAs(sourceFrame));StreamProbe(StreamHost(model),null);
+            state.Timings.Add(new{phase="actual-held-preview-cancel-newlease-submit",cancelledNotPublished=true,oldContinuationMainThread=cancelled.Context.Thread,newContinuationMainThread=preview.Context.Thread,submitContinuationMainThread=submit.Context.Thread,wholeRootBeforeCommit=true});
+        }
+        private static IEnumerator StreamHeldAdvance(PublishedReceivingState state,StreamedUiProof proof,UIDocument doc,ReviewEntry entry)
+        {
+            CampaignPage(doc,ReviewWorkspacePage.Map);yield return V3Settled(doc);var model=CampaignModel(entry);var frame=model.Current.Frame;var before=StreamBytes(model);
+            Click(doc.rootVisualElement.Q<Button>("player-primary-action"));
+            var turn=StreamStartHold(proof,entry,()=>Confirm(doc));yield return StreamEntered(turn,doc,"Advancing");
+            yield return StreamBusyProof(state,doc,turn,model,frame,before,"Advancing",new Vector2Int(1920,1080),"streamed-advance-responsive-1920x1080");
+            turn.Release.Set();yield return StreamUiIdle(entry,"held-advance-complete");Assert.That(turn.Context!.Thread,Is.EqualTo(Thread.CurrentThread.ManagedThreadId));
+            Assert.That(model.Current.Frame.Status.Turn,Is.EqualTo(frame.Status.Turn+1));Assert.That(turn.Hits,Is.EqualTo(1));StreamProbe(StreamHost(model),null);
+        }
         // Roots below are private audit evidence only. All destinations and commands
         // are selected from the actual controlled actor's presented observations.
         private static CampaignStreamedActivitiesSaveDto StreamAudit(ReviewUiModel model)
@@ -46,7 +184,9 @@ namespace HobbyDS9.UnityReview.Tests
             var view=doc.rootVisualElement.Q<ScrollView>("activity-scroll");if(scroll&&view!=null&&view.Contains(button))view.ScrollTo(button);
             yield return null;yield return null;
             Assert.That(button.panel,Is.SameAs(doc.rootVisualElement.panel),id+" must be attached");
-            Assert.That(button.enabledInHierarchy,Is.True,id);Click(button);yield return null;yield return null;
+            Assert.That(button.enabledInHierarchy,Is.True,id);var clock=System.Diagnostics.Stopwatch.StartNew();Click(button);
+            File.AppendAllText(Path.Combine(CampaignOutput(),"streamed-interaction-waits.jsonl"),JsonConvert.SerializeObject(new{phase="activate-"+id,owningThreadMs=clock.Elapsed.TotalMilliseconds,notTotalLatency=true})+Environment.NewLine);
+            yield return StreamUiIdle(doc.GetComponent<ReviewEntry>(),"click-"+id);
         }
         private static IEnumerator StreamOrder(UIDocument doc,string review)
         {yield return StreamClick(doc,review);yield return StreamClick(doc,"activity-order-confirm",false);}
@@ -63,7 +203,9 @@ namespace HobbyDS9.UnityReview.Tests
             CampaignPage(doc,ReviewWorkspacePage.Map);yield return V3Settled(doc);
             var before=CampaignModel(entry).Current.Frame.Status.Turn;
             Assert.That(CampaignModel(entry).Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning),"no combat fixture or forced encounter in this journey");
-            Click(doc.rootVisualElement.Q<Button>("player-primary-action"));Confirm(doc);yield return null;yield return null;
+            Click(doc.rootVisualElement.Q<Button>("player-primary-action"));var clock=System.Diagnostics.Stopwatch.StartNew();Confirm(doc);
+            File.AppendAllText(Path.Combine(CampaignOutput(),"streamed-interaction-waits.jsonl"),JsonConvert.SerializeObject(new{phase="activate-advance-confirm",owningThreadMs=clock.Elapsed.TotalMilliseconds,notTotalLatency=true})+Environment.NewLine);
+            yield return StreamUiIdle(entry,"advance");
             Assert.That(CampaignModel(entry).Current.Frame.Status.Turn,Is.GreaterThan(before),CampaignModel(entry).Message);
         }
         private static IEnumerator StreamRoute(UIDocument doc,ReviewEntry entry,string fleet,string node,bool? confirm=null)
@@ -245,20 +387,24 @@ namespace HobbyDS9.UnityReview.Tests
         [UnityTest,Timeout(600000)]
         public IEnumerator StreamedActivitiesCampaignUsesActualWorldsExpeditionsAndTypedContinue()
         {
-            var state=new PublishedReceivingState();var stack=new Stack<IEnumerator>();stack.Push(StreamReceivingBody(state));Exception? failure=null;
+            var state=new PublishedReceivingState();var interactions=new StreamedUiProof();var stack=new Stack<IEnumerator>();stack.Push(StreamReceivingBody(state,interactions));Exception? failure=null;
             while(stack.Count>0)
             {
                 bool next=false;object? value=null;var current=stack.Peek();try{next=current.MoveNext();if(next)value=current.Current;}catch(Exception error){failure=error;}
                 if(failure!=null)break;if(!next){stack.Pop();(current as IDisposable)?.Dispose();continue;}if(value is IEnumerator nested){stack.Push(nested);continue;}yield return value;
             }
-            state.Release.Set();while(stack.Count>0)(stack.Pop() as IDisposable)?.Dispose();var cleanup=System.Diagnostics.Stopwatch.StartNew();
-            while(state.Entry!=null&&((bool)CheckpointField(state.Entry,"generatedCampaignBusy")!||CampaignModel(state.Entry).Busy||CheckpointField(state.Entry,"checkpointUiOperation")!=null||state.Holder?.IsCompleted==false))
+            var releaseFailure=interactions.ReleaseAll();failure=failure??releaseFailure;state.Release.Set();
+            while(stack.Count>0)try{(stack.Pop() as IDisposable)?.Dispose();}catch(Exception error){failure=failure??error;}
+            var cleanup=System.Diagnostics.Stopwatch.StartNew();
+            while(interactions.Pending||state.Holder?.IsCompleted==false||state.Entry!=null&&((bool)CheckpointField(state.Entry,"generatedCampaignBusy")!||CampaignModel(state.Entry).Busy||CheckpointField(state.Entry,"checkpointUiOperation")!=null||CheckpointField(state.Entry,"streamedUiWork")!=null))
             {if(cleanup.Elapsed.TotalSeconds>=90){directory=null;failure=failure??new TimeoutException("Unsettled streamed worker; temporary namespace retained.");break;}yield return null;}
             try{File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-latency.json"),JsonConvert.SerializeObject(state.Timings));if(state.Entry!=null&&CampaignModel(state.Entry).StreamedActivitiesCampaign&&!CampaignModel(state.Entry).Busy)File.WriteAllBytes(Path.Combine(CampaignOutput(),failure==null?"streamed-final-private-audit.json":"streamed-failed-private-audit.json"),StreamBytes(CampaignModel(state.Entry)));}catch(Exception error){CampaignDiagnosticError("streamed-final-audit",error);}
             if(state.Entry!=null){state.Entry.enabled=false;typeof(ReviewEntry).GetField("generatedCampaignTestDirectory",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(state.Entry,state.PriorDirectory);}
+            foreach(var host in interactions.Hosts)StreamProbe(host,null);
+            if(!interactions.Pending)foreach(var hold in interactions.Holds){hold.Entered.Dispose();hold.Release.Dispose();}
             if(state.Holder==null||state.Holder.IsCompleted){state.Entered.Dispose();state.Release.Dispose();}yield return new ExitPlayMode();if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
         }
-        private IEnumerator StreamReceivingBody(PublishedReceivingState state)
+        private IEnumerator StreamReceivingBody(PublishedReceivingState state,StreamedUiProof interactions)
         {
             yield return new EnterPlayMode();yield return null;yield return null;var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();state.Entry=entry;var doc=entry.GetComponent<UIDocument>();
             directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-Streamed-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
@@ -276,7 +422,7 @@ namespace HobbyDS9.UnityReview.Tests
                 var blueprint=ready.Single(o=>o.HullVersionId=="hull.constitution-explorer.v1").DefinitionId;
                 yield return StreamPage(doc);var credits=model.Activities().Credits;var stock=JsonConvert.SerializeObject(model.StreamedActivities().Supply);
                 int structure=model.Activities().BuildOptions.FindIndex(o=>o.Kind==ActivityProductionKind.Infrastructure&&o.DefinitionId=="infrastructure.fabrication-annex.v1");Assert.That(structure,Is.GreaterThanOrEqualTo(0));
-                yield return StreamOrder(doc,"activity-build-review-"+structure);Assert.That(model.Activities().Credits,Is.EqualTo(credits));Assert.That(JsonConvert.SerializeObject(model.StreamedActivities().Supply),Is.EqualTo(stock));
+                yield return StreamHeldReviewAndSubmit(state,interactions,doc,entry,"activity-build-review-"+structure);Assert.That(model.Activities().Credits,Is.EqualTo(credits));Assert.That(JsonConvert.SerializeObject(model.StreamedActivities().Supply),Is.EqualTo(stock));
                 int ship=model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==1);yield return StreamOrder(doc,"activity-build-review-"+ship);
                 Assert.That(model.StreamedActivities().Production.Count,Is.EqualTo(2));Assert.That(model.Activities().Credits,Is.EqualTo(credits));Assert.That(model.StreamedActivities().Production.All(q=>q.CompletedIndustry==0&&q.ConsumedResources!.All(r=>r.Amount==0)),Is.True);
                 var ownActor=model.Activities().ActorId;var ownOrders=model.StreamedActivities().Production.Select(q=>q.QueueItemId).ToArray();
@@ -300,7 +446,7 @@ namespace HobbyDS9.UnityReview.Tests
                 foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"pending-review",true,reviewId:"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
                 yield return StreamClick(doc,"activity-order-back",false);CampaignPage(doc,ReviewWorkspacePage.Designer);yield return null;doc.rootVisualElement.Q<TextField>("designer-name").value="Unsent local class edit";yield return null;Assert.That(model.LocalDesignDirty,Is.True);yield return StreamSaveContinue(state,doc,"pending");model=CampaignModel(entry);
                 bool progressed=false;for(int i=0;i<48&&model.StreamedActivities().Production.Count>0;i++)
-                {yield return StreamAdvance(doc,entry);var orders=model.StreamedActivities().Production;progressed|=orders.Any(q=>q.CompletedIndustry>0&&q.ConsumedResources!.Any(r=>r.Amount>0));}
+                {if(i==0)yield return StreamHeldAdvance(state,interactions,doc,entry);else yield return StreamAdvance(doc,entry);var orders=model.StreamedActivities().Production;progressed|=orders.Any(q=>q.CompletedIndustry>0&&q.ConsumedResources!.Any(r=>r.Amount>0));}
                 var completed=StreamAudit(model);Assert.That(progressed,Is.True,"actual gradual work/material consumption observed");
                 Assert.That(completed.Production!.Where(q=>q.OwnerId==ownActor),Is.Empty,"only the controlled actor's orders must have completed; independent AI work may remain");
                 Assert.That(completed.ProductionHistory!.Where(r=>r.Completed&&r.Order!.OwnerId==ownActor).Select(r=>r.Order!.QueueItemId),Is.EquivalentTo(ownOrders),"both exact captured owned orders completed");
@@ -322,6 +468,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(StreamBytes(CampaignModel(entry)),Is.EqualTo(missionRoot),"report queries, scrolling, resizing and normal links never mutate campaign");
                 Assert.That(JsonConvert.SerializeObject(CampaignModel(entry).FrontierCommission()),Is.EqualTo(missionReport));
                 // Hold the actual slot store on a worker, never a semaphore on the UI thread.
+                state.Entered.Reset();state.Release.Reset();
                 CampaignPage(doc,ReviewWorkspacePage.Saves);yield return null;Click(doc.rootVisualElement.Q<Button>("save-slot-generated-1"));
                 var store=typeof(ReviewUiModel).GetField("streamedActivitiesSlots",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(model)!;var gate=store.GetType().GetField("gate",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(store)!;
                 state.Holder=System.Threading.Tasks.Task.Run(()=>{lock(gate){state.Entered.Set();if(!state.Release.Wait(TimeSpan.FromSeconds(90)))throw new TimeoutException();}});
@@ -339,8 +486,8 @@ namespace HobbyDS9.UnityReview.Tests
                 Click(doc.rootVisualElement.Q<Button>("generated-campaign-continue-generated-3"));Confirm(doc);yield return PublishedReceivingIdle(state,"separate-official-v2-explore");
                 Assert.That(CampaignModel(entry).StreamedActivitiesCampaign,Is.False);Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(CampaignModel(entry))),Is.EqualTo(codec.EncodeStaticAstronomyCampaignRoot(legacy)));
                 yield return StreamCapture(doc,new Vector2Int(1280,720),"separate-v2-explore");
-                int captures=Directory.GetFiles(CampaignOutput(),"streamed-*.png").Length+Directory.GetFiles(CampaignOutput(),"checkpoint-streamed-*.png").Length;Assert.That(captures,Is.EqualTo(17));
-                File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-results.json"),JsonConvert.SerializeObject(new{passed=true,captures,normalConstructionCredits=false,gradualMaterials=true,mixedFifo=true,frozenR1=true,r2Published=true,scienceAndMinor=true,commissionCompleted=true,commissionReportSaveContinueExact=true,continuedSandbox=true,typedContinueExact=true,threeOwnReadyHullComponentProof=true,departureAbortBranchThenOfficialSavedActiveRestore=true,continuousAbortAndClaimHistory=false,nativeInput=false}));
+                int captures=Directory.GetFiles(CampaignOutput(),"streamed-*.png").Length+Directory.GetFiles(CampaignOutput(),"checkpoint-streamed-*.png").Length;Assert.That(captures,Is.EqualTo(22));
+                File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-results.json"),JsonConvert.SerializeObject(new{passed=true,captures,normalConstructionCredits=false,gradualMaterials=true,mixedFifo=true,frozenR1=true,r2Published=true,scienceAndMinor=true,heldPreviewSubmitAdvance=true,disableCancelledPreviewThenNewLease=true,commissionCompleted=true,commissionReportSaveContinueExact=true,continuedSandbox=true,typedContinueExact=true,threeOwnReadyHullComponentProof=true,departureAbortBranchThenOfficialSavedActiveRestore=true,continuousAbortAndClaimHistory=false,nativeInput=false}));
             }
         }
         private IEnumerator StreamExpedition(PublishedReceivingState state,UIDocument doc,ReviewEntry entry,bool minor)
