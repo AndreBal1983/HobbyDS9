@@ -105,6 +105,8 @@ namespace HobbyDS9.UnityReview.Tests
             TestContext.WriteLine("Exposed campaign pointer "+intended.name+" point="+point+" actual="+down!.name+" resolved="+expected+" candidates="+attempts.Count);
             var standing=frame.Travel?.OwnOrders.FirstOrDefault(o=>o.FleetId==entry.Workspace!.SelectedFleet);
             bool replacement=standing?.Intent==CampaignTravelIntent.StayEngage||standing?.Intent==CampaignTravelIntent.Follow;
+            var departure=entry.Workspace!.SelectedFleet==null?null:CampaignModel(entry).Current.FindKnownRoute(entry.Workspace.SelectedFleet,expected);
+            replacement|=departure!=null&&CampaignModel(entry).DepartureInterruptsExpedition(departure);
             int id;
             using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,button=button,mousePosition=point,modifiers=shift?EventModifiers.Shift:EventModifiers.None}))
             {id=e.pointerId;e.target=down;down!.SendEvent(e);}

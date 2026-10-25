@@ -50,6 +50,54 @@ namespace HobbyDS9.UnityReview.Editor
             File.WriteAllText(Path.Combine(stage,"PLAY-PUBLISHED-CONSTRUCTION.txt"),PublishedConstructionWalkthrough);
         }
 
+        [MenuItem("HobbyDS9/Campaign/Build streamed construction and exploration checkpoint")]
+        public static void BuildWindowsStreamedActivitiesCheckpoint()
+        {
+            const string stageName="Windows-StreamedActivities-20261025";
+            BuildWindows(stageName);
+            var stage=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,
+                "../../../artifacts/generated-static-astronomy-v2",stageName));
+            File.WriteAllText(Path.Combine(stage,"README.txt"),StreamedActivitiesReadme);
+            File.WriteAllText(Path.Combine(stage,"PLAY-STREAMED-ACTIVITIES.txt"),StreamedActivitiesWalkthrough);
+        }
+
+        private const string StreamedActivitiesReadme=@"HobbyDS9 — construction and exploration playtest
+Run Start-Generated-Campaign.cmd. New campaign and Continue in the expanded
+'Campaign · construction and exploration' section use the streamed activities rules.
+Earlier campaigns retain their own Continue buttons, rules and separate save slots.
+Nothing converts or upgrades an earlier save.
+
+Normal construction uses Industry and gradually consumed LOCAL materials, without
+a credit charge. Physical deliveries use the existing same-owner logistics network.
+An order can wait for materials; interrupted supply pauses work without losing progress.
+Unused stock stays local. Cancellation loses work and consumed materials, with no refund.
+Credits still fund expeditions and society approaches. No buyout feature is included.
+
+The three ready classes have distinct authored hulls and provisional playtest capabilities:
+Constitution Explorer, Galaxy Cruiser and Defiant Combat. Art does not determine statistics.
+Review exact costs, powered capabilities and current eligibility in Activities / build.
+This is provisional demo content, not final balance. Read PLAY-STREAMED-ACTIVITIES.txt.
+";
+        private const string StreamedActivitiesWalkthrough=@"1. Start a campaign (seed 42 / 250 systems is the receiving baseline).
+2. In Activities / build, choose an owned world and review a structure or ready class.
+   Confirm the order. Industry works on one mixed FIFO head; materials are consumed
+   as work advances. End a week to see actual work, consumption, delivery and supply status.
+   Fabrication, research and food structures alter the actual world economy on completion.
+3. Use the map to send an owned ship along a known route. Exploration reveals finite
+   science opportunities and independent societies; undiscovered sites are not marked.
+4. In Expeditions & contact, select a ship at an observed site, review an available
+   choice and confirm. Powered study/contact requirements and funding are shown before
+   submission. Advance weeks, then explicitly review and claim the finding.
+   Society contact can be accepted or refused; cooperation is offered only when permitted.
+   Leaving ends an expedition; consumed funding is not refunded. A warning asks first.
+5. Save to a campaign slot and use the matching current-campaign Continue button.
+   Generating, saving and loading show an indeterminate activity bar while full validation
+   runs. Earlier campaign Continue buttons use their original separate save slots.
+
+Construction may legitimately stall under interrupted supply. No freight travel-time,
+freighter, treaty, cargo or colonization feature is included.
+";
+
         private static void BuildWindows(string stageName)
         {
             if (UnityEngine.Application.unityVersion != "6000.6.5f1")
