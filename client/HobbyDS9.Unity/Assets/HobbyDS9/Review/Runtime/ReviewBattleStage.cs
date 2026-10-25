@@ -14,6 +14,7 @@ namespace HobbyDS9.UnityReview
     // No campaign, RNG, input physics, command submission or outcome calculation.
     public sealed class ReviewBattleStage : IDisposable
     {
+        private readonly long shutdownLabel=ReviewShutdownLifecycle.NextId();
         private const int Layer=30;
         private readonly GameObject root;
         private readonly Camera camera;
@@ -414,9 +415,21 @@ namespace HobbyDS9.UnityReview
         }
         public void Dispose()
         {
-            if(disposed)return;disposed=true;camera.targetTexture=null;root.SetActive(false);
+            ReviewShutdownLifecycle.Mark("ReviewBattleStage",shutdownLabel,"dispose.enter");
+            if(disposed){ReviewShutdownLifecycle.Mark("ReviewBattleStage",shutdownLabel,"dispose.already-return"); return;}disposed=true;camera.targetTexture=null;root.SetActive(false);
+            ReviewShutdownLifecycle.Mark("ReviewBattleStage",shutdownLabel,"dispose.camera-detached-root-disabled");
+            ReviewShutdownLifecycle.Mark("ReviewBattleStage",shutdownLabel,"dispose.hulls.begin");
             foreach(var hull in hullModels.Values)hull.Dispose();hullModels.Clear();
-            Destroy(root);foreach(var item in owned)Destroy(item);owned.Clear();materialCache.Clear();Texture.Release();Destroy(Texture);
+            ReviewShutdownLifecycle.Mark("ReviewBattleStage",shutdownLabel,"dispose.hulls.return");
+            ReviewShutdownLifecycle.Mark("ReviewBattleStage",shutdownLabel,"dispose.destroy-batch.begin");
+            Destroy(root);foreach(var item in owned)Destroy(item);owned.Clear();materialCache.Clear();
+            ReviewShutdownLifecycle.Mark("ReviewBattleStage",shutdownLabel,"dispose.destroy-batch.return");
+            ReviewShutdownLifecycle.Mark("ReviewBattleStage",shutdownLabel,"dispose.rt-release.begin");
+            Texture.Release();
+            ReviewShutdownLifecycle.Mark("ReviewBattleStage",shutdownLabel,"dispose.rt-release.return");
+            Destroy(Texture);
+            ReviewShutdownLifecycle.Mark("ReviewBattleStage",shutdownLabel,"dispose.rt-destroy-requested");
+            ReviewShutdownLifecycle.Mark("ReviewBattleStage",shutdownLabel,"dispose.return");
         }
     }
 }

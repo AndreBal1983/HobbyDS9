@@ -6,10 +6,31 @@ using UnityEngine.Rendering.Universal;
 
 namespace HobbyDS9.ArtDemo
 {
+    // Opt-in log markers only; no lifecycle/resource ownership and no teardown exception handling.
+    internal static class ArtShutdownLifecycle
+    {
+        private static readonly bool enabled=ReadEnabled();
+        private static long next;
+        internal static long NextId()=>System.Threading.Interlocked.Increment(ref next);
+        internal static bool HasFlag(string[] args)
+        {foreach(var arg in args)if(string.Equals(arg,"--hobbyds9-shutdown-lifecycle",System.StringComparison.Ordinal))return true;return false;}
+        private static bool ReadEnabled()
+        {try{return HasFlag(System.Environment.GetCommandLineArgs());}catch{return false;}}
+        internal static void Mark(string component,long instance,string stage)
+        {
+            if(!enabled)return;
+            try{UnityEngine.Debug.Log("HOBBYDS9_SHUTDOWN component="+component+" instance="+instance.ToString(System.Globalization.CultureInfo.InvariantCulture)+
+                " stage="+stage+" thread="+System.Threading.Thread.CurrentThread.ManagedThreadId.ToString(System.Globalization.CultureInfo.InvariantCulture)+
+                " ticks="+System.Diagnostics.Stopwatch.GetTimestamp().ToString(System.Globalization.CultureInfo.InvariantCulture));}
+            catch{ /* Logging must never change the original teardown path. */ }
+        }
+    }
+
     // Caller owns this instance and must Dispose when its panel is removed.
     // Manual render only: no Update, animation, listener, simulation or input.
     public sealed partial class ShipPreviewStage : IDisposable
     {
+        private readonly long shutdownLabel=ArtShutdownLifecycle.NextId();
         private const int PreviewLayer = 31;
         private static readonly HashSet<int> Slots = new HashSet<int>();
         private readonly int slot;
@@ -278,16 +299,20 @@ namespace HobbyDS9.ArtDemo
 
         public void Dispose()
         {
-            if (disposed) return;
+            ArtShutdownLifecycle.Mark("ShipPreviewStage",shutdownLabel,"dispose.enter");
+            if (disposed) { ArtShutdownLifecycle.Mark("ShipPreviewStage",shutdownLabel,"dispose.already-return"); return; }
             Clear();
             disposed = true;
             if (camera != null) camera.targetTexture = null;
             if (root != null) root.SetActive(false);
             Destroy(root);
+            ArtShutdownLifecycle.Mark("ShipPreviewStage",shutdownLabel,"dispose.rt-release.begin");
             Texture.Release();
+            ArtShutdownLifecycle.Mark("ShipPreviewStage",shutdownLabel,"dispose.rt-release.return");
             Destroy(Texture);
             Texture = null;
             Slots.Remove(slot);
+            ArtShutdownLifecycle.Mark("ShipPreviewStage",shutdownLabel,"dispose.return");
         }
     }
 }

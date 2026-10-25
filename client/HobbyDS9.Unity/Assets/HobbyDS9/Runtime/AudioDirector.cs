@@ -8,6 +8,7 @@ namespace HobbyDS9.UnityClient
 {
     public sealed class AudioDirector : MonoBehaviour
     {
+        private readonly long shutdownLabel=ClientShutdownLifecycle.NextId();
         private static AudioDirector? instance;
         private readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>(StringComparer.Ordinal);
         private readonly HashSet<string> failed = new HashSet<string>(StringComparer.Ordinal);
@@ -227,8 +228,8 @@ namespace HobbyDS9.UnityClient
             gains[0] = gains[1] = 0; current = outgoing = -1; waiting = null; fading = stopping = false;
         }
         private void Warn(string key, string text) { if (warnings.Add(key)) Debug.LogWarning(text); }
-        private void OnDisable() { StopSources(); }
-        private void OnDestroy() { StopSources(); AudioOutputListener.Release(this); if (instance == this) instance = null; }
+        private void OnDisable() { ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"disable.enter");ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"disable.stop-sources.begin");StopSources(); ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"disable.stop-sources.return");ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"disable.return"); }
+        private void OnDestroy() { ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.enter");ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.stop-sources.begin");StopSources(); ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.stop-sources.return");ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.listener-release.begin");AudioOutputListener.Release(this); ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.listener-release.return");if (instance == this) instance = null; ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.return"); }
     }
     internal sealed class PlayerPrefsMusicStore : IMusicSettingsStore
     {

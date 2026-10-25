@@ -7,6 +7,26 @@ using UnityEngine.UIElements;
 
 namespace HobbyDS9.UnityReview
 {
+    // Opt-in log markers only; no lifecycle/resource ownership and no teardown exception handling.
+    internal static class ReviewShutdownLifecycle
+    {
+        private static readonly bool enabled=ReadEnabled();
+        private static long next;
+        internal static long NextId()=>System.Threading.Interlocked.Increment(ref next);
+        internal static bool HasFlag(string[] args)
+        {foreach(var arg in args)if(string.Equals(arg,"--hobbyds9-shutdown-lifecycle",System.StringComparison.Ordinal))return true;return false;}
+        private static bool ReadEnabled()
+        {try{return HasFlag(System.Environment.GetCommandLineArgs());}catch{return false;}}
+        internal static void Mark(string component,long instance,string stage)
+        {
+            if(!enabled)return;
+            try{UnityEngine.Debug.Log("HOBBYDS9_SHUTDOWN component="+component+" instance="+instance.ToString(System.Globalization.CultureInfo.InvariantCulture)+
+                " stage="+stage+" thread="+System.Threading.Thread.CurrentThread.ManagedThreadId.ToString(System.Globalization.CultureInfo.InvariantCulture)+
+                " ticks="+System.Diagnostics.Stopwatch.GetTimestamp().ToString(System.Globalization.CultureInfo.InvariantCulture));}
+            catch{ /* Logging must never change the original teardown path. */ }
+        }
+    }
+
     public static class ReviewLaunch
     {
         public static void Launch(string[] args)
@@ -29,6 +49,7 @@ namespace HobbyDS9.UnityReview
     }
     public sealed partial class ReviewEntry : MonoBehaviour
     {
+        private readonly long shutdownLabel=ReviewShutdownLifecycle.NextId();
         private ReviewLaunchOptions? options;
         private IntegratedLaunchOptions? integratedOptions;
         private SingleplayerDemoLaunchOptions? demoOptions;
@@ -97,16 +118,28 @@ namespace HobbyDS9.UnityReview
                 root=doc.rootVisualElement;root.Clear();root.Add(new Label("OPT-IN PHYSICAL TACTICAL V2 — unavailable. Check profile/resources/preparation; default campaign was not started."));
             }
         }
-        private void OnDisable(){viewEpoch++;modalPermission.Invalidate();AbandonPlayerCheckpoint();CancelStreamedUiWork();campaignBusyToken=null;root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();}
-        private void OnDestroy(){ResetDemoKeyboard();ReleasePanel();}
+        private void OnDisable()
+        {
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.enter");
+            viewEpoch++;modalPermission.Invalidate();
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.begin");
+            AbandonPlayerCheckpoint();CancelStreamedUiWork();
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.return");
+            campaignBusyToken=null;root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.return");
+        }
+        private void OnDestroy(){ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"destroy.enter");ResetDemoKeyboard();ReleasePanel();ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"destroy.return");}
         private void ReleasePanel()
         {
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"panel.enter");
             ReleaseAudio();
-            if(panel==null)return;
+            if(panel==null){ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"panel.absent.return"); return;}
             if(UnityEngine.Application.isPlaying)Destroy(panel);else DestroyImmediate(panel);
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"panel.destroy-requested");
             panel=null;
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"panel.return");
         }
-        private void ReleaseAudio(){audioInput?.Dispose();audioInput=null;buttonSound=null;}
+        private void ReleaseAudio(){ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"audio.begin");audioInput?.Dispose();audioInput=null;buttonSound=null;ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"audio.return");}
         private void BindAudio()
         {
             try

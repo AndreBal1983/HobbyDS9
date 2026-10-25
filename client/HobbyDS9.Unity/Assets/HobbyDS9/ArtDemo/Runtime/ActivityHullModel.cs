@@ -8,6 +8,7 @@ namespace HobbyDS9.ArtDemo
     // no scene, camera, render texture, input, statistics or gameplay authority.
     public sealed class ActivityHullModel : IDisposable
     {
+        private readonly long shutdownLabel=ArtShutdownLifecycle.NextId();
         private readonly List<Material> materialsOwned=new List<Material>();
         public GameObject Root { get; }
         public ActivityHullVisualDefinition Definition { get; }
@@ -124,6 +125,6 @@ namespace HobbyDS9.ArtDemo
         private static void Destroy(UnityEngine.Object value)
         {if(value==null)return;if(Application.isPlaying)UnityEngine.Object.Destroy(value);else UnityEngine.Object.DestroyImmediate(value);}
         public void Dispose()
-        {if(disposed)return;disposed=true;if(Root!=null){Root.SetActive(false);Destroy(Root);}foreach(var material in materialsOwned)Destroy(material);materialsOwned.Clear();}
+        {ArtShutdownLifecycle.Mark("ActivityHullModel",shutdownLabel,"dispose.enter");if(disposed){ArtShutdownLifecycle.Mark("ActivityHullModel",shutdownLabel,"dispose.already-return");return;}disposed=true;if(Root!=null){Root.SetActive(false);Destroy(Root);}foreach(var material in materialsOwned)Destroy(material);materialsOwned.Clear();ArtShutdownLifecycle.Mark("ActivityHullModel",shutdownLabel,"dispose.return");}
     }
 }

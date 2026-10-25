@@ -51,7 +51,7 @@ namespace HobbyDS9.UnityReview
             var settings=new VisualElement();settings.AddToClassList("review-field-row");panel.Add(settings);
             AddButton(settings,"Audio",()=>OpenDemoSettings(ReviewWorkspacePage.Audio));
             AddButton(settings,"Display",()=>OpenDemoSettings(ReviewWorkspacePage.Display));
-            AddButton(settings,"Quit",()=>Confirm("Quit without automatic saving? Any unsaved progress will be lost.",()=>{if(model!.Close(true))UnityEngine.Application.Quit();}));
+            AddButton(settings,"Quit",()=>Confirm("Quit without automatic saving? Any unsaved progress will be lost.",()=>{ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"close.begin");if(model!.Close(true)){ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"close.return.true");ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"quit.call");UnityEngine.Application.Quit();ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"quit.return");}else{ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"close.return.false");}}));
         }
         private void StartFreshDemo()
         {

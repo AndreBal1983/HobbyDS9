@@ -9,6 +9,7 @@ namespace HobbyDS9.UnityReview
 {
     public sealed class ReviewBattlePanel : VisualElement
     {
+        private readonly long shutdownLabel=ReviewShutdownLifecycle.NextId();
         private ReviewBattleStage? stage;
         private readonly Image image;
         private readonly Label caption;
@@ -48,7 +49,7 @@ namespace HobbyDS9.UnityReview
                 }).Every(33);
             }
             Add(new Label("Resolved events · visual scale is schematic"){name="battle-presentation-boundary",tooltip="Presentation spacing and timing are schematic. Camera, pause and skip do not change combat."});
-            RegisterCallback<DetachFromPanelEvent>(_=>{image.image=null;stage?.Dispose();stage=null;});
+            RegisterCallback<DetachFromPanelEvent>(_=>{ReviewShutdownLifecycle.Mark("ReviewBattlePanel",shutdownLabel,"detach.enter");image.image=null;ReviewShutdownLifecycle.Mark("ReviewBattlePanel",shutdownLabel,"detach.image-cleared");if(stage==null){ReviewShutdownLifecycle.Mark("ReviewBattlePanel",shutdownLabel,"detach.stage-absent");}ReviewShutdownLifecycle.Mark("ReviewBattlePanel",shutdownLabel,"detach.stage-dispose.begin");stage?.Dispose();ReviewShutdownLifecycle.Mark("ReviewBattlePanel",shutdownLabel,"detach.stage-dispose.return");stage=null;ReviewShutdownLifecycle.Mark("ReviewBattlePanel",shutdownLabel,"detach.return");});
         }
         public static void Statistics(VisualElement parent,CampaignBattlePlayback playback)
         {
