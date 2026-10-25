@@ -75,6 +75,15 @@ from 144 to 318 pixels without reducing the 180-pixel hull image. The test also
 retained frozen R1 completion, science/minor/mission behavior, exact typed
 Continue and the separate historical V2 path. Its stale-observation rejection
 updates an owned label in place; it does not claim a worker rejection. Held
-animation checks are not native/FPS/performance evidence. Separate executable
-packaging and native acceptance remain pending; reference compilation alone
-does not establish those outcomes.
+animation checks are not native/FPS/performance evidence.
+
+The separate Construction Catalogue Windows package built source `c42bba9` with
+strict IL2CPP in 91,787 milliseconds. Its 747 files were independently rehashed.
+Normal executable New250 at 1280×720 passed direct one-item addition, separate
+full hull inspection, week-two Industry/material progress, cancellation review
+and Back retaining the order, then normal Quit. Original saves/settings were
+restored and independently verified. This scoped native check did not save or
+cold-load, complete a ship, or enter combat; native 1920/3440 and the combined
+combat/recovery continuation remain separate acceptance work. The old review
+hint after cancellation Back is a nonblocking copy issue. Reference compilation
+alone does not establish these outcomes.
