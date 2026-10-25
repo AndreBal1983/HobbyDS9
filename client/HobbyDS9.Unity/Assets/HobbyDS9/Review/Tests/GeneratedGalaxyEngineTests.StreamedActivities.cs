@@ -142,12 +142,21 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private IEnumerator StreamSaveContinue(PublishedReceivingState state,UIDocument doc,string label)
         {
+            var expected=StreamBytes(CampaignModel(state.Entry!));
+            yield return StreamSaveOnly(state,doc,label);
+            yield return StreamContinueSaved(state,doc,label,expected);
+        }
+        private IEnumerator StreamSaveOnly(PublishedReceivingState state,UIDocument doc,string label)
+        {
             var savingModel=CampaignModel(state.Entry!);var dirty=savingModel.LocalDesignDirty;var draft=dirty?JsonConvert.SerializeObject(DesignerDto(state.Entry!)):null;var expected=StreamBytes(savingModel);CampaignPage(doc,ReviewWorkspacePage.Saves);yield return null;
             Click(doc.rootVisualElement.Q<Button>("save-slot-generated-1"));var clock=System.Diagnostics.Stopwatch.StartNew();Click(doc.rootVisualElement.Q<Button>("player-save"));
             if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);
             state.Timings.Add(new{phase=label+"-save-synchronous-capture",ms=clock.Elapsed.TotalMilliseconds});yield return PublishedReceivingIdle(state,label+"-save");
             var path=Path.Combine(directory!,"campaign","unity-campaign-streamed-activities-v1-generated-1.json");Assert.That(File.ReadAllBytes(path),Is.EqualTo(expected));if(dirty){Assert.That(savingModel.LocalDesignDirty,Is.True);Assert.That(JsonConvert.SerializeObject(DesignerDto(state.Entry!)),Is.EqualTo(draft),"Save retains the unsent class draft");}
             File.WriteAllBytes(Path.Combine(CampaignOutput(),"streamed-"+label+"-saved-private-audit.json"),expected);
+        }
+        private static IEnumerator StreamContinueSaved(PublishedReceivingState state,UIDocument doc,string label,byte[] expected)
+        {
             Click(doc.rootVisualElement.Q<Button>("demo-menu"));yield return null;yield return null;
             Click(doc.rootVisualElement.Q<Button>("streamed-activities-campaign-continue-generated-1"));Confirm(doc);yield return PublishedReceivingIdle(state,label+"-menu-continue");
             Assert.That(CampaignModel(state.Entry!).StreamedActivitiesCampaign,Is.True);Assert.That(StreamBytes(CampaignModel(state.Entry!)),Is.EqualTo(expected));
@@ -213,7 +222,7 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return StreamSaveContinue(state,doc,"completed");model=CampaignModel(entry);yield return StreamPage(doc);yield return StreamClick(doc,"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
                 foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})yield return StreamCapture(doc,size,"continued-review",true,reviewId:"activity-build-review-"+model.Activities().BuildOptions.FindIndex(o=>o.DefinitionId==blueprint&&o.BlueprintRevision==2));
                 yield return StreamClick(doc,"activity-order-back",false);
-                yield return StreamExpedition(doc,entry,false);yield return StreamExpedition(doc,entry,true);
+                yield return StreamExpedition(state,doc,entry,false);yield return StreamExpedition(state,doc,entry,true);
                 yield return StreamSaveContinue(state,doc,"findings");model=CampaignModel(entry);
                 // Hold the actual slot store on a worker, never a semaphore on the UI thread.
                 CampaignPage(doc,ReviewWorkspacePage.Saves);yield return null;Click(doc.rootVisualElement.Q<Button>("save-slot-generated-1"));
@@ -233,10 +242,10 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(CampaignModel(entry).StreamedActivitiesCampaign,Is.False);Assert.That(codec.EncodeStaticAstronomyCampaignRoot(CampaignPrivateAudit(CampaignModel(entry))),Is.EqualTo(codec.EncodeStaticAstronomyCampaignRoot(legacy)));
                 yield return StreamCapture(doc,new Vector2Int(1280,720),"separate-v2-explore");
                 int captures=Directory.GetFiles(CampaignOutput(),"streamed-*.png").Length+Directory.GetFiles(CampaignOutput(),"checkpoint-streamed-*.png").Length;Assert.That(captures,Is.EqualTo(14));
-                File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-results.json"),JsonConvert.SerializeObject(new{passed=true,captures,normalConstructionCredits=false,gradualMaterials=true,mixedFifo=true,frozenR1=true,r2Published=true,scienceAndMinor=true,typedContinueExact=true,threeOwnReadyHullComponentProof=true,nativeInput=false}));
+                File.WriteAllText(Path.Combine(CampaignOutput(),"streamed-results.json"),JsonConvert.SerializeObject(new{passed=true,captures,normalConstructionCredits=false,gradualMaterials=true,mixedFifo=true,frozenR1=true,r2Published=true,scienceAndMinor=true,typedContinueExact=true,threeOwnReadyHullComponentProof=true,departureAbortBranchThenOfficialSavedActiveRestore=true,continuousAbortAndClaimHistory=false,nativeInput=false}));
             }
         }
-        private static IEnumerator StreamExpedition(UIDocument doc,ReviewEntry entry,bool minor,bool interruption=true)
+        private IEnumerator StreamExpedition(PublishedReceivingState state,UIDocument doc,ReviewEntry entry,bool minor)
         {
             var model=CampaignModel(entry);var visited=new HashSet<string>();ActivityKnownSiteDto? found=null;
             var explorer=model.Activities().Ships.First(s=>s.HullVersionId=="hull.constitution-explorer.v1");
@@ -262,20 +271,32 @@ namespace HobbyDS9.UnityReview.Tests
             doc.rootVisualElement.Q<DropdownField>("activity-site-selector").index=model.Activities().Sites.FindIndex(s=>s.Site.SiteId==found.Site.SiteId);yield return null;
             found=model.Activities().Sites.Single(s=>s.Site.SiteId==found.Site.SiteId);int choice=found.Choices.FindIndex(c=>minor?c.ChoiceId.EndsWith(".channel",StringComparison.Ordinal):c.RequiredStudy<=explorer.StudyWork&&c.Work>0);Assert.That(choice,Is.GreaterThanOrEqualTo(0));
             var cash=model.Activities().Credits;var cost=found.Choices[choice].Credits;yield return StreamOrder(doc,"activity-choice-review-"+choice);Assert.That(model.Activities().Credits,Is.EqualTo(cash-cost));
-            if(!minor&&interruption)
+            if(!minor)
             {
+                // Explicit alternative branches: preserve the real active expedition
+                // through ordinary UI Save, test departure, then Continue that save.
+                // This is not one continuous history containing both abort and claim.
+                var activeBytes=StreamBytes(model);var activeFinding=JsonConvert.SerializeObject(model.Activities().Findings.Last());
+                yield return StreamSaveOnly(state,doc,"active-expedition-branch-point");Assert.That(StreamBytes(model),Is.EqualTo(activeBytes));
                 var destination=model.GeneratedMap().Regions.Select(r=>(r.NodeId,Offer:model.Current.FindKnownRoute(explorer.FleetId,r.NodeId))).Where(x=>x.Offer?.Route.Success==true&&x.Offer.Route.TotalCost>0).OrderBy(x=>x.Offer!.Route.TotalCost).ThenBy(x=>x.NodeId,StringComparer.Ordinal).First().NodeId;
-                var before=StreamBytes(model);yield return StreamRoute(doc,entry,explorer.FleetId,destination,false);Assert.That(StreamBytes(model),Is.EqualTo(before));
+                var before=StreamBytes(model);var researchBeforeDeparture=JsonConvert.SerializeObject(model.Current.Frame.Strategy!.Research);
+                yield return StreamRoute(doc,entry,explorer.FleetId,destination,false);Assert.That(StreamBytes(model),Is.EqualTo(before));
                 yield return StreamRoute(doc,entry,explorer.FleetId,destination,true);Assert.That(model.Activities().Findings.Last().Stage,Is.EqualTo(ActivityProgressStage.Aborted));
                 Assert.That(model.Activities().Findings.Count(f=>f.Stage==ActivityProgressStage.Aborted),Is.EqualTo(1));
-                yield return StreamCapture(doc,new Vector2Int(1280,720),"confirmed-departure");
-                yield return StreamExpedition(doc,entry,false,false);yield break;
+                Assert.That(model.Activities().Findings.Last().InsightApplied,Is.Zero);Assert.That(model.Activities().Findings.Last().InsightUnlearnable,Is.Zero);
+                Assert.That(model.Activities().Credits,Is.EqualTo(cash-cost),"departure refunds no consumed expedition funding");
+                Assert.That(JsonConvert.SerializeObject(model.Current.Frame.Strategy!.Research),Is.EqualTo(researchBeforeDeparture),"negative branch grants no research reward");
+                File.WriteAllBytes(Path.Combine(CampaignOutput(),"streamed-departure-abort-negative-branch-private-audit.json"),StreamBytes(model));
+                yield return StreamCapture(doc,new Vector2Int(1280,720),"departure-abort-negative-branch");
+                yield return StreamContinueSaved(state,doc,"active-expedition-positive-branch-restore",activeBytes);model=CampaignModel(entry);
+                Assert.That(JsonConvert.SerializeObject(model.Activities().Findings.Last()),Is.EqualTo(activeFinding),"exact finding identity, participant, paid source, work and remaining time restored through actual Continue");
+                File.WriteAllBytes(Path.Combine(CampaignOutput(),"streamed-official-active-restore-positive-branch-private-audit.json"),StreamBytes(model));
             }
             for(int i=0;i<8&&model.Activities().Findings.Last().Stage==ActivityProgressStage.Active;i++)yield return StreamAdvance(doc,entry);
             Assert.That(model.Activities().Findings.Last().Stage,Is.EqualTo(ActivityProgressStage.AwaitingClaim));yield return StreamPage(doc,true);
             int finding=model.Activities().Findings.Count-1;yield return StreamOrder(doc,"activity-finding-claim-"+finding);Assert.That(model.Activities().Findings.Last().Stage,Is.EqualTo(ActivityProgressStage.Completed));
             var resolved=model.Activities().Findings.Last();if(minor)Assert.That(model.Activities().Sites.Single(s=>s.Site.SiteId==found.Site.SiteId).Relation,Is.EqualTo(ActivityMinorRelation.Accepted).Or.EqualTo(ActivityMinorRelation.Refused));else Assert.That(resolved.InsightApplied,Is.GreaterThan(0));
-            yield return StreamCapture(doc,new Vector2Int(1280,720),minor?"minor-consent":"science-claim",false,true);
+            yield return StreamCapture(doc,new Vector2Int(1280,720),minor?"minor-consent":"science-claim-restored-active-branch",false,true);
 
         }
     }
