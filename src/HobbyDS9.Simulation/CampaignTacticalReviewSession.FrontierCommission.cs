@@ -13,6 +13,7 @@ namespace HobbyDS9.Simulation
         {
             lock(gate)
             {
+                if(colonisation!=null)return CaptureColonisationCommission(actor);
                 Require(Streams!=null&&Actor(actor)==CampaignTacticalError.None,"Commission requires an owned streamed campaign.");
                 var game=state.Campaign.GameState;
                 if(CampaignActivitiesData.CommissionContentFingerprint(activities!.Content)!=FrontierCommissionOfficialContent)

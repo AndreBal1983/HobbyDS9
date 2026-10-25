@@ -72,7 +72,7 @@ namespace HobbyDS9.Simulation
             lock(gate)
             {
                 Require(activities!=null&&Actor(actor)==CampaignTacticalError.None,"Controlled activity actor required.");
-                var game=state.Campaign.GameState;var copy=CampaignActivitiesData.Copy(activities!.State);
+                var game=state.Campaign.GameState;var copy=colonisation==null?CampaignActivitiesData.Copy(activities!.State):CopyColonisationOwnActivities(actor);
                 var colonies=game.Colonies!.Where(c=>c.OwnerCivilizationId==actor).Select(c=>c.ColonyId).ToHashSet(StringComparer.Ordinal);
                 var known=copy.Observations!.Where(o=>o.ActorId==actor).Select(o=>o.SiteId).ToHashSet(StringComparer.Ordinal);
                 var result=new CampaignActivityObservationDto{ActorId=actor,Turn=game.TurnNumber,Revision=game.StateRevision,
@@ -84,7 +84,7 @@ namespace HobbyDS9.Simulation
                     Industry=output.Industry,Research=output.ResearchOutput,Food=output.FoodOutput});}
                 foreach(var ship in game.Ships!.Where(s=>s.OwnerCivilizationId==actor).OrderBy(s=>s.ShipId,StringComparer.Ordinal))
                 {
-                    var fleet=game.Fleets!.Single(f=>f.FleetId==ship.FleetId);var supported=ActivityCapability(game,ship);
+                    var fleet=game.Fleets!.Single(f=>f.FleetId==ship.FleetId);var supported=colonisation==null?ActivityCapability(game,ship):new ActivityCapabilityFacts(ColonisationView(game,ship).Study,ColonisationView(game,ship).Contact);
                     var reference=ship.Blueprint;
                     if(reference==null&&activities.AuthoredActivityBlueprints.TryGetValue(ship.ShipId,out var authored))reference=new BlueprintReferenceDto{BlueprintId=authored,Revision=1};
                     var record=reference==null?null:CampaignBlueprints.Find(game,reference);
@@ -94,10 +94,10 @@ namespace HobbyDS9.Simulation
                 }
                 foreach(var record in game.Blueprints!.Where(b=>b.OwnerCivilizationId==actor).OrderBy(b=>b.BlueprintId,StringComparer.Ordinal).ThenBy(b=>b.Revision))
                 {
-                    var support=PublishedFit(game,new BlueprintReferenceDto{BlueprintId=record.BlueprintId,Revision=record.Revision},true);
+                    var supported=colonisation==null?PublishedFit(game,new BlueprintReferenceDto{BlueprintId=record.BlueprintId,Revision=record.Revision},true).IsSupportedByCompiler:ColonisationViewSupported(game,record);
                     result.BuildOptions.Add(new ActivityBuildOptionDto{Kind=ActivityProductionKind.PublishedShip,DefinitionId=record.BlueprintId,BlueprintRevision=record.Revision,
-                        DisplayName=record.Fit!.DisplayName,HullVersionId=record.Fit.HullVersionId,Cost=BlueprintCopies.Copy(record.Cost!),Supported=support.IsSupportedByCompiler,
-                        Reason=support.IsSupportedByCompiler?"":"This class contains equipment outside the supported activity/tactical package."});
+                        DisplayName=record.Fit!.DisplayName,HullVersionId=record.Fit.HullVersionId,Cost=BlueprintCopies.Copy(record.Cost!),Supported=supported,
+                        Reason=supported?"":"This class contains equipment outside the supported activity/tactical package."});
                 }
                 foreach(var structure in activities.Content.Structures!)result.BuildOptions.Add(new ActivityBuildOptionDto{Kind=ActivityProductionKind.Infrastructure,
                     DefinitionId=structure.DefinitionId,DisplayName=structure.DisplayName,Cost=BlueprintCopies.Copy(structure.Cost!),Supported=true});

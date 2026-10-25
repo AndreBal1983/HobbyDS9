@@ -20,12 +20,14 @@ namespace HobbyDS9.Simulation
             internal List<ColonisationOperationDto> Journal=new List<ColonisationOperationDto>();
             internal ColonisationMovementOwnershipDto? MovementOwnership;
             internal ColonisationSettlementProofDto? SettlementProof;
+            internal Dictionary<(string Owner,string Blueprint,int Revision),ColonisationViewCapacity> ViewCapacities=new Dictionary<(string,string,int),ColonisationViewCapacity>();
             internal ColonisationContext(string hash,ColonisationPolicyDto policy,ColonisationSupportCatalogueDto support,CampaignColonisationStateDto state,FrozenColonisationPlanetsDto frozen)
             {PackageHash=hash;Policy=ColonisationData.Copy(policy);Support=ColonisationSupportCopies.Copy(support);State=ColonisationData.Copy(state);FrozenPlanets=ColonisationData.Copy(frozen);}
             internal ColonisationContext Copy()=>new ColonisationContext(PackageHash,Policy,Support,State,FrozenPlanets){
                 Production=Production.Select(ColonisationData.Copy).ToList(),History=History.Select(ColonisationData.Copy).ToList(),
                 Journal=Journal.Select(o=>new ColonisationOperationDto{Colonisation=o.Colonisation==null?null:ColonisationData.Copy(o.Colonisation),Existing=o.Existing==null?null:CopyActivityOperation(o.Existing)}).ToList(),
-                MovementOwnership=MovementOwnership==null?null:ColonisationData.Copy(MovementOwnership),SettlementProof=SettlementProof==null?null:ColonisationData.Copy(SettlementProof)};
+                MovementOwnership=MovementOwnership==null?null:ColonisationData.Copy(MovementOwnership),SettlementProof=SettlementProof==null?null:ColonisationData.Copy(SettlementProof),
+                ViewCapacities=new Dictionary<(string,string,int),ColonisationViewCapacity>(ViewCapacities)};
         }
         private ColonisationContext? colonisation;
         private bool EstablishedColony(string colonyId)=>CurrentCamp(colonisation!.State,colonyId) is not SettlementCampDto camp||camp.Stage==ColonyEstablishmentStage.Established;
