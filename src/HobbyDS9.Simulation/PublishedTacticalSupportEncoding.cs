@@ -76,6 +76,21 @@ namespace HobbyDS9.Simulation
             if(!w.Object(c!=null))return;w.Number(c!.Credits);w.Number(c.Industry);w.Number(c.Maintenance);
             w.Items(c.Resources,(a,b)=>w.TextOrder(a.ResourceDefinitionId,b.ResourceDefinitionId),r=>{if(!w.Object(r!=null))return;w.Text(r!.ResourceDefinitionId);w.Number(r.Amount);});
         }
+        // New explicit catalogue identity for the activity profile; old v2 domains are unchanged.
+        internal static string ActivityCatalogue(ShipDesignCatalogueSnapshot catalogue)
+        {
+            using(var w=new Writer("activity-catalogue-encoding-v1",new Budget()))
+            {
+                w.Optional(catalogue.FormatVersion);
+                w.Items(catalogue.HullFamilies,(a,b)=>w.TextOrder(a.FamilyId,b.FamilyId),f=>{w.Text(f.FamilyId);w.Text(f.DisplayName);});
+                w.Items(catalogue.Hulls,(a,b)=>w.TextOrder(a.VersionId,b.VersionId),h=>Hull(w,h));
+                w.Items(catalogue.Components,(a,b)=>w.TextOrder(a.VersionId,b.VersionId),c=>Component(w,c));
+                w.Items(catalogue.Roles,(a,b)=>w.TextOrder(a.RoleId,b.RoleId),r=>{w.Text(r.RoleId);w.Text(r.DisplayName);
+                    w.Items(r.Recommendations,(a,b)=>{var order=a.Profile.CompareTo(b.Profile);return order!=0?order:a.Output.CompareTo(b.Output);},
+                        x=>{w.Number((int)x.Profile);w.Number((int)x.Output);w.Number(x.Minimum);});});
+                return w.Finish();
+            }
+        }
         private static void Hull(Writer w,HullVersionSnapshot? h)
         {
             if(!w.Object(h!=null))return;w.Text(h!.VersionId);w.Text(h.FamilyId);w.Number(h.VersionNumber);w.Text(h.ParentVersionId);w.Text(h.DisplayName);

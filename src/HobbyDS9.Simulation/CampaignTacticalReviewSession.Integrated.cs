@@ -85,9 +85,9 @@ namespace HobbyDS9.Simulation
             if(published!=null&&published.Records.Any(r=>r.FleetIdAtConstruction==fleet))return published.Records.First(r=>r.FleetIdAtConstruction==fleet).OwnerCivilizationId;
             return constructionTemplates == null ? null : BuildRegistry.FirstOrDefault(b => b.FleetIdAtConstruction == fleet)?.OwnerCivilizationId;
         }
-        private bool AdmittedConstruction(CommandEnvelope command) => published!=null&&command.Kind==CommandKind.EnqueueBlueprintConstruction&&command.EnqueueBlueprintConstruction!=null
+        private bool AdmittedConstruction(CommandEnvelope command) => activities==null&&(published!=null&&command.Kind==CommandKind.EnqueueBlueprintConstruction&&command.EnqueueBlueprintConstruction!=null
             ||constructionTemplates != null && command.Kind == CommandKind.EnqueueProduction && command.EnqueueProduction != null
-            && constructionTemplates.Any(t => t.ShipDesignDefinitionId == command.EnqueueProduction.DefinitionId);
+            && constructionTemplates.Any(t => t.ShipDesignDefinitionId == command.EnqueueProduction.DefinitionId));
 
         private void ValidateBuiltShips(GameStateDto game)
         {
@@ -97,7 +97,7 @@ namespace HobbyDS9.Simulation
                 :constructionTemplates.Any(t=>t.ShipDesignDefinitionId==q.ShipDesignDefinitionId)),
                 "Unsupported construction queue in integrated root.");
             Require(game.PopulationStatistics!.ProductionCompleted >= initialProductionCompleted
-                && game.PopulationStatistics.ProductionCompleted-initialProductionCompleted==records.Count+(published?.Records.Count??0), "Produced-source history/completion counter mismatch.");
+                && game.PopulationStatistics.ProductionCompleted-initialProductionCompleted==records.Count+(published?.Records.Count??0)+(activities?.State.Structures!.Count??0), "Produced-source history/completion counter mismatch.");
             Require(records.All(b => b != null && EntityId.TryParse(b.ShipId, out var id) && b.ShipId!.StartsWith("ship.",StringComparison.Ordinal) && id.TryGetAllocationSequence(out var n)
                     && n < game.NextEntitySequence && !definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Any(p => p.ShipId == b.ShipId)
                     && EntityId.TryParse(b.QueueItemId, out var queue) && b.QueueItemId!.StartsWith("queue-item.",StringComparison.Ordinal) && queue.TryGetAllocationSequence(out var q) && q < n

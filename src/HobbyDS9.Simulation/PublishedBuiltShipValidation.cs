@@ -21,7 +21,7 @@ namespace HobbyDS9.Simulation
     internal static class PublishedBuiltShipValidation
     {
         internal static IReadOnlyList<ValidatedPublishedBuiltSource> ValidateRetained(IReadOnlyList<CampaignPublishedBuiltShipDto> records,
-            GameStateDto game,TacticalSupportCatalogueDto support,int initialTurn)
+            GameStateDto game,TacticalSupportCatalogueDto support,int initialTurn,ActivityTacticalSupportCatalogueDto? activitySupport=null)
         {
             Require(records!=null && records.Count<=4096 && game!=null && game.Ships!=null && game.Blueprints!=null && game.Civilizations!=null
                 && initialTurn>=1 && game.TurnNumber>=initialTurn,"Missing or excessive detached inputs.");
@@ -52,7 +52,9 @@ namespace HobbyDS9.Simulation
                     && BlueprintCopies.Same(BlueprintCopies.Copy(publication.Cost!),new ShipDesignCostDto{Credits=restored!.Performance.Cost!.Credits,
                         Industry=restored.Performance.Cost.Industry,Maintenance=restored.Performance.Cost.Maintenance,
                         Resources=restored.Performance.Cost.Resources.Select(x=>new ResourceAmountDto{ResourceDefinitionId=x.ResourceDefinitionId,Amount=x.Amount}).ToList()}),"Forged compiled source or cost.");
-                var compiled=PublishedTacticalSupportCompiler.Evaluate(frozen,restored!,CampaignBlueprints.FrozenAccess(publication.FrozenCatalogue!),support);
+                var activity=activitySupport==null?null:PublishedTacticalSupportCompiler.EvaluateActivities(frozen,restored!,CampaignBlueprints.FrozenAccess(publication.FrozenCatalogue!),activitySupport);
+                var compiled=activity==null?PublishedTacticalSupportCompiler.Evaluate(frozen,restored!,CampaignBlueprints.FrozenAccess(publication.FrozenCatalogue!),support)
+                    :new PublishedTacticalSupportResult(activity.Issues,activity.Ship?.Tactical);
                 Require(compiled.IsSupportedByCompiler,"Unsupported frozen tactical source.");var fit=compiled.Fit!;
                 Require(r.SourceCompilerId==publication.CompilerVersion && r.SourceRulesVersion==publication.RulesVersion && r.SourceContentHash==publication.SourceContentHash
                     && r.PublicationHash==fit.SourceHash && r.SupportCatalogueId==fit.SupportCatalogueId && r.SupportCatalogueRevision==fit.SupportCatalogueRevision
@@ -70,7 +72,7 @@ namespace HobbyDS9.Simulation
         }
 
         internal static ValidatedPublishedBuiltSource ValidateCompletion(CampaignPublishedBuiltShipDto record,GameStateDto before,GameStateDto after,
-            TacticalSupportCatalogueDto support,int initialTurn)
+            TacticalSupportCatalogueDto support,int initialTurn,ActivityTacticalSupportCatalogueDto? activitySupport=null)
         {
             Require(record!=null && before?.Colonies!=null && before.Ships!=null && before.Blueprints!=null && after?.Colonies!=null && after.Ships!=null && after.Blueprints!=null,"Missing completion association.");
             var heads=before!.Colonies!.Where(c=>c.ProductionQueue?.Count>0 && c.ProductionQueue[0].QueueItemId==record!.QueueItemId).ToList();
@@ -88,14 +90,14 @@ namespace HobbyDS9.Simulation
             Require(queue.PaidCredits==cost.CreditCost && queue.RequiredIndustry==cost.IndustryCost && queue.CompletedIndustry>=0 && queue.CompletedIndustry<=queue.RequiredIndustry
                 && queue.PaidResources!=null && cost.ResourceCosts!=null && queue.PaidResources.Count==cost.ResourceCosts.Count
                 && queue.PaidResources.OrderBy(x=>x.ResourceDefinitionId,StringComparer.Ordinal).Zip(cost.ResourceCosts.OrderBy(x=>x.ResourceDefinitionId,StringComparer.Ordinal),BlueprintCopies.Same).All(x=>x),"Paid receipt/source cost mismatch.");
-            return ValidateRetained(new[]{record!},after,support,initialTurn)[0];
+            return ValidateRetained(new[]{record!},after,support,initialTurn,activitySupport)[0];
         }
         internal static CampaignPublishedBuiltShipDto Copy(CampaignPublishedBuiltShipDto r)=>new CampaignPublishedBuiltShipDto {
             ShipId=r.ShipId,BlueprintId=r.BlueprintId,BlueprintRevision=r.BlueprintRevision,OwnerCivilizationId=r.OwnerCivilizationId,FleetIdAtConstruction=r.FleetIdAtConstruction,
             QueueItemId=r.QueueItemId,TurnBuilt=r.TurnBuilt,SourceCompilerId=r.SourceCompilerId,SourceRulesVersion=r.SourceRulesVersion,SourceContentHash=r.SourceContentHash,
             PublicationHash=r.PublicationHash,SupportCatalogueId=r.SupportCatalogueId,SupportCatalogueRevision=r.SupportCatalogueRevision,SupportHash=r.SupportHash,
             SupportCompilerId=r.SupportCompilerId,FitId=r.FitId,FitRevision=r.FitRevision };
-        private static AuthoredTacticalFitDto ToFit(SupportedPublishedTacticalFit s)=>new AuthoredTacticalFitDto {
+        internal static AuthoredTacticalFitDto ToFit(SupportedPublishedTacticalFit s)=>new AuthoredTacticalFitDto {
             DefinitionId=s.FitId,Revision=s.FitRevision,ProvenanceId=s.ProvenanceId,MaxHull=s.MaxHull,Armor=s.Armor,EvasionBps=s.EvasionBps,Role=s.Role,
             Capabilities=new AuthoredTacticalCapabilitiesDto{Speed=s.Capabilities.Speed,Agility=s.Capabilities.Agility,Sensors=s.Capabilities.Sensors,Command=s.Capabilities.Command,Cohesion=s.Capabilities.Cohesion},
             ReactorOutput=s.ReactorOutput,DistributionLimit=s.DistributionLimit,ShieldRechargePerRound=s.ShieldRechargePerRound,

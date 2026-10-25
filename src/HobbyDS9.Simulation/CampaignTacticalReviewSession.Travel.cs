@@ -192,7 +192,7 @@ namespace HobbyDS9.Simulation
                 void Probe(StrategicTurnPhase phase){if(PhysicalPhaseProbe!=null&&!PhysicalPhaseProbe(phase))throw new InvalidOperationException("Injected phase failure.");}
                 Probe(StrategicTurnPhase.AiPlanning);
                 var beforeAi=SimulationSession.CopyState(next.Core.Campaign.GameState);
-                next.Core.Campaign.GameState=published!=null?Legacy(next.Core).RunPublishedPlanningAi(playableOpponent!,constructionTemplates!.Select(t=>t.ShipDesignDefinitionId!).ToList(),
+                next.Core.Campaign.GameState=activities!=null?RunActivityPlanningAi(next):published!=null?Legacy(next.Core).RunPublishedPlanningAi(playableOpponent!,constructionTemplates!.Select(t=>t.ShipDesignDefinitionId!).ToList(),
                     new PublishedPlanningCapacity(published.Package,next,BuildRegistry.ToList(),published.Records,published.RecordBudget,playableTranscript.Count))
                     :frontier!=null?SimulationSession.CopyState(next.Core.Campaign.GameState):demo==null&&playableHash==null?Legacy(next.Core).RunPlanningAiForPhysicalReview()
                     :Legacy(next.Core).RunDemoPlanningAi(demo?.OpponentActorId ?? playableOpponent!,constructionTemplates!.Select(t=>t.ShipDesignDefinitionId!).ToList());
@@ -217,8 +217,10 @@ namespace HobbyDS9.Simulation
                 Phase(StrategicTurnPhase.Economy,()=>EconomyPhase.Execute(game,definitions));
                 Phase(StrategicTurnPhase.Research,()=>ResearchPhase.Execute(game,definitions));
                 var beforeProduction=SimulationSession.CopyState(game);
-                Phase(StrategicTurnPhase.Production,()=>ProductionPhase.Execute(game,definitions));
-                ProvisionCompletedShips(next,beforeProduction);
+                if(activities!=null)
+                {Probe(StrategicTurnPhase.Production);ExecuteActivityProduction(next);FoundationValidator.ValidateGameState(game,definitions).ThrowIfInvalid(nameof(game));}
+                else
+                {Phase(StrategicTurnPhase.Production,()=>ProductionPhase.Execute(game,definitions));ProvisionCompletedShips(next,beforeProduction);}
                 if(game.Ships!.Any(s=>!next.Core.Pools.Any(p=>p.ShipId==s.ShipId)))return Result(CampaignTacticalError.UnsupportedSource);
                 Probe(StrategicTurnPhase.Movement);
                 next.MovementProof=new CampaignPhysicalMovementProofDto { Start=SimulationSession.CopyState(game),
@@ -229,6 +231,7 @@ namespace HobbyDS9.Simulation
                     movementGuard.Fleets!.Single(f=>f.FleetId==receipt.FleetId).RouteNodeIds=next.MovementProof.Start.Fleets!
                         .Single(f=>f.FleetId==receipt.FleetId).RouteNodeIds!.Skip((int)receipt.EdgesCompleted).ToList();
                 SimulationSession.RequirePhaseChanges(next.MovementProof.Start,movementGuard,allowEconomy:false,allowMovement:true);
+                if(activities!=null)TickActivityFindings(game);
                 Probe(StrategicTurnPhase.EncounterCreation);next.Requests=FreezePhysical(game,movement);next.LastMovement=movement.Receipts;
                 foreach(var o in next.Orders)
                 {

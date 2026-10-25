@@ -18,15 +18,15 @@ namespace HobbyDS9.Simulation
         private HashSet<string> playableRetiredFleets = new HashSet<string>(StringComparer.Ordinal);
         internal Action? PlayableOrganizationProbe { get; set; }
         internal Action? PlayableAiRemainderProbe { get; set; }
-        private string OwnedCoreProfile => published!=null?CampaignPublishedConstructionIdentity.EmbeddedCoreProfile:astronomyIndex != null ? CampaignStaticAstronomyIdentity.EmbeddedCoreProfile : generatedMap != null ? CampaignGeneratedIdentity.EmbeddedCoreProfile : playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
+        private string OwnedCoreProfile => activities!=null?CampaignActivitiesIdentity.EmbeddedCoreProfile:published!=null?CampaignPublishedConstructionIdentity.EmbeddedCoreProfile:astronomyIndex != null ? CampaignStaticAstronomyIdentity.EmbeddedCoreProfile : generatedMap != null ? CampaignGeneratedIdentity.EmbeddedCoreProfile : playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
             : frontier != null ? CampaignFrontierIdentity.EmbeddedCoreProfile : CampaignTacticalReviewIdentity.Profile;
-        public int RemainingPlayableOperations { get { lock (gate) return playableOperationLimit - playableTranscript.Count; } }
+        public int RemainingPlayableOperations { get { lock (gate) return playableOperationLimit - UsedPlayableOperations; } }
 
         private bool CanPublishPlayableAdvance(CampaignTacticalTravelSaveDto next)
         {
             if (playableHash == null) return true;
             var required = PlayableAdvanceCapacity.RequiredSlots(next, controllers);
-            return required <= (long)playableOperationLimit - playableTranscript.Count;
+            return required <= (long)playableOperationLimit - UsedPlayableOperations;
         }
 
         private static void ValidatePlayablePackage(CampaignPlayableFleetPackageDto p, bool generated = false)

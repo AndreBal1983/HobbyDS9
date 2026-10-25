@@ -15,7 +15,7 @@ namespace HobbyDS9.Simulation
         private readonly List<CampaignFrontierOperationDto> frontierTranscript = new List<CampaignFrontierOperationDto>();
         internal Action? FrontierCommitProbe { get; set; }
         private bool FrontierTranscriptFull=>(frontier!=null&&frontierTranscript.Count>=CampaignFrontierIdentity.TranscriptLimit)
-            || (playableHash!=null&&playableTranscript.Count>=playableOperationLimit);
+            || (playableHash!=null&&UsedPlayableOperations>=playableOperationLimit);
 
         private static void ValidateFrontierPackage(CampaignFrontierPackageDto p)
         {

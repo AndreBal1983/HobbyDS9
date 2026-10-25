@@ -72,11 +72,14 @@ namespace HobbyDS9.Simulation
             => BuildFacts(template,map,staticAstronomy,null);
         internal static CampaignPlayableFleetPackageDto BuildPublished(CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash)
             => BuildFacts(template,map,true,wrapperHash);
-        private static CampaignPlayableFleetPackageDto BuildFacts(CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,bool staticAstronomy,string? wrapperHash)
+        internal static CampaignPlayableFleetPackageDto BuildActivities(CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash)
+            => BuildFacts(template,map,true,wrapperHash,true);
+        private static CampaignPlayableFleetPackageDto BuildFacts(CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,bool staticAstronomy,string? wrapperHash,bool activities=false)
         {
             // Existing template reader supplies the trusted exact raw-source identity.
             CampaignTacticalReviewSession.StartPlayable(template);
             string Domain(string domain)=>wrapperHash==null?Identity(domain,template.PackageHash!,map.ContentHash,staticAstronomy)
+                :activities?CampaignActivitiesData.Identity(CampaignActivitiesIdentity.Profile,domain,wrapperHash,map.ContentHash)
                 :CampaignPublishedConstructionData.Identity(domain,wrapperHash,map.ContentHash);
             var source = template.Integrated!.Physical!.CorePackage!;
             var definitions = SimulationSession.CopyDefinitions(source.Campaign!.Definitions);
@@ -134,7 +137,7 @@ namespace HobbyDS9.Simulation
                     Connections = edges.OrderBy(e => e.ConnectionId, StringComparer.Ordinal).Select(e => new NavigationKnowledgeEntryDto { Id = e.ConnectionId, Level = NavigationKnowledgeLevel.Charted }).ToList() };
             }).ToList();
             game.RngState.State = ulong.Parse(map.Settings.Map.Seed, CultureInfo.InvariantCulture) ^ 0x47454e43414d5031UL;
-            var scenario = new ScenarioDto { ScenarioId = wrapperHash!=null?"scenario.generated-published-construction-v1":staticAstronomy ? "scenario.generated-campaign-v2" : "scenario.generated-campaign-v1", RulesVersion = source.Campaign.RulesVersion,
+            var scenario = new ScenarioDto { ScenarioId = activities?"scenario.generated-activities-v1":wrapperHash!=null?"scenario.generated-published-construction-v1":staticAstronomy ? "scenario.generated-campaign-v2" : "scenario.generated-campaign-v1", RulesVersion = source.Campaign.RulesVersion,
                 ContentHash = Domain("scenario"), Definitions = definitions, InitialState = game };
             FoundationValidator.ValidateScenario(scenario).ThrowIfInvalid(nameof(scenario));
             var core = new CampaignTacticalReviewPackageDto { FormatVersion = source.FormatVersion, ProfileId = source.ProfileId,

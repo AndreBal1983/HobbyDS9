@@ -31,9 +31,9 @@ namespace HobbyDS9.Simulation
             CampaignIntegratedPlaytestPackageDto? integratedPackage=null,CampaignIntegratedPlaytestSaveDto? integratedSave=null,
             CampaignSingleplayerDemoPackageDto? demoPackage=null,CampaignFrontierPackageDto? frontierPackage=null,
             CampaignPlayableFleetPackageDto? playablePackage=null, NaturalGalaxyDocumentDto? generatedMap=null, string? generatedTemplateHash=null,
-            bool staticAstronomy=false,PublishedConstructionContext? publishedContext=null)
+            bool staticAstronomy=false,PublishedConstructionContext? publishedContext=null,ActivitiesContext? activitiesContext=null)
         {
-            published=publishedContext;
+            published=publishedContext;activities=activitiesContext;
             this.generatedMap = generatedMap == null ? null : NaturalGalaxyData.Copy(generatedMap);
             this.generatedTemplateHash = generatedTemplateHash;
             if(staticAstronomy)

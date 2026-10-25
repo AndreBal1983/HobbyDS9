@@ -66,7 +66,7 @@ namespace HobbyDS9.Simulation
         {
             lock(gate)
             {
-                Require(published!=null,"Not a published-construction profile.");
+                Require(published!=null&&activities==null,"Use the complete activity root for an activity profile.");
                 return new CampaignPublishedConstructionSaveDto{FormatVersion=CampaignPublishedConstructionIdentity.Format,
                     ProfileId=CampaignPublishedConstructionIdentity.Profile,PolicyId=CampaignPublishedConstructionIdentity.Policy,
                     TemplatePackageHash=published!.WrapperHash,PackageHash=playableHash,
@@ -112,7 +112,7 @@ namespace HobbyDS9.Simulation
             integratedHash=source.integratedHash;initialProductionCompleted=source.initialProductionCompleted;constructionTemplates=source.constructionTemplates;
             // Every mutable authority/source/cache-container/organisation/transcript is
             // detached. Playback objects are already immutable snapshot values.
-            travel=source.TravelCopy();state=travel.Core;builtShips=source.builtShips.Select(CopyBuild).ToList();published=source.published!.Copy();
+            travel=source.TravelCopy();state=travel.Core;builtShips=source.builtShips.Select(CopyBuild).ToList();published=source.published!.Copy();activities=source.activities?.Copy();
             discoveries=source.discoveries.Select(CopyDiscovery).ToList();
             playableNames=new Dictionary<string,string>(source.playableNames,StringComparer.Ordinal);
             playableCreatedOwners=new Dictionary<string,string>(source.playableCreatedOwners,StringComparer.Ordinal);
@@ -129,7 +129,7 @@ namespace HobbyDS9.Simulation
         private void AdoptPublished(CampaignTacticalReviewSession c)
         {
             // All potentially throwing copies/validation/probes precede these assignments.
-            state=c.state;travel=c.travel;builtShips=c.builtShips;published=c.published;discoveries=c.discoveries;
+            state=c.state;travel=c.travel;builtShips=c.builtShips;published=c.published;activities=c.activities;discoveries=c.discoveries;
             playableNames=c.playableNames;playableCreatedOwners=c.playableCreatedOwners;
             playableTranscript=c.playableTranscript;playableRetiredFleets=c.playableRetiredFleets;playableHistory=c.playableHistory;
         }
@@ -139,14 +139,24 @@ namespace HobbyDS9.Simulation
             {
                 try
                 {
-                    var candidate=ForkPublished();var result=action(candidate);
+                    var candidate=ForkPublished();var beforeCommon=candidate.playableTranscript.Count;var result=action(candidate);
                     if(!result.Accepted){LastPhysicalFailure=candidate.LastPhysicalFailure;return Result(result.Error);}
                     // Strategic commands replace state; physical commands replace both.
                     // Certify the canonical post-command core, never the fork's old core.
                     candidate.travel=candidate.TravelCopy();
                     PublishedTransactionProbe?.Invoke("after-command");candidate.ValidateTravelSave(candidate.travel!);
-                    var facts=candidate.PublishedCapacity(ConstructionJournalOperation.AlreadyStagedBoundary,candidate.playableTranscript.Count);
-                    if(!facts.Certified){LastPhysicalFailure=facts.UncertifiableReason;return Result(CampaignTacticalError.Overflow);}
+                    if(candidate.activities!=null)
+                    {
+                        if(candidate.playableTranscript.Count!=beforeCommon)
+                        {Require(candidate.playableTranscript.Count==beforeCommon+1,"One common activity-journal operation required.");
+                         candidate.activities.Journal.Add(new CampaignActivityOperationDto{Common=CopyPlayableOperation(candidate.playableTranscript.Last())});}
+                          candidate.TickActivityFindings(candidate.state.Campaign.GameState,false);
+                          candidate.ValidateActivityState();
+                        if(!candidate.ActivityCapacity(0)){LastPhysicalFailure=candidate.LastPhysicalFailure;return Result(CampaignTacticalError.Overflow);}
+                    }
+                    else
+                    {var facts=candidate.PublishedCapacity(ConstructionJournalOperation.AlreadyStagedBoundary,candidate.playableTranscript.Count);
+                     if(!facts.Certified){LastPhysicalFailure=facts.UncertifiableReason;return Result(CampaignTacticalError.Overflow);}}
                     PublishedTransactionProbe?.Invoke("before-copy");
                     var ready=candidate.ForkPublished();ready.publishedExecuting=false;
                     PublishedTransactionProbe?.Invoke("after-transcript-copy");PublishedTransactionProbe?.Invoke("after-cache-copy");
@@ -154,8 +164,8 @@ namespace HobbyDS9.Simulation
                 }
                 catch(PublishedRecordCapacityException){return Result(CampaignTacticalError.Overflow);}
                 catch(OverflowException){return Result(CampaignTacticalError.Overflow);}
-                catch(ArgumentException){return Result(CampaignTacticalError.UnsupportedSource);}
-                catch(InvalidOperationException){return Result(CampaignTacticalError.InvalidBatch);}
+                catch(ArgumentException error){LastPhysicalFailure=error.ToString();return Result(CampaignTacticalError.UnsupportedSource);}
+                catch(InvalidOperationException error){LastPhysicalFailure=error.ToString();return Result(CampaignTacticalError.InvalidBatch);}
             }
         }
         private CampaignFleetOrganizationResult PublishedOrganization(SubmitCampaignFleetOrganizationDto? command)
@@ -170,9 +180,10 @@ namespace HobbyDS9.Simulation
         {
             var record=game.Blueprints!.Single(r=>r.BlueprintId==reference.BlueprintId&&r.Revision==reference.Revision);
             var restored=CampaignBlueprints.Restore(record);
-            return PublishedTacticalSupportCompiler.Evaluate(new ShipDesignCatalogueSnapshot(record.FrozenCatalogue!),restored!,
-                currentAccess?CampaignBlueprints.Access(definitions,game.Civilizations!.Single(c=>c.CivilizationId==record.OwnerCivilizationId))
-                    :CampaignBlueprints.FrozenAccess(record.FrozenCatalogue!),published!.Support);
+            var access=currentAccess?CampaignBlueprints.Access(definitions,game.Civilizations!.Single(c=>c.CivilizationId==record.OwnerCivilizationId)):CampaignBlueprints.FrozenAccess(record.FrozenCatalogue!);
+            if(activities!=null){var result=PublishedTacticalSupportCompiler.EvaluateActivities(new ShipDesignCatalogueSnapshot(record.FrozenCatalogue!),restored!,access,activities.Support);
+                return new PublishedTacticalSupportResult(result.Issues,result.Ship?.Tactical);}
+            return PublishedTacticalSupportCompiler.Evaluate(new ShipDesignCatalogueSnapshot(record.FrozenCatalogue!),restored!,access,published!.Support);
         }
         private void ValidatePublishedLedger(GameStateDto game)
         {
@@ -182,7 +193,7 @@ namespace HobbyDS9.Simulation
                 &&combined.Select(r=>r.QueueItemId).Distinct(StringComparer.Ordinal).Count()==combined.Count
                 &&combined.All(r=>!definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Any(p=>p.ShipId==r.ShipId)
                     &&!game.Colonies!.SelectMany(c=>c.ProductionQueue!).Any(q=>q.QueueItemId==r.QueueItemId)),"Mixed source/queue identity overlap.");
-            if(combined.Count+game.Colonies!.Sum(c=>c.ProductionQueue!.Count)>ctx.RecordBudget)throw new PublishedRecordCapacityException();
+            if(combined.Count+(activities==null?game.Colonies!.Sum(c=>c.ProductionQueue!.Count):activities.State.Production!.Count+activities.State.Structures!.Count+activities.State.Findings!.Count)>ctx.RecordBudget)throw new PublishedRecordCapacityException();
             foreach(var group in combined.GroupBy(r=>r.FleetIdAtConstruction,StringComparer.Ordinal))
             {
                 Require(group.Select(r=>r.OwnerCivilizationId).Distinct(StringComparer.Ordinal).Count()==1,"Mixed construction fleet ownership.");
@@ -192,7 +203,7 @@ namespace HobbyDS9.Simulation
                 Require(first<ulong.MaxValue&&first+1==fleetSequence,"Mixed fleet/first constructed ship allocation mismatch.");
             }
             var sources=new Dictionary<string,CampaignEquipmentSource>(StringComparer.Ordinal);
-            for(int i=0;i<ctx.Records.Count;i+=4096)foreach(var source in PublishedBuiltShipValidation.ValidateRetained(ctx.Records.Skip(i).Take(4096).ToList(),game,ctx.Support,initialTurn))
+            for(int i=0;i<ctx.Records.Count;i+=4096)foreach(var source in PublishedBuiltShipValidation.ValidateRetained(ctx.Records.Skip(i).Take(4096).ToList(),game,ctx.Support,initialTurn,activities?.Support))
                 sources.Add(source.Equipment.ShipId,source.Equipment);
             ctx.Sources=sources;
         }
@@ -206,7 +217,7 @@ namespace HobbyDS9.Simulation
                 SourceCompilerId=source.CompilerVersion,SourceRulesVersion=source.RulesVersion,SourceContentHash=source.SourceContentHash,
                 PublicationHash=fit.SourceHash,SupportCatalogueId=fit.SupportCatalogueId,SupportCatalogueRevision=fit.SupportCatalogueRevision,SupportHash=fit.SupportHash,
                 SupportCompilerId=fit.CompilerId,FitId=fit.FitId,FitRevision=fit.FitRevision};
-            var validated=PublishedBuiltShipValidation.ValidateCompletion(record,before,game,published!.Support,initialTurn);
+            var validated=PublishedBuiltShipValidation.ValidateCompletion(record,before,game,published!.Support,initialTurn,activities?.Support);
             published.Records.Add(PublishedBuiltShipValidation.Copy(record));published.Sources.Add(ship.ShipId,validated.Equipment);
             next.Core.Pools.Add(validated.Equipment.InitialPool());PublishedTransactionProbe?.Invoke("after-provision");
         }
