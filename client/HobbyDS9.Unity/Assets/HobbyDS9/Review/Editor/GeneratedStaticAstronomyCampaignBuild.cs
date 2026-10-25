@@ -66,6 +66,10 @@ namespace HobbyDS9.UnityReview.Editor
         public static void BuildWindowsStreamedActivitiesFrontierCommission()
             =>BuildStreamedActivitiesCheckpoint("Windows-StreamedActivities-FrontierCommission-20261025");
 
+        [MenuItem("HobbyDS9/Campaign/Build responsive orders checkpoint")]
+        public static void BuildWindowsStreamedActivitiesResponsiveOrders()
+            =>BuildStreamedActivitiesCheckpoint("Windows-StreamedActivities-ResponsiveOrders-20261025");
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName)
         {
             BuildWindows(stageName);

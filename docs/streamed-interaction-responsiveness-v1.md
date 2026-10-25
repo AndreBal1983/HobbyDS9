@@ -71,3 +71,9 @@ Actual receiving still needs bounded waits in the existing streamed test helpers
 Confirm / End Turn completion, disable/re-enable and resize, exact Save/Continue,
 and the retained mission/activity assertions. No threshold or existing campaign
 assertion is relaxed by this source packet.
+
+## Streamed order responsiveness receiving
+
+Actual Unity receiving at source 9cdbf378 passed the existing complete 250-system campaign case in 279.940187 seconds, with 22 captures. Controlled holds demonstrated scheduler updates and moving busy indicators during preview, submission and Planning advance, including cancellation and stale-continuation rejection. These controlled waits are not FPS or native/1000-system responsiveness evidence. Mature findings Save/Continue still took approximately 25/27 seconds; synchronous design publication remains outside this change. No rules, content, save or profile change.
+
+The separate ResponsiveOrders Editor entry uses the unchanged strict builder and a fresh stage; actual package/native acceptance remains pending.
