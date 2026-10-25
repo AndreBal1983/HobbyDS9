@@ -76,7 +76,8 @@ namespace HobbyDS9.Contracts.ShipDesign
         public string BlueprintId {get;}
         public int BlueprintRevision {get;}
         public string ClassId {get;}
-        public string CompilerId=>PublishedTacticalSupportIdentity.Compiler;
+        private readonly string compilerId;
+        public string CompilerId=>compilerId;
         public string SupportCatalogueId {get;}
         public int SupportCatalogueRevision {get;}
         public string SupportHash {get;}
@@ -105,9 +106,9 @@ namespace HobbyDS9.Contracts.ShipDesign
         // This compiler supports no shields, magazines or provisioning transaction.
         public IReadOnlyList<TacticalSector> ZeroShieldSectors {get;}
         public SupportedPublishedTacticalFit(PublishedShipBlueprint source,TacticalSupportCatalogueDto support,
-            string supportHash,string sourceHash,AuthoredTacticalFitDto fit)
+            string supportHash,string sourceHash,AuthoredTacticalFitDto fit,string compilerId=PublishedTacticalSupportIdentity.Compiler)
         {
-            BlueprintId=source.BlueprintId;BlueprintRevision=source.Revision;ClassId=source.Fit.ClassId;
+            this.compilerId=compilerId;BlueprintId=source.BlueprintId;BlueprintRevision=source.Revision;ClassId=source.Fit.ClassId;
             SupportCatalogueId=support.CatalogueId!;SupportCatalogueRevision=support.Revision!.Value;
             SupportHash=supportHash;SourceHash=sourceHash;FitId=fit.DefinitionId!;FitRevision=fit.Revision!.Value;ProvenanceId=fit.ProvenanceId!;
             MaxHull=fit.MaxHull!.Value;Armor=fit.Armor!.Value;EvasionBps=fit.EvasionBps!.Value;Role=fit.Role!.Value;

@@ -1,0 +1,1280 @@
+{
+  "FormatVersion": 1,
+  "HullFamilies": [
+    {
+      "FamilyId": "hull-family.constitution-explorer",
+      "DisplayName": "constitution-explorer"
+    },
+    {
+      "FamilyId": "hull-family.galaxy-cruiser",
+      "DisplayName": "galaxy-cruiser"
+    },
+    {
+      "FamilyId": "hull-family.defiant-combat",
+      "DisplayName": "defiant-combat"
+    }
+  ],
+  "Hulls": [
+    {
+      "VersionId": "hull.constitution-explorer.v1",
+      "FamilyId": "hull-family.constitution-explorer",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Constitution Explorer",
+      "Capacity": 100,
+      "MaxHull": 30,
+      "DesignLoad": 100,
+      "MinimumCrew": 10,
+      "PowerDistributionLimit": 60,
+      "MaxReactors": 1,
+      "MaxPropulsionPackages": 1,
+      "ReactorSizeLimit": 2,
+      "PropulsionSizeLimit": 2,
+      "Tags": [
+        "hull-tag.mobile"
+      ],
+      "Mounts": [
+        {
+          "Id": "mount.energy.forward",
+          "Kind": 1,
+          "SizeRating": 2,
+          "Count": 1,
+          "CoverageTag": "coverage.forward"
+        }
+      ],
+      "Cost": {
+        "Credits": 32,
+        "Industry": 50,
+        "Maintenance": 2,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "hull.galaxy-cruiser.v1",
+      "FamilyId": "hull-family.galaxy-cruiser",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Galaxy Cruiser",
+      "Capacity": 160,
+      "MaxHull": 60,
+      "DesignLoad": 160,
+      "MinimumCrew": 20,
+      "PowerDistributionLimit": 80,
+      "MaxReactors": 1,
+      "MaxPropulsionPackages": 1,
+      "ReactorSizeLimit": 2,
+      "PropulsionSizeLimit": 2,
+      "Tags": [
+        "hull-tag.mobile"
+      ],
+      "Mounts": [
+        {
+          "Id": "mount.energy.forward",
+          "Kind": 1,
+          "SizeRating": 2,
+          "Count": 2,
+          "CoverageTag": "coverage.forward"
+        }
+      ],
+      "Cost": {
+        "Credits": 70,
+        "Industry": 100,
+        "Maintenance": 2,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "hull.defiant-combat.v1",
+      "FamilyId": "hull-family.defiant-combat",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Defiant Combat",
+      "Capacity": 70,
+      "MaxHull": 24,
+      "DesignLoad": 70,
+      "MinimumCrew": 10,
+      "PowerDistributionLimit": 60,
+      "MaxReactors": 1,
+      "MaxPropulsionPackages": 1,
+      "ReactorSizeLimit": 2,
+      "PropulsionSizeLimit": 2,
+      "Tags": [
+        "hull-tag.mobile"
+      ],
+      "Mounts": [
+        {
+          "Id": "mount.energy.forward",
+          "Kind": 1,
+          "SizeRating": 2,
+          "Count": 3,
+          "CoverageTag": "coverage.forward"
+        }
+      ],
+      "Cost": {
+        "Credits": 38,
+        "Industry": 65,
+        "Maintenance": 2,
+        "Resources": []
+      }
+    }
+  ],
+  "Components": [
+    {
+      "VersionId": "component.reactor.v1",
+      "FamilyId": "component-family.reactor",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Reactor",
+      "Kind": 1,
+      "Capacity": 18,
+      "CrewRequired": 1,
+      "ComputerDemand": 0,
+      "PowerSupply": 60,
+      "EnvelopeSize": 2,
+      "CompatibleHullFamilyIds": [
+        "hull-family.constitution-explorer",
+        "hull-family.galaxy-cruiser",
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": []
+        },
+        {
+          "Profile": 2,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": []
+        },
+        {
+          "Profile": 3,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": []
+        }
+      ],
+      "Cost": {
+        "Credits": 6,
+        "Industry": 9,
+        "Maintenance": 1,
+        "Resources": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 1
+          }
+        ]
+      }
+    },
+    {
+      "VersionId": "component.life-support.v1",
+      "FamilyId": "component-family.life-support",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Life Support",
+      "Kind": 2,
+      "Capacity": 12,
+      "CrewRequired": 1,
+      "ComputerDemand": 2,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.constitution-explorer",
+        "hull-family.galaxy-cruiser",
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [
+        "system-tag.life-support"
+      ],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 6,
+          "MinimumPower": 6,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 1,
+              "Amount": 40
+            }
+          ]
+        },
+        {
+          "Profile": 2,
+          "FullPower": 6,
+          "MinimumPower": 6,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 1,
+              "Amount": 40
+            }
+          ]
+        },
+        {
+          "Profile": 3,
+          "FullPower": 6,
+          "MinimumPower": 6,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 1,
+              "Amount": 40
+            }
+          ]
+        }
+      ],
+      "Cost": {
+        "Credits": 2,
+        "Industry": 3,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.command.v1",
+      "FamilyId": "component-family.command",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Command",
+      "Kind": 3,
+      "Capacity": 8,
+      "CrewRequired": 1,
+      "ComputerDemand": 0,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.constitution-explorer",
+        "hull-family.galaxy-cruiser",
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [
+        "system-tag.command"
+      ],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 4,
+          "MinimumPower": 4,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 2,
+              "Amount": 60
+            },
+            {
+              "Kind": 8,
+              "Amount": 6000
+            }
+          ]
+        },
+        {
+          "Profile": 2,
+          "FullPower": 4,
+          "MinimumPower": 4,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 2,
+              "Amount": 60
+            },
+            {
+              "Kind": 8,
+              "Amount": 7000
+            }
+          ]
+        },
+        {
+          "Profile": 3,
+          "FullPower": 4,
+          "MinimumPower": 4,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 2,
+              "Amount": 60
+            },
+            {
+              "Kind": 8,
+              "Amount": 6000
+            }
+          ]
+        }
+      ],
+      "Cost": {
+        "Credits": 2,
+        "Industry": 3,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.propulsion.v1",
+      "FamilyId": "component-family.propulsion",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Propulsion",
+      "Kind": 4,
+      "Capacity": 16,
+      "CrewRequired": 1,
+      "ComputerDemand": 10,
+      "PowerSupply": 0,
+      "EnvelopeSize": 2,
+      "CompatibleHullFamilyIds": [
+        "hull-family.constitution-explorer",
+        "hull-family.galaxy-cruiser",
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 30,
+          "MinimumPower": 15,
+          "Scaling": 2,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 3,
+              "Amount": 200
+            },
+            {
+              "Kind": 10,
+              "Amount": 4
+            }
+          ]
+        },
+        {
+          "Profile": 2,
+          "FullPower": 12,
+          "MinimumPower": 6,
+          "Scaling": 2,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 3,
+              "Amount": 200
+            },
+            {
+              "Kind": 9,
+              "Amount": 1000
+            }
+          ]
+        },
+        {
+          "Profile": 3,
+          "FullPower": 8,
+          "MinimumPower": 4,
+          "Scaling": 2,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 3,
+              "Amount": 200
+            },
+            {
+              "Kind": 10,
+              "Amount": 2
+            }
+          ]
+        }
+      ],
+      "Cost": {
+        "Credits": 2,
+        "Industry": 3,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.escort-sensors.v1",
+      "FamilyId": "component-family.escort-sensors",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Escort Sensors",
+      "Kind": 5,
+      "Capacity": 6,
+      "CrewRequired": 1,
+      "ComputerDemand": 2,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.constitution-explorer",
+        "hull-family.galaxy-cruiser",
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [
+        "system-tag.sensors"
+      ],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 4,
+          "MinimumPower": 4,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": [
+            {
+              "Kind": 11,
+              "Amount": 8
+            }
+          ]
+        },
+        {
+          "Profile": 2,
+          "FullPower": 6,
+          "MinimumPower": 6,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": [
+            {
+              "Kind": 11,
+              "Amount": 6
+            },
+            {
+              "Kind": 8,
+              "Amount": 7500
+            }
+          ]
+        },
+        {
+          "Profile": 3,
+          "FullPower": 10,
+          "MinimumPower": 10,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": [
+            {
+              "Kind": 11,
+              "Amount": 10
+            }
+          ]
+        }
+      ],
+      "Cost": {
+        "Credits": 2,
+        "Industry": 3,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.energy-bank.v1",
+      "FamilyId": "component-family.energy-bank",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Energy Bank",
+      "Kind": 7,
+      "Capacity": 8,
+      "CrewRequired": 1,
+      "ComputerDemand": 4,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.constitution-explorer",
+        "hull-family.galaxy-cruiser",
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [],
+      "RequiredComponentTags": [],
+      "Mounts": [
+        {
+          "Kind": 1,
+          "SizeRating": 1,
+          "Count": 1,
+          "CoverageTag": "coverage.forward"
+        }
+      ],
+      "Dependencies": [
+        {
+          "Kind": 11,
+          "Amount": 3
+        }
+      ],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        },
+        {
+          "Profile": 2,
+          "FullPower": 8,
+          "MinimumPower": 4,
+          "Scaling": 2,
+          "Essential": false,
+          "Outputs": [
+            {
+              "Kind": 5,
+              "Amount": 4
+            },
+            {
+              "Kind": 6,
+              "Amount": 8
+            },
+            {
+              "Kind": 7,
+              "Amount": 12
+            }
+          ]
+        },
+        {
+          "Profile": 3,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        }
+      ],
+      "Cost": {
+        "Credits": 2,
+        "Industry": 3,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.defiant-reactor.v1",
+      "FamilyId": "component-family.defiant-reactor",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Compact Reactor",
+      "Kind": 1,
+      "Capacity": 12,
+      "CrewRequired": 1,
+      "ComputerDemand": 0,
+      "PowerSupply": 60,
+      "EnvelopeSize": 2,
+      "CompatibleHullFamilyIds": [
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": []
+        },
+        {
+          "Profile": 2,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": []
+        },
+        {
+          "Profile": 3,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": []
+        }
+      ],
+      "Cost": {
+        "Credits": 4,
+        "Industry": 5,
+        "Maintenance": 1,
+        "Resources": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 1
+          }
+        ]
+      }
+    },
+    {
+      "VersionId": "component.defiant-life-support.v1",
+      "FamilyId": "component-family.defiant-life-support",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Compact Life Support",
+      "Kind": 2,
+      "Capacity": 8,
+      "CrewRequired": 1,
+      "ComputerDemand": 2,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [
+        "system-tag.life-support"
+      ],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 6,
+          "MinimumPower": 6,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 1,
+              "Amount": 40
+            }
+          ]
+        },
+        {
+          "Profile": 2,
+          "FullPower": 6,
+          "MinimumPower": 6,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 1,
+              "Amount": 40
+            }
+          ]
+        },
+        {
+          "Profile": 3,
+          "FullPower": 6,
+          "MinimumPower": 6,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 1,
+              "Amount": 40
+            }
+          ]
+        }
+      ],
+      "Cost": {
+        "Credits": 4,
+        "Industry": 5,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.defiant-command.v1",
+      "FamilyId": "component-family.defiant-command",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Compact Command",
+      "Kind": 3,
+      "Capacity": 6,
+      "CrewRequired": 1,
+      "ComputerDemand": 0,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [
+        "system-tag.command"
+      ],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 4,
+          "MinimumPower": 4,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 2,
+              "Amount": 60
+            },
+            {
+              "Kind": 8,
+              "Amount": 6000
+            }
+          ]
+        },
+        {
+          "Profile": 2,
+          "FullPower": 4,
+          "MinimumPower": 4,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 2,
+              "Amount": 60
+            },
+            {
+              "Kind": 8,
+              "Amount": 7000
+            }
+          ]
+        },
+        {
+          "Profile": 3,
+          "FullPower": 4,
+          "MinimumPower": 4,
+          "Scaling": 1,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 2,
+              "Amount": 60
+            },
+            {
+              "Kind": 8,
+              "Amount": 6000
+            }
+          ]
+        }
+      ],
+      "Cost": {
+        "Credits": 4,
+        "Industry": 5,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.defiant-propulsion.v1",
+      "FamilyId": "component-family.defiant-propulsion",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Compact Propulsion",
+      "Kind": 4,
+      "Capacity": 12,
+      "CrewRequired": 1,
+      "ComputerDemand": 10,
+      "PowerSupply": 0,
+      "EnvelopeSize": 2,
+      "CompatibleHullFamilyIds": [
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 30,
+          "MinimumPower": 15,
+          "Scaling": 2,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 3,
+              "Amount": 200
+            },
+            {
+              "Kind": 10,
+              "Amount": 4
+            }
+          ]
+        },
+        {
+          "Profile": 2,
+          "FullPower": 12,
+          "MinimumPower": 6,
+          "Scaling": 2,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 3,
+              "Amount": 200
+            },
+            {
+              "Kind": 9,
+              "Amount": 1000
+            }
+          ]
+        },
+        {
+          "Profile": 3,
+          "FullPower": 8,
+          "MinimumPower": 4,
+          "Scaling": 2,
+          "Essential": true,
+          "Outputs": [
+            {
+              "Kind": 3,
+              "Amount": 200
+            },
+            {
+              "Kind": 10,
+              "Amount": 2
+            }
+          ]
+        }
+      ],
+      "Cost": {
+        "Credits": 4,
+        "Industry": 5,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.activity-lab.basic.v1",
+      "FamilyId": "component-family.activity-lab.basic",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "activity lab basic",
+      "Kind": 9,
+      "Capacity": 4,
+      "CrewRequired": 1,
+      "ComputerDemand": 2,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.constitution-explorer",
+        "hull-family.galaxy-cruiser",
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        },
+        {
+          "Profile": 2,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        },
+        {
+          "Profile": 3,
+          "FullPower": 4,
+          "MinimumPower": 4,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": [
+            {
+              "Kind": 12,
+              "Amount": 1
+            }
+          ]
+        }
+      ],
+      "Cost": {
+        "Credits": 4,
+        "Industry": 8,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.activity-lab.standard.v1",
+      "FamilyId": "component-family.activity-lab.standard",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "activity lab standard",
+      "Kind": 9,
+      "Capacity": 18,
+      "CrewRequired": 1,
+      "ComputerDemand": 2,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.constitution-explorer",
+        "hull-family.galaxy-cruiser",
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        },
+        {
+          "Profile": 2,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        },
+        {
+          "Profile": 3,
+          "FullPower": 8,
+          "MinimumPower": 8,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": [
+            {
+              "Kind": 12,
+              "Amount": 3
+            }
+          ]
+        }
+      ],
+      "Cost": {
+        "Credits": 18,
+        "Industry": 22,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.activity-lab.research.v1",
+      "FamilyId": "component-family.activity-lab.research",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "activity lab research",
+      "Kind": 9,
+      "Capacity": 24,
+      "CrewRequired": 1,
+      "ComputerDemand": 2,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.constitution-explorer",
+        "hull-family.galaxy-cruiser",
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        },
+        {
+          "Profile": 2,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        },
+        {
+          "Profile": 3,
+          "FullPower": 12,
+          "MinimumPower": 12,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": [
+            {
+              "Kind": 12,
+              "Amount": 4
+            }
+          ]
+        }
+      ],
+      "Cost": {
+        "Credits": 24,
+        "Industry": 28,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.contact-suite.standard.v1",
+      "FamilyId": "component-family.contact-suite.standard",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "contact suite standard",
+      "Kind": 10,
+      "Capacity": 8,
+      "CrewRequired": 1,
+      "ComputerDemand": 2,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.constitution-explorer",
+        "hull-family.galaxy-cruiser",
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        },
+        {
+          "Profile": 2,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        },
+        {
+          "Profile": 3,
+          "FullPower": 4,
+          "MinimumPower": 4,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        }
+      ],
+      "Cost": {
+        "Credits": 8,
+        "Industry": 12,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.contact-suite.extended.v1",
+      "FamilyId": "component-family.contact-suite.extended",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "contact suite extended",
+      "Kind": 10,
+      "Capacity": 16,
+      "CrewRequired": 1,
+      "ComputerDemand": 2,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.constitution-explorer",
+        "hull-family.galaxy-cruiser",
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        },
+        {
+          "Profile": 2,
+          "FullPower": 0,
+          "MinimumPower": 0,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        },
+        {
+          "Profile": 3,
+          "FullPower": 8,
+          "MinimumPower": 8,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": []
+        }
+      ],
+      "Cost": {
+        "Credits": 16,
+        "Industry": 20,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    },
+    {
+      "VersionId": "component.defiant-sensors.v1",
+      "FamilyId": "component-family.defiant-sensors",
+      "VersionNumber": 1,
+      "ParentVersionId": null,
+      "DisplayName": "Compact combat targeting sensors",
+      "Kind": 5,
+      "Capacity": 4,
+      "CrewRequired": 1,
+      "ComputerDemand": 2,
+      "PowerSupply": 0,
+      "EnvelopeSize": 0,
+      "CompatibleHullFamilyIds": [
+        "hull-family.defiant-combat"
+      ],
+      "RequiredHullTags": [
+        "hull-tag.mobile"
+      ],
+      "Tags": [
+        "system-tag.sensors"
+      ],
+      "RequiredComponentTags": [],
+      "Mounts": [],
+      "Dependencies": [],
+      "Modes": [
+        {
+          "Profile": 1,
+          "FullPower": 4,
+          "MinimumPower": 4,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": [
+            {
+              "Kind": 11,
+              "Amount": 8
+            }
+          ]
+        },
+        {
+          "Profile": 2,
+          "FullPower": 6,
+          "MinimumPower": 6,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": [
+            {
+              "Kind": 11,
+              "Amount": 6
+            },
+            {
+              "Kind": 8,
+              "Amount": 7500
+            }
+          ]
+        },
+        {
+          "Profile": 3,
+          "FullPower": 10,
+          "MinimumPower": 10,
+          "Scaling": 1,
+          "Essential": false,
+          "Outputs": [
+            {
+              "Kind": 11,
+              "Amount": 10
+            }
+          ]
+        }
+      ],
+      "Cost": {
+        "Credits": 4,
+        "Industry": 5,
+        "Maintenance": 1,
+        "Resources": []
+      }
+    }
+  ],
+  "Roles": [
+    {
+      "RoleId": "role.constitution-explorer",
+      "DisplayName": "Constitution Explorer",
+      "Recommendations": []
+    },
+    {
+      "RoleId": "role.galaxy-cruiser",
+      "DisplayName": "Galaxy Cruiser",
+      "Recommendations": []
+    },
+    {
+      "RoleId": "role.defiant-combat",
+      "DisplayName": "Defiant Combat",
+      "Recommendations": []
+    }
+  ]
+}

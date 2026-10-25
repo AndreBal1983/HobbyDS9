@@ -10,7 +10,7 @@ namespace HobbyDS9.Simulation
 {
     // Deterministic derivation used by detached inspection and the explicit portable
     // published-construction profile. Metadata itself never grants admission.
-    public static class PublishedTacticalSupportCompiler
+    public static partial class PublishedTacticalSupportCompiler
     {
         private sealed class SupportMappings
         {
@@ -68,7 +68,11 @@ namespace HobbyDS9.Simulation
         }
         public static PublishedTacticalSupportResult Evaluate(ShipDesignCatalogueSnapshot catalogue,PublishedShipBlueprint publication,
             ShipDesignAccessDto access,TacticalSupportCatalogueDto support)
+            => EvaluateCore(catalogue,publication,access,support,null,out _);
+        private static PublishedTacticalSupportResult EvaluateCore(ShipDesignCatalogueSnapshot catalogue,PublishedShipBlueprint publication,
+            ShipDesignAccessDto access,TacticalSupportCatalogueDto support,ActivityCompilation? activity,out PublishedShipBlueprint? canonical)
         {
+            canonical=null;
             var issues=new List<TacticalSupportIssue>();
             void Error(TacticalSupportIssueCode c,string p)=>issues.Add(new TacticalSupportIssue(c,p));
             PublishedTacticalSupportResult Rejected()=>new PublishedTacticalSupportResult(issues);
@@ -85,6 +89,7 @@ namespace HobbyDS9.Simulation
                 var suppliedSourceHash=PublishedTacticalSupportEncoding.Publication(publication,encodingBudget);
                 var sourceHash=PublishedTacticalSupportEncoding.Publication(ordinary.Blueprint!,encodingBudget);
                 if(suppliedSourceHash!=sourceHash){Error(TacticalSupportIssueCode.IdentityMismatch,"$.Publication");return Rejected();}
+                canonical=ordinary.Blueprint;
                 var mappings=MapMetadata(catalogue,support,Error);
                 if(mappings==null||issues.Count>0)return Rejected();
                 var hulls=mappings.Hulls;var components=mappings.Components;
@@ -96,6 +101,7 @@ namespace HobbyDS9.Simulation
                 foreach(var install in actual.Fit.Installations)
                 {
                     var path="$.Publication.Installations."+install.InstallationId;
+                    if(activity!=null&&activity.Modules.ContainsKey(install.ComponentVersionId))continue; // Exact v3 validation already checked all profile allocations.
                     if(!components.TryGetValue(install.ComponentVersionId,out var mapped)){Error(TacticalSupportIssueCode.MissingMapping,path);continue;}
                     if(install.Quantity!=1){Error(TacticalSupportIssueCode.UnsupportedQuantity,path);continue;}
                     var source=actual.Components.Single(c=>c.VersionId==install.ComponentVersionId);
@@ -130,11 +136,11 @@ namespace HobbyDS9.Simulation
                 power.TryGetValue(TacticalComponentSupportKind.TargetingSensors,out var targeting);
                 if(weapons.Count>0&&targeting<=0){Error(TacticalSupportIssueCode.CombatPower,"$.Publication.TargetingSensors");return Rejected();}
                 int sensorRating=hull.Capabilities!.Sensors!.Value;
-                foreach(var i in actual.Fit.Installations.Where(i=>components[i.ComponentVersionId].Kind==TacticalComponentSupportKind.TargetingSensors))
+                foreach(var i in actual.Fit.Installations.Where(i=>components.TryGetValue(i.ComponentVersionId,out var c)&&c.Kind==TacticalComponentSupportKind.TargetingSensors))
                     sensorRating=Math.Max(sensorRating,components[i.ComponentVersionId].TacticalSensorRating!.Value);
-                var supportHash=PublishedTacticalSupportEncoding.Support(support,encodingBudget);var fitId="fit.support."+HashText(PublishedTacticalSupportIdentity.Compiler+":"+supportHash+":"+sourceHash);
+                var supportHash=activity?.Hash??PublishedTacticalSupportEncoding.Support(support,encodingBudget);var fitId="fit.support."+HashText((activity==null?PublishedTacticalSupportIdentity.Compiler:ActivityTacticalSupportIdentity.Compiler)+":"+supportHash+":"+sourceHash);
                 AuthoredTacticalEssentialPowerDto Reserve(TacticalEssentialSystem system,long amount)=>new AuthoredTacticalEssentialPowerDto {System=system,RequiredPower=amount,AllocatedPower=amount};
-                var fit=new AuthoredTacticalFitDto {DefinitionId=fitId,Revision=publication.Revision,ProvenanceId=support.CatalogueId,
+                var fit=new AuthoredTacticalFitDto {DefinitionId=fitId,Revision=publication.Revision,ProvenanceId=activity?.CatalogueId??support.CatalogueId,
                     MaxHull=actual.Performance.Compiled.MaxHull,Armor=hull.Armor,EvasionBps=actual.Performance.Compiled.Combat.EvasionBps,Role=hull.TacticalRole,
                     Capabilities=new AuthoredTacticalCapabilitiesDto {Speed=hull.Capabilities.Speed,Agility=hull.Capabilities.Agility,Sensors=sensorRating,Command=hull.Capabilities.Command,Cohesion=hull.Capabilities.Cohesion},
                     ReactorOutput=actual.Performance.ReactorPower,DistributionLimit=actual.Performance.DistributionLimit,
@@ -149,7 +155,9 @@ namespace HobbyDS9.Simulation
                         Fits=new List<AuthoredTacticalFitDto>{fit},InitialShipProvisions=new List<AuthoredTacticalShipProvisionDto>()}});
                 foreach(var failure in validation.Issues)Error(TacticalSupportIssueCode.TacticalValidation,failure.Path);
                 if(issues.Count>0)return Rejected();
-                return new PublishedTacticalSupportResult(issues,new SupportedPublishedTacticalFit(actual,support,supportHash,sourceHash,fit));
+                var boundSupport=activity==null?support:new TacticalSupportCatalogueDto{CatalogueId=activity.CatalogueId,Revision=activity.Revision};
+                return new PublishedTacticalSupportResult(issues,new SupportedPublishedTacticalFit(actual,boundSupport,supportHash,sourceHash,fit,
+                    activity==null?PublishedTacticalSupportIdentity.Compiler:ActivityTacticalSupportIdentity.Compiler));
             }
             catch(OverflowException){Error(TacticalSupportIssueCode.InvalidMetadata,"$.Arithmetic");return Rejected();}
             catch(ArgumentException){Error(TacticalSupportIssueCode.InvalidPublication,"$.Publication");return Rejected();}
