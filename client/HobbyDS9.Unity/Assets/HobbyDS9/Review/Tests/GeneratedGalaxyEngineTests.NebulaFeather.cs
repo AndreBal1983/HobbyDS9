@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -91,10 +92,45 @@ namespace HobbyDS9.UnityReview.Tests
         }
         [UnityTest,Timeout(600000)] public IEnumerator NebulaFeatherPreservesActualChartedExteriorAcrossThreeSizes()
         {
+            var state=new PublishedReceivingState();var stack=new Stack<IEnumerator>();stack.Push(NebulaFeatherReceivingBody(state));Exception? failure=null;
+            while(stack.Count>0)
+            {
+                bool next=false;object? value=null;var current=stack.Peek();
+                try{next=current.MoveNext();if(next)value=current.Current;}catch(Exception error){failure=error;}
+                if(failure!=null)break;
+                if(!next){stack.Pop();try{(current as IDisposable)?.Dispose();}catch(Exception error){failure=error;break;}continue;}
+                if(value is IEnumerator nested){stack.Push(nested);continue;}yield return value;
+            }
+            state.Release.Set();
+            while(stack.Count>0)
+            {try{(stack.Pop() as IDisposable)?.Dispose();}catch(Exception error){failure=failure??error;CampaignDiagnosticError("feather-iterator-cleanup",error);}}
+            var cleanup=System.Diagnostics.Stopwatch.StartNew();
+            while(state.Entry!=null&&((bool)CheckpointField(state.Entry,"generatedCampaignBusy")!||CampaignModel(state.Entry).Busy||CheckpointField(state.Entry,"checkpointUiOperation")!=null||state.Holder?.IsCompleted==false))
+            {
+                if(cleanup.Elapsed.TotalSeconds>=90)
+                {
+                    try{File.WriteAllText(Path.Combine(CampaignOutput(),"feather-retained-temporary-namespace.txt"),directory??"not assigned");}catch(Exception error){CampaignDiagnosticError("feather-retained-namespace",error);}
+                    directory=null;failure=failure??new TimeoutException("Unsettled nebula receiving operation; temporary namespace retained.");break;
+                }
+                yield return null;
+            }
+            try{if(state.Entry!=null)V3Audit(state.Entry,failure==null?"feather-final":"feather-failed");}catch(Exception error){CampaignDiagnosticError("feather-final-audit",error);}
+            if(state.Entry!=null)
+            {
+                try{state.Entry.enabled=false;}catch(Exception error){failure=failure??error;}
+                try{typeof(ReviewEntry).GetField("generatedCampaignTestDirectory",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(state.Entry,state.PriorDirectory);}catch(Exception error){failure=failure??error;}
+            }
+            if(state.Holder==null||state.Holder.IsCompleted){state.Entered.Dispose();state.Release.Dispose();}
+            yield return new ExitPlayMode();
+            if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        }
+        private IEnumerator NebulaFeatherReceivingBody(PublishedReceivingState state)
+        {
             yield return new EnterPlayMode();yield return null;yield return null;
-            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();state.Entry=entry;var doc=entry.GetComponent<UIDocument>();
+            var overrideField=typeof(ReviewEntry).GetField("generatedCampaignTestDirectory",BindingFlags.Instance|BindingFlags.NonPublic)!;state.PriorDirectory=(string?)overrideField.GetValue(entry);
             directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-NebulaFeather-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
-            var path=Path.Combine(directory,"campaign");typeof(ReviewEntry).GetField("generatedCampaignTestDirectory",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(entry,path);
+            var path=Path.Combine(directory,"campaign");overrideField.SetValue(entry,path);
             var codec=new ReviewNewtonsoftCodec();var store=new ReviewStaticAstronomyCampaignSlotStore(path,codec);
             store.Write("generated-2",codec.DecodeStaticAstronomyCampaignRoot(V3Fixture("HOBBYDS9_V3_EXPLORE","d7b332383b726607209067a5c89085a4979814b12c35a5fd717a41ebd3ecdddc")),false);
             int baseline=GeneratedGalaxyV3Background.LiveInstances;int priorImages=Directory.GetFiles(CampaignOutput(),"v3-feather-*.png").Length;
@@ -121,7 +157,6 @@ namespace HobbyDS9.UnityReview.Tests
                 File.WriteAllText(Path.Combine(CampaignOutput(),"nebula-feather-summary.json"),JsonConvert.SerializeObject(new{fixture="Official actor-known Explore32, not native campaign play",frames=8,regionalMatchedPairs=3,appearanceOnlyCloseups=2,exactWholeCampaignUnchanged=true,exteriorClaim="Actual UI-composed8-bit Color32 equality, not unquantized radiance",syntheticImages=0}));
                 Click(doc.rootVisualElement.Q<Button>("demo-menu"));yield return null;Assert.That(GeneratedGalaxyV3Background.LiveInstances,Is.EqualTo(baseline));
             }
-            yield return new ExitPlayMode();
         }
     }
 }
