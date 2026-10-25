@@ -68,5 +68,13 @@ hypothetical overflow with unchanged admission. A direct worker submission test
 uses no preview, proves Busy/one-use/stale rejection, full synchronous equivalence,
 zero normal credit/Planning material charge and exact typed Continue. Actual
 per-size + hit targets, inactive/disposed callbacks, scrolling/focus and hull
-inspection will be checked in the existing receiving journey after source review;
-reference compilation alone does not establish those UI outcomes.
+inspection passed the actual Unity receiving journey at source `195da3e` on
+25 October 2026: 281.367226 seconds and 23 captures at 1280×720, 1920×1080 and
+3440×1440. The compact streamed header increased the 720p catalogue viewport
+from 144 to 318 pixels without reducing the 180-pixel hull image. The test also
+retained frozen R1 completion, science/minor/mission behavior, exact typed
+Continue and the separate historical V2 path. Its stale-observation rejection
+updates an owned label in place; it does not claim a worker rejection. Held
+animation checks are not native/FPS/performance evidence. Separate executable
+packaging and native acceptance remain pending; reference compilation alone
+does not establish those outcomes.
