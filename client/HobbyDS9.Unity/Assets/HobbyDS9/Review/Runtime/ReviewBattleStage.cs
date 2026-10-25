@@ -65,7 +65,7 @@ namespace HobbyDS9.UnityReview
                 }
                 Frame();
             }
-            Caption=round==null?"Current authoritative boundary · awaiting orders":"Resolved round "+round.Round+" · playback";
+            Caption=round==null?"Current authoritative boundary \u00b7 awaiting orders":"Resolved round "+round.Round+" \u00b7 playback";
             Render();
             }
             catch{Dispose();throw;}
@@ -331,7 +331,7 @@ namespace HobbyDS9.UnityReview
         private void Event(CampaignPlaybackEvent e)
         {
             ClearEffects();var source=Origin(e.SourceShipId,e.WeaponClass);var target=Position(e.TargetShipId);
-            Caption="Round "+e.Round+" · "+e.Kind+(e.Amount>0?" · "+e.Amount:"")+(e.Sector.HasValue?" · "+e.Sector:"");
+            Caption="Round "+e.Round+" \u00b7 "+e.Kind+(e.Amount>0?" \u00b7 "+e.Amount:"")+(e.Sector.HasValue?" \u00b7 "+e.Sector:"");
             switch(e.Kind)
             {
                 case CampaignPlaybackEventKind.Maneuver:
@@ -383,7 +383,7 @@ namespace HobbyDS9.UnityReview
             if(nextEvent>=round.Events.Count&&clock>=.8f)
             {
                 ClearEffects();boundary=round.After;Populate(boundary);Pose(boundary);Frame();
-                Caption="Round "+round.Round+" complete · authoritative result";
+                Caption="Round "+round.Round+" complete \u00b7 authoritative result";
             }
             Render();
         }
@@ -391,7 +391,7 @@ namespace HobbyDS9.UnityReview
         {
             if(disposed||round==null)return;
             nextEvent=round.Events.Count;maneuverTime=1;clock=.8f;ClearEffects();boundary=round.After;Populate(boundary);Pose(boundary);Frame();
-            Caption="Round "+round.Round+" result · playback skipped";Render();
+            Caption="Round "+round.Round+" result \u00b7 playback skipped";Render();
         }
         private void Render()
         {

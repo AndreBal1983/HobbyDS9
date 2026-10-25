@@ -22,9 +22,9 @@ namespace HobbyDS9.ArtDemo
         {
             switch(exactHullVersionId)
             {
-                case "hull.constitution-explorer.v1": return new ActivityHullVisualDefinition(exactHullVersionId,"activity.constitution-explorer.v1","Constitution-style Explorer Â· original hull art","ArtDemo/ActivityHulls/Constitution/Models/ConstitutionExplorer_LOD0",300);
-                case "hull.galaxy-cruiser.v1": return new ActivityHullVisualDefinition(exactHullVersionId,"activity.galaxy-cruiser.v1","Galaxy Cruiser Â· classic hull art",null,620);
-                case "hull.defiant-combat.v1": return new ActivityHullVisualDefinition(exactHullVersionId,"activity.defiant-combat.v1","Defiant Combat Â· owner-provided art, local review only","ArtDemo/ActivityHulls/Defiant/Models/Defiant_LOD0",170);
+                case "hull.constitution-explorer.v1": return new ActivityHullVisualDefinition(exactHullVersionId,"activity.constitution-explorer.v1","Constitution-style Explorer \u00b7 original hull art","ArtDemo/ActivityHulls/Constitution/Models/ConstitutionExplorer_LOD0",300);
+                case "hull.galaxy-cruiser.v1": return new ActivityHullVisualDefinition(exactHullVersionId,"activity.galaxy-cruiser.v1","Galaxy Cruiser \u00b7 classic hull art",null,620);
+                case "hull.defiant-combat.v1": return new ActivityHullVisualDefinition(exactHullVersionId,"activity.defiant-combat.v1","Defiant Combat \u00b7 owner-provided art, local review only","ArtDemo/ActivityHulls/Defiant/Models/Defiant_LOD0",170);
                 default:return null;
             }
         }
@@ -42,15 +42,20 @@ namespace HobbyDS9.ArtDemo
             var definition=ActivityHullCatalog.Find(exactHullVersionId);
             if(definition!=null && activityHullVersionId==exactHullVersionId && Availability==ShipPreviewAvailability.Model)return;
             Clear();
-            if(definition==null){Label="Hull schematic Â· no exact activity hull art binding";return;}
-            activityModel=ActivityHullModel.Create(root.transform,exactHullVersionId);
-            if(activityModel==null){Label=definition.Label+" Â· model or material unavailable, schematic only";return;}
+            if(definition==null){Label="Hull schematic \u00b7 no exact activity hull art binding";return;}
+            activityModel=ActivityHullModel.Create(root.transform,exactHullVersionId,out var availability);
+            if(activityModel==null)
+            {
+                Availability=availability;
+                Label=availability==ShipPreviewAvailability.RenderingUnavailable?"Activity hull unavailable in this renderer":definition.Label+" \u00b7 model or material unavailable, schematic only";
+                return;
+            }
             model=activityModel.Root;model.transform.localScale=Vector3.one*(10f/definition.NominalArtLengthMetres);
             missingDesignerArt=activityModel.MissingArt;
             activityHullVersionId=exactHullVersionId;
             designerReference=true;VisualKey=definition.VisualKey;Availability=ShipPreviewAvailability.Model;
-            Label=definition.Label+" Â· fixed hull presentation; fitted equipment remains in facts";
-            if(missingDesignerArt.Length>0)Label+=" Â· missing art: "+missingDesignerArt;
+            Label=definition.Label+" \u00b7 fixed hull presentation; fitted equipment remains in facts";
+            if(missingDesignerArt.Length>0)Label+=" \u00b7 missing art: "+missingDesignerArt;
             FrameDesignerReference();Render();
         }
 
