@@ -168,7 +168,8 @@ namespace HobbyDS9.UnityReview
         });
         public bool Load(string slot,bool discard=false)=>Run(()=>{
             if(Current.HasPendingWork||HasLocalEdits&&!discard){Message="Explicit discard required before load.";return false;}
-            var opened=PublishedConstructionCampaign?PhysicalReviewHost.OpenPublishedConstructionFromSlot(publishedConstructionPackage!,codec,publishedConstructionSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+            var opened=ActivitiesCampaign?PhysicalReviewHost.OpenActivitiesFromSlot(activitiesPackage!,codec,activitiesSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+                :PublishedConstructionCampaign?PhysicalReviewHost.OpenPublishedConstructionFromSlot(publishedConstructionPackage!,codec,publishedConstructionSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :StaticAstronomyCampaign?PhysicalReviewHost.OpenStaticAstronomyCampaignFromSlot(generatedCampaignTemplate!,codec,staticAstronomySlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :GeneratedCampaign?PhysicalReviewHost.OpenGeneratedCampaignFromSlot(generatedCampaignTemplate!,codec,generatedCampaignSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :playableFleetPackage!=null?PhysicalReviewHost.OpenPlayableFleetFromSlot(playableFleetPackage,codec,playableFleetSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)

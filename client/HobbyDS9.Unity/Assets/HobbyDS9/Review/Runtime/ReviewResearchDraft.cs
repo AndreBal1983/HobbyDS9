@@ -83,10 +83,13 @@ namespace HobbyDS9.UnityReview
         }
         public IReadOnlyList<ScienceAllocationDto> Values()=>weights.Select((w,i)=>new ScienceAllocationDto{Discipline=(ScienceDiscipline)(i+1),Weight=w}).ToList().AsReadOnly();
         public ReviewResearchDraft Acknowledge(ReviewFrame frame,CommandKind submitted)
+            =>Rebase(frame,submitted==CommandKind.SetResearchAllocation,submitted==CommandKind.SetScienceAllocation);
+        public ReviewResearchDraft PreserveUnsubmittedEdits(ReviewFrame frame)=>Rebase(frame,false,false);
+        private ReviewResearchDraft Rebase(ReviewFrame frame,bool allocationAccepted,bool weightsAccepted)
         {
             var next=new ReviewResearchDraft(frame);
-            if(submitted!=CommandKind.SetResearchAllocation)next.ScienceUnits=ScienceUnits;
-            if(submitted!=CommandKind.SetScienceAllocation)Array.Copy(weights,next.weights,weights.Length);
+            if(!allocationAccepted)next.ScienceUnits=ScienceUnits;
+            if(!weightsAccepted)Array.Copy(weights,next.weights,weights.Length);
             Array.Copy(locked,next.locked,locked.Length);
             Array.Copy(lockedDisplay,next.lockedDisplay,lockedDisplay.Length);
             return next;

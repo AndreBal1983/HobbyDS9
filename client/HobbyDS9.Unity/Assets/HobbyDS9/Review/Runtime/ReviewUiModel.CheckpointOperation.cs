@@ -32,14 +32,16 @@ namespace HobbyDS9.UnityReview
         internal ReviewController? Controller { get; }
         internal StaticCheckpointSaveWork? SaveWork { get; }
         internal PublishedCheckpointSaveWork? PublishedSaveWork { get; }
-        internal ReviewCheckpointCompletion(ReviewCheckpointError error,PhysicalReviewHost? host=null,ReviewController? controller=null,StaticCheckpointSaveWork? saveWork=null,PublishedCheckpointSaveWork? publishedSaveWork=null)
-        {Error=error;Host=host;Controller=controller;SaveWork=saveWork;PublishedSaveWork=publishedSaveWork;}
+        internal ActivitiesCheckpointSaveWork? ActivitiesSaveWork { get; }
+        internal ReviewCheckpointCompletion(ReviewCheckpointError error,PhysicalReviewHost? host=null,ReviewController? controller=null,StaticCheckpointSaveWork? saveWork=null,PublishedCheckpointSaveWork? publishedSaveWork=null,ActivitiesCheckpointSaveWork? activitiesSaveWork=null)
+        {Error=error;Host=host;Controller=controller;SaveWork=saveWork;PublishedSaveWork=publishedSaveWork;ActivitiesSaveWork=activitiesSaveWork;}
     }
     public sealed partial class ReviewUiModel
     {
         private ReviewCheckpointOperation? checkpointOperation;
         public ReviewCheckpointOperation? BeginStaticCheckpointOperation(string slot,bool loading,bool overwrite=false,bool discard=false)
         {
+            if(ActivitiesCampaign)return BeginActivitiesCheckpointOperation(slot,loading,overwrite,discard);
             if(PublishedConstructionCampaign)return BeginPublishedCheckpointOperation(slot,loading,overwrite,discard);
             if(!StaticAstronomyCampaign||Busy||Closed||Current.HasPendingWork)return null;
             if(loading&&HasLocalEdits&&!discard){Message="Explicit discard required before load.";return null;}
@@ -85,12 +87,13 @@ namespace HobbyDS9.UnityReview
             if(!ReferenceEquals(checkpointOperation,operation)||!ReferenceEquals(completion.Operation,operation))return false;
             checkpointOperation=null;Busy=false;
             if(Closed||!ReferenceEquals(Current,operation.Source)||!ReferenceEquals(Current.Frame,operation.Frame)
-                ||!(PublishedConstructionCampaign?host.IsCurrentPublishedCheckpointSource(operation.Frame):host.IsCurrentStaticCheckpointSource(operation.Frame)))
+                ||!(ActivitiesCampaign?host.IsCurrentActivitiesCheckpointSource(operation.Frame):PublishedConstructionCampaign?host.IsCurrentPublishedCheckpointSource(operation.Frame):host.IsCurrentStaticCheckpointSource(operation.Frame)))
             {Message="Checkpoint result: Busy";return false;}
             if(!operation.Loading)
             {
                 if(completion.SaveWork!=null&&!Current.ReceiveStaticCheckpointSave(completion.SaveWork))return false;
                 if(completion.PublishedSaveWork!=null&&!Current.ReceivePublishedCheckpointSave(completion.PublishedSaveWork))return false;
+                if(completion.ActivitiesSaveWork!=null&&!Current.ReceiveActivitiesCheckpointSave(completion.ActivitiesSaveWork))return false;
                 Message="Checkpoint result: "+completion.Error;return completion.Error==ReviewCheckpointError.None;
             }
             if(completion.Error!=ReviewCheckpointError.None){Message="Checkpoint result: "+completion.Error;return false;}

@@ -59,6 +59,15 @@ public sealed class CampaignActivitiesTests
         var p=Package();p.Content!.Sites![0].Choices!.Add(null!);
         Assert.Throws<ArgumentException>(()=>CampaignTacticalReviewSession.StartActivities(p,PublishedConstructionProfileTests.Settings()));
     }
+    [Fact] public void ExactPostpaymentReserveRejectsUnfinishableOrderWithoutDebitsIdsOrJournal()
+    {
+        var p=Package();p.BaseTemplate!.ReplayOperationLimit=3;
+        p=CampaignTacticalReviewSession.CreateActivitiesPackage(p.BaseTemplate,p.Catalogue!,p.ReadyClasses!,p.Support!,p.Content!,p.RecordBudget);
+        var s=CampaignTacticalReviewSession.StartActivities(p,PublishedConstructionProfileTests.Settings());var before=Json(Root(s));
+        var command=Command(s,CampaignActivityCommandKind.EnqueueShip,"colony.sol","blueprint.ready.galaxy-cruiser",1);
+        Assert.Equal(CampaignTacticalError.Overflow,s.SubmitActivity(command).Error);Assert.Equal(before,Json(Root(s)));
+        Assert.Equal(CampaignTacticalError.Overflow,s.EvaluateActivity(command).Error);Assert.Equal(before,Json(Root(s)));
+    }
     static void Travel(CampaignTacticalReviewSession s,string fleet,List<string> route)
     {var status=s.CaptureStatus();var r=s.SubmitTravelOrder(new(){ActorId=Human,CommandId="command.activity.travel."+status.CampaignRevision,ExpectedTurn=status.Turn,ExpectedRevision=status.CampaignRevision,
         Order=new(){FleetId=fleet,Intent=CampaignTravelIntent.Leave,RouteNodeIds=route}});Assert.True(r.Accepted,r.Error+" "+s.LastPhysicalFailure);}

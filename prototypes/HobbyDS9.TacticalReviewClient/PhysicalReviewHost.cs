@@ -115,6 +115,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(activitiesPackage!=null)return SaveActivitiesCommitted();
                 if(publishedPackage!=null)return SavePublishedCommitted();
                 if(generatedTemplate!=null)return SaveGeneratedCommitted();
                 if(playableFleetPackage!=null)return SavePlayableFleetCommitted();
@@ -130,6 +131,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(activitiesPackage!=null)return LoadActivitiesCommitted(handle,actor,encounter);
                 if(publishedPackage!=null)return LoadPublishedCommitted(handle,actor,encounter);
                 if(generatedTemplate!=null)return LoadGeneratedCommitted(handle,actor,encounter);
                 if(playableFleetPackage!=null)return LoadPlayableFleetCommitted(handle,actor,encounter);
@@ -146,6 +148,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(activitiesPackage!=null)return SaveActivitiesToSlot(slot,overwrite);
                 if(publishedPackage!=null)return SavePublishedToSlot(slot,overwrite);
                 if(generatedTemplate!=null)return SaveGeneratedToSlot(slot,overwrite);
                 if(playableFleetPackage!=null)return SavePlayableFleetToSlot(slot,overwrite);
@@ -166,6 +169,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(activitiesPackage!=null)return LoadActivitiesFromSlot(slot,actor,encounter);
                 if(publishedPackage!=null)return LoadPublishedFromSlot(slot,actor,encounter);
                 if(generatedTemplate!=null)return LoadGeneratedFromSlot(slot,actor,encounter);
                 if(playableFleetPackage!=null)return LoadPlayableFleetFromSlot(slot,actor,encounter);
@@ -204,6 +208,12 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(activitiesPackage!=null)
+                {
+                    if(activitiesStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var opened=OpenActivitiesFromSlot(activitiesPackage,activitiesCodec!,activitiesStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
+                }
                 if(publishedPackage!=null)
                 {
                     if(publishedStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);

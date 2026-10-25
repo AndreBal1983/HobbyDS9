@@ -86,9 +86,9 @@ The new journal reserve enumerates all remaining positive-addition structure
 combinations, actual policies, resistance states and disruption regimes through
 the actual economy projection. It takes minimum Industry and maximum Food,
 reserves all-owner mixed FIFO work, possible ship encounters, current combat debt
-and final decisions. Its aggregate technical projection-work bound is80million
+and final decisions. Its aggregate technical projection-work bound is 80 million
 conservative primitive-work units, accommodating up to eight structure outcomes;
-this does not change the older fixed-infrastructure calculator's10million bound.
+this does not change the older fixed-infrastructure calculator's 10 million bound.
 The queued-world food check is a direct queued-world headroom check, not a global
 economy safety proof. Ordinary unrelated technical errors still reject atomically.
 Budgets are technical supported domains, not adopted gameplay fleet limits.

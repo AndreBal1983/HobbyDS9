@@ -29,7 +29,7 @@ namespace HobbyDS9.UnityReview
             if(PlayerProfile){var menu=AddButton(nav,"Menu",OpenDemoMenu);menu.name="demo-menu";}
             foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Empire,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Display,ReviewWorkspacePage.Designer,ReviewWorkspacePage.Tools}.Where(p=>p!=ReviewWorkspacePage.Empire||model!.PlayableFleet))
             {
-                var b=AddButton(nav,(page==ReviewWorkspacePage.Map?"Map":Title(page))+(workspace.Page==page?"  ›":""),()=>Navigate(page));b.name="review-nav-"+page;b.SetEnabled(workspace.CanNavigate);b.EnableInClassList("selected-nav",workspace.Page==page);
+                var b=AddButton(nav,(page==ReviewWorkspacePage.Map?"Map":model!.ActivitiesCampaign&&page==ReviewWorkspacePage.Production?"Activities / build":Title(page))+(workspace.Page==page?"  ›":""),()=>Navigate(page));b.name="review-nav-"+page;b.SetEnabled(workspace.CanNavigate);b.EnableInClassList("selected-nav",workspace.Page==page);
             }
             content=new VisualElement{name="review-central-content"};content.AddToClassList("console-main");body.Add(content);
             if(central==null||!ReferenceEquals(centralContext,model.Current))
@@ -71,6 +71,7 @@ namespace HobbyDS9.UnityReview
             else if(workspace.Page==ReviewWorkspacePage.Display)DrawDisplay();
             else if(workspace.Page==ReviewWorkspacePage.Tools)DrawTools();
             else if(workspace.Page==ReviewWorkspacePage.Designer)DrawDesigner();
+            else if(model.ActivitiesCampaign&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds))DrawActivitiesPanel(content!);
             else player!.Render(content!,workspace.Page);
             DrawPlayerFooter();
         }
@@ -237,7 +238,10 @@ namespace HobbyDS9.UnityReview
                     new Action(publication.NewIdentity),new Func<string>(()=>publication.Notice),ReviewDesignPublication.Starter(publication.Library),new Func<string>(()=>publication.ClassId)});
                 var state=designState;model.ResetLocalDesign=()=>bridge.GetMethod("Reset")!.Invoke(null,new[]{state});
             }
-            bridge.GetMethod("SetConstructionPanel")!.Invoke(null,new object?[]{designState,model!.PublishedConstructionCampaign?new Action<VisualElement>(DrawPublishedConstructionPanel):null});
+            bridge.GetMethod("SetConstructionPanel")!.Invoke(null,new object?[]{designState,model!.ActivitiesCampaign?new Action<VisualElement>(p=>{
+                p.Add(Readout("Queue ready classes or supported published revisions, and inspect actual costs, in Activities / build."));
+                AddButton(p,"Open activities / build",()=>Navigate(ReviewWorkspacePage.Production));
+            }):model.PublishedConstructionCampaign?new Action<VisualElement>(DrawPublishedConstructionPanel):null});
             bridge.GetMethod("Present")!.Invoke(null,new[]{content,designState});
         }
     }
