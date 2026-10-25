@@ -42,7 +42,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
-                Require(generatedMap != null, "Not a generated campaign.");
+                Require(generatedMap != null && published==null, "Use the complete typed profile export.");
                 return new CampaignGeneratedSaveDto { FormatVersion = CampaignGeneratedIdentity.Format, ProfileId = astronomyIndex == null ? CampaignGeneratedIdentity.Profile : CampaignStaticAstronomyIdentity.Profile,
                     PolicyId = astronomyIndex == null ? CampaignGeneratedIdentity.Policy : CampaignStaticAstronomyIdentity.Policy, TemplatePackageHash = generatedTemplateHash!, PackageHash = playableHash!,
                     Map = NaturalGalaxyData.Copy(generatedMap), Campaign = ExportPlayableCore(), Discoveries = discoveries.Select(CopyDiscovery).ToList() };

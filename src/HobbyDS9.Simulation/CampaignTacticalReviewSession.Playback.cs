@@ -8,7 +8,7 @@ namespace HobbyDS9.Simulation
 {
     public sealed partial class CampaignTacticalReviewSession
     {
-        private readonly List<CampaignBattlePlayback> playableHistory = new List<CampaignBattlePlayback>();
+        private List<CampaignBattlePlayback> playableHistory = new List<CampaignBattlePlayback>();
         private CampaignPlaybackBoundary PlaybackBoundary(TacticalEncounterV2Dto battle, IReadOnlyCollection<string> hidden, string actor)
         {
             var own = battle.Formations.Where(f => f.SideId == actor)

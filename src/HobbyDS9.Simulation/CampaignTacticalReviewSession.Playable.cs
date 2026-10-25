@@ -12,13 +12,13 @@ namespace HobbyDS9.Simulation
         private int playableOperationLimit;
         private string? playableOpponent;
         private string? playableDefenseNode;
-        private readonly List<CampaignPlayableOperationDto> playableTranscript = new List<CampaignPlayableOperationDto>();
+        private List<CampaignPlayableOperationDto> playableTranscript = new List<CampaignPlayableOperationDto>();
         private Dictionary<string, string> playableNames = new Dictionary<string, string>(StringComparer.Ordinal);
         private Dictionary<string, string> playableCreatedOwners = new Dictionary<string, string>(StringComparer.Ordinal);
-        private readonly HashSet<string> playableRetiredFleets = new HashSet<string>(StringComparer.Ordinal);
+        private HashSet<string> playableRetiredFleets = new HashSet<string>(StringComparer.Ordinal);
         internal Action? PlayableOrganizationProbe { get; set; }
         internal Action? PlayableAiRemainderProbe { get; set; }
-        private string OwnedCoreProfile => astronomyIndex != null ? CampaignStaticAstronomyIdentity.EmbeddedCoreProfile : generatedMap != null ? CampaignGeneratedIdentity.EmbeddedCoreProfile : playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
+        private string OwnedCoreProfile => published!=null?CampaignPublishedConstructionIdentity.EmbeddedCoreProfile:astronomyIndex != null ? CampaignStaticAstronomyIdentity.EmbeddedCoreProfile : generatedMap != null ? CampaignGeneratedIdentity.EmbeddedCoreProfile : playableHash != null ? CampaignPlayableFleetIdentity.EmbeddedCoreProfile
             : frontier != null ? CampaignFrontierIdentity.EmbeddedCoreProfile : CampaignTacticalReviewIdentity.Profile;
         public int RemainingPlayableOperations { get { lock (gate) return playableOperationLimit - playableTranscript.Count; } }
 
@@ -143,6 +143,7 @@ namespace HobbyDS9.Simulation
             && name == name.Trim() && !name.Any(char.IsControl);
         public CampaignFleetOrganizationResult SubmitFleetOrganization(SubmitCampaignFleetOrganizationDto? command)
         {
+            if(published!=null&&!publishedExecuting)return PublishedOrganization(command);
             lock (gate)
             {
                 var game = state.Campaign.GameState;

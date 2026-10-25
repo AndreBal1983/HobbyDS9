@@ -8,8 +8,18 @@ namespace HobbyDS9.Simulation
     public sealed partial class SimulationSession
     {
         internal GameStateDto RunDemoPlanningAi(string actorId,IReadOnlyList<string> admitted)
+            =>RunDemoPlanningAiCore(actorId,admitted,null);
+        internal GameStateDto RunPublishedPlanningAi(string actorId,IReadOnlyList<string> admitted,PublishedPlanningCapacity capacity)
+            =>RunDemoPlanningAiCore(actorId,admitted,capacity);
+        private GameStateDto RunDemoPlanningAiCore(string actorId,IReadOnlyList<string> admitted,PublishedPlanningCapacity? capacity)
         {
             var staged=CopyState(state);
+            void Execute(CommandEnvelope command)
+            {
+                if(capacity==null){ExecuteCommand(ref staged,command,true);return;}
+                var candidate=CopyState(staged);
+                if(ExecuteCommand(ref candidate,command,true).Accepted&&capacity.Fits(candidate))staged=candidate;
+            }
             var actor=staged.Civilizations!.Single(c=>c.CivilizationId==actorId);
             if(actor.ControllerKind!=ControllerKind.AI)throw new ArgumentException("Demo planner requires AI ownership.");
             CommandEnvelope Envelope(CommandKind kind,int ordinal)=>new CommandEnvelope {ActorCivilizationId=actorId,Kind=kind,
@@ -21,7 +31,7 @@ namespace HobbyDS9.Simulation
                 var target=definitions.EngineeringApplications!.Where(a=>EngineeringRules.Availability(actor,a,staged.ResearchPaceFactor!.Value)==CommandErrorCode.None)
                     .OrderBy(a=>a.DefinitionId,StringComparer.Ordinal).FirstOrDefault();
                 if(target!=null){var c=Envelope(CommandKind.SetEngineeringTarget,0);c.SetEngineeringTarget=new SetEngineeringTargetPayload {TargetDefinitionId=target.DefinitionId};
-                    ExecuteCommand(ref staged,c,true);}
+                    Execute(c);}
             }
             // Three ships is this plan's procurement objective, not a fleet-size rule/cap.
             if(staged.Ships!.Count(s=>s.OwnerCivilizationId==actorId)<3)
@@ -34,7 +44,7 @@ namespace HobbyDS9.Simulation
                         .OrderBy(d=>d.CreditCost).ThenBy(d=>d.DefinitionId,StringComparer.Ordinal).FirstOrDefault();
                     if(design==null)continue;
                     var command=Envelope(CommandKind.EnqueueProduction,n);command.EnqueueProduction=new EnqueueProductionPayload {ColonyId=yards[n].ColonyId,DefinitionId=design.DefinitionId};
-                    ExecuteCommand(ref staged,command,true); // Same yard/resources/prerequisite validator, no free stocks.
+                    Execute(command); // Same yard/resources/prerequisite validator, no free stocks.
                 }
             }
             FoundationValidator.ValidateGameState(staged,definitions).ThrowIfInvalid(nameof(staged));

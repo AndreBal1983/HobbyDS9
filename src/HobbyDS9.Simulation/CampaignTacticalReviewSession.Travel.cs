@@ -102,6 +102,7 @@ namespace HobbyDS9.Simulation
         }
         public CampaignTacticalMutationResult SubmitTravelOrder(SubmitCampaignTravelOrderDto? command)
         {
+            if(published!=null&&!publishedExecuting)return PublishedMutation(c=>c.SubmitTravelOrder(command));
             lock(gate)
             {
                 if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
@@ -191,7 +192,9 @@ namespace HobbyDS9.Simulation
                 void Probe(StrategicTurnPhase phase){if(PhysicalPhaseProbe!=null&&!PhysicalPhaseProbe(phase))throw new InvalidOperationException("Injected phase failure.");}
                 Probe(StrategicTurnPhase.AiPlanning);
                 var beforeAi=SimulationSession.CopyState(next.Core.Campaign.GameState);
-                next.Core.Campaign.GameState=frontier!=null?SimulationSession.CopyState(next.Core.Campaign.GameState):demo==null&&playableHash==null?Legacy(next.Core).RunPlanningAiForPhysicalReview()
+                next.Core.Campaign.GameState=published!=null?Legacy(next.Core).RunPublishedPlanningAi(playableOpponent!,constructionTemplates!.Select(t=>t.ShipDesignDefinitionId!).ToList(),
+                    new PublishedPlanningCapacity(published.Package,next,BuildRegistry.ToList(),published.Records,published.RecordBudget,playableTranscript.Count))
+                    :frontier!=null?SimulationSession.CopyState(next.Core.Campaign.GameState):demo==null&&playableHash==null?Legacy(next.Core).RunPlanningAiForPhysicalReview()
                     :Legacy(next.Core).RunDemoPlanningAi(demo?.OpponentActorId ?? playableOpponent!,constructionTemplates!.Select(t=>t.ShipDesignDefinitionId!).ToList());
                 var game=next.Core.Campaign.GameState;
                 foreach(var order in next.Orders)

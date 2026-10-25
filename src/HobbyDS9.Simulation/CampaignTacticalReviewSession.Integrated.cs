@@ -77,25 +77,27 @@ namespace HobbyDS9.Simulation
 
         private AuthoredTacticalShipProvisionDto ResolveProvision(string id) => Equipment(id).AuthoredProvision;
         private bool KnownSource(string ship) => definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Any(p => p.ShipId == ship)
-            || constructionTemplates != null && BuildRegistry.Any(b => b.ShipId == ship);
+            || constructionTemplates != null && BuildRegistry.Any(b => b.ShipId == ship)||published!=null&&published.Sources.ContainsKey(ship);
         private string? KnownFleetOwner(string fleet)
         {
             if (playableHash != null && playableCreatedOwners.TryGetValue(fleet, out var createdOwner)) return createdOwner;
             if (authoredFleetOwners != null && authoredFleetOwners.TryGetValue(fleet, out var owner)) return owner;
+            if(published!=null&&published.Records.Any(r=>r.FleetIdAtConstruction==fleet))return published.Records.First(r=>r.FleetIdAtConstruction==fleet).OwnerCivilizationId;
             return constructionTemplates == null ? null : BuildRegistry.FirstOrDefault(b => b.FleetIdAtConstruction == fleet)?.OwnerCivilizationId;
         }
-        private bool AdmittedConstruction(CommandEnvelope command) => constructionTemplates != null
-            && command.Kind == CommandKind.EnqueueProduction && command.EnqueueProduction != null
+        private bool AdmittedConstruction(CommandEnvelope command) => published!=null&&command.Kind==CommandKind.EnqueueBlueprintConstruction&&command.EnqueueBlueprintConstruction!=null
+            ||constructionTemplates != null && command.Kind == CommandKind.EnqueueProduction && command.EnqueueProduction != null
             && constructionTemplates.Any(t => t.ShipDesignDefinitionId == command.EnqueueProduction.DefinitionId);
 
         private void ValidateBuiltShips(GameStateDto game)
         {
             if (constructionTemplates == null) return;
             var records = BuildRegistry.ToList();
-            Require(game.Colonies!.SelectMany(c=>c.ProductionQueue!).All(q=>q.Blueprint==null&&constructionTemplates.Any(t=>t.ShipDesignDefinitionId==q.ShipDesignDefinitionId)),
+            Require(game.Colonies!.SelectMany(c=>c.ProductionQueue!).All(q=>q.Blueprint!=null?published!=null&&PublishedFit(game,q.Blueprint,false).IsSupportedByCompiler
+                :constructionTemplates.Any(t=>t.ShipDesignDefinitionId==q.ShipDesignDefinitionId)),
                 "Unsupported construction queue in integrated root.");
             Require(game.PopulationStatistics!.ProductionCompleted >= initialProductionCompleted
-                && game.PopulationStatistics.ProductionCompleted-initialProductionCompleted==records.Count, "Produced-source history/completion counter mismatch.");
+                && game.PopulationStatistics.ProductionCompleted-initialProductionCompleted==records.Count+(published?.Records.Count??0), "Produced-source history/completion counter mismatch.");
             Require(records.All(b => b != null && EntityId.TryParse(b.ShipId, out var id) && b.ShipId!.StartsWith("ship.",StringComparison.Ordinal) && id.TryGetAllocationSequence(out var n)
                     && n < game.NextEntitySequence && !definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Any(p => p.ShipId == b.ShipId)
                     && EntityId.TryParse(b.QueueItemId, out var queue) && b.QueueItemId!.StartsWith("queue-item.",StringComparison.Ordinal) && queue.TryGetAllocationSequence(out var q) && q < n
@@ -119,10 +121,12 @@ namespace HobbyDS9.Simulation
             {
                 Require(group.Key!.StartsWith("fleet.",StringComparison.Ordinal)&&new EntityId(group.Key).TryGetAllocationSequence(out var fleetSequence)
                     &&fleetSequence<game.NextEntitySequence,"Unallocated constructed fleet.");
-                var first=group.Select(b=>{new EntityId(b.ShipId!).TryGetAllocationSequence(out var n);return n;}).Min();
+                var first=group.Select(b=>b.ShipId!).Concat(published?.Records.Where(r=>r.FleetIdAtConstruction==group.Key).Select(r=>r.ShipId!)??Array.Empty<string>())
+                    .Select(id=>{new EntityId(id).TryGetAllocationSequence(out var n);return n;}).Min();
                 new EntityId(group.Key).TryGetAllocationSequence(out var bornSequence);
                 Require(first<ulong.MaxValue&&first+1==bornSequence,"Constructed fleet not allocated immediately after its first ship.");
             }
+            if(published!=null)ValidatePublishedLedger(game);
         }
 
         private void ProvisionCompletedShips(CampaignTacticalTravelSaveDto next, GameStateDto beforeProduction)
@@ -137,6 +141,7 @@ namespace HobbyDS9.Simulation
             for (int i = 0; i < ships.Count; i++)
             {
                 var ship=ships[i]; var colony=completed[i];
+                if(published!=null&&ship.Blueprint!=null){ProvisionPublished(next,beforeProduction,ship,colony);continue;}
                 Require(ship.Blueprint == null && constructionTemplates.Any(t => t.ShipDesignDefinitionId == ship.ShipDesignDefinitionId), "Produced source was not admitted.");
                 var template = constructionTemplates.Single(t => t.ShipDesignDefinitionId == ship.ShipDesignDefinitionId);
                 Require(colony.OwnerCivilizationId == ship.OwnerCivilizationId && colony.ProductionQueue![0].ShipDesignDefinitionId == ship.ShipDesignDefinitionId

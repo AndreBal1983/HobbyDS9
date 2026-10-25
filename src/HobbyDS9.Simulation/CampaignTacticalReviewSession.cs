@@ -31,8 +31,9 @@ namespace HobbyDS9.Simulation
             CampaignIntegratedPlaytestPackageDto? integratedPackage=null,CampaignIntegratedPlaytestSaveDto? integratedSave=null,
             CampaignSingleplayerDemoPackageDto? demoPackage=null,CampaignFrontierPackageDto? frontierPackage=null,
             CampaignPlayableFleetPackageDto? playablePackage=null, NaturalGalaxyDocumentDto? generatedMap=null, string? generatedTemplateHash=null,
-            bool staticAstronomy=false)
+            bool staticAstronomy=false,PublishedConstructionContext? publishedContext=null)
         {
+            published=publishedContext;
             this.generatedMap = generatedMap == null ? null : NaturalGalaxyData.Copy(generatedMap);
             this.generatedTemplateHash = generatedTemplateHash;
             if(staticAstronomy)
@@ -109,7 +110,7 @@ namespace HobbyDS9.Simulation
         public CampaignTacticalReviewSaveDto ExportSave() { lock (gate) {Require(demo==null&&frontier==null&&playableHash==null,"Use complete profile export: bare lifecycle root is incomplete.");return Copy(state);} }
         internal SessionSnapshot CaptureCampaign() { lock (gate) return Legacy(state).CaptureSnapshot(); }
         private SimulationSession Legacy(CampaignTacticalReviewSaveDto s) => new SimulationSession(s.Campaign, definitions, compatibility);
-        private CampaignEquipmentSource Equipment(string id) => CampaignEquipmentSourceResolver.ResolveAuthored(definitions,cloak,constructionTemplates,BuildRegistry,id);
+        private CampaignEquipmentSource Equipment(string id) => published!=null&&published.Sources.TryGetValue(id,out var source)?source:CampaignEquipmentSourceResolver.ResolveAuthored(definitions,cloak,constructionTemplates,BuildRegistry,id);
         private AuthoredTacticalShipProvisionDto Provision(string id) => ResolveProvision(id);
         private AuthoredTacticalFitDto Fit(string ship) => Equipment(ship).Fit;
         private CampaignTacticalPoolDto InitialPool(string ship) => Equipment(ship).InitialPool();
@@ -130,6 +131,7 @@ namespace HobbyDS9.Simulation
         }
         public CampaignTacticalMutationResult SetApproachCloak(string actor, string commandId, string fleet, bool enabled, int turn, long revision)
         {
+            if(published!=null&&!publishedExecuting)return PublishedMutation(c=>c.SetApproachCloak(actor,commandId,fleet,enabled,turn,revision));
             lock (gate)
             {
                 if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
@@ -151,6 +153,7 @@ namespace HobbyDS9.Simulation
         }
         public CampaignTacticalMutationResult SubmitStrategicCommand(CommandEnvelope? command)
         {
+            if(published!=null&&!publishedExecuting)return PublishedMutation(c=>c.SubmitStrategicCommand(command));
             lock (gate)
             {
                 if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
@@ -168,6 +171,8 @@ namespace HobbyDS9.Simulation
                         : result.ErrorCode == CommandErrorCode.ActorNotControlled ? CampaignTacticalError.ActorNotControlled
                         : result.ErrorCode == CommandErrorCode.UnknownActor ? CampaignTacticalError.UnknownActor
                         : result.ErrorCode == CommandErrorCode.RevisionExhausted ? CampaignTacticalError.Overflow : CampaignTacticalError.InvalidOrder);
+                if(published!=null&&command?.Kind==CommandKind.EnqueueBlueprintConstruction)
+                    Require(PublishedFit(session.ExportSave().GameState,new BlueprintReferenceDto{BlueprintId=command.EnqueueBlueprintConstruction!.BlueprintId,Revision=command.EnqueueBlueprintConstruction.Revision},true).IsSupportedByCompiler,"Unsupported current-access tactical publication.");
                 var next = Copy(state); next.Campaign = session.ExportSave(); ValidateSave(next); state = Copy(next);
                 RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Strategic,Strategic=command});
                 return Result(CampaignTacticalError.None);
@@ -175,6 +180,7 @@ namespace HobbyDS9.Simulation
         }
         public CampaignTacticalMutationResult AdvanceTurn(int turn, long revision)
         {
+            if(published!=null&&!publishedExecuting)return PublishedMutation(c=>c.AdvanceTurn(turn,revision));
             lock (gate)
             {
                 if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
@@ -268,6 +274,7 @@ namespace HobbyDS9.Simulation
         }
         public CampaignTacticalMutationResult CommitRound(CommitCampaignTacticalRoundDto? command)
         {
+            if(published!=null&&!publishedExecuting)return PublishedMutation(c=>c.CommitRound(command));
             lock (gate)
             {
                 if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
@@ -344,6 +351,7 @@ namespace HobbyDS9.Simulation
         }
         public CampaignTacticalMutationResult FinalizeBatch(int turn, long revision)
         {
+            if(published!=null&&!publishedExecuting)return PublishedMutation(c=>c.FinalizeBatch(turn,revision));
             lock (gate)
             {
                 if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);

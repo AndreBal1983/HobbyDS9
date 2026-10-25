@@ -8,7 +8,8 @@ using HobbyDS9.Contracts;
 using HobbyDS9.Contracts.ShipDesign;
 namespace HobbyDS9.Simulation
 {
-    // Pure opt-in inspection only: never called by a live campaign/profile in this packet.
+    // Deterministic derivation used by detached inspection and the explicit portable
+    // published-construction profile. Metadata itself never grants admission.
     public static class PublishedTacticalSupportCompiler
     {
         private sealed class SupportMappings
