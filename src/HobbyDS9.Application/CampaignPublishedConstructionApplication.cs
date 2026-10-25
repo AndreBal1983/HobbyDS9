@@ -10,6 +10,7 @@ namespace HobbyDS9.Application
         CampaignGeneratedMapDto CaptureGeneratedMap(string actor);
         CampaignStaticAstronomySnapshot CaptureKnownAstronomy(string actor);
         CampaignPublishedConstructionSaveDto ExportPublishedConstructionSave();
+        CampaignPublishedConstructionEligibility CaptureConstructionEligibility(string actor,string blueprint,int revision,string colony);
     }
     // Explicit portable entry only. No host/codec/store/Unity/default registration.
     public sealed class CampaignPublishedConstructionApplication : CampaignIntegratedPlaytestApplication,ICampaignPublishedConstructionSession
@@ -24,6 +25,8 @@ namespace HobbyDS9.Application
         public CampaignGeneratedMapDto CaptureGeneratedMap(string actor)=>session.CaptureGeneratedMap(actor);
         public CampaignStaticAstronomySnapshot CaptureKnownAstronomy(string actor)=>session.CaptureKnownAstronomy(actor);
         public CampaignPublishedConstructionSaveDto ExportPublishedConstructionSave()=>session.ExportPublishedConstructionSave();
+        public CampaignPublishedConstructionEligibility CaptureConstructionEligibility(string actor,string blueprint,int revision,string colony)
+            =>session.CapturePublishedConstructionEligibility(actor,blueprint,revision,colony);
         public int RemainingPlayableOperations=>session.RemainingPlayableOperations;
         public CampaignPlayableFleetSaveDto ExportPlayableSave()=>session.ExportPlayableSave();
         public IReadOnlyList<CampaignNamedFleet> CaptureFleetOrganization(string actor)=>session.CaptureFleetOrganization(actor);

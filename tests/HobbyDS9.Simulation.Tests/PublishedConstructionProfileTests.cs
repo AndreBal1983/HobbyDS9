@@ -6,7 +6,7 @@ using Xunit;
 
 namespace HobbyDS9.Simulation.Tests;
 
-public sealed class PublishedConstructionProfileTests
+public sealed partial class PublishedConstructionProfileTests
 {
     const string Human="civ.federation",Id="blueprint.optin.escort";
     static string Json<T>(T value)=>JsonSerializer.Serialize(value);
