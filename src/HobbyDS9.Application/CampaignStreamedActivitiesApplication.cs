@@ -13,6 +13,7 @@ namespace HobbyDS9.Application
         FrontierCommissionSnapshot CaptureFrontierCommission(string actor);
         CampaignActivityEligibilityDto EvaluateActivity(CampaignActivityCommandDto command);
         CampaignTacticalMutationResult SubmitActivity(CampaignActivityCommandDto? command);
+        ICampaignStreamedActivitiesSession ForkInteraction(int turn,long revision);
     }
     public sealed class CampaignStreamedActivitiesApplication:CampaignIntegratedPlaytestApplication,ICampaignStreamedActivitiesSession
     {
@@ -29,6 +30,8 @@ namespace HobbyDS9.Application
         public FrontierCommissionSnapshot CaptureFrontierCommission(string actor)=>session.CaptureFrontierCommission(actor);
         public CampaignActivityEligibilityDto EvaluateActivity(CampaignActivityCommandDto command)=>session.EvaluateActivity(command);
         public CampaignTacticalMutationResult SubmitActivity(CampaignActivityCommandDto? command)=>session.SubmitActivity(command);
+        public ICampaignStreamedActivitiesSession ForkInteraction(int turn,long revision)
+            =>new CampaignStreamedActivitiesApplication(session.ForkStreamedInteraction(turn,revision));
         public int RemainingPlayableOperations=>session.RemainingPlayableOperations;
         public CampaignPlayableFleetSaveDto ExportPlayableSave()=>session.ExportPlayableSave();
         public IReadOnlyList<CampaignNamedFleet> CaptureFleetOrganization(string actor)=>session.CaptureFleetOrganization(actor);

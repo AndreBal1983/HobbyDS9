@@ -53,6 +53,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate){RequireCurrent(frame.HostId,frame.Generation);var status=session.CaptureStatus();
                 if(streamedActivitiesPackage==null||frame.Status.Turn!=status.Turn||frame.Status.CampaignRevision!=status.CampaignRevision)throw new InvalidOperationException("Commission observation changed.");
+                if(streamedCommittedCommission!=null&&ReferenceEquals(streamedCommissionFrame,frame))return streamedCommittedCommission;
                 return ((ICampaignStreamedActivitiesSession)session).CaptureFrontierCommission(frame.Actor);}
         }
         public CampaignActivityEligibilityDto EvaluateStreamedActivity(ReviewFrame frame,CampaignActivityCommandDto command)

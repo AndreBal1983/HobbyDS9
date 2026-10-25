@@ -16,8 +16,9 @@ namespace HobbyDS9.UnityReview
     {
         private readonly CampaignActivityObservationDto observation;
         private readonly CampaignStreamedActivityObservationDto? streamed;
-        private readonly Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto> evaluate;
+        private readonly Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto>? evaluate;
         private readonly Action<CampaignActivityCommandDto> submit;
+        private readonly Action<CampaignActivityCommandDto,string>? requestReview;
         private readonly string actor;
         private readonly int turn;
         private readonly long revision;
@@ -60,18 +61,22 @@ namespace HobbyDS9.UnityReview
         public ReviewActivitiesPanel(CampaignActivityObservationDto observation,
             Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto> evaluate,
             Action<CampaignActivityCommandDto> submit)
-            :this(observation,evaluate,submit,null){}
+            :this(observation,evaluate??throw new ArgumentNullException(nameof(evaluate)),submit,null){}
         public ReviewActivitiesPanel(CampaignStreamedActivityObservationDto observation,
             Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto> evaluate,
             Action<CampaignActivityCommandDto> submit)
-            :this(observation.Activities,evaluate,submit,observation){}
+            :this(observation.Activities,evaluate??throw new ArgumentNullException(nameof(evaluate)),submit,observation){}
+        public ReviewActivitiesPanel(CampaignStreamedActivityObservationDto observation,
+            Action<CampaignActivityCommandDto,string> requestReview,Action<CampaignActivityCommandDto> submit)
+            :this(observation.Activities,null,submit,observation)
+        {this.requestReview=requestReview??throw new ArgumentNullException(nameof(requestReview));}
         private ReviewActivitiesPanel(CampaignActivityObservationDto observation,
-            Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto> evaluate,
+            Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto>? evaluate,
             Action<CampaignActivityCommandDto> submit,CampaignStreamedActivityObservationDto? streamed)
         {
             this.streamed=streamed;
             this.observation=observation??throw new ArgumentNullException(nameof(observation));
-            this.evaluate=evaluate??throw new ArgumentNullException(nameof(evaluate));
+            this.evaluate=evaluate;
             this.submit=submit??throw new ArgumentNullException(nameof(submit));
             actor=observation.ActorId;turn=observation.Turn;revision=observation.Revision;
             name="campaign-activities-panel";style.flexGrow=1;style.minHeight=0;style.minWidth=0;
@@ -311,11 +316,17 @@ namespace HobbyDS9.UnityReview
         private void Review(CampaignActivityCommandDto candidate,string caption)
         {
             if(disposed || submitted)return;
-            DismissReview();review.Clear();review.style.display=DisplayStyle.Flex;
-            Text(review,caption,"console-section");CampaignActivityEligibilityDto eligibility;
-            try{eligibility=evaluate(Copy(candidate));}
-            catch{Text(review,"Availability could not be checked. Refresh the campaign.");return;}
-            var exact=eligibility!=null && eligibility.ActorId==actor && eligibility.Turn==turn && eligibility.Revision==revision;
+            if(requestReview!=null){requestReview(Copy(candidate),caption);return;}
+            CampaignActivityEligibilityDto eligibility;
+            try{eligibility=evaluate!(Copy(candidate));}
+            catch{DismissReview();status.text="Availability could not be checked. Refresh the campaign.";return;}
+            PresentReviewedOrder(candidate,caption,eligibility);
+        }
+        internal void PresentReviewedOrder(CampaignActivityCommandDto candidate,string caption,CampaignActivityEligibilityDto eligibility)
+        {
+            if(disposed||submitted)return;
+            DismissReview();review.Clear();review.style.display=DisplayStyle.Flex;Text(review,caption,"console-section");
+            var exact=candidate.ActorId==actor&&candidate.ExpectedTurn==turn&&candidate.ExpectedRevision==revision&&eligibility!=null && eligibility.ActorId==actor && eligibility.Turn==turn && eligibility.Revision==revision;
             if(!exact){Text(review,"This observation is out of date. Refresh the campaign before issuing another order.");return;}
             Text(review,Friendly(eligibility!.Reason,eligibility.Accepted?"Ready to submit at the observed campaign state.":"This order is unavailable."));
             if(eligibility.IndustryAfterCompletion.HasValue || eligibility.ResearchAfterCompletion.HasValue || eligibility.FoodAfterCompletion.HasValue)

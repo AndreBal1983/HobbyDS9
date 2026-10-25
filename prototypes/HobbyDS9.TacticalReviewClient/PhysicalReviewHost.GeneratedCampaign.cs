@@ -21,7 +21,7 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 error=ReviewCheckpointError.Busy;
-                if(observed.HostId!=id||observed.Generation!=generation)return true;
+                if(streamedInteraction!=null||observed.HostId!=id||observed.Generation!=generation)return true;
                 var status=session.CaptureStatus();
                 if(observed.Status.Turn!=status.Turn||observed.Status.CampaignRevision!=status.CampaignRevision)return true;
                 if(streamedActivitiesStore is IReviewCheckpointWriteAdmission streamedAdmission)

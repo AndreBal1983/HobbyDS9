@@ -39,8 +39,19 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(streamedInteraction!=null)
+                {
+                    if(ReferenceEquals(session,streamedInteraction.Source)&&ReferenceEquals(session,streamedPresentationSource)&&ReferenceEquals(observed,streamedInteraction.SourceFrame)&&streamedCommittedPresentation!=null&&ReferenceEquals(streamedCommittedPresentation.Frame,observed))return streamedCommittedPresentation;
+                    throw new InvalidOperationException("Wait for the current streamed interaction.");
+                }
                 RequireCurrent(observed.HostId,observed.Generation);
-                if(streamedActivitiesPackage!=null)return CaptureStreamedActivitiesCandidate((ICampaignStreamedActivitiesSession)session,observed);
+                if(streamedActivitiesPackage!=null)
+                {
+                    var status=session.CaptureStatus();
+                    if(observed.Status.Turn!=status.Turn||observed.Status.CampaignRevision!=status.CampaignRevision)throw new InvalidOperationException("Stale generated presentation.");
+                }
+                if(streamedActivitiesPackage!=null&&ReferenceEquals(session,streamedPresentationSource)&&streamedCommittedPresentation!=null&&ReferenceEquals(streamedCommittedPresentation.Frame,observed))return streamedCommittedPresentation;
+                if(streamedActivitiesPackage!=null){streamedPresentationSource=(ICampaignStreamedActivitiesSession)session;return streamedCommittedPresentation=CaptureStreamedActivitiesCandidate((ICampaignStreamedActivitiesSession)session,observed);}
                 if(activitiesPackage!=null)return CaptureActivitiesCandidate((ICampaignActivitiesSession)session,observed);
                 if(publishedPackage!=null)return CapturePublishedCandidate((ICampaignPublishedConstructionSession)session,observed);
                 if(!staticAstronomy || session is not ICampaignStaticAstronomySession current)
@@ -58,6 +69,11 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                if(streamedInteraction!=null)
+                {
+                    if(ReferenceEquals(session,streamedInteraction.Source)&&ReferenceEquals(session,streamedPresentationSource)&&ReferenceEquals(presentation,streamedCommittedPresentation)&&ReferenceEquals(observed,streamedInteraction.SourceFrame)&&ReferenceEquals(presentation.Frame,observed)&&presentation.HostId==id&&presentation.Generation==generation)return;
+                    throw new InvalidOperationException("Stale generated presentation.");
+                }
                 RequireCurrent(observed.HostId,observed.Generation);
                 RequireCurrent(presentation.HostId,presentation.Generation);
                 if(!staticAstronomy&&publishedPackage==null&&activitiesPackage==null&&streamedActivitiesPackage==null)throw new InvalidOperationException("Wrong campaign profile.");

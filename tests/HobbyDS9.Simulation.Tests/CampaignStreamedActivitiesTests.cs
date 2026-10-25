@@ -134,7 +134,9 @@ public sealed class CampaignStreamedActivitiesTests
         void Order(string fleet,CampaignTravelIntent intent,IReadOnlyList<string> route)
         {var status=app.CaptureStatus();var r=app.SubmitTravelOrder(new(){ActorId=Human,CommandId="command.stream.guard."+status.CampaignRevision,ExpectedTurn=status.Turn,
             ExpectedRevision=status.CampaignRevision,Order=new(){FleetId=fleet,Intent=intent,RouteNodeIds=route.ToList()}});Assert.True(r.Accepted,r.Error.ToString());}
-        void Step(){var f=app.CaptureStatus();var r=app.AdvanceTurn(f.Turn,f.CampaignRevision);Assert.True(r.Accepted,r.Error.ToString());}
+        void Step(){var f=app.CaptureStatus();var detached=app.ForkInteraction(f.Turn,f.CampaignRevision);
+            var prepared=detached.AdvanceTurn(f.Turn,f.CampaignRevision);var r=app.AdvanceTurn(f.Turn,f.CampaignRevision);
+            Assert.True(r.Accepted,r.Error.ToString());Assert.Equal(r.Error,prepared.Error);Assert.Equal(Json(app.ExportStreamedActivitiesSave()),Json(detached.ExportStreamedActivitiesSave()));}
         var visited=new HashSet<string>();
         for(int i=0;i<8&&app.CaptureStatus().Phase==SessionPhase.Planning;i++)
         {
@@ -169,10 +171,14 @@ public sealed class CampaignStreamedActivitiesTests
         foreach(var id in app.GetEncounters(Human))
         while(!app.Observe(id,Human).Complete)
         {
-            var o=app.Observe(id,Human);Assert.True(app.CommitRound(new(){ActorId=Human,CommandId="command.stream.round."+app.CaptureStatus().CampaignRevision,EncounterId=id,
-                ExpectedTurn=o.Turn,ExpectedRound=o.Round,ExpectedBoundaryRevision=o.BoundaryRevision,Replacements=new()}).Accepted);Liability();
+            var o=app.Observe(id,Human);var status=app.CaptureStatus();var detached=app.ForkInteraction(status.Turn,status.CampaignRevision);
+            var command=new CommitCampaignTacticalRoundDto{ActorId=Human,CommandId="command.stream.round."+status.CampaignRevision,EncounterId=id,
+                ExpectedTurn=o.Turn,ExpectedRound=o.Round,ExpectedBoundaryRevision=o.BoundaryRevision,Replacements=new()};
+            Assert.True(detached.CommitRound(command).Accepted);Assert.True(app.CommitRound(command).Accepted);
+            Assert.Equal(Json(app.ExportStreamedActivitiesSave()),Json(detached.ExportStreamedActivitiesSave()));Liability();
         }
-        var f=app.CaptureStatus();Assert.True(app.FinalizeBatch(f.Turn,f.CampaignRevision).Accepted);Liability();
+        var f=app.CaptureStatus();var finalized=app.ForkInteraction(f.Turn,f.CampaignRevision);Assert.True(finalized.FinalizeBatch(f.Turn,f.CampaignRevision).Accepted);
+        Assert.True(app.FinalizeBatch(f.Turn,f.CampaignRevision).Accepted);Assert.Equal(Json(app.ExportStreamedActivitiesSave()),Json(finalized.ExportStreamedActivitiesSave()));Liability();
         var root=app.ExportStreamedActivitiesSave();var order=root.Production!.Single(q=>q.OwnerId==Human);var stamp=app.CaptureStatus();
         Assert.True(app.SubmitActivity(new(){ActorId=Human,CommandId="command.stream.aftercombat.cancel",ExpectedTurn=stamp.Turn,ExpectedRevision=stamp.CampaignRevision,Kind=CampaignActivityCommandKind.CancelProduction,TargetId=order.QueueItemId}).Accepted);
         root=app.ExportStreamedActivitiesSave();Assert.Equal(Json(root),Json(CampaignStreamedActivitiesApplication.LoadSave(p,root).ExportStreamedActivitiesSave()));

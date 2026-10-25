@@ -20,7 +20,7 @@ namespace HobbyDS9.TacticalReviewClient
     public sealed partial class PhysicalReviewHost
     {
         public bool IsCurrentStreamedActivitiesCheckpointSource(ReviewFrame observed)
-        {lock(gate){if(streamedActivitiesPackage==null||observed.HostId!=id||observed.Generation!=generation)return false;
+        {lock(gate){if(streamedInteraction!=null||streamedActivitiesPackage==null||observed.HostId!=id||observed.Generation!=generation)return false;
             var status=session.CaptureStatus();return status.Turn==observed.Status.Turn&&status.CampaignRevision==observed.Status.CampaignRevision;}}
         public StreamedActivitiesCheckpointSaveWork PrepareStreamedActivitiesCheckpointSave(ReviewFrame observed,string slot,bool overwrite)
         {

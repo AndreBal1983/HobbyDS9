@@ -43,9 +43,9 @@ namespace HobbyDS9.UnityReview
                 return owner.ActivityEligibility(command);
             };
             Action<HobbyDS9.Contracts.CampaignActivityCommandDto> submit=command=>{
-                if(ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&ReferenceEquals(controller.Frame,frame))Do(()=>owner.SubmitActivity(command));
+                if(ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&ReferenceEquals(controller.Frame,frame)){if(owner.StreamedActivitiesCampaign)RunStreamedInteraction(owner,controller,frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.Submission,command,selection:root?.Q<ReviewActivitiesPanel>()?.CaptureSelection());else Do(()=>owner.SubmitActivity(command));}
             };
-            var panel=owner.StreamedActivitiesCampaign?new ReviewActivitiesPanel(owner.StreamedActivities(),evaluate,submit):new ReviewActivitiesPanel(observation,evaluate,submit);
+            var panel=owner.StreamedActivitiesCampaign?new ReviewActivitiesPanel(owner.StreamedActivities(),(command,caption)=>{if(ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&ReferenceEquals(controller.Frame,frame))RunStreamedInteraction(owner,controller,frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.Preview,command,caption,root?.Q<ReviewActivitiesPanel>()?.CaptureSelection());},submit):new ReviewActivitiesPanel(observation,evaluate,submit);
             panel.RestoreSelection(selection);
             panel.RegisterCallback<DetachFromPanelEvent>(e=>{if(ReferenceEquals(e.target,panel))panel.Dispose();});
             activitiesPanelOwner=owner;activitiesPanelController=controller;

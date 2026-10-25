@@ -8,6 +8,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Update="Fixtures/streamed-native1000-week2.json.gz" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../scenarios/activities-v1/*.json" Link="scenarios/activities-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../scenarios/published-construction-v1/support.json" Link="scenarios/published-construction-v1/support.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PublishedConstructionV1/support.json" Link="scenarios/published-construction-v1/unity-support.json" CopyToOutputDirectory="PreserveNewest" />

@@ -52,11 +52,11 @@ namespace HobbyDS9.TacticalReviewClient
             return new ReviewFrame(id,epoch,actor,status,encounters,own,candidate.GetFleetCloakSettings(actor),candidate.GetOwnStrategicFleets(actor),battle,travel,(candidate as ICampaignIntegratedPlaytestSession)?.CaptureStrategy(actor),(candidate as ICampaignSingleplayerDemoSession)?.CaptureDemo(),(candidate as ICampaignFrontierSession)?.CaptureDiscovery(actor));
         }
         public ReviewFrame Read(string actor,string? encounter=null)
-        { lock(gate) return Capture(session,actor,encounter,generation); }
+        { lock(gate) { RequireNoStreamedInteraction();return Capture(session,actor,encounter,generation); } }
         private void RequireCurrent(Guid host,long epoch)
-        { if(host != id || epoch != generation) throw new InvalidOperationException("Obsolete or foreign physical host request."); }
+        { RequireNoStreamedInteraction();if(host != id || epoch != generation) throw new InvalidOperationException("Obsolete or foreign physical host request."); }
         bool ITacticalClientHost.IsCurrent(ReviewWork work)
-        { lock(gate) return work.HostId == id && work.Generation == generation; }
+        { lock(gate) return streamedInteraction==null && work.HostId == id && work.Generation == generation; }
         public KnownRouteOffer FindKnownRoute(ReviewFrame observed,string fleet,string destination,bool append=false)
         {
             lock(gate)
@@ -83,7 +83,7 @@ namespace HobbyDS9.TacticalReviewClient
             }
         }
         public CampaignTacticalMutationResult SubmitTravelOrder(SubmitCampaignTravelOrderDto command)
-        { lock(gate) return session.SubmitTravelOrder(command); }
+        { lock(gate) {RequireNoStreamedInteraction();return session.SubmitTravelOrder(command);} }
         public CampaignTacticalMutationResult AdvancePlanning(ReviewFrame observed)
         { lock(gate) { RequireCurrent(observed.HostId,observed.Generation); return session.AdvanceTurn(observed.Status.Turn,observed.Status.CampaignRevision); } }
         public CampaignTacticalMutationResult SetApproachCloak(ReviewFrame observed,string command,string fleet,bool enabled)
@@ -115,6 +115,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                RequireNoStreamedInteraction();
                 if(streamedActivitiesPackage!=null)return SaveStreamedActivitiesCommitted();
                 if(activitiesPackage!=null)return SaveActivitiesCommitted();
                 if(publishedPackage!=null)return SavePublishedCommitted();
@@ -132,6 +133,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                RequireNoStreamedInteraction();
                 if(streamedActivitiesPackage!=null)return LoadStreamedActivitiesCommitted(handle,actor,encounter);
                 if(activitiesPackage!=null)return LoadActivitiesCommitted(handle,actor,encounter);
                 if(publishedPackage!=null)return LoadPublishedCommitted(handle,actor,encounter);
@@ -150,6 +152,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                RequireNoStreamedInteraction();
                 if(streamedActivitiesPackage!=null)return SaveStreamedActivitiesToSlot(slot,overwrite);
                 if(activitiesPackage!=null)return SaveActivitiesToSlot(slot,overwrite);
                 if(publishedPackage!=null)return SavePublishedToSlot(slot,overwrite);
@@ -172,6 +175,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                RequireNoStreamedInteraction();
                 if(streamedActivitiesPackage!=null)return LoadStreamedActivitiesFromSlot(slot,actor,encounter);
                 if(activitiesPackage!=null)return LoadActivitiesFromSlot(slot,actor,encounter);
                 if(publishedPackage!=null)return LoadPublishedFromSlot(slot,actor,encounter);
@@ -212,6 +216,7 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                RequireNoStreamedInteraction();
                 if(streamedActivitiesPackage!=null)
                 {
                     if(streamedActivitiesStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
