@@ -74,13 +74,17 @@ public sealed class GalaxyChartedFeatherTests
   Assert.False(failed.Succeeded);Assert.Equal("mask-work-budget",failed.Reason);Assert.True(failed.Work>old.Work);Assert.All(failed.Pixels,b=>Assert.Equal(0,b));
  }
  [Theory] [InlineData(false)] [InlineData(true)]
- public void Actual1000SolidAndFragmentedGeometryStillFitsAggregateBudget(bool fragmented)
+ public void Actual1000SolidAndFragmentedGeometryStillFitsAggregateBudget(bool fragmented)=>CheckActual1000(fragmented,false);
+ [Theory] [InlineData(false)] [InlineData(true)]
+ public void ActualRendererGuard1000SolidAndFragmentedFitsAggregateBudget(bool fragmented)=>CheckActual1000(fragmented,true);
+ void CheckActual1000(bool fragmented,bool rendererGuard)
  {
   var codec=new ReviewNewtonsoftCodec();var map=codec.DecodeNaturalGalaxy(File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory,"galaxy-samples/natural/seed-42-systems-1000.natural.json")));
   var regions=fragmented?map.Layout.Regions.Where((_,i)=>i%3==0).ToArray():map.Layout.Regions.ToArray();
   var view=new GeneratedGalaxyViewport();view.SetMap(map.Layout.Width,map.Layout.Height);view.Resize(1920,1080);view.Fit();
-  var result=GeneratedGalaxyChartedMask.Build(regions,view,1920,1080,960,540,inwardFeatherUiPixels:8);
-  output.WriteLine($"Feather1000 fragmented={fragmented} regions={regions.Length} success={result.Succeeded} work={result.Work} reason={result.Reason} partial={result.Pixels.Count(b=>b>0&&b<255)} opaque={result.Pixels.Count(b=>b==255)}");
+  var guard=GeneratedGalaxyV3AssetData.MaskGuard(960,540,960,540,1920,1080);
+  var result=GeneratedGalaxyChartedMask.Build(regions,view,1920,1080,960,540,rendererGuard?guard.x+1:3,rendererGuard?guard.y+1:3,inwardFeatherUiPixels:8);
+  output.WriteLine($"Feather1000 rendererGuard={rendererGuard} guard={ (rendererGuard?guard.x+1:3) } fragmented={fragmented} regions={regions.Length} success={result.Succeeded} work={result.Work} reason={result.Reason} partial={result.Pixels.Count(b=>b>0&&b<255)} opaque={result.Pixels.Count(b=>b==255)}");
   Assert.True(result.Succeeded,result.Reason);Assert.InRange(result.Work,1,10000000);Assert.Contains((byte)255,result.Pixels);Assert.Contains(result.Pixels,b=>b>0&&b<255);
  }
 }
