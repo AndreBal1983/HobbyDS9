@@ -12,3 +12,6 @@ client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ActivitiesV1/*.json text eol=lf
 art/ships/cardassian-cruiser-v1/** -text
 client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian/** -text
 client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian/*.meta text eol=lf
+
+# Expansion composition pins the exact planner asset bytes.
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationExpansionV1/*.json text eol=lf

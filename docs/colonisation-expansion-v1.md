@@ -21,3 +21,14 @@ Old frozen inventories keep their exact old facts and hashes. Inventory validati
 Tests distinguish the real public 250-system manufacture/survey/loaded/founding/established/supply journey and entire replay from explicitly labelled private planning/failure/arithmetic fixtures. Such fixtures do not prove fabricated histories load. Source acceptance, adapter/codec/host/UI integration, native/IL2CPP behavior, large-map performance and general strategic-AI quality remain separate gates. Existing full-save/replay latency remains an open limitation.
 
 Related contracts: [strategic AI](design/strategic-ai.md), [colonisation](design/colonisation-and-conquest.md), [exploration](design/exploration-missions.md), [time and movement](design/time-movement-mobilisation.md), [architecture](architecture.md).
+
+
+## Player integration candidate (source/CPU; physical acceptance pending)
+
+The explicit **Colonisation & Expansion** menu composes the accepted expansion wrapper from pinned existing base/roster resources and `scenarios/colonisation-expansion-v1/planner.json`. Its Unity resource copy has identical bytes (SHA256 `1863794d2fdbdcbfc444c23031bae7ff2bed0197e1feb72f8059166377f1bf48`). The new fold is initially open; existing campaign menus and direct entry points remain available.
+
+`ICampaignColonisationOperations` shares actor-safe queries/actions and a detached `ForkOperations` between old and expansion sessions. It introduces no checkpoint method; inherited older export APIs still reject partial expansion exports. Persistence dispatch is explicitly typed: the expansion host/model/store always carry the complete Format12 root, with normal full replay before publishing a loaded frame or writing a background checkpoint. AI plans never enter presentation snapshots.
+
+Expansion slots use directory `HobbyDS9CampaignColonisationExpansionOnly-v1` and filename prefix `unity-campaign-colonisation-expansion-v1-`. They never probe or reinterpret earlier namespaces. Save work captures its source/package/codec/store/slot; cancellation does not publish a stale candidate. A file write already entered before cancellation may complete only in that captured namespace with its captured root. Review and submission still use authoritative worker validation.
+
+Source/CPU tests and reference compilation do not establish actual Unity UI, IL2CPP, native cold Continue, 1000-system performance, or a successful replacement for the historical failed monolithic receiving case. Slow full replay remains an open limitation. Root owns subsequent receiving and package acceptance.
