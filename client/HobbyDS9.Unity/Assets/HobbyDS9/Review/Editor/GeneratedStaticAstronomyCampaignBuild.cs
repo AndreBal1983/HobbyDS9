@@ -341,6 +341,10 @@ claimed.
         public static void BuildWindowsColonisationFoodCandidate()
             =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Food-20261026");
 
+        [MenuItem("HobbyDS9/Campaign/Build colonisation growth candidate")]
+        public static void BuildWindowsColonisationGrowthCandidate()
+            =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Growth-20261026");
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName,bool checkpointDiagnostics=false)
         {
             BuildWindows(stageName,checkpointDiagnostics);
