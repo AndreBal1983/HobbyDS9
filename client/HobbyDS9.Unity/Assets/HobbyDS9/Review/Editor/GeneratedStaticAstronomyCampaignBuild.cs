@@ -333,6 +333,10 @@ claimed.
         public static void BuildWindowsColonisationShipyardCandidate()
             =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Shipyard-20261026");
 
+        [MenuItem("HobbyDS9/Campaign/Build colonisation expansion candidate")]
+        public static void BuildWindowsColonisationExpansionCandidate()
+            =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Expansion-20261026");
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName,bool checkpointDiagnostics=false)
         {
             BuildWindows(stageName,checkpointDiagnostics);
