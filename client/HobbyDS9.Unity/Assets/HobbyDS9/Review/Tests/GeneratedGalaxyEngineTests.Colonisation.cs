@@ -45,6 +45,8 @@ namespace HobbyDS9.UnityReview.Tests
         private static bool ColonyPending(ReviewEntry entry)=>(bool)CheckpointField(entry,"generatedCampaignBusy")!||CampaignModel(entry).Busy||CheckpointField(entry,"checkpointUiOperation")!=null||CheckpointField(entry,"colonisationUiWork")!=null;
         private static string ColonySelection(ReviewColonisationPanel? panel)
         {if(panel==null)return "none";var selected=typeof(ReviewColonisationPanel).GetMethod("CaptureSelection",HullPrivate)!.Invoke(panel,null);return selected==null?"none":JsonConvert.SerializeObject(selected.GetType().GetFields(HullPrivate).Where(f=>f.Name!="Science").ToDictionary(f=>f.Name,f=>f.GetValue(selected)));}
+        private static string ColonyDraft(UIDocument doc)
+        {var food=doc.rootVisualElement.Q<IntegerField>("colonisation-food");return food==null?"none":JsonConvert.SerializeObject(new{food=food.value,cohort=doc.rootVisualElement.Q<DropdownField>("colonisation-cohort")?.value,materials=doc.rootVisualElement.Query<IntegerField>().ToList().Where(f=>f.name.StartsWith("colonisation-material-",StringComparison.Ordinal)).OrderBy(f=>f.name,StringComparer.Ordinal).ToDictionary(f=>f.name,f=>f.value)});}
         private static IEnumerator ColonyIdle(ColonyCase s,string phase)
         {var clock=System.Diagnostics.Stopwatch.StartNew();int frames=0;while(ColonyPending(s.Shared.Entry!)){Assert.That(clock.Elapsed.TotalSeconds,Is.LessThan(90),phase);frames++;yield return null;}s.Shared.Timings.Add(new{phase,observedWallMs=clock.Elapsed.TotalMilliseconds,yieldedFrames=frames,notFps=true});yield return null;yield return null;}
         private static IEnumerator ColonyReach(UIDocument doc,VisualElement item,bool enabled=true,string target="actor control")
@@ -138,6 +140,7 @@ namespace HobbyDS9.UnityReview.Tests
         private static IEnumerator ColonyCapture(ColonyCase s,UIDocument doc,Vector2Int size,string filename,bool inspector=false)
         {
             var source=ColonyBytes(ColonyModel(s));var selected=ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>());
+            var draft=ColonyDraft(doc);
             var oldConfirm=doc.rootVisualElement.Q<Button>("colonisation-order-confirm");
             var prior=doc.panelSettings.targetTexture;var width=doc.rootVisualElement.style.width;var height=doc.rootVisualElement.style.height;var active=RenderTexture.active;var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);Texture2D? image=null;
             try
@@ -145,7 +148,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(target.Create(),Is.True);doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=size.x;doc.rootVisualElement.style.height=size.y;yield return null;yield return null;yield return null;
                 var panel=doc.rootVisualElement.Q<ReviewColonisationPanel>();var scroll=panel?.Q<ScrollView>("colonisation-scroll");var item=inspector?panel?.Q("colonisation-hull-image"):panel?.Q("colonisation-world-facts");if(scroll!=null&&item!=null){scroll.ScrollTo(item);yield return null;yield return null;}
                 RenderTexture.active=target;image=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);image.ReadPixels(new Rect(0,0,size.x,size.y),0,0);image.Apply();File.WriteAllBytes(Path.Combine(CampaignOutput(),filename),image.EncodeToPNG());
-                File.WriteAllText(Path.Combine(CampaignOutput(),filename.Replace(".png",".layout.json")),JsonConvert.SerializeObject(new{root=doc.rootVisualElement.worldBound.ToString(),footer=doc.rootVisualElement.Q("player-footer")?.worldBound.ToString(),panel=panel?.worldBound.ToString(),viewport=scroll?.contentViewport.worldBound.ToString(),scroll=scroll?.scrollOffset.ToString(),status=panel?.Q<Label>("colonisation-command-status")?.text,selection=ColonySelection(panel)}));
+                File.WriteAllText(Path.Combine(CampaignOutput(),filename.Replace(".png",".layout.json")),JsonConvert.SerializeObject(new{root=doc.rootVisualElement.worldBound.ToString(),footer=doc.rootVisualElement.Q("player-footer")?.worldBound.ToString(),panel=panel?.worldBound.ToString(),viewport=scroll?.contentViewport.worldBound.ToString(),scroll=scroll?.scrollOffset.ToString(),status=panel?.Q<Label>("colonisation-command-status")?.text,selection=ColonySelection(panel),draft=ColonyDraft(doc)}));
                 if(panel!=null)
                 {
                     if(oldConfirm!=null)Assert.That(doc.rootVisualElement.Q<Button>("colonisation-order-confirm"),Is.Not.Null,"same-frame resize retains the displayed review with fresh controls");
@@ -162,6 +165,7 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally{doc.panelSettings.targetTexture=prior;doc.rootVisualElement.style.width=width;doc.rootVisualElement.style.height=height;RenderTexture.active=active;if(image!=null)UnityEngine.Object.DestroyImmediate(image);target.Release();UnityEngine.Object.DestroyImmediate(target);}yield return null;yield return null;
             Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(source),"layout, inspection and queries never mutate authoritative campaign");Assert.That(ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>()),Is.EqualTo(selected),"same-controller redraw retains only view selection");
+            Assert.That(ColonyDraft(doc),Is.EqualTo(draft),"same transport context retains user food, cohort and material inputs through resize");
             if(oldConfirm!=null){var current=doc.rootVisualElement.Q<Button>("colonisation-order-confirm");Assert.That(current,Is.Not.Null,"review also survives restoration of the original size");if(!ReferenceEquals(oldConfirm,current)){StreamCapturedEvent(oldConfirm);yield return null;Assert.That(ColonyPending(s.Shared.Entry!),Is.False);Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(source),"removed pre-resize Confirm is inert");}}
         }
         private static IEnumerator ColonyManufacture(ColonyCase s,UIDocument doc,int transports)
@@ -224,7 +228,7 @@ namespace HobbyDS9.UnityReview.Tests
             yield return ColonyReview(s,doc,"colonisation-embark");var replaced=doc.rootVisualElement.Q<Button>("colonisation-order-confirm");
             // A replacement review on the SAME live panel exercises the independent review token.
             var panel=doc.rootVisualElement.Q<ReviewColonisationPanel>();var workFrame=ColonyModel(s).Current.Frame;var world=ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home);
-            var command=new ColonisationCommandDto{ActorId=ColonyModel(s).Colonisation().Actor,Turn=workFrame.Status.Turn,Revision=workFrame.Status.CampaignRevision,CommandId="command.receiving.replacement."+Guid.NewGuid().ToString("N"),Action=ColonisationAction.EmbarkSettlers,Embark=new EmbarkSettlersDto{ShipId=s.Transport,ColonyId=s.Home,CohortId=world.Cohorts.First(x=>x.Population>=400).Id,Population=100,Food=20}};
+            var cohort=doc.rootVisualElement.Q<DropdownField>("colonisation-cohort");var command=new ColonisationCommandDto{ActorId=ColonyModel(s).Colonisation().Actor,Turn=workFrame.Status.Turn,Revision=workFrame.Status.CampaignRevision,CommandId="command.receiving.replacement."+Guid.NewGuid().ToString("N"),Action=ColonisationAction.EmbarkSettlers,Embark=new EmbarkSettlersDto{ShipId=s.Transport,ColonyId=s.Home,CohortId=world.Cohorts[cohort.index].Id,Population=100,Food=doc.rootVisualElement.Q<IntegerField>("colonisation-food").value,Materials=world.Stocks.Where(r=>doc.rootVisualElement.Q<IntegerField>("colonisation-material-"+r.ResourceDefinitionId)?.value>0).Select(r=>new ResourceAmountDto{ResourceDefinitionId=r.ResourceDefinitionId,Amount=doc.rootVisualElement.Q<IntegerField>("colonisation-material-"+r.ResourceDefinitionId).value}).ToList()}};
             // Test-only same-panel lifetime probe uses genuine public eligibility; it never submits this replacement.
             var eligibility=StreamHost(ColonyModel(s)).EvaluateColonisation(workFrame,command);Assert.That(eligibility.Available,Is.True);
             typeof(ReviewColonisationPanel).GetMethod("PresentReviewedOrder",HullPrivate)!.Invoke(panel,new object[]{command,"Replacement of the same actual reviewed embark payload (view lifetime probe only).",eligibility});
@@ -245,9 +249,10 @@ namespace HobbyDS9.UnityReview.Tests
         private static IEnumerator ColonyLoadOne(ColonyCase s,UIDocument doc,string ship,bool lifecycle=false)
         {
             yield return ColonyTransport(s,doc,s.Home,ship);var source=ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home);
-            yield return ColonyPick(doc,"colonisation-cohort",source.Cohorts,x=>x.Id,source.Cohorts.First(x=>x.Population>=400).Id);
+            yield return ColonyPick(doc,"colonisation-cohort",source.Cohorts,x=>x.Id,source.Cohorts.Where(x=>x.Population>=400).OrderByDescending(x=>x.Id,StringComparer.Ordinal).First().Id);
             if(lifecycle)
             {
+                var oldFood=doc.rootVisualElement.Q<IntegerField>("colonisation-food");var oldMaterial=doc.rootVisualElement.Q<IntegerField>("colonisation-material-resource.dilithium");Assert.That(oldMaterial,Is.Not.Null);Assert.That(source.Stocks.Single(x=>x.ResourceDefinitionId=="resource.dilithium").Amount,Is.GreaterThan(0));oldFood.value=19;oldMaterial.value=1;var drafted=ColonyDraft(doc);
                 var root=ColonyBytes(ColonyModel(s));var sourceFrame=ColonyModel(s).Current.Frame;var selected=ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>());var button=doc.rootVisualElement.Q<Button>("colonisation-embark");yield return ColonyReach(doc,button);
                 var cancelled=ColonyStartHold(s,()=>Click(button),true);yield return ColonyEntered(cancelled);yield return ColonyBusy(s,doc,cancelled,root,sourceFrame);
                 yield return ColonyCapture(s,doc,new Vector2Int(1920,1080),"colony-04-held-busy-1920.png");
@@ -256,6 +261,7 @@ namespace HobbyDS9.UnityReview.Tests
                 s.Shared.Entry.enabled=false;yield return null;s.Shared.Entry.enabled=true;yield return null;yield return null;
                 Assert.That(ColonyModel(s).Busy,Is.False);Assert.That(ColonyModel(s).Current.Frame,Is.SameAs(sourceFrame));Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(root));
                 Assert.That(ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>()),Is.EqualTo(selected),"fresh view retains the already selected source world and transport");
+                Assert.That(ColonyDraft(doc),Is.EqualTo(drafted),"cancelled preview/drain retains the actual nondefault form draft");oldFood.value=8;oldMaterial.value=0;yield return null;Assert.That(ColonyDraft(doc),Is.EqualTo(drafted),"disposed input callbacks cannot edit the current draft");
                 var tracked=s.Contexts.Count;var oldUi=CheckpointField(s.Shared.Entry,"colonisationUiWork");ColonyActivate(s,()=>{});
                 Assert.That(s.Contexts.Count,Is.EqualTo(tracked),"synchronous activation cannot inherit an older held continuation");Assert.That(CheckpointField(s.Shared.Entry,"colonisationUiWork"),Is.SameAs(oldUi));
                 // Do not globally await the deliberately held OLD finally before creating its replacement lease.
@@ -264,18 +270,21 @@ namespace HobbyDS9.UnityReview.Tests
                 wait.Restart();while(Volatile.Read(ref cancelled.Context!.Finished)==0){Assert.That(wait.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}
                 Assert.That(CheckpointField(s.Shared.Entry,"colonisationUiWork"),Is.SameAs(next.Work));Assert.That(CheckpointField(s.Shared.Entry,"campaignBusyToken"),Is.SameAs(token));Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(root));
                 next.Release.Set();yield return ColonyIdle(s,"new-preview-after-cancel-drain");ColonyProbe(StreamHost(ColonyModel(s)),null);
+                Assert.That(ColonyDraft(doc),Is.EqualTo(drafted),"pure preview completion preserves food/cohort/material draft");
                 yield return ColonyConfirmNegatives(s,doc);yield return ColonyCapture(s,doc,new Vector2Int(1920,1080),"colony-03-embark-review-1920.png");
                 var oldFrame=ColonyModel(s).Current.Frame;var oldConfirm=doc.rootVisualElement.Q<Button>("colonisation-order-confirm");var unchanged=ColonyBytes(ColonyModel(s));
                 Assert.That(ColonyModel(s).Refresh(),Is.True);Assert.That(ColonyModel(s).Current.Frame,Is.Not.SameAs(oldFrame),"explicit refresh replaces the frame even at the same stamp");typeof(ReviewEntry).GetMethod("Draw",HullPrivate)!.Invoke(s.Shared.Entry,null);yield return null;yield return null;
                 Assert.That(doc.rootVisualElement.Q<Button>("colonisation-order-confirm"),Is.Null,"a replaced frame discards eligibility presentation");StreamCapturedEvent(oldConfirm);yield return null;Assert.That(ColonyPending(s.Shared.Entry!),Is.False);Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(unchanged));
                 // This re-review follows an explicit frame replacement, never a workaround for resize loss.
+                Assert.That(ColonyDraft(doc),Is.EqualTo(drafted));doc.rootVisualElement.Q<IntegerField>("colonisation-food").value=20;doc.rootVisualElement.Q<IntegerField>("colonisation-material-resource.dilithium").value=0;
                 yield return ColonyReview(s,doc,"colonisation-embark");
             }
-            else yield return ColonyReview(s,doc,"colonisation-embark");
+            else{Assert.That(doc.rootVisualElement.Q<IntegerField>("colonisation-food").value,Is.EqualTo(20));Assert.That(doc.rootVisualElement.Query<IntegerField>().ToList().Where(f=>f.name.StartsWith("colonisation-material-",StringComparison.Ordinal)).All(f=>f.value==0),Is.True,"different transport/manifest context resets material drafts");yield return ColonyReview(s,doc,"colonisation-embark");}
             var before=ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home);var credits=ColonyModel(s).ColonisationActivities().Credits;
             yield return ColonyClick(s,doc,"colonisation-order-confirm");var after=ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home);var loaded=ColonyModel(s).Colonisation().Transports.Single(x=>x.ShipId==ship);
             Assert.That(after.Population,Is.EqualTo(before.Population-100));Assert.That(after.Food,Is.EqualTo(before.Food-20));Assert.That(after.Stocks.Where(x=>x.ResourceDefinitionId=="resource.settlement-kit").Sum(x=>x.Amount),Is.EqualTo(before.Stocks.Where(x=>x.ResourceDefinitionId=="resource.settlement-kit").Sum(x=>x.Amount)-1));
             Assert.That(loaded.Population,Is.EqualTo(100));Assert.That(loaded.Food,Is.EqualTo(20));Assert.That(loaded.Kind,Is.EqualTo(SettlerManifestKind.Settlement));Assert.That(ColonyModel(s).ColonisationActivities().Credits,Is.EqualTo(credits));
+            Assert.That(loaded.Cargo.Where(x=>x.ResourceDefinitionId=="resource.settlement-kit").Sum(x=>x.Amount),Is.EqualTo(1));Assert.That(loaded.Cargo.Where(x=>x.ResourceDefinitionId!="resource.settlement-kit").Sum(x=>x.Amount),Is.Zero,"distinctive draft material is explicitly reset and re-reviewed before actual embark");
         }
         private static IEnumerator ColonyEstablished(ColonyCase s,UIDocument doc)
         {

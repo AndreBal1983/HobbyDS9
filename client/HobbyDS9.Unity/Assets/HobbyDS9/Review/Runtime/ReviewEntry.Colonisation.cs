@@ -14,8 +14,10 @@ namespace HobbyDS9.UnityReview
         private ReviewColonisationPanel.ReviewState? colonisationRebuildReview;
         private void CaptureColonisationSelectionForRebuild()
         {
-            colonisationRebuildSelection=!demoLanding&&workspace!=null&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds)
-                &&ReferenceEquals(model,colonisationPanelOwner)&&ReferenceEquals(model?.Current,colonisationPanelController)?root?.Q<ReviewColonisationPanel>()?.CaptureSelection():null;
+            var same=!demoLanding&&workspace!=null&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds)
+                &&ReferenceEquals(model,colonisationPanelOwner)&&ReferenceEquals(model?.Current,colonisationPanelController);
+            if(!same)colonisationRebuildSelection=null;
+            else if(root?.Q<ReviewColonisationPanel>()?.CaptureSelection() is ReviewColonisationPanel.Selection selected)colonisationRebuildSelection=selected;
             colonisationRebuildReview=colonisationRebuildSelection!=null&&ReferenceEquals(model?.Current.Frame,colonisationPanelFrame)?root?.Q<ReviewColonisationPanel>()?.CaptureReview():null;
         }
         private void DrawColonisationPanel(VisualElement parent)

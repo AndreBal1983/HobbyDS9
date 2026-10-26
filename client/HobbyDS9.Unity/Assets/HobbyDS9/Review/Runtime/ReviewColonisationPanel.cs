@@ -51,9 +51,20 @@ namespace HobbyDS9.UnityReview
             EnqueueKit=c.EnqueueKit==null?null:new EnqueueSettlementKitDto{ColonyId=c.EnqueueKit.ColonyId},
             LoadSupplies=c.LoadSupplies==null?null:new LoadCarriedSuppliesDto{ShipId=c.LoadSupplies.ShipId,SourceColonyId=c.LoadSupplies.SourceColonyId,Food=c.LoadSupplies.Food,Materials=CopyResources(c.LoadSupplies.Materials)}};
         private string page="Worlds",world="",ship="",planet="",surveyShip="";
+        private TransportDraft? transportDraft;
+        internal sealed class TransportDraft
+        {
+            internal readonly string World,Ship,Node;internal readonly string? Manifest;internal readonly ColonyEstablishmentStage Stage;
+            internal int Food;internal string Cohort;internal readonly Dictionary<string,int> Materials;
+            internal TransportDraft(ColonisationWorldSnapshot w,ColonisationTransportSnapshot t)
+            {World=w.Id;Ship=t.ShipId;Node=t.NodeId;Manifest=t.ManifestId;Stage=w.Stage;Food=t.ManifestId==null?20:checked((int)t.Food);Cohort=w.Cohorts.FirstOrDefault()?.Id??"";Materials=new Dictionary<string,int>(StringComparer.Ordinal);}
+            private TransportDraft(TransportDraft d){World=d.World;Ship=d.Ship;Node=d.Node;Manifest=d.Manifest;Stage=d.Stage;Food=d.Food;Cohort=d.Cohort;Materials=new Dictionary<string,int>(d.Materials,StringComparer.Ordinal);}
+            internal TransportDraft Copy()=>new TransportDraft(this);
+            internal bool Matches(ColonisationWorldSnapshot w,ColonisationTransportSnapshot t)=>World==w.Id&&Ship==t.ShipId&&Node==t.NodeId&&Manifest==t.ManifestId&&Stage==w.Stage;
+        }
         internal sealed class Selection
-        {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly ReviewActivitiesPanel.Selection? Science;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science){Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;}}
-        internal Selection? CaptureSelection()=>disposed?null:new Selection(page,world,ship,planet,surveyShip,inspectedBlueprint,inspectedRevision,this.Q<Foldout>("colonisation-hull-inspector")?.value??inspectedOpen,science?.CaptureSelection());
+        {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly ReviewActivitiesPanel.Selection? Science;internal readonly TransportDraft? Draft;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science,TransportDraft? draft){Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;Draft=draft?.Copy();}}
+        internal Selection? CaptureSelection()=>disposed?null:new Selection(page,world,ship,planet,surveyShip,inspectedBlueprint,inspectedRevision,this.Q<Foldout>("colonisation-hull-inspector")?.value??inspectedOpen,science?.CaptureSelection(),transportDraft);
         internal void RestoreSelection(Selection? saved)
         {
             if(disposed||saved==null)return;
@@ -61,7 +72,7 @@ namespace HobbyDS9.UnityReview
             if(observation.Transports.Any(x=>x.ShipId==saved.Ship))ship=saved.Ship;
             if(planets.Any(x=>x.PlanetId==saved.Planet))planet=saved.Planet;
             if(activities.Ships.Any(x=>x.ShipId==saved.SurveyShip))surveyShip=saved.SurveyShip;
-            inspectedBlueprint=saved.Blueprint;inspectedRevision=saved.Revision;inspectedOpen=saved.InspectorOpen;Show(saved.Page);science?.RestoreSelection(saved.Science);
+            transportDraft=saved.Draft?.Copy();inspectedBlueprint=saved.Blueprint;inspectedRevision=saved.Revision;inspectedOpen=saved.InspectorOpen;Show(saved.Page);science?.RestoreSelection(saved.Science);
         }
         public ReviewColonisationPanel(ColonisationCampaignSnapshot observation,IReadOnlyList<ColonisationPlanetSnapshot> planets,CampaignActivityObservationDto activities,
             Action<ColonisationCommandDto,string> reviewOrder,Action<ColonisationCommandDto> submit,Action<CampaignActivityCommandDto,string> reviewActivity,Action<CampaignActivityCommandDto> submitActivity)
@@ -97,6 +108,7 @@ namespace HobbyDS9.UnityReview
         private void SendActivity(CampaignActivityCommandDto command){if(!Live)return;displayedReview=null;submitted=true;submitActivity(command);}
         private void Show(string selected)
         {
+            if(page=="Transports"&&selected!="Transports")transportDraft=null;
             if(disposed)return;controlEpoch++;reviewEpoch++;displayedReview=null;currentInspector=null;page=new[]{"Worlds","Planets","Transports","Science"}.Contains(selected)?selected:"Worlds";
             science?.Dispose();science=null;ReleaseHull();body.Clear();review.Clear();review.style.display=DisplayStyle.None;
             if(page=="Worlds")Worlds();else if(page=="Planets")Planets();else if(page=="Transports")Transports();else
@@ -185,15 +197,22 @@ namespace HobbyDS9.UnityReview
             Text(body,"Aboard: "+t.Population+" people, "+t.Food+" food; "+Materials(t.Cargo)+". "+t.Report);
             Picker(body,"Owned source / receiving world",observation.Worlds,x=>x.Id,x=>x.Name,world,id=>{world=id;Show(page);},"colonisation-transport-world");
             var w=observation.Worlds.FirstOrDefault(x=>x.Id==world);if(w==null)return;
+            if(transportDraft==null||!transportDraft.Matches(w,t))transportDraft=new TransportDraft(w,t);
+            var draft=transportDraft;var draftEpoch=controlEpoch;
+            bool OwnDraft()=>Live&&draftEpoch==controlEpoch&&ReferenceEquals(transportDraft,draft);
+            if(!w.Cohorts.Any(c=>c.Id==draft.Cohort))draft.Cohort=w.Cohorts.FirstOrDefault()?.Id??"";
+            var resourceIds=(t.ManifestId==null?w.Stocks:t.Cargo).Select(x=>x.ResourceDefinitionId).Distinct(StringComparer.Ordinal).ToList();
+            foreach(var id in draft.Materials.Keys.Where(id=>!resourceIds.Contains(id,StringComparer.Ordinal)).ToList())draft.Materials.Remove(id);
+            foreach(var id in resourceIds)if(!draft.Materials.ContainsKey(id))draft.Materials.Add(id,0);
             Text(body,"Embark uses 100 actual settlers and one local kit; at least 500 people must remain, with no more than a quarter of the selected source cohort embarking. Choose 8–20 food for settlers. Carried food is finite; blocked journeys can cause shortages and deaths.");
-            var food=new IntegerField("Food to transfer"){value=t.ManifestId==null?20:checked((int)t.Food),name="colonisation-food"};food.style.minHeight=44;food.style.fontSize=16;body.Add(food);
+            var food=new IntegerField("Food to transfer"){value=draft.Food,name="colonisation-food"};food.style.minHeight=44;food.style.fontSize=16;body.Add(food);food.RegisterValueChangedCallback(_=>{if(OwnDraft())draft.Food=food.value;});
             var materialFields=new List<(string id,IntegerField field)>();
-            foreach(var resource in (t.ManifestId==null?w.Stocks:t.Cargo).Select(x=>x.ResourceDefinitionId).Distinct(StringComparer.Ordinal))
-            {var f=new IntegerField(MaterialName(resource)){value=0};f.style.minHeight=44;f.style.fontSize=16;body.Add(f);materialFields.Add((resource,f));}
+            foreach(var resource in resourceIds)
+            {var f=new IntegerField(MaterialName(resource)){value=draft.Materials[resource],name="colonisation-material-"+resource};f.style.minHeight=44;f.style.fontSize=16;body.Add(f);materialFields.Add((resource,f));f.RegisterValueChangedCallback(_=>{if(OwnDraft())draft.Materials[resource]=f.value;});}
             List<ResourceAmountDto> MaterialsInput()=>materialFields.Where(x=>x.field.value!=0).Select(x=>new ResourceAmountDto{ResourceDefinitionId=x.id,Amount=x.field.value}).ToList();
             if(t.ManifestId==null)
             {
-                Picker(body,"Source cohort",w.Cohorts,x=>x.Id,x=>x.SpeciesName+" "+x.Population,w.Cohorts.FirstOrDefault()?.Id??"",_=>{},"colonisation-cohort");
+                Picker(body,"Source cohort",w.Cohorts,x=>x.Id,x=>x.SpeciesName+" "+x.Population,draft.Cohort,id=>{if(OwnDraft())draft.Cohort=id;},"colonisation-cohort");
                 var cohorts=body.Q<DropdownField>("colonisation-cohort");
                 bool ValidCohort()=>w.Stage==ColonyEstablishmentStage.Established&&cohorts.index>=0&&cohorts.index<w.Cohorts.Count;
                 var embark=Button(body,"Review embark 100 settlers + kit","colonisation-embark",()=>{

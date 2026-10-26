@@ -33,6 +33,8 @@ namespace HobbyDS9.UnityReview
                 return;
             }
             var epoch=viewEpoch;colonisationUiWork=work;colonisationUiOwner=owner;
+            colonisationRebuildSelection=selection??(workspace!=null&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds)
+                &&ReferenceEquals(owner,colonisationPanelOwner)&&ReferenceEquals(controller,colonisationPanelController)?root?.Q<ReviewColonisationPanel>()?.CaptureSelection():null);
             colonisationUiTitle=kind==ColonisationInteractionKind.Preview?"Checking order…":kind==ColonisationInteractionKind.Submission?"Applying order…":"Advancing week…";
             try
             {
