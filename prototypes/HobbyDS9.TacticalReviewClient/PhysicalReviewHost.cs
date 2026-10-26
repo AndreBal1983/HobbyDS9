@@ -116,6 +116,7 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 RequireNoStreamedInteraction();
+                if(colonisationGrowthPackage!=null)return SaveColonisationGrowthCommitted();
                 if(colonisationExpansionPackage!=null)return SaveColonisationExpansionCommitted();
                 if(colonisationPackage!=null)return SaveColonisationCommitted();
                 if(streamedActivitiesPackage!=null)return SaveStreamedActivitiesCommitted();
@@ -136,6 +137,7 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 RequireNoStreamedInteraction();
+                if(colonisationGrowthPackage!=null)return LoadColonisationGrowthCommitted(handle,actor,encounter);
                 if(colonisationExpansionPackage!=null)return LoadColonisationExpansionCommitted(handle,actor,encounter);
                 if(colonisationPackage!=null)return LoadColonisationCommitted(handle,actor,encounter);
                 if(streamedActivitiesPackage!=null)return LoadStreamedActivitiesCommitted(handle,actor,encounter);
@@ -157,6 +159,7 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 RequireNoStreamedInteraction();
+                if(colonisationGrowthPackage!=null)return SaveColonisationGrowthToSlot(slot,overwrite);
                 if(colonisationExpansionPackage!=null)return SaveColonisationExpansionToSlot(slot,overwrite);
                 if(colonisationPackage!=null)return SaveColonisationToSlot(slot,overwrite);
                 if(streamedActivitiesPackage!=null)return SaveStreamedActivitiesToSlot(slot,overwrite);
@@ -182,6 +185,7 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 RequireNoStreamedInteraction();
+                if(colonisationGrowthPackage!=null)return LoadColonisationGrowthFromSlot(slot,actor,encounter);
                 if(colonisationExpansionPackage!=null)return LoadColonisationExpansionFromSlot(slot,actor,encounter);
                 if(colonisationPackage!=null)return LoadColonisationFromSlot(slot,actor,encounter);
                 if(streamedActivitiesPackage!=null)return LoadStreamedActivitiesFromSlot(slot,actor,encounter);
@@ -225,6 +229,12 @@ namespace HobbyDS9.TacticalReviewClient
             lock(gate)
             {
                 RequireNoStreamedInteraction();
+                if(colonisationGrowthPackage!=null)
+                {
+                    if(colonisationGrowthStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var opened=OpenColonisationGrowthFromSlot(colonisationGrowthPackage,colonisationGrowthCodec!,colonisationGrowthStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
+                }
                 if(colonisationExpansionPackage!=null)
                 {
                     if(colonisationExpansionStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);

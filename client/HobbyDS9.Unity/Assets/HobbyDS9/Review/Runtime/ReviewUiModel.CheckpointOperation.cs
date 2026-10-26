@@ -33,17 +33,19 @@ namespace HobbyDS9.UnityReview
         internal StaticCheckpointSaveWork? SaveWork { get; }
         internal PublishedCheckpointSaveWork? PublishedSaveWork { get; }
         internal ActivitiesCheckpointSaveWork? ActivitiesSaveWork { get; }
+        internal ColonisationGrowthCheckpointSaveWork? ColonisationGrowthSaveWork { get; }
         internal ColonisationExpansionCheckpointSaveWork? ColonisationExpansionSaveWork { get; }
         internal ColonisationCheckpointSaveWork? ColonisationSaveWork { get; }
         internal StreamedActivitiesCheckpointSaveWork? StreamedActivitiesSaveWork { get; }
-        internal ReviewCheckpointCompletion(ReviewCheckpointError error,PhysicalReviewHost? host=null,ReviewController? controller=null,StaticCheckpointSaveWork? saveWork=null,PublishedCheckpointSaveWork? publishedSaveWork=null,ActivitiesCheckpointSaveWork? activitiesSaveWork=null,StreamedActivitiesCheckpointSaveWork? streamedActivitiesSaveWork=null,ColonisationCheckpointSaveWork? colonisationSaveWork=null,ColonisationExpansionCheckpointSaveWork? colonisationExpansionSaveWork=null)
-        {Error=error;Host=host;Controller=controller;SaveWork=saveWork;PublishedSaveWork=publishedSaveWork;ActivitiesSaveWork=activitiesSaveWork;StreamedActivitiesSaveWork=streamedActivitiesSaveWork;ColonisationSaveWork=colonisationSaveWork;ColonisationExpansionSaveWork=colonisationExpansionSaveWork;}
+        internal ReviewCheckpointCompletion(ReviewCheckpointError error,PhysicalReviewHost? host=null,ReviewController? controller=null,StaticCheckpointSaveWork? saveWork=null,PublishedCheckpointSaveWork? publishedSaveWork=null,ActivitiesCheckpointSaveWork? activitiesSaveWork=null,StreamedActivitiesCheckpointSaveWork? streamedActivitiesSaveWork=null,ColonisationCheckpointSaveWork? colonisationSaveWork=null,ColonisationExpansionCheckpointSaveWork? colonisationExpansionSaveWork=null,ColonisationGrowthCheckpointSaveWork? colonisationGrowthSaveWork=null)
+        {Error=error;Host=host;Controller=controller;SaveWork=saveWork;PublishedSaveWork=publishedSaveWork;ActivitiesSaveWork=activitiesSaveWork;StreamedActivitiesSaveWork=streamedActivitiesSaveWork;ColonisationSaveWork=colonisationSaveWork;ColonisationExpansionSaveWork=colonisationExpansionSaveWork;ColonisationGrowthSaveWork=colonisationGrowthSaveWork;}
     }
     public sealed partial class ReviewUiModel
     {
         private ReviewCheckpointOperation? checkpointOperation;
         public ReviewCheckpointOperation? BeginStaticCheckpointOperation(string slot,bool loading,bool overwrite=false,bool discard=false)
         {
+            if(ColonisationGrowthCampaign)return BeginColonisationGrowthCheckpointOperation(slot,loading,overwrite,discard);
             if(ColonisationExpansionCampaign)return BeginColonisationExpansionCheckpointOperation(slot,loading,overwrite,discard);
             if(ColonisationCampaign)return BeginColonisationCheckpointOperation(slot,loading,overwrite,discard);
             if(StreamedActivitiesCampaign)return BeginStreamedActivitiesCheckpointOperation(slot,loading,overwrite,discard);
@@ -93,10 +95,11 @@ namespace HobbyDS9.UnityReview
             if(!ReferenceEquals(checkpointOperation,operation)||!ReferenceEquals(completion.Operation,operation))return false;
             checkpointOperation=null;Busy=false;
             if(Closed||!ReferenceEquals(Current,operation.Source)||!ReferenceEquals(Current.Frame,operation.Frame)
-                ||!(ColonisationExpansionCampaign?host.IsCurrentColonisationExpansionCheckpointSource(operation.Frame):ColonisationCampaign?host.IsCurrentColonisationCheckpointSource(operation.Frame):StreamedActivitiesCampaign?host.IsCurrentStreamedActivitiesCheckpointSource(operation.Frame):ActivitiesCampaign?host.IsCurrentActivitiesCheckpointSource(operation.Frame):PublishedConstructionCampaign?host.IsCurrentPublishedCheckpointSource(operation.Frame):host.IsCurrentStaticCheckpointSource(operation.Frame)))
+                ||!(ColonisationGrowthCampaign?host.IsCurrentColonisationGrowthCheckpointSource(operation.Frame):ColonisationExpansionCampaign?host.IsCurrentColonisationExpansionCheckpointSource(operation.Frame):ColonisationCampaign?host.IsCurrentColonisationCheckpointSource(operation.Frame):StreamedActivitiesCampaign?host.IsCurrentStreamedActivitiesCheckpointSource(operation.Frame):ActivitiesCampaign?host.IsCurrentActivitiesCheckpointSource(operation.Frame):PublishedConstructionCampaign?host.IsCurrentPublishedCheckpointSource(operation.Frame):host.IsCurrentStaticCheckpointSource(operation.Frame)))
             {Message="Checkpoint result: Busy";return false;}
             if(!operation.Loading)
             {
+                if(completion.ColonisationGrowthSaveWork!=null&&!Current.ReceiveColonisationGrowthCheckpointSave(completion.ColonisationGrowthSaveWork))return false;
                 if(completion.ColonisationExpansionSaveWork!=null&&!Current.ReceiveColonisationExpansionCheckpointSave(completion.ColonisationExpansionSaveWork))return false;
                 if(completion.ColonisationSaveWork!=null&&!Current.ReceiveColonisationCheckpointSave(completion.ColonisationSaveWork))return false;
                 if(completion.SaveWork!=null&&!Current.ReceiveStaticCheckpointSave(completion.SaveWork))return false;

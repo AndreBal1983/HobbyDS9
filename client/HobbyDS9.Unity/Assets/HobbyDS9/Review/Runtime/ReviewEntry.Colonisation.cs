@@ -33,7 +33,7 @@ namespace HobbyDS9.UnityReview
                 (command,caption)=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Preview,colonyCommand:command,caption:caption,selection:Selection());},
                 command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,colonyCommand:command,selection:Selection());},
                 (command,caption)=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Preview,command:command,caption:caption,selection:Selection());},
-                command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,command:command,selection:Selection());});
+                command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,command:command,selection:Selection());},owner.SupportsKitFreePassengers);
             panel.RestoreSelection(selection);panel.RestoreReview(reviewed);panel.PresentStatus(owner.ColonisationActionStatus());parent.Add(panel);colonisationPanelOwner=owner;colonisationPanelController=controller;colonisationPanelFrame=frame;
         }
         private void DrawColonisationMenu(VisualElement parent)

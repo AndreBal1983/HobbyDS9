@@ -71,12 +71,13 @@ namespace HobbyDS9.UnityReview
             }
             catch (Exception e) { loadDiagnostic?.Record(phase,ReviewLoadEvent.Error,e);throw new InvalidDataException("Invalid colonisation campaign carrier."); }
         }
-        private static void ColonisationWire(JToken token, Type declared, ref int visits, Dictionary<Type, PropertyInfo[]> shapes)
+        private enum ColonisationCarrierVocabulary { Original,Growth }
+        private static void ColonisationWire(JToken token, Type declared, ref int visits, Dictionary<Type, PropertyInfo[]> shapes,ColonisationCarrierVocabulary vocabulary=ColonisationCarrierVocabulary.Original)
         {
             if (--visits < 0) throw Invalid();
             if (token.Type == JTokenType.Null) return; // Typed decoding and required-fact checks follow.
             var type = Nullable.GetUnderlyingType(declared) ?? declared;
-            if (token.Type==JTokenType.Integer&&((type==typeof(SettlerManifestKind)&&token.Value<long>()==4)
+            if (vocabulary==ColonisationCarrierVocabulary.Original&&token.Type==JTokenType.Integer&&((type==typeof(SettlerManifestKind)&&token.Value<long>()==4)
                 ||(type==typeof(ColonisationAction)&&token.Value<long>()==11)
                 ||(type==typeof(ColonisationAiStage)&&token.Value<long>()>8)
                 ||(type==typeof(ColonisationAiAction)&&token.Value<long>()>14)))throw Invalid();
@@ -88,7 +89,7 @@ namespace HobbyDS9.UnityReview
                 foreach (var row in rows)
                 {
                     if (row.Type == JTokenType.Null) throw Invalid();
-                    ColonisationWire(row, itemType, ref visits, shapes);
+                    ColonisationWire(row, itemType, ref visits, shapes,vocabulary);
                 }
                 return;
             }
@@ -99,11 +100,11 @@ namespace HobbyDS9.UnityReview
                 shapes.Add(type, properties);
             }
             GeneratedObject(token, properties.Select(p => p.Name).ToArray());
-            foreach (var property in properties) ColonisationWire(token[property.Name]!, property.PropertyType, ref visits, shapes);
+            foreach (var property in properties) ColonisationWire(token[property.Name]!, property.PropertyType, ref visits, shapes,vocabulary);
         }
         private static void RequireColonisationCarrier(CampaignColonisationSaveDto? root)
             =>RequireColonisationCarrier(root,CampaignColonisationIdentity.InventoryPolicy);
-        private static void RequireColonisationCarrier(CampaignColonisationSaveDto? root,string expectedInventoryPolicy)
+        private static void RequireColonisationCarrier(CampaignColonisationSaveDto? root,string expectedInventoryPolicy,ColonisationCarrierVocabulary vocabulary=ColonisationCarrierVocabulary.Original)
         {
             bool Hash(string? value) => value != null && value.Length == 64 && value.All(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f');
             if (root == null || root.FormatVersion != CampaignColonisationIdentity.Format
@@ -123,17 +124,17 @@ namespace HobbyDS9.UnityReview
                 || !ActivityRows(root.Campaign.Transcript) || !ActivityRows(root.Campaign.Names)
                 || root.Campaign.Integrated?.Physical?.Core?.ProfileId != CampaignColonisationIdentity.EmbeddedCoreProfile
                 || root.Campaign.Integrated.Physical.Core.Campaign?.GameState == null) throw Invalid();
-            RequireColonisationStateCarrier(root.Colonisation);
+            RequireColonisationStateCarrier(root.Colonisation,vocabulary);
             if (root.MovementOwnership != null && (!ActivityRows(root.MovementOwnership.PlanetControls) || !ActivityRows(root.MovementOwnership.ColonyStages))) throw Invalid();
             if (root.LastSettlementProof != null)
             {
                 var proof = root.LastSettlementProof;
                 if (proof.BeforeGameState == null || proof.AfterGameState == null || proof.BeforeColonisation == null || proof.AfterColonisation == null || !ActivityRows(proof.Receipts)) throw Invalid();
-                RequireColonisationStateCarrier(proof.BeforeColonisation); RequireColonisationStateCarrier(proof.AfterColonisation);
+                RequireColonisationStateCarrier(proof.BeforeColonisation,vocabulary); RequireColonisationStateCarrier(proof.AfterColonisation,vocabulary);
                 foreach (var receipt in proof.Receipts!)
                 {
                     if (receipt.Intent == null || receipt.ManifestBefore == null || !ActivityRows(receipt.MaterialsTransferred)) throw Invalid();
-                    RequireColonisationManifestCarrier(receipt.ManifestBefore);
+                    RequireColonisationManifestCarrier(receipt.ManifestBefore,vocabulary);
                 }
             }
             var inherited = new List<CampaignActivityOperationDto>();
@@ -141,7 +142,7 @@ namespace HobbyDS9.UnityReview
             {
                 if ((operation.Colonisation == null) == (operation.Existing == null)) throw Invalid();
                 if (operation.Existing != null) inherited.Add(operation.Existing);
-                else RequireColonisationCommand(operation.Colonisation!);
+                else RequireColonisationCommand(operation.Colonisation!,vocabulary);
             }
             RequireActivityFacts(root.Activities, inherited);
             var ids = new HashSet<string>(StringComparer.Ordinal);
@@ -159,31 +160,32 @@ namespace HobbyDS9.UnityReview
                 if (built ? !ActivityText(receipt.ShipId) : receipt.ShipId != null) throw Invalid();
             }
         }
-        private static void RequireColonisationStateCarrier(CampaignColonisationStateDto state)
+        private static void RequireColonisationStateCarrier(CampaignColonisationStateDto state,ColonisationCarrierVocabulary vocabulary=ColonisationCarrierVocabulary.Original)
         {
             if (!ActivityRows(state.PlanetControls) || !ActivityRows(state.Bodies) || !ActivityRows(state.Surveys)
                 || !ActivityRows(state.ManifestRecords) || !ActivityRows(state.ManifestOrigins) || !ActivityRows(state.ManifestResolutions)
                 || !ActivityRows(state.ColonyOrigins) || !ActivityRows(state.LandedCohortLineages) || !ActivityRows(state.CampSources)
                 || !ActivityRows(state.CampTerminals) || !ActivityRows(state.DeploymentIntents)) throw Invalid();
-            foreach (var manifest in state.ManifestRecords!) RequireColonisationManifestCarrier(manifest);
+            foreach (var manifest in state.ManifestRecords!) RequireColonisationManifestCarrier(manifest,vocabulary);
             foreach (var origin in state.ManifestOrigins!) if (!ActivityRows(origin.LoadedMaterials)) throw Invalid();
             foreach (var resolution in state.ManifestResolutions!)
             {
                 if (!ActivityRows(resolution.CargoTransferred) || !ActivityRows(resolution.CargoLost)) throw Invalid();
             }
         }
-        private static void RequireColonisationManifestCarrier(SettlerManifestDto manifest)
+        private static void RequireColonisationManifestCarrier(SettlerManifestDto manifest,ColonisationCarrierVocabulary vocabulary=ColonisationCarrierVocabulary.Original)
         {
             if (manifest.Blueprint == null || !ActivityRows(manifest.Cargo) || !ActivityRows(manifest.MaterialsDelivered) || !ActivityRows(manifest.MaterialsLost)
-                || (!Enum.IsDefined(typeof(SettlerManifestKind), manifest.Kind)||(int)manifest.Kind>3) || !Enum.IsDefined(typeof(SettlerManifestStage), manifest.Stage)) throw Invalid();
+                || (!Enum.IsDefined(typeof(SettlerManifestKind), manifest.Kind)||vocabulary==ColonisationCarrierVocabulary.Original&&(int)manifest.Kind>3) || !Enum.IsDefined(typeof(SettlerManifestStage), manifest.Stage)) throw Invalid();
         }
-        private static void RequireColonisationCommand(ColonisationCommandDto command)
+        private static void RequireColonisationCommand(ColonisationCommandDto command,ColonisationCarrierVocabulary vocabulary=ColonisationCarrierVocabulary.Original)
         {
             object?[] payloads = { command.StartSurvey, command.CancelSurvey, command.Embark, command.Unload, command.Deploy,
                 command.Withdraw, command.Evacuate, command.Deliver, command.EnqueueKit, command.LoadSupplies };
             int action = (int)command.Action;
+            int payload=action==11&&vocabulary==ColonisationCarrierVocabulary.Growth?2:action-1;
             if (!ActivityText(command.ActorId) || !ActivityText(command.CommandId) || command.Turn < 0 || command.Revision < 0
-                || action < 1 || action > payloads.Length || payloads.Count(p => p != null) != 1 || payloads[action - 1] == null) throw Invalid();
+                || payload < 0 || payload >= payloads.Length || payloads.Count(p => p != null) != 1 || payloads[payload] == null) throw Invalid();
         }
         private static void RequireColonisationOrder(ColonisationProductionItemDto order, HashSet<string> ids)
         {

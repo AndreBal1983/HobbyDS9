@@ -1,6 +1,6 @@
 # Colonisation Growth V2 portable increment
 
-Status: implemented source candidate; independent source/CPU acceptance pending. No client activation or native acceptance in this packet. The design chapters remain the agreed direction; this is a bounded implementation contract, not the complete strategic-AI or conquest roadmap.
+Status: portable source/CPU accepted at 99cdd43. The minimal player integration is a source candidate pending independent acceptance; no Growth Unity/native acceptance is claimed. The design chapters remain the agreed direction; this is a bounded implementation contract, not the complete strategic-AI or conquest roadmap.
 
 The explicit Growth factory wraps the already validated Expansion source with a distinct package/profile/protocol/planner/budget identity. The complete carrier remains Format 12 with exactly the existing property shape. Only the explicit StartGrowthGame, LoadGrowthSave and ExportGrowthSave routes admit it. The trusted private source edition survives copies, fork, adoption and replay. Older factories, exports, preflight and codecs keep their original command/manifest/AI vocabulary; a new profile string or self-consistent hash never grants admission.
 
@@ -13,3 +13,9 @@ The provisional planner attempts at most one additional immigration trip after t
 Tests distinguish real public 250 AI travel/full replay from human same-system Earth/Mars transfer and reuse. Loss, shortage, counter-edge and poisoned-state tests are labelled private defensive fixtures and are not represented as admissible historical replay roots. Existing canonical historical byte proofs are reported separately in the sealed receipt.
 
 See [colonisation design](design/colonisation-and-conquest.md), [strategic AI](design/strategic-ai.md), [exploration](design/exploration-missions.md), [time and movement](design/time-movement-mobilisation.md), [ship design](design/ship-design.md) and [architecture](architecture.md).
+
+## Minimal player source candidate
+
+The separate Colonisation & Growth menu uses a typed Growth codec, host, background checkpoint work and slot namespace. Full normal Growth replay precedes a live model/frame replacement. Original menus, default rules and slot prefixes remain available without conversion. The panel receives a capability from the trusted model and adds one reviewed kit-free passenger action; kit-bearing embark remains available. No AI plan or whole-root data is sent to the panel.
+
+The composition uses 15 unchanged pinned Resources: five template files, four activity files, four colonisation files, one roster and one planner. The sealed integration plan's 14-resource wording was a non-substantive counting error, not authority to omit a file. Normal original composition is validated first, then the explicit Growth factory derives its source identity; no new values or assets are introduced.

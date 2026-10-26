@@ -63,23 +63,23 @@ namespace HobbyDS9.UnityReview
             }
             catch (Exception e) { loadDiagnostic?.Record(phase,ReviewLoadEvent.Error,e);throw new InvalidDataException("Invalid colonisation campaign carrier."); }
         }
-        private static void RequireColonisationExpansionCarrier(CampaignColonisationExpansionSaveDto root)
+        private static void RequireColonisationExpansionCarrier(CampaignColonisationExpansionSaveDto root,ColonisationCarrierVocabulary vocabulary=ColonisationCarrierVocabulary.Original)
         {
             if(root==null||root.FormatVersion!=CampaignColonisationExpansionIdentity.Format
-                ||root.ProfileId!=CampaignColonisationExpansionIdentity.Profile||root.PackageHash==null||root.PackageHash.Length!=64
+                ||root.ProfileId!=(vocabulary==ColonisationCarrierVocabulary.Growth?CampaignColonisationGrowthIdentity.Profile:CampaignColonisationExpansionIdentity.Profile)||root.PackageHash==null||root.PackageHash.Length!=64
                 ||!root.PackageHash.All(c=>c>='0'&&c<='9'||c>='a'&&c<='f')||(!ActivityRows(root.AiPlans)||root.AiPlans!.Count>4))throw Invalid();
-            RequireColonisationCarrier(root.BaseCampaign,CampaignColonisationExpansionIdentity.InventoryPolicy);
+            RequireColonisationCarrier(root.BaseCampaign,CampaignColonisationExpansionIdentity.InventoryPolicy,vocabulary);
             bool Text(string? value)=>value==null||value.Length<=512;
             var actors=new HashSet<string>(StringComparer.Ordinal);
             foreach(var p in root.AiPlans!)
             {
-                if(p.ActorId==null||!actors.Add(p.ActorId)||(!Enum.IsDefined(typeof(ColonisationAiStage),p.Stage)||(int)p.Stage>8)
+                if(p.ActorId==null||!actors.Add(p.ActorId)||(!Enum.IsDefined(typeof(ColonisationAiStage),p.Stage)||vocabulary==ColonisationCarrierVocabulary.Original&&(int)p.Stage>8)
                     ||!ActivityRows(p.LatestActions)||p.LatestActions!.Count>8||!ActivityRows(p.OwnAttemptedTargets)||p.OwnAttemptedTargets!.Count>8)throw Invalid();
                 if(p.GoalId!="establish-first-frontier-colony-v1"||p.HoldReason==null||p.HoldReason.Length>128
                     ||!new[]{p.ActorId,p.GoalId,p.HomeColonyId,p.YardColonyId,p.SourceCohortId,p.ScoutShipId,p.TransportShipId,p.BlueprintId,
                         p.TargetPlanetId,p.TargetNodeId,p.KitQueueId,p.TransportQueueId,p.ManifestId,p.CampId,p.EstablishedColonyId}.All(Text)
                     ||p.OwnAttemptedTargets.Any(id=>id==null||!Text(id)))throw Invalid();
-                foreach(var a in p.LatestActions)if(a.CommandId==null||a.CommandId.Length>128||(!Enum.IsDefined(typeof(ColonisationAiAction),a.Action)||(int)a.Action>14)||!Enum.IsDefined(typeof(CampaignTacticalError),a.Error))throw Invalid();
+                foreach(var a in p.LatestActions)if(a.CommandId==null||a.CommandId.Length>128||(!Enum.IsDefined(typeof(ColonisationAiAction),a.Action)||vocabulary==ColonisationCarrierVocabulary.Original&&(int)a.Action>14)||!Enum.IsDefined(typeof(CampaignTacticalError),a.Error))throw Invalid();
             }
         }
     }
