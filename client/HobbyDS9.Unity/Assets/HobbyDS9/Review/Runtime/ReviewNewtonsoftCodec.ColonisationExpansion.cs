@@ -66,16 +66,20 @@ namespace HobbyDS9.UnityReview
         private static void RequireColonisationExpansionCarrier(CampaignColonisationExpansionSaveDto root,ColonisationCarrierVocabulary vocabulary=ColonisationCarrierVocabulary.Original)
         {
             if(root==null||root.FormatVersion!=CampaignColonisationExpansionIdentity.Format
-                ||root.ProfileId!=(vocabulary==ColonisationCarrierVocabulary.Growth?CampaignColonisationGrowthIdentity.Profile:CampaignColonisationExpansionIdentity.Profile)||root.PackageHash==null||root.PackageHash.Length!=64
+                ||root.ProfileId!=(vocabulary!=ColonisationCarrierVocabulary.Original?CampaignColonisationGrowthIdentity.Profile:CampaignColonisationExpansionIdentity.Profile)||root.PackageHash==null||root.PackageHash.Length!=64
                 ||!root.PackageHash.All(c=>c>='0'&&c<='9'||c>='a'&&c<='f')||(!ActivityRows(root.AiPlans)||root.AiPlans!.Count>4))throw Invalid();
             RequireColonisationCarrier(root.BaseCampaign,CampaignColonisationExpansionIdentity.InventoryPolicy,vocabulary);
+            RequireColonisationAiPlans(root.AiPlans!,vocabulary,"establish-first-frontier-colony-v1");
+        }
+        private static void RequireColonisationAiPlans(List<ColonisationAiPlanDto> plans,ColonisationCarrierVocabulary vocabulary,string goal)
+        {
             bool Text(string? value)=>value==null||value.Length<=512;
             var actors=new HashSet<string>(StringComparer.Ordinal);
-            foreach(var p in root.AiPlans!)
+            foreach(var p in plans)
             {
                 if(p.ActorId==null||!actors.Add(p.ActorId)||(!Enum.IsDefined(typeof(ColonisationAiStage),p.Stage)||vocabulary==ColonisationCarrierVocabulary.Original&&(int)p.Stage>8)
                     ||!ActivityRows(p.LatestActions)||p.LatestActions!.Count>8||!ActivityRows(p.OwnAttemptedTargets)||p.OwnAttemptedTargets!.Count>8)throw Invalid();
-                if(p.GoalId!="establish-first-frontier-colony-v1"||p.HoldReason==null||p.HoldReason.Length>128
+                if(p.GoalId!=goal||p.HoldReason==null||p.HoldReason.Length>128
                     ||!new[]{p.ActorId,p.GoalId,p.HomeColonyId,p.YardColonyId,p.SourceCohortId,p.ScoutShipId,p.TransportShipId,p.BlueprintId,
                         p.TargetPlanetId,p.TargetNodeId,p.KitQueueId,p.TransportQueueId,p.ManifestId,p.CampId,p.EstablishedColonyId}.All(Text)
                     ||p.OwnAttemptedTargets.Any(id=>id==null||!Text(id)))throw Invalid();

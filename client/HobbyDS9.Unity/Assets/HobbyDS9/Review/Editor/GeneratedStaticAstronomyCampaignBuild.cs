@@ -345,6 +345,10 @@ claimed.
         public static void BuildWindowsColonisationGrowthCandidate()
             =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Growth-20261026");
 
+        [MenuItem("HobbyDS9/Campaign/Build colonisation repeat expansion candidate")]
+        public static void BuildWindowsColonisationRepeatCandidate()
+            =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Repeat-20261027");
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName,bool checkpointDiagnostics=false)
         {
             BuildWindows(stageName,checkpointDiagnostics);

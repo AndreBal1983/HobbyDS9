@@ -71,7 +71,7 @@ namespace HobbyDS9.UnityReview
             }
             catch (Exception e) { loadDiagnostic?.Record(phase,ReviewLoadEvent.Error,e);throw new InvalidDataException("Invalid colonisation campaign carrier."); }
         }
-        private enum ColonisationCarrierVocabulary { Original,Growth }
+        private enum ColonisationCarrierVocabulary { Original,Growth,Repeat }
         private static void ColonisationWire(JToken token, Type declared, ref int visits, Dictionary<Type, PropertyInfo[]> shapes,ColonisationCarrierVocabulary vocabulary=ColonisationCarrierVocabulary.Original)
         {
             if (--visits < 0) throw Invalid();
@@ -81,6 +81,12 @@ namespace HobbyDS9.UnityReview
                 ||(type==typeof(ColonisationAction)&&token.Value<long>()==11)
                 ||(type==typeof(ColonisationAiStage)&&token.Value<long>()>8)
                 ||(type==typeof(ColonisationAiAction)&&token.Value<long>()>14)))throw Invalid();
+            if(vocabulary==ColonisationCarrierVocabulary.Repeat)
+            {
+                if(type==typeof(string)&&token.Type!=JTokenType.String)throw Invalid();
+                if((type.IsEnum||type==typeof(int)||type==typeof(long))&&token.Type!=JTokenType.Integer)throw Invalid();
+                if(type==typeof(bool)&&token.Type!=JTokenType.Boolean)throw Invalid();
+            }
             if (type == typeof(string) || type.IsValueType) return;
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
             {
@@ -183,7 +189,7 @@ namespace HobbyDS9.UnityReview
             object?[] payloads = { command.StartSurvey, command.CancelSurvey, command.Embark, command.Unload, command.Deploy,
                 command.Withdraw, command.Evacuate, command.Deliver, command.EnqueueKit, command.LoadSupplies };
             int action = (int)command.Action;
-            int payload=action==11&&vocabulary==ColonisationCarrierVocabulary.Growth?2:action-1;
+            int payload=action==11&&vocabulary!=ColonisationCarrierVocabulary.Original?2:action-1;
             if (!ActivityText(command.ActorId) || !ActivityText(command.CommandId) || command.Turn < 0 || command.Revision < 0
                 || payload < 0 || payload >= payloads.Length || payloads.Count(p => p != null) != 1 || payloads[payload] == null) throw Invalid();
         }
