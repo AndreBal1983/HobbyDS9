@@ -29,6 +29,12 @@ namespace HobbyDS9.Application
             =>new CampaignColonisationApplication(CampaignTacticalReviewSession.StartColonisation(package,settings));
         public static ICampaignColonisationSession LoadSave(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root)
             =>new CampaignColonisationApplication(CampaignTacticalReviewSession.LoadColonisation(package,root));
+        public static CampaignColonisationRosterPackageDto CreateRosterPackage(CampaignColonisationPackageDto baseV1)
+            =>CampaignTacticalReviewSession.CreateColonisationRosterPackage(baseV1);
+        public static ICampaignColonisationSession StartRosterGame(CampaignColonisationRosterPackageDto package,NaturalGalaxySettingsDto settings)
+            =>new CampaignColonisationApplication(CampaignTacticalReviewSession.StartColonisationRoster(package,settings));
+        public static ICampaignColonisationSession LoadRosterSave(CampaignColonisationRosterPackageDto package,CampaignColonisationSaveDto root)
+            =>new CampaignColonisationApplication(CampaignTacticalReviewSession.LoadColonisationRoster(package,root));
         public CampaignGeneratedMapDto CaptureGeneratedMap(string actor)=>session.CaptureGeneratedMap(actor);
         public CampaignStaticAstronomySnapshot CaptureKnownAstronomy(string actor)=>session.CaptureKnownAstronomy(actor);
         public CampaignColonisationSaveDto ExportColonisationSave()=>session.ExportColonisationSave();

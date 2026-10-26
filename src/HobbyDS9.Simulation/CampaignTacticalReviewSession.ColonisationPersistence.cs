@@ -8,17 +8,19 @@ namespace HobbyDS9.Simulation
     public sealed partial class CampaignTacticalReviewSession
     {
         public static CampaignTacticalReviewSession LoadColonisation(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root)
+            =>LoadColonisationCore(package,root,null);
+        private static CampaignTacticalReviewSession LoadColonisationCore(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster)
         {
             Require(package!=null&&package.PackageHash==ColonisationData.PackageHash(package),"Different approved colonisation package.");
             ColonisationRootBudget.Validate(root,package!.Settlement!);
             Require(root!=null&&root.FormatVersion==CampaignColonisationIdentity.Format&&root.ProfileId==CampaignColonisationIdentity.Profile&&root.PolicyId==CampaignColonisationIdentity.Policy
-                &&root.TemplatePackageHash==package!.PackageHash&&root.Map!=null&&root.FrozenPlanets!=null&&root.Campaign!=null&&root.Colonisation!=null&&root.Activities!=null
+                &&root.TemplatePackageHash==(roster?.Hash??package!.PackageHash)&&root.Map!=null&&root.FrozenPlanets!=null&&root.Campaign!=null&&root.Colonisation!=null&&root.Activities!=null
                 &&root.Production!=null&&root.ProductionHistory!=null&&root.Discoveries!=null&&root.PublishedBuiltShips!=null&&root.Journal!=null&&root.Journal.Count<=package.Settlement!.JournalBudget,
                 "Complete typed colonisation root required; no conversion.");
             Require(root!.Campaign!.Integrated?.Physical?.Core.ProfileId==CampaignColonisationIdentity.EmbeddedCoreProfile,"Colonisation owned core marker required.");
             var definitions=package!.Activities!.BaseTemplate!.Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
             var map=GeneratedCampaignFactory.Frozen(root.Map!,definitions);
-            var replay=StartActivitiesFrozen(package.Activities,map,null,package,root.FrozenPlanets!);
+            var replay=StartActivitiesFrozen(package.Activities,map,null,package,root.FrozenPlanets!,roster);
             Require(root.PackageHash==replay.playableHash&&root.SupportHash==replay.published!.SupportHash,"Different frozen colonisation source identity.");
             foreach(var op in root.Journal!)
             {

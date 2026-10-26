@@ -11,6 +11,7 @@ namespace HobbyDS9.Simulation
         private sealed class ColonisationContext
         {
             internal readonly string PackageHash;
+            internal readonly ColonisationRosterSource? Roster;
             internal readonly ColonisationPolicyDto Policy;
             internal readonly ColonisationSupportCatalogueDto Support;
             internal readonly FrozenColonisationPlanetsDto FrozenPlanets;
@@ -21,9 +22,9 @@ namespace HobbyDS9.Simulation
             internal ColonisationMovementOwnershipDto? MovementOwnership;
             internal ColonisationSettlementProofDto? SettlementProof;
             internal Dictionary<(string Owner,string Blueprint,int Revision),ColonisationViewCapacity> ViewCapacities=new Dictionary<(string,string,int),ColonisationViewCapacity>();
-            internal ColonisationContext(string hash,ColonisationPolicyDto policy,ColonisationSupportCatalogueDto support,CampaignColonisationStateDto state,FrozenColonisationPlanetsDto frozen)
-            {PackageHash=hash;Policy=ColonisationData.Copy(policy);Support=ColonisationSupportCopies.Copy(support);State=ColonisationData.Copy(state);FrozenPlanets=ColonisationData.Copy(frozen);}
-            internal ColonisationContext Copy()=>new ColonisationContext(PackageHash,Policy,Support,State,FrozenPlanets){
+            internal ColonisationContext(string hash,ColonisationPolicyDto policy,ColonisationSupportCatalogueDto support,CampaignColonisationStateDto state,FrozenColonisationPlanetsDto frozen,ColonisationRosterSource? roster=null)
+            {PackageHash=hash;Roster=roster;Policy=ColonisationData.Copy(policy);Support=ColonisationSupportCopies.Copy(support);State=ColonisationData.Copy(state);FrozenPlanets=ColonisationData.Copy(frozen);}
+            internal ColonisationContext Copy()=>new ColonisationContext(PackageHash,Policy,Support,State,FrozenPlanets,Roster){
                 Production=Production.Select(ColonisationData.Copy).ToList(),History=History.Select(ColonisationData.Copy).ToList(),
                 Journal=Journal.Select(o=>new ColonisationOperationDto{Colonisation=o.Colonisation==null?null:ColonisationData.Copy(o.Colonisation),Existing=o.Existing==null?null:CopyActivityOperation(o.Existing)}).ToList(),
                 MovementOwnership=MovementOwnership==null?null:ColonisationData.Copy(MovementOwnership),SettlementProof=SettlementProof==null?null:ColonisationData.Copy(SettlementProof),
