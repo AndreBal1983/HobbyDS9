@@ -61,7 +61,8 @@ namespace HobbyDS9.Simulation
                     var planet=game.Planets!.Single(p=>p.PlanetId==colony.PlanetId);var name=definitions.Planets!.Single(d=>d.DefinitionId==planet.DefinitionId).DisplayName;
                     worlds.Add(new ColonisationWorldSnapshot(colony.ColonyId,colony.PlanetId,colony.SystemId,name,camp?.Stage??ColonyEstablishmentStage.Established,camp?.CampId,
                         PopulationRules.Population(colony),colony.Food,output.Industry,output.ResearchOutput,output.FoodOutput,camp?.CompletedIndustry??0,camp?.FedWeeks??0,colony.FoodShortageTurns,camp?.Deaths??0,camp?.LatestReport??"Established world.",
-                        ResourceAmountSnapshot.Copy(colony.Stockpiles!),colony.Cohorts!.OrderBy(c=>c.CohortId,StringComparer.Ordinal).Select(c=>new ColonisationCohortSnapshot(c.CohortId,c.SpeciesDefinitionId,c.Population,definitions.Species!.Single(s=>s.DefinitionId==c.SpeciesDefinitionId).DisplayName))));
+                        ResourceAmountSnapshot.Copy(colony.Stockpiles!),colony.Cohorts!.OrderBy(c=>c.CohortId,StringComparer.Ordinal).Select(c=>new ColonisationCohortSnapshot(c.CohortId,c.SpeciesDefinitionId,c.Population,definitions.Species!.Single(s=>s.DefinitionId==c.SpeciesDefinitionId).DisplayName)),
+                        WorldEconomy.Infrastructure(colony,definitions).Any(i=>i.definition.Shipbuilding)));
                 }
                 var ships=new List<ColonisationTransportSnapshot>();
                 foreach(var ship in game.Ships!.Where(s=>s.OwnerCivilizationId==actor).OrderBy(s=>s.ShipId,StringComparer.Ordinal))

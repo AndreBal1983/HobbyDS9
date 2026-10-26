@@ -24,6 +24,18 @@ public sealed class ColonisationInteractionTests:IDisposable
     byte[] Root(ReviewUiModel m)=>codec.EncodeColonisationRoot(Session(m).ExportColonisationSave());
     static ColonisationCommandDto Kit(ReviewUiModel m)=>new(){ActorId=m.Current.Frame.Actor,CommandId="command.player.kit",Turn=m.Current.Frame.Status.Turn,Revision=m.Current.Frame.Status.CampaignRevision,Action=ColonisationAction.EnqueueKit,EnqueueKit=new(){ColonyId="colony.sol"}};
     static void Probe(ReviewUiModel m,Action<string>? probe)=>typeof(PhysicalReviewHost).GetProperty("ColonisationInteractionProbe",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(Host(m),probe);
+    [Fact]public async Task RejectedConstructionKeepsSpecificCurrentFeedbackInsteadOfGenericColonisationDescription()
+    {
+        var m=Model();var before=Root(m);var controller=m.Current;var frame=controller.Frame;
+        var option=m.ColonisationActivities().BuildOptions.First(o=>o.Kind==ActivityProductionKind.PublishedShip&&o.Supported);
+        var command=new CampaignActivityCommandDto{ActorId=frame.Actor,CommandId="command.ship.unsupported-revision",ExpectedTurn=frame.Status.Turn,ExpectedRevision=frame.Status.CampaignRevision,
+            Kind=CampaignActivityCommandKind.EnqueueShip,TargetId="colony.sol",DefinitionId=option.DefinitionId,BlueprintRevision=int.MaxValue};
+        var work=m.BeginColonisationInteraction(ColonisationInteractionKind.Submission,command)!;var result=await Task.Run(work.Execute);
+        Assert.True(m.CompleteColonisationInteraction(work,result));Assert.False(result.Result!.Accepted);Assert.Equal(CampaignTacticalError.UnsupportedSource,result.Result.Error);
+        Assert.Equal("That class or construction site is not supported here.",m.Message);Assert.Equal(m.Message,m.ColonisationActionStatus());
+        Assert.Equal(m.Message,m.ColonisationStatusFor(controller,frame,"colony.sol"));Assert.Null(m.ColonisationStatusFor(controller,frame,"colony.mars"));
+        Assert.False(m.Busy);Assert.Same(frame,m.Current.Frame);Assert.Equal(before,Root(m));
+    }
     [Fact]public async Task PreviewSubmitAdvanceAndTypedContinuePreserveEntireCanonicalRoot()
     {
         var m=Model();var sync=CampaignColonisationApplication.StartGame(Package(),Settings());var before=Root(m);var command=Kit(m);

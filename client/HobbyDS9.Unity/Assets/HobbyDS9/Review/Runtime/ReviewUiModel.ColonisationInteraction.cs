@@ -87,7 +87,7 @@ namespace HobbyDS9.UnityReview
                     if(completion.Result?.Accepted==false)Message=ColonisationConstructionRejection(completion.Result.Error);
                     ColonisationFeedbackFor(work,command!,completion.Committed?"Construction order added.":Message);
                 }
-                if(work.Kind==ColonisationInteractionKind.Submission&&completion.Result?.Accepted==false)Message=ColonisationEligibilitySnapshot.Describe(completion.Result.Error);
+                if(work.Kind==ColonisationInteractionKind.Submission&&completion.Result?.Accepted==false&&!IsColonisationConstruction(work.Kind,command))Message=ColonisationEligibilitySnapshot.Describe(completion.Result.Error);
                 SetColonisationStatus(Message);return true;
             }
             catch(Exception)

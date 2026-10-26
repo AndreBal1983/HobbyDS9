@@ -133,7 +133,8 @@ namespace HobbyDS9.UnityReview
                 {
                 var selected=option;var card=new VisualElement();card.AddToClassList("console-panel");card.style.flexShrink=0;catalogue.Add(card);Text(card,selected.DisplayName+" "+(selected.BlueprintRevision>0?"R"+selected.BlueprintRevision:"")+" \u00b7 "+selected.Cost.Industry+" Industry");
                 Text(card,"Materials: "+string.Join(", ",selected.Cost.Resources!.Select(r=>MaterialName(r.ResourceDefinitionId)+" "+r.Amount)));
-                var button=Button(card,"+ Add "+selected.DisplayName,"colonisation-build-"+index++,()=>{var c=Activity(selected.Kind==ActivityProductionKind.PublishedShip?CampaignActivityCommandKind.EnqueueShip:CampaignActivityCommandKind.EnqueueStructure,w.Id);c.DefinitionId=selected.DefinitionId;c.BlueprintRevision=selected.BlueprintRevision;SendActivity(c);});button.SetEnabled(selected.Supported&&w.Stage==ColonyEstablishmentStage.Established);if(!selected.Supported)Text(card,selected.Reason);
+                var unavailable=w.ConstructionUnavailableReason(selected.Kind==ActivityProductionKind.PublishedShip);
+                var button=Button(card,"+ Add "+selected.DisplayName,"colonisation-build-"+index++,()=>{var c=Activity(selected.Kind==ActivityProductionKind.PublishedShip?CampaignActivityCommandKind.EnqueueShip:CampaignActivityCommandKind.EnqueueStructure,w.Id);c.DefinitionId=selected.DefinitionId;c.BlueprintRevision=selected.BlueprintRevision;SendActivity(c);});button.SetEnabled(selected.Supported&&unavailable==null);if(!selected.Supported)Text(card,selected.Reason);else if(unavailable!=null)Text(card,unavailable);
                 var queued=observation.Production.Count(x=>x.ColonyId==w.Id&&x.DefinitionId==selected.DefinitionId&&x.BlueprintRevision==selected.BlueprintRevision);
                 var built=selected.Kind==ActivityProductionKind.PublishedShip?observation.OwnShipSources.Count(x=>x.BlueprintId==selected.DefinitionId&&x.Revision==selected.BlueprintRevision):activities.Structures.Count(x=>x.ColonyId==w.Id&&x.DefinitionId==selected.DefinitionId);
                 Text(card,selected.Kind==ActivityProductionKind.PublishedShip?"Own living ships of this published revision: "+built+"; queued at this world: "+queued:"Built at this world: "+built+"; queued: "+queued);
@@ -143,7 +144,7 @@ namespace HobbyDS9.UnityReview
             }
             Text(catalogue,"Special projects","colonisation-section-projects");
             Text(catalogue,"Settlement equipment: "+observation.KitIndustry+" Industry; "+Materials(observation.KitResources));
-            Button(catalogue,"+ Settlement kit","colonisation-build-kit",()=>{var c=Command(ColonisationAction.EnqueueKit);c.EnqueueKit=new EnqueueSettlementKitDto{ColonyId=w.Id};Send(c);}).SetEnabled(w.Stage==ColonyEstablishmentStage.Established);
+            Button(catalogue,"+ Settlement kit","colonisation-build-kit",()=>{var c=Command(ColonisationAction.EnqueueKit);c.EnqueueKit=new EnqueueSettlementKitDto{ColonyId=w.Id};Send(c);}).SetEnabled(w.ConstructionUnavailableReason(false)==null);
             Text(catalogue,"System improvements","colonisation-section-system");Text(catalogue,"No system improvement recipes are implemented in this playtest.");
             foreach(var order in observation.Production.Where(x=>x.ColonyId==w.Id))
             {Text(queue,order.Name+" \u00b7 "+order.Status+" "+order.CompletedIndustry+"/"+order.RequiredIndustry);Text(queue,"Consumed: "+Materials(order.Consumed));var captured=order;Button(queue,"Cancel order","colonisation-queue-cancel-"+captured.Id,()=>reviewActivity(Activity(CampaignActivityCommandKind.CancelProduction,captured.Id),"Cancel construction; consumed materials are not refunded."));}

@@ -23,13 +23,17 @@ namespace HobbyDS9.Contracts
     {
         public string Id {get;}public string PlanetId {get;}public string SystemId {get;}public string Name {get;}
         public ColonyEstablishmentStage Stage {get;}public string? CampId {get;}public long Population {get;}public long Food {get;}
-        public long Industry {get;}public long Research {get;}public long FoodOutput {get;}
+        public long Industry {get;}public long Research {get;}public long FoodOutput {get;}public bool Shipbuilding {get;}
         public long EstablishmentWork {get;}public int FedWeeks {get;}public int ShortageWeeks {get;}public long Deaths {get;}public string Report {get;}
         public IReadOnlyList<ResourceAmountSnapshot> Stocks {get;}public IReadOnlyList<ColonisationCohortSnapshot> Cohorts {get;}
         public ColonisationWorldSnapshot(string id,string planet,string system,string name,ColonyEstablishmentStage stage,string? camp,long people,long food,
-            long industry,long research,long output,long work,int fed,int shortage,long deaths,string report,IEnumerable<ResourceAmountSnapshot> stocks,IEnumerable<ColonisationCohortSnapshot> cohorts)
+            long industry,long research,long output,long work,int fed,int shortage,long deaths,string report,IEnumerable<ResourceAmountSnapshot> stocks,IEnumerable<ColonisationCohortSnapshot> cohorts,bool shipbuilding=false)
         {Id=id;PlanetId=planet;SystemId=system;Name=name;Stage=stage;CampId=camp;Population=people;Food=food;Industry=industry;Research=research;FoodOutput=output;
-         EstablishmentWork=work;FedWeeks=fed;ShortageWeeks=shortage;Deaths=deaths;Report=report;Stocks=new List<ResourceAmountSnapshot>(stocks).AsReadOnly();Cohorts=new List<ColonisationCohortSnapshot>(cohorts).AsReadOnly();}
+         EstablishmentWork=work;FedWeeks=fed;ShortageWeeks=shortage;Deaths=deaths;Report=report;Stocks=new List<ResourceAmountSnapshot>(stocks).AsReadOnly();Cohorts=new List<ColonisationCohortSnapshot>(cohorts).AsReadOnly();Shipbuilding=shipbuilding;}
+        // Presentation guidance only; every submitted order still receives full command validation.
+        public string? ConstructionUnavailableReason(bool ship)
+            =>Stage!=ColonyEstablishmentStage.Established?"Requires an established world.":Population<=0?"Requires a populated world."
+                :ship&&!Shipbuilding?"Requires a shipyard at this world":null;
     }
     public sealed class ColonisationTransportSnapshot
     {

@@ -69,6 +69,15 @@ public sealed class ColonisationExpeditionTests
         for(int i=0;i<12&&s.ExportColonisationSave().Colonisation!.CampSources!.Single().Stage==ColonyEstablishmentStage.Founding;i++)Advance(s);
         var final=s.ExportColonisationSave();Assert.Equal(ColonyEstablishmentStage.Established,final.Colonisation!.CampSources!.Single().Stage);
         Assert.Equal(Json(final),Json(CampaignTacticalReviewSession.LoadColonisation(x.Package,final).ExportColonisationSave()));
+        var frontier=s.CaptureColonisation(Human).Worlds.Single(w=>w.Id==camp.ColonyId);
+        Assert.False(frontier.Shipbuilding);Assert.Equal("Requires a shipyard at this world",frontier.ConstructionUnavailableReason(true));
+        Assert.Null(frontier.ConstructionUnavailableReason(false));Assert.True(s.CaptureColonisation(Human).Worlds.Single(w=>w.Id==home.ColonyId).Shipbuilding);
+        var shipOption=s.CaptureActivities(Human).BuildOptions.First(o=>o.Kind==ActivityProductionKind.PublishedShip&&o.Supported);
+        var shipStamp=s.CaptureStatus();var denied=s.SubmitActivity(new(){ActorId=Human,CommandId="command.frontier.no-yard",ExpectedTurn=shipStamp.Turn,ExpectedRevision=shipStamp.CampaignRevision,
+            Kind=CampaignActivityCommandKind.EnqueueShip,TargetId=camp.ColonyId,DefinitionId=shipOption.DefinitionId,BlueprintRevision=shipOption.BlueprintRevision});
+        Assert.False(denied.Accepted);Assert.Equal(CampaignTacticalError.UnsupportedSource,denied.Error);Assert.Equal(Json(final),Json(s.ExportColonisationSave()));
+        var frontierKit=Command(s,ColonisationAction.EnqueueKit);frontierKit.EnqueueKit=new(){ColonyId=camp.ColonyId};
+        Assert.True(s.EvaluateColonisation(frontierKit).Available);Assert.Equal(Json(final),Json(s.ExportColonisationSave()));
         Move(s,x.Ship,s.CaptureGeneratedMap(Human).Regions.Single(r=>r.SystemId==home.SystemId).NodeId);
         var supplies=Command(s,ColonisationAction.LoadCarriedSupplies);supplies.LoadSupplies=new(){ShipId=x.Ship,SourceColonyId=home.ColonyId,Food=5,Materials=new()};
         Assert.True(s.SubmitColonisation(supplies).Accepted,s.LastPhysicalFailure);Move(s,x.Ship,node!);
