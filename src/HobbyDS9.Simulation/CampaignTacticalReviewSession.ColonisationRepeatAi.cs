@@ -9,16 +9,16 @@ namespace HobbyDS9.Simulation
     {
         private enum MissionSlot { First,Second }
         private ColonisationAiPlanDto AssignedPlan(string actor,MissionSlot slot)=>slot==MissionSlot.First?ExpansionPlan(actor):RepeatGoal(actor).Assignment!;
-        private bool ExpansionAttempt(MissionSlot slot,string actor,ColonisationAiAction action,Func<CampaignTacticalReviewSession,string,CampaignTacticalError> execute)
+        private bool AssignedAttempt(MissionSlot slot,string actor,ColonisationAiAction action,Func<CampaignTacticalReviewSession,string,CampaignTacticalError> execute)
         {
             var accepted=ExpansionAttempt(actor,action,execute);
             if(!accepted&&slot==MissionSlot.Second)AssignedPlan(actor,slot).HoldReason="Second expedition action unavailable; cargo and history retained.";
             return accepted;
         }
-        private bool ExpansionColonisation(MissionSlot slot,string actor,ColonisationAiAction action,ColonisationCommandDto command)
+        private bool AssignedColonisation(MissionSlot slot,string actor,ColonisationAiAction action,ColonisationCommandDto command)
         {
             if(slot==MissionSlot.First)return ExpansionColonisation(actor,action,command);
-            return ExpansionAttempt(slot,actor,action,(c,id)=>{
+            return AssignedAttempt(slot,actor,action,(c,id)=>{
                 var g=c.state.Campaign.GameState;command.ActorId=actor;command.CommandId=id;command.Turn=g.TurnNumber;command.Revision=g.StateRevision;
                 var result=c.ApplyColonisationCommand(command,ControllerKind.AI);
                 if(result.Accepted&&slot==MissionSlot.Second&&command.Action==ColonisationAction.EmbarkSettlers)
@@ -30,21 +30,21 @@ namespace HobbyDS9.Simulation
                 return result.Error;
             });
         }
-        private bool ExpansionBuild(MissionSlot slot,string actor,ColonyStateDto world,BlueprintRevisionDto source)
+        private bool AssignedBuild(MissionSlot slot,string actor,ColonyStateDto world,BlueprintRevisionDto source)
         {
             if(slot==MissionSlot.First)return ExpansionBuild(actor,world,source);
-            return ExpansionAttempt(slot,actor,ColonisationAiAction.Ship,(c,id)=>{
+            return AssignedAttempt(slot,actor,ColonisationAiAction.Ship,(c,id)=>{
                 var g=c.state.Campaign.GameState;var error=c.EnqueueActivity(g,new(){ActorId=actor,Kind=CampaignActivityCommandKind.EnqueueShip,TargetId=world.ColonyId,DefinitionId=source.BlueprintId,BlueprintRevision=source.Revision},ControllerKind.AI);
                 if(error==CampaignTacticalError.None){g.StateRevision=checked(g.StateRevision+1);g.AcceptedCommandIds!.Add(id);c.AssignedPlan(actor,slot).TransportQueueId=c.colonisation!.Production.Last().QueueItemId;}return error;});
         }
-        private bool ExpansionMove(MissionSlot slot,string actor,ShipStateDto ship,string destination,ExpansionSearch searches)
+        private bool AssignedMove(MissionSlot slot,string actor,ShipStateDto ship,string destination,ExpansionSearch searches)
         {
             if(slot==MissionSlot.First)return ExpansionMove(actor,ship,destination,searches);
             var game=state.Campaign.GameState;var fleet=game.Fleets!.Single(f=>f.FleetId==ship.FleetId);
             if(fleet.TransitTotalCost>0||fleet.RouteNodeIds!.Count>0||fleet.LocationNodeId==destination)return false;
             var route=ExpansionRoute(game,actor,fleet.LocationNodeId,destination,searches);
             if(route==null){AssignedPlan(actor,slot).HoldReason="No currently legal known route; physical cargo retained.";return false;}
-            return ExpansionAttempt(slot,actor,ColonisationAiAction.Travel,(c,id)=>{
+            return AssignedAttempt(slot,actor,ColonisationAiAction.Travel,(c,id)=>{
                 var g=c.state.Campaign.GameState;var command=new SubmitCampaignTravelOrderDto{ActorId=actor,CommandId=id,ExpectedTurn=g.TurnNumber,ExpectedRevision=g.StateRevision,
                     Order=new CampaignTravelOrderDto{FleetId=ship.FleetId,Intent=CampaignTravelIntent.Leave,RouteNodeIds=route}};
                 var error=c.ValidateTravelCommand(command,c.travel!,true);if(error==CampaignTacticalError.None)ApplyTravelCommand(c.travel!,command);return error;});
@@ -120,7 +120,7 @@ namespace HobbyDS9.Simulation
                 if(loaded.Kind==SettlerManifestKind.SupplyOnly)return PlanRepeatSupply(actor,colonisation.State.CampSources!.SingleOrDefault(c=>c.CampId==goal.SupplyCampId&&c.OwnerId==actor),loaded,searches);
                 if(loaded.Kind==SettlerManifestKind.ReturnOnly||slot==MissionSlot.Second&&p.Stage==ColonisationAiStage.Recovering)
                 {var ship=game.Ships!.SingleOrDefault(s=>s.ShipId==loaded.ShipId&&s.OwnerCivilizationId==actor&&s.CurrentHull>0);return ship!=null&&RepeatReturn(actor,ship,loaded,searches);}
-                return PlanExpansionAction(actor,searches,slot);
+                return PlanAssignedExpansionAction(actor,searches,slot);
             }
             goal.SupplyCampId=null;
             // Existing first-camp food commitments remain live even after the second goal closes.
@@ -136,7 +136,7 @@ namespace HobbyDS9.Simulation
                 second.TransportShipId=first.TransportShipId;second.HomeColonyId=first.HomeColonyId;second.YardColonyId=first.YardColonyId;
             }
             if(goal.State!=ColonisationRepeatState.Active){second.HoldReason="Second expedition closed; ordinary food support remains available.";return false;}
-            return PlanExpansionAction(actor,searches,MissionSlot.Second);
+            return PlanAssignedExpansionAction(actor,searches,MissionSlot.Second);
         }
         private bool PlanRepeatSupply(string actor,SettlementCampDto? camp,SettlerManifestDto? manifest,ExpansionSearch searches)
         {

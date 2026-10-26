@@ -170,7 +170,8 @@ namespace HobbyDS9.Simulation
                     &&WorldEconomy.Suitability(definitions.Species!.Single(s=>s.DefinitionId==cohort.SpeciesDefinitionId),o.Environment,h.Kind)>0))
                 .Where(o=>observedSystemCosts.ContainsKey(o.SystemId)).OrderByDescending(o=>o.Surveyed)
                 .ThenBy(o=>observedSystemCosts[o.SystemId]).ThenBy(o=>o.PlanetId,StringComparer.Ordinal).Take(expansion!.Source.Policy.BodyCandidates).FirstOrDefault();
-        private bool PlanExpansionAction(string actor,ExpansionSearch searches,MissionSlot slot=MissionSlot.First)
+        private bool PlanExpansionAction(string actor,ExpansionSearch searches)=>PlanAssignedExpansionAction(actor,searches,MissionSlot.First);
+        private bool PlanAssignedExpansionAction(string actor,ExpansionSearch searches,MissionSlot slot)
         {
             var game=state.Campaign.GameState;var a=colonisation!.State;var p=AssignedPlan(actor,slot);var policy=expansion!.Source.Policy;
             var own=game.Colonies!.Where(c=>c.OwnerCivilizationId==actor&&EstablishedColony(c.ColonyId)&&PopulationRules.Population(c)>0).OrderBy(c=>c.ColonyId,StringComparer.Ordinal).ToList();
@@ -207,10 +208,10 @@ namespace HobbyDS9.Simulation
             {
                 p.Stage=ColonisationAiStage.Recovering;
                 var intent=a.DeploymentIntents!.SingleOrDefault(i=>i.ManifestId==manifest.ManifestId);
-                if(intent!=null)return ExpansionColonisation(slot,actor,ColonisationAiAction.Withdraw,new(){Action=ColonisationAction.WithdrawDeployment,Withdraw=new(){IntentId=intent.IntentId}});
+                if(intent!=null)return AssignedColonisation(slot,actor,ColonisationAiAction.Withdraw,new(){Action=ColonisationAction.WithdrawDeployment,Withdraw=new(){IntentId=intent.IntentId}});
                 if(ShipAt(game,transport!,home.SystemId))
-                    return ExpansionColonisation(slot,actor,ColonisationAiAction.Unload,new(){Action=ColonisationAction.UnloadTransport,Unload=new(){ManifestId=manifest.ManifestId,ColonyId=home.ColonyId}});
-                return ExpansionMove(slot,actor,transport!,physicalNavigation!.NodeForSystem(home.SystemId)!,searches);
+                    return AssignedColonisation(slot,actor,ColonisationAiAction.Unload,new(){Action=ColonisationAction.UnloadTransport,Unload=new(){ManifestId=manifest.ManifestId,ColonyId=home.ColonyId}});
+                return AssignedMove(slot,actor,transport!,physicalNavigation!.NodeForSystem(home.SystemId)!,searches);
             }
             if(GrowthEnabled&&slot==MissionSlot.First&&p.Stage==ColonisationAiStage.GrowthClosed&&(transport==null||camp?.Stage==ColonyEstablishmentStage.EmptyOutpost))
             {
@@ -221,7 +222,7 @@ namespace HobbyDS9.Simulation
                     var source=game.Blueprints!.Where(b=>b.OwnerCivilizationId==actor&&b.Fit!.ClassId=="class.galaxy-colony-transport.v1")
                         .OrderBy(b=>b.BlueprintId,StringComparer.Ordinal).ThenByDescending(b=>b.Revision).FirstOrDefault();
                     if(source!=null&&!colonisation.Production.Any(q=>q.OwnerId==actor&&q.Kind==ColonisationProductionKind.PublishedShip&&q.Blueprint?.BlueprintId==source.BlueprintId))
-                    {p.BlueprintId=source.BlueprintId;p.BlueprintRevision=source.Revision;return ExpansionBuild(slot,actor,yard,source);}
+                    {p.BlueprintId=source.BlueprintId;p.BlueprintRevision=source.Revision;return AssignedBuild(slot,actor,yard,source);}
                 }
                 p.HoldReason="Immigration closed; replacement transport waits for actual ordinary supply need.";return false;
             }
@@ -232,17 +233,17 @@ namespace HobbyDS9.Simulation
                 var demand=Math.Max(0,output.FoodDemand-output.FoodOutput);
                 if(manifest!=null&&manifest.Kind==SettlerManifestKind.SupplyOnly)
                 {
-                    if(ShipAt(game,transport,world.SystemId))return ExpansionColonisation(slot,actor,ColonisationAiAction.Deliver,new(){Action=ColonisationAction.DeliverCarriedSupplies,
+                    if(ShipAt(game,transport,world.SystemId))return AssignedColonisation(slot,actor,ColonisationAiAction.Deliver,new(){Action=ColonisationAction.DeliverCarriedSupplies,
                         Deliver=new(){ManifestId=manifest.ManifestId,ColonyId=world.ColonyId,Food=manifest.Food,Materials=manifest.Cargo!.Where(r=>r.Amount>0).Select(PopulationData.Copy).ToList()}});
-                    return ExpansionMove(slot,actor,transport,physicalNavigation!.NodeForSystem(world.SystemId)!,searches);
+                    return AssignedMove(slot,actor,transport,physicalNavigation!.NodeForSystem(world.SystemId)!,searches);
                 }
                 if(demand>0&&(System.Numerics.BigInteger)world.Food<(System.Numerics.BigInteger)demand*(colonisation.Policy.MaximumFood+policy.ContingencyWeeks))
                 {
                     if(ShipAt(game,transport,home.SystemId)&&ExpansionFoodAvailable(home,game)>0)
-                        return ExpansionColonisation(slot,actor,ColonisationAiAction.SupplyLoad,new(){Action=ColonisationAction.LoadCarriedSupplies,LoadSupplies=new(){ShipId=transport.ShipId,SourceColonyId=home.ColonyId,Food=Math.Min(ExpansionFoodAvailable(home,game),colonisation.Policy.MaximumFood)}});
+                        return AssignedColonisation(slot,actor,ColonisationAiAction.SupplyLoad,new(){Action=ColonisationAction.LoadCarriedSupplies,LoadSupplies=new(){ShipId=transport.ShipId,SourceColonyId=home.ColonyId,Food=Math.Min(ExpansionFoodAvailable(home,game),colonisation.Policy.MaximumFood)}});
                     if(ShipAt(game,transport,world.SystemId)&&(System.Numerics.BigInteger)world.Food<=(System.Numerics.BigInteger)demand*policy.ContingencyWeeks&&camp.Stage==ColonyEstablishmentStage.Founding)
-                        return ExpansionColonisation(slot,actor,ColonisationAiAction.Evacuate,new(){Action=ColonisationAction.EvacuateColony,Evacuate=new(){CampId=camp.CampId,ShipId=transport.ShipId}});
-                    return ExpansionMove(slot,actor,transport,physicalNavigation!.NodeForSystem(home.SystemId)!,searches);
+                        return AssignedColonisation(slot,actor,ColonisationAiAction.Evacuate,new(){Action=ColonisationAction.EvacuateColony,Evacuate=new(){CampId=camp.CampId,ShipId=transport.ShipId}});
+                    return AssignedMove(slot,actor,transport,physicalNavigation!.NodeForSystem(home.SystemId)!,searches);
                 }
                 if(GrowthEnabled&&slot==MissionSlot.First&&camp.Stage==ColonyEstablishmentStage.Established&&p.Stage!=ColonisationAiStage.GrowthClosed)
                     return PlanGrowthShipment(actor,p,home,world,cohort,transport,searches);
@@ -257,19 +258,19 @@ namespace HobbyDS9.Simulation
             if(transport==null&&yard!=null&&!colonisation.Production.Any(q=>q.OwnerId==actor&&q.Kind==ColonisationProductionKind.PublishedShip&&q.Blueprint?.BlueprintId==p.BlueprintId))
             {
                 var source=game.Blueprints!.Where(b=>b.OwnerCivilizationId==actor&&b.Fit!.ClassId=="class.galaxy-colony-transport.v1").OrderBy(b=>b.BlueprintId,StringComparer.Ordinal).ThenByDescending(b=>b.Revision).FirstOrDefault();
-                if(source!=null){p.BlueprintId=source.BlueprintId;p.BlueprintRevision=source.Revision;return ExpansionBuild(slot,actor,yard,source);}
+                if(source!=null){p.BlueprintId=source.BlueprintId;p.BlueprintRevision=source.Revision;return AssignedBuild(slot,actor,yard,source);}
             }
             var homeOutput=ProjectOwnedWorld(home,game);
             if(ExpansionFoodAvailable(home,game)<colonisation.Policy.MaximumFood&&homeOutput.FoodDemand>=homeOutput.FoodOutput)
             {
                 var food=activities!.Content.Structures!.Where(s=>s.FoodOutput>0&&!home.Infrastructure!.Any(i=>i.DefinitionId==s.DefinitionId&&i.Count>0)
                     &&!colonisation.Production.Any(q=>q.ColonyId==home.ColonyId&&q.DefinitionId==s.DefinitionId)).OrderBy(s=>s.DefinitionId,StringComparer.Ordinal).FirstOrDefault();
-                if(food!=null)return ExpansionAttempt(slot,actor,ColonisationAiAction.Infrastructure,(c,id)=>{
+                if(food!=null)return AssignedAttempt(slot,actor,ColonisationAiAction.Infrastructure,(c,id)=>{
                     var g=c.state.Campaign.GameState;var error=c.EnqueueActivity(g,new(){ActorId=actor,Kind=CampaignActivityCommandKind.EnqueueStructure,TargetId=home.ColonyId,DefinitionId=food.DefinitionId},ControllerKind.AI);
                     if(error==CampaignTacticalError.None){g.StateRevision=checked(g.StateRevision+1);g.AcceptedCommandIds!.Add(id);}return error;});
             }
             if(PopulationRules.Stock(home.Stockpiles!,colonisation.Policy.EquipmentResourceId)<1&&!colonisation.Production.Any(q=>q.ColonyId==home.ColonyId&&q.Kind==ColonisationProductionKind.SettlementKit))
-                return ExpansionAttempt(slot,actor,ColonisationAiAction.Kit,(c,id)=>{var g=c.state.Campaign.GameState;var result=c.ApplyColonisationCommand(new(){ActorId=actor,CommandId=id,Turn=g.TurnNumber,Revision=g.StateRevision,Action=ColonisationAction.EnqueueKit,EnqueueKit=new(){ColonyId=home.ColonyId}},ControllerKind.AI);
+                return AssignedAttempt(slot,actor,ColonisationAiAction.Kit,(c,id)=>{var g=c.state.Campaign.GameState;var result=c.ApplyColonisationCommand(new(){ActorId=actor,CommandId=id,Turn=g.TurnNumber,Revision=g.StateRevision,Action=ColonisationAction.EnqueueKit,EnqueueKit=new(){ColonyId=home.ColonyId}},ControllerKind.AI);
                     if(result.Accepted)c.AssignedPlan(actor,slot).KitQueueId=c.colonisation!.Production.Last().QueueItemId;return result.Error;});
             var observations=ColonisationPlanetsForActor(game,actor);
             var target=observations.FirstOrDefault(o=>o.PlanetId==p.TargetPlanetId);
@@ -298,19 +299,19 @@ namespace HobbyDS9.Simulation
                 if(target!=null&&ShipAt(game,scout,target.SystemId))
                 {
                     if(target.ActiveSurveyId!=null)return false;
-                    return ExpansionColonisation(slot,actor,ColonisationAiAction.Survey,new(){Action=ColonisationAction.StartPlanetSurvey,StartSurvey=new(){ShipId=scout.ShipId,PlanetId=target.PlanetId}});
+                    return AssignedColonisation(slot,actor,ColonisationAiAction.Survey,new(){Action=ColonisationAction.StartPlanetSurvey,StartSurvey=new(){ShipId=scout.ShipId,PlanetId=target.PlanetId}});
                 }
                 var destination=target==null?ExpansionExplore(game,actor,physicalNavigation!.NodeForSystem(home.SystemId)!,searches):p.TargetNodeId;
-                return destination!=null&&ExpansionMove(slot,actor,scout,destination,searches);
+                return destination!=null&&AssignedMove(slot,actor,scout,destination,searches);
             }
             if(transport==null){p.Stage=ColonisationAiStage.Preparing;p.HoldReason="Transport construction progressing through ordinary local industry/material delivery.";return false;}
             if(manifest==null)
             {
                 p.Stage=ColonisationAiStage.Assembling;
-                if(!ShipAt(game,transport,home.SystemId))return ExpansionMove(slot,actor,transport,physicalNavigation!.NodeForSystem(home.SystemId)!,searches);
-                if(scout!=null&&!ShipAt(game,scout,home.SystemId))return ExpansionMove(slot,actor,scout,physicalNavigation!.NodeForSystem(home.SystemId)!,searches);
+                if(!ShipAt(game,transport,home.SystemId))return AssignedMove(slot,actor,transport,physicalNavigation!.NodeForSystem(home.SystemId)!,searches);
+                if(scout!=null&&!ShipAt(game,scout,home.SystemId))return AssignedMove(slot,actor,scout,physicalNavigation!.NodeForSystem(home.SystemId)!,searches);
                 if(scout!=null&&scout.FleetId!=transport.FleetId)
-                    return ExpansionAttempt(slot,actor,ColonisationAiAction.Organise,(c,id)=>{
+                    return AssignedAttempt(slot,actor,ColonisationAiAction.Organise,(c,id)=>{
                         var g=c.state.Campaign.GameState;var result=c.ApplyFleetOrganization(new(){ActorId=actor,CommandId=id,ExpectedTurn=g.TurnNumber,ExpectedRevision=g.StateRevision,
                             Kind=CampaignFleetOrganizationKind.Transfer,ShipIds=new List<string>{transport.ShipId},TargetFleetId=scout.FleetId},ControllerKind.AI);
                         return result.Accepted?CampaignTacticalError.None:result.Error==CampaignFleetOrganizationError.Overflow?CampaignTacticalError.Overflow:CampaignTacticalError.InvalidOrder;});
@@ -320,19 +321,19 @@ namespace HobbyDS9.Simulation
                 var fleet=game.Fleets!.Single(f=>f.FleetId==transport.FleetId);
                 var duration=physicalNavigation!.Travel(game,fleet,definitions,route).EstimatedTurns;
                 if((System.Numerics.BigInteger)duration+1+colonisation.Policy.MinimumFedWeeks+policy.ContingencyWeeks>colonisation.Policy.MaximumFood){p.HoldReason="Known voyage exceeds finite carried-food plan.";return false;}
-                return ExpansionColonisation(slot,actor,ColonisationAiAction.Embark,new(){Action=ColonisationAction.EmbarkSettlers,Embark=new(){ShipId=transport.ShipId,ColonyId=home.ColonyId,CohortId=cohort.CohortId,Population=colonisation.Policy.Settlers,Food=colonisation.Policy.MaximumFood}});
+                return AssignedColonisation(slot,actor,ColonisationAiAction.Embark,new(){Action=ColonisationAction.EmbarkSettlers,Embark=new(){ShipId=transport.ShipId,ColonyId=home.ColonyId,CohortId=cohort.CohortId,Population=colonisation.Policy.Settlers,Food=colonisation.Policy.MaximumFood}});
             }
             p.Stage=ColonisationAiStage.Loaded;
             var deployment=a.DeploymentIntents!.SingleOrDefault(i=>i.ManifestId==manifest.ManifestId);
             if(deployment!=null){p.Stage=ColonisationAiStage.Deploying;return false;}
             if(ShipAt(game,transport,target.SystemId))
             {
-                var accepted=ExpansionColonisation(slot,actor,ColonisationAiAction.Deploy,new(){Action=ColonisationAction.RequestDeployment,Deploy=new(){ManifestId=manifest.ManifestId,PlanetId=target.PlanetId}});
+                var accepted=AssignedColonisation(slot,actor,ColonisationAiAction.Deploy,new(){Action=ColonisationAction.RequestDeployment,Deploy=new(){ManifestId=manifest.ManifestId,PlanetId=target.PlanetId}});
                 if(!accepted){p=AssignedPlan(actor,slot);p.Stage=ColonisationAiStage.Recovering;if(!p.OwnAttemptedTargets!.Contains(target.PlanetId))p.OwnAttemptedTargets.Add(target.PlanetId);}
                 return accepted;
             }
             if(manifest.Food<=policy.ContingencyWeeks){p.Stage=ColonisationAiStage.Recovering;return true;}
-            return ExpansionMove(slot,actor,transport,p.TargetNodeId!,searches);
+            return AssignedMove(slot,actor,transport,p.TargetNodeId!,searches);
         }
         private void ReconcileExpansion(GameStateDto game)
         {
