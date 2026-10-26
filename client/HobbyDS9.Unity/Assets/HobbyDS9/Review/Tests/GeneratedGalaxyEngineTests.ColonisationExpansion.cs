@@ -181,7 +181,7 @@ namespace HobbyDS9.UnityReview.Tests
             using(var surface=new GalaxyInputSurface(doc))
             {
                 t.Mark("explicit-new-begin");doc.rootVisualElement.Q<TextField>("generated-campaign-seed").value="42";
-                doc.rootVisualElement.Q<DropdownField>("generated-campaign-size").value="250";doc.rootVisualElement.Q<DropdownField>("generated-campaign-quiet").value="2.00Ãƒâ€”";
+                doc.rootVisualElement.Q<DropdownField>("generated-campaign-size").value="250";doc.rootVisualElement.Q<DropdownField>("generated-campaign-quiet").value="2.00\u00d7";
                 var menu=doc.rootVisualElement.Q<Foldout>("colonisation-expansion-campaign-menu");Assert.That(menu,Is.Not.Null);Assert.That(menu.text,Is.EqualTo("Colonisation & Expansion"));Assert.That(menu.value,Is.True);
                 var oldModel=ColonyModel(s);var start=doc.rootVisualElement.Q<Button>("colonisation-expansion-campaign-start");yield return ColonyReach(doc,start,target:"explicit new expansion campaign");
                 ColonyActivate(s,()=>{Click(start);if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);});yield return ColonyIdle(s,"expansion-new250");
