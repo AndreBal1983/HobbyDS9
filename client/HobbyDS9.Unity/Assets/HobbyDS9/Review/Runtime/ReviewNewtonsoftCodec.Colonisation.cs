@@ -34,8 +34,10 @@ namespace HobbyDS9.UnityReview
         }
         public CampaignColonisationSaveDto DecodeColonisationRoot(byte[] bytes)
         {
+            var phase=ReviewLoadPhase.DecodeParse;
             try
             {
+                loadDiagnostic?.Record(phase,ReviewLoadEvent.Begin);
                 if (bytes == null || bytes.Length == 0 || bytes.Length > ReviewColonisationSlotStore.MaximumBytes) throw Invalid();
                 JToken wire;
                 using (var text = new StringReader(Utf8.GetString(bytes)))
@@ -44,17 +46,30 @@ namespace HobbyDS9.UnityReview
                     wire = JToken.Load(reader, new JsonLoadSettings { DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error });
                     if (!(wire is JObject) || reader.Read()) throw Invalid();
                 }
+                loadDiagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
+                phase=ReviewLoadPhase.DecodeShape;
+                loadDiagnostic?.Record(phase,ReviewLoadEvent.Begin);
                 // Unlike DTO default initializers, omitted fields are not retained history.
                 // This adapter-only reflection closes the fixed contract graph; portable
                 // simulation uses its independently versioned non-reflective preflight.
                 int visits = 2000000;
                 ColonisationWire(wire, typeof(CampaignColonisationSaveDto), ref visits, new Dictionary<Type, PropertyInfo[]>());
+                loadDiagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
+                phase=ReviewLoadPhase.DecodeNatural;
+                loadDiagnostic?.Record(phase,ReviewLoadEvent.Begin);
                 DecodeNaturalGalaxy(Utf8.GetBytes(wire["Map"]!.ToString(Formatting.None)));
+                loadDiagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
+                phase=ReviewLoadPhase.DecodeTyped;
+                loadDiagnostic?.Record(phase,ReviewLoadEvent.Begin);
                 var root = Decode<CampaignColonisationSaveDto>(bytes);
+                loadDiagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
+                phase=ReviewLoadPhase.DecodeCarrier;
+                loadDiagnostic?.Record(phase,ReviewLoadEvent.Begin);
                 RequireColonisationCarrier(root);
+                loadDiagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
                 return root;
             }
-            catch (Exception) { throw new InvalidDataException("Invalid colonisation campaign carrier."); }
+            catch (Exception e) { loadDiagnostic?.Record(phase,ReviewLoadEvent.Error,e);throw new InvalidDataException("Invalid colonisation campaign carrier."); }
         }
         private static void ColonisationWire(JToken token, Type declared, ref int visits, Dictionary<Type, PropertyInfo[]> shapes)
         {

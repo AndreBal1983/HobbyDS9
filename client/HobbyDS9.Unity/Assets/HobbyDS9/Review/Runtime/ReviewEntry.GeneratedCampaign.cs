@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using HobbyDS9.Contracts;
+using HobbyDS9.TacticalReviewClient;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -83,10 +84,16 @@ namespace HobbyDS9.UnityReview
             var seed=generatedCampaignSeed;var size=generatedCampaignSize;var quiet=generatedCampaignQuiet;
             generatedCampaignControls?.SetEnabled(false);legacyGeneratedCampaignControls?.SetEnabled(false);if(generatedCampaignNotice!=null)generatedCampaignNotice.text=slot==null?"Generating and validating campaign…":"Loading the saved galaxy and campaign…";
             ShowCampaignBusy(operationToken,slot==null?"Generating galaxy and validating campaign…":"Loading and validating campaign…");
+            var diagnostic=colonisationRoster?NewCheckpointDiagnostic():null;
+            var phase=ReviewLoadPhase.TemplateLoad;
             try
             {
                 // Resource access is main-thread only. The portable factory/load and trusted file IO run away from the UI.
-                var template=LoadPlayableFleetTemplate();var codec=new ReviewNewtonsoftCodec();
+                diagnostic?.Record(phase,ReviewLoadEvent.Begin);
+                var template=LoadPlayableFleetTemplate();var codec=colonisationRoster?new ReviewNewtonsoftCodec(diagnostic):new ReviewNewtonsoftCodec();
+                diagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
+                phase=ReviewLoadPhase.Resources;
+                diagnostic?.Record(phase,ReviewLoadEvent.Begin);
                 var directory=GeneratedCampaignDirectory(legacy,published,activities,streamed,colonisation,colonisationRoster);
                 byte[][]? activityBytes=null;
                 if(activities||streamed||colonisation)
@@ -103,13 +110,28 @@ namespace HobbyDS9.UnityReview
                 var settings=new NaturalGalaxySettingsDto{Map=new ScaledGalaxySettingsDto{Seed=seed,SystemCount=size,EmptyRegionCount=size,
                     Width=size==1000?5000000:2500000,Height=size==1000?4000000:2000000,QuietEmptyAreaTargetPermille=quiet,
                     HomeCivilizationDefinitionIds=new List<string>{"civilization.federation","civilization.cardassian"}}};
+                diagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
                 var next=await Task.Run(()=>{
                     if(colonisation)
                     {
                         if(legacy||published||activities||streamed)throw new InvalidOperationException("Distinct colonisation campaign profile required.");
-                        var content=ActivitiesPlaytestOptions.CreatePackage(template,activityBytes!,codec);var package=ColonisationPlaytestOptions.CreatePackage(content,colonisationBytes!,codec);var colonyStore=colonisationRoster?ReviewColonisationSlotStore.CreateRosterV2(directory,codec):new ReviewColonisationSlotStore(directory,codec);
-                        if(colonisationRoster){var roster=ColonisationPlaytestOptions.CreateRosterPackage(package,rosterBytes!,codec);
-                            return slot==null?new ReviewUiModel(roster,settings,codec,colonyStore):ReviewUiModel.ContinueColonisationRoster(roster,codec,colonyStore,slot);}
+                        phase=ReviewLoadPhase.ActivityCompose;diagnostic?.Record(phase,ReviewLoadEvent.Begin);
+                        var content=ActivitiesPlaytestOptions.CreatePackage(template,activityBytes!,codec);
+                        diagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
+                        phase=ReviewLoadPhase.ColonisationCompose;diagnostic?.Record(phase,ReviewLoadEvent.Begin);
+                        var package=ColonisationPlaytestOptions.CreatePackage(content,colonisationBytes!,codec);
+                        diagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
+                        phase=ReviewLoadPhase.StoreCreate;diagnostic?.Record(phase,ReviewLoadEvent.Begin);
+                        var colonyStore=colonisationRoster?ReviewColonisationSlotStore.CreateRosterV2(directory,codec):new ReviewColonisationSlotStore(directory,codec);
+                        diagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
+                        if(colonisationRoster){
+                            phase=ReviewLoadPhase.RosterCompose;diagnostic?.Record(phase,ReviewLoadEvent.Begin);
+                            var roster=ColonisationPlaytestOptions.CreateRosterPackage(package,rosterBytes!,codec);
+                            diagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
+                            phase=ReviewLoadPhase.ModelContinue;diagnostic?.Record(phase,ReviewLoadEvent.Begin);
+                            var loaded=slot==null?new ReviewUiModel(roster,settings,codec,colonyStore):ReviewUiModel.ContinueColonisationRoster(roster,codec,colonyStore,slot,diagnostic);
+                            diagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
+                            return loaded;}
                         return slot==null?new ReviewUiModel(package,settings,codec,colonyStore):ReviewUiModel.ContinueColonisation(package,codec,colonyStore,slot);
                     }
                     if(streamed)
@@ -140,16 +162,23 @@ namespace HobbyDS9.UnityReview
                     var store=new ReviewStaticAstronomyCampaignSlotStore(directory,codec);
                     return slot==null?new ReviewUiModel(template,settings,codec,store):ReviewUiModel.ContinueStaticAstronomyCampaign(template,codec,store,slot);
                 });
+                phase=ReviewLoadPhase.WorkerReturned;diagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
                 if(this==null||!isActiveAndEnabled||viewEpoch!=epoch||!ReferenceEquals(model,prior)||generatedGalaxyOpen)return;
+                phase=ReviewLoadPhase.HideBusy;diagnostic?.Record(phase,ReviewLoadEvent.Begin);
                 HideCampaignBusy(operationToken);
+                diagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
+                phase=ReviewLoadPhase.Publish;diagnostic?.Record(phase,ReviewLoadEvent.Begin);
                 PublishPlayerProfile(next,slot??GeneratedCampaignOptions.Slots()[0]);
+                diagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
             }
-            catch(Exception)
+            catch(Exception error)
             {
+                diagnostic?.Record(phase,ReviewLoadEvent.Error,error);
                 if(this!=null&&viewEpoch==epoch){profileMenuNotice="Generated campaign unavailable. Your current game, unsent edits and saves are kept.";if(generatedCampaignNotice!=null)generatedCampaignNotice.text=profileMenuNotice;}
             }
             finally
             {
+                diagnostic?.Close();
                 var owned=ReferenceEquals(generatedCampaignOperationToken,operationToken);
                 if(owned)
                 {generatedCampaignOperationToken=null;generatedCampaignBusy=false;}
