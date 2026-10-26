@@ -9,8 +9,9 @@ namespace HobbyDS9.Simulation
     {
         public static CampaignTacticalReviewSession LoadColonisation(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root)
             =>LoadColonisationCore(package,root,null);
-        private static CampaignTacticalReviewSession LoadColonisationCore(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster,ExpansionSource? expansionSource=null)
+        private static CampaignTacticalReviewSession LoadColonisationCore(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster,ExpansionSource? expansionSource=null,ColonisationReplayTiming? timing=null)
         {
+            timing?.Begin(ColonisationReplayPhase.CorePreflight);
             Require(package!=null&&package.PackageHash==ColonisationData.PackageHash(package),"Different approved colonisation package.");
             ColonisationRootBudget.Validate(root,package!.Settlement!);
             Require(root!=null&&root.FormatVersion==CampaignColonisationIdentity.Format&&root.ProfileId==CampaignColonisationIdentity.Profile&&root.PolicyId==CampaignColonisationIdentity.Policy
@@ -19,18 +20,31 @@ namespace HobbyDS9.Simulation
                 "Complete typed colonisation root required; no conversion.");
             Require(root!.Campaign!.Integrated?.Physical?.Core.ProfileId==CampaignColonisationIdentity.EmbeddedCoreProfile,"Colonisation owned core marker required.");
             var definitions=package!.Activities!.BaseTemplate!.Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
+            timing?.End(ColonisationReplayPhase.CorePreflight);
+            timing?.Begin(ColonisationReplayPhase.FrozenMap);
             var map=GeneratedCampaignFactory.Frozen(root.Map!,definitions);
+            timing?.End(ColonisationReplayPhase.FrozenMap);
+            timing?.Begin(ColonisationReplayPhase.InitialState);
             var replay=StartActivitiesFrozen(package.Activities,map,null,package,root.FrozenPlanets!,roster,expansionSource);
             Require(root.PackageHash==replay.playableHash&&root.SupportHash==replay.published!.SupportHash,"Different frozen colonisation source identity.");
+            timing?.End(ColonisationReplayPhase.InitialState);
+            timing?.Begin(ColonisationReplayPhase.Journal);
             foreach(var op in root.Journal!)
             {
+                var kind=timing==null?default:ColonisationReplayTiming.Kind(op);
+                timing?.Count(kind,0);
                 Require(op!=null&&(op.Colonisation==null)!=(op.Existing==null),"Closed colonisation operation required.");
                 if(op!.Existing!=null)Require((op.Existing.Activity==null)!=(op.Existing.Common==null),"Closed inherited colonisation operation required.");
                 var accepted=op!.Colonisation!=null?replay.SubmitColonisation(op.Colonisation).Accepted:
                     op.Existing!.Activity!=null?replay.SubmitActivity(op.Existing.Activity).Accepted:ReplayActivityCommon(replay,op.Existing.Common!);
+                timing?.Count(kind,accepted?1:2);
                 Require(accepted&&FrontierSame(op,replay.colonisation!.Journal.Last()),"Illegal or reordered colonisation journal operation.");
+                timing?.Count(kind,3);
             }
+            timing?.End(ColonisationReplayPhase.Journal);
+            timing?.Begin(ColonisationReplayPhase.CoreEquality);
             Require(FrontierSame(root,replay.ExportColonisationCore()),"Colonisation checkpoint differs from complete ordered operation replay.");
+            timing?.End(ColonisationReplayPhase.CoreEquality);
             return replay;
         }
         // Private borrowed view under the session transaction lock. No DTO escapes,

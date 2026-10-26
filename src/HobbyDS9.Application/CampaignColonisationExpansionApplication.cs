@@ -1,8 +1,47 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using HobbyDS9.Contracts;
 using HobbyDS9.Simulation;
 namespace HobbyDS9.Application
 {
+    public enum ColonisationLoadPhase { ExpansionPreflight, CorePreflight, FrozenMap, InitialState, Journal, CoreEquality, ExpansionEquality }
+    public enum ColonisationLoadOperationKind { Unclassified, Colonisation, Activity, Organization, Travel, Strategic, Cloak, Advance, Round, Finalize }
+    public enum ColonisationLoadPhaseState { NotReached, Active, Returned, Failed }
+    public sealed class ColonisationLoadPhaseTiming
+    {
+        public ColonisationLoadPhase Phase { get; }
+        public ColonisationLoadPhaseState State { get; }
+        public long ElapsedTicks { get; }
+        internal ColonisationLoadPhaseTiming(int phase,byte state,long ticks)
+        {Phase=(ColonisationLoadPhase)phase;State=(ColonisationLoadPhaseState)state;ElapsedTicks=ticks;}
+    }
+    public sealed class ColonisationLoadOperationCount
+    {
+        public ColonisationLoadOperationKind Kind { get; }
+        public int Attempted { get; }
+        public int Accepted { get; }
+        public int Refused { get; }
+        public int EqualityVerified { get; }
+        internal ColonisationLoadOperationCount(int kind,int attempted,int accepted,int refused,int verified)
+        {Kind=(ColonisationLoadOperationKind)kind;Attempted=attempted;Accepted=accepted;Refused=refused;EqualityVerified=verified;}
+    }
+    // Observation only, outside persisted Contracts. Timings are inclusive and non-additive.
+    public sealed class ColonisationLoadTimingReport
+    {
+        public long StopwatchFrequency { get; }
+        public IReadOnlyList<ColonisationLoadPhaseTiming> Phases { get; }
+        public IReadOnlyList<ColonisationLoadOperationCount> Operations { get; }
+        internal ColonisationLoadTimingReport(ColonisationReplayTiming timing)
+        {
+            StopwatchFrequency=Stopwatch.Frequency;
+            var phases=new ColonisationLoadPhaseTiming[7];
+            for(var i=0;i<phases.Length;i++)phases[i]=new ColonisationLoadPhaseTiming(i,timing.State[i],timing.Ticks[i]);
+            var operations=new ColonisationLoadOperationCount[10];
+            for(var i=0;i<operations.Length;i++)operations[i]=new ColonisationLoadOperationCount(i,timing.Counts[i,0],timing.Counts[i,1],timing.Counts[i,2],timing.Counts[i,3]);
+            Phases=Array.AsReadOnly(phases);Operations=Array.AsReadOnly(operations);
+        }
+    }
     public interface ICampaignColonisationExpansionSession:ICampaignColonisationOperations
     {
         CampaignColonisationExpansionSaveDto ExportColonisationExpansionSave();
@@ -16,6 +55,17 @@ namespace HobbyDS9.Application
             =>new CampaignColonisationExpansionApplication(CampaignTacticalReviewSession.StartColonisationExpansion(package,settings));
         public static ICampaignColonisationExpansionSession LoadSave(CampaignColonisationExpansionPackageDto package,CampaignColonisationExpansionSaveDto root)
             =>new CampaignColonisationExpansionApplication(CampaignTacticalReviewSession.LoadColonisationExpansion(package,root));
+        public static ICampaignColonisationExpansionSession LoadSave(CampaignColonisationExpansionPackageDto package,CampaignColonisationExpansionSaveDto root,out ColonisationLoadTimingReport? report)
+        {
+            report=null;ColonisationReplayTiming? timing=null;
+            try { timing=new ColonisationReplayTiming(); } catch(Exception) { }
+            try { return new CampaignColonisationExpansionApplication(CampaignTacticalReviewSession.LoadColonisationExpansion(package,root,timing)); }
+            finally
+            {
+                // Only diagnostics are shielded; load exceptions and their messages escape unchanged.
+                if(timing!=null)try { report=new ColonisationLoadTimingReport(timing); } catch(Exception) { }
+            }
+        }
         public CampaignGeneratedMapDto CaptureGeneratedMap(string actor)=>session.CaptureGeneratedMap(actor);
         public CampaignStaticAstronomySnapshot CaptureKnownAstronomy(string actor)=>session.CaptureKnownAstronomy(actor);
         public CampaignColonisationExpansionSaveDto ExportColonisationExpansionSave()=>session.ExportColonisationExpansionSave();

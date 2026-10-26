@@ -34,12 +34,22 @@ namespace HobbyDS9.Simulation
             return StartActivitiesFrozen(p.Activities,map,null,p,null,new ColonisationRosterSource(roster),source);
         }
         public static CampaignTacticalReviewSession LoadColonisationExpansion(CampaignColonisationExpansionPackageDto package,CampaignColonisationExpansionSaveDto root)
+            =>LoadColonisationExpansion(package,root,null);
+        internal static CampaignTacticalReviewSession LoadColonisationExpansion(CampaignColonisationExpansionPackageDto package,CampaignColonisationExpansionSaveDto root,ColonisationReplayTiming? timing)
         {
+            try
+            {
+            timing?.Begin(ColonisationReplayPhase.ExpansionPreflight);
             var source=new ExpansionSource(package);var roster=package.BaseRosterV2!;
             ColonisationRootBudget.ValidateExpansion(root,roster.BaseV1!.Settlement!);
             Require(root.PackageHash==source.Hash,"Different expansion source.");
-            var replay=LoadColonisationCore(roster.BaseV1,root.BaseCampaign!,new ColonisationRosterSource(roster),source);
-            Require(FrontierSame(root,replay.ExportColonisationExpansionSave()),"Expansion plan differs from complete ordered replay.");return replay;
+            timing?.End(ColonisationReplayPhase.ExpansionPreflight);
+            var replay=LoadColonisationCore(roster.BaseV1,root.BaseCampaign!,new ColonisationRosterSource(roster),source,timing);
+            timing?.Begin(ColonisationReplayPhase.ExpansionEquality);
+            Require(FrontierSame(root,replay.ExportColonisationExpansionSave()),"Expansion plan differs from complete ordered replay.");
+            timing?.End(ColonisationReplayPhase.ExpansionEquality);return replay;
+            }
+            finally { timing?.CloseFailed(); }
         }
         public CampaignColonisationExpansionSaveDto ExportColonisationExpansionSave()
         {
