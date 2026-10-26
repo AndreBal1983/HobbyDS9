@@ -60,9 +60,13 @@ namespace HobbyDS9.UnityReview.Tests
         {var b=doc.rootVisualElement.Q<Button>(id);yield return ColonyReach(doc,b,target:id);var clock=System.Diagnostics.Stopwatch.StartNew();ColonyActivate(s,()=>Click(b));s.Shared.Timings.Add(new{phase="activate-"+id,owningThreadMs=clock.Elapsed.TotalMilliseconds,notTotalLatency=true});yield return ColonyIdle(s,id);if(id=="colonisation-order-confirm")Assert.That(doc.rootVisualElement.Q<Button>(id),Is.Null,"accepted/rejected submission discards the prior review");}
         private static void ColonyActivate(ColonyCase s,Action activate)
         {
+            object?[] Operations()=>new[]{CheckpointField(s.Shared.Entry!,"colonisationUiWork"),CheckpointField(s.Shared.Entry!,"streamedUiWork"),CheckpointField(s.Shared.Entry!,"checkpointUiOperation"),CheckpointField(s.Shared.Entry!,"generatedCampaignOperationToken")};
+            var before=Operations();
             var prior=SynchronizationContext.Current;Assert.That(prior,Is.Not.Null);var context=new CheckpointContext(prior!);SynchronizationContext.SetSynchronizationContext(context);
             try{activate();}finally{SynchronizationContext.SetSynchronizationContext(prior);}
-            if(ColonyPending(s.Shared.Entry!))s.Contexts.Add(context);else{context.Inline=true;context.Finished=1;}
+            var after=Operations();
+            if(after.Where((operation,index)=>operation!=null&&!ReferenceEquals(operation,before[index])).Any())s.Contexts.Add(context);
+            else{context.Inline=true;context.Finished=1;} // No new async owner; an older held UI field is not this activation's continuation.
         }
         private static IEnumerator ColonyPage(ColonyCase s,UIDocument doc,string tab)
         {CampaignPage(doc,ReviewWorkspacePage.Production);yield return null;yield return null;yield return ColonyClick(s,doc,"colonisation-tab-"+tab);}
@@ -244,13 +248,16 @@ namespace HobbyDS9.UnityReview.Tests
             yield return ColonyPick(doc,"colonisation-cohort",source.Cohorts,x=>x.Id,source.Cohorts.First(x=>x.Population>=400).Id);
             if(lifecycle)
             {
-                var root=ColonyBytes(ColonyModel(s));var sourceFrame=ColonyModel(s).Current.Frame;var button=doc.rootVisualElement.Q<Button>("colonisation-embark");yield return ColonyReach(doc,button);
+                var root=ColonyBytes(ColonyModel(s));var sourceFrame=ColonyModel(s).Current.Frame;var selected=ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>());var button=doc.rootVisualElement.Q<Button>("colonisation-embark");yield return ColonyReach(doc,button);
                 var cancelled=ColonyStartHold(s,()=>Click(button),true);yield return ColonyEntered(cancelled);yield return ColonyBusy(s,doc,cancelled,root,sourceFrame);
                 yield return ColonyCapture(s,doc,new Vector2Int(1920,1080),"colony-04-held-busy-1920.png");
                 s.Shared.Entry!.enabled=false;yield return null;s.Shared.Entry.enabled=true;yield return null;Assert.That(ColonyPending(s.Shared.Entry),Is.True,"cancelled source-reading worker must drain before UI re-admits");
                 cancelled.Release.Set();var wait=System.Diagnostics.Stopwatch.StartNew();while(!cancelled.Work!.Settled||cancelled.Continuation!.Queued==0){Assert.That(wait.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}
                 s.Shared.Entry.enabled=false;yield return null;s.Shared.Entry.enabled=true;yield return null;yield return null;
-                yield return ColonyTransport(s,doc,s.Home,ship);button=doc.rootVisualElement.Q<Button>("colonisation-embark");yield return ColonyReach(doc,button);
+                Assert.That(ColonyModel(s).Busy,Is.False);Assert.That(ColonyModel(s).Current.Frame,Is.SameAs(sourceFrame));Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(root));
+                Assert.That(ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>()),Is.EqualTo(selected),"fresh view retains the already selected source world and transport");
+                // Do not globally await the deliberately held OLD finally before creating its replacement lease.
+                button=doc.rootVisualElement.Q<Button>("colonisation-embark");yield return ColonyReach(doc,button,target:"fresh selected Embark while old finally is held");
                 var next=ColonyStartHold(s,()=>Click(button));yield return ColonyEntered(next);var token=CheckpointField(s.Shared.Entry,"campaignBusyToken");cancelled.Continuation.Forward();
                 wait.Restart();while(Volatile.Read(ref cancelled.Context!.Finished)==0){Assert.That(wait.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}
                 Assert.That(CheckpointField(s.Shared.Entry,"colonisationUiWork"),Is.SameAs(next.Work));Assert.That(CheckpointField(s.Shared.Entry,"campaignBusyToken"),Is.SameAs(token));Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(root));
