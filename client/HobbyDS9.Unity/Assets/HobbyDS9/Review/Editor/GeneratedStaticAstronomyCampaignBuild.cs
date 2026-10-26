@@ -93,6 +93,116 @@ namespace HobbyDS9.UnityReview.Editor
             File.WriteAllText(Path.Combine(stage,"PLAY-COLONISATION.txt"),ColonisationWalkthrough);
         }
 
+        [MenuItem("HobbyDS9/Campaign/Build colonisation V2 diagnostic AOT candidate")]
+        public static void BuildWindowsColonisationV2Diagnostic()
+        {
+            const string stageName="Windows-Colonisation-V2-Diagnostic-20261026";
+            BuildStreamedActivitiesCheckpoint(stageName);
+            var stage=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,
+                "../../../artifacts/generated-static-astronomy-v2",stageName));
+            File.WriteAllText(Path.Combine(stage,"README.txt"),ColonisationV2DiagnosticReadme);
+            File.WriteAllText(Path.Combine(stage,"PLAY-COLONISATION-V2-DIAGNOSTIC.txt"),ColonisationV2DiagnosticGuide);
+        }
+
+        private const string ColonisationV2DiagnosticReadme=@"HobbyDS9 - Colonisation V2 diagnostic AOT candidate
+UNVALIDATED - NOT FOR HANDOVER OR LATEST PROMOTION
+
+This separate package is prepared only to measure native Save and Continue time.
+It is not a completed or accepted colonisation release.
+
+The actual Editor receiving run stopped at its 600-second framework timeout.
+It produced 13 of 15 planned images and reached the main colony/mining path and
+an official restored-founding evacuation branch. The final recommissioning and
+complete later Continue gates are incomplete. The test's own cleanup receipt
+was absent; only the independent external restoration check was proven.
+Do not describe that failed run as a pass or claim the test drained.
+
+An eventual diagnostic uses the unchanged, official UI-produced checkpoint and
+normal typed V2 Continue. That measures this checkpoint path. It does not prove
+a manual New Game journey, the remaining gates, native gameplay acceptance or
+a performance improvement. Read BUILD-IDENTITY.json and the separate actual
+measurement record; a built executable is not validation.
+
+Start with Start-Generated-Campaign.cmd. The V2 menu is:
+  Colonisation V2 (provisional playtest)
+Use only the matching Continue colonisation V2 slot for a reviewed checkpoint.
+The default campaign, earlier V1 colonisation and their slots stay unchanged.
+No old save is converted and no validation is bypassed.
+
+If a separate manual New Game check is authorised, use seed 42, 250 systems and
+Quiet area 2.00x. A practical industrial choice is a Defiant and two real kits
+at the settler source, while the stronger owned shipyard builds two transports.
+Kits remain physical local stock: a kit on Mars is not available to Earth.
+Industry and delivered materials advance queues; normal construction does not
+charge credits. No escort, transport, settlers or supplies are free.
+
+Both empires use their own Constitution Explorer starting class. An escort is
+not immunity. Survey, finite carried food, lawful travel, interrupted landings,
+four fed establishment weeks, resupply, evacuation and real recommissioning
+keep their existing shared rules and provisional content values.
+
+Mature full-history Save/Continue latency remains an open limitation.
+AI procurement/travel exists; AI colony-expedition planning is not implemented.
+No 1000-system colonisation or full native acceptance is claimed.
+Keep the prior accepted demo and all old saves. See the diagnostic guide.
+";
+        private const string ColonisationV2DiagnosticGuide=@"COLONISATION V2 DIAGNOSTIC GUIDE
+UNVALIDATED - NO HANDOVER OR LATEST PROMOTION
+
+Purpose
+  Measure the native Save/Continue latency of an immutable, official checkpoint
+  produced by the actual V2 UI. Root must separately authorise the exact build,
+  fixture, process and measurement. No diagnostic has run merely because this
+  guide exists. Full authoritative replay remains mandatory.
+
+Checkpoint measurement
+  Use the matching explicit V2 Continue path after the independently reviewed
+  checkpoint has been staged in a fresh controlled diagnostic slot. Never edit
+  its populations, resources, positions, journal, hash or content identity.
+  Record the exact checkpoint and package hashes, actual wall time, visible
+  busy feedback and resulting full bytes. A cold Continue result belongs to
+  that fixture and package, not to a manual New Game campaign.
+  Do not use owner progress as a fixture or overwrite an owner slot.
+
+Current incomplete receiving evidence
+  The Editor case timed out after 600.127302 seconds, with 13 of 15 images.
+  Main settlement, established-world supply/mining and the restored-founding
+  evacuation image were reached. Final recommissioning and later Continue
+  gates were not completed. No test cleanup/drain receipt exists.
+  External project/owner/package restoration was independently verified.
+  This diagnostic does not change that Failed result into a pass.
+
+Optional separate manual New Game check
+  1. Open Colonisation V2 (provisional playtest), then New colonisation V2
+     campaign. The baseline is seed 42, 250 systems, Quiet area 2.00x.
+  2. Inspect the actual owned worlds. Keep the kits at the world that supplies
+     the settlers; choose a stronger owned shipyard for the two transports.
+     The baseline uses Earth for a real Defiant and two kits, Mars for the two
+     transports. Queue work consumes Industry and delivered local materials.
+  3. Verify actual completed ships. Join only owned, stationary, colocated
+     fleets using normal controls if completion has not already joined them.
+     No repair, free unit or fleet-strength rule is added.
+  4. Explore and survey discovered uninhabited planets through known routes.
+     Stay / seek combat is an ordinary standing order for a future week, not
+     an instant battle. Record whether an encounter actually occurred.
+  5. Return normally to the source. Load 100 real settlers, one local kit and
+     finite food per expedition. Confirm only a current reviewed order.
+     Source population, cohort, capacity and food limits remain authoritative.
+  6. Travel, request deployment and read the actual outcome. A hostile arrival
+     can interrupt landing; settlers may remain aboard. Establishment needs
+     work and at least four fed weeks. Supplies can run out and people can die.
+  7. Support a real established world with actual delivery and queued work.
+     Founding evacuation is return-only; unload at an active established owned
+     receiver. An empty outpost needs a fresh equipped expedition and work.
+  8. Use the matching V2 Save/Continue controls and wait for full validation.
+     A restored branch is a separate history. Record exact successes and
+     failures; do not skip a gate or infer full acceptance from partial images.
+
+The content is a named provisional playtest. AI expedition planning, invasion,
+full native delivery and 1000-system colonisation performance remain outside
+this diagnostic's claim. No timeout, gameplay or validation rule is relaxed.
+";
+
         private const string ColonisationReadme=@"HobbyDS9 - colonisation diagnostic candidate (UNVALIDATED)
 
 Diagnostic candidate only. This is not an accepted release or the latest validated demo.
