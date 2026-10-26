@@ -13,6 +13,38 @@ namespace HobbyDS9.Simulation
         internal const string AlgorithmIdentity="colonisation-root-preflight-v1";
         internal const string SchemaFingerprint="eefec29cac2be2889afae7277e955587af184e186337303559001fbd9b852e32";
         internal static void Validate(CampaignColonisationSaveDto root,ColonisationPolicyDto policy)
+            =>ValidateCore(root,policy,0,0);
+        // Typed outer graph accounting. Old Format11 limits/schema/visitor remain unchanged.
+        internal static void ValidateExpansion(CampaignColonisationExpansionSaveDto root,ColonisationPolicyDto policy)
+        {
+            if(root==null||root.FormatVersion!=CampaignColonisationExpansionIdentity.Format||root.ProfileId!=CampaignColonisationExpansionIdentity.Profile
+                ||root.BaseCampaign==null||root.AiPlans==null||root.AiPlans.Count>4)Fail("Complete bounded expansion root required.");
+            // Reserve the full bounded future plan from genesis, not only today's
+            // empty receipts/targets. This allowance cannot grow after payment.
+            long visits=9,bytes=1024+2+6*512;
+            void Text(string? value){if(value!=null&&value.Length>512)Fail("Expansion plan string bound.");}
+            Text(root.PackageHash);var actors=new System.Collections.Generic.HashSet<string>(System.StringComparer.Ordinal);
+            foreach(var p in root.AiPlans)
+            {
+                if(p==null||p.ActorId==null||!actors.Add(p.ActorId)||p.GoalId!="establish-first-frontier-colony-v1"||!System.Enum.IsDefined(typeof(ColonisationAiStage),p.Stage)
+                    ||p.OwnAttemptedTargets==null||p.OwnAttemptedTargets.Count>8||p.LatestActions==null||p.LatestActions.Count>8)Fail("Invalid bounded expansion plan.");
+                // 64 fixed visits +16 text fields +8 targets +8*(16+1) receipt visits.
+                visits=checked(visits+224);
+                // Fixed keys/scalars plus maximum escaped UTF16 text at every slot.
+                bytes=checked(bytes+8192+16*(2+6*512)+8*(2+6*512)+8*(1024+2+6*128));
+                Text(p.ActorId);Text(p.GoalId);Text(p.HomeColonyId);Text(p.YardColonyId);Text(p.SourceCohortId);Text(p.ScoutShipId);Text(p.TransportShipId);
+                Text(p.BlueprintId);Text(p.TargetPlanetId);Text(p.TargetNodeId);Text(p.KitQueueId);Text(p.TransportQueueId);Text(p.ManifestId);Text(p.CampId);Text(p.EstablishedColonyId);Text(p.HoldReason);
+                foreach(var id in p.OwnAttemptedTargets){if(id==null)Fail("Null attempted target.");Text(id);}
+                foreach(var a in p.LatestActions)
+                {
+                    if(a==null||a.CommandId==null||a.CommandId.Length>128||!System.Enum.IsDefined(typeof(ColonisationAiAction),a.Action)
+                        ||!System.Enum.IsDefined(typeof(CampaignTacticalError),a.Error))Fail("Invalid bounded AI action receipt.");
+                    Text(a.CommandId);
+                }
+            }
+            ValidateCore(root.BaseCampaign,policy,visits,bytes);
+        }
+        private static void ValidateCore(CampaignColonisationSaveDto root,ColonisationPolicyDto policy,long extraVisits,long extraBytes)
         {
             if(root==null||policy==null||policy.MaximumValidationVisits<=0||policy.MaximumValidationVisits>2000000
                 ||policy.MaximumCanonicalRootBytes<=0||policy.MaximumCanonicalRootBytes>67108864)
@@ -24,7 +56,8 @@ namespace HobbyDS9.Simulation
                 ||root.FrozenPlanets.Definitions.Count>policy.MaximumPlanets||root.FrozenPlanets.InitialPlanets.Count>policy.MaximumPlanets
                 ||root.FrozenPlanets.Bodies.Count>policy.MaximumPlanets||root.FrozenPlanets.GenesisControls.Count>policy.MaximumPlanets)
                 Fail("Complete bounded frozen planet inventory required.");
-            new Counter(policy.MaximumValidationVisits,policy.MaximumCanonicalRootBytes).Root(root);
+            if(extraVisits>=policy.MaximumValidationVisits||extraBytes>=policy.MaximumCanonicalRootBytes)Fail("Expansion root work or byte limit.");
+            new Counter(policy.MaximumValidationVisits-extraVisits,policy.MaximumCanonicalRootBytes-extraBytes).Root(root);
         }
         [System.Diagnostics.CodeAnalysis.DoesNotReturn] private static void Fail(string message)=>throw new ArgumentException(message);
         private static void Need(object? value){if(value==null)Fail("Null required colonisation root member or collection item.");}

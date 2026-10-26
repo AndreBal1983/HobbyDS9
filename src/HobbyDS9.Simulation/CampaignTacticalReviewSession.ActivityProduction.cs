@@ -16,7 +16,7 @@ namespace HobbyDS9.Simulation
                 if(staged.Ships!.Count(s=>s.OwnerCivilizationId==actor.CivilizationId)
                     +(colonisation?.Production.Count(q=>q.Kind==ColonisationProductionKind.PublishedShip&&q.OwnerId==actor.CivilizationId)??Streams?.Production.Count(q=>q.Kind==ActivityProductionKind.PublishedShip&&q.OwnerId==actor.CivilizationId)
                     ??activities!.State.Production!.Count(q=>q.Kind==ActivityProductionKind.PublishedShip&&staged.Colonies!.Single(c=>c.ColonyId==q.ColonyId).OwnerCivilizationId==actor.CivilizationId))>=3)continue;
-                foreach(var colony in staged.Colonies!.Where(c=>c.OwnerCivilizationId==actor.CivilizationId).OrderBy(c=>c.ColonyId,StringComparer.Ordinal))
+                foreach(var colony in staged.Colonies!.Where(c=>c.OwnerCivilizationId==actor.CivilizationId&&!MissionWorld(actor.CivilizationId,c.ColonyId)).OrderBy(c=>c.ColonyId,StringComparer.Ordinal))
                 {
                     if(colonisation!=null?colonisation.Production.Any(q=>q.ColonyId==colony.ColonyId):Streams!=null?Streams.Production.Any(q=>q.ColonyId==colony.ColonyId):activities!.State.Production!.Any(q=>q.ColonyId==colony.ColonyId))continue;
                     foreach(var blueprint in staged.Blueprints!.Where(b=>b.OwnerCivilizationId==actor.CivilizationId)

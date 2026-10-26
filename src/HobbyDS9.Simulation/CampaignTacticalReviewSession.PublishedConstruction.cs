@@ -113,6 +113,7 @@ namespace HobbyDS9.Simulation
             // Every mutable authority/source/cache-container/organisation/transcript is
             // detached. Playback objects are already immutable snapshot values.
             travel=source.TravelCopy();state=travel.Core;builtShips=source.builtShips.Select(CopyBuild).ToList();published=source.published!.Copy();activities=source.activities?.Copy();colonisation=source.colonisation?.Copy();
+            expansion=source.expansion?.Copy();
             discoveries=source.discoveries.Select(CopyDiscovery).ToList();
             playableNames=new Dictionary<string,string>(source.playableNames,StringComparer.Ordinal);
             playableCreatedOwners=new Dictionary<string,string>(source.playableCreatedOwners,StringComparer.Ordinal);
@@ -130,6 +131,7 @@ namespace HobbyDS9.Simulation
         {
             // All potentially throwing copies/validation/probes precede these assignments.
             state=c.state;travel=c.travel;builtShips=c.builtShips;published=c.published;activities=c.activities;colonisation=c.colonisation;discoveries=c.discoveries;
+            expansion=c.expansion;
             playableNames=c.playableNames;playableCreatedOwners=c.playableCreatedOwners;
             playableTranscript=c.playableTranscript;playableRetiredFleets=c.playableRetiredFleets;playableHistory=c.playableHistory;
         }

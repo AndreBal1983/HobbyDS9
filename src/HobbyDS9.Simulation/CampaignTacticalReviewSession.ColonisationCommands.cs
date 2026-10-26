@@ -36,16 +36,19 @@ namespace HobbyDS9.Simulation
                     }).ToList().AsReadOnly();
         }
         public CampaignTacticalMutationResult SubmitColonisation(ColonisationCommandDto? command)
+            =>ApplyColonisationCommand(command,ControllerKind.Human);
+        private CampaignTacticalMutationResult ApplyColonisationCommand(ColonisationCommandDto? command,ControllerKind controller)
         {
             lock(gate)
             {
                 if(colonisation==null||command==null)return Result(CampaignTacticalError.UnsupportedSource);
                 if(!publishedExecuting)return PublishedMutation(c=>c.SubmitColonisation(command));
-                var game=state.Campaign.GameState;var actor=Actor(command.ActorId);if(actor!=CampaignTacticalError.None)return Result(actor);
+                var game=state.Campaign.GameState;var actor=Actor(command.ActorId,controller==ControllerKind.Human);if(actor!=CampaignTacticalError.None)return Result(actor);
+                if(controller==ControllerKind.AI&&(expansion==null||game.Civilizations!.Single(c=>c.CivilizationId==command.ActorId).ControllerKind!=ControllerKind.AI))return Result(CampaignTacticalError.ActorNotControlled);
                 if(CurrentPhase!=SessionPhase.Planning)return Result(CampaignTacticalError.WrongPhase);
                 if(command.Turn!=game.TurnNumber)return Result(CampaignTacticalError.StaleTurn);
                 if(command.Revision!=game.StateRevision)return Result(CampaignTacticalError.StaleRevision);
-                if(!EntityId.TryParse(command.CommandId,out _)||command.CommandId.StartsWith("ai-command.",StringComparison.Ordinal))return Result(CampaignTacticalError.InvalidOrder);
+                if(!EntityId.TryParse(command.CommandId,out _)||command.CommandId.StartsWith("ai-command.",StringComparison.Ordinal)!=(controller==ControllerKind.AI))return Result(CampaignTacticalError.InvalidOrder);
                 if(state.AcceptedRoundCommands.Contains(command.CommandId,StringComparer.Ordinal)||game.AcceptedCommandIds!.Contains(command.CommandId,StringComparer.Ordinal))return Result(CampaignTacticalError.DuplicateCommand);
                 var payloads=new object?[]{command.StartSurvey,command.CancelSurvey,command.Embark,command.Unload,command.Deploy,command.Withdraw,command.Evacuate,command.Deliver,command.EnqueueKit,command.LoadSupplies};
                 if(payloads.Count(x=>x!=null)!=1)return Result(CampaignTacticalError.InvalidOrder);
@@ -65,8 +68,9 @@ namespace HobbyDS9.Simulation
                     default:return Result(CampaignTacticalError.UnsupportedSource);
                 }
                 if(error!=CampaignTacticalError.None)return Result(error);
-                game.StateRevision=checked(game.StateRevision+1);state.AcceptedRoundCommands.Add(command.CommandId);
-                colonisation.Journal.Add(new ColonisationOperationDto{Colonisation=ColonisationData.Copy(command)});
+                game.StateRevision=checked(game.StateRevision+1);
+                if(controller==ControllerKind.Human){state.AcceptedRoundCommands.Add(command.CommandId);colonisation.Journal.Add(new ColonisationOperationDto{Colonisation=ColonisationData.Copy(command)});}
+                else game.AcceptedCommandIds!.Add(command.CommandId);
                 return Result(CampaignTacticalError.None);
             }
         }

@@ -78,8 +78,14 @@ namespace HobbyDS9.Simulation
             => BuildFacts(template,map,true,wrapperHash,true,true);
         internal static (CampaignPlayableFleetPackageDto Package,CampaignColonisationStateDto Inventory,FrozenColonisationPlanetsDto Frozen) BuildColonisation(
             CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash,CampaignActivityStateDto seededActivities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained=null)
+            =>BuildColonisationCore(template,map,wrapperHash,seededActivities,policy,retained,ColonisationInventoryVersion.Legacy);
+        internal static (CampaignPlayableFleetPackageDto Package,CampaignColonisationStateDto Inventory,FrozenColonisationPlanetsDto Frozen) BuildExpansionColonisation(
+            CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash,CampaignActivityStateDto seededActivities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained=null)
+            =>BuildColonisationCore(template,map,wrapperHash,seededActivities,policy,retained,ColonisationInventoryVersion.Expansion);
+        private static (CampaignPlayableFleetPackageDto Package,CampaignColonisationStateDto Inventory,FrozenColonisationPlanetsDto Frozen) BuildColonisationCore(
+            CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash,CampaignActivityStateDto seededActivities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained,ColonisationInventoryVersion version)
         {
-            var input=new ColonisationGenerationInput(seededActivities,policy,retained);
+            var input=new ColonisationGenerationInput(seededActivities,policy,retained,version);
             var package=BuildFacts(template,map,true,wrapperHash,true,true,input);
             return(package,input.Inventory!,input.Frozen!);
         }
@@ -87,18 +93,19 @@ namespace HobbyDS9.Simulation
         {
             internal readonly CampaignActivityStateDto Activities;
             internal readonly ColonisationPolicyDto Policy;
+            internal readonly ColonisationInventoryVersion Version;
             internal CampaignColonisationStateDto? Inventory;
             internal FrozenColonisationPlanetsDto? Frozen;
             internal readonly FrozenColonisationPlanetsDto? Retained;
-            internal ColonisationGenerationInput(CampaignActivityStateDto activities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained)
-            {Activities=CampaignActivitiesData.Copy(activities);Policy=ColonisationData.Copy(policy);Retained=retained;}
+            internal ColonisationGenerationInput(CampaignActivityStateDto activities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained,ColonisationInventoryVersion version)
+            {Version=version;Activities=CampaignActivitiesData.Copy(activities);Policy=ColonisationData.Copy(policy);Retained=retained;}
         }
         private static CampaignPlayableFleetPackageDto BuildFacts(CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,bool staticAstronomy,string? wrapperHash,bool activities=false,bool streamed=false,ColonisationGenerationInput? colonisation=null)
         {
             // Existing template reader supplies the trusted exact raw-source identity.
             CampaignTacticalReviewSession.StartPlayable(template);
             string Domain(string domain)=>wrapperHash==null?Identity(domain,template.PackageHash!,map.ContentHash,staticAstronomy)
-                :colonisation!=null?CampaignActivitiesData.Identity(CampaignColonisationIdentity.Profile,CampaignColonisationIdentity.InventoryAuthoring,colonisation.Frozen!.ContentHash,domain,wrapperHash,map.ContentHash)
+                :colonisation!=null?CampaignActivitiesData.Identity(CampaignColonisationIdentity.Profile,ColonisationData.InventoryAuthoring(colonisation.Version),colonisation.Frozen!.ContentHash,domain,wrapperHash,map.ContentHash)
                 :activities?CampaignActivitiesData.Identity(streamed?CampaignStreamedActivitiesIdentity.Profile:CampaignActivitiesIdentity.Profile,domain,wrapperHash,map.ContentHash)
                 :CampaignPublishedConstructionData.Identity(domain,wrapperHash,map.ContentHash);
             var source = template.Integrated!.Physical!.CorePackage!;
@@ -159,11 +166,11 @@ namespace HobbyDS9.Simulation
             game.RngState.State = ulong.Parse(map.Settings.Map.Seed, CultureInfo.InvariantCulture) ^ 0x47454e43414d5031UL;
             if(colonisation!=null)
             {
-                colonisation.Inventory=ColonisationPlanetInventory.Populate(definitions,game,map,colonisation.Activities,colonisation.Policy);
-                colonisation.Frozen=ColonisationData.Freeze(definitions,game,colonisation.Inventory);
+                colonisation.Inventory=colonisation.Version==ColonisationInventoryVersion.Legacy?ColonisationPlanetInventory.Populate(definitions,game,map,colonisation.Activities,colonisation.Policy):ColonisationPlanetInventory.PopulateExpansion(definitions,game,map,colonisation.Activities,colonisation.Policy);
+                colonisation.Frozen=ColonisationData.Freeze(definitions,game,colonisation.Inventory,colonisation.Version);
                 if(colonisation.Retained!=null)
                 {
-                    Require(colonisation.Retained.ContentHash==ColonisationData.InventoryHash(colonisation.Retained)
+                    Require(colonisation.Retained.ContentHash==ColonisationData.InventoryHash(colonisation.Retained,colonisation.Version)
                         &&colonisation.Retained.ContentHash==colonisation.Frozen.ContentHash,"Different frozen physical planet genesis.");
                     colonisation.Frozen=ColonisationData.Copy(colonisation.Retained);
                     // Consume the retained frozen definitions/facts after verifying their exact pinned policy genesis.

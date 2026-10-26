@@ -144,6 +144,8 @@ namespace HobbyDS9.Simulation
         private static bool ValidFleetName(string? name) => name != null && name.Length > 0 && name.Length <= 80
             && name == name.Trim() && !name.Any(char.IsControl);
         public CampaignFleetOrganizationResult SubmitFleetOrganization(SubmitCampaignFleetOrganizationDto? command)
+            =>ApplyFleetOrganization(command,ControllerKind.Human);
+        private CampaignFleetOrganizationResult ApplyFleetOrganization(SubmitCampaignFleetOrganizationDto? command,ControllerKind controller)
         {
             if(published!=null&&!publishedExecuting)return PublishedOrganization(command);
             lock (gate)
@@ -155,13 +157,14 @@ namespace HobbyDS9.Simulation
                 if (command == null || command.ShipIds == null || !Enum.IsDefined(typeof(CampaignFleetOrganizationKind), command.Kind))
                     return Fail(CampaignFleetOrganizationError.InvalidOrder);
                 var c = CopyOrganization(command);
-                var actor = Actor(c.ActorId);
+                var actor = Actor(c.ActorId,controller==ControllerKind.Human);
                 if (actor != CampaignTacticalError.None) return Fail(actor == CampaignTacticalError.UnknownActor
                     ? CampaignFleetOrganizationError.UnknownActor : CampaignFleetOrganizationError.ActorNotControlled);
+                if(controller==ControllerKind.AI&&(expansion==null||game.Civilizations!.Single(a=>a.CivilizationId==c.ActorId).ControllerKind!=ControllerKind.AI))return Fail(CampaignFleetOrganizationError.ActorNotControlled);
                 if (CurrentPhase != SessionPhase.Planning) return Fail(CampaignFleetOrganizationError.WrongPhase);
                 if (c.ExpectedTurn != game.TurnNumber) return Fail(CampaignFleetOrganizationError.StaleTurn);
                 if (c.ExpectedRevision != game.StateRevision) return Fail(CampaignFleetOrganizationError.StaleRevision);
-                if (!EntityId.TryParse(c.CommandId, out _) || c.CommandId.StartsWith("ai-command.", StringComparison.Ordinal))
+                if (!EntityId.TryParse(c.CommandId, out _) || c.CommandId.StartsWith("ai-command.", StringComparison.Ordinal)!=(controller==ControllerKind.AI))
                     return Fail(CampaignFleetOrganizationError.InvalidOrder);
                 if (state.AcceptedRoundCommands.Contains(c.CommandId, StringComparer.Ordinal) || game.AcceptedCommandIds!.Contains(c.CommandId))
                     return Fail(CampaignFleetOrganizationError.DuplicateCommand);
@@ -233,7 +236,7 @@ namespace HobbyDS9.Simulation
                         next.Orders.RemoveAll(o => o.FleetId == empty.FleetId);
                     }
                     if (c.DisplayName != null) names[destination] = c.DisplayName;
-                    staged.StateRevision++; next.Core.AcceptedRoundCommands.Add(c.CommandId);
+                    staged.StateRevision++; if(controller==ControllerKind.Human)next.Core.AcceptedRoundCommands.Add(c.CommandId);else staged.AcceptedCommandIds!.Add(c.CommandId);
                     playableCreatedOwners = owners;
                     foreach (var id in retired) playableRetiredFleets.Add(id);
                     ValidateTravelSave(next);
@@ -246,7 +249,7 @@ namespace HobbyDS9.Simulation
                     return Fail(e is OverflowException ? CampaignFleetOrganizationError.Overflow : CampaignFleetOrganizationError.InvalidOrder);
                 }
                 travel = CampaignTacticalTravelData.Copy(next); state = travel.Core; playableNames = names;
-                playableTranscript.Add(new CampaignPlayableOperationDto { Organization = c });
+                if(controller==ControllerKind.Human)playableTranscript.Add(new CampaignPlayableOperationDto { Organization = c });
                 return new CampaignFleetOrganizationResult(CampaignFleetOrganizationError.None, state.Campaign.GameState.StateRevision, destination);
             }
         }

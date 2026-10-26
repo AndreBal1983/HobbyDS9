@@ -47,14 +47,14 @@ namespace HobbyDS9.Simulation
             internal string SupportHash=>Tactical.SupportHash;
             internal ReadyShip(SupportedPublishedTacticalFit tactical){Tactical=tactical;}
         }
-        private static CampaignTacticalReviewSession StartActivitiesFrozen(CampaignActivitiesPackageDto p,NaturalGalaxyDocumentDto map,CampaignStreamedActivitiesPackageDto? streamed=null,CampaignColonisationPackageDto? colonisationPackage=null,FrozenColonisationPlanetsDto? retainedPlanets=null,ColonisationRosterSource? startingRoster=null)
+        private static CampaignTacticalReviewSession StartActivitiesFrozen(CampaignActivitiesPackageDto p,NaturalGalaxyDocumentDto map,CampaignStreamedActivitiesPackageDto? streamed=null,CampaignColonisationPackageDto? colonisationPackage=null,FrozenColonisationPlanetsDto? retainedPlanets=null,ColonisationRosterSource? startingRoster=null,ExpansionSource? expansionSource=null)
         {
             var ready=colonisationPackage==null?CampaignActivitiesData.Ready(p).ToDictionary(r=>r.Key,r=>new ReadyShip(r.Value.Tactical),StringComparer.Ordinal)
                 :ColonisationData.Ready(colonisationPackage).ToDictionary(r=>r.Key,r=>new ReadyShip(r.Value.Tactical),StringComparer.Ordinal);
             var catalogue=colonisationPackage?.Catalogue??p.Catalogue!;var readyClasses=colonisationPackage?.ReadyClasses??p.ReadyClasses!;
             CampaignColonisationStateDto? inventory=null;FrozenColonisationPlanetsDto? frozenPlanets=null;CampaignActivityStateDto? seeded=null;CampaignPlayableFleetPackageDto built;
             if(colonisationPackage!=null)
-            {seeded=SeedColonisationActivities(p,map);var facts=GeneratedCampaignFactory.BuildColonisation(p.BaseTemplate!,map,startingRoster?.Hash??colonisationPackage.PackageHash,seeded,colonisationPackage.Settlement!,retainedPlanets);built=facts.Package;inventory=facts.Inventory;frozenPlanets=facts.Frozen;}
+            {seeded=SeedColonisationActivities(p,map);var facts=expansionSource==null?GeneratedCampaignFactory.BuildColonisation(p.BaseTemplate!,map,startingRoster?.Hash??colonisationPackage.PackageHash,seeded,colonisationPackage.Settlement!,retainedPlanets):GeneratedCampaignFactory.BuildExpansionColonisation(p.BaseTemplate!,map,expansionSource.Hash,seeded,colonisationPackage.Settlement!,retainedPlanets);built=facts.Package;inventory=facts.Inventory;frozenPlanets=facts.Frozen;}
             else built=streamed==null?GeneratedCampaignFactory.BuildActivities(p.BaseTemplate!,map,p.PackageHash)
                 :GeneratedCampaignFactory.BuildStreamedActivities(p.BaseTemplate!,map,streamed.PackageHash);
             var physical=built.Integrated!.Physical!;var core=physical.CorePackage!;var scenario=core.Campaign!;var game=scenario.InitialState;var d=scenario.Definitions;
@@ -116,7 +116,7 @@ namespace HobbyDS9.Simulation
             if(startingRoster!=null)d.DefinitionIds=d.DefinitionIds.Distinct(StringComparer.Ordinal).OrderBy(x=>x,StringComparer.Ordinal).ToList();
             var inputOwnership=colonisationPackage==null?null:PlanetaryOwnershipContext.CreateForColonisation(d,game,inventory!.PlanetControls!,seeded!.Minors!);
             ValidatePlayablePackage(built,true,inputOwnership);
-            var wrapper=startingRoster?.Hash??colonisationPackage?.PackageHash??streamed?.PackageHash??p.PackageHash;
+            var wrapper=expansionSource?.Hash??startingRoster?.Hash??colonisationPackage?.PackageHash??streamed?.PackageHash??p.PackageHash;
             var context=new PublishedConstructionContext(built,CampaignPublishedConstructionData.CopySupport(p.Support!.Tactical!),wrapper,ready.First().Value.SupportHash,colonisationPackage?.Settlement!.RecordBudget??p.RecordBudget);
             var activity=new ActivitiesContext(p.Support,p.Content);if(seeded==null)SeedActivitySites(activity,map);else activity.State=seeded;
             if(streamed!=null)activity.Streamed=new StreamedActivitiesContext(streamed.PackageHash);
@@ -125,6 +125,9 @@ namespace HobbyDS9.Simulation
             var session=new CampaignTacticalReviewSession(core,null,physical,null,built.Integrated,null,null,null,built,map,wrapper,true,context,activity,colony);
             session.ObserveActivitySites(session.state.Campaign.GameState);
             if(colonisationPackage!=null)session.WarmColonisationViews(session.state.Campaign.GameState);
+            if(expansionSource!=null)session.expansion=new ExpansionContext(expansionSource,session.state.Campaign.GameState.Civilizations!
+                .Where(c=>c.ControllerKind==ControllerKind.AI).OrderBy(c=>c.CivilizationId,StringComparer.Ordinal).Select(c=>new ColonisationAiPlanDto{ActorId=c.CivilizationId}));
+            if(expansionSource!=null)session.ValidateActivityState();
             return session;
         }
         internal static CampaignActivityStateDto SeedColonisationActivities(CampaignActivitiesPackageDto package,NaturalGalaxyDocumentDto map)

@@ -74,6 +74,7 @@ namespace HobbyDS9.Simulation
         {
             var ctx=activities!;var game=state.Campaign.GameState;var a=ctx.State;
             if(colonisation!=null){ValidateColonisationRootBudget();ValidateColonisationState(game);WarmColonisationViews(game);}
+            if(expansion!=null)ValidateExpansionState(game);
             Require(a.Production!=null&&a.Structures!=null&&a.Findings!=null&&a.Sites!=null&&a.Minors!=null&&a.Bodies!=null&&a.Relations!=null&&a.Observations!=null,"Complete activity state.");
             Require(game.Colonies!.All(c=>c.ProductionQueue!.Count==0),"Mixed production is the sole published queue.");
             if(colonisation!=null)ValidateColonisationProduction(game);

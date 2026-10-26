@@ -100,7 +100,7 @@ namespace HobbyDS9.Simulation
                 foreach (var actor in game.Civilizations!.Where(c => c.DefinitionId == home.CivilizationDefinitionId)) visited.Add(actor.CivilizationId + "|" + home.NodeId);
             foreach (var fleet in game.Fleets!.Where(f => controllers[f.OwnerCivilizationId] == ControllerKind.AI).OrderBy(f => f.FleetId, StringComparer.Ordinal))
             {
-                if (fleet.RouteNodeIds!.Count > 0 || fleet.TransitTotalCost > 0) continue;
+                if (fleet.RouteNodeIds!.Count > 0 || fleet.TransitTotalCost > 0 || MissionFleet(game,fleet.FleetId)) continue;
                 // Only owned knowledge and last observed contacts enter the candidate set.
                 var contact = next.Contacts.Where(c => c.ActorId == fleet.OwnerCivilizationId && GeneratedContactFresh(game,c))
                     .OrderByDescending(c => c.LastSeenTurn).ThenBy(c => c.FleetId, StringComparer.Ordinal).FirstOrDefault();

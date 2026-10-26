@@ -191,6 +191,7 @@ namespace HobbyDS9.Simulation
             {
                 void Probe(StrategicTurnPhase phase){if(PhysicalPhaseProbe!=null&&!PhysicalPhaseProbe(phase))throw new InvalidOperationException("Injected phase failure.");}
                 Probe(StrategicTurnPhase.AiPlanning);
+                if(expansion!=null)next=PlanExpansion(next);
                 var beforeAi=SimulationSession.CopyState(next.Core.Campaign.GameState);
                 next.Core.Campaign.GameState=activities!=null?RunActivityPlanningAi(next):published!=null?Legacy(next.Core).RunPublishedPlanningAi(playableOpponent!,constructionTemplates!.Select(t=>t.ShipDesignDefinitionId!).ToList(),
                     new PublishedPlanningCapacity(published.Package,next,BuildRegistry.ToList(),published.Records,published.RecordBudget,playableTranscript.Count))

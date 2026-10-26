@@ -9,18 +9,18 @@ namespace HobbyDS9.Simulation
     {
         public static CampaignTacticalReviewSession LoadColonisation(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root)
             =>LoadColonisationCore(package,root,null);
-        private static CampaignTacticalReviewSession LoadColonisationCore(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster)
+        private static CampaignTacticalReviewSession LoadColonisationCore(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster,ExpansionSource? expansionSource=null)
         {
             Require(package!=null&&package.PackageHash==ColonisationData.PackageHash(package),"Different approved colonisation package.");
             ColonisationRootBudget.Validate(root,package!.Settlement!);
             Require(root!=null&&root.FormatVersion==CampaignColonisationIdentity.Format&&root.ProfileId==CampaignColonisationIdentity.Profile&&root.PolicyId==CampaignColonisationIdentity.Policy
-                &&root.TemplatePackageHash==(roster?.Hash??package!.PackageHash)&&root.Map!=null&&root.FrozenPlanets!=null&&root.Campaign!=null&&root.Colonisation!=null&&root.Activities!=null
+                &&root.TemplatePackageHash==(expansionSource?.Hash??roster?.Hash??package!.PackageHash)&&root.Map!=null&&root.FrozenPlanets!=null&&root.Campaign!=null&&root.Colonisation!=null&&root.Activities!=null
                 &&root.Production!=null&&root.ProductionHistory!=null&&root.Discoveries!=null&&root.PublishedBuiltShips!=null&&root.Journal!=null&&root.Journal.Count<=package.Settlement!.JournalBudget,
                 "Complete typed colonisation root required; no conversion.");
             Require(root!.Campaign!.Integrated?.Physical?.Core.ProfileId==CampaignColonisationIdentity.EmbeddedCoreProfile,"Colonisation owned core marker required.");
             var definitions=package!.Activities!.BaseTemplate!.Integrated!.Physical!.CorePackage!.Campaign!.Definitions.Civilizations!;
             var map=GeneratedCampaignFactory.Frozen(root.Map!,definitions);
-            var replay=StartActivitiesFrozen(package.Activities,map,null,package,root.FrozenPlanets!,roster);
+            var replay=StartActivitiesFrozen(package.Activities,map,null,package,root.FrozenPlanets!,roster,expansionSource);
             Require(root.PackageHash==replay.playableHash&&root.SupportHash==replay.published!.SupportHash,"Different frozen colonisation source identity.");
             foreach(var op in root.Journal!)
             {
@@ -30,7 +30,7 @@ namespace HobbyDS9.Simulation
                     op.Existing!.Activity!=null?replay.SubmitActivity(op.Existing.Activity).Accepted:ReplayActivityCommon(replay,op.Existing.Common!);
                 Require(accepted&&FrontierSame(op,replay.colonisation!.Journal.Last()),"Illegal or reordered colonisation journal operation.");
             }
-            Require(FrontierSame(root,replay.ExportColonisationSave()),"Colonisation checkpoint differs from complete ordered operation replay.");
+            Require(FrontierSame(root,replay.ExportColonisationCore()),"Colonisation checkpoint differs from complete ordered operation replay.");
             return replay;
         }
         // Private borrowed view under the session transaction lock. No DTO escapes,
@@ -48,9 +48,12 @@ namespace HobbyDS9.Simulation
                     Integrated=new CampaignIntegratedPlaytestSaveDto{FormatVersion=CampaignIntegratedPlaytestIdentity.SaveFormat,ProfileId=CampaignIntegratedPlaytestIdentity.Profile,PackageHash=integratedHash!,BuiltShips=builtShips,
                         Physical=new CampaignTacticalTravelSaveDto{FormatVersion=physical.FormatVersion,ProfileId=physical.ProfileId,PackageHash=physical.PackageHash,Core=state,
                             Phase=physical.Phase,Requests=physical.Requests,Orders=physical.Orders,Contacts=physical.Contacts,LastMovement=physical.LastMovement,MovementProof=physical.MovementProof}}}};
-            ColonisationRootBudget.Validate(view,c.Policy);
+            if(expansion==null)ColonisationRootBudget.Validate(view,c.Policy);
+            else ColonisationRootBudget.ValidateExpansion(new CampaignColonisationExpansionSaveDto{PackageHash=expansion.Source.Hash,BaseCampaign=view,AiPlans=expansion.Plans},c.Policy);
         }
         public CampaignColonisationSaveDto ExportColonisationSave()
+        {lock(gate){Require(expansion==null,"Use complete expansion Format12 export.");return ExportColonisationCore();}}
+        private CampaignColonisationSaveDto ExportColonisationCore()
         {
             lock(gate)
             {

@@ -6,11 +6,18 @@ using HobbyDS9.Contracts;
 
 namespace HobbyDS9.Simulation
 {
+    internal enum ColonisationInventoryVersion { Legacy=1,Expansion=2 }
     // Frozen start authoring only. Survey/deployment never creates or improves a planet.
     internal static class ColonisationPlanetInventory
     {
         internal static CampaignColonisationStateDto Populate(DefinitionCatalogDto definitions,GameStateDto game,
             NaturalGalaxyDocumentDto map,CampaignActivityStateDto activities,ColonisationPolicyDto policy)
+            =>PopulateCore(definitions,game,map,activities,policy,ColonisationInventoryVersion.Legacy);
+        internal static CampaignColonisationStateDto PopulateExpansion(DefinitionCatalogDto definitions,GameStateDto game,
+            NaturalGalaxyDocumentDto map,CampaignActivityStateDto activities,ColonisationPolicyDto policy)
+            =>PopulateCore(definitions,game,map,activities,policy,ColonisationInventoryVersion.Expansion);
+        private static CampaignColonisationStateDto PopulateCore(DefinitionCatalogDto definitions,GameStateDto game,
+            NaturalGalaxyDocumentDto map,CampaignActivityStateDto activities,ColonisationPolicyDto policy,ColonisationInventoryVersion version)
         {
             if(policy.PlanetInventoryPolicy!=CampaignColonisationIdentity.InventoryPolicy||policy.MaximumPlanets!=1040
                 ||policy.MaximumStarterPlanets!=32||game.Planets==null||game.Planets.Count>policy.MaximumStarterPlanets
@@ -40,8 +47,8 @@ namespace HobbyDS9.Simulation
                 var variant=Convert.ToInt32(Rank("environment",id).Substring(0,2),16)%5;
                 var d=environment==null?new PlanetDefinitionDto {
                     PlanetClass=new[]{"Temperate","Arid","Oceanic","Frozen","Vacuum"}[variant],
-                    Gravity=new[]{100,120,90,80,30}[variant],Pressure=new[]{100,40,150,20,0}[variant],
-                    Radiation=new[]{10,30,20,50,200}[variant],Atmosphere=variant==4?"atmosphere.vacuum":"atmosphere.oxygen",
+                    Gravity=new[]{100,120,90,80,30}[variant]*(version==ColonisationInventoryVersion.Expansion?100:1),Pressure=new[]{100,40,150,20,0}[variant]*(version==ColonisationInventoryVersion.Expansion?100:1),
+                    Radiation=new[]{10,30,20,50,200}[variant],Atmosphere=variant==4?"atmosphere.vacuum":version==ColonisationInventoryVersion.Expansion?"atmosphere.oxygen-nitrogen":"atmosphere.oxygen",
                     Habitats=Enum.GetValues(typeof(HabitatKind)).Cast<HabitatKind>().Select(h=>new HabitatDefinitionDto {
                         Kind=h,ShareBps=h==new[]{HabitatKind.Temperate,HabitatKind.Arid,HabitatKind.Oceanic,HabitatKind.Polar,HabitatKind.Volcanic}[variant]?10000:0,
                         NaturalCapacity=h==new[]{HabitatKind.Temperate,HabitatKind.Arid,HabitatKind.Oceanic,HabitatKind.Polar,HabitatKind.Volcanic}[variant]&&variant!=4?1000:0}).ToList(),
@@ -68,7 +75,7 @@ namespace HobbyDS9.Simulation
                         :throw new ArgumentException("Unsupported minor physical environment binding.");
                     var environment=definitions.Planets!.Single(d=>d.DefinitionId==planet.DefinitionId);
                     environment.PlanetClass=habitat==HabitatKind.Wetland?"Wetland":"Temperate";
-                    environment.Gravity=100;environment.Pressure=100;environment.Radiation=10;environment.Atmosphere="atmosphere.oxygen";
+                    environment.Gravity=version==ColonisationInventoryVersion.Expansion?10000:100;environment.Pressure=version==ColonisationInventoryVersion.Expansion?10000:100;environment.Radiation=10;environment.Atmosphere=version==ColonisationInventoryVersion.Expansion?"atmosphere.oxygen-nitrogen":"atmosphere.oxygen";
                     foreach(var h in environment.Habitats!){h.ShareBps=h.Kind==habitat?10000:0;h.NaturalCapacity=h.Kind==habitat?1000:0;}
                 }
                 result.Bodies!.Add(new PlanetBodyBindingDto{BodyId=body.BodyId,PlanetId=planet.PlanetId,SystemId=body.SystemId,MinorActorId=minor?.ActorId});
