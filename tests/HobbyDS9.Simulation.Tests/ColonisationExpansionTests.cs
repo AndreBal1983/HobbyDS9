@@ -46,6 +46,8 @@ public sealed class ColonisationExpansionTests
             {
                 Assert.Contains(root.BaseCampaign.PublishedBuiltShips!,s=>s.OwnerCivilizationId==p.ActorId&&s.BlueprintId!.Contains("galaxy-colony-transport"));
                 var camp=root.BaseCampaign.Colonisation!.CampSources!.Single(c=>c.CampId==p.CampId);Assert.True(camp.FedWeeks>=4);Assert.Equal(16,camp.CompletedIndustry);
+                Assert.Equal(0,camp.Deaths);Assert.Equal(100,game.Colonies!.Single(c=>c.ColonyId==camp.ColonyId).Cohorts!.Sum(c=>c.Population));
+                var settlers=root.BaseCampaign.Colonisation.ManifestRecords!.Single(m=>m.ManifestId==camp.ManifestId);Assert.Equal(100,settlers.PopulationTransferred);Assert.Equal(1,settlers.EquipmentConsumed);
                 Assert.Contains("loaded",snapshots);Assert.Contains("founding",snapshots);Assert.Contains("established",snapshots);
                 var supplies=Assert.Single(root.BaseCampaign.Colonisation.ManifestRecords!,m=>m.OwnerId==p.ActorId&&m.Kind==SettlerManifestKind.SupplyOnly);
                 Assert.Null(supplies.Passengers);Assert.Equal(p.TransportShipId,supplies.ShipId);Assert.Equal(SettlerManifestStage.Delivered,supplies.Stage);Assert.True(supplies.FoodDelivered>0);

@@ -158,17 +158,26 @@ namespace HobbyDS9.Simulation
             var output=ProjectOwnedWorld(home,game);var reserve=(System.Numerics.BigInteger)Math.Max(0,output.FoodDemand-output.FoodOutput)*expansion!.Source.Policy.HomeDeficitWeeks;
             return (long)System.Numerics.BigInteger.Max(0,(System.Numerics.BigInteger)home.Food-reserve);
         }
+        private ColonisationPlanetObservationDto? SelectExpansionBody(IEnumerable<ColonisationPlanetObservationDto> observations,ColonisationAiPlanDto p,
+            PopulationCohortDto? cohort,IReadOnlyDictionary<string,System.Numerics.BigInteger> observedSystemCosts)
+            =>observations.Where(o=>!p.OwnAttemptedTargets!.Contains(o.PlanetId)&&(!o.Surveyed||o.KnownControl?.Kind==PlanetControllerKind.Unclaimed))
+                // Unknown environments remain survey candidates. Only lawfully completed
+                // observations can be rejected for suitability before the candidate cap.
+                .Where(o=>!o.Surveyed||cohort!=null&&o.Environment!.Habitats!.Any(h=>h.NaturalCapacity>=colonisation!.Policy.Settlers
+                    &&WorldEconomy.Suitability(definitions.Species!.Single(s=>s.DefinitionId==cohort.SpeciesDefinitionId),o.Environment,h.Kind)>0))
+                .Where(o=>observedSystemCosts.ContainsKey(o.SystemId)).OrderByDescending(o=>o.Surveyed)
+                .ThenBy(o=>observedSystemCosts[o.SystemId]).ThenBy(o=>o.PlanetId,StringComparer.Ordinal).Take(expansion!.Source.Policy.BodyCandidates).FirstOrDefault();
         private bool PlanExpansionAction(string actor,ExpansionSearch searches)
         {
             var game=state.Campaign.GameState;var a=colonisation!.State;var p=ExpansionPlan(actor);var policy=expansion!.Source.Policy;
             var own=game.Colonies!.Where(c=>c.OwnerCivilizationId==actor&&EstablishedColony(c.ColonyId)&&PopulationRules.Population(c)>0).OrderBy(c=>c.ColonyId,StringComparer.Ordinal).ToList();
             var home=own.FirstOrDefault(c=>c.ColonyId==p.HomeColonyId)??own.FirstOrDefault(c=>PopulationRules.Population(c)-colonisation.Policy.Settlers>=colonisation.Policy.SourcePopulationFloor
-                &&c.Cohorts!.Any(co=>(System.Numerics.BigInteger)co.Population*colonisation.Policy.MaximumSourceCohortBps>=(System.Numerics.BigInteger)colonisation.Policy.Settlers*10000));
+                &&c.Cohorts!.Any(co=>(System.Numerics.BigInteger)co.Population*colonisation.Policy.MaximumSourceCohortBps>=(System.Numerics.BigInteger)colonisation.Policy.Settlers*10000))??own.FirstOrDefault();
             if(home==null){p.HoldReason="No sustainable owned source population.";return false;}
             p.HomeColonyId=home.ColonyId;
             var cohort=home.Cohorts!.Where(co=>(System.Numerics.BigInteger)co.Population*colonisation.Policy.MaximumSourceCohortBps>=(System.Numerics.BigInteger)colonisation.Policy.Settlers*10000)
                 .OrderBy(co=>co.CohortId,StringComparer.Ordinal).FirstOrDefault();p.SourceCohortId=cohort?.CohortId;
-            var yard=own.Where(c=>WorldEconomy.Infrastructure(c,definitions).Any(i=>i.definition.Shipbuilding)).OrderByDescending(c=>ProjectOwnedWorld(c,game).Industry).ThenBy(c=>c.ColonyId,StringComparer.Ordinal).FirstOrDefault();
+            var yard=own.Where(c=>WorldEconomy.Infrastructure(c,definitions).Any(i=>i.definition.Shipbuilding)).OrderByDescending(c=>c.SystemId==home.SystemId).ThenByDescending(c=>ProjectOwnedWorld(c,game).Industry).ThenBy(c=>c.ColonyId,StringComparer.Ordinal).FirstOrDefault();
             p.YardColonyId=yard?.ColonyId;
             var scout=game.Ships!.Where(s=>s.OwnerCivilizationId==actor&&s.CurrentHull>0&&(ActivityCapability(game,s)?.StudyWork??0)>0).OrderBy(s=>s.ShipId,StringComparer.Ordinal).FirstOrDefault();
             p.ScoutShipId=scout?.ShipId;
@@ -212,6 +221,8 @@ namespace HobbyDS9.Simulation
             if(p.EstablishedColonyId!=null&&camp?.Stage==ColonyEstablishmentStage.EmptyOutpost)
             {p.Stage=ColonisationAiStage.Suspended;p.HoldReason="Completed frontier world is an empty outpost; no second-colony goal granted.";return false;}
             if(p.OwnAttemptedTargets!.Count>=policy.FailedTargets){p.Stage=ColonisationAiStage.Suspended;p.HoldReason="Observed target budget exhausted; no further discretionary expedition.";return false;}
+            if(cohort==null||PopulationRules.Population(home)-colonisation.Policy.Settlers<colonisation.Policy.SourcePopulationFloor)
+            {p.HoldReason="No sustainable source cohort for a discretionary expedition; retained return cargo remains recoverable.";return false;}
             // Reserve real transport/kit production ahead of ordinary warship procurement.
             if(transport==null&&yard!=null&&!colonisation.Production.Any(q=>q.OwnerId==actor&&q.Kind==ColonisationProductionKind.PublishedShip&&q.Blueprint?.BlueprintId==p.BlueprintId))
             {
@@ -243,10 +254,10 @@ namespace HobbyDS9.Simulation
             {
                 var origin=transport==null?scout==null?physicalNavigation!.NodeForSystem(home.SystemId)!:game.Fleets!.Single(f=>f.FleetId==scout.FleetId).LocationNodeId:physicalNavigation!.NodeForSystem(home.SystemId)!;
                 var paths=ExpansionRoutes(game,actor,origin,searches);
-                target=observations.Where(o=>!p.OwnAttemptedTargets.Contains(o.PlanetId)&&(!o.Surveyed||o.KnownControl?.Kind==PlanetControllerKind.Unclaimed))
-                    .Where(o=>paths!=null&&paths.Distance.ContainsKey(physicalNavigation!.NodeForSystem(o.SystemId)!))
-                    .OrderByDescending(o=>o.Surveyed).ThenBy(o=>paths!.Distance[physicalNavigation!.NodeForSystem(o.SystemId)!]).ThenBy(o=>o.PlanetId,StringComparer.Ordinal).Take(policy.BodyCandidates)
-                    .FirstOrDefault(o=>!o.Surveyed||cohort!=null&&o.Environment!.Habitats!.Any(h=>h.NaturalCapacity>=colonisation.Policy.Settlers&&WorldEconomy.Suitability(definitions.Species!.Single(s=>s.DefinitionId==cohort.SpeciesDefinitionId),o.Environment,h.Kind)>0));
+                var costs=observations.Select(o=>o.SystemId).Distinct(StringComparer.Ordinal)
+                    .Where(system=>paths!=null&&paths.Distance.ContainsKey(physicalNavigation!.NodeForSystem(system)!))
+                    .ToDictionary(system=>system,system=>paths!.Distance[physicalNavigation!.NodeForSystem(system)!],StringComparer.Ordinal);
+                target=SelectExpansionBody(observations,p,cohort,costs);
                 p.TargetPlanetId=target?.PlanetId;p.TargetNodeId=target==null?null:physicalNavigation!.NodeForSystem(target.SystemId);
             }
             if(target==null||!target.Surveyed)

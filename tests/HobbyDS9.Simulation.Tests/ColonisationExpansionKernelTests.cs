@@ -75,5 +75,22 @@ public sealed class ColonisationExpansionKernelTests
             if(work)policy.MaximumValidationVisits--;else policy.MaximumCanonicalRootBytes--;Assert.Throws<ArgumentException>(()=>ColonisationRootBudget.ValidateExpansion(full,policy));
         }
     }
+
+    [Fact]public void SixteenNearerKnownUnsuitableBodiesCannotHideFartherObservedSuitableTarget()
+    {
+        var session=Fresh();var root=session.ExportColonisationExpansionSave();var p=Assert.Single(root.AiPlans!);var game=ColonisationTransportTests.Game(root.BaseCampaign!);
+        var home=game.Colonies!.Single(c=>c.OwnerCivilizationId==p.ActorId);var cohort=home.Cohorts![0];var planet=game.Planets!.Single(w=>w.PlanetId==home.PlanetId);
+        var environment=root.BaseCampaign!.FrozenPlanets!.Definitions!.Single(d=>d.DefinitionId==planet.DefinitionId);
+        var observations=new List<ColonisationPlanetObservationDto>();var costs=new Dictionary<string,System.Numerics.BigInteger>();
+        for(var n=0;n<17;n++)
+        {
+            var body=new ColonisationPlanetObservationDto{PlanetId="planet.observed."+n,SystemId="system.observed."+n,Surveyed=true,KnownControl=new(){Kind=PlanetControllerKind.Unclaimed},Environment=PopulationData.Copy(environment)};
+            if(n<16)body.Environment.Gravity=1;observations.Add(body);costs.Add(body.SystemId,n+1);
+        }
+        Assert.Equal(observations[16],Call(session,"SelectExpansionBody",observations,p,cohort,costs));
+        var unknown=new ColonisationPlanetObservationDto{PlanetId="planet.unknown",SystemId="system.unknown",Surveyed=false};costs.Add(unknown.SystemId,0);
+        Assert.Equal(unknown,Call(session,"SelectExpansionBody",new[]{unknown},p,cohort,costs));
+        unknown.Environment=new(){Gravity=int.MaxValue};Assert.Equal(unknown,Call(session,"SelectExpansionBody",new[]{unknown},p,cohort,costs));
+    }
 }
 
