@@ -26,6 +26,9 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private sealed class ColonyCase
         {
+            internal bool RosterV2;
+            internal string MenuPrefix=>RosterV2?"colonisation-roster-campaign":"colonisation-campaign";
+            internal string SlotPrefix=>RosterV2?"unity-campaign-colonisation-v2-":"unity-campaign-colonisation-v1-";
             internal readonly PublishedReceivingState Shared=new PublishedReceivingState();
             internal readonly List<ColonyHold> Holds=new List<ColonyHold>();internal readonly List<PhysicalReviewHost> Hosts=new List<PhysicalReviewHost>();
             internal readonly List<CheckpointContext> Contexts=new List<CheckpointContext>();
@@ -138,13 +141,13 @@ namespace HobbyDS9.UnityReview.Tests
         private static IEnumerator ColonySave(ColonyCase s,UIDocument doc,string label,int slot=1)
         {
             var expected=ColonyBytes(ColonyModel(s));CampaignPage(doc,ReviewWorkspacePage.Saves);yield return null;Click(doc.rootVisualElement.Q<Button>("save-slot-generated-"+slot));ColonyActivate(s,()=>{Click(doc.rootVisualElement.Q<Button>("player-save"));if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);});yield return ColonyIdle(s,label+"-save");
-            Assert.That(File.ReadAllBytes(Path.Combine(directoryFor(s),"unity-campaign-colonisation-v1-generated-"+slot+".json")),Is.EqualTo(expected));File.WriteAllBytes(Path.Combine(CampaignOutput(),"colony-"+label+"-saved-private-audit.json"),expected);
+            Assert.That(File.ReadAllBytes(Path.Combine(directoryFor(s),s.SlotPrefix+"generated-"+slot+".json")),Is.EqualTo(expected));File.WriteAllBytes(Path.Combine(CampaignOutput(),"colony-"+label+"-saved-private-audit.json"),expected);
         }
         private static string directoryFor(ColonyCase s)=>(string)CheckpointField(s.Shared.Entry!,"generatedCampaignTestDirectory")!;
         private static IEnumerator ColonyContinue(ColonyCase s,UIDocument doc,string label,byte[] expected,int slot=1,string? mission=null)
         {
-            var old=ColonyModel(s);Click(doc.rootVisualElement.Q<Button>("demo-menu"));yield return null;yield return null;doc.rootVisualElement.Q<Foldout>("colonisation-campaign-menu").value=true;yield return null;
-            ColonyActivate(s,()=>{Click(doc.rootVisualElement.Q<Button>("colonisation-campaign-continue-generated-"+slot));Confirm(doc);});yield return ColonyIdle(s,label+"-continue");var current=ColonyModel(s);Assert.That(current,Is.Not.SameAs(old));Assert.That(current.ColonisationCampaign,Is.True);Assert.That(ColonyBytes(current),Is.EqualTo(expected));if(mission!=null)Assert.That(JsonConvert.SerializeObject(current.FrontierCommission()),Is.EqualTo(mission));
+            var old=ColonyModel(s);Click(doc.rootVisualElement.Q<Button>("demo-menu"));yield return null;yield return null;doc.rootVisualElement.Q<Foldout>(s.MenuPrefix+"-menu").value=true;yield return null;
+            ColonyActivate(s,()=>{Click(doc.rootVisualElement.Q<Button>(s.MenuPrefix+"-continue-generated-"+slot));Confirm(doc);});yield return ColonyIdle(s,label+"-continue");var current=ColonyModel(s);Assert.That(current,Is.Not.SameAs(old));Assert.That(current.ColonisationCampaign,Is.True);Assert.That(current.ColonisationRosterCampaign,Is.EqualTo(s.RosterV2));Assert.That(ColonyBytes(current),Is.EqualTo(expected));if(mission!=null)Assert.That(JsonConvert.SerializeObject(current.FrontierCommission()),Is.EqualTo(mission));
             Assert.That(doc.rootVisualElement.Q<Button>("colonisation-order-confirm"),Is.Null,"new controller never inherits an earlier review");Assert.That(doc.rootVisualElement.Q<Button>("activity-order-confirm"),Is.Null);
         }
         private static IEnumerator ColonySaveContinue(ColonyCase s,UIDocument doc,string label,int slot=1)
@@ -383,8 +386,13 @@ namespace HobbyDS9.UnityReview.Tests
         }
         [UnityTest,Timeout(600000)]
         public IEnumerator ColonisationCampaignUsesConservedSettlersAndTypedContinue()
+            =>ColonyReceiving(false);
+        [UnityTest,Timeout(600000)]
+        public IEnumerator ColonisationRosterV2UsesConservedSettlersAndTypedContinue()
+            =>ColonyReceiving(true);
+        private IEnumerator ColonyReceiving(bool rosterV2)
         {
-            var s=new ColonyCase();var stack=new Stack<IEnumerator>();stack.Push(ColonyReceivingBody(s));Exception? failure=null;
+            var s=new ColonyCase{RosterV2=rosterV2};var stack=new Stack<IEnumerator>();stack.Push(ColonyReceivingBody(s));Exception? failure=null;
             while(stack.Count>0)
             {
                 var current=stack.Peek();bool next=false;object? value=null;try{next=current.MoveNext();if(next)value=current.Current;}catch(Exception e){failure=e;}
@@ -414,8 +422,10 @@ namespace HobbyDS9.UnityReview.Tests
             using(var surface=new GalaxyInputSurface(doc))
             {
                 doc.rootVisualElement.Q<TextField>("generated-campaign-seed").value="42";doc.rootVisualElement.Q<DropdownField>("generated-campaign-size").value="250";doc.rootVisualElement.Q<DropdownField>("generated-campaign-quiet").value="2.00×";
-                doc.rootVisualElement.Q<Foldout>("colonisation-campaign-menu").value=true;yield return null;ColonyActivate(s,()=>{Click(doc.rootVisualElement.Q<Button>("colonisation-campaign-start"));if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);});yield return ColonyIdle(s,"new-colonisation250");
+                doc.rootVisualElement.Q<Foldout>(s.MenuPrefix+"-menu").value=true;yield return null;ColonyActivate(s,()=>{Click(doc.rootVisualElement.Q<Button>(s.MenuPrefix+"-start"));if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);});yield return ColonyIdle(s,"new-colonisation250");
                 Assert.That(ColonyModel(s).ColonisationCampaign,Is.True);
+                Assert.That(ColonyModel(s).ColonisationRosterCampaign,Is.EqualTo(s.RosterV2),"explicit menu retains the trusted starting-content source");
+                File.WriteAllText(Path.Combine(CampaignOutput(),"colony-profile.json"),JsonConvert.SerializeObject(new{rosterV2=s.RosterV2,menu=s.MenuPrefix,slotPrefix=s.SlotPrefix,templatePackageHash=ColonyAudit(ColonyModel(s)).TemplatePackageHash}));
                 var home=ColonyModel(s).Colonisation().Worlds.Where(x=>x.Stage==ColonyEstablishmentStage.Established&&x.Population>=700&&(x.Cohorts.Any(c=>c.Population>=500)||x.Cohorts.Count(c=>c.Population>=400)>=2)).OrderByDescending(x=>x.Population).ThenBy(x=>x.Id,StringComparer.Ordinal).First();s.Home=home.Id;s.HomeSystem=home.SystemId;
                 s.HomeNode=ColonyModel(s).GeneratedMap().Regions.Single(x=>x.SystemId==s.HomeSystem).NodeId;s.Explorer=ColonyModel(s).ColonisationActivities().Ships.First(x=>x.StudyWork>0).ShipId;
                 yield return ColonyMove(s,doc,s.Explorer,s.HomeNode);
