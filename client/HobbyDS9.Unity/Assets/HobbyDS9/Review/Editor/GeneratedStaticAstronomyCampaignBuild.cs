@@ -329,6 +329,10 @@ claimed.
         public static void BuildWindowsColonisationStabilisationCandidate()
             =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Stabilisation-20261026");
 
+        [MenuItem("HobbyDS9/Campaign/Build colonisation shipyard candidate")]
+        public static void BuildWindowsColonisationShipyardCandidate()
+            =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Shipyard-20261026");
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName,bool checkpointDiagnostics=false)
         {
             BuildWindows(stageName,checkpointDiagnostics);
