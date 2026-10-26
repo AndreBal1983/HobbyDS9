@@ -256,6 +256,8 @@ namespace HobbyDS9.UnityReview.Tests
                 s.Shared.Entry.enabled=false;yield return null;s.Shared.Entry.enabled=true;yield return null;yield return null;
                 Assert.That(ColonyModel(s).Busy,Is.False);Assert.That(ColonyModel(s).Current.Frame,Is.SameAs(sourceFrame));Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(root));
                 Assert.That(ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>()),Is.EqualTo(selected),"fresh view retains the already selected source world and transport");
+                var tracked=s.Contexts.Count;var oldUi=CheckpointField(s.Shared.Entry,"colonisationUiWork");ColonyActivate(s,()=>{});
+                Assert.That(s.Contexts.Count,Is.EqualTo(tracked),"synchronous activation cannot inherit an older held continuation");Assert.That(CheckpointField(s.Shared.Entry,"colonisationUiWork"),Is.SameAs(oldUi));
                 // Do not globally await the deliberately held OLD finally before creating its replacement lease.
                 button=doc.rootVisualElement.Q<Button>("colonisation-embark");yield return ColonyReach(doc,button,target:"fresh selected Embark while old finally is held");
                 var next=ColonyStartHold(s,()=>Click(button));yield return ColonyEntered(next);var token=CheckpointField(s.Shared.Entry,"campaignBusyToken");cancelled.Continuation.Forward();
