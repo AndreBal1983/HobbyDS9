@@ -82,6 +82,128 @@ namespace HobbyDS9.UnityReview.Editor
         public static void BuildWindowsStreamedActivitiesNavigationIndices()
             =>BuildStreamedActivitiesCheckpoint("Windows-StreamedActivities-NavigationIndices-20261025");
 
+        [MenuItem("HobbyDS9/Campaign/Build colonisation validation candidate")]
+        public static void BuildWindowsColonisationCandidate()
+        {
+            const string stageName="Windows-Colonisation-Candidate-20261026";
+            BuildStreamedActivitiesCheckpoint(stageName);
+            var stage=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,
+                "../../../artifacts/generated-static-astronomy-v2",stageName));
+            File.WriteAllText(Path.Combine(stage,"README.txt"),ColonisationReadme);
+            File.WriteAllText(Path.Combine(stage,"PLAY-COLONISATION.txt"),ColonisationWalkthrough);
+        }
+
+        private const string ColonisationReadme=@"HobbyDS9 - colonisation diagnostic candidate (UNVALIDATED)
+
+Diagnostic candidate only. This is not an accepted release or the latest validated demo.
+The actual r7 receiving run stopped on a legitimate hostile-orbit deployment refusal.
+Landing feedback and real expedition return/unload passed. Establishment, recommissioning,
+the complete loop at all three sizes and IL2CPP Continue remain UNPROVEN.
+The existing accepted package remains available. Do not treat this guide as validation.
+
+Run Start-Generated-Campaign.cmd. On the landing menu expand
+'Colonisation campaign (provisional playtest)' and choose New colonisation campaign.
+Use seed 42, 250 systems and Quiet area 2.00x for the first receiving baseline.
+The default campaign button and earlier campaigns keep their original rules.
+
+Build a Galaxy Colony Transport and settlement kit through the ordinary world
+queue. Industry and gradually consumed local materials do the work; normal
+construction has no credit charge. Interrupted material supply pauses work.
+Use an Explorer to discover and survey a suitable uninhabited planet, load
+100 real settlers plus one local kit and 8-20 food, travel on a known route,
+then request deployment. Establishment needs work and at least four fed weeks.
+Read PLAY-COLONISATION.txt before loading people or leaving the source world.
+
+Colonisation uses its own matching Continue buttons and separate colonisation save slots.
+Earlier slots remain unchanged and are never converted or used as a fallback.
+Save, generation and Continue validate complete history and can take tens of
+seconds; wait for the animated busy view. Current mature replay latency is an
+open limitation, not a performance claim for this package.
+
+This is named provisional demo tuning, not final balance. Existing catalogue,
+power, crew, access, capacity and shared validation remain authoritative.
+AI procurement/travel exists; AI colony-expedition planning is not implemented.
+The first slice covers uninhabited planets, not invasion or minor-city conquest.
+Consult BUILD-IDENTITY.json and the validation record for actual acceptance;
+this prepared guide does not itself establish build, native or 1000-system coverage.
+";
+        private const string ColonisationWalkthrough=@"COLONISATION CAMPAIGN - UNVALIDATED DIAGNOSTIC CANDIDATE
+
+1. Expand Colonisation campaign (provisional playtest) on the landing menu.
+   Choose New colonisation campaign, seed 42, 250 systems, Quiet area 2.00x.
+   Wait for generation and validation. Old New/Continue choices remain
+   separate.
+
+2. Open Production/Worlds and select an established owned source world. Use +
+   for Galaxy Colony Transport and Settlement kit. Each click adds one order;
+   inspect separately and follow the right-hand queue. Advance weeks for
+   actual Industry, local material consumption and delivery. No normal
+   construction credits are charged. Cancellation loses work/consumed
+   materials; unused local stock remains stock. Never count a queued ship or
+   kit as already available.
+
+3. Send your Constitution Explorer along an ordinary known map route. Arrival
+   discovers bodies; charted adjacency alone does not reveal their details. In
+   Planets, select an observed body and a present Explorer. Choose Review
+   planetary survey, then Confirm order. Advance until complete; Cancel
+   discards survey work. Inspect the surveyed environment and last observed
+   control. This slice settles suitable uninhabited planets; it does not grant
+   rights over inhabited minor societies.
+
+4. Return the actual transport/fleet to the source before loading. In
+   Transports, choose the present empty transport, source world and resident
+   cohort. Choose Review embark 100 settlers + kit. Confirm order moves 100
+   real people, one manufactured local kit and 8-20 actual food aboard. At
+   least 500 people must remain; no more than a quarter of the selected cohort
+   can embark. Review the exact food/material amounts, then Confirm order. A
+   preview spends nothing; submission revalidates. Support power remains
+   required.
+
+5. Follow a known route to the surveyed destination. Carried food is finite;
+   delays and shortages can cause deaths. Choose Review deployment /
+   recommission in Transports. All actors are considered together after combat
+   in that week. Hostile arrivals can interrupt deployment. A disputed request
+   can pause; withdrawing leaves people/supplies aboard. A successful landing
+   claims that planet only, never every sibling in its star system.
+
+6. Inspect the new founding camp in Worlds. It needs actual food, work and at
+   least four fed weeks before becoming established; this is not a guaranteed
+   arrival date. Founding camps accept food/material resupply, not extra
+   incoming passengers. An established active world can receive passengers
+   through the normal habitat, access and capacity checks. Review current
+   progress/deaths.
+
+7. Reuse the now-empty transport. At an established owned world, load supplies
+   only with Review load supplies only, without people or another kit. Travel
+   back, then Review deliver carried supplies while present. No remote stock
+   pool or free resupply is created. On the established frontier, queue the
+   Frontier mine through the same construction controls. It uses power and
+   extracts actual finite deposits under the existing economy; deposits and
+   local stocks change only through accepted work/extraction/delivery.
+
+8. For a founding evacuation, bring an empty powered transport to the camp and
+   choose Review founding evacuation. Return-only passengers must travel to an
+   established active owned receiving world before unloading. The empty
+   outpost has no ordinary output or freight. Recommission it with a newly
+   equipped settlement expedition and actual deployment/establishment work;
+   ordinary passenger unload cannot bypass that process. Full evacuation of a
+   grown city is outside this slice.
+
+9. Save to a colonisation slot and use its matching Continue colonisation
+   button. Wait for the busy view through full validation. Keep saves you want
+   to retain; earlier campaigns use their own separate slots and original
+   rules. Mission still tracks its same four historical accomplishments;
+   colony establishment is not an invented fifth goal, reward or empire-wide
+   victory.
+
+Limits: provisional content and balance; no AI colony-expedition planner or
+invasion; slow complete-history Save/Continue remains open. Existing research,
+ship design, exploration/contact, music and lawful combat remain available.
+Actual build/native acceptance and tested sizes must be read from this exact
+package's validation record. No 1000-system colonisation performance is
+claimed.
+";
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName)
         {
             BuildWindows(stageName);
