@@ -181,7 +181,7 @@ namespace HobbyDS9.UnityReview.Tests
             using(var surface=new GalaxyInputSurface(doc))
             {
                 t.Mark("explicit-new-begin");doc.rootVisualElement.Q<TextField>("generated-campaign-seed").value="42";
-                doc.rootVisualElement.Q<DropdownField>("generated-campaign-size").value="250";doc.rootVisualElement.Q<DropdownField>("generated-campaign-quiet").value="2.00Ã—";
+                doc.rootVisualElement.Q<DropdownField>("generated-campaign-size").value="250";doc.rootVisualElement.Q<DropdownField>("generated-campaign-quiet").value="2.00Ãƒâ€”";
                 var menu=doc.rootVisualElement.Q<Foldout>("colonisation-expansion-campaign-menu");Assert.That(menu,Is.Not.Null);Assert.That(menu.text,Is.EqualTo("Colonisation & Expansion"));Assert.That(menu.value,Is.True);
                 var oldModel=ColonyModel(s);var start=doc.rootVisualElement.Q<Button>("colonisation-expansion-campaign-start");yield return ColonyReach(doc,start,target:"explicit new expansion campaign");
                 ColonyActivate(s,()=>{Click(start);if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);});yield return ColonyIdle(s,"expansion-new250");
@@ -238,6 +238,7 @@ namespace HobbyDS9.UnityReview.Tests
                 File.WriteAllText(Path.Combine(CampaignOutput(),"expansion-summary.json"),JsonConvert.SerializeObject(new{explicitMenu=true,systems=250,seed="42",uiAdvances=t.UiAdvances,finalTurn=ColonyModel(s).Current.Frame.Status.Turn,
                     t.SawQueued,t.SawActions,t.SawLoaded,t.SawFounding,t.SawEstablished,humanKitCompleted=true,whole12SaveContinueEqual=true,captures=ExpansionImages,
                     qualification="Actual AI facts from audit only; human commands and pictures use own lawful observations. Original failed15-image test remains unchanged."}));
+                t.Mark("all-expansion-gates-complete");
             }
         }
     }
