@@ -184,7 +184,7 @@ namespace HobbyDS9.Simulation
                 var assigned=game.Ships!.Where(s=>s.OwnerCivilizationId==g.ActorId&&s.FleetId==fleet).Select(s=>s.ShipId).ToList();
                 if(colonisation!.State.ManifestRecords!.Any(m=>m.OwnerId==g.ActorId&&m.Stage==SettlerManifestStage.Loaded&&assigned.Contains(m.ShipId)))return true;
                 if(colonisation.State.Surveys!.Any(s=>s.ActorId==g.ActorId&&s.Stage==PlanetSurveyStage.Active&&assigned.Contains(s.ShipId)))return true;
-                if(g.State==ColonisationRepeatState.Active&&(assigned.Contains(p.TransportShipId!)||assigned.Contains(p.ScoutShipId!)))return true;
+                if(g.State==ColonisationRepeatState.Active&&p.Stage!=ColonisationAiStage.Suspended&&(assigned.Contains(p.TransportShipId!)||assigned.Contains(p.ScoutShipId!)))return true;
                 if(first.EstablishedColonyId==null&&first.Stage!=ColonisationAiStage.Suspended&&(assigned.Contains(first.TransportShipId!)||assigned.Contains(first.ScoutShipId!)))return true;
                 if(first.Stage==ColonisationAiStage.Immigrating&&assigned.Contains(first.TransportShipId!))return true;
                 if(colonisation.State.CampSources!.Any(c=>c.OwnerId==g.ActorId&&RepeatNeedsSupply(game,c))&&assigned.Contains(first.TransportShipId!))return true;
@@ -195,7 +195,7 @@ namespace HobbyDS9.Simulation
             var g=RepeatGoal(actor);var p=g.Assignment!;var first=ExpansionPlan(actor);var game=state.Campaign.GameState;
             bool Kit(ColonisationAiPlanDto plan)=>plan.HomeColonyId==colony&&PopulationRules.Stock(game.Colonies!.Single(c=>c.ColonyId==colony).Stockpiles!,colonisation!.Policy.EquipmentResourceId)<1;
             if(first.EstablishedColonyId==null&&first.Stage!=ColonisationAiStage.Suspended&&(Kit(first)||first.YardColonyId==colony&&first.TransportShipId==null))return true;
-            if(g.State==ColonisationRepeatState.Active&&(g.SettlementManifestId==null&&Kit(p)||p.YardColonyId==colony&&p.TransportShipId==null))return true;
+            if(g.State==ColonisationRepeatState.Active&&p.Stage!=ColonisationAiStage.Suspended&&(g.SettlementManifestId==null&&Kit(p)||p.YardColonyId==colony&&p.TransportShipId==null))return true;
             return first.YardColonyId==colony&&!game.Ships!.Any(s=>s.OwnerCivilizationId==actor&&s.CurrentHull>0&&TransportCapability(game,s)?.Passengers>=colonisation!.Policy.Settlers)
                 &&colonisation!.State.CampSources!.Any(c=>c.OwnerId==actor&&RepeatNeedsSupply(game,c));
         }

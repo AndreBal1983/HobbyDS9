@@ -25,6 +25,10 @@ public sealed class ColonisationRepeatBoundaryTests
             if(id!=null&&root.BaseCampaign!.Colonisation!.ManifestRecords!.Any(m=>m.ManifestId==id&&m.Stage==SettlerManifestStage.Loaded))return Json(root);
             if(n<128)Advance(s);}
         throw new InvalidOperationException("Real second loaded checkpoint absent within128");});
+    static readonly Lazy<string> ActualSecondSurvey=new(()=>{
+        var s=CampaignTacticalReviewSession.StartRepeatGame(ColonisationRepeatTests.Package(),PublishedConstructionProfileTests.Settings(250));
+        for(int n=0;n<=128;n++){var root=s.ExportRepeatSave();var g=root.RepeatGoals![0];if(g.State==ColonisationRepeatState.Active&&g.SettlementManifestId==null&&root.BaseCampaign!.Colonisation!.Surveys!.Any(v=>v.ActorId==g.ActorId&&v.Stage==PlanetSurveyStage.Active))return Json(root);if(n<128)Advance(s);}
+        throw new InvalidOperationException("Actual second survey absent within128");});
     static CampaignTacticalReviewSession Fresh()=>CampaignTacticalReviewSession.LoadRepeatSave(ColonisationRepeatTests.Package(),JsonSerializer.Deserialize<CampaignColonisationRepeatSaveDto>(Loaded.Value)!);
     [Fact]public void SecondLoadedManifestRetainsItsOwnCarrierEvenWithAnotherEarlierCapableShip()
     {
@@ -88,9 +92,11 @@ public sealed class ColonisationRepeatBoundaryTests
         var game=Live(s);var camp=Facts(s).CampSources!.Single(c=>c.CampId==First(s).CampId);var world=game.Colonies!.Single(c=>c.ColonyId==camp.ColonyId);// Controlled same-actor population redistribution creates a genuine deficit, without adding people/resources.
         var donor=game.Colonies!.Where(w=>w.OwnerCivilizationId==goal.ActorId&&w.ColonyId!=world.ColonyId).SelectMany(w=>w.Cohorts!).OrderByDescending(c=>c.Population).First();var move=donor.Population-1;donor.Population-=move;world.Cohorts![0].Population+=move;
         var projection=(WorldEconomySnapshot)Call(s,"ProjectOwnedWorld",world,game)!;Assert.True(projection.FoodDemand>projection.FoodOutput,Json(projection));Facts(s).FoodConsumed+=world.Food;world.Food=0;
+        var urgentFleet=game.Ships!.Single(x=>x.ShipId==First(s).TransportShipId).FleetId;Assert.True((bool)Call(s,"RepeatMissionFleet",game,urgentFleet)!);
         var ships=game.Ships!.Where(x=>x.OwnerCivilizationId==goal.ActorId).Where(x=>{var cap=Call(s,"TransportCapability",game,x);return cap!=null&&Convert.ToInt64(cap.GetType().GetProperty("Passengers")!.GetValue(cap))>=100;}).ToList();Assert.NotEmpty(ships);
         CampaignCombatConsequences.Apply(game,new CombatResultDto{ShipChanges=ships.Select(x=>new ShipCombatChangeDto{ShipId=x.ShipId,RemainingHull=0}).ToList(),FleetChanges=new()});
         foreach(var ship in ships)Field<CampaignTacticalReviewSaveDto>(s,"state").Pools.RemoveAll(p=>p.ShipId==ship.ShipId);
+        Assert.True((bool)Call(s,"RepeatMissionWorld",goal.ActorId,First(s).YardColonyId)!);
         var before=Field<List<ColonisationProductionItemDto>>(Context(s),"Production").Select(q=>q.QueueItemId).ToHashSet();
         Assert.True((bool)Call(s,"PlanRepeatAction",goal.ActorId,Search())!);var queue=Assert.Single(Field<List<ColonisationProductionItemDto>>(Context(s),"Production"),q=>!before.Contains(q.QueueItemId));
         Assert.Equal(ColonisationProductionKind.PublishedShip,queue.Kind);Assert.Equal(0,queue.CompletedIndustry);Assert.All(queue.ConsumedResources!,r=>Assert.Equal(0,r.Amount));Assert.Equal(ColonisationRepeatState.Established,Goal(s).State);Assert.Equal(goal.SettlementManifestId,Goal(s).SettlementManifestId);
@@ -115,5 +121,25 @@ public sealed class ColonisationRepeatBoundaryTests
         var game=Live(s);var home=game.Colonies!.Single(w=>w.ColonyId==first.HomeColonyId);home.OwnerCivilizationId=Human;
         var camp=Facts(s).CampSources!.Single(c=>c.CampId==first.CampId);var cargo=Json(manifest);var food=home.Food;var count=Facts(s).ManifestRecords!.Count;
         Assert.False((bool)Call(s,"PlanRepeatSupply",goal.ActorId,camp,null,Search())!);Assert.Equal(food,home.Food);Assert.Equal(cargo,Json(manifest));Assert.Equal(count,Facts(s).ManifestRecords!.Count);Assert.Null(goal.SupplyCampId);
+    }
+    [Fact]public void SuspendedSecondReservationsReleaseFleetAndWorldButRetainActualResponsibilities()
+    {
+        var s=CampaignTacticalReviewSession.LoadRepeatSave(ColonisationRepeatTests.Package(),JsonSerializer.Deserialize<CampaignColonisationRepeatSaveDto>(ActualSecondSurvey.Value)!);var game=Live(s);var g=Goal(s);var p=g.Assignment!;
+        Assert.Equal(ColonisationRepeatState.Active,g.State);Assert.Null(g.SettlementManifestId);Assert.DoesNotContain(Facts(s).ManifestRecords!,m=>m.OwnerId==g.ActorId&&m.Stage==SettlerManifestStage.Loaded);
+        Assert.DoesNotContain(Facts(s).CampSources!,c=>c.OwnerId==g.ActorId&&(bool)Call(s,"RepeatNeedsSupply",game,c)!);
+        var survey=Assert.Single(Facts(s).Surveys!,v=>v.ActorId==g.ActorId&&v.Stage==PlanetSurveyStage.Active);var surveyFleet=game.Ships!.Single(x=>x.ShipId==survey.ShipId).FleetId;
+        // Selector-only defensive exhaustion fixture: no claimed replay or command history for this private stage/cancellation change.
+        p.Stage=ColonisationAiStage.Suspended;survey.Stage=PlanetSurveyStage.Cancelled;var home=p.HomeColonyId;var transport=p.TransportShipId;
+        var world=game.Colonies!.Single(w=>w.ColonyId==home);
+        // Move the existing physical kit to another actual own world for this selector-only premise; total kit stock is conserved.
+        var totalKits=game.Colonies!.Where(w=>w.OwnerCivilizationId==g.ActorId).Sum(w=>PopulationRules.Stock(w.Stockpiles!,"resource.settlement-kit"));
+        var kit=world.Stockpiles!.Single(x=>x.ResourceDefinitionId=="resource.settlement-kit");var stash=game.Colonies!.Single(w=>w.ColonyId==First(s).EstablishedColonyId).Stockpiles!;var stored=stash.SingleOrDefault(x=>x.ResourceDefinitionId==kit.ResourceDefinitionId);if(stored==null){stored=new(){ResourceDefinitionId=kit.ResourceDefinitionId};stash.Add(stored);}stored.Amount+=kit.Amount;kit.Amount=0;
+        Assert.Equal(totalKits,game.Colonies!.Where(w=>w.OwnerCivilizationId==g.ActorId).Sum(w=>PopulationRules.Stock(w.Stockpiles!,"resource.settlement-kit")));Assert.Equal(0,PopulationRules.Stock(world.Stockpiles!,"resource.settlement-kit"));Assert.Equal(home,p.YardColonyId);
+        var fleetReleased=!(bool)Call(s,"RepeatMissionFleet",game,surveyFleet)!;var kitWorldReleased=!(bool)Call(s,"RepeatMissionWorld",g.ActorId,home)!;
+        p.HomeColonyId=First(s).EstablishedColonyId;p.TransportShipId=null;var yardReleased=!(bool)Call(s,"RepeatMissionWorld",g.ActorId,p.YardColonyId)!;
+        Assert.Equal((true,true,true),(fleetReleased,kitWorldReleased,yardReleased));
+        p.HomeColonyId=home;p.TransportShipId=transport;survey.Stage=PlanetSurveyStage.Active;Assert.True((bool)Call(s,"RepeatMissionFleet",game,surveyFleet)!);
+        var loaded=Fresh();Goal(loaded).Assignment!.Stage=ColonisationAiStage.Suspended;var cargo=Facts(loaded).ManifestRecords!.Single(m=>m.ManifestId==Goal(loaded).SettlementManifestId);var cargoFleet=Live(loaded).Ships!.Single(x=>x.ShipId==cargo.ShipId).FleetId;
+        Assert.True((bool)Call(loaded,"RepeatMissionFleet",Live(loaded),cargoFleet)!);
     }
 }
