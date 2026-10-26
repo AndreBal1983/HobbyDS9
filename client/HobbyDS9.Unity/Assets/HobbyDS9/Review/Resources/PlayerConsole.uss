@@ -197,3 +197,12 @@
 .player-narrow .playable-combat #battle-presentation-boundary { display: none; }
 .playable-combat .review-tabs .selected-tab { background-color: #3f3548; border-bottom-color: #efb16b; border-bottom-width: 3px; }
 .player-narrow .playable-combat .review-order-dock { width: 224px; }
+
+/* Colonisation quantity inputs retain the established console contrast. */
+#colonisation-panel .unity-base-text-field__input,
+#colonisation-panel .unity-text-input {
+    background-color: #182431;
+    color: #eeeaf2;
+    --unity-cursor-color: #ffe0b9;
+    --unity-selection-color: #3d506a;
+}

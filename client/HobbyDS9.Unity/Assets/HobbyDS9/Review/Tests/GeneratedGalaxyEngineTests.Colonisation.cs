@@ -98,12 +98,25 @@ namespace HobbyDS9.UnityReview.Tests
             yield return StreamRoute(doc,s.Shared.Entry!,own.FleetId,node);for(int i=0;i<24&&!ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==ship).Stationary;i++)yield return ColonyAdvance(s,doc);
             own=ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==ship);Assert.That(own.NodeId,Is.EqualTo(node));Assert.That(own.Stationary,Is.True);
         }
-        private static string ColonyNextKnown(CampaignGeneratedMapDto map,string origin,HashSet<string> visited)
+        private static HashSet<string> ColonyObservedRisk(ColonyCase s,string phase,string? chosen=null)
+        {
+            var model=ColonyModel(s);var map=model.GeneratedMap();
+            var contacts=model.Current.Frame.Travel!.KnownContacts.OrderBy(c=>c.FleetId,StringComparer.Ordinal).ToArray();
+            var seen=new HashSet<string>(contacts.Select(c=>c.LastSeenNodeId),StringComparer.Ordinal);
+            var excluded=new HashSet<string>(seen,StringComparer.Ordinal);
+            foreach(var edge in map.Connections){if(seen.Contains(edge.EndpointA))excluded.Add(edge.EndpointB);if(seen.Contains(edge.EndpointB))excluded.Add(edge.EndpointA);}
+            s.Shared.Timings.Add(new{phase="observed-contact-risk",check=phase,turn=model.Current.Frame.Status.Turn,
+                contacts=contacts.Select(c=>new{c.FleetId,c.LastSeenNodeId,c.LastSeenTurn,c.Fresh}).ToArray(),
+                excluded=excluded.OrderBy(x=>x,StringComparer.Ordinal).ToArray(),chosen,
+                qualification="Conservative last-seen contact adjacency heuristic; not enemy destination knowledge or a safety guarantee."});
+            return excluded;
+        }
+        private static string ColonyNextKnown(CampaignGeneratedMapDto map,string origin,HashSet<string> visited,HashSet<string> excluded)
         {
             // One BFS over the ACTOR projection; no private map and no per-node full route recompilation.
             var distance=new Dictionary<string,int>(StringComparer.Ordinal){{origin,0}};var queue=new Queue<string>();queue.Enqueue(origin);
             while(queue.Count>0){var n=queue.Dequeue();foreach(var edge in map.Connections.Where(c=>c.EndpointA==n||c.EndpointB==n)){var next=edge.EndpointA==n?edge.EndpointB:edge.EndpointA;if(distance.ContainsKey(next))continue;distance.Add(next,distance[n]+1);queue.Enqueue(next);}}
-            var candidates=map.Regions.Where(r=>!visited.Contains(r.NodeId)&&distance.ContainsKey(r.NodeId)).OrderBy(r=>r.SystemId==null?1:0).ThenBy(r=>distance[r.NodeId]).ThenBy(r=>r.NodeId,StringComparer.Ordinal).ToList();Assert.That(candidates,Is.Not.Empty,"a lawful known exploration frontier exists");return candidates[0].NodeId;
+            var candidates=map.Regions.Where(r=>!visited.Contains(r.NodeId)&&!excluded.Contains(r.NodeId)&&distance.ContainsKey(r.NodeId)).OrderBy(r=>r.SystemId==null?1:0).ThenBy(r=>distance[r.NodeId]).ThenBy(r=>r.NodeId,StringComparer.Ordinal).ToList();Assert.That(candidates,Is.Not.Empty,"an unexcluded lawful known exploration frontier exists; no risky fallback");return candidates[0].NodeId;
         }
         private static ColonyHold ColonyStartHold(ColonyCase s,Action activate,bool continuation=false)
         {
@@ -188,13 +201,15 @@ namespace HobbyDS9.UnityReview.Tests
         {
             var home=ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home);
             var homeEnvironment=StreamHost(ColonyModel(s)).CaptureColonisationPlanets(ColonyModel(s).Current.Frame).Single(x=>x.PlanetId==home.PlanetId).Environment!;
-            var visited=new HashSet<string>(StringComparer.Ordinal);bool cancelled=false,captured=false;
+            var visited=new HashSet<string>(StringComparer.Ordinal){s.HomeNode};bool cancelled=false,captured=false;
             for(int attempt=0;attempt<20&&s.TargetPlanet=="";attempt++)
             {
                 var own=ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==s.Explorer);visited.Add(own.NodeId);
+                var excluded=ColonyObservedRisk(s,"before-survey");
                 // Discovery and candidate selection use ONLY the detached actor projection.
-                foreach(var planet in ColonyModel(s).ColonisationPlanets().Where(x=>x.SystemId!=s.HomeSystem&&!x.Surveyed&&ColonyModel(s).GeneratedMap().Regions.Any(r=>r.NodeId==own.NodeId&&r.SystemId==x.SystemId)).ToArray())
+                foreach(var planet in ColonyModel(s).ColonisationPlanets().Where(x=>x.SystemId!=s.HomeSystem&&!x.Surveyed&&!excluded.Contains(own.NodeId)&&ColonyModel(s).GeneratedMap().Regions.Any(r=>r.NodeId==own.NodeId&&r.SystemId==x.SystemId)).ToArray())
                 {
+                    if(ColonyObservedRisk(s,"before-next-body",own.NodeId).Contains(own.NodeId))break;
                     yield return ColonyPage(s,doc,"Planets");yield return ColonyPick(doc,"colonisation-planet-selector",ColonyModel(s).ColonisationPlanets(),x=>x.PlanetId,planet.PlanetId);
                     yield return ColonyPick(doc,"colonisation-survey-ship",ColonyModel(s).ColonisationActivities().Ships,x=>x.ShipId,s.Explorer);
                     yield return ColonyReview(s,doc,"colonisation-survey-review");
@@ -211,14 +226,23 @@ namespace HobbyDS9.UnityReview.Tests
                     var observed=StreamHost(ColonyModel(s)).CaptureColonisationPlanets(ColonyModel(s).Current.Frame).Single(x=>x.PlanetId==planet.PlanetId);
                     Assert.That(observed.Surveyed,Is.True);var e=observed.Environment!;
                     // A conservative choice from publicly surveyed facts, not a replacement eligibility rule.
-                    if(observed.KnownControl?.Kind==PlanetControllerKind.Unclaimed&&e.Deposits!.Any(r=>r.Amount>0)&&e.Gravity==homeEnvironment.Gravity&&e.Pressure==homeEnvironment.Pressure&&e.Atmosphere==homeEnvironment.Atmosphere&&e.Radiation<=homeEnvironment.Radiation&&e.Habitats!.Any(h=>h.NaturalCapacity>=100&&homeEnvironment.Habitats!.Any(k=>k.Kind==h.Kind&&k.ShareBps>0)))
+                    if(!ColonyObservedRisk(s,"post-survey",own.NodeId).Contains(own.NodeId)&&observed.KnownControl?.Kind==PlanetControllerKind.Unclaimed&&e.Deposits!.Any(r=>r.Amount>0)&&e.Gravity==homeEnvironment.Gravity&&e.Pressure==homeEnvironment.Pressure&&e.Atmosphere==homeEnvironment.Atmosphere&&e.Radiation<=homeEnvironment.Radiation&&e.Habitats!.Any(h=>h.NaturalCapacity>=100&&homeEnvironment.Habitats!.Any(k=>k.Kind==h.Kind&&k.ShareBps>0)))
                     {s.TargetPlanet=planet.PlanetId;s.TargetNode=own.NodeId;break;}
                 }
-                if(s.TargetPlanet=="")yield return ColonyMove(s,doc,s.Explorer,ColonyNextKnown(ColonyModel(s).GeneratedMap(),own.NodeId,visited));
+                if(s.TargetPlanet!="")
+                {
+                    // Return the shared fleet normally before loading; risk is rechecked against CURRENT observations.
+                    yield return ColonyMove(s,doc,s.Explorer,s.HomeNode);
+                    if(ColonyObservedRisk(s,"returned-home-before-load",s.TargetNode).Contains(s.TargetNode)){s.TargetPlanet="";s.TargetNode="";}
+                }
+                if(s.TargetPlanet=="")
+                {
+                    own=ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==s.Explorer);
+                    yield return ColonyMove(s,doc,s.Explorer,ColonyNextKnown(ColonyModel(s).GeneratedMap(),own.NodeId,visited,ColonyObservedRisk(s,"next-frontier")));
+                }
             }
             Assert.That(s.TargetPlanet,Is.Not.Empty,"a surveyed lawful nearby suitable resource opportunity");Assert.That(cancelled,Is.True);
-            // The starter and new transports may share a fleet. Return the actual fleet before loading.
-            yield return ColonyMove(s,doc,s.Explorer,s.HomeNode);
+            Assert.That(ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==s.Explorer).NodeId,Is.EqualTo(s.HomeNode));
         }
         private static IEnumerator ColonyConfirmNegatives(ColonyCase s,UIDocument doc)
         {
