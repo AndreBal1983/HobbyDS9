@@ -98,6 +98,8 @@ namespace HobbyDS9.UnityReview
             foreach (var property in properties) ColonisationWire(token[property.Name]!, property.PropertyType, ref visits, shapes);
         }
         private static void RequireColonisationCarrier(CampaignColonisationSaveDto? root)
+            =>RequireColonisationCarrier(root,CampaignColonisationIdentity.InventoryPolicy);
+        private static void RequireColonisationCarrier(CampaignColonisationSaveDto? root,string expectedInventoryPolicy)
         {
             bool Hash(string? value) => value != null && value.Length == 64 && value.All(c => c >= '0' && c <= '9' || c >= 'a' && c <= 'f');
             if (root == null || root.FormatVersion != CampaignColonisationIdentity.Format
@@ -109,7 +111,7 @@ namespace HobbyDS9.UnityReview
                 || !ActivityRows(root.Discoveries) || !ActivityRows(root.PublishedBuiltShips) || !ActivityRows(root.Journal)
                 || !ActivityRows(root.Production) || !ActivityRows(root.ProductionHistory)
                 || root.Activities?.Production == null || root.Activities.Production.Count != 0
-                || root.FrozenPlanets == null || root.FrozenPlanets.PolicyId != CampaignColonisationIdentity.InventoryPolicy || !Hash(root.FrozenPlanets.ContentHash)
+                || root.FrozenPlanets == null || root.FrozenPlanets.PolicyId != expectedInventoryPolicy || !Hash(root.FrozenPlanets.ContentHash)
                 || !ActivityRows(root.FrozenPlanets.Definitions) || !ActivityRows(root.FrozenPlanets.InitialPlanets)
                 || !ActivityRows(root.FrozenPlanets.Bodies) || !ActivityRows(root.FrozenPlanets.GenesisControls)
                 || root.Colonisation == null || root.Campaign == null || root.Campaign.FormatVersion != CampaignPlayableFleetIdentity.Format
