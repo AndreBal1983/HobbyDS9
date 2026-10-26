@@ -1,0 +1,13 @@
+# Canonical travel-core copy alias reduction
+
+Implemented allocation reduction only; latency benefit remains unmeasured.
+
+`CampaignTacticalReviewSession.TravelCopy` first performs the existing complete `CampaignTacticalTravelData.Copy(travel)`, including a deep copy of its core and all travel metadata/proof. When `travel.Core` and current `state` are the identical object, this copied core is already the detached canonical state. The method now retains it instead of immediately discarding it and making the same deep copy again.
+
+When the references differ, the original overwrite `copy.Core=Copy(state)` still runs after the complete first copy. This is necessary because strategic commands may replace canonical state without replacing the travel carrier's old core. Equal-looking but distinct DTOs are never treated as aliases. No source DTO is shared, and reference identity is not used as validation or admission authority.
+
+No validation, ordering, mutation, transaction probe, canonical replay, equality, publication or exception handling call was removed or moved. ForkPublished and PublishedMutation retain all existing pre/post checks and candidate/ready forks. No cache, diagnostics/API/serialization/format/content/identity/UI change is included. An allocation failure can naturally occur at different points when fewer objects are allocated; no OOM-equivalence or universal performance claim is made.
+
+Focused parity tests compare the actual private copy against the pre-change two-copy algorithm. A lawful authored physical battle after one resolved round is reloaded normally, then recursively checked for deep detachment across game state, tactical pools, battles/reports/resolved rounds, accepted command IDs and movement proof. A distinct updated canonical state must win over its stale travel core. A malformed stale core still fails during the retained first copy with the same underlying exception; malformed public physical ingress is still rejected unchanged. Existing published late-copy faults, colonisation phase/late faults, full-root replay checks and Format11/12 and legacy byte-preservation tests remain required.
+
+This source increment does not establish which portion of the earlier replay-dominant load is saved. Any mature-root or native comparison needs separate authorization, exact binary/content/input pins and unchanged complete export checks. It does not authorize another benchmark or a validation shortcut. Portable simulation remains authoritative as described in [architecture](architecture.md); [movement design](design/time-movement-mobilisation.md) remains separately labelled intended direction.

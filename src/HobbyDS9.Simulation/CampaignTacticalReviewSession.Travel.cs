@@ -23,7 +23,9 @@ namespace HobbyDS9.Simulation
         private CampaignTacticalTravelSaveDto TravelCopy()
         {
             Require(travel!=null,"Session has no physical profile.");
-            var copy=CampaignTacticalTravelData.Copy(travel);copy.Core=Copy(state);return copy;
+            var copy=CampaignTacticalTravelData.Copy(travel);
+            if(!ReferenceEquals(travel.Core,state))copy.Core=Copy(state);
+            return copy;
         }
         public CampaignTacticalTravelSaveDto ExportTravelSave(){lock(gate){Require(demo==null&&frontier==null&&playableHash==null,"Use complete profile export: bare physical root is incomplete.");return TravelCopy();}}
         public IReadOnlyList<CampaignKnownContact> KnownContacts(string actor)
