@@ -9,9 +9,13 @@ namespace HobbyDS9.UnityReview
         private static readonly bool checkpointDiagnosticsEnabled=CheckpointDiagnosticsEnabled();
         private static bool CheckpointDiagnosticsEnabled()
         {
+#if HOBBYDS9_CHECKPOINT_DIAGNOSTICS
+            return true; // Explicit unvalidated trace build only; no gameplay switch.
+#else
             try {foreach(var arg in Environment.GetCommandLineArgs())if(arg=="--hobbyds9-checkpoint-diagnostics")return true;}
             catch(Exception) { }
             return false;
+#endif
         }
         private static ReviewLoadDiagnostic? NewCheckpointDiagnostic()
             =>checkpointDiagnosticsEnabled?ReviewLoadDiagnostic.Create(row=>UnityEngine.Debug.Log(

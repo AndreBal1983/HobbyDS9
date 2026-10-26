@@ -314,9 +314,20 @@ package's validation record. No 1000-system colonisation performance is
 claimed.
 ";
 
-        private static void BuildStreamedActivitiesCheckpoint(string stageName)
+        [MenuItem("HobbyDS9/Campaign/Build colonisation V2 native trace diagnostic")]
+        public static void BuildWindowsColonisationV2TraceDiagnostic()
         {
-            BuildWindows(stageName);
+            const string stageName="Windows-Colonisation-V2-Trace-Diagnostic-20261026";
+            BuildStreamedActivitiesCheckpoint(stageName,true);
+            var stage=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,
+                "../../../artifacts/generated-static-astronomy-v2",stageName));
+            File.WriteAllText(Path.Combine(stage,"README.txt"),"UNVALIDATED NATIVE LOAD TRACE - NO HANDOVER OR LATEST\nThis build explicitly enables bounded fixed-code loading diagnostics.\nThe earlier standalone diagnostic rejected the official colony checkpoint; its cause remains unknown.\nNo validation or gameplay rule is changed.\n\n"+ColonisationV2DiagnosticReadme);
+            File.WriteAllText(Path.Combine(stage,"PLAY-COLONISATION-V2-DIAGNOSTIC.txt"),ColonisationV2DiagnosticGuide);
+        }
+
+        private static void BuildStreamedActivitiesCheckpoint(string stageName,bool checkpointDiagnostics=false)
+        {
+            BuildWindows(stageName,checkpointDiagnostics);
             var stage=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,
                 "../../../artifacts/generated-static-astronomy-v2",stageName));
             File.WriteAllText(Path.Combine(stage,"README.txt"),StreamedActivitiesReadme);
@@ -361,7 +372,7 @@ Construction may legitimately stall under interrupted supply. No freight travel-
 freighter, treaty, cargo or colonization feature is included.
 ";
 
-        private static void BuildWindows(string stageName)
+        private static void BuildWindows(string stageName,bool checkpointDiagnostics=false)
         {
             if (UnityEngine.Application.unityVersion != "6000.6.5f1")
                 throw new InvalidOperationException("Unity 6000.6.5f1 is required.");
@@ -402,7 +413,9 @@ freighter, treaty, cargo or colonization feature is included.
                     locationPathName = Path.Combine(stage, "HobbyDS9GeneratedCampaign.exe"),
                     target = BuildTarget.StandaloneWindows64,
                     options = BuildOptions.StrictMode,
-                    extraScriptingDefines = new[] { "HOBBYDS9_SINGLEPLAYER_DEMO" }
+                    extraScriptingDefines = checkpointDiagnostics
+                        ? new[] { "HOBBYDS9_SINGLEPLAYER_DEMO", "HOBBYDS9_CHECKPOINT_DIAGNOSTICS" }
+                        : new[] { "HOBBYDS9_SINGLEPLAYER_DEMO" }
                 });
                 if (report.summary.result != BuildResult.Succeeded)
                     throw new InvalidOperationException("Generated campaign build failed; preserve the failed stage and build report.");
