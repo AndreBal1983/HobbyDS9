@@ -1,6 +1,6 @@
 # Colonisation player integration v1
 
-Status: SOURCE/CPU candidate; actual Unity receiving, IL2CPP and native acceptance are pending. The accepted executable and earlier save slots remain unchanged. Portable gameplay acceptance is recorded separately in the colonisation source evidence; this document describes the player integration.
+Status, 26 October 2026: provisional player integration with separately scoped receiving/build/native evidence. See the [V2 starting-roster status](campaign-colonisation-roster-v2.md) for the current playtest and its limits. Earlier packages and save slots remain preserved. This describes implemented player integration, not completed acceptance of the full colonisation roadmap.
 
 The menu adds an explicit **Colonisation campaign (provisional playtest)** with New and three Continue choices. It retains the existing streamed campaign and earlier Continue paths. Colonisation saves use Format11 and their own slot directory; there is no conversion or decoder fallback. A loaded campaign completes ordinary full ordered replay before replacing the current host or discarding local edits.
 
