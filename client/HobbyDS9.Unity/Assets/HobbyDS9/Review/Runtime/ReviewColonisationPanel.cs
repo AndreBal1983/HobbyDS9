@@ -26,6 +26,30 @@ namespace HobbyDS9.UnityReview
         private string inspectedBlueprint="";private int inspectedRevision;
         private bool disposed,submitted;private int controlEpoch,reviewEpoch;private bool inspectedOpen;
         private Foldout? currentInspector;
+        private ReviewState? displayedReview;
+        internal sealed class ReviewState
+        {
+            internal readonly ColonisationCommandDto? Command;internal readonly ColonisationEligibilitySnapshot? Eligibility;
+            internal readonly ReviewActivitiesPanel.ReviewState? Activity;internal readonly string Caption;
+            internal ReviewState(ColonisationCommandDto command,string caption,ColonisationEligibilitySnapshot eligibility){Command=Copy(command);Caption=caption;Eligibility=eligibility;}
+            internal ReviewState(ReviewActivitiesPanel.ReviewState activity){Activity=activity;Caption=activity.Caption;}
+        }
+        internal ReviewState? CaptureReview()=>!Live?null:science!=null?(science.CaptureReview() is ReviewActivitiesPanel.ReviewState r?new ReviewState(r):null):displayedReview;
+        internal void RestoreReview(ReviewState? saved)
+        {if(saved?.Command!=null)PresentReviewedOrder(Copy(saved.Command),saved.Caption,saved.Eligibility!);else if(saved?.Activity!=null){if(science!=null)science.RestoreReview(saved.Activity);else PresentReviewedActivity(saved.Activity.Command,saved.Caption,saved.Activity.Eligibility);}}
+        private static List<ResourceAmountDto>? CopyResources(List<ResourceAmountDto>? rows)=>rows?.Select(r=>new ResourceAmountDto{ResourceDefinitionId=r.ResourceDefinitionId,Amount=r.Amount}).ToList();
+        private static ColonisationCommandDto Copy(ColonisationCommandDto c)=>new ColonisationCommandDto{
+            CommandId=c.CommandId,ActorId=c.ActorId,Turn=c.Turn,Revision=c.Revision,Action=c.Action,
+            StartSurvey=c.StartSurvey==null?null:new PlanetSurveyOrderDto{ShipId=c.StartSurvey.ShipId,PlanetId=c.StartSurvey.PlanetId},
+            CancelSurvey=c.CancelSurvey==null?null:new CancelPlanetSurveyDto{SurveyId=c.CancelSurvey.SurveyId},
+            Embark=c.Embark==null?null:new EmbarkSettlersDto{ShipId=c.Embark.ShipId,ColonyId=c.Embark.ColonyId,CohortId=c.Embark.CohortId,Population=c.Embark.Population,Food=c.Embark.Food,Materials=CopyResources(c.Embark.Materials)},
+            Unload=c.Unload==null?null:new UnloadSettlersDto{ManifestId=c.Unload.ManifestId,ColonyId=c.Unload.ColonyId},
+            Deploy=c.Deploy==null?null:new DeploySettlersDto{ManifestId=c.Deploy.ManifestId,PlanetId=c.Deploy.PlanetId},
+            Withdraw=c.Withdraw==null?null:new WithdrawDeploymentDto{IntentId=c.Withdraw.IntentId},
+            Evacuate=c.Evacuate==null?null:new EvacuateFoundingColonyDto{CampId=c.Evacuate.CampId,ShipId=c.Evacuate.ShipId},
+            Deliver=c.Deliver==null?null:new DeliverCarriedSuppliesDto{ManifestId=c.Deliver.ManifestId,ColonyId=c.Deliver.ColonyId,Food=c.Deliver.Food,Materials=CopyResources(c.Deliver.Materials)},
+            EnqueueKit=c.EnqueueKit==null?null:new EnqueueSettlementKitDto{ColonyId=c.EnqueueKit.ColonyId},
+            LoadSupplies=c.LoadSupplies==null?null:new LoadCarriedSuppliesDto{ShipId=c.LoadSupplies.ShipId,SourceColonyId=c.LoadSupplies.SourceColonyId,Food=c.LoadSupplies.Food,Materials=CopyResources(c.LoadSupplies.Materials)}};
         private string page="Worlds",world="",ship="",planet="",surveyShip="";
         internal sealed class Selection
         {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly ReviewActivitiesPanel.Selection? Science;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science){Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;}}
@@ -69,11 +93,11 @@ namespace HobbyDS9.UnityReview
         private ColonisationCommandDto Command(ColonisationAction action)=>new ColonisationCommandDto{ActorId=observation.Actor,Turn=observation.Turn,Revision=observation.Revision,Action=action,CommandId="command.colony.ui."+Guid.NewGuid().ToString("N")};
         private CampaignActivityCommandDto Activity(CampaignActivityCommandKind kind,string target)=>new CampaignActivityCommandDto{ActorId=observation.Actor,ExpectedTurn=observation.Turn,ExpectedRevision=observation.Revision,Kind=kind,TargetId=target,CommandId="command.colony.activity."+Guid.NewGuid().ToString("N")};
         private void Check(ColonisationCommandDto command,string caption){if(Live)reviewOrder(command,caption);}
-        private void Send(ColonisationCommandDto command){if(!Live)return;submitted=true;submit(command);}
-        private void SendActivity(CampaignActivityCommandDto command){if(!Live)return;submitted=true;submitActivity(command);}
+        private void Send(ColonisationCommandDto command){if(!Live)return;displayedReview=null;submitted=true;submit(command);}
+        private void SendActivity(CampaignActivityCommandDto command){if(!Live)return;displayedReview=null;submitted=true;submitActivity(command);}
         private void Show(string selected)
         {
-            if(disposed)return;controlEpoch++;reviewEpoch++;currentInspector=null;page=new[]{"Worlds","Planets","Transports","Science"}.Contains(selected)?selected:"Worlds";
+            if(disposed)return;controlEpoch++;reviewEpoch++;displayedReview=null;currentInspector=null;page=new[]{"Worlds","Planets","Transports","Science"}.Contains(selected)?selected:"Worlds";
             science?.Dispose();science=null;ReleaseHull();body.Clear();review.Clear();review.style.display=DisplayStyle.None;
             if(page=="Worlds")Worlds();else if(page=="Planets")Planets();else if(page=="Transports")Transports();else
             {science=new ReviewActivitiesPanel(activities,reviewActivity,submitActivity,true);body.Add(science);}
@@ -195,13 +219,15 @@ namespace HobbyDS9.UnityReview
         internal void PresentReviewedOrder(ColonisationCommandDto command,string caption,ColonisationEligibilitySnapshot eligibility)
         {
             if(!Live||eligibility.Actor!=observation.Actor||eligibility.Turn!=observation.Turn||eligibility.Revision!=observation.Revision||command.ActorId!=observation.Actor||command.Turn!=observation.Turn||command.Revision!=observation.Revision||eligibility.Action!=command.Action)return;
+            displayedReview=new ReviewState(command,caption,eligibility);command=Copy(displayedReview.Command!);
             var token=++reviewEpoch;review.Clear();review.style.display=DisplayStyle.Flex;Text(review,caption);Text(review,eligibility.Available?"Available at the observed campaign state. Confirm revalidates the order.":eligibility.Reason);
             if(eligibility.Available)Button(review,"Confirm order","colonisation-order-confirm",()=>{if(token==reviewEpoch)Send(command);});Button(review,"Back","colonisation-order-back",()=>DismissReview(token));
         }
         internal void PresentReviewedActivity(CampaignActivityCommandDto command,string caption,CampaignActivityEligibilityDto eligibility)
-        {if(science!=null){science.PresentReviewedOrder(command,caption,eligibility);return;}if(!Live||eligibility.ActorId!=observation.Actor||eligibility.Turn!=observation.Turn||eligibility.Revision!=observation.Revision)return;
+        {if(science!=null){science.PresentReviewedOrder(command,caption,eligibility);return;}if(!Live||eligibility.ActorId!=observation.Actor||eligibility.Turn!=observation.Turn||eligibility.Revision!=observation.Revision||command.ActorId!=observation.Actor||command.ExpectedTurn!=observation.Turn||command.ExpectedRevision!=observation.Revision)return;
+         var activity=new ReviewActivitiesPanel.ReviewState(command,caption,eligibility);displayedReview=new ReviewState(activity);command=activity.Command;
          var token=++reviewEpoch;review.Clear();review.style.display=DisplayStyle.Flex;Text(review,caption);Text(review,eligibility.Accepted?"Available at this observed state.":eligibility.Reason);if(eligibility.Accepted)Button(review,"Confirm order","colonisation-order-confirm",()=>{if(token==reviewEpoch)SendActivity(command);});Button(review,"Back","colonisation-order-back",()=>DismissReview(token));}
-        private void DismissReview(int token){if(token!=reviewEpoch)return;reviewEpoch++;review.Clear();review.style.display=DisplayStyle.None;}
-        public void Dispose(){if(disposed)return;disposed=true;reviewEpoch++;currentInspector=null;science?.Dispose();science=null;ReleaseHull();review.Clear();}
+        private void DismissReview(int token){if(token!=reviewEpoch)return;reviewEpoch++;displayedReview=null;review.Clear();review.style.display=DisplayStyle.None;}
+        public void Dispose(){if(disposed)return;disposed=true;reviewEpoch++;displayedReview=null;currentInspector=null;science?.Dispose();science=null;ReleaseHull();review.Clear();}
     }
 }

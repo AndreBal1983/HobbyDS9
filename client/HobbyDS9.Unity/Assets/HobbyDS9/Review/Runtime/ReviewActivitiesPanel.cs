@@ -28,6 +28,16 @@ namespace HobbyDS9.UnityReview
         private Func<string,string?>? constructionStatus;
         private readonly Label status;
         private CampaignActivityCommandDto? pending;
+        private int reviewGeneration;
+        private ReviewState? displayedReview;
+        internal sealed class ReviewState
+        {
+            internal readonly CampaignActivityCommandDto Command;internal readonly CampaignActivityEligibilityDto Eligibility;internal readonly string Caption;
+            internal ReviewState(CampaignActivityCommandDto c,string caption,CampaignActivityEligibilityDto e)
+            {Command=Copy(c);Caption=caption;Eligibility=new CampaignActivityEligibilityDto{ActorId=e.ActorId,Turn=e.Turn,Revision=e.Revision,Accepted=e.Accepted,Error=e.Error,Reason=e.Reason,IndustryAfterCompletion=e.IndustryAfterCompletion,ResearchAfterCompletion=e.ResearchAfterCompletion,FoodAfterCompletion=e.FoodAfterCompletion};}
+        }
+        internal ReviewState? CaptureReview()=>!disposed&&!submitted?displayedReview:null;
+        internal void RestoreReview(ReviewState? saved){if(saved!=null)PresentReviewedOrder(Copy(saved.Command),saved.Caption,saved.Eligibility);}
         private bool disposed,expeditionsSelected,submitted,largeActionTargets;
         private int colonyIndex,shipIndex,siteIndex;
         private VisualElement? buildList,queueList,siteDetails,history;
@@ -374,19 +384,21 @@ namespace HobbyDS9.UnityReview
             DismissReview();review.Clear();review.style.display=DisplayStyle.Flex;Text(review,caption,"console-section");
             var exact=candidate.ActorId==actor&&candidate.ExpectedTurn==turn&&candidate.ExpectedRevision==revision&&eligibility!=null && eligibility.ActorId==actor && eligibility.Turn==turn && eligibility.Revision==revision;
             if(!exact){Text(review,"This observation is out of date. Refresh the campaign before issuing another order.");return;}
+            if(largeActionTargets)displayedReview=new ReviewState(candidate,caption,eligibility!);var token=reviewGeneration;
             Text(review,Friendly(eligibility!.Reason,eligibility.Accepted?"Ready to submit at the observed campaign state.":"This order is unavailable."));
             if(eligibility.IndustryAfterCompletion.HasValue || eligibility.ResearchAfterCompletion.HasValue || eligibility.FoodAfterCompletion.HasValue)
                 Text(review,"After completion: Industry "+(eligibility.IndustryAfterCompletion.HasValue?N(eligibility.IndustryAfterCompletion.Value):"unavailable")
                     +" · Research "+(eligibility.ResearchAfterCompletion.HasValue?N(eligibility.ResearchAfterCompletion.Value):"unavailable")
                     +" · Food "+(eligibility.FoodAfterCompletion.HasValue?N(eligibility.FoodAfterCompletion.Value):"unavailable"));
             var controls=Row(review);
-            Button(controls,"Back","activity-order-back",DismissReview);
+            Button(controls,"Back","activity-order-back",()=>{if(!largeActionTargets||token==reviewGeneration)DismissReview();});
             if(!eligibility.Accepted){status.text="This order is unavailable at the observed campaign state.";return;}
             pending=Copy(candidate);
             Button(controls,"Confirm order","activity-order-confirm",()=>
             {
-                if(disposed || submitted || pending==null)return;
+                if(disposed || submitted || pending==null||largeActionTargets&&token!=reviewGeneration)return;
                 var command=Copy(pending);submitted=true;pending=null;review.style.display=DisplayStyle.None;
+                displayedReview=null;reviewGeneration++;
                 status.text="Order submitted for validation. Refresh the campaign to see its outcome.";
                 // No automatic retry or stamp refresh; callback may replace and
                 // dispose this entire panel synchronously.
@@ -394,7 +406,7 @@ namespace HobbyDS9.UnityReview
             }).AddToClassList("primary-action");
             status.text="Review this order, then confirm. No credits have been spent by this preview.";
         }
-        private void DismissReview(){pending=null;if(review!=null)review.style.display=DisplayStyle.None;}
+        private void DismissReview(){pending=null;displayedReview=null;reviewGeneration++;if(review!=null)review.style.display=DisplayStyle.None;}
 
         private void UpdateShipPreview()
         {
@@ -412,6 +424,6 @@ namespace HobbyDS9.UnityReview
             if(previewImage!=null){previewImage.image=null;previewImage.style.display=DisplayStyle.None;}
             stage?.Dispose();stage=null;
         }
-        public void Dispose(){if(disposed)return;disposed=true;pending=null;constructionStatus=null;construction?.Dispose();ReleasePreview();}
+        public void Dispose(){if(disposed)return;disposed=true;pending=null;displayedReview=null;reviewGeneration++;constructionStatus=null;construction?.Dispose();ReleasePreview();}
     }
 }
