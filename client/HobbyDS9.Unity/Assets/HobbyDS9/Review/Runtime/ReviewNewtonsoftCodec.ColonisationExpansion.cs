@@ -73,13 +73,13 @@ namespace HobbyDS9.UnityReview
             var actors=new HashSet<string>(StringComparer.Ordinal);
             foreach(var p in root.AiPlans!)
             {
-                if(p.ActorId==null||!actors.Add(p.ActorId)||!Enum.IsDefined(typeof(ColonisationAiStage),p.Stage)
+                if(p.ActorId==null||!actors.Add(p.ActorId)||(!Enum.IsDefined(typeof(ColonisationAiStage),p.Stage)||(int)p.Stage>8)
                     ||!ActivityRows(p.LatestActions)||p.LatestActions!.Count>8||!ActivityRows(p.OwnAttemptedTargets)||p.OwnAttemptedTargets!.Count>8)throw Invalid();
                 if(p.GoalId!="establish-first-frontier-colony-v1"||p.HoldReason==null||p.HoldReason.Length>128
                     ||!new[]{p.ActorId,p.GoalId,p.HomeColonyId,p.YardColonyId,p.SourceCohortId,p.ScoutShipId,p.TransportShipId,p.BlueprintId,
                         p.TargetPlanetId,p.TargetNodeId,p.KitQueueId,p.TransportQueueId,p.ManifestId,p.CampId,p.EstablishedColonyId}.All(Text)
                     ||p.OwnAttemptedTargets.Any(id=>id==null||!Text(id)))throw Invalid();
-                foreach(var a in p.LatestActions)if(a.CommandId==null||a.CommandId.Length>128||!Enum.IsDefined(typeof(ColonisationAiAction),a.Action)||!Enum.IsDefined(typeof(CampaignTacticalError),a.Error))throw Invalid();
+                foreach(var a in p.LatestActions)if(a.CommandId==null||a.CommandId.Length>128||(!Enum.IsDefined(typeof(ColonisationAiAction),a.Action)||(int)a.Action>14)||!Enum.IsDefined(typeof(CampaignTacticalError),a.Error))throw Invalid();
             }
         }
     }

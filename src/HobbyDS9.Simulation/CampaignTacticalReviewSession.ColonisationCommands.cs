@@ -59,6 +59,7 @@ namespace HobbyDS9.Simulation
                     case ColonisationAction.CancelPlanetSurvey when command.CancelSurvey!=null:error=CancelPlanetSurvey(game,command.ActorId,command.CancelSurvey);break;
                     case ColonisationAction.EnqueueKit when command.EnqueueKit!=null:error=EnqueueSettlementKit(game,command.ActorId,command.EnqueueKit);break;
                     case ColonisationAction.EmbarkSettlers when command.Embark!=null:error=EmbarkSettlers(game,command.ActorId,command.Embark);break;
+                    case ColonisationAction.LoadPassengers when command.Embark!=null:error=LoadPassengers(game,command.ActorId,command.Embark);break;
                     case ColonisationAction.LoadCarriedSupplies when command.LoadSupplies!=null:error=LoadCarriedSupplies(game,command.ActorId,command.LoadSupplies);break;
                     case ColonisationAction.UnloadTransport when command.Unload!=null:error=UnloadTransport(game,command.ActorId,command.Unload);break;
                     case ColonisationAction.DeliverCarriedSupplies when command.Deliver!=null:error=DeliverSupplies(game,command.ActorId,command.Deliver);break;

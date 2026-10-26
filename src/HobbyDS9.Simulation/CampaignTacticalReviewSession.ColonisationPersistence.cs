@@ -13,7 +13,8 @@ namespace HobbyDS9.Simulation
         {
             timing?.Begin(ColonisationReplayPhase.CorePreflight);
             Require(package!=null&&package.PackageHash==ColonisationData.PackageHash(package),"Different approved colonisation package.");
-            ColonisationRootBudget.Validate(root,package!.Settlement!);
+            if(expansionSource?.Edition==ColonisationSourceEdition.Growth)ColonisationRootBudget.ValidateGrowthBase(root,package!.Settlement!);
+            else ColonisationRootBudget.Validate(root,package!.Settlement!);
             Require(root!=null&&root.FormatVersion==CampaignColonisationIdentity.Format&&root.ProfileId==CampaignColonisationIdentity.Profile&&root.PolicyId==CampaignColonisationIdentity.Policy
                 &&root.TemplatePackageHash==(expansionSource?.Hash??roster?.Hash??package!.PackageHash)&&root.Map!=null&&root.FrozenPlanets!=null&&root.Campaign!=null&&root.Colonisation!=null&&root.Activities!=null
                 &&root.Production!=null&&root.ProductionHistory!=null&&root.Discoveries!=null&&root.PublishedBuiltShips!=null&&root.Journal!=null&&root.Journal.Count<=package.Settlement!.JournalBudget,
@@ -63,6 +64,7 @@ namespace HobbyDS9.Simulation
                         Physical=new CampaignTacticalTravelSaveDto{FormatVersion=physical.FormatVersion,ProfileId=physical.ProfileId,PackageHash=physical.PackageHash,Core=state,
                             Phase=physical.Phase,Requests=physical.Requests,Orders=physical.Orders,Contacts=physical.Contacts,LastMovement=physical.LastMovement,MovementProof=physical.MovementProof}}}};
             if(expansion==null)ColonisationRootBudget.Validate(view,c.Policy);
+            else if(GrowthEnabled)ColonisationRootBudget.ValidateGrowth(new CampaignColonisationExpansionSaveDto{ProfileId=expansion.Source.Profile,PackageHash=expansion.Source.Hash,BaseCampaign=view,AiPlans=expansion.Plans},c.Policy);
             else ColonisationRootBudget.ValidateExpansion(new CampaignColonisationExpansionSaveDto{PackageHash=expansion.Source.Hash,BaseCampaign=view,AiPlans=expansion.Plans},c.Policy);
         }
         public CampaignColonisationSaveDto ExportColonisationSave()

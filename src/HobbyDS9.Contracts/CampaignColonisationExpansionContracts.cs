@@ -37,8 +37,8 @@ namespace HobbyDS9.Contracts
         public CampaignColonisationRosterPackageDto? BaseRosterV2 {get;set;}
         public ColonisationPlannerPolicyDto? PlannerPolicy {get;set;}=new ColonisationPlannerPolicyDto();
     }
-    public enum ColonisationAiStage { Preparing=1,Scouting=2,Assembling=3,Loaded=4,Deploying=5,Supporting=6,Recovering=7,Suspended=8 }
-    public enum ColonisationAiAction { Kit=1,Ship=2,Infrastructure=3,Survey=4,Embark=5,Deploy=6,Withdraw=7,Unload=8,SupplyLoad=9,Deliver=10,Evacuate=11,Travel=12,Organise=13,CancelSurvey=14 }
+    public enum ColonisationAiStage { Preparing=1,Scouting=2,Assembling=3,Loaded=4,Deploying=5,Supporting=6,Recovering=7,Suspended=8,Immigrating=9,GrowthClosed=10 }
+    public enum ColonisationAiAction { Kit=1,Ship=2,Infrastructure=3,Survey=4,Embark=5,Deploy=6,Withdraw=7,Unload=8,SupplyLoad=9,Deliver=10,Evacuate=11,Travel=12,Organise=13,CancelSurvey=14,PassengerLoad=15 }
     public sealed class ColonisationAiActionReceiptDto
     {
         public string CommandId {get;set;}="";

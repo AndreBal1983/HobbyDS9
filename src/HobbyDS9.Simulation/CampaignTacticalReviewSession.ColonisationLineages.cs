@@ -25,7 +25,7 @@ namespace HobbyDS9.Simulation
             foreach(var m in a.ManifestRecords)
             {
                 Require(m!=null&&Allocated(m.ManifestId)&&controllers.ContainsKey(m.OwnerId)&&Enum.IsDefined(typeof(SettlerManifestKind),m.Kind)&&Enum.IsDefined(typeof(SettlerManifestStage),m.Stage)
-                    &&m.Blueprint!=null&&Vector(m.Cargo)&&Vector(m.MaterialsDelivered)&&Vector(m.MaterialsLost)&&m.Food>=0&&m.FoodConsumed>=0&&m.FoodDelivered>=0&&m.FoodLost>=0
+                    &&(GrowthEnabled||m.Kind!=SettlerManifestKind.ImmigrationOnly)&&m.Blueprint!=null&&Vector(m.Cargo)&&Vector(m.MaterialsDelivered)&&Vector(m.MaterialsLost)&&m.Food>=0&&m.FoodConsumed>=0&&m.FoodDelivered>=0&&m.FoodLost>=0
                     &&m.PassengerDeaths>=0&&m.PopulationTransferred>=0&&m.EquipmentConsumed>=0&&m.EquipmentConsumed<=1&&m.FoodShortageWeeks>=0&&m.LastSurvivalTurn<game.TurnNumber,"Invalid retained transport facts.");
                 var origin=a.ManifestOrigins.SingleOrDefault(o=>o.ManifestId==m.ManifestId);
                 Require(origin!=null&&game.Colonies!.Any(c=>c.ColonyId==origin.SourceColonyId&&c.OwnerCivilizationId==m.OwnerId)&&Vector(origin.LoadedMaterials)
@@ -41,6 +41,10 @@ namespace HobbyDS9.Simulation
                     Require(origin!.Kind==ManifestOriginKind.Passenger&&EntityId.TryParse(origin.SourceCohortId,out _)&&Allocated(origin.EmbarkedCohortId!)&&origin.EmbarkedPopulation>0&&origin.EmbarkedPopulation<=policy.Settlers
                         &&(BigInteger)(m.Passengers?.Population??0)+m.PopulationTransferred+m.PassengerDeaths==origin.EmbarkedPopulation
                         &&(m.Stage==SettlerManifestStage.Loaded?m.Passengers!=null&&m.Passengers.Population>0&&m.Passengers.CohortId==origin.EmbarkedCohortId:m.Passengers==null),"Passenger lineage is not conserved.");
+                if(m.Kind==SettlerManifestKind.ImmigrationOnly)
+                    Require(m.EquipmentConsumed==0&&PopulationRules.Stock(origin!.LoadedMaterials!,policy.EquipmentResourceId)==0
+                        &&m.Stage!=SettlerManifestStage.Deployed&&m.Stage!=SettlerManifestStage.Delivered
+                        &&origin.EmbarkedPopulation==policy.Settlers,"Kit-free passenger provenance required.");
                 Require((BigInteger)m.Food+m.FoodConsumed+m.FoodDelivered+m.FoodLost==origin!.LoadedFood,"Manifest food is not conserved.");
                 foreach(var id in origin.LoadedMaterials!.Select(r=>r.ResourceDefinitionId).Concat(m.Cargo!.Select(r=>r.ResourceDefinitionId)).Concat(m.MaterialsDelivered!.Select(r=>r.ResourceDefinitionId)).Concat(m.MaterialsLost!.Select(r=>r.ResourceDefinitionId)).Distinct(StringComparer.Ordinal))
                     Require((BigInteger)PopulationRules.Stock(origin.LoadedMaterials!,id)==(BigInteger)PopulationRules.Stock(m.Cargo!,id)+PopulationRules.Stock(m.MaterialsDelivered!,id)+PopulationRules.Stock(m.MaterialsLost!,id)+(id==policy.EquipmentResourceId?m.EquipmentConsumed:0),"Manifest material is not conserved.");

@@ -76,6 +76,10 @@ namespace HobbyDS9.UnityReview
             if (--visits < 0) throw Invalid();
             if (token.Type == JTokenType.Null) return; // Typed decoding and required-fact checks follow.
             var type = Nullable.GetUnderlyingType(declared) ?? declared;
+            if (token.Type==JTokenType.Integer&&((type==typeof(SettlerManifestKind)&&token.Value<long>()==4)
+                ||(type==typeof(ColonisationAction)&&token.Value<long>()==11)
+                ||(type==typeof(ColonisationAiStage)&&token.Value<long>()>8)
+                ||(type==typeof(ColonisationAiAction)&&token.Value<long>()>14)))throw Invalid();
             if (type == typeof(string) || type.IsValueType) return;
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
             {
@@ -171,7 +175,7 @@ namespace HobbyDS9.UnityReview
         private static void RequireColonisationManifestCarrier(SettlerManifestDto manifest)
         {
             if (manifest.Blueprint == null || !ActivityRows(manifest.Cargo) || !ActivityRows(manifest.MaterialsDelivered) || !ActivityRows(manifest.MaterialsLost)
-                || !Enum.IsDefined(typeof(SettlerManifestKind), manifest.Kind) || !Enum.IsDefined(typeof(SettlerManifestStage), manifest.Stage)) throw Invalid();
+                || (!Enum.IsDefined(typeof(SettlerManifestKind), manifest.Kind)||(int)manifest.Kind>3) || !Enum.IsDefined(typeof(SettlerManifestStage), manifest.Stage)) throw Invalid();
         }
         private static void RequireColonisationCommand(ColonisationCommandDto command)
         {

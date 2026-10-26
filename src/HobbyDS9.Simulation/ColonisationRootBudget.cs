@@ -13,11 +13,17 @@ namespace HobbyDS9.Simulation
         internal const string AlgorithmIdentity="colonisation-root-preflight-v1";
         internal const string SchemaFingerprint="eefec29cac2be2889afae7277e955587af184e186337303559001fbd9b852e32";
         internal static void Validate(CampaignColonisationSaveDto root,ColonisationPolicyDto policy)
-            =>ValidateCore(root,policy,0,0);
+            =>ValidateCore(root,policy,0,0,ColonisationSourceEdition.Original);
+        internal static void ValidateGrowthBase(CampaignColonisationSaveDto root,ColonisationPolicyDto policy)
+            =>ValidateCore(root,policy,0,0,ColonisationSourceEdition.Growth);
         // Typed outer graph accounting. Old Format11 limits/schema/visitor remain unchanged.
         internal static void ValidateExpansion(CampaignColonisationExpansionSaveDto root,ColonisationPolicyDto policy)
+            =>ValidateExpansionCore(root,policy,ColonisationSourceEdition.Original);
+        internal static void ValidateGrowth(CampaignColonisationExpansionSaveDto root,ColonisationPolicyDto policy)
+            =>ValidateExpansionCore(root,policy,ColonisationSourceEdition.Growth);
+        private static void ValidateExpansionCore(CampaignColonisationExpansionSaveDto root,ColonisationPolicyDto policy,ColonisationSourceEdition edition)
         {
-            if(root==null||root.FormatVersion!=CampaignColonisationExpansionIdentity.Format||root.ProfileId!=CampaignColonisationExpansionIdentity.Profile
+            if(root==null||root.FormatVersion!=CampaignColonisationExpansionIdentity.Format||root.ProfileId!=(edition==ColonisationSourceEdition.Growth?CampaignColonisationGrowthIdentity.Profile:CampaignColonisationExpansionIdentity.Profile)
                 ||root.BaseCampaign==null||root.AiPlans==null||root.AiPlans.Count>4)Fail("Complete bounded expansion root required.");
             // Reserve the full bounded future plan from genesis, not only today's
             // empty receipts/targets. This allowance cannot grow after payment.
@@ -26,7 +32,7 @@ namespace HobbyDS9.Simulation
             Text(root.PackageHash);var actors=new System.Collections.Generic.HashSet<string>(System.StringComparer.Ordinal);
             foreach(var p in root.AiPlans)
             {
-                if(p==null||p.ActorId==null||!actors.Add(p.ActorId)||p.GoalId!="establish-first-frontier-colony-v1"||!System.Enum.IsDefined(typeof(ColonisationAiStage),p.Stage)
+                if(p==null||p.ActorId==null||!actors.Add(p.ActorId)||p.GoalId!="establish-first-frontier-colony-v1"||(!System.Enum.IsDefined(typeof(ColonisationAiStage),p.Stage)||edition==ColonisationSourceEdition.Original&&(int)p.Stage>8)
                     ||p.OwnAttemptedTargets==null||p.OwnAttemptedTargets.Count>8||p.LatestActions==null||p.LatestActions.Count>8)Fail("Invalid bounded expansion plan.");
                 // 64 fixed visits +16 text fields +8 targets +8*(16+1) receipt visits.
                 visits=checked(visits+224);
@@ -37,14 +43,14 @@ namespace HobbyDS9.Simulation
                 foreach(var id in p.OwnAttemptedTargets){if(id==null)Fail("Null attempted target.");Text(id);}
                 foreach(var a in p.LatestActions)
                 {
-                    if(a==null||a.CommandId==null||a.CommandId.Length>128||!System.Enum.IsDefined(typeof(ColonisationAiAction),a.Action)
+                    if(a==null||a.CommandId==null||a.CommandId.Length>128||(!System.Enum.IsDefined(typeof(ColonisationAiAction),a.Action)||edition==ColonisationSourceEdition.Original&&(int)a.Action>14)
                         ||!System.Enum.IsDefined(typeof(CampaignTacticalError),a.Error))Fail("Invalid bounded AI action receipt.");
                     Text(a.CommandId);
                 }
             }
-            ValidateCore(root.BaseCampaign,policy,visits,bytes);
+            ValidateCore(root.BaseCampaign,policy,visits,bytes,edition);
         }
-        private static void ValidateCore(CampaignColonisationSaveDto root,ColonisationPolicyDto policy,long extraVisits,long extraBytes)
+        private static void ValidateCore(CampaignColonisationSaveDto root,ColonisationPolicyDto policy,long extraVisits,long extraBytes,ColonisationSourceEdition edition)
         {
             if(root==null||policy==null||policy.MaximumValidationVisits<=0||policy.MaximumValidationVisits>2000000
                 ||policy.MaximumCanonicalRootBytes<=0||policy.MaximumCanonicalRootBytes>67108864)
@@ -57,7 +63,7 @@ namespace HobbyDS9.Simulation
                 ||root.FrozenPlanets.Bodies.Count>policy.MaximumPlanets||root.FrozenPlanets.GenesisControls.Count>policy.MaximumPlanets)
                 Fail("Complete bounded frozen planet inventory required.");
             if(extraVisits>=policy.MaximumValidationVisits||extraBytes>=policy.MaximumCanonicalRootBytes)Fail("Expansion root work or byte limit.");
-            new Counter(policy.MaximumValidationVisits-extraVisits,policy.MaximumCanonicalRootBytes-extraBytes).Root(root);
+            new Counter(policy.MaximumValidationVisits-extraVisits,policy.MaximumCanonicalRootBytes-extraBytes,edition).Root(root);
         }
         [System.Diagnostics.CodeAnalysis.DoesNotReturn] private static void Fail(string message)=>throw new ArgumentException(message);
         private static void Need(object? value){if(value==null)Fail("Null required colonisation root member or collection item.");}
@@ -65,13 +71,13 @@ namespace HobbyDS9.Simulation
         private static void Shape(ColonisationOperationDto x){if(Present(x.Colonisation)+Present(x.Existing)!=1)Fail("Closed colonisation journal carrier required.");}
         private static void Shape(CampaignActivityOperationDto x){if(Present(x.Activity)+Present(x.Common)!=1)Fail("Closed inherited activity carrier required.");}
         private static void Shape(CampaignPlayableOperationDto x){if(Present(x.Common)+Present(x.Organization)!=1)Fail("Closed inherited playable carrier required.");}
-        private static void Shape(ColonisationCommandDto x)
+        private static void Shape(ColonisationCommandDto x,ColonisationSourceEdition edition)
         {
             if(Present(x.StartSurvey)+Present(x.CancelSurvey)+Present(x.Embark)+Present(x.Unload)+Present(x.Deploy)+Present(x.Withdraw)+Present(x.Evacuate)+Present(x.Deliver)+Present(x.EnqueueKit)+Present(x.LoadSupplies)!=1)
                 Fail("Exactly one colonisation command payload required.");
             bool matches=x.Action switch{
                 ColonisationAction.StartPlanetSurvey=>x.StartSurvey!=null,ColonisationAction.CancelPlanetSurvey=>x.CancelSurvey!=null,
-                ColonisationAction.EmbarkSettlers=>x.Embark!=null,ColonisationAction.UnloadTransport=>x.Unload!=null,
+                ColonisationAction.EmbarkSettlers=>x.Embark!=null,ColonisationAction.LoadPassengers=>edition==ColonisationSourceEdition.Growth&&x.Embark!=null,ColonisationAction.UnloadTransport=>x.Unload!=null,
                 ColonisationAction.RequestDeployment=>x.Deploy!=null,ColonisationAction.WithdrawDeployment=>x.Withdraw!=null,
                 ColonisationAction.EvacuateColony=>x.Evacuate!=null,ColonisationAction.DeliverCarriedSupplies=>x.Deliver!=null,
                 ColonisationAction.EnqueueKit=>x.EnqueueKit!=null,ColonisationAction.LoadCarriedSupplies=>x.LoadSupplies!=null,_=>false};
@@ -93,7 +99,8 @@ namespace HobbyDS9.Simulation
         private sealed class Counter
         {
             private long remainingVisits,remainingBytes;
-            internal Counter(long visits,long bytes){remainingVisits=visits;remainingBytes=bytes;}
+            private readonly ColonisationSourceEdition edition;
+            internal Counter(long visits,long bytes,ColonisationSourceEdition sourceEdition){remainingVisits=visits;remainingBytes=bytes;edition=sourceEdition;}
             internal void Root(CampaignColonisationSaveDto root)=>V(root);
             private void Count(long bytes)
             {
@@ -743,7 +750,7 @@ namespace HobbyDS9.Simulation
                 V(value.RadicalisationChange);
                 V(value.Reasons);
             }
-            private void V(global::HobbyDS9.Contracts.ColonisationAction value){Count(11);}
+            private void V(global::HobbyDS9.Contracts.ColonisationAction value){if(edition==ColonisationSourceEdition.Original&&value==ColonisationAction.LoadPassengers)Fail("Different colonisation action vocabulary.");Count(11);}
             private void V(global::HobbyDS9.Contracts.ColonisationColonyStageDto? value)
             {
                 if(value==null){Null();return;}
@@ -755,7 +762,7 @@ namespace HobbyDS9.Simulation
             private void V(global::HobbyDS9.Contracts.ColonisationCommandDto? value)
             {
                 if(value==null){Null();return;}
-                Shape(value);
+                Shape(value,edition);
                 Count(182);
                 Need(value.CommandId);
                 V(value.CommandId);
@@ -1901,7 +1908,7 @@ namespace HobbyDS9.Simulation
                 Need(value.LatestReport);
                 V(value.LatestReport);
             }
-            private void V(global::HobbyDS9.Contracts.SettlerManifestKind value){Count(11);}
+            private void V(global::HobbyDS9.Contracts.SettlerManifestKind value){if(edition==ColonisationSourceEdition.Original&&value==SettlerManifestKind.ImmigrationOnly)Fail("Different manifest vocabulary.");Count(11);}
             private void V(global::HobbyDS9.Contracts.SettlerManifestStage value){Count(11);}
             private void V(global::HobbyDS9.Contracts.ShipCombatChangeDto? value)
             {

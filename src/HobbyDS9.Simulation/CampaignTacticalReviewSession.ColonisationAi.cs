@@ -38,6 +38,7 @@ namespace HobbyDS9.Simulation
                 if(surveying)return true;
                 if(assigned.Any(s=>s.ShipId==p.ScoutShipId)&&p.EstablishedColonyId==null&&p.Stage!=ColonisationAiStage.Suspended&&p.Stage!=ColonisationAiStage.Supporting)return true;
                 if(!assigned.Any(s=>s.ShipId==p.TransportShipId))continue;
+                if(GrowthEnabled&&p.Stage==ColonisationAiStage.Immigrating)return true;
                 if(colonisation.State.ManifestRecords!.Any(m=>m.OwnerId==p.ActorId&&m.ShipId==p.TransportShipId&&m.Stage==SettlerManifestStage.Loaded))return true;
                 var camp=colonisation.State.CampSources!.SingleOrDefault(c=>c.CampId==p.CampId&&c.OwnerId==p.ActorId);
                 if(camp?.Stage==ColonyEstablishmentStage.Founding)return true;
@@ -55,7 +56,8 @@ namespace HobbyDS9.Simulation
             if(expansion==null)return false;var p=ExpansionPlan(actor);if(p.Stage==ColonisationAiStage.Suspended)return false;
             var game=state.Campaign.GameState;
             return p.HomeColonyId==colony&&p.EstablishedColonyId==null&&PopulationRules.Stock(game.Colonies!.Single(c=>c.ColonyId==colony).Stockpiles!,colonisation!.Policy.EquipmentResourceId)<1
-                ||p.YardColonyId==colony&&p.TransportShipId==null;
+                ||p.YardColonyId==colony&&p.TransportShipId==null
+                    &&(!GrowthEnabled||p.Stage!=ColonisationAiStage.GrowthClosed||GrowthSupplyNeeded(game,p));
         }
         private string ExpansionCommandId(string actor)
         {
@@ -186,7 +188,16 @@ namespace HobbyDS9.Simulation
             var manifest=transport==null?null:a.ManifestRecords!.SingleOrDefault(m=>m.ShipId==transport.ShipId&&m.OwnerId==actor&&m.Stage==SettlerManifestStage.Loaded);
             p.ManifestId=manifest?.ManifestId??p.ManifestId;
             var camp=a.CampSources!.Where(c=>c.OwnerId==actor).OrderByDescending(c=>c.DeployedTurn).ThenBy(c=>c.CampId,StringComparer.Ordinal).FirstOrDefault();
-            if(camp!=null){p.CampId=camp.CampId;if(camp.Stage!=ColonyEstablishmentStage.EmptyOutpost&&p.Stage!=ColonisationAiStage.Recovering)p.Stage=ColonisationAiStage.Supporting;if(camp.Stage==ColonyEstablishmentStage.Established)p.EstablishedColonyId=camp.ColonyId;}
+            if(camp!=null){p.CampId=camp.CampId;if(camp.Stage!=ColonyEstablishmentStage.EmptyOutpost&&p.Stage!=ColonisationAiStage.Recovering&&!(GrowthEnabled&&(p.Stage==ColonisationAiStage.Immigrating||p.Stage==ColonisationAiStage.GrowthClosed)))p.Stage=ColonisationAiStage.Supporting;if(camp.Stage==ColonyEstablishmentStage.Established)p.EstablishedColonyId=camp.ColonyId;}
+            if(GrowthEnabled)
+            {
+                var carried=a.ManifestRecords!.Where(m=>m.OwnerId==actor&&m.Kind==SettlerManifestKind.ImmigrationOnly).OrderBy(m=>m.ManifestId,StringComparer.Ordinal).LastOrDefault();
+                if(carried!=null&&carried.Stage!=SettlerManifestStage.Loaded)p.Stage=ColonisationAiStage.GrowthClosed;
+                if(carried?.Stage==SettlerManifestStage.Loaded&&(transport==null||transport.ShipId!=carried.ShipId))
+                {p.HoldReason="Immigration carrier unavailable; retained cargo awaits its survival boundary.";return false;}
+                if(manifest?.Kind==SettlerManifestKind.ImmigrationOnly)
+                    return PlanGrowthPassengers(actor,p,home,transport!,manifest,camp,searches);
+            }
             // Urgent handling precedes every discretionary search/failed-target limit.
             if(manifest!=null&&(manifest.Kind==SettlerManifestKind.ReturnOnly||p.Stage==ColonisationAiStage.Recovering))
             {
@@ -196,6 +207,19 @@ namespace HobbyDS9.Simulation
                 if(ShipAt(game,transport!,home.SystemId))
                     return ExpansionColonisation(actor,ColonisationAiAction.Unload,new(){Action=ColonisationAction.UnloadTransport,Unload=new(){ManifestId=manifest.ManifestId,ColonyId=home.ColonyId}});
                 return ExpansionMove(actor,transport!,physicalNavigation!.NodeForSystem(home.SystemId)!,searches);
+            }
+            if(GrowthEnabled&&p.Stage==ColonisationAiStage.GrowthClosed&&(transport==null||camp?.Stage==ColonyEstablishmentStage.EmptyOutpost))
+            {
+                // Closing immigration does not retire ordinary food logistics. Only a
+                // current populated receiver's real shortage can reserve a replacement.
+                if(transport==null&&yard!=null&&GrowthSupplyNeeded(game,p))
+                {
+                    var source=game.Blueprints!.Where(b=>b.OwnerCivilizationId==actor&&b.Fit!.ClassId=="class.galaxy-colony-transport.v1")
+                        .OrderBy(b=>b.BlueprintId,StringComparer.Ordinal).ThenByDescending(b=>b.Revision).FirstOrDefault();
+                    if(source!=null&&!colonisation.Production.Any(q=>q.OwnerId==actor&&q.Kind==ColonisationProductionKind.PublishedShip&&q.Blueprint?.BlueprintId==source.BlueprintId))
+                    {p.BlueprintId=source.BlueprintId;p.BlueprintRevision=source.Revision;return ExpansionBuild(actor,yard,source);}
+                }
+                p.HoldReason="Immigration closed; replacement transport waits for actual ordinary supply need.";return false;
             }
             if(p.Stage==ColonisationAiStage.Recovering&&manifest==null){p.TargetPlanetId=null;p.TargetNodeId=null;p.DisputedBoundaries=0;p.Stage=ColonisationAiStage.Preparing;}
             if(camp!=null&&camp.Stage!=ColonyEstablishmentStage.EmptyOutpost&&transport!=null)
@@ -216,7 +240,9 @@ namespace HobbyDS9.Simulation
                         return ExpansionColonisation(actor,ColonisationAiAction.Evacuate,new(){Action=ColonisationAction.EvacuateColony,Evacuate=new(){CampId=camp.CampId,ShipId=transport.ShipId}});
                     return ExpansionMove(actor,transport,physicalNavigation!.NodeForSystem(home.SystemId)!,searches);
                 }
-                p.HoldReason="Established expedition supplied; retained transport available.";return false;
+                if(GrowthEnabled&&camp.Stage==ColonyEstablishmentStage.Established&&p.Stage!=ColonisationAiStage.GrowthClosed)
+                    return PlanGrowthShipment(actor,p,home,world,cohort,transport,searches);
+                p.HoldReason=GrowthEnabled&&p.Stage==ColonisationAiStage.GrowthClosed?"One immigration attempt closed; ordinary supply remains available.":"Established expedition supplied; retained transport available.";return false;
             }
             if(p.EstablishedColonyId!=null&&camp?.Stage==ColonyEstablishmentStage.EmptyOutpost)
             {p.Stage=ColonisationAiStage.Suspended;p.HoldReason="Completed frontier world is an empty outpost; no second-colony goal granted.";return false;}
@@ -310,7 +336,7 @@ namespace HobbyDS9.Simulation
             foreach(var p in expansion.Plans)
             {
                 var camp=colonisation!.State.CampSources!.Where(c=>c.OwnerId==p.ActorId).OrderByDescending(c=>c.DeployedTurn).FirstOrDefault();
-                if(camp!=null){p.CampId=camp.CampId;if(camp.Stage==ColonyEstablishmentStage.Established)p.EstablishedColonyId=camp.ColonyId;if(camp.Stage!=ColonyEstablishmentStage.EmptyOutpost&&p.Stage!=ColonisationAiStage.Recovering)p.Stage=ColonisationAiStage.Supporting;}
+                if(camp!=null){p.CampId=camp.CampId;if(camp.Stage==ColonyEstablishmentStage.Established)p.EstablishedColonyId=camp.ColonyId;if(camp.Stage!=ColonyEstablishmentStage.EmptyOutpost&&p.Stage!=ColonisationAiStage.Recovering&&!(GrowthEnabled&&(p.Stage==ColonisationAiStage.Immigrating||p.Stage==ColonisationAiStage.GrowthClosed)))p.Stage=ColonisationAiStage.Supporting;}
                 var receipt=colonisation.SettlementProof!.Receipts!.SingleOrDefault(r=>r.Intent!.ActorId==p.ActorId&&r.Intent.ManifestId==p.ManifestId);
                 if(receipt==null||receipt.Outcome==DeploymentBoundaryOutcome.Deployed)continue;
                 if(receipt.Outcome==DeploymentBoundaryOutcome.Disputed)p.DisputedBoundaries=Math.Min(expansion.Source.Policy.DisputedWeeks,p.DisputedBoundaries+1);

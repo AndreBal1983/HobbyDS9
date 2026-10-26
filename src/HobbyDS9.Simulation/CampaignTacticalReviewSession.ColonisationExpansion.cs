@@ -11,8 +11,12 @@ namespace HobbyDS9.Simulation
         {
             internal readonly string Hash;
             internal readonly ColonisationPlannerPolicyDto Policy;
-            internal ExpansionSource(CampaignColonisationExpansionPackageDto p)
-            {Require(p!=null&&p.PackageHash==ColonisationData.ExpansionHash(p),"Different approved expansion package.");Hash=p!.PackageHash;Policy=ColonisationData.Copy(p.PlannerPolicy!);}
+            internal readonly ColonisationSourceEdition Edition;
+            internal string Profile=>Edition==ColonisationSourceEdition.Growth?CampaignColonisationGrowthIdentity.Profile:CampaignColonisationExpansionIdentity.Profile;
+            internal ExpansionSource(CampaignColonisationExpansionPackageDto p,ColonisationSourceEdition edition=ColonisationSourceEdition.Original)
+            {Require(edition==ColonisationSourceEdition.Original||edition==ColonisationSourceEdition.Growth,"Unsupported closed source edition.");
+                Require(p!=null&&p.PackageHash==(edition==ColonisationSourceEdition.Growth?ColonisationData.GrowthHash(p):ColonisationData.ExpansionHash(p)),"Different approved expansion package.");
+                Hash=p!.PackageHash;Policy=ColonisationData.Copy(p.PlannerPolicy!);Edition=edition;}
         }
         private sealed class ExpansionContext
         {
@@ -22,6 +26,7 @@ namespace HobbyDS9.Simulation
             internal ExpansionContext Copy()=>new ExpansionContext(Source,Plans);
         }
         private ExpansionContext? expansion;
+        private bool GrowthEnabled=>expansion?.Source.Edition==ColonisationSourceEdition.Growth;
         public static CampaignColonisationExpansionPackageDto CreateColonisationExpansionPackage(CampaignColonisationRosterPackageDto roster)
         {
             var p=new CampaignColonisationExpansionPackageDto{BaseRosterV2=roster};p.PackageHash=ColonisationData.ExpansionHash(p);return p;
@@ -53,8 +58,7 @@ namespace HobbyDS9.Simulation
         }
         public CampaignColonisationExpansionSaveDto ExportColonisationExpansionSave()
         {
-            lock(gate){Require(expansion!=null,"Explicit expansion root required.");return new CampaignColonisationExpansionSaveDto{
-                PackageHash=expansion!.Source.Hash,BaseCampaign=ExportColonisationCore(),AiPlans=expansion.Plans.Select(ColonisationData.Copy).ToList()};}
+            lock(gate){Require(expansion!=null&&!GrowthEnabled,"Explicit expansion root required.");return ExportExpansionCore();}
         }
         private void ValidateExpansionState(GameStateDto game)
         {
@@ -68,7 +72,7 @@ namespace HobbyDS9.Simulation
                     ||published!.Records.Any(r=>r.ShipId==id&&r.OwnerCivilizationId==p.ActorId)
                     ||published.Package.Integrated!.Physical!.CorePackage!.Campaign!.InitialState.Ships!.Any(s=>s.ShipId==id&&s.OwnerCivilizationId==p.ActorId);
                 bool Queue(string? id)=>id==null||colonisation!.Production.Any(q=>q.QueueItemId==id&&q.OwnerId==p.ActorId)||colonisation!.History.Any(h=>h.Order!.QueueItemId==id&&h.Order.OwnerId==p.ActorId);
-                Require(p.GoalId=="establish-first-frontier-colony-v1"&&Enum.IsDefined(typeof(ColonisationAiStage),p.Stage)&&p.LastPlannedTurn>=0&&p.LastPlannedTurn<=game.TurnNumber
+                Require(p.GoalId=="establish-first-frontier-colony-v1"&&Enum.IsDefined(typeof(ColonisationAiStage),p.Stage)&&(GrowthEnabled||(int)p.Stage<=8)&&p.LastPlannedTurn>=0&&p.LastPlannedTurn<=game.TurnNumber
                     &&p.DisputedBoundaries>=0&&p.DisputedBoundaries<=expansion.Source.Policy.DisputedWeeks&&p.HoldReason!=null&&p.HoldReason.Length<=128,"Invalid AI goal stage/report.");
                 Require(World(p.HomeColonyId)&&World(p.YardColonyId)&&World(p.EstablishedColonyId)&&Ship(p.ScoutShipId)&&Ship(p.TransportShipId)&&Queue(p.KitQueueId)&&Queue(p.TransportQueueId),"Foreign or fabricated AI assignment.");
                 Require(p.SourceCohortId==null||game.Colonies!.Where(c=>c.OwnerCivilizationId==p.ActorId&&c.ColonyId==p.HomeColonyId).SelectMany(c=>c.Cohorts!).Any(c=>c.CohortId==p.SourceCohortId)
@@ -83,6 +87,10 @@ namespace HobbyDS9.Simulation
                 Require(p.Stage!=ColonisationAiStage.Assembling||p.TransportShipId!=null&&p.TargetPlanetId!=null,"Incomplete assembling assignment.");
                 Require(p.Stage!=ColonisationAiStage.Loaded&&p.Stage!=ColonisationAiStage.Deploying||p.ManifestId!=null&&p.TargetPlanetId!=null,"Incomplete loaded assignment.");
                 Require(p.Stage!=ColonisationAiStage.Supporting||p.CampId!=null,"Supporting requires retained actual settlement.");
+                if(p.Stage==ColonisationAiStage.Immigrating||p.Stage==ColonisationAiStage.GrowthClosed)
+                    Require(GrowthEnabled&&p.EstablishedColonyId!=null&&p.CampId!=null,"Growth stage requires its actual established source.");
+                if(p.Stage==ColonisationAiStage.GrowthClosed)
+                    Require(colonisation!.State.ManifestRecords!.Any(m=>m.OwnerId==p.ActorId&&m.Kind==SettlerManifestKind.ImmigrationOnly&&m.Stage!=SettlerManifestStage.Loaded),"Growth closure requires a real terminal passenger manifest.");
                 Require(p.BlueprintId==null?p.BlueprintRevision==0:game.Blueprints!.Any(b=>b.BlueprintId==p.BlueprintId&&b.Revision==p.BlueprintRevision&&b.OwnerCivilizationId==p.ActorId),"Foreign AI source revision.");
                 Require(p.ManifestId==null||colonisation!.State.ManifestRecords!.Any(m=>m.ManifestId==p.ManifestId&&m.OwnerId==p.ActorId),"Foreign AI manifest.");
                 Require(p.CampId==null||colonisation!.State.CampSources!.Any(c=>c.CampId==p.CampId&&c.OwnerId==p.ActorId),"Foreign AI camp.");
@@ -91,7 +99,7 @@ namespace HobbyDS9.Simulation
                     &&p.OwnAttemptedTargets.All(id=>colonisation!.State.Surveys!.Any(s=>s.ActorId==p.ActorId&&s.PlanetId==id)),"Unobserved or duplicate AI attempted target.");
                 Require(p.LatestActions!=null&&p.LatestActions.Count<=expansion.Source.Policy.MaximumAttempts&&p.LatestActions.Count(a=>a.Accepted)<=expansion.Source.Policy.MaximumAccepted,"AI action bound.");
                 Require(p.LatestActions!.Select(a=>a.CommandId).Distinct(StringComparer.Ordinal).Count()==p.LatestActions.Count,"Duplicate AI action receipt.");
-                foreach(var a in p.LatestActions!)Require(Enum.IsDefined(typeof(ColonisationAiAction),a.Action)&&Enum.IsDefined(typeof(CampaignTacticalError),a.Error)&&a.AfterRevision<=game.StateRevision&&EntityId.TryParse(a.CommandId,out _)&&a.CommandId.Length<=128&&a.CommandId.StartsWith("ai-command.colonisation.",StringComparison.Ordinal)
+                foreach(var a in p.LatestActions!)Require(Enum.IsDefined(typeof(ColonisationAiAction),a.Action)&&(GrowthEnabled||(int)a.Action<=14)&&Enum.IsDefined(typeof(CampaignTacticalError),a.Error)&&a.AfterRevision<=game.StateRevision&&EntityId.TryParse(a.CommandId,out _)&&a.CommandId.Length<=128&&a.CommandId.StartsWith("ai-command.colonisation.",StringComparison.Ordinal)
                     &&a.CommandId=="ai-command.colonisation.a"+plans.OrderBy(x=>x.ActorId,StringComparer.Ordinal).Select(x=>x.ActorId).ToList().IndexOf(p.ActorId).ToString(System.Globalization.CultureInfo.InvariantCulture)+".t"+p.LastPlannedTurn.ToString(System.Globalization.CultureInfo.InvariantCulture)+".n"+p.LatestActions.IndexOf(a).ToString(System.Globalization.CultureInfo.InvariantCulture)
                     &&a.BeforeRevision>=0&&a.AfterRevision>=a.BeforeRevision&&(a.Accepted?(System.Numerics.BigInteger)a.AfterRevision==(System.Numerics.BigInteger)a.BeforeRevision+1&&a.Error==CampaignTacticalError.None:a.AfterRevision==a.BeforeRevision&&a.Error!=CampaignTacticalError.None),"Invalid actual AI action receipt.");
             }

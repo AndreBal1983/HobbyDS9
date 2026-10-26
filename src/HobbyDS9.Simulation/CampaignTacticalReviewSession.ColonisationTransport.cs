@@ -28,6 +28,10 @@ namespace HobbyDS9.Simulation
         }
         private static bool Materials(List<ResourceAmountDto>? materials,int capacity)=>materials!=null&&materials.Count<=1&&materials.All(r=>r!=null&&r.ResourceDefinitionId=="resource.dilithium"&&r.Amount>0&&r.Amount<=capacity);
         private CampaignTacticalError EmbarkSettlers(GameStateDto game,string actor,EmbarkSettlersDto order)
+            =>LoadPassengerCohort(game,actor,order,SettlerManifestKind.Settlement);
+        private CampaignTacticalError LoadPassengers(GameStateDto game,string actor,EmbarkSettlersDto order)
+            =>GrowthEnabled?LoadPassengerCohort(game,actor,order,SettlerManifestKind.ImmigrationOnly):CampaignTacticalError.UnsupportedSource;
+        private CampaignTacticalError LoadPassengerCohort(GameStateDto game,string actor,EmbarkSettlersDto order,SettlerManifestKind kind)
         {
             var colony=game.Colonies!.SingleOrDefault(c=>c.ColonyId==order.ColonyId&&c.OwnerCivilizationId==actor);
             var ship=game.Ships!.SingleOrDefault(s=>s.ShipId==order.ShipId&&s.OwnerCivilizationId==actor);
@@ -36,15 +40,17 @@ namespace HobbyDS9.Simulation
             if(source==null||order.Population!=policy.Settlers||source.Population-order.Population<(game.Displacements!.SingleOrDefault(d=>d.CohortId==source.CohortId)?.Population??0)
                 ||(BigInteger)order.Population*10000>(BigInteger)source.Population*policy.MaximumSourceCohortBps||PopulationRules.Population(colony)-order.Population<policy.SourcePopulationFloor
                 ||order.Food<policy.MinimumFood||order.Food>policy.MaximumFood||order.Food>capability!.Food||colony.Food<order.Food
-                ||!Materials(order.Materials,capability.Materials)||PopulationRules.Stock(colony.Stockpiles!,policy.EquipmentResourceId)<1
+                ||!Materials(order.Materials,capability.Materials)||kind==SettlerManifestKind.Settlement&&PopulationRules.Stock(colony.Stockpiles!,policy.EquipmentResourceId)<1
                 ||order.Materials!.Any(r=>PopulationRules.Stock(colony.Stockpiles!,r.ResourceDefinitionId)<r.Amount))return CampaignTacticalError.InvalidOrder;
             var id=CampaignAllocation.Allocate(game,"settler-manifest",null);var cohort=PopulationData.Copy(source);
             cohort.CohortId=CampaignAllocation.Allocate(game,"cohort",cohort.SpeciesDefinitionId);cohort.Population=order.Population;
             source.Population-=order.Population;colony.Food-=order.Food;
-            var cargo=order.Materials!.Select(PopulationData.Copy).Append(new ResourceAmountDto{ResourceDefinitionId=policy.EquipmentResourceId,Amount=1}).OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal).ToList();
+            var cargo=order.Materials!.Select(PopulationData.Copy).ToList();
+            if(kind==SettlerManifestKind.Settlement)cargo.Add(new ResourceAmountDto{ResourceDefinitionId=policy.EquipmentResourceId,Amount=1});
+            cargo=cargo.OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal).ToList();
             foreach(var r in cargo)PopulationRules.AddStock(colony.Stockpiles!,r.ResourceDefinitionId,-r.Amount);
-            colonisation.State.ManifestRecords!.Add(new SettlerManifestDto{ManifestId=id,OwnerId=actor,ShipId=ship.ShipId,Kind=SettlerManifestKind.Settlement,Stage=SettlerManifestStage.Loaded,
-                Blueprint=BlueprintCopies.Copy(ship.Blueprint!),FitId=capability!.Tactical.FitId,SupportHash=capability.Tactical.SupportHash,Passengers=cohort,Food=order.Food,Cargo=cargo,LastSurvivalTurn=game.TurnNumber-1,LatestReport="Settlers and physical supplies embarked."});
+            colonisation.State.ManifestRecords!.Add(new SettlerManifestDto{ManifestId=id,OwnerId=actor,ShipId=ship.ShipId,Kind=kind,Stage=SettlerManifestStage.Loaded,
+                Blueprint=BlueprintCopies.Copy(ship.Blueprint!),FitId=capability!.Tactical.FitId,SupportHash=capability.Tactical.SupportHash,Passengers=cohort,Food=order.Food,Cargo=cargo,LastSurvivalTurn=game.TurnNumber-1,LatestReport=kind==SettlerManifestKind.Settlement?"Settlers and physical supplies embarked.":"Passengers and finite supplies loaded; no settlement kit."});
             colonisation.State.ManifestOrigins!.Add(new ManifestOriginLineageDto{ManifestId=id,SourceColonyId=colony.ColonyId,SourceCohortId=source.CohortId,EmbarkedCohortId=cohort.CohortId,
                 Kind=ManifestOriginKind.Passenger,EmbarkedPopulation=cohort.Population,LoadedFood=order.Food,LoadedMaterials=cargo.Select(PopulationData.Copy).ToList(),Turn=game.TurnNumber});
             return CampaignTacticalError.None;

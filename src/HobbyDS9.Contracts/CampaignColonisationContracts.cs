@@ -14,7 +14,7 @@ namespace HobbyDS9.Contracts
     }
     public enum PlanetControllerKind { Unclaimed=0,Empire=1,IndependentGovernment=2 }
     public enum ColonyEstablishmentStage { Founding=1,Established=2,EmptyOutpost=3 }
-    public enum SettlerManifestKind { Settlement=1,ReturnOnly=2,SupplyOnly=3 }
+    public enum SettlerManifestKind { Settlement=1,ReturnOnly=2,SupplyOnly=3,ImmigrationOnly=4 }
     public enum SettlerManifestStage { Loaded=1,Deployed=2,Unloaded=3,Destroyed=4,Delivered=5 }
     public enum SettlementTerminalKind { Established=1,Evacuated=2,Extinct=3 }
     public enum PlanetSurveyStage { Active=1,Completed=2,Cancelled=3,Interrupted=4 }
@@ -134,7 +134,7 @@ namespace HobbyDS9.Contracts
     }
     public sealed class ColonisationProductionReceiptDto
     {public ColonisationProductionItemDto? Order {get;set;}public bool Completed {get;set;}public int ResolvedTurn {get;set;}public string? ShipId {get;set;}}
-    public enum ColonisationAction { StartPlanetSurvey=1,CancelPlanetSurvey=2,EmbarkSettlers=3,UnloadTransport=4,RequestDeployment=5,WithdrawDeployment=6,EvacuateColony=7,DeliverCarriedSupplies=8,EnqueueKit=9,LoadCarriedSupplies=10 }
+    public enum ColonisationAction { StartPlanetSurvey=1,CancelPlanetSurvey=2,EmbarkSettlers=3,UnloadTransport=4,RequestDeployment=5,WithdrawDeployment=6,EvacuateColony=7,DeliverCarriedSupplies=8,EnqueueKit=9,LoadCarriedSupplies=10,LoadPassengers=11 }
     public sealed class PlanetSurveyOrderDto {public string ShipId {get;set;}="";public string PlanetId {get;set;}="";}
     public sealed class CancelPlanetSurveyDto {public string SurveyId {get;set;}="";}
     public sealed class EmbarkSettlersDto
