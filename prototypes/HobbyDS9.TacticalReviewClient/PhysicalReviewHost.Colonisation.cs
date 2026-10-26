@@ -79,14 +79,14 @@ namespace HobbyDS9.TacticalReviewClient
         private CampaignColonisationSaveDto ExportColonisation()
         {
             var root=colonisationCodec!.CopySave(((ICampaignColonisationSession)session).ExportColonisationSave());
-            CampaignColonisationApplication.LoadSave(colonisationPackage!,root);return root;
+            LoadColonisationSource(root);return root;
         }
         private ReviewSaveHandle SaveColonisationCommitted()
         {var root=ExportColonisation();var number=checked(nextSave+1);var result=new ReviewSaveHandle(id,number,session.CaptureStatus());colonisationSaves.Add(number,root);nextSave=number;return result;}
         private ReviewFrame LoadColonisationCommitted(ReviewSaveHandle handle,string actor,string? encounter)
         {
             if(handle.HostId!=id||!colonisationSaves.TryGetValue(handle.Id,out var root))throw new ArgumentException("Unknown colonisation checkpoint.");
-            var candidate=CampaignColonisationApplication.LoadSave(colonisationPackage!,colonisationCodec!.CopySave(root));
+            var candidate=LoadColonisationSource(colonisationCodec!.CopySave(root));
             var epoch=checked(generation+1);var frame=Capture(candidate,actor,encounter,epoch);CaptureColonisationCandidate(candidate,frame);
             session=candidate;generation=epoch;return frame;
         }
@@ -106,7 +106,7 @@ namespace HobbyDS9.TacticalReviewClient
             CampaignColonisationSaveDto root;
             try{root=colonisationStore.Read(slot);}catch(ReviewCheckpointStoreException e){return new ReviewCheckpointResult(e.Error);}
             catch(Exception){return new ReviewCheckpointResult(ReviewCheckpointError.ReadFailed);}
-            try{var candidate=CampaignColonisationApplication.LoadSave(colonisationPackage!,colonisationCodec!.CopySave(root));
+            try{var candidate=LoadColonisationSource(colonisationCodec!.CopySave(root));
                 var epoch=checked(generation+1);var frame=Capture(candidate,actor,encounter,epoch);CaptureColonisationCandidate(candidate,frame);
                 var metadata=new ReviewSlotCheckpoint(slot,frame.Status);session=candidate;generation=epoch;
                 return new ReviewCheckpointResult(ReviewCheckpointError.None,metadata,frame);}

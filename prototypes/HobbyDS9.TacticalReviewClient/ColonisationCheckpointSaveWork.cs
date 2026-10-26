@@ -29,11 +29,11 @@ namespace HobbyDS9.TacticalReviewClient
                 if(!IsCurrentColonisationCheckpointSource(observed)||colonisationCodec is not IBackgroundColonisationCheckpointCodec
                     ||colonisationStore is not IBackgroundColonisationCheckpointStore)throw new InvalidOperationException("Background colonisation checkpoint unavailable.");
                 var root=((ICampaignColonisationSession)session).ExportColonisationSave();
-                var metadata=new ReviewSlotCheckpoint(slot,session.CaptureStatus());var package=colonisationPackage!;var workerCodec=colonisationCodec;var workerStore=colonisationStore;
+                var metadata=new ReviewSlotCheckpoint(slot,session.CaptureStatus());var workerCodec=colonisationCodec;var workerStore=colonisationStore;
                 return new ColonisationCheckpointSaveWork(observed,cancelled=>{
                     if(cancelled()||!IsCurrentColonisationCheckpointSource(observed))return new ReviewCheckpointResult(ReviewCheckpointError.Busy);
                     CampaignColonisationSaveDto copy;
-                    try{copy=workerCodec.CopySave(root);CampaignColonisationApplication.LoadSave(package,copy);}
+                    try{copy=workerCodec.CopySave(root);LoadColonisationSource(copy);}
                     catch(Exception){return new ReviewCheckpointResult(ReviewCheckpointError.SerializationFailed);}
                     if(cancelled()||!IsCurrentColonisationCheckpointSource(observed))return new ReviewCheckpointResult(ReviewCheckpointError.Busy);
                     try{workerStore.Write(slot,copy,overwrite);return new ReviewCheckpointResult(ReviewCheckpointError.None,metadata);}

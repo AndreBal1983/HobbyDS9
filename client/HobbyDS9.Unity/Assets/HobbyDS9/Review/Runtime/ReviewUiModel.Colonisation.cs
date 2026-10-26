@@ -14,7 +14,7 @@ namespace HobbyDS9.UnityReview
         public ReviewUiModel(CampaignColonisationPackageDto package,NaturalGalaxySettingsDto settings,
             ReviewNewtonsoftCodec codec,ReviewColonisationSlotStore slots)
         {
-            this.codec=codec;colonisationPackage=codec.CopyPackage(package);colonisationSlots=slots;
+            RequireColonisationStore(slots,false);this.codec=codec;colonisationPackage=codec.CopyPackage(package);colonisationSlots=slots;
             generatedCampaignTemplate=codec.CopyPackage(package.Activities!.BaseTemplate!);
             // Known astronomy rendering capability, not outer-root admission.
             StaticAstronomyCampaign=true;
@@ -23,11 +23,11 @@ namespace HobbyDS9.UnityReview
         }
         private ReviewUiModel(CampaignColonisationPackageDto package,ReviewNewtonsoftCodec codec,
             ReviewColonisationSlotStore slots,PhysicalReviewHost loaded,string actor)
-        {this.codec=codec;colonisationPackage=codec.CopyPackage(package);colonisationSlots=slots;
+        {RequireColonisationStore(slots,false);this.codec=codec;colonisationPackage=codec.CopyPackage(package);colonisationSlots=slots;
          generatedCampaignTemplate=codec.CopyPackage(package.Activities!.BaseTemplate!);StaticAstronomyCampaign=true;host=loaded;Current=Controller(host,actor);}
         public static ReviewUiModel ContinueColonisation(CampaignColonisationPackageDto package,ReviewNewtonsoftCodec codec,
             ReviewColonisationSlotStore slots,string slot)
-        {var actor=GeneratedHuman(package.Activities!.BaseTemplate!);var opened=PhysicalReviewHost.OpenColonisationFromSlot(package,codec,slots,slot,actor);
+        {RequireColonisationStore(slots,false);var actor=GeneratedHuman(package.Activities!.BaseTemplate!);var opened=PhysicalReviewHost.OpenColonisationFromSlot(package,codec,slots,slot,actor);
          if(!opened.Succeeded)throw new InvalidOperationException("Colonisation campaign checkpoint unavailable.");
          return new ReviewUiModel(package,codec,slots,opened.Host!,actor);}
         private ReviewFrame? colonisationObservationFrame;
@@ -53,7 +53,7 @@ namespace HobbyDS9.UnityReview
             try
             {
                 var save=loading?null:sourceHost.PrepareColonisationCheckpointSave(frame,slot,overwrite);
-                var package=colonisationPackage!;var workerCodec=codec;var workerStore=colonisationSlots!;
+                var package=colonisationPackage!;var roster=colonisationRosterPackage;var workerCodec=codec;var workerStore=colonisationSlots!;
                 ReviewCheckpointOperation? operation=null;
                 operation=new ReviewCheckpointOperation(source,slot,loading,cancelled=>{
                     ReviewCheckpointCompletion result;
@@ -61,7 +61,7 @@ namespace HobbyDS9.UnityReview
                     {
                         if(cancelled())result=new ReviewCheckpointCompletion(ReviewCheckpointError.Busy);
                         else if(!loading){var done=save!.Execute(cancelled);result=new ReviewCheckpointCompletion(done.Error,colonisationSaveWork:save);}
-                        else{var opened=PhysicalReviewHost.OpenColonisationFromSlot(package,workerCodec,workerStore,slot,frame.Actor,frame.Battle?.EncounterId);
+                        else{var opened=OpenColonisationModelSource(package,roster,workerCodec,workerStore,slot,frame.Actor,frame.Battle?.EncounterId);
                             if(!opened.Succeeded)result=new ReviewCheckpointCompletion(opened.Error);
                             else{var next=Controller(opened.Host!,frame.Actor);opened.Host!.CaptureGeneratedPresentation(next.Frame);
                                 result=new ReviewCheckpointCompletion(ReviewCheckpointError.None,opened.Host,next);}}

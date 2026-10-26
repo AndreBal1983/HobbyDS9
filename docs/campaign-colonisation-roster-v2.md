@@ -1,0 +1,13 @@
+# Colonisation starting roster V2
+
+Status: SOURCE/CPU candidate. Actual Unity receiving, IL2CPP and native V2 acceptance are pending. This is an explicit new-game content choice; the existing V1 starting fleets and saved campaigns remain unchanged.
+
+The menu offers **Colonisation V2 (provisional playtest)** with New and three Continue choices. Both empires begin with their own ordinarily compiled Constitution Explorer R1, retaining the original ship and fleet counts, IDs and positions. No escort, transport, settlers, stocks, credits or production receipts are granted. The four existing ready classes and every numerical fitting, construction and combat value remain unchanged. AI procurement and movement use the existing shared rules; AI colonisation planning remains outside this playtest.
+
+V2 uses the same Format11 carrier and settlement rules, with a closed typed starting-roster package and a different generated genesis identity. Its resource contains only the pinned roster declaration and composes the unchanged pinned V1 content. All normal full replay and final complete-root comparisons remain mandatory before a host is published. Unknown hashes do not select a fallback package.
+
+The V2 directory is `HobbyDS9CampaignColonisationOnly-v2`; filenames begin `unity-campaign-colonisation-v2-`. V1 retains `HobbyDS9CampaignColonisationOnly-v1` and `unity-campaign-colonisation-v1-`. Even when a dedicated test directory is shared, the filenames remain distinct. Explicit V1 and V2 Continue routes accept only their own trusted package. Saves are never migrated, renamed or reinterpreted.
+
+The [existing player loop](campaign-colonisation-player-v1.md) remains: manufacture real kits and transports, discover and survey planets, embark actual cohorts with finite supplies, travel, request deployment, establish and support a world, and reuse transports. Competition can interrupt a landing or destroy a ship; matched starting classes do not guarantee safety or success. Whole-campaign replay may still be slow, and finite journal/record/root budgets remain unchanged.
+
+Portable tests cover both actor-specific sources, template closure and legacy-clone rejection, real transport/kit manufacture and loaded/unloaded cohorts, combat/aftermath, and complete V2 replay. Adapter tests cover pinned resource admission, distinct namespaces, wrong-version rejection before host replacement, worker save/reopen/load, cancellation/stale ownership and own-only views. Reference compilation is API evidence, not actual rendering or AOT execution. The accepted V1 native-root byte proof remains separately recorded; no V2 native claim is made here.

@@ -15,12 +15,12 @@ namespace HobbyDS9.UnityReview
 #if UNITY_EDITOR
         private string? generatedCampaignTestDirectory=null; // Dedicated engine fixture only; never a player path option.
 #endif
-        private string GeneratedCampaignDirectory(bool legacy=false,bool published=false,bool activities=false,bool streamed=false,bool colonisation=false)
+        private string GeneratedCampaignDirectory(bool legacy=false,bool published=false,bool activities=false,bool streamed=false,bool colonisation=false,bool colonisationRoster=false)
         {
 #if UNITY_EDITOR
             if(generatedCampaignTestDirectory!=null)return generatedCampaignTestDirectory;
 #endif
-            return Path.Combine(UnityEngine.Application.persistentDataPath,colonisation?ReviewColonisationSlotStore.Namespace:streamed?ReviewStreamedActivitiesSlotStore.Namespace:activities?ReviewActivitiesSlotStore.Namespace:published?ReviewPublishedConstructionSlotStore.Namespace:legacy?GeneratedCampaignOptions.SaveDirectory:ReviewStaticAstronomyCampaignSlotStore.Namespace);
+            return Path.Combine(UnityEngine.Application.persistentDataPath,colonisationRoster?ReviewColonisationSlotStore.RosterNamespace:colonisation?ReviewColonisationSlotStore.Namespace:streamed?ReviewStreamedActivitiesSlotStore.Namespace:activities?ReviewActivitiesSlotStore.Namespace:published?ReviewPublishedConstructionSlotStore.Namespace:legacy?GeneratedCampaignOptions.SaveDirectory:ReviewStaticAstronomyCampaignSlotStore.Namespace);
         }
         private string generatedCampaignSeed="42";
         private int generatedCampaignSize=250,generatedCampaignQuiet=2000;
@@ -42,7 +42,7 @@ namespace HobbyDS9.UnityReview
             seed.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch)generatedCampaignSeed=e.newValue;});
             size.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch)generatedCampaignSize=int.Parse(e.newValue,CultureInfo.InvariantCulture);});
             quiet.RegisterValueChangedCallback(_=>{if(epoch==viewEpoch&&quiet.index>=0)generatedCampaignQuiet=values[quiet.index];});
-            DrawStreamedActivitiesMenu(controls);DrawColonisationMenu(controls);
+            DrawStreamedActivitiesMenu(controls);DrawColonisationRosterMenu(controls);DrawColonisationMenu(controls);
             var earlier=new Foldout{text="Earlier campaigns · original rules",value=false,name="earlier-generated-campaign-menu"};controls.Add(earlier);
             var start=AddButton(earlier,"New earlier campaign · original rules",()=>{
                 void Start(){RunGeneratedCampaignOperation(null);}
@@ -74,9 +74,10 @@ namespace HobbyDS9.UnityReview
             controls.SetEnabled(!generatedCampaignBusy&&PlayableResourcesAvailable());
         }
         private object? generatedCampaignOperationToken;
-        private async void RunGeneratedCampaignOperation(string? slot,bool legacy=false,bool published=false,bool activities=false,bool streamed=false,bool colonisation=false)
+        private async void RunGeneratedCampaignOperation(string? slot,bool legacy=false,bool published=false,bool activities=false,bool streamed=false,bool colonisation=false,bool colonisationRoster=false)
         {
             if(generatedCampaignBusy)return;
+            colonisation=colonisation||colonisationRoster;
             generatedCampaignBusy=true;var epoch=viewEpoch;var prior=model;
             var operationToken=new object();generatedCampaignOperationToken=operationToken;
             var seed=generatedCampaignSeed;var size=generatedCampaignSize;var quiet=generatedCampaignQuiet;
@@ -86,7 +87,7 @@ namespace HobbyDS9.UnityReview
             {
                 // Resource access is main-thread only. The portable factory/load and trusted file IO run away from the UI.
                 var template=LoadPlayableFleetTemplate();var codec=new ReviewNewtonsoftCodec();
-                var directory=GeneratedCampaignDirectory(legacy,published,activities,streamed,colonisation);
+                var directory=GeneratedCampaignDirectory(legacy,published,activities,streamed,colonisation,colonisationRoster);
                 byte[][]? activityBytes=null;
                 if(activities||streamed||colonisation)
                 {
@@ -95,6 +96,8 @@ namespace HobbyDS9.UnityReview
                 }
                 byte[][]? colonisationBytes=null;
                 if(colonisation){colonisationBytes=new byte[4][];var names=new[]{"catalogue","ready-classes","support","settlement"};for(int i=0;i<names.Length;i++){var asset=Resources.Load<TextAsset>("ColonisationV1/"+names[i]);if(asset==null)throw new InvalidOperationException("Colonisation campaign content unavailable.");colonisationBytes[i]=asset.bytes;}}
+                byte[]? rosterBytes=null;
+                if(colonisationRoster){var asset=Resources.Load<TextAsset>("ColonisationRosterV2/roster");if(asset==null)throw new InvalidOperationException("Starting-roster content unavailable.");rosterBytes=asset.bytes;}
                 byte[]? supportBytes=null;
                 if(published){var supportAsset=Resources.Load<TextAsset>("PublishedConstructionV1/support");if(supportAsset==null)throw new InvalidOperationException("Published playtest support unavailable.");supportBytes=supportAsset.bytes;}
                 var settings=new NaturalGalaxySettingsDto{Map=new ScaledGalaxySettingsDto{Seed=seed,SystemCount=size,EmptyRegionCount=size,
@@ -104,7 +107,9 @@ namespace HobbyDS9.UnityReview
                     if(colonisation)
                     {
                         if(legacy||published||activities||streamed)throw new InvalidOperationException("Distinct colonisation campaign profile required.");
-                        var content=ActivitiesPlaytestOptions.CreatePackage(template,activityBytes!,codec);var package=ColonisationPlaytestOptions.CreatePackage(content,colonisationBytes!,codec);var colonyStore=new ReviewColonisationSlotStore(directory,codec);
+                        var content=ActivitiesPlaytestOptions.CreatePackage(template,activityBytes!,codec);var package=ColonisationPlaytestOptions.CreatePackage(content,colonisationBytes!,codec);var colonyStore=colonisationRoster?ReviewColonisationSlotStore.CreateRosterV2(directory,codec):new ReviewColonisationSlotStore(directory,codec);
+                        if(colonisationRoster){var roster=ColonisationPlaytestOptions.CreateRosterPackage(package,rosterBytes!,codec);
+                            return slot==null?new ReviewUiModel(roster,settings,codec,colonyStore):ReviewUiModel.ContinueColonisationRoster(roster,codec,colonyStore,slot);}
                         return slot==null?new ReviewUiModel(package,settings,codec,colonyStore):ReviewUiModel.ContinueColonisation(package,codec,colonyStore,slot);
                     }
                     if(streamed)

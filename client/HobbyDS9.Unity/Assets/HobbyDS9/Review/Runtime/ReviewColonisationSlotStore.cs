@@ -16,8 +16,15 @@ namespace HobbyDS9.UnityReview
         public const int MaximumBytes=64*1024*1024;
         public const string Namespace="HobbyDS9CampaignColonisationOnly-v1";
         private const string Prefix="unity-campaign-colonisation-v1-";
-        public ReviewColonisationSlotStore(string reviewOnlyDirectory,ReviewNewtonsoftCodec codec,Action<UnityReviewWriteStage>? probe=null)
+        public const string RosterNamespace="HobbyDS9CampaignColonisationOnly-v2";
+        private readonly string prefix;
+        public bool RosterV2 {get;}
+        public static ReviewColonisationSlotStore CreateRosterV2(string directory,ReviewNewtonsoftCodec codec,Action<UnityReviewWriteStage>? probe=null)
+            =>new ReviewColonisationSlotStore(directory,codec,probe,true);
+        public ReviewColonisationSlotStore(string reviewOnlyDirectory,ReviewNewtonsoftCodec codec,Action<UnityReviewWriteStage>? probe=null):this(reviewOnlyDirectory,codec,probe,false) { }
+        private ReviewColonisationSlotStore(string reviewOnlyDirectory,ReviewNewtonsoftCodec codec,Action<UnityReviewWriteStage>? probe,bool rosterV2)
         {
+            RosterV2=rosterV2;prefix=rosterV2?"unity-campaign-colonisation-v2-":Prefix;
             this.codec=codec; this.probe=probe;
             try
             {
@@ -38,7 +45,7 @@ namespace HobbyDS9.UnityReview
                 char c=slot[i]; bool plain=c>='a' && c<='z' || c>='0' && c<='9';
                 if(!plain && (i==0 || c!='-' && c!='_')) throw Fail(ReviewCheckpointError.InvalidSlot);
             }
-            return Confined(Prefix+slot+".json");
+            return Confined(prefix+slot+".json");
         }
         private string Confined(string filename)
         {
@@ -85,7 +92,7 @@ namespace HobbyDS9.UnityReview
                     CheckDirectory(); CheckFile(destination);
                     if(File.Exists(destination) && !overwrite) throw Fail(ReviewCheckpointError.SlotOccupied);
                     Directory.CreateDirectory(directory); CheckDirectory();
-                    temporary=Confined("."+Prefix+slot+"."+Guid.NewGuid().ToString("N")+".tmp"); probe?.Invoke(UnityReviewWriteStage.BeforeWrite);
+                    temporary=Confined("."+prefix+slot+"."+Guid.NewGuid().ToString("N")+".tmp"); probe?.Invoke(UnityReviewWriteStage.BeforeWrite);
                     using(var stream=new FileStream(temporary,FileMode.CreateNew,FileAccess.Write,FileShare.None))
                     {
                         created=true; int half=bytes.Length/2; stream.Write(bytes,0,half); probe?.Invoke(UnityReviewWriteStage.AfterPartialWrite);

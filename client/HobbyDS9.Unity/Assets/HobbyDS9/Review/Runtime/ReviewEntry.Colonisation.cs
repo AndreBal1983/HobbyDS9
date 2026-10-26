@@ -38,7 +38,7 @@ namespace HobbyDS9.UnityReview
         }
         private void DrawColonisationMenu(VisualElement parent)
         {
-            var fold=new Foldout{text="Colonisation campaign (provisional playtest)",value=false,name="colonisation-campaign-menu"};parent.Add(fold);
+            var fold=new Foldout{text="Earlier colonisation V1 (provisional playtest)",value=false,name="colonisation-campaign-menu"};parent.Add(fold);
             fold.Add(Readout("Survey discovered planets, manufacture transport and settlement equipment, carry real settlers and supplies, then establish and support a frontier world. Separate save slots; earlier campaigns are unchanged. AI expansion planning is not included in this playtest."));
             var start=AddButton(fold,"New colonisation campaign",()=>{void Start()=>RunGeneratedCampaignOperation(null,colonisation:true);if(demoStarted||model!.HasLocalEdits)Confirm("Start a colonisation campaign? Unsaved progress is replaced only after validation; existing saves remain intact.",Start);else Start();});start.name="colonisation-campaign-start";
             foreach(var slot in GeneratedCampaignOptions.Slots()){var captured=slot;var load=AddButton(fold,"Continue colonisation "+slot.Substring(slot.Length-1),()=>Confirm("Continue this colonisation campaign? Unsaved progress is replaced only after complete replay validation.",()=>RunGeneratedCampaignOperation(captured,colonisation:true)));load.name="colonisation-campaign-continue-"+slot;}

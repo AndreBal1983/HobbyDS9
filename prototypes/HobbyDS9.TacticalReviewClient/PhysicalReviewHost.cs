@@ -224,7 +224,7 @@ namespace HobbyDS9.TacticalReviewClient
                 if(colonisationPackage!=null)
                 {
                     if(colonisationStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
-                    var opened=OpenColonisationFromSlot(colonisationPackage,colonisationCodec!,colonisationStore,slot,actor,encounter);
+                    var opened=OpenColonisationSource(slot,actor,encounter);
                     return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
                 }
                 if(streamedActivitiesPackage!=null)

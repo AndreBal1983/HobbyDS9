@@ -11,6 +11,14 @@ namespace HobbyDS9.UnityReview
     public static class ColonisationPlaytestOptions
     {
         private static readonly string[] AssetHashes={"1dc65fab5ec4c7392c1909e8917dff4af13376efcee3f5f16d58b55b02f572a5","c4289397f869f02f63324b29444b57ef8dd43ec24edf2e79111baf457a83eafc","fcba9d70f0e966e8d693ada1a363b43cd6a71f2e040e2e5f2edfc6b673c8b8a7","2145be41fbab731b1d0823ada361519d528b278da36fbf1393848b5ad21b987c"};
+        public static CampaignColonisationRosterPackageDto CreateRosterPackage(CampaignColonisationPackageDto baseV1,byte[] bytes,ReviewNewtonsoftCodec codec)
+        {
+            using(var sha=SHA256.Create())
+                if(bytes==null||string.Concat(sha.ComputeHash(bytes).Select(b=>b.ToString("x2",CultureInfo.InvariantCulture)))!="e9492594930ecce845d88ee0519a3edb7c5192a18fd55fccc7943e7864e04eea")throw new ArgumentException("Different pinned starting-roster content.");
+            var supplied=codec.DecodeColonisationRoster(bytes);var package=CampaignColonisationApplication.CreateRosterPackage(baseV1);var expected=package.StartingRoster!;
+            if(supplied==null||supplied.Identity!=expected.Identity||supplied.ClassId!=expected.ClassId||supplied.HullVersionId!=expected.HullVersionId||supplied.Revision!=expected.Revision)throw new ArgumentException("Different closed starting-roster policy.");
+            return package;
+        }
         public static CampaignColonisationPackageDto CreatePackage(CampaignActivitiesPackageDto activities,byte[][] bytes,ReviewNewtonsoftCodec codec)
         {
             if(bytes==null||bytes.Length!=4)throw new ArgumentException("Four pinned colonisation assets required.");
