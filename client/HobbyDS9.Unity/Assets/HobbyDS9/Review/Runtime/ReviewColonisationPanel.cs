@@ -133,6 +133,8 @@ namespace HobbyDS9.UnityReview
             }
             fold.RegisterValueChangedCallback(_=>{if(!OwnInspector())return;inspectedOpen=fold.value;Refresh();});fold.RegisterCallback<AttachToPanelEvent>(_=>Refresh());
             Button(fold,"Rotate hull","colonisation-hull-orbit",()=>{if(OwnInspector())hullPreview?.OrbitReference(80,26);});
+            // An inspector added to an attached page has already received its attach event.
+            if(fold.panel!=null)Refresh();
         }
         private void Planets()
         {
