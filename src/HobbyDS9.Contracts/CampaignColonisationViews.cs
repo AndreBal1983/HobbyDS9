@@ -24,12 +24,13 @@ namespace HobbyDS9.Contracts
         public string Id {get;}public string PlanetId {get;}public string SystemId {get;}public string Name {get;}
         public ColonyEstablishmentStage Stage {get;}public string? CampId {get;}public long Population {get;}public long Food {get;}
         public long Industry {get;}public long Research {get;}public long FoodOutput {get;}public bool Shipbuilding {get;}
+        public long? FoodDemand {get;}public long? LocalFoodBalance=>FoodDemand.HasValue?FoodOutput-FoodDemand.Value:(long?)null;
         public long EstablishmentWork {get;}public int FedWeeks {get;}public int ShortageWeeks {get;}public long Deaths {get;}public string Report {get;}
         public IReadOnlyList<ResourceAmountSnapshot> Stocks {get;}public IReadOnlyList<ColonisationCohortSnapshot> Cohorts {get;}
         public ColonisationWorldSnapshot(string id,string planet,string system,string name,ColonyEstablishmentStage stage,string? camp,long people,long food,
-            long industry,long research,long output,long work,int fed,int shortage,long deaths,string report,IEnumerable<ResourceAmountSnapshot> stocks,IEnumerable<ColonisationCohortSnapshot> cohorts,bool shipbuilding=false)
+            long industry,long research,long output,long work,int fed,int shortage,long deaths,string report,IEnumerable<ResourceAmountSnapshot> stocks,IEnumerable<ColonisationCohortSnapshot> cohorts,bool shipbuilding=false,long? foodDemand=null)
         {Id=id;PlanetId=planet;SystemId=system;Name=name;Stage=stage;CampId=camp;Population=people;Food=food;Industry=industry;Research=research;FoodOutput=output;
-         EstablishmentWork=work;FedWeeks=fed;ShortageWeeks=shortage;Deaths=deaths;Report=report;Stocks=new List<ResourceAmountSnapshot>(stocks).AsReadOnly();Cohorts=new List<ColonisationCohortSnapshot>(cohorts).AsReadOnly();Shipbuilding=shipbuilding;}
+         EstablishmentWork=work;FedWeeks=fed;ShortageWeeks=shortage;Deaths=deaths;Report=report;Stocks=new List<ResourceAmountSnapshot>(stocks).AsReadOnly();Cohorts=new List<ColonisationCohortSnapshot>(cohorts).AsReadOnly();Shipbuilding=shipbuilding;FoodDemand=foodDemand;}
         // Presentation guidance only; every submitted order still receives full command validation.
         public string? ConstructionUnavailableReason(bool ship)
             =>Stage!=ColonyEstablishmentStage.Established?"Requires an established world.":Population<=0?"Requires a populated world."
@@ -73,6 +74,7 @@ namespace HobbyDS9.Contracts
     {
         public string Actor {get;}public int Turn {get;}public long Revision {get;}public string PackageHash {get;}
         public IReadOnlyList<ColonisationWorldSnapshot> Worlds {get;}public IReadOnlyList<ColonisationTransportSnapshot> Transports {get;}
+        public IReadOnlyList<InfrastructureDefinitionSnapshot> BuildingBenefits {get;}
         public IReadOnlyList<ColonisationOwnShipSourceSnapshot> OwnShipSources {get;}
         public IReadOnlyList<ColonisationDeploymentReport> LatestDeployments {get;}
         public IReadOnlyList<ColonisationQueueSnapshot> Production {get;}public IReadOnlyList<ColonisationPresenceSnapshot> Presence {get;}
@@ -80,11 +82,12 @@ namespace HobbyDS9.Contracts
         public long KitIndustry {get;}public IReadOnlyList<ResourceAmountSnapshot> KitResources {get;}
         public ColonisationCampaignSnapshot(string actor,int turn,long revision,string hash,IEnumerable<ColonisationWorldSnapshot> worlds,IEnumerable<ColonisationTransportSnapshot> ships,
             IEnumerable<ColonisationQueueSnapshot> queue,IEnumerable<ColonisationPresenceSnapshot> presence,IEnumerable<ColonisationManifestReport> reports,IEnumerable<ColonisationSurveySnapshot> surveys,
-            IEnumerable<ColonisationIntentSnapshot> intents,long kitIndustry,IEnumerable<ResourceAmountSnapshot> kitResources,IEnumerable<ColonisationOwnShipSourceSnapshot>? ownShipSources=null,IEnumerable<ColonisationDeploymentReport>? latestDeployments=null)
+            IEnumerable<ColonisationIntentSnapshot> intents,long kitIndustry,IEnumerable<ResourceAmountSnapshot> kitResources,IEnumerable<ColonisationOwnShipSourceSnapshot>? ownShipSources=null,IEnumerable<ColonisationDeploymentReport>? latestDeployments=null,IEnumerable<InfrastructureDefinitionSnapshot>? buildingBenefits=null)
         {Actor=actor;Turn=turn;Revision=revision;PackageHash=hash;Worlds=new List<ColonisationWorldSnapshot>(worlds).AsReadOnly();Transports=new List<ColonisationTransportSnapshot>(ships).AsReadOnly();
          Production=new List<ColonisationQueueSnapshot>(queue).AsReadOnly();Presence=new List<ColonisationPresenceSnapshot>(presence).AsReadOnly();Reports=new List<ColonisationManifestReport>(reports).AsReadOnly();
          Surveys=new List<ColonisationSurveySnapshot>(surveys).AsReadOnly();Intents=new List<ColonisationIntentSnapshot>(intents).AsReadOnly();OwnShipSources=new List<ColonisationOwnShipSourceSnapshot>(ownShipSources??System.Array.Empty<ColonisationOwnShipSourceSnapshot>()).AsReadOnly();KitIndustry=kitIndustry;KitResources=new List<ResourceAmountSnapshot>(kitResources).AsReadOnly();
-         LatestDeployments=new List<ColonisationDeploymentReport>(latestDeployments??System.Array.Empty<ColonisationDeploymentReport>()).AsReadOnly();}
+         LatestDeployments=new List<ColonisationDeploymentReport>(latestDeployments??System.Array.Empty<ColonisationDeploymentReport>()).AsReadOnly();
+         BuildingBenefits=new List<InfrastructureDefinitionSnapshot>(buildingBenefits??System.Array.Empty<InfrastructureDefinitionSnapshot>()).AsReadOnly();}
     }
     // Latest retained settlement boundary only; not an accumulating history or a reason for hidden blockers.
     public sealed class ColonisationDeploymentReport

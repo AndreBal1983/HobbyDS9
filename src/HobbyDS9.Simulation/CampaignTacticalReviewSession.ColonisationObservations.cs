@@ -62,7 +62,7 @@ namespace HobbyDS9.Simulation
                     worlds.Add(new ColonisationWorldSnapshot(colony.ColonyId,colony.PlanetId,colony.SystemId,name,camp?.Stage??ColonyEstablishmentStage.Established,camp?.CampId,
                         PopulationRules.Population(colony),colony.Food,output.Industry,output.ResearchOutput,output.FoodOutput,camp?.CompletedIndustry??0,camp?.FedWeeks??0,colony.FoodShortageTurns,camp?.Deaths??0,camp?.LatestReport??"Established world.",
                         ResourceAmountSnapshot.Copy(colony.Stockpiles!),colony.Cohorts!.OrderBy(c=>c.CohortId,StringComparer.Ordinal).Select(c=>new ColonisationCohortSnapshot(c.CohortId,c.SpeciesDefinitionId,c.Population,definitions.Species!.Single(s=>s.DefinitionId==c.SpeciesDefinitionId).DisplayName)),
-                        WorldEconomy.Infrastructure(colony,definitions).Any(i=>i.definition.Shipbuilding)));
+                        WorldEconomy.Infrastructure(colony,definitions).Any(i=>i.definition.Shipbuilding),output.FoodDemand));
                 }
                 var ships=new List<ColonisationTransportSnapshot>();
                 foreach(var ship in game.Ships!.Where(s=>s.OwnerCivilizationId==actor).OrderBy(s=>s.ShipId,StringComparer.Ordinal))
@@ -103,10 +103,12 @@ namespace HobbyDS9.Simulation
                         &&game.Ships!.Any(s=>s.ShipId==prior.ShipId&&s.OwnerCivilizationId==actor&&s.CurrentHull>0);
                     deployments.Add(new ColonisationDeploymentReport(intent.IntentId,intent.ManifestId,prior.ShipId,intent.PlanetId,latest.Turn,receipt.Outcome,aboard));
                 }
+                var buildingIds=activities!.Content.Structures!.Select(s=>s.DefinitionId).Append(colonisation.Policy.Mine!.Infrastructure!.DefinitionId).ToHashSet(StringComparer.Ordinal);
+                var benefits=definitions.Infrastructure!.Where(i=>buildingIds.Contains(i.DefinitionId)).OrderBy(i=>i.DefinitionId,StringComparer.Ordinal).Select(i=>new InfrastructureDefinitionSnapshot(i));
                 return new ColonisationCampaignSnapshot(actor,game.TurnNumber,game.StateRevision,colonisation.PackageHash,worlds,ships,queue,presence,
                     a.ManifestRecords!.Where(m=>m.OwnerId==actor).OrderBy(m=>m.ManifestId,StringComparer.Ordinal).Select(m=>new ColonisationManifestReport(m.ManifestId,m.ShipId,m.Kind,m.Stage,m.PopulationTransferred,m.PassengerDeaths,m.FoodConsumed,m.FoodLost,m.LatestReport)),
                     a.Surveys!.Where(s=>s.ActorId==actor).Select(s=>new ColonisationSurveySnapshot(s.SurveyId,s.ShipId,s.PlanetId,s.Stage,s.CompletedWeeks)),
-                    a.DeploymentIntents!.Where(i=>i.ActorId==actor).Select(i=>new ColonisationIntentSnapshot(i.IntentId,i.ManifestId,i.PlanetId,i.Disputed)),colonisation.Policy.KitIndustry,ResourceAmountSnapshot.Copy(colonisation.Policy.KitResources!),sources,deployments);
+                    a.DeploymentIntents!.Where(i=>i.ActorId==actor).Select(i=>new ColonisationIntentSnapshot(i.IntentId,i.ManifestId,i.PlanetId,i.Disputed)),colonisation.Policy.KitIndustry,ResourceAmountSnapshot.Copy(colonisation.Policy.KitResources!),sources,deployments,benefits);
             }
         }
         public ColonisationEligibilitySnapshot EvaluateColonisation(ColonisationCommandDto command)

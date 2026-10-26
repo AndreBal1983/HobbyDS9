@@ -120,6 +120,12 @@ namespace HobbyDS9.UnityReview
             var w=observation.Worlds.FirstOrDefault(x=>x.Id==world);if(w==null){Text(body,"No owned worlds observed.");return;}
             Text(body,w.Name+" \u00b7 "+w.Stage+" \u00b7 "+w.Population+" people \u00b7 "+w.Food+" stored food","colonisation-world-facts");
             Text(body,"Current weekly output: Industry "+w.Industry+", Research "+w.Research+", Food "+w.FoodOutput+". Local stock: "+(Materials(w.Stocks)==""?"none":Materials(w.Stocks)));
+            Text(body,w.FoodDemand.HasValue?"Residents need "+w.FoodDemand.Value+" food/week; local balance "+(w.LocalFoodBalance>=0?"+":"")+w.LocalFoodBalance+" before imports/exports.":"Resident food demand unavailable.","colonisation-food-balance");
+            if(w.Stage==ColonyEstablishmentStage.Established)Text(body,"Consecutive food-shortage weeks: "+w.ShortageWeeks+". Deliveries depend on actual surplus, routes and capacity.","colonisation-food-shortage");
+            var preparation=new Foldout{text="Prepare a settlement expedition",value=false,name="colonisation-preparation-guide"};preparation.style.flexShrink=0;body.Add(preparation);
+            Text(preparation,"Choose a populated source world separately from your industrial yard. Check food output against resident demand before loading voyage food. Planetary buildings show their base effects below.");
+            Text(preparation,"At a food-deficit yard, consider a food-producing building before a long ship order. Check its material cost and base effects below. Materials and work are consumed gradually; extra food output begins after actual completion.");
+            Text(preparation,"Build a transport at a shipyard and a settlement kit at the source world, then bring the empty transport there. In Transports, review the actual source cohort, remaining residents, local kit and voyage food. Survey a suitable known planet, travel there and review deployment; retain food for establishment and later supply trips. Travel and deliveries are not guaranteed safe.");
             if(w.Stage==ColonyEstablishmentStage.Founding)Text(body,"Establishment: "+w.EstablishmentWork+" work, "+w.FedWeeks+" fed weeks. Shortage "+w.ShortageWeeks+" weeks; deaths "+w.Deaths+". "+w.Report);
             if(w.Stage==ColonyEstablishmentStage.EmptyOutpost)Text(body,"Empty outpost: no production or freight. A surveyed, supplied settlement expedition must recommission it.");
             var row=Row(body);row.style.flexWrap=Wrap.NoWrap;
@@ -133,6 +139,17 @@ namespace HobbyDS9.UnityReview
                 {
                 var selected=option;var card=new VisualElement();card.AddToClassList("console-panel");card.style.flexShrink=0;catalogue.Add(card);Text(card,selected.DisplayName+" "+(selected.BlueprintRevision>0?"R"+selected.BlueprintRevision:"")+" \u00b7 "+selected.Cost.Industry+" Industry");
                 Text(card,"Materials: "+string.Join(", ",selected.Cost.Resources!.Select(r=>MaterialName(r.ResourceDefinitionId)+" "+r.Amount)));
+                if(selected.Kind==ActivityProductionKind.Infrastructure)
+                {
+                    var benefit=observation.BuildingBenefits.FirstOrDefault(b=>b.DefinitionId==selected.DefinitionId);
+                    if(benefit!=null)
+                    {
+                        Text(card,"Base building effects: Food +"+benefit.FoodOutput+", Industry +"+benefit.Industry+", Research +"+benefit.Research+", power supply +"+benefit.PowerSupply+", power demand +"+benefit.PowerDemand+".","colonisation-building-effects-"+selected.DefinitionId);
+                        if(benefit.Extraction.Count>0)Text(card,"Base extraction/week: "+Materials(benefit.Extraction)+"; requires finite deposits.");
+                        Text(card,"Actual effective output depends on current power, politics and available deposits. This is not a completion forecast.");
+                    }
+                    else Text(card,"Building effects unavailable.");
+                }
                 var unavailable=w.ConstructionUnavailableReason(selected.Kind==ActivityProductionKind.PublishedShip);
                 var button=Button(card,"+ Add "+selected.DisplayName,"colonisation-build-"+index++,()=>{var c=Activity(selected.Kind==ActivityProductionKind.PublishedShip?CampaignActivityCommandKind.EnqueueShip:CampaignActivityCommandKind.EnqueueStructure,w.Id);c.DefinitionId=selected.DefinitionId;c.BlueprintRevision=selected.BlueprintRevision;SendActivity(c);});button.SetEnabled(selected.Supported&&unavailable==null);if(!selected.Supported)Text(card,selected.Reason);else if(unavailable!=null)Text(card,unavailable);
                 var queued=observation.Production.Count(x=>x.ColonyId==w.Id&&x.DefinitionId==selected.DefinitionId&&x.BlueprintRevision==selected.BlueprintRevision);

@@ -19,6 +19,41 @@ public sealed class ColonisationObservationTests
         actions.BuildOptions.Clear();Assert.Equal(before,Json(app.ExportColonisationSave()));Assert.Throws<ArgumentException>(()=>app.CaptureColonisation("civ.cardassian"));
         Assert.DoesNotContain(view.Worlds,w=>w.Id=="colony.cardassia");Assert.All(view.Worlds,w=>Assert.True(w.Shipbuilding));
     }
+    [Fact] public void OwnFoodDemandAndPublicBuildingBenefitsAreAuthoritativeDetachedAndReadOnly()
+    {
+        var package=ColonisationInventoryTests.Package();var packageBefore=Json(package);
+        var app=CampaignColonisationApplication.StartGame(package,PublishedConstructionProfileTests.Settings());
+        var before=Json(app.ExportColonisationSave());var view=app.CaptureColonisation(Human);
+        var earth=view.Worlds.Single(w=>w.Id=="colony.sol");var mars=view.Worlds.Single(w=>w.Id=="colony.mars");
+        Assert.Equal(1000,earth.Population);Assert.Equal(10,earth.FoodDemand);Assert.Equal(14,earth.FoodOutput);Assert.Equal(4,earth.LocalFoodBalance);
+        Assert.Equal(250,mars.Population);Assert.Equal(3,mars.FoodDemand);Assert.Equal(0,mars.FoodOutput);Assert.Equal(-3,mars.LocalFoodBalance);
+        Assert.Equal(0,mars.ShortageWeeks);Assert.DoesNotContain(view.Worlds,w=>w.Id=="colony.cardassia");
+        var publicIds=app.CaptureActivities(Human).BuildOptions.Where(b=>b.Kind==ActivityProductionKind.Infrastructure).Select(b=>b.DefinitionId).OrderBy(x=>x,StringComparer.Ordinal).ToArray();
+        Assert.Equal(publicIds,view.BuildingBenefits.Select(b=>b.DefinitionId));
+        foreach(var authored in package.Activities!.Content!.Structures!)
+        {
+            var benefit=view.BuildingBenefits.Single(b=>b.DefinitionId==authored.DefinitionId);
+            Assert.Equal(authored.FoodOutput,benefit.FoodOutput);Assert.Equal(authored.Industry,benefit.Industry);Assert.Equal(authored.Research,benefit.Research);Assert.Equal(authored.PowerDemand,benefit.PowerDemand);
+        }
+        var hydro=view.BuildingBenefits.Single(b=>b.DefinitionId=="infrastructure.hydroponic-extension.v1");Assert.Equal(6,hydro.FoodOutput);Assert.Equal(1,hydro.PowerDemand);
+        var mine=view.BuildingBenefits.Single(b=>b.DefinitionId==package.Settlement!.Mine!.Infrastructure!.DefinitionId);
+        Assert.Equal(3,Assert.Single(mine.Extraction).Amount);Assert.Equal(3,mine.PowerDemand);
+        Assert.DoesNotContain(view.BuildingBenefits,b=>b.DefinitionId=="infrastructure.farms");
+        Assert.Throws<NotSupportedException>(()=>((IList<InfrastructureDefinitionSnapshot>)view.BuildingBenefits).Clear());
+        Assert.Throws<NotSupportedException>(()=>((IList<ResourceAmountSnapshot>)mine.Extraction).Clear());
+        Assert.Null(typeof(ColonisationWorldSnapshot).GetProperty(nameof(earth.FoodDemand))!.SetMethod);
+        Assert.Equal(before,Json(app.ExportColonisationSave()));Assert.Equal(packageBefore,Json(package));
+        package.Settlement!.Mine!.Infrastructure!.Extraction![0].Amount=99;package.Activities!.Content!.Structures!.Single(s=>s.DefinitionId==hydro.DefinitionId).FoodOutput=999;
+        Assert.Equal(6,hydro.FoodOutput);Assert.Equal(3,Assert.Single(mine.Extraction).Amount);Assert.Equal(6,app.CaptureColonisation(Human).BuildingBenefits.Single(b=>b.DefinitionId==hydro.DefinitionId).FoodOutput);
+        Assert.Throws<ArgumentException>(()=>app.CaptureColonisation("civ.cardassian"));Assert.Equal(before,Json(app.ExportColonisationSave()));
+    }
+    [Fact] public void LegacySnapshotCallerHasUnavailableDemandAndNoInventedBuildingEffects()
+    {
+        var world=new ColonisationWorldSnapshot("own","p","s","World",ColonyEstablishmentStage.Established,null,250,4,18,0,0,0,0,0,0,"",Array.Empty<ResourceAmountSnapshot>(),Array.Empty<ColonisationCohortSnapshot>());
+        Assert.Null(world.FoodDemand);Assert.Null(world.LocalFoodBalance);
+        var view=new ColonisationCampaignSnapshot(Human,1,0,"hash",new[]{world},Array.Empty<ColonisationTransportSnapshot>(),Array.Empty<ColonisationQueueSnapshot>(),Array.Empty<ColonisationPresenceSnapshot>(),Array.Empty<ColonisationManifestReport>(),Array.Empty<ColonisationSurveySnapshot>(),Array.Empty<ColonisationIntentSnapshot>(),60,Array.Empty<ResourceAmountSnapshot>());
+        Assert.Empty(view.BuildingBenefits);
+    }
     [Theory]
     [InlineData(ColonyEstablishmentStage.Established,100,true,true,null)]
     [InlineData(ColonyEstablishmentStage.Established,100,false,true,"Requires a shipyard at this world")]
