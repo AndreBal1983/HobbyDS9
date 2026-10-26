@@ -3,19 +3,9 @@ using HobbyDS9.Contracts;
 using HobbyDS9.Simulation;
 namespace HobbyDS9.Application
 {
-    public interface ICampaignColonisationExpansionSession:ICampaignPlayableFleetSession
+    public interface ICampaignColonisationExpansionSession:ICampaignColonisationOperations
     {
-        CampaignGeneratedMapDto CaptureGeneratedMap(string actor);
-        CampaignStaticAstronomySnapshot CaptureKnownAstronomy(string actor);
         CampaignColonisationExpansionSaveDto ExportColonisationExpansionSave();
-        ColonisationCampaignSnapshot CaptureColonisation(string actor);
-        IReadOnlyList<ColonisationPlanetObservationDto> CaptureColonisationPlanets(string actor);
-        CampaignActivityObservationDto CaptureActivities(string actor);
-        FrontierCommissionSnapshot CaptureFrontierCommission(string actor);
-        ColonisationEligibilitySnapshot EvaluateColonisation(ColonisationCommandDto command);
-        CampaignTacticalMutationResult SubmitColonisation(ColonisationCommandDto? command);
-        CampaignActivityEligibilityDto EvaluateActivity(CampaignActivityCommandDto command);
-        CampaignTacticalMutationResult SubmitActivity(CampaignActivityCommandDto? command);
         ICampaignColonisationExpansionSession ForkInteraction(int turn,long revision);
     }
     public sealed class CampaignColonisationExpansionApplication:CampaignIntegratedPlaytestApplication,ICampaignColonisationExpansionSession
@@ -38,6 +28,7 @@ namespace HobbyDS9.Application
         public CampaignActivityEligibilityDto EvaluateActivity(CampaignActivityCommandDto command)=>session.EvaluateActivity(command);
         public CampaignTacticalMutationResult SubmitActivity(CampaignActivityCommandDto? command)=>session.SubmitActivity(command);
         public ICampaignColonisationExpansionSession ForkInteraction(int turn,long revision)=>new CampaignColonisationExpansionApplication(session.ForkColonisationInteraction(turn,revision));
+        public ICampaignColonisationOperations ForkOperations(int turn,long revision)=>ForkInteraction(turn,revision);
         public int RemainingPlayableOperations=>session.RemainingPlayableOperations;
         public CampaignPlayableFleetSaveDto ExportPlayableSave()=>session.ExportPlayableSave();
         public IReadOnlyList<CampaignNamedFleet> CaptureFleetOrganization(string actor)=>session.CaptureFleetOrganization(actor);

@@ -24,6 +24,11 @@ namespace HobbyDS9.TacticalReviewClient
                 if(streamedInteraction!=null||colonisationInteraction!=null||observed.HostId!=id||observed.Generation!=generation)return true;
                 var status=session.CaptureStatus();
                 if(observed.Status.Turn!=status.Turn||observed.Status.CampaignRevision!=status.CampaignRevision)return true;
+                if(colonisationExpansionStore is IReviewCheckpointWriteAdmission expansionAdmission)
+                {
+                    try{return expansionAdmission.TryCheckWriteAdmission(slot,out error);}
+                    catch(Exception){error=ReviewCheckpointError.WriteFailed;return true;}
+                }
                 if(colonisationStore is IReviewCheckpointWriteAdmission colonisationAdmission)
                 {
                     try{return colonisationAdmission.TryCheckWriteAdmission(slot,out error);}
@@ -76,7 +81,7 @@ namespace HobbyDS9.TacticalReviewClient
         public CampaignGeneratedMapDto CaptureGeneratedMap(ReviewFrame observed)
         {
             lock(gate){RequireCurrent(observed.HostId,observed.Generation);
-                var view=colonisationPackage!=null?((ICampaignColonisationSession)session).CaptureGeneratedMap(observed.Actor)
+                var view=colonisationPackage!=null?((ICampaignColonisationOperations)session).CaptureGeneratedMap(observed.Actor)
                     :streamedActivitiesPackage!=null?((ICampaignStreamedActivitiesSession)session).CaptureGeneratedMap(observed.Actor)
                     :activitiesPackage!=null?((ICampaignActivitiesSession)session).CaptureGeneratedMap(observed.Actor)
                     :publishedPackage!=null?((ICampaignPublishedConstructionSession)session).CaptureGeneratedMap(observed.Actor)

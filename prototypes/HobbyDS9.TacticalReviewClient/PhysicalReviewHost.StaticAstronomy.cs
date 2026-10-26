@@ -59,7 +59,7 @@ namespace HobbyDS9.TacticalReviewClient
                 if(streamedActivitiesPackage!=null){streamedPresentationSource=(ICampaignStreamedActivitiesSession)session;return streamedCommittedPresentation=CaptureStreamedActivitiesCandidate((ICampaignStreamedActivitiesSession)session,observed);}
                 if(colonisationPackage!=null){RequireColonisationFrame(observed);
                     if(ReferenceEquals(session,colonisationPresentationSource)&&colonisationCommittedPresentation!=null&&ReferenceEquals(colonisationCommittedPresentation.Frame,observed))return colonisationCommittedPresentation;
-                    colonisationPresentationSource=(ICampaignColonisationSession)session;return colonisationCommittedPresentation=CaptureColonisationCandidate((ICampaignColonisationSession)session,observed);}
+                    colonisationPresentationSource=(ICampaignColonisationOperations)session;return colonisationCommittedPresentation=CaptureColonisationCandidate((ICampaignColonisationOperations)session,observed);}
                 if(activitiesPackage!=null)return CaptureActivitiesCandidate((ICampaignActivitiesSession)session,observed);
                 if(publishedPackage!=null)return CapturePublishedCandidate((ICampaignPublishedConstructionSession)session,observed);
                 if(!staticAstronomy || session is not ICampaignStaticAstronomySession current)

@@ -41,34 +41,34 @@ namespace HobbyDS9.TacticalReviewClient
             catch(ReviewCheckpointStoreException e){return new PhysicalHostOpenResult(e.Error);}
             catch(Exception){return new PhysicalHostOpenResult(ReviewCheckpointError.InvalidCheckpoint);}
         }
-        private GeneratedCampaignPresentation CaptureColonisationCandidate(ICampaignColonisationSession candidate,ReviewFrame frame)
+        private GeneratedCampaignPresentation CaptureColonisationCandidate(ICampaignColonisationOperations candidate,ReviewFrame frame)
             =>new GeneratedCampaignPresentation(frame,candidate.CaptureGeneratedMap(frame.Actor),candidate.CaptureKnownAstronomy(frame.Actor),colonisationCodec!);
         public ColonisationCampaignSnapshot CaptureColonisation(ReviewFrame frame)
         {
             lock(gate){RequireCurrent(frame.HostId,frame.Generation);var status=session.CaptureStatus();
                 if(colonisationPackage==null||frame.Status.Turn!=status.Turn||frame.Status.CampaignRevision!=status.CampaignRevision)throw new InvalidOperationException("Activity observation changed.");
-                return ((ICampaignColonisationSession)session).CaptureColonisation(frame.Actor);}
+                return ((ICampaignColonisationOperations)session).CaptureColonisation(frame.Actor);}
         }
         public System.Collections.Generic.IReadOnlyList<ColonisationPlanetObservationDto> CaptureColonisationPlanets(ReviewFrame frame)
-        {lock(gate){RequireColonisationFrame(frame);return ((ICampaignColonisationSession)session).CaptureColonisationPlanets(frame.Actor);}}
+        {lock(gate){RequireColonisationFrame(frame);return ((ICampaignColonisationOperations)session).CaptureColonisationPlanets(frame.Actor);}}
         public CampaignActivityObservationDto CaptureColonisationActivities(ReviewFrame frame)
-        {lock(gate){RequireColonisationFrame(frame);return ((ICampaignColonisationSession)session).CaptureActivities(frame.Actor);}}
+        {lock(gate){RequireColonisationFrame(frame);return ((ICampaignColonisationOperations)session).CaptureActivities(frame.Actor);}}
         private void RequireColonisationFrame(ReviewFrame frame)
         {RequireCurrent(frame.HostId,frame.Generation);var status=session.CaptureStatus();
          if(colonisationPackage==null||status.Turn!=frame.Status.Turn||status.CampaignRevision!=frame.Status.CampaignRevision)throw new InvalidOperationException("Colonisation observation changed.");}
         public ColonisationEligibilitySnapshot EvaluateColonisation(ReviewFrame frame,ColonisationCommandDto command)
-        {lock(gate){RequireColonisationCommandFrame(frame,command);return ((ICampaignColonisationSession)session).EvaluateColonisation(command);}}
+        {lock(gate){RequireColonisationCommandFrame(frame,command);return ((ICampaignColonisationOperations)session).EvaluateColonisation(command);}}
         public ReviewFrame SubmitColonisation(ReviewFrame frame,ColonisationCommandDto command,out CampaignTacticalMutationResult result)
-        {lock(gate){RequireColonisationCommandFrame(frame,command);result=((ICampaignColonisationSession)session).SubmitColonisation(command);return Capture(session,frame.Actor,frame.Battle?.EncounterId,generation);}}
+        {lock(gate){RequireColonisationCommandFrame(frame,command);result=((ICampaignColonisationOperations)session).SubmitColonisation(command);return Capture(session,frame.Actor,frame.Battle?.EncounterId,generation);}}
         private void RequireColonisationCommandFrame(ReviewFrame frame,ColonisationCommandDto command)
         {RequireColonisationFrame(frame);if(command==null||command.ActorId!=frame.Actor||command.Turn!=frame.Status.Turn||command.Revision!=frame.Status.CampaignRevision)throw new InvalidOperationException("Colonisation command observation changed.");}
         public CampaignActivityEligibilityDto EvaluateColonisationActivity(ReviewFrame frame,CampaignActivityCommandDto command)
         {
-            lock(gate){RequireColonisationActivityFrame(frame,command);return ((ICampaignColonisationSession)session).EvaluateActivity(command);}
+            lock(gate){RequireColonisationActivityFrame(frame,command);return ((ICampaignColonisationOperations)session).EvaluateActivity(command);}
         }
         public ReviewFrame SubmitColonisationActivity(ReviewFrame frame,CampaignActivityCommandDto command,out CampaignTacticalMutationResult result)
         {
-            lock(gate){RequireColonisationActivityFrame(frame,command);result=((ICampaignColonisationSession)session).SubmitActivity(command);return Capture(session,frame.Actor,frame.Battle?.EncounterId,generation);}
+            lock(gate){RequireColonisationActivityFrame(frame,command);result=((ICampaignColonisationOperations)session).SubmitActivity(command);return Capture(session,frame.Actor,frame.Battle?.EncounterId,generation);}
         }
         private void RequireColonisationActivityFrame(ReviewFrame frame,CampaignActivityCommandDto command)
         {

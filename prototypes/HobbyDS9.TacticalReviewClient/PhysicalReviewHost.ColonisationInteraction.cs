@@ -10,7 +10,7 @@ namespace HobbyDS9.TacticalReviewClient
     public sealed class ColonisationInteractionCompletion
     {
         internal readonly ColonisationInteractionWork Work;
-        internal readonly ICampaignColonisationSession? Candidate;
+        internal readonly ICampaignColonisationOperations? Candidate;
         internal ReviewFrame? Frame;
         internal GeneratedCampaignPresentation? Presentation;
         internal FrontierCommissionSnapshot? Commission;
@@ -26,18 +26,18 @@ namespace HobbyDS9.TacticalReviewClient
         public System.Collections.Generic.IReadOnlyList<ColonisationPlanetSnapshot>? PreparedPlanets=>Planets;
         public bool Committed=>Published;
         public ReviewFrame? PreparedFrame=>Frame;
-        internal ColonisationInteractionCompletion(ColonisationInteractionWork work,ICampaignColonisationSession? candidate=null){Work=work;Candidate=candidate;}
+        internal ColonisationInteractionCompletion(ColonisationInteractionWork work,ICampaignColonisationOperations? candidate=null){Work=work;Candidate=candidate;}
     }
     public sealed class ColonisationInteractionWork
     {
         internal readonly PhysicalReviewHost Host;
-        internal readonly ICampaignColonisationSession Source;
+        internal readonly ICampaignColonisationOperations Source;
         public ReviewFrame SourceFrame {get;}
         public ColonisationInteractionKind Kind {get;}
         private readonly CampaignActivityCommandDto? command;
         private readonly ColonisationCommandDto? colonyCommand;
         private int executed,cancelled,finished;
-        internal ColonisationInteractionWork(PhysicalReviewHost host,ICampaignColonisationSession source,ReviewFrame frame,ColonisationInteractionKind kind,CampaignActivityCommandDto? command,ColonisationCommandDto? colonyCommand)
+        internal ColonisationInteractionWork(PhysicalReviewHost host,ICampaignColonisationOperations source,ReviewFrame frame,ColonisationInteractionKind kind,CampaignActivityCommandDto? command,ColonisationCommandDto? colonyCommand)
         {Host=host;Source=source;SourceFrame=frame;Kind=kind;this.command=command==null?null:Copy(command);this.colonyCommand=colonyCommand==null?null:ColonisationCommandCopy.Copy(colonyCommand);}
         public CampaignActivityCommandDto? Command=>command==null?null:Copy(command);
         public ColonisationCommandDto? ColonisationCommand=>colonyCommand==null?null:ColonisationCommandCopy.Copy(colonyCommand);
@@ -57,7 +57,7 @@ namespace HobbyDS9.TacticalReviewClient
     {
         private ColonisationInteractionWork? colonisationInteraction;
         private GeneratedCampaignPresentation? colonisationCommittedPresentation;
-        private ICampaignColonisationSession? colonisationPresentationSource;
+        private ICampaignColonisationOperations? colonisationPresentationSource;
         private FrontierCommissionSnapshot? colonisationCommittedCommission;
         private ReviewFrame? colonisationCommissionFrame;
         internal Action<string>? ColonisationInteractionProbe {get;set;}
@@ -67,21 +67,21 @@ namespace HobbyDS9.TacticalReviewClient
             {
                 RequireNoStreamedInteraction();RequireCurrent(frame.HostId,frame.Generation);
                 var status=session.CaptureStatus();
-                if(colonisationPackage==null||colonisationCodec is not IBackgroundColonisationCheckpointCodec||!Enum.IsDefined(typeof(ColonisationInteractionKind),kind)
+                if(colonisationPackage==null||(colonisationExpansionPackage!=null?colonisationExpansionCodec is not IBackgroundColonisationExpansionCheckpointCodec:colonisationCodec is not IBackgroundColonisationCheckpointCodec)||!Enum.IsDefined(typeof(ColonisationInteractionKind),kind)
                     ||status.Turn!=frame.Status.Turn||status.CampaignRevision!=frame.Status.CampaignRevision
                     ||kind==ColonisationInteractionKind.PlanningAdvance&&(command!=null||colonyCommand!=null)
                     ||kind!=ColonisationInteractionKind.PlanningAdvance&&((command==null)==(colonyCommand==null)
                         ||command!=null&&(command.ActorId!=frame.Actor||command.ExpectedTurn!=frame.Status.Turn||command.ExpectedRevision!=frame.Status.CampaignRevision)
                         ||colonyCommand!=null&&(colonyCommand.ActorId!=frame.Actor||colonyCommand.Turn!=frame.Status.Turn||colonyCommand.Revision!=frame.Status.CampaignRevision)))
                     throw new InvalidOperationException("Invalid streamed interaction observation.");
-                return colonisationInteraction=new ColonisationInteractionWork(this,(ICampaignColonisationSession)session,frame,kind,command,colonyCommand);
+                return colonisationInteraction=new ColonisationInteractionWork(this,(ICampaignColonisationOperations)session,frame,kind,command,colonyCommand);
             }
         }
         internal ColonisationInteractionCompletion ExecuteColonisationInteraction(ColonisationInteractionWork work)
         {
             // No host gate, source mutation, Unity objects, serialization or replay.
             ColonisationInteractionProbe?.Invoke("before-fork");
-            var candidate=work.Source.ForkInteraction(work.SourceFrame.Status.Turn,work.SourceFrame.Status.CampaignRevision);
+            var candidate=work.Source.ForkOperations(work.SourceFrame.Status.Turn,work.SourceFrame.Status.CampaignRevision);
             var completion=new ColonisationInteractionCompletion(work,candidate);
             if(work.Cancelled){completion.Failed=true;return completion;}
             ColonisationInteractionProbe?.Invoke("before-action");
