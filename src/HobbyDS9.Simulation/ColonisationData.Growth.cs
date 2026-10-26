@@ -2,7 +2,7 @@ using HobbyDS9.Contracts;
 using static HobbyDS9.Simulation.CampaignTacticalReviewData;
 namespace HobbyDS9.Simulation
 {
-    internal enum ColonisationSourceEdition { Original=0,Growth=1 }
+    internal enum ColonisationSourceEdition { Original=0,Growth=1,Repeat=2 }
     internal static partial class ColonisationData
     {
         internal static string GrowthHash(CampaignColonisationExpansionPackageDto p)

@@ -8,7 +8,7 @@ namespace HobbyDS9.Simulation
     // All scalar/null/container visits are charged; JSON byte accounting deliberately
     // overestimates punctuation, integer widths and escaped UTF16 string content.
     // This bounds work/allocation before replay; it never certifies semantic validity.
-    internal static class ColonisationRootBudget
+    internal static partial class ColonisationRootBudget
     {
         internal const string AlgorithmIdentity="colonisation-root-preflight-v1";
         internal const string SchemaFingerprint="eefec29cac2be2889afae7277e955587af184e186337303559001fbd9b852e32";
