@@ -15,3 +15,5 @@ client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardas
 
 # Expansion composition pins the exact planner asset bytes.
 client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationExpansionV1/*.json text eol=lf
+# Repeat composition also pins exact policy bytes.
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRepeatV1/*.json text eol=lf
