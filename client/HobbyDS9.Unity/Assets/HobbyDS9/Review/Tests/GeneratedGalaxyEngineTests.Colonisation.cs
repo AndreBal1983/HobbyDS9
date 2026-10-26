@@ -32,7 +32,9 @@ namespace HobbyDS9.UnityReview.Tests
             internal string Home="",HomeSystem="",HomeNode="",Explorer="",Transport="",SecondTransport="",TargetPlanet="",TargetNode="",TargetWorld="";
             internal byte[]? Founding,Established;internal string? FoundingMission,EstablishedMission;
             internal string[] ManufacturedOrders=Array.Empty<string>();
-            internal bool PriorDirectoryCaptured;
+            internal bool PriorDirectoryCaptured,SurveyCancelled,SurveyCaptured,LandingCompleted;
+            internal int SurveyAttempts;
+            internal readonly HashSet<string> SurveyVisited=new HashSet<string>(StringComparer.Ordinal),AttemptedPlanets=new HashSet<string>(StringComparer.Ordinal),AttemptedNodes=new HashSet<string>(StringComparer.Ordinal);
             internal bool Pending=>Contexts.Any(c=>Volatile.Read(ref c.Finished)==0)||Holds.Any(h=>h.Work!=null&&(!h.Work.Settled||h.Context!=null&&Volatile.Read(ref h.Context.Finished)==0));
             internal Exception? ReleaseAll(){foreach(var h in Holds)h.Release.Set();Exception? error=null;foreach(var h in Holds)try{h.Continuation?.Forward();}catch(Exception e){error=error??e;}return error;}
         }
@@ -105,10 +107,11 @@ namespace HobbyDS9.UnityReview.Tests
             var seen=new HashSet<string>(contacts.Select(c=>c.LastSeenNodeId),StringComparer.Ordinal);
             var excluded=new HashSet<string>(seen,StringComparer.Ordinal);
             foreach(var edge in map.Connections){if(seen.Contains(edge.EndpointA))excluded.Add(edge.EndpointB);if(seen.Contains(edge.EndpointB))excluded.Add(edge.EndpointA);}
+            excluded.UnionWith(s.AttemptedNodes);
             s.Shared.Timings.Add(new{phase="observed-contact-risk",check=phase,turn=model.Current.Frame.Status.Turn,
                 contacts=contacts.Select(c=>new{c.FleetId,c.LastSeenNodeId,c.LastSeenTurn,c.Fresh}).ToArray(),
-                excluded=excluded.OrderBy(x=>x,StringComparer.Ordinal).ToArray(),chosen,
-                qualification="Conservative last-seen contact adjacency heuristic; not enemy destination knowledge or a safety guarantee."});
+                excluded=excluded.OrderBy(x=>x,StringComparer.Ordinal).ToArray(),ownAttemptedNodes=s.AttemptedNodes.OrderBy(x=>x,StringComparer.Ordinal).ToArray(),ownAttemptedPlanets=s.AttemptedPlanets.OrderBy(x=>x,StringComparer.Ordinal).ToArray(),chosen,
+                qualification="Conservative last-seen contact adjacency and own failed-attempt exclusion; not enemy destination knowledge or a safety guarantee."});
             return excluded;
         }
         private static string ColonyNextKnown(CampaignGeneratedMapDto map,string origin,HashSet<string> visited,HashSet<string> excluded)
@@ -201,26 +204,26 @@ namespace HobbyDS9.UnityReview.Tests
         {
             var home=ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home);
             var homeEnvironment=StreamHost(ColonyModel(s)).CaptureColonisationPlanets(ColonyModel(s).Current.Frame).Single(x=>x.PlanetId==home.PlanetId).Environment!;
-            var visited=new HashSet<string>(StringComparer.Ordinal){s.HomeNode};bool cancelled=false,captured=false;
-            for(int attempt=0;attempt<20&&s.TargetPlanet=="";attempt++)
+            var visited=s.SurveyVisited;visited.Add(s.HomeNode);
+            for(;s.SurveyAttempts<20&&s.TargetPlanet=="";)
             {
-                var own=ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==s.Explorer);visited.Add(own.NodeId);
+                s.SurveyAttempts++;var own=ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==s.Explorer);visited.Add(own.NodeId);
                 var excluded=ColonyObservedRisk(s,"before-survey");
                 // Discovery and candidate selection use ONLY the detached actor projection.
-                foreach(var planet in ColonyModel(s).ColonisationPlanets().Where(x=>x.SystemId!=s.HomeSystem&&!x.Surveyed&&!excluded.Contains(own.NodeId)&&ColonyModel(s).GeneratedMap().Regions.Any(r=>r.NodeId==own.NodeId&&r.SystemId==x.SystemId)).ToArray())
+                foreach(var planet in ColonyModel(s).ColonisationPlanets().Where(x=>x.SystemId!=s.HomeSystem&&!x.Surveyed&&!s.AttemptedPlanets.Contains(x.PlanetId)&&!excluded.Contains(own.NodeId)&&ColonyModel(s).GeneratedMap().Regions.Any(r=>r.NodeId==own.NodeId&&r.SystemId==x.SystemId)).ToArray())
                 {
                     if(ColonyObservedRisk(s,"before-next-body",own.NodeId).Contains(own.NodeId))break;
                     yield return ColonyPage(s,doc,"Planets");yield return ColonyPick(doc,"colonisation-planet-selector",ColonyModel(s).ColonisationPlanets(),x=>x.PlanetId,planet.PlanetId);
                     yield return ColonyPick(doc,"colonisation-survey-ship",ColonyModel(s).ColonisationActivities().Ships,x=>x.ShipId,s.Explorer);
                     yield return ColonyReview(s,doc,"colonisation-survey-review");
-                    if(!captured){yield return ColonyCapture(s,doc,new Vector2Int(1920,1080),"colony-02-survey-review-1920.png");captured=true;}
+                    if(!s.SurveyCaptured){yield return ColonyCapture(s,doc,new Vector2Int(1920,1080),"colony-02-survey-review-1920.png");s.SurveyCaptured=true;}
                     yield return ColonyClick(s,doc,"colonisation-order-confirm");
-                    if(!cancelled)
+                    if(!s.SurveyCancelled)
                     {
                         yield return ColonyPage(s,doc,"Planets");yield return ColonyOrder(s,doc,"colonisation-survey-cancel");
                         Assert.That(ColonyModel(s).Colonisation().Surveys.Last(x=>x.PlanetId==planet.PlanetId).Stage,Is.EqualTo(PlanetSurveyStage.Cancelled));
                         Assert.That(ColonyModel(s).ColonisationPlanets().Single(x=>x.PlanetId==planet.PlanetId).Surveyed,Is.False);
-                        yield return ColonyOrder(s,doc,"colonisation-survey-review");cancelled=true;
+                        yield return ColonyOrder(s,doc,"colonisation-survey-review");s.SurveyCancelled=true;
                     }
                     for(int week=0;week<4&&!ColonyModel(s).ColonisationPlanets().Single(x=>x.PlanetId==planet.PlanetId).Surveyed;week++)yield return ColonyAdvance(s,doc);
                     var observed=StreamHost(ColonyModel(s)).CaptureColonisationPlanets(ColonyModel(s).Current.Frame).Single(x=>x.PlanetId==planet.PlanetId);
@@ -241,7 +244,7 @@ namespace HobbyDS9.UnityReview.Tests
                     yield return ColonyMove(s,doc,s.Explorer,ColonyNextKnown(ColonyModel(s).GeneratedMap(),own.NodeId,visited,ColonyObservedRisk(s,"next-frontier")));
                 }
             }
-            Assert.That(s.TargetPlanet,Is.Not.Empty,"a surveyed lawful nearby suitable resource opportunity");Assert.That(cancelled,Is.True);
+            Assert.That(s.TargetPlanet,Is.Not.Empty,"a surveyed lawful nearby suitable resource opportunity");Assert.That(s.SurveyCancelled,Is.True);
             Assert.That(ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==s.Explorer).NodeId,Is.EqualTo(s.HomeNode));
         }
         private static IEnumerator ColonyConfirmNegatives(ColonyCase s,UIDocument doc)
@@ -317,12 +320,48 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static IEnumerator ColonyIncomingRejected(ColonyCase s,UIDocument doc,string ship)
         {yield return ColonyTransport(s,doc,s.TargetWorld,ship);Assert.That(ColonyModel(s).Colonisation().Transports.Single(x=>x.ShipId==ship).Population,Is.GreaterThan(0));yield return ColonyReview(s,doc,"colonisation-unload",false);}
-        private static IEnumerator ColonyDeploy(ColonyCase s,UIDocument doc)
+        private static IEnumerator ColonyDeploy(ColonyCase s,UIDocument doc,bool allowInterrupted=false)
         {
-            yield return ColonyTransport(s,doc,s.Home);yield return ColonyPick(doc,"colonisation-deploy-planet",ColonyModel(s).ColonisationPlanets().Where(x=>x.Surveyed).ToArray(),x=>x.PlanetId,s.TargetPlanet);
-            yield return ColonyOrder(s,doc,"colonisation-deploy");Assert.That(ColonyModel(s).Colonisation().Intents.Any(x=>x.PlanetId==s.TargetPlanet),Is.True);
-            yield return ColonyAdvance(s,doc);var world=ColonyModel(s).Colonisation().Worlds.Single(x=>x.PlanetId==s.TargetPlanet);s.TargetWorld=world.Id;
+            s.LandingCompleted=false;yield return ColonyTransport(s,doc,s.Home);yield return ColonyPick(doc,"colonisation-deploy-planet",ColonyModel(s).ColonisationPlanets().Where(x=>x.Surveyed).ToArray(),x=>x.PlanetId,s.TargetPlanet);
+            var manifest=ColonyModel(s).Colonisation().Transports.Single(x=>x.ShipId==s.Transport).ManifestId;
+            yield return ColonyOrder(s,doc,"colonisation-deploy");var intent=ColonyModel(s).Colonisation().Intents.Single(x=>x.PlanetId==s.TargetPlanet&&x.ManifestId==manifest);
+            yield return ColonyAdvance(s,doc);var result=ColonyModel(s).Colonisation().LatestDeployments.Single(x=>x.IntentId==intent.Id&&x.ManifestId==manifest&&x.PlanetId==s.TargetPlanet);
+            s.Shared.Timings.Add(new{phase="actual-own-deployment-result",result.IntentId,result.ManifestId,result.PlanetId,result.Turn,result.Outcome,result.StillAboard});
+            if(result.Outcome==DeploymentBoundaryOutcome.Interrupted&&allowInterrupted)
+            {
+                Assert.That(result.StillAboard,Is.True);Assert.That(ColonyModel(s).Colonisation().Intents.Any(x=>x.Id==intent.Id),Is.False);
+                foreach(var id in new[]{s.Transport,s.SecondTransport}){var t=ColonyModel(s).Colonisation().Transports.Single(x=>x.ShipId==id);Assert.That(t.Living,Is.True);Assert.That(t.ManifestId,Is.Not.Null);Assert.That(t.Population,Is.EqualTo(100));Assert.That(t.Food,Is.GreaterThan(0));Assert.That(t.Cargo.Where(x=>x.ResourceDefinitionId=="resource.settlement-kit").Sum(x=>x.Amount),Is.EqualTo(1));}
+                yield return ColonyTransport(s,doc,s.Home,s.Transport);var label=doc.rootVisualElement.Q<Label>("colonisation-deployment-result-"+intent.Id);Assert.That(label,Is.Not.Null);Assert.That(label.text,Does.Contain("Landing did not complete"));Assert.That(label.text,Does.Contain("Settlers remain aboard"));
+                var parents=new List<ScrollView>();for(var at=label.parent;at!=null;at=at.parent)if(at is ScrollView v)parents.Add(v);
+                foreach(var view in parents){view.ScrollTo(label);yield return null;yield return null;PublishedReceivingContained(view.contentViewport.worldBound,label,"actual own interrupted landing feedback");}
+                Assert.That(label.panel,Is.SameAs(doc.rootVisualElement.panel));Assert.That(label.worldBound.height,Is.GreaterThan(0));Assert.That(label.worldBound.yMax,Is.LessThanOrEqualTo(doc.rootVisualElement.Q("player-footer").worldBound.yMin));
+                yield break;
+            }
+            Assert.That(result.Outcome,Is.EqualTo(DeploymentBoundaryOutcome.Deployed),"no silent repeated recovery or changed landing rules");
+            var world=ColonyModel(s).Colonisation().Worlds.Single(x=>x.PlanetId==s.TargetPlanet);s.TargetWorld=world.Id;s.LandingCompleted=true;
             Assert.That(world.Stage,Is.EqualTo(ColonyEstablishmentStage.Founding));Assert.That(world.Population,Is.EqualTo(100));Assert.That(ColonyModel(s).Colonisation().Transports.Single(x=>x.ShipId==s.Transport).ManifestId,Is.Null);
+        }
+        private static IEnumerator ColonyRecoverLanding(ColonyCase s,UIDocument doc)
+        {
+            // Only our own submitted target/action is excluded; no hidden reason, enemy position or private route is consulted.
+            Assert.That(s.AttemptedPlanets.Add(s.TargetPlanet),Is.True);Assert.That(s.AttemptedNodes.Add(s.TargetNode),Is.True);
+            foreach(var id in new[]{s.Transport,s.SecondTransport})
+            {
+                yield return ColonyMove(s,doc,id,s.HomeNode);yield return ColonyTransport(s,doc,s.Home,id);
+                var before=ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home);var cargo=ColonyModel(s).Colonisation().Transports.Single(x=>x.ShipId==id);Assert.That(cargo.Population,Is.EqualTo(100));Assert.That(cargo.Food,Is.GreaterThan(0));
+                var kit=cargo.Cargo.Where(x=>x.ResourceDefinitionId=="resource.settlement-kit").Sum(x=>x.Amount);Assert.That(kit,Is.EqualTo(1));
+                yield return ColonyOrder(s,doc,"colonisation-unload");var after=ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home);
+                Assert.That(after.Population,Is.EqualTo(before.Population+cargo.Population));Assert.That(after.Food,Is.EqualTo(before.Food+cargo.Food));
+                Assert.That(after.Stocks.Where(x=>x.ResourceDefinitionId=="resource.settlement-kit").Sum(x=>x.Amount),Is.EqualTo(before.Stocks.Where(x=>x.ResourceDefinitionId=="resource.settlement-kit").Sum(x=>x.Amount)+kit));
+                Assert.That(ColonyModel(s).Colonisation().Transports.Single(x=>x.ShipId==id).ManifestId,Is.Null);Assert.That(ColonyModel(s).Colonisation().Reports.Single(x=>x.ManifestId==cargo.ManifestId).Stage,Is.EqualTo(SettlerManifestStage.Unloaded));
+                s.Shared.Timings.Add(new{phase="actual-interrupted-expedition-return-unload",ship=id,cargo.ManifestId,cargo.Population,cargo.Food,recoveredKits=kit});
+            }
+            s.TargetPlanet="";s.TargetNode="";s.TargetWorld="";yield return ColonySurveyTarget(s,doc);
+            Assert.That(s.AttemptedPlanets.Contains(s.TargetPlanet)||s.AttemptedNodes.Contains(s.TargetNode),Is.False,"ONE different publicly discovered target/system");
+            yield return ColonyLoadOne(s,doc,s.Transport);yield return ColonyLoadOne(s,doc,s.SecondTransport);
+            // No extra SaveContinue, repeated captures or held races: first loaded checkpoint already covers the stage.
+            yield return ColonyMove(s,doc,s.Transport,s.TargetNode);yield return ColonyMove(s,doc,s.SecondTransport,s.TargetNode);yield return ColonyDeploy(s,doc);
+            Assert.That(s.LandingCompleted,Is.True,"the one allowed replanned attempt must actually land");
         }
         private static IEnumerator ColonyNoCohort(ColonyCase s,UIDocument doc)
         {
@@ -403,7 +442,8 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return ColonyManufacture(s,doc,2);foreach(var id in s.ManufacturedOrders)Assert.That(ColonyAudit(ColonyModel(s)).ProductionHistory!.Count(x=>x.Completed&&x.Order!.QueueItemId==id),Is.EqualTo(1));var ships=ColonyModel(s).Colonisation().Transports.OrderBy(x=>x.ShipId,StringComparer.Ordinal).ToArray();Assert.That(ships.Length,Is.EqualTo(2));s.Transport=ships[0].ShipId;s.SecondTransport=ships[1].ShipId;Assert.That(ships.All(x=>x.BlueprintRevision==1&&x.PassengerCapacity==100&&x.FoodCapacity==20),Is.True);
                 yield return ColonySurveyTarget(s,doc);
                 yield return ColonyLoadOne(s,doc,s.Transport,true);yield return ColonyLoadOne(s,doc,s.SecondTransport);yield return ColonySaveContinue(s,doc,"loaded-two-conserved-manifests");
-                yield return ColonyMove(s,doc,s.Transport,s.TargetNode);yield return ColonyMove(s,doc,s.SecondTransport,s.TargetNode);yield return ColonyDeploy(s,doc);
+                yield return ColonyMove(s,doc,s.Transport,s.TargetNode);yield return ColonyMove(s,doc,s.SecondTransport,s.TargetNode);yield return ColonyDeploy(s,doc,true);
+                if(!s.LandingCompleted)yield return ColonyRecoverLanding(s,doc);
                 yield return ColonyIncomingRejected(s,doc,s.SecondTransport);s.Founding=ColonyBytes(ColonyModel(s));s.FoundingMission=JsonConvert.SerializeObject(ColonyModel(s).FrontierCommission());yield return ColonySave(s,doc,"founding-branch-point",2);
                 foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)}){yield return ColonyWorld(s,doc,s.TargetWorld);yield return ColonyClick(s,doc,"colonisation-inspect-"+(ColonyBuildIndex(ColonyModel(s),blueprint)+1));yield return ColonyCapture(s,doc,size,"colony-0"+(size.x==1280?5:size.x==1920?6:7)+"-founding-"+size.x+".png",true);}
                 yield return ColonyEstablished(s,doc);yield return ColonyTransport(s,doc,s.TargetWorld,s.SecondTransport);var receiving=ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.TargetWorld).Population;var incoming=ColonyModel(s).Colonisation().Transports.Single(x=>x.ShipId==s.SecondTransport).Population;

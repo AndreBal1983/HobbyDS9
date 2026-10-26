@@ -10,7 +10,7 @@ public sealed class ColonisationObservationTests
     [Fact] public void NewFacadeReadsOwnDetachedFactsAndMissionWithoutMutatingCanonicalRoot()
     {
         var app=CampaignColonisationApplication.StartGame(ColonisationInventoryTests.Package(),PublishedConstructionProfileTests.Settings());
-        var before=Json(app.ExportColonisationSave());var view=app.CaptureColonisation(Human);Assert.Equal(Human,view.Actor);Assert.Equal(2,view.Worlds.Count);Assert.Empty(view.Transports);Assert.Empty(view.Production);
+        var before=Json(app.ExportColonisationSave());var view=app.CaptureColonisation(Human);Assert.Equal(Human,view.Actor);Assert.Equal(2,view.Worlds.Count);Assert.Empty(view.Transports);Assert.Empty(view.Production);Assert.Empty(view.LatestDeployments);
         Assert.Equal(app.CaptureStatus().CampaignRevision,view.Revision);Assert.All(view.Presence,p=>{Assert.DoesNotContain("owner",p.Caption,StringComparison.OrdinalIgnoreCase);Assert.InRange(p.ObservationTurn,0,view.Turn);});
         var actions=app.CaptureActivities(Human);Assert.Equal(4,actions.BuildOptions.Count(o=>o.Kind==ActivityProductionKind.PublishedShip));Assert.Contains(actions.BuildOptions,o=>o.DefinitionId=="infrastructure.frontier-mine.v1");
         var mission=app.CaptureFrontierCommission(Human);Assert.Equal(FrontierCommissionAvailability.Available,mission.Availability);Assert.Equal(4,mission.Objectives.Count);Assert.All(mission.Objectives,o=>Assert.Null(o.Evidence));

@@ -69,6 +69,30 @@ public sealed class ColonisationKernelTests
         Call(f.Session,"TickSettlementCamps",f.Game,f.Context);Assert.Equal(100,camp.Deaths);Assert.Equal(ColonyEstablishmentStage.EmptyOutpost,camp.Stage);
         Assert.Equal(SettlementTerminalKind.Extinct,f.Context.CampTerminals!.Single().Kind);Assert.Empty(colony.Cohorts!);
     }
+    [Fact]public void DetachedLatestDeploymentProjectionFiltersBothOwnersAndCopiesOnlyOwnOutcome()
+    {
+        // Projection-only assertions on the existing explicitly detached, validated kernel fixture.
+        // This does not claim controller journal/replay authority for its foreign actor.
+        var f=Fixture();Call(f.Session,"CompleteColonisationWeek",f.Game);
+        var context=Field<object>(f.Session,"colonisation");var proof=Field<ColonisationSettlementProofDto>(context,"SettlementProof");
+        var own=proof.Receipts!.Single(r=>r.Intent!.ActorId==Human);var foreign=proof.Receipts!.Single(r=>r.Intent!.ActorId!=Human);
+        var before=Json(f.Game)+Json(f.Context)+Json(proof);var snapshot=f.Session.CaptureColonisation(Human);var row=Assert.Single(snapshot.LatestDeployments);
+        Assert.Equal(own.Intent!.IntentId,row.IntentId);Assert.Equal(own.Intent.PlanetId,row.PlanetId);Assert.Equal(proof.Turn,row.Turn);Assert.True(row.StillAboard);Assert.Equal(DeploymentBoundaryOutcome.Disputed,row.Outcome);
+        Assert.DoesNotContain(foreign.Intent!.IntentId,Json(snapshot.LatestDeployments));Assert.Equal(before,Json(f.Game)+Json(f.Context)+Json(proof));
+        Assert.Throws<NotSupportedException>(()=>((IList<ColonisationDeploymentReport>)snapshot.LatestDeployments).Clear());
+        var originalId=own.Intent.IntentId;own.Intent.IntentId="changed";Assert.Equal(originalId,row.IntentId);own.Intent.IntentId=originalId;
+        var owner=own.ManifestBefore!.OwnerId;own.ManifestBefore.OwnerId=foreign.ManifestBefore!.OwnerId;
+        Assert.Empty(f.Session.CaptureColonisation(Human).LatestDeployments);own.ManifestBefore.OwnerId=owner;
+        var actor=foreign.Intent.ActorId;foreign.Intent.ActorId=Human;Assert.Single(f.Session.CaptureColonisation(Human).LatestDeployments);foreign.Intent.ActorId=actor;
+        // StillAboard is CURRENT, not a historical ManifestBefore claim.
+        var manifest=f.Context.ManifestRecords!.Single(m=>m.ManifestId==row.ManifestId);var stage=manifest.Stage;manifest.Stage=SettlerManifestStage.Unloaded;
+        Assert.False(Assert.Single(f.Session.CaptureColonisation(Human).LatestDeployments).StillAboard);manifest.Stage=stage;
+        var population=manifest.Passengers!.Population;manifest.Passengers.Population=0;Assert.False(Assert.Single(f.Session.CaptureColonisation(Human).LatestDeployments).StillAboard);manifest.Passengers.Population=population;
+        var ship=f.Game.Ships!.Single(s=>s.ShipId==manifest.ShipId);var hull=ship.CurrentHull;ship.CurrentHull=0;Assert.False(Assert.Single(f.Session.CaptureColonisation(Human).LatestDeployments).StillAboard);ship.CurrentHull=hull;
+        var ships=f.Game.Ships!;var index=ships.IndexOf(ship);ships.RemoveAt(index);Assert.False(Assert.Single(f.Session.CaptureColonisation(Human).LatestDeployments).StillAboard);ships.Insert(index,ship);
+        // Only the latest boundary is projected; the detached earlier snapshot remains unchanged.
+        proof.Receipts!.Clear();Assert.Empty(f.Session.CaptureColonisation(Human).LatestDeployments);Assert.Single(snapshot.LatestDeployments);
+    }
     [Fact]public void DetachedActualEconomyExtractsOnlyFiniteDepositsAndStopsAtZero()
     {
         var s=CampaignTacticalReviewSession.StartColonisation(ColonisationInventoryTests.Package(),PublishedConstructionProfileTests.Settings());

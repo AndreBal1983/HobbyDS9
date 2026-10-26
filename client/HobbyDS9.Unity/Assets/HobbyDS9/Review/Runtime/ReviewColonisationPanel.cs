@@ -188,6 +188,12 @@ namespace HobbyDS9.UnityReview
         }
         private void Transports()
         {
+            foreach(var landing in observation.LatestDeployments)
+            {
+                var outcome=landing.Outcome==DeploymentBoundaryOutcome.Interrupted?"Landing did not complete":landing.Outcome==DeploymentBoundaryOutcome.Disputed?"Landing disputed":"Landing completed";
+                var message=outcome+" in week "+landing.Turn+"."+(landing.StillAboard?" Settlers remain aboard; check food and transport status before another order.":" Check the current transport and world status.");
+                var label=Text(body,message);label.name="colonisation-deployment-result-"+landing.IntentId;
+            }
             var history=new Foldout{text="Own expedition history",value=observation.Transports.Count==0,name="colonisation-expedition-history"};history.style.flexShrink=0;history.style.fontSize=16;body.Add(history);
             foreach(var report in observation.Reports)Text(history,report.Stage+" \u00b7 deaths "+report.Deaths+", people transferred "+report.PopulationTransferred+", food consumed "+report.FoodConsumed+", lost "+report.FoodLost+". "+report.Report);
             if(observation.Reports.Count==0)Text(history,"No expedition manifests recorded yet.");

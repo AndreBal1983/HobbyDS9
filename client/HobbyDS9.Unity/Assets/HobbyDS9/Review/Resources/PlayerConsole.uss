@@ -206,3 +206,22 @@
     --unity-cursor-color: #ffe0b9;
     --unity-selection-color: #3d506a;
 }
+
+/* Colony controls use the existing console palette; disabled state remains distinct. */
+#colonisation-panel .unity-button {
+    background-image: none;
+    background-color: #15202d;
+    color: #eeeaf2;
+    border-color: #65798e;
+}
+#colonisation-panel .unity-button:hover {
+    background-color: #243449;
+}
+#colonisation-panel .unity-button:focus {
+    border-color: #f5f0dd;
+}
+#colonisation-panel .unity-button:disabled {
+    background-color: #18212b;
+    color: #a8b3c4;
+    border-color: #38485a;
+}

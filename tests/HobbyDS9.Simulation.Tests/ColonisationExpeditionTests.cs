@@ -51,8 +51,10 @@ public sealed class ColonisationExpeditionTests
         var deploy=Command(s,ColonisationAction.RequestDeployment);deploy.Deploy=new(){ManifestId=manifest.ManifestId,PlanetId=destination!.PlanetId};
         var deployed=s.SubmitColonisation(deploy);Assert.True(deployed.Accepted,deployed.Error+" "+s.LastPhysicalFailure+" "+Json(destination)+" "+Json(manifest));Advance(s);
         var landed=s.ExportColonisationSave();var camp=Assert.Single(landed.Colonisation!.CampSources!);Assert.Equal(ColonyEstablishmentStage.Founding,camp.Stage);
+        var landing=Assert.Single(s.CaptureColonisation(Human).LatestDeployments);Assert.Equal(DeploymentBoundaryOutcome.Deployed,landing.Outcome);Assert.Equal(manifest.ManifestId,landing.ManifestId);Assert.False(landing.StillAboard);
+        Assert.Equal(Json(landed),Json(s.ExportColonisationSave()));
         Assert.Equal(destination.PlanetId,Game(landed).Colonies!.Single(c=>c.ColonyId==camp.ColonyId).PlanetId);Assert.All(Game(landed).StarSystems!,s=>Assert.Null(s.OwnerCivilizationId));
-        Assert.Equal(Json(landed),Json(CampaignTacticalReviewSession.LoadColonisation(x.Package,landed).ExportColonisationSave()));
+        var reopened=CampaignTacticalReviewSession.LoadColonisation(x.Package,landed);Assert.Equal(Json(landed),Json(reopened.ExportColonisationSave()));Assert.Equal(Json(s.CaptureColonisation(Human).LatestDeployments),Json(reopened.CaptureColonisation(Human).LatestDeployments));
         foreach(var removeIntent in new[]{true,false})
         {
             var wrong=System.Text.Json.JsonSerializer.Deserialize<CampaignColonisationSaveDto>(Json(landed))!;

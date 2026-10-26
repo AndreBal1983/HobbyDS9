@@ -70,15 +70,25 @@ namespace HobbyDS9.Contracts
         public string Actor {get;}public int Turn {get;}public long Revision {get;}public string PackageHash {get;}
         public IReadOnlyList<ColonisationWorldSnapshot> Worlds {get;}public IReadOnlyList<ColonisationTransportSnapshot> Transports {get;}
         public IReadOnlyList<ColonisationOwnShipSourceSnapshot> OwnShipSources {get;}
+        public IReadOnlyList<ColonisationDeploymentReport> LatestDeployments {get;}
         public IReadOnlyList<ColonisationQueueSnapshot> Production {get;}public IReadOnlyList<ColonisationPresenceSnapshot> Presence {get;}
         public IReadOnlyList<ColonisationManifestReport> Reports {get;}public IReadOnlyList<ColonisationSurveySnapshot> Surveys {get;}public IReadOnlyList<ColonisationIntentSnapshot> Intents {get;}
         public long KitIndustry {get;}public IReadOnlyList<ResourceAmountSnapshot> KitResources {get;}
         public ColonisationCampaignSnapshot(string actor,int turn,long revision,string hash,IEnumerable<ColonisationWorldSnapshot> worlds,IEnumerable<ColonisationTransportSnapshot> ships,
             IEnumerable<ColonisationQueueSnapshot> queue,IEnumerable<ColonisationPresenceSnapshot> presence,IEnumerable<ColonisationManifestReport> reports,IEnumerable<ColonisationSurveySnapshot> surveys,
-            IEnumerable<ColonisationIntentSnapshot> intents,long kitIndustry,IEnumerable<ResourceAmountSnapshot> kitResources,IEnumerable<ColonisationOwnShipSourceSnapshot>? ownShipSources=null)
+            IEnumerable<ColonisationIntentSnapshot> intents,long kitIndustry,IEnumerable<ResourceAmountSnapshot> kitResources,IEnumerable<ColonisationOwnShipSourceSnapshot>? ownShipSources=null,IEnumerable<ColonisationDeploymentReport>? latestDeployments=null)
         {Actor=actor;Turn=turn;Revision=revision;PackageHash=hash;Worlds=new List<ColonisationWorldSnapshot>(worlds).AsReadOnly();Transports=new List<ColonisationTransportSnapshot>(ships).AsReadOnly();
          Production=new List<ColonisationQueueSnapshot>(queue).AsReadOnly();Presence=new List<ColonisationPresenceSnapshot>(presence).AsReadOnly();Reports=new List<ColonisationManifestReport>(reports).AsReadOnly();
-         Surveys=new List<ColonisationSurveySnapshot>(surveys).AsReadOnly();Intents=new List<ColonisationIntentSnapshot>(intents).AsReadOnly();OwnShipSources=new List<ColonisationOwnShipSourceSnapshot>(ownShipSources??System.Array.Empty<ColonisationOwnShipSourceSnapshot>()).AsReadOnly();KitIndustry=kitIndustry;KitResources=new List<ResourceAmountSnapshot>(kitResources).AsReadOnly();}
+         Surveys=new List<ColonisationSurveySnapshot>(surveys).AsReadOnly();Intents=new List<ColonisationIntentSnapshot>(intents).AsReadOnly();OwnShipSources=new List<ColonisationOwnShipSourceSnapshot>(ownShipSources??System.Array.Empty<ColonisationOwnShipSourceSnapshot>()).AsReadOnly();KitIndustry=kitIndustry;KitResources=new List<ResourceAmountSnapshot>(kitResources).AsReadOnly();
+         LatestDeployments=new List<ColonisationDeploymentReport>(latestDeployments??System.Array.Empty<ColonisationDeploymentReport>()).AsReadOnly();}
+    }
+    // Latest retained settlement boundary only; not an accumulating history or a reason for hidden blockers.
+    public sealed class ColonisationDeploymentReport
+    {
+        public string IntentId {get;}public string ManifestId {get;}public string ShipId {get;}public string PlanetId {get;}
+        public int Turn {get;}public DeploymentBoundaryOutcome Outcome {get;}public bool StillAboard {get;}
+        public ColonisationDeploymentReport(string intent,string manifest,string ship,string planet,int turn,DeploymentBoundaryOutcome outcome,bool aboard)
+        {IntentId=intent;ManifestId=manifest;ShipId=ship;PlanetId=planet;Turn=turn;Outcome=outcome;StillAboard=aboard;}
     }
     public sealed class ColonisationManifestReport
     {

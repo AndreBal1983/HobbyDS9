@@ -94,10 +94,18 @@ namespace HobbyDS9.Simulation
                     var reference=own.Blueprint;if(reference==null&&activities!.AuthoredActivityBlueprints.TryGetValue(own.ShipId,out var authored))reference=new BlueprintReferenceDto{BlueprintId=authored,Revision=1};
                     if(reference!=null)sources.Add(new ColonisationOwnShipSourceSnapshot(own.ShipId,reference.BlueprintId,reference.Revision));
                 }
+                var latest=colonisation.SettlementProof;var deployments=new List<ColonisationDeploymentReport>();
+                if(latest!=null)foreach(var receipt in latest.Receipts!.Where(r=>r.Intent!.ActorId==actor&&r.ManifestBefore?.OwnerId==actor).OrderBy(r=>r.Intent!.IntentId,StringComparer.Ordinal))
+                {
+                    var intent=receipt.Intent!;var prior=receipt.ManifestBefore!;
+                    var aboard=a.ManifestRecords!.Any(m=>m.ManifestId==intent.ManifestId&&m.ShipId==prior.ShipId&&m.OwnerId==actor&&m.Stage==SettlerManifestStage.Loaded&&m.Passengers?.Population>0)
+                        &&game.Ships!.Any(s=>s.ShipId==prior.ShipId&&s.OwnerCivilizationId==actor&&s.CurrentHull>0);
+                    deployments.Add(new ColonisationDeploymentReport(intent.IntentId,intent.ManifestId,prior.ShipId,intent.PlanetId,latest.Turn,receipt.Outcome,aboard));
+                }
                 return new ColonisationCampaignSnapshot(actor,game.TurnNumber,game.StateRevision,colonisation.PackageHash,worlds,ships,queue,presence,
                     a.ManifestRecords!.Where(m=>m.OwnerId==actor).OrderBy(m=>m.ManifestId,StringComparer.Ordinal).Select(m=>new ColonisationManifestReport(m.ManifestId,m.ShipId,m.Kind,m.Stage,m.PopulationTransferred,m.PassengerDeaths,m.FoodConsumed,m.FoodLost,m.LatestReport)),
                     a.Surveys!.Where(s=>s.ActorId==actor).Select(s=>new ColonisationSurveySnapshot(s.SurveyId,s.ShipId,s.PlanetId,s.Stage,s.CompletedWeeks)),
-                    a.DeploymentIntents!.Where(i=>i.ActorId==actor).Select(i=>new ColonisationIntentSnapshot(i.IntentId,i.ManifestId,i.PlanetId,i.Disputed)),colonisation.Policy.KitIndustry,ResourceAmountSnapshot.Copy(colonisation.Policy.KitResources!),sources);
+                    a.DeploymentIntents!.Where(i=>i.ActorId==actor).Select(i=>new ColonisationIntentSnapshot(i.IntentId,i.ManifestId,i.PlanetId,i.Disputed)),colonisation.Policy.KitIndustry,ResourceAmountSnapshot.Copy(colonisation.Policy.KitResources!),sources,deployments);
             }
         }
         public ColonisationEligibilitySnapshot EvaluateColonisation(ColonisationCommandDto command)
