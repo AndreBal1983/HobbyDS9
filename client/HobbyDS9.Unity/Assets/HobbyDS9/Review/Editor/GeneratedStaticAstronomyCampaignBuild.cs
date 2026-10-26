@@ -325,6 +325,10 @@ claimed.
             File.WriteAllText(Path.Combine(stage,"PLAY-COLONISATION-V2-DIAGNOSTIC.txt"),ColonisationV2DiagnosticGuide);
         }
 
+        [MenuItem("HobbyDS9/Campaign/Build colonisation stabilisation candidate")]
+        public static void BuildWindowsColonisationStabilisationCandidate()
+            =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Stabilisation-20261026");
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName,bool checkpointDiagnostics=false)
         {
             BuildWindows(stageName,checkpointDiagnostics);
