@@ -47,4 +47,22 @@ public sealed class ColonisationRosterTests
         Assert.Throws<ArgumentException>(()=>CampaignTacticalReviewSession.StartColonisationRoster(missing,PublishedConstructionProfileTests.Settings()));
         var wrong=CampaignTacticalReviewSession.CreateColonisationRosterPackage(ColonisationInventoryTests.Package());wrong.StartingRoster!.Revision=2;
         Assert.Throws<ArgumentException>(()=>CampaignTacticalReviewSession.StartColonisationRoster(wrong,PublishedConstructionProfileTests.Settings()));
-    }}
+    }    [Fact]public void RehashedSupportedAlternativeHullCannotMasqueradeAsClosedConstitutionRoster()
+    {
+        var official=ColonisationInventoryTests.Package();
+        var replacement=BlueprintCopies.Copy(official.ReadyClasses!.Single(d=>d.ClassId=="class.defiant-combat.v1"));replacement.ClassId="class.constitution-explorer.v1";
+        var old=official.Activities!; var swapped=BlueprintCopies.Copy(official.ReadyClasses!.Single(d=>d.ClassId=="class.constitution-explorer.v1"));swapped.ClassId="class.defiant-combat.v1";
+        var changedReady=old.ReadyClasses!.Select(d=>d.ClassId==replacement.ClassId?BlueprintCopies.Copy(replacement):d.ClassId==swapped.ClassId?BlueprintCopies.Copy(swapped):BlueprintCopies.Copy(d)).ToList();
+        var activities=CampaignTacticalReviewSession.CreateActivitiesPackage(old.BaseTemplate!,old.Catalogue!,changedReady,old.Support!,old.Content!,old.RecordBudget);
+        var ready=official.ReadyClasses!.Select(d=>d.ClassId==replacement.ClassId?BlueprintCopies.Copy(replacement):d.ClassId==swapped.ClassId?BlueprintCopies.Copy(swapped):BlueprintCopies.Copy(d)).ToList();
+        // Both ordinary factories validate and rehash this supported custom content; no stale hash causes rejection.
+        var custom=CampaignTacticalReviewSession.CreateColonisationPackage(activities,official.Catalogue!,ready,official.Support!,official.Settlement!);
+        Assert.NotEqual(official.PackageHash,custom.PackageHash);
+        var wrapped=CampaignTacticalReviewSession.CreateColonisationRosterPackage(custom);Assert.NotEqual(official.PackageHash,wrapped.PackageHash);
+        var source=new ShipDesignCompiler(new ShipDesignCatalogueSnapshot(custom.Catalogue!)).Publish(replacement,CampaignBlueprints.FrozenAccess(custom.Catalogue!),"blueprint.ready.constitution-explorer",1);
+        Assert.True(source.Published);var supported=PublishedTacticalSupportCompiler.EvaluateColonisation(new ShipDesignCatalogueSnapshot(custom.Catalogue!),source.Blueprint!,CampaignBlueprints.FrozenAccess(custom.Catalogue!),custom.Support!);
+        Assert.True(supported.Supported);Assert.Equal("hull.defiant-combat.v1",source.Blueprint!.Fit!.HullVersionId);
+        var error=Assert.Throws<ArgumentException>(()=>CampaignTacticalReviewSession.StartColonisationRoster(wrapped,PublishedConstructionProfileTests.Settings()));
+        Assert.Contains("closed roster class/hull",error.Message,StringComparison.Ordinal);
+    }
+}

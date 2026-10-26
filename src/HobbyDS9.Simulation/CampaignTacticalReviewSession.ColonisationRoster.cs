@@ -39,6 +39,7 @@ namespace HobbyDS9.Simulation
                 var ships=game.Ships!.Where(s=>s.OwnerCivilizationId==actor.CivilizationId).ToList();Require(ships.Count==1,"One actual starter per roster actor required.");var ship=ships[0];
                 var id="blueprint.ready.constitution-explorer"+(actor.CivilizationId==human?"":".ai");
                 var record=game.Blueprints!.Single(b=>b.OwnerCivilizationId==actor.CivilizationId&&b.BlueprintId==id&&b.Revision==1);
+                Require(record.Fit!=null&&record.Fit.ClassId=="class.constitution-explorer.v1"&&record.Fit.HullVersionId=="hull.constitution-explorer.v1","Actual actor-owned starter differs from the closed roster class/hull.");
                 var support=PublishedTacticalSupportCompiler.EvaluateColonisation(new ShipDesignCatalogueSnapshot(record.FrozenCatalogue!),CampaignBlueprints.Restore(record),CampaignBlueprints.FrozenAccess(record.FrozenCatalogue!),package.Support!);
                 Require(support.Supported&&support.Ship!.Tactical.BlueprintId==id,"Actual actor-owned starter support required.");
                 var fit=PublishedBuiltShipValidation.ToFit(support.Ship!.Tactical);Require(!d.AuthoredTacticalEquipment!.Fits!.Any(f=>f.DefinitionId==fit.DefinitionId),"Duplicate roster fit identity.");
