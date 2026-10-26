@@ -123,7 +123,7 @@ namespace HobbyDS9.UnityReview
             if(w.Stage==ColonyEstablishmentStage.Founding)Text(body,"Establishment: "+w.EstablishmentWork+" work, "+w.FedWeeks+" fed weeks. Shortage "+w.ShortageWeeks+" weeks; deaths "+w.Deaths+". "+w.Report);
             if(w.Stage==ColonyEstablishmentStage.EmptyOutpost)Text(body,"Empty outpost: no production or freight. A surveyed, supplied settlement expedition must recommission it.");
             var row=Row(body);row.style.flexWrap=Wrap.NoWrap;
-            var catalogue=new ScrollView(){name="colonisation-catalogue"};catalogue.style.flexGrow=2;catalogue.style.flexBasis=0;catalogue.style.minWidth=0;catalogue.style.height=300;row.Add(catalogue);
+            var catalogue=new ScrollView(){name="colonisation-catalogue"};catalogue.style.flexGrow=2;catalogue.style.flexBasis=0;catalogue.style.minWidth=0;catalogue.style.height=300;catalogue.style.marginRight=16;row.Add(catalogue);
             var queue=new ScrollView(){name="colonisation-queue"};queue.style.flexGrow=1;queue.style.flexBasis=0;queue.style.minWidth=0;queue.style.height=300;row.Add(queue);Text(queue,"Own world queue");
             int index=0;
             foreach(var kind in new[]{ActivityProductionKind.PublishedShip,ActivityProductionKind.Infrastructure})
