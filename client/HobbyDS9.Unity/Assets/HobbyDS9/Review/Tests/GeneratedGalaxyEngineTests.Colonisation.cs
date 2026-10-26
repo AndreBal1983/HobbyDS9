@@ -32,7 +32,7 @@ namespace HobbyDS9.UnityReview.Tests
             internal readonly PublishedReceivingState Shared=new PublishedReceivingState();
             internal readonly List<ColonyHold> Holds=new List<ColonyHold>();internal readonly List<PhysicalReviewHost> Hosts=new List<PhysicalReviewHost>();
             internal readonly List<CheckpointContext> Contexts=new List<CheckpointContext>();
-            internal string Home="",HomeSystem="",HomeNode="",Explorer="",Transport="",SecondTransport="",TargetPlanet="",TargetNode="",TargetWorld="";
+            internal string Home="",Yard="",HomeSystem="",HomeNode="",Explorer="",Escort="",Transport="",SecondTransport="",TargetPlanet="",TargetNode="",TargetWorld="";
             internal byte[]? Founding,Established;internal string? FoundingMission,EstablishedMission;
             internal string[] ManufacturedOrders=Array.Empty<string>();
             internal bool PriorDirectoryCaptured,SurveyCancelled,SurveyCaptured,LandingCompleted;
@@ -102,6 +102,47 @@ namespace HobbyDS9.UnityReview.Tests
             var route=ColonyModel(s).Current.FindKnownRoute(own.FleetId,node);Assert.That(route?.Route.Success,Is.True,"one selected actor-known route");
             yield return StreamRoute(doc,s.Shared.Entry!,own.FleetId,node);for(int i=0;i<24&&!ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==ship).Stationary;i++)yield return ColonyAdvance(s,doc);
             own=ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==ship);Assert.That(own.NodeId,Is.EqualTo(node));Assert.That(own.Stationary,Is.True);
+        }
+        private static IEnumerator ColonyJoinEscort(ColonyCase s,UIDocument doc)
+        {
+            var wanted=new[]{s.Explorer,s.Escort,s.Transport,s.SecondTransport};
+            foreach(var id in wanted)yield return ColonyMove(s,doc,id,s.HomeNode);
+            string Fleet(string id)=>ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==id).FleetId;
+            var target=Fleet(s.Explorer);var transfer=wanted.Where(id=>Fleet(id)!=target).ToArray();
+            if(transfer.Length>0)
+            {
+                foreach(var fleet in wanted.Select(Fleet).Distinct(StringComparer.Ordinal).ToArray())
+                {
+                    CampaignPage(doc,ReviewWorkspacePage.Map);yield return V3Settled(doc);Click(doc.rootVisualElement.Q<Button>("map-fleet-"+fleet));yield return V3Settled(doc);
+                    CampaignPage(doc,ReviewWorkspacePage.FleetOrders);yield return null;yield return null;var clear=doc.rootVisualElement.Q<Button>("fleet-clear-route");yield return ColonyReach(doc,clear,target:"normal fleet Remain");
+                    ColonyActivate(s,()=>{Click(clear);Confirm(doc);});yield return ColonyIdle(s,"normal-colocated-fleet-remain");
+                }
+                CampaignPage(doc,ReviewWorkspacePage.FleetOrders);yield return null;yield return null;
+                foreach(var id in transfer)
+                {
+                    if(doc.rootVisualElement.Q<Toggle>("fleet-member-"+id)==null){Click(doc.rootVisualElement.Q<Button>("fleet-roster-"+Fleet(id)));yield return null;yield return null;}
+                    var member=doc.rootVisualElement.Q<Toggle>("fleet-member-"+id);yield return ColonyReach(doc,member,target:"own transfer member");member.value=true;yield return null;yield return null;
+                }
+                var button=doc.rootVisualElement.Q<Button>("fleet-transfer-"+target);yield return ColonyReach(doc,button,target:"normal own colocated transfer");
+                ColonyActivate(s,()=>{Click(button);Confirm(doc);});yield return ColonyIdle(s,"normal-colocated-escort-transfer");
+            }
+            Assert.That(wanted.All(id=>Fleet(id)==target),Is.True,"actual normal completion autojoin or accepted UI transfer joins the own escort and transports");
+            Assert.That(ColonyModel(s).Current.Frame.OwnShips.Single(x=>x.Condition.ShipId==s.Escort).Condition.Hull,Is.GreaterThan(0));
+            s.Shared.Timings.Add(new{phase="actual-own-escort-assembly",targetFleet=target,ships=wanted,ordinaryTransferExecuted=transfer.Length>0});
+        }
+        private static IEnumerator ColonyCover(ColonyCase s,UIDocument doc,string phase)
+        {
+            var own=ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==s.Explorer);var fleet=own.FleetId;
+            Assert.That(own.Stationary,Is.True);Assert.That(ColonyModel(s).ColonisationActivities().Ships.Single(x=>x.ShipId==s.Escort).FleetId,Is.EqualTo(fleet));
+            Assert.That(ColonyModel(s).Current.Frame.OwnShips.Single(x=>x.Condition.ShipId==s.Escort).Condition.Hull,Is.GreaterThan(0));
+            var historyBefore=ColonyModel(s).History().Count;var before=ColonyModel(s).Current.Frame.Status;
+            CampaignPage(doc,ReviewWorkspacePage.Map);yield return V3Settled(doc);Click(doc.rootVisualElement.Q<Button>("map-fleet-"+fleet));yield return V3Settled(doc);
+            CampaignPage(doc,ReviewWorkspacePage.FleetOrders);yield return null;yield return null;
+            var engage=doc.rootVisualElement.Q<Button>("player-stay-engage");yield return ColonyReach(doc,engage,target:"public standing own StayEngage");
+            ColonyActivate(s,()=>{Click(engage);Confirm(doc);});yield return ColonyIdle(s,phase+"-standing-order");
+            yield return ColonyAdvance(s,doc);
+            Assert.That(ColonyModel(s).Current.Frame.Status.Turn,Is.EqualTo(before.Turn+1));
+            s.Shared.Timings.Add(new{phase,fleet,ownNode=own.NodeId,normalAdvance=true,actualCompletedEncounterDelta=ColonyModel(s).History().Count-historyBefore,qualification="A standing order and ordinary week; zero encounters is not a battle-win claim."});
         }
         private static HashSet<string> ColonyObservedRisk(ColonyCase s,string phase,string? chosen=null)
         {
@@ -187,21 +228,23 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(ColonyDraft(doc),Is.EqualTo(draft),"same transport context retains user food, cohort and material inputs through resize");
             if(oldConfirm!=null){var current=doc.rootVisualElement.Q<Button>("colonisation-order-confirm");Assert.That(current,Is.Not.Null,"review also survives restoration of the original size");if(!ReferenceEquals(oldConfirm,current)){StreamCapturedEvent(oldConfirm);yield return null;Assert.That(ColonyPending(s.Shared.Entry!),Is.False);Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(source),"removed pre-resize Confirm is inert");}}
         }
-        private static IEnumerator ColonyManufacture(ColonyCase s,UIDocument doc,int transports)
+        private static IEnumerator ColonyManufacture(ColonyCase s,UIDocument doc,int transports,IReadOnlyList<string>? captured=null)
         {
-            var orders=ColonyModel(s).Colonisation().Production.Where(x=>x.ColonyId==s.Home).Select(x=>x.Id).ToArray();
+            var orders=captured?.ToArray()??ColonyModel(s).Colonisation().Production.Where(x=>x.ColonyId==s.Home).Select(x=>x.Id).ToArray();
             bool shipOrder=ColonyModel(s).Colonisation().Production.Any(x=>orders.Contains(x.Id)&&x.Kind==ColonisationProductionKind.PublishedShip);
-            Assert.That(orders,Is.Not.Empty);bool consumed=false;
+            Assert.That(orders,Is.Not.Empty);bool consumed=false;var consumedWorlds=new HashSet<string>(StringComparer.Ordinal);
             for(int i=0;i<96&&ColonyModel(s).Colonisation().Production.Any(x=>orders.Contains(x.Id));i++)
             {
                 yield return ColonyAdvance(s,doc);
-                consumed|=ColonyModel(s).Colonisation().Production.Any(x=>orders.Contains(x.Id)&&x.CompletedIndustry>0&&x.Consumed.Any(r=>r.Amount>0));
+                var progress=ColonyModel(s).Colonisation().Production.Where(x=>orders.Contains(x.Id)&&x.CompletedIndustry>0&&x.Consumed.Any(r=>r.Amount>0)).ToArray();
+                consumed|=progress.Length>0;foreach(var order in progress)consumedWorlds.Add(order.ColonyId);
             }
             Assert.That(ColonyModel(s).Colonisation().Production.Where(x=>orders.Contains(x.Id)),Is.Empty,"normal FIFO finishes the actual captured orders");
             Assert.That(ColonyModel(s).Colonisation().Transports.Count,Is.GreaterThanOrEqualTo(transports));
             if(shipOrder)Assert.That(consumed,Is.True,"actual positive partial ship work and material consumption are observed before completion");
+            if(s.RosterV2&&captured!=null){Assert.That(consumedWorlds.Contains(s.Home),Is.True,"Home orders consume real delivered/local materials");Assert.That(consumedWorlds.Contains(s.Yard),Is.True,"parallel Yard orders consume real delivered/local materials");}
             var history=ColonyAudit(ColonyModel(s)).ProductionHistory!;foreach(var id in orders)Assert.That(history.Count(x=>x.Completed&&x.Order!.QueueItemId==id),Is.EqualTo(1),"each captured own order completes once");
-            s.Shared.Timings.Add(new{phase="manufacture",capturedOrders=orders,positiveConsumedWorkObserved=consumed,boundWeeks=96});
+            s.Shared.Timings.Add(new{phase="manufacture",capturedOrders=orders,positiveConsumedWorkObserved=consumed,consumedWorlds=consumedWorlds.ToArray(),boundWeeks=96});
         }
         private static IEnumerator ColonySurveyTarget(ColonyCase s,UIDocument doc)
         {
@@ -237,6 +280,8 @@ namespace HobbyDS9.UnityReview.Tests
                 }
                 if(s.TargetPlanet!="")
                 {
+                    // V2 exercises the real own standing order before return; no unseen contact is a command target.
+                    if(s.RosterV2)yield return ColonyCover(s,doc,"surveyed-target-cover");
                     // Return the shared fleet normally before loading; risk is rechecked against CURRENT observations.
                     yield return ColonyMove(s,doc,s.Explorer,s.HomeNode);
                     if(ColonyObservedRisk(s,"returned-home-before-load",s.TargetNode).Contains(s.TargetNode)){s.TargetPlanet="";s.TargetNode="";}
@@ -428,6 +473,13 @@ namespace HobbyDS9.UnityReview.Tests
                 File.WriteAllText(Path.Combine(CampaignOutput(),"colony-profile.json"),JsonConvert.SerializeObject(new{rosterV2=s.RosterV2,menu=s.MenuPrefix,slotPrefix=s.SlotPrefix,templatePackageHash=ColonyAudit(ColonyModel(s)).TemplatePackageHash}));
                 var home=ColonyModel(s).Colonisation().Worlds.Where(x=>x.Stage==ColonyEstablishmentStage.Established&&x.Population>=700&&(x.Cohorts.Any(c=>c.Population>=500)||x.Cohorts.Count(c=>c.Population>=400)>=2)).OrderByDescending(x=>x.Population).ThenBy(x=>x.Id,StringComparer.Ordinal).First();s.Home=home.Id;s.HomeSystem=home.SystemId;
                 s.HomeNode=ColonyModel(s).GeneratedMap().Regions.Single(x=>x.SystemId==s.HomeSystem).NodeId;s.Explorer=ColonyModel(s).ColonisationActivities().Ships.First(x=>x.StudyWork>0).ShipId;
+                s.Yard=s.Home;
+                if(s.RosterV2)
+                {
+                    var shipyards=ColonyModel(s).Current.Frame.Strategy!.Colonies.Where(x=>x.Economy.Shipbuilding).Select(x=>x.ColonyId.Value).ToHashSet(StringComparer.Ordinal);
+                    var yard=ColonyModel(s).Colonisation().Worlds.Where(x=>x.Id!=s.Home&&x.SystemId==s.HomeSystem&&x.Stage==ColonyEstablishmentStage.Established&&shipyards.Contains(x.Id)&&x.Industry>home.Industry).OrderByDescending(x=>x.Industry).ThenBy(x=>x.Id,StringComparer.Ordinal).First();s.Yard=yard.Id;
+                    s.Shared.Timings.Add(new{phase="actor-observed-parallel-production-allocation",home,yard,qualification="Home keeps physical kits/cohorts; the higher-output owned shipyard builds transports. No ETA is promised."});
+                }
                 yield return ColonyMove(s,doc,s.Explorer,s.HomeNode);
                 yield return ColonyPage(s,doc,"Science");Assert.That(doc.rootVisualElement.Q<DropdownField>("activity-ship-selector"),Is.Not.Null,"existing real expedition controls remain reachable on the new profile");
                 var options=ColonyModel(s).ColonisationActivities().BuildOptions;var transport=options.Single(x=>x.Kind==ActivityProductionKind.PublishedShip&&x.Supported&&x.DefinitionId=="blueprint.ready.galaxy-colony-transport"&&x.BlueprintRevision==1);var blueprint=transport.DefinitionId;
@@ -443,16 +495,35 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return ColonyWorld(s,doc,s.Home);var queued=ColonyModel(s).Colonisation().Production.Single(x=>x.ColonyId==s.Home).Id;yield return ColonyReview(s,doc,"colonisation-queue-cancel-"+queued);
                 var oldCancelConfirm=doc.rootVisualElement.Q<Button>("colonisation-order-confirm");var cancelFrame=ColonyModel(s).Current.Frame;typeof(ReviewEntry).GetMethod("Draw",HullPrivate)!.Invoke(entry,null);yield return null;yield return null;
                 Assert.That(ColonyModel(s).Current.Frame,Is.SameAs(cancelFrame));Assert.That(doc.rootVisualElement.Q<Button>("colonisation-order-confirm"),Is.Not.Null,"activity review in the colonisation container survives same-frame redraw");StreamCapturedEvent(oldCancelConfirm);yield return null;Assert.That(ColonyPending(entry),Is.False);Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(accepted));yield return ColonyClick(s,doc,"colonisation-order-back");
-                yield return ColonyWorld(s,doc,s.Home);yield return ColonyClick(s,doc,"colonisation-build-kit");
+                if(s.RosterV2)
+                {
+                    var unworked=ColonyModel(s).Colonisation().Production.Single(x=>x.Id==queued);Assert.That(unworked.CompletedIndustry,Is.EqualTo(0));
+                    var stocks=JsonConvert.SerializeObject(ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home).Stocks);var credits=ColonyModel(s).ColonisationActivities().Credits;
+                    yield return ColonyWorld(s,doc,s.Home);yield return ColonyOrder(s,doc,"colonisation-queue-cancel-"+queued);
+                    Assert.That(ColonyModel(s).Colonisation().Production.Any(x=>x.Id==queued),Is.False);Assert.That(JsonConvert.SerializeObject(ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home).Stocks),Is.EqualTo(stocks));Assert.That(ColonyModel(s).ColonisationActivities().Credits,Is.EqualTo(credits));
+                    var combat=ColonyModel(s).ColonisationActivities().BuildOptions.Single(x=>x.Supported&&x.BlueprintRevision==1&&x.HullVersionId=="hull.defiant-combat.v1");
+                    yield return ColonyWorld(s,doc,s.Home);yield return ColonyClick(s,doc,"colonisation-build-"+ColonyBuildIndex(ColonyModel(s),combat.DefinitionId));
+                    yield return ColonyWorld(s,doc,s.Home);yield return ColonyClick(s,doc,"colonisation-build-kit");Assert.That(ColonyModel(s).ColonisationActivities().Credits,Is.EqualTo(credits),"Defiant and kit use ordinary zero-normal-credit construction");
+                }
+                var kitCredits=ColonyModel(s).ColonisationActivities().Credits;yield return ColonyWorld(s,doc,s.Home);yield return ColonyClick(s,doc,"colonisation-build-kit");Assert.That(ColonyModel(s).ColonisationActivities().Credits,Is.EqualTo(kitCredits));
                 var constructionCredits=ColonyModel(s).ColonisationActivities().Credits;
-                for(int ship=0;ship<2;ship++){yield return ColonyWorld(s,doc,s.Home);yield return ColonyClick(s,doc,"colonisation-build-"+ColonyBuildIndex(ColonyModel(s),blueprint));}
-                Assert.That(ColonyModel(s).ColonisationActivities().Credits,Is.EqualTo(constructionCredits));Assert.That(ColonyModel(s).Colonisation().Production.Count(x=>x.ColonyId==s.Home),Is.EqualTo(4));s.ManufacturedOrders=ColonyModel(s).Colonisation().Production.Where(x=>x.ColonyId==s.Home).Select(x=>x.Id).ToArray();yield return ColonySaveContinue(s,doc,"manufacturing-pending");
+                for(int ship=0;ship<2;ship++){yield return ColonyWorld(s,doc,s.Yard);yield return ColonyClick(s,doc,"colonisation-build-"+ColonyBuildIndex(ColonyModel(s),blueprint));}
+                Assert.That(ColonyModel(s).ColonisationActivities().Credits,Is.EqualTo(constructionCredits));
+                Assert.That(ColonyModel(s).Colonisation().Production.Count(x=>x.ColonyId==s.Home),Is.EqualTo(s.RosterV2?3:4));if(s.RosterV2)Assert.That(ColonyModel(s).Colonisation().Production.Count(x=>x.ColonyId==s.Yard),Is.EqualTo(2));
+                s.ManufacturedOrders=ColonyModel(s).Colonisation().Production.Where(x=>x.ColonyId==s.Home||x.ColonyId==s.Yard).Select(x=>x.Id).ToArray();Assert.That(s.ManufacturedOrders.Length,Is.EqualTo(s.RosterV2?5:4));yield return ColonySaveContinue(s,doc,"manufacturing-pending");
                 CampaignPage(doc,ReviewWorkspacePage.Map);yield return V3Settled(doc);root=ColonyBytes(ColonyModel(s));frame=ColonyModel(s).Current.Frame;
                 var advance=ColonyStartHold(s,()=>{Click(doc.rootVisualElement.Q<Button>("player-primary-action"));Confirm(doc);});yield return ColonyEntered(advance);yield return ColonyBusy(s,doc,advance,root,frame);advance.Release.Set();yield return ColonyIdle(s,"held-advance");ColonyProbe(StreamHost(ColonyModel(s)),null);yield return ColonyResolveCombat(s,doc);Assert.That(ColonyModel(s).Current.Frame.Status.Turn,Is.EqualTo(frame.Status.Turn+1));
-                yield return ColonyManufacture(s,doc,2);foreach(var id in s.ManufacturedOrders)Assert.That(ColonyAudit(ColonyModel(s)).ProductionHistory!.Count(x=>x.Completed&&x.Order!.QueueItemId==id),Is.EqualTo(1));var ships=ColonyModel(s).Colonisation().Transports.OrderBy(x=>x.ShipId,StringComparer.Ordinal).ToArray();Assert.That(ships.Length,Is.EqualTo(2));s.Transport=ships[0].ShipId;s.SecondTransport=ships[1].ShipId;Assert.That(ships.All(x=>x.BlueprintRevision==1&&x.PassengerCapacity==100&&x.FoodCapacity==20),Is.True);
+                yield return ColonyManufacture(s,doc,2,s.ManufacturedOrders);foreach(var id in s.ManufacturedOrders)Assert.That(ColonyAudit(ColonyModel(s)).ProductionHistory!.Count(x=>x.Completed&&x.Order!.QueueItemId==id),Is.EqualTo(1));var ships=ColonyModel(s).Colonisation().Transports.OrderBy(x=>x.ShipId,StringComparer.Ordinal).ToArray();Assert.That(ships.Length,Is.EqualTo(2));s.Transport=ships[0].ShipId;s.SecondTransport=ships[1].ShipId;Assert.That(ships.All(x=>x.BlueprintRevision==1&&x.PassengerCapacity==100&&x.FoodCapacity==20),Is.True);
+                if(s.RosterV2)
+                {
+                    var combat=ColonyModel(s).ColonisationActivities().BuildOptions.Single(x=>x.Supported&&x.BlueprintRevision==1&&x.HullVersionId=="hull.defiant-combat.v1");
+                    s.Escort=ColonyModel(s).Colonisation().OwnShipSources.Single(x=>x.BlueprintId==combat.DefinitionId&&x.Revision==1).ShipId;
+                    var produced=ColonyAudit(ColonyModel(s)).PublishedBuiltShips!.Where(x=>x.OwnerCivilizationId==ColonyModel(s).Current.Frame.Actor).ToArray();Assert.That(produced.Length,Is.EqualTo(3));Assert.That(produced.All(x=>x.BlueprintRevision==1),Is.True);
+                    yield return ColonyJoinEscort(s,doc);
+                }
                 yield return ColonySurveyTarget(s,doc);
                 yield return ColonyLoadOne(s,doc,s.Transport,true);yield return ColonyLoadOne(s,doc,s.SecondTransport);yield return ColonySaveContinue(s,doc,"loaded-two-conserved-manifests");
-                yield return ColonyMove(s,doc,s.Transport,s.TargetNode);yield return ColonyMove(s,doc,s.SecondTransport,s.TargetNode);yield return ColonyDeploy(s,doc,true);
+                yield return ColonyMove(s,doc,s.Transport,s.TargetNode);yield return ColonyMove(s,doc,s.SecondTransport,s.TargetNode);if(s.RosterV2)yield return ColonyCover(s,doc,"loaded-approach-cover");yield return ColonyDeploy(s,doc,true);
                 if(!s.LandingCompleted)yield return ColonyRecoverLanding(s,doc);
                 yield return ColonyIncomingRejected(s,doc,s.SecondTransport);s.Founding=ColonyBytes(ColonyModel(s));s.FoundingMission=JsonConvert.SerializeObject(ColonyModel(s).FrontierCommission());yield return ColonySave(s,doc,"founding-branch-point",2);
                 foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)}){yield return ColonyWorld(s,doc,s.TargetWorld);yield return ColonyClick(s,doc,"colonisation-inspect-"+(ColonyBuildIndex(ColonyModel(s),blueprint)+1));yield return ColonyCapture(s,doc,size,"colony-0"+(size.x==1280?5:size.x==1920?6:7)+"-founding-"+size.x+".png",true);}
