@@ -1,6 +1,6 @@
 # Colonisation Growth V2 portable increment
 
-Status: portable source/CPU accepted at 99cdd43. The minimal player integration is a source candidate pending independent acceptance; no Growth Unity/native acceptance is claimed. The design chapters remain the agreed direction; this is a bounded implementation contract, not the complete strategic-AI or conquest roadmap.
+Status, 27 October 2026: portable source/CPU and the later player integration are accepted. Scoped Unity and native checks were subsequently completed for the earlier `4b723bc` Growth executable; they do not establish native acceptance of the newer Repeat candidate. See [current modes and exact validation scope](current-demo-implementation.md). The design chapters remain the agreed direction; this is a bounded implementation contract, not the complete strategic-AI or conquest roadmap.
 
 The explicit Growth factory wraps the already validated Expansion source with a distinct package/profile/protocol/planner/budget identity. The complete carrier remains Format 12 with exactly the existing property shape. Only the explicit StartGrowthGame, LoadGrowthSave and ExportGrowthSave routes admit it. The trusted private source edition survives copies, fork, adoption and replay. Older factories, exports, preflight and codecs keep their original command/manifest/AI vocabulary; a new profile string or self-consistent hash never grants admission.
 
@@ -14,7 +14,7 @@ Tests distinguish real public 250 AI travel/full replay from human same-system E
 
 See [colonisation design](design/colonisation-and-conquest.md), [strategic AI](design/strategic-ai.md), [exploration](design/exploration-missions.md), [time and movement](design/time-movement-mobilisation.md), [ship design](design/ship-design.md) and [architecture](architecture.md).
 
-## Minimal player source candidate
+## Minimal player integration
 
 The separate Colonisation & Growth menu uses a typed Growth codec, host, background checkpoint work and slot namespace. Full normal Growth replay precedes a live model/frame replacement. Original menus, default rules and slot prefixes remain available without conversion. The panel receives a capability from the trusted model and adds one reviewed kit-free passenger action; kit-bearing embark remains available. No AI plan or whole-root data is sent to the panel.
 
