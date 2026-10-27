@@ -62,7 +62,12 @@ namespace HobbyDS9.UnityReview.Tests
                     if(t.Productive.Elapsed.TotalSeconds>=600)throw new TimeoutException("Repeat productive deadline after "+t.Phase);
                     if(t.Flushed<s.Shared.Timings.Count)t.Flush();
                 }
-                catch(Exception error){failure=error;}
+                catch(Exception error)
+                {
+                    failure=error; // Diagnostics must never replace the original failure or prevent cleanup.
+                    try{RepeatFailureGeometry(t,current.GetType().FullName??"iterator");}
+                    catch(Exception diagnosticError){try{CampaignDiagnosticError("repeat-failure-geometry",diagnosticError);}catch{}}
+                }
                 if(failure!=null)break;
                 if(!next){stack.Pop();try{(current as IDisposable)?.Dispose();}catch(Exception error){failure=error;break;}continue;}
                 if(value is IEnumerator nested){stack.Push(nested);continue;}
@@ -106,6 +111,38 @@ namespace HobbyDS9.UnityReview.Tests
             {Cleanup("repeat-dispose-shared-entered",()=>s.Shared.Entered.Dispose());Cleanup("repeat-dispose-shared-release",()=>s.Shared.Release.Dispose());}
             yield return new ExitPlayMode();
             if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+        }
+
+        private static void RepeatFailureGeometry(RepeatReceivingState t,string iterator)
+        {
+            var entry=t.Case.Shared.Entry;if(entry==null)return;var doc=entry.GetComponent<UIDocument>();var root=doc.rootVisualElement;
+            object Box(VisualElement? item)=>item==null?(object)new{present=false}:new{
+                present=true,item.name,type=item.GetType().Name,classes=item.GetClasses().ToArray(),layout=item.layout.ToString(),world=item.worldBound.ToString(),
+                height=item.resolvedStyle.height,minHeight=item.resolvedStyle.minHeight.ToString(),maxHeight=item.resolvedStyle.maxHeight.ToString(),
+                flexGrow=item.resolvedStyle.flexGrow,flexShrink=item.resolvedStyle.flexShrink,flexBasis=item.resolvedStyle.flexBasis.ToString(),overflow=item.style.overflow.value.ToString()};
+            object Scroll(ScrollView item)=>new{viewport=Box(item.contentViewport),content=Box(item.contentContainer),offset=item.scrollOffset.ToString(),
+                vertical=new{low=item.verticalScroller.lowValue,high=item.verticalScroller.highValue,value=item.verticalScroller.value},
+                horizontal=new{low=item.horizontalScroller.lowValue,high=item.horizontalScroller.highValue,value=item.horizontalScroller.value}};
+            object OwnControl(string id)
+            {
+                var item=root.Q(id);var ancestors=new List<object>();
+                for(var at=item?.parent;at!=null;at=at.parent)ancestors.Add(new{box=Box(at),scroll=at is ScrollView view?Scroll(view):null});
+                return new{id,control=Box(item),ancestors};
+            }
+            File.WriteAllText(Path.Combine(CampaignOutput(),"repeat-failure-geometry.json"),JsonConvert.SerializeObject(new{
+                phase=t.Phase,iterator,productiveMs=t.Productive.Elapsed.TotalMilliseconds,root=Box(root),footer=Box(root.Q("player-footer")),
+                content=Box(root.Q("review-central-content")),body=Box(root.Query<VisualElement>().ToList().FirstOrDefault(e=>e.ClassListContains("console-body"))),panel=Box(root.Q<ReviewColonisationPanel>()),
+                controls=new[]{"colonisation-tab-Worlds","colonisation-tab-Planets","colonisation-tab-Transports","colonisation-tab-Science","colonisation-world-selector","colonisation-build-kit"}.Select(OwnControl).ToArray(),
+                qualification="Read-only own UI geometry before disable/disposal. No target is inferred from the flattened iterator or private AI audit."}));
+            var prior=RenderTexture.active;Texture2D? pixels=null;
+            try
+            {
+                var target=doc.panelSettings.targetTexture;if(target==null)throw new InvalidOperationException("Failure render target unavailable.");
+                RenderTexture.active=target;pixels=new Texture2D(target.width,target.height,TextureFormat.RGBA32,false);
+                pixels.ReadPixels(new Rect(0,0,target.width,target.height),0,0);pixels.Apply();
+                File.WriteAllBytes(Path.Combine(CampaignOutput(),"repeat-failure-view.png"),pixels.EncodeToPNG());
+            }
+            finally{RenderTexture.active=prior;if(pixels!=null)UnityEngine.Object.DestroyImmediate(pixels);}
         }
 
         // Audit IDs never select an action or human destination.
@@ -223,8 +260,8 @@ namespace HobbyDS9.UnityReview.Tests
                 RepeatCensus(t,initial);t.Mark("explicit-new-complete");
                 // Only current human own views choose this page. No AI IDs or positions select a command.
                 var own=model.Colonisation();var home=own.Worlds.Where(w=>w.Stage==ColonyEstablishmentStage.Established&&w.Population>0).OrderByDescending(w=>w.Industry).ThenBy(w=>w.Id,StringComparer.Ordinal).First();
-                s.Home=home.Id;yield return ColonyWorld(s,doc,s.Home);
-                yield return ColonyReach(doc,doc.rootVisualElement.Q<Button>("colonisation-build-kit"),target:"human own production remains usable");
+                s.Home=home.Id;t.Mark("own-world-navigation-begin");yield return ColonyWorld(s,doc,s.Home);t.Mark("own-world-navigation-complete");
+                t.Mark("own-kit-reach-begin");yield return ColonyReach(doc,doc.rootVisualElement.Q<Button>("colonisation-build-kit"),target:"human own production remains usable");t.Mark("own-kit-reach-complete");
                 CampaignColonisationRepeatSaveDto audit=initial;
                 while(!t.SawEstablished&&t.UiAdvances<64)
                 {
