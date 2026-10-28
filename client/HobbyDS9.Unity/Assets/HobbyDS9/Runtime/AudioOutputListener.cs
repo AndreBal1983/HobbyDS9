@@ -58,12 +58,17 @@ namespace HobbyDS9.UnityClient
         {
             if (releasing) return;
             if (output == null) output = GetComponent<AudioListener>();
-            if (output == null) output = gameObject.AddComponent<AudioListener>();
             bool sceneListener = false;
             foreach (var listener in Object.FindObjectsByType<AudioListener>())
                 if (listener != output && listener.isActiveAndEnabled) { sceneListener = true; break; }
             // Never alter another listener, global volume/pause, or client preferences.
-            output.enabled = !sceneListener;
+            if (sceneListener)
+            {
+                if (output != null) output.enabled = false;
+                return;
+            }
+            if (output == null) output = gameObject.AddComponent<AudioListener>();
+            output.enabled = true;
         }
 
         private void ReleaseOutput()
