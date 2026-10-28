@@ -139,7 +139,7 @@ namespace HobbyDS9.UnityReview.Tests
             s.Shared.Entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();Assert.That(s.Shared.Entry,Is.Not.Null);var entry=s.Shared.Entry!;
             var field=typeof(ReviewEntry).GetField("generatedCampaignTestDirectory",HullPrivate)!;
             s.Shared.PriorDirectory=(string?)field.GetValue(entry);s.PriorDirectoryCaptured=true;
-            directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Network-Materials-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
+            directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-Network-Materials-"+Guid.NewGuid().ToString("N"));Directory.CreateDirectory(directory);
             var storePath=Path.Combine(directory,"campaign");field.SetValue(entry,storePath);t.OverrideAssigned=true;
             Assert.That(field.GetValue(entry),Is.EqualTo(storePath));
             var resolved=(string)typeof(ReviewEntry).GetMethod("GeneratedCampaignDirectory",HullPrivate)!.Invoke(entry,new object[]{false,false,false,false,false,false,false,false,true})!;
