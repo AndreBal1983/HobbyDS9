@@ -30,8 +30,11 @@ namespace HobbyDS9.Simulation
     }
     internal static class WorldEconomy
     {
-        internal static PlanetDefinitionDto Planet(ColonyStateDto colony, GameStateDto state, DefinitionCatalogDto definitions) =>
-            definitions.Planets!.Single(p => p.DefinitionId == state.Planets!.Single(p => p.PlanetId == colony.PlanetId).DefinitionId);
+        internal static PlanetDefinitionDto Planet(ColonyStateDto colony, GameStateDto state, DefinitionCatalogDto definitions)
+        {
+            PlanetStateDto? selected = null;
+            return definitions.Planets!.Single(p => p.DefinitionId == (selected ??= state.Planets!.Single(s => s.PlanetId == colony.PlanetId)).DefinitionId);
+        }
         internal static IEnumerable<(InfrastructureDefinitionDto definition, int count)> Infrastructure(ColonyStateDto c, DefinitionCatalogDto d) =>
             c.Infrastructure!.OrderBy(i => i.DefinitionId, StringComparer.Ordinal).Select(i => (d.Infrastructure!.Single(x => x.DefinitionId == i.DefinitionId), i.Count));
         internal static long Installed(ColonyStateDto c, DefinitionCatalogDto d, Func<InfrastructureDefinitionDto, long> quantity) =>
