@@ -1,6 +1,6 @@
 # Repeat expansion player profile
 
-Status, 27 October 2026: source/CPU accepted, followed by actual scoped Unity receiving and a strict Windows build at `20fba84c`. Native gameplay validation of that executable is pending after a window-activation tool failure before successful input. See [current modes and exact validation scope](current-demo-implementation.md). Mature Save/Continue latency and the prior intermittent native shutdown issue remain open.
+Status, 28 October 2026: source/CPU accepted, followed by actual scoped Unity receiving and a strict Windows build at `20fba84c`. A scoped native New/streamed infrastructure/Save/normal close/cold Continue/whole-file exact re-export/fresh-week check now passed on that executable. Historical Growth loading and broader native acceptance remain pending. The owner stopped desktop testing and requested source/CPU work only; the live game and saves were preserved for the owner. See [current modes and exact validation scope](current-demo-implementation.md). Mature Save/Continue latency and the prior intermittent native shutdown issue remain open; one normal close does not resolve the intermittent issue.
 
 The explicit Colonisation & Repeat Expansion menu composes the unchanged15 original Resources plus one pinned repeat-policy resource. Its decoded fields must exactly match the closed policy returned by the accepted portable Repeat factory. The complete Format13 root retains first AiPlans, separate RepeatGoals and SupplyCampId. No root string chooses an edition and no partial11/12 export is used.
 
