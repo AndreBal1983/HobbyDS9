@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using UnityEditor;
 using NUnit.Framework;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 
@@ -111,6 +112,7 @@ namespace HobbyDS9.UnityReview.Tests
                 t.Mark("visible-family-material-readiness");var imported=VisibleFamilyReadyMaterials(t);
                 // This is a separately labelled COMPONENT probe, never the real enemy render proof.
                 t.Mark("visible-family-component-probe");VisibleFamilyStagePreservesConstructorAbiMembershipUnknownFallbackAndLifetime();
+                VisibleFamilyPipelineObservation(t,"after authored component");
                 Assert.That(CycleBytes(model),Is.EqualTo(bytes));VisibleFamilySourcesUnchanged(t,imported,"after component");
                 CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Combat));yield return null;yield return null;
                 Assert.That(model.Current.Frame.Battle,Is.Not.Null);var battle=model.Current.Frame.Battle!;
@@ -181,16 +183,67 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(actual.Item1,Is.EqualTo(baseline.Serialized),"entire ORIGINAL serialized imported material, including saved shader/pass overrides");
             Assert.That(VisibleFamilyMaterialProperties(actual.Item2),Is.EqualTo(VisibleFamilyMaterialProperties(baseline.Managed)),"every ORIGINAL managed field except explicitly readied pass metadata");
         }
+        private static void VisibleFamilyPipelineObservation(CycleReceivingState t,string label)
+        {
+            VisibleFamilyMaterialDeadline(t,label+" before pipeline observation");
+            var configured=GraphicsSettings.currentRenderPipeline;var quality=QualitySettings.renderPipeline;
+            var instance=RenderPipelineManager.currentPipeline;
+            File.AppendAllText(Path.Combine(CampaignOutput(),"cycle-visible-family-primer.jsonl"),JsonConvert.SerializeObject(new{
+                label,configuredAsset=configured==null?null:AssetDatabase.GetAssetPath(configured),configuredType=configured?.GetType().FullName,
+                qualityOverrideAsset=quality==null?null:AssetDatabase.GetAssetPath(quality),qualityOverrideType=quality?.GetType().FullName,
+                currentPipelineInstanceType=instance?.GetType().FullName})+Environment.NewLine);
+            VisibleFamilyMaterialDeadline(t,label+" after pipeline archive");
+        }
+
+        private static void VisibleFamilyEmptyStagePrimer(CycleReceivingState t,Dictionary<Material,VisibleFamilyMaterialBaseline> sources)
+        {
+            // One empty renderer setup only. No imported-model Spawn or campaign command.
+            var before=sources.ToDictionary(pair=>pair.Key,pair=>VisibleFamilyMaterialRead(t,pair.Key,pair.Value,"before empty primer"));
+            foreach(var pair in sources)VisibleFamilyOriginalMaterialUnchanged(pair.Value,before[pair.Key]);
+            VisibleFamilyPipelineObservation(t,"before empty primer");
+            ReviewBattleStage? primer=null;RenderTexture? texture=null;int generic=-1,models=-1,ships=-1;bool created=false;string? caption=null;
+            try
+            {
+                var empty=new CampaignPlaybackBoundary(Array.Empty<CampaignTacticalCondition>(),Array.Empty<CampaignTacticalCondition>(),
+                    Array.Empty<CampaignTacticalRelation>(),Array.Empty<CampaignPlaybackShipIdentity>());
+                VisibleFamilyMaterialDeadline(t,"before ONE empty Stage construction");
+                primer=new ReviewBattleStage(empty,null,ReviewBattleVisualBinding.Identity);
+                VisibleFamilyMaterialDeadline(t,"after ONE empty Stage construction");
+                texture=primer.Texture;created=texture.IsCreated();generic=primer.GenericMarkers;models=HullInstances(primer).Count;caption=primer.Caption;
+                ships=((IDictionary)typeof(ReviewBattleStage).GetField("ships",HullPrivate)!.GetValue(primer)!).Count;
+                VisibleFamilyPipelineObservation(t,"after empty Stage constructor render");
+            }
+            finally
+            {
+                // Never let an expired productive clock prevent disposal of a returned Stage.
+                if(primer!=null)primer.Dispose();
+            }
+            VisibleFamilyPipelineObservation(t,"after empty Stage disposal");
+            var after=sources.ToDictionary(pair=>pair.Key,pair=>VisibleFamilyMaterialRead(t,pair.Key,pair.Value,"after empty primer"));
+            bool released=texture==null||!texture.IsCreated();
+            File.AppendAllText(Path.Combine(CampaignOutput(),"cycle-visible-family-primer.jsonl"),JsonConvert.SerializeObject(new{
+                label="empty primer result",constructions=1,generic,models,ships,created,released,caption,
+                materialCount=sources.Count,claim="empty component renderer setup only; no shader-readiness causality or render proof"})+Environment.NewLine);
+            VisibleFamilyMaterialDeadline(t,"after empty primer complete facts");
+            // All nine original/pre/post material facts are archived BEFORE these assertions.
+            foreach(var pair in sources)VisibleFamilyOriginalMaterialUnchanged(pair.Value,after[pair.Key]);
+            Assert.That(sources.Count,Is.EqualTo(9),"exact current imported material census");
+            Assert.That(generic,Is.Zero);Assert.That(models,Is.Zero);Assert.That(ships,Is.Zero);
+            Assert.That(created,Is.True);Assert.That(released,Is.True,"returned empty Stage RT released; object destruction may be deferred");
+        }
+
         private static Dictionary<Material,VisibleFamilyMaterialBaseline> VisibleFamilyReadyMaterials(CycleReceivingState t)
         {
             VisibleFamilyMaterialDeadline(t,"before initial baseline");
             var initial=HullImportedMaterials();
             var result=initial.ToDictionary(pair=>pair.Key,pair=>new VisibleFamilyMaterialBaseline(EditorJsonUtility.ToJson(pair.Key),pair.Value));
+            // Archive ALL original observations before assertions or any pipeline observation/primer.
+            var originals=result.ToDictionary(pair=>pair.Key,pair=>VisibleFamilyMaterialRead(t,pair.Key,pair.Value,"original before readiness"));
+            foreach(var pair in result)VisibleFamilyOriginalMaterialUnchanged(pair.Value,originals[pair.Key]);
+            VisibleFamilyEmptyStagePrimer(t,result);
             foreach(var pair in result)
             {
                 var material=pair.Key;var baseline=pair.Value;
-                var original=VisibleFamilyMaterialRead(t,material,baseline,"original before readiness");
-                VisibleFamilyOriginalMaterialUnchanged(baseline,original);
                 bool ready=false;
                 for(int sweep=0;sweep<2&&!ready;sweep++)
                 {
