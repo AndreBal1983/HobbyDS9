@@ -80,7 +80,18 @@ namespace HobbyDS9.UnityReview.Tests
         private static IEnumerator CycleFleetLossEncounter(CycleReceivingState t,UIDocument doc,string id)
         {
             var model=ColonyModel(t.Case);var index=model.Current.Frame.Encounters.ToList().IndexOf(id);
-            Assert.That(index,Is.GreaterThanOrEqualTo(0));var picker=doc.rootVisualElement.Q<DropdownField>("owned-encounter-picker");
+            Assert.That(index,Is.GreaterThanOrEqualTo(0));
+            var rail=doc.rootVisualElement.Q<ScrollView>("central-fleet-rail");Assert.That(rail,Is.Not.Null);
+            if(rail.resolvedStyle.display==DisplayStyle.None)
+            {
+                var details=doc.rootVisualElement.Q<Button>("combat-toggle-fleet-details");
+                Assert.That(details,Is.Not.Null);Assert.That(details.text,Is.EqualTo("Fleet details"));
+                var beforeDetails=CycleBytes(model);yield return CycleCombatClick(t,doc,details);
+                Assert.That(CycleBytes(model),Is.EqualTo(beforeDetails),"public fleet-details toggle is cosmetic");
+            }
+            rail=doc.rootVisualElement.Q<ScrollView>("central-fleet-rail");Assert.That(rail,Is.Not.Null);
+            Assert.That(rail.resolvedStyle.display,Is.Not.EqualTo(DisplayStyle.None));
+            var picker=doc.rootVisualElement.Q<DropdownField>("owned-encounter-picker");
             yield return ColonyReach(doc,picker);Assert.That(index,Is.LessThan(picker.choices.Count));
             CycleActivate(t,()=>picker.index=index);yield return null;
             yield return CycleCombatClick(t,doc,CampaignButton(doc,"Open selected encounter"),true);
