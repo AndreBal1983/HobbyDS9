@@ -10,6 +10,8 @@ namespace HobbyDS9.Simulation
         public static CampaignTacticalReviewSession LoadColonisation(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root)
             =>LoadColonisationCore(package,root,null);
         private static CampaignTacticalReviewSession LoadColonisationCore(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster,ExpansionSource? expansionSource=null,ColonisationReplayTiming? timing=null)
+            =>LoadColonisationCoreWithVerifiedExport(package,root,roster,out _,expansionSource,timing);
+        private static CampaignTacticalReviewSession LoadColonisationCoreWithVerifiedExport(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster,out CampaignColonisationSaveDto verifiedBase,ExpansionSource? expansionSource=null,ColonisationReplayTiming? timing=null)
         {
             timing?.Begin(ColonisationReplayPhase.CorePreflight);
             Require(package!=null&&package.PackageHash==ColonisationData.PackageHash(package),"Different approved colonisation package.");
@@ -44,8 +46,10 @@ namespace HobbyDS9.Simulation
             }
             timing?.End(ColonisationReplayPhase.Journal);
             timing?.Begin(ColonisationReplayPhase.CoreEquality);
-            Require(FrontierSame(root,replay.ExportColonisationCore()),"Colonisation checkpoint differs from complete ordered operation replay.");
+            var exported=replay.ExportColonisationCore();
+            Require(FrontierSame(root,exported),"Colonisation checkpoint differs from complete ordered operation replay.");
             timing?.End(ColonisationReplayPhase.CoreEquality);
+            verifiedBase=exported;
             return replay;
         }
         // Private borrowed view under the session transaction lock. No DTO escapes,

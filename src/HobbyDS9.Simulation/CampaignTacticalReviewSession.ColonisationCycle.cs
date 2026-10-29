@@ -18,8 +18,15 @@ namespace HobbyDS9.Simulation
         {
             var source=new ExpansionSource(p);var roster=p.BaseGrowth!.BaseRosterV2!;
             ColonisationRootBudget.ValidateCycle(root,roster.BaseV1!.Settlement!);Require(root.PackageHash==source.Hash,"Different cycle source.");
-            var replay=LoadColonisationCore(roster.BaseV1,root.BaseCampaign!,new ColonisationRosterSource(roster),source);
-            Require(FrontierSame(root,replay.ExportCycleSave()),"Cycle differs from complete ordered replay.");return replay;
+            var replay=LoadColonisationCoreWithVerifiedExport(roster.BaseV1,root.BaseCampaign!,new ColonisationRosterSource(roster),out var verifiedBase,source);
+            CampaignColonisationCycleSaveDto canonical;
+            lock(replay.gate)
+            {
+                Require(replay.CycleEnabled,"Explicit cycle root required.");
+                canonical=new CampaignColonisationCycleSaveDto{PackageHash=replay.expansion!.Source.Hash,BaseCampaign=verifiedBase,
+                    AiPlans=replay.expansion.Plans.Select(ColonisationData.Copy).ToList(),CycleActors=replay.expansion.CycleActors.Select(ColonisationData.Copy).ToList()};
+            }
+            Require(FrontierSame(root,canonical),"Cycle differs from complete ordered replay.");return replay;
         }
         public CampaignColonisationCycleSaveDto ExportCycleSave()
         {lock(gate){Require(CycleEnabled,"Explicit cycle root required.");return new CampaignColonisationCycleSaveDto{PackageHash=expansion!.Source.Hash,
