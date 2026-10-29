@@ -27,7 +27,7 @@ namespace HobbyDS9.Simulation
             Require(FrontierSame(root,replay.ExportGrowthSave()),"Growth differs from complete ordered replay.");return replay;
         }
         public CampaignColonisationExpansionSaveDto ExportGrowthSave()
-        {lock(gate){Require(GrowthEnabled&&!RepeatEnabled,"Explicit growth root required.");return ExportExpansionCore();}}
+        {lock(gate){Require(GrowthEnabled&&!RepeatEnabled&&!CycleEnabled,"Explicit growth root required.");return ExportExpansionCore();}}
         private CampaignColonisationExpansionSaveDto ExportExpansionCore()=>new CampaignColonisationExpansionSaveDto{
             ProfileId=expansion!.Source.Profile,PackageHash=expansion.Source.Hash,BaseCampaign=ExportColonisationCore(),AiPlans=expansion.Plans.Select(ColonisationData.Copy).ToList()};
     }

@@ -50,7 +50,7 @@ namespace HobbyDS9.Simulation
             }
             ValidateCore(root.BaseCampaign,policy,visits,bytes,edition);
         }
-        private static void ValidateCore(CampaignColonisationSaveDto root,ColonisationPolicyDto policy,long extraVisits,long extraBytes,ColonisationSourceEdition edition)
+        private static void ValidateCore(CampaignColonisationSaveDto root,ColonisationPolicyDto policy,long extraVisits,long extraBytes,ColonisationSourceEdition edition,bool cycleCapacity=false)
         {
             if(root==null||policy==null||policy.MaximumValidationVisits<=0||policy.MaximumValidationVisits>2000000
                 ||policy.MaximumCanonicalRootBytes<=0||policy.MaximumCanonicalRootBytes>67108864)
@@ -62,8 +62,9 @@ namespace HobbyDS9.Simulation
                 ||root.FrozenPlanets.Definitions.Count>policy.MaximumPlanets||root.FrozenPlanets.InitialPlanets.Count>policy.MaximumPlanets
                 ||root.FrozenPlanets.Bodies.Count>policy.MaximumPlanets||root.FrozenPlanets.GenesisControls.Count>policy.MaximumPlanets)
                 Fail("Complete bounded frozen planet inventory required.");
-            if(extraVisits>=policy.MaximumValidationVisits||extraBytes>=policy.MaximumCanonicalRootBytes)Fail("Expansion root work or byte limit.");
-            new Counter(policy.MaximumValidationVisits-extraVisits,policy.MaximumCanonicalRootBytes-extraBytes,edition).Root(root);
+            if(extraVisits>=policy.MaximumValidationVisits||extraBytes>=policy.MaximumCanonicalRootBytes)
+            {if(cycleCapacity)throw new ColonisationRootCapacityException();Fail("Expansion root work or byte limit.");}
+            new Counter(policy.MaximumValidationVisits-extraVisits,policy.MaximumCanonicalRootBytes-extraBytes,edition,cycleCapacity).Root(root);
         }
         [System.Diagnostics.CodeAnalysis.DoesNotReturn] private static void Fail(string message)=>throw new ArgumentException(message);
         private static void Need(object? value){if(value==null)Fail("Null required colonisation root member or collection item.");}
@@ -100,11 +101,13 @@ namespace HobbyDS9.Simulation
         {
             private long remainingVisits,remainingBytes;
             private readonly ColonisationSourceEdition edition;
-            internal Counter(long visits,long bytes,ColonisationSourceEdition sourceEdition){remainingVisits=visits;remainingBytes=bytes;edition=sourceEdition;}
+            private readonly bool cycleCapacity;
+            internal Counter(long visits,long bytes,ColonisationSourceEdition sourceEdition,bool capacity=false){remainingVisits=visits;remainingBytes=bytes;edition=sourceEdition;cycleCapacity=capacity;}
             internal void Root(CampaignColonisationSaveDto root)=>V(root);
             private void Count(long bytes)
             {
-                if(remainingVisits<=0||bytes<0||bytes>remainingBytes)Fail("Colonisation root work or byte limit.");
+                if(bytes<0)Fail("Colonisation root work or byte limit.");
+                if(remainingVisits<=0||bytes>remainingBytes){if(cycleCapacity)throw new ColonisationRootCapacityException();Fail("Colonisation root work or byte limit.");}
                 remainingVisits--;remainingBytes-=bytes;
             }
             private void Null()=>Count(4);

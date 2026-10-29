@@ -129,6 +129,7 @@ namespace HobbyDS9.Simulation
                 .Where(c=>c.ControllerKind==ControllerKind.AI).OrderBy(c=>c.CivilizationId,StringComparer.Ordinal).Select(c=>new ColonisationAiPlanDto{ActorId=c.CivilizationId}));
             if(session.RepeatEnabled)session.expansion!.RepeatGoals=session.expansion.Plans.Select(p=>new ColonisationRepeatGoalDto{ActorId=p.ActorId,
                 Assignment=new ColonisationAiPlanDto{ActorId=p.ActorId,GoalId=CampaignColonisationRepeatIdentity.Goal}}).ToList();
+            if(session.CycleEnabled)session.expansion!.CycleActors=session.expansion.Plans.Select(p=>new ColonisationCycleActorDto{ActorId=p.ActorId}).ToList();
             if(expansionSource!=null)session.ValidateActivityState();
             return session;
         }

@@ -20,7 +20,7 @@ namespace HobbyDS9.Simulation
                 var searches=new ExpansionSearch();var passes=0;
                 while(passes++<worker.expansion.Source.Policy.MaximumAttempts&&p.LatestActions!.Count<worker.expansion.Source.Policy.MaximumAttempts&&p.LatestActions.Count(r=>r.Accepted)<worker.expansion.Source.Policy.MaximumAccepted)
                 {
-                    if(!(worker.RepeatEnabled?worker.PlanRepeatAction(actor,searches):worker.PlanExpansionAction(actor,searches)))break;
+                    if(!(worker.CycleEnabled?worker.PlanCycleAction(actor,searches):worker.RepeatEnabled?worker.PlanRepeatAction(actor,searches):worker.PlanExpansionAction(actor,searches)))break;
                     p=worker.ExpansionPlan(actor);
                 }
             }
@@ -31,7 +31,7 @@ namespace HobbyDS9.Simulation
         private bool MissionFleet(GameStateDto game,string fleet)
         {
             if(expansion==null)return false;
-            if(RepeatEnabled)return RepeatMissionFleet(game,fleet);
+            if(CycleEnabled)return CycleMissionFleet(game,fleet);if(RepeatEnabled)return RepeatMissionFleet(game,fleet);
             foreach(var p in expansion.Plans)
             {
                 var assigned=game.Ships!.Where(s=>s.OwnerCivilizationId==p.ActorId&&s.FleetId==fleet).ToList();
@@ -54,7 +54,7 @@ namespace HobbyDS9.Simulation
         }
         private bool MissionWorld(string actor,string colony)
         {
-            if(expansion==null)return false;if(RepeatEnabled)return RepeatMissionWorld(actor,colony);var p=ExpansionPlan(actor);if(p.Stage==ColonisationAiStage.Suspended)return false;
+            if(expansion==null)return false;if(CycleEnabled)return CycleMissionWorld(actor,colony);if(RepeatEnabled)return RepeatMissionWorld(actor,colony);var p=ExpansionPlan(actor);if(p.Stage==ColonisationAiStage.Suspended)return false;
             var game=state.Campaign.GameState;
             return p.HomeColonyId==colony&&p.EstablishedColonyId==null&&PopulationRules.Stock(game.Colonies!.Single(c=>c.ColonyId==colony).Stockpiles!,colonisation!.Policy.EquipmentResourceId)<1
                 ||p.YardColonyId==colony&&p.TransportShipId==null
@@ -89,7 +89,9 @@ namespace HobbyDS9.Simulation
         }
         private bool ExpansionColonisation(string actor,ColonisationAiAction action,ColonisationCommandDto command)
             =>ExpansionAttempt(actor,action,(c,id)=>{var g=c.state.Campaign.GameState;command.ActorId=actor;command.CommandId=id;command.Turn=g.TurnNumber;command.Revision=g.StateRevision;
-                return c.ApplyColonisationCommand(command,ControllerKind.AI).Error;});
+                var result=c.ApplyColonisationCommand(command,ControllerKind.AI);
+                if(result.Accepted&&c.CycleEnabled&&command.Action==ColonisationAction.EmbarkSettlers)c.ExpansionPlan(actor).ManifestId=c.colonisation!.State.ManifestRecords!.Single(m=>m.OwnerId==actor&&m.ShipId==command.Embark!.ShipId&&m.Stage==SettlerManifestStage.Loaded).ManifestId;
+                return result.Error;});
         private bool ExpansionBuild(string actor,ColonyStateDto colony,BlueprintRevisionDto source)
             =>ExpansionAttempt(actor,ColonisationAiAction.Ship,(c,id)=>{
                 var g=c.state.Campaign.GameState;var error=c.EnqueueActivity(g,new CampaignActivityCommandDto{ActorId=actor,Kind=CampaignActivityCommandKind.EnqueueShip,
@@ -185,14 +187,14 @@ namespace HobbyDS9.Simulation
             p.YardColonyId=yard?.ColonyId;
             var scout=game.Ships!.Where(s=>s.OwnerCivilizationId==actor&&s.CurrentHull>0&&(ActivityCapability(game,s)?.StudyWork??0)>0).OrderBy(s=>s.ShipId,StringComparer.Ordinal).FirstOrDefault();
             p.ScoutShipId=scout?.ShipId;
-            var bound=RepeatEnabled?a.ManifestRecords!.SingleOrDefault(m=>m.OwnerId==actor&&m.ManifestId==p.ManifestId&&m.Stage==SettlerManifestStage.Loaded):null;
+            var bound=BoundAssignments?a.ManifestRecords!.SingleOrDefault(m=>m.OwnerId==actor&&m.ManifestId==p.ManifestId&&m.Stage==SettlerManifestStage.Loaded):null;
             var transport=bound!=null?game.Ships!.SingleOrDefault(s=>s.ShipId==bound.ShipId&&s.OwnerCivilizationId==actor&&s.CurrentHull>0&&TransportCapability(game,s)?.Passengers>=colonisation.Policy.Settlers)
                 :game.Ships!.Where(s=>s.OwnerCivilizationId==actor&&s.CurrentHull>0).OrderBy(s=>s.ShipId,StringComparer.Ordinal).FirstOrDefault(s=>TransportCapability(game,s)?.Passengers>=colonisation.Policy.Settlers);
             if(bound!=null&&transport==null){p.HoldReason="Manifest carrier unavailable; physical cargo awaits its survival boundary.";return false;}
             p.TransportShipId=transport?.ShipId;
             var manifest=transport==null?null:a.ManifestRecords!.SingleOrDefault(m=>m.ShipId==transport.ShipId&&m.OwnerId==actor&&m.Stage==SettlerManifestStage.Loaded);
             p.ManifestId=manifest?.ManifestId??p.ManifestId;
-            var camp=RepeatEnabled?a.CampSources!.SingleOrDefault(c=>c.OwnerId==actor&&c.CampId==p.CampId):a.CampSources!.Where(c=>c.OwnerId==actor).OrderByDescending(c=>c.DeployedTurn).ThenBy(c=>c.CampId,StringComparer.Ordinal).FirstOrDefault();
+            var camp=BoundAssignments?a.CampSources!.SingleOrDefault(c=>c.OwnerId==actor&&c.CampId==p.CampId):a.CampSources!.Where(c=>c.OwnerId==actor).OrderByDescending(c=>c.DeployedTurn).ThenBy(c=>c.CampId,StringComparer.Ordinal).FirstOrDefault();
             if(camp!=null){p.CampId=camp.CampId;if(camp.Stage!=ColonyEstablishmentStage.EmptyOutpost&&p.Stage!=ColonisationAiStage.Recovering&&!(GrowthEnabled&&(p.Stage==ColonisationAiStage.Immigrating||p.Stage==ColonisationAiStage.GrowthClosed)))p.Stage=ColonisationAiStage.Supporting;if(camp.Stage==ColonyEstablishmentStage.Established)p.EstablishedColonyId=camp.ColonyId;}
             if(GrowthEnabled&&slot==MissionSlot.First)
             {
@@ -273,6 +275,7 @@ namespace HobbyDS9.Simulation
                 return AssignedAttempt(slot,actor,ColonisationAiAction.Kit,(c,id)=>{var g=c.state.Campaign.GameState;var result=c.ApplyColonisationCommand(new(){ActorId=actor,CommandId=id,Turn=g.TurnNumber,Revision=g.StateRevision,Action=ColonisationAction.EnqueueKit,EnqueueKit=new(){ColonyId=home.ColonyId}},ControllerKind.AI);
                     if(result.Accepted)c.AssignedPlan(actor,slot).KitQueueId=c.colonisation!.Production.Last().QueueItemId;return result.Error;});
             var observations=ColonisationPlanetsForActor(game,actor);
+            if(CycleEnabled&&slot==MissionSlot.Cycle)observations=observations.Where(o=>!CycleActor(actor).Receipts!.Any(x=>x.Outcome!=ColonisationCycleOutcome.Established&&x.TargetPlanetId==o.PlanetId)).ToList();
             var target=observations.FirstOrDefault(o=>o.PlanetId==p.TargetPlanetId);
             if(target!=null&&target.Surveyed&&(target.KnownControl?.Kind!=PlanetControllerKind.Unclaimed||cohort!=null&&!target.Environment!.Habitats!.Any(h=>h.NaturalCapacity>=colonisation.Policy.Settlers&&WorldEconomy.Suitability(definitions.Species!.Single(s=>s.DefinitionId==cohort.SpeciesDefinitionId),target.Environment,h.Kind)>0)))
             {
@@ -338,6 +341,7 @@ namespace HobbyDS9.Simulation
         private void ReconcileExpansion(GameStateDto game)
         {
             if(expansion==null)return;
+            if(CycleEnabled){ReconcileCycle(game);return;}
             if(RepeatEnabled){ReconcileRepeat(game);return;}
             foreach(var p in expansion.Plans)
             {

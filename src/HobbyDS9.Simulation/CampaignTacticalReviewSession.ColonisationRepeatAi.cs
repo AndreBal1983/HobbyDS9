@@ -7,8 +7,8 @@ namespace HobbyDS9.Simulation
 {
     public sealed partial class CampaignTacticalReviewSession
     {
-        private enum MissionSlot { First,Second }
-        private ColonisationAiPlanDto AssignedPlan(string actor,MissionSlot slot)=>slot==MissionSlot.First?ExpansionPlan(actor):RepeatGoal(actor).Assignment!;
+        private enum MissionSlot { First,Second,Cycle }
+        private ColonisationAiPlanDto AssignedPlan(string actor,MissionSlot slot)=>slot==MissionSlot.First?ExpansionPlan(actor):slot==MissionSlot.Second?RepeatGoal(actor).Assignment!:CycleActor(actor).Active!.Assignment!;
         private bool AssignedAttempt(MissionSlot slot,string actor,ColonisationAiAction action,Func<CampaignTacticalReviewSession,string,CampaignTacticalError> execute)
         {
             var accepted=ExpansionAttempt(actor,action,execute);
@@ -19,6 +19,7 @@ namespace HobbyDS9.Simulation
         {
             if(slot==MissionSlot.First)return ExpansionColonisation(actor,action,command);
             return AssignedAttempt(slot,actor,action,(c,id)=>{
+                if(slot==MissionSlot.Cycle&&command.Action==ColonisationAction.RequestDeployment&&command.Deploy!.PlanetId!=c.CycleActor(actor).Active!.CommittedTargetPlanetId)return CampaignTacticalError.InvalidOrder;
                 var g=c.state.Campaign.GameState;command.ActorId=actor;command.CommandId=id;command.Turn=g.TurnNumber;command.Revision=g.StateRevision;
                 var result=c.ApplyColonisationCommand(command,ControllerKind.AI);
                 if(result.Accepted&&slot==MissionSlot.Second&&command.Action==ColonisationAction.EmbarkSettlers)
@@ -26,6 +27,12 @@ namespace HobbyDS9.Simulation
                     var goal=c.RepeatGoal(actor);var manifest=c.colonisation!.State.ManifestRecords!.Single(m=>m.OwnerId==actor&&m.ShipId==command.Embark!.ShipId&&m.Stage==SettlerManifestStage.Loaded);
                     Require(goal.SettlementManifestId==null||goal.SettlementManifestId==manifest.ManifestId,"Second settlement attempt already committed.");
                     goal.SettlementManifestId=manifest.ManifestId;goal.Assignment!.ManifestId=manifest.ManifestId;
+                }
+                if(result.Accepted&&slot==MissionSlot.Cycle&&command.Action==ColonisationAction.EmbarkSettlers)
+                {
+                    var home=g.Colonies!.Single(w=>w.ColonyId==command.Embark!.ColonyId&&w.OwnerCivilizationId==actor);var output=c.ProjectOwnedWorld(home,g);
+                    if((System.Numerics.BigInteger)home.Food<System.Numerics.BigInteger.Max(0,(System.Numerics.BigInteger)output.FoodDemand-output.FoodOutput)*c.expansion!.Source.Policy.HomeDeficitWeeks)return CampaignTacticalError.InvalidOrder;
+                    c.CommitCycleManifest(actor,command.Embark!.ShipId);
                 }
                 return result.Error;
             });
@@ -140,7 +147,7 @@ namespace HobbyDS9.Simulation
         }
         private bool PlanRepeatSupply(string actor,SettlementCampDto? camp,SettlerManifestDto? manifest,ExpansionSearch searches)
         {
-            var game=state.Campaign.GameState;var p=ExpansionPlan(actor);var goal=RepeatGoal(actor);
+            var game=state.Campaign.GameState;var p=ExpansionPlan(actor);
             var world=camp==null?null:game.Colonies!.SingleOrDefault(c=>c.ColonyId==camp.ColonyId&&c.OwnerCivilizationId==actor&&PopulationRules.Population(c)>0);
             var ship=manifest==null?game.Ships!.Where(s=>s.OwnerCivilizationId==actor&&s.CurrentHull>0).OrderByDescending(s=>s.ShipId==p.TransportShipId).ThenBy(s=>s.ShipId,StringComparer.Ordinal)
                 .FirstOrDefault(s=>TransportCapability(game,s)?.Passengers>=colonisation!.Policy.Settlers):game.Ships!.SingleOrDefault(s=>s.ShipId==manifest.ShipId&&s.OwnerCivilizationId==actor&&s.CurrentHull>0);
@@ -151,7 +158,7 @@ namespace HobbyDS9.Simulation
                 world??=game.Colonies!.Where(c=>c.OwnerCivilizationId==actor&&EstablishedColony(c.ColonyId)&&PopulationRules.Population(c)>0).OrderByDescending(c=>c.ColonyId==p.HomeColonyId).ThenBy(c=>c.ColonyId,StringComparer.Ordinal).FirstOrDefault();
                 if(world==null)return false;
                 if(ShipAt(game,ship,world.SystemId))return ExpansionAttempt(actor,ColonisationAiAction.Deliver,(c,id)=>{
-                    var g=c.state.Campaign.GameState;c.RepeatGoal(actor).SupplyCampId=null;
+                    var g=c.state.Campaign.GameState;c.SetSupplyCommitment(actor,null);
                     return c.ApplyColonisationCommand(new(){ActorId=actor,CommandId=id,Turn=g.TurnNumber,Revision=g.StateRevision,Action=ColonisationAction.DeliverCarriedSupplies,
                         Deliver=new(){ManifestId=manifest.ManifestId,ColonyId=world.ColonyId,Food=manifest.Food,Materials=manifest.Cargo!.Where(r=>r.Amount>0).Select(PopulationData.Copy).ToList()}},ControllerKind.AI).Error;});
                 return ExpansionMove(actor,ship,physicalNavigation!.NodeForSystem(world.SystemId)!,searches);
@@ -171,9 +178,9 @@ namespace HobbyDS9.Simulation
             }
             p.TransportShipId=ship.ShipId;
             if(ShipAt(game,ship,home.SystemId))return ExpansionAttempt(actor,ColonisationAiAction.SupplyLoad,(c,id)=>{
-                var g=c.state.Campaign.GameState;c.RepeatGoal(actor).SupplyCampId=camp!.CampId;var result=c.ApplyColonisationCommand(new(){ActorId=actor,CommandId=id,Turn=g.TurnNumber,Revision=g.StateRevision,Action=ColonisationAction.LoadCarriedSupplies,
+                var g=c.state.Campaign.GameState;c.SetSupplyCommitment(actor,camp!.CampId);var result=c.ApplyColonisationCommand(new(){ActorId=actor,CommandId=id,Turn=g.TurnNumber,Revision=g.StateRevision,Action=ColonisationAction.LoadCarriedSupplies,
                     LoadSupplies=new(){ShipId=ship.ShipId,SourceColonyId=home.ColonyId,Food=Math.Min(ExpansionFoodAvailable(home,game),colonisation!.Policy.MaximumFood)}},ControllerKind.AI);
-                if(result.Accepted)c.RepeatGoal(actor).SupplyCampId=camp!.CampId;return result.Error;});
+                if(result.Accepted)c.SetSupplyCommitment(actor,camp!.CampId);return result.Error;});
             return ExpansionMove(actor,ship,physicalNavigation!.NodeForSystem(home.SystemId)!,searches);
         }
         private bool RepeatMissionFleet(GameStateDto game,string fleet)
