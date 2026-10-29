@@ -7,6 +7,8 @@ using System.Linq;
 using HobbyDS9.Contracts;
 using HobbyDS9.TacticalReviewClient;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using UnityEditor;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -106,10 +108,10 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(model.Current.Frame.Status.Turn,Is.EqualTo(69));Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.AwaitingCombat));
                 Assert.That(CycleBytes(model),Is.EqualTo(bytes),"full public typed replay ingress");
                 File.WriteAllBytes(Path.Combine(CampaignOutput(),"cycle-visible-family-ingress-private.json"),CycleBytes(model));
-                var imported=HullImportedMaterials();
+                t.Mark("visible-family-material-readiness");var imported=VisibleFamilyReadyMaterials(t);
                 // This is a separately labelled COMPONENT probe, never the real enemy render proof.
                 t.Mark("visible-family-component-probe");VisibleFamilyStagePreservesConstructorAbiMembershipUnknownFallbackAndLifetime();
-                Assert.That(CycleBytes(model),Is.EqualTo(bytes));HullSourcesUnchanged(imported);
+                Assert.That(CycleBytes(model),Is.EqualTo(bytes));VisibleFamilySourcesUnchanged(t,imported,"after component");
                 CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Combat));yield return null;yield return null;
                 Assert.That(model.Current.Frame.Battle,Is.Not.Null);var battle=model.Current.Frame.Battle!;
                 Assert.That(model.Current.Frame.Encounters,Does.Contain(battle.EncounterId));Assert.That(battle.OwnShips,Is.Not.Empty);
@@ -138,7 +140,7 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return CycleCombatClick(t,doc,doc.rootVisualElement.Q<Button>("combat-skip-pending-playback"));
                 Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(model.Current.Frame.Actor,Is.EqualTo(actor));Assert.That(model.Current.Frame.Status.Turn,Is.EqualTo(69));
                 Assert.That(CycleBytes(model),Is.EqualTo(accepted),"public playback acknowledgment is presentation/flow only");
-                HullSourcesUnchanged(imported);
+                VisibleFamilySourcesUnchanged(t,imported,"after playback acknowledgment");
                 File.WriteAllBytes(Path.Combine(CampaignOutput(),"cycle-visible-family-after-presentation-private.json"),CycleBytes(model));
                 File.WriteAllText(Path.Combine(CampaignOutput(),"cycle-visible-family-summary.json"),JsonConvert.SerializeObject(new{
                     actor,fixtureSha=CycleCombatFixtureSha,fixtureBytes=bytes.Length,turn=model.Current.Frame.Status.Turn,ordinaryAdvances=0,committedRounds=1,
@@ -148,7 +150,93 @@ namespace HobbyDS9.UnityReview.Tests
             }
         }
 
-        private static void VisibleFamilyModels(ReviewBattleStage stage,CampaignPlaybackBoundary expected,Dictionary<Material,string> imported,string label)
+        // Case-local readiness setup; old shared material helpers and cases remain unchanged.
+        private sealed class VisibleFamilyMaterialBaseline
+        {
+            public readonly string Serialized,Managed;
+            public string? Readied;
+            public VisibleFamilyMaterialBaseline(string serialized,string managed){Serialized=serialized;Managed=managed;}
+        }
+        private static void VisibleFamilyMaterialDeadline(CycleReceivingState t,string label)
+        {if(t.Productive.Elapsed.TotalSeconds>=600)throw new TimeoutException("Visible family material deadline: "+label);}
+        private static string VisibleFamilyMaterialProperties(string managed)
+        {
+            var value=JObject.Parse(managed);value.Remove("Passes");
+            return value.ToString(Formatting.None); // ONLY the explicit readiness comparison separates pass metadata.
+        }
+        private static Tuple<string,string> VisibleFamilyMaterialRead(CycleReceivingState t,Material material,VisibleFamilyMaterialBaseline baseline,string label)
+        {
+            VisibleFamilyMaterialDeadline(t,label+" before read");
+            var serialized=EditorJsonUtility.ToJson(material);var managed=HullSourceMaterial(material);
+            // Complete facts are persisted BEFORE assertions, including on the failing path.
+            File.AppendAllText(Path.Combine(CampaignOutput(),"cycle-visible-family-materials.jsonl"),JsonConvert.SerializeObject(new{
+                label,materialReference=material.GetEntityId().ToString(),assetPath=AssetDatabase.GetAssetPath(material),material.name,
+                originalSerialized=baseline.Serialized,originalManaged=baseline.Managed,readiedManaged=baseline.Readied,
+                currentSerialized=serialized,currentManaged=managed})+Environment.NewLine);
+            VisibleFamilyMaterialDeadline(t,label+" after archive");
+            return Tuple.Create(serialized,managed);
+        }
+        private static void VisibleFamilyOriginalMaterialUnchanged(VisibleFamilyMaterialBaseline baseline,Tuple<string,string> actual)
+        {
+            Assert.That(actual.Item1,Is.EqualTo(baseline.Serialized),"entire ORIGINAL serialized imported material, including saved shader/pass overrides");
+            Assert.That(VisibleFamilyMaterialProperties(actual.Item2),Is.EqualTo(VisibleFamilyMaterialProperties(baseline.Managed)),"every ORIGINAL managed field except explicitly readied pass metadata");
+        }
+        private static Dictionary<Material,VisibleFamilyMaterialBaseline> VisibleFamilyReadyMaterials(CycleReceivingState t)
+        {
+            VisibleFamilyMaterialDeadline(t,"before initial baseline");
+            var initial=HullImportedMaterials();
+            var result=initial.ToDictionary(pair=>pair.Key,pair=>new VisibleFamilyMaterialBaseline(EditorJsonUtility.ToJson(pair.Key),pair.Value));
+            foreach(var pair in result)
+            {
+                var material=pair.Key;var baseline=pair.Value;
+                var original=VisibleFamilyMaterialRead(t,material,baseline,"original before readiness");
+                VisibleFamilyOriginalMaterialUnchanged(baseline,original);
+                bool ready=false;
+                for(int sweep=0;sweep<2&&!ready;sweep++)
+                {
+                    var before=VisibleFamilyMaterialRead(t,material,baseline,"before readiness sweep "+sweep);
+                    VisibleFamilyOriginalMaterialUnchanged(baseline,before);
+                    int count=material.passCount;Assert.That(count,Is.GreaterThan(0),"positive current pass topology");
+                    for(int pass=0;pass<count;pass++)
+                    {
+                        VisibleFamilyMaterialDeadline(t,"before synchronous CompilePass");
+                        ShaderUtil.CompilePass(material,pass,true);
+                        VisibleFamilyMaterialDeadline(t,"after synchronous CompilePass");
+                    }
+                    var first=VisibleFamilyMaterialRead(t,material,baseline,"readied first sweep "+sweep);
+                    VisibleFamilyOriginalMaterialUnchanged(baseline,first);
+                    int currentCount=material.passCount;var compiled=new List<bool>();
+                    for(int pass=0;pass<currentCount;pass++)
+                    {
+                        VisibleFamilyMaterialDeadline(t,"before IsPassCompiled");compiled.Add(ShaderUtil.IsPassCompiled(material,pass));
+                        VisibleFamilyMaterialDeadline(t,"after IsPassCompiled");
+                    }
+                    var second=VisibleFamilyMaterialRead(t,material,baseline,"readied second sweep "+sweep);
+                    File.AppendAllText(Path.Combine(CampaignOutput(),"cycle-visible-family-materials.jsonl"),JsonConvert.SerializeObject(new{
+                        label="readiness result",assetPath=AssetDatabase.GetAssetPath(material),sweep,currentCount,compiled,
+                        firstManaged=first.Item2,secondManaged=second.Item2})+Environment.NewLine);
+                    VisibleFamilyMaterialDeadline(t,"after readiness facts");
+                    VisibleFamilyOriginalMaterialUnchanged(baseline,second);
+                    Assert.That(currentCount,Is.GreaterThan(0),"positive readied pass topology");
+                    ready=compiled.All(value=>value)&&first.Item2==second.Item2;
+                    if(ready)baseline.Readied=second.Item2;
+                }
+                Assert.That(ready,Is.True,"all current passes compiled and two complete reads stable within TWO sweeps; no deadline extension");
+            }
+            VisibleFamilySourcesUnchanged(t,result,"full readied baseline BEFORE component");
+            return result;
+        }
+        private static void VisibleFamilySourcesUnchanged(CycleReceivingState t,Dictionary<Material,VisibleFamilyMaterialBaseline> sources,string label)
+        {
+            foreach(var pair in sources)
+            {
+                var actual=VisibleFamilyMaterialRead(t,pair.Key,pair.Value,label);
+                VisibleFamilyOriginalMaterialUnchanged(pair.Value,actual);
+                Assert.That(actual.Item2,Is.EqualTo(pair.Value.Readied),"FULL pass-inclusive readied fingerprint unchanged across component/view/camera/ack");
+            }
+        }
+
+        private static void VisibleFamilyModels(CycleReceivingState t,ReviewBattleStage stage,CampaignPlaybackBoundary expected,Dictionary<Material,VisibleFamilyMaterialBaseline> imported,string label)
         {
             var boundary=(CampaignPlaybackBoundary)typeof(ReviewBattleStage).GetField("boundary",HullPrivate)!.GetValue(stage)!;
             Assert.That(boundary,Is.SameAs(expected),"fresh current stage uses pending BEFORE, not a future or union boundary");
@@ -196,11 +284,11 @@ namespace HobbyDS9.UnityReview.Tests
                 }
                 facts.Add(new{ship.ShipId,own,identity.VisibleHullFamilyId,representativeArtHullKey=art,visualKey=HullProperty(definition,"VisualKey"),meshCount=actualMeshes.Length,rendererCount=renderers.Length});
             }
-            Assert.That(stage.GenericMarkers,Is.Zero);HullSourcesUnchanged(imported);
+            Assert.That(stage.GenericMarkers,Is.Zero);VisibleFamilySourcesUnchanged(t,imported,label);
             File.AppendAllText(Path.Combine(CampaignOutput(),"cycle-visible-family-models.jsonl"),JsonConvert.SerializeObject(new{label,claim="public boundary visual family; representative art key is not foreign engineering identity",facts})+Environment.NewLine);
         }
 
-        private static IEnumerator VisibleFamilySized(CycleReceivingState t,UIDocument doc,CampaignPlaybackBoundary expected,byte[] accepted,ReviewUiModel model,Dictionary<Material,string> imported)
+        private static IEnumerator VisibleFamilySized(CycleReceivingState t,UIDocument doc,CampaignPlaybackBoundary expected,byte[] accepted,ReviewUiModel model,Dictionary<Material,VisibleFamilyMaterialBaseline> imported)
         {
             var size=new Vector2Int(1920,1080);var previous=doc.panelSettings.targetTexture;var width=doc.rootVisualElement.style.width;var height=doc.rootVisualElement.style.height;var active=RenderTexture.active;
             var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);Texture2D? pixels=null;bool complete=false;
@@ -211,13 +299,14 @@ namespace HobbyDS9.UnityReview.Tests
                 if(!BattleStage(doc).Paused)yield return CycleCombatClick(t,doc,doc.rootVisualElement.Q<Button>("battle-playback-pause"));
                 Assert.That(BattleStage(doc).Paused,Is.True);
                 yield return CycleCombatClick(t,doc,CampaignButton(doc,"Overview / cinematic"));
+                VisibleFamilySourcesUnchanged(t,imported,"after camera control");
                 Assert.That(CycleBytes(model),Is.EqualTo(accepted));
                 ReviewBattleStage InspectCurrent()
                 {
                     BattleLayoutAudit(doc,size,"visible-family");var current=BattleStage(doc);BattleCameraContainment(current,"visible-family1920");
                     var image=doc.rootVisualElement.Q<Image>("battle-3d-image");BattleVisible(image,size);
                     Assert.That(current.Texture.IsCreated(),Is.True);Assert.That(image.image,Is.SameAs(current.Texture));
-                    VisibleFamilyModels(current,expected,imported,"current sized stage immediately before pixels");return current;
+                    VisibleFamilyModels(t,current,expected,imported,"current sized stage immediately before pixels");return current;
                 }
                 var stage=InspectCurrent();
                 // No yield/action between final geometry/model audit and this read. Re-audit any unexpected replacement.
@@ -225,6 +314,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(BattleStage(doc),Is.SameAs(stage));
                 RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
                 File.WriteAllBytes(Path.Combine(CampaignOutput(),"cycle-visible-family-1920.png"),pixels.EncodeToPNG());
+                VisibleFamilySourcesUnchanged(t,imported,"after pixel capture");
                 Assert.That(CycleBytes(model),Is.EqualTo(accepted));complete=true;
             }
             finally
@@ -234,6 +324,7 @@ namespace HobbyDS9.UnityReview.Tests
                 target.Release();UnityEngine.Object.Destroy(target);if(pixels!=null)UnityEngine.Object.Destroy(pixels);
             }
             yield return null;yield return null;yield return null;
+            VisibleFamilySourcesUnchanged(t,imported,"after sized view restoration");
             Assert.That(CycleBytes(model),Is.EqualTo(accepted));
         }
     }
