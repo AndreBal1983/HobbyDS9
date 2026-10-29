@@ -142,9 +142,12 @@ namespace HobbyDS9.UnityReview.Tests
                     var order=model.Current.Frame.Battle.StandingOrders.Where(o=>o.CanOrder).ToArray();
                     Assert.That(order.Length,Is.EqualTo(1),"exact saved case has one actual human formation");
                     var maneuver=doc.rootVisualElement.Q<DropdownField>("combat-maneuver-picker");yield return ColonyReach(doc,maneuver);
-                    int hold=maneuver.choices.IndexOf(CampaignFleetManeuver.Hold.ToString());Assert.That(hold,Is.GreaterThanOrEqualTo(0));
+                    int hold=model.Current.Frame.Battle.LegalManeuvers.ToList().IndexOf(CampaignFleetManeuver.Hold);
+                    Assert.That(hold,Is.GreaterThanOrEqualTo(0));Assert.That(hold,Is.LessThan(maneuver.choices.Count));
+                    Assert.That(maneuver.choices[hold],Is.EqualTo(ReviewDemoCombatText.Maneuver(CampaignFleetManeuver.Hold.ToString())));
                     CycleActivate(t,()=>maneuver.index=hold);yield return null;
                     yield return CycleCombatClick(t,doc,CampaignButton(doc,"Apply to local draft"));
+                    Assert.That(model.Current.Draft.Single(d=>d.Fleet==order[0].FleetId).Maneuver,Is.EqualTo(CampaignFleetManeuver.Hold));
                     Assert.That(entry.Presentation!.CanCommitRound,Is.True,"actual AI commitment needs no actor switch");
                     var round=model.Current.Frame.Battle.Round;t.Mark("cycle-combat-round-"+round);
                     yield return CycleCombatClick(t,doc,CampaignButton(doc,"Review / commit round "+round),true);
