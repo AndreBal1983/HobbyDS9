@@ -8,7 +8,7 @@ namespace HobbyDS9.UnityReview
     {
         private readonly ReviewColonisationGrowthSlotStore? colonisationGrowthSlots;
         private readonly CampaignColonisationExpansionPackageDto? colonisationGrowthPackage;
-        public bool SupportsKitFreePassengers=>ColonisationRepeatCampaign||ColonisationGrowthCampaign;
+        public bool SupportsKitFreePassengers=>ColonisationCycleCampaign||ColonisationRepeatCampaign||ColonisationGrowthCampaign;
         public bool ColonisationGrowthCampaign=>colonisationGrowthPackage!=null;
         public ReviewUiModel(CampaignColonisationExpansionPackageDto package,NaturalGalaxySettingsDto settings,ReviewNewtonsoftCodec codec,ReviewColonisationGrowthSlotStore slots)
         {

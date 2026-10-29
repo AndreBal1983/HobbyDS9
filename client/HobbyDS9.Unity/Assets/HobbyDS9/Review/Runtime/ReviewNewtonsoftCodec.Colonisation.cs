@@ -71,7 +71,7 @@ namespace HobbyDS9.UnityReview
             }
             catch (Exception e) { loadDiagnostic?.Record(phase,ReviewLoadEvent.Error,e);throw new InvalidDataException("Invalid colonisation campaign carrier."); }
         }
-        private enum ColonisationCarrierVocabulary { Original,Growth,Repeat }
+        private enum ColonisationCarrierVocabulary { Original,Growth,Repeat,Cycle }
         private static void ColonisationWire(JToken token, Type declared, ref int visits, Dictionary<Type, PropertyInfo[]> shapes,ColonisationCarrierVocabulary vocabulary=ColonisationCarrierVocabulary.Original)
         {
             if (--visits < 0) throw Invalid();
@@ -81,7 +81,7 @@ namespace HobbyDS9.UnityReview
                 ||(type==typeof(ColonisationAction)&&token.Value<long>()==11)
                 ||(type==typeof(ColonisationAiStage)&&token.Value<long>()>8)
                 ||(type==typeof(ColonisationAiAction)&&token.Value<long>()>14)))throw Invalid();
-            if(vocabulary==ColonisationCarrierVocabulary.Repeat)
+            if(vocabulary==ColonisationCarrierVocabulary.Repeat||vocabulary==ColonisationCarrierVocabulary.Cycle)
             {
                 if(type==typeof(string)&&token.Type!=JTokenType.String)throw Invalid();
                 if((type.IsEnum||type==typeof(int)||type==typeof(long))&&token.Type!=JTokenType.Integer)throw Invalid();

@@ -8,6 +8,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../scenarios/colonisation-cycle-v1/*.json" Link="scenarios/colonisation-cycle-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRepeatV1/repeat-policy.json" Link="scenarios/colonisation-repeat-v1/repeat-policy.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../scenarios/colonisation-expansion-v1/*.json" Link="scenarios/colonisation-expansion-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRosterV2/roster.json" Link="scenarios/colonisation-roster-v2/roster.json" CopyToOutputDirectory="PreserveNewest" />

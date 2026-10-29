@@ -168,7 +168,8 @@ namespace HobbyDS9.UnityReview
         });
         public bool Load(string slot,bool discard=false)=>Run(()=>{
             if(Current.HasPendingWork||HasLocalEdits&&!discard){Message="Explicit discard required before load.";return false;}
-            var opened=ColonisationRepeatCampaign?PhysicalReviewHost.OpenColonisationRepeatFromSlot(colonisationRepeatPackage!,codec,colonisationRepeatSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+            var opened=ColonisationCycleCampaign?PhysicalReviewHost.OpenColonisationCycleFromSlot(colonisationCyclePackage!,codec,colonisationCycleSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
+                :ColonisationRepeatCampaign?PhysicalReviewHost.OpenColonisationRepeatFromSlot(colonisationRepeatPackage!,codec,colonisationRepeatSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :ColonisationGrowthCampaign?PhysicalReviewHost.OpenColonisationGrowthFromSlot(colonisationGrowthPackage!,codec,colonisationGrowthSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :ColonisationExpansionCampaign?PhysicalReviewHost.OpenColonisationExpansionFromSlot(colonisationExpansionPackage!,codec,colonisationExpansionSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :ColonisationCampaign?OpenColonisationModelSource(slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)

@@ -67,7 +67,7 @@ namespace HobbyDS9.TacticalReviewClient
             {
                 RequireNoStreamedInteraction();RequireCurrent(frame.HostId,frame.Generation);
                 var status=session.CaptureStatus();
-                if(colonisationPackage==null||(colonisationRepeatPackage!=null?colonisationRepeatCodec is not IBackgroundColonisationRepeatCheckpointCodec:colonisationGrowthPackage!=null?colonisationGrowthCodec is not IBackgroundColonisationGrowthCheckpointCodec:colonisationExpansionPackage!=null?colonisationExpansionCodec is not IBackgroundColonisationExpansionCheckpointCodec:colonisationCodec is not IBackgroundColonisationCheckpointCodec)||!Enum.IsDefined(typeof(ColonisationInteractionKind),kind)
+                if(colonisationPackage==null||(colonisationCyclePackage!=null?colonisationCycleCodec is not IBackgroundColonisationCycleCheckpointCodec:colonisationRepeatPackage!=null?colonisationRepeatCodec is not IBackgroundColonisationRepeatCheckpointCodec:colonisationGrowthPackage!=null?colonisationGrowthCodec is not IBackgroundColonisationGrowthCheckpointCodec:colonisationExpansionPackage!=null?colonisationExpansionCodec is not IBackgroundColonisationExpansionCheckpointCodec:colonisationCodec is not IBackgroundColonisationCheckpointCodec)||!Enum.IsDefined(typeof(ColonisationInteractionKind),kind)
                     ||status.Turn!=frame.Status.Turn||status.CampaignRevision!=frame.Status.CampaignRevision
                     ||kind==ColonisationInteractionKind.PlanningAdvance&&(command!=null||colonyCommand!=null)
                     ||kind!=ColonisationInteractionKind.PlanningAdvance&&((command==null)==(colonyCommand==null)

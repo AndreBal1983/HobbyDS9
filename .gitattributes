@@ -17,3 +17,7 @@ client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardas
 client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationExpansionV1/*.json text eol=lf
 # Repeat composition also pins exact policy bytes.
 client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRepeatV1/*.json text eol=lf
+
+# Cycle composition pins exact policy bytes in both authoring locations.
+scenarios/colonisation-cycle-v1/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationCycleV1/*.json text eol=lf
