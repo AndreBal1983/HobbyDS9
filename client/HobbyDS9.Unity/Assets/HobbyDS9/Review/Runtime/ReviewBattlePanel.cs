@@ -24,7 +24,7 @@ namespace HobbyDS9.UnityReview
             try
             {
                 // Exact actor-filtered identities are supplied by the receiving projection.
-                stage=new ReviewBattleStage(boundary,pending,ReviewBattleVisualBinding.Identity,ReviewBattleVisualBinding.OwnHullVersion);image.image=stage.Texture;caption.text=stage.Caption;caption.tooltip=caption.text;
+                stage=new ReviewBattleStage(boundary,pending,ReviewBattleVisualBinding.Identity,ReviewBattleVisualBinding.OwnHullVersion,ReviewBattleVisualBinding.VisibleHullFamily);image.image=stage.Texture;caption.text=stage.Caption;caption.tooltip=caption.text;
             }
             catch(Exception)
             {stage?.Dispose();stage=null;caption.text="3D presentation unavailable. The resolved report is still available; playback can be skipped.";}

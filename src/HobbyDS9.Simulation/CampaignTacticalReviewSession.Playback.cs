@@ -24,9 +24,23 @@ namespace HobbyDS9.Simulation
                 var source = Equipment(s.ShipId);
                 var civilization = state.Campaign.GameState.Civilizations!.Single(c => c.CivilizationId == source.Owner);
                 return new CampaignPlaybackShipIdentity(s.ShipId, civilization.DefinitionId, source.PlaybackDesignId,
-                    source.Owner==actor&&own.Any(c=>c.ShipId==s.ShipId)?PlaybackOwnHull(s.ShipId,actor):null);
+                    source.Owner==actor&&own.Any(c=>c.ShipId==s.ShipId)?PlaybackOwnHull(s.ShipId,actor):null,
+                    PlaybackVisibleHullFamily(s.ShipId,source.Owner));
             });
             return new CampaignPlaybackBoundary(own, enemy, relations, identities);
+        }
+        private string? PlaybackVisibleHullFamily(string ship,string owner)
+        {
+            // Called only after this actor's hidden-ship filter; retain exact publication, never latest fit.
+            if(activities==null)return null;
+            var built=published!.Records.SingleOrDefault(r=>r.ShipId==ship);
+            BlueprintReferenceDto? reference=built==null?null:new BlueprintReferenceDto{BlueprintId=built.BlueprintId!,Revision=built.BlueprintRevision!.Value};
+            if(reference==null&&activities.AuthoredActivityBlueprints.TryGetValue(ship,out var authored))
+                reference=new BlueprintReferenceDto{BlueprintId=authored,Revision=1};
+            if(reference==null)return null;
+            var publication=CampaignBlueprints.Find(state.Campaign.GameState,reference);
+            Require(publication!=null&&publication.OwnerCivilizationId==owner,"Different visible hull family source owner.");
+            return publication!.FrozenCatalogue!.Hulls!.Single(h=>h.VersionId==publication.Fit!.HullVersionId).FamilyId;
         }
         private string? PlaybackOwnHull(string ship,string actor)
         {

@@ -22,6 +22,7 @@ namespace HobbyDS9.UnityReview
         private readonly List<UnityEngine.Object> owned=new List<UnityEngine.Object>();
         private readonly Dictionary<string,ActivityHullModel> hullModels=new Dictionary<string,ActivityHullModel>(StringComparer.Ordinal);
         private readonly Func<CampaignPlaybackBoundary,string,string?>? ownHull;
+        private readonly Func<CampaignPlaybackBoundary,string,string?>? visibleHullFamily;
         private readonly List<GameObject> effects=new List<GameObject>();
         private readonly Dictionary<Tuple<Color,Color,float,float,bool>,Material> materialCache=new Dictionary<Tuple<Color,Color,float,float,bool>,Material>();
         private readonly Dictionary<string,Tuple<Vector3,Quaternion,Vector3,Quaternion>> poses=new Dictionary<string,Tuple<Vector3,Quaternion,Vector3,Quaternion>>(StringComparer.Ordinal);
@@ -43,8 +44,12 @@ namespace HobbyDS9.UnityReview
         private static readonly Color Space=new Color(.012f,.022f,.042f,1);
         public ReviewBattleStage(CampaignPlaybackBoundary boundary,CampaignRoundPlayback? round,
             Func<CampaignPlaybackBoundary,string,Tuple<string,string>?> identity,Func<CampaignPlaybackBoundary,string,string?>? ownHull=null)
+            :this(boundary,round,identity,ownHull,null) { }
+        public ReviewBattleStage(CampaignPlaybackBoundary boundary,CampaignRoundPlayback? round,
+            Func<CampaignPlaybackBoundary,string,Tuple<string,string>?> identity,Func<CampaignPlaybackBoundary,string,string?>? ownHull,
+            Func<CampaignPlaybackBoundary,string,string?>? visibleHullFamily)
         {
-            this.boundary=boundary;this.round=round;this.identity=identity;this.ownHull=ownHull;
+            this.boundary=boundary;this.round=round;this.identity=identity;this.ownHull=ownHull;this.visibleHullFamily=visibleHullFamily;
             root=new GameObject("Resolved battle presentation"){hideFlags=HideFlags.DontSave,layer=Layer};
             root.transform.position=new Vector3(0,-24000,0);
             camera=Child(root,"Battle camera").AddComponent<Camera>();camera.enabled=false;camera.cullingMask=1<<Layer;
@@ -131,7 +136,9 @@ namespace HobbyDS9.UnityReview
             GameObject? model=null;
             // Membership is enforced again here even if a caller supplied a delegate.
             var hull=source.OwnShips.Any(s=>s.ShipId==condition.ShipId)?ownHull?.Invoke(source,condition.ShipId):null;
-            var activity=hull==null?null:ActivityHullModel.Create(group.transform,hull);
+            var family=source.VisibleEnemies.Any(s=>s.ShipId==condition.ShipId)?visibleHullFamily?.Invoke(source,condition.ShipId):null;
+            var artHull=hull??ReviewBattleVisualBinding.FamilyArtHull(family);
+            var activity=artHull==null?null:ActivityHullModel.Create(group.transform,artHull);
             // Gallery preview may label partial art; battle must not silently
             // present an incomplete fixed hull as a complete model.
             if(activity!=null&&activity.MissingArt.Length>0){activity.Dispose();activity=null;}
@@ -140,12 +147,12 @@ namespace HobbyDS9.UnityReview
                 hullModels.Add(condition.ShipId,activity);model=activity.Root;
                 model.transform.localScale=Vector3.one*(4f/activity.Definition.NominalArtLengthMetres);
             }
-            else if(pair?.Item1=="civilization.federation"&&pair.Item2=="ship-design.source-cruiser")
+            else if(family==null&&pair?.Item1=="civilization.federation"&&pair.Item2=="ship-design.source-cruiser")
             {
                 var prefab=Resources.Load<GameObject>("ArtDemo/Federation/Prefabs/exploration-cruiser");
                 if(prefab!=null){model=UnityEngine.Object.Instantiate(prefab,group.transform,false);model.transform.localScale=Vector3.one*(4f/620f);Materials(model,false);}
             }
-            else if(pair?.Item1=="civilization.cardassian"&&pair.Item2=="ship-design.travel-target")
+            else if(family==null&&pair?.Item1=="civilization.cardassian"&&pair.Item2=="ship-design.travel-target")
             {
                 model=Child(group,"Cardassian prototype");model.transform.localScale=Vector3.one*(4f/480.95f);
                 var lods=new List<LOD>();

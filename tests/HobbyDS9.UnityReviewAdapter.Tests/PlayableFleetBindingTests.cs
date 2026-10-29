@@ -176,6 +176,34 @@ public sealed class PlayableFleetBindingTests : IDisposable
         Assert.Null(legacy.OwnHullVersionId);
         Assert.Null(ReviewBattleVisualBinding.OwnHullVersion(new CampaignPlaybackBoundary(new[]{own},Array.Empty<CampaignTacticalCondition>(),Array.Empty<CampaignTacticalRelation>(),new[]{legacy}),own.ShipId));
     }
+    [Fact] public void VisibleFamilyBindingIsBoundaryLocalWithoutForeignOwnHullOrLaterBackfill()
+    {
+        var own=new CampaignTacticalCondition("ship.own","fleet.own","Defiant",10,10,new long[]{0,0,0,0});
+        var enemy=new CampaignTacticalCondition("ship.enemy","fleet.enemy","Constitution",10,10,new long[]{0,0,0,0});
+        var disclosed=new CampaignPlaybackShipIdentity(enemy.ShipId,"civilization.cardassian","blueprint.ready.defiant-combat.ai","hull.forged.foreign.v9","hull-family.defiant-combat");
+        var hidden=new CampaignPlaybackBoundary(new[]{own},Array.Empty<CampaignTacticalCondition>(),Array.Empty<CampaignTacticalRelation>(),new[]{disclosed});
+        Assert.Null(ReviewBattleVisualBinding.VisibleHullFamily(hidden,enemy.ShipId));
+        var shown=new CampaignPlaybackBoundary(new[]{own},new[]{enemy},Array.Empty<CampaignTacticalRelation>(),new[]{disclosed});
+        Assert.Equal("hull-family.defiant-combat",ReviewBattleVisualBinding.VisibleHullFamily(shown,enemy.ShipId));
+        Assert.Null(ReviewBattleVisualBinding.OwnHullVersion(shown,enemy.ShipId));
+        Assert.Null(ReviewBattleVisualBinding.VisibleHullFamily(shown,"ship.absent"));
+        Assert.Null(ReviewBattleVisualBinding.VisibleHullFamily(shown,own.ShipId));
+        Assert.Null(ReviewBattleVisualBinding.VisibleHullFamily(hidden,enemy.ShipId));
+        var replacement=new CampaignPlaybackBoundary(Array.Empty<CampaignTacticalCondition>(),new[]{enemy},Array.Empty<CampaignTacticalRelation>(),
+            new[]{new CampaignPlaybackShipIdentity(enemy.ShipId,"civilization.cardassian","same mutable label",null,"hull-family.galaxy-cruiser")});
+        Assert.Equal("hull-family.galaxy-cruiser",ReviewBattleVisualBinding.VisibleHullFamily(replacement,enemy.ShipId));
+        Assert.Equal("hull-family.defiant-combat",ReviewBattleVisualBinding.VisibleHullFamily(shown,enemy.ShipId));
+    }
+    [Theory]
+    [InlineData("hull-family.constitution-explorer","hull.constitution-explorer.v1")]
+    [InlineData("hull-family.galaxy-cruiser","hull.galaxy-cruiser.v1")]
+    [InlineData("hull-family.defiant-combat","hull.defiant-combat.v1")]
+    [InlineData(null,null)] [InlineData("hull-family.unknown",null)]
+    [InlineData("Hull-family.defiant-combat",null)] [InlineData("Defiant Combat",null)]
+    [InlineData("blueprint.ready.defiant-combat.ai",null)] [InlineData("civilization.cardassian",null)]
+    [InlineData("hull.defiant-combat.v1",null)]
+    public void FamilyArtMapAdmitsOnlyExactVisualFamilyNotGameplayVersionOrAliases(string? family,string? art)
+    {Assert.Equal(art,ReviewBattleVisualBinding.FamilyArtHull(family));}
     private static T Clone<T>(T value)=>JsonSerializer.Deserialize<T>(Json(value))!;
     static CampaignPlayableFleetPackageDto MultiEncounterPackage(bool aiOnly)
     {

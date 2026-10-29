@@ -161,8 +161,8 @@ public sealed class FrontierCommissionTests
     {
      if(boundary.OwnShips.Any(o=>o.ShipId==identity.ShipId))
      {
-      if(identity.ShipId==starter){Assert.Equal("hull.constitution-explorer.v1",identity.OwnHullVersionId);seen.Add(starter);}
-      else if(identity.ShipId==born.ShipId){Assert.Equal("hull."+role+".v1",identity.OwnHullVersionId);Assert.Equal(born.BlueprintId,identity.ShipDesignDefinitionId);seen.Add(born.ShipId!);}
+      if(identity.ShipId==starter){Assert.Equal("hull.constitution-explorer.v1",identity.OwnHullVersionId);Assert.Equal("hull-family.constitution-explorer",identity.VisibleHullFamilyId);seen.Add(starter);}
+      else if(identity.ShipId==born.ShipId){Assert.Equal("hull."+role+".v1",identity.OwnHullVersionId);Assert.Equal("hull-family."+role,identity.VisibleHullFamilyId);Assert.Equal(born.BlueprintId,identity.ShipDesignDefinitionId);seen.Add(born.ShipId!);}
      }
      else Assert.Null(identity.OwnHullVersionId);
     }

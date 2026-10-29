@@ -68,6 +68,38 @@ namespace HobbyDS9.UnityReview.Tests
             if(!camera.orthographic)Assert.That(camera.fieldOfView,Is.EqualTo(35f));
             File.AppendAllText(Path.Combine(CampaignOutput(),"battle-camera-containment.jsonl"),JsonConvert.SerializeObject(new{label,camera.orthographic,camera.fieldOfView,camera.nearClipPlane,camera.farClipPlane,checkedPoints,cues,claim="actual Unity WorldToViewport of everyLOD/before/after/intermediate/sphere envelope; no pixel readability claim"})+Environment.NewLine);
         }
+        [Test] public void VisibleFamilyStagePreservesConstructorAbiMembershipUnknownFallbackAndLifetime()
+        {
+            var callback=typeof(Func<CampaignPlaybackBoundary,string,string>);var identityCallback=typeof(Func<CampaignPlaybackBoundary,string,Tuple<string,string>>);
+            var four=typeof(ReviewBattleStage).GetConstructor(new[]{typeof(CampaignPlaybackBoundary),typeof(CampaignRoundPlayback),identityCallback,callback});
+            Assert.That(four,Is.Not.Null);Assert.That(four!.GetParameters()[3].IsOptional,Is.True);
+            Assert.That(typeof(ReviewBattleStage).GetConstructor(new[]{typeof(CampaignPlaybackBoundary),typeof(CampaignRoundPlayback),identityCallback,callback,callback}),Is.Not.Null);
+            var enemy=new CampaignTacticalCondition("ship.component.enemy","fleet.component.enemy","Misleading mutable label",10,10,new long[]{0,0,0,0});
+            CampaignPlaybackBoundary Boundary(bool visible,string family)=>new CampaignPlaybackBoundary(Array.Empty<CampaignTacticalCondition>(),visible?new[]{enemy}:Array.Empty<CampaignTacticalCondition>(),Array.Empty<CampaignTacticalRelation>(),
+                new[]{new CampaignPlaybackShipIdentity(enemy.ShipId,"civilization.cardassian","ship-design.travel-target","hull.forged.foreign.v1",family)});
+            int familyCalls=0,ownCalls=0;string? Family(CampaignPlaybackBoundary b,string id){familyCalls++;return ReviewBattleVisualBinding.VisibleHullFamily(b,id);}
+            string? Own(CampaignPlaybackBoundary b,string id){ownCalls++;return "hull.forged.foreign.v1";}
+            using(var hidden=new ReviewBattleStage(Boundary(false,"hull-family.defiant-combat"),null,ReviewBattleVisualBinding.Identity,Own,Family))
+            {Assert.That(familyCalls,Is.Zero);Assert.That(ownCalls,Is.Zero);Assert.That(hidden.GenericMarkers,Is.Zero);}
+            var boundary=Boundary(true,"hull-family.defiant-combat");var frozen=JsonConvert.SerializeObject(boundary);
+            using(var stage=new ReviewBattleStage(boundary,null,ReviewBattleVisualBinding.Identity,Own,Family))
+            {
+            var texture=stage.Texture;Assert.That(texture.IsCreated(),Is.True,"render texture is created before disposal");
+            var field=typeof(ReviewBattleStage).GetField("hullModels",BindingFlags.Instance|BindingFlags.NonPublic)!;
+            var models=(System.Collections.IDictionary)field.GetValue(stage)!;
+            Assert.That(models.Contains(enemy.ShipId),Is.True);Assert.That(stage.GenericMarkers,Is.Zero);Assert.That(ownCalls,Is.Zero);Assert.That(familyCalls,Is.EqualTo(1));
+            var model=models[enemy.ShipId]!;var definition=model.GetType().GetProperty("Definition")!.GetValue(model)!;
+            Assert.That((string)definition.GetType().GetProperty("VisualKey")!.GetValue(definition)!,Is.EqualTo("activity.defiant-combat.v1"));
+            stage.Tick(.1f);stage.ToggleCamera();Assert.That(JsonConvert.SerializeObject(boundary),Is.EqualTo(frozen));
+            stage.Dispose();stage.Dispose();Assert.That(texture==null||!texture.IsCreated(),Is.True,"disposed render texture is released; object destruction may be deferred");
+            Assert.That(models.Count,Is.Zero,"disposed stage releases all hull models");
+            using(var unknown=new ReviewBattleStage(Boundary(true,"hull-family.unknown"),null,ReviewBattleVisualBinding.Identity,Own,Family))
+            {Assert.That(unknown.GenericMarkers,Is.EqualTo(1),"nonnull unknown family must not use a legacy-pair alias");Assert.That(((System.Collections.IDictionary)field.GetValue(unknown)!).Count,Is.Zero);}
+            using(var fresh=new ReviewBattleStage(boundary,null,ReviewBattleVisualBinding.Identity,Own,Family))
+            {Assert.That(fresh.GenericMarkers,Is.Zero);Assert.That(fresh.Texture,Is.Not.SameAs(texture));Assert.That(((System.Collections.IDictionary)field.GetValue(fresh)!).Contains(enemy.ShipId),Is.True);}
+            Assert.That(ownCalls,Is.Zero);Assert.That(JsonConvert.SerializeObject(boundary),Is.EqualTo(frozen));
+            }
+        }
         private static void BattleAnonymousCameraProbe(CampaignRoundPlayback knownRound)
         {
             var target=knownRound.Before.OwnShips.First(s=>s.Hull>0);

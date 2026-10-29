@@ -40,10 +40,14 @@ namespace HobbyDS9.Contracts
         public string ShipDesignDefinitionId { get; }
         // Actor-owned frozen source identity only; foreign disclosure is unchanged.
         public string? OwnHullVersionId { get; }
+        // Frozen visual family for this boundary's own/already-visible ships, never foreign equipment versions.
+        public string? VisibleHullFamilyId { get; }
         public CampaignPlaybackShipIdentity(string ship, string civilizationDefinition, string shipDesignDefinition)
             : this(ship,civilizationDefinition,shipDesignDefinition,null) { }
         public CampaignPlaybackShipIdentity(string ship, string civilizationDefinition, string shipDesignDefinition,string? ownHullVersionId)
-        { ShipId = ship; CivilizationDefinitionId = civilizationDefinition; ShipDesignDefinitionId = shipDesignDefinition; OwnHullVersionId=ownHullVersionId; }
+            : this(ship,civilizationDefinition,shipDesignDefinition,ownHullVersionId,null) { }
+        public CampaignPlaybackShipIdentity(string ship,string civilizationDefinition,string shipDesignDefinition,string? ownHullVersionId,string? visibleHullFamilyId)
+        { ShipId = ship; CivilizationDefinitionId = civilizationDefinition; ShipDesignDefinitionId = shipDesignDefinition; OwnHullVersionId=ownHullVersionId; VisibleHullFamilyId=visibleHullFamilyId; }
     }
     public sealed class CampaignPlaybackBoundary
     {
