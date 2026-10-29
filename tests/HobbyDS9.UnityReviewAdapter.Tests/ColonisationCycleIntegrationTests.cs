@@ -253,5 +253,192 @@ public sealed class ColonisationCycleIntegrationTests:IDisposable
             var typed=j.ToObject<CampaignColonisationCycleSaveDto>()!;Assert.ThrowsAny<Exception>(()=>codec.EncodeCycleRoot(typed));
         }
     }
+    [Fact]public void CycleRealHumanAiCombatAftermathFreshOrderAndWholeTypedContinue()
+    {
+        // Supported small generated host campaign, not the native250 expedition or a modified genesis.
+        var package=Package();var m=new ReviewUiModel(package,Settings(),codec,Store());
+        var human=m.Current.Frame.Actor;Assert.Equal("civ.federation",human);var flow=new ReviewCombatFlow(m);
+        int advances=0;
+        // Keep the original publicly observed scout stationary for ordinary natural fleet joining.
+        var scout=m.ColonisationActivities().Ships.Where(s=>s.Stationary&&s.StudyWork>0)
+            .OrderBy(s=>s.ShipId,StringComparer.Ordinal).FirstOrDefault();
+        Assert.NotNull(scout);var fleet=scout!.FleetId;
+        var original=m.Current.Frame.OwnStrategicFleets.Single(f=>f.FleetId.Value==fleet);
+        var system=m.GeneratedMap().Regions.Single(r=>r.NodeId==original.LocationNodeId.Value).SystemId;
+        var yard=m.Colonisation().Worlds.Where(w=>w.SystemId==system&&w.Stage==ColonyEstablishmentStage.Established&&w.Population>0&&w.Shipbuilding)
+            .OrderByDescending(w=>w.Industry).ThenBy(w=>w.Id,StringComparer.Ordinal).FirstOrDefault();
+        Assert.NotNull(yard); // No eligible co-located yard is a real unsupported preparation premise.
+        var option=m.ColonisationActivities().BuildOptions.Single(o=>o.DefinitionId=="blueprint.ready.defiant-combat"&&o.BlueprintRevision==1);
+        Assert.True(option.Supported,option.Reason);
+        var credits=m.Current.Frame.Strategy!.Civilization.Credits;
+        var stocks=Newtonsoft.Json.JsonConvert.SerializeObject(yard!.Stocks.OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal));
+        var priorQueues=m.Colonisation().Production.Select(q=>q.Id).ToHashSet(StringComparer.Ordinal);
+        var priorShips=m.Colonisation().OwnShipSources.Select(s=>s.ShipId).ToHashSet(StringComparer.Ordinal);
+        var command=new CampaignActivityCommandDto{ActorId=human,CommandId="command.cycle.combat.prepare",
+            ExpectedTurn=m.Current.Frame.Status.Turn,ExpectedRevision=m.Current.Frame.Status.CampaignRevision,
+            Kind=CampaignActivityCommandKind.EnqueueShip,TargetId=yard.Id,DefinitionId=option.DefinitionId,BlueprintRevision=option.BlueprintRevision};
+        var preview=m.BeginColonisationInteraction(ColonisationInteractionKind.Preview,command:command);
+        Assert.NotNull(preview);var eligibility=preview!.Execute();
+        Assert.True(m.CompleteColonisationInteraction(preview,eligibility),m.Message);
+        Assert.NotNull(eligibility.Eligibility);Assert.True(eligibility.Eligibility!.Accepted,eligibility.Eligibility.Reason);
+        var submit=m.BeginColonisationInteraction(ColonisationInteractionKind.Submission,command:command);
+        Assert.NotNull(submit);var submitted=submit!.Execute();
+        Assert.True(m.CompleteColonisationInteraction(submit,submitted),m.Message);Assert.True(submitted.Committed,m.Message);
+        var queued=Assert.Single(m.Colonisation().Production,q=>!priorQueues.Contains(q.Id));
+        Assert.Equal(yard.Id,queued.ColonyId);Assert.Equal(option.DefinitionId,queued.DefinitionId);Assert.Equal(1,queued.BlueprintRevision);
+        Assert.Equal(option.Cost.Industry,queued.RequiredIndustry);Assert.Equal(0,queued.CompletedIndustry);
+        Assert.All(queued.Consumed,r=>Assert.Equal(0,r.Amount));Assert.Equal(credits,m.Current.Frame.Strategy!.Civilization.Credits);
+        Assert.Equal(stocks,Newtonsoft.Json.JsonConvert.SerializeObject(m.Colonisation().Worlds.Single(w=>w.Id==yard.Id).Stocks.OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal)));
+        Assert.Equal(option.Cost.Resources!.OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal).Select(r=>(r.ResourceDefinitionId,r.Amount)),
+            queued.Required.OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal).Select(r=>(r.ResourceDefinitionId,r.Amount)));
+        output.WriteLine($"prepare yard={yard.Id} scoutFleet={fleet} queue={queued.Id} industry={queued.RequiredIndustry} creditsAtQueue={credits}; localMaterials={stocks}");
+        bool sawWork=false,sawConsumption=false;
+        while(!m.Colonisation().OwnShipSources.Any(s=>!priorShips.Contains(s.ShipId)&&s.BlueprintId==option.DefinitionId&&s.Revision==1)
+            &&m.Current.Frame.Status.Phase==SessionPhase.Planning&&advances<80)
+        {
+            Assert.Equal(human,m.Current.Frame.Actor);
+            Assert.True(flow.DraftNextOrder(fleet,CampaignTravelIntent.StayEngage),flow.Notice);
+            Assert.True(flow.SubmitNextOrder("command.cycle.combat.prepare.stay."+advances,true),m.Message);
+            Assert.True(flow.AdvancePlanning(true),m.Message);advances++;
+            var progress=m.Colonisation().Production.SingleOrDefault(q=>q.Id==queued.Id);
+            if(progress!=null)
+            {
+                sawWork|=progress.CompletedIndustry>0&&progress.CompletedIndustry<progress.RequiredIndustry;
+                sawConsumption|=progress.Consumed.Any(r=>r.Amount>0);
+                output.WriteLine($"prepare advances={advances} turn={m.Current.Frame.Status.Turn} queue={progress.Id} work={progress.CompletedIndustry}/{progress.RequiredIndustry} consumed={Newtonsoft.Json.JsonConvert.SerializeObject(progress.Consumed)}");
+            }
+        }
+        Assert.Equal(SessionPhase.Planning,m.Current.Frame.Status.Phase); // Early combat is narrower evidence, not bypassed.
+        Assert.True(sawWork,"Real streamed intermediate work was not observed.");Assert.True(sawConsumption,"Real local material consumption was not observed.");
+        var built=Assert.Single(m.Colonisation().OwnShipSources,s=>!priorShips.Contains(s.ShipId)&&s.BlueprintId==option.DefinitionId&&s.Revision==1);
+        Assert.Contains(m.Current.Frame.OwnStrategicFleets.Single(f=>f.FleetId.Value==fleet).ShipIds,s=>s.Value==built.ShipId);
+        Assert.Equal(fleet,m.ColonisationActivities().Ships.Single(s=>s.ShipId==built.ShipId).FleetId); // Natural join only; no transfer fallback.
+        // Full-root construction provenance is assertion-only, after the public completion/member observations.
+        var construction=Session(m).ExportCycleSave().BaseCampaign!;
+        var receipt=Assert.Single(construction.ProductionHistory!,r=>r.Order!.QueueItemId==queued.Id);
+        Assert.True(receipt.Completed);Assert.Equal(built.ShipId,receipt.ShipId);
+        Assert.Equal(human,receipt.Order!.OwnerId);Assert.Equal(yard.Id,receipt.Order.ColonyId);
+        Assert.Equal(queued.RequiredIndustry,receipt.Order.CompletedIndustry);
+        Assert.Equal(receipt.Order.RequiredResources!.OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal).Select(r=>(r.ResourceDefinitionId,r.Amount)),
+            receipt.Order.ConsumedResources!.OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal).Select(r=>(r.ResourceDefinitionId,r.Amount)));
+        var frozen=Assert.Single(construction.PublishedBuiltShips!,s=>s.QueueItemId==queued.Id);
+        Assert.Equal(built.ShipId,frozen.ShipId);Assert.Equal(human,frozen.OwnerCivilizationId);Assert.Equal(fleet,frozen.FleetIdAtConstruction);
+        Assert.Equal(option.DefinitionId,frozen.BlueprintId);Assert.Equal(1,frozen.BlueprintRevision);Assert.Equal(receipt.ResolvedTurn,frozen.TurnBuilt);
+        Assert.False(string.IsNullOrEmpty(frozen.PublicationHash));Assert.False(string.IsNullOrEmpty(frozen.SupportHash));Assert.False(string.IsNullOrEmpty(frozen.FitId));
+        output.WriteLine($"prepare completed queue={queued.Id} ship={built.ShipId} naturalFleet={fleet} turn={receipt.ResolvedTurn} totalAdvances={advances}");
+        while(m.Current.Frame.Status.Phase==SessionPhase.Planning&&advances<80)
+        {
+            var frame=m.Current.Frame;Assert.Equal(human,frame.Actor);
+            Assert.Contains(frame.OwnStrategicFleets,f=>f.FleetId.Value==fleet);
+            // Only lawful current contact/route observations choose commands; no exported root is read here.
+            var contact=frame.Travel!.KnownContacts.Where(c=>c.Fresh).OrderBy(c=>c.FleetId,StringComparer.Ordinal)
+                .FirstOrDefault(c=>flow.PreviewRoute(fleet,c.LastSeenNodeId)?.Route.Success==true);
+            Assert.True(flow.DraftNextOrder(fleet,contact==null?CampaignTravelIntent.StayEngage:CampaignTravelIntent.Follow,
+                contact?.LastSeenNodeId,contact?.FleetId),flow.Notice);
+            Assert.True(flow.SubmitNextOrder("command.cycle.combat.reach."+advances,true),m.Message);
+            Assert.True(flow.AdvancePlanning(true),m.Message);advances++;
+            output.WriteLine($"reach advances={advances} turn={m.Current.Frame.Status.Turn} phase={m.Current.Frame.Status.Phase} ownContacts={m.Current.Frame.Travel!.KnownContacts.Count}");
+        }
+        Assert.Equal(SessionPhase.AwaitingCombat,m.Current.Frame.Status.Phase); // No-contact remains a real failure.
+        Assert.NotEmpty(m.Current.Frame.Encounters);Assert.InRange(m.Current.Frame.Encounters.Count,1,16);
+        void Archive(byte[] bytes,string label)
+        {
+            // This invocation's external output confinement is verified by the reviewed build preflight.
+            // Ordinary test runners may use their own ignored bin output; no machine-specific source guard.
+            var path=Path.Combine(AppContext.BaseDirectory,"cycle-combat-"+label+"-"+Guid.NewGuid().ToString("N")+".json");
+            using(var file=new FileStream(path,FileMode.CreateNew,FileAccess.Write,FileShare.None))file.Write(bytes,0,bytes.Length);
+            output.WriteLine($"archive path={path} bytes={bytes.Length} sha256={Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)).ToLowerInvariant()}");
+        }
+        var waiting=Root(m);Assert.True(m.Save("combat-waiting"),m.Message);Archive(waiting,"waiting");
+        // Root inspection is assertion-only, after lawful public contact; never an order-selection input.
+        var waitingAudit=codec.DecodeCycleRoot(waiting);
+        var waitingPhysical=waitingAudit.BaseCampaign!.Campaign!.Integrated!.Physical!;
+        var waitingGame=waitingPhysical.Core.Campaign.GameState;
+        Assert.All(m.Current.Frame.Encounters,id=>{
+            var participants=waitingPhysical.Requests.Single(e=>e.EncounterId==id).Participants;
+            Assert.Contains(waitingPhysical.Core.Battles,b=>b.State.EncounterId==id&&b.State.Formations.Any(f=>f.SideId==human));
+            Assert.Contains(participants,p=>p.CivilizationId==human);
+            Assert.Contains(participants,p=>waitingGame.Civilizations!.Single(c=>c.CivilizationId==p.CivilizationId).ControllerKind==ControllerKind.AI);
+        });
+        var waitingHost=Host(m);var waitingController=m.Current;
+        m=ReviewUiModel.ContinueColonisationCycle(package,codec,Store(),"combat-waiting");
+        Assert.NotSame(waitingHost,Host(m));Assert.NotSame(waitingController,m.Current);Assert.Equal(waiting,Root(m));
+        Assert.Equal(human,m.Current.Frame.Actor);flow=new ReviewCombatFlow(m);
+        string Stocks(CampaignTacticalOwnShip ship)=>Newtonsoft.Json.JsonConvert.SerializeObject(new{
+            ship.Condition.Hull,Shields=ship.Condition.Shields.ToArray(),Weapons=ship.Weapons.OrderBy(w=>w.WeaponId,StringComparer.Ordinal)
+                .Select(w=>new{w.WeaponId,w.Ammunition}).ToArray()});
+        var beforeStocks=new Dictionary<string,string>(StringComparer.Ordinal);
+        // Capture every lawful own encounter view BEFORE any round can change a ship.
+        foreach(var encounter in m.Current.Frame.Encounters.OrderBy(x=>x,StringComparer.Ordinal).ToArray())
+        {
+            Assert.True(m.Current.SelectEncounter(encounter));Assert.Equal(human,m.Current.Frame.Actor);
+            foreach(var ship in m.Current.Frame.Battle!.OwnShips)
+            {
+                var stock=Stocks(ship);
+                if(beforeStocks.TryGetValue(ship.Condition.ShipId,out var prior))Assert.Equal(prior,stock);
+                else beforeStocks.Add(ship.Condition.ShipId,stock);
+            }
+        }
+        Assert.NotEmpty(beforeStocks);
+        var staged=new Dictionary<string,(long Hull,string Stocks)>(StringComparer.Ordinal);
+        void Acknowledge()
+        {
+            for(int i=0;flow.PendingPlayback!=null;i++)
+            {Assert.InRange(i,0,2);var playback=flow.Playback!;Assert.True(flow.AcknowledgePlayback(playback,flow.PendingPlayback!.Round));}
+        }
+        foreach(var encounter in m.Current.Frame.Encounters.OrderBy(x=>x,StringComparer.Ordinal).ToArray())
+        {
+            Assert.True(m.Current.SelectEncounter(encounter));Assert.Equal(human,m.Current.Frame.Actor);
+            for(int commits=0;!m.Current.Frame.Battle!.Complete;commits++)
+            {
+                Assert.InRange(commits,0,2);Acknowledge();
+                if(flow.Stage==ReviewCombatStage.RoundResult)Assert.True(flow.PlanNextRound());
+                var battle=m.Current.Frame.Battle!;Assert.Equal(encounter,battle.EncounterId);
+                Assert.True(flow.CanCommitRound,"Real AI must resolve its own commitment without actor switching.");
+                foreach(var order in battle.StandingOrders.Where(o=>o.CanOrder))
+                    Assert.True(flow.DraftFleet(order.FleetId,CampaignFleetManeuver.Hold,null),flow.Notice);
+                Assert.True(flow.CommitRound("command.cycle.combat.round."+encounter+"."+battle.Round,true),m.Message);
+                Assert.Equal(human,m.Current.Frame.Actor);
+            }
+            Acknowledge();
+            foreach(var ship in m.Current.Frame.Battle!.OwnShips)
+                staged[ship.Condition.ShipId]=(ship.Condition.Hull,Stocks(ship));
+        }
+        Assert.NotEmpty(staged);Assert.True(flow.CanFinalize,"The actual whole batch, including AI work, must be complete.");
+        var pendingTurn=m.Current.Frame.Status.Turn;Assert.True(flow.FinalizeAftermath(true),m.Message);
+        Assert.Equal(SessionPhase.Planning,m.Current.Frame.Status.Phase);Assert.Empty(m.Current.Frame.Encounters);
+        Assert.Equal(pendingTurn+1,m.Current.Frame.Status.Turn);
+        var finalStocks=m.Current.Frame.OwnShips.ToDictionary(s=>s.Condition.ShipId,Stocks,StringComparer.Ordinal);
+        foreach(var pair in staged)
+        {
+            if(pair.Value.Hull==0)Assert.False(finalStocks.ContainsKey(pair.Key));
+            else Assert.Equal(pair.Value.Stocks,finalStocks[pair.Key]);
+        }
+        Assert.All(staged.Keys,id=>Assert.True(beforeStocks.ContainsKey(id),"Every staged ship requires a real pre-round baseline."));
+        Assert.True(staged.Any(p=>beforeStocks[p.Key]!=p.Value.Stocks),
+            "A harmless encounter does not prove persistent resource aftermath.");
+        var after=Root(m);var aftermathAudit=codec.DecodeCycleRoot(after);
+        Assert.Equal(pendingTurn,aftermathAudit.BaseCampaign!.Colonisation!.LastSettlementTurn);
+        Assert.Equal(pendingTurn,aftermathAudit.BaseCampaign.LastSettlementProof!.Turn);
+        var aftermathPhysical=aftermathAudit.BaseCampaign.Campaign!.Integrated!.Physical!;
+        Assert.Equal(SessionPhase.Planning,aftermathPhysical.Phase);
+        Assert.Empty(aftermathPhysical.Requests);Assert.Empty(aftermathPhysical.Core.Battles);
+        Assert.False(flow.FinalizeAftermath(true));Assert.Equal(after,Root(m));
+        Archive(after,"aftermath"); // Preserve honest aftermath even when the real human fleet did not survive.
+        var survivor=m.Current.Frame.OwnStrategicFleets.OrderBy(f=>f.FleetId.Value,StringComparer.Ordinal).FirstOrDefault();
+        Assert.NotNull(survivor); // No-survivor is narrower evidence, never a passed fresh-order gate.
+        Assert.True(flow.DraftNextOrder(survivor!.FleetId.Value,CampaignTravelIntent.Stay),flow.Notice);
+        Assert.True(flow.SubmitNextOrder("command.cycle.combat.fresh",true),m.Message);
+        Assert.Equal(pendingTurn+1,m.Current.Frame.Status.Turn);Assert.Equal(human,m.Current.Frame.Actor);
+        Assert.Equal(finalStocks, m.Current.Frame.OwnShips.ToDictionary(s=>s.Condition.ShipId,Stocks,StringComparer.Ordinal));
+        var committed=Root(m);Assert.True(m.Save("combat-after-fresh-order"),m.Message);Archive(committed,"after-fresh-order");
+        var oldHost=Host(m);var oldController=m.Current;
+        var continued=ReviewUiModel.ContinueColonisationCycle(package,codec,Store(),"combat-after-fresh-order");
+        Assert.NotSame(oldHost,Host(continued));Assert.NotSame(oldController,continued.Current);
+        Assert.Equal(human,continued.Current.Frame.Actor);Assert.Equal(committed,Root(continued));
+        Assert.Equal(finalStocks,continued.Current.Frame.OwnShips.ToDictionary(s=>s.Condition.ShipId,Stocks,StringComparer.Ordinal));
+        Assert.Equal(CampaignTravelIntent.Stay,continued.Current.Frame.Travel!.OwnOrders.Single(o=>o.FleetId==survivor.FleetId.Value).Intent);
+        output.WriteLine($"Complete typed14 combat gate: normalAdvances={advances}, aftermathTurn={continued.Current.Frame.Status.Turn}, stagedShips={staged.Count}; no fresh Advance after final order/save.");
+    }
     public void Dispose(){if(Directory.Exists(directory))Directory.Delete(directory,true);}
 }
