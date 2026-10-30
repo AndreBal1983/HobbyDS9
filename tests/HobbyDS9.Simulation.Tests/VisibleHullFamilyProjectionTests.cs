@@ -131,4 +131,140 @@ public sealed class VisibleHullFamilyProjectionTests
         Assert.Equal(foreign.ShipIdentities.Select(x=>x.VisibleHullFamilyId),historical.ShipIdentities.Select(x=>x.VisibleHullFamilyId));
         Assert.Equal(before,Wire(s.ExportStreamedActivitiesSave()));
     }
+
+    [Fact] public void CycleBuiltR2RetainsExactFamilyAfterR3AndWholeReplay()
+    {
+        // Blueprint R2 uses an existing v1 hull; engineered-v2 content remains OPEN.
+        // ONE new R2 ship, no old Built/Journey lazy fixture and <=24 TOTAL ordinary weeks.
+        var package=ColonisationCycleTests.Package();var packageBefore=Wire(package);
+        var app=CampaignColonisationCycleApplication.StartCycleGame(package,PublishedConstructionProfileTests.Settings(30));
+        var library=app.CaptureDesignLibrary(Human);
+        var r1=Assert.Single(library.Published,p=>p.Blueprint.BlueprintId==Blueprint&&p.Blueprint.Revision==1).Blueprint;
+        var source=Assert.Single(library.Published,p=>p.Blueprint.Fit.HullVersionId=="hull.constitution-explorer.v1"&&p.Blueprint.Revision==1).Blueprint;
+        var r1Bytes=Wire(r1);var expectedR1Family=r1.Hull.FamilyId;var expectedR2Family=source.Hull.FamilyId;
+        Assert.Equal("hull-family.defiant-combat",expectedR1Family);
+        Assert.Equal("hull-family.constitution-explorer",expectedR2Family);Assert.NotEqual(expectedR1Family,expectedR2Family);
+        Assert.Equal(1,source.Hull.VersionNumber);
+        ShipClassDraftDto Draft(ShipClassDraftSnapshot fit)=>JsonSerializer.Deserialize<ShipClassDraftDto>(Wire(fit))!;
+        void Publish(int revision,ShipClassDraftDto draft)
+        {
+            draft.ClassId=r1.Fit.ClassId;draft.DisplayName="Actual built R2 probe revision "+revision;
+            var status=app.CaptureStatus();
+            var result=app.SubmitStrategicCommand(new(){ActorCivilizationId=Human,CommandId="command.family.cycle.publish."+revision,
+                ExpectedTurn=status.Turn,ExpectedRevision=status.CampaignRevision,Kind=CommandKind.PublishShipBlueprint,
+                PublishShipBlueprint=new(){BlueprintId=Blueprint,Revision=revision,Draft=draft}});
+            Assert.True(result.Accepted,result.Error.ToString());
+        }
+        var expectedR2Fit=Draft(source.Fit);Publish(2,expectedR2Fit);
+        var r2=Assert.Single(app.CaptureDesignLibrary(Human).Published,p=>p.Blueprint.BlueprintId==Blueprint&&p.Blueprint.Revision==2).Blueprint;
+        Assert.Equal(source.Fit.HullVersionId,r2.Fit.HullVersionId);Assert.Equal(expectedR2Family,r2.Hull.FamilyId);
+        Assert.Equal(Wire(expectedR2Fit),Wire(Draft(r2.Fit)));var r2Bytes=Wire(r2);
+        var retainedR2=Assert.Single(app.ExportCycleSave().BaseCampaign!.Campaign!.Integrated!.Physical!.Core.Campaign.GameState.Blueprints!,
+            p=>p.BlueprintId==Blueprint&&p.Revision==2);
+        var frozenR2Catalogue=retainedR2.FrozenCatalogue!;
+        var frozenAccess=new ShipDesignAccessDto{AvailableVersionIds=frozenR2Catalogue.Hulls!.Select(h=>h.VersionId)
+            .Concat(frozenR2Catalogue.Components!.Select(c=>c.VersionId)).OrderBy(id=>id,StringComparer.Ordinal).ToList()};
+        var expectedPublication=new ShipDesignCompiler(new ShipDesignCatalogueSnapshot(frozenR2Catalogue))
+            .Publish(retainedR2.Fit!,frozenAccess,Blueprint,2);
+        Assert.True(expectedPublication.Published);
+        var expectedSupport=PublishedTacticalSupportCompiler.EvaluateColonisation(new ShipDesignCatalogueSnapshot(frozenR2Catalogue),
+            expectedPublication.Blueprint!,frozenAccess,package.BaseGrowth!.BaseRosterV2!.BaseV1!.Support!);
+        Assert.True(expectedSupport.Supported);var expectedTactical=expectedSupport.Ship!.Tactical;
+        var option=Assert.Single(app.CaptureActivities(Human).BuildOptions,o=>o.DefinitionId==Blueprint&&o.BlueprintRevision==2);
+        Assert.True(option.Supported,option.Reason);Assert.NotNull(option.Cost);var cost=option.Cost!;
+        Assert.True(cost.Industry>0);Assert.NotNull(cost.Resources);Assert.Contains(cost.Resources!,r=>r.Amount>0);
+        CampaignActivityCommandDto Enqueue(string world)
+        {
+            var status=app.CaptureStatus();return new(){ActorId=Human,CommandId="command.family.cycle.enqueue.r2",
+                ExpectedTurn=status.Turn,ExpectedRevision=status.CampaignRevision,Kind=CampaignActivityCommandKind.EnqueueShip,
+                TargetId=world,DefinitionId=Blueprint,BlueprintRevision=2};
+        }
+        var eligible=app.CaptureColonisation(Human).Worlds.Where(w=>w.Stage==ColonyEstablishmentStage.Established&&w.Population>0&&w.Shipbuilding)
+            .Where(w=>app.EvaluateActivity(Enqueue(w.Id)).Accepted).OrderByDescending(w=>w.Industry).ThenBy(w=>w.Id,StringComparer.Ordinal).ToList();
+        Assert.NotEmpty(eligible);var yard=eligible[0];var credit=app.CaptureActivities(Human).Credits;
+        var stocks=Wire(yard.Stocks);var queues=app.CaptureColonisation(Human).Production.Select(q=>q.Id).ToHashSet(StringComparer.Ordinal);
+        var priorShips=app.CaptureColonisation(Human).OwnShipSources.Select(s=>s.ShipId).ToHashSet(StringComparer.Ordinal);
+        Assert.True(app.EvaluateActivity(Enqueue(yard.Id)).Accepted);
+        var submitted=app.SubmitActivity(Enqueue(yard.Id));Assert.True(submitted.Accepted,submitted.Error.ToString());
+        var queued=Assert.Single(app.CaptureColonisation(Human).Production,q=>!queues.Contains(q.Id));
+        Assert.Equal(yard.Id,queued.ColonyId);Assert.Equal(Blueprint,queued.DefinitionId);Assert.Equal(2,queued.BlueprintRevision);
+        Assert.Equal(cost.Industry,queued.RequiredIndustry);Assert.Equal(0,queued.CompletedIndustry);
+        Assert.All(queued.Consumed,r=>Assert.Equal(0,r.Amount));Assert.Equal(credit,app.CaptureActivities(Human).Credits);
+        Assert.Equal(stocks,Wire(app.CaptureColonisation(Human).Worlds.Single(w=>w.Id==yard.Id).Stocks));
+        Assert.Equal(cost.Resources!.OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal).Select(r=>(r.ResourceDefinitionId,r.Amount)),
+            queued.Required.OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal).Select(r=>(r.ResourceDefinitionId,r.Amount)));
+        // Publish different-family R3 BEFORE ANY Advance: completion must still use retained R2.
+        var expectedR3Fit=Draft(r1.Fit);Publish(3,expectedR3Fit);
+        var afterPublish=app.CaptureDesignLibrary(Human);
+        var r3=Assert.Single(afterPublish.Published,p=>p.Blueprint.BlueprintId==Blueprint&&p.Blueprint.Revision==3).Blueprint;
+        Assert.Equal(r1.Fit.HullVersionId,r3.Fit.HullVersionId);Assert.Equal(Wire(expectedR3Fit),Wire(Draft(r3.Fit)));
+        Assert.Equal(expectedR1Family,r3.Hull.FamilyId);Assert.NotEqual(expectedR2Family,r3.Hull.FamilyId);
+        Assert.Equal(r1Bytes,Wire(Assert.Single(afterPublish.Published,p=>p.Blueprint.BlueprintId==Blueprint&&p.Blueprint.Revision==1).Blueprint));
+        Assert.Equal(r2Bytes,Wire(Assert.Single(afterPublish.Published,p=>p.Blueprint.BlueprintId==Blueprint&&p.Blueprint.Revision==2).Blueprint));
+        Assert.Equal(2,Assert.Single(app.CaptureColonisation(Human).Production,q=>q.Id==queued.Id).BlueprintRevision);
+        int advances=0;bool sawWork=false,sawConsumption=false;
+        while(!app.CaptureColonisation(Human).OwnShipSources.Any(s=>!priorShips.Contains(s.ShipId)&&s.BlueprintId==Blueprint&&s.Revision==2)&&advances<24)
+        {
+            var status=app.CaptureStatus();Assert.Equal(SessionPhase.Planning,status.Phase);
+            var result=app.AdvanceTurn(status.Turn,status.CampaignRevision);Assert.True(result.Accepted,result.Error.ToString());advances++;
+            var progress=app.CaptureColonisation(Human).Production.SingleOrDefault(q=>q.Id==queued.Id);
+            if(progress!=null){Assert.Equal(2,progress.BlueprintRevision);sawWork|=progress.CompletedIndustry>0&&progress.CompletedIndustry<progress.RequiredIndustry;sawConsumption|=progress.Consumed.Any(r=>r.Amount>0);}
+        }
+        Assert.True(sawWork,"No real intermediate work observed within unchanged cap.");
+        Assert.True(sawConsumption,"No real local material consumption observed.");
+        var born=Assert.Single(app.CaptureColonisation(Human).OwnShipSources,s=>!priorShips.Contains(s.ShipId)&&s.BlueprintId==Blueprint&&s.Revision==2);
+        Assert.DoesNotContain(app.CaptureColonisation(Human).Production,q=>q.Id==queued.Id);
+        var root=app.ExportCycleSave();var basis=root.BaseCampaign!;
+        var receipt=Assert.Single(basis.ProductionHistory!,r=>r.Order!.QueueItemId==queued.Id);
+        Assert.True(receipt.Completed);Assert.Equal(born.ShipId,receipt.ShipId);Assert.NotNull(receipt.Order);var order=receipt.Order!;
+        Assert.Equal(Human,order.OwnerId);Assert.Equal(yard.Id,order.ColonyId);Assert.Equal(2,order.Blueprint!.Revision);
+        Assert.Equal(queued.RequiredIndustry,order.CompletedIndustry);Assert.Equal(order.RequiredIndustry,order.CompletedIndustry);
+        Assert.Equal(order.RequiredResources!.OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal).Select(r=>(r.ResourceDefinitionId,r.Amount)),
+            order.ConsumedResources!.OrderBy(r=>r.ResourceDefinitionId,StringComparer.Ordinal).Select(r=>(r.ResourceDefinitionId,r.Amount)));
+        var record=Assert.Single(basis.PublishedBuiltShips!,r=>r.QueueItemId==queued.Id);
+        Assert.Equal(born.ShipId,record.ShipId);Assert.Equal(Human,record.OwnerCivilizationId);Assert.Equal(Blueprint,record.BlueprintId);
+        Assert.Equal(2,record.BlueprintRevision);Assert.Equal(2,record.FitRevision);Assert.Equal(receipt.ResolvedTurn,record.TurnBuilt);
+        Assert.Equal(expectedTactical.BlueprintId,record.BlueprintId);Assert.Equal(expectedTactical.BlueprintRevision,record.BlueprintRevision);
+        Assert.Equal(expectedTactical.SourceHash,record.PublicationHash);Assert.Equal(expectedTactical.SupportCatalogueId,record.SupportCatalogueId);
+        Assert.Equal(expectedTactical.SupportCatalogueRevision,record.SupportCatalogueRevision);Assert.Equal(expectedTactical.SupportHash,record.SupportHash);
+        Assert.Equal(expectedTactical.CompilerId,record.SupportCompilerId);Assert.Equal(expectedTactical.FitId,record.FitId);
+        Assert.Equal(expectedTactical.FitRevision,record.FitRevision);
+        var game=basis.Campaign!.Integrated!.Physical!.Core.Campaign.GameState;
+        var actual=Assert.Single(game.Ships!,s=>s.ShipId==born.ShipId);Assert.Equal(Human,actual.OwnerCivilizationId);
+        Assert.Equal(Blueprint,actual.Blueprint!.BlueprintId);Assert.Equal(2,actual.Blueprint.Revision);
+        var frozen=Assert.Single(game.Blueprints!,p=>p.BlueprintId==Blueprint&&p.Revision==2);
+        Assert.Equal(source.Fit.HullVersionId,frozen.Fit!.HullVersionId);Assert.Equal(Wire(expectedR2Fit),Wire(frozen.Fit));
+        Assert.Equal(frozen.CompilerVersion,record.SourceCompilerId);Assert.Equal(frozen.RulesVersion,record.SourceRulesVersion);Assert.Equal(frozen.SourceContentHash,record.SourceContentHash);
+        var full=Wire(root);var loadInput=Copy(root);var loadInputBefore=Wire(loadInput);
+        var loaded=CampaignTacticalReviewSession.LoadCycleSave(package,loadInput);
+        Assert.Equal(loadInputBefore,Wire(loadInput));Assert.Equal(packageBefore,Wire(package));
+        Assert.Equal(14,root.FormatVersion);Assert.Equal(full,Wire(loaded.ExportCycleSave()));
+        // Case-local PROJECTION ONLY from the real built R2; never installed, submitted or used for commands.
+        CampaignPlaybackBoundary Boundary(string actor,bool hidden=false)
+        {
+            var battle=new TacticalEncounterV2Dto{Formations=new(){new(){FormationId="projection.actual-built-r2",SideId=Human,
+                Ships=new(){new(){ShipId=born.ShipId,Hull=actual.CurrentHull,MaxHull=actual.CurrentHull}}}}};
+            var method=typeof(CampaignTacticalReviewSession).GetMethod("PlaybackBoundary",BindingFlags.Instance|BindingFlags.NonPublic)!;
+            return (CampaignPlaybackBoundary)method.Invoke(loaded,new object[]{battle,hidden?new[]{born.ShipId}:Array.Empty<string>(),actor})!;
+        }
+        var hidden=Boundary(Observer,true);Assert.Empty(hidden.VisibleEnemies);Assert.Empty(hidden.ShipIdentities);var hiddenBytes=Wire(hidden);
+        var foreign=Boundary(Observer);var identity=Assert.Single(foreign.ShipIdentities);
+        Assert.Equal(expectedR2Family,identity.VisibleHullFamilyId);Assert.Null(identity.OwnHullVersionId);
+        var own=Assert.Single(Boundary(Human).ShipIdentities);Assert.Equal(source.Fit.HullVersionId,own.OwnHullVersionId);
+        Assert.Equal(expectedR2Family,own.VisibleHullFamilyId);var visibleBytes=Wire(foreign);
+        for(int i=0;i<3;i++){Assert.Equal(visibleBytes,Wire(Boundary(Observer)));Assert.Equal(hiddenBytes,Wire(hidden));Assert.Equal(full,Wire(loaded.ExportCycleSave()));}
+        Assert.Equal(full,Wire(app.ExportCycleSave()));Assert.Equal(loadInputBefore,Wire(loadInput));Assert.Equal(packageBefore,Wire(package));
+        // Mutate only caller-owned DTOs AFTER successful load; never resubmit either changed tree.
+        void MutateDetached(CampaignColonisationCycleSaveDto detached)
+        {
+            detached.BaseCampaign!.Map!.Settings!.Map!.Seed="caller-only-r2-mutation";
+            Assert.Single(detached.BaseCampaign.Campaign!.Integrated!.Physical!.Core.Campaign.GameState.Ships!,s=>s.ShipId==born.ShipId).CurrentHull=0;
+            detached.BaseCampaign.Journal!.Clear();detached.AiPlans![0].HoldReason="caller-only-r2-mutation";
+        }
+        MutateDetached(loadInput);Assert.NotEqual(loadInputBefore,Wire(loadInput));
+        Assert.Equal(full,Wire(loaded.ExportCycleSave()));Assert.Equal(visibleBytes,Wire(Boundary(Observer)));Assert.Equal(hiddenBytes,Wire(hidden));
+        var exported=loaded.ExportCycleSave();MutateDetached(exported);Assert.NotEqual(full,Wire(exported));
+        Assert.Equal(full,Wire(loaded.ExportCycleSave()));Assert.Equal(full,Wire(app.ExportCycleSave()));
+        Assert.Equal(visibleBytes,Wire(Boundary(Observer)));Assert.Equal(hiddenBytes,Wire(hidden));Assert.Equal(packageBefore,Wire(package));
+    }
 }
