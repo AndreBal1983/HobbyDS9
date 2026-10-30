@@ -29,10 +29,83 @@ public sealed class ColonisationCycleBoundaryTests
     }
     [Fact]public void ActualCarrierLossKeepsLatchAndRecordsOneTerminalWithoutFreeRetry()
     {
-        var s=Fresh("loaded");var a=Owner(s);var id=a.Active!.SettlementManifestId;var target=a.Active.CommittedTargetPlanetId;var m=Facts(s).ManifestRecords!.Single(m=>m.ManifestId==id);var g=Live(s);
-        var ship=g.Ships!.Single(x=>x.ShipId==m.ShipId);ship.CurrentHull=0;Call(s,"TickCarriedSettlers",g,Facts(s));Call(s,"ReconcileCycle",g);
-        var receipt=Assert.Single(Owner(s).Receipts!);Assert.Equal(ColonisationCycleOutcome.Lost,receipt.Outcome);Assert.Equal(target,receipt.TargetPlanetId);Assert.Equal(id,receipt.SettlementManifestId);Assert.Equal(100,m.PassengerDeaths);Assert.Null(Owner(s).Active);
-        Call(s,"ReconcileCycle",g);Assert.Single(Owner(s).Receipts!);Assert.False((bool)Call(s,"PlanCycleAction",a.ActorId,Search())!);Assert.Null(Owner(s).Active);
+        // Optional PRIVATE immutable input avoids the process-local public journey only for this Fact.
+        const string variable="HOBBYDS9_CYCLE_CARRIER_LOSS_FIXTURE";
+        bool supplied=Environment.GetEnvironmentVariables().Contains(variable);
+        string? path=supplied?Environment.GetEnvironmentVariable(variable):null;
+        byte[]? input=null;CampaignColonisationCycleSaveDto? decoded=null;CampaignColonisationCyclePackageDto? package=null;
+        string? packageBefore=null,inputBefore=null;
+        byte[] ReadInput()
+        {
+            Assert.True(!string.IsNullOrWhiteSpace(path)&&Path.IsPathFullyQualified(path),"Explicit fixture path required");
+            var full=Path.GetFullPath(path!);var boundary=Path.GetFullPath("E:/HobbyDS9/artifacts").TrimEnd(Path.DirectorySeparatorChar,Path.AltDirectorySeparatorChar);
+            Assert.True(full.StartsWith(boundary+Path.DirectorySeparatorChar,StringComparison.OrdinalIgnoreCase),"Artifact confinement required");
+            FileSystemInfo? item=new FileInfo(full);bool reached=false;
+            while(item!=null){Assert.True(item.Exists&&(item.Attributes&FileAttributes.ReparsePoint)==0,"Plain existing fixture ancestry required");
+                if(string.Equals(item.FullName,boundary,StringComparison.OrdinalIgnoreCase)){reached=true;break;}
+                item=item is FileInfo file?file.Directory:((DirectoryInfo)item).Parent;}
+            Assert.True(reached,"Artifact boundary ancestry required");
+            using var stream=new FileStream(full,FileMode.Open,FileAccess.Read,FileShare.Read);
+            Assert.True(stream.Length==2780110,"Exact bounded whole fixture length required");
+            var bytes=new byte[2780110];int offset=0;
+            while(offset<bytes.Length){int read=stream.Read(bytes,offset,bytes.Length-offset);Assert.True(read>0,"Complete fixture read required");offset+=read;}
+            Assert.True(stream.ReadByte()==-1,"Fixture must have no trailing bytes");
+            Assert.True(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)).Equals("800091fe1d9bbc5959d2216d7447cc6446b746901463e8ab27b57d531b4b4937",StringComparison.OrdinalIgnoreCase),"Exact immutable whole fixture hash required");
+            return bytes;
+        }
+        CampaignTacticalReviewSession s;
+        if(supplied)
+        {
+            input=ReadInput();decoded=JsonSerializer.Deserialize<CampaignColonisationCycleSaveDto>(input);
+            Assert.True(decoded!=null&&decoded.FormatVersion==14&&decoded.ProfileId=="generated-colonisation-cycle-v1"&&decoded.PackageHash=="34aba41a024a8c3e37c3bd24922ad2b0b47fcab3dffb5cd9d049d99e300dae75","Closed whole Cycle fixture required");
+            package=Package();packageBefore=Wire(package);inputBefore=Wire(decoded);
+            Assert.True(package.PackageHash==decoded!.PackageHash,"Actual current package identity required");
+            s=CampaignTacticalReviewSession.LoadCycleSave(package,decoded);
+            Assert.True(Wire(s.ExportCycleSave())==inputBefore,"Normal complete replay must preserve entire input");
+            Assert.True(Wire(package)==packageBefore&&Wire(decoded)==inputBefore&&ReadInput().SequenceEqual(input),"Package, input DTO and whole file unchanged after load");
+        }
+        else s=Fresh("loaded"); // Existing normal-suite path remains unchanged; explicit input never reaches Journey.
+        var a=Owner(s);Assert.True(a.Active!=null,"Active settlement required");
+        var id=a.Active!.SettlementManifestId;var target=a.Active.CommittedTargetPlanetId;int ordinal=a.Active.Ordinal,next=a.NextOrdinal;
+        var receiptsBefore=a.Receipts!.Select(Wire).ToArray();var bootstrapBefore=Wire(First(s));
+        var m=Facts(s).ManifestRecords!.Single(m=>m.ManifestId==id);var g=Live(s);var facts=Facts(s);
+        Assert.True(m.Stage==SettlerManifestStage.Loaded&&m.Kind==SettlerManifestKind.Settlement&&m.Passengers!=null&&m.Passengers.Population>0,"Actual loaded Settlement passengers required");
+        Assert.True(m.Cargo!.SingleOrDefault(r=>r.ResourceDefinitionId=="resource.settlement-kit")?.Amount==1,"One physical settlement kit required");
+        var ship=g.Ships!.Single(x=>x.ShipId==m.ShipId&&x.OwnerCivilizationId==m.OwnerId);Assert.True(ship.CurrentHull>0,"Live exact carrier required");
+        if(supplied)Assert.True(g.TurnNumber==68&&g.Phase==SessionPhase.Planning&&receiptsBefore.Length==2&&ordinal==3&&next==4
+            &&facts.ManifestRecords!.Count(x=>x.Stage==SettlerManifestStage.Loaded)==1&&m.Passengers!.Population==100&&m.Food==19,"Exact admitted mature fixture stage/census required");
+        long people=m.Passengers!.Population,food=m.Food,deaths=g.PopulationStatistics!.Deaths,oldDeaths=m.PassengerDeaths,oldFoodLost=m.FoodLost;
+        string cohort=m.Passengers.CohortId;var cargo=m.Cargo!.ToDictionary(r=>r.ResourceDefinitionId,r=>r.Amount,StringComparer.Ordinal);
+        var oldLost=m.MaterialsLost!.ToDictionary(r=>r.ResourceDefinitionId,r=>r.Amount,StringComparer.Ordinal);
+        var transferred=Wire(new{m.PopulationTransferred,m.FoodDelivered,m.FoodConsumed,m.EquipmentConsumed,m.MaterialsDelivered});
+        Assert.True(!facts.ManifestResolutions!.Any(x=>x.ManifestId==id),"No prior terminal for active manifest");
+        // Deliberately defensive hull0 accounting, NOT actual combat removal or a replayable modified root.
+        ship.CurrentHull=0;Call(s,"TickCarriedSettlers",g,facts);Call(s,"ReconcileCycle",g);
+        Assert.True(m.Stage==SettlerManifestStage.Destroyed&&m.Passengers==null&&m.Food==0&&m.Cargo!.All(r=>r.Amount==0),"All remaining finite cargo must be lost");
+        Assert.True(m.PassengerDeaths==oldDeaths+people&&g.PopulationStatistics.Deaths==deaths+people&&m.FoodLost==oldFoodLost+food,"Exact remaining population/food loss required");
+        if(!supplied)Assert.Equal(100,m.PassengerDeaths); // Preserve the original default-fixture deaths assertion.
+        foreach(var resource in oldLost.Keys.Union(cargo.Keys,StringComparer.Ordinal))
+            Assert.True(PopulationRules.Stock(m.MaterialsLost!,resource)==oldLost.GetValueOrDefault(resource)+cargo.GetValueOrDefault(resource),"Exact per-resource remaining cargo loss required");
+        Assert.True(m.MaterialsLost!.All(r=>oldLost.ContainsKey(r.ResourceDefinitionId)||cargo.ContainsKey(r.ResourceDefinitionId)),"No invented lost resource");
+        Assert.True(Wire(new{m.PopulationTransferred,m.FoodDelivered,m.FoodConsumed,m.EquipmentConsumed,m.MaterialsDelivered})==transferred,"Loss must not transfer or consume cargo");
+        Assert.True(!g.EntityIdentities.Any(x=>x.EntityId==cohort||x.EntityId==id),"Passenger and manifest identities retired");
+        var resolutions=facts.ManifestResolutions!.Where(x=>x.ManifestId==id).ToList();Assert.True(resolutions.Count==1,"Exactly one manifest terminal required");var resolution=resolutions[0];
+        Assert.True(resolution.Stage==SettlerManifestStage.Destroyed&&resolution.Turn==g.TurnNumber&&resolution.DestinationPlanetId==null
+            &&resolution.PopulationLost==m.PassengerDeaths&&resolution.FoodLost==m.FoodLost&&resolution.PopulationTransferred==m.PopulationTransferred&&resolution.FoodTransferred==m.FoodDelivered
+            &&Wire(resolution.CargoLost)==Wire(m.MaterialsLost)&&Wire(resolution.CargoTransferred)==Wire(m.MaterialsDelivered),"Exact manifest terminal totals required");
+        Assert.True(a.Receipts!.Count==receiptsBefore.Length+1&&a.Receipts!.Take(receiptsBefore.Length).Select(Wire).SequenceEqual(receiptsBefore),"Historical receipt prefix retained");
+        var receipt=a.Receipts!.Single(x=>x.Ordinal==ordinal);
+        Assert.True(receipt.Outcome==ColonisationCycleOutcome.Lost&&receipt.TargetPlanetId==target&&receipt.SettlementManifestId==id&&receipt.TerminalTurn==resolution.Turn,"Exact Lost latch and terminal required");
+        Assert.True(a.Active==null&&a.NextOrdinal==next&&Wire(First(s))==bootstrapBefore,"Loss closes only the committed mission");
+        var after=Wire(new{game=g,facts,owner=a,bootstrap=First(s)});Call(s,"ReconcileCycle",g);
+        Assert.True(Wire(new{game=g,facts,owner=Owner(s),bootstrap=First(s)})==after,"Repeat reconciliation must not duplicate loss or terminal");
+        var kitsBefore=Wire(Field<List<ColonisationProductionItemDto>>(Context(s),"Production").Where(q=>q.Kind==ColonisationProductionKind.SettlementKit));
+        var settlementsBefore=Wire(facts.ManifestRecords!.Where(x=>x.Kind==SettlerManifestKind.Settlement));
+        var planned=(bool)Call(s,"PlanCycleAction",a.ActorId,Search())!;
+        if(!supplied)Assert.False(planned); // Original fixture expectation; logistics may legitimately run with explicit input.
+        Assert.True(Owner(s).Active==null&&Owner(s).NextOrdinal==next&&Wire(Facts(s).ManifestRecords!.Where(x=>x.Kind==SettlerManifestKind.Settlement))==settlementsBefore
+            &&Wire(Field<List<ColonisationProductionItemDto>>(Context(s),"Production").Where(q=>q.Kind==ColonisationProductionKind.SettlementKit))==kitsBefore,"No same-week new settlement mission or procurement");
+        if(supplied)Assert.True(Wire(package)==packageBefore&&Wire(decoded)==inputBefore&&ReadInput().SequenceEqual(input!),"Original package/input DTO/file remain unchanged through defensive case");
     }
     [Fact]public void EstablishedReceiptRemainsHistoricalSuccessAfterLaterEmptyOutpost()
     {
