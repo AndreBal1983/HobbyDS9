@@ -357,6 +357,10 @@ claimed.
         public static void BuildWindowsColonisationCycleCandidate()
             =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Cycle-20261029");
 
+        [MenuItem("HobbyDS9/Campaign/Build colonisation visible hull family candidate")]
+        public static void BuildWindowsColonisationVisibleFamilyCandidate()
+            =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Visible-Family-20261030");
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName,bool checkpointDiagnostics=false)
         {
             BuildWindows(stageName,checkpointDiagnostics);
