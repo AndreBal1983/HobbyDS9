@@ -94,9 +94,10 @@ namespace HobbyDS9.UnityReview
                     Text(card,project.Band==EngineeringMaturityBand.Mature?"Completed":project.IsTarget?"Current project":Reason(project.UnavailableReason),id:"engineering-project-state");
                     card.Add(new ProgressBar{value=project.MaturityPercent});Text(card,project.MaturityPercent+"% · "+project.Band,"console-metric");
                     Text(card,"Project cost: "+Units(project.Cost)+(demo?" Engineering points":" research points"),id:"engineering-project-cost");
-                    if(!demo){Text(card,project.Definition.EffectSummary);Text(card,"Construction in this preview supports "+string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct())+". Additional class unlocks are not available here yet.");}
+                    if(!demo)Text(card,"Check the construction catalogue for ships currently offered in this campaign.");
                     var requirements=new Foldout{name="engineering-project-details",text=demo?"Details — authored effect & requirements":"Requirements & progress",value=false};card.Add(requirements);
-                    if(demo){Text(requirements,"Authored effect; the demo construction limits above still apply.",id:"engineering-effect-qualifier");Text(requirements,project.Definition.EffectSummary,id:"engineering-authored-effect");}
+                    Text(requirements,demo?"Authored effect; the demo construction limits above still apply.":"Authored effect. Ship availability depends on the campaign construction catalogue.",id:"engineering-effect-qualifier");
+                    Text(requirements,project.Definition.EffectSummary,id:"engineering-authored-effect");
                     for(int i=0;i<project.Definition.ScienceRequirements.Count;i++){var q=project.Definition.ScienceRequirements[i];Text(requirements,(project.ScienceSatisfied[i]?"✓ ":"○ ")+q.Discipline+" interval "+q.IntervalStartLevel+" breakthrough "+q.BreakthroughOrdinal);}
                     Btn(card,"Develop project","integrated-develop-"+project.Definition.DefinitionId,()=>confirm("Develop "+project.Definition.DisplayName+"? Earned progress is retained when you change targets. Work progresses on End turn.",()=>perform(()=>model.Engineering(project.Definition.DefinitionId.Value,ReviewUiModel.NewCommandId()))),edit&&project.CanTarget,true);
                 }
