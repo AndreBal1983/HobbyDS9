@@ -1,0 +1,5 @@
+Earth Day Map and Mars by Solar System Scope (INOVE).
+Source: https://www.solarsystemscope.com/textures/
+License: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/
+JPEGs copied unchanged from the art handoff, which shortened the filenames.
+Unity imports them at up to 1024 pixels for illustrative surface previews.
