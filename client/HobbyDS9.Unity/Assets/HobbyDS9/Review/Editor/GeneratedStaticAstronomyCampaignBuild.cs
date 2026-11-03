@@ -367,6 +367,9 @@ claimed.
         public static void BuildWindowsConstructionCommandReadoutCandidate()
             =>BuildWindows("Windows-Construction-Command-Readout-20261103");
 
+        public static void BuildWindowsCampaignSystemCandidate()
+            =>BuildWindows("Windows-Campaign-System-20261103");
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName,bool checkpointDiagnostics=false)
         {
             BuildWindows(stageName,checkpointDiagnostics);
