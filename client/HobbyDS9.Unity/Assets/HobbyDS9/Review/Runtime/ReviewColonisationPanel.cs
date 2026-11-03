@@ -250,9 +250,36 @@ namespace HobbyDS9.UnityReview
             {
                 var owned=observation.Worlds.FirstOrDefault(x=>x.PlanetId==discovered.PlanetId);
                 var status=owned!=null?owned.Stage.ToString():discovered.Surveyed?"Surveyed":"Unsurveyed";
-                var button=Button(bodyStrip,discovered.DisplayName+" · "+status,
+                var card=new VisualElement();
+                card.AddToClassList("console-panel");
+                card.style.width=150;
+                card.style.maxWidth=Length.Percent(100);
+                card.style.marginRight=6;
+                card.style.marginBottom=6;
+                bodyStrip.Add(card);
+                var disk=new VisualElement{pickingMode=PickingMode.Ignore};
+                disk.style.width=36;
+                disk.style.height=36;
+                disk.style.borderTopLeftRadius=18;
+                disk.style.borderTopRightRadius=18;
+                disk.style.borderBottomLeftRadius=18;
+                disk.style.borderBottomRightRadius=18;
+                disk.style.backgroundColor=discovered.Surveyed?new Color(0.36f,0.64f,0.79f):new Color(0.38f,0.42f,0.48f);
+                disk.style.alignSelf=Align.Center;
+                card.Add(disk);
+                var button=Button(card,discovered.DisplayName+" · "+status,
                     "colonisation-system-body-"+discovered.BodyId,()=>{planet=discovered.PlanetId;Show(page);});
                 if(discovered.PlanetId==p.PlanetId)button.style.unityFontStyleAndWeight=FontStyle.Bold;
+            }
+
+            var surfaceArt=p.Surveyed?(p.DisplayName=="Earth"?"earth_daymap":p.DisplayName=="Mars"?"mars":null):null;
+            if(surfaceArt!=null&&Resources.Load<Texture2D>("SystemBodyArt/"+surfaceArt) is Texture2D surface)
+            {
+                Text(body,"Illustrative surface map · Solar System Scope (CC BY 4.0)","colonisation-system-art-credit");
+                var preview=new Image{name="colonisation-system-surface-preview",image=surface,scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};
+                preview.style.height=144;
+                preview.style.flexShrink=0;
+                body.Add(preview);
             }
 
             Text(body,p.DisplayName+" \u00b7 "+(p.Surveyed?"Survey complete":"Not surveyed"));
