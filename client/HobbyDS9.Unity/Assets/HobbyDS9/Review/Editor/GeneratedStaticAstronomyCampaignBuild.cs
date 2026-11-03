@@ -361,6 +361,9 @@ claimed.
         public static void BuildWindowsColonisationVisibleFamilyCandidate()
             =>BuildStreamedActivitiesCheckpoint("Windows-Colonisation-Visible-Family-20261030");
 
+        public static void BuildWindowsConstructionCommandCandidate()
+            =>BuildWindows("Windows-Construction-Command-20261103");
+
         private static void BuildStreamedActivitiesCheckpoint(string stageName,bool checkpointDiagnostics=false)
         {
             BuildWindows(stageName,checkpointDiagnostics);

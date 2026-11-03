@@ -43,7 +43,9 @@ namespace HobbyDS9.UnityReview
             seed.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch)generatedCampaignSeed=e.newValue;});
             size.RegisterValueChangedCallback(e=>{if(epoch==viewEpoch)generatedCampaignSize=int.Parse(e.newValue,CultureInfo.InvariantCulture);});
             quiet.RegisterValueChangedCallback(_=>{if(epoch==viewEpoch&&quiet.index>=0)generatedCampaignQuiet=values[quiet.index];});
-            DrawColonisationCycleMenu(controls);DrawColonisationRepeatMenu(controls);DrawColonisationGrowthMenu(controls);DrawColonisationExpansionMenu(controls);DrawStreamedActivitiesMenu(controls);DrawColonisationRosterMenu(controls);DrawColonisationMenu(controls);
+            DrawColonisationCycleMenu(controls);
+#if UNITY_EDITOR
+            DrawColonisationRepeatMenu(controls);DrawColonisationGrowthMenu(controls);DrawColonisationExpansionMenu(controls);DrawStreamedActivitiesMenu(controls);DrawColonisationRosterMenu(controls);DrawColonisationMenu(controls);
             var earlier=new Foldout{text="Earlier campaigns · original rules",value=false,name="earlier-generated-campaign-menu"};controls.Add(earlier);
             var start=AddButton(earlier,"New earlier campaign · original rules",()=>{
                 void Start(){RunGeneratedCampaignOperation(null);}
@@ -57,9 +59,10 @@ namespace HobbyDS9.UnityReview
                 var load=AddButton(saved,"Earlier campaign · Continue "+slot.Substring(slot.Length-1),()=>Confirm("Continue this earlier campaign under its original rules? Unsaved progress is replaced only after the save is validated.",()=>RunGeneratedCampaignOperation(captured)));
                 load.name="generated-campaign-continue-"+slot;
             }
-            generatedCampaignNotice=Readout(generatedCampaignBusy?"Preparing and validating campaign…":profileMenuNotice);generatedCampaignNotice.name="generated-campaign-notice";controls.Add(generatedCampaignNotice);
             DrawPublishedConstructionMenu(earlier);
             DrawActivitiesMenu(earlier);
+#endif
+            generatedCampaignNotice=Readout(generatedCampaignBusy?"Preparing and validating campaign…":profileMenuNotice);generatedCampaignNotice.name="generated-campaign-notice";controls.Add(generatedCampaignNotice);
             controls.SetEnabled(!generatedCampaignBusy&&PlayableResourcesAvailable());
         }
         private void DrawLegacyGeneratedCampaignMenu(VisualElement parent)

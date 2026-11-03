@@ -129,9 +129,24 @@ namespace HobbyDS9.UnityReview
             Text(preparation,"Build a transport at a shipyard and a settlement kit at the source world, then bring the empty transport there. In Transports, review the actual source cohort, remaining residents, local kit and voyage food. Survey a suitable known planet, travel there and review deployment; retain food for establishment and later supply trips. Travel and deliveries are not guaranteed safe.");
             if(w.Stage==ColonyEstablishmentStage.Founding)Text(body,"Establishment: "+w.EstablishmentWork+" work, "+w.FedWeeks+" fed weeks. Shortage "+w.ShortageWeeks+" weeks; deaths "+w.Deaths+". "+w.Report);
             if(w.Stage==ColonyEstablishmentStage.EmptyOutpost)Text(body,"Empty outpost: no production or freight. A surveyed, supplied settlement expedition must recommission it.");
+            Text(body,"Construction Command","colonisation-construction-heading");
             var row=Row(body);row.style.flexWrap=Wrap.NoWrap;
             var catalogue=new ScrollView(){name="colonisation-catalogue"};catalogue.style.flexGrow=2;catalogue.style.flexBasis=0;catalogue.style.minWidth=0;catalogue.style.height=300;catalogue.style.marginRight=16;row.Add(catalogue);
-            var queue=new ScrollView(){name="colonisation-queue"};queue.style.flexGrow=1;queue.style.flexBasis=0;queue.style.minWidth=0;queue.style.height=300;row.Add(queue);Text(queue,"Own world queue");
+            var queue=new ScrollView(){name="colonisation-queue"};queue.style.flexGrow=1;queue.style.flexBasis=0;queue.style.minWidth=0;queue.style.height=300;row.Add(queue);
+            var orders=observation.Production.Where(x=>x.ColonyId==w.Id).ToArray();
+            Text(queue,"Build queue · "+orders.Length+" orders","colonisation-queue-heading");
+            row.RegisterCallback<GeometryChangedEvent>(e=>
+            {
+                var direction=e.newRect.width<760?FlexDirection.Column:FlexDirection.Row;
+                if(row.style.flexDirection.value==direction)return;
+                row.style.flexDirection=direction;
+                var sideBySide=direction==FlexDirection.Row;
+                catalogue.style.marginRight=sideBySide?16:0;
+                catalogue.style.flexBasis=sideBySide?new StyleLength(0):new StyleLength(StyleKeyword.Auto);
+                queue.style.flexBasis=catalogue.style.flexBasis;
+                catalogue.style.flexShrink=sideBySide?1:0;
+                queue.style.flexShrink=catalogue.style.flexShrink;
+            });
             int index=0;
             foreach(var kind in new[]{ActivityProductionKind.PublishedShip,ActivityProductionKind.Infrastructure})
             {
@@ -164,9 +179,17 @@ namespace HobbyDS9.UnityReview
             Text(catalogue,"Settlement equipment: "+observation.KitIndustry+" Industry; "+Materials(observation.KitResources));
             Button(catalogue,"+ Settlement kit","colonisation-build-kit",()=>{var c=Command(ColonisationAction.EnqueueKit);c.EnqueueKit=new EnqueueSettlementKitDto{ColonyId=w.Id};Send(c);}).SetEnabled(w.ConstructionUnavailableReason(false)==null);
             Text(catalogue,"System improvements","colonisation-section-system");Text(catalogue,"No system improvement recipes are implemented in this playtest.");
-            foreach(var order in observation.Production.Where(x=>x.ColonyId==w.Id))
-            {Text(queue,order.Name+" \u00b7 "+order.Status+" "+order.CompletedIndustry+"/"+order.RequiredIndustry);Text(queue,"Consumed: "+Materials(order.Consumed));var captured=order;Button(queue,"Cancel order","colonisation-queue-cancel-"+captured.Id,()=>reviewActivity(Activity(CampaignActivityCommandKind.CancelProduction,captured.Id),"Cancel construction; consumed materials are not refunded."));}
-            if(!observation.Production.Any(x=>x.ColonyId==w.Id))Text(queue,"No queued orders.");
+            foreach(var order in orders)
+            {
+                var card=new VisualElement();card.AddToClassList("console-panel");card.style.flexShrink=0;queue.Add(card);
+                Text(card,order.Name+" · "+order.Status);
+                if(order.RequiredIndustry>0)
+                    card.Add(new ProgressBar{lowValue=0,highValue=order.RequiredIndustry,value=order.CompletedIndustry,title=order.CompletedIndustry+" / "+order.RequiredIndustry+" Industry"});
+                Text(card,"Materials consumed: "+(order.Consumed.Count==0?"none":Materials(order.Consumed)));
+                var captured=order;
+                Button(card,"Cancel order","colonisation-queue-cancel-"+captured.Id,()=>reviewActivity(Activity(CampaignActivityCommandKind.CancelProduction,captured.Id),"Cancel construction; consumed materials are not refunded."));
+            }
+            if(orders.Length==0)Text(queue,"No queued orders.");
             var inspected=activities.BuildOptions.FirstOrDefault(x=>x.DefinitionId==inspectedBlueprint&&x.BlueprintRevision==inspectedRevision);if(inspected!=null)InspectHull(body,inspected);
         }
         private void ReleaseHull(){hullPreview?.Dispose();hullPreview=null;}

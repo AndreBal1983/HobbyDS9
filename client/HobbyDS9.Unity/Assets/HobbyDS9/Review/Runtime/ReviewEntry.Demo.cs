@@ -19,7 +19,9 @@ namespace HobbyDS9.UnityReview
     {
         private CampaignSingleplayerDemoPackageDto? demoSource;
         private bool demoLanding,demoStarted;
+#if UNITY_EDITOR
         private bool otherCampaignProfilesOpen;
+#endif
         private void DrawDemoLanding()
         {
             var panel=PagePanel("HobbyDS9 — Start / Continue");
@@ -28,6 +30,7 @@ namespace HobbyDS9.UnityReview
             DrawGeneratedCampaignMenu(panel);
             try{Type.GetType("HobbyDS9.UnityClient.IntegratedAudioPanelBridge, HobbyDS9.UnityClient",false)?.GetMethod("PresentPlayer")?.Invoke(null,new object[]{panel});}
             catch(Exception){panel.Add(Readout("Music player unavailable."));}
+#if UNITY_EDITOR
             var other=new Foldout{text="Other scenarios & review tools",value=otherCampaignProfilesOpen,name="other-campaign-profiles"};panel.Add(other);
             var epoch=viewEpoch;
             other.RegisterValueChangedCallback(e=>{if(e.target==other&&epoch==viewEpoch)otherCampaignProfilesOpen=e.newValue;});
@@ -48,6 +51,7 @@ namespace HobbyDS9.UnityReview
             }
             other.Add(Readout("Earlier scenarios keep their original saves. Empty or incompatible slots leave the current game intact."));
             DrawFrontierMenu(other);
+#endif
             var settings=new VisualElement();settings.AddToClassList("review-field-row");panel.Add(settings);
             AddButton(settings,"Audio",()=>OpenDemoSettings(ReviewWorkspacePage.Audio));
             AddButton(settings,"Display",()=>OpenDemoSettings(ReviewWorkspacePage.Display));
