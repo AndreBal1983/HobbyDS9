@@ -185,10 +185,13 @@ namespace HobbyDS9.UnityReview
             {
                 var card=new VisualElement();card.AddToClassList("console-panel");card.style.flexShrink=0;queue.Add(card);
                 Text(card,order.Name+" · "+order.Status);
+                Text(card,"Industry progress: "+order.CompletedIndustry+" / "+order.RequiredIndustry);
                 if(order.RequiredIndustry>0)
-                    card.Add(new ProgressBar{lowValue=0,highValue=order.RequiredIndustry,value=order.CompletedIndustry,title=order.CompletedIndustry+" / "+order.RequiredIndustry+" Industry"});
-                Text(card,"Materials required: "+(order.Required.Count==0?"none":Materials(order.Required)));
-                Text(card,"Materials consumed: "+(order.Consumed.Count==0?"none":Materials(order.Consumed)));
+                    card.Add(new ProgressBar{lowValue=0,highValue=order.RequiredIndustry,value=order.CompletedIndustry});
+                var requiredMaterials=Materials(order.Required);
+                var consumedMaterials=Materials(order.Consumed);
+                Text(card,"Materials required: "+(requiredMaterials.Length==0?"none":requiredMaterials));
+                Text(card,"Materials consumed: "+(consumedMaterials.Length==0?"none":consumedMaterials));
                 var captured=order;
                 Button(card,"Cancel order","colonisation-queue-cancel-"+captured.Id,()=>reviewActivity(Activity(CampaignActivityCommandKind.CancelProduction,captured.Id),"Cancel construction; consumed materials are not refunded."));
             }
