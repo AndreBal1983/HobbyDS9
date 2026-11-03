@@ -267,7 +267,7 @@ namespace HobbyDS9.UnityReview
                 disk.style.backgroundColor=discovered.Surveyed?new Color(0.36f,0.64f,0.79f):new Color(0.38f,0.42f,0.48f);
                 disk.style.alignSelf=Align.Center;
                 card.Add(disk);
-                var button=Button(card,discovered.DisplayName+" · "+status,
+                var button=Button(card,discovered.DisplayName+"\n"+status,
                     "colonisation-system-body-"+discovered.BodyId,()=>{planet=discovered.PlanetId;Show(page);});
                 if(discovered.PlanetId==p.PlanetId)button.style.unityFontStyleAndWeight=FontStyle.Bold;
             }
