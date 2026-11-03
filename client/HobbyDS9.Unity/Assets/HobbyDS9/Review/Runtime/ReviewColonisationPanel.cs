@@ -63,14 +63,15 @@ namespace HobbyDS9.UnityReview
             internal bool Matches(ColonisationWorldSnapshot w,ColonisationTransportSnapshot t)=>World==w.Id&&Ship==t.ShipId&&Node==t.NodeId&&Manifest==t.ManifestId&&Stage==w.Stage;
         }
         internal sealed class Selection
-        {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly ReviewActivitiesPanel.Selection? Science;internal readonly TransportDraft? Draft;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science,TransportDraft? draft){Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;Draft=draft?.Copy();}}
-        internal Selection? CaptureSelection()=>disposed?null:new Selection(page,world,ship,planet,surveyShip,inspectedBlueprint,inspectedRevision,this.Q<Foldout>("colonisation-hull-inspector")?.value??inspectedOpen,science?.CaptureSelection(),transportDraft);
+        {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly string? SystemCaption;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly ReviewActivitiesPanel.Selection? Science;internal readonly TransportDraft? Draft;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science,TransportDraft? draft,string? systemCaption){SystemCaption=systemCaption;Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;Draft=draft?.Copy();}}
+        internal Selection? CaptureSelection()=>disposed?null:new Selection(page,world,ship,planet,surveyShip,inspectedBlueprint,inspectedRevision,this.Q<Foldout>("colonisation-hull-inspector")?.value??inspectedOpen,science?.CaptureSelection(),transportDraft,inspectedSystemCaption);
         internal void RestoreSelection(Selection? saved)
         {
             if(disposed||saved==null)return;
             if(observation.Worlds.Any(x=>x.Id==saved.World))world=saved.World;
             if(observation.Transports.Any(x=>x.ShipId==saved.Ship))ship=saved.Ship;
-            if(planets.Any(x=>x.PlanetId==saved.Planet))planet=saved.Planet;
+            if(planets.Any(x=>x.PlanetId==saved.Planet)||saved.Planet.Length==0)
+            {planet=saved.Planet;inspectedSystemCaption=saved.SystemCaption;}
             if(activities.Ships.Any(x=>x.ShipId==saved.SurveyShip))surveyShip=saved.SurveyShip;
             transportDraft=saved.Draft?.Copy();inspectedBlueprint=saved.Blueprint;inspectedRevision=saved.Revision;inspectedOpen=saved.InspectorOpen;Show(saved.Page);science?.RestoreSelection(saved.Science);
         }
@@ -220,22 +221,29 @@ namespace HobbyDS9.UnityReview
             // An inspector added to an attached page has already received its attach event.
             if(fold.panel!=null)Refresh();
         }
+        private string? inspectedSystemCaption;
+        internal void InspectSystem(string? systemId,string caption)
+        {
+            inspectedSystemCaption=caption;
+            planet=planets.FirstOrDefault(x=>x.SystemId==systemId)?.PlanetId??"";
+            Show("Planets");
+        }
         private void Planets()
         {
-            Text(body,"System","colonisation-system-heading").style.unityFontStyleAndWeight=FontStyle.Bold;
+            Text(body,inspectedSystemCaption??"System","colonisation-system-heading").style.unityFontStyleAndWeight=FontStyle.Bold;
             Text(body,"Only discovered bodies are listed. Survey reveals environment and the last observed control; remote control can change.");
             var p=planets.FirstOrDefault(x=>x.PlanetId==planet);
-            if(p==null){Text(body,"Travel to a charted system to discover its bodies.");return;}
+            if(p==null){Text(body,inspectedSystemCaption==null?"Travel to a charted system to discover its bodies.":"No planetary bodies have been disclosed here.");return;}
 
             var systems=planets.GroupBy(x=>x.SystemId,StringComparer.Ordinal).ToArray();
             Picker(body,"Disclosed system",systems,x=>x.Key,x=>"System containing "+x.First().DisplayName,p.SystemId,id=>
             {
-                planet=systems.First(x=>x.Key==id).First().PlanetId;
+                inspectedSystemCaption=null;planet=systems.First(x=>x.Key==id).First().PlanetId;
                 Show(page);
             },"colonisation-system-selector");
 
             var bodies=systems.First(x=>x.Key==p.SystemId).ToArray();
-            Picker(body,"Jump to discovered planet",planets,x=>x.PlanetId,x=>x.DisplayName,planet,id=>{planet=id;Show(page);},"colonisation-planet-selector");
+            Picker(body,"Jump to discovered planet",planets,x=>x.PlanetId,x=>x.DisplayName,planet,id=>{inspectedSystemCaption=null;planet=id;Show(page);},"colonisation-planet-selector");
             var bodyStrip=Row(body);
             bodyStrip.name="colonisation-system-bodies";
             foreach(var discovered in bodies)

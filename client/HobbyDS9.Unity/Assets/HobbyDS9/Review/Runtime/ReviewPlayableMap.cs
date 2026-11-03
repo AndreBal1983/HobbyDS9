@@ -32,6 +32,11 @@ namespace HobbyDS9.UnityReview
             var generatedRegions=generated?.Regions.ToDictionary(r=>r.NodeId,StringComparer.Ordinal);
             var generatedStars=generated?.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star).ToDictionary(f=>f.NodeId!,f=>f.Position,StringComparer.Ordinal);
             var generatedNames=generated?.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.Star).ToDictionary(f=>f.NodeId!,f=>f.DisplayName,StringComparer.Ordinal);
+            var knownBlackHoles=generated?.Features.Where(f=>f.Kind==GalaxyEnvironmentFeatureKind.BlackHole&&f.NodeId!=null)
+                .ToLookup(f=>f.NodeId!,StringComparer.Ordinal);
+            var systemsWithDisclosedPlanets=model.ColonisationCampaign&&!model.Busy&&!model.Closed
+                ?new HashSet<string>(model.ColonisationPlanets().Select(p=>p.SystemId),StringComparer.Ordinal)
+                :new HashSet<string>(StringComparer.Ordinal);
             var viewport=model.GeneratedViewport;
             var nodes=facts.Navigation.Nodes.OrderBy(n=>n.NodeId.Value,StringComparer.Ordinal).ToList();
             var nodeIds=new HashSet<string>(nodes.Select(n=>n.NodeId.Value),StringComparer.Ordinal);
@@ -366,7 +371,10 @@ namespace HobbyDS9.UnityReview
                     else Place(count,()=>Point(id),140,24,new Vector2(0,53));
                 }
                 var isSystem=generated==null||generatedStars!.ContainsKey(id);
-                var star=new Button{name="map-star-"+id,text=isSystem?"●":"·",tooltip=Name(id)+(isSystem?" · system":" · empty transit region")+"; right-click to prepare navigation."};
+                var hasPlanets=node.AssociatedSystemId.HasValue&&systemsWithDisclosedPlanets.Contains(node.AssociatedSystemId.Value.Value);
+                var blackHole=knownBlackHoles?.Contains(id)==true;
+                var locationType=blackHole?"black hole":hasPlanets?"known planetary system":isSystem?"star · planetary status unknown":"empty transit region";
+                var star=new Button{name="map-star-"+id,text=blackHole?"◉":hasPlanets?"⊙":isSystem?"●":"·",tooltip=Name(id)+" · "+locationType+"; right-click to prepare navigation."};
                 bindButton(star,()=>perform(()=>workspace.SelectedNode=id));
                 star.AddToClassList("map-star");star.EnableInClassList("selected-map-marker",workspace.SelectedNode==id);
                 if(generated!=null)star.AddToClassList("generated-map-node-hit");
@@ -395,12 +403,26 @@ namespace HobbyDS9.UnityReview
                 Place(moving,()=>Vector2.Lerp(Point(receipt.EndNodeId),Point(receipt.TransitDestinationId),(float)((double)receipt.TransitProgress/receipt.TransitTotalCost)),38,38);
             }
             Text(main,generated==null?"Known lanes · double line: wormhole · amber: selected fleet's route.":"Known generated regions · borders define crossings · amber: selected fleet's route · Shift + right-click extends it.");
+            if(model.ColonisationCampaign)Text(main,"⊙ Disclosed planets · ● Star with planetary status unknown · ◉ Disclosed black hole");
             var selectedNode=nodes.FirstOrDefault(n=>n.NodeId.Value==workspace.SelectedNode);
             if(selectedNode!=null)
             {
                 Text(details,Name(selectedNode.NodeId.Value)).AddToClassList("console-section");
                 var observation=sensorStatus?.Describe(selectedNode.NodeId.Value);
                 if(observation!=null)Text(details,observation,"map-sensor-status").tooltip=GeneratedObservationStatus.CoverageHelp;
+                var nodeId=selectedNode.NodeId.Value;
+                var systemId=selectedNode.AssociatedSystemId?.Value;
+                var blackHole=knownBlackHoles?[nodeId].FirstOrDefault();
+                if(model.ColonisationCampaign&&(systemId!=null||blackHole!=null))
+                {
+                    var caption=blackHole!=null?blackHole.DisplayName+" · Black hole":Name(nodeId);
+                    button(details,"Inspect system",()=>
+                    {
+                        if(!ReferenceEquals(frame,model.Current.Frame)||!workspace.CanNavigate)return;
+                        workspace.PendingSystemInspection=(systemId,caption);
+                        navigate(ReviewWorkspacePage.Worlds);
+                    }).name="map-inspect-system";
+                }
                 foreach(var colony in facts.Colonies.Where(c=>selectedNode.AssociatedSystemId.HasValue&&c.SystemId==selectedNode.AssociatedSystemId.Value))
                 {
                     Text(details,colony.Environment.DisplayName+" · population "+colony.Population);
