@@ -81,7 +81,7 @@ namespace HobbyDS9.UnityReview
             this.observation=observation;this.planets=planets;this.activities=activities;this.reviewOrder=reviewOrder;this.submit=submit;this.reviewActivity=reviewActivity;this.submitActivity=submitActivity;this.supportsKitFreePassengers=supportsKitFreePassengers;
             name="colonisation-panel";style.flexGrow=1;style.minHeight=0;style.minWidth=0;
             world=observation.Worlds.FirstOrDefault()?.Id??"";ship=observation.Transports.FirstOrDefault()?.ShipId??"";planet=planets.FirstOrDefault()?.PlanetId??"";surveyShip=activities.Ships.FirstOrDefault(s=>s.StudyWork>0)?.ShipId??"";
-            var tabs=Row(this);foreach(var name in new[]{"Worlds","Planets","Transports","Science"}){var captured=name;Button(tabs,name,"colonisation-tab-"+name,()=>Show(captured),true);}
+            var tabs=Row(this);foreach(var name in new[]{"Worlds","Planets","Transports","Science"}){var captured=name;Button(tabs,name=="Planets"?"System":name,"colonisation-tab-"+name,()=>Show(captured),true);}
             body=new ScrollView(ScrollViewMode.Vertical){name="colonisation-scroll"};body.style.flexGrow=1;body.style.minHeight=0;Add(body);
             review=new VisualElement{name="colonisation-order-review"};review.style.flexShrink=0;review.style.maxHeight=220;review.style.display=DisplayStyle.None;Add(review);
             status=Text(this,"Provisional colony playtest. Construction uses Industry and delivered materials; credits fund expedition choices.","colonisation-command-status");status.style.flexShrink=0;
@@ -222,9 +222,31 @@ namespace HobbyDS9.UnityReview
         }
         private void Planets()
         {
+            Text(body,"System","colonisation-system-heading").style.unityFontStyleAndWeight=FontStyle.Bold;
             Text(body,"Only discovered bodies are listed. Survey reveals environment and the last observed control; remote control can change.");
-            Picker(body,"Discovered planet",planets,x=>x.PlanetId,x=>x.DisplayName,planet,id=>{planet=id;Show(page);},"colonisation-planet-selector");
-            var p=planets.FirstOrDefault(x=>x.PlanetId==planet);if(p==null){Text(body,"Travel to a charted system to discover its bodies.");return;}
+            var p=planets.FirstOrDefault(x=>x.PlanetId==planet);
+            if(p==null){Text(body,"Travel to a charted system to discover its bodies.");return;}
+
+            var systems=planets.GroupBy(x=>x.SystemId,StringComparer.Ordinal).ToArray();
+            Picker(body,"Disclosed system",systems,x=>x.Key,x=>"System containing "+x.First().DisplayName,p.SystemId,id=>
+            {
+                planet=systems.First(x=>x.Key==id).First().PlanetId;
+                Show(page);
+            },"colonisation-system-selector");
+
+            var bodies=systems.First(x=>x.Key==p.SystemId).ToArray();
+            Picker(body,"Jump to discovered planet",planets,x=>x.PlanetId,x=>x.DisplayName,planet,id=>{planet=id;Show(page);},"colonisation-planet-selector");
+            var bodyStrip=Row(body);
+            bodyStrip.name="colonisation-system-bodies";
+            foreach(var discovered in bodies)
+            {
+                var owned=observation.Worlds.FirstOrDefault(x=>x.PlanetId==discovered.PlanetId);
+                var status=owned!=null?owned.Stage.ToString():discovered.Surveyed?"Surveyed":"Unsurveyed";
+                var button=Button(bodyStrip,discovered.DisplayName+" · "+status,
+                    "colonisation-system-body-"+discovered.BodyId,()=>{planet=discovered.PlanetId;Show(page);});
+                if(discovered.PlanetId==p.PlanetId)button.style.unityFontStyleAndWeight=FontStyle.Bold;
+            }
+
             Text(body,p.DisplayName+" \u00b7 "+(p.Surveyed?"Survey complete":"Not surveyed"));
             if(p.PlanetClass!=null){var e=p;Text(body,e.PlanetClass+"; "+e.Atmosphere+"; gravity "+e.Gravity+", pressure "+e.Pressure+", radiation "+e.Radiation);Text(body,"Frozen initial deposits: "+string.Join(", ",e.InitialDeposits.Select(r=>MaterialName(r.ResourceDefinitionId)+" "+r.Amount))+". Remaining deposits and access are rechecked by the campaign.");}
             if(p.KnownControl!=null)Text(body,"Last observed control: "+p.KnownControl+" \u00b7 week "+p.ControlObservedTurn+". This is not a claim of system sovereignty.");
