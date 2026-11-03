@@ -129,12 +129,13 @@ namespace HobbyDS9.UnityReview
             Text(preparation,"Build a transport at a shipyard and a settlement kit at the source world, then bring the empty transport there. In Transports, review the actual source cohort, remaining residents, local kit and voyage food. Survey a suitable known planet, travel there and review deployment; retain food for establishment and later supply trips. Travel and deliveries are not guaranteed safe.");
             if(w.Stage==ColonyEstablishmentStage.Founding)Text(body,"Establishment: "+w.EstablishmentWork+" work, "+w.FedWeeks+" fed weeks. Shortage "+w.ShortageWeeks+" weeks; deaths "+w.Deaths+". "+w.Report);
             if(w.Stage==ColonyEstablishmentStage.EmptyOutpost)Text(body,"Empty outpost: no production or freight. A surveyed, supplied settlement expedition must recommission it.");
-            Text(body,"Construction Command","colonisation-construction-heading");
+            Text(body,"Construction Command","colonisation-construction-heading").style.unityFontStyleAndWeight=FontStyle.Bold;
+            Text(body,w.Name+" · "+w.Industry+" Industry per week available from this world.");
             var row=Row(body);row.style.flexWrap=Wrap.NoWrap;
             var catalogue=new ScrollView(){name="colonisation-catalogue"};catalogue.style.flexGrow=2;catalogue.style.flexBasis=0;catalogue.style.minWidth=0;catalogue.style.height=300;catalogue.style.marginRight=16;row.Add(catalogue);
             var queue=new ScrollView(){name="colonisation-queue"};queue.style.flexGrow=1;queue.style.flexBasis=0;queue.style.minWidth=0;queue.style.height=300;row.Add(queue);
             var orders=observation.Production.Where(x=>x.ColonyId==w.Id).ToArray();
-            Text(queue,"Build queue · "+orders.Length+" orders","colonisation-queue-heading");
+            Text(queue,"Build queue · "+orders.Length+(orders.Length==1?" order":" orders"),"colonisation-queue-heading").style.unityFontStyleAndWeight=FontStyle.Bold;
             row.RegisterCallback<GeometryChangedEvent>(e=>
             {
                 var direction=e.newRect.width<760?FlexDirection.Column:FlexDirection.Row;
@@ -150,11 +151,12 @@ namespace HobbyDS9.UnityReview
             int index=0;
             foreach(var kind in new[]{ActivityProductionKind.PublishedShip,ActivityProductionKind.Infrastructure})
             {
-                Text(catalogue,kind==ActivityProductionKind.PublishedShip?"Ships":"Planetary buildings","colonisation-section-"+kind);
+                Text(catalogue,kind==ActivityProductionKind.PublishedShip?"Ships":"Planetary buildings","colonisation-section-"+kind).style.unityFontStyleAndWeight=FontStyle.Bold;
                 foreach(var option in activities.BuildOptions.Where(x=>x.Kind==kind))
                 {
                 var selected=option;var card=new VisualElement();card.AddToClassList("console-panel");card.style.flexShrink=0;catalogue.Add(card);Text(card,selected.DisplayName+" "+(selected.BlueprintRevision>0?"R"+selected.BlueprintRevision:"")+" \u00b7 "+selected.Cost.Industry+" Industry");
-                Text(card,"Materials: "+string.Join(", ",selected.Cost.Resources!.Select(r=>MaterialName(r.ResourceDefinitionId)+" "+r.Amount)));
+                var materials=selected.Cost.Resources;
+                Text(card,"Materials: "+(materials==null||materials.Count==0?"none":string.Join(", ",materials.Select(r=>MaterialName(r.ResourceDefinitionId)+" "+r.Amount))));
                 if(selected.Kind==ActivityProductionKind.Infrastructure)
                 {
                     var benefit=observation.BuildingBenefits.FirstOrDefault(b=>b.DefinitionId==selected.DefinitionId);
@@ -185,6 +187,7 @@ namespace HobbyDS9.UnityReview
                 Text(card,order.Name+" · "+order.Status);
                 if(order.RequiredIndustry>0)
                     card.Add(new ProgressBar{lowValue=0,highValue=order.RequiredIndustry,value=order.CompletedIndustry,title=order.CompletedIndustry+" / "+order.RequiredIndustry+" Industry"});
+                Text(card,"Materials required: "+(order.Required.Count==0?"none":Materials(order.Required)));
                 Text(card,"Materials consumed: "+(order.Consumed.Count==0?"none":Materials(order.Consumed)));
                 var captured=order;
                 Button(card,"Cancel order","colonisation-queue-cancel-"+captured.Id,()=>reviewActivity(Activity(CampaignActivityCommandKind.CancelProduction,captured.Id),"Cancel construction; consumed materials are not refunded."));
