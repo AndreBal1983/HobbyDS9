@@ -143,7 +143,7 @@ namespace HobbyDS9.UnityReview
                 row.style.flexDirection=direction;
                 var sideBySide=direction==FlexDirection.Row;
                 catalogue.style.marginRight=sideBySide?16:0;
-                catalogue.style.flexBasis=sideBySide?new StyleLength(0):new StyleLength(StyleKeyword.Auto);
+                catalogue.style.flexBasis=sideBySide?new StyleLength(0f):new StyleLength(StyleKeyword.Auto);
                 queue.style.flexBasis=catalogue.style.flexBasis;
                 catalogue.style.flexShrink=sideBySide?1:0;
                 queue.style.flexShrink=catalogue.style.flexShrink;
