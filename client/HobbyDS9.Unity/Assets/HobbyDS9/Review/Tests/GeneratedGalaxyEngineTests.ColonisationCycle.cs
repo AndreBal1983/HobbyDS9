@@ -321,7 +321,7 @@ namespace HobbyDS9.UnityReview.Tests
             {
                 t.Mark("explicit-new-begin");CycleActivate(t,()=>{doc.rootVisualElement.Q<TextField>("generated-campaign-seed").value="42";
                 doc.rootVisualElement.Q<DropdownField>("generated-campaign-size").value="250";doc.rootVisualElement.Q<DropdownField>("generated-campaign-quiet").value="2.00\u00d7";});
-                var menu=doc.rootVisualElement.Q<Foldout>("colonisation-cycle-campaign-menu");Assert.That(menu,Is.Not.Null);Assert.That(menu.text,Is.EqualTo("Colonisation & Continuous Expansion"));Assert.That(menu.value,Is.True);
+                var menu=doc.rootVisualElement.Q<Foldout>("colonisation-cycle-campaign-menu");Assert.That(menu,Is.Not.Null);Assert.That(menu.text,Is.EqualTo("Campaign"));Assert.That(menu.value,Is.True);
                 var oldModel=ColonyModel(s);var start=doc.rootVisualElement.Q<Button>("colonisation-cycle-campaign-start");yield return ColonyReach(doc,start,target:"explicit New Cycle campaign");
                 yield return CycleOperation(t,doc,"cycle-new250","Generating",()=>{Click(start);if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc);});
                 var model=ColonyModel(s);Assert.That(model,Is.Not.SameAs(oldModel));Assert.That(model.ColonisationCycleCampaign,Is.True);Assert.That(model.ColonisationGrowthCampaign,Is.False);Assert.That(model.SupportsKitFreePassengers,Is.True);
