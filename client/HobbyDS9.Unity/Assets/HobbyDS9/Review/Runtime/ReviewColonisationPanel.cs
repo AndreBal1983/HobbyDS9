@@ -252,7 +252,7 @@ namespace HobbyDS9.UnityReview
                 var status=owned!=null?owned.Stage.ToString():discovered.Surveyed?"Surveyed":"Unsurveyed";
                 var card=new VisualElement();
                 card.AddToClassList("console-panel");
-                card.style.width=150;
+                card.style.width=174;
                 card.style.maxWidth=Length.Percent(100);
                 card.style.marginRight=6;
                 card.style.marginBottom=6;
