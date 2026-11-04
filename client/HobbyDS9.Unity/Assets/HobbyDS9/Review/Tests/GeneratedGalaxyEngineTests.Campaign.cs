@@ -32,10 +32,18 @@ namespace HobbyDS9.UnityReview.Tests
                 drawMenu.Invoke(entry, new object[] { menu });
                 Assert.That(menu.Q("earlier-campaign-saves"), Is.Null);
                 Assert.That(Directory.Exists(directory), Is.False, "Drawing the menu creates no save directory");
+                foreach (var slot in GeneratedCampaignOptions.Slots())
+                {
+                    var empty = menu.Q<Button>("colonisation-cycle-campaign-continue-" + slot);
+                    Assert.That(empty.enabledSelf, Is.False);
+                    Assert.That(empty.text, Does.EndWith(" · empty"));
+                }
 
                 Directory.CreateDirectory(directory);
+                var cycle = Path.Combine(directory, "unity-campaign-colonisation-cycle-v1-generated-2.json");
                 var streamed = Path.Combine(directory, "unity-campaign-streamed-activities-v1-generated-3.json");
                 var astronomy = Path.Combine(directory, "unity-generated-static-astronomy-v2-generated-3.json");
+                File.WriteAllText(cycle, "cycle fixture");
                 File.WriteAllText(streamed, "streamed fixture");
                 File.WriteAllText(astronomy, "astronomy fixture");
 
@@ -43,7 +51,11 @@ namespace HobbyDS9.UnityReview.Tests
                 drawMenu.Invoke(entry, new object[] { menu });
                 var campaign = menu.Q<Foldout>("colonisation-cycle-campaign-menu");
                 Assert.That(campaign.Q<Button>("colonisation-cycle-campaign-start"), Is.Not.Null);
-                Assert.That(campaign.Q<Button>("colonisation-cycle-campaign-continue-generated-3"), Is.Not.Null);
+                var occupied = campaign.Q<Button>("colonisation-cycle-campaign-continue-generated-2");
+                Assert.That(occupied.enabledSelf, Is.True);
+                Assert.That(occupied.text, Is.EqualTo("Continue 2"));
+                Assert.That(campaign.Q<Button>("colonisation-cycle-campaign-continue-generated-3").enabledSelf, Is.False,
+                    "An earlier edition's slot cannot enable the same-numbered Cycle slot");
                 var earlier = campaign.Q<Foldout>("earlier-campaign-saves");
                 Assert.That(earlier.value, Is.False);
                 Assert.That(earlier.Query<Button>().ToList().Select(button => button.name), Is.EquivalentTo(new[]
@@ -51,9 +63,10 @@ namespace HobbyDS9.UnityReview.Tests
                     "earlier-campaign-continue-streamed-generated-3",
                     "earlier-campaign-continue-astronomy-generated-3"
                 }));
+                Assert.That(File.ReadAllText(cycle), Is.EqualTo("cycle fixture"));
                 Assert.That(File.ReadAllText(streamed), Is.EqualTo("streamed fixture"));
                 Assert.That(File.ReadAllText(astronomy), Is.EqualTo("astronomy fixture"));
-                Assert.That(Directory.GetFiles(directory), Is.EquivalentTo(new[] { streamed, astronomy }));
+                Assert.That(Directory.GetFiles(directory), Is.EquivalentTo(new[] { cycle, streamed, astronomy }));
             }
             finally { UnityEngine.Object.DestroyImmediate(host); }
         }
