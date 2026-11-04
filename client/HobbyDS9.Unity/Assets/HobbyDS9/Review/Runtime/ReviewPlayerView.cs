@@ -44,6 +44,15 @@ namespace HobbyDS9.UnityReview
             var tabs=Row(main,"console-tabs");
             foreach(var tab in new[]{"science","engineering"}){var b=Btn(tabs,tab=="science"?"Science":"Engineering","research-tab-"+tab,()=>perform(()=>workspace.ResearchTab=tab));b.EnableInClassList("selected-tab",workspace.ResearchTab==tab);}
             var r=facts.Research;var d=model.ResearchInputs()!;bool edit=Editable&&d.Current(model.Current.Frame);
+            var directAllocations=model.ColonisationCycleCampaign;
+            void ApplyAllocation(Action action, Func<string> confirmation)
+            {
+                if(directAllocations)
+                    perform(action);
+                else
+                    confirm(confirmation(),()=>perform(action));
+            }
+
             if(workspace.ResearchTab=="science")
             {
                 Text(main,"Science allocation · TOTAL 100%","console-intro","science-allocation-total");
@@ -73,8 +82,13 @@ namespace HobbyDS9.UnityReview
                 if(!r.Science.Any(c=>d.CanAdjust(c.Discipline)))Text(main,"Unlock at least two disciplines to redistribute Science.","console-copy","science-lock-reason");
                 var scienceActions=Row(main);
                 Btn(scienceActions,"Equalize unlocked","integrated-equalize-science",()=>perform(()=>d.Equalize()),edit&&r.Science.Any(c=>d.CanAdjust(c.Discipline)));
-                Btn(scienceActions,"Restore accepted shares","science-restore",()=>confirm("Discard only the six unsent Science shares? Allocation locks and the separate R&D split remain.",()=>perform(()=>d.ResetScience())),edit&&d.ScienceChanged);
-                Btn(scienceActions,"Review all six allocations","integrated-apply-science",()=>confirm("Apply this complete Science plan?\n"+string.Join("\n",r.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%. The Science / Engineering split is a separate order.",()=>perform(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()))),edit&&d.ScienceChanged,true);
+                Btn(scienceActions,"Restore accepted shares","science-restore",
+                    ()=>ApplyAllocation(d.ResetScience,()=>"Discard only the six unsent Science shares? Allocation locks and the separate R&D split remain."),
+                    edit&&d.ScienceChanged);
+                Btn(scienceActions,directAllocations?"Apply Science allocation":"Review all six allocations","integrated-apply-science",
+                    ()=>ApplyAllocation(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()),
+                        ()=>"Apply this complete Science plan?\n"+string.Join("\n",r.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%. The Science / Engineering split is a separate order."),
+                    edit&&d.ScienceChanged,true);
                 var receipts=new Foldout{text="Latest-turn research",value=false};main.Add(receipts);
                 foreach(var receipt in r.Receipts)Text(receipts,receipt.Category+" · "+Units(receipt.Amount)+(receipt.Discipline.HasValue?" · "+receipt.Discipline:""));
             }
@@ -136,7 +150,10 @@ namespace HobbyDS9.UnityReview
             var split=new SliderInt(0,20){name="integrated-research-split",value=d.ScienceUnits/30};split.SetEnabled(edit);aside.Add(split);
             Text(aside,(100m*d.ScienceUnits/600).ToString("0.##")+"% / "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"%","console-metric");
             split.RegisterValueChangedCallback(e=>perform(()=>d.ScienceUnits=e.newValue*30));
-            Btn(aside,"Apply R&D split","integrated-apply-split",()=>confirm("Apply "+(100m*d.ScienceUnits/600).ToString("0.##")+"% Science and "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"% Engineering? Other Science-share edits remain unsent.",()=>perform(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()))),edit&&d.SplitChanged);
+            Btn(aside,"Apply R&D split","integrated-apply-split",
+                ()=>ApplyAllocation(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()),
+                    ()=>"Apply "+(100m*d.ScienceUnits/600).ToString("0.##")+"% Science and "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"% Engineering? Other Science-share edits remain unsent."),
+                edit&&d.SplitChanged);
             Text(aside,"Science reserve: "+r.ScienceReserveConceptual);Text(aside,"Engineering reserve: "+r.EngineeringReserveConceptual+(model.Current.Frame.Demo!=null?" Engineering points":""),id:"engineering-reserve");
             Text(aside,"One Engineering project at a time. Progress and eligibility are checked by the campaign.");
             Btn(aside,workspace.ResearchTab=="science"?"Open Engineering":"Open Science","open-other-research",()=>perform(()=>workspace.ResearchTab=workspace.ResearchTab=="science"?"engineering":"science"));

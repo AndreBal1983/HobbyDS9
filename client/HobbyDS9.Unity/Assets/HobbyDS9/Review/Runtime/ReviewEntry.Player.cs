@@ -103,6 +103,8 @@ namespace HobbyDS9.UnityReview
             if(flow.Stage==ReviewCombatStage.AftermathConfirmed)return "Aftermath confirmed. Return to the map or give surviving fleets fresh strategic orders.";
             if(model.HasLocalEdits)return "Unsent changes · apply or discard them before ending the turn. Navigation keeps your edits.";
             if(model.Current.Frame.Status.Phase!=SessionPhase.Planning)return "A battle needs your attention. Open Combat, resolve its rounds, then confirm the aftermath.";
+            if(workspace!.Page==ReviewWorkspacePage.Research&&model.ColonisationCycleCampaign)
+                return "Apply each allocation beside its controls. Select Engineering projects directly. Research progresses on End turn.";
             if(workspace!.Page==ReviewWorkspacePage.Research&&model.ColonisationCampaign)
                 return "Apply Science allocations to commit them. Select Engineering projects directly. Research progresses on End turn.";
             if(model.FrontierPreview&&workspace!.Page==ReviewWorkspacePage.Map)return "Frontier preview: select your fleet and a known node, preview/review the route, then end turns. Actual arrivals chart branches at the next Planning boundary.";
@@ -124,7 +126,7 @@ namespace HobbyDS9.UnityReview
             AddButton(left,"Save",()=>Navigate(ReviewWorkspacePage.Saves));
             if(model!.HasLocalEdits)AddButton(left,"Discard changes",()=>Confirm("Discard your unsent edits? Your accepted orders and campaign remain unchanged.",()=>Do(()=>model.Reset())));
             if(workspace!.Page==ReviewWorkspacePage.Combat)return; // Central view owns the battle primary action.
-            if(workspace.Page==ReviewWorkspacePage.Research)
+            if(workspace.Page==ReviewWorkspacePage.Research&&!model.ColonisationCycleCampaign)
             {
                 var d=model.ResearchInputs()!;
                 if(d.ScienceChanged){Primary(actions,"Apply Science allocation",()=>Confirm("Apply this complete Science plan?\n"+string.Join("\n",model.Current.Frame.Strategy!.Research.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%.",()=>Do(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
