@@ -19,7 +19,9 @@ namespace HobbyDS9.UnityReview
         private bool DrawCampaignBusy()
         {
             if(campaignBusyToken==null)return false;
-            content!.Clear();playerFooter!.Clear();playerTitle!.text="Please wait";playerGuidance!.text=campaignBusyTitle;
+            content!.Clear();playerFooter!.Clear();
+            playerTopActions!.Clear();playerTopActions.style.display=DisplayStyle.None;
+            playerTitle!.text="Please wait";playerGuidance!.text=campaignBusyTitle;
             content.Add(new CampaignBusyPanel(campaignBusyTitle,campaignBusyStarted));return true;
         }
         private sealed class CampaignBusyPanel : VisualElement

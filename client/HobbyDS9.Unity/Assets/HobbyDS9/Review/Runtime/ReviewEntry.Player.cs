@@ -10,7 +10,7 @@ namespace HobbyDS9.UnityReview
     public sealed partial class ReviewEntry
     {
         private ReviewPlayerView? player;
-        private VisualElement? playerFooter;
+        private VisualElement? playerTopActions,playerFooter;
         private Label? playerStatus,playerTitle,playerGuidance;
         private object? designState;private HobbyDS9.TacticalReviewClient.ReviewController? designContext;
         private void BuildPlayerShell()
@@ -24,6 +24,10 @@ namespace HobbyDS9.UnityReview
             if(model!.Current.Frame.Demo!=null&&!demoLanding){var objective=Readout("");objective.name="demo-objective";objective.AddToClassList("console-kicker");names.Add(objective);}
             playerStatus=Readout("");playerStatus.AddToClassList("console-status");header.Add(playerStatus);
             playerGuidance=Readout("");playerGuidance.name="player-guidance";playerGuidance.AddToClassList("console-guidance");root.Add(playerGuidance);
+            playerTopActions=new VisualElement{name="player-top-actions"};
+            playerTopActions.AddToClassList("console-top-actions");
+            playerTopActions.style.display=DisplayStyle.None;
+            root.Add(playerTopActions);
             var body=new VisualElement();body.AddToClassList("console-body");root.Add(body);
             var nav=new ScrollView(ScrollViewMode.Vertical){name="review-workspace-navigation"};nav.AddToClassList("console-nav");body.Add(nav);if(PlayerProfile&&(demoLanding||!demoStarted))nav.style.display=DisplayStyle.None;
             if(PlayerProfile){var menu=AddButton(nav,"Menu",OpenDemoMenu);menu.name="demo-menu";}
@@ -77,7 +81,7 @@ namespace HobbyDS9.UnityReview
             else if(model.ColonisationCampaign&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds))DrawColonisationPanel(content!);
             else if(model.ActivitiesCampaign&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds))DrawActivitiesPanel(content!);
             else player!.Render(content!,workspace.Page);
-            DrawPlayerFooter();
+            DrawPlayerActions();
         }
         private string PlayerMessage()
         {
@@ -102,9 +106,19 @@ namespace HobbyDS9.UnityReview
             if(model.FrontierPreview&&workspace!.Page==ReviewWorkspacePage.Map)return "Frontier preview: select your fleet and a known node, preview/review the route, then end turns. Actual arrivals chart branches at the next Planning boundary.";
             return workspace!.Page==ReviewWorkspacePage.Map?"Select a fleet to plot a course, visit Research, or build a ship in Production.":workspace.Page==ReviewWorkspacePage.Research?"Science and Engineering progress when you end a turn. Changes apply only when you confirm them.":workspace.Page==ReviewWorkspacePage.Production?((model!.StreamedActivitiesCampaign||model.ColonisationCampaign)?"Choose a world and use + to add an order. Industry and delivered materials advance construction each week.":"Choose a shipyard, inspect the cost, then build. Industry progresses on End turn."):"Inspection and navigation never submit an order.";
         }
-        private void DrawPlayerFooter()
+        private void DrawPlayerActions()
         {
-            playerFooter!.Clear();var left=new VisualElement();left.AddToClassList("review-field-row");playerFooter.Add(left);
+            var page=workspace!.Page;
+            var useTop=PlayerProfile&&demoStarted&&!demoLanding&&!frontierCommissionOpen&&model!.ColonisationCampaign
+                &&(page==ReviewWorkspacePage.Worlds||page==ReviewWorkspacePage.Production);
+            playerTopActions!.Clear();
+            playerTopActions.style.display=useTop?DisplayStyle.Flex:DisplayStyle.None;
+            playerFooter!.Clear();
+            playerFooter.EnableInClassList("console-footer",!useTop);
+            var actions=useTop?playerTopActions:playerFooter;
+            var left=new VisualElement();
+            left.AddToClassList("review-field-row");
+            actions.Add(left);
             if(PlayerProfile&&(demoLanding||!demoStarted)){AddButton(left,"Back to menu",OpenDemoMenu);return;}
             AddButton(left,"‹ Return to map",()=>Navigate(ReviewWorkspacePage.Map));
             AddButton(left,"Save",()=>Navigate(ReviewWorkspacePage.Saves));
@@ -113,14 +127,14 @@ namespace HobbyDS9.UnityReview
             if(workspace.Page==ReviewWorkspacePage.Research)
             {
                 var d=model.ResearchInputs()!;
-                if(d.ScienceChanged){Primary("Apply Science allocation",()=>Confirm("Apply this complete Science plan?\n"+string.Join("\n",model.Current.Frame.Strategy!.Research.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%.",()=>Do(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
-                if(d.SplitChanged){Primary("Apply R&D split",()=>Confirm("Apply this Science / Engineering split?",()=>Do(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
+                if(d.ScienceChanged){Primary(actions,"Apply Science allocation",()=>Confirm("Apply this complete Science plan?\n"+string.Join("\n",model.Current.Frame.Strategy!.Research.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%.",()=>Do(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
+                if(d.SplitChanged){Primary(actions,"Apply R&D split",()=>Confirm("Apply this Science / Engineering split?",()=>Do(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
             }
-            if(model.Current.Frame.Status.Phase!=SessionPhase.Planning){Primary("Open combat",()=>Navigate(ReviewWorkspacePage.Combat));return;}
-            Primary("End turn →",()=>Confirm("End turn with your accepted orders? Research and Industry will progress. Unsent edits must be applied or discarded first.",()=>{if(model.ColonisationCampaign)RunColonisationInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.ColonisationInteractionKind.PlanningAdvance);else if(model.StreamedActivitiesCampaign)RunStreamedInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.PlanningAdvance);else Do(()=>model.Advance());}),CanPlan()&&!model.HasLocalEdits);
+            if(model.Current.Frame.Status.Phase!=SessionPhase.Planning){Primary(actions,"Open combat",()=>Navigate(ReviewWorkspacePage.Combat));return;}
+            Primary(actions,"End turn →",()=>Confirm("End turn with your accepted orders? Research and Industry will progress. Unsent edits must be applied or discarded first.",()=>{if(model.ColonisationCampaign)RunColonisationInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.ColonisationInteractionKind.PlanningAdvance);else if(model.StreamedActivitiesCampaign)RunStreamedInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.PlanningAdvance);else Do(()=>model.Advance());}),CanPlan()&&!model.HasLocalEdits);
         }
         private bool CanPlan()=>model!.Current.Frame.Status.Phase==SessionPhase.Planning&&(model.Current.Frame.Demo==null||model.Current.Frame.Demo.Outcome==CampaignDemoOutcome.Active)&&!model.Current.RefreshRequired&&!model.Current.HasPendingWork&&!model.Busy&&!model.Closed;
-        private Button Primary(string label,Action action,bool enabled=true){var b=AddButton(playerFooter!,label,action);b.AddToClassList("primary-action");b.name="player-primary-action";b.SetEnabled(enabled);return b;}
+        private Button Primary(VisualElement parent,string label,Action action,bool enabled=true){var b=AddButton(parent,label,action);b.AddToClassList("primary-action");b.name="player-primary-action";b.SetEnabled(enabled);return b;}
         private VisualElement PagePanel(string heading)
         {content!.Clear();var p=new ScrollView(ScrollViewMode.Vertical);p.AddToClassList("console-panel");content.Add(p);var h=Readout(heading);h.AddToClassList("console-section");p.Add(h);return p;}
         private void DrawSaves()
@@ -234,7 +248,7 @@ namespace HobbyDS9.UnityReview
             {
                 designContext=model!.Current;var owner=designContext;
                 var publication=new ReviewDesignPublication(model);
-                designState=bridge.GetMethod("Create")!.Invoke(null,new object?[]{publication.Library,new Action<bool>(dirty=>{if(!ReferenceEquals(model.Current,owner)||model.Closed)return;model.LocalDesignDirty=dirty;playerGuidance!.text=PlayerMessage();DrawPlayerFooter();}),new Action(()=>{if(ReferenceEquals(model.Current,owner)&&confirmation==null&&!model.Busy&&!model.Closed)Navigate(ReviewWorkspacePage.Map);}),
+                designState=bridge.GetMethod("Create")!.Invoke(null,new object?[]{publication.Library,new Action<bool>(dirty=>{if(!ReferenceEquals(model.Current,owner)||model.Closed)return;model.LocalDesignDirty=dirty;playerGuidance!.text=PlayerMessage();DrawPlayerActions();}),new Action(()=>{if(ReferenceEquals(model.Current,owner)&&confirmation==null&&!model.Busy&&!model.Closed)Navigate(ReviewWorkspacePage.Map);}),
                     new Func<HobbyDS9.Contracts.ShipDesign.ShipClassDraftDto,bool>(publication.CanPublish),
                     new Func<HobbyDS9.Contracts.ShipDesign.ShipClassDraftDto,bool>(publication.Publish),
                     new Func<bool,HobbyDS9.Application.CampaignIntegratedDesignLibrarySnapshot?>(announce=>publication.Refresh(announce)?publication.Library:null),
