@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Linq;
 using HobbyDS9.Contracts;
 using HobbyDS9.TacticalReviewClient;
 using UnityEngine.UIElements;
@@ -29,11 +30,13 @@ namespace HobbyDS9.UnityReview
             foreach(var old in parent.Query<ReviewColonisationPanel>().ToList())old.Dispose();foreach(var old in parent.Query<ReviewActivitiesPanel>().ToList())old.Dispose();parent.Clear();
             bool Current()=>ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current,controller)&&ReferenceEquals(controller.Frame,frame)&&!owner.Busy&&!owner.Closed;
             ReviewColonisationPanel.Selection? Selection()=>root?.Q<ReviewColonisationPanel>()?.CaptureSelection();
+            var systemNodes=frame.Strategy?.Navigation.Nodes.Where(node=>node.AssociatedSystemId.HasValue)
+                .ToLookup(node=>node.AssociatedSystemId!.Value.Value,node=>node.NodeId.Value,StringComparer.Ordinal);
             var panel=new ReviewColonisationPanel(owner.Colonisation(),owner.ColonisationPlanets(),owner.ColonisationActivities(),
                 (command,caption)=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Preview,colonyCommand:command,caption:caption,selection:Selection());},
                 command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,colonyCommand:command,selection:Selection());},
                 (command,caption)=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Preview,command:command,caption:caption,selection:Selection());},
-                command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,command:command,selection:Selection());},owner.SupportsKitFreePassengers);
+                command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,command:command,selection:Selection());},owner.SupportsKitFreePassengers,systemNodes);
             panel.RestoreSelection(selection);
             var inspection=workspace!.PendingSystemInspection;
             workspace.PendingSystemInspection=null;

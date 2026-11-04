@@ -248,7 +248,7 @@ namespace HobbyDS9.UnityReview.Tests
                 {
                     Assert.That(t.SurveyBodies++,Is.LessThan(12),"subordinate actual surveyed-body bound");
                     yield return ColonyPage(s,doc,"Planets");yield return ColonyPick(doc,"colonisation-planet-selector",ColonyModel(s).ColonisationPlanets(),x=>x.PlanetId,planet.PlanetId);
-                    yield return ColonyPick(doc,"colonisation-survey-ship",ColonyModel(s).ColonisationActivities().Ships,x=>x.ShipId,s.Explorer);yield return HumanOrder(t,doc,"colonisation-survey-review");
+                    yield return ColonyClick(s,doc,"colonisation-survey-start-"+s.Explorer);
                     for(int week=0;week<4&&!ColonyModel(s).ColonisationPlanets().Single(x=>x.PlanetId==planet.PlanetId).Surveyed;week++)yield return HumanAdvance(t,doc,"planetary-survey");
                     var observed=StreamHost(ColonyModel(s)).CaptureColonisationPlanets(ColonyModel(s).Current.Frame).Single(x=>x.PlanetId==planet.PlanetId);Assert.That(observed.Surveyed,Is.True);var e=observed.Environment!;
                     // Conservative public home comparison ONLY selects a candidate; fresh deployment review remains authority.

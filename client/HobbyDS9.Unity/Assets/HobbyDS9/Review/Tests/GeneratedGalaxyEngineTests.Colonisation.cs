@@ -260,16 +260,19 @@ namespace HobbyDS9.UnityReview.Tests
                 {
                     if(ColonyObservedRisk(s,"before-next-body",own.NodeId).Contains(own.NodeId))break;
                     yield return ColonyPage(s,doc,"Planets");yield return ColonyPick(doc,"colonisation-planet-selector",ColonyModel(s).ColonisationPlanets(),x=>x.PlanetId,planet.PlanetId);
-                    yield return ColonyPick(doc,"colonisation-survey-ship",ColonyModel(s).ColonisationActivities().Ships,x=>x.ShipId,s.Explorer);
-                    yield return ColonyReview(s,doc,"colonisation-survey-review");
-                    if(!s.SurveyCaptured){yield return ColonyCapture(s,doc,new Vector2Int(1920,1080),"colony-02-survey-review-1920.png");s.SurveyCaptured=true;}
-                    yield return ColonyClick(s,doc,"colonisation-order-confirm");
+                    var beforeSelection=ColonyBytes(ColonyModel(s));
+                    yield return ColonyClick(s,doc,"colonisation-survey-select-"+s.Explorer);
+                    Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(beforeSelection),"selecting a local ship is read-only");
+                    if(!s.SurveyCaptured){yield return ColonyCapture(s,doc,new Vector2Int(1920,1080),"colony-02-survey-controls-1920.png");s.SurveyCaptured=true;}
+                    yield return ColonyClick(s,doc,"colonisation-system-survey-"+planet.BodyId);
+                    Assert.That(doc.rootVisualElement.Q<Button>("colonisation-order-confirm"),Is.Null,"planet survey submits from the card");
+                    Assert.That(ColonyModel(s).Colonisation().Surveys.Single(x=>x.PlanetId==planet.PlanetId).ShipId,Is.EqualTo(s.Explorer));
                     if(!s.SurveyCancelled)
                     {
-                        yield return ColonyPage(s,doc,"Planets");yield return ColonyOrder(s,doc,"colonisation-survey-cancel");
+                        yield return ColonyPage(s,doc,"Planets");yield return ColonyClick(s,doc,"colonisation-survey-cancel");
                         Assert.That(ColonyModel(s).Colonisation().Surveys.Last(x=>x.PlanetId==planet.PlanetId).Stage,Is.EqualTo(PlanetSurveyStage.Cancelled));
                         Assert.That(ColonyModel(s).ColonisationPlanets().Single(x=>x.PlanetId==planet.PlanetId).Surveyed,Is.False);
-                        yield return ColonyOrder(s,doc,"colonisation-survey-review");s.SurveyCancelled=true;
+                        yield return ColonyClick(s,doc,"colonisation-survey-start-"+s.Explorer);s.SurveyCancelled=true;
                     }
                     for(int week=0;week<4&&!ColonyModel(s).ColonisationPlanets().Single(x=>x.PlanetId==planet.PlanetId).Surveyed;week++)yield return ColonyAdvance(s,doc);
                     var observed=StreamHost(ColonyModel(s)).CaptureColonisationPlanets(ColonyModel(s).Current.Frame).Single(x=>x.PlanetId==planet.PlanetId);

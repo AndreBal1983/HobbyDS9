@@ -14,6 +14,7 @@ namespace HobbyDS9.UnityReview
         private readonly ColonisationCampaignSnapshot observation;
         private readonly IReadOnlyList<ColonisationPlanetSnapshot> planets;
         private readonly CampaignActivityObservationDto activities;
+        private readonly ILookup<string,string>? systemNodes;
         private readonly Action<ColonisationCommandDto,string> reviewOrder;
         private readonly Action<ColonisationCommandDto> submit;
         private readonly Action<CampaignActivityCommandDto> submitActivity;
@@ -77,11 +78,11 @@ namespace HobbyDS9.UnityReview
         }
         private readonly bool supportsKitFreePassengers;
         public ReviewColonisationPanel(ColonisationCampaignSnapshot observation,IReadOnlyList<ColonisationPlanetSnapshot> planets,CampaignActivityObservationDto activities,
-            Action<ColonisationCommandDto,string> reviewOrder,Action<ColonisationCommandDto> submit,Action<CampaignActivityCommandDto,string> reviewActivity,Action<CampaignActivityCommandDto> submitActivity,bool supportsKitFreePassengers=false)
+            Action<ColonisationCommandDto,string> reviewOrder,Action<ColonisationCommandDto> submit,Action<CampaignActivityCommandDto,string> reviewActivity,Action<CampaignActivityCommandDto> submitActivity,bool supportsKitFreePassengers=false, ILookup<string,string>? systemNodes=null)
         {
-            this.observation=observation;this.planets=planets;this.activities=activities;this.reviewOrder=reviewOrder;this.submit=submit;this.reviewActivity=reviewActivity;this.submitActivity=submitActivity;this.supportsKitFreePassengers=supportsKitFreePassengers;
+            this.observation=observation;this.planets=planets;this.activities=activities;this.reviewOrder=reviewOrder;this.submit=submit;this.reviewActivity=reviewActivity;this.submitActivity=submitActivity;this.supportsKitFreePassengers=supportsKitFreePassengers;this.systemNodes=systemNodes;
             name="colonisation-panel";style.flexGrow=1;style.minHeight=0;style.minWidth=0;
-            world=observation.Worlds.FirstOrDefault()?.Id??"";ship=observation.Transports.FirstOrDefault()?.ShipId??"";planet=planets.FirstOrDefault()?.PlanetId??"";surveyShip=activities.Ships.FirstOrDefault(s=>s.StudyWork>0)?.ShipId??"";
+            world=observation.Worlds.FirstOrDefault()?.Id??"";ship=observation.Transports.FirstOrDefault()?.ShipId??"";planet=planets.FirstOrDefault()?.PlanetId??"";
             var tabs=Row(this);foreach(var name in new[]{"Worlds","Planets","Transports","Science"}){var captured=name;Button(tabs,name=="Planets"?"System":name,"colonisation-tab-"+name,()=>Show(captured),true);}
             body=new ScrollView(ScrollViewMode.Vertical){name="colonisation-scroll"};body.style.flexGrow=1;body.style.minHeight=0;Add(body);
             review=new VisualElement{name="colonisation-order-review"};review.style.flexShrink=0;review.style.maxHeight=220;review.style.display=DisplayStyle.None;Add(review);
@@ -372,12 +373,24 @@ namespace HobbyDS9.UnityReview
 
             var bodies=systems.First(x=>x.Key==p.SystemId).ToArray();
             Picker(body,"Jump to discovered planet",planets,x=>x.PlanetId,x=>x.DisplayName,planet,id=>{inspectedSystemCaption=null;planet=id;Show(page);},"colonisation-planet-selector");
+            var localShips=systemNodes==null?Array.Empty<ActivityOwnShipDto>():activities.Ships
+                .Where(x=>x.Stationary&&systemNodes[p.SystemId].Contains(x.NodeId,StringComparer.Ordinal)).ToArray();
+            var assignedShips=observation.Surveys.Where(s=>s.Stage==PlanetSurveyStage.Active).Select(s=>s.ShipId)
+                .Concat(activities.Findings.Where(f=>f.Stage==ActivityProgressStage.Active||f.Stage==ActivityProgressStage.AwaitingClaim)
+                    .Select(f=>f.ShipId)).ToHashSet(StringComparer.Ordinal);
+            var completedSurveys=observation.Surveys.Where(s=>s.Stage==PlanetSurveyStage.Completed).Select(s=>s.PlanetId)
+                .ToHashSet(StringComparer.Ordinal);
+            var needsSurvey=p.ActiveSurveyId==null&&!completedSurveys.Contains(p.PlanetId);
+            var availableShips=localShips.Where(x=>x.StudyWork>0&&!assignedShips.Contains(x.ShipId)).ToArray();
+            var quickSurveyShip=availableShips.FirstOrDefault(x=>x.ShipId==surveyShip)
+                ?? (availableShips.Length==1?availableShips[0]:null);
+
             var bodyStrip=Row(body);
             bodyStrip.name="colonisation-system-bodies";
             foreach(var discovered in bodies)
             {
                 var owned=observation.Worlds.FirstOrDefault(x=>x.PlanetId==discovered.PlanetId);
-                var status=owned!=null?owned.Stage.ToString():discovered.Surveyed?"Surveyed":"Unsurveyed";
+                var status=owned!=null?owned.Stage.ToString():discovered.Surveyed?"Surveyed":discovered.ActiveSurveyId!=null?"Survey in progress":"Unsurveyed";
                 var card=new VisualElement();
                 card.AddToClassList("console-panel");
                 card.style.width=174;
@@ -397,8 +410,41 @@ namespace HobbyDS9.UnityReview
                 card.Add(disk);
                 var button=Button(card,discovered.DisplayName+"\n"+status,
                     "colonisation-system-body-"+discovered.BodyId,()=>{planet=discovered.PlanetId;Show(page);});
-                if(discovered.PlanetId==p.PlanetId)button.style.unityFontStyleAndWeight=FontStyle.Bold;
+                if(discovered.PlanetId!=p.PlanetId)continue;
+                button.style.unityFontStyleAndWeight=FontStyle.Bold;
+                if(needsSurvey&&quickSurveyShip!=null)
+                    Button(card,"Survey with "+quickSurveyShip.DisplayName,"colonisation-system-survey-"+discovered.BodyId,
+                        ()=>StartSurvey(discovered,quickSurveyShip));
+                if(discovered.ActiveSurveyId is string activeSurvey)
+                {
+                    Text(card,discovered.CompletedSurveyWeeks+" completed weeks. Cancelling discards the work.");
+                    Button(card,"Cancel survey","colonisation-survey-cancel",()=>
+                    {
+                        var command=Command(ColonisationAction.CancelPlanetSurvey);
+                        command.CancelSurvey=new CancelPlanetSurveyDto{SurveyId=activeSurvey};
+                        Send(command);
+                    });
+                }
             }
+
+            if(localShips.Length>0)
+            {
+                Text(body,"Your stationary ships here");
+                var ships=Row(body);
+                foreach(var local in localShips)
+                {
+                    var card=ConstructionCard(ships,local.DisplayName,ConstructionCardArt.Ship(local.HullVersionId));
+                    card.style.marginRight=6;
+                    var select=Button(card,"Select ship","colonisation-survey-select-"+local.ShipId,
+                        ()=>{surveyShip=local.ShipId;Show(page);});
+                    if(local.ShipId==surveyShip)select.text="Selected ship";
+                    if(!needsSurvey)continue;
+                    if(local.StudyWork<1)Text(card,"Survey capability unavailable.");
+                    else if(assignedShips.Contains(local.ShipId))Text(card,"Already assigned to survey or study.");
+                    else Button(card,"Survey "+p.DisplayName,"colonisation-survey-start-"+local.ShipId,()=>StartSurvey(p,local));
+                }
+            }
+            else if(needsSurvey&&!p.Surveyed)Text(body,"Bring a survey-capable ship to this system.");
 
             var surfaceArt=p.Surveyed?(p.DisplayName=="Earth"?"earth_daymap":p.DisplayName=="Mars"?"mars":null):null;
             if(surfaceArt!=null&&Resources.Load<Texture2D>("SystemBodyArt/"+surfaceArt) is Texture2D surface)
@@ -410,15 +456,19 @@ namespace HobbyDS9.UnityReview
                 body.Add(preview);
             }
 
-            Text(body,p.DisplayName+" \u00b7 "+(p.Surveyed?"Survey complete":"Not surveyed"));
+            Text(body,p.DisplayName+" \u00b7 "+(completedSurveys.Contains(p.PlanetId)?"Survey complete":p.Surveyed?"Environment known":"Not surveyed"));
             if(p.PlanetClass!=null){var e=p;Text(body,e.PlanetClass+"; "+e.Atmosphere+"; gravity "+e.Gravity+", pressure "+e.Pressure+", radiation "+e.Radiation);Text(body,"Frozen initial deposits: "+string.Join(", ",e.InitialDeposits.Select(r=>MaterialName(r.ResourceDefinitionId)+" "+r.Amount))+". Remaining deposits and access are rechecked by the campaign.");}
             if(p.KnownControl!=null)Text(body,"Last observed control: "+p.KnownControl+" \u00b7 week "+p.ControlObservedTurn+". This is not a claim of system sovereignty.");
-            Picker(body,"Survey ship",activities.Ships,x=>x.ShipId,x=>x.DisplayName,surveyShip,id=>surveyShip=id,"colonisation-survey-ship");
-            Button(body,"Review planetary survey","colonisation-survey-review",()=>{var c=Command(ColonisationAction.StartPlanetSurvey);c.StartSurvey=new PlanetSurveyOrderDto{ShipId=surveyShip,PlanetId=p.PlanetId};Check(c,"Begin planetary survey with this ship.");});
-            foreach(var survey in observation.Surveys.Where(s=>s.PlanetId==p.PlanetId))
-            {Text(body,survey.Stage+" \u00b7 "+survey.Weeks+" completed weeks");if(survey.Stage==PlanetSurveyStage.Active){var s=survey;Button(body,"Review cancel survey","colonisation-survey-cancel",()=>{var c=Command(ColonisationAction.CancelPlanetSurvey);c.CancelSurvey=new CancelPlanetSurveyDto{SurveyId=s.Id};Check(c,"Cancel survey; completed work is discarded and no survey result is awarded.");});}}
             var presence=observation.Presence.FirstOrDefault(x=>x.SystemId==p.SystemId);if(presence!=null)Text(body,presence.Caption+" \u00b7 observed week "+presence.ObservationTurn+". Unobserved bodies may have other governments.");
         }
+        private void StartSurvey(ColonisationPlanetSnapshot target,ActivityOwnShipDto local)
+        {
+            surveyShip=local.ShipId;
+            var command=Command(ColonisationAction.StartPlanetSurvey);
+            command.StartSurvey=new PlanetSurveyOrderDto{ShipId=local.ShipId,PlanetId=target.PlanetId};
+            Send(command);
+        }
+
         private void Transports()
         {
             foreach(var landing in observation.LatestDeployments)
