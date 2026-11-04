@@ -122,6 +122,7 @@ namespace HobbyDS9.UnityReview
                 }
                 Btn(main,"Clear Engineering target","integrated-clear-engineering",
                     ()=>SelectEngineering(null,"Clear the current Engineering target? Earned progress will remain."),edit&&r.Target.HasValue);
+                EngineeringTurnReport(main,r);
             }
             if(workspace.ScienceDetails.HasValue&&workspace.ResearchTab=="science")
             {
@@ -140,6 +141,36 @@ namespace HobbyDS9.UnityReview
             Text(aside,"One Engineering project at a time. Progress and eligibility are checked by the campaign.");
             Btn(aside,workspace.ResearchTab=="science"?"Open Engineering":"Open Science","open-other-research",()=>perform(()=>workspace.ResearchTab=workspace.ResearchTab=="science"?"engineering":"science"));
             if(!edit)Text(aside,model.Current.Frame.Demo!=null&&model.Current.Frame.Demo.Outcome!=CampaignDemoOutcome.Active?"Campaign complete. Research is available for inspection; further changes are unavailable.":"Research changes are unavailable at this boundary. Finish pending combat, refresh stale authority, or submit/discard unsent orders before editing.",id:"research-readonly-reason");
+        }
+        private static void EngineeringTurnReport(VisualElement parent,ResearchOverviewSnapshot research)
+        {
+            var report=new VisualElement{name="engineering-turn-report"};
+            report.AddToClassList("console-queue");parent.Add(report);
+            Text(report,"Latest turn: Engineering","console-section");
+            var hasActivity=false;
+            foreach(var receipt in research.Receipts)
+            {
+                string line;
+                switch(receipt.Category)
+                {
+                    case "engineering-allocated":
+                        line="Points added to reserve: "+Units(receipt.Amount);
+                        break;
+                    case "engineering-spent":
+                    case "engineering-mature":
+                        var project=research.Engineering.FirstOrDefault(p=>p.Definition.DefinitionId==receipt.ApplicationDefinitionId)?.Definition.DisplayName
+                            ?? "Engineering project";
+                        line=receipt.Category=="engineering-spent"
+                            ? project+" — points spent: "+Units(receipt.Amount)
+                            : project+" — completed";
+                        break;
+                    default:
+                        continue;
+                }
+                Text(report,line);
+                hasActivity=true;
+            }
+            if(!hasActivity)Text(report,"No Engineering activity recorded for the latest turn.");
         }
         private static string ShipName(ShipDesignSnapshot d)=>d.DefinitionId.Value=="ship-design.source-cruiser"?"Cruiser":d.DisplayName;
         private static string Resource(string id)=>id=="resource.dilithium"?"Dilithium":id.Substring(id.LastIndexOf('.')+1).Replace('-',' ');
