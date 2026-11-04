@@ -16,6 +16,48 @@ namespace HobbyDS9.UnityReview.Tests
 {
     public sealed partial class GeneratedGalaxyEngineTests
     {
+        [Test]
+        public void CampaignMenuSeparatesEarlierSavesSharingASlotNumber()
+        {
+            directory = Path.Combine(Path.GetTempPath(), "HobbyDS9-Galaxy-Engine-" + Guid.NewGuid().ToString("N"));
+            var host = new GameObject("Campaign menu test");
+            host.SetActive(false);
+            try
+            {
+                var entry = host.AddComponent<ReviewEntry>();
+                const BindingFlags Private = BindingFlags.Instance | BindingFlags.NonPublic;
+                typeof(ReviewEntry).GetField("generatedCampaignTestDirectory", Private)!.SetValue(entry, directory);
+                var drawMenu = typeof(ReviewEntry).GetMethod("DrawColonisationCycleMenu", Private)!;
+                var menu = new VisualElement();
+                drawMenu.Invoke(entry, new object[] { menu });
+                Assert.That(menu.Q("earlier-campaign-saves"), Is.Null);
+                Assert.That(Directory.Exists(directory), Is.False, "Drawing the menu creates no save directory");
+
+                Directory.CreateDirectory(directory);
+                var streamed = Path.Combine(directory, "unity-campaign-streamed-activities-v1-generated-3.json");
+                var astronomy = Path.Combine(directory, "unity-generated-static-astronomy-v2-generated-3.json");
+                File.WriteAllText(streamed, "streamed fixture");
+                File.WriteAllText(astronomy, "astronomy fixture");
+
+                menu.Clear();
+                drawMenu.Invoke(entry, new object[] { menu });
+                var campaign = menu.Q<Foldout>("colonisation-cycle-campaign-menu");
+                Assert.That(campaign.Q<Button>("colonisation-cycle-campaign-start"), Is.Not.Null);
+                Assert.That(campaign.Q<Button>("colonisation-cycle-campaign-continue-generated-3"), Is.Not.Null);
+                var earlier = campaign.Q<Foldout>("earlier-campaign-saves");
+                Assert.That(earlier.value, Is.False);
+                Assert.That(earlier.Query<Button>().ToList().Select(button => button.name), Is.EquivalentTo(new[]
+                {
+                    "earlier-campaign-continue-streamed-generated-3",
+                    "earlier-campaign-continue-astronomy-generated-3"
+                }));
+                Assert.That(File.ReadAllText(streamed), Is.EqualTo("streamed fixture"));
+                Assert.That(File.ReadAllText(astronomy), Is.EqualTo("astronomy fixture"));
+                Assert.That(Directory.GetFiles(directory), Is.EquivalentTo(new[] { streamed, astronomy }));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(host); }
+        }
+
         private static int campaignFractionalOnlySelections;
         private static ReviewUiModel CampaignModel(ReviewEntry entry)=>(ReviewUiModel)typeof(ReviewEntry).GetField("model",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(entry)!;
         private static void CampaignPage(UIDocument doc,ReviewWorkspacePage page)=>Click(doc.rootVisualElement.Q<Button>("review-nav-"+page));

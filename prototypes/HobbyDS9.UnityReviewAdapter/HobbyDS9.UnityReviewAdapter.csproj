@@ -10,4 +10,5 @@
   </ItemGroup>
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewColonisationPanel.cs" /></ItemGroup>
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewConstructionCatalogue.cs" /></ItemGroup>
+  <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ConstructionCardArt.cs" /></ItemGroup>
 </Project>
