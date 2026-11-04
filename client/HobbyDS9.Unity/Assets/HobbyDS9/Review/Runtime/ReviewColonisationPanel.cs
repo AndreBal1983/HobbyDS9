@@ -24,6 +24,8 @@ namespace HobbyDS9.UnityReview
         private readonly Label status;
         private ReviewActivitiesPanel? science;
         private ShipPreviewStage? hullPreview;
+        private ReviewSolOverview? solOverview;
+        private float solYaw,solZoom=1;
         private string inspectedBlueprint="";private int inspectedRevision;
         private bool disposed,submitted;private int controlEpoch,reviewEpoch;private bool inspectedOpen;
         private Foldout? currentInspector;
@@ -113,7 +115,7 @@ namespace HobbyDS9.UnityReview
         {
             if(page=="Transports"&&selected!="Transports")transportDraft=null;
             if(disposed)return;controlEpoch++;reviewEpoch++;displayedReview=null;currentInspector=null;page=new[]{"Worlds","Planets","Transports","Science"}.Contains(selected)?selected:"Worlds";
-            science?.Dispose();science=null;ReleaseHull();body.Clear();review.Clear();review.style.display=DisplayStyle.None;
+            science?.Dispose();science=null;ReleaseHull();ReleaseSolOverview();body.Clear();review.Clear();review.style.display=DisplayStyle.None;
             if(page=="Worlds")Worlds();else if(page=="Planets")Planets();else if(page=="Transports")Transports();else
             {science=new ReviewActivitiesPanel(activities,reviewActivity,submitActivity,true);body.Add(science);}
         }
@@ -360,7 +362,7 @@ namespace HobbyDS9.UnityReview
         private void Planets()
         {
             Text(body,inspectedSystemCaption??"System","colonisation-system-heading").style.unityFontStyleAndWeight=FontStyle.Bold;
-            Text(body,"Only discovered bodies are listed. Survey reveals environment and the last observed control; remote control can change.");
+            Text(body,"Only discovered bodies have campaign cards. Survey reveals environment and the last observed control; remote control can change.");
             var p=planets.FirstOrDefault(x=>x.PlanetId==planet);
             if(p==null){Text(body,inspectedSystemCaption==null?"Travel to a charted system to discover its bodies.":"No planetary bodies have been disclosed here.");return;}
 
@@ -445,6 +447,22 @@ namespace HobbyDS9.UnityReview
                 }
             }
             else if(needsSurvey&&!p.Surveyed)Text(body,"Bring a survey-capable ship to this system.");
+
+            if(bodies.Any(ReviewSolOverview.HasReference))
+            {
+                var epoch=controlEpoch;
+                solOverview=new ReviewSolOverview(bodies,p.PlanetId,solYaw,solZoom,target=>{
+                    if(!Live||epoch!=controlEpoch)return;
+                    planet=target.PlanetId;
+                    Show(page);
+                    var selectedEpoch=controlEpoch;
+                    body.schedule.Execute(()=>{
+                        if(Live&&selectedEpoch==controlEpoch&&body.Q<Button>("colonisation-system-body-"+target.BodyId)?.parent is VisualElement card)
+                            body.ScrollTo(card);
+                    });
+                },(yaw,zoom)=>{if(Live&&epoch==controlEpoch){solYaw=yaw;solZoom=zoom;}});
+                body.Add(solOverview);
+            }
 
             var surfaceArt=p.Surveyed?(p.DisplayName=="Earth"?"earth_daymap":p.DisplayName=="Mars"?"mars":null):null;
             if(surfaceArt!=null&&Resources.Load<Texture2D>("SystemBodyArt/"+surfaceArt) is Texture2D surface)
@@ -544,6 +562,7 @@ namespace HobbyDS9.UnityReview
          var activity=new ReviewActivitiesPanel.ReviewState(command,caption,eligibility);displayedReview=new ReviewState(activity);command=activity.Command;
          var token=++reviewEpoch;review.Clear();review.style.display=DisplayStyle.Flex;Text(review,caption);Text(review,eligibility.Accepted?"Available at this observed state.":eligibility.Reason);if(eligibility.Accepted)Button(review,"Confirm order","colonisation-order-confirm",()=>{if(token==reviewEpoch)SendActivity(command);});Button(review,"Back","colonisation-order-back",()=>DismissReview(token));}
         private void DismissReview(int token){if(token!=reviewEpoch)return;reviewEpoch++;displayedReview=null;review.Clear();review.style.display=DisplayStyle.None;}
-        public void Dispose(){if(disposed)return;disposed=true;reviewEpoch++;displayedReview=null;currentInspector=null;science?.Dispose();science=null;ReleaseHull();review.Clear();}
+        private void ReleaseSolOverview(){solOverview?.Dispose();solOverview=null;}
+        public void Dispose(){if(disposed)return;disposed=true;reviewEpoch++;displayedReview=null;currentInspector=null;science?.Dispose();science=null;ReleaseHull();ReleaseSolOverview();review.Clear();}
     }
 }
