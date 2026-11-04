@@ -492,15 +492,25 @@ namespace HobbyDS9.UnityReview.Tests
                 // Retry the SAME still-attached control only after explicitly discarding the draft.
                 var submit=ColonyStartHold(s,()=>Click(kit));yield return ColonyEntered(submit);yield return ColonyBusy(s,doc,submit,root,frame);StreamCapturedEvent(kit);Assert.That(CheckpointField(entry,"colonisationUiWork"),Is.SameAs(submit.Work));
                 submit.Release.Set();yield return ColonyIdle(s,"direct-kit-single-submit");ColonyProbe(StreamHost(ColonyModel(s)),null);Assert.That(ColonyModel(s).Colonisation().Production.Count(x=>x.ColonyId==s.Home),Is.EqualTo(1));Assert.That(doc.rootVisualElement.Q("colonisation-order-confirm"),Is.Null);var accepted=ColonyBytes(ColonyModel(s));StreamCapturedEvent(kit);yield return null;Assert.That(ColonyPending(entry),Is.False);Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(accepted),"disposed prior + cannot enqueue again");
-                yield return ColonyWorld(s,doc,s.Home);var queued=ColonyModel(s).Colonisation().Production.Single(x=>x.ColonyId==s.Home).Id;yield return ColonyReview(s,doc,"colonisation-queue-cancel-"+queued);
-                var oldCancelConfirm=doc.rootVisualElement.Q<Button>("colonisation-order-confirm");var cancelFrame=ColonyModel(s).Current.Frame;typeof(ReviewEntry).GetMethod("Draw",HullPrivate)!.Invoke(entry,null);yield return null;yield return null;
-                Assert.That(ColonyModel(s).Current.Frame,Is.SameAs(cancelFrame));Assert.That(doc.rootVisualElement.Q<Button>("colonisation-order-confirm"),Is.Not.Null,"activity review in the colonisation container survives same-frame redraw");StreamCapturedEvent(oldCancelConfirm);yield return null;Assert.That(ColonyPending(entry),Is.False);Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(accepted));yield return ColonyClick(s,doc,"colonisation-order-back");
                 if(s.RosterV2)
                 {
-                    var unworked=ColonyModel(s).Colonisation().Production.Single(x=>x.Id==queued);Assert.That(unworked.CompletedIndustry,Is.EqualTo(0));
-                    var stocks=JsonConvert.SerializeObject(ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home).Stocks);var credits=ColonyModel(s).ColonisationActivities().Credits;
-                    yield return ColonyWorld(s,doc,s.Home);yield return ColonyOrder(s,doc,"colonisation-queue-cancel-"+queued);
-                    Assert.That(ColonyModel(s).Colonisation().Production.Any(x=>x.Id==queued),Is.False);Assert.That(JsonConvert.SerializeObject(ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home).Stocks),Is.EqualTo(stocks));Assert.That(ColonyModel(s).ColonisationActivities().Credits,Is.EqualTo(credits));
+                    yield return ColonyWorld(s,doc,s.Home);
+                    var unworked=ColonyModel(s).Colonisation().Production.Single(x=>x.ColonyId==s.Home);
+                    Assert.That(unworked.CompletedIndustry,Is.EqualTo(0));
+                    var stocks=JsonConvert.SerializeObject(ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home).Stocks);
+                    var credits=ColonyModel(s).ColonisationActivities().Credits;
+                    var cancelId="colonisation-queue-cancel-"+unworked.Id;
+                    var oldCancel=doc.rootVisualElement.Q<Button>(cancelId);
+                    Assert.That(oldCancel.parent.Query<Label>().ToList().Any(l=>l.text.Contains("discards work and consumed materials")),Is.True);
+                    yield return ColonyClick(s,doc,cancelId);
+                    Assert.That(doc.rootVisualElement.Q<Button>("colonisation-order-confirm"),Is.Null,"cancel applies directly from the queue card");
+                    Assert.That(ColonyModel(s).Colonisation().Production.Any(x=>x.Id==unworked.Id),Is.False);
+                    Assert.That(JsonConvert.SerializeObject(ColonyModel(s).Colonisation().Worlds.Single(x=>x.Id==s.Home).Stocks),Is.EqualTo(stocks));
+                    Assert.That(ColonyModel(s).ColonisationActivities().Credits,Is.EqualTo(credits));
+                    var cancelled=ColonyBytes(ColonyModel(s));
+                    StreamCapturedEvent(oldCancel);yield return null;
+                    Assert.That(ColonyPending(entry),Is.False);
+                    Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(cancelled),"disposed cancel cannot submit a second order");
                     var combat=ColonyModel(s).ColonisationActivities().BuildOptions.Single(x=>x.Supported&&x.BlueprintRevision==1&&x.HullVersionId=="hull.defiant-combat.v1");
                     yield return ColonyWorld(s,doc,s.Home);yield return ColonyClick(s,doc,"colonisation-build-"+ColonyBuildIndex(ColonyModel(s),combat.DefinitionId));
                     yield return ColonyWorld(s,doc,s.Home);yield return ColonyClick(s,doc,"colonisation-build-kit");Assert.That(ColonyModel(s).ColonisationActivities().Credits,Is.EqualTo(credits),"Defiant and kit use ordinary zero-normal-credit construction");

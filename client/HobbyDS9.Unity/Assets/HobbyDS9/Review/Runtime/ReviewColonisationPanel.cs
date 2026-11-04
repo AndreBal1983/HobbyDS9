@@ -118,6 +118,10 @@ namespace HobbyDS9.UnityReview
         }
         private void Worlds()
         {
+            var command=Text(body,"Construction Command","colonisation-construction-heading");
+            command.style.fontSize=24;
+            command.style.color= (Color)new Color32(240,205,165,255);
+            command.style.unityFontStyleAndWeight=FontStyle.Bold;
             Picker(body,"Owned world",observation.Worlds,x=>x.Id,x=>x.Name,world,id=>{world=id;Show(page);},"colonisation-world-selector");
             var w=observation.Worlds.FirstOrDefault(x=>x.Id==world);if(w==null){Text(body,"No owned worlds observed.");return;}
             Text(body,w.Name+" \u00b7 "+w.Stage+" \u00b7 "+w.Population+" people \u00b7 "+w.Food+" stored food","colonisation-world-facts");
@@ -130,79 +134,203 @@ namespace HobbyDS9.UnityReview
             Text(preparation,"Build a transport at a shipyard and a settlement kit at the source world, then bring the empty transport there. In Transports, review the actual source cohort, remaining residents, local kit and voyage food. Survey a suitable known planet, travel there and review deployment; retain food for establishment and later supply trips. Travel and deliveries are not guaranteed safe.");
             if(w.Stage==ColonyEstablishmentStage.Founding)Text(body,"Establishment: "+w.EstablishmentWork+" work, "+w.FedWeeks+" fed weeks. Shortage "+w.ShortageWeeks+" weeks; deaths "+w.Deaths+". "+w.Report);
             if(w.Stage==ColonyEstablishmentStage.EmptyOutpost)Text(body,"Empty outpost: no production or freight. A surveyed, supplied settlement expedition must recommission it.");
-            Text(body,"Construction Command","colonisation-construction-heading").style.unityFontStyleAndWeight=FontStyle.Bold;
-            Text(body,w.Name+" · "+w.Industry+" Industry per week available from this world.");
-            var row=Row(body);row.style.flexWrap=Wrap.NoWrap;
-            var catalogue=new ScrollView(){name="colonisation-catalogue"};catalogue.style.flexGrow=2;catalogue.style.flexBasis=0;catalogue.style.minWidth=0;catalogue.style.height=300;catalogue.style.marginRight=16;row.Add(catalogue);
-            var queue=new ScrollView(){name="colonisation-queue"};queue.style.flexGrow=1;queue.style.flexBasis=0;queue.style.minWidth=0;queue.style.height=300;row.Add(queue);
-            var orders=observation.Production.Where(x=>x.ColonyId==w.Id).ToArray();
-            Text(queue,"Build queue · "+orders.Length+(orders.Length==1?" order":" orders"),"colonisation-queue-heading").style.unityFontStyleAndWeight=FontStyle.Bold;
+            Text(body,"Builds use Industry and local materials as work advances.");
+            var row=Row(body);
+            row.style.flexWrap=Wrap.NoWrap;
+            var catalogue=new ScrollView{name="colonisation-catalogue"};
+            var queue=new ScrollView{name="colonisation-queue"};
+            foreach(var column in new[]{catalogue,queue})
+            {
+                column.style.flexBasis=0;
+                column.style.minWidth=0;
+                column.style.height=420;
+                row.Add(column);
+            }
+            catalogue.style.flexGrow=2;
+            catalogue.style.marginRight=16;
+            queue.style.flexGrow=1;
             row.RegisterCallback<GeometryChangedEvent>(e=>
             {
-                var direction=e.newRect.width<760?FlexDirection.Column:FlexDirection.Row;
+                var sideBySide=e.newRect.width>=760;
+                var direction=sideBySide?FlexDirection.Row:FlexDirection.Column;
                 if(row.style.flexDirection.value==direction)return;
                 row.style.flexDirection=direction;
-                var sideBySide=direction==FlexDirection.Row;
                 catalogue.style.marginRight=sideBySide?16:0;
                 catalogue.style.flexBasis=sideBySide?new StyleLength(0f):new StyleLength(StyleKeyword.Auto);
                 queue.style.flexBasis=catalogue.style.flexBasis;
                 catalogue.style.flexShrink=sideBySide?1:0;
                 queue.style.flexShrink=catalogue.style.flexShrink;
             });
+
+            var orders=observation.Production.Where(x=>x.ColonyId==w.Id).ToArray();
+            ConstructionHeading(queue,"Build queue · "+orders.Length+(orders.Length==1?" order":" orders"),"colonisation-queue-heading");
             int index=0;
             foreach(var kind in new[]{ActivityProductionKind.PublishedShip,ActivityProductionKind.Infrastructure})
             {
-                Text(catalogue,kind==ActivityProductionKind.PublishedShip?"Ships":"Planetary buildings","colonisation-section-"+kind).style.unityFontStyleAndWeight=FontStyle.Bold;
+                var ships=kind==ActivityProductionKind.PublishedShip;
+                ConstructionHeading(catalogue,ships?"Ships":"Planetary buildings","colonisation-section-"+kind);
+                var cards=Row(catalogue);
+                cards.RegisterCallback<GeometryChangedEvent>(e=>
+                {
+                    var useGrid=e.newRect.width>=620;
+                    var width=Length.Percent(useGrid?48:100);
+                    foreach(var card in cards.Children())
+                    {card.style.width=width;card.style.marginRight=useGrid?6:0;}
+                });
                 foreach(var option in activities.BuildOptions.Where(x=>x.Kind==kind))
                 {
-                var selected=option;var card=new VisualElement();card.AddToClassList("console-panel");card.style.flexShrink=0;catalogue.Add(card);Text(card,selected.DisplayName+" "+(selected.BlueprintRevision>0?"R"+selected.BlueprintRevision:"")+" \u00b7 "+selected.Cost.Industry+" Industry");
-                var materials=selected.Cost.Resources;
-                Text(card,"Materials: "+(materials==null||materials.Count==0?"none":string.Join(", ",materials.Select(r=>MaterialName(r.ResourceDefinitionId)+" "+r.Amount))));
-                if(selected.Kind==ActivityProductionKind.Infrastructure)
-                {
-                    var benefit=observation.BuildingBenefits.FirstOrDefault(b=>b.DefinitionId==selected.DefinitionId);
-                    if(benefit!=null)
+                    var selected=option;
+                    var art=ships?ConstructionCardArt.Ship(selected.HullVersionId):ConstructionCardArt.Building(selected.DefinitionId);
+                    var title=selected.DisplayName+(selected.BlueprintRevision>0?" R"+selected.BlueprintRevision:"");
+                    var card=ConstructionCard(cards,title,art);
+                    card.style.marginRight=6;
+                    card.style.width=Length.Percent(100);
+                    Text(card,selected.Cost.Industry+" Industry");
+                    var materials=selected.Cost.Resources;
+                    Text(card,"Materials: "+(materials==null||materials.Count==0?"none":string.Join(", ",
+                        materials.Select(r=>MaterialName(r.ResourceDefinitionId)+" "+r.Amount))));
+
+                    var queued=orders.Count(x=>x.DefinitionId==selected.DefinitionId&&x.BlueprintRevision==selected.BlueprintRevision);
+                    var built=ships
+                        ?observation.OwnShipSources.Count(x=>x.BlueprintId==selected.DefinitionId&&x.Revision==selected.BlueprintRevision)
+                        :activities.Structures.Count(x=>x.ColonyId==w.Id&&x.DefinitionId==selected.DefinitionId);
+                    Text(card,ships?"Owned ships: "+built+" · queued here: "+queued:"Built here: "+built+" · queued here: "+queued);
+
+                    var unavailable=!selected.Supported?selected.Reason:w.ConstructionUnavailableReason(ships);
+                    if(unavailable==null&&!ships&&(built>0||queued>0))unavailable="Unique building: already built or queued.";
+                    var actions=Row(card);
+                    var add=Button(actions,"+ Add "+selected.DisplayName,"colonisation-build-"+index++,()=>
                     {
-                        Text(card,"Base building effects: Food +"+benefit.FoodOutput+", Industry +"+benefit.Industry+", Research +"+benefit.Research+", power supply +"+benefit.PowerSupply+", power demand +"+benefit.PowerDemand+".","colonisation-building-effects-"+selected.DefinitionId);
-                        if(benefit.Extraction.Count>0)Text(card,"Base extraction/week: "+Materials(benefit.Extraction)+"; requires finite deposits.");
-                        Text(card,"Actual effective output depends on current power, politics and available deposits. This is not a completion forecast.");
+                        var c=Activity(ships?CampaignActivityCommandKind.EnqueueShip:CampaignActivityCommandKind.EnqueueStructure,w.Id);
+                        c.DefinitionId=selected.DefinitionId;
+                        c.BlueprintRevision=selected.BlueprintRevision;
+                        SendActivity(c);
+                    });
+                    ConstructionPrimary(add);
+                    add.SetEnabled(selected.Supported&&unavailable==null);
+                    if(unavailable!=null)Text(card,unavailable);
+                    if(ships)
+                    {
+                        Button(actions,"Inspect "+selected.DisplayName,"colonisation-inspect-"+index,()=>
+                        {
+                            inspectedBlueprint=selected.DefinitionId;
+                            inspectedRevision=selected.BlueprintRevision;
+                            inspectedOpen=true;
+                            InspectHull(card,selected);
+                        });
+                        if(inspectedBlueprint==selected.DefinitionId&&inspectedRevision==selected.BlueprintRevision)
+                            InspectHull(card,selected);
                     }
-                    else Text(card,"Building effects unavailable.");
-                }
-                var unavailable=w.ConstructionUnavailableReason(selected.Kind==ActivityProductionKind.PublishedShip);
-                var button=Button(card,"+ Add "+selected.DisplayName,"colonisation-build-"+index++,()=>{var c=Activity(selected.Kind==ActivityProductionKind.PublishedShip?CampaignActivityCommandKind.EnqueueShip:CampaignActivityCommandKind.EnqueueStructure,w.Id);c.DefinitionId=selected.DefinitionId;c.BlueprintRevision=selected.BlueprintRevision;SendActivity(c);});button.SetEnabled(selected.Supported&&unavailable==null);if(!selected.Supported)Text(card,selected.Reason);else if(unavailable!=null)Text(card,unavailable);
-                var queued=observation.Production.Count(x=>x.ColonyId==w.Id&&x.DefinitionId==selected.DefinitionId&&x.BlueprintRevision==selected.BlueprintRevision);
-                var built=selected.Kind==ActivityProductionKind.PublishedShip?observation.OwnShipSources.Count(x=>x.BlueprintId==selected.DefinitionId&&x.Revision==selected.BlueprintRevision):activities.Structures.Count(x=>x.ColonyId==w.Id&&x.DefinitionId==selected.DefinitionId);
-                Text(card,selected.Kind==ActivityProductionKind.PublishedShip?"Own living ships of this published revision: "+built+"; queued at this world: "+queued:"Built at this world: "+built+"; queued: "+queued);
-                if(selected.Kind==ActivityProductionKind.Infrastructure&&(built>0||queued>0)){button.SetEnabled(false);Text(card,"Unique building: already built or queued.");}
-                if(selected.Kind==ActivityProductionKind.PublishedShip)Button(card,"Inspect "+selected.DisplayName,"colonisation-inspect-"+index,()=>{inspectedBlueprint=selected.DefinitionId;inspectedRevision=selected.BlueprintRevision;inspectedOpen=true;InspectHull(body,selected);});
+                    else ConstructionEffects(card,selected.DefinitionId);
                 }
             }
-            Text(catalogue,"Special projects","colonisation-section-projects");
-            Text(catalogue,"Settlement equipment: "+observation.KitIndustry+" Industry; "+Materials(observation.KitResources));
-            Button(catalogue,"+ Settlement kit","colonisation-build-kit",()=>{var c=Command(ColonisationAction.EnqueueKit);c.EnqueueKit=new EnqueueSettlementKitDto{ColonyId=w.Id};Send(c);}).SetEnabled(w.ConstructionUnavailableReason(false)==null);
-            Text(catalogue,"System improvements","colonisation-section-system");Text(catalogue,"No system improvement recipes are implemented in this playtest.");
-            foreach(var order in orders)
+
+            ConstructionHeading(catalogue,"Special projects","colonisation-section-projects");
+            var kit=ConstructionCard(catalogue,"Settlement kit",ConstructionCardArt.Kit());
+            Text(kit,observation.KitIndustry+" Industry · "+ConstructionMaterials(observation.KitResources));
+            var addKit=Button(kit,"+ Settlement kit","colonisation-build-kit",()=>
             {
-                var card=new VisualElement();card.AddToClassList("console-panel");card.style.flexShrink=0;queue.Add(card);
-                Text(card,order.Name+" · "+order.Status);
+                var c=Command(ColonisationAction.EnqueueKit);
+                c.EnqueueKit=new EnqueueSettlementKitDto{ColonyId=w.Id};
+                Send(c);
+            });
+            ConstructionPrimary(addKit);
+            var kitUnavailable=w.ConstructionUnavailableReason(false);
+            addKit.SetEnabled(kitUnavailable==null);
+            if(kitUnavailable!=null)Text(kit,kitUnavailable);
+
+            ConstructionHeading(catalogue,"System improvements","colonisation-section-system");
+            Text(catalogue,"No system improvements are available in this playtest.");
+
+            if(orders.Length==0)Text(queue,"No queued orders.");
+            for(var i=0;i<orders.Length;i++)
+            {
+                var order=orders[i];
+                var artwork=order.Kind switch
+                {
+                    ColonisationProductionKind.PublishedShip => activities.BuildOptions.FirstOrDefault(x=>
+                        x.DefinitionId==order.DefinitionId&&x.BlueprintRevision==order.BlueprintRevision) is ActivityBuildOptionDto option
+                        ? ConstructionCardArt.Ship(option.HullVersionId) : null,
+                    ColonisationProductionKind.Infrastructure => ConstructionCardArt.Building(order.DefinitionId),
+                    ColonisationProductionKind.SettlementKit => ConstructionCardArt.Kit(),
+                    _ => null,
+                };
+                var card=ConstructionCard(queue,order.Name,artwork);
+                if(i==0)card.style.borderLeftColor= (Color)new Color32(239,179,107,255);
+                Text(card,(i+1)+" · "+order.Status);
                 Text(card,"Industry progress: "+order.CompletedIndustry+" / "+order.RequiredIndustry);
                 if(order.RequiredIndustry>0)
                     card.Add(new ProgressBar{lowValue=0,highValue=order.RequiredIndustry,value=order.CompletedIndustry});
-                var requiredMaterials=Materials(order.Required);
-                var consumedMaterials=Materials(order.Consumed);
-                Text(card,"Materials required: "+(requiredMaterials.Length==0?"none":requiredMaterials));
-                Text(card,"Materials consumed: "+(consumedMaterials.Length==0?"none":consumedMaterials));
-                var captured=order;
-                Button(card,"Cancel order","colonisation-queue-cancel-"+captured.Id,()=>reviewActivity(Activity(CampaignActivityCommandKind.CancelProduction,captured.Id),"Cancel construction; consumed materials are not refunded."));
+                Text(card,"Materials required: "+ConstructionMaterials(order.Required));
+                Text(card,"Materials consumed: "+ConstructionMaterials(order.Consumed));
+                Text(card,"Cancel discards work and consumed materials.");
+                var cancel=Button(card,"Cancel order","colonisation-queue-cancel-"+order.Id,
+                    ()=>SendActivity(Activity(CampaignActivityCommandKind.CancelProduction,order.Id)));
+                cancel.tooltip="Cancel construction now. Work and consumed materials are not refunded.";
             }
-            if(orders.Length==0)Text(queue,"No queued orders.");
-            var inspected=activities.BuildOptions.FirstOrDefault(x=>x.DefinitionId==inspectedBlueprint&&x.BlueprintRevision==inspectedRevision);if(inspected!=null)InspectHull(body,inspected);
         }
+
+        private static void ConstructionPrimary(Button button)
+        {
+            button.AddToClassList("primary-action");
+            button.style.backgroundColor= (Color)new Color32(239,179,107,255);
+            button.style.color= (Color)new Color32(17,24,32,255);
+        }
+
+        private static void ConstructionHeading(VisualElement parent,string title,string name)
+        {
+            var heading=Text(parent,title,name);
+            heading.style.color= (Color)new Color32(175,162,228,255);
+            heading.style.unityFontStyleAndWeight=FontStyle.Bold;
+            heading.style.marginTop=8;
+        }
+
+        private static VisualElement ConstructionCard(VisualElement parent,string title,Texture2D? artwork)
+        {
+            var card=new VisualElement();
+            card.AddToClassList("console-panel");
+            card.style.flexShrink=0;
+            card.style.minWidth=0;
+            card.style.marginBottom=8;
+            card.style.backgroundColor= (Color)new Color32(17,32,47,255);
+            parent.Add(card);
+            var header=Row(card);
+            if(artwork!=null)
+            {
+                var image=new Image{image=artwork,scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};
+                image.style.width=78;
+                image.style.height=54;
+                image.style.marginRight=8;
+                header.Add(image);
+            }
+            var label=Text(header,title);
+            label.style.maxWidth=Length.Percent(100);
+            label.style.unityFontStyleAndWeight=FontStyle.Bold;
+            return card;
+        }
+
+        private static string ConstructionMaterials(IEnumerable<ResourceAmountSnapshot> materials)
+        {
+            var text=Materials(materials);
+            return text.Length==0?"none":text;
+        }
+
+        private void ConstructionEffects(VisualElement card,string definitionId)
+        {
+            var benefit=observation.BuildingBenefits.FirstOrDefault(b=>b.DefinitionId==definitionId);
+            if(benefit==null){Text(card,"Building effects unavailable.");return;}
+            Text(card,"Base building effects: Food +"+benefit.FoodOutput+", Industry +"+benefit.Industry+
+                ", Research +"+benefit.Research+", power supply +"+benefit.PowerSupply+", power demand +"+benefit.PowerDemand+".",
+                "colonisation-building-effects-"+definitionId);
+            if(benefit.Extraction.Count>0)Text(card,"Base extraction/week: "+Materials(benefit.Extraction)+"; requires finite deposits.");
+            Text(card,"Actual output depends on power, politics and deposits.");
+        }
+
         private void ReleaseHull(){hullPreview?.Dispose();hullPreview=null;}
         private void InspectHull(VisualElement parent,ActivityBuildOptionDto option)
         {
-            currentInspector=null;ReleaseHull();parent.Q("colonisation-hull-inspector")?.RemoveFromHierarchy();
+            var oldInspector=currentInspector;
+            currentInspector=null;ReleaseHull();oldInspector?.RemoveFromHierarchy();
             var fold=new Foldout{text="Inspect "+option.DisplayName+" R"+option.BlueprintRevision,value=inspectedOpen,name="colonisation-hull-inspector"};fold.style.flexShrink=0;fold.style.fontSize=16;parent.Add(fold);
             currentInspector=fold;var inspectorEpoch=controlEpoch;
             bool OwnInspector()=>Live&&inspectorEpoch==controlEpoch&&ReferenceEquals(currentInspector,fold);
