@@ -196,15 +196,16 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally{pulse.Pause();}
         }
-        private static IEnumerator RepeatFooterReach(UIDocument doc,Button button)
+        private static IEnumerator ColonyToolbarReach(UIDocument doc,Button button)
         {
-            var root=doc.rootVisualElement;var footer=root.Q("player-footer");
-            Assert.That(button,Is.Not.Null);Assert.That(footer,Is.Not.Null);Assert.That(root.panel,Is.Not.Null);
-            Assert.That(root.Q<Button>("player-primary-action"),Is.SameAs(button),"current footer action");
-            Assert.That(button.panel,Is.SameAs(root.panel));Assert.That(footer.panel,Is.SameAs(root.panel));
-            Assert.That(button.enabledInHierarchy,Is.True);Assert.That(footer.Contains(button),Is.True,"End week belongs to the current footer");
+            var root=doc.rootVisualElement;var toolbar=root.Q("player-top-actions");var footer=root.Q("player-footer");
+            Assert.That(button,Is.Not.Null);Assert.That(toolbar,Is.Not.Null);Assert.That(root.panel,Is.Not.Null);
+            Assert.That(root.Q<Button>("player-primary-action"),Is.SameAs(button),"current toolbar action");
+            Assert.That(button.panel,Is.SameAs(root.panel));Assert.That(toolbar.panel,Is.SameAs(root.panel));
+            Assert.That(button.enabledInHierarchy,Is.True);Assert.That(toolbar.Contains(button),Is.True,"End week belongs to the top toolbar");
+            Assert.That(footer.Q<Button>(),Is.Null,"The campaign footer has no actions");
             var hit=root.panel.Pick(button.worldBound.center);
-            Assert.That(hit==button||hit!=null&&button.Contains(hit),Is.True,"actual footer action pick");
+            Assert.That(hit==button||hit!=null&&button.Contains(hit),Is.True,"actual toolbar action pick");
             void Contained(Rect bounds,string owner)
             {
                 Assert.That(button.worldBound.xMin,Is.GreaterThanOrEqualTo(bounds.xMin),owner+" left");
@@ -212,9 +213,9 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(button.worldBound.xMax,Is.LessThanOrEqualTo(bounds.xMax),owner+" right");
                 Assert.That(button.worldBound.yMax,Is.LessThanOrEqualTo(bounds.yMax),owner+" bottom");
             }
-            Contained(footer.worldBound,"footer");Contained(root.worldBound,"root");
+            Contained(toolbar.worldBound,"toolbar");Contained(root.worldBound,"root");
             Assert.That(button.worldBound.height,Is.GreaterThanOrEqualTo(36));Assert.That(button.resolvedStyle.fontSize,Is.GreaterThanOrEqualTo(16));
-            yield break; // The footer is not scrolled; no additional frame or wait is introduced.
+            yield break; // The toolbar is not scrolled; no additional frame or wait is introduced.
         }
         private static IEnumerator RepeatAdvance(RepeatReceivingState t,UIDocument doc)
         {
@@ -222,7 +223,7 @@ namespace HobbyDS9.UnityReview.Tests
             var model=ColonyModel(s);Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning),"unsupported tactical/event phase is a finding, never forged or switched");
             Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null,"no unattended modal before End week");
             CampaignPage(doc,ReviewWorkspacePage.Map);yield return V3Settled(doc);var turn=model.Current.Frame.Status.Turn;
-            var button=doc.rootVisualElement.Q<Button>("player-primary-action");yield return RepeatFooterReach(doc,button);
+            var button=doc.rootVisualElement.Q<Button>("player-primary-action");yield return ColonyToolbarReach(doc,button);
             ColonyActivate(s,()=>{Click(button);Confirm(doc);});yield return ColonyIdle(s,"repeat-ui-week");
             Assert.That(ColonyModel(s).Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning),"unexpected tactical/modal flow stops the bounded receiving case");
             Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);Assert.That(ColonyModel(s).Current.Frame.Status.Turn,Is.EqualTo(turn+1));

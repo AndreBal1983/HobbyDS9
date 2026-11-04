@@ -81,6 +81,19 @@ namespace HobbyDS9.UnityReview
             else
             {
                 Text(main,"Develop capabilities","console-intro");
+                var directEngineering = model.ColonisationCampaign;
+                if (directEngineering)
+                    Text(main,"Selecting or clearing a project keeps earned progress. Work advances on End turn.");
+
+                void SelectEngineering(string? target, string warning)
+                {
+                    void Apply() => perform(() => model.Engineering(target, ReviewUiModel.NewCommandId()));
+                    if (directEngineering)
+                        Apply();
+                    else
+                        confirm(warning, Apply);
+                }
+
                 foreach(var project in r.Engineering)
                 {
                     var card=new VisualElement{name="engineering-project-"+project.Definition.DefinitionId};card.AddToClassList("console-queue");main.Add(card);
@@ -94,14 +107,21 @@ namespace HobbyDS9.UnityReview
                     Text(card,project.Band==EngineeringMaturityBand.Mature?"Completed":project.IsTarget?"Current project":Reason(project.UnavailableReason),id:"engineering-project-state");
                     card.Add(new ProgressBar{value=project.MaturityPercent});Text(card,project.MaturityPercent+"% · "+project.Band,"console-metric");
                     Text(card,"Project cost: "+Units(project.Cost)+(demo?" Engineering points":" research points"),id:"engineering-project-cost");
-                    if(!demo)Text(card,"Check the construction catalogue for ships currently offered in this campaign.");
+                    var legacyScoutEffect = model.ColonisationCycleCampaign &&
+                        project.Definition.DefinitionId.Value == "engineering.advanced-starship-engineering";
+                    if (legacyScoutEffect)
+                        Text(card,"Advanced Scout is unavailable in this campaign's construction catalogue.",id:"engineering-cycle-construction");
+                    else if(!demo)Text(card,"Check the construction catalogue for ships currently offered in this campaign.");
                     var requirements=new Foldout{name="engineering-project-details",text=demo?"Details — authored effect & requirements":"Requirements & progress",value=false};card.Add(requirements);
-                    Text(requirements,demo?"Authored effect; the demo construction limits above still apply.":"Authored effect. Ship availability depends on the campaign construction catalogue.",id:"engineering-effect-qualifier");
+                    Text(requirements,legacyScoutEffect?"The authored effect below applies to the original Scout catalogue.":demo?"Authored effect; the demo construction limits above still apply.":"Authored effect. Ship availability depends on the campaign construction catalogue.",id:"engineering-effect-qualifier");
                     Text(requirements,project.Definition.EffectSummary,id:"engineering-authored-effect");
                     for(int i=0;i<project.Definition.ScienceRequirements.Count;i++){var q=project.Definition.ScienceRequirements[i];Text(requirements,(project.ScienceSatisfied[i]?"✓ ":"○ ")+q.Discipline+" interval "+q.IntervalStartLevel+" breakthrough "+q.BreakthroughOrdinal);}
-                    Btn(card,"Develop project","integrated-develop-"+project.Definition.DefinitionId,()=>confirm("Develop "+project.Definition.DisplayName+"? Earned progress is retained when you change targets. Work progresses on End turn.",()=>perform(()=>model.Engineering(project.Definition.DefinitionId.Value,ReviewUiModel.NewCommandId()))),edit&&project.CanTarget,true);
+                    Btn(card,"Develop project","integrated-develop-"+project.Definition.DefinitionId,
+                        ()=>SelectEngineering(project.Definition.DefinitionId.Value,"Develop "+project.Definition.DisplayName+"? Earned progress is retained when you change targets. Work progresses on End turn."),
+                        edit&&project.CanTarget,true);
                 }
-                Btn(main,"Clear Engineering target","integrated-clear-engineering",()=>confirm("Clear the current Engineering target? Earned progress will remain.",()=>perform(()=>model.Engineering(null,ReviewUiModel.NewCommandId()))),edit&&r.Target.HasValue);
+                Btn(main,"Clear Engineering target","integrated-clear-engineering",
+                    ()=>SelectEngineering(null,"Clear the current Engineering target? Earned progress will remain."),edit&&r.Target.HasValue);
             }
             if(workspace.ScienceDetails.HasValue&&workspace.ResearchTab=="science")
             {

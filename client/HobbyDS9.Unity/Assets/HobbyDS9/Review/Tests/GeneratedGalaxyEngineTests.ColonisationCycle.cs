@@ -271,7 +271,7 @@ namespace HobbyDS9.UnityReview.Tests
             var model=ColonyModel(s);Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning),"unsupported tactical/event phase is a finding, never forged or switched");
             Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null,"no unattended modal before End week");
             CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Map));yield return V3Settled(doc);var turn=model.Current.Frame.Status.Turn;
-            var button=doc.rootVisualElement.Q<Button>("player-primary-action");yield return RepeatFooterReach(doc,button);
+            var button=doc.rootVisualElement.Q<Button>("player-primary-action");yield return ColonyToolbarReach(doc,button);
             CycleActivate(t,()=>{Click(button);Confirm(doc);});yield return ColonyIdle(s,"cycle-ui-week");
             Assert.That(ColonyModel(s).Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning),"unexpected tactical/modal flow stops the bounded receiving case");
             Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);Assert.That(ColonyModel(s).Current.Frame.Status.Turn,Is.EqualTo(turn+1));
