@@ -214,12 +214,35 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(RepeatBytes(model),Is.EqualTo(bytes),"Empire inspection/filtering changes none of the complete committed root");
                 if(t.EmpireOnly)
                 {
+                    // A route preview uses only disclosed navigation and never submits an order.
+                    var routeController=model.Current;var routeFrame=routeController.Frame;
+                    var beforeDraft=routeController.TravelDraft;var beforeDirty=model.HasLocalEdits;var beforeBytes=RepeatBytes(model);
+                    var navigation=routeFrame.Strategy!.Navigation;
+                    var visible=new HashSet<string>(navigation.Nodes.Select(n=>n.NodeId.Value),StringComparer.Ordinal);
+                    var pairs=routeFrame.OwnStrategicFleets.Where(f=>f.OwnerCivilizationId.Value==routeFrame.Actor&&f.TransitTotalCost==0&&f.RouteNodeIds.Count==0)
+                        .SelectMany(f=>navigation.Links.Where(e=>e.EndpointA.Value==f.LocationNodeId.Value||e.EndpointB.Value==f.LocationNodeId.Value)
+                            .Select(e=>new{Fleet=f,Destination=e.EndpointA.Value==f.LocationNodeId.Value?e.EndpointB.Value:e.EndpointA.Value}))
+                        .Where(p=>p.Destination!=p.Fleet.LocationNodeId.Value&&visible.Contains(p.Fleet.LocationNodeId.Value)&&visible.Contains(p.Destination))
+                        .OrderBy(p=>p.Fleet.FleetId.Value,StringComparer.Ordinal).ThenBy(p=>p.Destination,StringComparer.Ordinal).ToArray();
+                    Assert.That(pairs,Is.Not.Empty);var choice=pairs[0];
+                    var offer=routeController.FindKnownRoute(choice.Fleet.FleetId.Value,choice.Destination);
+                    Assert.That(offer,Is.Not.Null);Assert.That(offer!.Route.Success,Is.True);
+                    Assert.That(offer.Route.Steps,Is.Not.Empty);Assert.That(offer.Route.TotalCost.HasValue,Is.True);
+                    Assert.That(offer.Route.TotalCost!.Value,Is.GreaterThan(0));Assert.That(offer.Route.Steps.Last(),Is.EqualTo(choice.Destination));
+                    Assert.That(offer.Actor,Is.EqualTo(routeFrame.Actor));Assert.That(offer.Fleet,Is.EqualTo(choice.Fleet.FleetId.Value));
+                    Assert.That(offer.Origin,Is.EqualTo(choice.Fleet.LocationNodeId.Value));Assert.That(offer.Destination,Is.EqualTo(choice.Destination));
+                    Assert.That(offer.Turn,Is.EqualTo(routeFrame.Status.Turn));Assert.That(offer.CampaignRevision,Is.EqualTo(routeFrame.Status.CampaignRevision));
+                    Assert.That(model.Current,Is.SameAs(routeController));Assert.That(model.Current.Frame,Is.SameAs(routeFrame));
+                    Assert.That(routeController.TravelDraft,Is.SameAs(beforeDraft));Assert.That(model.HasLocalEdits,Is.EqualTo(beforeDirty));
+                    Assert.That(RepeatBytes(model),Is.EqualTo(beforeBytes));Assert.That(beforeBytes,Is.EqualTo(bytes));
                     Assert.That(t.Trace.UiAdvances,Is.Zero);Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning));
                     Assert.That(model.Current,Is.SameAs(controller));Assert.That(model.Current.Frame,Is.SameAs(ledgerFrame));
                     File.WriteAllText(Path.Combine(CampaignOutput(),t.EvidencePrefix+"summary.json"),JsonConvert.SerializeObject(t.Evidence(new{
                         bodyAssertionsComplete=true,cleanupRequired=true,fixtureSha=NetworkMaterialFixtureSha,readOnlyUiAdvances=t.Trace.UiAdvances,
-                        wholeTypedBytesUnchanged=true,ownStreamedQueue=true,tableAsideAndFiltersAgree=true,
-                        qualification="Focused read-only Repeat Empire assertions only. No construction completion, output Save/Continue, capture, native, performance or full-goal acceptance."})));
+                        wholeTypedBytesUnchanged=true,ownStreamedQueue=true,tableAsideAndFiltersAgree=true,routePreviewQueries=1,
+                        publicOwnedStationaryFleet=true,publicKnownAdjacentDestination=true,nontrivialSuccessfulRoute=true,positiveCost=true,
+                        nonemptySteps=true,destinationLast=true,sameControllerFrameAndDraft=true,
+                        qualification="Focused read-only Repeat Empire and one public weighted-route query only. No order submission, construction completion, output Save/Continue, capture, native, performance or full-goal acceptance."})));
                     t.Mark("empire-only-body-complete");yield break;
                 }
                 s.Home=world.Id;long work=queue.CompletedIndustry;bool intermediate=false,paidQuantum=false;
