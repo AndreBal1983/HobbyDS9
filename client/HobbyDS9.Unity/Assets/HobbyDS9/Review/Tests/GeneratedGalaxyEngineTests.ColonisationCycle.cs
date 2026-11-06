@@ -250,6 +250,13 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(field,Is.Not.Null);int index=worlds.ToList().FindIndex(w=>w.Id==world);Assert.That(index,Is.GreaterThanOrEqualTo(0),"current human-owned world selection");
             yield return ColonyReach(doc,field);CycleActivate(t,()=>field.index=index);yield return null;yield return null;
         }
+        private static IEnumerator CyclePageSettled(CycleReceivingState t,ReviewWorkspacePage page)
+        {
+            Assert.That(page,Is.Not.EqualTo(ReviewWorkspacePage.Map),"Map keeps its real renderer and fade checks");
+            Assert.That(t.Case.Shared.Entry!.Workspace!.Page,Is.EqualTo(page),"requested non-map page opened");
+            yield return null;yield return null;
+            Assert.That(t.Case.Shared.Entry!.Workspace!.Page,Is.EqualTo(page),"non-map page remains selected after layout");
+        }
         private static IEnumerator CycleWorldNavigation(CycleReceivingState t,UIDocument doc,ReviewFrame staleFrame)
         {
             var model=ColonyModel(t.Case);var frame=model.Current.Frame;var workspace=t.Case.Shared.Entry!.Workspace!;
@@ -271,22 +278,22 @@ namespace HobbyDS9.UnityReview.Tests
                     CampaignPage(doc,ReviewWorkspacePage.Map);
                 });yield return V3Settled(doc);
                 var open=doc.rootVisualElement.Q<Button>("map-open-world-"+target.Id);yield return ColonyReach(doc,open);
-                CycleActivate(t,()=>Click(open));yield return V3Settled(doc);AssertWorld(target.Id);
+                CycleActivate(t,()=>Click(open));yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);AssertWorld(target.Id);
             }
             for(int i=0;i<2;i++)
             {
-                var target=worlds[1-i];CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Empire));yield return V3Settled(doc);
+                var target=worlds[1-i];CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Empire));yield return CyclePageSettled(t,ReviewWorkspacePage.Empire);
                 var select=doc.rootVisualElement.Q<Button>("world-select-"+target.Id);yield return ColonyReach(doc,select);
-                CycleActivate(t,()=>Click(select));yield return V3Settled(doc);
+                CycleActivate(t,()=>Click(select));yield return CyclePageSettled(t,ReviewWorkspacePage.Empire);
                 var open=doc.rootVisualElement.Q<Button>(i==0?"world-open-exact-queue":"world-open-details");yield return ColonyReach(doc,open);
-                CycleActivate(t,()=>Click(open));yield return V3Settled(doc);AssertWorld(target.Id);
+                CycleActivate(t,()=>Click(open));yield return CyclePageSettled(t,i==0?ReviewWorkspacePage.Production:ReviewWorkspacePage.Worlds);AssertWorld(target.Id);
             }
             yield return CycleWorld(t,doc,worlds[1].Id);
-            CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Worlds));yield return V3Settled(doc);AssertWorld(worlds[1].Id);
+            CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Worlds));yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);AssertWorld(worlds[1].Id);
             foreach(var request in new[]{(Frame:frame,World:"world.not-owned"),(Frame:staleFrame,World:worlds[0].Id)})
             {
                 CycleActivate(t,()=>{pending.SetValue(workspace,request);CampaignPage(doc,ReviewWorkspacePage.Worlds);});
-                yield return V3Settled(doc);AssertWorld(worlds[1].Id);
+                yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);AssertWorld(worlds[1].Id);
             }
         }
         private static IEnumerator CycleOperation(CycleReceivingState t,UIDocument doc,string phase,string busyTitle,Action activate)
@@ -386,13 +393,13 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return CycleWorldNavigation(t,doc,oldModel.Current.Frame);
                 // A local Research edit must never become an implicit order or a week advance.
                 var acceptedFrame=model.Current.Frame;
-                CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Research));yield return V3Settled(doc);
+                CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Research));yield return CyclePageSettled(t,ReviewWorkspacePage.Research);
                 var science=model.Current.Frame.Strategy!.Research.Science.First().Discipline;
-                CycleActivate(t,()=>Click(doc.rootVisualElement.Q<Button>("science-plus-"+science)));yield return V3Settled(doc);
+                CycleActivate(t,()=>Click(doc.rootVisualElement.Q<Button>("science-plus-"+science)));yield return CyclePageSettled(t,ReviewWorkspacePage.Research);
                 Assert.That(model.HasLocalEdits,Is.True);
                 Assert.That(doc.rootVisualElement.Q<Button>("player-primary-action").enabledInHierarchy,Is.False,"End turn stays blocked by an unsent Science draft");
                 Assert.That(model.Current.Frame,Is.SameAs(acceptedFrame),"editing the draft submits no campaign command");
-                CycleActivate(t,()=>Click(doc.rootVisualElement.Q<Button>("player-discard-changes")));yield return V3Settled(doc);
+                CycleActivate(t,()=>Click(doc.rootVisualElement.Q<Button>("player-discard-changes")));yield return CyclePageSettled(t,ReviewWorkspacePage.Research);
                 Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null,"Cycle discards local changes directly");
                 Assert.That(model.HasLocalEdits,Is.False);
                 Assert.That(model.Current.Frame,Is.SameAs(acceptedFrame),"discard preserves all accepted campaign state");
