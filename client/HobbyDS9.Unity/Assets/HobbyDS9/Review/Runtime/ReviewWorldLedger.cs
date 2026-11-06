@@ -185,8 +185,10 @@ namespace HobbyDS9.UnityReview
                 if(model.ColonisationCampaign)workspace.PendingWorldInspection=(frame,selected.ColonyId.Value);
                 navigate(page);
             }
-            button(aside,"Open this world's production queue",()=>OpenSelectedWorld(ReviewWorkspacePage.Production)).name="world-open-exact-queue";
-            button(aside,"Inspect this world's details",()=>OpenSelectedWorld(ReviewWorkspacePage.Worlds)).name="world-open-details";
+            var queueButton=button(aside,"Open queue",()=>OpenSelectedWorld(ReviewWorkspacePage.Production));queueButton.name="world-open-exact-queue";
+            queueButton.tooltip="Open this world's production queue";
+            var detailsButton=button(aside,"World details",()=>OpenSelectedWorld(ReviewWorkspacePage.Worlds));detailsButton.name="world-open-details";
+            detailsButton.tooltip="Inspect this world's details";
         }
     }
 }

@@ -78,7 +78,7 @@ namespace HobbyDS9.UnityReview
                     Btn(steps,"−","science-minus-"+discipline,()=>perform(()=>d.Adjust(discipline,-30)),canAdjust&&d.Weight(discipline)>0);
                     Btn(steps,"+","science-plus-"+discipline,()=>perform(()=>d.Adjust(discipline,30)),canAdjust&&d.Weight(discipline)<600);
                 }
-                Text(main,"Unsent allocation draft · total 100%. Locks keep their shares fixed; other unlocked shares rebalance proportionally.","console-copy");
+                Text(main,(d.ScienceChanged?"Unsent Science allocation":"Accepted Science allocation")+" · total 100%. Locks keep their shares fixed; other unlocked shares rebalance proportionally.","console-copy");
                 if(!r.Science.Any(c=>d.CanAdjust(c.Discipline)))Text(main,"Unlock at least two disciplines to redistribute Science.","console-copy","science-lock-reason");
                 var scienceActions=Row(main);
                 Btn(scienceActions,"Equalize unlocked","integrated-equalize-science",()=>perform(()=>d.Equalize()),edit&&r.Science.Any(c=>d.CanAdjust(c.Discipline)));
