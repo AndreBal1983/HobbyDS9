@@ -272,7 +272,7 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null,"no unattended modal before End week");
             CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Map));yield return V3Settled(doc);var turn=model.Current.Frame.Status.Turn;
             var button=doc.rootVisualElement.Q<Button>("player-primary-action");yield return ColonyToolbarReach(doc,button);
-            CycleActivate(t,()=>{Click(button);Confirm(doc);});yield return ColonyIdle(s,"cycle-ui-week");
+            CycleActivate(t,()=>{Click(button);Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null,"Cycle advances directly from its upper toolbar");});yield return ColonyIdle(s,"cycle-ui-week");
             Assert.That(ColonyModel(s).Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning),"unexpected tactical/modal flow stops the bounded receiving case");
             Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);Assert.That(ColonyModel(s).Current.Frame.Status.Turn,Is.EqualTo(turn+1));
         }
@@ -332,6 +332,19 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(initial.AiPlans!.All(p=>p.ActorId!=actor),Is.True);Assert.That(initial.CycleActors!.All(g=>g.ActorId!=actor),Is.True);
                 var initialActor=AssertSingleCycle(initial.CycleActors!);Assert.That(initialActor.Receipts,Is.Empty);Assert.That(initialActor.Active,Is.Null);Assert.That(initialActor.NextOrdinal,Is.EqualTo(1));
                 CycleCensus(t,initial);t.Mark("explicit-new-complete");
+                // A local Research edit must never become an implicit order or a week advance.
+                var acceptedFrame=model.Current.Frame;
+                CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Research));yield return V3Settled(doc);
+                var science=model.Current.Frame.Strategy!.Research.Science.First().Discipline;
+                CycleActivate(t,()=>Click(doc.rootVisualElement.Q<Button>("science-plus-"+science)));yield return V3Settled(doc);
+                Assert.That(model.HasLocalEdits,Is.True);
+                Assert.That(doc.rootVisualElement.Q<Button>("player-primary-action").enabledInHierarchy,Is.False,"End turn stays blocked by an unsent Science draft");
+                Assert.That(model.Current.Frame,Is.SameAs(acceptedFrame),"editing the draft submits no campaign command");
+                CycleActivate(t,()=>Click(doc.rootVisualElement.Q<Button>("player-discard-changes")));yield return V3Settled(doc);
+                Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null,"Cycle discards local changes directly");
+                Assert.That(model.HasLocalEdits,Is.False);
+                Assert.That(model.Current.Frame,Is.SameAs(acceptedFrame),"discard preserves all accepted campaign state");
+                Assert.That(doc.rootVisualElement.Q<Button>("player-primary-action").enabledInHierarchy,Is.True);
                 // Only current human own views choose this page. No AI IDs or positions select a command.
                 var own=model.Colonisation();var home=own.Worlds.Where(w=>w.Stage==ColonyEstablishmentStage.Established&&w.Population>0).OrderByDescending(w=>w.Industry).ThenBy(w=>w.Id,StringComparer.Ordinal).First();
                 s.Home=home.Id;t.Mark("own-world-navigation-begin");yield return CycleWorld(t,doc,s.Home);t.Mark("own-world-navigation-complete");

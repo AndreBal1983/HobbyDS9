@@ -124,15 +124,36 @@ namespace HobbyDS9.UnityReview
             if(PlayerProfile&&(demoLanding||!demoStarted)){AddButton(left,"Back to menu",OpenDemoMenu);return;}
             AddButton(left,"‹ Return to map",()=>Navigate(ReviewWorkspacePage.Map));
             AddButton(left,"Save",()=>Navigate(ReviewWorkspacePage.Saves));
-            if(model!.HasLocalEdits)AddButton(left,"Discard changes",()=>Confirm("Discard your unsent edits? Your accepted orders and campaign remain unchanged.",()=>Do(()=>model.Reset())));
+            var actionModel=model!;var actionController=actionModel.Current;var actionFrame=actionController.Frame;var actionEpoch=viewEpoch;
+            bool CurrentCycleAction()=>actionEpoch==viewEpoch&&ReferenceEquals(model,actionModel)
+                &&ReferenceEquals(actionModel.Current,actionController)&&ReferenceEquals(actionController.Frame,actionFrame)
+                &&isActiveAndEnabled&&!actionModel.Busy&&!actionModel.Closed&&campaignBusyToken==null;
+            if(actionModel.HasLocalEdits)
+            {
+                var discard=AddButton(left,"Discard changes",()=>{
+                    if(actionModel.ColonisationCycleCampaign)
+                    {if(CurrentCycleAction()&&actionModel.HasLocalEdits)Do(()=>actionModel.Reset());}
+                    else Confirm("Discard your unsent edits? Your accepted orders and campaign remain unchanged.",()=>Do(()=>model!.Reset()));
+                });
+                discard.name="player-discard-changes";
+            }
             if(workspace!.Page==ReviewWorkspacePage.Combat)return; // Central view owns the battle primary action.
-            if(workspace.Page==ReviewWorkspacePage.Research&&!model.ColonisationCycleCampaign)
+            if(workspace.Page==ReviewWorkspacePage.Research&&!model!.ColonisationCycleCampaign)
             {
                 var d=model.ResearchInputs()!;
                 if(d.ScienceChanged){Primary(actions,"Apply Science allocation",()=>Confirm("Apply this complete Science plan?\n"+string.Join("\n",model.Current.Frame.Strategy!.Research.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%.",()=>Do(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
                 if(d.SplitChanged){Primary(actions,"Apply R&D split",()=>Confirm("Apply this Science / Engineering split?",()=>Do(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
             }
-            if(model.Current.Frame.Status.Phase!=SessionPhase.Planning){Primary(actions,"Open combat",()=>Navigate(ReviewWorkspacePage.Combat));return;}
+            if(model!.Current.Frame.Status.Phase!=SessionPhase.Planning){Primary(actions,"Open combat",()=>Navigate(ReviewWorkspacePage.Combat));return;}
+            if(actionModel.ColonisationCycleCampaign)
+            {
+                var endTurn=Primary(actions,"End turn →",()=>{
+                    if(!CurrentCycleAction()||!CanPlan()||actionModel.HasLocalEdits)return;
+                    RunColonisationInteraction(actionModel,actionController,actionFrame,HobbyDS9.TacticalReviewClient.ColonisationInteractionKind.PlanningAdvance);
+                },CanPlan()&&!actionModel.HasLocalEdits);
+                endTurn.tooltip="Advance one week with your accepted orders. Apply or discard unsent changes first.";
+                return;
+            }
             Primary(actions,"End turn →",()=>Confirm("End turn with your accepted orders? Research and Industry will progress. Unsent edits must be applied or discarded first.",()=>{if(model.ColonisationCampaign)RunColonisationInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.ColonisationInteractionKind.PlanningAdvance);else if(model.StreamedActivitiesCampaign)RunStreamedInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.PlanningAdvance);else Do(()=>model.Advance());}),CanPlan()&&!model.HasLocalEdits);
         }
         private bool CanPlan()=>model!.Current.Frame.Status.Phase==SessionPhase.Planning&&(model.Current.Frame.Demo==null||model.Current.Frame.Demo.Outcome==CampaignDemoOutcome.Active)&&!model.Current.RefreshRequired&&!model.Current.HasPendingWork&&!model.Busy&&!model.Closed;
