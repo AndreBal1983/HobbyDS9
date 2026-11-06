@@ -19,6 +19,71 @@ namespace HobbyDS9.UnityReview.Tests
 {
     public sealed partial class GeneratedGalaxyEngineTests
     {
+        // Stay in Edit Mode: entering Play Mode runs the normal campaign bootstrap.
+        // The temporary window tests presentation without creating a campaign host.
+        [UnityTest,Timeout(90000)]
+        public IEnumerator ExpeditionSiteMapControlUsesOnlyDisclosedLocations()
+        {
+            UnityEditor.EditorWindow? window=null;ReviewActivitiesPanel? view=null;
+            Exception? failure=null;var body=Body();
+            while(true)
+            {
+                object? step=null;bool moved;
+                try{moved=body.MoveNext();if(moved)step=body.Current;}
+                catch(Exception error){failure=error;break;}
+                if(!moved)break;yield return step;
+            }
+            void Cleanup(Action action){try{action();}catch(Exception error){failure=failure??error;}}
+            Cleanup(()=>{(body as IDisposable)?.Dispose();});
+            Cleanup(()=>view?.Dispose());
+            Cleanup(()=>{if(window!=null)window.Close();});
+            if(failure!=null)System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
+            IEnumerator Body()
+            {
+                Assert.That(UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode,Is.False,"isolated control check stays in Edit Mode");
+                var observation=new CampaignActivityObservationDto{ActorId="actor.explorer",Turn=1,Revision=0};
+                foreach(var item in new[]{("site.known","region.known"),("site.unmapped","region.unmapped"),("site.case","REGION.KNOWN")})
+                    observation.Sites.Add(new ActivityKnownSiteDto{
+                        Site=new ActivitySiteStateDto{SiteId=item.Item1,NodeId=item.Item2},
+                        Definition=new ActivitySiteDefinitionDto{Title="Observed opportunity"},
+                        Body=new ActivityBodyDto{DisplayName="Observed body"}});
+                var before=JsonConvert.SerializeObject(observation);var reviews=0;var commands=0;var selections=new List<string>();
+                view=new ReviewActivitiesPanel(observation,(_,__)=>reviews++,_=>commands++,true);
+                Assert.That(view.Q("activity-site-location"),Is.Null,"optional binding leaves older presenters unchanged");
+                var labels=new Dictionary<string,string>(StringComparer.Ordinal){{"region.known","Disclosed sector"}};
+                var bind=typeof(ReviewActivitiesPanel).GetMethod("BindKnownSiteNavigation",BindingFlags.Instance|BindingFlags.NonPublic)!;
+                bind.Invoke(view,new object[]{labels,new Action<string>(node=>selections.Add(node))});
+                labels["region.known"]="External mutation";labels.Clear();
+                window=ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();
+                window.titleContent=new GUIContent("Known expedition site UI test");window.Show();window.rootVisualElement.Add(view);
+                yield return null;yield return null;
+                Assert.That(view.panel,Is.Not.Null);
+                Assert.That(view.Q<Label>("activity-site-location").text,Is.EqualTo("Location: Disclosed sector"));
+                var first=view.Q<Button>("activity-site-map");first.Focus();Click(first);
+                Assert.That(selections,Is.EqualTo(new[]{"region.known"}));
+                var picker=view.Q<DropdownField>("activity-site-selector");
+                foreach(var index in new[]{1,2})
+                {
+                    picker.index=index;yield return null;
+                    Assert.That(view.Q("activity-site-location"),Is.Null,"absent or different-case nodes have no location fallback");
+                    Assert.That(view.Q("activity-site-map"),Is.Null);
+                }
+                picker.index=0;yield return null;
+                // Reattach the superseded button to make event delivery possible:
+                // its captured generation must still reject the old site control.
+                view.Add(first);first.Focus();Click(first);first.RemoveFromHierarchy();
+                Assert.That(selections.Count,Is.EqualTo(1));
+                var current=view.Q<Button>("activity-site-map");current.Focus();Click(current);
+                Assert.That(selections.Count,Is.EqualTo(2));
+                current.RemoveFromHierarchy();Click(current);
+                Assert.That(selections.Count,Is.EqualTo(2),"detached NavigationSubmit event is inert");
+                view.Add(current);view.Dispose();current.Focus();Click(current);
+                Assert.That(selections.Count,Is.EqualTo(2),"disposed panel cannot select a map destination");
+                Assert.That(reviews,Is.Zero);Assert.That(commands,Is.Zero);
+                Assert.That(JsonConvert.SerializeObject(observation),Is.EqualTo(before));
+            }
+        }
+
         private sealed class StreamedContinuationHold : SynchronizationContext
         {
             private readonly CheckpointContext target;

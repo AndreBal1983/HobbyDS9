@@ -32,11 +32,27 @@ namespace HobbyDS9.UnityReview
             ReviewColonisationPanel.Selection? Selection()=>root?.Q<ReviewColonisationPanel>()?.CaptureSelection();
             var systemNodes=frame.Strategy?.Navigation.Nodes.Where(node=>node.AssociatedSystemId.HasValue)
                 .ToLookup(node=>node.AssociatedSystemId!.Value.Value,node=>node.NodeId.Value,StringComparer.Ordinal);
-            var panel=new ReviewColonisationPanel(owner.Colonisation(),owner.ColonisationPlanets(),owner.ColonisationActivities(),
+            var observation=owner.Colonisation();var activities=owner.ColonisationActivities();var epoch=viewEpoch;
+            var panel=new ReviewColonisationPanel(observation,owner.ColonisationPlanets(),activities,
                 (command,caption)=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Preview,colonyCommand:command,caption:caption,selection:Selection());},
                 command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,colonyCommand:command,selection:Selection());},
                 (command,caption)=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Preview,command:command,caption:caption,selection:Selection());},
                 command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,command:command,selection:Selection());},owner.SupportsKitFreePassengers,systemNodes);
+            if(frame.Strategy!=null&&observation.Actor==frame.Actor&&activities.ActorId==frame.Actor
+                &&observation.Turn==frame.Status.Turn&&activities.Turn==frame.Status.Turn
+                &&observation.Revision==frame.Status.CampaignRevision&&activities.Revision==frame.Status.CampaignRevision)
+            {
+                var knownLocations=frame.Strategy.Navigation.Nodes.ToDictionary(node=>node.NodeId.Value,node=>node.DisplayName,StringComparer.Ordinal);
+                panel.BindKnownSiteNavigation(knownLocations,node=>{
+                    if(!Current()||epoch!=viewEpoch||confirmation!=null||root?.Contains(panel)!=true||workspace?.CanNavigate!=true
+                        ||(workspace.Page!=ReviewWorkspacePage.Production&&workspace.Page!=ReviewWorkspacePage.Worlds)
+                        ||!knownLocations.ContainsKey(node))return;
+                    // Match normal navigation: only select after permission succeeds,
+                    // then rebuild once. Inspection does not choose or order a fleet.
+                    if(!workspace.Navigate(ReviewWorkspacePage.Map))return;
+                    workspace.SelectedNode=node;frontierCommissionOpen=false;viewEpoch++;Build();
+                });
+            }
             panel.RestoreSelection(selection);
             var inspection=workspace!.PendingSystemInspection;
             var worldInspection=workspace.PendingWorldInspection;

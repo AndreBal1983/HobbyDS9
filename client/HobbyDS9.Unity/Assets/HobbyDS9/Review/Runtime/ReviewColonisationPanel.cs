@@ -23,6 +23,8 @@ namespace HobbyDS9.UnityReview
         private readonly VisualElement review;
         private readonly Label status;
         private ReviewActivitiesPanel? science;
+        private Dictionary<string,string>? knownSiteLocations;
+        private Action<string>? selectSiteOnMap;
         private ShipPreviewStage? hullPreview;
         private ReviewSolOverview? solOverview;
         private float solYaw,solZoom=1;
@@ -98,6 +100,12 @@ namespace HobbyDS9.UnityReview
             RegisterCallback<DetachFromPanelEvent>(e=>{if(ReferenceEquals(e.target,this))Dispose();});Show("Worlds");
         }
         private bool Live=>!disposed&&!submitted;
+        internal void BindKnownSiteNavigation(IReadOnlyDictionary<string,string> locations,Action<string> select)
+        {
+            if(!Live)return;
+            knownSiteLocations=locations.ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+            selectSiteOnMap=select;science?.BindKnownSiteNavigation(knownSiteLocations,select);
+        }
         private static Label Text(VisualElement p,string text,string id="")
         {var l=new Label(text){name=id};l.style.whiteSpace=WhiteSpace.Normal;l.style.fontSize=16;l.style.flexShrink=0;l.style.marginBottom=6;p.Add(l);return l;}
         private static VisualElement Row(VisualElement p)
@@ -123,7 +131,11 @@ namespace HobbyDS9.UnityReview
             if(disposed)return;controlEpoch++;reviewEpoch++;displayedReview=null;currentInspector=null;page=new[]{"Worlds","Planets","Transports","Science"}.Contains(selected)?selected:"Worlds";
             science?.Dispose();science=null;ReleaseHull();ReleaseSolOverview();body.Clear();review.Clear();review.style.display=DisplayStyle.None;
             if(page=="Worlds")Worlds();else if(page=="Planets")Planets();else if(page=="Transports")Transports();else
-            {science=new ReviewActivitiesPanel(activities,reviewActivity,submitActivity,true);body.Add(science);}
+            {
+                science=new ReviewActivitiesPanel(activities,reviewActivity,submitActivity,true);
+                if(knownSiteLocations!=null&&selectSiteOnMap!=null)science.BindKnownSiteNavigation(knownSiteLocations,selectSiteOnMap);
+                body.Add(science);
+            }
         }
         private void Worlds()
         {
@@ -576,6 +588,6 @@ namespace HobbyDS9.UnityReview
          var token=++reviewEpoch;review.Clear();review.style.display=DisplayStyle.Flex;Text(review,caption);Text(review,eligibility.Accepted?"Available at this observed state.":eligibility.Reason);if(eligibility.Accepted)Button(review,"Confirm order","colonisation-order-confirm",()=>{if(token==reviewEpoch)SendActivity(command);});Button(review,"Back","colonisation-order-back",()=>DismissReview(token));}
         private void DismissReview(int token){if(token!=reviewEpoch)return;reviewEpoch++;displayedReview=null;review.Clear();review.style.display=DisplayStyle.None;}
         private void ReleaseSolOverview(){solOverview?.Dispose();solOverview=null;}
-        public void Dispose(){if(disposed)return;disposed=true;reviewEpoch++;displayedReview=null;currentInspector=null;science?.Dispose();science=null;ReleaseHull();ReleaseSolOverview();review.Clear();}
+        public void Dispose(){if(disposed)return;disposed=true;reviewEpoch++;displayedReview=null;currentInspector=null;science?.Dispose();science=null;knownSiteLocations=null;selectSiteOnMap=null;ReleaseHull();ReleaseSolOverview();review.Clear();}
     }
 }

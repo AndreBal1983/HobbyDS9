@@ -29,6 +29,9 @@ namespace HobbyDS9.UnityReview
         private readonly Label status;
         private CampaignActivityCommandDto? pending;
         private int reviewGeneration;
+        private int siteNavigationGeneration;
+        private Dictionary<string,string>? knownSiteLocations;
+        private Action<string>? selectSiteOnMap;
         private ReviewState? displayedReview;
         internal sealed class ReviewState
         {
@@ -74,6 +77,13 @@ namespace HobbyDS9.UnityReview
         }
         internal void BindConstructionStatus(Func<string,string?> currentStatus)
         {if(disposed)return;constructionStatus=currentStatus;RefreshConstructionStatus();}
+        internal void BindKnownSiteNavigation(IReadOnlyDictionary<string,string> locations,Action<string> select)
+        {
+            if(disposed||submitted)return;
+            knownSiteLocations=locations.Where(pair=>!string.IsNullOrWhiteSpace(pair.Value))
+                .ToDictionary(pair=>pair.Key,pair=>pair.Value,StringComparer.Ordinal);
+            selectSiteOnMap=select;RefreshSite();
+        }
         internal void RefreshConstructionStatus()
         {if(!disposed&&Colony!=null)construction?.PresentStatus(constructionStatus?.Invoke(Colony.ColonyId));}
 
@@ -310,12 +320,25 @@ namespace HobbyDS9.UnityReview
         }
         private void RefreshSite()
         {
+            var navigationGeneration=++siteNavigationGeneration;
             if(siteDetails==null || history==null)return;
             siteDetails.Clear();history.Clear();Text(history,"Expedition progress & reports","console-section");
             var site=Site;var ship=Ship;
             if(site!=null)
             {
                 Text(siteDetails,Friendly(site.Definition.DiscoveryText,"An opportunity has been observed."));
+                if(selectSiteOnMap!=null&&knownSiteLocations!=null&&knownSiteLocations.TryGetValue(site.Site.NodeId,out var location))
+                {
+                    Text(siteDetails,"Location: "+location,id:"activity-site-location");
+                    var siteId=site.Site.SiteId;var nodeId=site.Site.NodeId;
+                    Button? locate=null;
+                    locate=Button(siteDetails,"Select site on map","activity-site-map",()=>{
+                        if(disposed||submitted||navigationGeneration!=siteNavigationGeneration||locate==null
+                            ||locate.panel==null||!locate.enabledInHierarchy||!Contains(locate)
+                            ||Site?.Site.SiteId!=siteId||Site?.Site.NodeId!=nodeId)return;
+                        selectSiteOnMap?.Invoke(nodeId);
+                    });
+                }
                 if(site.MinorDefinition!=null)
                     Text(siteDetails,Friendly(site.MinorDefinition.DisplayName,"Observed society")+" · "+Friendly(site.MinorDefinition.SpeciesName,"Species not disclosed")
                         +(site.MinorDefinition.WarpCapable?" · warp capable":" · pre-warp")+" · relation: "+(site.Relation?.ToString()??"Observed"));
@@ -424,6 +447,6 @@ namespace HobbyDS9.UnityReview
             if(previewImage!=null){previewImage.image=null;previewImage.style.display=DisplayStyle.None;}
             stage?.Dispose();stage=null;
         }
-        public void Dispose(){if(disposed)return;disposed=true;pending=null;displayedReview=null;reviewGeneration++;constructionStatus=null;construction?.Dispose();ReleasePreview();}
+        public void Dispose(){if(disposed)return;disposed=true;pending=null;displayedReview=null;reviewGeneration++;siteNavigationGeneration++;knownSiteLocations=null;selectSiteOnMap=null;constructionStatus=null;construction?.Dispose();ReleasePreview();}
     }
 }
