@@ -61,7 +61,13 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(item.panel,Is.SameAs(doc.rootVisualElement.panel));if(enabled)Assert.That(item.enabledInHierarchy,Is.True,item.name);
             var hit=doc.rootVisualElement.panel.Pick(item.worldBound.center);Assert.That(hit==item||hit!=null&&item.Contains(hit),Is.True,item.name+" actual pick");
             foreach(var v in parents)PublishedReceivingContained(v.contentViewport.worldBound,item,item.name);
-            Assert.That(item.worldBound.yMax,Is.LessThanOrEqualTo(doc.rootVisualElement.Q("player-footer").worldBound.yMin));
+            var footer=doc.rootVisualElement.Q("player-footer");Assert.That(footer,Is.Not.Null);
+            if(footer.resolvedStyle.display==DisplayStyle.None)
+            {
+                Assert.That(footer.Q<Button>(),Is.Null,"the hidden landing footer has no actions");
+                PublishedReceivingContained(doc.rootVisualElement.worldBound,item,item.name+" root viewport");
+            }
+            else Assert.That(item.worldBound.yMax,Is.LessThanOrEqualTo(footer.worldBound.yMin));
         }
         private static IEnumerator ColonyClick(ColonyCase s,UIDocument doc,string id)
         {var b=doc.rootVisualElement.Q<Button>(id);yield return ColonyReach(doc,b,target:id);var clock=System.Diagnostics.Stopwatch.StartNew();ColonyActivate(s,()=>Click(b));s.Shared.Timings.Add(new{phase="activate-"+id,owningThreadMs=clock.Elapsed.TotalMilliseconds,notTotalLatency=true});yield return ColonyIdle(s,id);if(id=="colonisation-order-confirm")Assert.That(doc.rootVisualElement.Q<Button>(id),Is.Null,"accepted/rejected submission discards the prior review");}
