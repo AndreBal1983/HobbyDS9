@@ -238,6 +238,45 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(field,Is.Not.Null);int index=worlds.ToList().FindIndex(w=>w.Id==world);Assert.That(index,Is.GreaterThanOrEqualTo(0),"current human-owned world selection");
             yield return ColonyReach(doc,field);CycleActivate(t,()=>field.index=index);yield return null;yield return null;
         }
+        private static IEnumerator CycleWorldNavigation(CycleReceivingState t,UIDocument doc,ReviewFrame staleFrame)
+        {
+            var model=ColonyModel(t.Case);var frame=model.Current.Frame;var workspace=t.Case.Shared.Entry!.Workspace!;
+            var worlds=model.Colonisation().Worlds.ToArray();Assert.That(worlds.Length,Is.GreaterThanOrEqualTo(2),"two distinct owned worlds exercise exact navigation");
+            var pending=typeof(ReviewWorkspace).GetProperty("PendingWorldInspection",HullPrivate)!;
+            void AssertWorld(string expected)
+            {
+                var picker=doc.rootVisualElement.Q<DropdownField>("colonisation-world-selector");Assert.That(picker,Is.Not.Null,"explicit world navigation opens Construction Command");
+                Assert.That(picker.index,Is.EqualTo(Array.FindIndex(worlds,w=>w.Id==expected)),"the requested owned world is selected");
+                Assert.That(pending.GetValue(workspace),Is.Null,"navigation request is consumed once");
+                Assert.That(model.Current.Frame,Is.SameAs(frame),"inspection submits no order or campaign mutation");
+                Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
+            }
+            yield return CycleWorld(t,doc,worlds[1].Id);
+            foreach(var target in worlds.Take(2))
+            {
+                CycleActivate(t,()=>{
+                    workspace.SelectedNode=frame.Strategy!.Navigation.Nodes.First(n=>n.AssociatedSystemId?.Value==target.SystemId).NodeId.Value;
+                    CampaignPage(doc,ReviewWorkspacePage.Map);
+                });yield return V3Settled(doc);
+                var open=doc.rootVisualElement.Q<Button>("map-open-world-"+target.Id);yield return ColonyReach(doc,open);
+                CycleActivate(t,()=>Click(open));yield return V3Settled(doc);AssertWorld(target.Id);
+            }
+            for(int i=0;i<2;i++)
+            {
+                var target=worlds[1-i];CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Empire));yield return V3Settled(doc);
+                var select=doc.rootVisualElement.Q<Button>("world-select-"+target.Id);yield return ColonyReach(doc,select);
+                CycleActivate(t,()=>Click(select));yield return V3Settled(doc);
+                var open=doc.rootVisualElement.Q<Button>(i==0?"world-open-exact-queue":"world-open-details");yield return ColonyReach(doc,open);
+                CycleActivate(t,()=>Click(open));yield return V3Settled(doc);AssertWorld(target.Id);
+            }
+            yield return CycleWorld(t,doc,worlds[1].Id);
+            CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Worlds));yield return V3Settled(doc);AssertWorld(worlds[1].Id);
+            foreach(var request in new[]{(Frame:frame,World:"world.not-owned"),(Frame:staleFrame,World:worlds[0].Id)})
+            {
+                CycleActivate(t,()=>{pending.SetValue(workspace,request);CampaignPage(doc,ReviewWorkspacePage.Worlds);});
+                yield return V3Settled(doc);AssertWorld(worlds[1].Id);
+            }
+        }
         private static IEnumerator CycleOperation(CycleReceivingState t,UIDocument doc,string phase,string busyTitle,Action activate)
         {
             var s=t.Case;var clock=System.Diagnostics.Stopwatch.StartNew();var busyClock=new System.Diagnostics.Stopwatch();int busyFrames=0,ticks=0;
@@ -332,6 +371,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(initial.AiPlans!.All(p=>p.ActorId!=actor),Is.True);Assert.That(initial.CycleActors!.All(g=>g.ActorId!=actor),Is.True);
                 var initialActor=AssertSingleCycle(initial.CycleActors!);Assert.That(initialActor.Receipts,Is.Empty);Assert.That(initialActor.Active,Is.Null);Assert.That(initialActor.NextOrdinal,Is.EqualTo(1));
                 CycleCensus(t,initial);t.Mark("explicit-new-complete");
+                yield return CycleWorldNavigation(t,doc,oldModel.Current.Frame);
                 // A local Research edit must never become an implicit order or a week advance.
                 var acceptedFrame=model.Current.Frame;
                 CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Research));yield return V3Settled(doc);

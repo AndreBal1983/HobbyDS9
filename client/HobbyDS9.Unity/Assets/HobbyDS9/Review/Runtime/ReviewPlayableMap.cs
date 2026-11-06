@@ -419,6 +419,7 @@ namespace HobbyDS9.UnityReview
                     button(details,"Inspect system",()=>
                     {
                         if(!ReferenceEquals(frame,model.Current.Frame)||!workspace.CanNavigate)return;
+                        workspace.PendingWorldInspection=null;
                         workspace.PendingSystemInspection=(systemId,caption);
                         navigate(ReviewWorkspacePage.Worlds);
                     }).name="map-inspect-system";
@@ -426,7 +427,14 @@ namespace HobbyDS9.UnityReview
                 foreach(var colony in facts.Colonies.Where(c=>selectedNode.AssociatedSystemId.HasValue&&c.SystemId==selectedNode.AssociatedSystemId.Value))
                 {
                     Text(details,colony.Environment.DisplayName+" · population "+colony.Population);
-                    button(details,"Open world / construction",()=>{workspace.SelectedColony=colony.ColonyId.Value;navigate(ReviewWorkspacePage.Worlds);});
+                    button(details,"Open world / construction",()=>
+                    {
+                        if(!ReferenceEquals(frame,model.Current.Frame)||!workspace.CanNavigate)return;
+                        workspace.SelectedColony=colony.ColonyId.Value;
+                        workspace.PendingSystemInspection=null;
+                        if(model.ColonisationCampaign)workspace.PendingWorldInspection=(frame,colony.ColonyId.Value);
+                        navigate(ReviewWorkspacePage.Worlds);
+                    }).name="map-open-world-"+colony.ColonyId;
                 }
             }
             Text(details,"Your fleets").AddToClassList("console-section");

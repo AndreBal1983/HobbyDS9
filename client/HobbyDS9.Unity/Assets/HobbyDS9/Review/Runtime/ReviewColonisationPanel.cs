@@ -353,6 +353,13 @@ namespace HobbyDS9.UnityReview
             if(fold.panel!=null)Refresh();
         }
         private string? inspectedSystemCaption;
+        internal bool InspectOwnedWorld(string worldId)
+        {
+            if(!Live||!observation.Worlds.Any(x=>x.Id==worldId))return false;
+            world=worldId;transportDraft=null;
+            Show("Worlds");
+            return true;
+        }
         internal void InspectSystem(string? systemId,string caption)
         {
             inspectedSystemCaption=caption;

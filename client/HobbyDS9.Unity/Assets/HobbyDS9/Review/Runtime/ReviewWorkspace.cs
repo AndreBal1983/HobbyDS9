@@ -18,6 +18,7 @@ namespace HobbyDS9.UnityReview
         public string? SelectedNode { get=>selectedNode;set{if(selectedNode!=value)RoutePreview=null;selectedNode=value;} }
         public string? SelectedFleet { get=>selectedFleet;set{if(selectedFleet!=value)RoutePreview=null;selectedFleet=value;} }
         internal (string? SystemId,string Caption)? PendingSystemInspection { get; set; }
+        internal (ReviewFrame Frame,string World)? PendingWorldInspection { get; set; }
         public string? SelectedColony { get; set; }
         public string? SelectedOwnShip { get; set; }
         public KnownRouteOffer? RoutePreview { get; set; }
@@ -50,7 +51,7 @@ namespace HobbyDS9.UnityReview
         private void Context()
         {
             if(ReferenceEquals(context,Model.Current))return;
-            context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;PendingSystemInspection=null;SelectedOwnShip=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";MapZoom=1;MapPanX=MapPanY=0;NavigationEpoch=checked(NavigationEpoch+1);
+            context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;PendingSystemInspection=null;PendingWorldInspection=null;SelectedOwnShip=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";MapZoom=1;MapPanX=MapPanY=0;NavigationEpoch=checked(NavigationEpoch+1);
             FleetSort="Name";FleetSortDescending=false;WorldFilters.Clear();CollapsedSystems.Clear();WorldSort="World";WorldSortDescending=false;
         }
         public ReviewWorkspacePage Page { get {Context();return page;} }

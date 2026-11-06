@@ -39,8 +39,13 @@ namespace HobbyDS9.UnityReview
                 command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,command:command,selection:Selection());},owner.SupportsKitFreePassengers,systemNodes);
             panel.RestoreSelection(selection);
             var inspection=workspace!.PendingSystemInspection;
-            workspace.PendingSystemInspection=null;
-            if(inspection.HasValue)panel.InspectSystem(inspection.Value.SystemId,inspection.Value.Caption);
+            var worldInspection=workspace.PendingWorldInspection;
+            workspace.PendingSystemInspection=null;workspace.PendingWorldInspection=null;
+            if(worldInspection.HasValue)
+            {
+                if(ReferenceEquals(worldInspection.Value.Frame,frame))panel.InspectOwnedWorld(worldInspection.Value.World);
+            }
+            else if(inspection.HasValue)panel.InspectSystem(inspection.Value.SystemId,inspection.Value.Caption);
             else panel.RestoreReview(reviewed);
             panel.PresentStatus(owner.ColonisationActionStatus());parent.Add(panel);colonisationPanelOwner=owner;colonisationPanelController=controller;colonisationPanelFrame=frame;
         }

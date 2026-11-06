@@ -59,7 +59,7 @@ namespace HobbyDS9.UnityReview
         }
         public void Render(VisualElement parent)
         {
-            var facts=model.Current.Frame.Strategy!;
+            var frame=model.Current.Frame;var facts=frame.Strategy!;
             var main=new VisualElement();main.AddToClassList("console-panel");main.AddToClassList("console-work");parent.Add(main);
             Text(main,"Empire / owned worlds").AddToClassList("console-section");
             Text(main,"Current owned observations · turn "+model.Current.Frame.Status.Turn+". Per-turn output, stock and capacity are separate.");
@@ -150,8 +150,16 @@ namespace HobbyDS9.UnityReview
                 Text(aside,"Paid: "+active.PaidCredits+" credits. Remaining-turn estimate unavailable.");
             }
             Text(aside,"Foreign queues, power supply and unexploited deposits are unavailable in this observation; they are not counted as zero.");
-            button(aside,"Open this world's production queue",()=>navigate(ReviewWorkspacePage.Production)).name="world-open-exact-queue";
-            button(aside,"Inspect this world's details",()=>navigate(ReviewWorkspacePage.Worlds)).name="world-open-details";
+            void OpenSelectedWorld(ReviewWorkspacePage page)
+            {
+                if(!ReferenceEquals(frame,model.Current.Frame)||!workspace.CanNavigate)return;
+                workspace.SelectedColony=selected.ColonyId.Value;
+                workspace.PendingSystemInspection=null;
+                if(model.ColonisationCampaign)workspace.PendingWorldInspection=(frame,selected.ColonyId.Value);
+                navigate(page);
+            }
+            button(aside,"Open this world's production queue",()=>OpenSelectedWorld(ReviewWorkspacePage.Production)).name="world-open-exact-queue";
+            button(aside,"Inspect this world's details",()=>OpenSelectedWorld(ReviewWorkspacePage.Worlds)).name="world-open-details";
         }
     }
 }
