@@ -70,12 +70,15 @@ namespace HobbyDS9.UnityReview
         {
             var panel=PagePanel("Display preferences");panel.Add(Readout("Window size and fullscreen mode affect presentation only. They do not change your campaign or Windows display settings."));
             var status=Readout(CurrentDisplayStatus());status.name="display-current-status";panel.Add(status);
-            // SetResolution is asynchronous. The element's own scheduler pauses
-            // when detached; only actual applied window state is displayed.
-            status.schedule.Execute(()=>{var value=CurrentDisplayStatus();if(status.text!=value)status.text=value;}).Every(100);
             foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})
                 AddButton(panel,size.x+" × "+size.y,()=>Screen.SetResolution(size.x,size.y,Screen.fullScreen?FullScreenMode.FullScreenWindow:FullScreenMode.Windowed));
-            AddButton(panel,Screen.fullScreen?"Use windowed mode":"Use borderless fullscreen",()=>Screen.SetResolution(Screen.width,Screen.height,Screen.fullScreen?FullScreenMode.Windowed:FullScreenMode.FullScreenWindow));
+            var mode=AddButton(panel,Screen.fullScreen?"Use windowed mode":"Use borderless fullscreen",()=>Screen.SetResolution(Screen.width,Screen.height,Screen.fullScreen?FullScreenMode.Windowed:FullScreenMode.FullScreenWindow));
+            // SetResolution is asynchronous. The element's own scheduler pauses
+            // when detached; status and action follow the actual applied mode.
+            status.schedule.Execute(()=>{
+                var value=CurrentDisplayStatus();if(status.text!=value)status.text=value;
+                var caption=Screen.fullScreen?"Use windowed mode":"Use borderless fullscreen";if(mode.text!=caption)mode.text=caption;
+            }).Every(100);
             panel.Add(Readout("VSync follows the established game configuration. No desktop resolution or account setting is changed."));
             panel.Add(Readout("A window as large as your desktop can extend beyond its edges. Use borderless fullscreen to fit the display."));
         }
