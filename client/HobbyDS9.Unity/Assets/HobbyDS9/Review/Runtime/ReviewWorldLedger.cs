@@ -25,15 +25,23 @@ namespace HobbyDS9.UnityReview
         {var l=new Label(text){name=id};l.AddToClassList("console-copy");parent.Add(l);return l;}
         private static string SystemName(CampaignIntegratedStrategySnapshot facts,ColonySnapshot colony)
             =>facts.Navigation.Nodes.FirstOrDefault(n=>n.AssociatedSystemId==colony.SystemId)?.DisplayName??"Known owned system";
-        private static string BuildName(CampaignIntegratedStrategySnapshot facts,ColonySnapshot colony)
+        private static string BuildName(CampaignIntegratedStrategySnapshot facts,ColonySnapshot colony,ILookup<string,ColonisationQueueSnapshot>? production)
         {
+            if(production!=null)return production[colony.ColonyId.Value].FirstOrDefault()?.Name??"Idle";
             var active=colony.ProductionQueue.FirstOrDefault();
             if(active==null)return "Idle";
             var design=facts.Construction.FirstOrDefault(c=>c.Design.DefinitionId==active.ShipDesignDefinitionId)?.Design;
             return design?.DisplayName??"Paid ship construction";
         }
-        private static decimal? Number(ColonySnapshot c,string column)
+        private static decimal? Number(ColonySnapshot c,string column,ILookup<string,ColonisationQueueSnapshot>? production)
         {
+            if(production!=null)
+            {
+                var queue=production[c.ColonyId.Value];
+                if(column=="Work completed")return queue.FirstOrDefault()?.CompletedIndustry;
+                if(column=="Work required")return queue.FirstOrDefault()?.RequiredIndustry;
+                if(column=="Queue count")return queue.Count();
+            }
             switch(column)
             {
                 case "Population":return c.Population;
@@ -50,16 +58,18 @@ namespace HobbyDS9.UnityReview
                 default:return null;
             }
         }
-        private static string Cell(CampaignIntegratedStrategySnapshot facts,ColonySnapshot c,string column)
+        private static string Cell(CampaignIntegratedStrategySnapshot facts,ColonySnapshot c,string column,ILookup<string,ColonisationQueueSnapshot>? production)
         {
             if(column=="World")return c.Environment.DisplayName;
-            if(column=="Current build")return BuildName(facts,c);
-            var n=Number(c,column);
+            if(column=="Current build")return BuildName(facts,c,production);
+            var n=Number(c,column,production);
             return n.HasValue?n.Value.ToString("0",CultureInfo.InvariantCulture):"Unavailable";
         }
         public void Render(VisualElement parent)
         {
             var frame=model.Current.Frame;var facts=frame.Strategy!;
+            // Streamed orders deliberately leave the legacy prepaid queue empty.
+            var production=model.ColonisationCampaign?model.Colonisation().Production.ToLookup(q=>q.ColonyId,StringComparer.Ordinal):null;
             var main=new VisualElement();main.AddToClassList("console-panel");main.AddToClassList("console-work");parent.Add(main);
             Text(main,"Empire / owned worlds").AddToClassList("console-section");
             Text(main,"Current owned observations · turn "+model.Current.Frame.Status.Turn+". Per-turn output, stock and capacity are separate.");
@@ -77,15 +87,15 @@ namespace HobbyDS9.UnityReview
                     if(Numeric.Contains(filter.Key))
                     {
                         if(decimal.TryParse(filter.Value,NumberStyles.Integer,CultureInfo.InvariantCulture,out var minimum))
-                        {var n=Number(c,filter.Key);if(!n.HasValue||n<minimum)return false;}
+                        {var n=Number(c,filter.Key,production);if(!n.HasValue||n<minimum)return false;}
                     }
-                    else if(Cell(facts,c,filter.Key).IndexOf(filter.Value,StringComparison.OrdinalIgnoreCase)<0)return false;
+                    else if(Cell(facts,c,filter.Key,production).IndexOf(filter.Value,StringComparison.OrdinalIgnoreCase)<0)return false;
                 }
                 return true;
             }
             var rows=facts.Colonies.Where(Matches).ToList();
             rows.Sort((a,b)=>{
-                var av=Number(a,workspace.WorldSort);var bv=Number(b,workspace.WorldSort);
+                var av=Number(a,workspace.WorldSort,production);var bv=Number(b,workspace.WorldSort,production);
                 int comparison;
                 if(Numeric.Contains(workspace.WorldSort))
                 {
@@ -93,7 +103,7 @@ namespace HobbyDS9.UnityReview
                     if(av.HasValue!=bv.HasValue)return av.HasValue?-1:1;
                     comparison=Nullable.Compare(av,bv);
                 }
-                else comparison=StringComparer.OrdinalIgnoreCase.Compare(Cell(facts,a,workspace.WorldSort),Cell(facts,b,workspace.WorldSort));
+                else comparison=StringComparer.OrdinalIgnoreCase.Compare(Cell(facts,a,workspace.WorldSort,production),Cell(facts,b,workspace.WorldSort,production));
                 if(workspace.WorldSortDescending)comparison=-comparison;
                 return comparison!=0?comparison:StringComparer.Ordinal.Compare(a.ColonyId.Value,b.ColonyId.Value);
             });
@@ -129,7 +139,7 @@ namespace HobbyDS9.UnityReview
                     {
                         var cell=new VisualElement();cell.AddToClassList("world-ledger-cell");row.Add(cell);
                         if(column=="World"){var choose=button(cell,colony.Environment.DisplayName,()=>perform(()=>workspace.SelectedColony=colony.ColonyId.Value));choose.name="world-select-"+colony.ColonyId;}
-                        else Text(cell,Cell(facts,colony,column));
+                        else Text(cell,Cell(facts,colony,column,production),"world-cell-"+column);
                     }
                 }
             }
@@ -142,12 +152,29 @@ namespace HobbyDS9.UnityReview
             if(!rows.Contains(selected))Text(aside,"Selected world is hidden by filters; selection is retained.");
             Text(aside,SystemName(facts,selected)+" · "+selected.Environment.PlanetClass);
             Text(aside,"Population "+selected.Population+" / "+selected.PopulationCapacity+" · Stability "+selected.State.Stability);
-            Text(aside,"Current construction: "+BuildName(facts,selected),"world-current-construction");
-            var active=selected.ProductionQueue.FirstOrDefault();
-            if(active!=null)
+            Text(aside,"Current construction: "+BuildName(facts,selected,production),"world-current-construction");
+            if(production!=null)
             {
-                Text(aside,active.CompletedIndustry+" / "+active.RequiredIndustry+" Industry · "+selected.ProductionQueue.Count+" queued");
-                Text(aside,"Paid: "+active.PaidCredits+" credits. Remaining-turn estimate unavailable.");
+                var queue=production[selected.ColonyId.Value];var active=queue.FirstOrDefault();
+                if(active!=null)
+                {
+                    Text(aside,active.CompletedIndustry+" / "+active.RequiredIndustry+" Industry · "+queue.Count()+" queued","world-construction-progress");
+                    Text(aside,"Status: "+active.Status,"world-construction-status");
+                    var materials=active.Required.Select(r=>
+                        (facts.References.Resources.FirstOrDefault(d=>d.DefinitionId==r.ResourceDefinitionId)?.DisplayName??"Material")+": "+
+                        (active.Consumed.FirstOrDefault(c=>c.ResourceDefinitionId==r.ResourceDefinitionId)?.Amount??0)+" / "+r.Amount);
+                    Text(aside,"Materials consumed / required: "+(active.Required.Count==0?"none":string.Join(", ",materials)),"world-construction-materials");
+                    Text(aside,"Construction uses Industry and materials delivered to this world, with no upfront credit payment. Remaining-turn estimate unavailable.");
+                }
+            }
+            else
+            {
+                var active=selected.ProductionQueue.FirstOrDefault();
+                if(active!=null)
+                {
+                    Text(aside,active.CompletedIndustry+" / "+active.RequiredIndustry+" Industry · "+selected.ProductionQueue.Count+" queued","world-construction-progress");
+                    Text(aside,"Paid: "+active.PaidCredits+" credits. Remaining-turn estimate unavailable.");
+                }
             }
             Text(aside,"Foreign queues, power supply and unexploited deposits are unavailable in this observation; they are not counted as zero.");
             void OpenSelectedWorld(ReviewWorkspacePage page)

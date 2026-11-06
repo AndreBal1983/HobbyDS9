@@ -161,6 +161,36 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(world.Stage,Is.EqualTo(ColonyEstablishmentStage.Established));Assert.That(queue.Kind,Is.EqualTo(ColonisationProductionKind.SettlementKit));Assert.That(queue.DefinitionId,Is.EqualTo("resource.settlement-kit"));
                 Assert.That(queue.CompletedIndustry,Is.EqualTo(12));var consumed=NetworkMaterialConsumed(queue);Assert.That(consumed,Is.EqualTo(2));
                 Assert.That(NetworkMaterialStock(world,"resource.dilithium"),Is.EqualTo(0));var initialKits=NetworkMaterialStock(world,"resource.settlement-kit");Assert.That(initialKits,Is.EqualTo(0));
+                // Empire must read the same owned streamed queue as Construction Command.
+                var ledgerFrame=model.Current.Frame;var workspace=entry.Workspace!;
+                var ownQueue=model.Colonisation().Production.Where(q=>q.ColonyId==world.Id).ToArray();var head=ownQueue.First();
+                Assert.That(ledgerFrame.Strategy!.Colonies.Single(c=>c.ColonyId.Value==world.Id).ProductionQueue,Is.Empty,"streamed orders do not populate the prepaid queue");
+                ColonyActivate(s,()=>CampaignPage(doc,ReviewWorkspacePage.Empire));yield return V3Settled(doc);
+                yield return ColonyClick(s,doc,"world-select-"+world.Id);
+                var ledgerRow=doc.rootVisualElement.Q("world-row-"+world.Id);Assert.That(ledgerRow,Is.Not.Null);
+                Assert.That(ledgerRow.Q<Label>("world-cell-Current build").text,Is.EqualTo(head.Name));
+                Assert.That(ledgerRow.Q<Label>("world-cell-Work completed").text,Is.EqualTo(head.CompletedIndustry.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                Assert.That(ledgerRow.Q<Label>("world-cell-Work required").text,Is.EqualTo(head.RequiredIndustry.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+                Assert.That(ledgerRow.Q<Label>("world-cell-Queue count").text,Is.EqualTo(ownQueue.Length.ToString()));
+                Assert.That(doc.rootVisualElement.Q<Label>("world-current-construction").text,Is.EqualTo("Current construction: "+head.Name));
+                Assert.That(doc.rootVisualElement.Q<Label>("world-construction-progress").text,Is.EqualTo(head.CompletedIndustry+" / "+head.RequiredIndustry+" Industry · "+ownQueue.Length+" queued"));
+                Assert.That(doc.rootVisualElement.Q<Label>("world-construction-status").text,Is.EqualTo("Status: "+head.Status));
+                foreach(var material in head.Required)
+                    Assert.That(doc.rootVisualElement.Q<Label>("world-construction-materials").text,Does.Contain((head.Consumed.FirstOrDefault(r=>r.ResourceDefinitionId==material.ResourceDefinitionId)?.Amount??0)+" / "+material.Amount));
+                Assert.That(doc.rootVisualElement.Query<Label>().ToList().Any(l=>l.text.StartsWith("Paid:",StringComparison.Ordinal)),Is.False);
+                foreach(var column in new[]{"Current build","Queue count","Work completed"})
+                {
+                    var filter=doc.rootVisualElement.Q<TextField>("world-filter-"+column);
+                    ColonyActivate(s,()=>filter.value=column=="Current build"?head.Name:column=="Queue count"?ownQueue.Length.ToString():head.CompletedIndustry.ToString());yield return V3Settled(doc);
+                    Assert.That(doc.rootVisualElement.Q("world-row-"+world.Id),Is.Not.Null,"visible queue agrees with its own text/numeric filters");
+                }
+                var minimum=doc.rootVisualElement.Q<TextField>("world-filter-Work completed");
+                ColonyActivate(s,()=>minimum.value=(head.CompletedIndustry+1).ToString());yield return V3Settled(doc);
+                Assert.That(doc.rootVisualElement.Q("world-row-"+world.Id),Is.Null,"minimum filter uses actual completed Industry");
+                yield return ColonyClick(s,doc,"world-ledger-clear");
+                Assert.That(workspace.WorldFilters,Is.Empty);Assert.That(doc.rootVisualElement.Q("world-row-"+world.Id),Is.Not.Null);
+                Assert.That(workspace.SelectedColony,Is.EqualTo(world.Id));Assert.That(model.Current.Frame,Is.SameAs(ledgerFrame));
+                Assert.That(RepeatBytes(model),Is.EqualTo(bytes),"Empire inspection/filtering changes none of the complete committed root");
                 s.Home=world.Id;var controller=model.Current;var host=StreamHost(model);s.Hosts.Add(host);long work=queue.CompletedIndustry;bool intermediate=false,paidQuantum=false;
                 t.Mark("fixture-continue-exact-complete");yield return ColonyWorld(s,doc,s.Home);
                 while(ColonyModel(s).Colonisation().Production.Any(q=>q.Id==NetworkMaterialQueue))
