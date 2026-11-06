@@ -114,14 +114,22 @@ namespace HobbyDS9.UnityReview
         {
             var useTop=PlayerProfile&&demoStarted&&!demoLanding&&model!.ColonisationCampaign;
             playerTopActions!.Clear();
-            playerTopActions.style.display=useTop?DisplayStyle.Flex:DisplayStyle.None;
             playerFooter!.Clear();
+            if(PlayerProfile&&demoLanding)
+            {
+                playerTopActions.style.display=DisplayStyle.None;
+                playerFooter.style.display=DisplayStyle.None;
+                return;
+            }
+            if(PlayerProfile&&!demoStarted)useTop=true;
+            playerTopActions.style.display=useTop?DisplayStyle.Flex:DisplayStyle.None;
+            playerFooter.style.display=DisplayStyle.Flex;
             playerFooter.EnableInClassList("console-footer",!useTop);
             var actions=useTop?playerTopActions:playerFooter;
             var left=new VisualElement();
             left.AddToClassList("review-field-row");
             actions.Add(left);
-            if(PlayerProfile&&(demoLanding||!demoStarted)){AddButton(left,"Back to menu",OpenDemoMenu);return;}
+            if(PlayerProfile&&!demoStarted){AddButton(left,"Back to menu",OpenDemoMenu).name="player-back-to-menu";return;}
             AddButton(left,"‹ Return to map",()=>Navigate(ReviewWorkspacePage.Map));
             AddButton(left,"Save",()=>Navigate(ReviewWorkspacePage.Saves));
             var actionModel=model!;var actionController=actionModel.Current;var actionFrame=actionController.Frame;var actionEpoch=viewEpoch;
