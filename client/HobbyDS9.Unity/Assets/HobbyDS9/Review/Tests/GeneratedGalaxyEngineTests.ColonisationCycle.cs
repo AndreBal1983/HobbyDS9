@@ -27,6 +27,9 @@ namespace HobbyDS9.UnityReview.Tests
             internal int Flushed,UiAdvances;
             internal string Phase="setup";
             internal bool OverrideAssigned;
+            internal bool InterfaceOnly;
+            internal string EvidencePrefix=>InterfaceOnly?"cycle-interface-":"cycle-";
+            internal object Evidence(object payload)=>InterfaceOnly?new{mode="interface-only",payload}:payload;
             internal readonly List<ReviewUiModel> Models=new List<ReviewUiModel>();
             internal readonly List<CycleActivationContext> Activations=new List<CycleActivationContext>();
             internal void Flush()
@@ -34,35 +37,44 @@ namespace HobbyDS9.UnityReview.Tests
                 // Inspecting the count is cheap; disk writes happen ONLY for new timing rows.
                 while(Flushed<Case.Shared.Timings.Count)
                 {
-                    File.AppendAllText(Path.Combine(CampaignOutput(),"cycle-timings.jsonl"),
-                        JsonConvert.SerializeObject(Case.Shared.Timings[Flushed])+Environment.NewLine);
+                    File.AppendAllText(Path.Combine(CampaignOutput(),EvidencePrefix+"timings.jsonl"),
+                        JsonConvert.SerializeObject(Evidence(Case.Shared.Timings[Flushed]))+Environment.NewLine);
                     Flushed++;
                 }
             }
             internal void Mark(string phase)
             {
                 Phase=phase;
-                File.AppendAllText(Path.Combine(CampaignOutput(),"cycle-phases.jsonl"),
-                    JsonConvert.SerializeObject(new{phase,productiveMs=Productive.Elapsed.TotalMilliseconds})+Environment.NewLine);
+                File.AppendAllText(Path.Combine(CampaignOutput(),EvidencePrefix+"phases.jsonl"),
+                    JsonConvert.SerializeObject(Evidence(new{phase,productiveMs=Productive.Elapsed.TotalMilliseconds}))+Environment.NewLine);
                 Flush();
             }
         }
 
-        // One explicit-menu cycle case; no original receiving test is changed or relabelled.
+        // Preserve the full explicit-menu Cycle gate; the separate focused case proves interface changes only.
         //720 is ONLY600 productive +90 drain + scene-exit margin, never extra gameplay time.
         [UnityTest,Timeout(720000)]
         public IEnumerator ColonisationCycleUsesExplicitMenuAndWholeTypedContinue()
+            =>RunCycleReceiving(false);
+
+        // Explicitly filter this case for current interface changes; it proves no long-cycle or persistence gate.
+        [UnityTest,Timeout(300000)]
+        public IEnumerator ColonisationCycleCurrentInterfaceKeepsWorldAndPlanningContext()
+            =>RunCycleReceiving(true);
+
+        private IEnumerator RunCycleReceiving(bool interfaceOnly)
         {
-            var t=new CycleReceivingState();var s=t.Case;var stack=new Stack<IEnumerator>();
+            var t=new CycleReceivingState{InterfaceOnly=interfaceOnly};var s=t.Case;var stack=new Stack<IEnumerator>();
+            var productiveLimit=interfaceOnly?180:600;
             stack.Push(CycleReceivingBody(t));Exception? failure=null;
             while(stack.Count>0)
             {
                 bool next=false;object? value=null;var current=stack.Peek();
                 try
                 {
-                    if(t.Productive.Elapsed.TotalSeconds>=600)throw new TimeoutException("Cycle productive deadline before "+t.Phase);
+                    if(t.Productive.Elapsed.TotalSeconds>=productiveLimit)throw new TimeoutException(t.EvidencePrefix+"productive deadline before "+t.Phase);
                     next=current.MoveNext();if(next)value=current.Current;CycleDiscover(t);
-                    if(t.Productive.Elapsed.TotalSeconds>=600)throw new TimeoutException("Cycle productive deadline after "+t.Phase);
+                    if(t.Productive.Elapsed.TotalSeconds>=productiveLimit)throw new TimeoutException(t.EvidencePrefix+"productive deadline after "+t.Phase);
                     if(t.Flushed<s.Shared.Timings.Count)t.Flush();
                 }
                 catch(Exception error)
@@ -105,11 +117,11 @@ namespace HobbyDS9.UnityReview.Tests
                 Cleanup("cycle-restore-override",()=>{typeof(ReviewEntry).GetField("generatedCampaignTestDirectory",HullPrivate)!.SetValue(s.Shared.Entry,s.Shared.PriorDirectory);overrideRestored=true;});
             bool directoryRetained=!settled||t.OverrideAssigned&&!overrideRestored;
             if(directoryRetained)directory=null; // Never let shared teardown delete a namespace still selected by a failed restore.
-            Cleanup("cycle-cleanup-receipt",()=>File.WriteAllText(Path.Combine(CampaignOutput(),"cycle-cleanup.json"),JsonConvert.SerializeObject(new{
+            Cleanup("cycle-cleanup-receipt",()=>File.WriteAllText(Path.Combine(CampaignOutput(),t.EvidencePrefix+"cleanup.json"),JsonConvert.SerializeObject(t.Evidence(new{
                 settled,allReleasesSet=s.Holds.All(h=>h.Release.IsSet),priorOverrideCaptured=s.PriorDirectoryCaptured,overrideAssigned=t.OverrideAssigned,trackedModels=t.Models.Count,trackedHosts=s.Hosts.Count,trackedContexts=s.Contexts.Count,
                 overrideRestored,directoryRetained,entryDisabled=s.Shared.Entry==null||!s.Shared.Entry.enabled,
                 cleanupMs=cleanupClock.Elapsed.TotalMilliseconds,productiveMs=t.Productive.Elapsed.TotalMilliseconds,
-                productiveLimitSeconds=600,drainLimitSeconds=90,outerFrameworkSeconds=720,failed=failure!=null,lastPhase=t.Phase})));
+                productiveLimitSeconds=productiveLimit,drainLimitSeconds=90,outerFrameworkSeconds=interfaceOnly?300:720,failed=failure!=null,lastPhase=t.Phase}))));
             if(settled)foreach(var host in s.Hosts)Cleanup("cycle-remove-probe",()=>ColonyProbe(host,null));
             if(!s.Pending)foreach(var h in s.Holds){Cleanup("cycle-dispose-entered",()=>h.Entered.Dispose());Cleanup("cycle-dispose-release",()=>h.Release.Dispose());}
             if(s.Shared.Holder==null||s.Shared.Holder.IsCompleted)
@@ -134,18 +146,18 @@ namespace HobbyDS9.UnityReview.Tests
                 for(var at=item?.parent;at!=null;at=at.parent)ancestors.Add(new{box=Box(at),scroll=at is ScrollView view?Scroll(view):null});
                 return new{id,control=Box(item),ancestors};
             }
-            File.WriteAllText(Path.Combine(CampaignOutput(),"cycle-failure-geometry.json"),JsonConvert.SerializeObject(new{
+            File.WriteAllText(Path.Combine(CampaignOutput(),t.EvidencePrefix+"failure-geometry.json"),JsonConvert.SerializeObject(t.Evidence(new{
                 phase=t.Phase,iterator,productiveMs=t.Productive.Elapsed.TotalMilliseconds,root=Box(root),footer=Box(root.Q("player-footer")),
                 content=Box(root.Q("review-central-content")),body=Box(root.Query<VisualElement>().ToList().FirstOrDefault(e=>e.ClassListContains("console-body"))),panel=Box(root.Q<ReviewColonisationPanel>()),
                 controls=new[]{"colonisation-tab-Worlds","colonisation-tab-Planets","colonisation-tab-Transports","colonisation-tab-Science","colonisation-world-selector","colonisation-build-kit"}.Select(OwnControl).ToArray(),
-                qualification="Read-only own UI geometry before disable/disposal. No target is inferred from the flattened iterator or private AI audit."}));
+                qualification="Read-only own UI geometry before disable/disposal. No target is inferred from the flattened iterator or private AI audit."})));
             var prior=RenderTexture.active;Texture2D? pixels=null;
             try
             {
                 var target=doc.panelSettings.targetTexture;if(target==null)throw new InvalidOperationException("Failure render target unavailable.");
                 RenderTexture.active=target;pixels=new Texture2D(target.width,target.height,TextureFormat.RGBA32,false);
                 pixels.ReadPixels(new Rect(0,0,target.width,target.height),0,0);pixels.Apply();
-                File.WriteAllBytes(Path.Combine(CampaignOutput(),"cycle-failure-view.png"),pixels.EncodeToPNG());
+                File.WriteAllBytes(Path.Combine(CampaignOutput(),t.EvidencePrefix+"failure-view.png"),pixels.EncodeToPNG());
             }
             finally{RenderTexture.active=prior;if(pixels!=null)UnityEngine.Object.DestroyImmediate(pixels);}
         }
@@ -171,12 +183,12 @@ namespace HobbyDS9.UnityReview.Tests
             t.SawThirdCommitted|=established.Length>=2&&active?.Ordinal==3&&active.SettlementManifestId!=null&&active.CommittedTargetPlanetId!=null&&manifest?.Kind==SettlerManifestKind.Settlement;
             Assert.That(first.LatestActions!.Count,Is.LessThanOrEqualTo(8));Assert.That(first.LatestActions.Count(a=>a.Accepted),Is.LessThanOrEqualTo(4));
             if(plan!=null)Assert.That(plan.LatestActions,Is.Empty);
-            File.AppendAllText(Path.Combine(CampaignOutput(),"cycle-private-week-audit.jsonl"),JsonConvert.SerializeObject(new{
+            File.AppendAllText(Path.Combine(CampaignOutput(),t.EvidencePrefix+"private-week-audit.jsonl"),JsonConvert.SerializeObject(t.Evidence(new{
                 turn=ColonyGame(state).TurnNumber,first.Stage,actor.NextOrdinal,actor.SupplyCampId,active,actor.Receipts,queues,manifest,camps,
                 ownSources=ColonyGame(state).Colonies!.Where(w=>w.OwnerCivilizationId==actor.ActorId).ToArray(),
                 origins=state.Colonisation.ManifestOrigins!.Where(o=>state.Colonisation.ManifestRecords!.Any(m=>m.ManifestId==o.ManifestId&&m.OwnerId==actor.ActorId)).ToArray(),
                 resolutions=state.Colonisation.ManifestResolutions!.Where(o=>state.Colonisation.ManifestRecords!.Any(m=>m.ManifestId==o.ManifestId&&m.OwnerId==actor.ActorId)).ToArray(),
-                qualification="PRIVATE AUDIT ONLY. No AI fact selects human controls/targets/routes. Concurrent queue is not consumed-kit provenance; source stock deltas include Economy/migration/freight."})+Environment.NewLine);
+                qualification="PRIVATE AUDIT ONLY. No AI fact selects human controls/targets/routes. Concurrent queue is not consumed-kit provenance; source stock deltas include Economy/migration/freight."}))+Environment.NewLine);
         }
         private static T AssertSingleCycle<T>(IReadOnlyList<T> rows)
         {Assert.That(rows.Count,Is.EqualTo(1),"actual two-empire case has exactly one AI actor");return rows[0];}
@@ -300,7 +312,7 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(sawBusy,Is.True,"normal asynchronous operation presented busy ownership");
                 if(busyClock.Elapsed.TotalMilliseconds>=250){Assert.That(ticks,Is.GreaterThanOrEqualTo(3));Assert.That(positions.Count,Is.GreaterThan(1),"indeterminate indicator changed while real work was busy");}
                 s.Shared.Timings.Add(new{phase,observedWallMs=clock.Elapsed.TotalMilliseconds,busyMs=busyClock.Elapsed.TotalMilliseconds,busyFrames,uiTicks=ticks,indicatorPositions=positions.Count,notFps=true,noLatencyThreshold=true});
-                File.AppendAllText(Path.Combine(CampaignOutput(),"cycle-operation-observations.jsonl"),JsonConvert.SerializeObject(new{phase,wallMs=clock.Elapsed.TotalMilliseconds,busyMs=busyClock.Elapsed.TotalMilliseconds,busyFrames,uiTicks=ticks,indicatorPositions=positions.Count,sawBusy,noLatencyThreshold=true})+Environment.NewLine);
+                File.AppendAllText(Path.Combine(CampaignOutput(),t.EvidencePrefix+"operation-observations.jsonl"),JsonConvert.SerializeObject(t.Evidence(new{phase,wallMs=clock.Elapsed.TotalMilliseconds,busyMs=busyClock.Elapsed.TotalMilliseconds,busyFrames,uiTicks=ticks,indicatorPositions=positions.Count,sawBusy,noLatencyThreshold=true}))+Environment.NewLine);
             }
             finally{pulse.Pause();}
         }
@@ -385,6 +397,18 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(model.HasLocalEdits,Is.False);
                 Assert.That(model.Current.Frame,Is.SameAs(acceptedFrame),"discard preserves all accepted campaign state");
                 Assert.That(doc.rootVisualElement.Q<Button>("player-primary-action").enabledInHierarchy,Is.True);
+                if(t.InterfaceOnly)
+                {
+                    var beforeTurn=model.Current.Frame.Status.Turn;
+                    yield return CycleAdvance(t,doc);
+                    Assert.That(t.UiAdvances,Is.EqualTo(1));Assert.That(model.Current,Is.SameAs(controller));
+                    Assert.That(model.Current.Frame.Actor,Is.EqualTo(actor));Assert.That(model.Current.Frame.Status.Turn,Is.EqualTo(beforeTurn+1));
+                    Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning));
+                    File.WriteAllText(Path.Combine(CampaignOutput(),t.EvidencePrefix+"summary.json"),JsonConvert.SerializeObject(t.Evidence(new{
+                        bodyAssertionsComplete=true,cleanupRequired=true,explicitNew=true,exactOwnedWorldNavigation=true,dirtyAdvanceBlocked=true,directLocalDiscard=true,directUiAdvances=t.UiAdvances,
+                        finalTurn=model.Current.Frame.Status.Turn,qualification="Focused interface assertions only. No AI milestone, Save/Continue, capture, native, performance or full-cycle acceptance."})));
+                    t.Mark("interface-only-body-complete");yield break;
+                }
                 // Only current human own views choose this page. No AI IDs or positions select a command.
                 var own=model.Colonisation();var home=own.Worlds.Where(w=>w.Stage==ColonyEstablishmentStage.Established&&w.Population>0).OrderByDescending(w=>w.Industry).ThenBy(w=>w.Id,StringComparer.Ordinal).First();
                 s.Home=home.Id;t.Mark("own-world-navigation-begin");yield return CycleWorld(t,doc,s.Home);t.Mark("own-world-navigation-complete");
