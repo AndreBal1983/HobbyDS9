@@ -68,6 +68,12 @@ namespace HobbyDS9.UnityReview
         internal sealed class Selection
         {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly string? SystemCaption;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly ReviewActivitiesPanel.Selection? Science;internal readonly TransportDraft? Draft;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science,TransportDraft? draft,string? systemCaption){SystemCaption=systemCaption;Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;Draft=draft?.Copy();}}
         internal Selection? CaptureSelection()=>disposed?null:new Selection(page,world,ship,planet,surveyShip,inspectedBlueprint,inspectedRevision,this.Q<Foldout>("colonisation-hull-inspector")?.value??inspectedOpen,science?.CaptureSelection(),transportDraft,inspectedSystemCaption);
+        internal void OpenMissionPage(bool expeditions)
+        {
+            if(!Live)return;
+            Show(expeditions?"Science":"Worlds");
+            if(expeditions)science?.RestoreSelection(new ReviewActivitiesPanel.Selection(observation.Actor,true,null,null,null));
+        }
         internal void RestoreSelection(Selection? saved)
         {
             if(disposed||saved==null)return;

@@ -235,14 +235,52 @@ namespace HobbyDS9.UnityReview.Tests
                     Assert.That(model.Current,Is.SameAs(routeController));Assert.That(model.Current.Frame,Is.SameAs(routeFrame));
                     Assert.That(routeController.TravelDraft,Is.SameAs(beforeDraft));Assert.That(model.HasLocalEdits,Is.EqualTo(beforeDirty));
                     Assert.That(RepeatBytes(model),Is.EqualTo(beforeBytes));Assert.That(beforeBytes,Is.EqualTo(bytes));
+                    // Exercise the actual current colonisation panel, not the legacy streamed panel.
+                    IEnumerator MissionLink(string id,ReviewWorkspacePage destination)
+                    {
+                        yield return ColonyClick(s,doc,"frontier-commission-summary");
+                        Assert.That(doc.rootVisualElement.Q("frontier-commission-report"),Is.Not.Null);
+                        yield return ColonyClick(s,doc,id); // ColonyReach checks actual picking and the hidden-footer layout.
+                        Assert.That(workspace.Page,Is.EqualTo(destination));
+                        Assert.That(doc.rootVisualElement.Q("frontier-commission-report"),Is.Null);
+                    }
+                    yield return MissionLink("commission-open-worlds",ReviewWorkspacePage.Production);
+                    var missionWorld=doc.rootVisualElement.Q<DropdownField>("colonisation-world-selector");
+                    Assert.That(missionWorld,Is.Not.Null);var missionWorldLabel=missionWorld.value;
+                    yield return ColonyClick(s,doc,"frontier-commission-summary");
+                    var oldMissionLinks=new[]{"commission-open-worlds","commission-open-expeditions","commission-open-map"}
+                        .Select(id=>doc.rootVisualElement.Q<Button>(id)).ToArray();
+                    Assert.That(oldMissionLinks.All(button=>button!=null),Is.True);
+                    yield return ColonyClick(s,doc,"commission-open-expeditions");
+                    Assert.That(workspace.Page,Is.EqualTo(ReviewWorkspacePage.Production));
+                    var missionPanel=doc.rootVisualElement.Q<ReviewColonisationPanel>();Assert.That(missionPanel,Is.Not.Null);
+                    Assert.That(doc.rootVisualElement.Q<ReviewActivitiesPanel>(),Is.Not.Null);
+                    Assert.That(doc.rootVisualElement.Q("colonisation-construction-heading"),Is.Null);
+                    var expeditions=doc.rootVisualElement.Q("activity-expeditions");Assert.That(expeditions,Is.Not.Null);
+                    Assert.That(expeditions.resolvedStyle.display,Is.Not.EqualTo(DisplayStyle.None));
+                    foreach(var old in oldMissionLinks)
+                    {
+                        Assert.That(doc.rootVisualElement.Contains(old),Is.False);
+                        ColonyActivate(s,()=>Click(old));yield return null;yield return null;
+                        Assert.That(workspace.Page,Is.EqualTo(ReviewWorkspacePage.Production));
+                        Assert.That(doc.rootVisualElement.Q<ReviewColonisationPanel>(),Is.SameAs(missionPanel),"detached Mission controls cannot navigate or rebuild the current panel");
+                    }
+                    yield return MissionLink("commission-open-worlds",ReviewWorkspacePage.Production);
+                    Assert.That(doc.rootVisualElement.Q<DropdownField>("colonisation-world-selector").value,Is.EqualTo(missionWorldLabel),"Mission handoff retains the selected owned world");
+                    Assert.That(doc.rootVisualElement.Q("colonisation-construction-heading"),Is.Not.Null);
+                    yield return MissionLink("commission-open-map",ReviewWorkspacePage.Map);
+                    Assert.That(model.Current,Is.SameAs(routeController));Assert.That(model.Current.Frame,Is.SameAs(routeFrame));
+                    Assert.That(routeController.TravelDraft,Is.SameAs(beforeDraft));Assert.That(model.HasLocalEdits,Is.EqualTo(beforeDirty));
+                    Assert.That(RepeatBytes(model),Is.EqualTo(beforeBytes),"Mission links and detached-control events submit no command or advance");
                     Assert.That(t.Trace.UiAdvances,Is.Zero);Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning));
                     Assert.That(model.Current,Is.SameAs(controller));Assert.That(model.Current.Frame,Is.SameAs(ledgerFrame));
                     File.WriteAllText(Path.Combine(CampaignOutput(),t.EvidencePrefix+"summary.json"),JsonConvert.SerializeObject(t.Evidence(new{
                         bodyAssertionsComplete=true,cleanupRequired=true,fixtureSha=NetworkMaterialFixtureSha,readOnlyUiAdvances=t.Trace.UiAdvances,
                         wholeTypedBytesUnchanged=true,ownStreamedQueue=true,tableAsideAndFiltersAgree=true,routePreviewQueries=1,
                         publicOwnedStationaryFleet=true,publicKnownAdjacentDestination=true,nontrivialSuccessfulRoute=true,positiveCost=true,
-                        nonemptySteps=true,destinationLast=true,sameControllerFrameAndDraft=true,
-                        qualification="Focused read-only Repeat Empire and one public weighted-route query only. No order submission, construction completion, output Save/Continue, capture, native, performance or full-goal acceptance."})));
+                        nonemptySteps=true,destinationLast=true,sameControllerFrameAndDraft=true,missionDestinations=3,missionLinkActivations=4,detachedMissionControlEvents=3,
+                        colonisationExpeditionsSelected=true,missionConstructionSelected=true,missionSelectedWorldRetained=true,
+                        qualification="Focused read-only Repeat Empire, one public weighted-route query and Mission navigation only. No order submission, construction completion, output Save/Continue, capture, native, performance or full-goal acceptance."})));
                     t.Mark("empire-only-body-complete");yield break;
                 }
                 s.Home=world.Id;long work=queue.CompletedIndustry;bool intermediate=false,paidQuantum=false;

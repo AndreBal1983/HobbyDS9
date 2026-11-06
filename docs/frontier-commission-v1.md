@@ -5,6 +5,12 @@ acceptance passed. This adds a finite mission outcome to the existing
 [streamed campaign](campaign-activities-streamed-v1.md), with continued sandbox
 play after completion. It does not add a campaign terminal state or rewards.
 
+The 6 November source candidate explicitly opens construction or expeditions
+from Mission in colonisation campaigns and guards stale or detached controls.
+Its focused receiving source checks the current panel destinations and unchanged
+campaign state. Exact source review, reference compilation and actual receiving
+are separate gates; this note grants no new executable or runtime acceptance.
+
 The portable Simulation derives four independent historical accomplishments for
 the controlled actor: a completed streamed structure, a completed published ship,
 a completed and claimed finite non-minor scientific finding, and a completed

@@ -46,12 +46,24 @@ namespace HobbyDS9.UnityReview
                 }
             }
             var links=new VisualElement();links.AddToClassList("review-field-row");links.style.flexShrink=0;panel.Add(links);
-            var worlds=AddButton(links,"Open world construction",()=>Navigate(ReviewWorkspacePage.Production));worlds.name="commission-open-worlds";
-            var expeditions=AddButton(links,"Open expeditions",()=>{
-                Navigate(ReviewWorkspacePage.Production);
-                root?.Q<ReviewActivitiesPanel>()?.RestoreSelection(new ReviewActivitiesPanel.Selection(model!.Current.Frame.Actor,true,null,null,null));
-            });expeditions.name="commission-open-expeditions";
-            var map=AddButton(links,"Explore known routes",()=>Navigate(ReviewWorkspacePage.Map));map.name="commission-open-map";
+            var owner=model!;var controller=owner.Current;var frame=controller.Frame;var epoch=viewEpoch;
+            void Link(string caption,string id,ReviewWorkspacePage page,bool expeditions=false)
+            {
+                Button? button=null;
+                button=AddButton(links,caption,()=>{
+                    if(button==null||root?.Contains(button)!=true||epoch!=viewEpoch||!frontierCommissionOpen
+                        ||!ReferenceEquals(model,owner)||!ReferenceEquals(owner.Current,controller)||!ReferenceEquals(controller.Frame,frame)
+                        ||owner.Busy||owner.Closed||confirmation!=null||workspace?.CanNavigate!=true)return;
+                    Navigate(page);
+                    if(frontierCommissionOpen||workspace?.Page!=page||page!=ReviewWorkspacePage.Production)return;
+                    if(owner.ColonisationCampaign)root?.Q<ReviewColonisationPanel>()?.OpenMissionPage(expeditions);
+                    else root?.Q<ReviewActivitiesPanel>()?.RestoreSelection(new ReviewActivitiesPanel.Selection(frame.Actor,expeditions,null,null,null));
+                });
+                button.name=id;button.SetEnabled(workspace?.CanNavigate==true&&!owner.Busy&&!owner.Closed);
+            }
+            Link("Open world construction","commission-open-worlds",ReviewWorkspacePage.Production);
+            Link("Open expeditions","commission-open-expeditions",ReviewWorkspacePage.Production,true);
+            Link("Explore known routes","commission-open-map",ReviewWorkspacePage.Map);
             panel.Add(Readout("Progress records what your campaign actually accomplished. Refusal is a valid contact assessment; cooperation is never required. Failed or aborted science attempts remain in your reports and do not count as completed studies."));
         }
     }
