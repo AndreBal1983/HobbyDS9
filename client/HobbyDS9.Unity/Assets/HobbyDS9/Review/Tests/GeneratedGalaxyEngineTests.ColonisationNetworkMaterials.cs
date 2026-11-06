@@ -25,20 +25,23 @@ namespace HobbyDS9.UnityReview.Tests
             internal string Phase="setup";
             internal int Flushed;
             internal bool OverrideAssigned;
+            internal bool EmpireOnly;
+            internal string EvidencePrefix=>EmpireOnly?"network-material-empire-":"network-material-";
+            internal object Evidence(object payload)=>EmpireOnly?new{mode="empire-only",payload}:payload;
             internal void Flush()
             {
                 while(Flushed<Case.Shared.Timings.Count)
                 {
-                    File.AppendAllText(Path.Combine(CampaignOutput(),"network-material-timings.jsonl"),
-                        JsonConvert.SerializeObject(Case.Shared.Timings[Flushed])+Environment.NewLine);
+                    File.AppendAllText(Path.Combine(CampaignOutput(),EvidencePrefix+"timings.jsonl"),
+                        JsonConvert.SerializeObject(Evidence(Case.Shared.Timings[Flushed]))+Environment.NewLine);
                     Flushed++;
                 }
             }
             internal void Mark(string phase)
             {
                 Phase=phase;
-                File.AppendAllText(Path.Combine(CampaignOutput(),"network-material-phases.jsonl"),
-                    JsonConvert.SerializeObject(new{phase,productiveMs=Trace.Productive.Elapsed.TotalMilliseconds})+Environment.NewLine);
+                File.AppendAllText(Path.Combine(CampaignOutput(),EvidencePrefix+"phases.jsonl"),
+                    JsonConvert.SerializeObject(Evidence(new{phase,productiveMs=Trace.Productive.Elapsed.TotalMilliseconds}))+Environment.NewLine);
                 Flush();
             }
         }
@@ -47,17 +50,26 @@ namespace HobbyDS9.UnityReview.Tests
         //720 is600 productive +90 cooperative drain + scene-exit margin, not extra gameplay time.
         [UnityTest,Timeout(720000)]
         public IEnumerator ColonisationNetworkMaterialSavedQueueCompletesAndWholeTypedContinue()
+            =>RunNetworkMaterialReceiving(false);
+
+        // Explicitly filter this case to inspect the existing partial queue without progressing construction.
+        [UnityTest,Timeout(300000)]
+        public IEnumerator ColonisationRepeatEmpireReadsStreamedQueueWithoutAdvancing()
+            =>RunNetworkMaterialReceiving(true);
+
+        private IEnumerator RunNetworkMaterialReceiving(bool empireOnly)
         {
-            var t=new NetworkMaterialCase();var s=t.Case;var stack=new Stack<IEnumerator>();
+            var t=new NetworkMaterialCase{EmpireOnly=empireOnly};var s=t.Case;var stack=new Stack<IEnumerator>();
+            var productiveLimit=empireOnly?180:600;
             stack.Push(NetworkMaterialBody(t));Exception? failure=null;
             while(stack.Count>0)
             {
                 bool next=false;object? value=null;var current=stack.Peek();
                 try
                 {
-                    if(t.Trace.Productive.Elapsed.TotalSeconds>=600)throw new TimeoutException("Network material productive deadline before "+t.Phase);
+                    if(t.Trace.Productive.Elapsed.TotalSeconds>=productiveLimit)throw new TimeoutException(t.EvidencePrefix+"productive deadline before "+t.Phase);
                     next=current.MoveNext();if(next)value=current.Current;
-                    if(t.Trace.Productive.Elapsed.TotalSeconds>=600)throw new TimeoutException("Network material productive deadline after "+t.Phase);
+                    if(t.Trace.Productive.Elapsed.TotalSeconds>=productiveLimit)throw new TimeoutException(t.EvidencePrefix+"productive deadline after "+t.Phase);
                     if(t.Flushed<s.Shared.Timings.Count)t.Flush();
                 }
                 catch(Exception error){failure=error;}
@@ -93,11 +105,13 @@ namespace HobbyDS9.UnityReview.Tests
             bool overrideRestored=false;
             if(settled&&s.Shared.Entry!=null&&s.PriorDirectoryCaptured)
                 Cleanup("network-material-restore-override",()=>{typeof(ReviewEntry).GetField("generatedCampaignTestDirectory",HullPrivate)!.SetValue(s.Shared.Entry,s.Shared.PriorDirectory);overrideRestored=true;});
-            Cleanup("network-material-cleanup-receipt",()=>File.WriteAllText(Path.Combine(CampaignOutput(),"network-material-cleanup.json"),JsonConvert.SerializeObject(new{
+            var directoryRetained=!settled||(t.OverrideAssigned&&!overrideRestored);
+            if(directoryRetained)directory=null; // Shared teardown must not delete a namespace still selected after a failed restore.
+            Cleanup("network-material-cleanup-receipt",()=>File.WriteAllText(Path.Combine(CampaignOutput(),t.EvidencePrefix+"cleanup.json"),JsonConvert.SerializeObject(t.Evidence(new{
                 settled,allReleasesSet=s.Holds.All(h=>h.Release.IsSet),priorOverrideCaptured=s.PriorDirectoryCaptured,
-                overrideAssigned=t.OverrideAssigned,overrideRestored,directoryRetained=!settled,entryDisabled=s.Shared.Entry==null||!s.Shared.Entry.enabled,
+                overrideAssigned=t.OverrideAssigned,overrideRestored,directoryRetained,entryDisabled=s.Shared.Entry==null||!s.Shared.Entry.enabled,
                 cleanupMs=drain.Elapsed.TotalMilliseconds,productiveMs=t.Trace.Productive.Elapsed.TotalMilliseconds,
-                productiveLimitSeconds=600,drainLimitSeconds=90,outerFrameworkSeconds=720,failed=failure!=null,lastPhase=t.Phase})));
+                productiveLimitSeconds=productiveLimit,drainLimitSeconds=90,outerFrameworkSeconds=empireOnly?300:720,failed=failure!=null,lastPhase=t.Phase}))));
             if(settled)foreach(var host in s.Hosts)Cleanup("network-material-remove-probe",()=>ColonyProbe(host,null));
             if(!s.Pending)foreach(var h in s.Holds){Cleanup("network-material-dispose-entered",()=>h.Entered.Dispose());Cleanup("network-material-dispose-release",()=>h.Release.Dispose());}
             if(s.Shared.Holder==null||s.Shared.Holder.IsCompleted)
@@ -152,10 +166,11 @@ namespace HobbyDS9.UnityReview.Tests
                 var priorModel=ColonyModel(s);t.Mark("fixture-continue-begin");
                 doc.rootVisualElement.Q<Foldout>("colonisation-repeat-campaign-menu").value=true;yield return null;
                 var initial=doc.rootVisualElement.Q<Button>("colonisation-repeat-campaign-continue-generated-2");yield return ColonyReach(doc,initial,target:"saved Repeat material queue Continue2");
-                yield return RepeatOperation(t.Trace,doc,"network-material-fixture-continue","Loading",()=>{Click(initial);Confirm(doc);});
+                yield return RepeatOperation(t.Trace,doc,t.EvidencePrefix+"fixture-continue","Loading",()=>{Click(initial);Confirm(doc);});
                 var model=ColonyModel(s);Assert.That(model,Is.Not.SameAs(priorModel));Assert.That(model.Current,Is.Not.SameAs(priorModel.Current));Assert.That(StreamHost(model),Is.Not.SameAs(StreamHost(priorModel)));
                 Assert.That(model.ColonisationRepeatCampaign,Is.True);Assert.That(model.Current.Frame.Status.Turn,Is.EqualTo(31));Assert.That(RepeatBytes(model),Is.EqualTo(bytes),"normal typed full Replay ingress equals entire native fixture");
                 var actor=model.Current.Frame.Actor;Assert.That(actor,Is.EqualTo("civ.federation"));
+                var controller=model.Current;var host=StreamHost(model);s.Hosts.Add(host);
                 // Selection uses public own production/world snapshots, never private plans or root target IDs.
                 var queue=model.Colonisation().Production.Single(q=>q.Id==NetworkMaterialQueue);var world=model.Colonisation().Worlds.Single(w=>w.Id==queue.ColonyId);
                 Assert.That(world.Stage,Is.EqualTo(ColonyEstablishmentStage.Established));Assert.That(queue.Kind,Is.EqualTo(ColonisationProductionKind.SettlementKit));Assert.That(queue.DefinitionId,Is.EqualTo("resource.settlement-kit"));
@@ -191,7 +206,17 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(workspace.WorldFilters,Is.Empty);Assert.That(doc.rootVisualElement.Q("world-row-"+world.Id),Is.Not.Null);
                 Assert.That(workspace.SelectedColony,Is.EqualTo(world.Id));Assert.That(model.Current.Frame,Is.SameAs(ledgerFrame));
                 Assert.That(RepeatBytes(model),Is.EqualTo(bytes),"Empire inspection/filtering changes none of the complete committed root");
-                s.Home=world.Id;var controller=model.Current;var host=StreamHost(model);s.Hosts.Add(host);long work=queue.CompletedIndustry;bool intermediate=false,paidQuantum=false;
+                if(t.EmpireOnly)
+                {
+                    Assert.That(t.Trace.UiAdvances,Is.Zero);Assert.That(model.Current.Frame.Status.Phase,Is.EqualTo(SessionPhase.Planning));
+                    Assert.That(model.Current,Is.SameAs(controller));Assert.That(model.Current.Frame,Is.SameAs(ledgerFrame));
+                    File.WriteAllText(Path.Combine(CampaignOutput(),t.EvidencePrefix+"summary.json"),JsonConvert.SerializeObject(t.Evidence(new{
+                        bodyAssertionsComplete=true,cleanupRequired=true,fixtureSha=NetworkMaterialFixtureSha,readOnlyUiAdvances=t.Trace.UiAdvances,
+                        wholeTypedBytesUnchanged=true,ownStreamedQueue=true,tableAsideAndFiltersAgree=true,
+                        qualification="Focused read-only Repeat Empire assertions only. No construction completion, output Save/Continue, capture, native, performance or full-goal acceptance."})));
+                    t.Mark("empire-only-body-complete");yield break;
+                }
+                s.Home=world.Id;long work=queue.CompletedIndustry;bool intermediate=false,paidQuantum=false;
                 t.Mark("fixture-continue-exact-complete");yield return ColonyWorld(s,doc,s.Home);
                 while(ColonyModel(s).Colonisation().Production.Any(q=>q.Id==NetworkMaterialQueue))
                 {
