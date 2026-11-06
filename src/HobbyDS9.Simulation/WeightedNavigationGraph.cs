@@ -34,7 +34,11 @@ namespace HobbyDS9.Simulation
         }
         public string? NodeForSystem(string system)=>Regions.SingleOrDefault(n=>n.AssociatedSystemId==system)?.NodeId;
         public string? SystemForNode(string node)=>nodes.TryGetValue(node,out var region)?region.AssociatedSystemId:null;
-        public IReadOnlyList<string> Neighbors(string node)=>Connections.Where(e=>e.EndpointA==node||e.EndpointB==node).Select(e=>e.EndpointA==node?e.EndpointB:e.EndpointA).OrderBy(n=>n,StringComparer.Ordinal).ToList().AsReadOnly();
+        public IReadOnlyList<string> Neighbors(string node)
+        {
+            var neighbors=node!=null&&endpointEdges.TryGetValue(node,out var adjacent)?(IEnumerable<string>)adjacent.Keys:Array.Empty<string>();
+            return neighbors.OrderBy(n=>n,StringComparer.Ordinal).ToList().AsReadOnly();
+        }
         // A retained graph may be shared by detached session forks. Never expose its mutable DTOs.
         internal NavigationConnectionDto? Edge(string from,string to)
         {if(from==null||to==null)return null;return endpointEdges.TryGetValue(from,out var adjacent)&&adjacent.TryGetValue(to,out var edge)?PopulationData.Copy(edge):null;}
