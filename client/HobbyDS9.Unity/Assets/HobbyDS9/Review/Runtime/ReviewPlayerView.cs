@@ -94,7 +94,12 @@ namespace HobbyDS9.UnityReview
             }
             else
             {
-                Text(main,"Develop capabilities","console-intro");
+                var overview=new VisualElement{name="engineering-current-summary"};overview.AddToClassList("engineering-summary");main.Add(overview);
+                Text(overview,"Engineering workbench","console-intro");
+                var current=r.Engineering.FirstOrDefault(project=>project.IsTarget);
+                Text(overview,current==null?"No active Engineering project":"Current project: "+current.Definition.DisplayName,"console-section");
+                if(current!=null)Text(overview,Units(current.Progress)+" / "+Units(current.Cost)+" Engineering points · "+current.MaturityPercent+"% · "+current.Band);
+                Text(overview,"One active project. Earned progress is retained when targets change. Unspent Engineering remains banked.");
                 var directEngineering = model.ColonisationCampaign;
                 if (directEngineering)
                     Text(main,"Selecting or clearing a project keeps earned progress. Work advances on End turn.");
@@ -108,31 +113,42 @@ namespace HobbyDS9.UnityReview
                         confirm(warning, Apply);
                 }
 
-                foreach(var project in r.Engineering)
+                foreach(var kind in new[]{EngineeringProjectKind.NewCapability,EngineeringProjectKind.Refinement,EngineeringProjectKind.CivilApplication})
                 {
-                    var card=new VisualElement{name="engineering-project-"+project.Definition.DefinitionId};card.AddToClassList("console-queue");main.Add(card);
-                    var demo=model.Current.Frame.Demo!=null;
-                    Text(card,project.Definition.DisplayName,"console-section","engineering-project-heading");
-                    if(demo)
+                    var section=new VisualElement{name="engineering-kind-"+kind};section.AddToClassList("engineering-group");main.Add(section);
+                    var heading=kind==EngineeringProjectKind.NewCapability?"Breakthrough applications":kind==EngineeringProjectKind.Refinement?"Improve existing technology":"Civil applications";
+                    Text(section,heading,"console-section");
+                    Text(section,kind==EngineeringProjectKind.NewCapability?"Develop new capabilities from the required Science discoveries.":kind==EngineeringProjectKind.Refinement?"Refine existing technology through authored Engineering projects.":"Develop authored civil applications.");
+                    var projects=r.Engineering.Where(project=>project.Definition.Kind==kind).ToList();
+                    if(projects.Count==0)Text(section,"No projects of this kind are offered in this campaign.",id:"engineering-empty-"+kind);
+                    foreach(var project in projects)
                     {
-                        var designs=string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct());
-                        Text(card,"Demo construction: "+(designs.Length==0?"no ship designs offered":designs+" only")+". Other class unlocks are unavailable here.",id:"engineering-demo-construction");
+                        var card=new VisualElement{name="engineering-project-"+project.Definition.DefinitionId};card.AddToClassList("console-queue");card.AddToClassList("engineering-card");section.Add(card);
+                        var demo=model.Current.Frame.Demo!=null;
+                        Text(card,project.Definition.DisplayName,"console-section","engineering-project-heading");
+                        if(demo)
+                        {
+                            var designs=string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct());
+                            Text(card,"Demo construction: "+(designs.Length==0?"no ship designs offered":designs+" only")+". Other class unlocks are unavailable here.",id:"engineering-demo-construction");
+                        }
+                        Text(card,project.Band==EngineeringMaturityBand.Mature?"Completed":project.IsTarget?"Current project":Reason(project.UnavailableReason),id:"engineering-project-state");
+                        card.Add(new ProgressBar{value=project.MaturityPercent});Text(card,project.MaturityPercent+"% · "+project.Band,"console-metric");
+                        Text(card,"Project cost: "+Units(project.Cost)+" Engineering points",id:"engineering-project-cost");
+                        Text(card,"Earned progress: "+Units(project.Progress)+" / "+Units(project.Cost)+" Engineering points",id:"engineering-project-progress");
+                        Text(card,"Requirements met: Science "+project.ScienceSatisfied.Count(value=>value)+" / "+project.ScienceSatisfied.Count+"; applications "+project.PrerequisitesSatisfied.Count(value=>value)+" / "+project.PrerequisitesSatisfied.Count,id:"engineering-requirement-summary");
+                        var legacyScoutEffect = model.ColonisationCycleCampaign &&
+                            project.Definition.DefinitionId.Value == "engineering.advanced-starship-engineering";
+                        if (legacyScoutEffect)
+                            Text(card,"Advanced Scout is unavailable in this campaign's construction catalogue.",id:"engineering-cycle-construction");
+                        else if(!demo)Text(card,"Check the construction catalogue for ships currently offered in this campaign.");
+                        var requirements=new Foldout{name="engineering-project-details",text=demo?"Details — authored effect & requirements":"Requirements & progress",value=false};card.Add(requirements);
+                        Text(requirements,legacyScoutEffect?"The authored effect below applies to the original Scout catalogue.":demo?"Authored effect; the demo construction limits above still apply.":"Authored effect. Ship availability depends on the campaign construction catalogue.",id:"engineering-effect-qualifier");
+                        Text(requirements,project.Definition.EffectSummary,id:"engineering-authored-effect");
+                        for(int i=0;i<project.Definition.ScienceRequirements.Count;i++){var q=project.Definition.ScienceRequirements[i];Text(requirements,(project.ScienceSatisfied[i]?"✓ ":"○ ")+q.Discipline+" interval "+q.IntervalStartLevel+" breakthrough "+q.BreakthroughOrdinal);}
+                        Btn(card,"Develop project","integrated-develop-"+project.Definition.DefinitionId,
+                            ()=>SelectEngineering(project.Definition.DefinitionId.Value,"Develop "+project.Definition.DisplayName+"? Earned progress is retained when you change targets. Work progresses on End turn."),
+                            edit&&project.CanTarget,true);
                     }
-                    Text(card,project.Band==EngineeringMaturityBand.Mature?"Completed":project.IsTarget?"Current project":Reason(project.UnavailableReason),id:"engineering-project-state");
-                    card.Add(new ProgressBar{value=project.MaturityPercent});Text(card,project.MaturityPercent+"% · "+project.Band,"console-metric");
-                    Text(card,"Project cost: "+Units(project.Cost)+(demo?" Engineering points":" research points"),id:"engineering-project-cost");
-                    var legacyScoutEffect = model.ColonisationCycleCampaign &&
-                        project.Definition.DefinitionId.Value == "engineering.advanced-starship-engineering";
-                    if (legacyScoutEffect)
-                        Text(card,"Advanced Scout is unavailable in this campaign's construction catalogue.",id:"engineering-cycle-construction");
-                    else if(!demo)Text(card,"Check the construction catalogue for ships currently offered in this campaign.");
-                    var requirements=new Foldout{name="engineering-project-details",text=demo?"Details — authored effect & requirements":"Requirements & progress",value=false};card.Add(requirements);
-                    Text(requirements,legacyScoutEffect?"The authored effect below applies to the original Scout catalogue.":demo?"Authored effect; the demo construction limits above still apply.":"Authored effect. Ship availability depends on the campaign construction catalogue.",id:"engineering-effect-qualifier");
-                    Text(requirements,project.Definition.EffectSummary,id:"engineering-authored-effect");
-                    for(int i=0;i<project.Definition.ScienceRequirements.Count;i++){var q=project.Definition.ScienceRequirements[i];Text(requirements,(project.ScienceSatisfied[i]?"✓ ":"○ ")+q.Discipline+" interval "+q.IntervalStartLevel+" breakthrough "+q.BreakthroughOrdinal);}
-                    Btn(card,"Develop project","integrated-develop-"+project.Definition.DefinitionId,
-                        ()=>SelectEngineering(project.Definition.DefinitionId.Value,"Develop "+project.Definition.DisplayName+"? Earned progress is retained when you change targets. Work progresses on End turn."),
-                        edit&&project.CanTarget,true);
                 }
                 Btn(main,"Clear Engineering target","integrated-clear-engineering",
                     ()=>SelectEngineering(null,"Clear the current Engineering target? Earned progress will remain."),edit&&r.Target.HasValue);

@@ -243,3 +243,10 @@
 .fleet-card-workspace .fleet-card-meters { flex-direction: row; flex-wrap: wrap; flex-grow: 1; flex-basis: 170px; min-width: 0; }
 .fleet-card-workspace .fleet-condition-meter { width: 48%; margin-right: 2%; }
 .fleet-card-workspace .fleet-hull-meter { width: 98%; }
+
+/* Engineering-owned per-render elements only. */
+.engineering-summary { min-width: 0; flex-shrink: 0; padding: 12px; margin-bottom: 12px; border-left-width: 3px; border-left-color: #efb16b; background-color: #142030; }
+.engineering-group { min-width: 0; flex-shrink: 0; margin-bottom: 16px; padding: 10px; border-top-width: 2px; border-top-color: #b9ace6; }
+.engineering-group .engineering-card { min-width: 0; flex-shrink: 0; margin-top: 8px; }
+.engineering-group .console-copy, .engineering-summary .console-copy { white-space: normal; }
+.engineering-group .review-action { white-space: normal; min-width: 0; max-width: 100%; }
