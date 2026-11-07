@@ -31,6 +31,7 @@ namespace HobbyDS9.UnityReview
         public float MapPanY { get; set; }
         public string FleetSort { get; set; }="Name";
         public bool FleetSortDescending { get; set; }
+        public bool FleetOrganizationExpanded { get; set; }
         public string WorldSort { get; set; }="World";
         public bool WorldSortDescending { get; set; }
         public System.Collections.Generic.Dictionary<string,string> WorldFilters { get; }=new System.Collections.Generic.Dictionary<string,string>(StringComparer.Ordinal);
@@ -52,7 +53,7 @@ namespace HobbyDS9.UnityReview
         {
             if(ReferenceEquals(context,Model.Current))return;
             context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;PendingSystemInspection=null;PendingWorldInspection=null;SelectedOwnShip=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";MapZoom=1;MapPanX=MapPanY=0;NavigationEpoch=checked(NavigationEpoch+1);
-            FleetSort="Name";FleetSortDescending=false;WorldFilters.Clear();CollapsedSystems.Clear();WorldSort="World";WorldSortDescending=false;
+            FleetSort="Name";FleetSortDescending=false;FleetOrganizationExpanded=false;WorldFilters.Clear();CollapsedSystems.Clear();WorldSort="World";WorldSortDescending=false;
         }
         public ReviewWorkspacePage Page { get {Context();return page;} }
         public bool CanNavigate=>!Model.Closed&&!Model.Busy&&!Model.Current.HasPendingWork;

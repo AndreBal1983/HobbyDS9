@@ -226,3 +226,20 @@
     color: #a8b3c4;
     border-color: #38485a;
 }
+
+/* Selected Fleet inspector only. */
+.fleet-card-workspace.fleet-roster-aside { width: 390px; max-width: 48%; min-width: 260px; }
+.fleet-card-workspace .fleet-ship-card { min-width: 0; flex-shrink: 0; padding: 12px; margin-bottom: 12px; background-color: #111e2b; border-width: 1px; border-color: #52677c; border-radius: 7px; }
+.fleet-card-workspace .fleet-ship-title { white-space: normal; font-size: 21px; color: #ffe0b9; }
+.fleet-card-workspace .fleet-ship-image { height: 110px; flex-shrink: 0; }
+.fleet-card-workspace .fleet-navigation-summary { margin-bottom: 12px; padding-bottom: 12px; border-bottom-width: 2px; border-bottom-color: #efb16b; }
+.fleet-card-workspace .fleet-condition-meter { min-width: 0; flex-shrink: 0; margin-bottom: 5px; }
+.fleet-card-workspace .fleet-condition-meter .unity-progress-bar { height: 12px; }
+.fleet-card-workspace .fleet-condition-meter .unity-progress-bar__title { display: none; }
+.fleet-card-workspace .unity-toggle__text { white-space: normal; }
+
+.fleet-card-workspace .fleet-card-condition-area { flex-direction: row; flex-wrap: wrap; min-width: 0; }
+.fleet-card-workspace .fleet-ship-image { width: 95px; height: 90px; margin-right: 8px; }
+.fleet-card-workspace .fleet-card-meters { flex-direction: row; flex-wrap: wrap; flex-grow: 1; flex-basis: 170px; min-width: 0; }
+.fleet-card-workspace .fleet-condition-meter { width: 48%; margin-right: 2%; }
+.fleet-card-workspace .fleet-hull-meter { width: 98%; }
