@@ -1,0 +1,1 @@
+Sol maps by Solar System Scope (https://www.solarsystemscope.com/textures/), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Original 2K equirectangular JPEGs, filenames shortened. Use sRGB color maps; apply day/night lighting in Unity. Venus uses the cloud-top map. For Saturn create separate ring geometry.

@@ -35,6 +35,11 @@ namespace HobbyDS9.UnityReview
         private readonly Camera camera;
         private readonly Material material;
         private readonly Mesh sphere, track, rings;
+        private readonly List<Mesh> importedCopies = new List<Mesh>();
+        private readonly List<string> assetFallbacks = new List<string>();
+        private readonly Material? ringMaterial;
+        internal int ImportedMeshCount => importedCopies.Count;
+        internal IReadOnlyList<string> AssetFallbacks => assetFallbacks.AsReadOnly();
         private readonly Dictionary<string,Transform> planetTransforms = new Dictionary<string,Transform>(StringComparer.Ordinal);
         private readonly Dictionary<string,MeshRenderer> planetOrbits = new Dictionary<string,MeshRenderer>(StringComparer.Ordinal);
         private readonly MaterialPropertyBlock properties = new MaterialPropertyBlock();
@@ -65,22 +70,82 @@ namespace HobbyDS9.UnityReview
             sphere=Sphere();
             track=Annulus(.996f,1, "Sol orbit");
             rings=Annulus(.83f,1.38f, "Saturn rings");
+            var ringShader=Resources.Load<Shader>("SystemBodyArt/SolMeshes/SolRing");
+            var ringMap=Resources.Load<Texture2D>("SystemBodyArt/SolMeshes/saturn_rings");
+            if(ringShader!=null&&ringShader.isSupported&&ringMap!=null)
+            {
+                ringMaterial=new Material(ringShader) { hideFlags=HideFlags.HideAndDontSave };
+                ringMaterial.SetTexture("_Surface",ringMap);
+            }
+            else Fallback("Saturn ring material or alpha texture unavailable; using legacy rings.");
             foreach(var body in Bodies)
             {
                 var theta=body.Angle*Mathf.Deg2Rad;
                 var position=new Vector3(Mathf.Cos(theta)*body.Orbit,0,Mathf.Sin(theta)*body.Orbit);
                 var texture=Resources.Load<Texture2D>("SystemBodyArt/"+body.Map);
-                var planet=Part(body.Map,sphere,position,body.Radius,Color.white,texture,body.Orbit>0);
+                var mesh=DeliveredMesh(BodyMesh(body.Map),false,sphere);
+                var planet=Part(body.Map,mesh,position,body.Radius,Color.white,texture,body.Orbit>0);
+                planet.shadowCastingMode=ShadowCastingMode.Off;planet.receiveShadows=false;
                 if(body.PlanetId!=null)planetTransforms.Add(body.PlanetId,planet.transform);
                 if(body.Orbit==0)continue;
                 var orbit=Part("Schematic orbit",track,new Vector3(0,-.045f,0),body.Orbit,OrbitColor);
                 if(body.PlanetId!=null)planetOrbits.Add(body.PlanetId,orbit);
                 if(body.Map=="saturn")
                 {
-                    var ring=Part("Saturn rings",rings,position,1,new Color(.72f,.57f,.42f),striped:true);
-                    ring.transform.localRotation=Quaternion.Euler(11,0,22);
+                    var ringMesh=ringMaterial==null?rings:DeliveredMesh("Saturn_Rings_LOD1",true,rings);
+                    var delivered=ringMaterial!=null&&!ReferenceEquals(ringMesh,rings);
+                    var ring=Part("Saturn rings",ringMesh,position,delivered?body.Radius:1,delivered?Color.white:new Color(.72f,.57f,.42f),striped:!delivered);
+                    if(delivered)ring.sharedMaterial=ringMaterial;
+                    ring.shadowCastingMode=ShadowCastingMode.Off;ring.receiveShadows=false;
+                    ring.transform.localRotation=delivered?Quaternion.Euler(26.7f,0,0):Quaternion.Euler(11,0,22);
                 }
             }
+        }
+
+        private static string BodyMesh(string map)=>map switch
+        {
+            "sun"=>"Sun_LOD1", "mercury"=>"Mercury_LOD1", "venus_atmosphere"=>"Venus_LOD1",
+            "earth_daymap"=>"Earth_LOD1", "mars"=>"Mars_LOD1", "jupiter"=>"Jupiter_LOD1",
+            "saturn"=>"Saturn_LOD1", "uranus"=>"Uranus_LOD1", "neptune"=>"Neptune_LOD1",
+            _=>""
+        };
+
+        private void Fallback(string reason)
+        { assetFallbacks.Add(reason);Debug.LogWarning("Sol asset fallback: "+reason); }
+
+        // Bake the IMPORTED prefab transform, never a guessed axis/100x correction.
+        // Copies are stage-owned; source FBX meshes/textures remain borrowed Resources.
+        private Mesh DeliveredMesh(string name,bool ring,Mesh fallback)
+        {
+            var prefab=Resources.Load<GameObject>("SystemBodyArt/SolMeshes/"+name);
+            if(prefab==null){Fallback(name+": model missing");return fallback;}
+            var filters=prefab.GetComponentsInChildren<MeshFilter>(true);
+            if(filters.Length!=1||filters[0].sharedMesh==null){Fallback(name+": expected one mesh");return fallback;}
+            var source=filters[0].sharedMesh;
+            if(!source.isReadable){Fallback(name+": readable import required for transform validation");return fallback;}
+            var vertices=source.vertices;var normals=source.normals;var uv=source.uv;
+            if(vertices.Length==0||normals.Length!=vertices.Length||uv.Length!=vertices.Length||source.subMeshCount!=1)
+            {Fallback(name+": normals/UV/submesh contract mismatch");return fallback;}
+            var matrix=Matrix4x4.identity;
+            for(var t=filters[0].transform;t!=null;t=t.parent)
+                matrix=Matrix4x4.TRS(t.localPosition,t.localRotation,t.localScale)*matrix;
+            if(float.IsNaN(matrix.determinant)||Mathf.Abs(matrix.determinant)<1e-8f)
+            {Fallback(name+": invalid model transform");return fallback;}
+            var normalMatrix=matrix.inverse.transpose;
+            for(var i=0;i<vertices.Length;i++)
+            {
+                var v=matrix.MultiplyPoint3x4(vertices[i]);
+                var radius=ring?new Vector2(v.x,v.z).magnitude:v.magnitude;
+                var valid=ring?(Mathf.Abs(v.y)<.02f&&(Mathf.Abs(radius-1.22f)<.02f||Mathf.Abs(radius-2.27f)<.02f)):Mathf.Abs(radius-1)<.02f;
+                if(!valid||float.IsNaN(uv[i].x)||float.IsNaN(uv[i].y)||float.IsInfinity(uv[i].x)||float.IsInfinity(uv[i].y))
+                {Fallback(name+": centered radius/axis/UV contract mismatch");return fallback;}
+                vertices[i]=v;normals[i]=normalMatrix.MultiplyVector(normals[i]).normalized;
+            }
+            var triangles=source.triangles;
+            if(matrix.determinant<0)for(var i=0;i<triangles.Length;i+=3){var swap=triangles[i];triangles[i]=triangles[i+1];triangles[i+1]=swap;}
+            var copy=new Mesh{name="Sol validated "+name,hideFlags=HideFlags.HideAndDontSave};
+            copy.vertices=vertices;copy.normals=normals;copy.uv=uv;copy.triangles=triangles;copy.RecalculateBounds();
+            importedCopies.Add(copy);return copy;
         }
 
         private GameObject Child(string name)
@@ -209,6 +274,9 @@ namespace HobbyDS9.UnityReview
             camera.targetTexture=null;
             Texture.Release();
             Destroy(root);Destroy(Texture);Destroy(material);Destroy(sphere);Destroy(track);Destroy(rings);
+            if(ringMaterial!=null)Destroy(ringMaterial);
+            foreach(var copy in importedCopies)Destroy(copy);
+            importedCopies.Clear();
         }
     }
 }
