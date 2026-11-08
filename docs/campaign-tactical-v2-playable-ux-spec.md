@@ -21,6 +21,8 @@ Read together:
 
 Read-input SHA256 identities: lifecycle milestone a61e29d88c7c2d77752803adf596ecfc323eefb0c7e86bfb4c678d0966358033; latest tactical chapter 1dee3914fdd69ebcba9b5be0b03684d9e04210c2f4a912941636dc6ebd24f4e8; assignment 69da4851cb4cd1eea498576046b9d61c29f55696cc15439be73569c99423451c. These identify local inputs, not committed source versions.
 
+**Assignment recheck, 8 November 2026:** the three supplied local inputs still match these hashes. The existing reconciliation remains consistent with that assignment and the product review. This is a documentation recheck of pinned evidence, not a claim about current main, remote PR status, CI or later lifecycle capability.
+
 ### Agreed behavior and remaining scope
 
 **Agreed, 13 October 2026, source: latest tactical chapter and lifecycle milestone linked above:**
@@ -317,3 +319,22 @@ Future acceptance must prove all eight examples against campaign-owned authority
 ## Documentation delivery boundary
 
 This revision changes only this specification on codex/campaign-tactical-v2-ux-spec. Local source hashes, pinned links, decision consistency, six annotated wireframes, eight worked examples and the diff are checked. Existing gameplay acceptance was read, not repeated. No production edits, desktop tools, publication/push, merge, other-chat messaging or Unity runtime work is part of this assignment.
+
+## Reconciliation review checklist — 8 November 2026
+
+This table traces the supplied assignment to the reviewable proposal. “Covered” means documented, not implemented or accepted in a running campaign.
+
+| Assignment / review concern | Coverage in this specification | Remaining review or implementation gate |
+| --- | --- | --- |
+| Fleet command, same-route separation and fleet-local screening | Wireframes A/C; examples 1–2; D2 | Prove actual defensive access and useful equipment contributions without cross-fleet protection or role-label buffs |
+| Simple maneuver/focus controls and persistent lawful fallback | Actions table; wireframes A/B/D; example 3; D3/D5 | Agree deterministic ranking, menu and automatic range policy; reject excluded exits in Simulation |
+| Distant opening; visible enemy condition without private stocks/orders | Wireframes A–D; examples 3–6; D2/D4 | Review facing/geometry and display precision against lawful lifecycle projections |
+| Strategic cloak; full, mixed and mutual cloak; hidden-launcher defense | Strategic strip; wireframes B–D; examples 4–6; D4 | Explicit equipment, power/state semantics and independently proven resolver/observation behavior |
+| Four shield facings, hull and finite per-package ammunition | Wireframe C; examples 2/8 | Persist current resources separately from source provisions; no automatic between-battle recovery/refill |
+| Save committed state without discarding unsent edits | Wireframe E; example 7; D6 | Local-draft retention is still a UX proposal; prove authoritative boundary save/resume and failure behavior |
+| Stopped travel, fresh orders, physical pursuit and depleted re-engagement | Wireframe F; example 8; D1 | Shared travel/contact policy and atomic aftermath; no catch-roll interface or same-turn repeat |
+| Filtered round reports and campaign completion distinction | Wireframes D/F; D7 | Current-batch retention policy; battle-turn completion is not campaign victory |
+| Three-resolution readability | Responsive matrix | Textual proposals only; later rendered/native acceptance at 1280 × 720, 1920 × 1080 and 3440 × 1440 |
+| Historical capability versus proposed UI | Pinned source inventory and authority table | Reconcile the actual accepted lifecycle before commissioning Unity; no invented backend signatures |
+
+**Design discussion remains required:** settle D1 travel/contact timing, D2 capability/mobility/facing rules, D3 automatic ranking, D4 cloak operational rules/observations/opponent policy, D5 maneuver presentation, D6 persistence/version policy, D7 report retention and D8 warnings/confirmation details. Agreed fleet/cloak/focus/aftermath behavior is not reopened by these remaining technical and interface choices. No response is treated as approval.
