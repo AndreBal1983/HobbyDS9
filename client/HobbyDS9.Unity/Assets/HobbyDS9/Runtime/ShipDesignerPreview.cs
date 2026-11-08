@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 namespace HobbyDS9.UnityClient
 {
-    // Presentation reference only: this is not the actual ship identity resolver.
+    // The selected catalogue hull supplies presentation identity only; art never validates a fit.
     public sealed class ShipDesignerPreview : VisualElement, IDisposable
     {
         private string? visualKey;
@@ -18,6 +18,9 @@ namespace HobbyDS9.UnityClient
         private int dragPointer=-1;
         private Vector2 dragPosition;
         private readonly VisualElement nacelleStudies=new VisualElement(),deflectorStudies=new VisualElement();
+        private readonly List<Button> modularViews=new List<Button>();
+        private readonly Label fixedExterior=new Label("Fixed hull exterior · fitted equipment remains in the facts.")
+            {name="designer-fixed-exterior-note",pickingMode=PickingMode.Ignore};
         private const string ArtCredit="Galaxy source: Chris Kuhn / Kuhn Industries, Big D, CC BY-NC-SA 3.0. Noncommercial fan-art derivative. Original procedural modules from the HobbyDS9 art study.";
         private readonly Image image = new Image { name="designer-hull-reference-image", scaleMode=ScaleMode.ScaleToFit, pickingMode=PickingMode.Position };
         private readonly Label caption = new Label { name="designer-hull-reference-caption", pickingMode=PickingMode.Ignore };
@@ -28,7 +31,14 @@ namespace HobbyDS9.UnityClient
         private bool disposed;
 
         public static string? ReferenceKey(string? hullVersionId) =>
-            ShipPreviewStage.DesignerReferenceKey(hullVersionId!);
+            ActivityHullCatalog.Find(hullVersionId!)?.VisualKey??ShipPreviewStage.DesignerReferenceKey(hullVersionId!);
+
+        private bool HasFixedExterior => ActivityHullCatalog.Find(hullId!)!=null;
+        private string Credit => hullId=="hull.defiant-combat.v1"
+            ? "Defiant source: owner-provided Meshy study. Private local review only."
+            : hullId=="hull.constitution-explorer.v1"
+                ? "Constitution-style Explorer: original HobbyDS9 hull art."
+                : visualKey==null?"No exact hull art binding.":ArtCredit;
 
         public ShipDesignerPreview(string? hullVersionId)
         {
@@ -68,7 +78,7 @@ namespace HobbyDS9.UnityClient
             {
                 var choice=view;var button=new Button(()=>{stage?.SetReferenceView(choice);RefreshCaption();})
                     {name="designer-view-"+view.ToString().ToLowerInvariant(),text=view==DesignerReferenceView.CoreCutaway?"Internal core":view.ToString()};
-                CompactControl(button);controls.Add(button);
+                CompactControl(button);controls.Add(button);modularViews.Add(button);
             }
             foreach(var step in new[]{("◀",-20f,0f),("▶",20f,0f),("↑",0f,15f),("↓",0f,-15f)})
             {
@@ -77,6 +87,7 @@ namespace HobbyDS9.UnityClient
                 CompactControl(button);controls.Add(button);
             }
             Add(controls);
+            fixedExterior.style.flexShrink=0;Add(fixedExterior);
             nacelleStudies.name="designer-nacelle-studies";deflectorStudies.name="designer-deflector-studies";
             foreach(var group in new[]{nacelleStudies,deflectorStudies}){group.style.flexDirection=FlexDirection.Row;group.style.flexWrap=Wrap.Wrap;group.style.flexShrink=0;group.style.display=DisplayStyle.None;Add(group);}
             foreach(var choice in new[]{("Classic",DesignerStudyVariant.ClassicNacelles),("Sovereign-style",DesignerStudyVariant.SovereignNacelles),("Blue",DesignerStudyVariant.BlueDeflector),("Amber",DesignerStudyVariant.AmberDeflector),("Survey",DesignerStudyVariant.SurveyDeflector)})
@@ -87,7 +98,7 @@ namespace HobbyDS9.UnityClient
                 (choice.Item2==DesignerStudyVariant.ClassicNacelles || choice.Item2==DesignerStudyVariant.SovereignNacelles?nacelleStudies:deflectorStudies).Add(button);
             }
             Add(image); Add(schematic); Add(caption);
-            caption.tooltip=ArtCredit;
+            RefreshPresentationOptions();caption.tooltip=Credit;
             Fallback(visualKey==null ? "Hull schematic · no mapped model reference" : "Illustrative hull reference · equipment shown schematically");
             RegisterCallback<AttachToPanelEvent>(_=>Open());
             RegisterCallback<DetachFromPanelEvent>(_=>Release());
@@ -108,27 +119,43 @@ namespace HobbyDS9.UnityClient
             bool hullChanged=!string.Equals(hullId,hullVersionId,StringComparison.Ordinal);
             hullId=hullVersionId;visualKey=ReferenceKey(hullVersionId);pendingPreview=isPendingPreview;
             installed.Clear();foreach(var pair in quantities)installed.Add(pair.Key,pair.Value);
-            if(hullChanged){Release();Fallback(visualKey==null?"Hull schematic · no mapped Galaxy reference":"Galaxy reference awaiting renderer");if(panel!=null)Open();}
-            else if(stage!=null){stage.ShowDesignerReference(hullId!,installed);RefreshCaption();}
+            RefreshPresentationOptions();
+            if(hullChanged){Release();Fallback(visualKey==null?"Hull schematic · no exact model binding":"Selected hull reference awaiting renderer");if(panel!=null)Open();}
+            else if(stage!=null){ShowCurrentHull();RefreshCaption();}
         }
 
-        public void UpdateFacts(string text) { caption.tooltip=text+"\n"+ArtCredit; }
+        public void UpdateFacts(string text) { caption.tooltip=text+"\n"+Credit; }
         public DesignerArtSnapshot? CaptureArtDiagnostics()=>stage?.CaptureArtDiagnostics();
+        private void ShowCurrentHull()
+        {
+            if(HasFixedExterior)stage!.ShowActivityHull(hullId!);
+            else stage!.ShowDesignerReference(hullId!,installed);
+        }
+        private void RefreshPresentationOptions()
+        {
+            // Fixed exteriors have no received component/socket map. Do not offer study views as working equipment controls.
+            var fixedHull=HasFixedExterior;
+            foreach(var button in modularViews)button.style.display=fixedHull?DisplayStyle.None:DisplayStyle.Flex;
+            fixedExterior.style.display=fixedHull?DisplayStyle.Flex:DisplayStyle.None;
+            if(fixedHull || visualKey==null || stage==null)
+            {nacelleStudies.style.display=DisplayStyle.None;deflectorStudies.style.display=DisplayStyle.None;}
+            caption.tooltip=Credit;
+        }
         private void RefreshCaption()
         {
             if(stage!=null)
             {
                 var text=stage.Label;
-                if(stage.IsDesignerReference && stage.ReferenceView==DesignerReferenceView.Hull)
+                if(stage.IsDesignerReference && !stage.IsActivityHull && stage.ReferenceView==DesignerReferenceView.Hull)
                     text="Illustrative Galaxy · propulsion "+ShipPreviewStage.DesignerModuleQuantity(installed,DesignerReferenceView.Nacelles)
                         +" / reactor "+ShipPreviewStage.DesignerModuleQuantity(installed,DesignerReferenceView.CoreCutaway)+" · art only";
-                else if(stage.IsDesignerReference && stage.ReferenceView==DesignerReferenceView.Deflector)text="Uninstalled deflector art study";
+                else if(stage.IsDesignerReference && !stage.IsActivityHull && stage.ReferenceView==DesignerReferenceView.Deflector)text="Uninstalled deflector art study";
                 if(stage.Label.Contains("missing art:"))text+=" · some fitting art unavailable";
                 caption.text=(pendingPreview?"PREVIEW · ":"DRAFT FIT · ")+text;
-                caption.tooltip=stage.Label+"\n"+ArtCredit;
+                caption.tooltip=stage.Label+"\n"+Credit;
             }
-            nacelleStudies.style.display=stage?.ReferenceView==DesignerReferenceView.Nacelles?DisplayStyle.Flex:DisplayStyle.None;
-            deflectorStudies.style.display=stage?.ReferenceView==DesignerReferenceView.Deflector?DisplayStyle.Flex:DisplayStyle.None;
+            nacelleStudies.style.display=stage!=null && !stage.IsActivityHull && stage.ReferenceView==DesignerReferenceView.Nacelles?DisplayStyle.Flex:DisplayStyle.None;
+            deflectorStudies.style.display=stage!=null && !stage.IsActivityHull && stage.ReferenceView==DesignerReferenceView.Deflector?DisplayStyle.Flex:DisplayStyle.None;
         }
 
         public void BindViewport(VisualElement value)
@@ -162,7 +189,7 @@ namespace HobbyDS9.UnityClient
             try
             {
                 stage=new ShipPreviewStage(768,480);
-                stage.ShowDesignerReference(hullId!,installed);
+                ShowCurrentHull();
                 if(stage.Availability!=ShipPreviewAvailability.Model)
                 {
                     Fallback("Hull schematic · "+stage.Label); Release(); return;

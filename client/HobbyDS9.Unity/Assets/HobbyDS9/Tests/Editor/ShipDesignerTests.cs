@@ -18,6 +18,11 @@ namespace HobbyDS9.UnityClient.Tests
             Assert.That(invoke,Is.Not.Null);invoke.Invoke(button.clickable,new object[]{null});
         }
         [TestCase("hull.utility.v1","reference.galaxy.precision.v3")]
+        [TestCase("hull.defiant-combat.v1","activity.defiant-combat.v1")]
+        [TestCase("hull.galaxy-cruiser.v1","activity.galaxy-cruiser.v1")]
+        [TestCase("hull.constitution-explorer.v1","activity.constitution-explorer.v1")]
+        [TestCase("hull.defiant-combat.v1-extra",null)]
+        [TestCase("HULL.GALAXY-CRUISER.V1",null)]
         [TestCase("hull.utility.v1-extra",null)]
         [TestCase("HULL.UTILITY.V1",null)]
         [TestCase("hull.cruiser.v1",null)]
@@ -25,6 +30,26 @@ namespace HobbyDS9.UnityClient.Tests
         public void HullReferenceBindingIsExactAndPresentationOnly(string hull,string expected)
         {
             Assert.That(ShipDesignerPreview.ReferenceKey(hull),Is.EqualTo(expected));
+        }
+        [Test]
+        public void FixedHullPreviewSeparatesExteriorFromUnmappedEquipmentStudies()
+        {
+            using(var preview=new ShipDesignerPreview("hull.defiant-combat.v1"))
+            {
+                foreach(var name in new[]{"hull","nacelles","deflector","corecutaway"})
+                    Assert.That(preview.Q<Button>("designer-view-"+name).style.display.value,Is.EqualTo(DisplayStyle.None));
+                Assert.That(preview.Q<Label>("designer-fixed-exterior-note").style.display.value,Is.EqualTo(DisplayStyle.Flex));
+                Assert.That(preview.Q<Label>("designer-hull-reference-caption").tooltip,Does.Contain("owner-provided Meshy study"));
+                var counts=new System.Collections.Generic.Dictionary<string,int>{{"component.propulsion.v1",2}};
+                preview.SetFit("hull.utility.v1",counts,true);
+                Assert.That(counts["component.propulsion.v1"],Is.EqualTo(2));
+                Assert.That(preview.Q<Button>("designer-view-nacelles").style.display.value,Is.EqualTo(DisplayStyle.Flex));
+                Assert.That(preview.Q<Label>("designer-fixed-exterior-note").style.display.value,Is.EqualTo(DisplayStyle.None));
+                preview.SetFit("hull.galaxy-cruiser.v1",counts,false);
+                Assert.That(preview.Q<Button>("designer-view-nacelles").style.display.value,Is.EqualTo(DisplayStyle.None));
+                Assert.That(preview.Q<Label>("designer-hull-reference-caption").tooltip,Does.Contain("Chris Kuhn"));
+                Assert.That(preview.Q<Image>("designer-hull-reference-image").image,Is.Null,"Unattached source test must not open a renderer.");
+            }
         }
         [Test]
         public void OverviewDraftRefreshKeepsReferenceElementAndRefreshesFitFacts()
