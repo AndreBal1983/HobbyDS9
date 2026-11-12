@@ -21,3 +21,4 @@ client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRepeatV1/*.js
 # Cycle composition pins exact policy bytes in both authoring locations.
 scenarios/colonisation-cycle-v1/*.json text eol=lf
 client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationCycleV1/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ShipNames/*.json text eol=lf

@@ -97,8 +97,9 @@ namespace HobbyDS9.UnityReview
                     var design=facts.Construction.FirstOrDefault(c=>c.Design.DefinitionId==ship.ShipDesignDefinitionId)?.Design.DisplayName??"unavailable";
                     var row=new VisualElement{name="fleet-ship-card-"+sid};row.AddToClassList("fleet-ship-card");members.Add(row);
                     var source=activity?.Ships.FirstOrDefault(v=>v.ShipId==sid&&v.FleetId==id);
-                    Text(row,"Class / fit: "+(source!=null&&!string.IsNullOrWhiteSpace(source.DisplayName)?source.DisplayName:design),"fleet-ship-title");
-                    Text(row,"Ship ID: "+sid);
+                    var identity=ReviewShipNames.Ship(sid,ship.OwnerCivilizationId.Value);
+                    Text(row,identity?.Label??"Vessel","fleet-ship-title");
+                    Text(row,"Class / fit: "+(source!=null&&!string.IsNullOrWhiteSpace(source.DisplayName)?source.DisplayName:design));
                     var conditionArea=new VisualElement();conditionArea.AddToClassList("fleet-card-condition-area");row.Add(conditionArea);
                     var image=source==null?null:ConstructionCardArt.Ship(source.HullVersionId);
                     if(image!=null){var art=new Image{name="fleet-ship-image-"+sid,image=image,scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};art.AddToClassList("fleet-ship-image");conditionArea.Add(art);}
