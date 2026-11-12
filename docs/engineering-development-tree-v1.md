@@ -58,3 +58,9 @@ No DTO field, save/content format, compiler, combat resolver or RNG identity cha
 - Unity EditMode coverage was updated for multi-project lookup and a 20-card/scroll-container/read-only rendering check. Unity Editor, native visuals and a Windows player build have not been executed for this change. No desktop control was used.
 
 Scenario SHA256: `a9d631c84ab8689718c9f5199877694fa4b027ac774e3ee0f1a6b9bb31fa692f`. This is a local implementation candidate, not a merged/released feature or a claim of remote CI success.
+
+## Native acceptance follow-up — 12 November 2026
+
+The owner authorized native/visual testing, conditional merge and a new playable build. The first pinned Unity EditMode launch exited **198 before compilation/tests**: its licensing log reports “No valid Unity Editor license found.” Activation in Unity Hub is required; this is not a test failure or a successful runtime check. All three original player save slots were backed up and verified unchanged after that attempt. Evidence is retained locally under `E:/HobbyDS9/artifacts/engineering-projects-20-20261112-1977a81/`.
+
+The optional Editor entry point `HobbyDS9.UnityClient.Editor.EngineeringTreeCapture.CaptureForAcceptance` prepares 18 real Game-view captures across the three requested sizes: initial top/last project, available engine, completed engine, partial progress and retargeted state. It advances the actual campaign and submits ordinary commands without granting Science or resources, writes separate test-owned checkpoints, and checks authority/read-only presentation and save/load invariants. Its source compiles against the installed Unity libraries. It has **not executed** while licensing is unresolved. This runner does not replace native mouse/keyboard acceptance or justify merging before those checks and the Windows build pass.
