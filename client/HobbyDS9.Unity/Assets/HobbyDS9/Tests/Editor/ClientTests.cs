@@ -154,9 +154,9 @@ namespace HobbyDS9.UnityClient.Tests
             host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save));var actor=new HobbyDS9.Contracts.EntityId("civ.federation");var app=new DefinitionId("engineering.advanced-starship-engineering");
             Assert.That(ResearchView(host).Q<Button>("target-"+app.Value).enabledSelf,Is.True);
             Assert.That(host.Client.Engineering(host.Snapshot,actor,app).Accepted,Is.True);Assert.That(host.EndTurn().Status,Is.EqualTo(TurnStatus.Completed));
-            var progress=ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single();Assert.That(progress.Band,Is.EqualTo(EngineeringMaturityBand.Operational));
+            var progress=ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single(e => e.Definition.DefinitionId.Value == "engineering.advanced-starship-engineering");Assert.That(progress.Band,Is.EqualTo(EngineeringMaturityBand.Operational));
             Assert.That(host.Client.Engineering(host.Snapshot,actor,null).Accepted,Is.True);var json=host.SaveJson();host.LoadJson(json);
-            Assert.That(ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single().Progress,Is.EqualTo(progress.Progress));
+            Assert.That(ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single(e => e.Definition.DefinitionId.Value == "engineering.advanced-starship-engineering").Progress,Is.EqualTo(progress.Progress));
             Assert.That(host.Client.Engineering(host.Snapshot,actor,app).Accepted,Is.True);for(int i=0;i<30;i++)
             {
                 var turn=host.EndTurn();Assert.That(turn.Status,Is.Not.EqualTo(TurnStatus.Rejected));
@@ -166,7 +166,7 @@ namespace HobbyDS9.UnityClient.Tests
                     Assert.That(host.FinalizeCombats().Status,Is.EqualTo(TurnStatus.Completed));
                 }
             }
-            var mature=ResearchOverviewSnapshot.For(host.Snapshot,actor);Assert.That(mature.Engineering.Single().MaturityPercent,Is.EqualTo(100));Assert.That(mature.Target,Is.Null);
+            var mature=ResearchOverviewSnapshot.For(host.Snapshot,actor);Assert.That(mature.Engineering.Single(e => e.Definition.DefinitionId.Value == "engineering.advanced-starship-engineering").MaturityPercent,Is.EqualTo(100));Assert.That(mature.Target,Is.Null);
             var before=host.SaveJson();Assert.That(ResearchView(host).Q<Button>("target-"+app.Value).enabledSelf,Is.False);Assert.That(host.SaveJson(),Is.EqualTo(before));
         }
         [Test]

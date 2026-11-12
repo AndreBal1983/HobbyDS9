@@ -67,10 +67,14 @@ namespace HobbyDS9.UnityClient
                 increases[discipline.Discipline] = Button("+ 5%", "increase-science-" + discipline.Discipline, () => { draft.SetWeight(discipline.Discipline, Math.Min(ResearchUnits.Scale, draft.Weight(discipline.Discipline) + ResearchUnits.Scale / 20)); RefreshDraft(); }, planning, "Local allocation preview", card);
             }
             RefreshDraft();
-            Add(new LcarsSectionHeader("Engineering"));
+            Add(new LcarsSectionHeader("Engineering development tree"));
+            Line($"{observed.Engineering.Count} projects • one active target • prerequisites shown below");
+            var projects = new ScrollView(ScrollViewMode.Vertical) { name = "engineering-projects" };
+            projects.style.maxHeight = 460; projects.style.minHeight = 180;
+            projects.style.flexShrink = 0; Add(projects);
             foreach (var application in observed.Engineering)
             {
-                var definition = application.Definition; var card = new VisualElement { name = "engineering-" + definition.DefinitionId.Value }; card.AddToClassList("research-card"); Add(card);
+                var definition = application.Definition; var card = new VisualElement { name = "engineering-" + definition.DefinitionId.Value }; card.AddToClassList("research-card"); projects.Add(card);
                 var state = application.Band == EngineeringMaturityBand.Mature ? "Completed" : application.IsTarget ? "Current" : application.ScienceSatisfied.All(s => s) && application.PrerequisitesSatisfied.All(s => s) ? "Available" : "Locked";
                 Line(definition.DisplayName + " • " + KindLabel(definition.Kind) + " • " + state, card);
                 card.Add(new ProgressBar { value = application.MaturityPercent, title = $"{application.MaturityPercent}% • {(state == "Completed" ? state : application.Band.ToString())}" });
