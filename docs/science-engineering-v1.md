@@ -1,5 +1,7 @@
 # Science & Engineering foundation v1
 
+Later scoped extension: the [20-project Engineering development tree](engineering-development-tree-v1.md) expands the authored selection and releases gated hull/component versions. One active target, saved per-project progress and the maturity bands remain unchanged. The single-project content and acceptance hashes below describe the historical foundation.
+
 This revises the unaccepted `242247de4331e5b62896cac631848024940e26af` candidate on `codex/science-engineering-foundation-v1`. Main remains at accepted `a0f750681438d26ded17fff38cb3df37c3da9eb0`. R1 implements authoritative fixed-point arithmetic, six-way Science and Engineering kinds. R2 implements detached Application projections, local allocation drafts, percentage/conceptual UI and local Unity acceptance instructions.
 
 ## Authoritative units and allocations
