@@ -10,6 +10,27 @@ namespace HobbyDS9.UnityClient.Tests
     public sealed class ClientTests
     {
         private static CampaignHost Start() => new CampaignHost(Resources.Load<TextAsset>("ds9-slice").bytes);
+        [Test]
+        public void EngineeringTreeShowsAllTwentyProjectsWithoutChangingCampaignState()
+        {
+            var host = Start(); var before = host.SaveJson();
+            var view = new ResearchPanelView();
+            view.Present(host.Snapshot, host.Client, operation => operation());
+            var projects = view.Q<ScrollView>("engineering-projects");
+            Assert.That(projects, Is.Not.Null);
+            var actor = host.Snapshot.Campaign.Civilizations.Single(c => c.ControllerKind == ControllerKind.Human);
+            var cards = ResearchOverviewSnapshot.For(host.Snapshot, actor.CivilizationId).Engineering;
+            Assert.That(cards.Count, Is.EqualTo(20));
+            foreach (var card in cards)
+            {
+                var button = projects.Q<Button>("target-" + card.Definition.DefinitionId.Value);
+                Assert.That(button, Is.Not.Null);
+                Assert.That(button.enabledSelf, Is.EqualTo(card.CanTarget));
+            }
+            Assert.That(view.Q<Button>("clear-engineering-target"), Is.Not.Null);
+            Assert.That(projects.Q<Button>("clear-engineering-target"), Is.Null);
+            Assert.That(host.SaveJson(), Is.EqualTo(before));
+        }
         private static CampaignHost BlueprintCampaign(bool complete)
         {
             var host = Start();

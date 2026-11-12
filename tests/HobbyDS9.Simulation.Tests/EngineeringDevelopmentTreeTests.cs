@@ -156,6 +156,29 @@ public sealed class EngineeringDevelopmentTreeTests
     }
 
     [Fact]
+    public void AiUsesTheSameTwentyProjectTreeWithoutAssigningAHumanTarget()
+    {
+        var scenario = VerticalSliceFixture.Scenario(humans: false, weighted: true, fullEngineeringTree: true);
+        foreach (var owner in scenario.InitialState.Civilizations!)
+        {
+            foreach (var discipline in owner.Disciplines!) discipline.Level = 10;
+            owner.EngineeringReserve = 18000;
+        }
+        var session = VerticalSliceFixture.Session(scenario);
+        VerticalSliceFixture.Advance(session);
+        foreach (var owner in session.ExportSave().GameState.Civilizations!)
+        {
+            if (owner.ControllerKind == ControllerKind.Human)
+            {
+                Assert.Null(owner.EngineeringTargetDefinitionId);
+                Assert.Empty(owner.MatureEngineeringApplicationDefinitionIds!);
+            }
+            else
+                Assert.Equal(new[] { "engineering.compact-life-support" }, owner.MatureEngineeringApplicationDefinitionIds!);
+        }
+    }
+
+    [Fact]
     public void EngineAndShieldUnlocksAffectNewBlueprintsWithoutChangingOldPublishedPerformance()
     {
         var scenario = Tree();
