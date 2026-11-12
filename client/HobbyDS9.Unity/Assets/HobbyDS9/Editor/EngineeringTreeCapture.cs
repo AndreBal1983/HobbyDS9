@@ -23,7 +23,7 @@ namespace HobbyDS9.UnityClient.Editor
         private static ClientEntry entry;
         private static CampaignHost host;
         private static double deadline;
-        private static string Output => Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "../../..", "artifacts/unity/engineering-tree"));
+        private static string Output => Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "../../..", "artifacts/unity/engineering-tree-release"));
         static EngineeringTreeCapture()
         {
             if (SessionState.GetBool(Key, false)) { deadline = EditorApplication.timeSinceStartup + 180; EditorApplication.update += Start; }
@@ -132,14 +132,19 @@ namespace HobbyDS9.UnityClient.Editor
         }
         private static void Capture(string name, string project, Action next)
         {
-            StrategicPrototypeCapture.CaptureSequence("engineering-tree", name, Sizes, root =>
+            StrategicPrototypeCapture.CaptureSequence("engineering-tree-release", name, Sizes, root =>
             {
                 var shell = root.Q<LcarsShell>(); var view = root.Q<ResearchPanelView>();
                 Require(view != null, "Research panel missing.");
                 var projects = view.Q<ScrollView>("engineering-projects");
                 Require(projects != null && projects.Query<Button>().ToList().Count == 20, "Expected all twenty development controls.");
                 Require(projects.worldBound.width > 150 && projects.resolvedStyle.height >= 180, "Project list collapsed.");
-                shell.Details.ScrollTo(projects); projects.ScrollTo(view.Q<VisualElement>("engineering-" + project));
+                var projectCard = view.Q<VisualElement>("engineering-" + project);
+                // Align the card's heading/progress at the top, rather than
+                // ScrollTo's bottom alignment for cards taller than the viewport.
+                projects.scrollOffset = new Vector2(0, projectCard.layout.y);
+                var listTop = projects.ChangeCoordinatesTo(shell.Details.contentContainer, Vector2.zero).y;
+                shell.Details.scrollOffset = new Vector2(0, Mathf.Max(0, listTop - 100));
                 foreach (var card in Research.Engineering)
                 {
                     var button = projects.Q<Button>("target-" + card.Definition.DefinitionId.Value);

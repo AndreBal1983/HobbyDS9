@@ -10,6 +10,29 @@ namespace HobbyDS9.UnityClient.Tests
     public sealed class ClientTests
     {
         private static CampaignHost Start() => new CampaignHost(Resources.Load<TextAsset>("ds9-slice").bytes);
+        [UnityEngine.TestTools.UnityTest]
+        public System.Collections.IEnumerator CompactEngineeringViewportKeepsClearReachableAndAllProjectsScrollable()
+        {
+            var host = Start(); var before = host.SaveJson();
+            var window = ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();
+            try
+            {
+                window.position = new Rect(50, 50, 360, 340); window.Show();
+                var outer = new ScrollView(ScrollViewMode.Vertical); outer.style.height = 320; outer.style.flexShrink = 0;
+                window.rootVisualElement.Add(outer);
+                var view = ResearchView(host); outer.Add(view);
+                yield return null; yield return null;
+                var projects = view.Q<ScrollView>("engineering-projects");
+                Assert.That(projects.layout.height, Is.InRange(180f, 220f));
+                Assert.That(projects.Query<Button>().ToList().Count, Is.EqualTo(20));
+                var clear = view.Q<Button>("clear-engineering-target");
+                outer.ScrollTo(clear); yield return null; yield return null;
+                Assert.That(outer.contentViewport.worldBound.Contains(clear.worldBound.center), Is.True);
+                Assert.That(projects.verticalScroller.highValue, Is.GreaterThan(0));
+                Assert.That(host.SaveJson(), Is.EqualTo(before));
+            }
+            finally { window.Close(); }
+        }
         [Test]
         public void EngineeringTreeShowsAllTwentyProjectsWithoutChangingCampaignState()
         {
@@ -139,7 +162,7 @@ namespace HobbyDS9.UnityClient.Tests
             var application=view.Q<VisualElement>("engineering-engineering.advanced-starship-engineering");
             Assert.That(application,Is.Not.Null);Assert.That(application.Query<Label>().ToList().Any(l=>l.text.Contains("Propulsion interval 1→2, breakthrough 2")),Is.True);
             Assert.That(view.Q<Button>("target-engineering.advanced-starship-engineering").enabledSelf,Is.False);
-            Assert.That(view.Query<ProgressBar>().ToList().Count,Is.EqualTo(7));Assert.That(host.SaveJson(),Is.EqualTo(before));
+            Assert.That(view.Query<ProgressBar>().ToList().Count,Is.EqualTo(26));Assert.That(host.SaveJson(),Is.EqualTo(before));
         }
         [Test]
         public void ResearchSplitPreviewIsLocalAndSubmissionUsesRealStampedBoundary()

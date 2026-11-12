@@ -71,7 +71,26 @@ namespace HobbyDS9.UnityClient
             Line($"{observed.Engineering.Count} projects • one active target • prerequisites shown below");
             var projects = new ScrollView(ScrollViewMode.Vertical) { name = "engineering-projects" };
             projects.style.maxHeight = 460; projects.style.minHeight = 180;
+            projects.style.height = 180;
             projects.style.flexShrink = 0; Add(projects);
+            // The compact shell's details viewport is much shorter than the wide
+            // shell's. Keep the inner list usable alongside Clear and receipts.
+            VisualElement? viewport = null;
+            void SizeProjects()
+            {
+                if (viewport != null && viewport.layout.height > 0)
+                    projects.style.height = Math.Max(180f, Math.Min(460f, viewport.layout.height - 140f));
+            }
+            EventCallback<GeometryChangedEvent> resizeProjects = _ => SizeProjects();
+            projects.RegisterCallback<AttachToPanelEvent>(_ =>
+            {
+                viewport = GetFirstAncestorOfType<ScrollView>()?.contentViewport;
+                viewport?.RegisterCallback(resizeProjects); SizeProjects();
+            });
+            projects.RegisterCallback<DetachFromPanelEvent>(_ =>
+            {
+                viewport?.UnregisterCallback(resizeProjects); viewport = null;
+            });
             foreach (var application in observed.Engineering)
             {
                 var definition = application.Definition; var card = new VisualElement { name = "engineering-" + definition.DefinitionId.Value }; card.AddToClassList("research-card"); projects.Add(card);
