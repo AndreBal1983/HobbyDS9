@@ -25,6 +25,7 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 - Spend existing Engineering capacity to develop and refine hull/component versions; preserve diminishing returns and scientific prerequisites.
 - Integrate the ship designer with the strategic planner: build for mission, timing, affordability and logistics.
 - Use one week per strategic turn; express movement in sector crossings, separately from warp factors.
+- Treat the full generated campaign map as the entire galaxy; tune traversal through propulsion and travel pace. Fixed lore quadrant geography is not required, and empire placement is procedural. See the [23 October galaxy visual integration scope](../unity-galaxy-visual-integration-2026-10-23.md). Exact speed bands remain proposed.
 - Allow credits to expedite eligible work and ship construction while respecting physical and social constraints.
 - Treat sensor infrastructure as an investment in warning time; balance warning, travel and mobilisation together.
 - Use no hard fleet-size cap; additional ships always add baseline capability, while command hierarchy and technology add positive coordination bonuses.
@@ -47,6 +48,8 @@ Fleet/interception/combat decisions are recorded in [tactical-combat.md](tactica
 Colonisation/conquest decisions are recorded in [colonisation-and-conquest.md](colonisation-and-conquest.md). Planet-specific sovereignty, targeted blockades, colony expeditions, ground campaigns and occupation require scoped implementation. Existing system-level ownership and broad freight-blocking behaviour must not be silently reinterpreted; the chapter records those gaps and keeps detailed rules and balance open.
 
 ## Design versus implementation
+
+The [art-direction workspace](../art/README.md) records the owner's requested Unity 3D galaxy map, modular ship presentation and evolving nacelle appearance. Its visual and asset-pipeline recommendations are proposed; it does not change gameplay rules or implementation status.
 
 These chapters describe intended gameplay. [Architecture](../architecture.md) and milestone/acceptance documents describe current implementation. Do not relabel a proposal as implemented merely because it is documented.
 

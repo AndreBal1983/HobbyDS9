@@ -9,6 +9,7 @@ Read [the design index](README.md), [ship design](ship-design.md), [exploration 
 ## Agreed decisions
 
 - One strategic turn represents **one week** of empire time.
+- Owner decision, 23 October 2026: the full generated campaign map represents the entire galaxy. Tune travel pace and propulsion progression to achieve suitable traversal times; fixed lore quadrants are not required and empires are placed procedurally. The [pacing proposal](../galaxy-pacing-proposal-2026-10-23.md) supplies unapproved numerical examples, not installed speed rules. A whole-galaxy visual background is permitted atop current generation without relocating existing nodes or changing saved geometry.
 - Weekly turns are the common clock for travel, missions, Industry, economy, political action and diplomacy. Orders can be immediate; their physical or social consequences have explicit resolution timing. Short activities may resolve within a turn.
 - Ships have a strategic movement rating in ordinary sector crossings per week. This is **not** a warp factor. DS9-era starts use mature propulsion, not warp-one technology.
 - Fleets should visibly progress through intermediate navigation regions. Do not leave a moving fleet displayed as stationary at its origin for the whole journey.

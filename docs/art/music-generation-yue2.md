@@ -8,6 +8,10 @@ HOT-Step CPP 1.4.0, its bundled music runtime/engine, YuE2 Q8 and BF16 weights, 
 
 This removal concerns music generation only. Blender/art modelling tools, existing game music and Unity audio integration are unaffected.
 
+Removal rechecked on 8 November 2026: the former installation root and both checked desktop shortcut locations are absent; no matching music application/engine process or listener on the former ports was found. No matching HOT-Step/YuE2/ACE-Step installation archive was found in Downloads. Historical audio and provenance remain preserved.
+
+Reconfirmed on 13 November 2026: `C:\Users\ambal\AI\YuE2`, the user/public `YuE2 Music` desktop shortcuts and `tools/art/generate_music_candidates.py` remain absent. No matching HOT-Step/YuE2/ACE-Step installation archive was found among the files in Downloads. The art director was notified again that local generation is unavailable and the owner will use Suno online. Existing music, historical candidates and Blender tools remain outside this removal scope.
+
 ## Instructions for the art director
 
 1. Prepare original musical briefs and Suno-ready prompts for owner review. Retain useful composition/palette findings from the [music direction](music-direction.md), while treating its local-model production sections as historical.
