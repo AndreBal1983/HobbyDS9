@@ -64,6 +64,15 @@ namespace HobbyDS9.UnityReview.Tests
             var path=(string)typeof(ReviewEntry).GetMethod("CampaignArchivePath",BindingFlags.NonPublic|BindingFlags.Instance)!
                 .Invoke(entry,new object[]{"combat","combat-1"})!;
             Assert.That(Path.GetDirectoryName(path),Is.EqualTo(Path.Combine(UnityEngine.Application.persistentDataPath,CombatPlaytestOptions.SaveDirectory)));
+            var backToMenu=root.Query<Button>().ToList().Single(b=>b.text=="Back");
+            using(var e=NavigationSubmitEvent.GetPooled()){e.target=backToMenu;backToMenu.SendEvent(e);}yield return null;
+            Click("campaign-menu-main");yield return null;Click("campaign-menu-new");yield return null;
+            var backToRunningCampaign=root.Query<Button>().ToList().Single(b=>b.text=="Back");
+            using(var e=NavigationSubmitEvent.GetPooled()){e.target=backToRunningCampaign;backToRunningCampaign.SendEvent(e);}yield return null;
+            Assert.That(root.Q<Button>("campaign-menu-resume"),Is.Not.Null,"Back from New while a campaign is running returns to its paused menu.");
+            Assert.That(root.Q<Button>("campaign-menu-new"),Is.Null,"The paused menu keeps New behind the explicit Main menu route.");
+            Click("campaign-menu-main");yield return null;
+            Assert.That(root.Q<Button>("campaign-menu-new"),Is.Not.Null);Assert.That(root.Q<Button>("campaign-menu-combat"),Is.Not.Null);
             // No disk write, combat advance or native acceptance is performed by this menu case.
             }
             finally{UnityEngine.Object.Destroy(fixture);}

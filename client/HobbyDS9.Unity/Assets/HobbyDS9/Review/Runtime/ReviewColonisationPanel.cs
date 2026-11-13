@@ -20,6 +20,7 @@ namespace HobbyDS9.UnityReview
         private readonly Action<CampaignActivityCommandDto> submitActivity;
         private readonly Action<CampaignActivityCommandDto,string> reviewActivity;
         private readonly ScrollView body;
+        private readonly VisualElement tabs;
         private readonly VisualElement review;
         private readonly Label status;
         private ReviewActivitiesPanel? science;
@@ -99,7 +100,7 @@ namespace HobbyDS9.UnityReview
             this.observation=observation;this.planets=planets;this.activities=activities;this.reviewOrder=reviewOrder;this.submit=submit;this.reviewActivity=reviewActivity;this.submitActivity=submitActivity;this.supportsKitFreePassengers=supportsKitFreePassengers;this.systemNodes=systemNodes;
             name="colonisation-panel";style.flexGrow=1;style.minHeight=0;style.minWidth=0;
             world=observation.Worlds.FirstOrDefault()?.Id??"";ship=observation.Transports.FirstOrDefault()?.ShipId??"";planet=planets.FirstOrDefault()?.PlanetId??"";
-            var tabs=Row(this);foreach(var name in new[]{"Worlds","Planets","Transports","Science"}){var captured=name;Button(tabs,name=="Planets"?"System":name,"colonisation-tab-"+name,()=>Show(captured),true);}
+            tabs=Row(this);foreach(var name in new[]{"Worlds","Planets","Transports","Science"}){var captured=name;Button(tabs,name=="Planets"?"System":name,"colonisation-tab-"+name,()=>Show(captured),true);}
             body=new ScrollView(ScrollViewMode.Vertical){name="colonisation-scroll"};body.style.flexGrow=1;body.style.minHeight=0;Add(body);
             body.contentViewport.RegisterCallback<GeometryChangedEvent>(_=>fitConstruction?.Invoke());
             review=new VisualElement{name="colonisation-order-review"};review.style.flexShrink=0;review.style.maxHeight=220;review.style.display=DisplayStyle.None;Add(review);
@@ -125,6 +126,7 @@ namespace HobbyDS9.UnityReview
             var f=new DropdownField(caption,labels,index){name=control};f.style.minHeight=44;f.style.fontSize=16;f.style.flexShrink=0;p.Add(f);f.SetEnabled(values.Count>0);
             f.RegisterValueChangedCallback(_=>{if(Live&&epoch==controlEpoch&&f.index>=0&&f.index<values.Count)changed(id(values[f.index]));});
         }
+        internal void BindWorldsOverview(Action back)=>Button(tabs,"Owned worlds overview","worlds-back-to-overview",back,true);
         private static string MaterialName(string id)=>id=="resource.dilithium"?"Dilithium":id=="resource.settlement-kit"?"Settlement kits":"Material";
         private static string Materials(IEnumerable<ResourceAmountSnapshot> rows)=>string.Join(", ",rows.Where(x=>x.Amount!=0).Select(x=>MaterialName(x.ResourceDefinitionId)+" "+x.Amount));
         private ColonisationCommandDto Command(ColonisationAction action)=>new ColonisationCommandDto{ActorId=observation.Actor,Turn=observation.Turn,Revision=observation.Revision,Action=action,CommandId="command.colony.ui."+Guid.NewGuid().ToString("N")};
@@ -438,7 +440,8 @@ namespace HobbyDS9.UnityReview
             Text(body,"Click / Space: focus · Double-click / Enter: open planet","colonisation-planet-interaction-hint");
             var layout=Row(surface);layout.name="colonisation-system-layout";
             var visual=new VisualElement{name="colonisation-system-visual"};visual.style.flexBasis=520;visual.style.flexGrow=1;visual.style.minWidth=0;
-            var detail=new VisualElement{name="colonisation-planet-focus"};detail.AddToClassList("system-selected-inspector");
+            var detail=new ScrollView(ScrollViewMode.Vertical){name="colonisation-planet-focus"};detail.AddToClassList("system-selected-inspector");
+            detail.style.height=420;detail.style.minHeight=300;
             detail.style.width=360;detail.style.flexShrink=0;detail.style.minWidth=0;
             layout.Add(visual);layout.Add(detail);
             bool? compact=null;

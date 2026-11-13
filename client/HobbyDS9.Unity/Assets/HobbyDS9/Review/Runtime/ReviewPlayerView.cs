@@ -32,7 +32,7 @@ namespace HobbyDS9.UnityReview
         {
             root.Clear();var facts=model.Current.Frame.Strategy!;var columns=Row(root,"console-columns");
             if(page==ReviewWorkspacePage.Research)Research(columns,facts);
-            else if(page==ReviewWorkspacePage.Empire&&model.PlayableFleet)new ReviewWorldLedger(model,workspace,button,perform,navigate).Render(columns);
+            else if(page==ReviewWorkspacePage.Empire&&model.PlayableFleet||page==ReviewWorkspacePage.Worlds&&model.ColonisationCampaign)new ReviewWorldLedger(model,workspace,button,perform,navigate).Render(columns);
             else if(page==ReviewWorkspacePage.Worlds)Worlds(columns,facts);
             else if(page==ReviewWorkspacePage.Production)Production(columns,facts);
             else if(page==ReviewWorkspacePage.FleetOrders)Fleets(columns,facts);

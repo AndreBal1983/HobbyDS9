@@ -187,6 +187,7 @@ namespace HobbyDS9.UnityReview.Tests
                 var ownQueue=model.Colonisation().Production.Where(q=>q.ColonyId==world.Id).ToArray();var head=ownQueue.First();
                 Assert.That(ledgerFrame.Strategy!.Colonies.Single(c=>c.ColonyId.Value==world.Id).ProductionQueue,Is.Empty,"streamed orders do not populate the prepaid queue");
                 ColonyActivate(s,()=>CampaignPage(doc,ReviewWorkspacePage.Empire));yield return EmpireSettled();
+                yield return ColonyClick(s,doc,"world-ledger-columns-toggle");
                 yield return ColonyClick(s,doc,"world-select-"+world.Id);
                 var ledgerRow=doc.rootVisualElement.Q("world-row-"+world.Id);Assert.That(ledgerRow,Is.Not.Null);
                 Assert.That(ledgerRow.Q<Label>("world-cell-Current build").text,Is.EqualTo(head.Name));

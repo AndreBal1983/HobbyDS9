@@ -100,9 +100,13 @@ namespace HobbyDS9.UnityReview
             if(demo&&frame.OwnShips.Any(s=>s.Condition.ShipId==selectedShip)){var currentStocks=Text(readable.CompactOwn(frame,selectedShip));currentStocks.name="combat-own-current-stocks";currentStocks.AddToClassList("combat-current-stocks");viewer.Add(currentStocks);}
             }
             var tabs=new VisualElement();tabs.AddToClassList("review-tabs");viewer.Add(tabs);
-            foreach(var name in (battleViewAvailable?new[]{"battle","stocks","report","inspection"}:new[]{"stocks","report","inspection"}))
+            var ownPreview=frame.OwnShips.Any(s=>s.Condition.ShipId==selectedShip)?frame.Strategy?.Ships.FirstOrDefault(s=>s.ShipId.Value==selectedShip):null;
+            if(tab=="ship"&&ownPreview==null)tab="inspection";
+            var viewTabs=(battleViewAvailable?new[]{"battle","stocks","report","inspection"}:new[]{"stocks","report","inspection"}).ToList();
+            if(ownPreview!=null)viewTabs.Insert(0,"ship");
+            foreach(var name in viewTabs)
             {
-                var pick=button(tabs,name=="battle"?"Battle view":name=="stocks"?(demo?"Ship status":"Own hull / shields / ammunition"):name=="report"?(aftermath!=null?"Battle summary":"Round report"):"Inspection",()=>{tab=name;Render();});
+                var pick=button(tabs,name=="ship"?"Ship view":name=="battle"?"Battle view":name=="stocks"?(demo?"Ship status":"Own hull / shields / ammunition"):name=="report"?(aftermath!=null?"Battle summary":"Round report"):"Inspection",()=>{tab=name;Render();});
                 pick.name="combat-tab-"+name;
                 pick.EnableInClassList("selected-tab",tab==name);
             }
@@ -111,9 +115,14 @@ namespace HobbyDS9.UnityReview
                 var fleetDetails=button(tabs,showFleetDetails?"Hide fleet details":"Fleet details",()=>{showFleetDetails=!showFleetDetails;Render();});
                 fleetDetails.name="combat-toggle-fleet-details";fleetDetails.EnableInClassList("selected-tab",showFleetDetails);
             }
-            VisualElement details=model.PlayableFleet&&tab=="battle"?new VisualElement():new ScrollView(ScrollViewMode.Vertical);
+            VisualElement details=model.PlayableFleet&&tab=="battle"||tab=="ship"?new VisualElement():new ScrollView(ScrollViewMode.Vertical);
             details.name="central-combat-details";details.AddToClassList("review-detail-scroll");details.EnableInClassList("battle-detail-host",model.PlayableFleet&&tab=="battle");viewer.Add(details);
-            if(model.PlayableFleet&&tab=="battle")details.Add(new ReviewBattlePanel(flow,button,perform));
+            if(tab=="ship"&&ownPreview!=null)
+            {
+                details.Add(new ReviewShipArtPanel(frame.Strategy!.Civilization.DefinitionId.Value,ownPreview.ShipDesignDefinitionId.Value,true));
+                var caption=Text("Static owned-ship preview. Actual maneuvers, impacts and damage are in the round report.");caption.name="combat-current-detail";details.Add(caption);
+            }
+            else if(model.PlayableFleet&&tab=="battle")details.Add(new ReviewBattlePanel(flow,button,perform));
             else
             {
             var report=Text(demo?(tab=="report"?(aftermath!=null?readable.Aftermath(aftermath):readable.LatestRound(frame)):tab=="inspection"?readable.Inspection(frame,selectedShip):readable.Stocks(frame)):tab=="report"?model.Report():tab=="inspection"?model.Inspection():flow.Conditions());report.name="combat-current-detail";details.Add(report);

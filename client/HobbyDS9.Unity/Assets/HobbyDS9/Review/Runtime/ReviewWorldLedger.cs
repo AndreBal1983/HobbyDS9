@@ -19,6 +19,7 @@ namespace HobbyDS9.UnityReview
         private readonly Action<ReviewWorkspacePage> navigate;
         private static readonly string[] Columns={"World","Population","Credits / turn","Research / turn","Industry / turn","Food / turn","Food stock","Dilithium stock","Logistics capacity","Current build","Work completed","Work required","Queue count","ETA","Resource output","Unexploited deposits","Power"};
         private static readonly HashSet<string> Numeric=new HashSet<string>(Columns.Skip(1).Take(8).Concat(new[]{"Work completed","Work required","Queue count"}),StringComparer.Ordinal);
+        private static readonly HashSet<string> OverviewColumns=new HashSet<string>(new[]{"World","Population","Research / turn","Industry / turn","Food stock","Current build","Queue count"},StringComparer.Ordinal);
         public ReviewWorldLedger(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<ReviewWorkspacePage> navigate)
         {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.navigate=navigate;}
         private static Label Text(VisualElement parent,string text,string id="")
@@ -71,12 +72,15 @@ namespace HobbyDS9.UnityReview
             // Streamed orders deliberately leave the legacy prepaid queue empty.
             var production=model.ColonisationCampaign?model.Colonisation().Production.ToLookup(q=>q.ColonyId,StringComparer.Ordinal):null;
             var main=new VisualElement();main.AddToClassList("console-panel");main.AddToClassList("console-work");parent.Add(main);
-            Text(main,"Empire / owned worlds").AddToClassList("console-section");
+            Text(main,workspace.Page==ReviewWorkspacePage.Worlds?"Owned worlds":"Empire / owned worlds").AddToClassList("console-section");
             Text(main,"Current owned observations · turn "+model.Current.Frame.Status.Turn+". Per-turn output, stock and capacity are separate.");
             var toolbar=new VisualElement();toolbar.AddToClassList("review-field-row");main.Add(toolbar);
             var scope=button(toolbar,"Owned worlds",()=>{});scope.SetEnabled(false);
             var unavailable=button(toolbar,"All-known / foreign: unavailable",()=>{});unavailable.SetEnabled(false);
             unavailable.tooltip="A permitted foreign and uncolonised-world projection is not supplied by this scenario.";
+            button(toolbar,workspace.WorldColumnsExpanded?"Show overview columns":"More columns & filters",()=>perform(()=>workspace.WorldColumnsExpanded=!workspace.WorldColumnsExpanded)).name="world-ledger-columns-toggle";
+            if(!workspace.WorldColumnsExpanded&&workspace.WorldFilters.Any(f=>!OverviewColumns.Contains(f.Key)&&!string.IsNullOrWhiteSpace(f.Value)))
+                Text(main,"Additional column filters are active. Open More columns & filters to inspect them.");
             button(toolbar,"Clear filters",()=>perform(()=>workspace.WorldFilters.Clear())).name="world-ledger-clear";
             var malformed=workspace.WorldFilters.Any(f=>Numeric.Contains(f.Key)&&f.Value.Length>0&&!decimal.TryParse(f.Value,NumberStyles.Integer,CultureInfo.InvariantCulture,out _));
             if(malformed)Text(main,"Enter a whole-number minimum for numeric filters. Invalid filters do not hide rows.","world-ledger-filter-warning");
@@ -110,11 +114,12 @@ namespace HobbyDS9.UnityReview
             Text(main,"Filtered owned totals ("+rows.Count+" current worlds): Credits "+rows.Sum(c=>(decimal)c.Economy.CreditOutput)+
                 " / turn · Research "+rows.Sum(c=>(decimal)c.Economy.ResearchOutput)+" / turn · Industry "+rows.Sum(c=>(decimal)c.Economy.Industry)+" / turn.","world-ledger-totals");
             var scroll=new ScrollView(ScrollViewMode.VerticalAndHorizontal){name="world-ledger-scroll"};scroll.style.flexGrow=1;scroll.style.minHeight=0;main.Add(scroll);
-            var table=new VisualElement();table.AddToClassList("world-ledger-table");scroll.Add(table);
+            var table=new VisualElement();table.AddToClassList("world-ledger-table");table.style.minWidth=(workspace.WorldColumnsExpanded?Columns.Length:OverviewColumns.Count)*152;scroll.Add(table);
             var header=new VisualElement();header.AddToClassList("world-ledger-row");table.Add(header);
             foreach(var column in Columns)
             {
                 var cell=new VisualElement();cell.AddToClassList("world-ledger-cell");header.Add(cell);
+                cell.EnableInClassList("world-ledger-numeric",Numeric.Contains(column));cell.style.display=workspace.WorldColumnsExpanded||OverviewColumns.Contains(column)?DisplayStyle.Flex:DisplayStyle.None;
                 var sort=button(cell,column+(workspace.WorldSort==column?(workspace.WorldSortDescending?" ↓":" ↑"):""),()=>perform(()=>{
                     if(workspace.WorldSort==column)workspace.WorldSortDescending=!workspace.WorldSortDescending;
                     else{workspace.WorldSort=column;workspace.WorldSortDescending=false;}
@@ -138,6 +143,7 @@ namespace HobbyDS9.UnityReview
                     foreach(var column in Columns)
                     {
                         var cell=new VisualElement();cell.AddToClassList("world-ledger-cell");row.Add(cell);
+                    cell.EnableInClassList("world-ledger-numeric",Numeric.Contains(column));cell.style.display=workspace.WorldColumnsExpanded||OverviewColumns.Contains(column)?DisplayStyle.Flex:DisplayStyle.None;
                         if(column=="World"){var choose=button(cell,colony.Environment.DisplayName,()=>perform(()=>workspace.SelectedColony=colony.ColonyId.Value));choose.name="world-select-"+colony.ColonyId;}
                         else Text(cell,Cell(facts,colony,column,production),"world-cell-"+column);
                     }

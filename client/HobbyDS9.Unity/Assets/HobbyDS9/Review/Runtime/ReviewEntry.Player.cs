@@ -87,6 +87,8 @@ namespace HobbyDS9.UnityReview
             else if(workspace.Page==ReviewWorkspacePage.Display)DrawDisplay();
             else if(workspace.Page==ReviewWorkspacePage.Tools)DrawTools();
             else if(workspace.Page==ReviewWorkspacePage.Designer)DrawDesigner();
+            else if(model.ColonisationCampaign&&workspace.Page==ReviewWorkspacePage.Worlds&&!workspace.WorldsContextOpen
+                &&!workspace.PendingSystemInspection.HasValue&&!workspace.PendingWorldInspection.HasValue)player!.Render(content!,workspace.Page);
             else if(model.ColonisationCampaign&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds))DrawColonisationPanel(content!);
             else if(model.ActivitiesCampaign&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds))DrawActivitiesPanel(content!);
             else player!.Render(content!,workspace.Page);

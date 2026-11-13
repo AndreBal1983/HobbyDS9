@@ -14,6 +14,7 @@ namespace HobbyDS9.UnityReview
         private readonly Dictionary<string,float> markerHoldUntil=new Dictionary<string,float>(StringComparer.Ordinal);
         private readonly ColonisationPlanetSnapshot[] bodies;
         private readonly VisualElement viewport,controls;
+        private readonly Foldout viewControls;
         private readonly Image image;
         private readonly Label unavailable;
         private Image? focusedPortrait;
@@ -34,7 +35,8 @@ namespace HobbyDS9.UnityReview
             name="sol-overview";style.flexGrow=1;style.flexBasis=520;style.minWidth=0;
             var title=new Label("System overview");title.AddToClassList("console-section");Add(title);
             Add(new Label("Schematic orbits and sizes · Only disclosed bodies"));
-            controls=new VisualElement();controls.style.flexDirection=FlexDirection.Row;controls.style.flexWrap=Wrap.Wrap;Add(controls);
+            viewControls=new Foldout{text="View controls",value=false,name="system-view-controls"};Add(viewControls);
+            controls=new VisualElement();controls.style.flexDirection=FlexDirection.Row;controls.style.flexWrap=Wrap.Wrap;viewControls.Add(controls);
             Control("Rotate left",()=>SetView(yaw-25,zoom));Control("Rotate right",()=>SetView(yaw+25,zoom));
             Control("Zoom out",()=>SetView(yaw,zoom-.14f));Control("Zoom in",()=>SetView(yaw,zoom+.14f));
             Control("Overview",()=>SetView(0,1));
@@ -137,7 +139,7 @@ namespace HobbyDS9.UnityReview
             if(animating)QueueDraw();
         }
         private void Fallback()
-        {failed=true;image.image=null;if(focusedPortrait!=null)focusedPortrait.image=null;if(portraitUnavailable!=null)portraitUnavailable.style.display=DisplayStyle.Flex;stage?.Dispose();stage=null;viewport.style.display=controls.style.display=DisplayStyle.None;unavailable.style.display=DisplayStyle.Flex;}
+        {failed=true;image.image=null;if(focusedPortrait!=null)focusedPortrait.image=null;if(portraitUnavailable!=null)portraitUnavailable.style.display=DisplayStyle.Flex;stage?.Dispose();stage=null;viewport.style.display=viewControls.style.display=DisplayStyle.None;unavailable.style.display=DisplayStyle.Flex;}
         public void Dispose(){if(disposed)return;disposed=true;image.image=null;if(focusedPortrait!=null)focusedPortrait.image=null;focusedPortrait=null;portraitUnavailable=null;stage?.Dispose();stage=null;}
     }
 }

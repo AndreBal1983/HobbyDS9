@@ -87,6 +87,12 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(root.Q<Label>("combat-own-current-stocks").text,Does.Contain("Hull").And.Contain("Fore").And.Contain("Port").And.Contain("Starboard").And.Contain("Aft").And.Contain("Torpedoes"));
             }
             yield return Capture("Battle-orders",CombatBounds);
+            var beforeShipPreview=model.Current.Frame;
+            Id("combat-tab-ship");yield return null;
+            Assert.That(doc.rootVisualElement.Q<Image>("owned-ship-model"),Is.Not.Null);
+            Assert.That(doc.rootVisualElement.Q<Label>("combat-current-detail").text,Does.Contain("Static owned-ship preview"));
+            Assert.That(model.Current.Frame,Is.SameAs(beforeShipPreview),"Ship viewing cannot commit a round or change any stock.");
+            Id("combat-tab-stocks");yield return null;
             Caption("Review / commit round "+model.Current.Frame.Battle!.Round);yield return null;Caption("Confirm");yield return null;
             Assert.That(model.Current.Frame.Battle!.Reports.Count,Is.GreaterThan(0));
             yield return Capture("Resolved-round",CombatBounds);

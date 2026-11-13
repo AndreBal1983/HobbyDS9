@@ -212,6 +212,8 @@
 .world-ledger-cell { width: 152px; min-width: 152px; padding: 4px 8px; justify-content: center; }
 .world-ledger-cell .review-action { margin: 0; padding: 5px; min-width: 0; white-space: normal; font-size: 16px; }
 .world-ledger-cell Label { font-size: 16px; white-space: normal; }
+.world-ledger-numeric Label { -unity-text-align: middle-right; }
+#world-ledger-totals { padding: 8px 12px; margin-bottom: 10px; border-left-width: 3px; border-left-color: #b9ace6; background-color: #101b29; color: #9fd8fb; }
 .world-ledger-filter { min-width: 0; margin-top: 4px; }
 .world-row-selected { background-color: #2a2c34; border-left-width: 4px; border-left-color: #efb16b; }
 .world-system-heading { -unity-text-align: middle-left; background-color: #172637; }
@@ -270,6 +272,8 @@
 .fleet-card-workspace.fleet-roster-aside { width: 390px; max-width: 48%; min-width: 260px; }
 .fleet-card-workspace .fleet-ship-card { min-width: 0; flex-shrink: 0; padding: 12px; margin-bottom: 12px; background-color: #111e2b; border-width: 1px; border-color: #52677c; border-radius: 7px; }
 .fleet-card-workspace .fleet-ship-title { white-space: normal; font-size: 21px; color: #ffe0b9; }
+.fleet-card-workspace #fleet-selected-ship-cards { padding-left: 12px; border-left-width: 3px; border-left-color: #b9ace6; }
+.fleet-card-workspace #fleet-selected-ship-inspector { padding: 12px; margin-top: 12px; border-top-width: 3px; border-top-color: #b9ace6; background-color: #101b29; }
 .fleet-card-workspace .fleet-ship-image { height: 110px; flex-shrink: 0; }
 .fleet-card-workspace .fleet-navigation-summary { margin-bottom: 12px; padding-bottom: 12px; border-bottom-width: 2px; border-bottom-color: #efb16b; }
 .fleet-card-workspace .fleet-condition-meter { min-width: 0; flex-shrink: 0; margin-bottom: 5px; }
