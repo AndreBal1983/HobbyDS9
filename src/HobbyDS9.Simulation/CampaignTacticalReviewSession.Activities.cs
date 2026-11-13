@@ -60,8 +60,22 @@ namespace HobbyDS9.Simulation
             var physical=built.Integrated!.Physical!;var core=physical.CorePackage!;var scenario=core.Campaign!;var game=scenario.InitialState;var d=scenario.Definitions;
             var previous=d.ShipDesignCatalogue!;var oldVersions=previous.Hulls!.Select(h=>h.VersionId).Concat(previous.Components!.Select(c=>c.VersionId)).ToHashSet(StringComparer.Ordinal);
             d.ShipDesignCatalogue=BlueprintCopies.Copy(catalogue);
-            var versions=catalogue.Hulls!.Select(h=>h.VersionId).Concat(catalogue.Components!.Select(c=>c.VersionId)).ToList();
+            // Explicit Engineering content editions retain their authored version tree.
+            // Ready-package versions keep their original facts and baseline access;
+            // authored Engineering gates must never turn into free ready access.
+            var gates=d.ShipDesignVersionAccess!.Where(g=>g.RequiredEngineeringApplicationDefinitionIds!.Count>0).ToDictionary(g=>g.VersionId,StringComparer.Ordinal);
+            if(gates.Count>0)
+            {
+                var retained=BlueprintCopies.Copy(previous);var combined=d.ShipDesignCatalogue;
+                combined.HullFamilies!.AddRange(retained.HullFamilies!.Where(f=>!combined.HullFamilies.Any(c=>c.FamilyId==f.FamilyId)));
+                combined.Hulls!.AddRange(retained.Hulls!.Where(h=>!combined.Hulls.Any(c=>c.VersionId==h.VersionId)));
+                combined.Components!.AddRange(retained.Components!.Where(c=>!combined.Components.Any(v=>v.VersionId==c.VersionId)));
+                combined.Roles!.AddRange(retained.Roles!.Where(r=>!combined.Roles.Any(c=>c.RoleId==r.RoleId)));
+            }
+            var versions=d.ShipDesignCatalogue.Hulls!.Select(h=>h.VersionId).Concat(d.ShipDesignCatalogue.Components!.Select(c=>c.VersionId)).ToList();
             d.ShipDesignVersionAccess=versions.Select(id=>new ShipDesignVersionAccessDto{VersionId=id,RequiredEngineeringApplicationDefinitionIds=new List<string>()}).ToList();
+            foreach(var gate in d.ShipDesignVersionAccess)if(gates.TryGetValue(gate.VersionId,out var authored))
+                gate.RequiredEngineeringApplicationDefinitionIds=new List<string>(authored.RequiredEngineeringApplicationDefinitionIds!);
             // This explicit new package authors the ready catalogue's baseline access. No old campaign is upgraded.
             d.DefinitionIds=d.DefinitionIds.Where(id=>!oldVersions.Contains(id)).Concat(versions).Distinct(StringComparer.Ordinal).OrderBy(id=>id,StringComparer.Ordinal).ToList();
             foreach(var s in p.Content!.Structures!)

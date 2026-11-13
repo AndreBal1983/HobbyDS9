@@ -11,7 +11,7 @@ namespace HobbyDS9.UnityReview
     {
         private static bool PlayableResourcesAvailable()=>new[]{"playable","package","physical","core","scenario"}
             .All(name=>Resources.Load<TextAsset>(PlayableFleetOptions.ResourceRoot+name)!=null);
-        private HobbyDS9.Contracts.CampaignPlayableFleetPackageDto LoadPlayableFleetTemplate()
+        private HobbyDS9.Contracts.CampaignPlayableFleetPackageDto LoadPlayableFleetTemplate(bool engineeringContent=false)
         {
             byte[] Bytes(string name)
             {
@@ -20,7 +20,12 @@ namespace HobbyDS9.UnityReview
                 return asset.bytes;
             }
             var codec=new ReviewNewtonsoftCodec();
-            return ReviewExactPackageLoader.LoadPlayableFleet(Bytes("playable"),Bytes("package"),Bytes("physical"),Bytes("core"),Bytes("scenario"),codec);
+#if HOBBYDS9_PB_20261113
+            var scenario=engineeringContent?"engineering-scenario":"scenario";
+#else
+            const string scenario="scenario";
+#endif
+            return ReviewExactPackageLoader.LoadPlayableFleet(Bytes("playable"),Bytes("package"),Bytes("physical"),Bytes("core"),Bytes(scenario),codec);
         }
         private ReviewUiModel NewPlayableFleetModel()
         {

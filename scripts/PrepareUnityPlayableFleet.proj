@@ -12,5 +12,6 @@
     <ItemGroup><RawSource Include="$(PlayableFleetSource)/playable.json;$(PlayableFleetSource)/package.json;$(PlayableFleetSource)/physical.json;$(PlayableFleetSource)/core.json;$(PlayableFleetSource)/scenario.json" /></ItemGroup>
     <MakeDir Directories="$(PlayableFleetOutput)" />
     <Copy SourceFiles="@(RawSource)" DestinationFolder="$(PlayableFleetOutput)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(RepoRoot)/scenarios/engineering-development-v1/scenario.json" DestinationFiles="$(PlayableFleetOutput)/engineering-scenario.json" SkipUnchangedFiles="true" />
   </Target>
 </Project>
