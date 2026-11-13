@@ -1,0 +1,230 @@
+{
+  "pack": "system-v1",
+  "checks": "manifest byte hashes; source copies; GLB structure/dependency closure; buffer indices, finite UVs/positions/normals, normal length, triangle area/count/budget",
+  "assets": [
+    {
+      "asset": "Earth_LOD0",
+      "triangles": 9024,
+      "exported_vertices": 4751,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Earth_LOD1",
+      "triangles": 2208,
+      "exported_vertices": 1223,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Earth_LOD2",
+      "triangles": 528,
+      "exported_vertices": 323,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Mars_LOD0",
+      "triangles": 9024,
+      "exported_vertices": 4751,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Mars_LOD1",
+      "triangles": 2208,
+      "exported_vertices": 1223,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Mars_LOD2",
+      "triangles": 528,
+      "exported_vertices": 323,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Sun_LOD0",
+      "triangles": 9024,
+      "exported_vertices": 4751,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Sun_LOD1",
+      "triangles": 2208,
+      "exported_vertices": 1223,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Sun_LOD2",
+      "triangles": 528,
+      "exported_vertices": 323,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Mercury_LOD0",
+      "triangles": 9024,
+      "exported_vertices": 4751,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Mercury_LOD1",
+      "triangles": 2208,
+      "exported_vertices": 1223,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Mercury_LOD2",
+      "triangles": 528,
+      "exported_vertices": 323,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Venus_LOD0",
+      "triangles": 9024,
+      "exported_vertices": 4751,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Venus_LOD1",
+      "triangles": 2208,
+      "exported_vertices": 1223,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Venus_LOD2",
+      "triangles": 528,
+      "exported_vertices": 323,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Jupiter_LOD0",
+      "triangles": 9024,
+      "exported_vertices": 4751,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Jupiter_LOD1",
+      "triangles": 2208,
+      "exported_vertices": 1223,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Jupiter_LOD2",
+      "triangles": 528,
+      "exported_vertices": 323,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Saturn_LOD0",
+      "triangles": 9024,
+      "exported_vertices": 4751,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Saturn_LOD1",
+      "triangles": 2208,
+      "exported_vertices": 1223,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Saturn_LOD2",
+      "triangles": 528,
+      "exported_vertices": 323,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Uranus_LOD0",
+      "triangles": 9024,
+      "exported_vertices": 4751,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Uranus_LOD1",
+      "triangles": 2208,
+      "exported_vertices": 1223,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Uranus_LOD2",
+      "triangles": 528,
+      "exported_vertices": 323,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Neptune_LOD0",
+      "triangles": 9024,
+      "exported_vertices": 4751,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Neptune_LOD1",
+      "triangles": 2208,
+      "exported_vertices": 1223,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Neptune_LOD2",
+      "triangles": 528,
+      "exported_vertices": 323,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    },
+    {
+      "asset": "Saturn_Rings",
+      "triangles": 1152,
+      "exported_vertices": 2304,
+      "degenerate_triangles": 0,
+      "embedded_images": 0
+    },
+    {
+      "asset": "Orbit_Unit",
+      "triangles": 512,
+      "exported_vertices": 1024,
+      "degenerate_triangles": 0,
+      "embedded_images": 0
+    },
+    {
+      "asset": "Atmosphere_Unit",
+      "triangles": 2208,
+      "exported_vertices": 1223,
+      "degenerate_triangles": 0,
+      "embedded_images": 0
+    },
+    {
+      "asset": "Corona_Billboard",
+      "triangles": 2,
+      "exported_vertices": 4,
+      "degenerate_triangles": 0,
+      "embedded_images": 1
+    }
+  ],
+  "failures": [],
+  "passed": true,
+  "not_executed": [
+    "Unity importer",
+    "URP shader compilation/render",
+    "native workflow/visual acceptance"
+  ]
+}

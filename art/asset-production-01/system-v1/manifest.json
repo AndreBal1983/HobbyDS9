@@ -1,0 +1,1618 @@
+{
+  "schema": 1,
+  "status": "proposed original asset candidate; native receiving outstanding",
+  "generator": "tools/art/build_asset_production_01.py",
+  "blender": "5.3.0",
+  "blender_build": "02f0899d78e3",
+  "coordinates": {
+    "blender": "metres, +Z up; hull bow -Y",
+    "gltf": "metres, +Y up; hull bow +Z",
+    "fbx": "metres; axis_forward=-Z, axis_up=Y; verify receiving root TRS"
+  },
+  "texture_sources": [
+    {
+      "path": "Textures/earth_daymap.jpg",
+      "sha256": "767ee1dc6eb3802699bfccf6f264880f8acd0b80de3191cd24984fe279b07b7c",
+      "source_repo_path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/earth_daymap.jpg",
+      "author": "Solar System Scope / INOVE",
+      "license": "CC-BY-4.0",
+      "source_url": "https://www.solarsystemscope.com/textures/",
+      "license_verified": "2026-11-13",
+      "changes": "None; exact-byte copy"
+    },
+    {
+      "path": "Textures/mars.jpg",
+      "sha256": "2d187f3e77a98eaa8cea5f4cc722f633c122ef170b9e94ace6b5fb6cbc3f8e01",
+      "source_repo_path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/mars.jpg",
+      "author": "Solar System Scope / INOVE",
+      "license": "CC-BY-4.0",
+      "source_url": "https://www.solarsystemscope.com/textures/",
+      "license_verified": "2026-11-13",
+      "changes": "None; exact-byte copy"
+    },
+    {
+      "path": "Textures/sun.jpg",
+      "sha256": "ff0f076ba65e03b5ab518451bc96699325be38e3ccbdd5869ee1c00f3a0c8816",
+      "source_repo_path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/sun.jpg",
+      "author": "Solar System Scope / INOVE",
+      "license": "CC-BY-4.0",
+      "source_url": "https://www.solarsystemscope.com/textures/",
+      "license_verified": "2026-11-13",
+      "changes": "None; exact-byte copy"
+    },
+    {
+      "path": "Textures/mercury.jpg",
+      "sha256": "5a5c80607f643496bac9a631e71957def35ed788895f18b678ac849c2b38e48a",
+      "source_repo_path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/mercury.jpg",
+      "author": "Solar System Scope / INOVE",
+      "license": "CC-BY-4.0",
+      "source_url": "https://www.solarsystemscope.com/textures/",
+      "license_verified": "2026-11-13",
+      "changes": "None; exact-byte copy"
+    },
+    {
+      "path": "Textures/venus_atmosphere.jpg",
+      "sha256": "225012ad4911730605c4e189ca2a3bf674fce50cc48aab4102b936b47d6991ac",
+      "source_repo_path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/venus_atmosphere.jpg",
+      "author": "Solar System Scope / INOVE",
+      "license": "CC-BY-4.0",
+      "source_url": "https://www.solarsystemscope.com/textures/",
+      "license_verified": "2026-11-13",
+      "changes": "None; exact-byte copy"
+    },
+    {
+      "path": "Textures/jupiter.jpg",
+      "sha256": "b0f04d005350252636b0e3396fc592548cbd9e9126b269d32d5c6abd4b0e4f2b",
+      "source_repo_path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/jupiter.jpg",
+      "author": "Solar System Scope / INOVE",
+      "license": "CC-BY-4.0",
+      "source_url": "https://www.solarsystemscope.com/textures/",
+      "license_verified": "2026-11-13",
+      "changes": "None; exact-byte copy"
+    },
+    {
+      "path": "Textures/saturn.jpg",
+      "sha256": "54a900ca9bf7ab62e70f862852759abdf342e6d6436a95a2fe9ebdb6bcd3bbac",
+      "source_repo_path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/saturn.jpg",
+      "author": "Solar System Scope / INOVE",
+      "license": "CC-BY-4.0",
+      "source_url": "https://www.solarsystemscope.com/textures/",
+      "license_verified": "2026-11-13",
+      "changes": "None; exact-byte copy"
+    },
+    {
+      "path": "Textures/uranus.jpg",
+      "sha256": "d15239d46f82d3ea13d2b260b5b29b2a382f42f2916dae0694d0387b1204a09d",
+      "source_repo_path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/uranus.jpg",
+      "author": "Solar System Scope / INOVE",
+      "license": "CC-BY-4.0",
+      "source_url": "https://www.solarsystemscope.com/textures/",
+      "license_verified": "2026-11-13",
+      "changes": "None; exact-byte copy"
+    },
+    {
+      "path": "Textures/neptune.jpg",
+      "sha256": "cb42ea82709741d28b0af44d8b283cbc6dbd0c521a7f0e1e1e010ade00977df6",
+      "source_repo_path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/neptune.jpg",
+      "author": "Solar System Scope / INOVE",
+      "license": "CC-BY-4.0",
+      "source_url": "https://www.solarsystemscope.com/textures/",
+      "license_verified": "2026-11-13",
+      "changes": "None; exact-byte copy"
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "art.production01.earth_lod0",
+      "name": "Earth_LOD0",
+      "candidate_binding": "planet.sol",
+      "lod": 0,
+      "notes": "Exact known planet presentation candidate; no simulation change",
+      "meshes": [
+        {
+          "name": "Earth_LOD0",
+          "triangles": 9024,
+          "vertices": 4514,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.0000009536743164,
+              -1.0000005960464478,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Earth_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Earth_LOD0.glb",
+      "fbx": "Models/Earth_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.earth_lod1",
+      "name": "Earth_LOD1",
+      "candidate_binding": "planet.sol",
+      "lod": 1,
+      "notes": "Exact known planet presentation candidate; no simulation change",
+      "meshes": [
+        {
+          "name": "Earth_LOD1",
+          "triangles": 2208,
+          "vertices": 1106,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Earth_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Earth_LOD1.glb",
+      "fbx": "Models/Earth_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.earth_lod2",
+      "name": "Earth_LOD2",
+      "candidate_binding": "planet.sol",
+      "lod": 2,
+      "notes": "Exact known planet presentation candidate; no simulation change",
+      "meshes": [
+        {
+          "name": "Earth_LOD2",
+          "triangles": 528,
+          "vertices": 266,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -0.999999463558197,
+              -0.9999997019767761,
+              -1.0
+            ],
+            [
+              0.9999998211860657,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Earth_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Earth_LOD2.glb",
+      "fbx": "Models/Earth_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.mars_lod0",
+      "name": "Mars_LOD0",
+      "candidate_binding": "planet.mars",
+      "lod": 0,
+      "notes": "Exact known planet presentation candidate; no simulation change",
+      "meshes": [
+        {
+          "name": "Mars_LOD0",
+          "triangles": 9024,
+          "vertices": 4514,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.0000009536743164,
+              -1.0000005960464478,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Mars_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Mars_LOD0.glb",
+      "fbx": "Models/Mars_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.mars_lod1",
+      "name": "Mars_LOD1",
+      "candidate_binding": "planet.mars",
+      "lod": 1,
+      "notes": "Exact known planet presentation candidate; no simulation change",
+      "meshes": [
+        {
+          "name": "Mars_LOD1",
+          "triangles": 2208,
+          "vertices": 1106,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Mars_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Mars_LOD1.glb",
+      "fbx": "Models/Mars_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.mars_lod2",
+      "name": "Mars_LOD2",
+      "candidate_binding": "planet.mars",
+      "lod": 2,
+      "notes": "Exact known planet presentation candidate; no simulation change",
+      "meshes": [
+        {
+          "name": "Mars_LOD2",
+          "triangles": 528,
+          "vertices": 266,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -0.999999463558197,
+              -0.9999997019767761,
+              -1.0
+            ],
+            [
+              0.9999998211860657,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Mars_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Mars_LOD2.glb",
+      "fbx": "Models/Mars_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.sun_lod0",
+      "name": "Sun_LOD0",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Sun_LOD0",
+          "triangles": 9024,
+          "vertices": 4514,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.0000009536743164,
+              -1.0000005960464478,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Sun_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Sun_LOD0.glb",
+      "fbx": "Models/Sun_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.sun_lod1",
+      "name": "Sun_LOD1",
+      "candidate_binding": null,
+      "lod": 1,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Sun_LOD1",
+          "triangles": 2208,
+          "vertices": 1106,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Sun_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Sun_LOD1.glb",
+      "fbx": "Models/Sun_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.sun_lod2",
+      "name": "Sun_LOD2",
+      "candidate_binding": null,
+      "lod": 2,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Sun_LOD2",
+          "triangles": 528,
+          "vertices": 266,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -0.999999463558197,
+              -0.9999997019767761,
+              -1.0
+            ],
+            [
+              0.9999998211860657,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Sun_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Sun_LOD2.glb",
+      "fbx": "Models/Sun_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.mercury_lod0",
+      "name": "Mercury_LOD0",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Mercury_LOD0",
+          "triangles": 9024,
+          "vertices": 4514,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.0000009536743164,
+              -1.0000005960464478,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Mercury_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Mercury_LOD0.glb",
+      "fbx": "Models/Mercury_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.mercury_lod1",
+      "name": "Mercury_LOD1",
+      "candidate_binding": null,
+      "lod": 1,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Mercury_LOD1",
+          "triangles": 2208,
+          "vertices": 1106,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Mercury_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Mercury_LOD1.glb",
+      "fbx": "Models/Mercury_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.mercury_lod2",
+      "name": "Mercury_LOD2",
+      "candidate_binding": null,
+      "lod": 2,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Mercury_LOD2",
+          "triangles": 528,
+          "vertices": 266,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -0.999999463558197,
+              -0.9999997019767761,
+              -1.0
+            ],
+            [
+              0.9999998211860657,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Mercury_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Mercury_LOD2.glb",
+      "fbx": "Models/Mercury_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.venus_lod0",
+      "name": "Venus_LOD0",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Venus_LOD0",
+          "triangles": 9024,
+          "vertices": 4514,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.0000009536743164,
+              -1.0000005960464478,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Venus_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Venus_LOD0.glb",
+      "fbx": "Models/Venus_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.venus_lod1",
+      "name": "Venus_LOD1",
+      "candidate_binding": null,
+      "lod": 1,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Venus_LOD1",
+          "triangles": 2208,
+          "vertices": 1106,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Venus_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Venus_LOD1.glb",
+      "fbx": "Models/Venus_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.venus_lod2",
+      "name": "Venus_LOD2",
+      "candidate_binding": null,
+      "lod": 2,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Venus_LOD2",
+          "triangles": 528,
+          "vertices": 266,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -0.999999463558197,
+              -0.9999997019767761,
+              -1.0
+            ],
+            [
+              0.9999998211860657,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Venus_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Venus_LOD2.glb",
+      "fbx": "Models/Venus_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.jupiter_lod0",
+      "name": "Jupiter_LOD0",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Jupiter_LOD0",
+          "triangles": 9024,
+          "vertices": 4514,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.0000009536743164,
+              -1.0000005960464478,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Jupiter_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Jupiter_LOD0.glb",
+      "fbx": "Models/Jupiter_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.jupiter_lod1",
+      "name": "Jupiter_LOD1",
+      "candidate_binding": null,
+      "lod": 1,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Jupiter_LOD1",
+          "triangles": 2208,
+          "vertices": 1106,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Jupiter_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Jupiter_LOD1.glb",
+      "fbx": "Models/Jupiter_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.jupiter_lod2",
+      "name": "Jupiter_LOD2",
+      "candidate_binding": null,
+      "lod": 2,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Jupiter_LOD2",
+          "triangles": 528,
+          "vertices": 266,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -0.999999463558197,
+              -0.9999997019767761,
+              -1.0
+            ],
+            [
+              0.9999998211860657,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Jupiter_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Jupiter_LOD2.glb",
+      "fbx": "Models/Jupiter_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.saturn_lod0",
+      "name": "Saturn_LOD0",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Saturn_LOD0",
+          "triangles": 9024,
+          "vertices": 4514,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.0000009536743164,
+              -1.0000005960464478,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Saturn_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Saturn_LOD0.glb",
+      "fbx": "Models/Saturn_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.saturn_lod1",
+      "name": "Saturn_LOD1",
+      "candidate_binding": null,
+      "lod": 1,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Saturn_LOD1",
+          "triangles": 2208,
+          "vertices": 1106,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Saturn_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Saturn_LOD1.glb",
+      "fbx": "Models/Saturn_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.saturn_lod2",
+      "name": "Saturn_LOD2",
+      "candidate_binding": null,
+      "lod": 2,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Saturn_LOD2",
+          "triangles": 528,
+          "vertices": 266,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -0.999999463558197,
+              -0.9999997019767761,
+              -1.0
+            ],
+            [
+              0.9999998211860657,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Saturn_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Saturn_LOD2.glb",
+      "fbx": "Models/Saturn_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.uranus_lod0",
+      "name": "Uranus_LOD0",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Uranus_LOD0",
+          "triangles": 9024,
+          "vertices": 4514,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.0000009536743164,
+              -1.0000005960464478,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Uranus_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Uranus_LOD0.glb",
+      "fbx": "Models/Uranus_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.uranus_lod1",
+      "name": "Uranus_LOD1",
+      "candidate_binding": null,
+      "lod": 1,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Uranus_LOD1",
+          "triangles": 2208,
+          "vertices": 1106,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Uranus_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Uranus_LOD1.glb",
+      "fbx": "Models/Uranus_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.uranus_lod2",
+      "name": "Uranus_LOD2",
+      "candidate_binding": null,
+      "lod": 2,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Uranus_LOD2",
+          "triangles": 528,
+          "vertices": 266,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -0.999999463558197,
+              -0.9999997019767761,
+              -1.0
+            ],
+            [
+              0.9999998211860657,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Uranus_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Uranus_LOD2.glb",
+      "fbx": "Models/Uranus_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.neptune_lod0",
+      "name": "Neptune_LOD0",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Neptune_LOD0",
+          "triangles": 9024,
+          "vertices": 4514,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.0000009536743164,
+              -1.0000005960464478,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Neptune_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Neptune_LOD0.glb",
+      "fbx": "Models/Neptune_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.neptune_lod1",
+      "name": "Neptune_LOD1",
+      "candidate_binding": null,
+      "lod": 1,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Neptune_LOD1",
+          "triangles": 2208,
+          "vertices": 1106,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Neptune_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Neptune_LOD1.glb",
+      "fbx": "Models/Neptune_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.neptune_lod2",
+      "name": "Neptune_LOD2",
+      "candidate_binding": null,
+      "lod": 2,
+      "notes": "Unit radius, centred pivot; reference-only body",
+      "meshes": [
+        {
+          "name": "Neptune_LOD2",
+          "triangles": 528,
+          "vertices": 266,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -0.999999463558197,
+              -0.9999997019767761,
+              -1.0
+            ],
+            [
+              0.9999998211860657,
+              1.0,
+              1.0
+            ]
+          ],
+          "materials": [
+            "Neptune_Surface"
+          ]
+        }
+      ],
+      "glb": "Models/Neptune_LOD2.glb",
+      "fbx": "Models/Neptune_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.saturn_rings",
+      "name": "Saturn_Rings",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Reference-only, two-sided URP material; 1 unit body radius",
+      "meshes": [
+        {
+          "name": "Saturn_RingBand_0",
+          "triangles": 384,
+          "vertices": 384,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.4800000190734863,
+              -1.4800000190734863,
+              0.0
+            ],
+            [
+              1.4800000190734863,
+              1.4800000190734863,
+              0.0
+            ]
+          ],
+          "materials": [
+            "Saturn_Rings"
+          ]
+        },
+        {
+          "name": "Saturn_RingBand_1",
+          "triangles": 384,
+          "vertices": 384,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.8899999856948853,
+              -1.8899999856948853,
+              0.0
+            ],
+            [
+              1.8899999856948853,
+              1.8899999856948853,
+              0.0
+            ]
+          ],
+          "materials": [
+            "Saturn_Rings"
+          ]
+        },
+        {
+          "name": "Saturn_RingBand_2",
+          "triangles": 384,
+          "vertices": 384,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -2.180000066757202,
+              -2.180000066757202,
+              0.0
+            ],
+            [
+              2.180000066757202,
+              2.180000066757202,
+              0.0
+            ]
+          ],
+          "materials": [
+            "Saturn_Rings"
+          ]
+        }
+      ],
+      "glb": "Models/Saturn_Rings.glb",
+      "fbx": "Models/Saturn_Rings.fbx"
+    },
+    {
+      "asset_id": "art.production01.orbit_unit",
+      "name": "Orbit_Unit",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Nonpickable schematic orbit. Use screen-space line if this mesh aliases; no gameplay collider",
+      "meshes": [
+        {
+          "name": "Orbit_Unit",
+          "triangles": 512,
+          "vertices": 512,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.003000020980835,
+              -1.003000020980835,
+              0.0
+            ],
+            [
+              1.003000020980835,
+              1.003000020980835,
+              0.0
+            ]
+          ],
+          "materials": [
+            "Orbit_Tint"
+          ]
+        }
+      ],
+      "glb": "Models/Orbit_Unit.glb",
+      "fbx": "Models/Orbit_Unit.fbx"
+    },
+    {
+      "asset_id": "art.production01.atmosphere_unit",
+      "name": "Atmosphere_Unit",
+      "candidate_binding": "planet.sol",
+      "lod": 1,
+      "notes": "Optional separate mesh, disabled by default. Requires receiving Fresnel alpha shader; solid material is placeholder",
+      "meshes": [
+        {
+          "name": "Atmosphere_Unit",
+          "triangles": 2208,
+          "vertices": 1106,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.0180010795593262,
+              -1.018000841140747,
+              -1.0180000066757202
+            ],
+            [
+              1.0180003643035889,
+              1.0180013179779053,
+              1.0180000066757202
+            ]
+          ],
+          "materials": [
+            "Atmosphere_Placeholder"
+          ]
+        }
+      ],
+      "glb": "Models/Atmosphere_Unit.glb",
+      "fbx": "Models/Atmosphere_Unit.fbx"
+    },
+    {
+      "asset_id": "art.production01.corona_billboard",
+      "name": "Corona_Billboard",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Original analytic RGBA texture, camera-facing nonpickable plane; no bloom required. Authoring plane XY normal +Z.",
+      "meshes": [
+        {
+          "name": "Corona_Billboard",
+          "triangles": 2,
+          "vertices": 4,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1,
+              -1,
+              0
+            ],
+            [
+              1,
+              1,
+              0
+            ]
+          ],
+          "materials": [
+            "Corona_Alpha_Emission"
+          ]
+        }
+      ],
+      "glb": "Models/Corona_Billboard.glb",
+      "fbx": "Models/Corona_Billboard.fbx"
+    }
+  ],
+  "files": [
+    {
+      "path": "contact-sheet.png",
+      "bytes": 859252,
+      "sha256": "453d07be1691fe01c20a10935810463b3079a535e1415dfcfc84c931816d042c"
+    },
+    {
+      "path": "gallery.html",
+      "bytes": 2387,
+      "sha256": "f79c82b7f07d36ebea5cd4adc0e4eb12702f47a0d899736bcc9b512951a104f2"
+    },
+    {
+      "path": "Models/Atmosphere_Unit.fbx",
+      "bytes": 54892,
+      "sha256": "6092358b1199511e0b8f044c1bde75272390ed53462e10f4006d5e0c4e82eb72"
+    },
+    {
+      "path": "Models/Atmosphere_Unit.glb",
+      "bytes": 53668,
+      "sha256": "bd4031e822fa2bd11e92cb9a1c8bc1c4f99d9d95632dd63ce87656a6bcc1a49e"
+    },
+    {
+      "path": "Models/Corona_Billboard.fbx",
+      "bytes": 19772,
+      "sha256": "a0865720e8e598ef93ef75ec1f1e30acecb4cb45a3f0a4b858b5b70b196fc4f5"
+    },
+    {
+      "path": "Models/Corona_Billboard.glb",
+      "bytes": 41400,
+      "sha256": "d0c5a1ddc07ccef93a9d625b7b818f30d18586d7ffec2c7f251bad62b15631c9"
+    },
+    {
+      "path": "Models/Earth_LOD0.fbx",
+      "bytes": 184876,
+      "sha256": "2dcfaccba0ab2bfd733a527abd0ab1c9574428cc99ff31a52289823dae257170"
+    },
+    {
+      "path": "Models/Earth_LOD0.glb",
+      "bytes": 670648,
+      "sha256": "73cd1f91cf0767a46b07c6405b1cee21020edbf23bfb3374bc9698de6c77928f"
+    },
+    {
+      "path": "Models/Earth_LOD1.fbx",
+      "bytes": 58268,
+      "sha256": "6d7fb4adf756c4d9667f21c7f2688638569bed2834ed2cc0b834d1e01009230e"
+    },
+    {
+      "path": "Models/Earth_LOD1.glb",
+      "bytes": 516864,
+      "sha256": "e8011bdcda142e754e9b12540c75447fbc44cdf1a73bdc18d6bfdfd5c534f306"
+    },
+    {
+      "path": "Models/Earth_LOD2.fbx",
+      "bytes": 28348,
+      "sha256": "b6c70549f8514bf646a432b20b5fc1c936d48f20e8a2757627ab344ec459ab8d"
+    },
+    {
+      "path": "Models/Earth_LOD2.glb",
+      "bytes": 477960,
+      "sha256": "02dd7f58c970a96055b37d270839d8c6cc91f3b9b4577ab18df896dbe7abd7d9"
+    },
+    {
+      "path": "Models/Jupiter_LOD0.fbx",
+      "bytes": 184908,
+      "sha256": "89d62684b93511fcf8ffe8b57d401c71911355cbded257c459ce1f36edd4bd28"
+    },
+    {
+      "path": "Models/Jupiter_LOD0.glb",
+      "bytes": 706536,
+      "sha256": "5163f896e2e665d8801fee2098f9231e1a996e22ac0acf9d76ef4963c6796f56"
+    },
+    {
+      "path": "Models/Jupiter_LOD1.fbx",
+      "bytes": 58236,
+      "sha256": "e86b31ff4289ea61d2a787fc1c6603a95bf590a715212e3f440579b248296428"
+    },
+    {
+      "path": "Models/Jupiter_LOD1.glb",
+      "bytes": 552756,
+      "sha256": "7fdc0201f042dfc3674d1dbef661fb5ff81c5c4e9fd4bf9456f4d2284bf6f66b"
+    },
+    {
+      "path": "Models/Jupiter_LOD2.fbx",
+      "bytes": 28284,
+      "sha256": "ab1f6092e12f8a4e91e84e26f38c2f8b63706e3799cbab625ffacf755383429d"
+    },
+    {
+      "path": "Models/Jupiter_LOD2.glb",
+      "bytes": 513852,
+      "sha256": "6f8b6a224cc32316501a3f2a25d239859dfcfcbd869499408f697bcc4874f9b4"
+    },
+    {
+      "path": "Models/Mars_LOD0.fbx",
+      "bytes": 184876,
+      "sha256": "58298e16335e112fe8b47f72d01b01ab810c1b74a765131bb0a3ecd676cbf8d5"
+    },
+    {
+      "path": "Models/Mars_LOD0.glb",
+      "bytes": 958096,
+      "sha256": "8238eeecf08d81baa9ca1be8c69b7c70887d6c505402ed4f5dffff4e203086bb"
+    },
+    {
+      "path": "Models/Mars_LOD1.fbx",
+      "bytes": 58268,
+      "sha256": "fbec43322ff65624d94b77ac76bede576f3fc280bce170a3076fb39ba68c903e"
+    },
+    {
+      "path": "Models/Mars_LOD1.glb",
+      "bytes": 804316,
+      "sha256": "bedae328b623d1491057a78f87c1a8258a46582f3171e2a4e84a93e4f2180a1c"
+    },
+    {
+      "path": "Models/Mars_LOD2.fbx",
+      "bytes": 28284,
+      "sha256": "f13a0996e4e30fd10785b6d8f69917ff960b748937ea2d7f574bef7eaca85be6"
+    },
+    {
+      "path": "Models/Mars_LOD2.glb",
+      "bytes": 765412,
+      "sha256": "bb302d742c6c201bb8c0115b0b4627c563d47c226bae38aa023fca4c7369a36e"
+    },
+    {
+      "path": "Models/Mercury_LOD0.fbx",
+      "bytes": 184844,
+      "sha256": "6ddc3ce2283fc3c6692cbbe25fff2a23bc185c3713af2b9572804a8f155254c6"
+    },
+    {
+      "path": "Models/Mercury_LOD0.glb",
+      "bytes": 1080116,
+      "sha256": "a8923fdcac1debf643310aa56fd49f1c8a9b481adfcb65a1c5406e11b4b5704f"
+    },
+    {
+      "path": "Models/Mercury_LOD1.fbx",
+      "bytes": 58300,
+      "sha256": "84a36c3987182d31af731e5b32d8c340bfaf1cae86fb4a8dc5b35fa0088577c4"
+    },
+    {
+      "path": "Models/Mercury_LOD1.glb",
+      "bytes": 926336,
+      "sha256": "cd27958d8e4f9b8c631befdfa4161ff5511cc33c5356f45d03939e3f66ab42c7"
+    },
+    {
+      "path": "Models/Mercury_LOD2.fbx",
+      "bytes": 28316,
+      "sha256": "d349ea4149d1b6682a82e0d37a8e4d515364ccfa6aa13bcf839dfdf90c177c2d"
+    },
+    {
+      "path": "Models/Mercury_LOD2.glb",
+      "bytes": 887432,
+      "sha256": "5ed6e917fa7587181b5ed34dda0029e20c03f432146b0be206d7d49a505f7405"
+    },
+    {
+      "path": "Models/Neptune_LOD0.fbx",
+      "bytes": 184876,
+      "sha256": "6d57a98e8178acf6a603bdbb3877a036be6f29eb15ede0b8c6192b1b71e02db7"
+    },
+    {
+      "path": "Models/Neptune_LOD0.glb",
+      "bytes": 449140,
+      "sha256": "a1d632491eaa09cdd272625c0cbd2aa7110c24ecd9cdf458fbcafbdf1dabf98e"
+    },
+    {
+      "path": "Models/Neptune_LOD1.fbx",
+      "bytes": 58252,
+      "sha256": "9e6d2b20494f839c798ecdbd71c258bac95e8e8ff4f5781e2dcbe2cfed2a6d61"
+    },
+    {
+      "path": "Models/Neptune_LOD1.glb",
+      "bytes": 295360,
+      "sha256": "7fae7f0f7d4210186bfd79b5d53a370a6aaef42e14ed29bb2e7abd0717aea1c0"
+    },
+    {
+      "path": "Models/Neptune_LOD2.fbx",
+      "bytes": 28284,
+      "sha256": "cafee90eff63d068537c493e77eca3342d7ffcc50cf363830eff4744d771be88"
+    },
+    {
+      "path": "Models/Neptune_LOD2.glb",
+      "bytes": 256456,
+      "sha256": "4489892e77e3c5633fe0299fc8e55e7e5605c107d5e738b0e4a7cbe53e94e858"
+    },
+    {
+      "path": "Models/Orbit_Unit.fbx",
+      "bytes": 22828,
+      "sha256": "c85eca73fcf4879f5d8181469d51aef1948936ea774b2d58532a805bdb6edf28"
+    },
+    {
+      "path": "Models/Orbit_Unit.glb",
+      "bytes": 37108,
+      "sha256": "c99b9de3c527fd4117e6fbf5e3a65e7cf34484ec7b08e0df7a0ee4d18f134564"
+    },
+    {
+      "path": "Models/Saturn_LOD0.fbx",
+      "bytes": 184812,
+      "sha256": "bd636cfc24061adcfea95b6ea1b4a0b7939d212f71f857332d2e4b092ce10904"
+    },
+    {
+      "path": "Models/Saturn_LOD0.glb",
+      "bytes": 407472,
+      "sha256": "098edd5f725d26aa97a5074a270f77f8637c4cd5a27b8ebc7ab7a94f74816422"
+    },
+    {
+      "path": "Models/Saturn_LOD1.fbx",
+      "bytes": 58252,
+      "sha256": "014b33536561bfdcf1bc0d671b62e3bfa73838dc6604d4fed6de3f3d1ea5b169"
+    },
+    {
+      "path": "Models/Saturn_LOD1.glb",
+      "bytes": 253692,
+      "sha256": "432dd6b501b885ed592fbd9dfc49d228706df4012792517c71d3fd803c687012"
+    },
+    {
+      "path": "Models/Saturn_LOD2.fbx",
+      "bytes": 28332,
+      "sha256": "8f8e246a25fbfc4e6d806d746f19bf5fdeb9fad1fd8501aa86c3b576bfd3b11d"
+    },
+    {
+      "path": "Models/Saturn_LOD2.glb",
+      "bytes": 214788,
+      "sha256": "89ca43a720cd84cc8d6ec1c9c857e6aa9f19b062a2c9332e129d1953176f13ed"
+    },
+    {
+      "path": "Models/Saturn_Rings.fbx",
+      "bytes": 38092,
+      "sha256": "1d53d1fd1a9490cc465620d7cb23429d4825afedc5435a3da1b312c6a8d71548"
+    },
+    {
+      "path": "Models/Saturn_Rings.glb",
+      "bytes": 78576,
+      "sha256": "804db2cf63e0a676cf1ea60d77c2cd078f28709975bcab5d5fa7ff6a5eceff43"
+    },
+    {
+      "path": "Models/Sun_LOD0.fbx",
+      "bytes": 185404,
+      "sha256": "54ed522718457550719344d6ec1b4b665cda0578cd4a532e8f755bb0e44fc7e3"
+    },
+    {
+      "path": "Models/Sun_LOD0.glb",
+      "bytes": 1030052,
+      "sha256": "77991ddc6f080ee8adc581b66bafae3439f02dc20daaa1ae1d78fd9ad7f41f5d"
+    },
+    {
+      "path": "Models/Sun_LOD1.fbx",
+      "bytes": 58716,
+      "sha256": "0dc653ec6309d351f49d53341856d310f3cc03af3350a06d72b7bd409d684c3b"
+    },
+    {
+      "path": "Models/Sun_LOD1.glb",
+      "bytes": 876272,
+      "sha256": "fe0b72d43912637b8854b1d5c55b3c6bfd908eb78b5fb58273613a8e0a8a7a66"
+    },
+    {
+      "path": "Models/Sun_LOD2.fbx",
+      "bytes": 28796,
+      "sha256": "05e4b75eed6f3f8a4e53efbee5999d6ca6511a76ece72a4056aa93ba958b2952"
+    },
+    {
+      "path": "Models/Sun_LOD2.glb",
+      "bytes": 837368,
+      "sha256": "ec17b736ddee2d5b6eada8ea01ed22b30101db96c227e25607158e80d16f5439"
+    },
+    {
+      "path": "Models/Uranus_LOD0.fbx",
+      "bytes": 184940,
+      "sha256": "d524b5ed0f9e40b0bb5291d0289edd77c9ebd03149ba5a055a44ebb24e3e3361"
+    },
+    {
+      "path": "Models/Uranus_LOD0.glb",
+      "bytes": 285308,
+      "sha256": "64c20539fdf95a54b1e4f729377861890163f8ef5ff179f745e1069be5dbed09"
+    },
+    {
+      "path": "Models/Uranus_LOD1.fbx",
+      "bytes": 58236,
+      "sha256": "73df63565270069956f46333686907e73ad2a983ea33d519b672400d9253f3b7"
+    },
+    {
+      "path": "Models/Uranus_LOD1.glb",
+      "bytes": 131524,
+      "sha256": "eb24c45b748abad11b15e3d78bc9cfd2738633ce1c1fac27297dd987a28ee53f"
+    },
+    {
+      "path": "Models/Uranus_LOD2.fbx",
+      "bytes": 28284,
+      "sha256": "ec83172b94389047db8e28a15eec6af5aea06939c3e6710da254f509dd99c1a1"
+    },
+    {
+      "path": "Models/Uranus_LOD2.glb",
+      "bytes": 92620,
+      "sha256": "f98cfd0282cf743e1c378addb0405614ac4be1dd5feb292ce4b7bab780131a96"
+    },
+    {
+      "path": "Models/Venus_LOD0.fbx",
+      "bytes": 184892,
+      "sha256": "ab599fb211db2be27ae9850cb76bf3f2314cf80c4b1ed20f09ae233a6c864402"
+    },
+    {
+      "path": "Models/Venus_LOD0.glb",
+      "bytes": 437260,
+      "sha256": "032a6a4ece6d52b9c49aeaa2ae7d2b7b2a9b9ce1d2bbe8f90635b0ef77d74c37"
+    },
+    {
+      "path": "Models/Venus_LOD1.fbx",
+      "bytes": 58316,
+      "sha256": "05ddf167c1f26a7260fb42e370845f07f8f79ebaaa0f879ffbfd72b13d46bc02"
+    },
+    {
+      "path": "Models/Venus_LOD1.glb",
+      "bytes": 283476,
+      "sha256": "03de522cc0e6b1d47d91a5594642c7ed3768fc4d2fae44d9a9e89678351969ba"
+    },
+    {
+      "path": "Models/Venus_LOD2.fbx",
+      "bytes": 28364,
+      "sha256": "3846e884300d23598d5cdeaad2bd20d0ef7d4ffa634b31eb74c4db62a73ff6a9"
+    },
+    {
+      "path": "Models/Venus_LOD2.glb",
+      "bytes": 244572,
+      "sha256": "38d361f190b7219b7a7e95281a0c4cf3aeae905d26136ac6ba6e94bb2b39b05b"
+    },
+    {
+      "path": "Previews/Earth_direct_light_reference.png",
+      "bytes": 625553,
+      "sha256": "1018b66b70360f9d4f6747a6c5f0048fe2b877756eac085b4849ec932b1f1fd5"
+    },
+    {
+      "path": "Previews/Earth_limb_studio.png",
+      "bytes": 648041,
+      "sha256": "87c8a8d963742a9385b1e08a283203b81abe0824589c54c9d6b3c62121969bb1"
+    },
+    {
+      "path": "Previews/Earth_studio.png",
+      "bytes": 616211,
+      "sha256": "56e1a0c0ff5e11bce11952631883541b4c66fd59d0e6769d6e0d0ccc6fc707e6"
+    },
+    {
+      "path": "Previews/Jupiter_studio.png",
+      "bytes": 621063,
+      "sha256": "5ec21cfe2bec22c2a6b8d7654831f31cd94f7b873f7085ec506fd49793a05285"
+    },
+    {
+      "path": "Previews/Mars_direct_light_reference.png",
+      "bytes": 597158,
+      "sha256": "bd0429e0bb1febd49354224d0222d3bc34ce0359c3d19de547e759e9c907f570"
+    },
+    {
+      "path": "Previews/Mars_studio.png",
+      "bytes": 589522,
+      "sha256": "4cd89a3af541c30e81a30ae9df8eed1ce06ccd516093034833c7bd88a1531b25"
+    },
+    {
+      "path": "Previews/Mercury_studio.png",
+      "bytes": 614559,
+      "sha256": "aa27815edb0f2830ceb5bcfc89bb21d27e51e1367c1827589fdc3e138473ad6a"
+    },
+    {
+      "path": "Previews/Neptune_studio.png",
+      "bytes": 498590,
+      "sha256": "7764cb3397e3c3e777a171230390dfefb9107a96a63a792c5608eecd58f55d48"
+    },
+    {
+      "path": "Previews/Saturn_rings_studio.png",
+      "bytes": 540538,
+      "sha256": "b23615635a70e03b881538170677a9c33223cfb039d3d318319c579cae9fcd30"
+    },
+    {
+      "path": "Previews/Saturn_studio.png",
+      "bytes": 519215,
+      "sha256": "caea7002692f7e1fdb7dec0d1acb0ec0d4340a78a24051e63bedf1a362eef3ae"
+    },
+    {
+      "path": "Previews/Sun_studio.png",
+      "bytes": 726299,
+      "sha256": "efb11da15182c57d710608f5cf359521f8c1ad6444c0d0d9b2ceaee63009e558"
+    },
+    {
+      "path": "Previews/System_presentation_studio.png",
+      "bytes": 1019440,
+      "sha256": "8eacc4b14ccd7a22eef069d5feb36cb39f3c3c90f6bb476954df7a6ab78c49b0"
+    },
+    {
+      "path": "Previews/System_three_body_composition.png",
+      "bytes": 959073,
+      "sha256": "6e0ee014c468f8a5850ed64ee85c831b53768b401dac7156a463c412c1274c9b"
+    },
+    {
+      "path": "Previews/Uranus_studio.png",
+      "bytes": 497391,
+      "sha256": "95258148b1f8a4623f7ea4eda21e397e82452cec52944ba74c5830e730f83136"
+    },
+    {
+      "path": "Previews/Venus_studio.png",
+      "bytes": 535289,
+      "sha256": "8b8274c7749836e4e5de7f39a9d633a1043e6499108eedaf3ab3a12bcbb1f392"
+    },
+    {
+      "path": "receiving.json",
+      "bytes": 28683,
+      "sha256": "952e8e30373179ebbd6fae498a80d0093d76543b790ea2f12f4bf2e5fe808a86"
+    },
+    {
+      "path": "Sources/SystemBody_Library.blend",
+      "bytes": 1027008,
+      "sha256": "e34480ae719f8680b9bf103ac1967e39deb4d07384835372bb854ab3b790fbb7"
+    },
+    {
+      "path": "Sources/SystemPresentation.blend",
+      "bytes": 1038068,
+      "sha256": "f0794f89897431b451c4388764066e83e7fec0d54b5f6fa899d59fb40f2f2707"
+    },
+    {
+      "path": "Textures/DecorativeStars.png",
+      "bytes": 22825,
+      "sha256": "4166e3538a413e908fe1b0e9d113f692f033d49b0cd42ef1fe4d2780822845c3"
+    },
+    {
+      "path": "Textures/earth_daymap.jpg",
+      "bytes": 463087,
+      "sha256": "767ee1dc6eb3802699bfccf6f264880f8acd0b80de3191cd24984fe279b07b7c"
+    },
+    {
+      "path": "Textures/jupiter.jpg",
+      "bytes": 498976,
+      "sha256": "b0f04d005350252636b0e3396fc592548cbd9e9126b269d32d5c6abd4b0e4f2b"
+    },
+    {
+      "path": "Textures/mars.jpg",
+      "bytes": 750547,
+      "sha256": "2d187f3e77a98eaa8cea5f4cc722f633c122ef170b9e94ace6b5fb6cbc3f8e01"
+    },
+    {
+      "path": "Textures/mercury.jpg",
+      "bytes": 872555,
+      "sha256": "5a5c80607f643496bac9a631e71957def35ed788895f18b678ac849c2b38e48a"
+    },
+    {
+      "path": "Textures/neptune.jpg",
+      "bytes": 241580,
+      "sha256": "cb42ea82709741d28b0af44d8b283cbc6dbd0c521a7f0e1e1e010ade00977df6"
+    },
+    {
+      "path": "Textures/OriginalCorona.png",
+      "bytes": 39899,
+      "sha256": "f201c0e7d5046915bc74fe36a589804c2eed0d4c8d6006ed5f5509f894bd2f2d"
+    },
+    {
+      "path": "Textures/saturn.jpg",
+      "bytes": 199916,
+      "sha256": "54a900ca9bf7ab62e70f862852759abdf342e6d6436a95a2fe9ebdb6bcd3bbac"
+    },
+    {
+      "path": "Textures/sun.jpg",
+      "bytes": 822427,
+      "sha256": "ff0f076ba65e03b5ab518451bc96699325be38e3ccbdd5869ee1c00f3a0c8816"
+    },
+    {
+      "path": "Textures/uranus.jpg",
+      "bytes": 77751,
+      "sha256": "d15239d46f82d3ea13d2b260b5b29b2a382f42f2916dae0694d0387b1204a09d"
+    },
+    {
+      "path": "Textures/venus_atmosphere.jpg",
+      "bytes": 229696,
+      "sha256": "225012ad4911730605c4e189ca2a3bf674fce50cc48aab4102b936b47d6991ac"
+    },
+    {
+      "path": "validation-fbx.json",
+      "bytes": 16917,
+      "sha256": "b8c3334b494cdc8929f3808d51e97cc8dd6be4227f9d749579e7ddbafb72b1fb"
+    },
+    {
+      "path": "validation-glb.json",
+      "bytes": 5571,
+      "sha256": "9f323b4aa80f862233e570bc49af1921a0e7c06209f931c46c9ff8211fab40cb"
+    }
+  ],
+  "phase": "system"
+}

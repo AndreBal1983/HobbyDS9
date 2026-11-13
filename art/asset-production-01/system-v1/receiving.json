@@ -1,0 +1,708 @@
+{
+  "status": "proposed paths/GUIDs only; not imported",
+  "namespace": "hobbyds9.art.production01",
+  "existing_project_guids_checked": 557,
+  "collisions": 0,
+  "route": "Use FBX plus explicit URP material remaps; GLB is alternate interchange, not duplicate runtime import",
+  "files": [
+    {
+      "path": "Models/Atmosphere_Unit.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Atmosphere_Unit.fbx",
+      "proposed_guid": "c93534d985ba8e24148d974e0f73ff33",
+      "sha256": "6092358b1199511e0b8f044c1bde75272390ed53462e10f4006d5e0c4e82eb72",
+      "bytes": 54892
+    },
+    {
+      "path": "Models/Atmosphere_Unit.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Atmosphere_Unit.glb",
+      "proposed_guid": "1542f07dfb61b82c00bacc19bab0e73d",
+      "sha256": "bd4031e822fa2bd11e92cb9a1c8bc1c4f99d9d95632dd63ce87656a6bcc1a49e",
+      "bytes": 53668
+    },
+    {
+      "path": "Models/Corona_Billboard.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Corona_Billboard.fbx",
+      "proposed_guid": "d7dd800900e64dc9e0d6cb6dca1db923",
+      "sha256": "a0865720e8e598ef93ef75ec1f1e30acecb4cb45a3f0a4b858b5b70b196fc4f5",
+      "bytes": 19772
+    },
+    {
+      "path": "Models/Corona_Billboard.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Corona_Billboard.glb",
+      "proposed_guid": "b377527f8b4584c8e61e26c4900d9aad",
+      "sha256": "d0c5a1ddc07ccef93a9d625b7b818f30d18586d7ffec2c7f251bad62b15631c9",
+      "bytes": 41400
+    },
+    {
+      "path": "Models/Earth_LOD0.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Earth_LOD0.fbx",
+      "proposed_guid": "f4b41ad6bc5f2dbb0fcc479d33828875",
+      "sha256": "2dcfaccba0ab2bfd733a527abd0ab1c9574428cc99ff31a52289823dae257170",
+      "bytes": 184876
+    },
+    {
+      "path": "Models/Earth_LOD0.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Earth_LOD0.glb",
+      "proposed_guid": "f31328a5876777acf5d204fe95b39b8b",
+      "sha256": "73cd1f91cf0767a46b07c6405b1cee21020edbf23bfb3374bc9698de6c77928f",
+      "bytes": 670648
+    },
+    {
+      "path": "Models/Earth_LOD1.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Earth_LOD1.fbx",
+      "proposed_guid": "ed289bd55216a25f1dadfa73983e89e8",
+      "sha256": "6d7fb4adf756c4d9667f21c7f2688638569bed2834ed2cc0b834d1e01009230e",
+      "bytes": 58268
+    },
+    {
+      "path": "Models/Earth_LOD1.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Earth_LOD1.glb",
+      "proposed_guid": "46d9db392bec906cd844db59cab34117",
+      "sha256": "e8011bdcda142e754e9b12540c75447fbc44cdf1a73bdc18d6bfdfd5c534f306",
+      "bytes": 516864
+    },
+    {
+      "path": "Models/Earth_LOD2.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Earth_LOD2.fbx",
+      "proposed_guid": "ca58cb903e66b095fb450789fed3767a",
+      "sha256": "b6c70549f8514bf646a432b20b5fc1c936d48f20e8a2757627ab344ec459ab8d",
+      "bytes": 28348
+    },
+    {
+      "path": "Models/Earth_LOD2.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Earth_LOD2.glb",
+      "proposed_guid": "0e185571c04f3d35a85cd1d7880545b6",
+      "sha256": "02dd7f58c970a96055b37d270839d8c6cc91f3b9b4577ab18df896dbe7abd7d9",
+      "bytes": 477960
+    },
+    {
+      "path": "Models/Jupiter_LOD0.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Jupiter_LOD0.fbx",
+      "proposed_guid": "0c86f67e746c5ddf289d31d19eb72b4e",
+      "sha256": "89d62684b93511fcf8ffe8b57d401c71911355cbded257c459ce1f36edd4bd28",
+      "bytes": 184908
+    },
+    {
+      "path": "Models/Jupiter_LOD0.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Jupiter_LOD0.glb",
+      "proposed_guid": "3e78bfa7182d610d6deab36f8af71c88",
+      "sha256": "5163f896e2e665d8801fee2098f9231e1a996e22ac0acf9d76ef4963c6796f56",
+      "bytes": 706536
+    },
+    {
+      "path": "Models/Jupiter_LOD1.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Jupiter_LOD1.fbx",
+      "proposed_guid": "46fc346772fc55ca219e15d9e168a83e",
+      "sha256": "e86b31ff4289ea61d2a787fc1c6603a95bf590a715212e3f440579b248296428",
+      "bytes": 58236
+    },
+    {
+      "path": "Models/Jupiter_LOD1.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Jupiter_LOD1.glb",
+      "proposed_guid": "8bc15847c0b835d16e85761b1a1e2ee6",
+      "sha256": "7fdc0201f042dfc3674d1dbef661fb5ff81c5c4e9fd4bf9456f4d2284bf6f66b",
+      "bytes": 552756
+    },
+    {
+      "path": "Models/Jupiter_LOD2.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Jupiter_LOD2.fbx",
+      "proposed_guid": "698cd52bc0a1bf458fb0de03e8fb11de",
+      "sha256": "ab1f6092e12f8a4e91e84e26f38c2f8b63706e3799cbab625ffacf755383429d",
+      "bytes": 28284
+    },
+    {
+      "path": "Models/Jupiter_LOD2.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Jupiter_LOD2.glb",
+      "proposed_guid": "94f44738fa741754bd27bfbe91756bed",
+      "sha256": "6f8b6a224cc32316501a3f2a25d239859dfcfcbd869499408f697bcc4874f9b4",
+      "bytes": 513852
+    },
+    {
+      "path": "Models/Mars_LOD0.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mars_LOD0.fbx",
+      "proposed_guid": "f650fad9f725263fecb636d7b88ebfc8",
+      "sha256": "58298e16335e112fe8b47f72d01b01ab810c1b74a765131bb0a3ecd676cbf8d5",
+      "bytes": 184876
+    },
+    {
+      "path": "Models/Mars_LOD0.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mars_LOD0.glb",
+      "proposed_guid": "d31b61e20b96d77243c3663c8bd4bb0b",
+      "sha256": "8238eeecf08d81baa9ca1be8c69b7c70887d6c505402ed4f5dffff4e203086bb",
+      "bytes": 958096
+    },
+    {
+      "path": "Models/Mars_LOD1.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mars_LOD1.fbx",
+      "proposed_guid": "566393f9d9dc4eff54d3cbb4b67f7fa3",
+      "sha256": "fbec43322ff65624d94b77ac76bede576f3fc280bce170a3076fb39ba68c903e",
+      "bytes": 58268
+    },
+    {
+      "path": "Models/Mars_LOD1.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mars_LOD1.glb",
+      "proposed_guid": "ddf79d01975255b8fd31c907130c3ff2",
+      "sha256": "bedae328b623d1491057a78f87c1a8258a46582f3171e2a4e84a93e4f2180a1c",
+      "bytes": 804316
+    },
+    {
+      "path": "Models/Mars_LOD2.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mars_LOD2.fbx",
+      "proposed_guid": "4fcae1028628c08c41b387dcb8c9ecff",
+      "sha256": "f13a0996e4e30fd10785b6d8f69917ff960b748937ea2d7f574bef7eaca85be6",
+      "bytes": 28284
+    },
+    {
+      "path": "Models/Mars_LOD2.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mars_LOD2.glb",
+      "proposed_guid": "8cf1c4ac84ce48d4d417075915912db7",
+      "sha256": "bb302d742c6c201bb8c0115b0b4627c563d47c226bae38aa023fca4c7369a36e",
+      "bytes": 765412
+    },
+    {
+      "path": "Models/Mercury_LOD0.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mercury_LOD0.fbx",
+      "proposed_guid": "61472147bec175d2770aaf339f0aaa79",
+      "sha256": "6ddc3ce2283fc3c6692cbbe25fff2a23bc185c3713af2b9572804a8f155254c6",
+      "bytes": 184844
+    },
+    {
+      "path": "Models/Mercury_LOD0.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mercury_LOD0.glb",
+      "proposed_guid": "f29251621f364944c23c536d792011ed",
+      "sha256": "a8923fdcac1debf643310aa56fd49f1c8a9b481adfcb65a1c5406e11b4b5704f",
+      "bytes": 1080116
+    },
+    {
+      "path": "Models/Mercury_LOD1.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mercury_LOD1.fbx",
+      "proposed_guid": "4aae4b6ddfae5aacf449d0948deefbf3",
+      "sha256": "84a36c3987182d31af731e5b32d8c340bfaf1cae86fb4a8dc5b35fa0088577c4",
+      "bytes": 58300
+    },
+    {
+      "path": "Models/Mercury_LOD1.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mercury_LOD1.glb",
+      "proposed_guid": "f79ee0263600262d586e2112e0cf675b",
+      "sha256": "cd27958d8e4f9b8c631befdfa4161ff5511cc33c5356f45d03939e3f66ab42c7",
+      "bytes": 926336
+    },
+    {
+      "path": "Models/Mercury_LOD2.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mercury_LOD2.fbx",
+      "proposed_guid": "2a32a49269eeb9b57b0ae5ec681f7f4b",
+      "sha256": "d349ea4149d1b6682a82e0d37a8e4d515364ccfa6aa13bcf839dfdf90c177c2d",
+      "bytes": 28316
+    },
+    {
+      "path": "Models/Mercury_LOD2.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Mercury_LOD2.glb",
+      "proposed_guid": "35effe35fecefb45d07dead61d016a04",
+      "sha256": "5ed6e917fa7587181b5ed34dda0029e20c03f432146b0be206d7d49a505f7405",
+      "bytes": 887432
+    },
+    {
+      "path": "Models/Neptune_LOD0.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Neptune_LOD0.fbx",
+      "proposed_guid": "9f79fbcfdc9fc3233dbd21625c359789",
+      "sha256": "6d57a98e8178acf6a603bdbb3877a036be6f29eb15ede0b8c6192b1b71e02db7",
+      "bytes": 184876
+    },
+    {
+      "path": "Models/Neptune_LOD0.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Neptune_LOD0.glb",
+      "proposed_guid": "d5d78beb30b07517c752246facfa4117",
+      "sha256": "a1d632491eaa09cdd272625c0cbd2aa7110c24ecd9cdf458fbcafbdf1dabf98e",
+      "bytes": 449140
+    },
+    {
+      "path": "Models/Neptune_LOD1.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Neptune_LOD1.fbx",
+      "proposed_guid": "a12633ff60d801e9b2da395636cf8dd4",
+      "sha256": "9e6d2b20494f839c798ecdbd71c258bac95e8e8ff4f5781e2dcbe2cfed2a6d61",
+      "bytes": 58252
+    },
+    {
+      "path": "Models/Neptune_LOD1.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Neptune_LOD1.glb",
+      "proposed_guid": "8f1f95a46ea3cbca84e066ab44c6663a",
+      "sha256": "7fae7f0f7d4210186bfd79b5d53a370a6aaef42e14ed29bb2e7abd0717aea1c0",
+      "bytes": 295360
+    },
+    {
+      "path": "Models/Neptune_LOD2.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Neptune_LOD2.fbx",
+      "proposed_guid": "bda1cb8485e1e8646a6f9013907ee978",
+      "sha256": "cafee90eff63d068537c493e77eca3342d7ffcc50cf363830eff4744d771be88",
+      "bytes": 28284
+    },
+    {
+      "path": "Models/Neptune_LOD2.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Neptune_LOD2.glb",
+      "proposed_guid": "d098a2ee22bb1eaadf1df579e2260051",
+      "sha256": "4489892e77e3c5633fe0299fc8e55e7e5605c107d5e738b0e4a7cbe53e94e858",
+      "bytes": 256456
+    },
+    {
+      "path": "Models/Orbit_Unit.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Orbit_Unit.fbx",
+      "proposed_guid": "2d6156e9a050e3255106de439901c02a",
+      "sha256": "c85eca73fcf4879f5d8181469d51aef1948936ea774b2d58532a805bdb6edf28",
+      "bytes": 22828
+    },
+    {
+      "path": "Models/Orbit_Unit.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Orbit_Unit.glb",
+      "proposed_guid": "d28de4edf7648193d537d58716041b97",
+      "sha256": "c99b9de3c527fd4117e6fbf5e3a65e7cf34484ec7b08e0df7a0ee4d18f134564",
+      "bytes": 37108
+    },
+    {
+      "path": "Models/Saturn_LOD0.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Saturn_LOD0.fbx",
+      "proposed_guid": "889a9067edb606a17580e97cbfb61ef9",
+      "sha256": "bd636cfc24061adcfea95b6ea1b4a0b7939d212f71f857332d2e4b092ce10904",
+      "bytes": 184812
+    },
+    {
+      "path": "Models/Saturn_LOD0.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Saturn_LOD0.glb",
+      "proposed_guid": "0666f5057e6fc47fae58f8843b6a6a97",
+      "sha256": "098edd5f725d26aa97a5074a270f77f8637c4cd5a27b8ebc7ab7a94f74816422",
+      "bytes": 407472
+    },
+    {
+      "path": "Models/Saturn_LOD1.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Saturn_LOD1.fbx",
+      "proposed_guid": "77aaafc63833a4d5b7f7f8466c747f05",
+      "sha256": "014b33536561bfdcf1bc0d671b62e3bfa73838dc6604d4fed6de3f3d1ea5b169",
+      "bytes": 58252
+    },
+    {
+      "path": "Models/Saturn_LOD1.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Saturn_LOD1.glb",
+      "proposed_guid": "130c91c123334bbf65625c35732a7086",
+      "sha256": "432dd6b501b885ed592fbd9dfc49d228706df4012792517c71d3fd803c687012",
+      "bytes": 253692
+    },
+    {
+      "path": "Models/Saturn_LOD2.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Saturn_LOD2.fbx",
+      "proposed_guid": "3857bee9a2a08e24b1729c458a475bbc",
+      "sha256": "8f8e246a25fbfc4e6d806d746f19bf5fdeb9fad1fd8501aa86c3b576bfd3b11d",
+      "bytes": 28332
+    },
+    {
+      "path": "Models/Saturn_LOD2.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Saturn_LOD2.glb",
+      "proposed_guid": "6264464e6bf67ede8d0d60ce90b41cd1",
+      "sha256": "89ca43a720cd84cc8d6ec1c9c857e6aa9f19b062a2c9332e129d1953176f13ed",
+      "bytes": 214788
+    },
+    {
+      "path": "Models/Saturn_Rings.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Saturn_Rings.fbx",
+      "proposed_guid": "c72a1617e387dbba22ca4e0215bac3ba",
+      "sha256": "1d53d1fd1a9490cc465620d7cb23429d4825afedc5435a3da1b312c6a8d71548",
+      "bytes": 38092
+    },
+    {
+      "path": "Models/Saturn_Rings.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Saturn_Rings.glb",
+      "proposed_guid": "8eb987bd00b1ca062378e6c2ead6d136",
+      "sha256": "804db2cf63e0a676cf1ea60d77c2cd078f28709975bcab5d5fa7ff6a5eceff43",
+      "bytes": 78576
+    },
+    {
+      "path": "Models/Sun_LOD0.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Sun_LOD0.fbx",
+      "proposed_guid": "3482d18a3cba929fdf40f2aa55ea48ac",
+      "sha256": "54ed522718457550719344d6ec1b4b665cda0578cd4a532e8f755bb0e44fc7e3",
+      "bytes": 185404
+    },
+    {
+      "path": "Models/Sun_LOD0.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Sun_LOD0.glb",
+      "proposed_guid": "3deca52bf0bcb3195c3ae0ef6b55e5bb",
+      "sha256": "77991ddc6f080ee8adc581b66bafae3439f02dc20daaa1ae1d78fd9ad7f41f5d",
+      "bytes": 1030052
+    },
+    {
+      "path": "Models/Sun_LOD1.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Sun_LOD1.fbx",
+      "proposed_guid": "ce3d5d96eab7bf9c3265bc2e0b8bf508",
+      "sha256": "0dc653ec6309d351f49d53341856d310f3cc03af3350a06d72b7bd409d684c3b",
+      "bytes": 58716
+    },
+    {
+      "path": "Models/Sun_LOD1.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Sun_LOD1.glb",
+      "proposed_guid": "48f9aa5b79929e2361f5d81e72a9c71a",
+      "sha256": "fe0b72d43912637b8854b1d5c55b3c6bfd908eb78b5fb58273613a8e0a8a7a66",
+      "bytes": 876272
+    },
+    {
+      "path": "Models/Sun_LOD2.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Sun_LOD2.fbx",
+      "proposed_guid": "10a0a3c8a844f1c937520299e3c1b54a",
+      "sha256": "05e4b75eed6f3f8a4e53efbee5999d6ca6511a76ece72a4056aa93ba958b2952",
+      "bytes": 28796
+    },
+    {
+      "path": "Models/Sun_LOD2.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Sun_LOD2.glb",
+      "proposed_guid": "a64dc878c4a6357bd91ae0b267fff8d8",
+      "sha256": "ec17b736ddee2d5b6eada8ea01ed22b30101db96c227e25607158e80d16f5439",
+      "bytes": 837368
+    },
+    {
+      "path": "Models/Uranus_LOD0.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Uranus_LOD0.fbx",
+      "proposed_guid": "fb24e3eff908a57c021877ffcae79f7e",
+      "sha256": "d524b5ed0f9e40b0bb5291d0289edd77c9ebd03149ba5a055a44ebb24e3e3361",
+      "bytes": 184940
+    },
+    {
+      "path": "Models/Uranus_LOD0.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Uranus_LOD0.glb",
+      "proposed_guid": "d2f5bb1b6443be77219243b88b60c084",
+      "sha256": "64c20539fdf95a54b1e4f729377861890163f8ef5ff179f745e1069be5dbed09",
+      "bytes": 285308
+    },
+    {
+      "path": "Models/Uranus_LOD1.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Uranus_LOD1.fbx",
+      "proposed_guid": "0a339808db556c93869e738dd8f924e1",
+      "sha256": "73df63565270069956f46333686907e73ad2a983ea33d519b672400d9253f3b7",
+      "bytes": 58236
+    },
+    {
+      "path": "Models/Uranus_LOD1.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Uranus_LOD1.glb",
+      "proposed_guid": "885e2e5ae70986196ece6d779db71079",
+      "sha256": "eb24c45b748abad11b15e3d78bc9cfd2738633ce1c1fac27297dd987a28ee53f",
+      "bytes": 131524
+    },
+    {
+      "path": "Models/Uranus_LOD2.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Uranus_LOD2.fbx",
+      "proposed_guid": "1d5495025e30ec52bf058bb2f7498a17",
+      "sha256": "ec83172b94389047db8e28a15eec6af5aea06939c3e6710da254f509dd99c1a1",
+      "bytes": 28284
+    },
+    {
+      "path": "Models/Uranus_LOD2.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Uranus_LOD2.glb",
+      "proposed_guid": "b1808793a339631348166ccc8c50b4ed",
+      "sha256": "f98cfd0282cf743e1c378addb0405614ac4be1dd5feb292ce4b7bab780131a96",
+      "bytes": 92620
+    },
+    {
+      "path": "Models/Venus_LOD0.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Venus_LOD0.fbx",
+      "proposed_guid": "97ca106cfbea34faea7e46f26aef5c18",
+      "sha256": "ab599fb211db2be27ae9850cb76bf3f2314cf80c4b1ed20f09ae233a6c864402",
+      "bytes": 184892
+    },
+    {
+      "path": "Models/Venus_LOD0.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Venus_LOD0.glb",
+      "proposed_guid": "c4887acd5aca82c671a259583f97bf74",
+      "sha256": "032a6a4ece6d52b9c49aeaa2ae7d2b7b2a9b9ce1d2bbe8f90635b0ef77d74c37",
+      "bytes": 437260
+    },
+    {
+      "path": "Models/Venus_LOD1.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Venus_LOD1.fbx",
+      "proposed_guid": "463228288da6b98b6888fb16a01ae332",
+      "sha256": "05ddf167c1f26a7260fb42e370845f07f8f79ebaaa0f879ffbfd72b13d46bc02",
+      "bytes": 58316
+    },
+    {
+      "path": "Models/Venus_LOD1.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Venus_LOD1.glb",
+      "proposed_guid": "b40bd492d1d39823d7389e420b805bb6",
+      "sha256": "03de522cc0e6b1d47d91a5594642c7ed3768fc4d2fae44d9a9e89678351969ba",
+      "bytes": 283476
+    },
+    {
+      "path": "Models/Venus_LOD2.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Venus_LOD2.fbx",
+      "proposed_guid": "0676baa9fc0cd63c924897165940feef",
+      "sha256": "3846e884300d23598d5cdeaad2bd20d0ef7d4ffa634b31eb74c4db62a73ff6a9",
+      "bytes": 28364
+    },
+    {
+      "path": "Models/Venus_LOD2.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Models/Venus_LOD2.glb",
+      "proposed_guid": "aa479275094b4c36de8ba60a0f26a78b",
+      "sha256": "38d361f190b7219b7a7e95281a0c4cf3aeae905d26136ac6ba6e94bb2b39b05b",
+      "bytes": 244572
+    },
+    {
+      "path": "Textures/DecorativeStars.png",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Textures/DecorativeStars.png",
+      "proposed_guid": "2333dc382562484dc1c9f5cef2009e64",
+      "sha256": "4166e3538a413e908fe1b0e9d113f692f033d49b0cd42ef1fe4d2780822845c3",
+      "bytes": 22825
+    },
+    {
+      "path": "Textures/earth_daymap.jpg",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Textures/earth_daymap.jpg",
+      "proposed_guid": "5f14c751a8162e15583fbb18f419c0a1",
+      "sha256": "767ee1dc6eb3802699bfccf6f264880f8acd0b80de3191cd24984fe279b07b7c",
+      "bytes": 463087
+    },
+    {
+      "path": "Textures/jupiter.jpg",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Textures/jupiter.jpg",
+      "proposed_guid": "10b198ce9d2352fa7de574533be38976",
+      "sha256": "b0f04d005350252636b0e3396fc592548cbd9e9126b269d32d5c6abd4b0e4f2b",
+      "bytes": 498976
+    },
+    {
+      "path": "Textures/mars.jpg",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Textures/mars.jpg",
+      "proposed_guid": "d3dbb0afc302f3f4b37891f86309f559",
+      "sha256": "2d187f3e77a98eaa8cea5f4cc722f633c122ef170b9e94ace6b5fb6cbc3f8e01",
+      "bytes": 750547
+    },
+    {
+      "path": "Textures/mercury.jpg",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Textures/mercury.jpg",
+      "proposed_guid": "fbe8c09f05618d382a05cd585860e6a3",
+      "sha256": "5a5c80607f643496bac9a631e71957def35ed788895f18b678ac849c2b38e48a",
+      "bytes": 872555
+    },
+    {
+      "path": "Textures/neptune.jpg",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Textures/neptune.jpg",
+      "proposed_guid": "bd64f36c244fa0479164599aa3f1b046",
+      "sha256": "cb42ea82709741d28b0af44d8b283cbc6dbd0c521a7f0e1e1e010ade00977df6",
+      "bytes": 241580
+    },
+    {
+      "path": "Textures/OriginalCorona.png",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Textures/OriginalCorona.png",
+      "proposed_guid": "fc1a62e6a4891eedb7a7bff9d35d62cf",
+      "sha256": "f201c0e7d5046915bc74fe36a589804c2eed0d4c8d6006ed5f5509f894bd2f2d",
+      "bytes": 39899
+    },
+    {
+      "path": "Textures/saturn.jpg",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Textures/saturn.jpg",
+      "proposed_guid": "50dc1c56e007e30482b94c980ba30ad1",
+      "sha256": "54a900ca9bf7ab62e70f862852759abdf342e6d6436a95a2fe9ebdb6bcd3bbac",
+      "bytes": 199916
+    },
+    {
+      "path": "Textures/sun.jpg",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Textures/sun.jpg",
+      "proposed_guid": "2cd266dfcadcdcd3340dfc5356c3b8d4",
+      "sha256": "ff0f076ba65e03b5ab518451bc96699325be38e3ccbdd5869ee1c00f3a0c8816",
+      "bytes": 822427
+    },
+    {
+      "path": "Textures/uranus.jpg",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Textures/uranus.jpg",
+      "proposed_guid": "a315f48f6ae260e333fc61edd2771089",
+      "sha256": "d15239d46f82d3ea13d2b260b5b29b2a382f42f2916dae0694d0387b1204a09d",
+      "bytes": 77751
+    },
+    {
+      "path": "Textures/venus_atmosphere.jpg",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/system-v1/Textures/venus_atmosphere.jpg",
+      "proposed_guid": "7b362555de3b974ff54cb5ac29fc0cf2",
+      "sha256": "225012ad4911730605c4e189ca2a3bf674fce50cc48aab4102b936b47d6991ac",
+      "bytes": 229696
+    }
+  ],
+  "exact_bindings": [
+    {
+      "asset_id": "art.production01.earth_lod0",
+      "candidate_binding": "planet.sol",
+      "lod": 0,
+      "fbx": "Models/Earth_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.earth_lod1",
+      "candidate_binding": "planet.sol",
+      "lod": 1,
+      "fbx": "Models/Earth_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.earth_lod2",
+      "candidate_binding": "planet.sol",
+      "lod": 2,
+      "fbx": "Models/Earth_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.mars_lod0",
+      "candidate_binding": "planet.mars",
+      "lod": 0,
+      "fbx": "Models/Mars_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.mars_lod1",
+      "candidate_binding": "planet.mars",
+      "lod": 1,
+      "fbx": "Models/Mars_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.mars_lod2",
+      "candidate_binding": "planet.mars",
+      "lod": 2,
+      "fbx": "Models/Mars_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.sun_lod0",
+      "candidate_binding": null,
+      "lod": 0,
+      "fbx": "Models/Sun_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.sun_lod1",
+      "candidate_binding": null,
+      "lod": 1,
+      "fbx": "Models/Sun_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.sun_lod2",
+      "candidate_binding": null,
+      "lod": 2,
+      "fbx": "Models/Sun_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.mercury_lod0",
+      "candidate_binding": null,
+      "lod": 0,
+      "fbx": "Models/Mercury_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.mercury_lod1",
+      "candidate_binding": null,
+      "lod": 1,
+      "fbx": "Models/Mercury_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.mercury_lod2",
+      "candidate_binding": null,
+      "lod": 2,
+      "fbx": "Models/Mercury_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.venus_lod0",
+      "candidate_binding": null,
+      "lod": 0,
+      "fbx": "Models/Venus_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.venus_lod1",
+      "candidate_binding": null,
+      "lod": 1,
+      "fbx": "Models/Venus_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.venus_lod2",
+      "candidate_binding": null,
+      "lod": 2,
+      "fbx": "Models/Venus_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.jupiter_lod0",
+      "candidate_binding": null,
+      "lod": 0,
+      "fbx": "Models/Jupiter_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.jupiter_lod1",
+      "candidate_binding": null,
+      "lod": 1,
+      "fbx": "Models/Jupiter_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.jupiter_lod2",
+      "candidate_binding": null,
+      "lod": 2,
+      "fbx": "Models/Jupiter_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.saturn_lod0",
+      "candidate_binding": null,
+      "lod": 0,
+      "fbx": "Models/Saturn_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.saturn_lod1",
+      "candidate_binding": null,
+      "lod": 1,
+      "fbx": "Models/Saturn_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.saturn_lod2",
+      "candidate_binding": null,
+      "lod": 2,
+      "fbx": "Models/Saturn_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.uranus_lod0",
+      "candidate_binding": null,
+      "lod": 0,
+      "fbx": "Models/Uranus_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.uranus_lod1",
+      "candidate_binding": null,
+      "lod": 1,
+      "fbx": "Models/Uranus_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.uranus_lod2",
+      "candidate_binding": null,
+      "lod": 2,
+      "fbx": "Models/Uranus_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.neptune_lod0",
+      "candidate_binding": null,
+      "lod": 0,
+      "fbx": "Models/Neptune_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.neptune_lod1",
+      "candidate_binding": null,
+      "lod": 1,
+      "fbx": "Models/Neptune_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.neptune_lod2",
+      "candidate_binding": null,
+      "lod": 2,
+      "fbx": "Models/Neptune_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.saturn_rings",
+      "candidate_binding": null,
+      "lod": 0,
+      "fbx": "Models/Saturn_Rings.fbx"
+    },
+    {
+      "asset_id": "art.production01.orbit_unit",
+      "candidate_binding": null,
+      "lod": 0,
+      "fbx": "Models/Orbit_Unit.fbx"
+    },
+    {
+      "asset_id": "art.production01.atmosphere_unit",
+      "candidate_binding": "planet.sol",
+      "lod": 1,
+      "fbx": "Models/Atmosphere_Unit.fbx"
+    },
+    {
+      "asset_id": "art.production01.corona_billboard",
+      "candidate_binding": null,
+      "lod": 0,
+      "fbx": "Models/Corona_Billboard.fbx"
+    }
+  ]
+}
