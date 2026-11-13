@@ -273,6 +273,18 @@ namespace HobbyDS9.UnityReview.Tests
             text=Labels(PanelFor(Planet(),10000));
             Assert.That(text,Does.Contain("Gravity 1 g · Pressure 1 (reference scale)"));
         }
+        [UnityTest] public System.Collections.IEnumerator OpenedPlanetKeepsExactDisclosedGlobeAndReleasesPortraitOnExit()
+        {
+            var host=Host();var earth=Planet("planet.sol",name:"Earth");var panel=PanelFor(earth);host.Add(panel);
+            yield return null;yield return null;
+            var portrait=panel.Q("planet-detail-visual");Assert.That(portrait,Is.Not.Null);
+            var image=portrait.Q<Image>("planet-detail-portrait");Assert.That(image.image,Is.Not.Null,"The Planet page must render a globe, not silently fall back in the graphics fixture.");
+            var stage=Field<object>(portrait,"stage");
+            Assert.That(Field<Dictionary<string,Transform>>(stage,"planetTransforms").Keys,Is.EqualTo(new[]{earth.PlanetId}));
+            Assert.That(stage.GetType().GetProperty("PortraitTexture",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(stage),Is.SameAs(image.image));
+            Call(panel,"Show","Planets");Assert.That(image.image,Is.Null,"Leaving Planet releases its portrait binding and owned stage.");
+            Assert.That(Field<object?>(portrait,"stage"),Is.Null);
+        }
         [TestCase(0)] [TestCase(-10000)]
         public void InvalidEnvironmentScaleIsRejected(int scale)
             =>Assert.Throws<ArgumentOutOfRangeException>(()=>PanelFor(Planet(),scale));

@@ -294,12 +294,15 @@
 .system-selected-inspector { margin-left: 12px; padding: 16px; background-color: #111e2b; border-left-width: 3px; border-left-color: #efb16b; border-radius: 7px; }
 #colonisation-system-visual { margin-bottom: 10px; }
 #colonisation-system-bodies { padding-top: 10px; border-top-width: 1px; border-top-color: #52677c; }
+.planet-detail-visual { width: 380px; max-width: 100%; min-width: 0; flex-shrink: 0; margin-right: 20px; padding: 12px; border-top-width: 3px; border-top-color: #efb16b; background-color: #080f19; }
+.planet-detail-portrait { height: 320px; min-height: 240px; flex-shrink: 0; }
+#planet-detail-facts { padding: 12px; border-top-width: 3px; border-top-color: #b9ace6; }
 
 /* PROD-VIS-01: recovered catalogue/context hierarchy, current streamed facts. */
 .construction-world-readouts { flex-wrap: wrap; }
 .construction-world-readout { min-width: 140px; padding: 6px 12px; margin-right: 8px; margin-bottom: 4px; border-left-width: 3px; border-left-color: #b7a5dc; background-color: #111e2b; }
-.construction-world-readout .construction-readout-label { font-size: 14px; color: #b6d9ed; margin-bottom: 1px; }
-.construction-world-readout .construction-readout-value { font-size: 21px; margin-bottom: 0; }
+.construction-world-readout .construction-readout-label { font-size: 16px; color: #b6d9ed; margin-bottom: 1px; }
+.construction-world-readout .construction-readout-value { font-size: 24px; margin-bottom: 0; }
 .construction-option-card, .construction-queue-row { padding: 10px; border-left-width: 2px; border-left-color: #52677c; }
 .construction-option-card .unity-label, .construction-queue-row .unity-label { margin-bottom: 4px; }
 #construction-context-dock { border-top-width: 3px; border-top-color: #efb16b; padding-top: 6px; min-width: 0; }
