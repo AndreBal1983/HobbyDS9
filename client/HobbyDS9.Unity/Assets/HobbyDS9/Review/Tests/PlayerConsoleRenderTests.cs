@@ -119,7 +119,18 @@ namespace HobbyDS9.UnityReview.Tests
                     Assert.That(root.Q<Label>("player-status-credits").text,Is.EqualTo(model.Current.Frame.Strategy!.Civilization.Credits.ToString()));
                     if(root.Q("player-primary-action") is VisualElement primary)
                         Assert.That(footer.Contains(primary),Is.True,"Profile changes must not move the primary action above the workspace.");
-                    if(page==ReviewWorkspacePage.Map)Assert.That(root.Q<Image>("map-space-backdrop").image,Is.Not.Null,"Live map decorative asset must load");
+                    if(page==ReviewWorkspacePage.Map)
+                    {
+                        Assert.That(root.Q<Image>("map-space-backdrop").image,Is.Not.Null,"Live map decorative asset must load");
+                        Assert.That(root.Q("review-central-content").worldBound.xMax,Is.EqualTo(footer.worldBound.xMax).Within(2),"Map workspace must use the available width while its inspector stays bounded.");
+                        if(size.y>=1080)
+                        {
+                            var map=root.Q("integrated-known-map");var viewport=map.GetFirstAncestorOfType<ScrollView>().contentViewport;
+                            var caption=root.Q("integrated-map-caption");
+                            Assert.That(viewport.worldBound.yMax-caption.worldBound.yMax,Is.LessThanOrEqualTo(24),"Tall schematic map must use the panel height instead of leaving a blank lower canvas.");
+                            Assert.That(caption.worldBound.yMax,Is.LessThanOrEqualTo(viewport.worldBound.yMax+1),"Map caption remains inside its viewport.");
+                        }
+                    }
                     if(page==ReviewWorkspacePage.Research)
                     {
                         var cards=root.Query<VisualElement>().ToList().Where(e=>e.name.StartsWith("science-card-")).ToList();Assert.That(cards.Count,Is.EqualTo(6));

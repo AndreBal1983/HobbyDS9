@@ -82,6 +82,7 @@ namespace HobbyDS9.UnityReview
         {
             RestoreStreamedBusy();RestoreColonisationBusy();var frame=model!.Current.Frame;playerTitle!.text=PlayerProfile&&workspace!.Page==ReviewWorkspacePage.Tools?"Help & credits":Title(workspace!.Page);
             content!.EnableInClassList("review-central",!demoLanding&&workspace.Page==ReviewWorkspacePage.Combat);
+            content.EnableInClassList("map-workspace",!demoLanding&&workspace.Page==ReviewWorkspacePage.Map&&!frontierCommissionOpen&&campaignSettingsReturn==null);
             playerStatus!.style.display=ShowPlayerCampaignFacts?DisplayStyle.Flex:DisplayStyle.None;
             playerStatus.Q<Label>("player-status-phase").text=ShowPlayerCampaignFacts?(frame.Status.Phase==SessionPhase.Planning?"Planning":"Combat pending"):"";
             playerStatus.Q<Label>("player-status-turn").text=ShowPlayerCampaignFacts?frame.Status.Turn.ToString():"";

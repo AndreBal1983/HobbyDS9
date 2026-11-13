@@ -200,6 +200,9 @@ namespace HobbyDS9.UnityReview
             if(model.PlayableFleet){new ReviewPlayableMap(model,workspace,button,perform,confirm,navigate,bindButton).Render(root);return;}
             if(model.FrontierPreview){new ReviewFrontierMap(model,workspace,button,perform,confirm,navigate).Render(root);return;}
             var main=Panel(root,"Strategic operations");var aside=Panel(root,"Selection / context","console-aside");
+            // Let the existing flexible map use surplus viewport height while its
+            // minimum still permits ordinary scrolling on short windows.
+            main.contentContainer.style.flexGrow=1;
             var ordinaryColor=new Color(.61f,.76f,.87f);var wormholeColor=new Color(.72f,.64f,.9f);
             var legend=Row(main);legend.name="map-link-legend";
             foreach(var wormhole in new[]{false,true})
@@ -230,7 +233,7 @@ namespace HobbyDS9.UnityReview
                 var marker=Btn(map,node.DisplayName,"map-node-"+node.NodeId,()=>perform(()=>workspace.SelectedNode=node.NodeId.Value));marker.style.position=Position.Absolute;marker.style.width=178;marker.style.fontSize=16;marker.style.whiteSpace=WhiteSpace.Normal;
                 map.RegisterCallback<GeometryChangedEvent>(_=>{var p=Point(node.NodeId.Value);marker.style.left=p.x-89;marker.style.top=p.y-22;map.MarkDirtyRepaint();});
             }
-            Text(main,"Known navigation · arrangement is schematic. Select your fleet, then a destination to preview its route.");
+            Text(main,"Known navigation · arrangement is schematic. Select your fleet, then a destination to preview its route.",id:"integrated-map-caption");
             Text(aside,"Your fleets","console-section","map-own-fleets-heading");
             foreach(var fleet in facts.Fleets){var b=Btn(aside,"Your fleet · "+fleet.ShipIds.Count+" ship(s)\n"+NodeName(facts,fleet.LocationNodeId.Value),"map-fleet-orders-"+fleet.FleetId,()=>{workspace.SelectedFleet=fleet.FleetId.Value;selectFleet(fleet.FleetId.Value,workspace.SelectedNode,null);});b.style.whiteSpace=WhiteSpace.Normal;}
             var selected=nodes.FirstOrDefault(n=>n.NodeId.Value==workspace.SelectedNode);Text(aside,selected==null?"Your worlds — no sector selected":"Selected sector: "+selected.DisplayName,"console-intro","map-worlds-scope");
