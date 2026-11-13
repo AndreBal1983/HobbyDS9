@@ -1,0 +1,9 @@
+# Schematic map viewport receiving
+
+13 November 2026. **Presentation source candidate; graphics/native receiving pending.** Base is QA's tested HUD `f5cdac08c4ba2ca9de491747bd8da0cc8a1357e7` / PR111. Existing packages, native saves and queued art candidates stay unchanged.
+
+QA's actual1920x1080 Map render target was inspected alongside its1280 target and the recovered map-overview reference. The schematic scene in the legacy/integrated/authored profile remains at its500px minimum, leaving a large unused lower panel below the caption. The generated campaign uses a different renderer; it is not changed by this fix. Editor targets are separate from native desktop evidence.
+
+The scoped change lets only the schematic map ScrollView's content container grow into spare viewport height. Its existing flexible map then receives the spare height, retaining320/500 minimums and ordinary scrolling on short windows. The caption receives an additive stable element ID. Node buttons and route strokes continue to derive positions from the same actual map.contentRect and existing GeometryChanged callback, with the same lawful snapshot facts, selection IDs and actions. No coordinate, topology, travel, save, art, shader or generated/frontier renderer change.
+
+The existing graphics fixture gains a large-height check that the caption remains inside the map viewport with at most24px unused space below. Its1280 scroll/containment/input cases remain intact. Source/reference compilation is separate from actual graphics execution. QA next: focused PlayerConsoleRenderTests, then schematic map at1280/1920/3440 render targets and available native sizes; compare viewer fill and pointer/node/route alignment, long caption/legend, right-inspector scroll, footer/focus and ordinary route review. Retain true-ultrawide/native frame-time/owner reference-fidelity gates. No broader gameplay test rerun is required for this layout-only change.
