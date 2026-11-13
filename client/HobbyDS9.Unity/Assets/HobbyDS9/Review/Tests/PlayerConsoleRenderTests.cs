@@ -113,6 +113,12 @@ namespace HobbyDS9.UnityReview.Tests
                         Visible(root.Q("player-status-"+stat),header.worldBound,"Header "+stat);
                     Assert.That(root.Q<Label>("player-status-turn").text,Is.EqualTo(model.Current.Frame.Status.Turn.ToString()));
                     Assert.That(root.Q<Label>("player-status-credits").text,Is.EqualTo(model.Current.Frame.Strategy!.Civilization.Credits.ToString()));
+                    var phaseValue=root.Q<Label>("player-status-phase");
+                    if(phaseValue.text=="Planning")
+                    {
+                        var singleLine=phaseValue.MeasureTextSize(phaseValue.text,0,MeasureMode.Undefined,0,MeasureMode.Undefined);
+                        Assert.That(phaseValue.contentRect.width,Is.GreaterThanOrEqualTo(singleLine.x-1),"Planning must fit without a second header line.");
+                    }
                     if(root.Q("player-primary-action") is VisualElement primary)
                         Assert.That(footer.Contains(primary),Is.True,"Profile changes must not move the primary action above the workspace.");
                     if(page==ReviewWorkspacePage.Map)Assert.That(root.Q<Image>("map-space-backdrop").image,Is.Not.Null,"Live map decorative asset must load");

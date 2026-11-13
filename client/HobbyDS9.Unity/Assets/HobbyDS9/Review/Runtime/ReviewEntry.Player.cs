@@ -31,6 +31,7 @@ namespace HobbyDS9.UnityReview
             foreach(var stat in new[]{("CAMPAIGN","phase"),("TURN","turn"),("CREDITS","credits")})
             {
                 var cell=new VisualElement{pickingMode=PickingMode.Ignore};cell.AddToClassList("console-stat");playerStatus.Add(cell);
+                if(stat.Item2=="phase")cell.AddToClassList("console-stat-phase");
                 var key=Readout(stat.Item1);key.AddToClassList("console-stat-key");cell.Add(key);
                 var value=Readout("");value.name="player-status-"+stat.Item2;value.AddToClassList("console-stat-value");cell.Add(value);
             }
