@@ -17,6 +17,7 @@ namespace HobbyDS9.UnityReview
         private readonly Image image;
         private readonly Label unavailable;
         private Image? focusedPortrait;
+        private Label? portraitUnavailable;
         private readonly Action<float,float> onView;
         private readonly PlanetActivationScope activation;
         private ReviewSolStage? stage;
@@ -62,17 +63,26 @@ namespace HobbyDS9.UnityReview
             unavailable=new Label("3D overview unavailable. Use the disclosed body list."){name="sol-overview-unavailable"};unavailable.style.display=DisplayStyle.None;Add(unavailable);
             Add(new Label("Earth/Mars surface maps: Solar System Scope · CC BY 4.0. Other terrain is decorative."));
             viewport.RegisterCallback<GeometryChangedEvent>(e=>{if(e.oldRect.size!=e.newRect.size)QueueDraw();});
+            RegisterCallback<GeometryChangedEvent>(e=>{
+                if(ReferenceEquals(e.target,this))viewport.style.height=Mathf.Clamp(e.newRect.width/2.1f,260,420);
+            });
             RegisterCallback<AttachToPanelEvent>(_=>{pendingFocus=true;QueueDraw();});
             RegisterCallback<DetachFromPanelEvent>(e=>{if(ReferenceEquals(e.target,this))Dispose();});
         }
-        internal void BindPortrait(Image portrait){focusedPortrait=portrait;QueueDraw();}
+        internal void BindPortrait(Image portrait,Label? unavailable=null)
+        {
+            if(focusedPortrait!=null)focusedPortrait.image=null;
+            focusedPortrait=portrait;portraitUnavailable=unavailable;
+            if(failed&&portraitUnavailable!=null)portraitUnavailable.style.display=DisplayStyle.Flex;
+            QueueDraw();
+        }
         internal void Select(string id)
         {
             if(disposed||!markers.ContainsKey(id))return;
             selected=id;pendingFocus=true;QueueDraw();
         }
         private void Control(string text,Action action)
-        {var b=new Button(()=>{if(!disposed&&!failed)action();}){text=text};b.style.minHeight=36;b.style.marginRight=4;controls.Add(b);}
+        {var b=new Button(()=>{if(!disposed&&!failed)action();}){text=text};b.style.minHeight=44;b.style.marginRight=4;controls.Add(b);}
         private void SetView(float angle,float scale)
         {activation.Cancel();animating=false;pendingFocus=false;yaw=Mathf.Repeat(angle+180,360)-180;zoom=Mathf.Clamp(scale,.76f,1.42f);onView(yaw,zoom);QueueDraw();}
         private void QueueDraw()
@@ -103,8 +113,13 @@ namespace HobbyDS9.UnityReview
             try {if(!stage.Render(width/height,yaw,zoom,selected)){Fallback();return;}}
             catch(Exception){Fallback();return;}
             image.image=stage.Texture;
-            if(focusedPortrait!=null&&focusedPortrait.panel!=null&&stage.TryGetPortraitRect(selected,out var crop))
-            {focusedPortrait.image=stage.Texture;focusedPortrait.sourceRect=crop;}
+            if(focusedPortrait!=null&&focusedPortrait.panel!=null)
+            {
+                bool ready;
+                try{ready=stage.RenderPortrait(selected);}catch(Exception){ready=false;}
+                focusedPortrait.image=ready?stage.PortraitTexture:null;
+                if(portraitUnavailable!=null)portraitUnavailable.style.display=ready?DisplayStyle.None:DisplayStyle.Flex;
+            }
             var occupied=new List<Rect>();
             foreach(var entry in markers.OrderBy(x=>x.Key==selected?0:bodies.First(b=>b.PlanetId==x.Key).ActiveSurveyId!=null?1:2))
             {
@@ -121,7 +136,7 @@ namespace HobbyDS9.UnityReview
             if(animating)QueueDraw();
         }
         private void Fallback()
-        {failed=true;image.image=null;if(focusedPortrait!=null)focusedPortrait.image=null;stage?.Dispose();stage=null;viewport.style.display=controls.style.display=DisplayStyle.None;unavailable.style.display=DisplayStyle.Flex;}
-        public void Dispose(){if(disposed)return;disposed=true;image.image=null;if(focusedPortrait!=null)focusedPortrait.image=null;focusedPortrait=null;stage?.Dispose();stage=null;}
+        {failed=true;image.image=null;if(focusedPortrait!=null)focusedPortrait.image=null;if(portraitUnavailable!=null)portraitUnavailable.style.display=DisplayStyle.Flex;stage?.Dispose();stage=null;viewport.style.display=controls.style.display=DisplayStyle.None;unavailable.style.display=DisplayStyle.Flex;}
+        public void Dispose(){if(disposed)return;disposed=true;image.image=null;if(focusedPortrait!=null)focusedPortrait.image=null;focusedPortrait=null;portraitUnavailable=null;stage?.Dispose();stage=null;}
     }
 }

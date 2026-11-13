@@ -275,3 +275,8 @@
 .engineering-group .engineering-card { min-width: 0; flex-shrink: 0; margin-top: 8px; }
 .engineering-group .console-copy, .engineering-summary .console-copy { white-space: normal; }
 .engineering-group .review-action { white-space: normal; min-width: 0; max-width: 100%; }
+
+/* SYS-VIS-01: selected disclosed-world context, using existing console tokens. */
+.system-selected-inspector { margin-left: 12px; padding: 16px; background-color: #111e2b; border-left-width: 3px; border-left-color: #efb16b; border-radius: 7px; }
+#colonisation-system-visual { margin-bottom: 10px; }
+#colonisation-system-bodies { padding-top: 10px; border-top-width: 1px; border-top-color: #52677c; }

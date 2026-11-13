@@ -402,8 +402,20 @@ namespace HobbyDS9.UnityReview
             var surface=new VisualElement{name="colonisation-system-content"};body.Add(surface);
             var activation=new PlanetActivationScope(surface);
             Text(body,"Click / Space: focus · Double-click / Enter: open planet","colonisation-planet-interaction-hint");
-            var layout=Row(surface);var detail=new VisualElement{name="colonisation-planet-focus"};
-            detail.style.flexBasis=300;detail.style.flexGrow=1;detail.style.minWidth=0;detail.style.paddingLeft=10;
+            var layout=Row(surface);layout.name="colonisation-system-layout";
+            var visual=new VisualElement{name="colonisation-system-visual"};visual.style.flexBasis=520;visual.style.flexGrow=1;visual.style.minWidth=0;
+            var detail=new VisualElement{name="colonisation-planet-focus"};detail.AddToClassList("system-selected-inspector");
+            detail.style.width=360;detail.style.flexShrink=0;detail.style.minWidth=0;
+            layout.Add(visual);layout.Add(detail);
+            bool? compact=null;
+            surface.RegisterCallback<GeometryChangedEvent>(e=>{
+                if(!ReferenceEquals(e.target,surface))return;
+                var narrow=e.newRect.width<940;if(compact==narrow)return;compact=narrow;
+                layout.style.flexDirection=narrow?FlexDirection.Column:FlexDirection.Row;
+                visual.style.flexBasis=narrow?StyleKeyword.Auto:new StyleLength(520);
+                detail.style.width=narrow?new StyleLength(Length.Percent(100)):new StyleLength(360);
+                detail.style.marginLeft=narrow?0:12;
+            });
             var cards=new Dictionary<string,PlanetBodyCard>(StringComparer.Ordinal);var epoch=controlEpoch;
             void FocusPlanet(ColonisationPlanetSnapshot target)
             {
@@ -421,9 +433,9 @@ namespace HobbyDS9.UnityReview
             solOverview=new ReviewSolOverview(bodies,p.PlanetId,solYaw,solZoom,FocusPlanet,
                 (yaw,zoom)=>{if(Live&&epoch==controlEpoch){solYaw=yaw;solZoom=zoom;}},OpenPlanet,solReducedMotion,
                 reduced=>{if(Live&&epoch==controlEpoch)solReducedMotion=reduced;},activation);
-            layout.Add(solOverview);layout.Add(detail);PlanetDetails(detail,p);
+            visual.Add(solOverview);PlanetDetails(detail,p);
             Text(body,"⌂ Own colony / outpost · ? Colony unknown · Gold edge: selected. Survey and settlement are separate observations.");
-            var strip=Row(surface);strip.name="colonisation-system-bodies";
+            var strip=Row(visual);strip.name="colonisation-system-bodies";
             foreach(var disclosed in bodies)
             {
                 var own=observation.Worlds.Where(x=>x.PlanetId==disclosed.PlanetId).ToArray();
@@ -453,7 +465,9 @@ namespace HobbyDS9.UnityReview
             if(page=="Planets"&&solOverview!=null)
             {
                 var portrait=new Image{name="colonisation-focused-planet-portrait",scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};
-                portrait.style.height=144;portrait.style.flexShrink=0;parent.Add(portrait);solOverview.BindPortrait(portrait);
+                portrait.style.height=220;portrait.style.flexShrink=0;parent.Add(portrait);
+                var portraitStatus=Text(parent,"Selected-body preview unavailable.","colonisation-portrait-unavailable");
+                portraitStatus.style.display=DisplayStyle.None;solOverview.BindPortrait(portrait,portraitStatus);
             }
             var ownWorlds=observation.Worlds.Where(x=>x.PlanetId==p.PlanetId).ToArray();
             if(ownWorlds.Length==0)Text(parent,"Colony presence, population, production and build queue: unknown. No own-world record is not proof of an uncolonised body.");

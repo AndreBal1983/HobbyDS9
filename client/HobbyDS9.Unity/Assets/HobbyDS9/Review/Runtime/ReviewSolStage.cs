@@ -27,10 +27,14 @@ namespace HobbyDS9.UnityReview
         private readonly MaterialPropertyBlock properties=new MaterialPropertyBlock();
         private static readonly Color OrbitColor=new Color(.15f,.22f,.33f);
         private readonly float extent;
+        private Camera? portraitCamera;
+        private MeshRenderer? portraitGlobe;
+        private string? portraitId;
         private bool disposed;
         internal int ImportedMeshCount=>importedCopies.Count;
         internal IReadOnlyList<string> AssetFallbacks=>assetFallbacks.AsReadOnly();
         internal RenderTexture Texture {get;}=null!;
+        internal RenderTexture? PortraitTexture {get;private set;}
 
         internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies)
         {
@@ -61,7 +65,7 @@ namespace HobbyDS9.UnityReview
                 var mesh=sphere;
                 if(profile.Kind!=PlanetSurfaceKind.Unknown)
                     mesh=delivered??=DeliveredMesh("Earth_LOD1",false,sphere);
-                var planet=Part(body.PlanetId,mesh,new Vector3(Mathf.Cos(theta)*orbit,0,Mathf.Sin(theta)*orbit),.46f,Color.white,true);
+                var planet=Part(body.PlanetId,mesh,new Vector3(Mathf.Cos(theta)*orbit,0,Mathf.Sin(theta)*orbit),.7f,Color.white,true);
                 planet.transform.SetParent(orbitalRoot,false);
                 var maps=Surface(profile);
                 planet.GetPropertyBlock(properties);properties.SetTexture("_Surface",maps.surface);properties.SetTexture("_Clouds",maps.clouds);
@@ -166,7 +170,9 @@ namespace HobbyDS9.UnityReview
             if(disposed||!Texture.IsCreated())return false;
             var pixels=Mathf.Clamp(Mathf.RoundToInt(400*aspect),160,1536);
             if(Texture.width!=pixels){Texture.Release();Texture.width=pixels;Texture.Create();}
-            camera.aspect=aspect;camera.orthographicSize=Mathf.Max(extent*.92f,extent/aspect)/zoom;
+            // Fit the actual disclosed orbit envelope, not an extra empty orbit.
+            var outerRadius=Mathf.Max(0,extent-1.2f);
+            camera.aspect=aspect;camera.orthographicSize=Mathf.Max(outerRadius*.81f+.7f,(outerRadius+.7f)/aspect)*1.1f/zoom;
             var tilt=Quaternion.Euler(54,0,0);
             orbitalRoot.localRotation=Quaternion.Euler(0,yaw,0);
             var centre=root.transform.position;
@@ -193,13 +199,50 @@ namespace HobbyDS9.UnityReview
             var p=camera.WorldToViewportPoint(planet.position);position=new Vector2(p.x,1-p.y);
             return p.z>0&&p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1;
         }
-        internal bool TryGetPortraitRect(string id,out Rect pixels)
+        internal bool RenderPortrait(string id)
         {
-            pixels=default;if(disposed||!planetTransforms.TryGetValue(id,out var planet))return false;
-            var centre=camera.WorldToViewportPoint(planet.position);
-            var dx=.65f/(camera.orthographicSize*2*camera.aspect);var dy=.65f/(camera.orthographicSize*2);
-            pixels=new Rect((centre.x-dx)*Texture.width,(centre.y-dy)*Texture.height,dx*2*Texture.width,dy*2*Texture.height);
-            return centre.z>0;
+            if(disposed||!planetTransforms.TryGetValue(id,out var selected)){portraitId=null;return false;}
+            if(portraitId==id&&PortraitTexture!=null&&PortraitTexture.IsCreated())return true;
+            portraitId=null;
+            if(portraitCamera==null)
+            {
+                try
+                {
+                PortraitTexture=new RenderTexture(512,512,24,RenderTextureFormat.ARGB32)
+                    {name="Disclosed selected-body portrait",hideFlags=HideFlags.HideAndDontSave,antiAliasing=1};
+                PortraitTexture.Create();
+                // A separate, bounded near volume keeps overview bodies/orbits out of this camera.
+                var centre=new Vector3(0,0,-extent*5-8);
+                portraitGlobe=Part("Selected disclosed globe",sphere,centre,.7f,Color.white,true);
+                portraitGlobe.gameObject.SetActive(false);
+                portraitCamera=Child("Selected-body portrait camera").AddComponent<Camera>();
+                portraitCamera.enabled=false;portraitCamera.orthographic=true;portraitCamera.aspect=1;
+                portraitCamera.orthographicSize=.875f;portraitCamera.nearClipPlane=.1f;portraitCamera.farClipPlane=6;
+                portraitCamera.clearFlags=CameraClearFlags.SolidColor;portraitCamera.backgroundColor=camera.backgroundColor;
+                portraitCamera.cullingMask=1<<Layer;portraitCamera.allowHDR=false;portraitCamera.allowMSAA=false;
+                portraitCamera.targetTexture=PortraitTexture;
+                portraitCamera.transform.localPosition=centre+new Vector3(0,0,-2.8f);
+                portraitCamera.transform.localRotation=Quaternion.identity;
+                }
+                catch{ReleasePortrait();throw;}
+            }
+            if(!PortraitTexture!.IsCreated())PortraitTexture.Create();
+            var source=selected.GetComponent<MeshRenderer>();
+            portraitGlobe!.GetComponent<MeshFilter>().sharedMesh=selected.GetComponent<MeshFilter>().sharedMesh;
+            source.GetPropertyBlock(properties);
+            // Stable decorative illumination; no dependency on overview yaw, zoom or location.
+            properties.SetVector("_StarCenter",portraitGlobe.transform.position+new Vector3(-3,2,-4));
+            portraitGlobe.SetPropertyBlock(properties);
+            root.SetActive(true);portraitGlobe.gameObject.SetActive(true);
+            try
+            {
+                var request=new RenderPipeline.StandardRequest{destination=PortraitTexture};
+                if(GraphicsSettings.currentRenderPipeline==null)portraitCamera.Render();
+                else if(RenderPipeline.SupportsRenderRequest(portraitCamera,request))RenderPipeline.SubmitRenderRequest(portraitCamera,request);
+                else return false;
+                portraitId=id;return true;
+            }
+            finally{portraitGlobe.gameObject.SetActive(false);root.SetActive(false);}
         }
         private static Mesh Sphere()
         {
@@ -259,9 +302,17 @@ namespace HobbyDS9.UnityReview
 
         private static void Destroy(UnityEngine.Object? value)
         {if(value==null)return;if(UnityEngine.Application.isPlaying)UnityEngine.Object.Destroy(value);else UnityEngine.Object.DestroyImmediate(value);}
+        private void ReleasePortrait()
+        {
+            if(portraitCamera!=null){portraitCamera.targetTexture=null;Destroy(portraitCamera.gameObject);}
+            if(portraitGlobe!=null)Destroy(portraitGlobe.gameObject);
+            if(PortraitTexture!=null){PortraitTexture.Release();Destroy(PortraitTexture);}
+            portraitCamera=null;portraitGlobe=null;PortraitTexture=null;portraitId=null;
+        }
         public void Dispose()
         {
             if(disposed)return;disposed=true;if(root!=null)root.SetActive(false);if(camera!=null)camera.targetTexture=null;if(Texture!=null)Texture.Release();
+            ReleasePortrait();
             Destroy(root);Destroy(Texture);Destroy(material);Destroy(sphere);Destroy(track);
             foreach(var mesh in importedCopies)Destroy(mesh);
             foreach(var texture in ownedTextures)Destroy(texture);
