@@ -1,10 +1,10 @@
 # ENG-TREE-MODEL-01 — goal-directed Engineering refinement
 
-13 November 2026, **R2 owner decisions and proposed integration model. The diminishing-return curve below is canon; no gameplay, GUI, schema or save implementation.**
+13 November 2026, **R3 owner decisions and proposed integration model. The curve, retained-version branching and default refit workload are canon; no gameplay, GUI, schema or save implementation.**
 
 **The core loop is settled: Science knowledge → a new hull/module capability or generation → explicit Engineering → player-selected iterative refinement → a new immutable version → designer, construction and eligible refit.** Science does not automatically award improved hardware. The existing 20 projects were a temporary playable/UI exercise, **not the intended full model, a mandatory opening tree or a target project count**. Their [exact graph and source audit](engineering-tree-model-01-catalogue-audit.md) are retained as implementation evidence.
 
-Every completed refinement improves its selected target. The initial tunable policy is approximately **70% without a detractor / 30% with a detractor in another supported attribute**. There is no 30% failure branch. The maturity-based diminishing-return curve is also settled below. Net-improvement evaluation, generation overlap and branch policy retain the explicit proposals below; a displayed maturity percentage cannot settle them.
+Every completed refinement improves its selected target. The initial tunable policy is approximately **70% without a detractor / 30% with a detractor in another supported attribute**. There is no 30% failure branch. The maturity-based diminishing-return curve is also settled below. Retained-parent choice and independent branch maturity/history are now agreed. Net-improvement evaluation, physical generation envelopes and stopping/quantization retain the explicit proposals below; a displayed maturity percentage cannot settle them.
 
 ## Agreed direction, current code and open tuning
 
@@ -12,12 +12,14 @@ Every completed refinement improves its selected target. The initial tunable pol
 | --- | --- |
 | **Owner-specified direction** | Choose a meaningful supported goal. Every completed refinement improves that target; the initial tunable mixture is ~70% no detractor / ~30% a detractor in another attribute. Every recognized increment must be an overall improvement while allowing useful competing branches. Later paid work can target a downside. Once a generation/direction is unlocked, refinement needs no additional Science, conquest or survey until its finite potential is exhausted. |
 | **Canon — diminishing returns** | Use factor `r(M)=1` through maturity 100, `(150-M)/50` between 100 and 150, and `0` at/above 150. Apply it to target improvement, maturity increment and downside magnitude. Standard cycle workload is initially fixed; no additional exponential cost multiplier. The detailed equation/example are recorded below and in [ship design](ship-design.md#engineering-diminishing-returns--canon-13-november-2026). |
+| **Agreed — branches and outcome choices** | Any retained version may parent another normal paid project. Branches inherit that parent’s vector, maturity and ancestry, then develop independently. Save retains the result; rollback selects an earlier parent without refund or reroll; continue starts normal paid work from the result. Saving does not publish or update a ship class. |
+| **Agreed — default refit** | Manufacture newly required changed equipment, add removal and installation/integration work; unchanged equipment contributes zero. Old manufacture is sunk, actual materials and a yard are mandatory, and the ship is unavailable. No automatic salvage/refund or cheap conversion. |
 | **Preserved design direction** | Science enables qualitative possibilities; shared capacity, power, compatibility and mounts still constrain designs. New results are immutable versions, not free updates to historical ships/blueprints. Benefits saturate; positive cost floors remain. See [ship design](ship-design.md#engineering-hulls-and-components). |
 | **Current implementation only** | One Engineering target, banked/retained work, authored Science prerequisites and completion at 100%. Completion matures a fixed application and releases already-authored versions; it generates no random refinement result. This is the temporary fixture, not the future design limit. |
 | **Proposed below** | A frozen goal/context contract, bounded result selection, persistent lineage limits, contextual improvement checks, immutable release and deterministic experiment history. These policies are recommendations for review. |
 | **Numerical tuning open** | Release thresholds, standard cycle workload, normal-like distribution width, attribute ranges, practical stopping tolerance/precision, minimum useful gains, cost floors and any scalar weights. **Release around 80, a base step of 5 maturity points, ~10% target gain (8–12%) and 2–5% detractor are provisional examples.** The curve and its 100/150 breakpoints are canon; 70/30 is the approved initial tunable mixture. Portfolio scheduling remains separate; concurrent projects are not approved here. |
 
-The model follows the broader [Science-to-Engineering design](ship-design.md#engineering-hulls-and-components). The chapter's weighted portfolio and refit detail remain proposals where current code lacks them. Do not relabel those paragraphs as implemented.
+The model follows the broader [Science-to-Engineering design](ship-design.md#engineering-hulls-and-components). The chapter’s weighted portfolio remains proposed; the default refit and branch rules are agreed design, with detailed implementation and coefficients still pending. Do not relabel those paragraphs as implemented.
 
 ## Keep the quantities separate
 
@@ -56,7 +58,7 @@ flowchart TD
   R --> D["Designer: valid fit and operating profiles"]
   D --> P["Immutable class revision"]
   P --> B["Eligible new construction"]
-  P -. "separate proposed contract" .-> F["Eligible paid refit"]
+  P -. "agreed default; future implementation" .-> F["Explicit target revision; eligible paid yard refit"]
   S -. "separately defined direct effects" .-> X["Supported domain / economic bonus"]
 ```
 
@@ -94,9 +96,27 @@ At the inspected source pin:
 - [Cycle enqueue](../../src/HobbyDS9.Simulation/CampaignTacticalReviewSession.ColonisationProduction.cs#L14) uses frozen Industry and material requirements without debiting credits. [Material-limited progress](../../src/HobbyDS9.Simulation/StreamedMaterialWork.cs#L13) consumes cumulative integer quantities from local stock. Cancellation loses completed work/consumed materials and refunds nothing.
 - [Legacy static construction](../../src/HobbyDS9.Simulation/ProductionCommands.cs#L28) and [legacy published construction](../../src/HobbyDS9.Simulation/CampaignBlueprints.cs#L44) prepay credits/resources and retain proportional cancellation refunds. These are a **versioned behavior conflict**, not permission to reinterpret historical payments.
 - [Strategic commands](../../src/HobbyDS9.Contracts/CommandContracts.cs#L5) and [activity commands](../../src/HobbyDS9.Contracts/CampaignActivitiesContracts.cs#L215) provide no rush/buyout action. The conversion mechanic remains future work.
-- The ship-design chapter's proposed refit work currently includes Industry and credits. The ordinary-construction clarification does not silently rewrite that separate refit contract; its normal-versus-rush cost semantics need explicit resolution in the refit stage.
+- The [ordinary refit default](ship-design.md#default-refit-workload--agreed) now specifies newly manufactured changed equipment plus removal and installation/integration work, with actual materials. This supersedes the former blanket replacement percentage and assumed ordinary refit credit ingredient. Credit acceleration remains separately scoped.
 
 A separately scoped cost/rush acceptance contract must define eligible remaining Industry, rate/rounding, once-only payment/work, queue effects, timing, cancellation/refunds and shared human/AI validation. Rush cannot bypass materials, local delivery, prerequisites, yard, ownership or physical/capacity constraints. It cannot give newly completed ships arbitrary post-Planning orders. Existing [streamed-profile compatibility](../campaign-activities-streamed-v1.md) preserves earlier prepaid profiles; any future migration must reconcile completed work, prepaid credits/materials and frozen revisions without double charge, double refund or free inputs.
+
+## Default yard refit — agreed
+
+The [authoritative refit rule](ship-design.md#refit-and-fleet-modernization) compares the actual installed fit with an **explicit target published class revision**:
+
+~~~text
+RefitIndustry = Industry for newly manufactured changed equipment
+              + removal work for removed equipment
+              + installation/integration work
+~~~
+
+Unchanged hull/components contribute zero. The old equipment's manufacturing work is sunk; target-minus-old is not the calculation, and a cheaper target produces no negative work or automatic refund. Newly manufactured changed modules require actual materials. Salvage/reuse need a future explicit storage/material system; cheap same-hardware modification needs a later explicit conversion recipe.
+
+The approved illustration is **old reactor 100, new reactor 90, removal 10, installation 18 → 118 Industry**. At a sole allocation of 40 Industry per turn with no other constraints, completion takes three allocated production turns (40 + 40 + 38). The numbers and coefficients are illustrative/tunable. This default supersedes the earlier provisional 40–60% guideline for ordinary full replacements; future explicit conversions may differ.
+
+An eligible yard/facility is mandatory; the ship is unavailable during work and cannot upgrade remotely. Hull compatibility, damage preservation, stocks and frozen provenance still apply. Saving an Engineering result does not update any class, ship or queue. The designer explicitly publishes a new revision, and a refit explicitly targets it.
+
+The [existing compiler](../../src/HobbyDS9.Simulation/ShipDesignCompiler.cs#L140) totals new-build costs, not changed-equipment refit work. The [command contracts](../../src/HobbyDS9.Contracts/CommandContracts.cs#L5) still provide no refit order. Calculation, scheduling, installation and persistence remain future implementation.
 
 ## What counts as a net win?
 
@@ -104,7 +124,7 @@ There is no unit-free, universally correct exchange rate between capacity, outpu
 
 ### Recommended policy — contextual improvement with protected requirements
 
-**PROPOSED:** commit to a goal and useful operating context before work or randomness. Compare against the selected parent, while retaining a persistent family/scientific-generation reference. The player chooses from supported goals/contexts, not arbitrary score weights that can be manipulated after seeing a result.
+**PROPOSED:** commit to a goal and useful operating context before work or randomness. Compare against the selected parent and its branch history, while retaining a family/scientific-generation physical reference. That reference is not a shared maturity or expenditure pool. The player chooses from supported goals/contexts, not arbitrary score weights that can be manipulated after seeing a result.
 
 The contract fixes:
 
@@ -121,8 +141,8 @@ A recognized increment must pass **all** of the following:
 2. **Material goal gain:** the selected primary measure improves relative to the parent by the declared useful amount.
 3. **Protected outcomes:** required service still works, every disclosed downside is within bounds, and persistent lineage limits hold.
 4. **Practical witness:** at least one fixed benchmark fit/profile demonstrates the claimed advantage. Before deployment support exists this is a technical model witness, not proof of a usable Cycle ship.
-5. **Useful alternative:** an already available compatible alternative does not dominate the candidate under the same context, including actual manufacturing obligations. A merely different vector is insufficient.
-6. **No duplicate credit:** revisiting an already attained equivalent realization or undoing/reapplying the same change is not a fresh recognized advancement.
+5. **Honest comparison:** show relevant alternatives and actual manufacturing obligations; do not claim the result is universally best. Useful improvement is tested against the selected parent in the frozen context.
+6. **No duplicate reward:** reopening or reselecting a saved experiment grants no extra result, maturity or refunded work. A new normal paid project from an earlier parent is allowed and keeps its own identity/history.
 
 This defines “net win” as **better for a stated purpose within agreed sacrifices**. It does not prove that every player, mission or fleet should prefer the result. If “overall improvement” instead means a common score across all roles, its units and exchange rates need an explicit separate decision.
 
@@ -134,7 +154,7 @@ A useful technical increment may still be an unwise investment during an urgent 
 | --- | --- | --- |
 | Strict Pareto improvement: no tracked characteristic worsens | Clear and easy to verify. | Cannot be the general rule if smaller-but-costlier or stronger-but-larger results are wanted. A particular result may still Pareto-improve its parent. |
 | Pinned role-specific score with hard limits | Can compensate several gains/losses and rank candidates. | Requires normalization, weights and a positive margin fixed before sampling. None are approved; changing weights after a draw is forbidden. A global score risks one universal optimum. |
-| New nondominated frontier point | Preserves alternative specialties. | Necessary useful screening, but not sufficient alone: a tiny or impractical difference need not justify recognition or Engineering expense. |
+| Nondominated alternatives | Helps players compare specialties. | Useful comparison, not an approved global admission ban on paid branches from retained parents. A tiny or impractical difference alone does not establish the contextual gain. |
 | Context contract above | Makes required service and permitted sacrifices explicit without pretending unlike units are interchangeable. | Bounds/minimum gains are still balance choices; they require playtesting. “Fits inside the limits” must be paired with the material-gain and witness tests. |
 
 If a score is later chosen, a dimensionless form such as weighted normalized gains/losses could be tested. That is an alternative policy family, **not approval of coefficients**. Do not quietly turn the current cost table into those exchange rates.
@@ -153,7 +173,7 @@ These are **toy units, not catalogue values or balance**. All unlisted attribute
 | Output sibling D from A | 1030 | 1100 | 1000 | 10% output gain with 3% capacity detractor; can serve the output role, not the compact role. |
 | Manufacturing descendant C from B2 | 900 | 1000 | 927 | A later clean 10% Industry reduction from 1030; mitigates and passes the earlier penalty at new paid effort, if inherited limits admit it. |
 
-B0/B1/B2 illustrate **alternative counterfactual draws under their own frozen histories**, not simultaneous grants or a promise all remain novel if B0 already exists. If an already available B0 dominates B1/B2 under the same context, those outcomes fail the proposed useful-alternative test; admission must account for that before commitment. An explicit history policy is needed for any future concurrent commitments. These full-strength examples start each cycle at maturity at or below 100. For A→B2→C with provisional base maturity step 5, choose A at 95: B2 then starts its follow-up at 100, so both shown 10% gains apply. Above 100, apply the agreed factor to gain, maturity increment and detractor.
+B0/B1/B2 illustrate possible outcomes of distinct paid projects, not simultaneous grants from one project. If B0 also exists, disclose that it dominates B1/B2 in this context; this does not impose a shared maturity pool or erase their branch history. Cross-branch dominance/duplicate restrictions are not owner-approved admission rules. These full-strength examples start each cycle at maturity at or below 100. For A→B2→C with provisional base maturity step 5, choose A at 95: B2 starts its follow-up at 100, so both shown 10% gains apply. Above 100, apply the agreed factor to gain, maturity increment and detractor.
 
 B1 has output/capacity 970/900 versus A's 1000/1000: **about 7.78% higher density despite 3% lower total output**. That is neither a maturity increase of 7.78 nor 7.78% improvement in every statistic. D and B1 offer different useful specialties. A future descendant may dominate an older parent; preservation of branches does not require an artificial permanent flaw.
 
@@ -169,8 +189,8 @@ The base magnitude shape is **bounded, normal-like**, with typical benefit aroun
 
 **Proposed admission and sampling contract:**
 
-1. Freeze parent, goal/context, complete vector, generation history, policy and effort.
-2. Establish two nonempty, novel, jointly feasible outcome sets: **F0** has a material target gain and no worsening supported characteristic; **F1** has that gain plus a real bounded detractor in one allowed other attribute. Both pass legality, protected requirements, cumulative limits and contextual net-improvement checks.
+1. Freeze parent, goal/context, complete vector, that branch’s maturity/history, physical generation bounds, policy and effort.
+2. Establish two nonempty, jointly feasible outcome sets: **F0** has a material target gain and no worsening supported characteristic; **F1** has that gain plus a real bounded detractor in one allowed other attribute. Both pass legality, protected requirements, cumulative limits and contextual net-improvement checks.
 3. Select the category once at the initial 70/30 mixture, then sample valid magnitudes and the allowed detractor identity **within that category**. Coupled constraints apply before sampling; independent extreme rolls need not be jointly valid.
 4. Persist one result atomically. Never remove an inconvenient penalty, redraw the category until it passes, silently switch to 100/0, or award a paid no-gain completion.
 
@@ -227,26 +247,43 @@ The mathematical curve is agreed; its finite-precision realization is **not yet 
 - Use versioned fixed-point or rational arithmetic and a declared maturity precision. Evaluate the factor from committed maturity; avoid platform-dependent floating point for authoritative outcomes. Never let rounding freeze maturity while positive stat gains continue at the same factor.
 - Scale the base magnitude ranges first, then intersect the **joint** permitted result sets with the actual attribute/maturity representation grids. Sample valid representable outcomes; do not round an out-of-range value into a nominal success, erase a penalty, or let material rounding remove a dependency.
 - Define a configurable minimum useful maturity increment **epsilon_M** and per-attribute useful quantum **q_i** before admission. **Example only: epsilon_M = 0.1 maturity point**; actual tolerance and precision remain open. Current integer attributes already impose representable quanta; useful gameplay thresholds may be larger.
-- Admit only if both category sets contain novel results with target gain at least the declared useful quantum and maturity increment at least epsilon_M. If either lacks such a result, report **practical exhaustion under this policy** before charging a new cycle. This may occur below 150; it does not mean all physical headroom is mathematically zero.
+- Admit only if both category sets contain results with target gain at least the declared useful quantum and maturity increment at least epsilon_M. If either lacks such a result, report **practical exhaustion under this policy** before charging a new cycle. This may occur below 150; it does not mean all physical headroom is mathematically zero.
 - Preserve the achieved maturity and exact vector at practical exhaustion. Do not round maturity up to 150, award the remainder, silently turn 70/30 into 100/0, or finish a paid cycle without useful target improvement.
 - Freeze precision, bounds, tolerance and policy with the experiment; reload/render cannot redraw or reinterpret the result. Validate any later base-step/precision choice against overshoot and minimum-gain requirements before admission.
 
 For the illustrative base step, a cycle starting at 149 yields 0.1 maturity. With proposed epsilon_M = 0.1, later smaller steps would be practically exhausted unless a different explicit tolerance is adopted. An actual integer target or detractor may become unavailable earlier. These are visible policy consequences for review, not installed balance.
 
-## Scientific-generation limits and branch history
+## Retained-version branches and outcome choices — agreed
 
-The agreed curve describes diminishing returns; it does not by itself define every generation's physical feasible region, readiness or branch rules. **Proposed additional rules:**
+The player may select **any retained version** as a new project's parent, under the normal project eligibility and refinement-limit checks. A compact branch and a power branch can both start from the original. Each new branch inherits its chosen parent's complete characteristics, maturity and ancestry, then retains **its own history and maturity**. A sibling's progress does not consume its potential or raise its applicable maturity.
 
-- Give each family/scientific generation a joint envelope, positive cost/resource floors and persistent history. Independent per-stat ceilings that eventually permit every best extreme would undermine specialization.
-- Refinement inside an unlocked generation needs **no new Science, conquest or survey** while qualifying potential remains in both required categories under the adopted policy. Exhausting one direction does not prove all directions exhausted. New generations require new enabling Science **and explicit Engineering**.
-- Evaluate cumulative sacrifices against the generation baseline as well as the immediate parent. Repeated small losses cannot accumulate into unusable output or unlimited cost.
-- Preserve history across goals, old-parent branches, copies, renames and publication. **Branching is the next interview decision:** how an older parent's maturity relates to inherited family/generation history remains proposed. Recommendation: allow useful branches while preventing names/copies/branches from resetting the same already-spent potential.
-- Shared history does not silently change another branch's installed characteristics. Persist the selected parent's vector and the maturity/history reference used for its new commitment.
-- Later paid work can mitigate/remove a downside through the same curve and 70/30 process; full removal or a consequence-free result is not guaranteed.
-- Equivalent attained vectors and dominated regressions are not new advancements. Alternating compact → cheap → compact must not farm repeated recognition.
-- A mature older generation may bridge part of the performance gap to new hardware without acquiring its qualitative capability. The extent of specialty overlap remains a proposed envelope choice, not a reason to reopen the agreed curve.
+For example, original A at maturity 100 can parent compact B and power C. With the provisional base maturity increment 5, both B and C can reach 105 through their separate paid projects. Starting C from A still uses A's 100, even if B has advanced further. Continuing from B instead uses B's own current state. The agreed curve remains unchanged; there is **no shared family maturity budget**. This supersedes R2's shared-history/no-restored-headroom recommendation.
 
-The joint envelope, contextual materiality requirements and branch/history interpretation still need representative-fit evaluation and playtesting. The curve is canon; these additions remain proposals.
+Present the resolved outcome with these agreed choices:
+
+| Choice | Meaning | Preserved boundary |
+| --- | --- | --- |
+| Save | Retain the immutable Engineering result for later selection. | No automatic class publication, design update, construction or refit. |
+| Rollback | Choose an earlier retained version as parent for another paid normal project. | No refund of completed Engineering work; no erasure, modification or reroll of the saved project/result. |
+| Continue | Start another paid normal refinement from the resolved result. | Use that result's vector and branch maturity/history with the same curve and 70/30 policy. |
+
+The outcome is durably resolved before the choice; “save” is a player-facing retention action, not permission to generate an unrecorded result that can be rerolled. A new paid project has a new durable experiment identity; the original result remains exact. Reopening, renaming, copying a display entry or reloading creates no free project or maturity change.
+
+**Downside treatment is normal refinement:** choose the affected characteristic as the target of another full paid project. It uses the same curve, bounds and 70/30 process. Improved performance may offset an earlier detractor; there is no dedicated paid-erasure service or promised consequence-free restoration.
+
+The designer separately selects saved versions and explicitly publishes a new immutable ship-class revision. Existing designs, ships and queued builds retain their references. Refit targets an explicit published revision at a yard, under the agreed workload rule.
+
+## Scientific-generation limits — proposed physical constraints
+
+The agreed branch rule and curve do not define every generation's physical envelope or readiness. Remaining proposals:
+
+- Use a joint physical envelope, positive cost/resource floors and a generation reference. They constrain actual capability, **not shared sibling expenditure or maturity**.
+- Within an unlocked generation, no new Science, conquest or survey is needed while both required outcome categories retain qualifying potential under the adopted policy. An exhausted branch/direction does not exhaust independent siblings. New generations require enabling Science and explicit Engineering.
+- Evaluate cumulative sacrifices along the selected branch against the generation reference and immediate parent, so repeated small losses cannot produce unusable output or unlimited cost.
+- A mature older generation may bridge part of the performance gap to new hardware without gaining its qualitative capabilities. The permitted specialty overlap still needs envelope choices and playtesting.
+- Comparative usefulness, duplicate-result presentation and contextual net-win thresholds remain reviewable policy. They must not silently reintroduce shared maturity or forbid the owner's ordinary paid branching/rollback loop.
+
+The physical envelope, contextual materiality requirements and stopping/quantization still need acceptance. Retained-parent freedom, independent branch maturity/history, normal targeted downside refinement and save/rollback/continue semantics are settled.
 
 ## Data-driven tuning contract — proposed parameter groups
 
@@ -258,7 +295,7 @@ These are configuration responsibilities, **not a chosen JSON schema or current 
 | Goal and context definitions | Benchmark fits/profiles, required service, primary measures | Context is fixed before paid work/outcome; unsupported consumers remain disclosed. |
 | Gain and downside limits | Minimum useful gain, paired/cumulative bounds, protected floors | Every recognized result passes the same rule for human and AI. |
 | Random outcome policy | Initial 70/30 categories, normal-like magnitudes, finite ranges, correlations and quantization | Every completion improves its target; preserve category probabilities without hidden filtering. |
-| Effort and saturation | Initially fixed standard cycle work, agreed maturity factor, inherited history and proposed practical exhaustion | No separate exponential cost multiplier; branch/goal policy must explicitly preserve the agreed curve. |
+| Effort and saturation | Initially fixed standard cycle work, agreed factor applied to the selected branch’s maturity, proposed practical exhaustion | Independent branches inherit their selected parent; no sibling depletion or separate exponential cost multiplier. |
 | Readiness / release | Milestone meaning, any maturity scale and release conditions | No automatic whole-stat multiplier or double-counted benefit. |
 | Cost and resource semantics | Actual Industry/material/operating implications | A displayed saving must correspond to a real supported consumer. |
 | Policy identity / compatibility | Version/hash, rounding, canonical ordering and validation | An update cannot rewrite earlier experiments or released outcomes. |
@@ -275,9 +312,9 @@ Current [Engineering state](../../src/HobbyDS9.Contracts/ScienceEngineeringDtos.
 2. **Commit:** a stamped authoritative transaction fixes parent, canonical goal/context, policy and experiment identity with the first paid commitment. Cosmetic names or command IDs do not choose the outcome.
 3. **Fund / pause / resume:** preserve paid work and that experiment. Funding speed, turn timing and panel visits do not supply new draws.
 4. **Resolve once:** atomically record paid work, complete result vector and recognized increment under the frozen policy. Under the owner-resolved guarantee, result validation is an invariant; a code/transaction failure commits nothing and retries identically, not with another candidate.
-5. **Release:** where release is separate, accept the already persisted result when eligible. Declining/reopening does not regenerate it. Further refinement starts a new paid experiment from an actual immutable parent and inherited history.
+5. **Outcome choice and release:** present save/rollback/continue against the already persisted result. Readiness/release eligibility remains separate. Rollback selects an earlier retained parent for another paid project without refund; continue selects the result. Neither redraws or mutates the completed experiment. Class publication remains an explicit designer action.
 
-A possible random-identity model is a dedicated persisted refinement seed/domain plus actor, canonical Engineering parent identity and paid attempt ordinal, under a versioned stable derivation. The goal/context is frozen separately; mutable goal text is not seed material. The exact derivation is open. Avoid coupling it to rendering, save slot, current turn, class names, command UUIDs, thread order or unrelated combat/production RNG.
+A possible random-identity model is a dedicated persisted refinement seed/domain plus actor, canonical Engineering parent identity and paid attempt ordinal, under a versioned stable derivation. The goal/context is frozen separately; mutable goal text is not seed material. The paid-attempt identity must survive outcome rollback: choosing the same older parent for a new paid project creates a distinct experiment without rerolling the saved one. The exact derivation is open. Avoid coupling it to rendering, save slot, current turn, class names, command UUIDs, thread order or unrelated combat/production RNG.
 
 | Operation | Required result |
 | --- | --- |
@@ -285,7 +322,8 @@ A possible random-identity model is a dedicated persisted refinement seed/domain
 | Save/reload before or after completion | Same committed experiment gives the same result; persisted results remain unchanged. |
 | Duplicate/stale command or repeated release | No extra work payment, attempt, version or RNG advancement. |
 | Pause, clear target or resume | Retain experiment identity and paid work. Cancellation must not offer a free fresh draw. |
-| Change a committed goal / abandon | Cannot edit the committed experiment. A new chance requires an explicitly valid new paid effort and settlement/attempt rule; exact abandonment economics remain open. |
+| Rollback after a result | Select an earlier retained parent for new paid normal work, using that parent’s branch maturity/history. No completed-work refund or saved-project reroll; do not rewind the experiment ledger. |
+| Change a committed goal / abandon unfinished work | Cannot edit the committed experiment. A new project requires its own paid commitment; unfinished-project settlement remains separately scoped. This does not reopen the agreed no-refund outcome rollback. |
 | Rename or republish a class | Does not change Engineering ancestry or random identity. |
 | Earlier checkpoint / different choices | Identical committed decisions reproduce the same result. Legitimately different future choices may lead to different variants; deterministic offline play is not a promise of identical outcomes across all counterfactual histories. |
 | Balance-policy update | Pin old experiments/results to their policy; do not reinterpret them under “latest.” Unsupported old policies need an explicit compatibility/migration decision. |
@@ -298,9 +336,9 @@ Generated outcomes belong to authoritative campaign history, not mutable edits t
 | --- | --- | --- |
 | Earned version | Authored family/parent/version structures, gated access and immutable snapshots | Campaign-owned generated versions, stable provenance and authoritative availability. Current [access gates](../../src/HobbyDS9.Simulation/CampaignBlueprints.cs#L11) point to already-authored data. |
 | Designer | Shared compatibility/capacity/mount/dependency/power compiler | Feed earned versions into lawful catalogue/access; compare complete parent/result and actual consumers. Preview ratings do not create gameplay effects. |
-| Publication | [Freeze fit/catalogue/result/costs](../../src/HobbyDS9.Simulation/CampaignBlueprints.cs#L94); [validate/recompile saved proof](../../src/HobbyDS9.Simulation/BlueprintValidation.cs#L48) | Include generated-version authority and policy provenance. Caller-supplied “improved stats” cannot become trusted merely by compiling consistently. |
+| Publication | [Freeze fit/catalogue/result/costs](../../src/HobbyDS9.Simulation/CampaignBlueprints.cs#L94); [validate/recompile saved proof](../../src/HobbyDS9.Simulation/BlueprintValidation.cs#L48) | Explicitly publish a new revision through the designer; saving Engineering does not update existing designs. Include authoritative generated-version provenance; caller-supplied stats are not trusted merely because they compile. |
 | New build | Exact owned published revision, yard/support checks and streamed Industry/materials | Supported derivation/consumer rules for generated versions. [Current support requires exact IDs](../../src/HobbyDS9.Simulation/PublishedTacticalSupportCompiler.cs#L96); parent lineage does not confer support. [Cycle enqueue](../../src/HobbyDS9.Simulation/CampaignTacticalReviewSession.ColonisationProduction.cs#L19) must accept the actual result. |
-| Refit | Frozen build/installed provenance and immutable target revisions | A separate paid work-order contract: eligible conversions, yard/materials, ship unavailability, cancellation and installed-fit replacement. Preserve damage and stocks; no free repair/ammunition. Major structural change may require new construction. [Refit intent](ship-design.md#refit-and-fleet-modernization) is not current runtime support. |
+| Refit | Frozen build/installed provenance and immutable target revisions | Implement the agreed changed-equipment manufacture + removal + installation/integration sum against an explicit target revision; unchanged equipment costs zero. Require yard/materials and ship unavailability, preserve damage/stocks, define cancellation and atomic installation. [Refit design](ship-design.md#refit-and-fleet-modernization) is agreed but not current runtime support. |
 | Historical continuation | Pinned content/rules/compiler identities and typed checkpoints | Save generated history, replay the same outcomes and retain old published/queued/built data under explicit compatibility rules. No silent old-save rebinding. |
 
 The integration dependency is therefore **define improvement → persist an authoritative generated result → expose it to the designer → freeze a valid class → support its actual new build/gameplay → separately support eligible refit**. This is a model-level sequence, not authorization or a coding schedule.
@@ -313,12 +351,12 @@ These stages identify future scoped contracts and evidence, **not execution auth
 
 | Stage | Reviewable scope | Required exit evidence |
 | --- | --- | --- |
-| 1. Model and policy acceptance | Choose branch/history policy, contextual net-win evaluation, generation overlap, practical stopping/quantization and release meaning. Retain the settled core loop, exact curve, fixed standard cycle work and 70/30 policy. | Worked admissible/inadmissible cases, both category sets and an exhaustion case; explicit agreed/proposed/open labels. |
+| 1. Model and policy acceptance | Choose contextual net-win evaluation, physical generation overlap, practical stopping/quantization and release meaning. Preserve the agreed loop, curve, fixed initial cycle work, 70/30, independent branches and default refit workload. | Worked admissible/inadmissible cases, both category sets and an exhaustion case; explicit agreed/proposed/open labels. |
 | 2. Authoritative experiments | Portable commands, admission, paid work, canonical RNG, generated immutable versions, durable history and versioned save/copy/validation. | Deterministic replay/reload/reordering, atomic rollback, shared human/AI legality and old-profile compatibility. No Unity authority. |
 | 3. Designer and publication | Expose earned versions, explain parent/result/limits, compile fits and freeze authoritative provenance. | An earned result can be inspected, legally fitted and published; arbitrary caller stats are rejected. |
 | 4. Construction and real consumers | Support generated derivations in the intended profile and actual performance/cost consumers; keep ordinary Industry/material semantics. | Construct a valid published result; its paid recipe and runtime benefit match the frozen proof. Existing orders/ships remain unchanged. |
 | 5. Cost/rush acceptance, separately scoped | Remaining-Industry conversion, delivered inputs, once-only payment, timing and refunds; explicit legacy compatibility/migration policy. | No bypass, double payment, double work or free material; repeat/reload/cancel cases agree for human and AI. |
-| 6. Eligible refit, separately scoped | Paid yard work, actual hull compatibility, installation, unavailability, repair/stock and cancellation semantics; resolve refit's credit/rush distinction. | Eligible replacement works; structural incompatibility rejects; damage/stocks/provenance persist with no free healing or upgrade. |
+| 6. Eligible refit, separately scoped | Implement the agreed changed-equipment workload against an explicit target revision; actual materials, yard, hull compatibility, unavailability, damage/stocks, cancellation and atomic installation. Coefficients and any rush/conversion mechanics remain separate. | Eligible replacement works; structural incompatibility rejects; damage/stocks/provenance persist with no free healing or upgrade. |
 
 Balance iteration can follow accepted behavior; numerical tuning does not substitute for the contracts. Portfolio scheduling, direct Science bonuses and qualitative survey-derived recipes need their own scoped acceptance when undertaken.
 
@@ -328,31 +366,32 @@ These are proposed acceptance properties, **not tests executed here**:
 
 - Every completed refinement improves its selected target; both 70/30 categories pass the chosen overall-improvement rule. X cannot complete as a recognized result.
 - Category weighting is independent of magnitude selection. No eligibility filtering, penalty removal or saturation fallback silently redistributes 70/30.
-- Both category sets contain valid quantized novel results at commitment; empty sets reject admission. No zero target gain or rounded-away detractor.
+- Both category sets contain valid quantized results at commitment; empty sets reject admission. No zero target gain or rounded-away detractor.
 - Same-generation refinement needs no additional Science while both required categories retain qualifying potential under the adopted policy. New qualitative capability requires its knowledge gate and explicit Engineering.
-- B1 and D demonstrate role-specific usefulness; the B0-dominates-B1 case is screened prospectively. Historical duplicates do not earn repeated recognition.
-- Follow-up work uses the complete inherited vector and generation history. No old-parent branch, rename, copy, cancel or goal alternation resets effort/headroom or cumulative floors.
+- B1 and D demonstrate role-specific usefulness. Show when B0 dominates B1 without inventing a shared maturity pool or a global ban on normal paid branch projects.
+- New branches inherit the selected parent’s vector, maturity and ancestry; sibling progress does not deplete them. Renaming/copying never changes the saved version or creates free work. Outcome rollback permits a new paid project from an older parent without refund or reroll.
 - The exact agreed factor scales target gain, maturity increment and downside together; initial standard cycle work stays fixed. Maturity/generation labels apply no whole-vector multiplier and duplicate no benefit.
 - Practical exhaustion preserves achieved maturity/vector. No snap to 150, zero-gain payment, rounded-away detractor or unapproved cost multiplier is introduced.
 - Replay of the same committed decisions/history, including save/reload and reordered independent execution, yields identical experiment records, results and release IDs. Different legitimate goal/history order need not produce identical results. Rendering and unrelated activity leave outcomes unchanged.
-- A failed transaction leaves work, result, attempt ordinal and version registry unchanged; retry resolves identically.
-- Earlier publications, queues and ships remain exact. Only a new build or separately authorized refit consumes a later version.
+- A failed technical transaction leaves work, result, attempt ordinal and version registry unchanged; retry resolves identically. This atomic rollback is distinct from the player’s paid outcome-rollback loop.
+- Save/continue/rollback do not publish classes. Existing designs, publications, queues and ships remain exact; the designer explicitly publishes a new revision, and a yard refit targets an explicit revision.
+- Ordinary refit excludes unchanged equipment and sunk old manufacture; the 90+10+18 illustration gives 118 Industry, never target-minus-old or a blanket percentage. Changed modules require actual materials; no automatic salvage/reuse, remote upgrade or free repair.
+- Payment cannot directly edit an immutable version to erase a detractor. A valid yard refit may replace it with another explicitly published version whose characteristics are better suited to the mission.
 - Claimed deployed benefits survive actual compiler/build/gameplay consumers; unsupported sensor/Science ratings or distribution-capped output remain disclosed.
 - Ordinary builds charge actual Industry/materials with no direct credits. Future rush preserves local material/yard limits and once-only payment/work; old prepaid profiles are not silently reinterpreted.
 - Material quantity rounding cannot remove a resource dependency; qualitative substitution needs the explicit knowledge/Engineering route.
 - Policy updates retain pinned old results or reject incompatibility explicitly.
 
-## Next interview: branching from retained versions
+## Remaining design work
 
-The core loop, guaranteed target gain, initial 70/30 policy, no-fresh-Science requirement within a generation, **exact diminishing-return curve and initially fixed standard work per cycle are resolved**. Do not re-ask them.
+The core loop, guaranteed target gain, initial 70/30 policy, no-fresh-Science refinement, exact curve, fixed initial cycle workload, retained-parent branching with independent maturity/history, save/rollback/continue behavior, explicit class publication and default yard-refit workload are **resolved owner decisions**.
 
-1. **Branch freedom:** may the player start refinement from any retained eligible older version, or only continue the selected development line? **Recommendation:** permit retained-parent branches as separately paid alternatives.
-2. **Maturity/history on a branch:** how should an older parent's maturity and already-spent generation potential govern that new branch? **Recommendation:** retain the parent's real vector and declared ancestry while sharing relevant generation history, so copies/names cannot reset the same potential. Freeze the chosen maturity reference and apply the agreed curve unchanged.
+Contextual net-win evaluation, physical generation envelopes/older-versus-newer specialty overlap, readiness thresholds and practical stopping/quantization remain proposals. Refit removal/installation coefficients are tunable; salvage/reuse storage and same-hardware conversion recipes require explicit future systems. Detailed scheduling, unfinished-work cancellation, rush and save/command contracts still need scoped acceptance.
 
-The contextual net-win contract, joint generation envelope/older-versus-newer specialty overlap, readiness thresholds and practical stopping/quantization remain **proposals awaiting acceptance**. A common cross-role score would need explicit units/weights. None requires reopening the approved curve or inventing runtime behavior.
+Do not reopen settled branching or refit cost defaults as interview questions, or describe this record as runtime implementation.
 
 ## Evidence and scope
 
-Source contracts were inspected at `1fb8bbe84543291b191b9074a6b5f84422610f93`, containing ENG-CONTENT-01 `fd0bb6c`; the [temporary-catalogue audit](engineering-tree-model-01-catalogue-audit.md) preserves its exact inputs, graph and costs. R2 supersedes R1's opening-catalogue assumption and earlier risk question. Owner clarification is recorded as direction, including the initial 70/30 policy, exact maturity factor and fixed standard cycle work. Evaluation/envelope/branch/stopping recommendations and illustrative base magnitudes remain separately labelled. The canon is also recorded in the [authoritative ship-design chapter](ship-design.md#engineering-diminishing-returns--canon-13-november-2026).
+Source contracts were inspected at `1fb8bbe84543291b191b9074a6b5f84422610f93`, containing ENG-CONTENT-01 `fd0bb6c`; the [temporary-catalogue audit](engineering-tree-model-01-catalogue-audit.md) preserves its exact inputs, graph and costs. R2 superseded R1’s opening-catalogue assumption and risk question. R3 records the owner’s independent-branch and refit decisions, superseding R2’s shared-maturity recommendation and the older blanket replacement-cost percentage. Owner clarification is recorded as direction, including the initial 70/30 policy, exact maturity factor and fixed standard cycle work. Branch/outcome/refit defaults are agreed; evaluation/physical-envelope/stopping recommendations and illustrative base magnitudes/refit coefficients remain separately labelled. The canon is also recorded in the [authoritative ship-design chapter](ship-design.md#engineering-diminishing-returns--canon-13-november-2026).
 
 Only documentation changes in this revision. No new random mechanism, generated-version schema, numerical rebalance, GUI, refit, gameplay test, save migration, Unity/native run, main merge or package change is performed. Unrelated GUI refresh and Art production can continue.
