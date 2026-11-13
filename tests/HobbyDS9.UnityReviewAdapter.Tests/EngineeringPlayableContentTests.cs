@@ -53,8 +53,11 @@ public sealed class EngineeringPlayableContentTests
         Assert.Equal(ids,cards.Select(c=>c.Definition.DefinitionId.Value));
         var library=session.CaptureDesignLibrary(Human).Catalogue!;
         Assert.Contains("component.reactor.v1",library.AvailableVersionIds);
-        Assert.DoesNotContain("component.reactor.v2",library.AvailableVersionIds);
-        Assert.Contains(library.Catalogue.Components,c=>c.VersionId=="component.reactor.v2");
+        Assert.DoesNotContain("component.utility.reactor.v2",library.AvailableVersionIds);
+        Assert.Contains(library.Catalogue.Components,c=>c.VersionId=="component.utility.reactor.v2");
+        Assert.Equal(47,library.Catalogue.Components.Count);
+        Assert.Equal(6,library.Catalogue.Hulls.Count);
+        Assert.Contains("component.utility.reactor.v1",library.AvailableVersionIds);
         var before=Wire(session);
         Assert.Equal(before,Wire(CampaignColonisationCycleApplication.LoadCycleSave(package,session.ExportCycleSave())));
         var legacyPackage=Package(engineering:false);
@@ -86,7 +89,7 @@ public sealed class EngineeringPlayableContentTests
             Assert.Equal(published,JsonSerializer.Serialize(session.CaptureDesignLibrary(Human).Published));
         }
         var finalLibrary=session.CaptureDesignLibrary(Human).Catalogue!;
-        Assert.Contains("component.reactor.v3",finalLibrary.AvailableVersionIds);
+        Assert.Contains("component.utility.reactor.v3",finalLibrary.AvailableVersionIds);
         Assert.Contains("hull.utility.v3",finalLibrary.AvailableVersionIds);
         var before=Wire(session);
         Assert.Equal(before,Wire(CampaignColonisationCycleApplication.LoadCycleSave(package,session.ExportCycleSave())));
