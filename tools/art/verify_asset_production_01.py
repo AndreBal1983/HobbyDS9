@@ -42,6 +42,8 @@ for asset in manifest['assets']:
     check(document is not None and binary is not None, 'GLB chunks ' + asset['name'])
     check(all('uri' not in v for v in document.get('buffers', [])), 'External buffer ' + asset['name'])
     check(all('uri' not in v for v in document.get('images', [])), 'External image ' + asset['name'])
+    if manifest.get('phase') == 'hulls':
+        check(len(document.get('materials', [])) <= 8, 'Hull material budget ' + asset['name'])
 
     def accessor(index):
         a = document['accessors'][index]

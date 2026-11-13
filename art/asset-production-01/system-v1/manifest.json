@@ -1145,8 +1145,13 @@
     },
     {
       "path": "gallery.html",
-      "bytes": 2387,
-      "sha256": "f79c82b7f07d36ebea5cd4adc0e4eb12702f47a0d899736bcc9b512951a104f2"
+      "bytes": 2380,
+      "sha256": "52717db739dbfefd71703195d072fb57224cae17f9d40814971a51a2605a5331"
+    },
+    {
+      "path": "material-recipes.json",
+      "bytes": 5489,
+      "sha256": "8b5a3ba4e9236a9a35555bcf1ae56618939a8073b64eb3171829a2daa3e572fd"
     },
     {
       "path": "Models/Atmosphere_Unit.fbx",
@@ -1535,8 +1540,13 @@
     },
     {
       "path": "receiving.json",
-      "bytes": 28683,
-      "sha256": "952e8e30373179ebbd6fae498a80d0093d76543b790ea2f12f4bf2e5fe808a86"
+      "bytes": 31048,
+      "sha256": "67821d994e83b84c8845ae29470107daf2f0f276809c473dbd1808a02b2f6b9a"
+    },
+    {
+      "path": "Shaders/PlanetLimb01.shader",
+      "bytes": 1996,
+      "sha256": "12ee558fe1c96203658e2753cc6478b32ac36562754394c6e9af5dad95c2d1a2"
     },
     {
       "path": "Sources/SystemBody_Library.blend",
@@ -1547,6 +1557,11 @@
       "path": "Sources/SystemPresentation.blend",
       "bytes": 1038068,
       "sha256": "f0794f89897431b451c4388764066e83e7fec0d54b5f6fa899d59fb40f2f2707"
+    },
+    {
+      "path": "Textures/ATTRIBUTION.txt",
+      "bytes": 500,
+      "sha256": "a08deb3b9e3d27ad888d98921f5d12ff738165be7abbd71d122a32114b46c054"
     },
     {
       "path": "Textures/DecorativeStars.png",
@@ -1605,13 +1620,13 @@
     },
     {
       "path": "validation-fbx.json",
-      "bytes": 16917,
-      "sha256": "b8c3334b494cdc8929f3808d51e97cc8dd6be4227f9d749579e7ddbafb72b1fb"
+      "bytes": 16292,
+      "sha256": "02735652cc298b4d382e95c870d66f8efd91ecbb438a1844e9f0559dc66d6def"
     },
     {
       "path": "validation-glb.json",
-      "bytes": 5571,
-      "sha256": "9f323b4aa80f862233e570bc49af1921a0e7c06209f931c46c9ff8211fab40cb"
+      "bytes": 5341,
+      "sha256": "a0ab7d95d8c1a8cf382567ee5d43767c58de8263d38cf92054979c11005b2844"
     }
   ],
   "phase": "system"
