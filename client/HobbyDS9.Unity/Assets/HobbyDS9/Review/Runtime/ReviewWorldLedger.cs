@@ -73,7 +73,7 @@ namespace HobbyDS9.UnityReview
             var production=model.ColonisationCampaign?model.Colonisation().Production.ToLookup(q=>q.ColonyId,StringComparer.Ordinal):null;
             var main=new VisualElement();main.AddToClassList("console-panel");main.AddToClassList("console-work");parent.Add(main);
             Text(main,workspace.Page==ReviewWorkspacePage.Worlds?"Owned worlds":"Empire / owned worlds").AddToClassList("console-section");
-            Text(main,"Current owned observations · turn "+model.Current.Frame.Status.Turn+". Per-turn output, stock and capacity are separate.");
+            Text(main,"Current owned observations · turn "+model.Current.Frame.Status.Turn+" · Sorted by "+workspace.WorldSort+(workspace.WorldSortDescending?" ↓":" ↑")+". Per-turn output, stock and capacity are separate.");
             var toolbar=new VisualElement();toolbar.AddToClassList("review-field-row");main.Add(toolbar);
             var scope=button(toolbar,"Owned worlds",()=>{});scope.SetEnabled(false);
             var unavailable=button(toolbar,"All-known / foreign: unavailable",()=>{});unavailable.SetEnabled(false);
