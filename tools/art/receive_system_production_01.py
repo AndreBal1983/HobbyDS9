@@ -27,7 +27,9 @@ def text(value):
 
 def payloads():
     # Pin the Git text content, independent of Windows checkout newline conversion.
-    manifest_bytes = (PACK / 'manifest.json').read_bytes().replace(b'\r\n', b'\n')
+    # Later Art batches extend their manifest; preserve the first receiving pin's
+    # exact source evidence rather than rewriting a received inventory on extension.
+    manifest_bytes = (ROOT / 'tools/art/contracts/system-production-01-560d6c1.json').read_bytes().replace(b'\r\n', b'\n')
     manifest = json.loads(manifest_bytes)
     files = {f['path']: f for f in manifest['files']}
     model_template = (DEST.parent / 'SolMeshes/Earth_LOD1.fbx.meta').read_text(encoding='utf-8')

@@ -29,7 +29,9 @@ namespace HobbyDS9.ArtDemo
                 var shader=Resources.Load<Shader>("ArtDemo/PreviewStudio");if(shader==null||!shader.isSupported){availability=ShipPreviewAvailability.RenderingUnavailable;return null;}
                 var prefab=Resources.Load<GameObject>(definition.ResourcePath??(ShipPreviewStage.DesignerResourceRoot+"Models/GalaxyHull_LOD0"));if(prefab==null)return null;
                 value=new ActivityHullModel(parent,definition);
-                if(definition.ResourcePath!=null)
+                if(definition.IsOriginalCandidate)
+                {if(!value.ApplyCandidateMaterials(value.Socket(prefab),definition,shader)){value.Dispose();return null;}}
+                else if(definition.ResourcePath!=null)
                 {if(!value.ApplyActivityMaterials(value.Socket(prefab),definition,shader)){value.Dispose();return null;}}
                 else
                 {
@@ -84,6 +86,26 @@ namespace HobbyDS9.ArtDemo
                 }
                 renderer.sharedMaterials=materials;
             }
+        }
+        private bool ApplyCandidateMaterials(GameObject instance,ActivityHullVisualDefinition definition,Shader shader)
+        {
+            // Exact pinned submesh order; never infer mounts or capability from art.
+            var roles=definition.HullVersionId=="hull.galaxy-cruiser.v1"
+                ?new[]{"Hull_Pearl","Hull_Slate","Recess_Graphite","Sensor_Bronze","Engine_Blue","Collector_Red","Trim_Titanium","Windows_Warm"}
+                :new[]{"Hull_Pearl","Hull_Slate","Trim_Titanium","Recess_Graphite","Collector_Red","Engine_Blue","Windows_Warm","Sensor_Bronze"};
+            var filters=instance.GetComponentsInChildren<MeshFilter>(true);
+            var renderers=instance.GetComponentsInChildren<MeshRenderer>(true);
+            if(filters.Length!=1 || renderers.Length!=1 || filters[0].sharedMesh==null || filters[0].sharedMesh.subMeshCount!=roles.Length)return false;
+            var imported=renderers[0].sharedMaterials;
+            if(imported.Length!=roles.Length)return false;
+            for(int i=0;i<roles.Length;i++)
+            {
+                var material=Resources.Load<Material>("ArtDemo/Production01/Hulls/Materials/"+roles[i]);
+                if(material==null || imported[i]!=material)return false;
+            }
+            // Private clones retain the existing studio response and ownership.
+            // Shared imported materials/resources remain unchanged.
+            StudioMaterials(shader);return true;
         }
         private static void CopyTexture(Material source,Material target,string from,string to)
         {if(!source.HasProperty(from)||source.GetTexture(from)==null)return;target.SetTexture(to,source.GetTexture(from));target.SetTextureScale(to,source.GetTextureScale(from));target.SetTextureOffset(to,source.GetTextureOffset(from));}

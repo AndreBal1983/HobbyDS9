@@ -1,0 +1,59 @@
+{
+  "schema": 1,
+  "sourcePin": "70d55db18f2fb3be4e0196094736c799a88aa3f9",
+  "sourceManifestSha256": "408a7ec0d7ba06a296a511aabb59ecc554a21944610e6925b3d363a107e1d987",
+  "sourceMaterialRecipesSha256": "73367212d7889dba43560e3d6fbdd997ad76579e48703a56918c18ebb6a48ae7",
+  "textHashFormat": "UTF-8 with LF newlines",
+  "shader": "HobbyDS9/ArtDemo/PreviewStudio",
+  "shaderGuid": "6ae380f4425f5ce7984d46c8c519a336",
+  "materialPolicy": "Explicit source slot remaps; factor-only opaque studio materials; private runtime clones",
+  "textures": [],
+  "bindings": [
+    {
+      "hullVersionId": "hull.galaxy-cruiser.v1",
+      "status": "Original candidate exterior; owner artistic approval pending",
+      "sourceAssetId": "art.production01.cruiser_lod0",
+      "source": "Models/Cruiser_LOD0.fbx",
+      "resource": "ArtDemo/Production01/Hulls/Cruiser_LOD0",
+      "nominalArtLengthMetres": 620,
+      "triangles": 9884,
+      "roles": [
+        "Hull_Pearl",
+        "Hull_Slate",
+        "Recess_Graphite",
+        "Sensor_Bronze",
+        "Engine_Blue",
+        "Collector_Red",
+        "Trim_Titanium",
+        "Windows_Warm"
+      ],
+      "sha256": "c42ecad3260ccc29c00914583f6e0d6a47f145a72ec3f927fc8a4e6788231d40",
+      "bytes": 231548,
+      "guid": "f7443a6d6a6a580eb5e8e988d175de28"
+    },
+    {
+      "hullVersionId": "hull.defiant-combat.v1",
+      "status": "Original candidate exterior; owner artistic approval pending",
+      "sourceAssetId": "art.production01.escort_lod0",
+      "source": "Models/Escort_LOD0.fbx",
+      "resource": "ArtDemo/Production01/Hulls/Escort_LOD0",
+      "nominalArtLengthMetres": 170,
+      "triangles": 7560,
+      "roles": [
+        "Hull_Pearl",
+        "Hull_Slate",
+        "Trim_Titanium",
+        "Recess_Graphite",
+        "Collector_Red",
+        "Engine_Blue",
+        "Windows_Warm",
+        "Sensor_Bronze"
+      ],
+      "sha256": "b647e2674360065c82ce46b9931766b8b51d1922648bd54d5e5a1dcae8fbf870",
+      "bytes": 178956,
+      "guid": "8cb666ba851f5434b1599b5009c40375"
+    }
+  ],
+  "approvedExternalReplacementModels": "Remain separately unreceived; these are original proposals",
+  "nativeAcceptance": "Pending Unity import/material/frame/lifetime/performance and owner review"
+}

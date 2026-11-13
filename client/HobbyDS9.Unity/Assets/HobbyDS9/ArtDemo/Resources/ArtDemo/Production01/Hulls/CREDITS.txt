@@ -1,0 +1,6 @@
+Original procedural hull candidates and factor-only materials: HobbyDS9 ASSET-PRODUCTION-01.
+Source pin: 70d55db18f2fb3be4e0196094736c799a88aa3f9
+Editable Blender sources/export recipes/provenance: art/asset-production-01/hulls-v1.
+No downloaded hull mesh, Kuhn/Meshy mesh, reference-image pixels or unique texture allocation.
+Original proposals only; no owner artistic approval or approved external replacement identity claimed.
+Existing separate legacy source/attribution records remain unchanged.

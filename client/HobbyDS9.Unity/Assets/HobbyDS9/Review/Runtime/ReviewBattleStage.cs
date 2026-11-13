@@ -41,6 +41,7 @@ namespace HobbyDS9.UnityReview
         public bool Paused { get; set; }
         public float Speed { get; set; }=1;
         public int GenericMarkers { get; private set; }
+        public string ArtNotice=>hullModels.Values.Any(h=>h.Definition.IsOriginalCandidate)?" · Original candidate hull art; artistic approval pending":"";
         private static readonly Color Space=new Color(.012f,.022f,.042f,1);
         public ReviewBattleStage(CampaignPlaybackBoundary boundary,CampaignRoundPlayback? round,
             Func<CampaignPlaybackBoundary,string,Tuple<string,string>?> identity,Func<CampaignPlaybackBoundary,string,string?>? ownHull=null)
