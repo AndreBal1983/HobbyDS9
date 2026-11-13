@@ -52,12 +52,12 @@ namespace HobbyDS9.ArtDemo.Tests
                 Assert.That(first,Is.Not.Null);Assert.That(second,Is.Not.Null);
                 Assert.That(first.Root.GetComponentsInChildren<Camera>(true),Is.Empty);Assert.That(Resources.FindObjectsOfTypeAll<RenderTexture>().Length,Is.EqualTo(textures));
                 var imported=Resources.Load<GameObject>(ActivityHullCatalog.Find("hull.defiant-combat.v1").ResourcePath).GetComponentInChildren<MeshRenderer>(true).sharedMaterial;
-                var importedJson=JsonUtility.ToJson(imported);
+                var importedJson=UnityEditor.EditorJsonUtility.ToJson(imported);
                 var a=first.Root.GetComponentInChildren<MeshRenderer>(true).sharedMaterial;var b=second.Root.GetComponentInChildren<MeshRenderer>(true).sharedMaterial;
                 Assert.That(a,Is.Not.SameAs(imported));Assert.That(b,Is.Not.SameAs(imported));Assert.That(a,Is.Not.SameAs(b));var original=b.GetColor("_BaseColor");a.SetColor("_BaseColor",Color.magenta);Assert.That(b.GetColor("_BaseColor"),Is.EqualTo(original));
                 var root=first.Root;first.Dispose();first.Dispose();
                 if(Application.isPlaying)Assert.That(root.activeSelf,Is.False);else{Assert.That(root==null,Is.True);Assert.That(a==null,Is.True);}
-                Assert.That(second.Root!=null,Is.True);Assert.That(b!=null,Is.True);Assert.That(JsonUtility.ToJson(imported),Is.EqualTo(importedJson));
+                Assert.That(second.Root!=null,Is.True);Assert.That(b!=null,Is.True);Assert.That(UnityEditor.EditorJsonUtility.ToJson(imported),Is.EqualTo(importedJson));
                 Assert.That(ActivityHullModel.Create(parent.transform,"Defiant"),Is.Null);Assert.That(ActivityHullModel.Create(parent.transform,null),Is.Null);
             }
             finally{first?.Dispose();second?.Dispose();UnityEngine.Object.DestroyImmediate(parent);}

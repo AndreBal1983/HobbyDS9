@@ -17,6 +17,9 @@ namespace HobbyDS9.UnityReview
         private void BuildPlayerShell()
         {
             root!.AddToClassList("client-root");root.AddToClassList("player-console");root.style.fontSize=18;
+            // Published campaigns render into a detached root before it is attached to the UIDocument.
+            // Keep the console inset on that root when the old document host is reset at commit.
+            root.style.paddingLeft=40;root.style.paddingRight=24;root.style.paddingTop=14;root.style.paddingBottom=14;
             var spine=new VisualElement();spine.AddToClassList("console-spine");root.Add(spine);
             var header=new VisualElement{name="player-header"};header.AddToClassList("console-header");root.Add(header);
             var names=new VisualElement();header.Add(names);

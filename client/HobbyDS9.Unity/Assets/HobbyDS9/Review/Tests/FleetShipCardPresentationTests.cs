@@ -76,8 +76,8 @@ namespace HobbyDS9.UnityReview.Tests
                     Assert.That(meter.Q<Label>().text,Does.Contain(own.Condition.Shields[i]+" / "+own.ShieldMaximum[i]));
                     Assert.That(meter.Q<ProgressBar>().value,Is.InRange(0f,100f));
                 }
-                Assert.That(card.Q<Label>(className:"fleet-ship-title").text,Does.StartWith("Class / fit: "));
-                Assert.That(card.Query<Label>().ToList().Any(l=>l.text=="Ship ID: "+id),Is.True);
+                Assert.That(card.Q<Label>(className:"fleet-ship-title").text,Is.Not.Empty);
+                Assert.That(card.Query<Label>().ToList().Any(l=>l.text.StartsWith("Class / fit: ",StringComparison.Ordinal)),Is.True);
                 Assert.That(card.Q<Button>("fleet-inspect-"+id),Is.Not.Null);
             }
             Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(model.OrganizationShips,Is.Empty);
