@@ -123,7 +123,7 @@
 .player-narrow .console-spine { border-left-width: 12px; }
 .player-narrow .console-nav { width: 144px; padding-right: 6px; }
 .player-narrow .console-nav .review-action { font-size: 16px; min-height: 44px; padding: 6px 10px; margin-bottom: 4px; }
-.player-narrow .console-header .console-status { width: 300px; }
+.player-narrow .console-header .console-status { width: 340px; }
 .player-narrow .console-stat { margin-left: 12px; }
 .player-narrow .console-stat-key { font-size: 13px; }
 .player-narrow .console-stat-value { font-size: 18px; }
