@@ -427,9 +427,12 @@ freighter, treaty, cargo or colonization feature is included.
             foreach(var required in new[]{"GalaxyPresentationV3/galaxy.png","GalaxyPresentationV3/nebula.bytes",
                 "GalaxyPresentationV3/particles.json","GalaxyPresentationV3/Presentation.shader",
                 "SystemBodyArt/SolMeshes/Earth_LOD1.fbx","SystemBodyArt/ProceduralSurface.shader",
-                "DemoPackages/v1/demo.json","PlayableFleetPackages/v1/playable.json"})
+                "DemoPackages/v1/demo.json","PlayableFleetPackages/v1/playable.json","PlayableFleetPackages/v1/engineering-scenario.json"})
                 if(!File.Exists(Path.Combine(resources,required)))
                     throw new InvalidOperationException("PB presentation/preparation resource missing: "+required);
+            var engineering=new ReviewNewtonsoftCodec().DecodeScenario(File.ReadAllBytes(Path.Combine(resources,"PlayableFleetPackages/v1/engineering-scenario.json")));
+            if(engineering.Definitions.EngineeringApplications==null||engineering.Definitions.EngineeringApplications.Count!=20)
+                throw new InvalidOperationException("PB requires the prepared 20-project Engineering scenario.");
             BuildWindows("Windows-PB-20261113-"+sha.Substring(0,12)+"-"+UnityEngine.Application.unityVersion,false,true);
         }
 

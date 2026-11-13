@@ -12,12 +12,19 @@ namespace HobbyDS9.UnityReview
 #if UNITY_EDITOR
             if(generatedCampaignTestDirectory!=null)return generatedCampaignTestDirectory;
 #endif
+#if HOBBYDS9_PB_20261113
+            return Path.Combine(UnityEngine.Application.persistentDataPath,ReviewColonisationCycleSlotStore.Namespace+"-engineering20");
+#else
             return Path.Combine(UnityEngine.Application.persistentDataPath,ReviewColonisationCycleSlotStore.Namespace);
+#endif
         }
         private void DrawColonisationCycleMenu(VisualElement parent)
         {
             var fold=new Foldout{text="Campaign",value=true,name="colonisation-cycle-campaign-menu"};parent.Add(fold);
             fold.Add(Readout("Found and grow your colonies. Rival empires can prepare successive resource-limited frontier expeditions while their colonies remain viable, using real ships, settlers and supplies. Provisional playtest; earlier campaigns keep their separate saves."));
+#if HOBBYDS9_PB_20261113
+            fold.Add(Readout("20-project Engineering edition. Start a new campaign; Continue uses this edition's separate saves. Earlier Cycle saves remain with the earlier build."));
+#endif
             var start=AddButton(fold,"New Campaign",()=>{void Start()=>RunGeneratedCampaignOperation(null,colonisationCycle:true);
                 if(demoStarted||model!.HasLocalEdits)Confirm("Start a new continuous expansion campaign? Unsaved progress is replaced only after validation. Earlier saves stay in their own slots.",Start);else Start();});start.name="colonisation-cycle-campaign-start";
             ReviewColonisationCycleSlotStore? store = null;

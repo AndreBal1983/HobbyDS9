@@ -270,8 +270,9 @@ namespace HobbyDS9.UnityReview
         private void Do(Action action)
         {
             if(model==null||model.Busy||model.Closed)return;
-            var before=model.Current.Frame;action();
+            var owner=model;var before=model.Current.Frame;action();
             if(!ReferenceEquals(before,model.Current.Frame)){viewEpoch++;Build();}else Draw();
+            CapturePublishedCompletions(owner,before);
         }
         private void Confirm(string title,Action action)=>Confirm(title,action,"Confirm","Cancel");
         private void Confirm(string title,Action action,string commitLabel,string dismissLabel)
