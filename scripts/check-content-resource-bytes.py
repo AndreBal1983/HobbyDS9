@@ -18,6 +18,7 @@ GENERATED_PAIRS = [
     ("scenarios/ship-design-fixtures/fixture.json", "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ship-design-fixture.json"),
 ]
 PAIRS = []
+PAIRS += [("scenarios/engineering-development-v1/scenario.json", f"{RES}PlayableFleetPackages/v1/engineering-scenario.json")]
 for source, target, names in [
     ("tactical-v2-physical-review/faster", "ReviewPackages/faster", "package core scenario"),
     ("tactical-v2-physical-review/slower", "ReviewPackages/slower", "package core scenario"),
