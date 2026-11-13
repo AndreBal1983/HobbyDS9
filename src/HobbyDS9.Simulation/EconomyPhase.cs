@@ -5,11 +5,12 @@ namespace HobbyDS9.Simulation
 {
     internal static class EconomyPhase
     {
-        internal static void Execute(GameStateDto s, DefinitionCatalogDto d)
+        internal static void Execute(GameStateDto s, DefinitionCatalogDto d,System.Collections.Generic.IReadOnlyDictionary<string,System.Collections.Generic.IReadOnlyList<ResourceAmountDto>>? constructionDemand=null,PlanetaryOwnershipContext? ownership=null)
         {
-            foreach (var c in s.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal))
+            ownership?.RequireOwner(d,s);
+            foreach (var c in s.Colonies!.Where(c=>ownership==null||PopulationRules.Population(c)>0).OrderBy(c => c.ColonyId, StringComparer.Ordinal))
             {
-                c.Food = checked(c.Food + WorldEconomy.Project(c, s, d).FoodOutput);
+                c.Food = checked(c.Food + WorldEconomy.Project(c, s, d,ownership).FoodOutput);
                 var planet = s.Planets!.Single(p => p.PlanetId == c.PlanetId);
                 foreach (var installed in WorldEconomy.Infrastructure(c, d))
                     foreach (var rate in installed.definition.Extraction!.OrderBy(r => r.ResourceDefinitionId, StringComparer.Ordinal))
@@ -19,10 +20,10 @@ namespace HobbyDS9.Simulation
                         s.PopulationStatistics!.ResourceExtracted = checked(s.PopulationStatistics!.ResourceExtracted + amount);
                     }
             }
-            PopulationLogistics.Execute(s, d);
-            foreach (var c in s.Colonies.OrderBy(c => c.ColonyId, StringComparer.Ordinal))
+            PopulationLogistics.Execute(s, d,constructionDemand,ownership);
+            foreach (var c in s.Colonies.Where(c=>ownership==null||PopulationRules.Population(c)>0).OrderBy(c => c.ColonyId, StringComparer.Ordinal))
             {
-                var facts = WorldEconomy.Project(c, s, d); var sufficient = c.Food >= facts.FoodDemand;
+                var facts = WorldEconomy.Project(c, s, d,ownership); var sufficient = c.Food >= facts.FoodDemand;
                 c.Food -= Math.Min(c.Food, facts.FoodDemand); c.FoodShortageTurns = sufficient ? 0 : checked(c.FoodShortageTurns + 1);
                 foreach (var cohort in c.Cohorts!.OrderBy(p => p.CohortId, StringComparer.Ordinal))
                 {
@@ -35,7 +36,7 @@ namespace HobbyDS9.Simulation
                         cohort.Population -= lost; s.PopulationStatistics!.Deaths = checked(s.PopulationStatistics!.Deaths + lost);
                     }
                 }
-                if (sufficient)
+                if (sufficient&&ownership?.IsFounding(c.ColonyId)!=true)
                 {
                     var free = Math.Max(0, facts.EffectiveCapacity - facts.Population);
                     var births = Math.Min(free, PopulationRules.ScaleBy(facts.Population, PopulationRules.GrowthBps));
@@ -44,12 +45,12 @@ namespace HobbyDS9.Simulation
                     s.PopulationStatistics!.Births = checked(s.PopulationStatistics!.Births + births);
                 }
                 PoliticsRules.ExecuteWorld(c,s,d,sufficient);
-                var target = WorldEconomy.Project(c, s, d).TargetStability;
+                var target = WorldEconomy.Project(c, s, d,ownership).TargetStability;
                 c.Stability += Math.Max(-PopulationRules.StabilityStep, Math.Min(PopulationRules.StabilityStep, target - c.Stability));
                 if (c.OwnerCivilizationId != null)
                 { var owner = s.Civilizations!.Single(v => v.CivilizationId == c.OwnerCivilizationId); owner.Credits = checked(owner.Credits + facts.CreditOutput); }
             }
-            PopulationMigration.Execute(s, d);
+            PopulationMigration.Execute(s, d,ownership);
         }
     }
 }

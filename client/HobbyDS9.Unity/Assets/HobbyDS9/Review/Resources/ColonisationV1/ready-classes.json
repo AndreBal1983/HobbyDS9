@@ -1,0 +1,746 @@
+[
+  {
+    "ClassId": "class.constitution-explorer.v1",
+    "DisplayName": "Constitution Explorer",
+    "RoleId": "role.constitution-explorer",
+    "HullVersionId": "hull.constitution-explorer.v1",
+    "EmbarkedCrew": 30,
+    "Installations": [
+      {
+        "InstallationId": "installation.constitution-explorer.0",
+        "ComponentVersionId": "component.reactor.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.constitution-explorer.1",
+        "ComponentVersionId": "component.life-support.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.constitution-explorer.2",
+        "ComponentVersionId": "component.command.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.constitution-explorer.3",
+        "ComponentVersionId": "component.propulsion.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.constitution-explorer.4",
+        "ComponentVersionId": "component.escort-sensors.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.constitution-explorer.5",
+        "ComponentVersionId": "component.energy-bank.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.constitution-explorer.6",
+        "ComponentVersionId": "component.activity-lab.standard.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.constitution-explorer.7",
+        "ComponentVersionId": "component.contact-suite.standard.v1",
+        "Quantity": 1
+      }
+    ],
+    "Profiles": [
+      {
+        "Kind": 1,
+        "Allocations": [
+          {
+            "InstallationId": "installation.constitution-explorer.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.3",
+            "RequestedPower": 30,
+            "AllocatedPower": 30
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.4",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.5",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.6",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.7",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          }
+        ]
+      },
+      {
+        "Kind": 2,
+        "Allocations": [
+          {
+            "InstallationId": "installation.constitution-explorer.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.3",
+            "RequestedPower": 12,
+            "AllocatedPower": 12
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.4",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.5",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.6",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.7",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          }
+        ]
+      },
+      {
+        "Kind": 3,
+        "Allocations": [
+          {
+            "InstallationId": "installation.constitution-explorer.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.3",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.4",
+            "RequestedPower": 10,
+            "AllocatedPower": 10
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.5",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.6",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          },
+          {
+            "InstallationId": "installation.constitution-explorer.7",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "ClassId": "class.galaxy-cruiser.v1",
+    "DisplayName": "Galaxy Cruiser",
+    "RoleId": "role.galaxy-cruiser",
+    "HullVersionId": "hull.galaxy-cruiser.v1",
+    "EmbarkedCrew": 40,
+    "Installations": [
+      {
+        "InstallationId": "installation.galaxy-cruiser.0",
+        "ComponentVersionId": "component.reactor.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.1",
+        "ComponentVersionId": "component.life-support.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.2",
+        "ComponentVersionId": "component.command.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.3",
+        "ComponentVersionId": "component.propulsion.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.4",
+        "ComponentVersionId": "component.escort-sensors.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.5",
+        "ComponentVersionId": "component.energy-bank.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.6",
+        "ComponentVersionId": "component.energy-bank.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.7",
+        "ComponentVersionId": "component.activity-lab.research.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.8",
+        "ComponentVersionId": "component.contact-suite.extended.v1",
+        "Quantity": 1
+      }
+    ],
+    "Profiles": [
+      {
+        "Kind": 1,
+        "Allocations": [
+          {
+            "InstallationId": "installation.galaxy-cruiser.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.3",
+            "RequestedPower": 30,
+            "AllocatedPower": 30
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.4",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.5",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.6",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.7",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.8",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          }
+        ]
+      },
+      {
+        "Kind": 2,
+        "Allocations": [
+          {
+            "InstallationId": "installation.galaxy-cruiser.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.3",
+            "RequestedPower": 12,
+            "AllocatedPower": 12
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.4",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.5",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.6",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.7",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.8",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          }
+        ]
+      },
+      {
+        "Kind": 3,
+        "Allocations": [
+          {
+            "InstallationId": "installation.galaxy-cruiser.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.3",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.4",
+            "RequestedPower": 10,
+            "AllocatedPower": 10
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.5",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.6",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.7",
+            "RequestedPower": 12,
+            "AllocatedPower": 12
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.8",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "ClassId": "class.defiant-combat.v1",
+    "DisplayName": "Defiant Combat",
+    "RoleId": "role.defiant-combat",
+    "HullVersionId": "hull.defiant-combat.v1",
+    "EmbarkedCrew": 20,
+    "Installations": [
+      {
+        "InstallationId": "installation.defiant-combat.0",
+        "ComponentVersionId": "component.defiant-reactor.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.defiant-combat.1",
+        "ComponentVersionId": "component.defiant-life-support.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.defiant-combat.2",
+        "ComponentVersionId": "component.defiant-command.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.defiant-combat.3",
+        "ComponentVersionId": "component.defiant-propulsion.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.defiant-combat.4",
+        "ComponentVersionId": "component.defiant-sensors.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.defiant-combat.5",
+        "ComponentVersionId": "component.energy-bank.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.defiant-combat.6",
+        "ComponentVersionId": "component.energy-bank.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.defiant-combat.7",
+        "ComponentVersionId": "component.energy-bank.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.defiant-combat.8",
+        "ComponentVersionId": "component.activity-lab.basic.v1",
+        "Quantity": 1
+      }
+    ],
+    "Profiles": [
+      {
+        "Kind": 1,
+        "Allocations": [
+          {
+            "InstallationId": "installation.defiant-combat.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.defiant-combat.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.defiant-combat.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.defiant-combat.3",
+            "RequestedPower": 30,
+            "AllocatedPower": 30
+          },
+          {
+            "InstallationId": "installation.defiant-combat.4",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.defiant-combat.5",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.defiant-combat.6",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.defiant-combat.7",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.defiant-combat.8",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          }
+        ]
+      },
+      {
+        "Kind": 2,
+        "Allocations": [
+          {
+            "InstallationId": "installation.defiant-combat.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.defiant-combat.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.defiant-combat.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.defiant-combat.3",
+            "RequestedPower": 12,
+            "AllocatedPower": 12
+          },
+          {
+            "InstallationId": "installation.defiant-combat.4",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.defiant-combat.5",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          },
+          {
+            "InstallationId": "installation.defiant-combat.6",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          },
+          {
+            "InstallationId": "installation.defiant-combat.7",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          },
+          {
+            "InstallationId": "installation.defiant-combat.8",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          }
+        ]
+      },
+      {
+        "Kind": 3,
+        "Allocations": [
+          {
+            "InstallationId": "installation.defiant-combat.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.defiant-combat.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.defiant-combat.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.defiant-combat.3",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          },
+          {
+            "InstallationId": "installation.defiant-combat.4",
+            "RequestedPower": 10,
+            "AllocatedPower": 10
+          },
+          {
+            "InstallationId": "installation.defiant-combat.5",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.defiant-combat.6",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.defiant-combat.7",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.defiant-combat.8",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "ClassId": "class.galaxy-colony-transport.v1",
+    "DisplayName": "Galaxy Colony Transport",
+    "RoleId": "role.colony-transport.v1",
+    "HullVersionId": "hull.galaxy-cruiser.v1",
+    "EmbarkedCrew": 40,
+    "Installations": [
+      {
+        "InstallationId": "installation.galaxy-cruiser.0",
+        "ComponentVersionId": "component.reactor.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.1",
+        "ComponentVersionId": "component.life-support.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.2",
+        "ComponentVersionId": "component.command.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.3",
+        "ComponentVersionId": "component.propulsion.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-cruiser.4",
+        "ComponentVersionId": "component.escort-sensors.v1",
+        "Quantity": 1
+      },
+      {
+        "InstallationId": "installation.galaxy-colony-transport.settlers",
+        "ComponentVersionId": "component.settler-module.v1",
+        "Quantity": 1
+      }
+    ],
+    "Profiles": [
+      {
+        "Kind": 1,
+        "Allocations": [
+          {
+            "InstallationId": "installation.galaxy-cruiser.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.3",
+            "RequestedPower": 30,
+            "AllocatedPower": 30
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.4",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.galaxy-colony-transport.settlers",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          }
+        ]
+      },
+      {
+        "Kind": 2,
+        "Allocations": [
+          {
+            "InstallationId": "installation.galaxy-cruiser.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.3",
+            "RequestedPower": 12,
+            "AllocatedPower": 12
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.4",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.galaxy-colony-transport.settlers",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          }
+        ]
+      },
+      {
+        "Kind": 3,
+        "Allocations": [
+          {
+            "InstallationId": "installation.galaxy-cruiser.0",
+            "RequestedPower": 0,
+            "AllocatedPower": 0
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.1",
+            "RequestedPower": 6,
+            "AllocatedPower": 6
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.2",
+            "RequestedPower": 4,
+            "AllocatedPower": 4
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.3",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          },
+          {
+            "InstallationId": "installation.galaxy-cruiser.4",
+            "RequestedPower": 10,
+            "AllocatedPower": 10
+          },
+          {
+            "InstallationId": "installation.galaxy-colony-transport.settlers",
+            "RequestedPower": 8,
+            "AllocatedPower": 8
+          }
+        ]
+      }
+    ]
+  }
+]

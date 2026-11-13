@@ -1,0 +1,5 @@
+Activity hull art, local owner review.
+Constitution-style Explorer: original HobbyDS9 procedural geometry; no third-party mesh/pixels; not exact canon.
+Defiant: owner-provided Meshy source, task ID/license not supplied. Local derivative only; no public redistribution clearance claimed. Source SHA25615526c4097f98ddf147f9fa6c28c44f4ceecb54ae8843076a5d61df9f4008f82. Preserve adjacent provenance and original source externally.
+Galaxy: existing Designer/Galaxy pack, Chris Kuhn/Kuhn Industries Big D, CC BY-NC-SA3.0. Preserve that pack attribution/license and distribution notices. Classic nacelles used for fixed Cruiser.
+No paid generation/upload. Artwork supplies no gameplay stats/unlocks.

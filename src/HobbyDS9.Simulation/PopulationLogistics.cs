@@ -21,17 +21,19 @@ namespace HobbyDS9.Simulation
             return (path, Math.Min(interference, path.Select(graph.LogisticsFactor).Min()), route.TotalCost!.Value);
         }
         private static string Edge(string a, string b) => StringComparer.Ordinal.Compare(a, b) < 0 ? a + "|" + b : b + "|" + a;
-        internal static void Execute(GameStateDto s, DefinitionCatalogDto d)
+        internal static void Execute(GameStateDto s, DefinitionCatalogDto d,IReadOnlyDictionary<string,IReadOnlyList<ResourceAmountDto>>? constructionDemand=null,PlanetaryOwnershipContext? ownership=null)
         {
+            ownership?.RequireOwner(d,s);
             s.LastDeliveries!.Clear(); var graph = Graph(s, d);
-            var colonies = s.Colonies!.OrderBy(c => c.ColonyId, StringComparer.Ordinal).ToList();
-            var facts = colonies.ToDictionary(c => c.ColonyId, c => WorldEconomy.Project(c, s, d), StringComparer.Ordinal);
+            var colonies = s.Colonies!.Where(c=>ownership==null||PopulationRules.Population(c)>0).OrderBy(c => c.ColonyId, StringComparer.Ordinal).ToList();
+            var facts = colonies.ToDictionary(c => c.ColonyId, c => WorldEconomy.Project(c, s, d,ownership), StringComparer.Ordinal);
             var endpoints = colonies.ToDictionary(c => c.ColonyId, c => facts[c.ColonyId].LogisticsCapacity, StringComparer.Ordinal);
             var edges = graph.Connections.ToDictionary(e => Edge(e.EndpointA, e.EndpointB), e => TransitCapacity, StringComparer.Ordinal);
             foreach (var resource in new[] { "resource.food" }.Concat(d.Resources!.Select(r => r.DefinitionId).Where(id => id != "resource.food").OrderBy(id => id, StringComparer.Ordinal)))
             {
                 long Stock(ColonyStateDto c) => resource == "resource.food" ? c.Food : PopulationRules.Stock(c.Stockpiles!, resource);
-                long Desired(ColonyStateDto c) => resource == "resource.food" ? facts[c.ColonyId].FoodDemand : PopulationRules.Stock(c.DesiredStockpiles!, resource);
+                long Desired(ColonyStateDto c) => resource == "resource.food" ? facts[c.ColonyId].FoodDemand : Math.Max(PopulationRules.Stock(c.DesiredStockpiles!, resource),
+                    constructionDemand!=null&&constructionDemand.TryGetValue(c.ColonyId,out var demand)?PopulationRules.Stock(demand,resource):0);
                 void Change(ColonyStateDto c, long value) { if (resource == "resource.food") c.Food = checked(c.Food + value); else PopulationRules.AddStock(c.Stockpiles!, resource, value); }
                 foreach (var destination in colonies.Where(c => c.OwnerCivilizationId != null))
                     foreach (var origin in colonies.Where(c => c.ColonyId != destination.ColonyId && c.OwnerCivilizationId == destination.OwnerCivilizationId))

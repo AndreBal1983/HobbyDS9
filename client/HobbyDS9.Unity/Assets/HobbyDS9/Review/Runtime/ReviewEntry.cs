@@ -7,6 +7,26 @@ using UnityEngine.UIElements;
 
 namespace HobbyDS9.UnityReview
 {
+    // Opt-in log markers only; no lifecycle/resource ownership and no teardown exception handling.
+    internal static class ReviewShutdownLifecycle
+    {
+        private static readonly bool enabled=ReadEnabled();
+        private static long next;
+        internal static long NextId()=>System.Threading.Interlocked.Increment(ref next);
+        internal static bool HasFlag(string[] args)
+        {foreach(var arg in args)if(string.Equals(arg,"--hobbyds9-shutdown-lifecycle",System.StringComparison.Ordinal))return true;return false;}
+        private static bool ReadEnabled()
+        {try{return HasFlag(System.Environment.GetCommandLineArgs());}catch{return false;}}
+        internal static void Mark(string component,long instance,string stage)
+        {
+            if(!enabled)return;
+            try{UnityEngine.Debug.Log("HOBBYDS9_SHUTDOWN component="+component+" instance="+instance.ToString(System.Globalization.CultureInfo.InvariantCulture)+
+                " stage="+stage+" thread="+System.Threading.Thread.CurrentThread.ManagedThreadId.ToString(System.Globalization.CultureInfo.InvariantCulture)+
+                " ticks="+System.Diagnostics.Stopwatch.GetTimestamp().ToString(System.Globalization.CultureInfo.InvariantCulture));}
+            catch{ /* Logging must never change the original teardown path. */ }
+        }
+    }
+
     public static class ReviewLaunch
     {
         public static void Launch(string[] args)
@@ -29,6 +49,7 @@ namespace HobbyDS9.UnityReview
     }
     public sealed partial class ReviewEntry : MonoBehaviour
     {
+        private readonly long shutdownLabel=ReviewShutdownLifecycle.NextId();
         private ReviewLaunchOptions? options;
         private IntegratedLaunchOptions? integratedOptions;
         private SingleplayerDemoLaunchOptions? demoOptions;
@@ -97,16 +118,28 @@ namespace HobbyDS9.UnityReview
                 root=doc.rootVisualElement;root.Clear();root.Add(new Label("OPT-IN PHYSICAL TACTICAL V2 — unavailable. Check profile/resources/preparation; default campaign was not started."));
             }
         }
-        private void OnDisable(){viewEpoch++;modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();}
-        private void OnDestroy(){ResetDemoKeyboard();ReleasePanel();}
+        private void OnDisable()
+        {
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.enter");
+            viewEpoch++;modalPermission.Invalidate();
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.begin");
+            AbandonPlayerCheckpoint();CancelStreamedUiWork();CancelColonisationUiWork();
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.return");
+            campaignBusyToken=null;root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.return");
+        }
+        private void OnDestroy(){ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"destroy.enter");ResetDemoKeyboard();ReleasePanel();ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"destroy.return");}
         private void ReleasePanel()
         {
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"panel.enter");
             ReleaseAudio();
-            if(panel==null)return;
+            if(panel==null){ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"panel.absent.return"); return;}
             if(UnityEngine.Application.isPlaying)Destroy(panel);else DestroyImmediate(panel);
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"panel.destroy-requested");
             panel=null;
+            ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"panel.return");
         }
-        private void ReleaseAudio(){audioInput?.Dispose();audioInput=null;buttonSound=null;}
+        private void ReleaseAudio(){ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"audio.begin");audioInput?.Dispose();audioInput=null;buttonSound=null;ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"audio.return");}
         private void BindAudio()
         {
             try
@@ -118,23 +151,29 @@ namespace HobbyDS9.UnityReview
             }
             catch(Exception){ReleaseAudio();Debug.LogWarning("Review audio unavailable; playtest continues.");}
         }
-        private void Build()
+        private void Build()=>Build(null);
+        private void Build(VisualElement? detachedRoot)
         {
-            modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ReleaseAudio();
+            if(detachedRoot==null)
+            {
+                CaptureActivitiesSelectionForRebuild();CaptureColonisationSelectionForRebuild();
+                modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ReleaseAudio();
+            }
             var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();
-            if(model?.SingleplayerDemo!=true||panel==null||doc.panelSettings!=panel)
+            if(detachedRoot!=null&&(panel==null||doc.panelSettings!=panel||!PlayerProfile))
+                throw new InvalidOperationException("Detached publication requires an initialized player panel.");
+            if(!PlayerProfile||panel==null||doc.panelSettings!=panel)
             {
                 ReleasePanel();panel=ScriptableObject.CreateInstance<PanelSettings>();panel.scaleMode=model!.Integrated?PanelScaleMode.ConstantPixelSize:PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
                 panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=1;panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");doc.panelSettings=panel;
             }
-            root=doc.rootVisualElement;root.Clear();root.styleSheets.Clear();confirmation=null;root.AddToClassList("physical-review-root");
-            PreserveDemoKeyOrigins();
-            BindDemoKeyboard();
-            BindAudio();
+            root=detachedRoot??doc.rootVisualElement;root.Clear();root.styleSheets.Clear();confirmation=null;root.AddToClassList("physical-review-root");
+            if(detachedRoot==null){PreserveDemoKeyOrigins();BindDemoKeyboard();BindAudio();}
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.03f,0.05f,0.08f);root.style.color=new Color(0.92f,0.95f,1);root.style.fontSize=16;
-            foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ShipDesigner","ReviewControls","ReviewCombat","PlayerConsole"})
+            foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ShipDesigner","ReviewControls","ReviewCombat","PlayerConsole","GeneratedGalaxy"})
             {var sheet=Resources.Load<StyleSheet>(resource);if(sheet!=null)root.styleSheets.Add(sheet);}
-            if(model.Integrated){workspace!.Compact=Screen.width<1600||Screen.height<850;root.EnableInClassList("player-narrow",workspace.Compact);BuildPlayerShell();root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();return;}
+            if(generatedGalaxyOpen){BuildGeneratedGalaxy();root.RegisterCallback<GeometryChangedEvent>(Geometry);return;}
+            if(model!.Integrated){workspace!.Compact=Screen.width<1600||Screen.height<850;root.EnableInClassList("player-narrow",workspace.Compact);BuildPlayerShell();root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();return;}
             var identity=Readout((model!.Integrated?"OPT-IN INTEGRATED PLAYTEST | SCENARIO: integrated-playtest-v1":"OPT-IN PHYSICAL TACTICAL V2 | SCENARIO: "+options!.Profile)+" | ACTOR VIEW: "+model.Current.Frame.Actor+" | Proposed policies; default campaign activation disabled");
             identity.name="review-scenario-identity";identity.AddToClassList("review-heading");root.Add(identity);
             root.Add(Readout(workspace!.BoundaryIdentity));
@@ -173,12 +212,14 @@ namespace HobbyDS9.UnityReview
         private void Navigate(ReviewWorkspacePage page)
         {
             if(workspace==null||confirmation!=null||!workspace.Navigate(page))return;
+            frontierCommissionOpen=false;
             viewEpoch++;Build(); // Old detached controls/modal permissions cannot act on another panel.
         }
         private static string PageLabel(ReviewWorkspacePage page)=>page==ReviewWorkspacePage.Research?"R&D":page==ReviewWorkspacePage.FleetOrders?"Fleet orders":page.ToString();
         private void Geometry(GeometryChangedEvent e)
         {
             if(root==null||panel==null)return;
+            if(generatedGalaxyOpen){GalaxyResponsive(e.newRect.width);return;}
             if(model?.Integrated==true){var playerCompact=e.newRect.width<1600||e.newRect.height<850;root.EnableInClassList("player-narrow",playerCompact);if(workspace!.Compact!=playerCompact){workspace.Compact=playerCompact;Draw();}return;}
             var compact=e.newRect.width<1700||e.newRect.height<850;
             root.EnableInClassList("review-compact",compact);
@@ -187,6 +228,7 @@ namespace HobbyDS9.UnityReview
         private void Draw()
         {
             if(model==null||root==null)return;
+            if(generatedGalaxyOpen){DrawGeneratedGalaxyStatus();PreserveDemoKeyOrigins();return;}
             if(model.Integrated){try{DrawPlayer();}finally{PreserveDemoKeyOrigins();}return;}
             message!.text=model.Message+" "+flow!.Notice;
             if(workspace!.Page==ReviewWorkspacePage.Combat||workspace.Page==ReviewWorkspacePage.FleetOrders)central?.Render();
@@ -214,10 +256,16 @@ namespace HobbyDS9.UnityReview
         private static TextField Field(string title,string value){var f=new TextField(title){value=value};f.AddToClassList("review-input");return f;}
         private Button AddButton(VisualElement parent,string title,Action action,bool dialog=false)
         {
-            var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
-            var button=new Button(guarded){text=title};
-            if(model!.SingleplayerDemo)BindDemoButtonKeyboard(button,guarded);
+            var button=new Button{text=title};
+            BindButton(button,action,dialog);
             button.AddToClassList("review-action");button.style.minHeight=36;parent.Add(button);return button;
+        }
+        private void BindButton(Button button,Action action,bool dialog=false)
+        {
+            var publication=playerPublicationAttempt;
+            var epoch=viewEpoch;Action guarded=()=>{if(publication?.Failed!=true&&epoch==viewEpoch&&isActiveAndEnabled&&campaignBusyToken==null&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
+            button.clicked+=guarded;
+            if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);
         }
         private void Do(Action action)
         {
@@ -225,36 +273,18 @@ namespace HobbyDS9.UnityReview
             var before=model.Current.Frame;action();
             if(!ReferenceEquals(before,model.Current.Frame)){viewEpoch++;Build();}else Draw();
         }
-        private void Confirm(string title,Action action)
-        {
-            if(confirmation!=null)return;
-            var callbacks=modalPermission.TryOpen(()=>{ClearConfirmation();action();},()=>ClearConfirmation());if(callbacks==null)return;
-            confirmation=new VisualElement{name="review-one-use-confirmation"};confirmation.AddToClassList("review-confirmation");
-            foreach(var child in root!.Children())child.SetEnabled(false);
-            if(model!.Integrated)
-            {
-                confirmation.style.position=Position.Absolute;confirmation.style.left=0;confirmation.style.top=0;confirmation.style.right=0;confirmation.style.bottom=0;
-                confirmation.style.marginLeft=0;confirmation.style.marginRight=0;confirmation.style.marginTop=0;confirmation.style.marginBottom=0;
-                confirmation.style.alignItems=Align.Center;confirmation.style.justifyContent=Justify.Center;confirmation.style.backgroundColor=new Color(.02f,.03f,.06f,.96f);
-                var box=new VisualElement{name="player-confirmation-summary"};box.AddToClassList("console-panel");box.style.width=620;box.style.maxWidth=new Length(90,LengthUnit.Percent);box.style.maxHeight=new Length(80,LengthUnit.Percent);
-                var text=Readout(title);text.style.fontSize=22;
-                if(model.SingleplayerDemo)
-                {
-                    box.style.height=new Length(70,LengthUnit.Percent);
-                    var body=new ScrollView(ScrollViewMode.Vertical){name="player-confirmation-details"};body.style.flexGrow=1;body.style.minHeight=0;body.Add(text);box.Add(body);
-                }
-                else box.Add(text);
-                var actions=new VisualElement();actions.AddToClassList("review-field-row");actions.style.flexShrink=0;box.Add(actions);
-                AddButton(actions,"Cancel",callbacks.Cancel,true);var yes=AddButton(actions,"Confirm",callbacks.Confirm,true);yes.AddToClassList("primary-action");
-                confirmation.RegisterCallback<KeyDownEvent>(e=>{if(e.keyCode==KeyCode.Escape){callbacks.Cancel();e.StopPropagation();}});
-                confirmation.Add(box);root.Add(confirmation);yes.Focus();return;
-            }
-            var scroll=new ScrollView();scroll.style.flexGrow=1;scroll.style.minHeight=0;
-            scroll.Add(Readout(title));confirmation.Add(scroll);
-            AddButton(confirmation,"Cancel",callbacks.Cancel,true);var button=AddButton(confirmation,"Confirm",callbacks.Confirm,true);
-            root.Add(confirmation);button.Focus();
-        }
+        private void Confirm(string title,Action action)=>Confirm(title,action,"Confirm","Cancel");
+        private void Confirm(string title,Action action,string commitLabel,string dismissLabel)
+            =>ShowCampaignDialog(title.Length>96||title.Contains("\n")?"Review action":title,
+                title.Length>96||title.Contains("\n")?title:"",dismissLabel,null,new CampaignDialogAction(commitLabel,action));
         private void ClearConfirmation()
-        {modalPermission.Invalidate();confirmation?.RemoveFromHierarchy();confirmation=null;foreach(var child in root!.Children())child.SetEnabled(true);Draw();if(model!.Integrated)root.Q<Button>("player-primary-action")?.Focus();}
+        {
+            var previous=campaignDialogInvoker;var previousName=campaignDialogInvokerName;
+            campaignDialogInvoker=null;campaignDialogInvokerName="";
+            modalPermission.Invalidate();confirmation?.RemoveFromHierarchy();confirmation=null;
+            foreach(var child in root!.Children())child.SetEnabled(true);
+            Draw();RestoreCampaignDialogFocus(previous,previousName);
+        }
+
     }
 }

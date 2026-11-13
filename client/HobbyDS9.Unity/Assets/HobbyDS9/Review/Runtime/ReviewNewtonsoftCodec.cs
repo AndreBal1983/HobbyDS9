@@ -19,11 +19,12 @@ namespace HobbyDS9.UnityReview
     public sealed partial class ReviewNewtonsoftCodec : ISingleplayerDemoHostCodec
     {
         private static readonly UTF8Encoding Utf8=new UTF8Encoding(false,true);
+        private static readonly RequiredScalarResolver SharedRequiredScalarResolver=new RequiredScalarResolver();
         private static JsonSerializerSettings Settings() => new JsonSerializerSettings {
             MissingMemberHandling=MissingMemberHandling.Error,TypeNameHandling=TypeNameHandling.None,
             MetadataPropertyHandling=MetadataPropertyHandling.Ignore,DateParseHandling=DateParseHandling.None,
             FloatParseHandling=FloatParseHandling.Decimal,Culture=CultureInfo.InvariantCulture,
-            MaxDepth=128,ContractResolver=new RequiredScalarResolver()
+            MaxDepth=128,ContractResolver=SharedRequiredScalarResolver
         };
         public CampaignTacticalTravelPackageDto CopyPackage(CampaignTacticalTravelPackageDto package)
             => Decode<CampaignTacticalTravelPackageDto>(Encode(package));

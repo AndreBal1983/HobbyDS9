@@ -30,6 +30,8 @@ jobs:
         run: python scripts/check-unity-integration.py
       - name: Test
         run: dotnet test HobbyDS9.slnx --configuration Release --no-build --no-restore
+      - name: Playable fleet construction, Follow, battle playback and replay
+        run: dotnet run --project src/HobbyDS9.Headless --configuration Release --no-build --no-restore -- --playable-fleet
       - name: Phased combat headless smoke (25 turns)
         run: dotnet run --project src/HobbyDS9.Headless --configuration Release --no-build --no-restore -- --turns 25
       - name: Reverse phased combat resolution smoke (25 turns)

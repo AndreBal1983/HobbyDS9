@@ -42,7 +42,7 @@ namespace HobbyDS9.Simulation
         internal static BlueprintRevisionDto? Find(GameStateDto state, BlueprintReferenceDto reference) => state.Blueprints!
             .SingleOrDefault(b => b.BlueprintId == reference.BlueprintId && b.Revision == reference.Revision);
 
-        internal static CommandErrorCode Eligibility(GameStateDto state, DefinitionCatalogDto definitions, string actor, string colonyId, BlueprintRevisionDto? blueprint)
+        internal static CommandErrorCode Eligibility(GameStateDto state, DefinitionCatalogDto definitions, string actor, string colonyId, BlueprintRevisionDto? blueprint, ControllerKind expectedController=ControllerKind.Human)
         {
             if (blueprint == null) return CommandErrorCode.UnknownBlueprint;
             if (blueprint.OwnerCivilizationId != actor) return CommandErrorCode.BlueprintNotOwned;
@@ -50,7 +50,7 @@ namespace HobbyDS9.Simulation
             if (colony == null) return CommandErrorCode.UnknownColony;
             if (colony.OwnerCivilizationId != actor) return CommandErrorCode.ColonyNotOwned;
             var owner = state.Civilizations!.Single(c => c.CivilizationId == actor);
-            if (owner.ControllerKind != ControllerKind.Human) return CommandErrorCode.ActorNotControlled;
+            if (owner.ControllerKind != expectedController) return CommandErrorCode.ActorNotControlled;
             if (state.Phase != SessionPhase.Planning) return CommandErrorCode.CombatPending;
             if (!WorldEconomy.Infrastructure(colony, definitions).Any(i => i.definition.Shipbuilding)) return CommandErrorCode.ShipbuildingUnavailable;
             var design = blueprint.CompiledDesign!;
@@ -114,12 +114,13 @@ namespace HobbyDS9.Simulation
     {
         private readonly DefinitionCatalogDto definitions;
         internal EnqueueBlueprintConstructionHandler(DefinitionCatalogDto definitions) { this.definitions = definitions; }
-        public CommandErrorCode Execute(GameStateDto state, CommandEnvelope command)
+        public CommandErrorCode Execute(GameStateDto state, CommandEnvelope command) => ExecuteForOwner(state,command,ControllerKind.Human);
+        internal CommandErrorCode ExecuteForOwner(GameStateDto state, CommandEnvelope command,ControllerKind expectedController)
         {
             var payload = command.EnqueueBlueprintConstruction!;
             var reference = new BlueprintReferenceDto { BlueprintId = payload.BlueprintId, Revision = payload.Revision };
             var blueprint = CampaignBlueprints.Find(state, reference);
-            var error = CampaignBlueprints.Eligibility(state, definitions, command.ActorCivilizationId, payload.ColonyId, blueprint);
+            var error = CampaignBlueprints.Eligibility(state, definitions, command.ActorCivilizationId, payload.ColonyId, blueprint,expectedController);
             if (error != CommandErrorCode.None) return error;
             var colony = state.Colonies!.Single(c => c.ColonyId == payload.ColonyId);
             var owner = state.Civilizations!.Single(c => c.CivilizationId == command.ActorCivilizationId);

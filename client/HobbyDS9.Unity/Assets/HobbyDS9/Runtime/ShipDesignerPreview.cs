@@ -1,0 +1,223 @@
+#nullable enable
+using System;
+using System.Collections.Generic;
+using HobbyDS9.ArtDemo;
+using UnityEngine;
+using UnityEngine.UIElements;
+
+namespace HobbyDS9.UnityClient
+{
+    // The selected catalogue hull supplies presentation identity only; art never validates a fit.
+    public sealed class ShipDesignerPreview : VisualElement, IDisposable
+    {
+        private string? visualKey;
+        private string? hullId;
+        private readonly Dictionary<string,int> installed=new Dictionary<string,int>(StringComparer.Ordinal);
+        private bool pendingPreview;
+        private float yaw=37.57f,pitch=26,zoom=1;
+        private int dragPointer=-1;
+        private Vector2 dragPosition;
+        private readonly VisualElement nacelleStudies=new VisualElement(),deflectorStudies=new VisualElement();
+        private readonly List<Button> modularViews=new List<Button>();
+        private readonly Label fixedExterior=new Label("Fixed hull exterior · fitted equipment remains in the facts.")
+            {name="designer-fixed-exterior-note",pickingMode=PickingMode.Ignore};
+        private const string ArtCredit="Galaxy source: Chris Kuhn / Kuhn Industries, Big D, CC BY-NC-SA 3.0. Noncommercial fan-art derivative. Original procedural modules from the HobbyDS9 art study.";
+        private readonly Image image = new Image { name="designer-hull-reference-image", scaleMode=ScaleMode.ScaleToFit, pickingMode=PickingMode.Position };
+        private readonly Label caption = new Label { name="designer-hull-reference-caption", pickingMode=PickingMode.Ignore };
+        private readonly VisualElement schematic = new VisualElement();
+        private ShipPreviewStage? stage;
+        private VisualElement? viewport;
+        private Vector2 fittedViewportSize=new Vector2(-1,-1);
+        private bool disposed;
+
+        public static string? ReferenceKey(string? hullVersionId) =>
+            ActivityHullCatalog.Find(hullVersionId!)?.VisualKey??ShipPreviewStage.DesignerReferenceKey(hullVersionId!);
+
+        private bool HasFixedExterior => ActivityHullCatalog.Find(hullId!)!=null;
+        private string Credit => hullId=="hull.defiant-combat.v1"
+            ? "Defiant source: owner-provided Meshy study. Private local review only."
+            : hullId=="hull.constitution-explorer.v1"
+                ? "Constitution-style Explorer: original HobbyDS9 hull art."
+                : visualKey==null?"No exact hull art binding.":ArtCredit;
+
+        public ShipDesignerPreview(string? hullVersionId)
+        {
+            name="designer-hull-reference";pickingMode=PickingMode.Ignore; AddToClassList("sd-hull-reference");
+            hullId=hullVersionId;visualKey=ReferenceKey(hullVersionId);
+            schematic.AddToClassList("sd-reference-schematic");
+            foreach(var text in new[]{"MISSION / SENSORS / SCIENCE","CORE / POWER / PROPULSION","DEFENCE / SUPPORT"})
+                schematic.Add(new Label(text){pickingMode=PickingMode.Ignore});
+            image.AddToClassList("sd-hull-reference-image");
+            image.style.height=StyleKeyword.Auto;image.style.minHeight=1;image.style.flexBasis=0;image.style.flexGrow=1;image.style.flexShrink=1;
+            image.style.width=Length.Percent(100);image.style.maxWidth=Length.Percent(100);
+            caption.style.flexShrink=0;
+            image.tooltip="Drag with left mouse to orbit · wheel to zoom the illustrative model";
+            image.RegisterCallback<PointerDownEvent>(e=>
+            {
+                if(e.button!=0 || stage?.IsDesignerReference!=true || dragPointer!=-1)return;
+                dragPointer=e.pointerId;dragPosition=new Vector2(e.position.x,e.position.y);image.CapturePointer(e.pointerId);e.StopPropagation();
+            });
+            image.RegisterCallback<PointerMoveEvent>(e=>
+            {
+                if(dragPointer!=e.pointerId || !image.HasPointerCapture(e.pointerId))return;
+                var position=new Vector2(e.position.x,e.position.y);var delta=position-dragPosition;dragPosition=position;
+                yaw+=Mathf.Clamp(delta.x,-80,80)*.6f;pitch=Mathf.Clamp(pitch-Mathf.Clamp(delta.y,-80,80)*.5f,-75,75);
+                stage?.OrbitReference(yaw,pitch);e.StopPropagation();
+            });
+            image.RegisterCallback<PointerUpEvent>(e=>{if(e.pointerId==dragPointer){ReleaseDrag();e.StopPropagation();}});
+            image.RegisterCallback<PointerCancelEvent>(e=>{if(e.pointerId==dragPointer)ReleaseDrag();});
+            image.RegisterCallback<PointerCaptureOutEvent>(e=>{if(e.pointerId==dragPointer)dragPointer=-1;});
+            image.RegisterCallback<WheelEvent>(e=>
+            {
+                if(stage?.IsDesignerReference!=true)return;
+                zoom=Mathf.Clamp(zoom*Mathf.Exp(-Mathf.Clamp(e.delta.y,-10,10)*.12f),.6f,2.2f);stage.ZoomReference(zoom);e.StopPropagation();
+            });
+            var controls=new VisualElement {name="designer-reference-controls"};controls.style.flexDirection=FlexDirection.Row;controls.style.flexWrap=Wrap.Wrap;
+            controls.style.flexShrink=0;
+            foreach(var view in new[]{DesignerReferenceView.Hull,DesignerReferenceView.Nacelles,DesignerReferenceView.Deflector,DesignerReferenceView.CoreCutaway})
+            {
+                var choice=view;var button=new Button(()=>{stage?.SetReferenceView(choice);RefreshCaption();})
+                    {name="designer-view-"+view.ToString().ToLowerInvariant(),text=view==DesignerReferenceView.CoreCutaway?"Internal core":view.ToString()};
+                CompactControl(button);controls.Add(button);modularViews.Add(button);
+            }
+            foreach(var step in new[]{("◀",-20f,0f),("▶",20f,0f),("↑",0f,15f),("↓",0f,-15f)})
+            {
+                var turn=step;var button=new Button(()=>{yaw+=turn.Item2;pitch=Mathf.Clamp(pitch+turn.Item3,-75,75);stage?.OrbitReference(yaw,pitch);RefreshCaption();})
+                    {name="designer-orbit-"+(turn.Item2<0?"left":turn.Item2>0?"right":turn.Item3>0?"up":"down"),text=turn.Item1,tooltip="Rotate illustrative reference"};
+                CompactControl(button);controls.Add(button);
+            }
+            Add(controls);
+            fixedExterior.style.flexShrink=0;Add(fixedExterior);
+            nacelleStudies.name="designer-nacelle-studies";deflectorStudies.name="designer-deflector-studies";
+            foreach(var group in new[]{nacelleStudies,deflectorStudies}){group.style.flexDirection=FlexDirection.Row;group.style.flexWrap=Wrap.Wrap;group.style.flexShrink=0;group.style.display=DisplayStyle.None;Add(group);}
+            foreach(var choice in new[]{("Classic",DesignerStudyVariant.ClassicNacelles),("Sovereign-style",DesignerStudyVariant.SovereignNacelles),("Blue",DesignerStudyVariant.BlueDeflector),("Amber",DesignerStudyVariant.AmberDeflector),("Survey",DesignerStudyVariant.SurveyDeflector)})
+            {
+                var selected=choice;var button=new Button(()=>{stage?.SetStudyVariant(selected.Item2);RefreshCaption();})
+                    {name="designer-study-"+choice.Item2.ToString().ToLowerInvariant(),text=choice.Item1+" · art study",tooltip="Changes reference artwork only; does not fit equipment or change technology."};
+                CompactControl(button);
+                (choice.Item2==DesignerStudyVariant.ClassicNacelles || choice.Item2==DesignerStudyVariant.SovereignNacelles?nacelleStudies:deflectorStudies).Add(button);
+            }
+            Add(image); Add(schematic); Add(caption);
+            RefreshPresentationOptions();caption.tooltip=Credit;
+            Fallback(visualKey==null ? "Hull schematic · no mapped model reference" : "Illustrative hull reference · equipment shown schematically");
+            RegisterCallback<AttachToPanelEvent>(_=>Open());
+            RegisterCallback<DetachFromPanelEvent>(_=>Release());
+        }
+
+        private static void CompactControl(Button button)
+        {
+            button.AddToClassList("lcars-pill");button.style.height=28;button.style.minHeight=28;
+            button.style.fontSize=12;button.style.paddingTop=2;button.style.paddingBottom=2;
+            button.style.paddingLeft=7;button.style.paddingRight=7;button.style.marginTop=1;button.style.marginBottom=1;
+        }
+
+        public void SetFit(string hullVersionId,IReadOnlyDictionary<string,int> quantities,bool isPendingPreview)
+        {
+            if(disposed)return;
+            if(quantities==null || quantities.Count>256)throw new ArgumentException("Invalid visual fit.",nameof(quantities));
+            foreach(var pair in quantities)if(pair.Key==null || pair.Value<0)throw new ArgumentException("Invalid visual quantity.",nameof(quantities));
+            bool hullChanged=!string.Equals(hullId,hullVersionId,StringComparison.Ordinal);
+            hullId=hullVersionId;visualKey=ReferenceKey(hullVersionId);pendingPreview=isPendingPreview;
+            installed.Clear();foreach(var pair in quantities)installed.Add(pair.Key,pair.Value);
+            RefreshPresentationOptions();
+            if(hullChanged){Release();Fallback(visualKey==null?"Hull schematic · no exact model binding":"Selected hull reference awaiting renderer");if(panel!=null)Open();}
+            else if(stage!=null){ShowCurrentHull();RefreshCaption();}
+        }
+
+        public void UpdateFacts(string text) { caption.tooltip=text+"\n"+Credit; }
+        public DesignerArtSnapshot? CaptureArtDiagnostics()=>stage?.CaptureArtDiagnostics();
+        private void ShowCurrentHull()
+        {
+            if(HasFixedExterior)stage!.ShowActivityHull(hullId!);
+            else stage!.ShowDesignerReference(hullId!,installed);
+        }
+        private void RefreshPresentationOptions()
+        {
+            // Fixed exteriors have no received component/socket map. Do not offer study views as working equipment controls.
+            var fixedHull=HasFixedExterior;
+            foreach(var button in modularViews)button.style.display=fixedHull?DisplayStyle.None:DisplayStyle.Flex;
+            fixedExterior.style.display=fixedHull?DisplayStyle.Flex:DisplayStyle.None;
+            if(fixedHull || visualKey==null || stage==null)
+            {nacelleStudies.style.display=DisplayStyle.None;deflectorStudies.style.display=DisplayStyle.None;}
+            caption.tooltip=Credit;
+        }
+        private void RefreshCaption()
+        {
+            if(stage!=null)
+            {
+                var text=stage.Label;
+                if(stage.IsDesignerReference && !stage.IsActivityHull && stage.ReferenceView==DesignerReferenceView.Hull)
+                    text="Illustrative Galaxy · propulsion "+ShipPreviewStage.DesignerModuleQuantity(installed,DesignerReferenceView.Nacelles)
+                        +" / reactor "+ShipPreviewStage.DesignerModuleQuantity(installed,DesignerReferenceView.CoreCutaway)+" · art only";
+                else if(stage.IsDesignerReference && !stage.IsActivityHull && stage.ReferenceView==DesignerReferenceView.Deflector)text="Uninstalled deflector art study";
+                if(stage.Label.Contains("missing art:"))text+=" · some fitting art unavailable";
+                caption.text=(pendingPreview?"PREVIEW · ":"DRAFT FIT · ")+text;
+                caption.tooltip=stage.Label+"\n"+Credit;
+            }
+            nacelleStudies.style.display=stage!=null && !stage.IsActivityHull && stage.ReferenceView==DesignerReferenceView.Nacelles?DisplayStyle.Flex:DisplayStyle.None;
+            deflectorStudies.style.display=stage!=null && !stage.IsActivityHull && stage.ReferenceView==DesignerReferenceView.Deflector?DisplayStyle.Flex:DisplayStyle.None;
+        }
+
+        public void BindViewport(VisualElement value)
+        {
+            if(viewport!=null)viewport.UnregisterCallback<GeometryChangedEvent>(FitViewport);
+            viewport=value;fittedViewportSize=new Vector2(-1,-1);viewport.RegisterCallback<GeometryChangedEvent>(FitViewport);
+        }
+
+        private void FitViewport(GeometryChangedEvent change)
+        {
+            if(disposed || viewport==null || panel==null)return;
+            // One-way sizing: only the externally constrained viewport feeds
+            // this box. Child/image/caption positions never feed layout back.
+            var size=viewport.contentRect.size;
+            if(float.IsNaN(size.x)||float.IsInfinity(size.x)||float.IsNaN(size.y)||float.IsInfinity(size.y)||size.x<=0||size.y<=0)return;
+            size=new Vector2(Mathf.Max(1,Mathf.Floor(size.x-2)),Mathf.Max(1,Mathf.Floor(size.y-14)));
+            if(size==fittedViewportSize)return;fittedViewportSize=size;
+            style.width=size.x;style.maxWidth=size.x;style.height=size.y;style.minHeight=0;
+            var maximum=GetFirstAncestorOfType<ShipDesignerView>()?.ClassListContains("sd-wide")==true?440:360;
+            image.style.maxHeight=maximum;
+        }
+
+        private void Fallback(string text)
+        {
+            image.style.display=DisplayStyle.None; schematic.style.display=DisplayStyle.Flex; caption.text=text;
+        }
+
+        private void Open()
+        {
+            if(disposed || stage!=null || visualKey==null)return;
+            try
+            {
+                stage=new ShipPreviewStage(768,480);
+                ShowCurrentHull();
+                if(stage.Availability!=ShipPreviewAvailability.Model)
+                {
+                    Fallback("Hull schematic · "+stage.Label); Release(); return;
+                }
+                image.image=stage.Texture; image.style.display=DisplayStyle.Flex;
+                schematic.style.display=DisplayStyle.None;stage.OrbitReference(yaw,pitch);stage.ZoomReference(zoom);RefreshCaption();
+            }
+            catch(Exception exception)
+            {
+                Release(); Fallback("Hull schematic · model preview unavailable");
+                Debug.LogWarning("Designer reference preview unavailable: "+exception.GetType().Name);
+            }
+        }
+
+        private void Release()
+        {
+            ReleaseDrag();image.image=null;stage?.Dispose();stage=null;
+        }
+        private void ReleaseDrag()
+        {
+            var pointer=dragPointer;dragPointer=-1;
+            if(pointer>=0 && image.HasPointerCapture(pointer))image.ReleasePointer(pointer);
+        }
+        public void Dispose()
+        {
+            if(disposed)return; disposed=true;
+            if(viewport!=null)viewport.UnregisterCallback<GeometryChangedEvent>(FitViewport);
+            viewport=null;Release();
+        }
+    }
+}

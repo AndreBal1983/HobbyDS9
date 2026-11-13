@@ -1,0 +1,79 @@
+{
+  "Identity": "colonisation-playtest-values-v1",
+  "PlanetInventoryPolicy": "planetary-inventory-all-systems-v1",
+  "MaximumPlanets": 1040,
+  "MaximumStarterPlanets": 32,
+  "RecordBudget": 8192,
+  "JournalBudget": 65536,
+  "Settlers": 100,
+  "SourcePopulationFloor": 500,
+  "MaximumSourceCohortBps": 2500,
+  "MinimumFood": 8,
+  "MaximumFood": 20,
+  "EquipmentResourceId": "resource.settlement-kit",
+  "KitIndustry": 60,
+  "KitResources": [
+    {
+      "ResourceDefinitionId": "resource.dilithium",
+      "Amount": 6
+    }
+  ],
+  "EstablishmentIndustry": 16,
+  "MinimumFedWeeks": 4,
+  "Camp": {
+    "ArtificialCapacity": 100,
+    "ArtificialHabitability": 10000,
+    "Industry": 4,
+    "PowerSupply": 4,
+    "PowerDemand": 2,
+    "LogisticsCapacity": 10,
+    "FoodOutput": 0,
+    "DefinitionId": "infrastructure.settlement-camp.v1",
+    "DisplayName": "Settlement camp",
+    "Research": 0,
+    "Shipbuilding": false,
+    "Extraction": [],
+    "AccessibleHabitats": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ]
+  },
+  "EstablishedFoodOutput": 2,
+  "MaximumValidationVisits": 2000000,
+  "MaximumCanonicalRootBytes": 67108864,
+  "Mine": {
+    "Infrastructure": {
+      "DefinitionId": "infrastructure.frontier-mine.v1",
+      "DisplayName": "Frontier dilithium mine",
+      "FoodOutput": 0,
+      "Industry": 0,
+      "PowerSupply": 0,
+      "PowerDemand": 3,
+      "Research": 0,
+      "LogisticsCapacity": 0,
+      "Shipbuilding": false,
+      "Extraction": [
+        {
+          "ResourceDefinitionId": "resource.dilithium",
+          "Amount": 3
+        }
+      ],
+      "AccessibleHabitats": [],
+      "ArtificialCapacity": 0,
+      "ArtificialHabitability": 0
+    },
+    "Cost": {
+      "Credits": 0,
+      "Industry": 60,
+      "Maintenance": 0,
+      "Resources": []
+    }
+  }
+}

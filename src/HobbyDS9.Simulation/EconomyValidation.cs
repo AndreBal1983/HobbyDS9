@@ -22,11 +22,15 @@ namespace HobbyDS9.Simulation
                 Check(s.Atmospheres != null && s.Atmospheres.Count > 0 && s.Atmospheres.All(a => DefinitionId.TryParse(a, out _)) && s.Atmospheres.Distinct().Count() == s.Atmospheres.Count, s.DefinitionId);
                 Check(s.TraitTags != null && s.TraitTags.All(a => DefinitionId.TryParse(a, out _)) && s.TraitTags.Distinct().Count() == s.TraitTags.Count, s.DefinitionId);
             }
+            // Local membership includes null keys just as the original string equality did.
+            var systemDefinitions = new HashSet<string?>(StringComparer.Ordinal);
+            if (d.StarSystems != null) foreach (var system in d.StarSystems)
+                if (system != null) systemDefinitions.Add(system.DefinitionId);
             foreach (var p in d.Planets)
             {
                 if (p == null) { Check(false, "Planets"); continue; }
                 Definition(p.DefinitionId, p.DisplayName);
-                Check(d.StarSystems != null && d.StarSystems.Any(s => s != null && s.DefinitionId == p.SystemDefinitionId) && !string.IsNullOrWhiteSpace(p.PlanetClass) && p.Gravity >= 0 && p.Pressure >= 0 && p.Radiation >= 0 && DefinitionId.TryParse(p.Atmosphere, out _), p.DefinitionId);
+                Check(d.StarSystems != null && systemDefinitions.Contains(p.SystemDefinitionId) && !string.IsNullOrWhiteSpace(p.PlanetClass) && p.Gravity >= 0 && p.Pressure >= 0 && p.Radiation >= 0 && DefinitionId.TryParse(p.Atmosphere, out _), p.DefinitionId);
                 Check(p.Habitats != null && p.Habitats.Count == 9 && p.Habitats.All(h => h != null && Enum.IsDefined(typeof(HabitatKind), h.Kind) && h.ShareBps >= 0 && h.ShareBps <= 10000 && h.NaturalCapacity >= 0)
                     && p.Habitats.Select(h => h.Kind).Distinct().Count() == 9 && p.Habitats.Sum(h => (long)h.ShareBps) == 10000 && p.Habitats.Aggregate(BigInteger.Zero, (a, h) => a + h.NaturalCapacity) <= long.MaxValue, p.DefinitionId);
                 ValidateResources(p.Deposits, d, p.DefinitionId + ".Deposits", issues);
@@ -46,7 +50,7 @@ namespace HobbyDS9.Simulation
             var unique = new HashSet<string>(StringComparer.Ordinal);
             foreach (var r in values) if (r == null || r.Amount < 0 || !DefinitionId.TryParse(r.ResourceDefinitionId, out _) || !unique.Add(r.ResourceDefinitionId) || d?.Resources == null || !d.Resources.Any(v => v != null && v.DefinitionId == r.ResourceDefinitionId)) Add(issues, ValidationCode.InvalidEconomicValue, path);
         }
-        private static void ValidateColonies(GameStateDto s, DefinitionCatalogDto? d, Dictionary<string, EntityIdentityDto> headers, HashSet<string> typed, HashSet<string> civs, string path, List<ValidationIssue> issues)
+        private static void ValidateColonies(GameStateDto s, DefinitionCatalogDto? d, Dictionary<string, EntityIdentityDto> headers, HashSet<string> typed, HashSet<string> civs, string path, List<ValidationIssue> issues,PlanetaryOwnershipContext? ownership=null)
         {
             void Check(bool ok, string p) { if (!ok) Add(issues, ValidationCode.InvalidEconomicValue, path + "." + p); }
             void Identity(string id, string? definition)
@@ -56,12 +60,25 @@ namespace HobbyDS9.Simulation
                 else if (header.DefinitionId != definition) Add(issues, ValidationCode.IdentityMismatch, path + "." + id);
             }
             if (s.Planets == null || s.Colonies == null || s.Displacements == null || s.LastDeliveries == null || s.PopulationStatistics == null) { Add(issues, ValidationCode.MissingField, path + ".PopulationState"); return; }
+            // Preserve FirstOrDefault's first non-null row, including a null DefinitionId.
+            var planetDefinitions = new Dictionary<string, PlanetDefinitionDto>(StringComparer.Ordinal);
+            PlanetDefinitionDto? nullKeyDefinition = null;
+            if (d?.Planets != null) foreach (var definition in d.Planets)
+            {
+                if (definition == null) continue;
+                if (definition.DefinitionId == null) { if (nullKeyDefinition == null) nullKeyDefinition = definition; }
+                else planetDefinitions.TryAdd(definition.DefinitionId, definition);
+            }
+            // Tuple equality is ordinal for strings and preserves null/null matches without delimiter keys.
+            var systemPairs = new HashSet<(string? SystemId, string? DefinitionId)>();
+            if (s.StarSystems != null) foreach (var system in s.StarSystems)
+                if (system != null) systemPairs.Add((system.SystemId, system.DefinitionId));
             foreach (var p in s.Planets)
             {
                 if (p == null) { Check(false, "Planets"); continue; }
                 Identity(p.PlanetId, p.DefinitionId);
-                var definition = d?.Planets?.FirstOrDefault(v => v != null && v.DefinitionId == p.DefinitionId);
-                Check(definition != null && s.StarSystems != null && s.StarSystems.Any(n => n != null && n.SystemId == p.SystemId && n.DefinitionId == definition.SystemDefinitionId), p.PlanetId);
+                var definition = p.DefinitionId == null ? nullKeyDefinition : planetDefinitions.TryGetValue(p.DefinitionId, out var found) ? found : null;
+                Check(definition != null && s.StarSystems != null && systemPairs.Contains((p.SystemId, definition.SystemDefinitionId)), p.PlanetId);
                 ValidateResources(p.RemainingDeposits, d, p.PlanetId, issues);
                 if (p.RemainingDeposits != null && definition?.Deposits != null) Check(p.RemainingDeposits.All(r => r != null && r.Amount <= PopulationRules.Stock(definition.Deposits.Where(x => x != null), r.ResourceDefinitionId)), p.PlanetId);
             }
@@ -71,7 +88,7 @@ namespace HobbyDS9.Simulation
                 if (c == null) { Check(false, "Colonies"); continue; }
                 Identity(c.ColonyId, null); ValidatePolitics(c,s,d,path+"."+c.ColonyId,issues);
                 Check(occupied.Add(c.PlanetId) && s.Planets.Any(p => p != null && p.PlanetId == c.PlanetId && p.SystemId == c.SystemId), c.ColonyId + ".Planet");
-                Check(s.StarSystems != null && s.StarSystems.Any(n => n != null && n.SystemId == c.SystemId && n.OwnerCivilizationId == c.OwnerCivilizationId), c.ColonyId + ".Ownership");
+                Check(ownership==null?s.StarSystems != null && s.StarSystems.Any(n => n != null && n.SystemId == c.SystemId && n.OwnerCivilizationId == c.OwnerCivilizationId):c.OwnerCivilizationId!=null&&ownership.EmpireControls(c.PlanetId,c.OwnerCivilizationId), c.ColonyId + ".Ownership");
                 Check(c.OwnerCivilizationId == null || civs.Contains(c.OwnerCivilizationId), c.ColonyId + ".Owner");
                 Check(c.Stability >= 0 && c.Stability <= 10000 && c.Prosperity >= 0 && c.Prosperity <= 10000 && c.Automation >= 0 && c.Automation <= 10000 && c.Food >= 0 && c.FoodShortageTurns >= 0, c.ColonyId);
                 ValidateResources(c.Stockpiles, d, c.ColonyId + ".Stockpiles", issues); ValidateResources(c.DesiredStockpiles, d, c.ColonyId + ".DesiredStockpiles", issues);

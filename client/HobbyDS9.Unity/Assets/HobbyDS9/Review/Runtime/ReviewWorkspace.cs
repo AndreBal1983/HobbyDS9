@@ -4,7 +4,7 @@ using HobbyDS9.TacticalReviewClient;
 
 namespace HobbyDS9.UnityReview
 {
-    public enum ReviewWorkspacePage { Map, Research, Production, FleetOrders, Combat, Saves, Audio, Tools, Designer, Worlds, Display }
+    public enum ReviewWorkspacePage { Map, Research, Production, FleetOrders, Combat, Saves, Audio, Tools, Designer, Worlds, Display, Empire }
 
     // Navigation owns presentation only. It never creates/replaces a host, refreshes a
     // campaign, drops a controller draft or dispatches authoritative work.
@@ -15,8 +15,11 @@ namespace HobbyDS9.UnityReview
         private ReviewController context;
         private ReviewWorkspacePage page=ReviewWorkspacePage.Map;
         private string? selectedNode,selectedFleet;
-        public string? SelectedNode { get=>selectedNode;set{if(selectedNode!=value)RoutePreview=null;selectedNode=value;} }
+        public string? SelectedNode { get=>selectedNode;set{if(selectedNode!=value){RoutePreview=null;LastMapStarClick=null;}selectedNode=value;} }
         public string? SelectedFleet { get=>selectedFleet;set{if(selectedFleet!=value)RoutePreview=null;selectedFleet=value;} }
+        internal (string? SystemId,string Caption)? PendingSystemInspection { get; set; }
+        internal (ReviewFrame Frame,string World)? PendingWorldInspection { get; set; }
+        internal (ReviewFrame Frame,string Node,int PointerId)? LastMapStarClick { get; set; }
         public string? SelectedColony { get; set; }
         public string? SelectedOwnShip { get; set; }
         public KnownRouteOffer? RoutePreview { get; set; }
@@ -24,6 +27,16 @@ namespace HobbyDS9.UnityReview
         public HobbyDS9.Contracts.ScienceDiscipline? ScienceDetails { get; set; }
         public string ResearchTab { get; set; }="science";
         public bool Compact { get; set; }
+        public float MapZoom { get; set; }=1;
+        public float MapPanX { get; set; }
+        public float MapPanY { get; set; }
+        public string FleetSort { get; set; }="Name";
+        public bool FleetSortDescending { get; set; }
+        public bool FleetOrganizationExpanded { get; set; }
+        public string WorldSort { get; set; }="World";
+        public bool WorldSortDescending { get; set; }
+        public System.Collections.Generic.Dictionary<string,string> WorldFilters { get; }=new System.Collections.Generic.Dictionary<string,string>(StringComparer.Ordinal);
+        public System.Collections.Generic.HashSet<string> CollapsedSystems { get; }=new System.Collections.Generic.HashSet<string>(StringComparer.Ordinal);
         public bool RoutePreviewMatchesCurrent
         {
             get
@@ -40,7 +53,8 @@ namespace HobbyDS9.UnityReview
         private void Context()
         {
             if(ReferenceEquals(context,Model.Current))return;
-            context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;SelectedOwnShip=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";NavigationEpoch=checked(NavigationEpoch+1);
+            context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;PendingSystemInspection=null;PendingWorldInspection=null;LastMapStarClick=null;SelectedOwnShip=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";MapZoom=1;MapPanX=MapPanY=0;NavigationEpoch=checked(NavigationEpoch+1);
+            FleetSort="Name";FleetSortDescending=false;FleetOrganizationExpanded=false;WorldFilters.Clear();CollapsedSystems.Clear();WorldSort="World";WorldSortDescending=false;
         }
         public ReviewWorkspacePage Page { get {Context();return page;} }
         public bool CanNavigate=>!Model.Closed&&!Model.Busy&&!Model.Current.HasPendingWork;
@@ -48,7 +62,7 @@ namespace HobbyDS9.UnityReview
         {
             Context();if(!Enum.IsDefined(typeof(ReviewWorkspacePage),next)||!CanNavigate)return false;
             if(page==next)return true;
-            page=next;NavigationEpoch=checked(NavigationEpoch+1);
+            page=next;LastMapStarClick=null;NavigationEpoch=checked(NavigationEpoch+1);
             if(next==ReviewWorkspacePage.Combat)Combat.Open();
             return true;
         }

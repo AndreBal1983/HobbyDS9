@@ -17,13 +17,87 @@ namespace HobbyDS9.UnityClient.Tests
             var invoke=typeof(Clickable).GetMethod("Invoke",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
             Assert.That(invoke,Is.Not.Null);invoke.Invoke(button.clickable,new object[]{null});
         }
+        [TestCase("hull.utility.v1","reference.galaxy.precision.v3")]
+        [TestCase("hull.defiant-combat.v1","activity.defiant-combat.v1")]
+        [TestCase("hull.galaxy-cruiser.v1","activity.galaxy-cruiser.v1")]
+        [TestCase("hull.constitution-explorer.v1","activity.constitution-explorer.v1")]
+        [TestCase("hull.defiant-combat.v1-extra",null)]
+        [TestCase("HULL.GALAXY-CRUISER.V1",null)]
+        [TestCase("hull.utility.v1-extra",null)]
+        [TestCase("HULL.UTILITY.V1",null)]
+        [TestCase("hull.cruiser.v1",null)]
+        [TestCase(null,null)]
+        public void HullReferenceBindingIsExactAndPresentationOnly(string hull,string expected)
+        {
+            Assert.That(ShipDesignerPreview.ReferenceKey(hull),Is.EqualTo(expected));
+        }
+        [Test]
+        public void FixedHullPreviewSeparatesExteriorFromUnmappedEquipmentStudies()
+        {
+            using(var preview=new ShipDesignerPreview("hull.defiant-combat.v1"))
+            {
+                foreach(var name in new[]{"hull","nacelles","deflector","corecutaway"})
+                    Assert.That(preview.Q<Button>("designer-view-"+name).style.display.value,Is.EqualTo(DisplayStyle.None));
+                Assert.That(preview.Q<Label>("designer-fixed-exterior-note").style.display.value,Is.EqualTo(DisplayStyle.Flex));
+                Assert.That(preview.Q<Label>("designer-hull-reference-caption").tooltip,Does.Contain("owner-provided Meshy study"));
+                var counts=new System.Collections.Generic.Dictionary<string,int>{{"component.propulsion.v1",2}};
+                preview.SetFit("hull.utility.v1",counts,true);
+                Assert.That(counts["component.propulsion.v1"],Is.EqualTo(2));
+                Assert.That(preview.Q<Button>("designer-view-nacelles").style.display.value,Is.EqualTo(DisplayStyle.Flex));
+                Assert.That(preview.Q<Label>("designer-fixed-exterior-note").style.display.value,Is.EqualTo(DisplayStyle.None));
+                preview.SetFit("hull.galaxy-cruiser.v1",counts,false);
+                Assert.That(preview.Q<Button>("designer-view-nacelles").style.display.value,Is.EqualTo(DisplayStyle.None));
+                Assert.That(preview.Q<Label>("designer-hull-reference-caption").tooltip,Does.Contain("Chris Kuhn"));
+                Assert.That(preview.Q<Image>("designer-hull-reference-image").image,Is.Null,"Unattached source test must not open a renderer.");
+            }
+        }
+        [Test]
+        public void OverviewDraftRefreshKeepsReferenceElementAndRefreshesFitFacts()
+        {
+            var draft=new ShipDesignDraft(ShipDesignFixtureLoader.Load());
+            using(var view=new ShipDesignerView(draft,()=>{}))
+            {
+                var preview=view.Q<ShipDesignerPreview>();
+                draft.Rename("Updated local class");
+                Assert.That(view.Q<ShipDesignerPreview>(),Is.SameAs(preview));
+                var component=draft.Provider.Catalogue.First();
+                draft.Add(component.Id);
+                Assert.That(view.Q<ShipDesignerPreview>(),Is.SameAs(preview));
+                Assert.That(view.Query<Label>().ToList().Any(l=>l.text==component.Name),Is.True);
+                Assert.That(view.Q<Label>("designer-capacity").text,Does.Contain(draft.Preview().UsedCapacity.ToString()));
+                view.SelectSystem("Hull");view.SelectSystem("Overview");
+                Assert.That(view.Q<ShipDesignerPreview>(),Is.Not.SameAs(preview));
+            }
+        }
+        [Test]
+        public void AttachedReferenceReleasesOnDetachRecreatesOnAttachAndDoesNotRedrawForDraftEdit()
+        {
+            var window=ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();
+            var draft=new ShipDesignDraft(ShipDesignFixtureLoader.Load());
+            using(var view=new ShipDesignerView(draft,()=>{}))
+            try
+            {
+                window.rootVisualElement.Add(view);
+                var image=view.Q<Image>("designer-hull-reference-image");
+                var first=image.image;
+                Assert.That(first,Is.Not.Null,"Receiving renderer must supply the explicit owned art reference.");
+                draft.Rename("Same hull keeps reference stage");
+                Assert.That(view.Q<Image>("designer-hull-reference-image"),Is.SameAs(image));
+                Assert.That(image.image,Is.SameAs(first));
+                window.rootVisualElement.Remove(view);Assert.That(image.image,Is.Null);
+                window.rootVisualElement.Add(view);Assert.That(image.image,Is.Not.Null);
+                Assert.That(image.image,Is.Not.SameAs(first));
+                view.Dispose();Assert.That(image.image,Is.Null);
+            }
+            finally {UnityEngine.Object.DestroyImmediate(window);}
+        }
         [Test]
         public void SystemSwitchingFiltersCataloguePreservesDraftAndSeparatesProfileControls()
         {
             var draft=new ShipDesignDraft(ShipDesignFixtureLoader.Load());draft.Rename("Local survey class");
             using(var view=new ShipDesignerView(draft,()=>{}))
             {
-                Assert.That(view.Q<ShipSystemGraphic>().HasImage,Is.True);
+                Assert.That(view.Q<ShipDesignerPreview>(),Is.Not.Null);
                 foreach(var id in new[]{"Weapons","Power","Crew","Sensors","Science","Command","Shields","Propulsion","Support"})
                 {
                     view.SelectSystem(id);
@@ -49,7 +123,7 @@ namespace HobbyDS9.UnityClient.Tests
             finally {UnityEngine.Object.DestroyImmediate(image);UnityEngine.Object.DestroyImmediate(catalogue);}
         }
         [Test]
-        public void AttachedComponentActionsAddReplaceAndRemoveThroughLocalDraft()
+        public void AttachedComponentActionsPreviewBeforeFittingAndCancelWithoutInstalling()
         {
             var draft=new ShipDesignDraft(ShipDesignFixtureLoader.Load());draft.RequestTemplate("class.escort");
             var window=ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();
@@ -60,11 +134,17 @@ namespace HobbyDS9.UnityClient.Tests
                     window.Show();window.rootVisualElement.Add(view);view.SelectSystem("Shields");
                     Click(view.Q<Button>("select-component-component.small-shield.v1"));
                     Click(view.Q<Button>("designer-replace"));
+                    Assert.That(draft.Current.Installed.ContainsKey("component.escort-shield.v1"),Is.True);
+                    Assert.That(draft.HasPendingFit,Is.True);Click(view.Q<Button>("designer-cancel-fit"));
+                    Assert.That(draft.Current.Installed.ContainsKey("component.escort-shield.v1"),Is.True);
+                    Click(view.Q<Button>("designer-replace"));Click(view.Q<Button>("designer-fit-package"));
                     Assert.That(draft.Current.Installed.ContainsKey("component.escort-shield.v1"),Is.False);
                     Assert.That(draft.Current.Installed["component.small-shield.v1"],Is.EqualTo(1));
                     Click(view.Q<Button>("designer-add"));
+                    Assert.That(draft.Current.Installed["component.small-shield.v1"],Is.EqualTo(1));Click(view.Q<Button>("designer-fit-package"));
                     Assert.That(draft.Current.Installed["component.small-shield.v1"],Is.EqualTo(2));
                     Click(view.Q<Button>("remove-component.small-shield.v1"));
+                    Assert.That(draft.Current.Installed.ContainsKey("component.small-shield.v1"),Is.True);Click(view.Q<Button>("designer-fit-package"));
                     Assert.That(draft.Current.Installed.ContainsKey("component.small-shield.v1"),Is.False);
                 }
                 finally{window.Close();}
@@ -192,7 +272,7 @@ namespace HobbyDS9.UnityClient.Tests
                 Assert.That(shell.DesignerOpen,Is.True); Assert.That(shell.Q<GalaxyMap>(),Is.SameAs(map));
                 Assert.That(shell.Q<VisualElement>("galaxy-map-frame").style.display.value,Is.EqualTo(DisplayStyle.None));
                 Assert.That(view.Q<VisualElement>("designer-body"),Is.Not.Null); Assert.That(view.CloseButton,Is.Not.Null);
-                Assert.That(view.Q<ShipSystemGraphic>().pickingMode,Is.EqualTo(PickingMode.Ignore)); Assert.That(view.Q<Image>("designer-image"),Is.Not.Null);
+                Assert.That(view.Q<ShipDesignerPreview>().pickingMode,Is.EqualTo(PickingMode.Ignore)); Assert.That(view.Q<Image>("designer-hull-reference-image"),Is.Not.Null);
                 shell.SelectSection("Selection"); Assert.That(shell.DesignerOpen,Is.False);
                 Assert.That(shell.Q<VisualElement>("galaxy-map-frame").style.display.value,Is.EqualTo(DisplayStyle.Flex));
                 Assert.That(shell.Header.FitMap.enabledSelf,Is.True);

@@ -1,0 +1,45 @@
+# V3 Unity receiving proposal
+
+Source-only plan, 24 October 2026. No graphics lease is implied. The protected f52 playable package stays unchanged. One later focused graphics-enabled Unity case is proposed, at most20 normal saved frames and a15-minute owned-process watchdog; each asynchronous operation remains bounded90seconds. Full Assets/Packages/ProjectSettings and .vsconfig presence are snapshotted BEFORE Prepare, automatic changes/extras archived after owned processes exit, originals restored and hash-verified. No native/build in this gate.
+
+Use the accepted labelled V2 Explore32 checkpoint (three actor-known proxies) and separately the accepted V2 combat checkpoint (zero proxies), each opened through its explicit typed store/host. No full generated map, private seed or hidden feature data drives UI actions or rendering. An eight-field workload may use a clearly labelled synthetic actor-known presentation fixture solely for renderer budget/mask receiving; never claim that fixture is a campaign observation. Main-menu integration uses the separately reviewed V2 default and explicit old V1 Continue control.
+
+Before normal captures assert the V3 atlas's actual importer flags, linear non-sRGB graphics format, RGBA32,12 mips, non-readable, Clamp/Trilinear and independent alpha. Use shader probe pass3 plus known asymmetric original PNG texels to check numeric channels/Y orientation without changing the imported asset. Assert the uploaded volume's actual linear graphics format/eight mips. Shader compile/support errors fail this case, not a silent visual success.
+
+Capture Explore32 overview and regional views at1280x720,1920x1080,3440x1440 (six frames). At every size compare actual Image content-plane world corners with the independent lines plane; retain<2px star/route marker proof and real picked left/right gestures. Add matched regional pan/depth-off frames at1920 (two), plus one matched Nebulae-off macro-only frame. Macro arms, warm core/dust, local colour/particles, contrast and motion are judged from the actual images; no CPU metric establishes appearance.
+
+Read back actual UI-composed Nebulae-on minus Nebulae-off contributions at the EXACT same pair/camera/depth, including opacity shadows, at all three sizes with fractional pan/zoom and charted edge/corner placements. Off must retain the macro and immediately clear local residency/transitions. Require exterior ZERO outside the trusted charted polygon union, with unchanged macro there. This test includes both local-to-final and final-to-UI bilinear stages and the actual Image quad/border/padding; CPU mask tests alone are insufficient. Save at most six supporting normal frames across these states. Conservative guard loss inside the boundary must be visible and disclosed.
+
+Use at most three more normal frames for the eight-field bounded workload and separate combat-zero-proxy state. Assert final macro target remains its normal capped resolution, local target dimensions/fetch bound<=40million, fields<=8, particles<=256/full quad<=32px/aggregate fragments<=262144. Report actual dimensions, mask work/status and any fallback. Assert stale host/pair suppresses publication, no-idle-submission once the finite residency fade settles, effects-off ends transitions, and detach/reattach/profile change releases/recreates resources without accumulation. Unsupported or lost targets must leave a usable flat map and no local reveal. No hardware GPU/FPS claim from CPU submission timings.
+
+The frozen corrected budget is19: three menu, one raw-linear-data asymmetric particle component probe, one raw-linear-data synthetic eight-field component, three overview, six regional on/off, one lawful-proxy closeup, three matched pan/depth/control, and one combat-zero frame. Maximum20 remains unchanged. Component PNGs are linear-data diagnostics, not display previews; full UI frames receive the normal display transfer. Preserve every failed attempt and raw diagnostics. Root/art/independent source and image gates precede any strict player build or native control.
+
+## Particle-orientation correction receiving
+
+The actual116219a run failed strict exterior equality at four pixels. An asymmetric pass2 particle probe now uses an isolated white point mask, private half target/material/mesh and the SAME particle shader pass; its weighted centroid must be within0.35px of the intended asymmetric point and farther than10px from its vertical reflection. This centroid tolerance is not an exterior-mask tolerance: exterior equality remains exact ZERO at all three original cameras. All probe resources and the prior active target are restored/disposed in finally. One additional1920 full-UI closeup fits only an actor-known proxy's reference bounds; the original three regional cameras remain unchanged. No production exposure/gamma/optical coefficient changes are included.
+
+## Pending-layout regression
+
+The e46 case passed particle placement/all three strict exterior gates, then map Fit immediately after fleet-selection redraw reached NaN layout dimensions and emitted invalid particle mesh bounds. The renderer now defers nonfinite/nonpositive dimensions, scale/origins or non-float-representable camera/extents before cache/residency/target/material/GPU changes. Stale observation and lost context checks retain precedence. The binding validates the captured content rectangle and placement before construction/publication, after stale-pair validation; pending layout does not latch permanent fallback and GeometryChanged retries. Defensive particle projection/quad checks reject nonfinite candidates before mesh writes. The component verifies invalid dimensions/derived camera preserve target/counts/active RT, valid recovery, stale/lost-context precedence. Actual control testing awaits a bounded fresh attached finite layout after fleet selection, then reacquires Fit. Cameras, optical coefficients, exact exterior tolerance and19-frame budget remain unchanged.
+
+
+
+## Narrow inward-edge smoothing gate
+
+Do not repeat the old menu/combat matrix for this presentation-only change.
+Use the real actor-known Explore32 presentation and actual V3 Image at1280x720,
+1920x1080 and3440x1440. Retain actual content-plane/lines alignment and strict
+UI-composed8-bit NebulaeON-minus-OFF exteriorZERO, including opacity and particles,
+with settled residency, the same camera and a fractional pan/zoom. Save matched
+regional pairs at three sizes plus at mosttwo zoomed oblique-edge closeups for
+Root/art assessment (eight frames proposed). Confirm several intermediate alpha
+levels in the actual uploaded mask; an isolated synthetic coverage probe is
+permitted only if clearly labelled component evidence, not campaign play.
+
+Judge smooth taper at diagonal/curved explored contours and pan/depth extremes,
+no internal charted seam or window-edge vignette, no new unknown detail and no
+objectionable flicker. Show the remaining conservative inset honestly. CPU
+zero-support proof and distance math do not establish actual visual success.
+Retain current field/particle/fetch/texture caps, mask-grid stability and
+stale/dispose/no-idle checks; no shader/optics or gameplay changes. A separate
+source-reviewed test and explicit physical lease precede this narrow run.

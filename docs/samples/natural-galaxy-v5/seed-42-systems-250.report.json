@@ -1,0 +1,5365 @@
+{
+  "ContentHash": "4ea9b0d4581edb60460413e9fee0203257bd47e5b6cb43fc044ee5b2cda01976",
+  "Settings": {
+    "Map": {
+      "Seed": "42",
+      "SystemCount": 250,
+      "EmptyRegionCount": 250,
+      "Width": 2500000,
+      "Height": 2000000,
+      "QuietEmptyAreaTargetPermille": 2000,
+      "BlackHolesPerBaselineArea": 2,
+      "NebulaePerBaselineArea": 3,
+      "HomeCivilizationDefinitionIds": [
+        "civilization.cardassian",
+        "civilization.federation"
+      ],
+      "StellarInfluenceEnabled": true,
+      "BlackHoleInfluenceEnabled": true,
+      "NebulaInfluenceEnabled": true
+    },
+    "IsolatedStarSharePermille": 100,
+    "AssociationSpreadPermille": 1000
+  },
+  "Tuning": {
+    "Environment": {
+      "BaseDensity": 100,
+      "MaximumDensity": 1000,
+      "MinimumSiteSeparation": 8000,
+      "MinimumStarSeparation": 12000,
+      "OuterMargin": 20000,
+      "BlackHoleCount": 10,
+      "NebulaCount": 15,
+      "CandidateDrawsPerRegion": 1024,
+      "PlacementAttempts": 8
+    },
+    "IsolatedStarSeparation": 120000,
+    "MinimumAssociationSize": 2,
+    "MaximumAssociationSize": 9,
+    "MinimumAssociationRadius": 22000,
+    "MaximumAssociationRadius": 75000,
+    "MinimumAssociationSeparation": 45000,
+    "MaximumAssociationSeparation": 160000,
+    "ExtraSiteSeparation": 30000,
+    "StellarPlacementPressurePermille": 1000,
+    "QuietDisturbanceThreshold": 100
+  },
+  "GenerateMs": 570.6172,
+  "StrictOpenMs": 407.5499,
+  "ReopenedHash": "4ea9b0d4581edb60460413e9fee0203257bd47e5b6cb43fc044ee5b2cda01976",
+  "MalformedRejectMs": 0.4802,
+  "WrongHashRejectMs": 379.9637,
+  "FailedOpenPreservedReview": true,
+  "IndentedJsonBytes": 1095520,
+  "PeakWorkingSetBytes": 93155328,
+  "Query": {
+    "PolicyVersion": "minimum-crossings-centre-span-v1",
+    "MapContentHash": "4ea9b0d4581edb60460413e9fee0203257bd47e5b6cb43fc044ee5b2cda01976",
+    "OriginNodeId": "nav.natural.0078",
+    "Targets": [
+      {
+        "NodeId": "nav.natural.0151",
+        "Intent": 2,
+        "SystemId": "system.natural.0151"
+      }
+    ],
+    "Filter": {
+      "PermittedNodeIds": [
+        "nav.natural.0001",
+        "nav.natural.0002",
+        "nav.natural.0003",
+        "nav.natural.0004",
+        "nav.natural.0005",
+        "nav.natural.0006",
+        "nav.natural.0007",
+        "nav.natural.0008",
+        "nav.natural.0009",
+        "nav.natural.0010",
+        "nav.natural.0011",
+        "nav.natural.0012",
+        "nav.natural.0013",
+        "nav.natural.0014",
+        "nav.natural.0015",
+        "nav.natural.0016",
+        "nav.natural.0017",
+        "nav.natural.0018",
+        "nav.natural.0019",
+        "nav.natural.0020",
+        "nav.natural.0021",
+        "nav.natural.0022",
+        "nav.natural.0023",
+        "nav.natural.0024",
+        "nav.natural.0025",
+        "nav.natural.0026",
+        "nav.natural.0027",
+        "nav.natural.0028",
+        "nav.natural.0029",
+        "nav.natural.0030",
+        "nav.natural.0031",
+        "nav.natural.0032",
+        "nav.natural.0033",
+        "nav.natural.0034",
+        "nav.natural.0035",
+        "nav.natural.0036",
+        "nav.natural.0037",
+        "nav.natural.0038",
+        "nav.natural.0039",
+        "nav.natural.0040",
+        "nav.natural.0041",
+        "nav.natural.0042",
+        "nav.natural.0043",
+        "nav.natural.0044",
+        "nav.natural.0045",
+        "nav.natural.0046",
+        "nav.natural.0047",
+        "nav.natural.0048",
+        "nav.natural.0049",
+        "nav.natural.0050",
+        "nav.natural.0051",
+        "nav.natural.0052",
+        "nav.natural.0053",
+        "nav.natural.0054",
+        "nav.natural.0055",
+        "nav.natural.0056",
+        "nav.natural.0057",
+        "nav.natural.0058",
+        "nav.natural.0059",
+        "nav.natural.0060",
+        "nav.natural.0061",
+        "nav.natural.0062",
+        "nav.natural.0063",
+        "nav.natural.0064",
+        "nav.natural.0065",
+        "nav.natural.0066",
+        "nav.natural.0067",
+        "nav.natural.0068",
+        "nav.natural.0069",
+        "nav.natural.0070",
+        "nav.natural.0071",
+        "nav.natural.0072",
+        "nav.natural.0073",
+        "nav.natural.0074",
+        "nav.natural.0075",
+        "nav.natural.0076",
+        "nav.natural.0077",
+        "nav.natural.0078",
+        "nav.natural.0079",
+        "nav.natural.0080",
+        "nav.natural.0081",
+        "nav.natural.0082",
+        "nav.natural.0083",
+        "nav.natural.0084",
+        "nav.natural.0085",
+        "nav.natural.0086",
+        "nav.natural.0087",
+        "nav.natural.0088",
+        "nav.natural.0089",
+        "nav.natural.0090",
+        "nav.natural.0091",
+        "nav.natural.0092",
+        "nav.natural.0093",
+        "nav.natural.0094",
+        "nav.natural.0095",
+        "nav.natural.0096",
+        "nav.natural.0097",
+        "nav.natural.0098",
+        "nav.natural.0099",
+        "nav.natural.0100",
+        "nav.natural.0101",
+        "nav.natural.0102",
+        "nav.natural.0103",
+        "nav.natural.0104",
+        "nav.natural.0105",
+        "nav.natural.0106",
+        "nav.natural.0107",
+        "nav.natural.0108",
+        "nav.natural.0109",
+        "nav.natural.0110",
+        "nav.natural.0111",
+        "nav.natural.0112",
+        "nav.natural.0113",
+        "nav.natural.0114",
+        "nav.natural.0115",
+        "nav.natural.0116",
+        "nav.natural.0117",
+        "nav.natural.0118",
+        "nav.natural.0119",
+        "nav.natural.0120",
+        "nav.natural.0121",
+        "nav.natural.0122",
+        "nav.natural.0123",
+        "nav.natural.0124",
+        "nav.natural.0125",
+        "nav.natural.0126",
+        "nav.natural.0127",
+        "nav.natural.0128",
+        "nav.natural.0129",
+        "nav.natural.0130",
+        "nav.natural.0131",
+        "nav.natural.0132",
+        "nav.natural.0133",
+        "nav.natural.0134",
+        "nav.natural.0135",
+        "nav.natural.0136",
+        "nav.natural.0137",
+        "nav.natural.0138",
+        "nav.natural.0139",
+        "nav.natural.0140",
+        "nav.natural.0141",
+        "nav.natural.0142",
+        "nav.natural.0143",
+        "nav.natural.0144",
+        "nav.natural.0145",
+        "nav.natural.0146",
+        "nav.natural.0147",
+        "nav.natural.0148",
+        "nav.natural.0149",
+        "nav.natural.0150",
+        "nav.natural.0151",
+        "nav.natural.0152",
+        "nav.natural.0153",
+        "nav.natural.0154",
+        "nav.natural.0155",
+        "nav.natural.0156",
+        "nav.natural.0157",
+        "nav.natural.0158",
+        "nav.natural.0159",
+        "nav.natural.0160",
+        "nav.natural.0161",
+        "nav.natural.0162",
+        "nav.natural.0163",
+        "nav.natural.0164",
+        "nav.natural.0165",
+        "nav.natural.0166",
+        "nav.natural.0167",
+        "nav.natural.0168",
+        "nav.natural.0169",
+        "nav.natural.0170",
+        "nav.natural.0171",
+        "nav.natural.0172",
+        "nav.natural.0173",
+        "nav.natural.0174",
+        "nav.natural.0175",
+        "nav.natural.0176",
+        "nav.natural.0177",
+        "nav.natural.0178",
+        "nav.natural.0179",
+        "nav.natural.0180",
+        "nav.natural.0181",
+        "nav.natural.0182",
+        "nav.natural.0183",
+        "nav.natural.0184",
+        "nav.natural.0185",
+        "nav.natural.0186",
+        "nav.natural.0187",
+        "nav.natural.0188",
+        "nav.natural.0189",
+        "nav.natural.0190",
+        "nav.natural.0191",
+        "nav.natural.0192",
+        "nav.natural.0193",
+        "nav.natural.0194",
+        "nav.natural.0195",
+        "nav.natural.0196",
+        "nav.natural.0197",
+        "nav.natural.0198",
+        "nav.natural.0199",
+        "nav.natural.0200",
+        "nav.natural.0201",
+        "nav.natural.0202",
+        "nav.natural.0203",
+        "nav.natural.0204",
+        "nav.natural.0205",
+        "nav.natural.0206",
+        "nav.natural.0207",
+        "nav.natural.0208",
+        "nav.natural.0209",
+        "nav.natural.0210",
+        "nav.natural.0211",
+        "nav.natural.0212",
+        "nav.natural.0213",
+        "nav.natural.0214",
+        "nav.natural.0215",
+        "nav.natural.0216",
+        "nav.natural.0217",
+        "nav.natural.0218",
+        "nav.natural.0219",
+        "nav.natural.0220",
+        "nav.natural.0221",
+        "nav.natural.0222",
+        "nav.natural.0223",
+        "nav.natural.0224",
+        "nav.natural.0225",
+        "nav.natural.0226",
+        "nav.natural.0227",
+        "nav.natural.0228",
+        "nav.natural.0229",
+        "nav.natural.0230",
+        "nav.natural.0231",
+        "nav.natural.0232",
+        "nav.natural.0233",
+        "nav.natural.0234",
+        "nav.natural.0235",
+        "nav.natural.0236",
+        "nav.natural.0237",
+        "nav.natural.0238",
+        "nav.natural.0239",
+        "nav.natural.0240",
+        "nav.natural.0241",
+        "nav.natural.0242",
+        "nav.natural.0243",
+        "nav.natural.0244",
+        "nav.natural.0245",
+        "nav.natural.0246",
+        "nav.natural.0247",
+        "nav.natural.0248",
+        "nav.natural.0249",
+        "nav.natural.0250",
+        "nav.natural.0251",
+        "nav.natural.0252",
+        "nav.natural.0253",
+        "nav.natural.0254",
+        "nav.natural.0255",
+        "nav.natural.0256",
+        "nav.natural.0257",
+        "nav.natural.0258",
+        "nav.natural.0259",
+        "nav.natural.0260",
+        "nav.natural.0261",
+        "nav.natural.0262",
+        "nav.natural.0263",
+        "nav.natural.0264",
+        "nav.natural.0265",
+        "nav.natural.0266",
+        "nav.natural.0267",
+        "nav.natural.0268",
+        "nav.natural.0269",
+        "nav.natural.0270",
+        "nav.natural.0271",
+        "nav.natural.0272",
+        "nav.natural.0273",
+        "nav.natural.0274",
+        "nav.natural.0275",
+        "nav.natural.0276",
+        "nav.natural.0277",
+        "nav.natural.0278",
+        "nav.natural.0279",
+        "nav.natural.0280",
+        "nav.natural.0281",
+        "nav.natural.0282",
+        "nav.natural.0283",
+        "nav.natural.0284",
+        "nav.natural.0285",
+        "nav.natural.0286",
+        "nav.natural.0287",
+        "nav.natural.0288",
+        "nav.natural.0289",
+        "nav.natural.0290",
+        "nav.natural.0291",
+        "nav.natural.0292",
+        "nav.natural.0293",
+        "nav.natural.0294",
+        "nav.natural.0295",
+        "nav.natural.0296",
+        "nav.natural.0297",
+        "nav.natural.0298",
+        "nav.natural.0299",
+        "nav.natural.0300",
+        "nav.natural.0301",
+        "nav.natural.0302",
+        "nav.natural.0303",
+        "nav.natural.0304",
+        "nav.natural.0305",
+        "nav.natural.0306",
+        "nav.natural.0307",
+        "nav.natural.0308",
+        "nav.natural.0309",
+        "nav.natural.0310",
+        "nav.natural.0311",
+        "nav.natural.0312",
+        "nav.natural.0313",
+        "nav.natural.0314",
+        "nav.natural.0315",
+        "nav.natural.0316",
+        "nav.natural.0317",
+        "nav.natural.0318",
+        "nav.natural.0319",
+        "nav.natural.0320",
+        "nav.natural.0321",
+        "nav.natural.0322",
+        "nav.natural.0323",
+        "nav.natural.0324",
+        "nav.natural.0325",
+        "nav.natural.0326",
+        "nav.natural.0327",
+        "nav.natural.0328",
+        "nav.natural.0329",
+        "nav.natural.0330",
+        "nav.natural.0331",
+        "nav.natural.0332",
+        "nav.natural.0333",
+        "nav.natural.0334",
+        "nav.natural.0335",
+        "nav.natural.0336",
+        "nav.natural.0337",
+        "nav.natural.0338",
+        "nav.natural.0339",
+        "nav.natural.0340",
+        "nav.natural.0341",
+        "nav.natural.0342",
+        "nav.natural.0343",
+        "nav.natural.0344",
+        "nav.natural.0345",
+        "nav.natural.0346",
+        "nav.natural.0347",
+        "nav.natural.0348",
+        "nav.natural.0349",
+        "nav.natural.0350",
+        "nav.natural.0351",
+        "nav.natural.0352",
+        "nav.natural.0353",
+        "nav.natural.0354",
+        "nav.natural.0355",
+        "nav.natural.0356",
+        "nav.natural.0357",
+        "nav.natural.0358",
+        "nav.natural.0359",
+        "nav.natural.0360",
+        "nav.natural.0361",
+        "nav.natural.0362",
+        "nav.natural.0363",
+        "nav.natural.0364",
+        "nav.natural.0365",
+        "nav.natural.0366",
+        "nav.natural.0367",
+        "nav.natural.0368",
+        "nav.natural.0369",
+        "nav.natural.0370",
+        "nav.natural.0371",
+        "nav.natural.0372",
+        "nav.natural.0373",
+        "nav.natural.0374",
+        "nav.natural.0375",
+        "nav.natural.0376",
+        "nav.natural.0377",
+        "nav.natural.0378",
+        "nav.natural.0379",
+        "nav.natural.0380",
+        "nav.natural.0381",
+        "nav.natural.0382",
+        "nav.natural.0383",
+        "nav.natural.0384",
+        "nav.natural.0385",
+        "nav.natural.0386",
+        "nav.natural.0387",
+        "nav.natural.0388",
+        "nav.natural.0389",
+        "nav.natural.0390",
+        "nav.natural.0391",
+        "nav.natural.0392",
+        "nav.natural.0393",
+        "nav.natural.0394",
+        "nav.natural.0395",
+        "nav.natural.0396",
+        "nav.natural.0397",
+        "nav.natural.0398",
+        "nav.natural.0399",
+        "nav.natural.0400",
+        "nav.natural.0401",
+        "nav.natural.0402",
+        "nav.natural.0403",
+        "nav.natural.0404",
+        "nav.natural.0405",
+        "nav.natural.0406",
+        "nav.natural.0407",
+        "nav.natural.0408",
+        "nav.natural.0409",
+        "nav.natural.0410",
+        "nav.natural.0411",
+        "nav.natural.0412",
+        "nav.natural.0413",
+        "nav.natural.0414",
+        "nav.natural.0415",
+        "nav.natural.0416",
+        "nav.natural.0417",
+        "nav.natural.0418",
+        "nav.natural.0419",
+        "nav.natural.0420",
+        "nav.natural.0421",
+        "nav.natural.0422",
+        "nav.natural.0423",
+        "nav.natural.0424",
+        "nav.natural.0425",
+        "nav.natural.0426",
+        "nav.natural.0427",
+        "nav.natural.0428",
+        "nav.natural.0429",
+        "nav.natural.0430",
+        "nav.natural.0431",
+        "nav.natural.0432",
+        "nav.natural.0433",
+        "nav.natural.0434",
+        "nav.natural.0435",
+        "nav.natural.0436",
+        "nav.natural.0437",
+        "nav.natural.0438",
+        "nav.natural.0439",
+        "nav.natural.0440",
+        "nav.natural.0441",
+        "nav.natural.0442",
+        "nav.natural.0443",
+        "nav.natural.0444",
+        "nav.natural.0445",
+        "nav.natural.0446",
+        "nav.natural.0447",
+        "nav.natural.0448",
+        "nav.natural.0449",
+        "nav.natural.0450",
+        "nav.natural.0451",
+        "nav.natural.0452",
+        "nav.natural.0453",
+        "nav.natural.0454",
+        "nav.natural.0455",
+        "nav.natural.0456",
+        "nav.natural.0457",
+        "nav.natural.0458",
+        "nav.natural.0459",
+        "nav.natural.0460",
+        "nav.natural.0461",
+        "nav.natural.0462",
+        "nav.natural.0463",
+        "nav.natural.0464",
+        "nav.natural.0465",
+        "nav.natural.0466",
+        "nav.natural.0467",
+        "nav.natural.0468",
+        "nav.natural.0469",
+        "nav.natural.0470",
+        "nav.natural.0471",
+        "nav.natural.0472",
+        "nav.natural.0473",
+        "nav.natural.0474",
+        "nav.natural.0475",
+        "nav.natural.0476",
+        "nav.natural.0477",
+        "nav.natural.0478",
+        "nav.natural.0479",
+        "nav.natural.0480",
+        "nav.natural.0481",
+        "nav.natural.0482",
+        "nav.natural.0483",
+        "nav.natural.0484",
+        "nav.natural.0485",
+        "nav.natural.0486",
+        "nav.natural.0487",
+        "nav.natural.0488",
+        "nav.natural.0489",
+        "nav.natural.0490",
+        "nav.natural.0491",
+        "nav.natural.0492",
+        "nav.natural.0493",
+        "nav.natural.0494",
+        "nav.natural.0495",
+        "nav.natural.0496",
+        "nav.natural.0497",
+        "nav.natural.0498",
+        "nav.natural.0499",
+        "nav.natural.0500"
+      ],
+      "PermittedConnectionIds": [
+        "connection.generated.001",
+        "connection.generated.002",
+        "connection.generated.003",
+        "connection.generated.004",
+        "connection.generated.005",
+        "connection.generated.006",
+        "connection.generated.007",
+        "connection.generated.008",
+        "connection.generated.009",
+        "connection.generated.010",
+        "connection.generated.011",
+        "connection.generated.012",
+        "connection.generated.013",
+        "connection.generated.014",
+        "connection.generated.015",
+        "connection.generated.016",
+        "connection.generated.017",
+        "connection.generated.018",
+        "connection.generated.019",
+        "connection.generated.020",
+        "connection.generated.021",
+        "connection.generated.022",
+        "connection.generated.023",
+        "connection.generated.024",
+        "connection.generated.025",
+        "connection.generated.026",
+        "connection.generated.027",
+        "connection.generated.028",
+        "connection.generated.029",
+        "connection.generated.030",
+        "connection.generated.031",
+        "connection.generated.032",
+        "connection.generated.033",
+        "connection.generated.034",
+        "connection.generated.035",
+        "connection.generated.036",
+        "connection.generated.037",
+        "connection.generated.038",
+        "connection.generated.039",
+        "connection.generated.040",
+        "connection.generated.041",
+        "connection.generated.042",
+        "connection.generated.043",
+        "connection.generated.044",
+        "connection.generated.045",
+        "connection.generated.046",
+        "connection.generated.047",
+        "connection.generated.048",
+        "connection.generated.049",
+        "connection.generated.050",
+        "connection.generated.051",
+        "connection.generated.052",
+        "connection.generated.053",
+        "connection.generated.054",
+        "connection.generated.055",
+        "connection.generated.056",
+        "connection.generated.057",
+        "connection.generated.058",
+        "connection.generated.059",
+        "connection.generated.060",
+        "connection.generated.061",
+        "connection.generated.062",
+        "connection.generated.063",
+        "connection.generated.064",
+        "connection.generated.065",
+        "connection.generated.066",
+        "connection.generated.067",
+        "connection.generated.068",
+        "connection.generated.069",
+        "connection.generated.070",
+        "connection.generated.071",
+        "connection.generated.072",
+        "connection.generated.073",
+        "connection.generated.074",
+        "connection.generated.075",
+        "connection.generated.076",
+        "connection.generated.077",
+        "connection.generated.078",
+        "connection.generated.079",
+        "connection.generated.080",
+        "connection.generated.081",
+        "connection.generated.082",
+        "connection.generated.083",
+        "connection.generated.084",
+        "connection.generated.085",
+        "connection.generated.086",
+        "connection.generated.087",
+        "connection.generated.088",
+        "connection.generated.089",
+        "connection.generated.090",
+        "connection.generated.091",
+        "connection.generated.092",
+        "connection.generated.093",
+        "connection.generated.094",
+        "connection.generated.095",
+        "connection.generated.096",
+        "connection.generated.097",
+        "connection.generated.098",
+        "connection.generated.099",
+        "connection.generated.100",
+        "connection.generated.101",
+        "connection.generated.102",
+        "connection.generated.103",
+        "connection.generated.104",
+        "connection.generated.105",
+        "connection.generated.106",
+        "connection.generated.107",
+        "connection.generated.108",
+        "connection.generated.109",
+        "connection.generated.110",
+        "connection.generated.111",
+        "connection.generated.112",
+        "connection.generated.113",
+        "connection.generated.114",
+        "connection.generated.115",
+        "connection.generated.116",
+        "connection.generated.117",
+        "connection.generated.118",
+        "connection.generated.119",
+        "connection.generated.120",
+        "connection.generated.121",
+        "connection.generated.122",
+        "connection.generated.123",
+        "connection.generated.124",
+        "connection.generated.125",
+        "connection.generated.126",
+        "connection.generated.127",
+        "connection.generated.128",
+        "connection.generated.129",
+        "connection.generated.130",
+        "connection.generated.131",
+        "connection.generated.132",
+        "connection.generated.133",
+        "connection.generated.134",
+        "connection.generated.135",
+        "connection.generated.136",
+        "connection.generated.137",
+        "connection.generated.138",
+        "connection.generated.139",
+        "connection.generated.140",
+        "connection.generated.141",
+        "connection.generated.142",
+        "connection.generated.143",
+        "connection.generated.144",
+        "connection.generated.145",
+        "connection.generated.146",
+        "connection.generated.147",
+        "connection.generated.148",
+        "connection.generated.149",
+        "connection.generated.150",
+        "connection.generated.151",
+        "connection.generated.152",
+        "connection.generated.153",
+        "connection.generated.154",
+        "connection.generated.155",
+        "connection.generated.156",
+        "connection.generated.157",
+        "connection.generated.158",
+        "connection.generated.159",
+        "connection.generated.160",
+        "connection.generated.161",
+        "connection.generated.162",
+        "connection.generated.163",
+        "connection.generated.164",
+        "connection.generated.165",
+        "connection.generated.166",
+        "connection.generated.167",
+        "connection.generated.168",
+        "connection.generated.169",
+        "connection.generated.170",
+        "connection.generated.171",
+        "connection.generated.172",
+        "connection.generated.173",
+        "connection.generated.174",
+        "connection.generated.175",
+        "connection.generated.176",
+        "connection.generated.177",
+        "connection.generated.178",
+        "connection.generated.179",
+        "connection.generated.180",
+        "connection.generated.181",
+        "connection.generated.182",
+        "connection.generated.183",
+        "connection.generated.184",
+        "connection.generated.185",
+        "connection.generated.186",
+        "connection.generated.187",
+        "connection.generated.188",
+        "connection.generated.189",
+        "connection.generated.190",
+        "connection.generated.191",
+        "connection.generated.192",
+        "connection.generated.193",
+        "connection.generated.194",
+        "connection.generated.195",
+        "connection.generated.196",
+        "connection.generated.197",
+        "connection.generated.198",
+        "connection.generated.199",
+        "connection.generated.200",
+        "connection.generated.201",
+        "connection.generated.202",
+        "connection.generated.203",
+        "connection.generated.204",
+        "connection.generated.205",
+        "connection.generated.206",
+        "connection.generated.207",
+        "connection.generated.208",
+        "connection.generated.209",
+        "connection.generated.210",
+        "connection.generated.211",
+        "connection.generated.212",
+        "connection.generated.213",
+        "connection.generated.214",
+        "connection.generated.215",
+        "connection.generated.216",
+        "connection.generated.217",
+        "connection.generated.218",
+        "connection.generated.219",
+        "connection.generated.220",
+        "connection.generated.221",
+        "connection.generated.222",
+        "connection.generated.223",
+        "connection.generated.224",
+        "connection.generated.225",
+        "connection.generated.226",
+        "connection.generated.227",
+        "connection.generated.228",
+        "connection.generated.229",
+        "connection.generated.230",
+        "connection.generated.231",
+        "connection.generated.232",
+        "connection.generated.233",
+        "connection.generated.234",
+        "connection.generated.235",
+        "connection.generated.236",
+        "connection.generated.237",
+        "connection.generated.238",
+        "connection.generated.239",
+        "connection.generated.240",
+        "connection.generated.241",
+        "connection.generated.242",
+        "connection.generated.243",
+        "connection.generated.244",
+        "connection.generated.245",
+        "connection.generated.246",
+        "connection.generated.247",
+        "connection.generated.248",
+        "connection.generated.249",
+        "connection.generated.250",
+        "connection.generated.251",
+        "connection.generated.252",
+        "connection.generated.253",
+        "connection.generated.254",
+        "connection.generated.255",
+        "connection.generated.256",
+        "connection.generated.257",
+        "connection.generated.258",
+        "connection.generated.259",
+        "connection.generated.260",
+        "connection.generated.261",
+        "connection.generated.262",
+        "connection.generated.263",
+        "connection.generated.264",
+        "connection.generated.265",
+        "connection.generated.266",
+        "connection.generated.267",
+        "connection.generated.268",
+        "connection.generated.269",
+        "connection.generated.270",
+        "connection.generated.271",
+        "connection.generated.272",
+        "connection.generated.273",
+        "connection.generated.274",
+        "connection.generated.275",
+        "connection.generated.276",
+        "connection.generated.277",
+        "connection.generated.278",
+        "connection.generated.279",
+        "connection.generated.280",
+        "connection.generated.281",
+        "connection.generated.282",
+        "connection.generated.283",
+        "connection.generated.284",
+        "connection.generated.285",
+        "connection.generated.286",
+        "connection.generated.287",
+        "connection.generated.288",
+        "connection.generated.289",
+        "connection.generated.290",
+        "connection.generated.291",
+        "connection.generated.292",
+        "connection.generated.293",
+        "connection.generated.294",
+        "connection.generated.295",
+        "connection.generated.296",
+        "connection.generated.297",
+        "connection.generated.298",
+        "connection.generated.299",
+        "connection.generated.300",
+        "connection.generated.301",
+        "connection.generated.302",
+        "connection.generated.303",
+        "connection.generated.304",
+        "connection.generated.305",
+        "connection.generated.306",
+        "connection.generated.307",
+        "connection.generated.308",
+        "connection.generated.309",
+        "connection.generated.310",
+        "connection.generated.311",
+        "connection.generated.312",
+        "connection.generated.313",
+        "connection.generated.314",
+        "connection.generated.315",
+        "connection.generated.316",
+        "connection.generated.317",
+        "connection.generated.318",
+        "connection.generated.319",
+        "connection.generated.320",
+        "connection.generated.321",
+        "connection.generated.322",
+        "connection.generated.323",
+        "connection.generated.324",
+        "connection.generated.325",
+        "connection.generated.326",
+        "connection.generated.327",
+        "connection.generated.328",
+        "connection.generated.329",
+        "connection.generated.330",
+        "connection.generated.331",
+        "connection.generated.332",
+        "connection.generated.333",
+        "connection.generated.334",
+        "connection.generated.335",
+        "connection.generated.336",
+        "connection.generated.337",
+        "connection.generated.338",
+        "connection.generated.339",
+        "connection.generated.340",
+        "connection.generated.341",
+        "connection.generated.342",
+        "connection.generated.343",
+        "connection.generated.344",
+        "connection.generated.345",
+        "connection.generated.346",
+        "connection.generated.347",
+        "connection.generated.348",
+        "connection.generated.349",
+        "connection.generated.350",
+        "connection.generated.351",
+        "connection.generated.352",
+        "connection.generated.353",
+        "connection.generated.354",
+        "connection.generated.355",
+        "connection.generated.356",
+        "connection.generated.357",
+        "connection.generated.358",
+        "connection.generated.359",
+        "connection.generated.360",
+        "connection.generated.361",
+        "connection.generated.362",
+        "connection.generated.363",
+        "connection.generated.364",
+        "connection.generated.365",
+        "connection.generated.366",
+        "connection.generated.367",
+        "connection.generated.368",
+        "connection.generated.369",
+        "connection.generated.370",
+        "connection.generated.371",
+        "connection.generated.372",
+        "connection.generated.373",
+        "connection.generated.374",
+        "connection.generated.375",
+        "connection.generated.376",
+        "connection.generated.377",
+        "connection.generated.378",
+        "connection.generated.379",
+        "connection.generated.380",
+        "connection.generated.381",
+        "connection.generated.382",
+        "connection.generated.383",
+        "connection.generated.384",
+        "connection.generated.385",
+        "connection.generated.386",
+        "connection.generated.387",
+        "connection.generated.388",
+        "connection.generated.389",
+        "connection.generated.390",
+        "connection.generated.391",
+        "connection.generated.392",
+        "connection.generated.393",
+        "connection.generated.394",
+        "connection.generated.395",
+        "connection.generated.396",
+        "connection.generated.397",
+        "connection.generated.398",
+        "connection.generated.399",
+        "connection.generated.400",
+        "connection.generated.401",
+        "connection.generated.402",
+        "connection.generated.403",
+        "connection.generated.404",
+        "connection.generated.405",
+        "connection.generated.406",
+        "connection.generated.407",
+        "connection.generated.408",
+        "connection.generated.409",
+        "connection.generated.410",
+        "connection.generated.411",
+        "connection.generated.412",
+        "connection.generated.413",
+        "connection.generated.414",
+        "connection.generated.415",
+        "connection.generated.416",
+        "connection.generated.417",
+        "connection.generated.418",
+        "connection.generated.419",
+        "connection.generated.420",
+        "connection.generated.421",
+        "connection.generated.422",
+        "connection.generated.423",
+        "connection.generated.424",
+        "connection.generated.425",
+        "connection.generated.426",
+        "connection.generated.427",
+        "connection.generated.428",
+        "connection.generated.429",
+        "connection.generated.430",
+        "connection.generated.431",
+        "connection.generated.432",
+        "connection.generated.433",
+        "connection.generated.434",
+        "connection.generated.435",
+        "connection.generated.436",
+        "connection.generated.437",
+        "connection.generated.438",
+        "connection.generated.439",
+        "connection.generated.440",
+        "connection.generated.441",
+        "connection.generated.442",
+        "connection.generated.443",
+        "connection.generated.444",
+        "connection.generated.445",
+        "connection.generated.446",
+        "connection.generated.447",
+        "connection.generated.448",
+        "connection.generated.449",
+        "connection.generated.450",
+        "connection.generated.451",
+        "connection.generated.452",
+        "connection.generated.453",
+        "connection.generated.454",
+        "connection.generated.455",
+        "connection.generated.456",
+        "connection.generated.457",
+        "connection.generated.458",
+        "connection.generated.459",
+        "connection.generated.460",
+        "connection.generated.461",
+        "connection.generated.462",
+        "connection.generated.463",
+        "connection.generated.464",
+        "connection.generated.465",
+        "connection.generated.466",
+        "connection.generated.467",
+        "connection.generated.468",
+        "connection.generated.469",
+        "connection.generated.470",
+        "connection.generated.471",
+        "connection.generated.472",
+        "connection.generated.473",
+        "connection.generated.474",
+        "connection.generated.475",
+        "connection.generated.476",
+        "connection.generated.477",
+        "connection.generated.478",
+        "connection.generated.479",
+        "connection.generated.480",
+        "connection.generated.481",
+        "connection.generated.482",
+        "connection.generated.483",
+        "connection.generated.484",
+        "connection.generated.485",
+        "connection.generated.486",
+        "connection.generated.487",
+        "connection.generated.488",
+        "connection.generated.489",
+        "connection.generated.490",
+        "connection.generated.491",
+        "connection.generated.492",
+        "connection.generated.493",
+        "connection.generated.494",
+        "connection.generated.495",
+        "connection.generated.496",
+        "connection.generated.497",
+        "connection.generated.498",
+        "connection.generated.499",
+        "connection.generated.500",
+        "connection.generated.501",
+        "connection.generated.502",
+        "connection.generated.503",
+        "connection.generated.504",
+        "connection.generated.505",
+        "connection.generated.506",
+        "connection.generated.507",
+        "connection.generated.508",
+        "connection.generated.509",
+        "connection.generated.510",
+        "connection.generated.511",
+        "connection.generated.512",
+        "connection.generated.513",
+        "connection.generated.514",
+        "connection.generated.515",
+        "connection.generated.516",
+        "connection.generated.517",
+        "connection.generated.518",
+        "connection.generated.519",
+        "connection.generated.520",
+        "connection.generated.521",
+        "connection.generated.522",
+        "connection.generated.523",
+        "connection.generated.524",
+        "connection.generated.525",
+        "connection.generated.526",
+        "connection.generated.527",
+        "connection.generated.528",
+        "connection.generated.529",
+        "connection.generated.530",
+        "connection.generated.531",
+        "connection.generated.532",
+        "connection.generated.533",
+        "connection.generated.534",
+        "connection.generated.535",
+        "connection.generated.536",
+        "connection.generated.537",
+        "connection.generated.538",
+        "connection.generated.539",
+        "connection.generated.540",
+        "connection.generated.541",
+        "connection.generated.542",
+        "connection.generated.543",
+        "connection.generated.544",
+        "connection.generated.545",
+        "connection.generated.546",
+        "connection.generated.547",
+        "connection.generated.548",
+        "connection.generated.549",
+        "connection.generated.550",
+        "connection.generated.551",
+        "connection.generated.552",
+        "connection.generated.553",
+        "connection.generated.554",
+        "connection.generated.555",
+        "connection.generated.556",
+        "connection.generated.557",
+        "connection.generated.558",
+        "connection.generated.559",
+        "connection.generated.560",
+        "connection.generated.561",
+        "connection.generated.562",
+        "connection.generated.563",
+        "connection.generated.564",
+        "connection.generated.565",
+        "connection.generated.566",
+        "connection.generated.567",
+        "connection.generated.568",
+        "connection.generated.569",
+        "connection.generated.570",
+        "connection.generated.571",
+        "connection.generated.572",
+        "connection.generated.573",
+        "connection.generated.574",
+        "connection.generated.575",
+        "connection.generated.576",
+        "connection.generated.577",
+        "connection.generated.578",
+        "connection.generated.579",
+        "connection.generated.580",
+        "connection.generated.581",
+        "connection.generated.582",
+        "connection.generated.583",
+        "connection.generated.584",
+        "connection.generated.585",
+        "connection.generated.586",
+        "connection.generated.587",
+        "connection.generated.588",
+        "connection.generated.589",
+        "connection.generated.590",
+        "connection.generated.591",
+        "connection.generated.592",
+        "connection.generated.593",
+        "connection.generated.594",
+        "connection.generated.595",
+        "connection.generated.596",
+        "connection.generated.597",
+        "connection.generated.598",
+        "connection.generated.599",
+        "connection.generated.600",
+        "connection.generated.601",
+        "connection.generated.602",
+        "connection.generated.603",
+        "connection.generated.604",
+        "connection.generated.605",
+        "connection.generated.606",
+        "connection.generated.607",
+        "connection.generated.608",
+        "connection.generated.609",
+        "connection.generated.610",
+        "connection.generated.611",
+        "connection.generated.612",
+        "connection.generated.613",
+        "connection.generated.614",
+        "connection.generated.615",
+        "connection.generated.616",
+        "connection.generated.617",
+        "connection.generated.618",
+        "connection.generated.619",
+        "connection.generated.620",
+        "connection.generated.621",
+        "connection.generated.622",
+        "connection.generated.623",
+        "connection.generated.624",
+        "connection.generated.625",
+        "connection.generated.626",
+        "connection.generated.627",
+        "connection.generated.628",
+        "connection.generated.629",
+        "connection.generated.630",
+        "connection.generated.631",
+        "connection.generated.632",
+        "connection.generated.633",
+        "connection.generated.634",
+        "connection.generated.635",
+        "connection.generated.636",
+        "connection.generated.637",
+        "connection.generated.638",
+        "connection.generated.639",
+        "connection.generated.640",
+        "connection.generated.641",
+        "connection.generated.642",
+        "connection.generated.643",
+        "connection.generated.644",
+        "connection.generated.645",
+        "connection.generated.646",
+        "connection.generated.647",
+        "connection.generated.648",
+        "connection.generated.649",
+        "connection.generated.650",
+        "connection.generated.651",
+        "connection.generated.652",
+        "connection.generated.653",
+        "connection.generated.654",
+        "connection.generated.655",
+        "connection.generated.656",
+        "connection.generated.657",
+        "connection.generated.658",
+        "connection.generated.659",
+        "connection.generated.660",
+        "connection.generated.661",
+        "connection.generated.662",
+        "connection.generated.663",
+        "connection.generated.664",
+        "connection.generated.665",
+        "connection.generated.666",
+        "connection.generated.667",
+        "connection.generated.668",
+        "connection.generated.669",
+        "connection.generated.670",
+        "connection.generated.671",
+        "connection.generated.672",
+        "connection.generated.673",
+        "connection.generated.674",
+        "connection.generated.675",
+        "connection.generated.676",
+        "connection.generated.677",
+        "connection.generated.678",
+        "connection.generated.679",
+        "connection.generated.680",
+        "connection.generated.681",
+        "connection.generated.682",
+        "connection.generated.683",
+        "connection.generated.684",
+        "connection.generated.685",
+        "connection.generated.686",
+        "connection.generated.687",
+        "connection.generated.688",
+        "connection.generated.689",
+        "connection.generated.690",
+        "connection.generated.691",
+        "connection.generated.692",
+        "connection.generated.693",
+        "connection.generated.694",
+        "connection.generated.695",
+        "connection.generated.696",
+        "connection.generated.697",
+        "connection.generated.698",
+        "connection.generated.699",
+        "connection.generated.700",
+        "connection.generated.701",
+        "connection.generated.702",
+        "connection.generated.703",
+        "connection.generated.704",
+        "connection.generated.705",
+        "connection.generated.706",
+        "connection.generated.707",
+        "connection.generated.708",
+        "connection.generated.709",
+        "connection.generated.710",
+        "connection.generated.711",
+        "connection.generated.712",
+        "connection.generated.713",
+        "connection.generated.714",
+        "connection.generated.715",
+        "connection.generated.716",
+        "connection.generated.717",
+        "connection.generated.718",
+        "connection.generated.719",
+        "connection.generated.720",
+        "connection.generated.721",
+        "connection.generated.722",
+        "connection.generated.723",
+        "connection.generated.724",
+        "connection.generated.725",
+        "connection.generated.726",
+        "connection.generated.727",
+        "connection.generated.728",
+        "connection.generated.729",
+        "connection.generated.730",
+        "connection.generated.731",
+        "connection.generated.732",
+        "connection.generated.733",
+        "connection.generated.734",
+        "connection.generated.735",
+        "connection.generated.736",
+        "connection.generated.737",
+        "connection.generated.738",
+        "connection.generated.739",
+        "connection.generated.740",
+        "connection.generated.741",
+        "connection.generated.742",
+        "connection.generated.743",
+        "connection.generated.744",
+        "connection.generated.745",
+        "connection.generated.746",
+        "connection.generated.747",
+        "connection.generated.748",
+        "connection.generated.749",
+        "connection.generated.750",
+        "connection.generated.751",
+        "connection.generated.752",
+        "connection.generated.753",
+        "connection.generated.754",
+        "connection.generated.755",
+        "connection.generated.756",
+        "connection.generated.757",
+        "connection.generated.758",
+        "connection.generated.759",
+        "connection.generated.760",
+        "connection.generated.761",
+        "connection.generated.762",
+        "connection.generated.763",
+        "connection.generated.764",
+        "connection.generated.765",
+        "connection.generated.766",
+        "connection.generated.767",
+        "connection.generated.768",
+        "connection.generated.769",
+        "connection.generated.770",
+        "connection.generated.771",
+        "connection.generated.772",
+        "connection.generated.773",
+        "connection.generated.774",
+        "connection.generated.775",
+        "connection.generated.776",
+        "connection.generated.777",
+        "connection.generated.778",
+        "connection.generated.779",
+        "connection.generated.780",
+        "connection.generated.781",
+        "connection.generated.782",
+        "connection.generated.783",
+        "connection.generated.784",
+        "connection.generated.785",
+        "connection.generated.786",
+        "connection.generated.787",
+        "connection.generated.788",
+        "connection.generated.789",
+        "connection.generated.790",
+        "connection.generated.791",
+        "connection.generated.792",
+        "connection.generated.793",
+        "connection.generated.794",
+        "connection.generated.795",
+        "connection.generated.796",
+        "connection.generated.797",
+        "connection.generated.798",
+        "connection.generated.799",
+        "connection.generated.800",
+        "connection.generated.801",
+        "connection.generated.802",
+        "connection.generated.803",
+        "connection.generated.804",
+        "connection.generated.805",
+        "connection.generated.806",
+        "connection.generated.807",
+        "connection.generated.808",
+        "connection.generated.809",
+        "connection.generated.810",
+        "connection.generated.811",
+        "connection.generated.812",
+        "connection.generated.813",
+        "connection.generated.814",
+        "connection.generated.815",
+        "connection.generated.816",
+        "connection.generated.817",
+        "connection.generated.818",
+        "connection.generated.819",
+        "connection.generated.820",
+        "connection.generated.821",
+        "connection.generated.822",
+        "connection.generated.823",
+        "connection.generated.824",
+        "connection.generated.825",
+        "connection.generated.826",
+        "connection.generated.827",
+        "connection.generated.828",
+        "connection.generated.829",
+        "connection.generated.830",
+        "connection.generated.831",
+        "connection.generated.832",
+        "connection.generated.833",
+        "connection.generated.834",
+        "connection.generated.835",
+        "connection.generated.836",
+        "connection.generated.837",
+        "connection.generated.838",
+        "connection.generated.839",
+        "connection.generated.840",
+        "connection.generated.841",
+        "connection.generated.842",
+        "connection.generated.843",
+        "connection.generated.844",
+        "connection.generated.845",
+        "connection.generated.846",
+        "connection.generated.847",
+        "connection.generated.848",
+        "connection.generated.849",
+        "connection.generated.850",
+        "connection.generated.851",
+        "connection.generated.852",
+        "connection.generated.853",
+        "connection.generated.854",
+        "connection.generated.855",
+        "connection.generated.856",
+        "connection.generated.857",
+        "connection.generated.858",
+        "connection.generated.859",
+        "connection.generated.860",
+        "connection.generated.861",
+        "connection.generated.862",
+        "connection.generated.863",
+        "connection.generated.864",
+        "connection.generated.865",
+        "connection.generated.866",
+        "connection.generated.867",
+        "connection.generated.868",
+        "connection.generated.869",
+        "connection.generated.870",
+        "connection.generated.871",
+        "connection.generated.872",
+        "connection.generated.873",
+        "connection.generated.874",
+        "connection.generated.875",
+        "connection.generated.876",
+        "connection.generated.877",
+        "connection.generated.878",
+        "connection.generated.879",
+        "connection.generated.880",
+        "connection.generated.881",
+        "connection.generated.882",
+        "connection.generated.883",
+        "connection.generated.884",
+        "connection.generated.885",
+        "connection.generated.886",
+        "connection.generated.887",
+        "connection.generated.888",
+        "connection.generated.889",
+        "connection.generated.890",
+        "connection.generated.891",
+        "connection.generated.892",
+        "connection.generated.893",
+        "connection.generated.894",
+        "connection.generated.895",
+        "connection.generated.896",
+        "connection.generated.897",
+        "connection.generated.898",
+        "connection.generated.899",
+        "connection.generated.900",
+        "connection.generated.901",
+        "connection.generated.902",
+        "connection.generated.903",
+        "connection.generated.904",
+        "connection.generated.905",
+        "connection.generated.906",
+        "connection.generated.907",
+        "connection.generated.908",
+        "connection.generated.909",
+        "connection.generated.910",
+        "connection.generated.911",
+        "connection.generated.912",
+        "connection.generated.913",
+        "connection.generated.914",
+        "connection.generated.915",
+        "connection.generated.916",
+        "connection.generated.917",
+        "connection.generated.918",
+        "connection.generated.919",
+        "connection.generated.920",
+        "connection.generated.921",
+        "connection.generated.922",
+        "connection.generated.923",
+        "connection.generated.924",
+        "connection.generated.925",
+        "connection.generated.926",
+        "connection.generated.927",
+        "connection.generated.928",
+        "connection.generated.929",
+        "connection.generated.930",
+        "connection.generated.931",
+        "connection.generated.932",
+        "connection.generated.933",
+        "connection.generated.934",
+        "connection.generated.935",
+        "connection.generated.936",
+        "connection.generated.937",
+        "connection.generated.938",
+        "connection.generated.939",
+        "connection.generated.940",
+        "connection.generated.941",
+        "connection.generated.942",
+        "connection.generated.943",
+        "connection.generated.944",
+        "connection.generated.945",
+        "connection.generated.946",
+        "connection.generated.947",
+        "connection.generated.948",
+        "connection.generated.949",
+        "connection.generated.950",
+        "connection.generated.951",
+        "connection.generated.952",
+        "connection.generated.953",
+        "connection.generated.954",
+        "connection.generated.955",
+        "connection.generated.956",
+        "connection.generated.957",
+        "connection.generated.958",
+        "connection.generated.959",
+        "connection.generated.960",
+        "connection.generated.961",
+        "connection.generated.962",
+        "connection.generated.963",
+        "connection.generated.964",
+        "connection.generated.965",
+        "connection.generated.966",
+        "connection.generated.967",
+        "connection.generated.968",
+        "connection.generated.969",
+        "connection.generated.970",
+        "connection.generated.971",
+        "connection.generated.972",
+        "connection.generated.973",
+        "connection.generated.974",
+        "connection.generated.975",
+        "connection.generated.976",
+        "connection.generated.977",
+        "connection.generated.978",
+        "connection.generated.979",
+        "connection.generated.980",
+        "connection.generated.981",
+        "connection.generated.982",
+        "connection.generated.983",
+        "connection.generated.984",
+        "connection.generated.985",
+        "connection.generated.986",
+        "connection.generated.987",
+        "connection.generated.988",
+        "connection.generated.989",
+        "connection.generated.990",
+        "connection.generated.991",
+        "connection.generated.992",
+        "connection.generated.993",
+        "connection.generated.994",
+        "connection.generated.995",
+        "connection.generated.996",
+        "connection.generated.997",
+        "connection.generated.998",
+        "connection.generated.999",
+        "connection.generated.1000",
+        "connection.generated.1001",
+        "connection.generated.1002",
+        "connection.generated.1003",
+        "connection.generated.1004",
+        "connection.generated.1005",
+        "connection.generated.1006",
+        "connection.generated.1007",
+        "connection.generated.1008",
+        "connection.generated.1009",
+        "connection.generated.1010",
+        "connection.generated.1011",
+        "connection.generated.1012",
+        "connection.generated.1013",
+        "connection.generated.1014",
+        "connection.generated.1015",
+        "connection.generated.1016",
+        "connection.generated.1017",
+        "connection.generated.1018",
+        "connection.generated.1019",
+        "connection.generated.1020",
+        "connection.generated.1021",
+        "connection.generated.1022",
+        "connection.generated.1023",
+        "connection.generated.1024",
+        "connection.generated.1025",
+        "connection.generated.1026",
+        "connection.generated.1027",
+        "connection.generated.1028",
+        "connection.generated.1029",
+        "connection.generated.1030",
+        "connection.generated.1031",
+        "connection.generated.1032",
+        "connection.generated.1033",
+        "connection.generated.1034",
+        "connection.generated.1035",
+        "connection.generated.1036",
+        "connection.generated.1037",
+        "connection.generated.1038",
+        "connection.generated.1039",
+        "connection.generated.1040",
+        "connection.generated.1041",
+        "connection.generated.1042",
+        "connection.generated.1043",
+        "connection.generated.1044",
+        "connection.generated.1045",
+        "connection.generated.1046",
+        "connection.generated.1047",
+        "connection.generated.1048",
+        "connection.generated.1049",
+        "connection.generated.1050",
+        "connection.generated.1051",
+        "connection.generated.1052",
+        "connection.generated.1053",
+        "connection.generated.1054",
+        "connection.generated.1055",
+        "connection.generated.1056",
+        "connection.generated.1057",
+        "connection.generated.1058",
+        "connection.generated.1059",
+        "connection.generated.1060",
+        "connection.generated.1061",
+        "connection.generated.1062",
+        "connection.generated.1063",
+        "connection.generated.1064",
+        "connection.generated.1065",
+        "connection.generated.1066",
+        "connection.generated.1067",
+        "connection.generated.1068",
+        "connection.generated.1069",
+        "connection.generated.1070",
+        "connection.generated.1071",
+        "connection.generated.1072",
+        "connection.generated.1073",
+        "connection.generated.1074",
+        "connection.generated.1075",
+        "connection.generated.1076",
+        "connection.generated.1077",
+        "connection.generated.1078",
+        "connection.generated.1079",
+        "connection.generated.1080",
+        "connection.generated.1081",
+        "connection.generated.1082",
+        "connection.generated.1083",
+        "connection.generated.1084",
+        "connection.generated.1085",
+        "connection.generated.1086",
+        "connection.generated.1087",
+        "connection.generated.1088",
+        "connection.generated.1089",
+        "connection.generated.1090",
+        "connection.generated.1091",
+        "connection.generated.1092",
+        "connection.generated.1093",
+        "connection.generated.1094",
+        "connection.generated.1095",
+        "connection.generated.1096",
+        "connection.generated.1097",
+        "connection.generated.1098",
+        "connection.generated.1099",
+        "connection.generated.1100",
+        "connection.generated.1101",
+        "connection.generated.1102",
+        "connection.generated.1103",
+        "connection.generated.1104",
+        "connection.generated.1105",
+        "connection.generated.1106",
+        "connection.generated.1107",
+        "connection.generated.1108",
+        "connection.generated.1109",
+        "connection.generated.1110",
+        "connection.generated.1111",
+        "connection.generated.1112",
+        "connection.generated.1113",
+        "connection.generated.1114",
+        "connection.generated.1115",
+        "connection.generated.1116",
+        "connection.generated.1117",
+        "connection.generated.1118",
+        "connection.generated.1119",
+        "connection.generated.1120",
+        "connection.generated.1121",
+        "connection.generated.1122",
+        "connection.generated.1123",
+        "connection.generated.1124",
+        "connection.generated.1125",
+        "connection.generated.1126",
+        "connection.generated.1127",
+        "connection.generated.1128",
+        "connection.generated.1129",
+        "connection.generated.1130",
+        "connection.generated.1131",
+        "connection.generated.1132",
+        "connection.generated.1133",
+        "connection.generated.1134",
+        "connection.generated.1135",
+        "connection.generated.1136",
+        "connection.generated.1137",
+        "connection.generated.1138",
+        "connection.generated.1139",
+        "connection.generated.1140",
+        "connection.generated.1141",
+        "connection.generated.1142",
+        "connection.generated.1143",
+        "connection.generated.1144",
+        "connection.generated.1145",
+        "connection.generated.1146",
+        "connection.generated.1147",
+        "connection.generated.1148",
+        "connection.generated.1149",
+        "connection.generated.1150",
+        "connection.generated.1151",
+        "connection.generated.1152",
+        "connection.generated.1153",
+        "connection.generated.1154",
+        "connection.generated.1155",
+        "connection.generated.1156",
+        "connection.generated.1157",
+        "connection.generated.1158",
+        "connection.generated.1159",
+        "connection.generated.1160",
+        "connection.generated.1161",
+        "connection.generated.1162",
+        "connection.generated.1163",
+        "connection.generated.1164",
+        "connection.generated.1165",
+        "connection.generated.1166",
+        "connection.generated.1167",
+        "connection.generated.1168",
+        "connection.generated.1169",
+        "connection.generated.1170",
+        "connection.generated.1171",
+        "connection.generated.1172",
+        "connection.generated.1173",
+        "connection.generated.1174",
+        "connection.generated.1175",
+        "connection.generated.1176",
+        "connection.generated.1177",
+        "connection.generated.1178",
+        "connection.generated.1179",
+        "connection.generated.1180",
+        "connection.generated.1181",
+        "connection.generated.1182",
+        "connection.generated.1183",
+        "connection.generated.1184",
+        "connection.generated.1185",
+        "connection.generated.1186",
+        "connection.generated.1187",
+        "connection.generated.1188",
+        "connection.generated.1189",
+        "connection.generated.1190",
+        "connection.generated.1191",
+        "connection.generated.1192",
+        "connection.generated.1193",
+        "connection.generated.1194",
+        "connection.generated.1195",
+        "connection.generated.1196",
+        "connection.generated.1197",
+        "connection.generated.1198",
+        "connection.generated.1199",
+        "connection.generated.1200",
+        "connection.generated.1201",
+        "connection.generated.1202",
+        "connection.generated.1203",
+        "connection.generated.1204",
+        "connection.generated.1205",
+        "connection.generated.1206",
+        "connection.generated.1207",
+        "connection.generated.1208",
+        "connection.generated.1209",
+        "connection.generated.1210",
+        "connection.generated.1211",
+        "connection.generated.1212",
+        "connection.generated.1213",
+        "connection.generated.1214",
+        "connection.generated.1215",
+        "connection.generated.1216",
+        "connection.generated.1217",
+        "connection.generated.1218",
+        "connection.generated.1219",
+        "connection.generated.1220",
+        "connection.generated.1221",
+        "connection.generated.1222",
+        "connection.generated.1223",
+        "connection.generated.1224",
+        "connection.generated.1225",
+        "connection.generated.1226",
+        "connection.generated.1227",
+        "connection.generated.1228",
+        "connection.generated.1229",
+        "connection.generated.1230",
+        "connection.generated.1231",
+        "connection.generated.1232",
+        "connection.generated.1233",
+        "connection.generated.1234",
+        "connection.generated.1235",
+        "connection.generated.1236",
+        "connection.generated.1237",
+        "connection.generated.1238",
+        "connection.generated.1239",
+        "connection.generated.1240",
+        "connection.generated.1241",
+        "connection.generated.1242",
+        "connection.generated.1243",
+        "connection.generated.1244",
+        "connection.generated.1245",
+        "connection.generated.1246",
+        "connection.generated.1247",
+        "connection.generated.1248",
+        "connection.generated.1249",
+        "connection.generated.1250",
+        "connection.generated.1251",
+        "connection.generated.1252",
+        "connection.generated.1253",
+        "connection.generated.1254",
+        "connection.generated.1255",
+        "connection.generated.1256",
+        "connection.generated.1257",
+        "connection.generated.1258",
+        "connection.generated.1259",
+        "connection.generated.1260",
+        "connection.generated.1261",
+        "connection.generated.1262",
+        "connection.generated.1263",
+        "connection.generated.1264",
+        "connection.generated.1265",
+        "connection.generated.1266",
+        "connection.generated.1267",
+        "connection.generated.1268",
+        "connection.generated.1269",
+        "connection.generated.1270",
+        "connection.generated.1271",
+        "connection.generated.1272",
+        "connection.generated.1273",
+        "connection.generated.1274",
+        "connection.generated.1275",
+        "connection.generated.1276",
+        "connection.generated.1277",
+        "connection.generated.1278",
+        "connection.generated.1279",
+        "connection.generated.1280",
+        "connection.generated.1281",
+        "connection.generated.1282",
+        "connection.generated.1283",
+        "connection.generated.1284",
+        "connection.generated.1285",
+        "connection.generated.1286",
+        "connection.generated.1287",
+        "connection.generated.1288",
+        "connection.generated.1289",
+        "connection.generated.1290",
+        "connection.generated.1291",
+        "connection.generated.1292",
+        "connection.generated.1293",
+        "connection.generated.1294",
+        "connection.generated.1295",
+        "connection.generated.1296",
+        "connection.generated.1297",
+        "connection.generated.1298",
+        "connection.generated.1299",
+        "connection.generated.1300",
+        "connection.generated.1301",
+        "connection.generated.1302",
+        "connection.generated.1303",
+        "connection.generated.1304",
+        "connection.generated.1305",
+        "connection.generated.1306",
+        "connection.generated.1307",
+        "connection.generated.1308",
+        "connection.generated.1309",
+        "connection.generated.1310",
+        "connection.generated.1311",
+        "connection.generated.1312",
+        "connection.generated.1313",
+        "connection.generated.1314",
+        "connection.generated.1315",
+        "connection.generated.1316",
+        "connection.generated.1317",
+        "connection.generated.1318",
+        "connection.generated.1319",
+        "connection.generated.1320",
+        "connection.generated.1321",
+        "connection.generated.1322",
+        "connection.generated.1323",
+        "connection.generated.1324",
+        "connection.generated.1325",
+        "connection.generated.1326",
+        "connection.generated.1327",
+        "connection.generated.1328",
+        "connection.generated.1329",
+        "connection.generated.1330",
+        "connection.generated.1331",
+        "connection.generated.1332",
+        "connection.generated.1333",
+        "connection.generated.1334",
+        "connection.generated.1335",
+        "connection.generated.1336",
+        "connection.generated.1337",
+        "connection.generated.1338",
+        "connection.generated.1339",
+        "connection.generated.1340",
+        "connection.generated.1341",
+        "connection.generated.1342",
+        "connection.generated.1343",
+        "connection.generated.1344",
+        "connection.generated.1345",
+        "connection.generated.1346",
+        "connection.generated.1347",
+        "connection.generated.1348",
+        "connection.generated.1349",
+        "connection.generated.1350",
+        "connection.generated.1351",
+        "connection.generated.1352",
+        "connection.generated.1353",
+        "connection.generated.1354",
+        "connection.generated.1355",
+        "connection.generated.1356",
+        "connection.generated.1357",
+        "connection.generated.1358",
+        "connection.generated.1359",
+        "connection.generated.1360",
+        "connection.generated.1361",
+        "connection.generated.1362",
+        "connection.generated.1363",
+        "connection.generated.1364",
+        "connection.generated.1365",
+        "connection.generated.1366",
+        "connection.generated.1367",
+        "connection.generated.1368",
+        "connection.generated.1369",
+        "connection.generated.1370",
+        "connection.generated.1371",
+        "connection.generated.1372",
+        "connection.generated.1373",
+        "connection.generated.1374",
+        "connection.generated.1375",
+        "connection.generated.1376",
+        "connection.generated.1377",
+        "connection.generated.1378",
+        "connection.generated.1379",
+        "connection.generated.1380",
+        "connection.generated.1381",
+        "connection.generated.1382",
+        "connection.generated.1383",
+        "connection.generated.1384",
+        "connection.generated.1385",
+        "connection.generated.1386",
+        "connection.generated.1387",
+        "connection.generated.1388",
+        "connection.generated.1389",
+        "connection.generated.1390",
+        "connection.generated.1391",
+        "connection.generated.1392",
+        "connection.generated.1393",
+        "connection.generated.1394",
+        "connection.generated.1395",
+        "connection.generated.1396",
+        "connection.generated.1397",
+        "connection.generated.1398",
+        "connection.generated.1399",
+        "connection.generated.1400",
+        "connection.generated.1401",
+        "connection.generated.1402",
+        "connection.generated.1403",
+        "connection.generated.1404",
+        "connection.generated.1405",
+        "connection.generated.1406",
+        "connection.generated.1407",
+        "connection.generated.1408",
+        "connection.generated.1409",
+        "connection.generated.1410",
+        "connection.generated.1411",
+        "connection.generated.1412",
+        "connection.generated.1413",
+        "connection.generated.1414",
+        "connection.generated.1415",
+        "connection.generated.1416",
+        "connection.generated.1417",
+        "connection.generated.1418",
+        "connection.generated.1419",
+        "connection.generated.1420",
+        "connection.generated.1421",
+        "connection.generated.1422",
+        "connection.generated.1423",
+        "connection.generated.1424",
+        "connection.generated.1425",
+        "connection.generated.1426",
+        "connection.generated.1427",
+        "connection.generated.1428",
+        "connection.generated.1429",
+        "connection.generated.1430",
+        "connection.generated.1431",
+        "connection.generated.1432",
+        "connection.generated.1433",
+        "connection.generated.1434",
+        "connection.generated.1435",
+        "connection.generated.1436",
+        "connection.generated.1437",
+        "connection.generated.1438",
+        "connection.generated.1439",
+        "connection.generated.1440",
+        "connection.generated.1441",
+        "connection.generated.1442"
+      ]
+    }
+  },
+  "Plan": {
+    "PolicyVersion": "minimum-crossings-centre-span-v1",
+    "SecondaryMetric": "sum-floor-centre-hop-length-v1",
+    "MapContentHash": "4ea9b0d4581edb60460413e9fee0203257bd47e5b6cb43fc044ee5b2cda01976",
+    "OriginNodeId": "nav.natural.0078",
+    "ErrorCode": 0,
+    "Success": true,
+    "FailedLegIndex": null,
+    "Legs": [
+      {
+        "Index": 0,
+        "OriginNodeId": "nav.natural.0078",
+        "Target": {
+          "NodeId": "nav.natural.0151",
+          "Intent": 2,
+          "SystemId": "system.natural.0151"
+        },
+        "Route": {
+          "ErrorCode": 0,
+          "Success": true,
+          "Steps": [
+            "nav.natural.0073",
+            "nav.natural.0077",
+            "nav.natural.0302",
+            "nav.natural.0289",
+            "nav.natural.0386",
+            "nav.natural.0312",
+            "nav.natural.0262",
+            "nav.natural.0276",
+            "nav.natural.0016",
+            "nav.natural.0484",
+            "nav.natural.0193",
+            "nav.natural.0189",
+            "nav.natural.0420",
+            "nav.natural.0352",
+            "nav.natural.0445",
+            "nav.natural.0444",
+            "nav.natural.0451",
+            "nav.natural.0345",
+            "nav.natural.0433",
+            "nav.natural.0101",
+            "nav.natural.0387",
+            "nav.natural.0153",
+            "nav.natural.0151"
+          ],
+          "Costs": [
+            {
+              "ConnectionId": "connection.generated.320",
+              "FromNodeId": "nav.natural.0078",
+              "ToNodeId": "nav.natural.0073",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.319",
+              "FromNodeId": "nav.natural.0073",
+              "ToNodeId": "nav.natural.0077",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.335",
+              "FromNodeId": "nav.natural.0077",
+              "ToNodeId": "nav.natural.0302",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.1092",
+              "FromNodeId": "nav.natural.0302",
+              "ToNodeId": "nav.natural.0289",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.1093",
+              "FromNodeId": "nav.natural.0289",
+              "ToNodeId": "nav.natural.0386",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.1163",
+              "FromNodeId": "nav.natural.0386",
+              "ToNodeId": "nav.natural.0312",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.1004",
+              "FromNodeId": "nav.natural.0312",
+              "ToNodeId": "nav.natural.0262",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.1001",
+              "FromNodeId": "nav.natural.0262",
+              "ToNodeId": "nav.natural.0276",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.096",
+              "FromNodeId": "nav.natural.0276",
+              "ToNodeId": "nav.natural.0016",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.100",
+              "FromNodeId": "nav.natural.0016",
+              "ToNodeId": "nav.natural.0484",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.757",
+              "FromNodeId": "nav.natural.0484",
+              "ToNodeId": "nav.natural.0193",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.746",
+              "FromNodeId": "nav.natural.0193",
+              "ToNodeId": "nav.natural.0189",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.748",
+              "FromNodeId": "nav.natural.0189",
+              "ToNodeId": "nav.natural.0420",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.1271",
+              "FromNodeId": "nav.natural.0420",
+              "ToNodeId": "nav.natural.0352",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.1272",
+              "FromNodeId": "nav.natural.0352",
+              "ToNodeId": "nav.natural.0445",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.1416",
+              "FromNodeId": "nav.natural.0445",
+              "ToNodeId": "nav.natural.0444",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.1417",
+              "FromNodeId": "nav.natural.0444",
+              "ToNodeId": "nav.natural.0451",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.1250",
+              "FromNodeId": "nav.natural.0451",
+              "ToNodeId": "nav.natural.0345",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.1249",
+              "FromNodeId": "nav.natural.0345",
+              "ToNodeId": "nav.natural.0433",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.416",
+              "FromNodeId": "nav.natural.0433",
+              "ToNodeId": "nav.natural.0101",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.415",
+              "FromNodeId": "nav.natural.0101",
+              "ToNodeId": "nav.natural.0387",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.618",
+              "FromNodeId": "nav.natural.0387",
+              "ToNodeId": "nav.natural.0153",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            },
+            {
+              "ConnectionId": "connection.generated.611",
+              "FromNodeId": "nav.natural.0153",
+              "ToNodeId": "nav.natural.0151",
+              "Kind": 1,
+              "BaseCost": 1,
+              "PhenomenonCost": 0,
+              "ArtificialCost": 0,
+              "EffectiveCost": 1
+            }
+          ],
+          "TotalCost": 23
+        },
+        "GeographicLengthUnits": 3099208
+      }
+    ],
+    "Steps": [
+      "nav.natural.0073",
+      "nav.natural.0077",
+      "nav.natural.0302",
+      "nav.natural.0289",
+      "nav.natural.0386",
+      "nav.natural.0312",
+      "nav.natural.0262",
+      "nav.natural.0276",
+      "nav.natural.0016",
+      "nav.natural.0484",
+      "nav.natural.0193",
+      "nav.natural.0189",
+      "nav.natural.0420",
+      "nav.natural.0352",
+      "nav.natural.0445",
+      "nav.natural.0444",
+      "nav.natural.0451",
+      "nav.natural.0345",
+      "nav.natural.0433",
+      "nav.natural.0101",
+      "nav.natural.0387",
+      "nav.natural.0153",
+      "nav.natural.0151"
+    ],
+    "TotalCost": 23,
+    "GeographicLengthUnits": 3099208
+  },
+  "Diagnostics": {
+    "ContentHash": "4ea9b0d4581edb60460413e9fee0203257bd47e5b6cb43fc044ee5b2cda01976",
+    "CoordinateMeaning": "Integer map presentation units, not physical distance or ship speed",
+    "ProvenanceGroupsAreNotNearestNeighbourComponents": true,
+    "ProvenanceIsolatedCount": 25,
+    "ActualStarsWithNearestAtLeastIsolatedSeparation": 25,
+    "NearestDistanceMinimum": 12401.002298201545,
+    "NearestDistanceP10": 14158.825940027655,
+    "NearestDistanceMedian": 25937.271753212597,
+    "NearestDistanceP90": 86813.71581150066,
+    "NearestDistanceMaximum": 313114.2257531586,
+    "NearestDistanceMean": 40393.06711235224,
+    "NearestNeighbours": [
+      {
+        "FeatureId": "feature.star.natural.0001",
+        "NearestFeatureId": "feature.star.natural.0105",
+        "DistanceSquared": 18338207828
+      },
+      {
+        "FeatureId": "feature.star.natural.0002",
+        "NearestFeatureId": "feature.star.natural.0025",
+        "DistanceSquared": 27986474025
+      },
+      {
+        "FeatureId": "feature.star.natural.0003",
+        "NearestFeatureId": "feature.star.natural.0240",
+        "DistanceSquared": 30998023720
+      },
+      {
+        "FeatureId": "feature.star.natural.0004",
+        "NearestFeatureId": "feature.star.natural.0041",
+        "DistanceSquared": 20638297829
+      },
+      {
+        "FeatureId": "feature.star.natural.0005",
+        "NearestFeatureId": "feature.star.natural.0170",
+        "DistanceSquared": 17835201757
+      },
+      {
+        "FeatureId": "feature.star.natural.0006",
+        "NearestFeatureId": "feature.star.natural.0205",
+        "DistanceSquared": 24597555049
+      },
+      {
+        "FeatureId": "feature.star.natural.0007",
+        "NearestFeatureId": "feature.star.natural.0122",
+        "DistanceSquared": 23997375880
+      },
+      {
+        "FeatureId": "feature.star.natural.0008",
+        "NearestFeatureId": "feature.star.natural.0099",
+        "DistanceSquared": 24939860593
+      },
+      {
+        "FeatureId": "feature.star.natural.0009",
+        "NearestFeatureId": "feature.star.natural.0016",
+        "DistanceSquared": 24330370250
+      },
+      {
+        "FeatureId": "feature.star.natural.0010",
+        "NearestFeatureId": "feature.star.natural.0214",
+        "DistanceSquared": 15132419773
+      },
+      {
+        "FeatureId": "feature.star.natural.0011",
+        "NearestFeatureId": "feature.star.natural.0035",
+        "DistanceSquared": 30769487282
+      },
+      {
+        "FeatureId": "feature.star.natural.0012",
+        "NearestFeatureId": "feature.star.natural.0010",
+        "DistanceSquared": 98040518369
+      },
+      {
+        "FeatureId": "feature.star.natural.0013",
+        "NearestFeatureId": "feature.star.natural.0040",
+        "DistanceSquared": 40541260874
+      },
+      {
+        "FeatureId": "feature.star.natural.0014",
+        "NearestFeatureId": "feature.star.natural.0028",
+        "DistanceSquared": 18020442541
+      },
+      {
+        "FeatureId": "feature.star.natural.0015",
+        "NearestFeatureId": "feature.star.natural.0009",
+        "DistanceSquared": 25859775490
+      },
+      {
+        "FeatureId": "feature.star.natural.0016",
+        "NearestFeatureId": "feature.star.natural.0009",
+        "DistanceSquared": 24330370250
+      },
+      {
+        "FeatureId": "feature.star.natural.0017",
+        "NearestFeatureId": "feature.star.natural.0220",
+        "DistanceSquared": 44497953949
+      },
+      {
+        "FeatureId": "feature.star.natural.0018",
+        "NearestFeatureId": "feature.star.natural.0082",
+        "DistanceSquared": 20847355561
+      },
+      {
+        "FeatureId": "feature.star.natural.0019",
+        "NearestFeatureId": "feature.star.natural.0097",
+        "DistanceSquared": 33022598132
+      },
+      {
+        "FeatureId": "feature.star.natural.0020",
+        "NearestFeatureId": "feature.star.natural.0191",
+        "DistanceSquared": 14518365833
+      },
+      {
+        "FeatureId": "feature.star.natural.0021",
+        "NearestFeatureId": "feature.star.natural.0214",
+        "DistanceSquared": 18106378657
+      },
+      {
+        "FeatureId": "feature.star.natural.0022",
+        "NearestFeatureId": "feature.star.natural.0091",
+        "DistanceSquared": 26813728744
+      },
+      {
+        "FeatureId": "feature.star.natural.0023",
+        "NearestFeatureId": "feature.star.natural.0184",
+        "DistanceSquared": 21094554050
+      },
+      {
+        "FeatureId": "feature.star.natural.0024",
+        "NearestFeatureId": "feature.star.natural.0244",
+        "DistanceSquared": 22180456258
+      },
+      {
+        "FeatureId": "feature.star.natural.0025",
+        "NearestFeatureId": "feature.star.natural.0175",
+        "DistanceSquared": 17127096125
+      },
+      {
+        "FeatureId": "feature.star.natural.0026",
+        "NearestFeatureId": "feature.star.natural.0027",
+        "DistanceSquared": 1990906362
+      },
+      {
+        "FeatureId": "feature.star.natural.0027",
+        "NearestFeatureId": "feature.star.natural.0026",
+        "DistanceSquared": 1990906362
+      },
+      {
+        "FeatureId": "feature.star.natural.0028",
+        "NearestFeatureId": "feature.star.natural.0029",
+        "DistanceSquared": 862327090
+      },
+      {
+        "FeatureId": "feature.star.natural.0029",
+        "NearestFeatureId": "feature.star.natural.0028",
+        "DistanceSquared": 862327090
+      },
+      {
+        "FeatureId": "feature.star.natural.0030",
+        "NearestFeatureId": "feature.star.natural.0029",
+        "DistanceSquared": 910214504
+      },
+      {
+        "FeatureId": "feature.star.natural.0031",
+        "NearestFeatureId": "feature.star.natural.0030",
+        "DistanceSquared": 934611005
+      },
+      {
+        "FeatureId": "feature.star.natural.0032",
+        "NearestFeatureId": "feature.star.natural.0031",
+        "DistanceSquared": 1273095584
+      },
+      {
+        "FeatureId": "feature.star.natural.0033",
+        "NearestFeatureId": "feature.star.natural.0038",
+        "DistanceSquared": 191056292
+      },
+      {
+        "FeatureId": "feature.star.natural.0034",
+        "NearestFeatureId": "feature.star.natural.0036",
+        "DistanceSquared": 193704100
+      },
+      {
+        "FeatureId": "feature.star.natural.0035",
+        "NearestFeatureId": "feature.star.natural.0034",
+        "DistanceSquared": 261449161
+      },
+      {
+        "FeatureId": "feature.star.natural.0036",
+        "NearestFeatureId": "feature.star.natural.0034",
+        "DistanceSquared": 193704100
+      },
+      {
+        "FeatureId": "feature.star.natural.0037",
+        "NearestFeatureId": "feature.star.natural.0038",
+        "DistanceSquared": 253405312
+      },
+      {
+        "FeatureId": "feature.star.natural.0038",
+        "NearestFeatureId": "feature.star.natural.0033",
+        "DistanceSquared": 191056292
+      },
+      {
+        "FeatureId": "feature.star.natural.0039",
+        "NearestFeatureId": "feature.star.natural.0038",
+        "DistanceSquared": 679320074
+      },
+      {
+        "FeatureId": "feature.star.natural.0040",
+        "NearestFeatureId": "feature.star.natural.0042",
+        "DistanceSquared": 736977625
+      },
+      {
+        "FeatureId": "feature.star.natural.0041",
+        "NearestFeatureId": "feature.star.natural.0042",
+        "DistanceSquared": 900245201
+      },
+      {
+        "FeatureId": "feature.star.natural.0042",
+        "NearestFeatureId": "feature.star.natural.0043",
+        "DistanceSquared": 296546120
+      },
+      {
+        "FeatureId": "feature.star.natural.0043",
+        "NearestFeatureId": "feature.star.natural.0042",
+        "DistanceSquared": 296546120
+      },
+      {
+        "FeatureId": "feature.star.natural.0044",
+        "NearestFeatureId": "feature.star.natural.0043",
+        "DistanceSquared": 1282461124
+      },
+      {
+        "FeatureId": "feature.star.natural.0045",
+        "NearestFeatureId": "feature.star.natural.0050",
+        "DistanceSquared": 323342321
+      },
+      {
+        "FeatureId": "feature.star.natural.0046",
+        "NearestFeatureId": "feature.star.natural.0049",
+        "DistanceSquared": 238168961
+      },
+      {
+        "FeatureId": "feature.star.natural.0047",
+        "NearestFeatureId": "feature.star.natural.0045",
+        "DistanceSquared": 656303033
+      },
+      {
+        "FeatureId": "feature.star.natural.0048",
+        "NearestFeatureId": "feature.star.natural.0050",
+        "DistanceSquared": 2878404561
+      },
+      {
+        "FeatureId": "feature.star.natural.0049",
+        "NearestFeatureId": "feature.star.natural.0046",
+        "DistanceSquared": 238168961
+      },
+      {
+        "FeatureId": "feature.star.natural.0050",
+        "NearestFeatureId": "feature.star.natural.0049",
+        "DistanceSquared": 278027865
+      },
+      {
+        "FeatureId": "feature.star.natural.0051",
+        "NearestFeatureId": "feature.star.natural.0053",
+        "DistanceSquared": 291752914
+      },
+      {
+        "FeatureId": "feature.star.natural.0052",
+        "NearestFeatureId": "feature.star.natural.0053",
+        "DistanceSquared": 1707678530
+      },
+      {
+        "FeatureId": "feature.star.natural.0053",
+        "NearestFeatureId": "feature.star.natural.0059",
+        "DistanceSquared": 213997914
+      },
+      {
+        "FeatureId": "feature.star.natural.0054",
+        "NearestFeatureId": "feature.star.natural.0055",
+        "DistanceSquared": 393227882
+      },
+      {
+        "FeatureId": "feature.star.natural.0055",
+        "NearestFeatureId": "feature.star.natural.0054",
+        "DistanceSquared": 393227882
+      },
+      {
+        "FeatureId": "feature.star.natural.0056",
+        "NearestFeatureId": "feature.star.natural.0057",
+        "DistanceSquared": 317172530
+      },
+      {
+        "FeatureId": "feature.star.natural.0057",
+        "NearestFeatureId": "feature.star.natural.0056",
+        "DistanceSquared": 317172530
+      },
+      {
+        "FeatureId": "feature.star.natural.0058",
+        "NearestFeatureId": "feature.star.natural.0054",
+        "DistanceSquared": 403876945
+      },
+      {
+        "FeatureId": "feature.star.natural.0059",
+        "NearestFeatureId": "feature.star.natural.0053",
+        "DistanceSquared": 213997914
+      },
+      {
+        "FeatureId": "feature.star.natural.0060",
+        "NearestFeatureId": "feature.star.natural.0062",
+        "DistanceSquared": 593209700
+      },
+      {
+        "FeatureId": "feature.star.natural.0061",
+        "NearestFeatureId": "feature.star.natural.0060",
+        "DistanceSquared": 1071114553
+      },
+      {
+        "FeatureId": "feature.star.natural.0062",
+        "NearestFeatureId": "feature.star.natural.0060",
+        "DistanceSquared": 593209700
+      },
+      {
+        "FeatureId": "feature.star.natural.0063",
+        "NearestFeatureId": "feature.star.natural.0068",
+        "DistanceSquared": 2017645225
+      },
+      {
+        "FeatureId": "feature.star.natural.0064",
+        "NearestFeatureId": "feature.star.natural.0070",
+        "DistanceSquared": 2664783776
+      },
+      {
+        "FeatureId": "feature.star.natural.0065",
+        "NearestFeatureId": "feature.star.natural.0071",
+        "DistanceSquared": 189753005
+      },
+      {
+        "FeatureId": "feature.star.natural.0066",
+        "NearestFeatureId": "feature.star.natural.0229",
+        "DistanceSquared": 1832160361
+      },
+      {
+        "FeatureId": "feature.star.natural.0067",
+        "NearestFeatureId": "feature.star.natural.0065",
+        "DistanceSquared": 763437956
+      },
+      {
+        "FeatureId": "feature.star.natural.0068",
+        "NearestFeatureId": "feature.star.natural.0069",
+        "DistanceSquared": 1579860977
+      },
+      {
+        "FeatureId": "feature.star.natural.0069",
+        "NearestFeatureId": "feature.star.natural.0065",
+        "DistanceSquared": 223760069
+      },
+      {
+        "FeatureId": "feature.star.natural.0070",
+        "NearestFeatureId": "feature.star.natural.0069",
+        "DistanceSquared": 2251969994
+      },
+      {
+        "FeatureId": "feature.star.natural.0071",
+        "NearestFeatureId": "feature.star.natural.0065",
+        "DistanceSquared": 189753005
+      },
+      {
+        "FeatureId": "feature.star.natural.0072",
+        "NearestFeatureId": "feature.star.natural.0073",
+        "DistanceSquared": 222075450
+      },
+      {
+        "FeatureId": "feature.star.natural.0073",
+        "NearestFeatureId": "feature.star.natural.0078",
+        "DistanceSquared": 200472352
+      },
+      {
+        "FeatureId": "feature.star.natural.0074",
+        "NearestFeatureId": "feature.star.natural.0072",
+        "DistanceSquared": 959223385
+      },
+      {
+        "FeatureId": "feature.star.natural.0075",
+        "NearestFeatureId": "feature.star.natural.0076",
+        "DistanceSquared": 830657498
+      },
+      {
+        "FeatureId": "feature.star.natural.0076",
+        "NearestFeatureId": "feature.star.natural.0078",
+        "DistanceSquared": 244699130
+      },
+      {
+        "FeatureId": "feature.star.natural.0077",
+        "NearestFeatureId": "feature.star.natural.0079",
+        "DistanceSquared": 1350219389
+      },
+      {
+        "FeatureId": "feature.star.natural.0078",
+        "NearestFeatureId": "feature.star.natural.0073",
+        "DistanceSquared": 200472352
+      },
+      {
+        "FeatureId": "feature.star.natural.0079",
+        "NearestFeatureId": "feature.star.natural.0075",
+        "DistanceSquared": 866560202
+      },
+      {
+        "FeatureId": "feature.star.natural.0080",
+        "NearestFeatureId": "feature.star.natural.0072",
+        "DistanceSquared": 648739730
+      },
+      {
+        "FeatureId": "feature.star.natural.0081",
+        "NearestFeatureId": "feature.star.natural.0086",
+        "DistanceSquared": 306120425
+      },
+      {
+        "FeatureId": "feature.star.natural.0082",
+        "NearestFeatureId": "feature.star.natural.0081",
+        "DistanceSquared": 923547476
+      },
+      {
+        "FeatureId": "feature.star.natural.0083",
+        "NearestFeatureId": "feature.star.natural.0085",
+        "DistanceSquared": 303325337
+      },
+      {
+        "FeatureId": "feature.star.natural.0084",
+        "NearestFeatureId": "feature.star.natural.0083",
+        "DistanceSquared": 954370885
+      },
+      {
+        "FeatureId": "feature.star.natural.0085",
+        "NearestFeatureId": "feature.star.natural.0083",
+        "DistanceSquared": 303325337
+      },
+      {
+        "FeatureId": "feature.star.natural.0086",
+        "NearestFeatureId": "feature.star.natural.0081",
+        "DistanceSquared": 306120425
+      },
+      {
+        "FeatureId": "feature.star.natural.0087",
+        "NearestFeatureId": "feature.star.natural.0089",
+        "DistanceSquared": 300546880
+      },
+      {
+        "FeatureId": "feature.star.natural.0088",
+        "NearestFeatureId": "feature.star.natural.0090",
+        "DistanceSquared": 657274229
+      },
+      {
+        "FeatureId": "feature.star.natural.0089",
+        "NearestFeatureId": "feature.star.natural.0087",
+        "DistanceSquared": 300546880
+      },
+      {
+        "FeatureId": "feature.star.natural.0090",
+        "NearestFeatureId": "feature.star.natural.0088",
+        "DistanceSquared": 657274229
+      },
+      {
+        "FeatureId": "feature.star.natural.0091",
+        "NearestFeatureId": "feature.star.natural.0092",
+        "DistanceSquared": 533656276
+      },
+      {
+        "FeatureId": "feature.star.natural.0092",
+        "NearestFeatureId": "feature.star.natural.0091",
+        "DistanceSquared": 533656276
+      },
+      {
+        "FeatureId": "feature.star.natural.0093",
+        "NearestFeatureId": "feature.star.natural.0096",
+        "DistanceSquared": 636468605
+      },
+      {
+        "FeatureId": "feature.star.natural.0094",
+        "NearestFeatureId": "feature.star.natural.0097",
+        "DistanceSquared": 468182701
+      },
+      {
+        "FeatureId": "feature.star.natural.0095",
+        "NearestFeatureId": "feature.star.natural.0097",
+        "DistanceSquared": 1436410741
+      },
+      {
+        "FeatureId": "feature.star.natural.0096",
+        "NearestFeatureId": "feature.star.natural.0098",
+        "DistanceSquared": 394631690
+      },
+      {
+        "FeatureId": "feature.star.natural.0097",
+        "NearestFeatureId": "feature.star.natural.0094",
+        "DistanceSquared": 468182701
+      },
+      {
+        "FeatureId": "feature.star.natural.0098",
+        "NearestFeatureId": "feature.star.natural.0096",
+        "DistanceSquared": 394631690
+      },
+      {
+        "FeatureId": "feature.star.natural.0099",
+        "NearestFeatureId": "feature.star.natural.0102",
+        "DistanceSquared": 985439348
+      },
+      {
+        "FeatureId": "feature.star.natural.0100",
+        "NearestFeatureId": "feature.star.natural.0101",
+        "DistanceSquared": 392290637
+      },
+      {
+        "FeatureId": "feature.star.natural.0101",
+        "NearestFeatureId": "feature.star.natural.0100",
+        "DistanceSquared": 392290637
+      },
+      {
+        "FeatureId": "feature.star.natural.0102",
+        "NearestFeatureId": "feature.star.natural.0099",
+        "DistanceSquared": 985439348
+      },
+      {
+        "FeatureId": "feature.star.natural.0103",
+        "NearestFeatureId": "feature.star.natural.0102",
+        "DistanceSquared": 1508227301
+      },
+      {
+        "FeatureId": "feature.star.natural.0104",
+        "NearestFeatureId": "feature.star.natural.0107",
+        "DistanceSquared": 3936967093
+      },
+      {
+        "FeatureId": "feature.star.natural.0105",
+        "NearestFeatureId": "feature.star.natural.0107",
+        "DistanceSquared": 1201040290
+      },
+      {
+        "FeatureId": "feature.star.natural.0106",
+        "NearestFeatureId": "feature.star.natural.0107",
+        "DistanceSquared": 1092686900
+      },
+      {
+        "FeatureId": "feature.star.natural.0107",
+        "NearestFeatureId": "feature.star.natural.0108",
+        "DistanceSquared": 478218109
+      },
+      {
+        "FeatureId": "feature.star.natural.0108",
+        "NearestFeatureId": "feature.star.natural.0107",
+        "DistanceSquared": 478218109
+      },
+      {
+        "FeatureId": "feature.star.natural.0109",
+        "NearestFeatureId": "feature.star.natural.0111",
+        "DistanceSquared": 386967769
+      },
+      {
+        "FeatureId": "feature.star.natural.0110",
+        "NearestFeatureId": "feature.star.natural.0114",
+        "DistanceSquared": 672742066
+      },
+      {
+        "FeatureId": "feature.star.natural.0111",
+        "NearestFeatureId": "feature.star.natural.0109",
+        "DistanceSquared": 386967769
+      },
+      {
+        "FeatureId": "feature.star.natural.0112",
+        "NearestFeatureId": "feature.star.natural.0111",
+        "DistanceSquared": 628109780
+      },
+      {
+        "FeatureId": "feature.star.natural.0113",
+        "NearestFeatureId": "feature.star.natural.0112",
+        "DistanceSquared": 1778663605
+      },
+      {
+        "FeatureId": "feature.star.natural.0114",
+        "NearestFeatureId": "feature.star.natural.0110",
+        "DistanceSquared": 672742066
+      },
+      {
+        "FeatureId": "feature.star.natural.0115",
+        "NearestFeatureId": "feature.star.natural.0109",
+        "DistanceSquared": 794000290
+      },
+      {
+        "FeatureId": "feature.star.natural.0116",
+        "NearestFeatureId": "feature.star.natural.0112",
+        "DistanceSquared": 1015950052
+      },
+      {
+        "FeatureId": "feature.star.natural.0117",
+        "NearestFeatureId": "feature.star.natural.0109",
+        "DistanceSquared": 647143844
+      },
+      {
+        "FeatureId": "feature.star.natural.0118",
+        "NearestFeatureId": "feature.star.natural.0120",
+        "DistanceSquared": 177550105
+      },
+      {
+        "FeatureId": "feature.star.natural.0119",
+        "NearestFeatureId": "feature.star.natural.0122",
+        "DistanceSquared": 413012093
+      },
+      {
+        "FeatureId": "feature.star.natural.0120",
+        "NearestFeatureId": "feature.star.natural.0118",
+        "DistanceSquared": 177550105
+      },
+      {
+        "FeatureId": "feature.star.natural.0121",
+        "NearestFeatureId": "feature.star.natural.0123",
+        "DistanceSquared": 473178946
+      },
+      {
+        "FeatureId": "feature.star.natural.0122",
+        "NearestFeatureId": "feature.star.natural.0119",
+        "DistanceSquared": 413012093
+      },
+      {
+        "FeatureId": "feature.star.natural.0123",
+        "NearestFeatureId": "feature.star.natural.0121",
+        "DistanceSquared": 473178946
+      },
+      {
+        "FeatureId": "feature.star.natural.0124",
+        "NearestFeatureId": "feature.star.natural.0120",
+        "DistanceSquared": 2055911048
+      },
+      {
+        "FeatureId": "feature.star.natural.0125",
+        "NearestFeatureId": "feature.star.natural.0128",
+        "DistanceSquared": 189310538
+      },
+      {
+        "FeatureId": "feature.star.natural.0126",
+        "NearestFeatureId": "feature.star.natural.0128",
+        "DistanceSquared": 276863525
+      },
+      {
+        "FeatureId": "feature.star.natural.0127",
+        "NearestFeatureId": "feature.star.natural.0128",
+        "DistanceSquared": 157078129
+      },
+      {
+        "FeatureId": "feature.star.natural.0128",
+        "NearestFeatureId": "feature.star.natural.0127",
+        "DistanceSquared": 157078129
+      },
+      {
+        "FeatureId": "feature.star.natural.0129",
+        "NearestFeatureId": "feature.star.natural.0130",
+        "DistanceSquared": 2508316306
+      },
+      {
+        "FeatureId": "feature.star.natural.0130",
+        "NearestFeatureId": "feature.star.natural.0129",
+        "DistanceSquared": 2508316306
+      },
+      {
+        "FeatureId": "feature.star.natural.0131",
+        "NearestFeatureId": "feature.star.natural.0132",
+        "DistanceSquared": 466230609
+      },
+      {
+        "FeatureId": "feature.star.natural.0132",
+        "NearestFeatureId": "feature.star.natural.0131",
+        "DistanceSquared": 466230609
+      },
+      {
+        "FeatureId": "feature.star.natural.0133",
+        "NearestFeatureId": "feature.star.natural.0132",
+        "DistanceSquared": 1897234978
+      },
+      {
+        "FeatureId": "feature.star.natural.0134",
+        "NearestFeatureId": "feature.star.natural.0136",
+        "DistanceSquared": 1282793504
+      },
+      {
+        "FeatureId": "feature.star.natural.0135",
+        "NearestFeatureId": "feature.star.natural.0165",
+        "DistanceSquared": 370607161
+      },
+      {
+        "FeatureId": "feature.star.natural.0136",
+        "NearestFeatureId": "feature.star.natural.0140",
+        "DistanceSquared": 699487277
+      },
+      {
+        "FeatureId": "feature.star.natural.0137",
+        "NearestFeatureId": "feature.star.natural.0141",
+        "DistanceSquared": 1155069648
+      },
+      {
+        "FeatureId": "feature.star.natural.0138",
+        "NearestFeatureId": "feature.star.natural.0139",
+        "DistanceSquared": 157144689
+      },
+      {
+        "FeatureId": "feature.star.natural.0139",
+        "NearestFeatureId": "feature.star.natural.0138",
+        "DistanceSquared": 157144689
+      },
+      {
+        "FeatureId": "feature.star.natural.0140",
+        "NearestFeatureId": "feature.star.natural.0136",
+        "DistanceSquared": 699487277
+      },
+      {
+        "FeatureId": "feature.star.natural.0141",
+        "NearestFeatureId": "feature.star.natural.0137",
+        "DistanceSquared": 1155069648
+      },
+      {
+        "FeatureId": "feature.star.natural.0142",
+        "NearestFeatureId": "feature.star.natural.0143",
+        "DistanceSquared": 969087185
+      },
+      {
+        "FeatureId": "feature.star.natural.0143",
+        "NearestFeatureId": "feature.star.natural.0142",
+        "DistanceSquared": 969087185
+      },
+      {
+        "FeatureId": "feature.star.natural.0144",
+        "NearestFeatureId": "feature.star.natural.0143",
+        "DistanceSquared": 1642876520
+      },
+      {
+        "FeatureId": "feature.star.natural.0145",
+        "NearestFeatureId": "feature.star.natural.0146",
+        "DistanceSquared": 371963764
+      },
+      {
+        "FeatureId": "feature.star.natural.0146",
+        "NearestFeatureId": "feature.star.natural.0145",
+        "DistanceSquared": 371963764
+      },
+      {
+        "FeatureId": "feature.star.natural.0147",
+        "NearestFeatureId": "feature.star.natural.0148",
+        "DistanceSquared": 656075264
+      },
+      {
+        "FeatureId": "feature.star.natural.0148",
+        "NearestFeatureId": "feature.star.natural.0145",
+        "DistanceSquared": 451609448
+      },
+      {
+        "FeatureId": "feature.star.natural.0149",
+        "NearestFeatureId": "feature.star.natural.0146",
+        "DistanceSquared": 615016756
+      },
+      {
+        "FeatureId": "feature.star.natural.0150",
+        "NearestFeatureId": "feature.star.natural.0147",
+        "DistanceSquared": 3246449357
+      },
+      {
+        "FeatureId": "feature.star.natural.0151",
+        "NearestFeatureId": "feature.star.natural.0153",
+        "DistanceSquared": 283048609
+      },
+      {
+        "FeatureId": "feature.star.natural.0152",
+        "NearestFeatureId": "feature.star.natural.0151",
+        "DistanceSquared": 2993554265
+      },
+      {
+        "FeatureId": "feature.star.natural.0153",
+        "NearestFeatureId": "feature.star.natural.0151",
+        "DistanceSquared": 283048609
+      },
+      {
+        "FeatureId": "feature.star.natural.0154",
+        "NearestFeatureId": "feature.star.natural.0156",
+        "DistanceSquared": 942048356
+      },
+      {
+        "FeatureId": "feature.star.natural.0155",
+        "NearestFeatureId": "feature.star.natural.0154",
+        "DistanceSquared": 1225465768
+      },
+      {
+        "FeatureId": "feature.star.natural.0156",
+        "NearestFeatureId": "feature.star.natural.0154",
+        "DistanceSquared": 942048356
+      },
+      {
+        "FeatureId": "feature.star.natural.0157",
+        "NearestFeatureId": "feature.star.natural.0158",
+        "DistanceSquared": 2054014426
+      },
+      {
+        "FeatureId": "feature.star.natural.0158",
+        "NearestFeatureId": "feature.star.natural.0157",
+        "DistanceSquared": 2054014426
+      },
+      {
+        "FeatureId": "feature.star.natural.0159",
+        "NearestFeatureId": "feature.star.natural.0161",
+        "DistanceSquared": 2276105690
+      },
+      {
+        "FeatureId": "feature.star.natural.0160",
+        "NearestFeatureId": "feature.star.natural.0159",
+        "DistanceSquared": 3611222746
+      },
+      {
+        "FeatureId": "feature.star.natural.0161",
+        "NearestFeatureId": "feature.star.natural.0159",
+        "DistanceSquared": 2276105690
+      },
+      {
+        "FeatureId": "feature.star.natural.0162",
+        "NearestFeatureId": "feature.star.natural.0166",
+        "DistanceSquared": 738821416
+      },
+      {
+        "FeatureId": "feature.star.natural.0163",
+        "NearestFeatureId": "feature.star.natural.0164",
+        "DistanceSquared": 346764305
+      },
+      {
+        "FeatureId": "feature.star.natural.0164",
+        "NearestFeatureId": "feature.star.natural.0166",
+        "DistanceSquared": 257809988
+      },
+      {
+        "FeatureId": "feature.star.natural.0165",
+        "NearestFeatureId": "feature.star.natural.0135",
+        "DistanceSquared": 370607161
+      },
+      {
+        "FeatureId": "feature.star.natural.0166",
+        "NearestFeatureId": "feature.star.natural.0164",
+        "DistanceSquared": 257809988
+      },
+      {
+        "FeatureId": "feature.star.natural.0167",
+        "NearestFeatureId": "feature.star.natural.0163",
+        "DistanceSquared": 1546274914
+      },
+      {
+        "FeatureId": "feature.star.natural.0168",
+        "NearestFeatureId": "feature.star.natural.0170",
+        "DistanceSquared": 928370690
+      },
+      {
+        "FeatureId": "feature.star.natural.0169",
+        "NearestFeatureId": "feature.star.natural.0168",
+        "DistanceSquared": 1381134420
+      },
+      {
+        "FeatureId": "feature.star.natural.0170",
+        "NearestFeatureId": "feature.star.natural.0168",
+        "DistanceSquared": 928370690
+      },
+      {
+        "FeatureId": "feature.star.natural.0171",
+        "NearestFeatureId": "feature.star.natural.0172",
+        "DistanceSquared": 1268602381
+      },
+      {
+        "FeatureId": "feature.star.natural.0172",
+        "NearestFeatureId": "feature.star.natural.0171",
+        "DistanceSquared": 1268602381
+      },
+      {
+        "FeatureId": "feature.star.natural.0173",
+        "NearestFeatureId": "feature.star.natural.0172",
+        "DistanceSquared": 1910695541
+      },
+      {
+        "FeatureId": "feature.star.natural.0174",
+        "NearestFeatureId": "feature.star.natural.0179",
+        "DistanceSquared": 947276852
+      },
+      {
+        "FeatureId": "feature.star.natural.0175",
+        "NearestFeatureId": "feature.star.natural.0176",
+        "DistanceSquared": 1451561945
+      },
+      {
+        "FeatureId": "feature.star.natural.0176",
+        "NearestFeatureId": "feature.star.natural.0177",
+        "DistanceSquared": 1052209181
+      },
+      {
+        "FeatureId": "feature.star.natural.0177",
+        "NearestFeatureId": "feature.star.natural.0176",
+        "DistanceSquared": 1052209181
+      },
+      {
+        "FeatureId": "feature.star.natural.0178",
+        "NearestFeatureId": "feature.star.natural.0180",
+        "DistanceSquared": 157549732
+      },
+      {
+        "FeatureId": "feature.star.natural.0179",
+        "NearestFeatureId": "feature.star.natural.0174",
+        "DistanceSquared": 947276852
+      },
+      {
+        "FeatureId": "feature.star.natural.0180",
+        "NearestFeatureId": "feature.star.natural.0178",
+        "DistanceSquared": 157549732
+      },
+      {
+        "FeatureId": "feature.star.natural.0181",
+        "NearestFeatureId": "feature.star.natural.0185",
+        "DistanceSquared": 748034729
+      },
+      {
+        "FeatureId": "feature.star.natural.0182",
+        "NearestFeatureId": "feature.star.natural.0183",
+        "DistanceSquared": 648557962
+      },
+      {
+        "FeatureId": "feature.star.natural.0183",
+        "NearestFeatureId": "feature.star.natural.0185",
+        "DistanceSquared": 211750605
+      },
+      {
+        "FeatureId": "feature.star.natural.0184",
+        "NearestFeatureId": "feature.star.natural.0181",
+        "DistanceSquared": 2219946385
+      },
+      {
+        "FeatureId": "feature.star.natural.0185",
+        "NearestFeatureId": "feature.star.natural.0186",
+        "DistanceSquared": 202040005
+      },
+      {
+        "FeatureId": "feature.star.natural.0186",
+        "NearestFeatureId": "feature.star.natural.0185",
+        "DistanceSquared": 202040005
+      },
+      {
+        "FeatureId": "feature.star.natural.0187",
+        "NearestFeatureId": "feature.star.natural.0185",
+        "DistanceSquared": 655856116
+      },
+      {
+        "FeatureId": "feature.star.natural.0188",
+        "NearestFeatureId": "feature.star.natural.0193",
+        "DistanceSquared": 214311572
+      },
+      {
+        "FeatureId": "feature.star.natural.0189",
+        "NearestFeatureId": "feature.star.natural.0188",
+        "DistanceSquared": 235944938
+      },
+      {
+        "FeatureId": "feature.star.natural.0190",
+        "NearestFeatureId": "feature.star.natural.0193",
+        "DistanceSquared": 676724162
+      },
+      {
+        "FeatureId": "feature.star.natural.0191",
+        "NearestFeatureId": "feature.star.natural.0192",
+        "DistanceSquared": 1452267785
+      },
+      {
+        "FeatureId": "feature.star.natural.0192",
+        "NearestFeatureId": "feature.star.natural.0191",
+        "DistanceSquared": 1452267785
+      },
+      {
+        "FeatureId": "feature.star.natural.0193",
+        "NearestFeatureId": "feature.star.natural.0188",
+        "DistanceSquared": 214311572
+      },
+      {
+        "FeatureId": "feature.star.natural.0194",
+        "NearestFeatureId": "feature.star.natural.0195",
+        "DistanceSquared": 1107007666
+      },
+      {
+        "FeatureId": "feature.star.natural.0195",
+        "NearestFeatureId": "feature.star.natural.0194",
+        "DistanceSquared": 1107007666
+      },
+      {
+        "FeatureId": "feature.star.natural.0196",
+        "NearestFeatureId": "feature.star.natural.0199",
+        "DistanceSquared": 752660649
+      },
+      {
+        "FeatureId": "feature.star.natural.0197",
+        "NearestFeatureId": "feature.star.natural.0200",
+        "DistanceSquared": 988587106
+      },
+      {
+        "FeatureId": "feature.star.natural.0198",
+        "NearestFeatureId": "feature.star.natural.0200",
+        "DistanceSquared": 153784858
+      },
+      {
+        "FeatureId": "feature.star.natural.0199",
+        "NearestFeatureId": "feature.star.natural.0196",
+        "DistanceSquared": 752660649
+      },
+      {
+        "FeatureId": "feature.star.natural.0200",
+        "NearestFeatureId": "feature.star.natural.0198",
+        "DistanceSquared": 153784858
+      },
+      {
+        "FeatureId": "feature.star.natural.0201",
+        "NearestFeatureId": "feature.star.natural.0202",
+        "DistanceSquared": 3767376713
+      },
+      {
+        "FeatureId": "feature.star.natural.0202",
+        "NearestFeatureId": "feature.star.natural.0201",
+        "DistanceSquared": 3767376713
+      },
+      {
+        "FeatureId": "feature.star.natural.0203",
+        "NearestFeatureId": "feature.star.natural.0204",
+        "DistanceSquared": 7536621253
+      },
+      {
+        "FeatureId": "feature.star.natural.0204",
+        "NearestFeatureId": "feature.star.natural.0203",
+        "DistanceSquared": 7536621253
+      },
+      {
+        "FeatureId": "feature.star.natural.0205",
+        "NearestFeatureId": "feature.star.natural.0211",
+        "DistanceSquared": 394422185
+      },
+      {
+        "FeatureId": "feature.star.natural.0206",
+        "NearestFeatureId": "feature.star.natural.0213",
+        "DistanceSquared": 560952082
+      },
+      {
+        "FeatureId": "feature.star.natural.0207",
+        "NearestFeatureId": "feature.star.natural.0212",
+        "DistanceSquared": 265756250
+      },
+      {
+        "FeatureId": "feature.star.natural.0208",
+        "NearestFeatureId": "feature.star.natural.0211",
+        "DistanceSquared": 208073813
+      },
+      {
+        "FeatureId": "feature.star.natural.0209",
+        "NearestFeatureId": "feature.star.natural.0210",
+        "DistanceSquared": 158563693
+      },
+      {
+        "FeatureId": "feature.star.natural.0210",
+        "NearestFeatureId": "feature.star.natural.0209",
+        "DistanceSquared": 158563693
+      },
+      {
+        "FeatureId": "feature.star.natural.0211",
+        "NearestFeatureId": "feature.star.natural.0208",
+        "DistanceSquared": 208073813
+      },
+      {
+        "FeatureId": "feature.star.natural.0212",
+        "NearestFeatureId": "feature.star.natural.0207",
+        "DistanceSquared": 265756250
+      },
+      {
+        "FeatureId": "feature.star.natural.0213",
+        "NearestFeatureId": "feature.star.natural.0206",
+        "DistanceSquared": 560952082
+      },
+      {
+        "FeatureId": "feature.star.natural.0214",
+        "NearestFeatureId": "feature.star.natural.0215",
+        "DistanceSquared": 213434010
+      },
+      {
+        "FeatureId": "feature.star.natural.0215",
+        "NearestFeatureId": "feature.star.natural.0214",
+        "DistanceSquared": 213434010
+      },
+      {
+        "FeatureId": "feature.star.natural.0216",
+        "NearestFeatureId": "feature.star.natural.0217",
+        "DistanceSquared": 1886649113
+      },
+      {
+        "FeatureId": "feature.star.natural.0217",
+        "NearestFeatureId": "feature.star.natural.0218",
+        "DistanceSquared": 223333200
+      },
+      {
+        "FeatureId": "feature.star.natural.0218",
+        "NearestFeatureId": "feature.star.natural.0217",
+        "DistanceSquared": 223333200
+      },
+      {
+        "FeatureId": "feature.star.natural.0219",
+        "NearestFeatureId": "feature.star.natural.0222",
+        "DistanceSquared": 290677858
+      },
+      {
+        "FeatureId": "feature.star.natural.0220",
+        "NearestFeatureId": "feature.star.natural.0221",
+        "DistanceSquared": 1366084541
+      },
+      {
+        "FeatureId": "feature.star.natural.0221",
+        "NearestFeatureId": "feature.star.natural.0220",
+        "DistanceSquared": 1366084541
+      },
+      {
+        "FeatureId": "feature.star.natural.0222",
+        "NearestFeatureId": "feature.star.natural.0219",
+        "DistanceSquared": 290677858
+      },
+      {
+        "FeatureId": "feature.star.natural.0223",
+        "NearestFeatureId": "feature.star.natural.0224",
+        "DistanceSquared": 232773517
+      },
+      {
+        "FeatureId": "feature.star.natural.0224",
+        "NearestFeatureId": "feature.star.natural.0223",
+        "DistanceSquared": 232773517
+      },
+      {
+        "FeatureId": "feature.star.natural.0225",
+        "NearestFeatureId": "feature.star.natural.0223",
+        "DistanceSquared": 510058816
+      },
+      {
+        "FeatureId": "feature.star.natural.0226",
+        "NearestFeatureId": "feature.star.natural.0225",
+        "DistanceSquared": 1748928913
+      },
+      {
+        "FeatureId": "feature.star.natural.0227",
+        "NearestFeatureId": "feature.star.natural.0225",
+        "DistanceSquared": 1356849754
+      },
+      {
+        "FeatureId": "feature.star.natural.0228",
+        "NearestFeatureId": "feature.star.natural.0229",
+        "DistanceSquared": 1733306570
+      },
+      {
+        "FeatureId": "feature.star.natural.0229",
+        "NearestFeatureId": "feature.star.natural.0228",
+        "DistanceSquared": 1733306570
+      },
+      {
+        "FeatureId": "feature.star.natural.0230",
+        "NearestFeatureId": "feature.star.natural.0234",
+        "DistanceSquared": 166866629
+      },
+      {
+        "FeatureId": "feature.star.natural.0231",
+        "NearestFeatureId": "feature.star.natural.0232",
+        "DistanceSquared": 365469173
+      },
+      {
+        "FeatureId": "feature.star.natural.0232",
+        "NearestFeatureId": "feature.star.natural.0231",
+        "DistanceSquared": 365469173
+      },
+      {
+        "FeatureId": "feature.star.natural.0233",
+        "NearestFeatureId": "feature.star.natural.0230",
+        "DistanceSquared": 2253031469
+      },
+      {
+        "FeatureId": "feature.star.natural.0234",
+        "NearestFeatureId": "feature.star.natural.0230",
+        "DistanceSquared": 166866629
+      },
+      {
+        "FeatureId": "feature.star.natural.0235",
+        "NearestFeatureId": "feature.star.natural.0234",
+        "DistanceSquared": 213473581
+      },
+      {
+        "FeatureId": "feature.star.natural.0236",
+        "NearestFeatureId": "feature.star.natural.0234",
+        "DistanceSquared": 785714836
+      },
+      {
+        "FeatureId": "feature.star.natural.0237",
+        "NearestFeatureId": "feature.star.natural.0238",
+        "DistanceSquared": 2027320321
+      },
+      {
+        "FeatureId": "feature.star.natural.0238",
+        "NearestFeatureId": "feature.star.natural.0237",
+        "DistanceSquared": 2027320321
+      },
+      {
+        "FeatureId": "feature.star.natural.0239",
+        "NearestFeatureId": "feature.star.natural.0240",
+        "DistanceSquared": 1300368217
+      },
+      {
+        "FeatureId": "feature.star.natural.0240",
+        "NearestFeatureId": "feature.star.natural.0239",
+        "DistanceSquared": 1300368217
+      },
+      {
+        "FeatureId": "feature.star.natural.0241",
+        "NearestFeatureId": "feature.star.natural.0242",
+        "DistanceSquared": 396603341
+      },
+      {
+        "FeatureId": "feature.star.natural.0242",
+        "NearestFeatureId": "feature.star.natural.0241",
+        "DistanceSquared": 396603341
+      },
+      {
+        "FeatureId": "feature.star.natural.0243",
+        "NearestFeatureId": "feature.star.natural.0248",
+        "DistanceSquared": 184394930
+      },
+      {
+        "FeatureId": "feature.star.natural.0244",
+        "NearestFeatureId": "feature.star.natural.0247",
+        "DistanceSquared": 328868465
+      },
+      {
+        "FeatureId": "feature.star.natural.0245",
+        "NearestFeatureId": "feature.star.natural.0248",
+        "DistanceSquared": 289214626
+      },
+      {
+        "FeatureId": "feature.star.natural.0246",
+        "NearestFeatureId": "feature.star.natural.0245",
+        "DistanceSquared": 293736340
+      },
+      {
+        "FeatureId": "feature.star.natural.0247",
+        "NearestFeatureId": "feature.star.natural.0244",
+        "DistanceSquared": 328868465
+      },
+      {
+        "FeatureId": "feature.star.natural.0248",
+        "NearestFeatureId": "feature.star.natural.0243",
+        "DistanceSquared": 184394930
+      },
+      {
+        "FeatureId": "feature.star.natural.0249",
+        "NearestFeatureId": "feature.star.natural.0250",
+        "DistanceSquared": 382589992
+      },
+      {
+        "FeatureId": "feature.star.natural.0250",
+        "NearestFeatureId": "feature.star.natural.0249",
+        "DistanceSquared": 382589992
+      }
+    ],
+    "LooseAssociationArities": [
+      {
+        "MemberCount": 2,
+        "GroupCount": 9
+      },
+      {
+        "MemberCount": 3,
+        "GroupCount": 9
+      },
+      {
+        "MemberCount": 4,
+        "GroupCount": 3
+      },
+      {
+        "MemberCount": 5,
+        "GroupCount": 5
+      },
+      {
+        "MemberCount": 6,
+        "GroupCount": 8
+      },
+      {
+        "MemberCount": 7,
+        "GroupCount": 6
+      },
+      {
+        "MemberCount": 8,
+        "GroupCount": 1
+      },
+      {
+        "MemberCount": 9,
+        "GroupCount": 5
+      }
+    ],
+    "LooseRadiusMinimum": 23246,
+    "LooseRadiusMaximum": 73354,
+    "CloseNeighbourThreshold": 30000,
+    "ClosePairCount": 114,
+    "CloseComponents": [
+      {
+        "ComponentId": "feature.star.natural.0001",
+        "NodeIds": [
+          "nav.natural.0001"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0002",
+        "NodeIds": [
+          "nav.natural.0002"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0003",
+        "NodeIds": [
+          "nav.natural.0003"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0004",
+        "NodeIds": [
+          "nav.natural.0004"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0005",
+        "NodeIds": [
+          "nav.natural.0005"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0006",
+        "NodeIds": [
+          "nav.natural.0006"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0007",
+        "NodeIds": [
+          "nav.natural.0007"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0008",
+        "NodeIds": [
+          "nav.natural.0008"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0009",
+        "NodeIds": [
+          "nav.natural.0009"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0010",
+        "NodeIds": [
+          "nav.natural.0010"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0011",
+        "NodeIds": [
+          "nav.natural.0011"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0012",
+        "NodeIds": [
+          "nav.natural.0012"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0013",
+        "NodeIds": [
+          "nav.natural.0013"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0014",
+        "NodeIds": [
+          "nav.natural.0014"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0015",
+        "NodeIds": [
+          "nav.natural.0015"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0016",
+        "NodeIds": [
+          "nav.natural.0016"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0017",
+        "NodeIds": [
+          "nav.natural.0017"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0018",
+        "NodeIds": [
+          "nav.natural.0018"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0019",
+        "NodeIds": [
+          "nav.natural.0019"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0020",
+        "NodeIds": [
+          "nav.natural.0020"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0021",
+        "NodeIds": [
+          "nav.natural.0021"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0022",
+        "NodeIds": [
+          "nav.natural.0022"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0023",
+        "NodeIds": [
+          "nav.natural.0023"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0024",
+        "NodeIds": [
+          "nav.natural.0024"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0025",
+        "NodeIds": [
+          "nav.natural.0025"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0026",
+        "NodeIds": [
+          "nav.natural.0026"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0027",
+        "NodeIds": [
+          "nav.natural.0027"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0028",
+        "NodeIds": [
+          "nav.natural.0028",
+          "nav.natural.0029"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0030",
+        "NodeIds": [
+          "nav.natural.0030"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0031",
+        "NodeIds": [
+          "nav.natural.0031"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0032",
+        "NodeIds": [
+          "nav.natural.0032"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0033",
+        "NodeIds": [
+          "nav.natural.0033",
+          "nav.natural.0037",
+          "nav.natural.0038",
+          "nav.natural.0039"
+        ],
+        "Size": 4
+      },
+      {
+        "ComponentId": "feature.star.natural.0034",
+        "NodeIds": [
+          "nav.natural.0034",
+          "nav.natural.0035",
+          "nav.natural.0036"
+        ],
+        "Size": 3
+      },
+      {
+        "ComponentId": "feature.star.natural.0040",
+        "NodeIds": [
+          "nav.natural.0040",
+          "nav.natural.0042",
+          "nav.natural.0043"
+        ],
+        "Size": 3
+      },
+      {
+        "ComponentId": "feature.star.natural.0041",
+        "NodeIds": [
+          "nav.natural.0041"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0044",
+        "NodeIds": [
+          "nav.natural.0044"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0045",
+        "NodeIds": [
+          "nav.natural.0045",
+          "nav.natural.0046",
+          "nav.natural.0047",
+          "nav.natural.0049",
+          "nav.natural.0050"
+        ],
+        "Size": 5
+      },
+      {
+        "ComponentId": "feature.star.natural.0048",
+        "NodeIds": [
+          "nav.natural.0048"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0051",
+        "NodeIds": [
+          "nav.natural.0051",
+          "nav.natural.0053",
+          "nav.natural.0056",
+          "nav.natural.0057",
+          "nav.natural.0059"
+        ],
+        "Size": 5
+      },
+      {
+        "ComponentId": "feature.star.natural.0052",
+        "NodeIds": [
+          "nav.natural.0052"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0054",
+        "NodeIds": [
+          "nav.natural.0054",
+          "nav.natural.0055",
+          "nav.natural.0058"
+        ],
+        "Size": 3
+      },
+      {
+        "ComponentId": "feature.star.natural.0060",
+        "NodeIds": [
+          "nav.natural.0060",
+          "nav.natural.0062"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0061",
+        "NodeIds": [
+          "nav.natural.0061"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0063",
+        "NodeIds": [
+          "nav.natural.0063"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0064",
+        "NodeIds": [
+          "nav.natural.0064"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0065",
+        "NodeIds": [
+          "nav.natural.0065",
+          "nav.natural.0067",
+          "nav.natural.0069",
+          "nav.natural.0071"
+        ],
+        "Size": 4
+      },
+      {
+        "ComponentId": "feature.star.natural.0066",
+        "NodeIds": [
+          "nav.natural.0066"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0068",
+        "NodeIds": [
+          "nav.natural.0068"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0070",
+        "NodeIds": [
+          "nav.natural.0070"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0072",
+        "NodeIds": [
+          "nav.natural.0072",
+          "nav.natural.0073",
+          "nav.natural.0075",
+          "nav.natural.0076",
+          "nav.natural.0078",
+          "nav.natural.0079",
+          "nav.natural.0080"
+        ],
+        "Size": 7
+      },
+      {
+        "ComponentId": "feature.star.natural.0074",
+        "NodeIds": [
+          "nav.natural.0074"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0077",
+        "NodeIds": [
+          "nav.natural.0077"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0081",
+        "NodeIds": [
+          "nav.natural.0081",
+          "nav.natural.0086"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0082",
+        "NodeIds": [
+          "nav.natural.0082"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0083",
+        "NodeIds": [
+          "nav.natural.0083",
+          "nav.natural.0085"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0084",
+        "NodeIds": [
+          "nav.natural.0084"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0087",
+        "NodeIds": [
+          "nav.natural.0087",
+          "nav.natural.0089"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0088",
+        "NodeIds": [
+          "nav.natural.0088",
+          "nav.natural.0090"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0091",
+        "NodeIds": [
+          "nav.natural.0091",
+          "nav.natural.0092"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0093",
+        "NodeIds": [
+          "nav.natural.0093",
+          "nav.natural.0096",
+          "nav.natural.0098"
+        ],
+        "Size": 3
+      },
+      {
+        "ComponentId": "feature.star.natural.0094",
+        "NodeIds": [
+          "nav.natural.0094",
+          "nav.natural.0097"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0095",
+        "NodeIds": [
+          "nav.natural.0095"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0099",
+        "NodeIds": [
+          "nav.natural.0099"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0100",
+        "NodeIds": [
+          "nav.natural.0100",
+          "nav.natural.0101"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0102",
+        "NodeIds": [
+          "nav.natural.0102"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0103",
+        "NodeIds": [
+          "nav.natural.0103"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0104",
+        "NodeIds": [
+          "nav.natural.0104"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0105",
+        "NodeIds": [
+          "nav.natural.0105"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0106",
+        "NodeIds": [
+          "nav.natural.0106"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0107",
+        "NodeIds": [
+          "nav.natural.0107",
+          "nav.natural.0108"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0109",
+        "NodeIds": [
+          "nav.natural.0109",
+          "nav.natural.0111",
+          "nav.natural.0112",
+          "nav.natural.0115",
+          "nav.natural.0117"
+        ],
+        "Size": 5
+      },
+      {
+        "ComponentId": "feature.star.natural.0110",
+        "NodeIds": [
+          "nav.natural.0110",
+          "nav.natural.0114"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0113",
+        "NodeIds": [
+          "nav.natural.0113"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0116",
+        "NodeIds": [
+          "nav.natural.0116"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0118",
+        "NodeIds": [
+          "nav.natural.0118",
+          "nav.natural.0119",
+          "nav.natural.0120",
+          "nav.natural.0122"
+        ],
+        "Size": 4
+      },
+      {
+        "ComponentId": "feature.star.natural.0121",
+        "NodeIds": [
+          "nav.natural.0121",
+          "nav.natural.0123"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0124",
+        "NodeIds": [
+          "nav.natural.0124"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0125",
+        "NodeIds": [
+          "nav.natural.0125",
+          "nav.natural.0126",
+          "nav.natural.0127",
+          "nav.natural.0128"
+        ],
+        "Size": 4
+      },
+      {
+        "ComponentId": "feature.star.natural.0129",
+        "NodeIds": [
+          "nav.natural.0129"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0130",
+        "NodeIds": [
+          "nav.natural.0130"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0131",
+        "NodeIds": [
+          "nav.natural.0131",
+          "nav.natural.0132"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0133",
+        "NodeIds": [
+          "nav.natural.0133"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0134",
+        "NodeIds": [
+          "nav.natural.0134"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0135",
+        "NodeIds": [
+          "nav.natural.0135",
+          "nav.natural.0165"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0136",
+        "NodeIds": [
+          "nav.natural.0136",
+          "nav.natural.0140"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0137",
+        "NodeIds": [
+          "nav.natural.0137"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0138",
+        "NodeIds": [
+          "nav.natural.0138",
+          "nav.natural.0139"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0141",
+        "NodeIds": [
+          "nav.natural.0141"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0142",
+        "NodeIds": [
+          "nav.natural.0142"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0143",
+        "NodeIds": [
+          "nav.natural.0143"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0144",
+        "NodeIds": [
+          "nav.natural.0144"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0145",
+        "NodeIds": [
+          "nav.natural.0145",
+          "nav.natural.0146",
+          "nav.natural.0147",
+          "nav.natural.0148",
+          "nav.natural.0149"
+        ],
+        "Size": 5
+      },
+      {
+        "ComponentId": "feature.star.natural.0150",
+        "NodeIds": [
+          "nav.natural.0150"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0151",
+        "NodeIds": [
+          "nav.natural.0151",
+          "nav.natural.0153"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0152",
+        "NodeIds": [
+          "nav.natural.0152"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0154",
+        "NodeIds": [
+          "nav.natural.0154"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0155",
+        "NodeIds": [
+          "nav.natural.0155"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0156",
+        "NodeIds": [
+          "nav.natural.0156"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0157",
+        "NodeIds": [
+          "nav.natural.0157"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0158",
+        "NodeIds": [
+          "nav.natural.0158"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0159",
+        "NodeIds": [
+          "nav.natural.0159"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0160",
+        "NodeIds": [
+          "nav.natural.0160"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0161",
+        "NodeIds": [
+          "nav.natural.0161"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0162",
+        "NodeIds": [
+          "nav.natural.0162",
+          "nav.natural.0163",
+          "nav.natural.0164",
+          "nav.natural.0166"
+        ],
+        "Size": 4
+      },
+      {
+        "ComponentId": "feature.star.natural.0167",
+        "NodeIds": [
+          "nav.natural.0167"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0168",
+        "NodeIds": [
+          "nav.natural.0168"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0169",
+        "NodeIds": [
+          "nav.natural.0169"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0170",
+        "NodeIds": [
+          "nav.natural.0170"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0171",
+        "NodeIds": [
+          "nav.natural.0171"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0172",
+        "NodeIds": [
+          "nav.natural.0172"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0173",
+        "NodeIds": [
+          "nav.natural.0173"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0174",
+        "NodeIds": [
+          "nav.natural.0174"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0175",
+        "NodeIds": [
+          "nav.natural.0175"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0176",
+        "NodeIds": [
+          "nav.natural.0176"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0177",
+        "NodeIds": [
+          "nav.natural.0177"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0178",
+        "NodeIds": [
+          "nav.natural.0178",
+          "nav.natural.0180"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0179",
+        "NodeIds": [
+          "nav.natural.0179"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0181",
+        "NodeIds": [
+          "nav.natural.0181",
+          "nav.natural.0182",
+          "nav.natural.0183",
+          "nav.natural.0185",
+          "nav.natural.0186",
+          "nav.natural.0187"
+        ],
+        "Size": 6
+      },
+      {
+        "ComponentId": "feature.star.natural.0184",
+        "NodeIds": [
+          "nav.natural.0184"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0188",
+        "NodeIds": [
+          "nav.natural.0188",
+          "nav.natural.0189",
+          "nav.natural.0190",
+          "nav.natural.0193"
+        ],
+        "Size": 4
+      },
+      {
+        "ComponentId": "feature.star.natural.0191",
+        "NodeIds": [
+          "nav.natural.0191"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0192",
+        "NodeIds": [
+          "nav.natural.0192"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0194",
+        "NodeIds": [
+          "nav.natural.0194"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0195",
+        "NodeIds": [
+          "nav.natural.0195"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0196",
+        "NodeIds": [
+          "nav.natural.0196",
+          "nav.natural.0199"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0197",
+        "NodeIds": [
+          "nav.natural.0197"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0198",
+        "NodeIds": [
+          "nav.natural.0198",
+          "nav.natural.0200"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0201",
+        "NodeIds": [
+          "nav.natural.0201"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0202",
+        "NodeIds": [
+          "nav.natural.0202"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0203",
+        "NodeIds": [
+          "nav.natural.0203"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0204",
+        "NodeIds": [
+          "nav.natural.0204"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0205",
+        "NodeIds": [
+          "nav.natural.0205",
+          "nav.natural.0207",
+          "nav.natural.0208",
+          "nav.natural.0211",
+          "nav.natural.0212"
+        ],
+        "Size": 5
+      },
+      {
+        "ComponentId": "feature.star.natural.0206",
+        "NodeIds": [
+          "nav.natural.0206",
+          "nav.natural.0213"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0209",
+        "NodeIds": [
+          "nav.natural.0209",
+          "nav.natural.0210"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0214",
+        "NodeIds": [
+          "nav.natural.0214",
+          "nav.natural.0215"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0216",
+        "NodeIds": [
+          "nav.natural.0216"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0217",
+        "NodeIds": [
+          "nav.natural.0217",
+          "nav.natural.0218"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0219",
+        "NodeIds": [
+          "nav.natural.0219",
+          "nav.natural.0222"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0220",
+        "NodeIds": [
+          "nav.natural.0220"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0221",
+        "NodeIds": [
+          "nav.natural.0221"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0223",
+        "NodeIds": [
+          "nav.natural.0223",
+          "nav.natural.0224",
+          "nav.natural.0225"
+        ],
+        "Size": 3
+      },
+      {
+        "ComponentId": "feature.star.natural.0226",
+        "NodeIds": [
+          "nav.natural.0226"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0227",
+        "NodeIds": [
+          "nav.natural.0227"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0228",
+        "NodeIds": [
+          "nav.natural.0228"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0229",
+        "NodeIds": [
+          "nav.natural.0229"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0230",
+        "NodeIds": [
+          "nav.natural.0230",
+          "nav.natural.0234",
+          "nav.natural.0235",
+          "nav.natural.0236"
+        ],
+        "Size": 4
+      },
+      {
+        "ComponentId": "feature.star.natural.0231",
+        "NodeIds": [
+          "nav.natural.0231",
+          "nav.natural.0232"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0233",
+        "NodeIds": [
+          "nav.natural.0233"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0237",
+        "NodeIds": [
+          "nav.natural.0237"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0238",
+        "NodeIds": [
+          "nav.natural.0238"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0239",
+        "NodeIds": [
+          "nav.natural.0239"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0240",
+        "NodeIds": [
+          "nav.natural.0240"
+        ],
+        "Size": 1
+      },
+      {
+        "ComponentId": "feature.star.natural.0241",
+        "NodeIds": [
+          "nav.natural.0241",
+          "nav.natural.0242"
+        ],
+        "Size": 2
+      },
+      {
+        "ComponentId": "feature.star.natural.0243",
+        "NodeIds": [
+          "nav.natural.0243",
+          "nav.natural.0244",
+          "nav.natural.0245",
+          "nav.natural.0246",
+          "nav.natural.0247",
+          "nav.natural.0248"
+        ],
+        "Size": 6
+      },
+      {
+        "ComponentId": "feature.star.natural.0249",
+        "NodeIds": [
+          "nav.natural.0249",
+          "nav.natural.0250"
+        ],
+        "Size": 2
+      }
+    ],
+    "CloseComponentSizes": [
+      {
+        "Size": 1,
+        "ComponentCount": 107
+      },
+      {
+        "Size": 2,
+        "ComponentCount": 28
+      },
+      {
+        "Size": 3,
+        "ComponentCount": 5
+      },
+      {
+        "Size": 4,
+        "ComponentCount": 7
+      },
+      {
+        "Size": 5,
+        "ComponentCount": 5
+      },
+      {
+        "Size": 6,
+        "ComponentCount": 2
+      },
+      {
+        "Size": 7,
+        "ComponentCount": 1
+      }
+    ],
+    "GeometryAndQuietSpace": {
+      "ContentHash": "4ea9b0d4581edb60460413e9fee0203257bd47e5b6cb43fc044ee5b2cda01976",
+      "Classification": "Site-pressure sample; not whole-cell environmental coverage or campaign knowledge",
+      "QuietEmptyNodeIds": [
+        "nav.natural.0261",
+        "nav.natural.0262",
+        "nav.natural.0266",
+        "nav.natural.0267",
+        "nav.natural.0270",
+        "nav.natural.0271",
+        "nav.natural.0272",
+        "nav.natural.0273",
+        "nav.natural.0274",
+        "nav.natural.0275",
+        "nav.natural.0278",
+        "nav.natural.0280",
+        "nav.natural.0281",
+        "nav.natural.0282",
+        "nav.natural.0283",
+        "nav.natural.0288",
+        "nav.natural.0291",
+        "nav.natural.0293",
+        "nav.natural.0295",
+        "nav.natural.0296",
+        "nav.natural.0297",
+        "nav.natural.0298",
+        "nav.natural.0300",
+        "nav.natural.0301",
+        "nav.natural.0303",
+        "nav.natural.0306",
+        "nav.natural.0307",
+        "nav.natural.0309",
+        "nav.natural.0310",
+        "nav.natural.0312",
+        "nav.natural.0313",
+        "nav.natural.0314",
+        "nav.natural.0316",
+        "nav.natural.0317",
+        "nav.natural.0318",
+        "nav.natural.0322",
+        "nav.natural.0326",
+        "nav.natural.0328",
+        "nav.natural.0329",
+        "nav.natural.0330",
+        "nav.natural.0331",
+        "nav.natural.0332",
+        "nav.natural.0333",
+        "nav.natural.0335",
+        "nav.natural.0336",
+        "nav.natural.0337",
+        "nav.natural.0343",
+        "nav.natural.0345",
+        "nav.natural.0346",
+        "nav.natural.0347",
+        "nav.natural.0349",
+        "nav.natural.0350",
+        "nav.natural.0356",
+        "nav.natural.0358",
+        "nav.natural.0360",
+        "nav.natural.0364",
+        "nav.natural.0365",
+        "nav.natural.0366",
+        "nav.natural.0372",
+        "nav.natural.0373",
+        "nav.natural.0374",
+        "nav.natural.0376",
+        "nav.natural.0377",
+        "nav.natural.0378",
+        "nav.natural.0381",
+        "nav.natural.0382",
+        "nav.natural.0383",
+        "nav.natural.0384",
+        "nav.natural.0387",
+        "nav.natural.0388",
+        "nav.natural.0390",
+        "nav.natural.0391",
+        "nav.natural.0394",
+        "nav.natural.0395",
+        "nav.natural.0396",
+        "nav.natural.0397",
+        "nav.natural.0398",
+        "nav.natural.0401",
+        "nav.natural.0402",
+        "nav.natural.0404",
+        "nav.natural.0409",
+        "nav.natural.0410",
+        "nav.natural.0411",
+        "nav.natural.0412",
+        "nav.natural.0413",
+        "nav.natural.0415",
+        "nav.natural.0416",
+        "nav.natural.0418",
+        "nav.natural.0420",
+        "nav.natural.0421",
+        "nav.natural.0423",
+        "nav.natural.0424",
+        "nav.natural.0426",
+        "nav.natural.0428",
+        "nav.natural.0433",
+        "nav.natural.0436",
+        "nav.natural.0438",
+        "nav.natural.0440",
+        "nav.natural.0442",
+        "nav.natural.0444",
+        "nav.natural.0446",
+        "nav.natural.0447",
+        "nav.natural.0449",
+        "nav.natural.0450",
+        "nav.natural.0451",
+        "nav.natural.0452",
+        "nav.natural.0454",
+        "nav.natural.0456",
+        "nav.natural.0460",
+        "nav.natural.0463",
+        "nav.natural.0464",
+        "nav.natural.0465",
+        "nav.natural.0466",
+        "nav.natural.0468",
+        "nav.natural.0469",
+        "nav.natural.0471",
+        "nav.natural.0473",
+        "nav.natural.0475",
+        "nav.natural.0476",
+        "nav.natural.0477",
+        "nav.natural.0478",
+        "nav.natural.0479",
+        "nav.natural.0480",
+        "nav.natural.0481",
+        "nav.natural.0482",
+        "nav.natural.0484",
+        "nav.natural.0485",
+        "nav.natural.0486",
+        "nav.natural.0489",
+        "nav.natural.0492",
+        "nav.natural.0494",
+        "nav.natural.0497",
+        "nav.natural.0499"
+      ],
+      "DisturbedEmptyNodeIds": [
+        "nav.natural.0251",
+        "nav.natural.0252",
+        "nav.natural.0253",
+        "nav.natural.0254",
+        "nav.natural.0255",
+        "nav.natural.0256",
+        "nav.natural.0257",
+        "nav.natural.0258",
+        "nav.natural.0259",
+        "nav.natural.0260",
+        "nav.natural.0263",
+        "nav.natural.0264",
+        "nav.natural.0265",
+        "nav.natural.0268",
+        "nav.natural.0269",
+        "nav.natural.0276",
+        "nav.natural.0277",
+        "nav.natural.0279",
+        "nav.natural.0284",
+        "nav.natural.0285",
+        "nav.natural.0286",
+        "nav.natural.0287",
+        "nav.natural.0289",
+        "nav.natural.0290",
+        "nav.natural.0292",
+        "nav.natural.0294",
+        "nav.natural.0299",
+        "nav.natural.0302",
+        "nav.natural.0304",
+        "nav.natural.0305",
+        "nav.natural.0308",
+        "nav.natural.0311",
+        "nav.natural.0315",
+        "nav.natural.0319",
+        "nav.natural.0320",
+        "nav.natural.0321",
+        "nav.natural.0323",
+        "nav.natural.0324",
+        "nav.natural.0325",
+        "nav.natural.0327",
+        "nav.natural.0334",
+        "nav.natural.0338",
+        "nav.natural.0339",
+        "nav.natural.0340",
+        "nav.natural.0341",
+        "nav.natural.0342",
+        "nav.natural.0344",
+        "nav.natural.0348",
+        "nav.natural.0351",
+        "nav.natural.0352",
+        "nav.natural.0353",
+        "nav.natural.0354",
+        "nav.natural.0355",
+        "nav.natural.0357",
+        "nav.natural.0359",
+        "nav.natural.0361",
+        "nav.natural.0362",
+        "nav.natural.0363",
+        "nav.natural.0367",
+        "nav.natural.0368",
+        "nav.natural.0369",
+        "nav.natural.0370",
+        "nav.natural.0371",
+        "nav.natural.0375",
+        "nav.natural.0379",
+        "nav.natural.0380",
+        "nav.natural.0385",
+        "nav.natural.0386",
+        "nav.natural.0389",
+        "nav.natural.0392",
+        "nav.natural.0393",
+        "nav.natural.0399",
+        "nav.natural.0400",
+        "nav.natural.0403",
+        "nav.natural.0405",
+        "nav.natural.0406",
+        "nav.natural.0407",
+        "nav.natural.0408",
+        "nav.natural.0414",
+        "nav.natural.0417",
+        "nav.natural.0419",
+        "nav.natural.0422",
+        "nav.natural.0425",
+        "nav.natural.0427",
+        "nav.natural.0429",
+        "nav.natural.0430",
+        "nav.natural.0431",
+        "nav.natural.0432",
+        "nav.natural.0434",
+        "nav.natural.0435",
+        "nav.natural.0437",
+        "nav.natural.0439",
+        "nav.natural.0441",
+        "nav.natural.0443",
+        "nav.natural.0445",
+        "nav.natural.0448",
+        "nav.natural.0453",
+        "nav.natural.0455",
+        "nav.natural.0457",
+        "nav.natural.0458",
+        "nav.natural.0459",
+        "nav.natural.0461",
+        "nav.natural.0462",
+        "nav.natural.0467",
+        "nav.natural.0470",
+        "nav.natural.0472",
+        "nav.natural.0474",
+        "nav.natural.0483",
+        "nav.natural.0487",
+        "nav.natural.0488",
+        "nav.natural.0490",
+        "nav.natural.0491",
+        "nav.natural.0493",
+        "nav.natural.0495",
+        "nav.natural.0496",
+        "nav.natural.0498",
+        "nav.natural.0500"
+      ],
+      "QuietEmptyMeanArea": 15829926087.12406,
+      "DisturbedEmptyMeanArea": 10049561624.799145,
+      "SystemMeanArea": 6875284481.244,
+      "QuietEmptySystemMeanAreaRatio": 2.3024394307331737,
+      "AllEmptyAreaShare": 0.6562357759378,
+      "QuietComponents": [
+        {
+          "ComponentId": "nav.natural.0261",
+          "NodeIds": [
+            "nav.natural.0261",
+            "nav.natural.0267",
+            "nav.natural.0280",
+            "nav.natural.0313",
+            "nav.natural.0349",
+            "nav.natural.0360",
+            "nav.natural.0378",
+            "nav.natural.0387",
+            "nav.natural.0397",
+            "nav.natural.0402",
+            "nav.natural.0411",
+            "nav.natural.0413",
+            "nav.natural.0463",
+            "nav.natural.0468",
+            "nav.natural.0476"
+          ],
+          "MaxCrossings": 8,
+          "AdjacentSystemCount": 24
+        },
+        {
+          "ComponentId": "nav.natural.0262",
+          "NodeIds": [
+            "nav.natural.0262",
+            "nav.natural.0266",
+            "nav.natural.0278",
+            "nav.natural.0281",
+            "nav.natural.0282",
+            "nav.natural.0283",
+            "nav.natural.0293",
+            "nav.natural.0307",
+            "nav.natural.0312",
+            "nav.natural.0326",
+            "nav.natural.0331",
+            "nav.natural.0346",
+            "nav.natural.0356",
+            "nav.natural.0358",
+            "nav.natural.0366",
+            "nav.natural.0374",
+            "nav.natural.0395",
+            "nav.natural.0398",
+            "nav.natural.0409",
+            "nav.natural.0415",
+            "nav.natural.0416",
+            "nav.natural.0424",
+            "nav.natural.0438",
+            "nav.natural.0446",
+            "nav.natural.0464",
+            "nav.natural.0477",
+            "nav.natural.0485",
+            "nav.natural.0489",
+            "nav.natural.0494",
+            "nav.natural.0499"
+          ],
+          "MaxCrossings": 15,
+          "AdjacentSystemCount": 36
+        },
+        {
+          "ComponentId": "nav.natural.0270",
+          "NodeIds": [
+            "nav.natural.0270",
+            "nav.natural.0274",
+            "nav.natural.0303",
+            "nav.natural.0306",
+            "nav.natural.0310",
+            "nav.natural.0316",
+            "nav.natural.0318",
+            "nav.natural.0322",
+            "nav.natural.0329",
+            "nav.natural.0332",
+            "nav.natural.0333",
+            "nav.natural.0337",
+            "nav.natural.0345",
+            "nav.natural.0347",
+            "nav.natural.0372",
+            "nav.natural.0373",
+            "nav.natural.0390",
+            "nav.natural.0394",
+            "nav.natural.0396",
+            "nav.natural.0404",
+            "nav.natural.0412",
+            "nav.natural.0418",
+            "nav.natural.0420",
+            "nav.natural.0421",
+            "nav.natural.0426",
+            "nav.natural.0428",
+            "nav.natural.0433",
+            "nav.natural.0436",
+            "nav.natural.0440",
+            "nav.natural.0444",
+            "nav.natural.0447",
+            "nav.natural.0449",
+            "nav.natural.0451",
+            "nav.natural.0454",
+            "nav.natural.0456",
+            "nav.natural.0465",
+            "nav.natural.0478",
+            "nav.natural.0480"
+          ],
+          "MaxCrossings": 12,
+          "AdjacentSystemCount": 55
+        },
+        {
+          "ComponentId": "nav.natural.0271",
+          "NodeIds": [
+            "nav.natural.0271"
+          ],
+          "MaxCrossings": 0,
+          "AdjacentSystemCount": 3
+        },
+        {
+          "ComponentId": "nav.natural.0272",
+          "NodeIds": [
+            "nav.natural.0272",
+            "nav.natural.0291",
+            "nav.natural.0295",
+            "nav.natural.0296",
+            "nav.natural.0297",
+            "nav.natural.0298",
+            "nav.natural.0343",
+            "nav.natural.0350",
+            "nav.natural.0365",
+            "nav.natural.0376",
+            "nav.natural.0382",
+            "nav.natural.0388",
+            "nav.natural.0391",
+            "nav.natural.0423",
+            "nav.natural.0473",
+            "nav.natural.0475",
+            "nav.natural.0481",
+            "nav.natural.0497"
+          ],
+          "MaxCrossings": 9,
+          "AdjacentSystemCount": 30
+        },
+        {
+          "ComponentId": "nav.natural.0273",
+          "NodeIds": [
+            "nav.natural.0273",
+            "nav.natural.0300",
+            "nav.natural.0442",
+            "nav.natural.0466",
+            "nav.natural.0482",
+            "nav.natural.0486"
+          ],
+          "MaxCrossings": 4,
+          "AdjacentSystemCount": 11
+        },
+        {
+          "ComponentId": "nav.natural.0275",
+          "NodeIds": [
+            "nav.natural.0275",
+            "nav.natural.0301",
+            "nav.natural.0335",
+            "nav.natural.0377",
+            "nav.natural.0410",
+            "nav.natural.0469",
+            "nav.natural.0471",
+            "nav.natural.0492"
+          ],
+          "MaxCrossings": 4,
+          "AdjacentSystemCount": 14
+        },
+        {
+          "ComponentId": "nav.natural.0288",
+          "NodeIds": [
+            "nav.natural.0288",
+            "nav.natural.0317",
+            "nav.natural.0328",
+            "nav.natural.0330",
+            "nav.natural.0336"
+          ],
+          "MaxCrossings": 4,
+          "AdjacentSystemCount": 5
+        },
+        {
+          "ComponentId": "nav.natural.0309",
+          "NodeIds": [
+            "nav.natural.0309"
+          ],
+          "MaxCrossings": 0,
+          "AdjacentSystemCount": 1
+        },
+        {
+          "ComponentId": "nav.natural.0314",
+          "NodeIds": [
+            "nav.natural.0314"
+          ],
+          "MaxCrossings": 0,
+          "AdjacentSystemCount": 5
+        },
+        {
+          "ComponentId": "nav.natural.0364",
+          "NodeIds": [
+            "nav.natural.0364"
+          ],
+          "MaxCrossings": 0,
+          "AdjacentSystemCount": 4
+        },
+        {
+          "ComponentId": "nav.natural.0381",
+          "NodeIds": [
+            "nav.natural.0381",
+            "nav.natural.0401"
+          ],
+          "MaxCrossings": 1,
+          "AdjacentSystemCount": 4
+        },
+        {
+          "ComponentId": "nav.natural.0383",
+          "NodeIds": [
+            "nav.natural.0383",
+            "nav.natural.0452"
+          ],
+          "MaxCrossings": 1,
+          "AdjacentSystemCount": 7
+        },
+        {
+          "ComponentId": "nav.natural.0384",
+          "NodeIds": [
+            "nav.natural.0384"
+          ],
+          "MaxCrossings": 0,
+          "AdjacentSystemCount": 3
+        },
+        {
+          "ComponentId": "nav.natural.0450",
+          "NodeIds": [
+            "nav.natural.0450"
+          ],
+          "MaxCrossings": 0,
+          "AdjacentSystemCount": 6
+        },
+        {
+          "ComponentId": "nav.natural.0460",
+          "NodeIds": [
+            "nav.natural.0460",
+            "nav.natural.0484"
+          ],
+          "MaxCrossings": 1,
+          "AdjacentSystemCount": 9
+        },
+        {
+          "ComponentId": "nav.natural.0479",
+          "NodeIds": [
+            "nav.natural.0479"
+          ],
+          "MaxCrossings": 0,
+          "AdjacentSystemCount": 3
+        }
+      ],
+      "QuietComponentCount": 17,
+      "SystemPairCount": 31125,
+      "SystemPairCrossingsMedian": 9,
+      "SystemPairCrossingsP90": 15,
+      "SystemPairCrossingsMaximum": 23,
+      "InteriorEdgeCount": 1442,
+      "MinimumSharedEdgeLengthSquared": 6052,
+      "MedianSharedEdgeLengthSquared": 2813043986
+    }
+  }
+}

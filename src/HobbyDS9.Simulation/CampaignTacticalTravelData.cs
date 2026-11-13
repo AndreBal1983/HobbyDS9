@@ -24,14 +24,14 @@ namespace HobbyDS9.Simulation
             MovementProof=s.MovementProof==null?null:new CampaignPhysicalMovementProofDto { Start=SimulationSession.CopyState(s.MovementProof.Start),
                 Orders=s.MovementProof.Orders.OrderBy(o=>o.FleetId,StringComparer.Ordinal).Select(Copy).ToList(),
                 Contacts=s.MovementProof.Contacts.OrderBy(k=>k.ActorId,StringComparer.Ordinal).ThenBy(k=>k.FleetId,StringComparer.Ordinal).Select(Copy).ToList() } };
-        internal static void ValidatePackage(CampaignTacticalTravelPackageDto p)
+        internal static void ValidatePackage(CampaignTacticalTravelPackageDto p,PlanetaryOwnershipContext? ownership=null)
         {
             Require(p!=null&&p.FormatVersion==CampaignTacticalTravelIdentity.PackageFormat&&p.ProfileId==CampaignTacticalTravelIdentity.Profile&&Hash(p.PackageHash)
                 &&p.PolicyStatus=="proposed"&&p.DefaultActivationAllowed==false
                 &&p.BoundaryPolicy=="arrivals-contact-departures-v1"&&p.SharedStartPolicy=="departure-first-start-v1"
                 &&p.LaterArrivalPolicy=="join-connected-before-allocation-v1"&&p.ContactFreshnessTurns.HasValue&&p.ContactFreshnessTurns>=0
                 &&p.ContactFreshnessTurns<=100000&&p.CorePackage!=null&&p.Hostilities!=null&&p.InitialContacts!=null&&p.InitialOrders!=null,"Unknown/ungated physical package.");
-            CampaignTacticalReviewData.ValidatePackage(p.CorePackage);
+            CampaignTacticalReviewData.ValidatePackage(p.CorePackage,ownership);
             var game=p.CorePackage.Campaign!.InitialState;var defs=p.CorePackage.Campaign.Definitions;
             var graph=new WeightedNavigationGraph(defs);
             Require(p.Hostilities.All(h=>h!=null&&h.CivilizationA!=h.CivilizationB&&game.Civilizations!.Any(c=>c.CivilizationId==h.CivilizationA)

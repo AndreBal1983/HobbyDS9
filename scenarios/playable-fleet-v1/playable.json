@@ -1,0 +1,9 @@
+{
+  "FormatVersion": 6,
+  "ProfileId": "campaign-tactical-v2-playable-fleet-1",
+  "PolicyStatus": "proposed",
+  "DefaultActivationAllowed": false,
+  "ReplayOperationLimit": 2048,
+  "OpponentActorId": "civ.cardassian",
+  "DefenseNodeId": "nav.bajor"
+}

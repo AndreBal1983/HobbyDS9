@@ -17,6 +17,7 @@ namespace HobbyDS9.Application
         IReadOnlyList<CampaignOwnTravelReceipt> GetOwnTravelReceipts(string actor);
         IReadOnlyList<CampaignOwnTravelOrder> GetOwnTravelOrders(string actor);
         StrategicRouteSnapshot FindKnownRoute(string actor,string origin,string destination);
+        StrategicRouteSnapshot EvaluateKnownRoute(string actor,string origin,IReadOnlyList<string> steps);
         CampaignTacticalMutationResult SubmitTravelOrder(SubmitCampaignTravelOrderDto? command);
         CampaignTacticalMutationResult SetApproachCloak(string actor,string command,string fleet,bool enabled,int turn,long revision);
         CampaignTacticalMutationResult SubmitStrategicCommand(CommandEnvelope? command);
@@ -43,6 +44,7 @@ namespace HobbyDS9.Application
         public IReadOnlyList<CampaignOwnTravelReceipt> GetOwnTravelReceipts(string actor)=>session.OwnTravelReceipts(actor);
         public IReadOnlyList<CampaignOwnTravelOrder> GetOwnTravelOrders(string actor)=>session.OwnTravelOrders(actor);
         public StrategicRouteSnapshot FindKnownRoute(string actor,string origin,string destination)=>session.FindKnownTravelRoute(actor,origin,destination);
+        public StrategicRouteSnapshot EvaluateKnownRoute(string actor,string origin,IReadOnlyList<string> steps)=>session.EvaluateKnownTravelRoute(actor,origin,steps);
         public CampaignTacticalMutationResult SubmitTravelOrder(SubmitCampaignTravelOrderDto? command)=>session.SubmitTravelOrder(command);
         public CampaignTacticalMutationResult SetApproachCloak(string actor,string command,string fleet,bool enabled,int turn,long revision)=>session.SetApproachCloak(actor,command,fleet,enabled,turn,revision);
         public CampaignTacticalMutationResult SubmitStrategicCommand(CommandEnvelope? command)=>session.SubmitStrategicCommand(command);

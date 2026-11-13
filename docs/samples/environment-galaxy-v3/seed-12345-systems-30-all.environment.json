@@ -1,0 +1,4815 @@
+{
+  "FormatVersion": 2,
+  "ProfileId": "generated-galaxy-review-v1",
+  "GeneratorVersion": "environment-first-regions-v3",
+  "TuningVersion": "provisional-environment-influence-v1",
+  "ContentHash": "768d23805daf819671ec63a0705b85115aba66eb0a2a2aae98d648a5aaa020a7",
+  "Settings": {
+    "Map": {
+      "Seed": "12345",
+      "SystemCount": 30,
+      "HomeCivilizationDefinitionIds": [
+        "civilization.cardassian",
+        "civilization.federation"
+      ]
+    },
+    "StellarInfluenceEnabled": true,
+    "BlackHoleInfluenceEnabled": true,
+    "NebulaInfluenceEnabled": true
+  },
+  "Tuning": {
+    "BaseDensity": 100,
+    "MaximumDensity": 1000,
+    "MinimumSiteSeparation": 30000,
+    "MinimumStarSeparation": 60000,
+    "OuterMargin": 15000,
+    "BlackHoleCount": 2,
+    "NebulaCount": 3,
+    "CandidateDrawsPerRegion": 1024,
+    "PlacementAttempts": 8
+  },
+  "Features": [
+    {
+      "FeatureId": "feature.generated.black-hole.001",
+      "Kind": 2,
+      "DisplayName": "Black hole 001",
+      "Position": {
+        "X": 747904,
+        "Y": 153743
+      },
+      "RadiusX": 160000,
+      "RadiusY": 160000,
+      "DensityWeight": 650,
+      "SystemId": null,
+      "NodeId": "nav.generated.031"
+    },
+    {
+      "FeatureId": "feature.generated.black-hole.002",
+      "Kind": 2,
+      "DisplayName": "Black hole 002",
+      "Position": {
+        "X": 279645,
+        "Y": 489877
+      },
+      "RadiusX": 160000,
+      "RadiusY": 160000,
+      "DensityWeight": 650,
+      "SystemId": null,
+      "NodeId": "nav.generated.032"
+    },
+    {
+      "FeatureId": "feature.generated.nebula.001",
+      "Kind": 3,
+      "DisplayName": "Nebula 001",
+      "Position": {
+        "X": 570145,
+        "Y": 311238
+      },
+      "RadiusX": 199419,
+      "RadiusY": 114009,
+      "DensityWeight": 420,
+      "SystemId": null,
+      "NodeId": null
+    },
+    {
+      "FeatureId": "feature.generated.nebula.002",
+      "Kind": 3,
+      "DisplayName": "Nebula 002",
+      "Position": {
+        "X": 296245,
+        "Y": 253859
+      },
+      "RadiusX": 206340,
+      "RadiusY": 116208,
+      "DensityWeight": 420,
+      "SystemId": null,
+      "NodeId": null
+    },
+    {
+      "FeatureId": "feature.generated.nebula.003",
+      "Kind": 3,
+      "DisplayName": "Nebula 003",
+      "Position": {
+        "X": 644308,
+        "Y": 175300
+      },
+      "RadiusX": 226039,
+      "RadiusY": 136255,
+      "DensityWeight": 420,
+      "SystemId": null,
+      "NodeId": null
+    },
+    {
+      "FeatureId": "feature.generated.star.001",
+      "Kind": 1,
+      "DisplayName": "Star 001",
+      "Position": {
+        "X": 558313,
+        "Y": 533384
+      },
+      "RadiusX": 120000,
+      "RadiusY": 120000,
+      "DensityWeight": 280,
+      "SystemId": "system.generated.001",
+      "NodeId": "nav.generated.001"
+    },
+    {
+      "FeatureId": "feature.generated.star.002",
+      "Kind": 1,
+      "DisplayName": "Star 002",
+      "Position": {
+        "X": 828675,
+        "Y": 233242
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.002",
+      "NodeId": "nav.generated.002"
+    },
+    {
+      "FeatureId": "feature.generated.star.003",
+      "Kind": 1,
+      "DisplayName": "Star 003",
+      "Position": {
+        "X": 241268,
+        "Y": 387300
+      },
+      "RadiusX": 120000,
+      "RadiusY": 120000,
+      "DensityWeight": 280,
+      "SystemId": "system.generated.003",
+      "NodeId": "nav.generated.003"
+    },
+    {
+      "FeatureId": "feature.generated.star.004",
+      "Kind": 1,
+      "DisplayName": "Star 004",
+      "Position": {
+        "X": 423065,
+        "Y": 432744
+      },
+      "RadiusX": 70000,
+      "RadiusY": 70000,
+      "DensityWeight": 120,
+      "SystemId": "system.generated.004",
+      "NodeId": "nav.generated.004"
+    },
+    {
+      "FeatureId": "feature.generated.star.005",
+      "Kind": 1,
+      "DisplayName": "Star 005",
+      "Position": {
+        "X": 970955,
+        "Y": 470887
+      },
+      "RadiusX": 70000,
+      "RadiusY": 70000,
+      "DensityWeight": 120,
+      "SystemId": "system.generated.005",
+      "NodeId": "nav.generated.005"
+    },
+    {
+      "FeatureId": "feature.generated.star.006",
+      "Kind": 1,
+      "DisplayName": "Star 006",
+      "Position": {
+        "X": 183155,
+        "Y": 234226
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.006",
+      "NodeId": "nav.generated.006"
+    },
+    {
+      "FeatureId": "feature.generated.star.007",
+      "Kind": 1,
+      "DisplayName": "Star 007",
+      "Position": {
+        "X": 848849,
+        "Y": 489216
+      },
+      "RadiusX": 120000,
+      "RadiusY": 120000,
+      "DensityWeight": 280,
+      "SystemId": "system.generated.007",
+      "NodeId": "nav.generated.007"
+    },
+    {
+      "FeatureId": "feature.generated.star.008",
+      "Kind": 1,
+      "DisplayName": "Star 008",
+      "Position": {
+        "X": 829752,
+        "Y": 140661
+      },
+      "RadiusX": 120000,
+      "RadiusY": 120000,
+      "DensityWeight": 280,
+      "SystemId": "system.generated.008",
+      "NodeId": "nav.generated.008"
+    },
+    {
+      "FeatureId": "feature.generated.star.009",
+      "Kind": 1,
+      "DisplayName": "Star 009",
+      "Position": {
+        "X": 70582,
+        "Y": 41369
+      },
+      "RadiusX": 120000,
+      "RadiusY": 120000,
+      "DensityWeight": 280,
+      "SystemId": "system.generated.009",
+      "NodeId": "nav.generated.009"
+    },
+    {
+      "FeatureId": "feature.generated.star.010",
+      "Kind": 1,
+      "DisplayName": "Star 010",
+      "Position": {
+        "X": 616229,
+        "Y": 575331
+      },
+      "RadiusX": 70000,
+      "RadiusY": 70000,
+      "DensityWeight": 120,
+      "SystemId": "system.generated.010",
+      "NodeId": "nav.generated.010"
+    },
+    {
+      "FeatureId": "feature.generated.star.011",
+      "Kind": 1,
+      "DisplayName": "Star 011",
+      "Position": {
+        "X": 900938,
+        "Y": 214253
+      },
+      "RadiusX": 120000,
+      "RadiusY": 120000,
+      "DensityWeight": 280,
+      "SystemId": "system.generated.011",
+      "NodeId": "nav.generated.011"
+    },
+    {
+      "FeatureId": "feature.generated.star.012",
+      "Kind": 1,
+      "DisplayName": "Star 012",
+      "Position": {
+        "X": 57214,
+        "Y": 584694
+      },
+      "RadiusX": 120000,
+      "RadiusY": 120000,
+      "DensityWeight": 280,
+      "SystemId": "system.generated.012",
+      "NodeId": "nav.generated.012"
+    },
+    {
+      "FeatureId": "feature.generated.star.013",
+      "Kind": 1,
+      "DisplayName": "Star 013",
+      "Position": {
+        "X": 436093,
+        "Y": 53066
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.013",
+      "NodeId": "nav.generated.013"
+    },
+    {
+      "FeatureId": "feature.generated.star.014",
+      "Kind": 1,
+      "DisplayName": "Star 014",
+      "Position": {
+        "X": 108658,
+        "Y": 196018
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.014",
+      "NodeId": "nav.generated.014"
+    },
+    {
+      "FeatureId": "feature.generated.star.015",
+      "Kind": 1,
+      "DisplayName": "Star 015",
+      "Position": {
+        "X": 326002,
+        "Y": 98779
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.015",
+      "NodeId": "nav.generated.015"
+    },
+    {
+      "FeatureId": "feature.generated.star.016",
+      "Kind": 1,
+      "DisplayName": "Star 016",
+      "Position": {
+        "X": 971334,
+        "Y": 341967
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.016",
+      "NodeId": "nav.generated.016"
+    },
+    {
+      "FeatureId": "feature.generated.star.017",
+      "Kind": 1,
+      "DisplayName": "Star 017",
+      "Position": {
+        "X": 840511,
+        "Y": 379625
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.017",
+      "NodeId": "nav.generated.017"
+    },
+    {
+      "FeatureId": "feature.generated.star.018",
+      "Kind": 1,
+      "DisplayName": "Star 018",
+      "Position": {
+        "X": 699979,
+        "Y": 298775
+      },
+      "RadiusX": 70000,
+      "RadiusY": 70000,
+      "DensityWeight": 120,
+      "SystemId": "system.generated.018",
+      "NodeId": "nav.generated.018"
+    },
+    {
+      "FeatureId": "feature.generated.star.019",
+      "Kind": 1,
+      "DisplayName": "Star 019",
+      "Position": {
+        "X": 141294,
+        "Y": 577796
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.019",
+      "NodeId": "nav.generated.019"
+    },
+    {
+      "FeatureId": "feature.generated.star.020",
+      "Kind": 1,
+      "DisplayName": "Star 020",
+      "Position": {
+        "X": 188917,
+        "Y": 523501
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.020",
+      "NodeId": "nav.generated.020"
+    },
+    {
+      "FeatureId": "feature.generated.star.021",
+      "Kind": 1,
+      "DisplayName": "Star 021",
+      "Position": {
+        "X": 94436,
+        "Y": 528600
+      },
+      "RadiusX": 70000,
+      "RadiusY": 70000,
+      "DensityWeight": 120,
+      "SystemId": "system.generated.021",
+      "NodeId": "nav.generated.021"
+    },
+    {
+      "FeatureId": "feature.generated.star.022",
+      "Kind": 1,
+      "DisplayName": "Star 022",
+      "Position": {
+        "X": 399345,
+        "Y": 580474
+      },
+      "RadiusX": 70000,
+      "RadiusY": 70000,
+      "DensityWeight": 120,
+      "SystemId": "system.generated.022",
+      "NodeId": "nav.generated.022"
+    },
+    {
+      "FeatureId": "feature.generated.star.023",
+      "Kind": 1,
+      "DisplayName": "Star 023",
+      "Position": {
+        "X": 811527,
+        "Y": 48190
+      },
+      "RadiusX": 70000,
+      "RadiusY": 70000,
+      "DensityWeight": 120,
+      "SystemId": "system.generated.023",
+      "NodeId": "nav.generated.023"
+    },
+    {
+      "FeatureId": "feature.generated.star.024",
+      "Kind": 1,
+      "DisplayName": "Star 024",
+      "Position": {
+        "X": 474966,
+        "Y": 177519
+      },
+      "RadiusX": 120000,
+      "RadiusY": 120000,
+      "DensityWeight": 280,
+      "SystemId": "system.generated.024",
+      "NodeId": "nav.generated.024"
+    },
+    {
+      "FeatureId": "feature.generated.star.025",
+      "Kind": 1,
+      "DisplayName": "Star 025",
+      "Position": {
+        "X": 491418,
+        "Y": 442999
+      },
+      "RadiusX": 120000,
+      "RadiusY": 120000,
+      "DensityWeight": 280,
+      "SystemId": "system.generated.025",
+      "NodeId": "nav.generated.025"
+    },
+    {
+      "FeatureId": "feature.generated.star.026",
+      "Kind": 1,
+      "DisplayName": "Star 026",
+      "Position": {
+        "X": 351451,
+        "Y": 297481
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.026",
+      "NodeId": "nav.generated.026"
+    },
+    {
+      "FeatureId": "feature.generated.star.027",
+      "Kind": 1,
+      "DisplayName": "Star 027",
+      "Position": {
+        "X": 99656,
+        "Y": 258053
+      },
+      "RadiusX": 70000,
+      "RadiusY": 70000,
+      "DensityWeight": 120,
+      "SystemId": "system.generated.027",
+      "NodeId": "nav.generated.027"
+    },
+    {
+      "FeatureId": "feature.generated.star.028",
+      "Kind": 1,
+      "DisplayName": "Star 028",
+      "Position": {
+        "X": 48004,
+        "Y": 136674
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.028",
+      "NodeId": "nav.generated.028"
+    },
+    {
+      "FeatureId": "feature.generated.star.029",
+      "Kind": 1,
+      "DisplayName": "Star 029",
+      "Position": {
+        "X": 755114,
+        "Y": 74243
+      },
+      "RadiusX": 70000,
+      "RadiusY": 70000,
+      "DensityWeight": 120,
+      "SystemId": "system.generated.029",
+      "NodeId": "nav.generated.029"
+    },
+    {
+      "FeatureId": "feature.generated.star.030",
+      "Kind": 1,
+      "DisplayName": "Star 030",
+      "Position": {
+        "X": 266959,
+        "Y": 143458
+      },
+      "RadiusX": 95000,
+      "RadiusY": 95000,
+      "DensityWeight": 200,
+      "SystemId": "system.generated.030",
+      "NodeId": "nav.generated.030"
+    }
+  ],
+  "Layout": {
+    "Width": 1000000,
+    "Height": 600000,
+    "Regions": [
+      {
+        "NodeId": "nav.generated.001",
+        "DisplayName": "Region 001",
+        "SystemId": "system.generated.001",
+        "Center": {
+          "X": 558313,
+          "Y": 533384
+        },
+        "Boundary": [
+          {
+            "X": 476828,
+            "Y": 550174
+          },
+          {
+            "X": 480794,
+            "Y": 520809
+          },
+          {
+            "X": 625376,
+            "Y": 413803
+          },
+          {
+            "X": 641832,
+            "Y": 423740
+          },
+          {
+            "X": 663110,
+            "Y": 449646
+          },
+          {
+            "X": 554213,
+            "Y": 600000
+          },
+          {
+            "X": 491588,
+            "Y": 600000
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.002",
+        "DisplayName": "Region 002",
+        "SystemId": "system.generated.002",
+        "Center": {
+          "X": 828675,
+          "Y": 233242
+        },
+        "Boundary": [
+          {
+            "X": 753020,
+            "Y": 243802
+          },
+          {
+            "X": 843897,
+            "Y": 203359
+          },
+          {
+            "X": 861792,
+            "Y": 212276
+          },
+          {
+            "X": 885454,
+            "Y": 302321
+          },
+          {
+            "X": 817064,
+            "Y": 307851
+          },
+          {
+            "X": 775310,
+            "Y": 287578
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.003",
+        "DisplayName": "Region 003",
+        "SystemId": "system.generated.003",
+        "Center": {
+          "X": 241268,
+          "Y": 387300
+        },
+        "Boundary": [
+          {
+            "X": 163260,
+            "Y": 400965
+          },
+          {
+            "X": 167271,
+            "Y": 348717
+          },
+          {
+            "X": 202880,
+            "Y": 343474
+          },
+          {
+            "X": 324370,
+            "Y": 414677
+          },
+          {
+            "X": 263718,
+            "Y": 437368
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.004",
+        "DisplayName": "Region 004",
+        "SystemId": "system.generated.004",
+        "Center": {
+          "X": 423065,
+          "Y": 432744
+        },
+        "Boundary": [
+          {
+            "X": 338021,
+            "Y": 427839
+          },
+          {
+            "X": 465143,
+            "Y": 385208
+          },
+          {
+            "X": 450592,
+            "Y": 482192
+          },
+          {
+            "X": 349369,
+            "Y": 456324
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.005",
+        "DisplayName": "Region 005",
+        "SystemId": "system.generated.005",
+        "Center": {
+          "X": 970955,
+          "Y": 470887
+        },
+        "Boundary": [
+          {
+            "X": 902393,
+            "Y": 430030
+          },
+          {
+            "X": 919013,
+            "Y": 406274
+          },
+          {
+            "X": 1000000,
+            "Y": 406512
+          },
+          {
+            "X": 1000000,
+            "Y": 600000
+          },
+          {
+            "X": 927907,
+            "Y": 600000
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.006",
+        "DisplayName": "Region 006",
+        "SystemId": "system.generated.006",
+        "Center": {
+          "X": 183155,
+          "Y": 234226
+        },
+        "Boundary": [
+          {
+            "X": 137328,
+            "Y": 231849
+          },
+          {
+            "X": 154827,
+            "Y": 197730
+          },
+          {
+            "X": 249818,
+            "Y": 211703
+          },
+          {
+            "X": 259056,
+            "Y": 220232
+          },
+          {
+            "X": 156778,
+            "Y": 300012
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.007",
+        "DisplayName": "Region 007",
+        "SystemId": "system.generated.007",
+        "Center": {
+          "X": 848849,
+          "Y": 489216
+        },
+        "Boundary": [
+          {
+            "X": 715640,
+            "Y": 486624
+          },
+          {
+            "X": 788219,
+            "Y": 438716
+          },
+          {
+            "X": 902393,
+            "Y": 430030
+          },
+          {
+            "X": 927907,
+            "Y": 600000
+          },
+          {
+            "X": 757611,
+            "Y": 600000
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.008",
+        "DisplayName": "Region 008",
+        "SystemId": "system.generated.008",
+        "Center": {
+          "X": 829752,
+          "Y": 140661
+        },
+        "Boundary": [
+          {
+            "X": 783991,
+            "Y": 116939
+          },
+          {
+            "X": 800491,
+            "Y": 98397
+          },
+          {
+            "X": 941658,
+            "Y": 70574
+          },
+          {
+            "X": 828905,
+            "Y": 170459
+          },
+          {
+            "X": 790470,
+            "Y": 157474
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.009",
+        "DisplayName": "Region 009",
+        "SystemId": "system.generated.009",
+        "Center": {
+          "X": 70582,
+          "Y": 41369
+        },
+        "Boundary": [
+          {
+            "X": 0,
+            "Y": 0
+          },
+          {
+            "X": 120948,
+            "Y": 0
+          },
+          {
+            "X": 103357,
+            "Y": 99460
+          },
+          {
+            "X": 0,
+            "Y": 74975
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.010",
+        "DisplayName": "Region 010",
+        "SystemId": "system.generated.010",
+        "Center": {
+          "X": 616229,
+          "Y": 575331
+        },
+        "Boundary": [
+          {
+            "X": 554213,
+            "Y": 600000
+          },
+          {
+            "X": 663110,
+            "Y": 449646
+          },
+          {
+            "X": 715640,
+            "Y": 486624
+          },
+          {
+            "X": 757611,
+            "Y": 600000
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.011",
+        "DisplayName": "Region 011",
+        "SystemId": "system.generated.011",
+        "Center": {
+          "X": 900938,
+          "Y": 214253
+        },
+        "Boundary": [
+          {
+            "X": 861792,
+            "Y": 212276
+          },
+          {
+            "X": 1000000,
+            "Y": 69660
+          },
+          {
+            "X": 1000000,
+            "Y": 242908
+          },
+          {
+            "X": 889518,
+            "Y": 303806
+          },
+          {
+            "X": 885454,
+            "Y": 302321
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.012",
+        "DisplayName": "Region 012",
+        "SystemId": "system.generated.012",
+        "Center": {
+          "X": 57214,
+          "Y": 584694
+        },
+        "Boundary": [
+          {
+            "X": 0,
+            "Y": 506332
+          },
+          {
+            "X": 98469,
+            "Y": 571673
+          },
+          {
+            "X": 100793,
+            "Y": 600000
+          },
+          {
+            "X": 0,
+            "Y": 600000
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.013",
+        "DisplayName": "Region 013",
+        "SystemId": "system.generated.013",
+        "Center": {
+          "X": 436093,
+          "Y": 53066
+        },
+        "Boundary": [
+          {
+            "X": 349522,
+            "Y": 0
+          },
+          {
+            "X": 558742,
+            "Y": 0
+          },
+          {
+            "X": 510295,
+            "Y": 84560
+          },
+          {
+            "X": 421047,
+            "Y": 107566
+          },
+          {
+            "X": 387125,
+            "Y": 90560
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.014",
+        "DisplayName": "Region 014",
+        "SystemId": "system.generated.014",
+        "Center": {
+          "X": 108658,
+          "Y": 196018
+        },
+        "Boundary": [
+          {
+            "X": 29545,
+            "Y": 216208
+          },
+          {
+            "X": 121017,
+            "Y": 122718
+          },
+          {
+            "X": 133600,
+            "Y": 126803
+          },
+          {
+            "X": 154827,
+            "Y": 197730
+          },
+          {
+            "X": 137328,
+            "Y": 231849
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.015",
+        "DisplayName": "Region 015",
+        "SystemId": "system.generated.015",
+        "Center": {
+          "X": 326002,
+          "Y": 98779
+        },
+        "Boundary": [
+          {
+            "X": 245813,
+            "Y": 54162
+          },
+          {
+            "X": 259247,
+            "Y": 0
+          },
+          {
+            "X": 349522,
+            "Y": 0
+          },
+          {
+            "X": 387125,
+            "Y": 90560
+          },
+          {
+            "X": 325788,
+            "Y": 159848
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.016",
+        "DisplayName": "Region 016",
+        "SystemId": "system.generated.016",
+        "Center": {
+          "X": 971334,
+          "Y": 341967
+        },
+        "Boundary": [
+          {
+            "X": 889518,
+            "Y": 303806
+          },
+          {
+            "X": 1000000,
+            "Y": 242908
+          },
+          {
+            "X": 1000000,
+            "Y": 406512
+          },
+          {
+            "X": 919013,
+            "Y": 406274
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.017",
+        "DisplayName": "Region 017",
+        "SystemId": "system.generated.017",
+        "Center": {
+          "X": 840511,
+          "Y": 379625
+        },
+        "Boundary": [
+          {
+            "X": 788219,
+            "Y": 438716
+          },
+          {
+            "X": 817064,
+            "Y": 307851
+          },
+          {
+            "X": 885454,
+            "Y": 302321
+          },
+          {
+            "X": 889518,
+            "Y": 303806
+          },
+          {
+            "X": 919013,
+            "Y": 406274
+          },
+          {
+            "X": 902393,
+            "Y": 430030
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.018",
+        "DisplayName": "Region 018",
+        "SystemId": "system.generated.018",
+        "Center": {
+          "X": 699979,
+          "Y": 298775
+        },
+        "Boundary": [
+          {
+            "X": 619016,
+            "Y": 381386
+          },
+          {
+            "X": 696924,
+            "Y": 254468
+          },
+          {
+            "X": 748919,
+            "Y": 239410
+          },
+          {
+            "X": 753020,
+            "Y": 243802
+          },
+          {
+            "X": 775310,
+            "Y": 287578
+          },
+          {
+            "X": 641832,
+            "Y": 423740
+          },
+          {
+            "X": 625376,
+            "Y": 413803
+          },
+          {
+            "X": 623478,
+            "Y": 411059
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.019",
+        "DisplayName": "Region 019",
+        "SystemId": "system.generated.019",
+        "Center": {
+          "X": 141294,
+          "Y": 577796
+        },
+        "Boundary": [
+          {
+            "X": 98469,
+            "Y": 571673
+          },
+          {
+            "X": 141906,
+            "Y": 530300
+          },
+          {
+            "X": 221371,
+            "Y": 600000
+          },
+          {
+            "X": 100793,
+            "Y": 600000
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.020",
+        "DisplayName": "Region 020",
+        "SystemId": "system.generated.020",
+        "Center": {
+          "X": 188917,
+          "Y": 523501
+        },
+        "Boundary": [
+          {
+            "X": 138463,
+            "Y": 466515
+          },
+          {
+            "X": 233919,
+            "Y": 505712
+          },
+          {
+            "X": 268862,
+            "Y": 600000
+          },
+          {
+            "X": 221371,
+            "Y": 600000
+          },
+          {
+            "X": 141906,
+            "Y": 530300
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.021",
+        "DisplayName": "Region 021",
+        "SystemId": "system.generated.021",
+        "Center": {
+          "X": 94436,
+          "Y": 528600
+        },
+        "Boundary": [
+          {
+            "X": 0,
+            "Y": 455768
+          },
+          {
+            "X": 129516,
+            "Y": 450535
+          },
+          {
+            "X": 138463,
+            "Y": 466515
+          },
+          {
+            "X": 141906,
+            "Y": 530300
+          },
+          {
+            "X": 98469,
+            "Y": 571673
+          },
+          {
+            "X": 0,
+            "Y": 506332
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.022",
+        "DisplayName": "Region 022",
+        "SystemId": "system.generated.022",
+        "Center": {
+          "X": 399345,
+          "Y": 580474
+        },
+        "Boundary": [
+          {
+            "X": 290431,
+            "Y": 600000
+          },
+          {
+            "X": 333512,
+            "Y": 543080
+          },
+          {
+            "X": 476828,
+            "Y": 550174
+          },
+          {
+            "X": 491588,
+            "Y": 600000
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.023",
+        "DisplayName": "Region 023",
+        "SystemId": "system.generated.023",
+        "Center": {
+          "X": 811527,
+          "Y": 48190
+        },
+        "Boundary": [
+          {
+            "X": 771526,
+            "Y": 35677
+          },
+          {
+            "X": 778931,
+            "Y": 0
+          },
+          {
+            "X": 1000000,
+            "Y": 0
+          },
+          {
+            "X": 1000000,
+            "Y": 48613
+          },
+          {
+            "X": 941658,
+            "Y": 70574
+          },
+          {
+            "X": 800491,
+            "Y": 98397
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.024",
+        "DisplayName": "Region 024",
+        "SystemId": "system.generated.024",
+        "Center": {
+          "X": 474966,
+          "Y": 177519
+        },
+        "Boundary": [
+          {
+            "X": 439282,
+            "Y": 176655
+          },
+          {
+            "X": 517530,
+            "Y": 138481
+          },
+          {
+            "X": 521308,
+            "Y": 146903
+          },
+          {
+            "X": 472723,
+            "Y": 258554
+          },
+          {
+            "X": 472642,
+            "Y": 258577
+          },
+          {
+            "X": 444379,
+            "Y": 212653
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.025",
+        "DisplayName": "Region 025",
+        "SystemId": "system.generated.025",
+        "Center": {
+          "X": 491418,
+          "Y": 442999
+        },
+        "Boundary": [
+          {
+            "X": 450592,
+            "Y": 482192
+          },
+          {
+            "X": 465143,
+            "Y": 385208
+          },
+          {
+            "X": 471426,
+            "Y": 377302
+          },
+          {
+            "X": 623478,
+            "Y": 411059
+          },
+          {
+            "X": 625376,
+            "Y": 413803
+          },
+          {
+            "X": 480794,
+            "Y": 520809
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.026",
+        "DisplayName": "Region 026",
+        "SystemId": "system.generated.026",
+        "Center": {
+          "X": 351451,
+          "Y": 297481
+        },
+        "Boundary": [
+          {
+            "X": 288884,
+            "Y": 300054
+          },
+          {
+            "X": 292878,
+            "Y": 229426
+          },
+          {
+            "X": 311493,
+            "Y": 219214
+          },
+          {
+            "X": 431871,
+            "Y": 297627
+          },
+          {
+            "X": 331093,
+            "Y": 366619
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.027",
+        "DisplayName": "Region 027",
+        "SystemId": "system.generated.027",
+        "Center": {
+          "X": 99656,
+          "Y": 258053
+        },
+        "Boundary": [
+          {
+            "X": 10986,
+            "Y": 224106
+          },
+          {
+            "X": 29545,
+            "Y": 216208
+          },
+          {
+            "X": 137328,
+            "Y": 231849
+          },
+          {
+            "X": 156778,
+            "Y": 300012
+          },
+          {
+            "X": 151097,
+            "Y": 322349
+          },
+          {
+            "X": 80850,
+            "Y": 315532
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.028",
+        "DisplayName": "Region 028",
+        "SystemId": "system.generated.028",
+        "Center": {
+          "X": 48004,
+          "Y": 136674
+        },
+        "Boundary": [
+          {
+            "X": 0,
+            "Y": 74975
+          },
+          {
+            "X": 103357,
+            "Y": 99460
+          },
+          {
+            "X": 121017,
+            "Y": 122718
+          },
+          {
+            "X": 29545,
+            "Y": 216208
+          },
+          {
+            "X": 10986,
+            "Y": 224106
+          },
+          {
+            "X": 0,
+            "Y": 222442
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.029",
+        "DisplayName": "Region 029",
+        "SystemId": "system.generated.029",
+        "Center": {
+          "X": 755114,
+          "Y": 74243
+        },
+        "Boundary": [
+          {
+            "X": 721879,
+            "Y": 64843
+          },
+          {
+            "X": 771526,
+            "Y": 35677
+          },
+          {
+            "X": 800491,
+            "Y": 98397
+          },
+          {
+            "X": 783991,
+            "Y": 116939
+          },
+          {
+            "X": 733563,
+            "Y": 112365
+          },
+          {
+            "X": 732550,
+            "Y": 111797
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.030",
+        "DisplayName": "Region 030",
+        "SystemId": "system.generated.030",
+        "Center": {
+          "X": 266959,
+          "Y": 143458
+        },
+        "Boundary": [
+          {
+            "X": 209176,
+            "Y": 101526
+          },
+          {
+            "X": 245813,
+            "Y": 54162
+          },
+          {
+            "X": 325788,
+            "Y": 159848
+          },
+          {
+            "X": 322788,
+            "Y": 200694
+          },
+          {
+            "X": 311493,
+            "Y": 219214
+          },
+          {
+            "X": 292878,
+            "Y": 229426
+          },
+          {
+            "X": 259056,
+            "Y": 220232
+          },
+          {
+            "X": 249818,
+            "Y": 211703
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.031",
+        "DisplayName": "Region 031",
+        "SystemId": null,
+        "Center": {
+          "X": 747904,
+          "Y": 153743
+        },
+        "Boundary": [
+          {
+            "X": 725831,
+            "Y": 200892
+          },
+          {
+            "X": 733563,
+            "Y": 112365
+          },
+          {
+            "X": 783991,
+            "Y": 116939
+          },
+          {
+            "X": 790470,
+            "Y": 157474
+          },
+          {
+            "X": 746777,
+            "Y": 225383
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.032",
+        "DisplayName": "Region 032",
+        "SystemId": null,
+        "Center": {
+          "X": 279645,
+          "Y": 489877
+        },
+        "Boundary": [
+          {
+            "X": 233919,
+            "Y": 505712
+          },
+          {
+            "X": 263718,
+            "Y": 437368
+          },
+          {
+            "X": 324370,
+            "Y": 414677
+          },
+          {
+            "X": 325365,
+            "Y": 414530
+          },
+          {
+            "X": 338021,
+            "Y": 427839
+          },
+          {
+            "X": 349369,
+            "Y": 456324
+          },
+          {
+            "X": 333512,
+            "Y": 543080
+          },
+          {
+            "X": 290431,
+            "Y": 600000
+          },
+          {
+            "X": 268862,
+            "Y": 600000
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.033",
+        "DisplayName": "Region 033",
+        "SystemId": null,
+        "Center": {
+          "X": 259876,
+          "Y": 355550
+        },
+        "Boundary": [
+          {
+            "X": 202880,
+            "Y": 343474
+          },
+          {
+            "X": 288884,
+            "Y": 300054
+          },
+          {
+            "X": 331093,
+            "Y": 366619
+          },
+          {
+            "X": 325365,
+            "Y": 414530
+          },
+          {
+            "X": 324370,
+            "Y": 414677
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.034",
+        "DisplayName": "Region 034",
+        "SystemId": null,
+        "Center": {
+          "X": 619787,
+          "Y": 124867
+        },
+        "Boundary": [
+          {
+            "X": 575033,
+            "Y": 0
+          },
+          {
+            "X": 606009,
+            "Y": 0
+          },
+          {
+            "X": 668648,
+            "Y": 128339
+          },
+          {
+            "X": 667160,
+            "Y": 133679
+          },
+          {
+            "X": 600682,
+            "Y": 147724
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.035",
+        "DisplayName": "Region 035",
+        "SystemId": null,
+        "Center": {
+          "X": 695971,
+          "Y": 87684
+        },
+        "Boundary": [
+          {
+            "X": 606009,
+            "Y": 0
+          },
+          {
+            "X": 613838,
+            "Y": 0
+          },
+          {
+            "X": 721879,
+            "Y": 64843
+          },
+          {
+            "X": 732550,
+            "Y": 111797
+          },
+          {
+            "X": 668648,
+            "Y": 128339
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.036",
+        "DisplayName": "Region 036",
+        "SystemId": null,
+        "Center": {
+          "X": 517340,
+          "Y": 326237
+        },
+        "Boundary": [
+          {
+            "X": 439036,
+            "Y": 297449
+          },
+          {
+            "X": 472642,
+            "Y": 258577
+          },
+          {
+            "X": 472723,
+            "Y": 258554
+          },
+          {
+            "X": 513034,
+            "Y": 262810
+          },
+          {
+            "X": 600651,
+            "Y": 334597
+          },
+          {
+            "X": 619016,
+            "Y": 381386
+          },
+          {
+            "X": 623478,
+            "Y": 411059
+          },
+          {
+            "X": 471426,
+            "Y": 377302
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.037",
+        "DisplayName": "Region 037",
+        "SystemId": null,
+        "Center": {
+          "X": 88252,
+          "Y": 375554
+        },
+        "Boundary": [
+          {
+            "X": 0,
+            "Y": 411746
+          },
+          {
+            "X": 80850,
+            "Y": 315532
+          },
+          {
+            "X": 151097,
+            "Y": 322349
+          },
+          {
+            "X": 167271,
+            "Y": 348717
+          },
+          {
+            "X": 163260,
+            "Y": 400965
+          },
+          {
+            "X": 129516,
+            "Y": 450535
+          },
+          {
+            "X": 0,
+            "Y": 455768
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.038",
+        "DisplayName": "Region 038",
+        "SystemId": null,
+        "Center": {
+          "X": 675829,
+          "Y": 215385
+        },
+        "Boundary": [
+          {
+            "X": 628504,
+            "Y": 230459
+          },
+          {
+            "X": 635538,
+            "Y": 202432
+          },
+          {
+            "X": 671601,
+            "Y": 170377
+          },
+          {
+            "X": 725831,
+            "Y": 200892
+          },
+          {
+            "X": 746777,
+            "Y": 225383
+          },
+          {
+            "X": 748919,
+            "Y": 239410
+          },
+          {
+            "X": 696924,
+            "Y": 254468
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.039",
+        "DisplayName": "Region 039",
+        "SystemId": null,
+        "Center": {
+          "X": 574990,
+          "Y": 132645
+        },
+        "Boundary": [
+          {
+            "X": 510295,
+            "Y": 84560
+          },
+          {
+            "X": 558742,
+            "Y": 0
+          },
+          {
+            "X": 575033,
+            "Y": 0
+          },
+          {
+            "X": 600682,
+            "Y": 147724
+          },
+          {
+            "X": 593542,
+            "Y": 160969
+          },
+          {
+            "X": 559293,
+            "Y": 171387
+          },
+          {
+            "X": 521308,
+            "Y": 146903
+          },
+          {
+            "X": 517530,
+            "Y": 138481
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.040",
+        "DisplayName": "Region 040",
+        "SystemId": null,
+        "Center": {
+          "X": 227006,
+          "Y": 290443
+        },
+        "Boundary": [
+          {
+            "X": 151097,
+            "Y": 322349
+          },
+          {
+            "X": 156778,
+            "Y": 300012
+          },
+          {
+            "X": 259056,
+            "Y": 220232
+          },
+          {
+            "X": 292878,
+            "Y": 229426
+          },
+          {
+            "X": 288884,
+            "Y": 300054
+          },
+          {
+            "X": 202880,
+            "Y": 343474
+          },
+          {
+            "X": 167271,
+            "Y": 348717
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.041",
+        "DisplayName": "Region 041",
+        "SystemId": null,
+        "Center": {
+          "X": 20450,
+          "Y": 318579
+        },
+        "Boundary": [
+          {
+            "X": 0,
+            "Y": 222442
+          },
+          {
+            "X": 10986,
+            "Y": 224106
+          },
+          {
+            "X": 80850,
+            "Y": 315532
+          },
+          {
+            "X": 0,
+            "Y": 411746
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.042",
+        "DisplayName": "Region 042",
+        "SystemId": null,
+        "Center": {
+          "X": 576069,
+          "Y": 254557
+        },
+        "Boundary": [
+          {
+            "X": 513034,
+            "Y": 262810
+          },
+          {
+            "X": 564391,
+            "Y": 218541
+          },
+          {
+            "X": 621969,
+            "Y": 235734
+          },
+          {
+            "X": 600651,
+            "Y": 334597
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.043",
+        "DisplayName": "Region 043",
+        "SystemId": null,
+        "Center": {
+          "X": 192465,
+          "Y": 170937
+        },
+        "Boundary": [
+          {
+            "X": 133600,
+            "Y": 126803
+          },
+          {
+            "X": 209176,
+            "Y": 101526
+          },
+          {
+            "X": 249818,
+            "Y": 211703
+          },
+          {
+            "X": 154827,
+            "Y": 197730
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.044",
+        "DisplayName": "Region 044",
+        "SystemId": null,
+        "Center": {
+          "X": 627400,
+          "Y": 160900
+        },
+        "Boundary": [
+          {
+            "X": 593542,
+            "Y": 160969
+          },
+          {
+            "X": 600682,
+            "Y": 147724
+          },
+          {
+            "X": 667160,
+            "Y": 133679
+          },
+          {
+            "X": 671601,
+            "Y": 170377
+          },
+          {
+            "X": 635538,
+            "Y": 202432
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.045",
+        "DisplayName": "Region 045",
+        "SystemId": null,
+        "Center": {
+          "X": 593905,
+          "Y": 194825
+        },
+        "Boundary": [
+          {
+            "X": 559293,
+            "Y": 171387
+          },
+          {
+            "X": 593542,
+            "Y": 160969
+          },
+          {
+            "X": 635538,
+            "Y": 202432
+          },
+          {
+            "X": 628504,
+            "Y": 230459
+          },
+          {
+            "X": 621969,
+            "Y": 235734
+          },
+          {
+            "X": 564391,
+            "Y": 218541
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.046",
+        "DisplayName": "Region 046",
+        "SystemId": null,
+        "Center": {
+          "X": 399232,
+          "Y": 224128
+        },
+        "Boundary": [
+          {
+            "X": 311493,
+            "Y": 219214
+          },
+          {
+            "X": 322788,
+            "Y": 200694
+          },
+          {
+            "X": 345954,
+            "Y": 196553
+          },
+          {
+            "X": 444379,
+            "Y": 212653
+          },
+          {
+            "X": 472642,
+            "Y": 258577
+          },
+          {
+            "X": 439036,
+            "Y": 297449
+          },
+          {
+            "X": 431871,
+            "Y": 297627
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.047",
+        "DisplayName": "Region 047",
+        "SystemId": null,
+        "Center": {
+          "X": 386380,
+          "Y": 152229
+        },
+        "Boundary": [
+          {
+            "X": 322788,
+            "Y": 200694
+          },
+          {
+            "X": 325788,
+            "Y": 159848
+          },
+          {
+            "X": 387125,
+            "Y": 90560
+          },
+          {
+            "X": 421047,
+            "Y": 107566
+          },
+          {
+            "X": 423741,
+            "Y": 154828
+          },
+          {
+            "X": 345954,
+            "Y": 196553
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.048",
+        "DisplayName": "Region 048",
+        "SystemId": null,
+        "Center": {
+          "X": 656033,
+          "Y": 271799
+        },
+        "Boundary": [
+          {
+            "X": 600651,
+            "Y": 334597
+          },
+          {
+            "X": 621969,
+            "Y": 235734
+          },
+          {
+            "X": 628504,
+            "Y": 230459
+          },
+          {
+            "X": 696924,
+            "Y": 254468
+          },
+          {
+            "X": 619016,
+            "Y": 381386
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.049",
+        "DisplayName": "Region 049",
+        "SystemId": null,
+        "Center": {
+          "X": 405241,
+          "Y": 187391
+        },
+        "Boundary": [
+          {
+            "X": 345954,
+            "Y": 196553
+          },
+          {
+            "X": 423741,
+            "Y": 154828
+          },
+          {
+            "X": 439282,
+            "Y": 176655
+          },
+          {
+            "X": 444379,
+            "Y": 212653
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.050",
+        "DisplayName": "Region 050",
+        "SystemId": null,
+        "Center": {
+          "X": 214405,
+          "Y": 461431
+        },
+        "Boundary": [
+          {
+            "X": 129516,
+            "Y": 450535
+          },
+          {
+            "X": 163260,
+            "Y": 400965
+          },
+          {
+            "X": 263718,
+            "Y": 437368
+          },
+          {
+            "X": 233919,
+            "Y": 505712
+          },
+          {
+            "X": 138463,
+            "Y": 466515
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.051",
+        "DisplayName": "Region 051",
+        "SystemId": null,
+        "Center": {
+          "X": 460565,
+          "Y": 148000
+        },
+        "Boundary": [
+          {
+            "X": 421047,
+            "Y": 107566
+          },
+          {
+            "X": 510295,
+            "Y": 84560
+          },
+          {
+            "X": 517530,
+            "Y": 138481
+          },
+          {
+            "X": 439282,
+            "Y": 176655
+          },
+          {
+            "X": 423741,
+            "Y": 154828
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.052",
+        "DisplayName": "Region 052",
+        "SystemId": null,
+        "Center": {
+          "X": 402716,
+          "Y": 512371
+        },
+        "Boundary": [
+          {
+            "X": 333512,
+            "Y": 543080
+          },
+          {
+            "X": 349369,
+            "Y": 456324
+          },
+          {
+            "X": 450592,
+            "Y": 482192
+          },
+          {
+            "X": 480794,
+            "Y": 520809
+          },
+          {
+            "X": 476828,
+            "Y": 550174
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.053",
+        "DisplayName": "Region 053",
+        "SystemId": null,
+        "Center": {
+          "X": 858587,
+          "Y": 173211
+        },
+        "Boundary": [
+          {
+            "X": 828905,
+            "Y": 170459
+          },
+          {
+            "X": 941658,
+            "Y": 70574
+          },
+          {
+            "X": 1000000,
+            "Y": 48613
+          },
+          {
+            "X": 1000000,
+            "Y": 69660
+          },
+          {
+            "X": 861792,
+            "Y": 212276
+          },
+          {
+            "X": 843897,
+            "Y": 203359
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.054",
+        "DisplayName": "Region 054",
+        "SystemId": null,
+        "Center": {
+          "X": 712266,
+          "Y": 150630
+        },
+        "Boundary": [
+          {
+            "X": 667160,
+            "Y": 133679
+          },
+          {
+            "X": 668648,
+            "Y": 128339
+          },
+          {
+            "X": 732550,
+            "Y": 111797
+          },
+          {
+            "X": 733563,
+            "Y": 112365
+          },
+          {
+            "X": 725831,
+            "Y": 200892
+          },
+          {
+            "X": 671601,
+            "Y": 170377
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.055",
+        "DisplayName": "Region 055",
+        "SystemId": null,
+        "Center": {
+          "X": 765615,
+          "Y": 363117
+        },
+        "Boundary": [
+          {
+            "X": 641832,
+            "Y": 423740
+          },
+          {
+            "X": 775310,
+            "Y": 287578
+          },
+          {
+            "X": 817064,
+            "Y": 307851
+          },
+          {
+            "X": 788219,
+            "Y": 438716
+          },
+          {
+            "X": 715640,
+            "Y": 486624
+          },
+          {
+            "X": 663110,
+            "Y": 449646
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.056",
+        "DisplayName": "Region 056",
+        "SystemId": null,
+        "Center": {
+          "X": 154069,
+          "Y": 56135
+        },
+        "Boundary": [
+          {
+            "X": 103357,
+            "Y": 99460
+          },
+          {
+            "X": 120948,
+            "Y": 0
+          },
+          {
+            "X": 259247,
+            "Y": 0
+          },
+          {
+            "X": 245813,
+            "Y": 54162
+          },
+          {
+            "X": 209176,
+            "Y": 101526
+          },
+          {
+            "X": 133600,
+            "Y": 126803
+          },
+          {
+            "X": 121017,
+            "Y": 122718
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.057",
+        "DisplayName": "Region 057",
+        "SystemId": null,
+        "Center": {
+          "X": 811507,
+          "Y": 194665
+        },
+        "Boundary": [
+          {
+            "X": 746777,
+            "Y": 225383
+          },
+          {
+            "X": 790470,
+            "Y": 157474
+          },
+          {
+            "X": 828905,
+            "Y": 170459
+          },
+          {
+            "X": 843897,
+            "Y": 203359
+          },
+          {
+            "X": 753020,
+            "Y": 243802
+          },
+          {
+            "X": 748919,
+            "Y": 239410
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.058",
+        "DisplayName": "Region 058",
+        "SystemId": null,
+        "Center": {
+          "X": 402913,
+          "Y": 372652
+        },
+        "Boundary": [
+          {
+            "X": 325365,
+            "Y": 414530
+          },
+          {
+            "X": 331093,
+            "Y": 366619
+          },
+          {
+            "X": 431871,
+            "Y": 297627
+          },
+          {
+            "X": 439036,
+            "Y": 297449
+          },
+          {
+            "X": 471426,
+            "Y": 377302
+          },
+          {
+            "X": 465143,
+            "Y": 385208
+          },
+          {
+            "X": 338021,
+            "Y": 427839
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.059",
+        "DisplayName": "Region 059",
+        "SystemId": null,
+        "Center": {
+          "X": 729849,
+          "Y": 31237
+        },
+        "Boundary": [
+          {
+            "X": 613838,
+            "Y": 0
+          },
+          {
+            "X": 778931,
+            "Y": 0
+          },
+          {
+            "X": 771526,
+            "Y": 35677
+          },
+          {
+            "X": 721879,
+            "Y": 64843
+          }
+        ]
+      },
+      {
+        "NodeId": "nav.generated.060",
+        "DisplayName": "Region 060",
+        "SystemId": null,
+        "Center": {
+          "X": 530491,
+          "Y": 201681
+        },
+        "Boundary": [
+          {
+            "X": 472723,
+            "Y": 258554
+          },
+          {
+            "X": 521308,
+            "Y": 146903
+          },
+          {
+            "X": 559293,
+            "Y": 171387
+          },
+          {
+            "X": 564391,
+            "Y": 218541
+          },
+          {
+            "X": 513034,
+            "Y": 262810
+          }
+        ]
+      }
+    ],
+    "Systems": [
+      {
+        "SystemId": "system.generated.001",
+        "DisplayName": "System 001",
+        "NodeId": "nav.generated.001"
+      },
+      {
+        "SystemId": "system.generated.002",
+        "DisplayName": "System 002",
+        "NodeId": "nav.generated.002"
+      },
+      {
+        "SystemId": "system.generated.003",
+        "DisplayName": "System 003",
+        "NodeId": "nav.generated.003"
+      },
+      {
+        "SystemId": "system.generated.004",
+        "DisplayName": "System 004",
+        "NodeId": "nav.generated.004"
+      },
+      {
+        "SystemId": "system.generated.005",
+        "DisplayName": "System 005",
+        "NodeId": "nav.generated.005"
+      },
+      {
+        "SystemId": "system.generated.006",
+        "DisplayName": "System 006",
+        "NodeId": "nav.generated.006"
+      },
+      {
+        "SystemId": "system.generated.007",
+        "DisplayName": "System 007",
+        "NodeId": "nav.generated.007"
+      },
+      {
+        "SystemId": "system.generated.008",
+        "DisplayName": "System 008",
+        "NodeId": "nav.generated.008"
+      },
+      {
+        "SystemId": "system.generated.009",
+        "DisplayName": "System 009",
+        "NodeId": "nav.generated.009"
+      },
+      {
+        "SystemId": "system.generated.010",
+        "DisplayName": "System 010",
+        "NodeId": "nav.generated.010"
+      },
+      {
+        "SystemId": "system.generated.011",
+        "DisplayName": "System 011",
+        "NodeId": "nav.generated.011"
+      },
+      {
+        "SystemId": "system.generated.012",
+        "DisplayName": "System 012",
+        "NodeId": "nav.generated.012"
+      },
+      {
+        "SystemId": "system.generated.013",
+        "DisplayName": "System 013",
+        "NodeId": "nav.generated.013"
+      },
+      {
+        "SystemId": "system.generated.014",
+        "DisplayName": "System 014",
+        "NodeId": "nav.generated.014"
+      },
+      {
+        "SystemId": "system.generated.015",
+        "DisplayName": "System 015",
+        "NodeId": "nav.generated.015"
+      },
+      {
+        "SystemId": "system.generated.016",
+        "DisplayName": "System 016",
+        "NodeId": "nav.generated.016"
+      },
+      {
+        "SystemId": "system.generated.017",
+        "DisplayName": "System 017",
+        "NodeId": "nav.generated.017"
+      },
+      {
+        "SystemId": "system.generated.018",
+        "DisplayName": "System 018",
+        "NodeId": "nav.generated.018"
+      },
+      {
+        "SystemId": "system.generated.019",
+        "DisplayName": "System 019",
+        "NodeId": "nav.generated.019"
+      },
+      {
+        "SystemId": "system.generated.020",
+        "DisplayName": "System 020",
+        "NodeId": "nav.generated.020"
+      },
+      {
+        "SystemId": "system.generated.021",
+        "DisplayName": "System 021",
+        "NodeId": "nav.generated.021"
+      },
+      {
+        "SystemId": "system.generated.022",
+        "DisplayName": "System 022",
+        "NodeId": "nav.generated.022"
+      },
+      {
+        "SystemId": "system.generated.023",
+        "DisplayName": "System 023",
+        "NodeId": "nav.generated.023"
+      },
+      {
+        "SystemId": "system.generated.024",
+        "DisplayName": "System 024",
+        "NodeId": "nav.generated.024"
+      },
+      {
+        "SystemId": "system.generated.025",
+        "DisplayName": "System 025",
+        "NodeId": "nav.generated.025"
+      },
+      {
+        "SystemId": "system.generated.026",
+        "DisplayName": "System 026",
+        "NodeId": "nav.generated.026"
+      },
+      {
+        "SystemId": "system.generated.027",
+        "DisplayName": "System 027",
+        "NodeId": "nav.generated.027"
+      },
+      {
+        "SystemId": "system.generated.028",
+        "DisplayName": "System 028",
+        "NodeId": "nav.generated.028"
+      },
+      {
+        "SystemId": "system.generated.029",
+        "DisplayName": "System 029",
+        "NodeId": "nav.generated.029"
+      },
+      {
+        "SystemId": "system.generated.030",
+        "DisplayName": "System 030",
+        "NodeId": "nav.generated.030"
+      }
+    ],
+    "Connections": [
+      {
+        "ConnectionId": "connection.generated.001",
+        "EndpointA": "nav.generated.001",
+        "EndpointB": "nav.generated.010",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.002",
+        "EndpointA": "nav.generated.001",
+        "EndpointB": "nav.generated.018",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.003",
+        "EndpointA": "nav.generated.001",
+        "EndpointB": "nav.generated.022",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.004",
+        "EndpointA": "nav.generated.001",
+        "EndpointB": "nav.generated.025",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.005",
+        "EndpointA": "nav.generated.001",
+        "EndpointB": "nav.generated.052",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.006",
+        "EndpointA": "nav.generated.001",
+        "EndpointB": "nav.generated.055",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.007",
+        "EndpointA": "nav.generated.002",
+        "EndpointB": "nav.generated.011",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.008",
+        "EndpointA": "nav.generated.002",
+        "EndpointB": "nav.generated.017",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.009",
+        "EndpointA": "nav.generated.002",
+        "EndpointB": "nav.generated.018",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.010",
+        "EndpointA": "nav.generated.002",
+        "EndpointB": "nav.generated.053",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.011",
+        "EndpointA": "nav.generated.002",
+        "EndpointB": "nav.generated.055",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.012",
+        "EndpointA": "nav.generated.002",
+        "EndpointB": "nav.generated.057",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.013",
+        "EndpointA": "nav.generated.003",
+        "EndpointB": "nav.generated.032",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.014",
+        "EndpointA": "nav.generated.003",
+        "EndpointB": "nav.generated.033",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.015",
+        "EndpointA": "nav.generated.003",
+        "EndpointB": "nav.generated.037",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.016",
+        "EndpointA": "nav.generated.003",
+        "EndpointB": "nav.generated.040",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.017",
+        "EndpointA": "nav.generated.003",
+        "EndpointB": "nav.generated.050",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.018",
+        "EndpointA": "nav.generated.004",
+        "EndpointB": "nav.generated.025",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.019",
+        "EndpointA": "nav.generated.004",
+        "EndpointB": "nav.generated.032",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.020",
+        "EndpointA": "nav.generated.004",
+        "EndpointB": "nav.generated.052",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.021",
+        "EndpointA": "nav.generated.004",
+        "EndpointB": "nav.generated.058",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.022",
+        "EndpointA": "nav.generated.005",
+        "EndpointB": "nav.generated.007",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.023",
+        "EndpointA": "nav.generated.005",
+        "EndpointB": "nav.generated.016",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.024",
+        "EndpointA": "nav.generated.005",
+        "EndpointB": "nav.generated.017",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.025",
+        "EndpointA": "nav.generated.006",
+        "EndpointB": "nav.generated.014",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.026",
+        "EndpointA": "nav.generated.006",
+        "EndpointB": "nav.generated.027",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.027",
+        "EndpointA": "nav.generated.006",
+        "EndpointB": "nav.generated.030",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.028",
+        "EndpointA": "nav.generated.006",
+        "EndpointB": "nav.generated.040",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.029",
+        "EndpointA": "nav.generated.006",
+        "EndpointB": "nav.generated.043",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.030",
+        "EndpointA": "nav.generated.007",
+        "EndpointB": "nav.generated.010",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.031",
+        "EndpointA": "nav.generated.007",
+        "EndpointB": "nav.generated.017",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.032",
+        "EndpointA": "nav.generated.007",
+        "EndpointB": "nav.generated.055",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.033",
+        "EndpointA": "nav.generated.008",
+        "EndpointB": "nav.generated.023",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.034",
+        "EndpointA": "nav.generated.008",
+        "EndpointB": "nav.generated.029",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.035",
+        "EndpointA": "nav.generated.008",
+        "EndpointB": "nav.generated.031",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.036",
+        "EndpointA": "nav.generated.008",
+        "EndpointB": "nav.generated.053",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.037",
+        "EndpointA": "nav.generated.008",
+        "EndpointB": "nav.generated.057",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.038",
+        "EndpointA": "nav.generated.009",
+        "EndpointB": "nav.generated.028",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.039",
+        "EndpointA": "nav.generated.009",
+        "EndpointB": "nav.generated.056",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.040",
+        "EndpointA": "nav.generated.010",
+        "EndpointB": "nav.generated.055",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.041",
+        "EndpointA": "nav.generated.011",
+        "EndpointB": "nav.generated.016",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.042",
+        "EndpointA": "nav.generated.011",
+        "EndpointB": "nav.generated.017",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.043",
+        "EndpointA": "nav.generated.011",
+        "EndpointB": "nav.generated.053",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.044",
+        "EndpointA": "nav.generated.012",
+        "EndpointB": "nav.generated.019",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.045",
+        "EndpointA": "nav.generated.012",
+        "EndpointB": "nav.generated.021",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.046",
+        "EndpointA": "nav.generated.013",
+        "EndpointB": "nav.generated.015",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.047",
+        "EndpointA": "nav.generated.013",
+        "EndpointB": "nav.generated.039",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.048",
+        "EndpointA": "nav.generated.013",
+        "EndpointB": "nav.generated.047",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.049",
+        "EndpointA": "nav.generated.013",
+        "EndpointB": "nav.generated.051",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.050",
+        "EndpointA": "nav.generated.014",
+        "EndpointB": "nav.generated.027",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.051",
+        "EndpointA": "nav.generated.014",
+        "EndpointB": "nav.generated.028",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.052",
+        "EndpointA": "nav.generated.014",
+        "EndpointB": "nav.generated.043",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.053",
+        "EndpointA": "nav.generated.014",
+        "EndpointB": "nav.generated.056",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.054",
+        "EndpointA": "nav.generated.015",
+        "EndpointB": "nav.generated.030",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.055",
+        "EndpointA": "nav.generated.015",
+        "EndpointB": "nav.generated.047",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.056",
+        "EndpointA": "nav.generated.015",
+        "EndpointB": "nav.generated.056",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.057",
+        "EndpointA": "nav.generated.016",
+        "EndpointB": "nav.generated.017",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.058",
+        "EndpointA": "nav.generated.017",
+        "EndpointB": "nav.generated.055",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.059",
+        "EndpointA": "nav.generated.018",
+        "EndpointB": "nav.generated.025",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.060",
+        "EndpointA": "nav.generated.018",
+        "EndpointB": "nav.generated.036",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.061",
+        "EndpointA": "nav.generated.018",
+        "EndpointB": "nav.generated.038",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.062",
+        "EndpointA": "nav.generated.018",
+        "EndpointB": "nav.generated.048",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.063",
+        "EndpointA": "nav.generated.018",
+        "EndpointB": "nav.generated.055",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.064",
+        "EndpointA": "nav.generated.018",
+        "EndpointB": "nav.generated.057",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.065",
+        "EndpointA": "nav.generated.019",
+        "EndpointB": "nav.generated.020",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.066",
+        "EndpointA": "nav.generated.019",
+        "EndpointB": "nav.generated.021",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.067",
+        "EndpointA": "nav.generated.020",
+        "EndpointB": "nav.generated.021",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.068",
+        "EndpointA": "nav.generated.020",
+        "EndpointB": "nav.generated.032",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.069",
+        "EndpointA": "nav.generated.020",
+        "EndpointB": "nav.generated.050",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.070",
+        "EndpointA": "nav.generated.021",
+        "EndpointB": "nav.generated.037",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.071",
+        "EndpointA": "nav.generated.021",
+        "EndpointB": "nav.generated.050",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.072",
+        "EndpointA": "nav.generated.022",
+        "EndpointB": "nav.generated.032",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.073",
+        "EndpointA": "nav.generated.022",
+        "EndpointB": "nav.generated.052",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.074",
+        "EndpointA": "nav.generated.023",
+        "EndpointB": "nav.generated.029",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.075",
+        "EndpointA": "nav.generated.023",
+        "EndpointB": "nav.generated.053",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.076",
+        "EndpointA": "nav.generated.023",
+        "EndpointB": "nav.generated.059",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.077",
+        "EndpointA": "nav.generated.024",
+        "EndpointB": "nav.generated.036",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.078",
+        "EndpointA": "nav.generated.024",
+        "EndpointB": "nav.generated.039",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.079",
+        "EndpointA": "nav.generated.024",
+        "EndpointB": "nav.generated.046",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.080",
+        "EndpointA": "nav.generated.024",
+        "EndpointB": "nav.generated.049",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.081",
+        "EndpointA": "nav.generated.024",
+        "EndpointB": "nav.generated.051",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.082",
+        "EndpointA": "nav.generated.024",
+        "EndpointB": "nav.generated.060",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.083",
+        "EndpointA": "nav.generated.025",
+        "EndpointB": "nav.generated.036",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.084",
+        "EndpointA": "nav.generated.025",
+        "EndpointB": "nav.generated.052",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.085",
+        "EndpointA": "nav.generated.025",
+        "EndpointB": "nav.generated.058",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.086",
+        "EndpointA": "nav.generated.026",
+        "EndpointB": "nav.generated.030",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.087",
+        "EndpointA": "nav.generated.026",
+        "EndpointB": "nav.generated.033",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.088",
+        "EndpointA": "nav.generated.026",
+        "EndpointB": "nav.generated.040",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.089",
+        "EndpointA": "nav.generated.026",
+        "EndpointB": "nav.generated.046",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.090",
+        "EndpointA": "nav.generated.026",
+        "EndpointB": "nav.generated.058",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.091",
+        "EndpointA": "nav.generated.027",
+        "EndpointB": "nav.generated.028",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.092",
+        "EndpointA": "nav.generated.027",
+        "EndpointB": "nav.generated.037",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.093",
+        "EndpointA": "nav.generated.027",
+        "EndpointB": "nav.generated.040",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.094",
+        "EndpointA": "nav.generated.027",
+        "EndpointB": "nav.generated.041",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.095",
+        "EndpointA": "nav.generated.028",
+        "EndpointB": "nav.generated.041",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.096",
+        "EndpointA": "nav.generated.028",
+        "EndpointB": "nav.generated.056",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.097",
+        "EndpointA": "nav.generated.029",
+        "EndpointB": "nav.generated.031",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.098",
+        "EndpointA": "nav.generated.029",
+        "EndpointB": "nav.generated.035",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.099",
+        "EndpointA": "nav.generated.029",
+        "EndpointB": "nav.generated.054",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.100",
+        "EndpointA": "nav.generated.029",
+        "EndpointB": "nav.generated.059",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.101",
+        "EndpointA": "nav.generated.030",
+        "EndpointB": "nav.generated.040",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.102",
+        "EndpointA": "nav.generated.030",
+        "EndpointB": "nav.generated.043",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.103",
+        "EndpointA": "nav.generated.030",
+        "EndpointB": "nav.generated.046",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.104",
+        "EndpointA": "nav.generated.030",
+        "EndpointB": "nav.generated.047",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.105",
+        "EndpointA": "nav.generated.030",
+        "EndpointB": "nav.generated.056",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.106",
+        "EndpointA": "nav.generated.031",
+        "EndpointB": "nav.generated.038",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.107",
+        "EndpointA": "nav.generated.031",
+        "EndpointB": "nav.generated.054",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.108",
+        "EndpointA": "nav.generated.031",
+        "EndpointB": "nav.generated.057",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.109",
+        "EndpointA": "nav.generated.032",
+        "EndpointB": "nav.generated.033",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.110",
+        "EndpointA": "nav.generated.032",
+        "EndpointB": "nav.generated.050",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.111",
+        "EndpointA": "nav.generated.032",
+        "EndpointB": "nav.generated.052",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.112",
+        "EndpointA": "nav.generated.032",
+        "EndpointB": "nav.generated.058",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.113",
+        "EndpointA": "nav.generated.033",
+        "EndpointB": "nav.generated.040",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.114",
+        "EndpointA": "nav.generated.033",
+        "EndpointB": "nav.generated.058",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.115",
+        "EndpointA": "nav.generated.034",
+        "EndpointB": "nav.generated.035",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.116",
+        "EndpointA": "nav.generated.034",
+        "EndpointB": "nav.generated.039",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.117",
+        "EndpointA": "nav.generated.034",
+        "EndpointB": "nav.generated.044",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.118",
+        "EndpointA": "nav.generated.034",
+        "EndpointB": "nav.generated.054",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.119",
+        "EndpointA": "nav.generated.035",
+        "EndpointB": "nav.generated.054",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.120",
+        "EndpointA": "nav.generated.035",
+        "EndpointB": "nav.generated.059",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.121",
+        "EndpointA": "nav.generated.036",
+        "EndpointB": "nav.generated.042",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.122",
+        "EndpointA": "nav.generated.036",
+        "EndpointB": "nav.generated.046",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.123",
+        "EndpointA": "nav.generated.036",
+        "EndpointB": "nav.generated.048",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.124",
+        "EndpointA": "nav.generated.036",
+        "EndpointB": "nav.generated.058",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.125",
+        "EndpointA": "nav.generated.036",
+        "EndpointB": "nav.generated.060",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.126",
+        "EndpointA": "nav.generated.037",
+        "EndpointB": "nav.generated.040",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.127",
+        "EndpointA": "nav.generated.037",
+        "EndpointB": "nav.generated.041",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.128",
+        "EndpointA": "nav.generated.037",
+        "EndpointB": "nav.generated.050",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.129",
+        "EndpointA": "nav.generated.038",
+        "EndpointB": "nav.generated.044",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.130",
+        "EndpointA": "nav.generated.038",
+        "EndpointB": "nav.generated.045",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.131",
+        "EndpointA": "nav.generated.038",
+        "EndpointB": "nav.generated.048",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.132",
+        "EndpointA": "nav.generated.038",
+        "EndpointB": "nav.generated.054",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.133",
+        "EndpointA": "nav.generated.038",
+        "EndpointB": "nav.generated.057",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.134",
+        "EndpointA": "nav.generated.039",
+        "EndpointB": "nav.generated.044",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.135",
+        "EndpointA": "nav.generated.039",
+        "EndpointB": "nav.generated.045",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.136",
+        "EndpointA": "nav.generated.039",
+        "EndpointB": "nav.generated.051",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.137",
+        "EndpointA": "nav.generated.039",
+        "EndpointB": "nav.generated.060",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.138",
+        "EndpointA": "nav.generated.042",
+        "EndpointB": "nav.generated.045",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.139",
+        "EndpointA": "nav.generated.042",
+        "EndpointB": "nav.generated.048",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.140",
+        "EndpointA": "nav.generated.042",
+        "EndpointB": "nav.generated.060",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.141",
+        "EndpointA": "nav.generated.043",
+        "EndpointB": "nav.generated.056",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.142",
+        "EndpointA": "nav.generated.044",
+        "EndpointB": "nav.generated.045",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.143",
+        "EndpointA": "nav.generated.044",
+        "EndpointB": "nav.generated.054",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.144",
+        "EndpointA": "nav.generated.045",
+        "EndpointB": "nav.generated.048",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.145",
+        "EndpointA": "nav.generated.045",
+        "EndpointB": "nav.generated.060",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.146",
+        "EndpointA": "nav.generated.046",
+        "EndpointB": "nav.generated.047",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.147",
+        "EndpointA": "nav.generated.046",
+        "EndpointB": "nav.generated.049",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.148",
+        "EndpointA": "nav.generated.046",
+        "EndpointB": "nav.generated.058",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.149",
+        "EndpointA": "nav.generated.047",
+        "EndpointB": "nav.generated.049",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.150",
+        "EndpointA": "nav.generated.047",
+        "EndpointB": "nav.generated.051",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.151",
+        "EndpointA": "nav.generated.049",
+        "EndpointB": "nav.generated.051",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.152",
+        "EndpointA": "nav.generated.053",
+        "EndpointB": "nav.generated.057",
+        "Kind": 1,
+        "BaseTraversalCost": 1
+      }
+    ],
+    "HomeCandidates": [
+      {
+        "CivilizationDefinitionId": "civilization.cardassian",
+        "SystemId": "system.generated.012",
+        "NodeId": "nav.generated.012"
+      },
+      {
+        "CivilizationDefinitionId": "civilization.federation",
+        "SystemId": "system.generated.023",
+        "NodeId": "nav.generated.023"
+      }
+    ]
+  },
+  "RegionInfluences": [
+    {
+      "NodeId": "nav.generated.001",
+      "BaseDensity": 100,
+      "TargetDensity": 414,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.001",
+          "Amount": 280
+        },
+        {
+          "FeatureId": "feature.generated.star.025",
+          "Amount": 34
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.002",
+      "BaseDensity": 100,
+      "TargetDensity": 971,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 323
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 64
+        },
+        {
+          "FeatureId": "feature.generated.star.002",
+          "Amount": 200
+        },
+        {
+          "FeatureId": "feature.generated.star.008",
+          "Amount": 113
+        },
+        {
+          "FeatureId": "feature.generated.star.011",
+          "Amount": 171
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.003",
+      "BaseDensity": 100,
+      "TargetDensity": 725,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.002",
+          "Amount": 345
+        },
+        {
+          "FeatureId": "feature.generated.star.003",
+          "Amount": 280
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.004",
+      "BaseDensity": 100,
+      "TargetDensity": 451,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.002",
+          "Amount": 44
+        },
+        {
+          "FeatureId": "feature.generated.star.004",
+          "Amount": 120
+        },
+        {
+          "FeatureId": "feature.generated.star.025",
+          "Amount": 187
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.005",
+      "BaseDensity": 100,
+      "TargetDensity": 220,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.005",
+          "Amount": 120
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.006",
+      "BaseDensity": 100,
+      "TargetDensity": 625,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.002",
+          "Amount": 281
+        },
+        {
+          "FeatureId": "feature.generated.star.006",
+          "Amount": 200
+        },
+        {
+          "FeatureId": "feature.generated.star.014",
+          "Amount": 44
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.007",
+      "BaseDensity": 100,
+      "TargetDensity": 380,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.007",
+          "Amount": 280
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.008",
+      "BaseDensity": 100,
+      "TargetDensity": 1000,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 475
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 110
+        },
+        {
+          "FeatureId": "feature.generated.star.002",
+          "Amount": 10
+        },
+        {
+          "FeatureId": "feature.generated.star.008",
+          "Amount": 280
+        },
+        {
+          "FeatureId": "feature.generated.star.011",
+          "Amount": 76
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.009",
+      "BaseDensity": 100,
+      "TargetDensity": 380,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.009",
+          "Amount": 280
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.010",
+      "BaseDensity": 100,
+      "TargetDensity": 400,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.001",
+          "Amount": 180
+        },
+        {
+          "FeatureId": "feature.generated.star.010",
+          "Amount": 120
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.011",
+      "BaseDensity": 100,
+      "TargetDensity": 532,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.002",
+          "Amount": 76
+        },
+        {
+          "FeatureId": "feature.generated.star.008",
+          "Amount": 76
+        },
+        {
+          "FeatureId": "feature.generated.star.011",
+          "Amount": 280
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.012",
+      "BaseDensity": 100,
+      "TargetDensity": 431,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.012",
+          "Amount": 280
+        },
+        {
+          "FeatureId": "feature.generated.star.019",
+          "Amount": 42
+        },
+        {
+          "FeatureId": "feature.generated.star.021",
+          "Amount": 9
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.013",
+      "BaseDensity": 100,
+      "TargetDensity": 300,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.013",
+          "Amount": 200
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.014",
+      "BaseDensity": 100,
+      "TargetDensity": 407,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.006",
+          "Amount": 44
+        },
+        {
+          "FeatureId": "feature.generated.star.014",
+          "Amount": 200
+        },
+        {
+          "FeatureId": "feature.generated.star.027",
+          "Amount": 23
+        },
+        {
+          "FeatureId": "feature.generated.star.028",
+          "Amount": 40
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.015",
+      "BaseDensity": 100,
+      "TargetDensity": 378,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.015",
+          "Amount": 200
+        },
+        {
+          "FeatureId": "feature.generated.star.030",
+          "Amount": 78
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.016",
+      "BaseDensity": 100,
+      "TargetDensity": 300,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.016",
+          "Amount": 200
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.017",
+      "BaseDensity": 100,
+      "TargetDensity": 345,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.007",
+          "Amount": 45
+        },
+        {
+          "FeatureId": "feature.generated.star.017",
+          "Amount": 200
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.018",
+      "BaseDensity": 100,
+      "TargetDensity": 562,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 57
+        },
+        {
+          "FeatureId": "feature.generated.nebula.001",
+          "Amount": 236
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 49
+        },
+        {
+          "FeatureId": "feature.generated.star.018",
+          "Amount": 120
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.019",
+      "BaseDensity": 100,
+      "TargetDensity": 531,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.012",
+          "Amount": 141
+        },
+        {
+          "FeatureId": "feature.generated.star.019",
+          "Amount": 200
+        },
+        {
+          "FeatureId": "feature.generated.star.020",
+          "Amount": 84
+        },
+        {
+          "FeatureId": "feature.generated.star.021",
+          "Amount": 6
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.020",
+      "BaseDensity": 100,
+      "TargetDensity": 796,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.002",
+          "Amount": 412
+        },
+        {
+          "FeatureId": "feature.generated.star.019",
+          "Amount": 84
+        },
+        {
+          "FeatureId": "feature.generated.star.020",
+          "Amount": 200
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.021",
+      "BaseDensity": 100,
+      "TargetDensity": 509,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.012",
+          "Amount": 191
+        },
+        {
+          "FeatureId": "feature.generated.star.019",
+          "Amount": 97
+        },
+        {
+          "FeatureId": "feature.generated.star.020",
+          "Amount": 1
+        },
+        {
+          "FeatureId": "feature.generated.star.021",
+          "Amount": 120
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.022",
+      "BaseDensity": 100,
+      "TargetDensity": 297,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.002",
+          "Amount": 77
+        },
+        {
+          "FeatureId": "feature.generated.star.022",
+          "Amount": 120
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.023",
+      "BaseDensity": 100,
+      "TargetDensity": 616,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 264
+        },
+        {
+          "FeatureId": "feature.generated.star.008",
+          "Amount": 107
+        },
+        {
+          "FeatureId": "feature.generated.star.023",
+          "Amount": 120
+        },
+        {
+          "FeatureId": "feature.generated.star.029",
+          "Amount": 25
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.024",
+      "BaseDensity": 100,
+      "TargetDensity": 564,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 184
+        },
+        {
+          "FeatureId": "feature.generated.star.024",
+          "Amount": 280
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.025",
+      "BaseDensity": 100,
+      "TargetDensity": 417,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.001",
+          "Amount": 34
+        },
+        {
+          "FeatureId": "feature.generated.star.004",
+          "Amount": 3
+        },
+        {
+          "FeatureId": "feature.generated.star.025",
+          "Amount": 280
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.026",
+      "BaseDensity": 100,
+      "TargetDensity": 630,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.002",
+          "Amount": 330
+        },
+        {
+          "FeatureId": "feature.generated.star.026",
+          "Amount": 200
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.027",
+      "BaseDensity": 100,
+      "TargetDensity": 402,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.002",
+          "Amount": 38
+        },
+        {
+          "FeatureId": "feature.generated.star.006",
+          "Amount": 32
+        },
+        {
+          "FeatureId": "feature.generated.star.014",
+          "Amount": 112
+        },
+        {
+          "FeatureId": "feature.generated.star.027",
+          "Amount": 120
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.028",
+      "BaseDensity": 100,
+      "TargetDensity": 433,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.009",
+          "Amount": 93
+        },
+        {
+          "FeatureId": "feature.generated.star.014",
+          "Amount": 40
+        },
+        {
+          "FeatureId": "feature.generated.star.028",
+          "Amount": 200
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.029",
+      "BaseDensity": 100,
+      "TargetDensity": 906,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 488
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 88
+        },
+        {
+          "FeatureId": "feature.generated.star.008",
+          "Amount": 85
+        },
+        {
+          "FeatureId": "feature.generated.star.023",
+          "Amount": 25
+        },
+        {
+          "FeatureId": "feature.generated.star.029",
+          "Amount": 120
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.030",
+      "BaseDensity": 100,
+      "TargetDensity": 410,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.002",
+          "Amount": 32
+        },
+        {
+          "FeatureId": "feature.generated.star.015",
+          "Amount": 78
+        },
+        {
+          "FeatureId": "feature.generated.star.030",
+          "Amount": 200
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.031",
+      "BaseDensity": 100,
+      "TargetDensity": 1000,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 650
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 321
+        },
+        {
+          "FeatureId": "feature.generated.star.008",
+          "Amount": 146
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.032",
+      "BaseDensity": 100,
+      "TargetDensity": 796,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.002",
+          "Amount": 650
+        },
+        {
+          "FeatureId": "feature.generated.star.003",
+          "Amount": 46
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.033",
+      "BaseDensity": 100,
+      "TargetDensity": 619,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.002",
+          "Amount": 181
+        },
+        {
+          "FeatureId": "feature.generated.nebula.002",
+          "Amount": 85
+        },
+        {
+          "FeatureId": "feature.generated.star.003",
+          "Amount": 253
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.034",
+      "BaseDensity": 100,
+      "TargetDensity": 669,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 212
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 357
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.035",
+      "BaseDensity": 100,
+      "TargetDensity": 823,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 470
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 224
+        },
+        {
+          "FeatureId": "feature.generated.star.029",
+          "Amount": 29
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.036",
+      "BaseDensity": 100,
+      "TargetDensity": 484,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.001",
+          "Amount": 383
+        },
+        {
+          "FeatureId": "feature.generated.star.025",
+          "Amount": 1
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.037",
+      "BaseDensity": 100,
+      "TargetDensity": 100,
+      "Contributions": []
+    },
+    {
+      "NodeId": "nav.generated.038",
+      "BaseDensity": 100,
+      "TargetDensity": 901,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 421
+        },
+        {
+          "FeatureId": "feature.generated.nebula.001",
+          "Amount": 5
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 375
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.039",
+      "BaseDensity": 100,
+      "TargetDensity": 485,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 339
+        },
+        {
+          "FeatureId": "feature.generated.star.024",
+          "Amount": 46
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.040",
+      "BaseDensity": 100,
+      "TargetDensity": 611,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.002",
+          "Amount": 331
+        },
+        {
+          "FeatureId": "feature.generated.star.003",
+          "Amount": 93
+        },
+        {
+          "FeatureId": "feature.generated.star.006",
+          "Amount": 87
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.041",
+      "BaseDensity": 100,
+      "TargetDensity": 100,
+      "Contributions": []
+    },
+    {
+      "NodeId": "nav.generated.042",
+      "BaseDensity": 100,
+      "TargetDensity": 654,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.001",
+          "Amount": 315
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 239
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.043",
+      "BaseDensity": 100,
+      "TargetDensity": 398,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.002",
+          "Amount": 99
+        },
+        {
+          "FeatureId": "feature.generated.star.006",
+          "Amount": 109
+        },
+        {
+          "FeatureId": "feature.generated.star.014",
+          "Amount": 30
+        },
+        {
+          "FeatureId": "feature.generated.star.030",
+          "Amount": 60
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.044",
+      "BaseDensity": 100,
+      "TargetDensity": 791,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 279
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 412
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.045",
+      "BaseDensity": 100,
+      "TargetDensity": 494,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 4
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 390
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.046",
+      "BaseDensity": 100,
+      "TargetDensity": 543,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.002",
+          "Amount": 287
+        },
+        {
+          "FeatureId": "feature.generated.star.024",
+          "Amount": 126
+        },
+        {
+          "FeatureId": "feature.generated.star.026",
+          "Amount": 30
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.047",
+      "BaseDensity": 100,
+      "TargetDensity": 287,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.002",
+          "Amount": 18
+        },
+        {
+          "FeatureId": "feature.generated.star.015",
+          "Amount": 55
+        },
+        {
+          "FeatureId": "feature.generated.star.024",
+          "Amount": 114
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.048",
+      "BaseDensity": 100,
+      "TargetDensity": 734,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 81
+        },
+        {
+          "FeatureId": "feature.generated.nebula.001",
+          "Amount": 291
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 208
+        },
+        {
+          "FeatureId": "feature.generated.star.018",
+          "Amount": 54
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.049",
+      "BaseDensity": 100,
+      "TargetDensity": 448,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.002",
+          "Amount": 165
+        },
+        {
+          "FeatureId": "feature.generated.star.024",
+          "Amount": 183
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.050",
+      "BaseDensity": 100,
+      "TargetDensity": 880,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.002",
+          "Amount": 521
+        },
+        {
+          "FeatureId": "feature.generated.star.003",
+          "Amount": 159
+        },
+        {
+          "FeatureId": "feature.generated.star.020",
+          "Amount": 100
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.051",
+      "BaseDensity": 100,
+      "TargetDensity": 484,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 125
+        },
+        {
+          "FeatureId": "feature.generated.star.024",
+          "Amount": 259
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.052",
+      "BaseDensity": 100,
+      "TargetDensity": 391,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.002",
+          "Amount": 252
+        },
+        {
+          "FeatureId": "feature.generated.star.022",
+          "Amount": 6
+        },
+        {
+          "FeatureId": "feature.generated.star.025",
+          "Amount": 33
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.053",
+      "BaseDensity": 100,
+      "TargetDensity": 1000,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 329
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 42
+        },
+        {
+          "FeatureId": "feature.generated.star.002",
+          "Amount": 100
+        },
+        {
+          "FeatureId": "feature.generated.star.008",
+          "Amount": 243
+        },
+        {
+          "FeatureId": "feature.generated.star.011",
+          "Amount": 212
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.054",
+      "BaseDensity": 100,
+      "TargetDensity": 1000,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 617
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 368
+        },
+        {
+          "FeatureId": "feature.generated.star.008",
+          "Amount": 9
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.055",
+      "BaseDensity": 100,
+      "TargetDensity": 169,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.017",
+          "Amount": 69
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.056",
+      "BaseDensity": 100,
+      "TargetDensity": 240,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.star.009",
+          "Amount": 140
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.057",
+      "BaseDensity": 100,
+      "TargetDensity": 1000,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 504
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 181
+        },
+        {
+          "FeatureId": "feature.generated.star.002",
+          "Amount": 160
+        },
+        {
+          "FeatureId": "feature.generated.star.008",
+          "Amount": 216
+        },
+        {
+          "FeatureId": "feature.generated.star.011",
+          "Amount": 117
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.058",
+      "BaseDensity": 100,
+      "TargetDensity": 170,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.001",
+          "Amount": 2
+        },
+        {
+          "FeatureId": "feature.generated.star.004",
+          "Amount": 21
+        },
+        {
+          "FeatureId": "feature.generated.star.025",
+          "Amount": 31
+        },
+        {
+          "FeatureId": "feature.generated.star.026",
+          "Amount": 16
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.059",
+      "BaseDensity": 100,
+      "TargetDensity": 419,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.black-hole.001",
+          "Amount": 260
+        },
+        {
+          "FeatureId": "feature.generated.star.029",
+          "Amount": 59
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.060",
+      "BaseDensity": 100,
+      "TargetDensity": 620,
+      "Contributions": [
+        {
+          "FeatureId": "feature.generated.nebula.001",
+          "Amount": 15
+        },
+        {
+          "FeatureId": "feature.generated.nebula.003",
+          "Amount": 297
+        },
+        {
+          "FeatureId": "feature.generated.star.024",
+          "Amount": 208
+        }
+      ]
+    }
+  ]
+}

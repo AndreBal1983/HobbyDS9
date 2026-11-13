@@ -1,0 +1,8 @@
+Sun, Mercury, Venus Atmosphere, Earth Day Map, Mars, Jupiter, Saturn,
+Uranus, and Neptune by Solar System Scope (INOVE).
+Source: https://www.solarsystemscope.com/textures/
+License: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/
+JPEGs copied unchanged from the art handoff, which shortened the filenames.
+Unity imports the original 2K maps at up to 1024 pixels in sRGB. The
+Sol overview projects and lights the maps on schematic spheres; the orbits
+and Saturn's separate ring mesh are illustrative and are not to scale.

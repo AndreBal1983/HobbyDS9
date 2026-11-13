@@ -8,6 +8,7 @@ namespace HobbyDS9.UnityClient
 {
     public sealed class AudioDirector : MonoBehaviour
     {
+        private readonly long shutdownLabel=ClientShutdownLifecycle.NextId();
         private static AudioDirector? instance;
         private readonly Dictionary<string, AudioClip> clips = new Dictionary<string, AudioClip>(StringComparer.Ordinal);
         private readonly HashSet<string> failed = new HashSet<string>(StringComparer.Ordinal);
@@ -22,6 +23,17 @@ namespace HobbyDS9.UnityClient
         private double requestedStart, loadDeadline, fadeStart, fadeSeconds, retryAfter, stopStart, stopSeconds;
         private int current = -1, outgoing = -1;
         private bool initialized, fading, stopping, paused;
+        private readonly List<MusicTrack> playerTracks = new List<MusicTrack>();
+        private bool transportPaused, manualPlaylist;
+        private string? stoppedTrackId;
+        private double pausedDsp;
+        private readonly double[] cueStarts = new double[2];
+        public IReadOnlyList<MusicTrack> Tracks => playerTracks.AsReadOnly();
+        public bool IsPaused => transportPaused || paused;
+        public bool AutomaticPlaylist => !manualPlaylist;
+        public float PositionSeconds => current < 0 || sources[current].clip == null ? 0 : sources[current].time;
+        public float DurationSeconds => current < 0 || sources[current].clip == null ? 0 : sources[current].clip.length;
+        public string CurrentTrackName => current < 0 ? waiting?.Name ?? "Ready" : sourceTracks[current]?.Name ?? "Ready";
         public MusicPreferences Preferences { get; private set; } = null!;
         public string? CurrentTrackId => current < 0 ? null : sourceTracks[current]?.Id;
         public string Status { get; private set; } = "Music initializing";
@@ -69,6 +81,7 @@ namespace HobbyDS9.UnityClient
                 }
             else Warn("catalog", "MusicCatalog missing. Campaign remains playable without music.");
             playlist = new MusicPlaylist(metadata);
+            playerTracks.AddRange(metadata.Where(Available));
             Status = clips.Count == 0 ? "No playable music assets" : "Strategic playlist ready";
         }
         private bool Available(MusicTrack track) => clips.TryGetValue(track.Id, out var clip) && clip != null && !failed.Contains(track.Id) && clip.loadState != AudioDataLoadState.Failed;
@@ -76,15 +89,67 @@ namespace HobbyDS9.UnityClient
         public void SetMasterVolume(float value) { Preferences.SetMaster(value); ApplyVolumes(); SfxDirector.SharedMaster(Preferences.MasterVolume); }
         public void SetMusicVolume(float value) { Preferences.SetMusic(value); ApplyVolumes(); }
         public void SetMuted(bool value) { Preferences.SetMuted(value); ApplyVolumes(); }
+        public bool PlayTrack(string id)
+        {
+            var track=playerTracks.FirstOrDefault(t=>t.Id==id&&Available(t));
+            if(track==null){Status="Track unavailable. Choose another song.";return false;}
+            StopSources();stoppedTrackId=null;manualPlaylist=true;paused=false;transportPaused=false;
+            waiting=track;requestedStart=AudioSettings.dspTime+.25;loadDeadline=AudioSettings.dspTime+5;
+            var clip=clips[track.Id];
+            if(clip.loadType!=AudioClipLoadType.Streaming&&clip.loadState==AudioDataLoadState.Unloaded)clip.LoadAudioData();
+            Status="Loading: "+track.Name;return true;
+        }
+        public void StepTrack(int direction)
+        {
+            var available=playerTracks.Where(Available).ToList();if(available.Count==0)return;
+            var index=available.FindIndex(t=>t.Id==(waiting?.Id??CurrentTrackId));
+            var next=index<0?(direction<0?available.Count-1:0):(index+(direction<0?-1:1)+available.Count)%available.Count;
+            PlayTrack(available[next].Id);
+        }
+        public void UseAutomaticPlaylist(){manualPlaylist=false;}
+        public bool Seek(float fraction)
+        {
+            if(paused||float.IsNaN(fraction)||float.IsInfinity(fraction)||current<0||sources[current].clip==null)return false;
+            var source=sources[current];var now=AudioSettings.dspTime;
+            var position=Mathf.Clamp01(fraction)*Math.Max(0,source.clip.length-.1f);
+            // Cancel an already prepared overlap before repositioning the current decoder.
+            for(var i=0;i<sources.Length;i++)if(i!=current){sources[i].Stop();sources[i].clip=null;gains[i]=0;timings[i]=null;sourceTracks[i]=null;}
+            waiting=null;outgoing=-1;fading=stopping=false;
+            source.Stop();source.time=position;source.Play();
+            cueStarts[current]=now-position;timings[current]=new MusicCueTiming(cueStarts[current],source.clip.length,sourceTracks[current]!);
+            gains[current]=1;ApplyVolumes();
+            if(transportPaused){source.Pause();pausedDsp=now;}
+            return true;
+        }
+        public void TogglePause()
+        {
+            if(paused){ResumeMusic();return;}
+            if(!transportPaused){transportPaused=true;pausedDsp=AudioSettings.dspTime;foreach(var source in sources)source.Pause();return;}
+            var delay=Math.Max(0,AudioSettings.dspTime-pausedDsp);
+            fadeStart+=delay;requestedStart+=delay;loadDeadline+=delay;retryAfter+=delay;
+            for(var i=0;i<sources.Length;i++)
+            {
+                var scheduled=sources[i].clip!=null&&sourceTracks[i]!=null&&timings[i]!=null&&pausedDsp<cueStarts[i];
+                if(timings[i]!=null&&sourceTracks[i]!=null&&sources[i].clip!=null){cueStarts[i]+=delay;timings[i]=new MusicCueTiming(cueStarts[i],sources[i].clip.length,sourceTracks[i]!);}
+                if(scheduled){sources[i].Stop();sources[i].PlayScheduled(cueStarts[i]);}else sources[i].UnPause();
+            }
+            transportPaused=false;
+        }
         // Explicit service transitions, not mute: mute leaves DSP playback running.
         public void StopMusic(double seconds = 2)
         {
+            stoppedTrackId=waiting?.Id??CurrentTrackId;transportPaused=false;
             paused = true; waiting = null;
             if (seconds <= 0 || double.IsNaN(seconds) || double.IsInfinity(seconds)) { StopSources(); return; }
             stopStart = AudioSettings.dspTime; stopSeconds = seconds;
             Array.Copy(gains, stopGains, 2); stopping = true;
         }
-        public void ResumeMusic() { StopSources(); paused = false; retryAfter = 0; }
+        public void ResumeMusic()
+        {
+            var id=stoppedTrackId;var manual=manualPlaylist;
+            if(id!=null&&PlayTrack(id)){manualPlaylist=manual;return;}
+            StopSources();paused=false;transportPaused=false;retryAfter=0;
+        }
         private void Update()
         {
             if (!initialized || !UnityEngine.Application.isPlaying || sources.Length != 2) return;
@@ -99,7 +164,7 @@ namespace HobbyDS9.UnityClient
                 for (var i = 0; i < 2; i++) gains[i] = stopGains[i] * MusicEnvelope.Outgoing(progress);
                 ApplyVolumes(); if (progress >= 1) StopSources(); return;
             }
-            if (paused) return;
+            if (paused || transportPaused) return;
             if (current >= 0 && sources[current].clip != null && sources[current].clip.loadState == AudioDataLoadState.Failed)
             { failed.Add(sourceTracks[current]!.Id); Warn(sourceTracks[current]!.Id, "Broken music clip skipped: " + sourceTracks[current]!.Id); StopSources(); }
             if (fading)
@@ -115,7 +180,13 @@ namespace HobbyDS9.UnityClient
             }
             if (waiting == null && !fading && now >= retryAfter && (current < 0 || now >= timings[current]!.NextStartDsp - 2))
             {
-                waiting = playlist.Next(Available);
+                if(manualPlaylist)
+                {
+                    var available=playerTracks.Where(Available).ToList();
+                    var index=available.FindIndex(t=>t.Id==CurrentTrackId);
+                    waiting=available.Count==0?null:available[(index+1)%available.Count];
+                }
+                else waiting = playlist.Next(Available);
                 if (waiting == null) { retryAfter = now + 10; Status = "No playable music assets"; }
                 else
                 {
@@ -142,6 +213,7 @@ namespace HobbyDS9.UnityClient
                     outgoing = current; current = index; sourceTracks[index] = waiting;
                     fadeStart = start; fadeSeconds = outgoing < 0 ? 2 : timings[outgoing]!.CrossfadeSeconds;
                     timings[index] = new MusicCueTiming(start, clip.length, waiting);
+                    cueStarts[index]=start;
                     gains[index] = 0; fading = true; waiting = null;
                     Status = "Cue: " + sourceTracks[index]!.Name;
                 }
@@ -156,8 +228,8 @@ namespace HobbyDS9.UnityClient
             gains[0] = gains[1] = 0; current = outgoing = -1; waiting = null; fading = stopping = false;
         }
         private void Warn(string key, string text) { if (warnings.Add(key)) Debug.LogWarning(text); }
-        private void OnDisable() { StopSources(); }
-        private void OnDestroy() { StopSources(); AudioOutputListener.Release(this); if (instance == this) instance = null; }
+        private void OnDisable() { ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"disable.enter");ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"disable.stop-sources.begin");StopSources(); ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"disable.stop-sources.return");ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"disable.return"); }
+        private void OnDestroy() { ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.enter");ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.stop-sources.begin");StopSources(); ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.stop-sources.return");ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.listener-release.begin");AudioOutputListener.Release(this); ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.listener-release.return");if (instance == this) instance = null; ClientShutdownLifecycle.Mark("AudioDirector",shutdownLabel,"destroy.return"); }
     }
     internal sealed class PlayerPrefsMusicStore : IMusicSettingsStore
     {

@@ -1,0 +1,5 @@
+Construction Command catalogue thumbnails
+Galaxy, fusion and research are from the art director's Construction Command mockup (construction-mockup-20261025).
+Constitution Explorer and Defiant are the existing 2D proof renders from three-hull-runtime-v1-20261025-1. Owner-provided Defiant art is for local review.
+Hydroponics, frontier mine and settlement kit adapt the mockup's illustration style for existing recipes.
+Illustrations depict concepts and hull identity. Campaign snapshots supply all costs, availability and effects.

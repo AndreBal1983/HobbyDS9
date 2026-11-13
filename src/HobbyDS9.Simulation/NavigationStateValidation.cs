@@ -19,7 +19,12 @@ namespace HobbyDS9.Simulation
             if(state.NavigationKnowledge==null||state.TraversalEffects==null||state.NavigationStatistics==null){Add(issues,ValidationCode.MissingField,path+".Navigation");return;}
             if(d==null||!WeightedNavigationGraph.Validate(d).IsValid)return;
             var graph=new WeightedNavigationGraph(d);var nodes=d.NavigationRegions!.Select(n=>n.NodeId).ToHashSet(StringComparer.Ordinal);var connections=d.NavigationConnections!.Select(e=>e.ConnectionId).ToHashSet(StringComparer.Ordinal);
-            Check(d.NavigationRegions!.All(n=>n.AssociatedSystemId==null||state.StarSystems?.Any(s=>s!=null&&s.SystemId==n.AssociatedSystemId)==true));
+            // Invocation-local lookups only, after the unchanged complete definition checks.
+            // Preserve definition order when combining the two endpoints' phenomena.
+            var regionIndex=d.NavigationRegions!.Select((region,index)=>(region,index)).ToDictionary(p=>p.region.NodeId,StringComparer.Ordinal);
+            var phenomenonIndex=d.Phenomena!.ToDictionary(p=>p.DefinitionId,StringComparer.Ordinal);
+            var systems=state.StarSystems?.Where(s=>s!=null).Select(s=>s.SystemId).ToHashSet(StringComparer.Ordinal);
+            Check(d.NavigationRegions!.All(n=>n.AssociatedSystemId==null||systems?.Contains(n.AssociatedSystemId)==true));
             Check((state.Colonies??new List<ColonyStateDto>()).Where(c=>c!=null).All(c=>graph.NodeForSystem(c.SystemId)!=null));
             var civilizations=(state.Civilizations??new List<CivilizationStateDto>()).Where(c=>c!=null).Select(c=>c.CivilizationId).ToHashSet(StringComparer.Ordinal);
             Check(state.NavigationKnowledge.Count==civilizations.Count&&state.NavigationKnowledge.All(k=>k!=null)&&state.NavigationKnowledge.Where(k=>k!=null).Select(k=>k.CivilizationId).Distinct(StringComparer.Ordinal).Count()==civilizations.Count);
@@ -36,13 +41,14 @@ namespace HobbyDS9.Simulation
                     &&(effect.ConnectionId==null||effect.MovementBudgetPenalty==0)&&effect.StartTurn>0&&effect.EndTurn>=effect.StartTurn);
             foreach(var connection in d.NavigationConnections!)
             {
-                var regions=d.NavigationRegions!.Where(n=>n.NodeId==connection.EndpointA||n.NodeId==connection.EndpointB);
-                var natural=regions.SelectMany(n=>n.PhenomenonDefinitionIds!).Distinct(StringComparer.Ordinal).Select(id=>d.Phenomena!.Single(p=>p.DefinitionId==id).TraversalCostIncrease);
+                var a=regionIndex[connection.EndpointA];var b=regionIndex[connection.EndpointB];
+                var regions=a.index<b.index?new[]{a.region,b.region}:new[]{b.region,a.region};
+                var natural=regions.SelectMany(n=>n.PhenomenonDefinitionIds!).Distinct(StringComparer.Ordinal).Select(id=>phenomenonIndex[id].TraversalCostIncrease);
                 var artificial=state.TraversalEffects.Where(e=>e!=null&&(e.ConnectionId==connection.ConnectionId||e.NodeId==connection.EndpointA||e.NodeId==connection.EndpointB)).Select(e=>e.TraversalCostIncrease);
                 Check(natural.Concat(artificial).Aggregate((BigInteger)connection.BaseTraversalCost,(sum,cost)=>sum+cost)<=long.MaxValue);
             }
             foreach(var region in d.NavigationRegions!)
-                Check(region.PhenomenonDefinitionIds!.Select(id=>d.Phenomena!.Single(p=>p.DefinitionId==id).MovementBudgetPenalty)
+                Check(region.PhenomenonDefinitionIds!.Select(id=>phenomenonIndex[id].MovementBudgetPenalty)
                     .Concat(state.TraversalEffects.Where(e=>e!=null&&e.NodeId==region.NodeId).Select(e=>e.MovementBudgetPenalty))
                     .Aggregate(BigInteger.Zero,(sum,value)=>sum+value)<=long.MaxValue);
             var stats=state.NavigationStatistics;Check(stats.TraversalCostPaid>=0&&stats.EdgesCompleted>=0&&stats.PartialTraversalTurns>=0);

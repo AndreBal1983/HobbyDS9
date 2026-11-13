@@ -27,7 +27,7 @@ namespace HobbyDS9.UnityReview.Tests
                 var b=root.Q<Button>(id);Debug.Log("DESIGN CAPTION "+id+" text="+b.text+" color="+b.resolvedStyle.color+" background="+b.resolvedStyle.backgroundColor+" size="+b.resolvedStyle.fontSize+" font="+b.resolvedStyle.unityFont+" fontDefinition="+b.resolvedStyle.unityFontDefinition+" bounds="+b.worldBound);
             }
             var back=root.Q<Button>("designer-close");
-            Assert.That(root.Q<Label>("designer-state").text,Is.EqualTo("Incomplete local preview"));
+            Assert.That(root.Q<Button>("integrated-design-publish").enabledSelf,Is.True,"The real campaign starter must pass publication validation.");
             yield return null;yield return null;
             var prior=RenderTexture.active;RenderTexture.active=target;var png=new Texture2D(1280,720,TextureFormat.RGBA32,false);png.ReadPixels(new Rect(0,0,1280,720),0,0);png.Apply();
             var output=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/early-game-player-ui/designer-probe.png"));File.WriteAllBytes(output,png.EncodeToPNG());RenderTexture.active=prior;

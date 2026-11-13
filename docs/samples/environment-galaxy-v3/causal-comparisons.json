@@ -1,0 +1,504 @@
+{
+  "GeneratorVersion": "environment-first-regions-v3",
+  "TuningVersion": "provisional-environment-influence-v1",
+  "Measurement": "Extra sites in the union of a family\u0027s \u003E= half normalized-weight elliptical cores, excluding mandatory star/black-hole anchors.",
+  "Caveat": "Exact same feature positions/parameters and other inputs in each pair; fixed region budget redistributes sites. This is an aggregate directional check, not a guaranteed per-seed increase, physical law, inverse-area formula or unique polygon attribution.",
+  "SystemCount": 40,
+  "Seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    42
+  ],
+  "Totals": [
+    {
+      "Family": "Star",
+      "EnabledLocalExtraSites": 415,
+      "DisabledLocalExtraSites": 335
+    },
+    {
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 106,
+      "DisabledLocalExtraSites": 49
+    },
+    {
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 179,
+      "DisabledLocalExtraSites": 108
+    }
+  ],
+  "Comparisons": [
+    {
+      "Seed": 0,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 25,
+      "DisabledLocalExtraSites": 21,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "0e6ba39fc8f09b88d165cdf19ffc30e8feac33c5b64c9008adfa62859aa299c5",
+      "DisabledHash": "5e7f814cd3d14da6968cc19eeea43b9cc8e98bf44612af938b0ecab70429fcd6"
+    },
+    {
+      "Seed": 0,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 10,
+      "DisabledLocalExtraSites": 8,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "0e6ba39fc8f09b88d165cdf19ffc30e8feac33c5b64c9008adfa62859aa299c5",
+      "DisabledHash": "8fcb7c59589dfcc8ec8e214785f87603bfcd13cb4c9094365630bed852f52c33"
+    },
+    {
+      "Seed": 0,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 13,
+      "DisabledLocalExtraSites": 10,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "0e6ba39fc8f09b88d165cdf19ffc30e8feac33c5b64c9008adfa62859aa299c5",
+      "DisabledHash": "a6c8dbef8ebc4cef6aec72a719fcda7e86e6b1e355a01bedcab1343dffe199eb"
+    },
+    {
+      "Seed": 1,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 24,
+      "DisabledLocalExtraSites": 18,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "7e82bcaa856a24bc8b603665e1ba9d292a24737f946912bed4cb4c85b252b819",
+      "DisabledHash": "790dcc88ca2e6ef7b9ee0d38b3fc5b8cb3aaab81d9f3633030e61fecd9e13aca"
+    },
+    {
+      "Seed": 1,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 12,
+      "DisabledLocalExtraSites": 9,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "7e82bcaa856a24bc8b603665e1ba9d292a24737f946912bed4cb4c85b252b819",
+      "DisabledHash": "1b6f51aff53f64979d726c7989ecc1dbf585f46242991a82fecdb7e77e767696"
+    },
+    {
+      "Seed": 1,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 14,
+      "DisabledLocalExtraSites": 10,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "7e82bcaa856a24bc8b603665e1ba9d292a24737f946912bed4cb4c85b252b819",
+      "DisabledHash": "41970b8dd9adfbbdb877b4883dcd253ef6c8f93e440886870ec014de791ee6ff"
+    },
+    {
+      "Seed": 2,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 28,
+      "DisabledLocalExtraSites": 18,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "a29342e26de71ff3058e4d910051bf0a2e68046d285a0352b53108c41d7038ed",
+      "DisabledHash": "1c53e4d3fbb87add91b70ac7e9fda09eb8965a59115f81a488703f5819331971"
+    },
+    {
+      "Seed": 2,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 5,
+      "DisabledLocalExtraSites": 2,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "a29342e26de71ff3058e4d910051bf0a2e68046d285a0352b53108c41d7038ed",
+      "DisabledHash": "5818ad0b3c69d48edd37050c2f981097333717b76aa18c36f80d03daa6f50686"
+    },
+    {
+      "Seed": 2,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 9,
+      "DisabledLocalExtraSites": 5,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "a29342e26de71ff3058e4d910051bf0a2e68046d285a0352b53108c41d7038ed",
+      "DisabledHash": "a950047c5bc31cf3bcdcd49e4496088381f8581a4fada05fd199e00be8910f2a"
+    },
+    {
+      "Seed": 3,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 23,
+      "DisabledLocalExtraSites": 22,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "81d8a255dc4700f568c6cc7d388fcb6ade09c2d2f3daf1f0943833efac6ab4aa",
+      "DisabledHash": "61356d80c9666d0fb2a1c1278f956942e8e574efe3918a391ec05b22a272dbc6"
+    },
+    {
+      "Seed": 3,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 4,
+      "DisabledLocalExtraSites": 3,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "81d8a255dc4700f568c6cc7d388fcb6ade09c2d2f3daf1f0943833efac6ab4aa",
+      "DisabledHash": "ff9c779482f937328f2014888d0f466e3e313a0f05278a82364a294b69ee19cc"
+    },
+    {
+      "Seed": 3,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 7,
+      "DisabledLocalExtraSites": 4,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "81d8a255dc4700f568c6cc7d388fcb6ade09c2d2f3daf1f0943833efac6ab4aa",
+      "DisabledHash": "8b1e1de25cfd6865a9cc0d7aa885ef986efe3ad0378a54b118b391c670ce9eec"
+    },
+    {
+      "Seed": 4,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 28,
+      "DisabledLocalExtraSites": 23,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "dfc2bc158941062125161022db85a6b17b03533c44216de65db11e1d3d771d5b",
+      "DisabledHash": "1177edf313d60809b3c9b5d2e10b6fe72fac33fe9488d7101f14a0df4221812c"
+    },
+    {
+      "Seed": 4,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 8,
+      "DisabledLocalExtraSites": 1,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "dfc2bc158941062125161022db85a6b17b03533c44216de65db11e1d3d771d5b",
+      "DisabledHash": "45631b71bd53933b8301ea796237d55d1e65152bf68c90d3952031f115e204b6"
+    },
+    {
+      "Seed": 4,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 10,
+      "DisabledLocalExtraSites": 3,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "dfc2bc158941062125161022db85a6b17b03533c44216de65db11e1d3d771d5b",
+      "DisabledHash": "1b86927b119cbae3025cc9286794e90514c6e0a31a162927de7793d0ddaea04b"
+    },
+    {
+      "Seed": 5,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 21,
+      "DisabledLocalExtraSites": 16,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "8ba0e03c062dce27174fc500c49f844807ed69474e49f383ddab3abaf8cac3de",
+      "DisabledHash": "0ce3363bc287a90ed8de2a7a0d9d20b368b7bfdfeda03c57813cd74a03552346"
+    },
+    {
+      "Seed": 5,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 5,
+      "DisabledLocalExtraSites": 0,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "8ba0e03c062dce27174fc500c49f844807ed69474e49f383ddab3abaf8cac3de",
+      "DisabledHash": "260f1db8321a87081215dcb9f795b6ddae30fe7c86bb87460649b5f4d65f0765"
+    },
+    {
+      "Seed": 5,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 15,
+      "DisabledLocalExtraSites": 10,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "8ba0e03c062dce27174fc500c49f844807ed69474e49f383ddab3abaf8cac3de",
+      "DisabledHash": "9d7c2224758d557c3cb2698c7714e2a12307847ef8d3519c70a463afe622b048"
+    },
+    {
+      "Seed": 6,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 25,
+      "DisabledLocalExtraSites": 20,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "71f982b9bf2025ab537b9d6c75f44b8e46deccaea5674f4d3d7d236c9413e924",
+      "DisabledHash": "62536681849dcfdb931adcfddb2fd48a5ba8ab8d9b4efe3234546ea6a63681b4"
+    },
+    {
+      "Seed": 6,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 6,
+      "DisabledLocalExtraSites": 4,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "71f982b9bf2025ab537b9d6c75f44b8e46deccaea5674f4d3d7d236c9413e924",
+      "DisabledHash": "ac95ae32cbc254755cbe259ab93bfbcd65924d727b7649627189319d933f0dfd"
+    },
+    {
+      "Seed": 6,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 9,
+      "DisabledLocalExtraSites": 3,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "71f982b9bf2025ab537b9d6c75f44b8e46deccaea5674f4d3d7d236c9413e924",
+      "DisabledHash": "fa5fffbdd05ec124e295feea1278501d3ef5d13ba2e0e25c7272dbaef2a8b949"
+    },
+    {
+      "Seed": 7,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 26,
+      "DisabledLocalExtraSites": 23,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "6190e33df278ecc43928e39e49e25b952385dc3e6a9828920683b26b9659f56d",
+      "DisabledHash": "5372e1dfc2a2ec2f7f5fac810c443ab4c5355f5c6d68f31e6e60b7cbd03261d5"
+    },
+    {
+      "Seed": 7,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 7,
+      "DisabledLocalExtraSites": 3,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "6190e33df278ecc43928e39e49e25b952385dc3e6a9828920683b26b9659f56d",
+      "DisabledHash": "b459252b86a9731ade4fef2ebe1ea85c311ae0707900a6e5d4eaa01d781624ba"
+    },
+    {
+      "Seed": 7,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 12,
+      "DisabledLocalExtraSites": 8,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "6190e33df278ecc43928e39e49e25b952385dc3e6a9828920683b26b9659f56d",
+      "DisabledHash": "5c8f5b353ff796b554f6ca9ff3520f95959ce2fea519299a152eb7d8065401fb"
+    },
+    {
+      "Seed": 8,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 26,
+      "DisabledLocalExtraSites": 22,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "d112a4c0b148228eccff94ccf7be6314f80279051aeecd4d01451a0f064e0357",
+      "DisabledHash": "a45d07e2cd9faeb9a7e1256aa39973a7f7ce2b16d44a7efb67171e0ecb39f724"
+    },
+    {
+      "Seed": 8,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 6,
+      "DisabledLocalExtraSites": 2,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "d112a4c0b148228eccff94ccf7be6314f80279051aeecd4d01451a0f064e0357",
+      "DisabledHash": "d8dce561846a3611ff9af62ee19fc320cb8a2210bd20e55bd3b647a7b2ad00c5"
+    },
+    {
+      "Seed": 8,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 11,
+      "DisabledLocalExtraSites": 5,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "d112a4c0b148228eccff94ccf7be6314f80279051aeecd4d01451a0f064e0357",
+      "DisabledHash": "426e0dced714f5aebe22c558ebd113b9c946e4296c0a0cc00d78a69f541fd6b2"
+    },
+    {
+      "Seed": 9,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 20,
+      "DisabledLocalExtraSites": 19,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "5376f79085b527c9824d5cc669f4759aa4b268516a8ebf2fee4095c1348ef2c6",
+      "DisabledHash": "e0b466b725ef47f66ff6fde4fad6194d270f23c0987ed9cec249c357b2357669"
+    },
+    {
+      "Seed": 9,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 8,
+      "DisabledLocalExtraSites": 4,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "5376f79085b527c9824d5cc669f4759aa4b268516a8ebf2fee4095c1348ef2c6",
+      "DisabledHash": "603a7636aeab4cb5d1e92ec0a99c52881bfcb249056fc4ca2e8b7fcfe7caab8c"
+    },
+    {
+      "Seed": 9,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 5,
+      "DisabledLocalExtraSites": 1,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "5376f79085b527c9824d5cc669f4759aa4b268516a8ebf2fee4095c1348ef2c6",
+      "DisabledHash": "58cc460cc836c25a679775314f96f8ed4311eeaaaa0d9746b21f70155706f525"
+    },
+    {
+      "Seed": 10,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 25,
+      "DisabledLocalExtraSites": 18,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "8f4927cbc59cbe652815a1c8adbf7115f617279105d59dca83a7cccb7c213482",
+      "DisabledHash": "6bd9fdd4f90df47d94e8a901c26529f78fcee8724ccc9c8f4be5660b980f8175"
+    },
+    {
+      "Seed": 10,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 5,
+      "DisabledLocalExtraSites": 1,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "8f4927cbc59cbe652815a1c8adbf7115f617279105d59dca83a7cccb7c213482",
+      "DisabledHash": "fe3a07b62df93dfccd615750f4ed92cf5a3dd348a9bf026e9aad35012dec6810"
+    },
+    {
+      "Seed": 10,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 13,
+      "DisabledLocalExtraSites": 9,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "8f4927cbc59cbe652815a1c8adbf7115f617279105d59dca83a7cccb7c213482",
+      "DisabledHash": "d97b7a838af5e5e2e34a366086ec9dbf609f03d8f1c6fdb438db0f60e76cb1c9"
+    },
+    {
+      "Seed": 11,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 27,
+      "DisabledLocalExtraSites": 24,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "4115a9ef311714d83d73b263d1a5487113294411fe2eb1aab077e0e92d876ee4",
+      "DisabledHash": "55ae93896f289c5e922dd93bb2e4adff31d97e2223348d55fe04d6b4707f3545"
+    },
+    {
+      "Seed": 11,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 3,
+      "DisabledLocalExtraSites": 2,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "4115a9ef311714d83d73b263d1a5487113294411fe2eb1aab077e0e92d876ee4",
+      "DisabledHash": "30041d06c63468762cd06faed294807a94b26d2f957a83e875c258b4f527e609"
+    },
+    {
+      "Seed": 11,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 7,
+      "DisabledLocalExtraSites": 5,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "4115a9ef311714d83d73b263d1a5487113294411fe2eb1aab077e0e92d876ee4",
+      "DisabledHash": "6f9459de2d86dd6ff9cf667670c1d008721ed7df83215c0cea2c3e5abac059b1"
+    },
+    {
+      "Seed": 12,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 23,
+      "DisabledLocalExtraSites": 18,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "f2dd01c7b5356b9d2d8f48bf22d1c8fc5667df7596958c9a3dc279226c8f0c5f",
+      "DisabledHash": "c19749bdd17109d595b6fbd2db09baf83f99bbce0d5ecdaf8827ca027b17a8e3"
+    },
+    {
+      "Seed": 12,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 4,
+      "DisabledLocalExtraSites": 2,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "f2dd01c7b5356b9d2d8f48bf22d1c8fc5667df7596958c9a3dc279226c8f0c5f",
+      "DisabledHash": "05788c4c194bb8aa66a77c302913890988e70ea8e87cafcb62222270e73855bc"
+    },
+    {
+      "Seed": 12,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 12,
+      "DisabledLocalExtraSites": 9,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "f2dd01c7b5356b9d2d8f48bf22d1c8fc5667df7596958c9a3dc279226c8f0c5f",
+      "DisabledHash": "a7e1962d9baf9bb384c8b231c8975e0a92ef01888a61d0eecbe808b35040d8f1"
+    },
+    {
+      "Seed": 13,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 20,
+      "DisabledLocalExtraSites": 17,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "f4ae7686ac767242c4551adb223966e906fb831c533638bd693e72266b24077d",
+      "DisabledHash": "8b24cea48242d21d3c54537da083224f2548259f69a435f1bac41632ebb70569"
+    },
+    {
+      "Seed": 13,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 7,
+      "DisabledLocalExtraSites": 3,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "f4ae7686ac767242c4551adb223966e906fb831c533638bd693e72266b24077d",
+      "DisabledHash": "afb073109e97f3518682d9e32f37723b4c6fda9ab3faf79733de8bd439b858b5"
+    },
+    {
+      "Seed": 13,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 11,
+      "DisabledLocalExtraSites": 5,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "f4ae7686ac767242c4551adb223966e906fb831c533638bd693e72266b24077d",
+      "DisabledHash": "a6e0cd59febae0c576a7911c19f1a842c9dd275b3d3fb53520d2f8b2ef839c79"
+    },
+    {
+      "Seed": 14,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 24,
+      "DisabledLocalExtraSites": 17,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "bef19f2453a8686e9098253268720fb2e543e0c1bfe550e9ab3b3573aaec5ff0",
+      "DisabledHash": "445dcbc1f8df631ed22f6e33c176430ecc27af9f6bb361476cde76f40ee05635"
+    },
+    {
+      "Seed": 14,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 6,
+      "DisabledLocalExtraSites": 2,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "bef19f2453a8686e9098253268720fb2e543e0c1bfe550e9ab3b3573aaec5ff0",
+      "DisabledHash": "d0a1c64c32e19c22cb9f882fbc50436a060d78c36d534ea797b6cc64c2d1ddd0"
+    },
+    {
+      "Seed": 14,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 11,
+      "DisabledLocalExtraSites": 6,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "bef19f2453a8686e9098253268720fb2e543e0c1bfe550e9ab3b3573aaec5ff0",
+      "DisabledHash": "97747a772205fa074893d193661cbc1dfedb93fbaf82f7e6288da8e8e2491c2c"
+    },
+    {
+      "Seed": 15,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 27,
+      "DisabledLocalExtraSites": 18,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "cdca3577dceda50bf923cf1282d8a600f46f8a226d9e5d2351b8c1b611c79e6d",
+      "DisabledHash": "550e3e80be0af1e7810abc737309846bf6ef080e37d5f1141859eb54ce32b7dc"
+    },
+    {
+      "Seed": 15,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 4,
+      "DisabledLocalExtraSites": 1,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "cdca3577dceda50bf923cf1282d8a600f46f8a226d9e5d2351b8c1b611c79e6d",
+      "DisabledHash": "141fdf61c92ee32681101b373834cb9ebfef06f6bcf72560d5661f52c79bb2ea"
+    },
+    {
+      "Seed": 15,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 12,
+      "DisabledLocalExtraSites": 10,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "cdca3577dceda50bf923cf1282d8a600f46f8a226d9e5d2351b8c1b611c79e6d",
+      "DisabledHash": "8fe1f4fe7b422ef42c48e71404fc09df2937ae2ceec47e7aaa3daae30224586a"
+    },
+    {
+      "Seed": 42,
+      "Family": "Star",
+      "EnabledLocalExtraSites": 23,
+      "DisabledLocalExtraSites": 21,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "404d1e15057f42531a6f1da078efd78663d902dcff22e5484e6e3ba2cc8d68fe",
+      "DisabledHash": "e58781cdc4bf92714bb1127be55cc18f45f64d77dc0d0fc24348c1f80798a742"
+    },
+    {
+      "Seed": 42,
+      "Family": "BlackHole",
+      "EnabledLocalExtraSites": 6,
+      "DisabledLocalExtraSites": 2,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "404d1e15057f42531a6f1da078efd78663d902dcff22e5484e6e3ba2cc8d68fe",
+      "DisabledHash": "b213ba0f15469bab0ff60f6940afae863b15fd5ba12ef7678021bf42056c12eb"
+    },
+    {
+      "Seed": 42,
+      "Family": "Nebula",
+      "EnabledLocalExtraSites": 8,
+      "DisabledLocalExtraSites": 5,
+      "AllFeaturesAndTuningIdentical": true,
+      "EnabledHash": "404d1e15057f42531a6f1da078efd78663d902dcff22e5484e6e3ba2cc8d68fe",
+      "DisabledHash": "99267a670c668bee2d2f5d57c37b2ded4eff8cc52f683d505e8bed1fc1b8c15e"
+    }
+  ]
+}

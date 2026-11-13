@@ -13,12 +13,13 @@ namespace HobbyDS9.UnityReview
     {
         private readonly ReviewUiModel model;private readonly ReviewWorkspace workspace;
         private readonly Func<VisualElement,string,Action,Button> button;
+        private readonly Action<Button,Action> bindButton;
         private readonly Action<Action> perform;private readonly Action<string,Action> confirm;
         private readonly Action<ReviewWorkspacePage> navigate;private readonly Action<string,string?,string?> selectFleet;
         private string? colony {get=>workspace.SelectedColony;set=>workspace.SelectedColony=value;}
         private KnownRouteOffer? route {get=>workspace.RoutePreview;set=>workspace.RoutePreview=value;}
-        public ReviewPlayerView(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate,Action<string,string?,string?> selectFleet)
-        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;this.selectFleet=selectFleet;}
+        public ReviewPlayerView(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate,Action<string,string?,string?> selectFleet,Action<Button,Action> bindButton)
+        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;this.selectFleet=selectFleet;this.bindButton=bindButton;}
         private bool Editable=>model.Current.Frame.Status.Phase==SessionPhase.Planning&&(model.Current.Frame.Demo==null||model.Current.Frame.Demo.Outcome==CampaignDemoOutcome.Active)&&!model.Current.HasPendingWork&&!model.Current.RefreshRequired&&!model.Current.Dirty&&!model.Busy&&!model.Closed;
         private static Label Text(VisualElement p,string text,string cls="console-copy",string? id=null)
         {var l=new Label(text){name=id??""};l.AddToClassList(cls);p.Add(l);return l;}
@@ -31,6 +32,7 @@ namespace HobbyDS9.UnityReview
         {
             root.Clear();var facts=model.Current.Frame.Strategy!;var columns=Row(root,"console-columns");
             if(page==ReviewWorkspacePage.Research)Research(columns,facts);
+            else if(page==ReviewWorkspacePage.Empire&&model.PlayableFleet)new ReviewWorldLedger(model,workspace,button,perform,navigate).Render(columns);
             else if(page==ReviewWorkspacePage.Worlds)Worlds(columns,facts);
             else if(page==ReviewWorkspacePage.Production)Production(columns,facts);
             else if(page==ReviewWorkspacePage.FleetOrders)Fleets(columns,facts);
@@ -42,59 +44,123 @@ namespace HobbyDS9.UnityReview
             var tabs=Row(main,"console-tabs");
             foreach(var tab in new[]{"science","engineering"}){var b=Btn(tabs,tab=="science"?"Science":"Engineering","research-tab-"+tab,()=>perform(()=>workspace.ResearchTab=tab));b.EnableInClassList("selected-tab",workspace.ResearchTab==tab);}
             var r=facts.Research;var d=model.ResearchInputs()!;bool edit=Editable&&d.Current(model.Current.Frame);
+            var directAllocations=model.ColonisationCycleCampaign;
+            void ApplyAllocation(Action action, Func<string> confirmation)
+            {
+                if(directAllocations)
+                    perform(action);
+                else
+                    confirm(confirmation(),()=>perform(action));
+            }
+
             if(workspace.ResearchTab=="science")
             {
-                if(!workspace.Compact)Text(main,"Invest in discovery","console-intro");
-                var grid=Row(main,"science-grid");grid.name="six-science-cards";
+                Text(main,"Science allocation · TOTAL 100%","console-intro","science-allocation-total");
+                var grid=new VisualElement{name="six-science-cards"};grid.AddToClassList("science-allocation-bank");main.Add(grid);
+                var colours=new[]{new Color(.94f,.69f,.42f),new Color(.73f,.67f,.90f),new Color(.62f,.85f,.98f),new Color(.94f,.69f,.42f),new Color(.73f,.60f,.80f),new Color(.52f,.72f,.83f)};
                 foreach(var card in r.Science)
                 {
-                    var c=new VisualElement{name="science-card-"+card.Discipline};c.AddToClassList("science-card");grid.Add(c);
-                    if(workspace.Compact)
-                    {
-                        c.AddToClassList("science-compact-row");var name=new VisualElement();name.style.width=145;c.Add(name);Text(name,card.Discipline.ToString(),"console-section");Text(name,"Level "+card.Level+" · "+card.ProgressPercent.ToString("0.##")+"%");
-                        var share=Text(c,(100m*d.Weight(card.Discipline)/600).ToString("0.##")+"%","console-metric");share.style.width=75;
-                        Btn(c,"−","science-minus-"+card.Discipline,()=>perform(()=>d.Adjust(card.Discipline,-30)),edit&&d.Weight(card.Discipline)>0);Btn(c,"+","science-plus-"+card.Discipline,()=>perform(()=>d.Adjust(card.Discipline,30)),edit&&d.Weight(card.Discipline)<600);
-                        Btn(c,"Details","science-details-"+card.Discipline,()=>perform(()=>workspace.ScienceDetails=workspace.ScienceDetails==card.Discipline?null:card.Discipline));
-                        continue;
-                    }
-                    Text(c,card.Discipline.ToString(),"console-section");Text(c,"Level "+card.Level+" / "+card.MaxLevel);
-                    c.Add(new ProgressBar{value=(float)card.ProgressPercent});
-                    Text(c,card.ProgressPercent.ToString("0.##")+"% to next level");
-                    Text(c,(100m*d.Weight(card.Discipline)/ResearchUnits.Scale).ToString("0.##")+"% Science share","console-metric");
-                    var controls=Row(c);
-                    Btn(controls,"− 5%","science-minus-"+card.Discipline,()=>perform(()=>d.Adjust(card.Discipline,-30)),edit&&d.Weight(card.Discipline)>0);
-                    Btn(controls,"+ 5%","science-plus-"+card.Discipline,()=>perform(()=>d.Adjust(card.Discipline,30)),edit&&d.Weight(card.Discipline)<600);
-                    var details=new Foldout{text="Breakthrough details",value=false};c.Add(details);
-                    foreach(var point in card.Breakpoints)Text(details,(point.Achieved?"✓ ":"○ ")+"Breakthrough "+point.Ordinal+" · threshold "+Units(point.Threshold));
-                    if(card.AllocatedWhileMaxed)Text(details,"This share stays in reserve at maximum level. Reallocate explicitly to use it elsewhere.");
+                    var discipline=card.Discipline;var canAdjust=edit&&d.CanAdjust(discipline);
+                    var c=Row(grid,"science-allocation-row");c.name="science-card-"+discipline;
+                    var label=new VisualElement();label.AddToClassList("science-allocation-label");c.Add(label);
+                    Btn(label,discipline.ToString(),"science-details-"+discipline,()=>perform(()=>workspace.ScienceDetails=workspace.ScienceDetails==discipline?null:discipline));
+                    Text(label,"Level "+card.Level+" · "+card.ProgressPercent.ToString("0.##")+"%","science-allocation-level");
+                    var bar=new ReviewAllocationBar("science-bar-"+discipline,d.Weight(discipline),colours[(int)discipline-1],value=>{
+                        if(Editable&&d.Current(model.Current.Frame))perform(()=>d.SetWeight(discipline,value));
+                    });bar.SetEnabled(canAdjust);c.Add(bar);
+                    var exact=new VisualElement();exact.AddToClassList("science-allocation-exact");c.Add(exact);
+                    Text(exact,d.PercentLabel(discipline),"science-allocation-percent");
+                    var lockButton=Btn(c,d.IsLocked(discipline)?"Locked":"Unlock","science-lock-"+discipline,()=>perform(()=>d.SetLocked(discipline,!d.IsLocked(discipline))),edit);
+                    lockButton.text=d.IsLocked(discipline)?"Locked":"Lock";lockButton.AddToClassList("science-allocation-lock");
+                    lockButton.tooltip=d.IsLocked(discipline)?"Keep this exact share fixed. Select to unlock without redistributing.":"Lock this exact share while editing other disciplines.";
+                    lockButton.EnableInClassList("selected-tab",d.IsLocked(discipline));
+                    var steps=new VisualElement();steps.AddToClassList("science-allocation-steps");c.Add(steps);
+                    Btn(steps,"−","science-minus-"+discipline,()=>perform(()=>d.Adjust(discipline,-30)),canAdjust&&d.Weight(discipline)>0);
+                    Btn(steps,"+","science-plus-"+discipline,()=>perform(()=>d.Adjust(discipline,30)),canAdjust&&d.Weight(discipline)<600);
                 }
-                Btn(main,"Equalize Science","integrated-equalize-science",()=>perform(()=>d.Equalize()),edit);
+                Text(main,(d.ScienceChanged?"Unsent Science allocation":"Accepted Science allocation")+" · total 100%. Locks keep their shares fixed; other unlocked shares rebalance proportionally.","console-copy");
+                if(!r.Science.Any(c=>d.CanAdjust(c.Discipline)))Text(main,"Unlock at least two disciplines to redistribute Science.","console-copy","science-lock-reason");
+                var scienceActions=Row(main);
+                Btn(scienceActions,"Equalize unlocked","integrated-equalize-science",()=>perform(()=>d.Equalize()),edit&&r.Science.Any(c=>d.CanAdjust(c.Discipline)));
+                Btn(scienceActions,"Restore accepted shares","science-restore",
+                    ()=>ApplyAllocation(d.ResetScience,()=>"Discard only the six unsent Science shares? Allocation locks and the separate R&D split remain."),
+                    edit&&d.ScienceChanged);
+                Btn(scienceActions,directAllocations?"Apply Science allocation":"Review all six allocations","integrated-apply-science",
+                    ()=>ApplyAllocation(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()),
+                        ()=>"Apply this complete Science plan?\n"+string.Join("\n",r.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%. The Science / Engineering split is a separate order."),
+                    edit&&d.ScienceChanged,true);
                 var receipts=new Foldout{text="Latest-turn research",value=false};main.Add(receipts);
                 foreach(var receipt in r.Receipts)Text(receipts,receipt.Category+" · "+Units(receipt.Amount)+(receipt.Discipline.HasValue?" · "+receipt.Discipline:""));
             }
             else
             {
-                Text(main,"Develop capabilities","console-intro");
-                foreach(var project in r.Engineering)
+                var overview=new VisualElement{name="engineering-current-summary"};overview.AddToClassList("engineering-summary");main.Add(overview);
+                Text(overview,"Engineering workbench","console-intro");
+                var current=r.Engineering.FirstOrDefault(project=>project.IsTarget);
+                Text(overview,current==null?"No active Engineering project":"Current project: "+current.Definition.DisplayName,"console-section");
+                if(current!=null)Text(overview,Units(current.Progress)+" / "+Units(current.Cost)+" Engineering points · "+current.MaturityPercent+"% · "+current.Band);
+                Text(overview,"One active project. Earned progress is retained when targets change. Unspent Engineering remains banked.");
+                var directEngineering = model.ColonisationCampaign;
+                if (directEngineering)
+                    Text(main,"Selecting or clearing a project keeps earned progress. Work advances on End turn.");
+
+                void SelectEngineering(string? target, string warning)
                 {
-                    var card=new VisualElement{name="engineering-project-"+project.Definition.DefinitionId};card.AddToClassList("console-queue");main.Add(card);
-                    var demo=model.Current.Frame.Demo!=null;
-                    Text(card,project.Definition.DisplayName,"console-section","engineering-project-heading");
-                    if(demo)
-                    {
-                        var designs=string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct());
-                        Text(card,"Demo construction: "+(designs.Length==0?"no ship designs offered":designs+" only")+". Other class unlocks are unavailable here.",id:"engineering-demo-construction");
-                    }
-                    Text(card,project.Band==EngineeringMaturityBand.Mature?"Completed":project.IsTarget?"Current project":Reason(project.UnavailableReason),id:"engineering-project-state");
-                    card.Add(new ProgressBar{value=project.MaturityPercent});Text(card,project.MaturityPercent+"% · "+project.Band,"console-metric");
-                    Text(card,"Project cost: "+Units(project.Cost)+(demo?" Engineering points":" research points"),id:"engineering-project-cost");
-                    if(!demo){Text(card,project.Definition.EffectSummary);Text(card,"Construction in this preview supports "+string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct())+". Additional class unlocks are not available here yet.");}
-                    var requirements=new Foldout{name="engineering-project-details",text=demo?"Details — authored effect & requirements":"Requirements & progress",value=false};card.Add(requirements);
-                    if(demo){Text(requirements,"Authored effect; the demo construction limits above still apply.",id:"engineering-effect-qualifier");Text(requirements,project.Definition.EffectSummary,id:"engineering-authored-effect");}
-                    for(int i=0;i<project.Definition.ScienceRequirements.Count;i++){var q=project.Definition.ScienceRequirements[i];Text(requirements,(project.ScienceSatisfied[i]?"✓ ":"○ ")+q.Discipline+" interval "+q.IntervalStartLevel+" breakthrough "+q.BreakthroughOrdinal);}
-                    Btn(card,"Develop project","integrated-develop-"+project.Definition.DefinitionId,()=>confirm("Develop "+project.Definition.DisplayName+"? Earned progress is retained when you change targets. Work progresses on End turn.",()=>perform(()=>model.Engineering(project.Definition.DefinitionId.Value,ReviewUiModel.NewCommandId()))),edit&&project.CanTarget,true);
+                    void Apply() => perform(() => model.Engineering(target, ReviewUiModel.NewCommandId()));
+                    if (directEngineering)
+                        Apply();
+                    else
+                        confirm(warning, Apply);
                 }
-                Btn(main,"Clear Engineering target","integrated-clear-engineering",()=>confirm("Clear the current Engineering target? Earned progress will remain.",()=>perform(()=>model.Engineering(null,ReviewUiModel.NewCommandId()))),edit&&r.Target.HasValue);
+
+                foreach(var kind in new[]{EngineeringProjectKind.NewCapability,EngineeringProjectKind.Refinement,EngineeringProjectKind.CivilApplication})
+                {
+                    var section=new VisualElement{name="engineering-kind-"+kind};section.AddToClassList("engineering-group");main.Add(section);
+                    var heading=kind==EngineeringProjectKind.NewCapability?"Breakthrough applications":kind==EngineeringProjectKind.Refinement?"Improve existing technology":"Civil applications";
+                    Text(section,heading,"console-section");
+                    Text(section,kind==EngineeringProjectKind.NewCapability?"Develop new capabilities from the required Science discoveries.":kind==EngineeringProjectKind.Refinement?"Refine existing technology through authored Engineering projects.":"Develop authored civil applications.");
+                    var projects=r.Engineering.Where(project=>project.Definition.Kind==kind).ToList();
+                    if(projects.Count==0)Text(section,"No projects of this kind are offered in this campaign.",id:"engineering-empty-"+kind);
+                    foreach(var project in projects)
+                    {
+                        var card=new VisualElement{name="engineering-project-"+project.Definition.DefinitionId};card.AddToClassList("console-queue");card.AddToClassList("engineering-card");section.Add(card);
+                        var demo=model.Current.Frame.Demo!=null;
+                        Text(card,project.Definition.DisplayName,"console-section","engineering-project-heading");
+                        if(demo)
+                        {
+                            var designs=string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct());
+                            Text(card,"Demo construction: "+(designs.Length==0?"no ship designs offered":designs+" only")+". Other class unlocks are unavailable here.",id:"engineering-demo-construction");
+                        }
+                        Text(card,project.Band==EngineeringMaturityBand.Mature?"Completed":project.IsTarget?"Current project":Reason(project.UnavailableReason),id:"engineering-project-state");
+                        card.Add(new ProgressBar{value=project.MaturityPercent});Text(card,project.MaturityPercent+"% · "+project.Band,"console-metric");
+                        Text(card,"Project cost: "+Units(project.Cost)+" Engineering points",id:"engineering-project-cost");
+                        Text(card,"Earned progress: "+Units(project.Progress)+" / "+Units(project.Cost)+" Engineering points",id:"engineering-project-progress");
+                        Text(card,"Requirements met: Science "+project.ScienceSatisfied.Count(value=>value)+" / "+project.ScienceSatisfied.Count+"; applications "+project.PrerequisitesSatisfied.Count(value=>value)+" / "+project.PrerequisitesSatisfied.Count,id:"engineering-requirement-summary");
+                        var legacyScoutEffect = model.ColonisationCycleCampaign &&
+                            project.Definition.DefinitionId.Value == "engineering.advanced-starship-engineering";
+                        if (legacyScoutEffect)
+                            Text(card,"Advanced Scout is unavailable in this campaign's construction catalogue.",id:"engineering-cycle-construction");
+                        else if(!demo)Text(card,"Check the construction catalogue for ships currently offered in this campaign.");
+                        var requirements=new Foldout{name="engineering-project-details",text=demo?"Details — authored effect & requirements":"Requirements & progress",value=false};card.Add(requirements);
+                        Text(requirements,legacyScoutEffect?"The authored effect below applies to the original Scout catalogue.":demo?"Authored effect; the demo construction limits above still apply.":"Authored effect. Ship availability depends on the campaign construction catalogue.",id:"engineering-effect-qualifier");
+                        Text(requirements,project.Definition.EffectSummary,id:"engineering-authored-effect");
+                        for(int i=0;i<project.Definition.ScienceRequirements.Count;i++){var q=project.Definition.ScienceRequirements[i];Text(requirements,(project.ScienceSatisfied[i]?"✓ ":"○ ")+q.Discipline+" interval "+q.IntervalStartLevel+" breakthrough "+q.BreakthroughOrdinal);}
+                        for(int i=0;i<project.Definition.Prerequisites.Count;i++)
+                        {
+                            var prerequisite=project.Definition.Prerequisites[i];
+                            var name=r.Engineering.FirstOrDefault(p=>p.Definition.DefinitionId==prerequisite)?.Definition.DisplayName
+                                ??"Required Engineering project";
+                            Text(requirements,(project.PrerequisitesSatisfied[i]?"✓ ":"○ ")+name);
+                        }
+                        Text(requirements,"Unlocking a new hull or component version leaves existing ships and published designs unchanged.");
+                        Btn(card,"Develop project","integrated-develop-"+project.Definition.DefinitionId,
+                            ()=>SelectEngineering(project.Definition.DefinitionId.Value,"Develop "+project.Definition.DisplayName+"? Earned progress is retained when you change targets. Work progresses on End turn."),
+                            edit&&project.CanTarget,true);
+                    }
+                }
+                Btn(main,"Clear Engineering target","integrated-clear-engineering",
+                    ()=>SelectEngineering(null,"Clear the current Engineering target? Earned progress will remain."),edit&&r.Target.HasValue);
+                EngineeringTurnReport(main,r);
             }
             if(workspace.ScienceDetails.HasValue&&workspace.ResearchTab=="science")
             {
@@ -108,11 +174,44 @@ namespace HobbyDS9.UnityReview
             var split=new SliderInt(0,20){name="integrated-research-split",value=d.ScienceUnits/30};split.SetEnabled(edit);aside.Add(split);
             Text(aside,(100m*d.ScienceUnits/600).ToString("0.##")+"% / "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"%","console-metric");
             split.RegisterValueChangedCallback(e=>perform(()=>d.ScienceUnits=e.newValue*30));
-            Btn(aside,"Apply R&D split","integrated-apply-split",()=>confirm("Apply "+(100m*d.ScienceUnits/600).ToString("0.##")+"% Science and "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"% Engineering? Other Science-share edits remain unsent.",()=>perform(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()))),edit&&d.SplitChanged);
+            Btn(aside,"Apply R&D split","integrated-apply-split",
+                ()=>ApplyAllocation(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()),
+                    ()=>"Apply "+(100m*d.ScienceUnits/600).ToString("0.##")+"% Science and "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"% Engineering? Other Science-share edits remain unsent."),
+                edit&&d.SplitChanged);
             Text(aside,"Science reserve: "+r.ScienceReserveConceptual);Text(aside,"Engineering reserve: "+r.EngineeringReserveConceptual+(model.Current.Frame.Demo!=null?" Engineering points":""),id:"engineering-reserve");
             Text(aside,"One Engineering project at a time. Progress and eligibility are checked by the campaign.");
             Btn(aside,workspace.ResearchTab=="science"?"Open Engineering":"Open Science","open-other-research",()=>perform(()=>workspace.ResearchTab=workspace.ResearchTab=="science"?"engineering":"science"));
             if(!edit)Text(aside,model.Current.Frame.Demo!=null&&model.Current.Frame.Demo.Outcome!=CampaignDemoOutcome.Active?"Campaign complete. Research is available for inspection; further changes are unavailable.":"Research changes are unavailable at this boundary. Finish pending combat, refresh stale authority, or submit/discard unsent orders before editing.",id:"research-readonly-reason");
+        }
+        private static void EngineeringTurnReport(VisualElement parent,ResearchOverviewSnapshot research)
+        {
+            var report=new VisualElement{name="engineering-turn-report"};
+            report.AddToClassList("console-queue");parent.Add(report);
+            Text(report,"Latest turn: Engineering","console-section");
+            var hasActivity=false;
+            foreach(var receipt in research.Receipts)
+            {
+                string line;
+                switch(receipt.Category)
+                {
+                    case "engineering-allocated":
+                        line="Points added to reserve: "+Units(receipt.Amount);
+                        break;
+                    case "engineering-spent":
+                    case "engineering-mature":
+                        var project=research.Engineering.FirstOrDefault(p=>p.Definition.DefinitionId==receipt.ApplicationDefinitionId)?.Definition.DisplayName
+                            ?? "Engineering project";
+                        line=receipt.Category=="engineering-spent"
+                            ? project+" — points spent: "+Units(receipt.Amount)
+                            : project+" — completed";
+                        break;
+                    default:
+                        continue;
+                }
+                Text(report,line);
+                hasActivity=true;
+            }
+            if(!hasActivity)Text(report,"No Engineering activity recorded for the latest turn.");
         }
         private static string ShipName(ShipDesignSnapshot d)=>d.DefinitionId.Value=="ship-design.source-cruiser"?"Cruiser":d.DisplayName;
         private static string Resource(string id)=>id=="resource.dilithium"?"Dilithium":id.Substring(id.LastIndexOf('.')+1).Replace('-',' ');
@@ -151,6 +250,8 @@ namespace HobbyDS9.UnityReview
         }
         private void Map(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
+            if(model.PlayableFleet){new ReviewPlayableMap(model,workspace,button,perform,confirm,navigate,bindButton).Render(root);return;}
+            if(model.FrontierPreview){new ReviewFrontierMap(model,workspace,button,perform,confirm,navigate).Render(root);return;}
             var main=Panel(root,"Strategic operations");var aside=Panel(root,"Selection / context","console-aside");
             var ordinaryColor=new Color(.61f,.76f,.87f);var wormholeColor=new Color(.72f,.64f,.9f);
             var legend=Row(main);legend.name="map-link-legend";
@@ -192,6 +293,7 @@ namespace HobbyDS9.UnityReview
         }
         private void Fleets(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
+            if(model.PlayableFleet){new ReviewFleetRoster(model,workspace,button,perform,confirm,navigate).Render(root);return;}
             var main=Panel(root,"Your fleets & ships");var aside=Panel(root,"Plot a course","console-aside");
             if(workspace.SelectedFleet==null||!facts.Fleets.Any(f=>f.FleetId.Value==workspace.SelectedFleet))workspace.SelectedFleet=facts.Fleets.FirstOrDefault()?.FleetId.Value;
             foreach(var f in facts.Fleets)Btn(main,"Fleet · "+NodeName(facts,f.LocationNodeId.Value)+" · "+f.ShipIds.Count+" ships"+(f.FleetId.Value==workspace.SelectedFleet?" · selected":""),"fleet-select-"+f.FleetId,()=>perform(()=>{workspace.SelectedFleet=f.FleetId.Value;route=null;}));

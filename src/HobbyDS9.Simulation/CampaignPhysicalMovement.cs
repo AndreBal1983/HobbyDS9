@@ -45,8 +45,13 @@ namespace HobbyDS9.Simulation
         internal static PhysicalMovementResult Execute(GameStateDto game,DefinitionCatalogDto definitions,
             IReadOnlyList<CampaignTravelOrderDto> orders,IReadOnlyList<CampaignContactKnowledgeDto> contacts,
             IReadOnlyList<CampaignDeclaredHostilityDto> hostilities,int freshness)
+            =>Execute(game,definitions,orders,contacts,hostilities,freshness,new WeightedNavigationGraph(definitions));
+        // Session-owned topology only; callers must supply the exact privately retained definitions owner.
+        internal static PhysicalMovementResult Execute(GameStateDto game,DefinitionCatalogDto definitions,
+            IReadOnlyList<CampaignTravelOrderDto> orders,IReadOnlyList<CampaignContactKnowledgeDto> contacts,
+            IReadOnlyList<CampaignDeclaredHostilityDto> hostilities,int freshness,WeightedNavigationGraph graph)
         {
-            var graph=new WeightedNavigationGraph(definitions);
+            graph.RequireOwner(definitions);
             var plans=new Dictionary<string,Plan>(StringComparer.Ordinal);
             foreach(var fleet in game.Fleets!.OrderBy(f=>f.FleetId,StringComparer.Ordinal))
             {

@@ -1,0 +1,5041 @@
+{
+  "status": "PINNED_ENGINEERING_VARIANT_SOURCE_INPUTS_ONLY",
+  "repository": "C:\\Users\\ambal\\.codex\\worktrees\\ui-fleet-cards-20261107\\HobbyDS9",
+  "sourceEngineeringScenario": {
+    "commit": "e365ec1ecf3d686b114548f805f68f73f742e89b",
+    "gitPath": "scenarios/ds9-slice/scenario.json",
+    "blobObjectId": "bcee2168529c90bbb41cec300b3f13fb08aeb231",
+    "bytes": 150142,
+    "sha256": "A9D631C84AB8689718C9F5199877694FA4B027AC774E3EE0F1A6B9BB31FA692F"
+  },
+  "inputs": [
+    {
+      "relativePath": "scenarios/playable-fleet-v1/scenario.json",
+      "bytes": 105886,
+      "sha256": "66574E1E1BF95C7B609EDB6AEAD7919C1BB66F6F413B2A71A1A1FCCF36614077",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150998
+      }
+    },
+    {
+      "relativePath": "scenarios/playable-fleet-v1/core.json",
+      "bytes": 946,
+      "sha256": "669F27F19696C78A3FF2E179F73C96B92048D720352E97EF21DF9909FE68EE9D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150994
+      }
+    },
+    {
+      "relativePath": "scenarios/playable-fleet-v1/physical.json",
+      "bytes": 1455,
+      "sha256": "8F899568E5952F091C2CA155074021D02553342120A97D119D65BAFAE095E9E7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150996
+      }
+    },
+    {
+      "relativePath": "scenarios/playable-fleet-v1/package.json",
+      "bytes": 317,
+      "sha256": "16ECAA2B27CB9102C8E2AD92F4DB6A98BF616BF3F1A49A7D91D830C0B79668A6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150995
+      }
+    },
+    {
+      "relativePath": "scenarios/playable-fleet-v1/playable.json",
+      "bytes": 251,
+      "sha256": "101BAC634444E9FE1CD31F728B32034CD49312FF1B0B78A059CABE244F61CBD1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150997
+      }
+    },
+    {
+      "relativePath": "scenarios/activities-v1/catalogue.json",
+      "bytes": 29180,
+      "sha256": "945BD888471CC38DDD6307FF7245072E61131752A1F55D22D7155B8D4178B17F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150964
+      }
+    },
+    {
+      "relativePath": "scenarios/colonisation-v1/catalogue.json",
+      "bytes": 30809,
+      "sha256": "E1DFC9066038007F87D6CD943DD1E899F0F7F842ED0B2F665A5CDB6579D0B067",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150973
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewExactPackageLoader.cs",
+      "bytes": 3427,
+      "sha256": "20D1D5C59C41918B8C0B493BD02E14902675D1299F77EE965782F4D6FA2F1085",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150211
+      }
+    }
+  ],
+  "unityMetadataInputs": [
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9.meta",
+      "bytes": 121,
+      "sha256": "371E539137D1066078DCE64909C9D44E2F23CE64EDDC30F11B8CCC7CB54A2FD3",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1970324838702154
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo.meta",
+      "bytes": 177,
+      "sha256": "154A36F2604FC9541AA834454219C5A345F7B1A9E61F716F05D88406A9A5C30E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 2251799815412812
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources.meta",
+      "bytes": 177,
+      "sha256": "F58ABFB5540F4A993EDD706CC998131AADF5D78D2595D39458D239529AAF75A0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 2251799815412814
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo.meta",
+      "bytes": 169,
+      "sha256": "B91CCDDEF4CCBA20606423671774707E6442A4BA1080BF22E3580D37A56DBBDF",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1970324838702160
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls.meta",
+      "bytes": 116,
+      "sha256": "C3D0CEE8DA9AE18F7D8EB6FAC3FFC5B9A401A659514BF0DA089D794C199E3050",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1688849861991506
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/CREDITS.txt.meta",
+      "bytes": 99,
+      "sha256": "DB391D0F7C474F050B73B61764CD53F26715A288E30D9CFDDA88682AC361D0B4",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 12384898976996437
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Constitution.meta",
+      "bytes": 116,
+      "sha256": "3F50B5722D869E42FC2A65EEA30D00D33E088A4C28419966FA931F69A2F8A140",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 9570149209889878
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Constitution/Models.meta",
+      "bytes": 116,
+      "sha256": "FF975264DA01680A799E63942F1693703A0FEE5C4F92D152624E4BF9F4240ADC",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 11258999070153816
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Constitution/Models/ConstitutionExplorer_LOD0.fbx.meta",
+      "bytes": 3055,
+      "sha256": "36E5C389D8EBA9838183A142E7FBFA12AF14442D3E0EEF64D0BCF56F01EB52A1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 2251799815412827
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Constitution/Models/ConstitutionExplorer_LOD1.fbx.meta",
+      "bytes": 3055,
+      "sha256": "453AD441953DC7A4890866AB80243FFEC7F565C1E980D241C1495BEA8AA46ED3",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1407374885281153
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Constitution/source-contract.json.meta",
+      "bytes": 99,
+      "sha256": "D90D8E2C84CF00B69F9F1322302736E8302037555E31C5E67E1A885A5E743238",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 3377699722255750
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Defiant.meta",
+      "bytes": 116,
+      "sha256": "5E4242E5204752CC1C36F490E1DD849A8CE1A355E9CB4E3D65F3F32A953E0134",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908570844
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Defiant/Models.meta",
+      "bytes": 116,
+      "sha256": "81281FEE9A976678A1F6A9C414AE49E80B606D5D9F73539E99B2A2FB3B232ED8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1688849861992159
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Defiant/Models/Defiant_LOD0.fbx.meta",
+      "bytes": 3055,
+      "sha256": "B4CB8906638A10E6D37A8B7954360D3CC9FDB344204797F96F0BD40CCC2FF4C3",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908570851
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Defiant/Models/Defiant_LOD1.fbx.meta",
+      "bytes": 3055,
+      "sha256": "12F4CD2DC5E570DCC543F8E0DCA53C7E575CC4CC4B8A3F78226F1B165454F8F0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860198
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Defiant/Textures.meta",
+      "bytes": 116,
+      "sha256": "A2833720EBE080881ADF35049A4D9E23A0E745925B0E81D1E335180A0E419270",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 3659174698966760
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Defiant/Textures/Defiant_Image_0.jpg.meta",
+      "bytes": 405,
+      "sha256": "0470FCB1A54345747CB739EBE03E24B4E87D13605097EE03F9C4BF9E6949729E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1407374885281515
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Defiant/Textures/Defiant_Image_1.jpg.meta",
+      "bytes": 405,
+      "sha256": "E86EA9113BEA69A358712B2B77E9219DE531A2866CE15EDE81749A0C7828AA7F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908570861
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Defiant/Textures/Defiant_Image_2.jpg.meta",
+      "bytes": 405,
+      "sha256": "2572BD3E92F6DA523EAD7A00F812BFB3F56E7B4A55BE8280A546ACE8F604B271",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908570863
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Defiant/source-contract.json.meta",
+      "bytes": 99,
+      "sha256": "F89492D46C5BB8B251EC427335A25AF07350E25D63FF9AACEE99C7A0CBC0499A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860209
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/INTEGRATION.md.meta",
+      "bytes": 99,
+      "sha256": "31A2E0D5F922B9229126FC917550C1179D3C7582575E9C02B9B334E59F23FD8D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1407374885281523
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Provenance.meta",
+      "bytes": 116,
+      "sha256": "66EF1B0D820F26EBBEDC88CAEB697202E558BA25D17A1F964C3A6C136E3BA1E4",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1407374885281524
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Provenance/RECEIVING.md.meta",
+      "bytes": 99,
+      "sha256": "5D12C1B494059CD0BEBADF866CFCCC766D6C90C71E84A679701B007A467EBA14",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908570874
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Provenance/cpu-validation.json.meta",
+      "bytes": 99,
+      "sha256": "5325EE0CBB5A5AEAB824551C653C00AC5B1025554165BA4C7961D0756FC2000C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 2814749768834814
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Provenance/delivery-contract.json.meta",
+      "bytes": 99,
+      "sha256": "1AE3C57DAD4B21A296A65D6EF932F86FE095C1E1E79664379A6203C949B1BCD2",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860224
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Provenance/fbx-normal-validation.json.meta",
+      "bytes": 99,
+      "sha256": "0A459DC1CC9F72EEF53079D3F40CAE472BBBE1DFA904CC4800608CBA780D7861",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860229
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Provenance/owner-defiant-provenance.json.meta",
+      "bytes": 99,
+      "sha256": "ECDD2F2257E3E09F0771C6E33D5CD1A1DED88660CAFD990034BEF9C4B7761FE9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860231
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/receiving-inventory.json.meta",
+      "bytes": 99,
+      "sha256": "B5CCBFC36461776FC1FCB07ABA8A6565C9C11CB26F31E63AE0B432BFC5A82362",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860233
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer.meta",
+      "bytes": 116,
+      "sha256": "49917A8CE16C77570D245962D6B6E527AD33D2BB8FFF4016CCB7678F9E5130B8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860234
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy.meta",
+      "bytes": 116,
+      "sha256": "B3ED52BC670C1611DC4E500FA76A763B05AFED1BBF650689936E2D06767661AB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149580
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/ATTRIBUTION.txt.meta",
+      "bytes": 155,
+      "sha256": "F3033902FE778F3723C40B064D80B43DEFB57702A9FD4ADE940E617D70BFCAD7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149583
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials.meta",
+      "bytes": 116,
+      "sha256": "D35D6697ACC4C0E20306CD00800CB68CDBC90D91F5BCC07B4792876432F6D212",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149584
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_AmberMetal.mat.meta",
+      "bytes": 185,
+      "sha256": "CE4643AF6952BBC0C0AEFF1D21F33267EEBF76157E8F623E46F24569793D502A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149587
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_BlueEnergy.mat.meta",
+      "bytes": 185,
+      "sha256": "7D30411B0F54B72BE28C9742009D1CAD3BF88900F42F911AB14C972BF20A36E1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149590
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_Ceramic.mat.meta",
+      "bytes": 185,
+      "sha256": "220C6DE672E3E98BCD538E4B5F8212DC342271ADA71C1990B68B8B0D03E2AC53",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149592
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_Engineering.mat.meta",
+      "bytes": 185,
+      "sha256": "85405C4E046470A6335BC28374518ED3BFA6E6E23331059781500F9A1F7969A9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149594
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_Graphite.mat.meta",
+      "bytes": 185,
+      "sha256": "70C7B85E2224E1F288152707D9BD1EC42128359F6E06DFF75A8A094D9D77DDEC",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149596
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_PlasmaAmber.mat.meta",
+      "bytes": 185,
+      "sha256": "7091D033F6A4411D2DE81FB96A9B8A282342F1A28E7E974F7D43E1C2047389CF",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149598
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_ReactorEnergy.mat.meta",
+      "bytes": 185,
+      "sha256": "AE19687ED7FCA20841AA88B206E1A9DBE758C161E564C928B5BC28EB13FB53C9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149600
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_RedEnergy.mat.meta",
+      "bytes": 185,
+      "sha256": "79754F00463F996B97CA18EB2700270819E3A07CC96286C311D900A6B1FBE311",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149602
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_SaucerLower.mat.meta",
+      "bytes": 185,
+      "sha256": "676718B9A8C0D225ACF9AC7A828F25ECFAD721FBF55DF7204B9DDE028E8F15F4",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149604
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_SaucerUpper.mat.meta",
+      "bytes": 185,
+      "sha256": "6EC912DB354766BD2A572D5016A6C216EBDEF22059F0B18D36AEB29FBC425FBA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149606
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_Titanium.mat.meta",
+      "bytes": 185,
+      "sha256": "454FD09408BF0C3E328BDC1305EDE1DA6183F40DBA209BF9EFCBED601EB5AD6C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149608
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Materials/Galaxy_WindowLight.mat.meta",
+      "bytes": 185,
+      "sha256": "397B144B4E2BCFA562757164771C0177EFB93464EEFBEC17AC55EF7CB70C7DC9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149610
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Models.meta",
+      "bytes": 116,
+      "sha256": "88438252F054AD9F3CD4364850F63D2FCFDAA330BFDF40ADB1E78B1C2444A5C0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149611
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Models/Deflector_Amber_oval_LOD1.fbx.meta",
+      "bytes": 4198,
+      "sha256": "BCFEF21B9686D9D481ECDBD7FBA72A0865B371A915681B43C5678371A3C3F780",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149614
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Models/Deflector_Blue_concentric_LOD0.fbx.meta",
+      "bytes": 3813,
+      "sha256": "54AF78F4DC9920E26223A32CA0183271D5C58AEB95182181386A2B19B74532DB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149616
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Models/Deflector_Segmented_survey_LOD1.fbx.meta",
+      "bytes": 4006,
+      "sha256": "6985827E0E855E8CD4480A85CF9200F6F9C4096BC457095808FA8F0E44D5CD87",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149618
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Models/GalaxyHullCutaway_LOD1.fbx.meta",
+      "bytes": 4778,
+      "sha256": "D27DE24B28DF9B320590446A2DCE82510A1EEF7252804EC946E2CB272A53304F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149620
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Models/GalaxyHull_LOD0.fbx.meta",
+      "bytes": 4778,
+      "sha256": "0DBA306BF3A7F14780C0811C279708C6940BF6AF6716C93FB34FDF03EA158070",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149622
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Models/GalaxyNacelle_Port_LOD1.fbx.meta",
+      "bytes": 4585,
+      "sha256": "F286A98FB7B90438FEEF62BF7C1DB7BDF3C05E364AF4F8CE7B84EF26DF494D9D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149626
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Models/GalaxyNacelle_Starboard_LOD1.fbx.meta",
+      "bytes": 4585,
+      "sha256": "03F140CDD7D069C719FC0F94F536C6F1CAF0FCB8ACB15CCAA1183544A7A97AA7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149628
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Models/SovereignNacelle_Port_LOD0.fbx.meta",
+      "bytes": 3814,
+      "sha256": "FFEDCFD8F974673F70EFBB9C93D31AE0965B4BA01545F8EFB3459D7DBC7A4F0A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149630
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Models/SovereignNacelle_Starboard_LOD0.fbx.meta",
+      "bytes": 3814,
+      "sha256": "09C984DC343D45A8C3DFAEC1C3E109748F72BCE0377FD515FC1E90D3651F2CE1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149632
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Models/WarpCore_LOD0.fbx.meta",
+      "bytes": 3820,
+      "sha256": "8DE6F7561A6739EDFBF7C19A0631A5580F1A5AC98BFA5FEC373C9656E30A6CE2",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149634
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/RECEIVING.txt.meta",
+      "bytes": 155,
+      "sha256": "F38341D5B766A4FAE0BCA841A40C7D19D4AA68906C44CF7F488A24F13B2CF1CF",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149636
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/SOURCE-LICENSE.html.meta",
+      "bytes": 155,
+      "sha256": "464E32D8C8660784ED2BA26427830224304372C1F23D65AEBB9A50A81F8CFCC6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149638
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Textures.meta",
+      "bytes": 116,
+      "sha256": "D44C3F7748050FA29418B4599315EDC954411EFB8F71FF26AE29988170680C17",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149639
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Textures/Galaxy_Ceramic_Albedo.png.meta",
+      "bytes": 405,
+      "sha256": "DA005C16CF86587644EE60904EEC0CBFE5F006637E4398F9B90852674367D05F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149642
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Textures/Galaxy_Engineering_Albedo.png.meta",
+      "bytes": 405,
+      "sha256": "E76394AAAB25317ACD5134B1678500F5903B2BED55A9752BFDE9FCA636CDA0A6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149644
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Textures/Galaxy_SaucerLower_Albedo.png.meta",
+      "bytes": 405,
+      "sha256": "41B7BD26F20455434651DB1E5496B4084EFD6B443ED4AFD373DBC359C6FFF442",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149646
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/Textures/Galaxy_SaucerUpper_Albedo.png.meta",
+      "bytes": 405,
+      "sha256": "94D7ACCD13E2BC76663BEC57466C6C3140AD4CD8C3D218251F6EFB8515E7C815",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149648
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/asset-contract.json.meta",
+      "bytes": 155,
+      "sha256": "9B18AFAC5A00317DA5DC89573559788726C8F95E97A5E1688A9EAAB9C2F43D5B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149650
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/delivery-manifest.json.meta",
+      "bytes": 155,
+      "sha256": "1241A5C32B5481B8B85EA6F126608C76E35F2F5B451EE42398AA3B5962922064",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149652
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/receiving-inventory.json.meta",
+      "bytes": 102,
+      "sha256": "C6CB3A48B76251D98B52198A9438CB35D9BDBC378269B9ABA80C01DD835143E6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149654
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation.meta",
+      "bytes": 169,
+      "sha256": "05DBA80AF005676215F8E4B16B8DECAB8568E69EAE759BB10235BD46A429BC8E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149655
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Materials.meta",
+      "bytes": 169,
+      "sha256": "70764EFE743BBFD501E39E3BF1B79472F72AFD95296CFC64DB2D08F052FE78D6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149657
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Materials/FED_Collector_Red.mat.meta",
+      "bytes": 185,
+      "sha256": "C64C4AED3D1BCA986F1A11D02483E8842A4C49919CA3C6F93A5CD1791BF2CBE3",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149661
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Materials/FED_Deflector_Amber.mat.meta",
+      "bytes": 185,
+      "sha256": "EA8614C9A1B92C6FA833063A575750D110704EEEE171221037E077E43B10B52A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149663
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Materials/FED_Hull_Pearl.mat.meta",
+      "bytes": 185,
+      "sha256": "B80E28F9EAD194EEA320F2DF700B92C004518A096BABCDDA0C3E256455DA73EB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149665
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Materials/FED_Panel_Silver.mat.meta",
+      "bytes": 185,
+      "sha256": "9E0BC5495C67D8D9205C1B532D678F34815B841224B2DC5CE003E50C293A5093",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149667
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Materials/FED_Panel_Slate.mat.meta",
+      "bytes": 185,
+      "sha256": "C5C1272C2E84A78C070BF84FEDF6B0AF3BF753E791204A90C2CA6B50F9E5538B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149669
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Materials/FED_Phaser_Bronze.mat.meta",
+      "bytes": 185,
+      "sha256": "52334CB7DA523BBABF64281623DE8C93E28DC36B6585A51B38C41232F96FFAAA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149671
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Materials/FED_Recess_Graphite.mat.meta",
+      "bytes": 185,
+      "sha256": "0A069CA9CCC40A56D0875790BC15D037584908D1F286016A9FD37C868EF67623",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149673
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Materials/FED_Warp_Blue.mat.meta",
+      "bytes": 185,
+      "sha256": "EAEA15B8CA3DBCCCD90510616B78DAD0FB9A76A734B0D685CE16E39D49A5B7B9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149675
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Materials/FED_Window_Ice.mat.meta",
+      "bytes": 185,
+      "sha256": "89FAEECBBD9D3E67760A7C7A9DFA304507B3080F78A432C8EF383FAF97DF7399",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149677
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Models.meta",
+      "bytes": 169,
+      "sha256": "B8E8DD1B8736D30C1816E60CB14687CE4A424A37BF4EC09044ED20D74862149F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149678
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Models/compact-escort_LOD0.fbx.meta",
+      "bytes": 3055,
+      "sha256": "19F8027BAB7837F90D6B0D28FA848452F1AFBEC4D6D4D71F8FBA110BFCCB789C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149681
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Models/compact-escort_LOD1.fbx.meta",
+      "bytes": 3055,
+      "sha256": "26506E5B674CC5613135715F20CE6539734D75371B9EBD4C7B65C7D1BF8B2A10",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149683
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Models/compact-escort_LOD2.fbx.meta",
+      "bytes": 3055,
+      "sha256": "791E3D35733C5F8C1DA623BBC8BC4EECA3D633AF989CA353DB16DA8090B441B7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149685
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Models/exploration-cruiser_LOD0.fbx.meta",
+      "bytes": 3055,
+      "sha256": "C6FFF333B374A966AD8C0DBE0B7399697D05E6B2E22451872CFD1FAF30464EC7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149687
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Models/exploration-cruiser_LOD1.fbx.meta",
+      "bytes": 3055,
+      "sha256": "838FFCCD71F4F11097F9548F79E2B854488BFE8FA4546CA5500054FAB23AC1D9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149689
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Models/exploration-cruiser_LOD2.fbx.meta",
+      "bytes": 3055,
+      "sha256": "0CFBBDA9788F718BE04FAD93EA14E93E2927D2E9AD1396D857BBF6764978F2C9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149691
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Models/patrol-frigate_LOD0.fbx.meta",
+      "bytes": 3055,
+      "sha256": "8D1D965538A0868D686166E03FADA8E167F46AF18AE51B44100A40E83899F086",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149693
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Models/patrol-frigate_LOD1.fbx.meta",
+      "bytes": 3055,
+      "sha256": "B24CA33EDC9DB02EF0D6A21F532EE54F8ADAEC71451F9F2606F2901157023311",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149696
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Models/patrol-frigate_LOD2.fbx.meta",
+      "bytes": 3055,
+      "sha256": "709ED4E8E7B287B2E2E5B88A007198AFE5509045D3BB2CBBA5BAB97370EBD09B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149698
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Prefabs.meta",
+      "bytes": 169,
+      "sha256": "5F16E69386507F14026FA67C0FC44DA6147A2D9BFFCEF9E2B2251112DD9645E7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149699
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Prefabs/compact-escort.prefab.meta",
+      "bytes": 151,
+      "sha256": "13FB2C191D89C65FF24CD0B5220082B06C25560EC6422B7AD7D2FBD6359634E0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149702
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Prefabs/exploration-cruiser.prefab.meta",
+      "bytes": 151,
+      "sha256": "580D68F0B2F2A2E24F731CEE9AAE37644436CC4960DFDC0DF774A944FF6E48F6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149704
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Federation/Prefabs/patrol-frigate.prefab.meta",
+      "bytes": 151,
+      "sha256": "45AEB30BBC88D8F5943E1D20E62C678E5B094ED008D5A68F5721846FEB9E1B37",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149706
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/PreviewStudio.shader.meta",
+      "bytes": 201,
+      "sha256": "4EF13105996E2461DA48DEF76D7C74CAE62CCB930D7DEB40F6B1F6A62D64831A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149708
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Runtime.meta",
+      "bytes": 177,
+      "sha256": "A6F8F1BD840115AEF92BDCB536F58751D4FE097A9D81E996BD4310AD34A80C4D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149709
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Runtime/ActivityHullModel.cs.meta",
+      "bytes": 254,
+      "sha256": "254E2050D3BBFDFB9BF8C423022103544CAEB700F5977F94FF8CCDF0773562BB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149713
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Runtime/ActivityHullPresentation.cs.meta",
+      "bytes": 103,
+      "sha256": "0FBCAEC0D575D2FBA40B37F00BBB760DDFD8B6FFC7DEB8C983B9A83EFDE42E3F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149715
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Runtime/DesignerArtReference.cs.meta",
+      "bytes": 62,
+      "sha256": "B1EB7131A3787465BDF753EF84CC5930726D6EF7BE3D05EE6CAD94119679FE28",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149717
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Runtime/HobbyDS9.ArtDemo.asmdef.meta",
+      "bytes": 170,
+      "sha256": "F3C6D326F73BAFE1C1AE89E1FB46E4F4BCD470394704F2EBB4211430C990504D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149719
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Runtime/ShipPreviewStage.cs.meta",
+      "bytes": 251,
+      "sha256": "3AB13278A2238FDC7084AEBC8931EC3F3973426DA2D1266BEE0F40AC1D4B45C3",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149721
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Runtime/ShipVisualCatalog.cs.meta",
+      "bytes": 251,
+      "sha256": "6C3A6218A0B952B1E3DCC817B364A4514B98D8680FCC16E9F9B97E3A8815621E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149723
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Tests.meta",
+      "bytes": 177,
+      "sha256": "F84F19C0410B4675ACF751F67C46B4A25E66980811B98647D9091590452DE06C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149724
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Tests/Editor.meta",
+      "bytes": 177,
+      "sha256": "62EC95F5D555F2FE678A2FB92C567C30858808B5FAD1A9E95EB28555F1ECB35F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149726
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Tests/Editor/ActivityHullPresentationTests.cs.meta",
+      "bytes": 62,
+      "sha256": "6AF06EAFCC0CF6821B5F1CCB8D5C68DEB756DB9D7CE89E42EE3813DC99DFBE46",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149729
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Tests/Editor/HobbyDS9.ArtDemo.Tests.asmdef.meta",
+      "bytes": 170,
+      "sha256": "9A3BCDA6399FE0E5DC16D504243B9D027BC7FCC1A3ED71D71A86882FBD8391D8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149732
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Tests/Editor/ShipPreviewStageTests.cs.meta",
+      "bytes": 251,
+      "sha256": "BDB13917C50BB146BE00A7C62CA564B4E966A5066C7DC42D65C7BA421DBCD6D8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149734
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/runtime-manifest.json.meta",
+      "bytes": 162,
+      "sha256": "FF4F4D0EE868CE56CE9C1AFD093A06E95C3541F532808DA9D18A9C942CD6FBCE",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149736
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/source-manifest.json.meta",
+      "bytes": 162,
+      "sha256": "24649F99A19597087DBF52C6D36813BD59F71E91A588C51C0B111D1F635AD2BC",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149738
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio.meta",
+      "bytes": 177,
+      "sha256": "BF3FAA69575B0EEE1F3CBD722052BB67B03F25776676C7DFBF27834D1B327362",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149739
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music.meta",
+      "bytes": 177,
+      "sha256": "E3F7B40B99E148521D9D0FFEAE7A72438B8DA5EDC87AF66F703D0C65B670D9C1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149741
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Across the Stars.mp3.meta",
+      "bytes": 508,
+      "sha256": "DC707828623710B4C62B753F7C274009BF0524138F40334B0CA0AFC4DE05BE68",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149744
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Bajor 1.mp3.meta",
+      "bytes": 508,
+      "sha256": "437D7E48BBF440BA884F10A6B3433BBEB3C9D427B460C77B61EE2AAA761F1AFB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149746
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Bajor 2.mp3.meta",
+      "bytes": 508,
+      "sha256": "69531FD0368C0C4CAA955E08B8EEBEE14D40BCB30D1419AF12E31744B3C605EC",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149748
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Cardassia 1.mp3.meta",
+      "bytes": 508,
+      "sha256": "608001C9BA3FE1D4619E45CF90E2C92673ECBC3CA2A0F86F6F18DC1419B7FDE8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149750
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Deep Station track 1.mp3.meta",
+      "bytes": 508,
+      "sha256": "478060845283D83BB185D7DC4724C3ACFA6BBD55A7FBBE01C0974CD33BB06EC2",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149752
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Deep Station.mp3.meta",
+      "bytes": 508,
+      "sha256": "E323674E3E1653C2DE7E15E63A1ADBBB8C6D7AD44D47A0C46D15DCD75AFD17D0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149754
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Klingon 1 - no' wIqaw.mp3.meta",
+      "bytes": 508,
+      "sha256": "1AB1196EFB4EBD33295910CFABA707F4FD0D778EF4E2E3F2B416190A47A8E295",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149756
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Quiet Frontier.mp3.meta",
+      "bytes": 508,
+      "sha256": "FDFD2073CFA5FEBE4ECDA3B8B84B668AFAF3ECB1CC9052674FC6ABEA150ADA79",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149758
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Secrets in the Courtyard.mp3.meta",
+      "bytes": 508,
+      "sha256": "787DDE54A4BAC3A7765761AE4DBA69D2AB07E81F0633F18F35CB92B809D195E7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149760
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX.meta",
+      "bytes": 180,
+      "sha256": "DE08045F0CC37931FF3458A236E84FA6D3959605D1BEFC0A1B0AD70D92561FD6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149761
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS.meta",
+      "bytes": 180,
+      "sha256": "02C4E8861714BB4DAE0D57E30D28A09F9EA187F9825392B2ABFF04B8C0D0F6C0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149763
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/README.md.meta",
+      "bytes": 62,
+      "sha256": "2709073840199B9607BB12611D66E0D18AD960DE54680B542E873CE567F709F9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149767
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-access-denied.wav.meta",
+      "bytes": 508,
+      "sha256": "DE2A293878083F1096E1875E25AC4863B3F6604938A6CE41967371CF1B2B2322",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149769
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-input-successful-1.wav.meta",
+      "bytes": 508,
+      "sha256": "51071085B7B520700D1A796D5EAF4EA5DB0F5039B8C299D33CF6A37B29A49260",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149771
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-key-beep-1.wav.meta",
+      "bytes": 508,
+      "sha256": "9DAA5161FFF4C103A30CF5959759EA0F6BEAA037BFA4EB828BFCA17426640A6B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149773
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-lcars-search.wav.meta",
+      "bytes": 508,
+      "sha256": "A846664FFC6F187D704E54D8AC4DAD85333AC51FC34735F604120E964B656BBA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149775
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-processing-1.wav.meta",
+      "bytes": 508,
+      "sha256": "0C63317E065D6B3278E30828F3D774318A90FB34D35556DDCF69930AF135149C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149777
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-screen-display-1.wav.meta",
+      "bytes": 508,
+      "sha256": "93D369FD85B0A09950DE0E95354B214A80A9185C279A0B23A40AFA6D99B76BC1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149779
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Diagnostics.meta",
+      "bytes": 177,
+      "sha256": "1CEDA0EA8817F22E25C9A32826A708D81BF93D2F39E543551FD61E69AA3B1242",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149780
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Diagnostics/NativeInputEvidence.meta",
+      "bytes": 177,
+      "sha256": "6207778CF792197F34B378C9EDAE71C99AF13EEC931E8A4243B7352D33C7B76C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149782
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Diagnostics/NativeInputEvidence/HobbyDS9.NativeInputEvidence.asmdef.meta",
+      "bytes": 62,
+      "sha256": "4A7628EFD128278D68959CC29498F00FB6E71673E9DE8EAA309436453248A945",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149785
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Diagnostics/NativeInputEvidence/NativeInputEvidence.cs.meta",
+      "bytes": 62,
+      "sha256": "56BE969F1A4BE3FE234DB5B8A5C9196F1E9A6D8DDF1B3F1CA86ABAE4E551EFDA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149787
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Diagnostics/NativeInputEvidence/link.xml.meta",
+      "bytes": 62,
+      "sha256": "EF075C545A4816C5FCB13B06BEB1981EE6F8DB388E1E81FD6C1B0EEDFD346AC7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149789
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Editor.meta",
+      "bytes": 121,
+      "sha256": "3BC42A501DEB05121FB4A081235298DA96BB92EEFFCAA446B0EFB51F172BFE87",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149790
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Editor/CampaignBlueprintCapture.cs.meta",
+      "bytes": 60,
+      "sha256": "B38A65A051D81F545B1B1F3BA3BC1702EB948362A7D0CA30D56D25DB2CCBFC89",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149793
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Editor/ClientBuild.cs.meta",
+      "bytes": 62,
+      "sha256": "FAE5DFBB7F11DADA62A6BE2026341BA72D7915F6B1BCDFFAD378F9D83D932907",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149795
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Editor/HobbyDS9.UnityClient.Editor.asmdef.meta",
+      "bytes": 62,
+      "sha256": "69E42A0141B318ADFC01DBE5D34AD75445C6BF15C37FCA57FE4CFC324D7390B5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149797
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Editor/ShipDesignerCapture.cs.meta",
+      "bytes": 62,
+      "sha256": "6C3799EE082682C749FB3C4072077CA263F4AF2CBD53E97370D79D2CF5B95F26",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149799
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Editor/StrategicPrototypeCapture.cs.meta",
+      "bytes": 62,
+      "sha256": "A30A6D88F20EF3399768D8E83BA7D1648EABB4A3B27E02E7CD5940883A66735C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149801
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources.meta",
+      "bytes": 121,
+      "sha256": "33D707E9AA183817888511B7612EAFB9AEC0B914EEBEF90DECCA609E7961C24E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149802
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ActivitiesV1.meta",
+      "bytes": 121,
+      "sha256": "554882305A2FF7385B4D2C37E576FBBC4190EFCB3790D7FAAFE8096919BCE2D6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149804
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ActivitiesV1/activities.json.meta",
+      "bytes": 62,
+      "sha256": "E05781712E49F9704BD86278A0ADC3AAFAD5EBE017F9CD7B876703E8C9A20302",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149807
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ActivitiesV1/catalogue.json.meta",
+      "bytes": 62,
+      "sha256": "416D6EBA2E776B5FBBA0D30921A27390F962368EC05F268504AD9AC5D15B3D45",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149809
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ActivitiesV1/ready-classes.json.meta",
+      "bytes": 62,
+      "sha256": "5D558D6C906EB0A25030433BB14B7077CBD279BA50B973F33352AF42D84291C7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149811
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ActivitiesV1/support.json.meta",
+      "bytes": 62,
+      "sha256": "93DA859E9CE5B7C23F77E9200550E27C94C696218D8CFF8D017222B95A785061",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149813
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/HobbyClient.uss.meta",
+      "bytes": 313,
+      "sha256": "E8435F5A536BFF479C8D50EC908494C12B2D4E97A8A9EDD5422BF498E13AE9BF",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149815
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/HobbyTheme.tss.meta",
+      "bytes": 313,
+      "sha256": "3C3DA73A7247DE9A7668518F14608757695CBF64D81B359FF2C4E60CA5872268",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149817
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/Lcars.uss.meta",
+      "bytes": 289,
+      "sha256": "F20A45C20C2BB1375A9ECC5D1190CD4CFB62A5E3D99A0FA40154CDCB65504ADE",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149819
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/LcarsSfxCatalog.asset.meta",
+      "bytes": 194,
+      "sha256": "9111532CAD553C37ED65F10F894A2B00C835C6F86B789C7CE91F635FE0A560B4",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149821
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/LcarsTokens.uss.meta",
+      "bytes": 289,
+      "sha256": "7BC2A24B83E3588B2965B9496F4D070E560AF7E7F0F7BF7A43F2A9A2268FAE5E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149823
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/MusicCatalog.asset.meta",
+      "bytes": 194,
+      "sha256": "56F9EF41E3FCCE9FB13AAD60A26224771012F3C7CEA1394172B7CC68667405CD",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149825
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ShipDesigner.uss.meta",
+      "bytes": 289,
+      "sha256": "7D4057D63EB728B2008B5822EF0E997CD9E885E2BABC927C7B9064B929479984",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149827
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ShipDesignerGraphics.asset.meta",
+      "bytes": 115,
+      "sha256": "5CF24961802452C545C43C0820B03F47F264141908CABA8C64B6CFAAA828228D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149829
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ShipOverview.png.meta",
+      "bytes": 263,
+      "sha256": "077CA63D4EBD6CB62A102447D119513DFA54C04BEDD4AA3004EA912EB4FD84D6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149831
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ds9-slice.json.meta",
+      "bytes": 62,
+      "sha256": "75C28CAE9B37005D7B325F9E7F237F5C21CD761B67D8B2DEC073853F98E21C78",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149832
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ship-design-fixture.json.meta",
+      "bytes": 162,
+      "sha256": "BAEC8C7FF490528ACE2910871E650C61338D618B0499AC2361CD977619E056F0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149833
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review.meta",
+      "bytes": 121,
+      "sha256": "D4D5BDE2F62296D48AE99C29D5AB6C05221D703E795EC09395EA93E587E1A7E5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149834
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor.meta",
+      "bytes": 177,
+      "sha256": "A6327D62C3DBC5FE43AA3C868C7CDFC8BF351CF1C0CCF2B1CDEC43E5625E6A06",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149836
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/FrontierPreviewBuild.cs.meta",
+      "bytes": 62,
+      "sha256": "5318EC11923DE9FDF65DC374E42700F6B0F5FBF2D60A96F119D70F9E6A20B628",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149839
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/GeneratedCampaignBuild.cs.meta",
+      "bytes": 62,
+      "sha256": "060B2677FFCF8694A9CB9001C75ABA4EEC41FC10A4182A4D053D44E98E307E2F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149841
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/GeneratedGalaxyBuild.cs.meta",
+      "bytes": 62,
+      "sha256": "B79BAB99F102C0C30BC1F2F1E9CF2A3F4FBFB193B0C934445805393EAAC5DCBF",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149843
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/GeneratedGalaxyV3Import.cs.meta",
+      "bytes": 62,
+      "sha256": "2AC3ABD1C8B37BB44CAED84810D5AB75636902924A6A13C2EE9B3712606EE37B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149845
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/GeneratedStaticAstronomyCampaignBuild.cs.meta",
+      "bytes": 62,
+      "sha256": "D8F7679963FBB50E8954AD35759B8DF3E7A989C963DF75B264DD9100FB269A05",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149847
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/HobbyDS9.UnityReview.Editor.asmdef.meta",
+      "bytes": 62,
+      "sha256": "2841DDA0375BC92DD8F21877C83A029DBFC662C69351692173477CFE70862E11",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149849
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/IntegratedBuild.cs.meta",
+      "bytes": 62,
+      "sha256": "34C023B1DC309EAB71B1CA5D73EF0019C26EDA7594230F0151E23953C0B901C3",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149851
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/PlayableFleetBuild.cs.meta",
+      "bytes": 62,
+      "sha256": "58D0184FA6B1D74B199AD8899444590E51045012A15CD215AF9CA8997F586EA5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149853
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/ReviewBuild.cs.meta",
+      "bytes": 62,
+      "sha256": "68C6A2C28854A4A527B22B07C98C09DB07A57F3E99391D3746F593BD93E06F3D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149855
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Editor/SingleplayerDemoBuild.cs.meta",
+      "bytes": 62,
+      "sha256": "BD63AFD3CC7E335BCA13936F410DC18419E6073449814D9F791F6DCFA1D0D9AA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149857
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources.meta",
+      "bytes": 121,
+      "sha256": "8CCE6E1FC5DD9471711BA7737E68EEF32563CFA09FCD0779543F1DAD7564DFBD",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149858
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation.meta",
+      "bytes": 80,
+      "sha256": "DF700A4DFBA8BD0030B69B89C233FA7EAE83CBD844E9695D4723F34A926DCDF5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149861
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian.meta",
+      "bytes": 80,
+      "sha256": "EE13A2EA517965A75311298B5E6482E47D231E3B33DF78B01B6CAF11F348757B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149863
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian/cardassian-cruiser.mtl.meta",
+      "bytes": 60,
+      "sha256": "6C7AF961B539F115B8920C582A3D59D2006DDD12DEF0595D2DAF8D6F48E8B621",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149866
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian/cardassian-cruiser_LOD0.obj.meta",
+      "bytes": 60,
+      "sha256": "18C0B78FDF70EBC58AB9E6451AF3406E1DB43AD83B2D8A96D752AAEDA8409B69",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149868
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian/cardassian-cruiser_LOD1.obj.meta",
+      "bytes": 60,
+      "sha256": "9EF1DF36D878D9CFD945C53D137CADA24FDCDC828DE6F34B6BDBFD02D4C2E8D3",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149870
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian/cardassian-cruiser_LOD2.obj.meta",
+      "bytes": 60,
+      "sha256": "0AB58246BB22C461AFC626636F17D135D9F6FA86283315A0CAB6B93495339040",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149872
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian/manifest.json.meta",
+      "bytes": 60,
+      "sha256": "AD3C2E01C08C3EC22365FE0B8026897DF1D605FF8D2A4FDF17CC40214A57995C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149874
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Effect.shader.meta",
+      "bytes": 62,
+      "sha256": "B2F51EF251A027375F61EE53D6F0803502872803589DA0DE38BB01DAEFB6AC25",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149876
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationCycleV1.meta",
+      "bytes": 177,
+      "sha256": "F21BD3D5B810204CFA2B03EB6C441E948E16CCA4B16B76EBB21CB48586241C91",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149877
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationCycleV1/cycle-policy.json.meta",
+      "bytes": 162,
+      "sha256": "5BF9D932C99A0B51C4B11392F9CB1671102692ED2D27A01D8748F69638DC4B6F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149880
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationExpansionV1.meta",
+      "bytes": 177,
+      "sha256": "5FB96A5D73AF1829542488BE4C2882983CA1B78DE8EC9F137C4883DF6B6EBA3A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149881
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationExpansionV1/planner.json.meta",
+      "bytes": 162,
+      "sha256": "62A2EDE39FFBCB8D61B93C99660C9C137E8C27A48FA954E29F49E928D8514FFD",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149884
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRepeatV1.meta",
+      "bytes": 80,
+      "sha256": "1221277E44AA237D0CCF94D776479DE6ED9DD17C4E46E9316F14B5AA0FFF5E28",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149885
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRepeatV1/repeat-policy.json.meta",
+      "bytes": 62,
+      "sha256": "59B2D0047CF5CF7BEA3D59902F231D7F21FBDD31BDDDCA4A31C50E840CAA4F7F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149888
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRosterV2.meta",
+      "bytes": 177,
+      "sha256": "19E039DAEF46842FA663FD65A1FE538B3255D4689D9C2A1584C1E21C025B8628",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149889
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRosterV2/roster.json.meta",
+      "bytes": 62,
+      "sha256": "A67F2D85FDE82F0D1725BCEDEDE011BF0AEFF5A819F70658567545213C9DD981",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149892
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationV1.meta",
+      "bytes": 177,
+      "sha256": "299BE5099E6F5B6C4445E07E67BE6706300182B31E9420EC3AFB65F09B8F5434",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149893
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationV1/catalogue.json.meta",
+      "bytes": 162,
+      "sha256": "AAC4642B6992900BA2CACE1E5CAE99F63078A47AF6242963010BEF39DC57297F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149897
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationV1/ready-classes.json.meta",
+      "bytes": 162,
+      "sha256": "D31FA42281CD1CF1A84E728DA6C327D260DD68D9B806E74C3355226408BF1A03",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149899
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationV1/settlement.json.meta",
+      "bytes": 162,
+      "sha256": "6E76CC8C09919084D09F1D657219872B784D33E21793E66212B3ECCA588C0247",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149901
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationV1/support.json.meta",
+      "bytes": 162,
+      "sha256": "CCFDF95245BA3A618659B89B5D1850593E8C920F6D841D476DDCBBCA0B10111F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149903
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt.meta",
+      "bytes": 121,
+      "sha256": "58BDBE45CE6D0BFF51192D1E0505C09A073BB1E73EAE733FB0071EAEE2E3D560",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149904
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/ATTRIBUTION.txt.meta",
+      "bytes": 106,
+      "sha256": "43A999A9195C1D776EBAC0CBF120DC057EB8D466EB55C93575D2DD457CBA55E1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149907
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/constitution.png.meta",
+      "bytes": 281,
+      "sha256": "4234AC94494B5F6C04F876680EF490D9E99AE33FF18C8C117226D3751CA87769",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149909
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/defiant.png.meta",
+      "bytes": 281,
+      "sha256": "C1686E31B452F20694063ED091D15162DA3E18978E509863EEB982FB3ECCBE36",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149911
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/fusion.png.meta",
+      "bytes": 281,
+      "sha256": "15153DF5D9D4D4180C5B393E4407ABC217C588807AFD7912E8C3F5BC83821318",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149913
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/galaxy.jpg.meta",
+      "bytes": 281,
+      "sha256": "76A95CFA4CDF0CEC3823F77F51943846D4E95D2B8066BA0783F716757128675F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149915
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/hydroponics.png.meta",
+      "bytes": 281,
+      "sha256": "CCAD03CA9C5259F3369D9CCB02DCE451FC60BDEC2A2667E1C53356D35E988455",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149917
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/kit.png.meta",
+      "bytes": 281,
+      "sha256": "B84F5238BA649CFBBC19073D5CA6ED1A0622EC0F4447802D25DDCE9F31B7EEAA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149919
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/mine.png.meta",
+      "bytes": 281,
+      "sha256": "24F9E19240327059E2E61E8399488AAC289CA0710BB627E3ABCEFE77E2ED527C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149921
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/research.png.meta",
+      "bytes": 281,
+      "sha256": "4428DEAA0216E938591506B4C953D717BD9280387A08895D6955818F50B109CE",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149923
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/DemoPackages.meta",
+      "bytes": 177,
+      "sha256": "82498F5DF258D8DB0373C8573D0E2A3C7589F7406B67FABFEB147C349090082A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149924
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/DemoPackages/v1.meta",
+      "bytes": 177,
+      "sha256": "11731BA29CBF603D0BDF9060A100E550BCA699EF7D0C9947C7FF879F04A224B2",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149926
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/DemoPackages/v1/core.json.meta",
+      "bytes": 62,
+      "sha256": "135CA590994272B80FB5C964D518188BCFAA4E27D9D1F97616E0A162DBF6C959",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149930
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/DemoPackages/v1/demo.json.meta",
+      "bytes": 62,
+      "sha256": "9A5FD5826787D8C8109891F717A1989459404FFE946823F184BD2F103C976E36",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149932
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/DemoPackages/v1/package.json.meta",
+      "bytes": 62,
+      "sha256": "85257A783A5DE74CED48359BBDAE89E4DEFFC07CD760550687330381DBD93156",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149934
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/DemoPackages/v1/physical.json.meta",
+      "bytes": 62,
+      "sha256": "CC82A3E33B92D187939C61E2FE9D1A3E9435667CC375BF6839AE438191DE3567",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149936
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/DemoPackages/v1/scenario.json.meta",
+      "bytes": 62,
+      "sha256": "00FF7BAA077E990C2325A3B6AB09209F13D5DA7966A3B876AFA859C38926EB07",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149938
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/FrontierPackages.meta",
+      "bytes": 177,
+      "sha256": "7AC7B7C2B7924708FD595B57B4AE2FE508B72DD9F804D639188A9E6973E7B0D0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149939
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/FrontierPackages/v1.meta",
+      "bytes": 177,
+      "sha256": "80C9FAB2A063049ADCA87F612ED94EEAB1CDC8864EB8D2A118F0494DD9D72378",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149941
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/FrontierPackages/v1/core.json.meta",
+      "bytes": 62,
+      "sha256": "48B1DD735849903A2B7CCF229E5463EEED640FFD2B0D918574920DA51857B6D6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149944
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/FrontierPackages/v1/frontier.json.meta",
+      "bytes": 62,
+      "sha256": "1B321210E6FDF443ABAA19EEB8AA59851F601D6FCE7F0DF1B60F3197FD2DF4F6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149946
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/FrontierPackages/v1/package.json.meta",
+      "bytes": 62,
+      "sha256": "F38BC24866C3BA185477897B869BB89E0C008752CAB29D832EC9C5455A8F85E4",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149948
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/FrontierPackages/v1/physical.json.meta",
+      "bytes": 62,
+      "sha256": "E96B0B082F89E90704232AE6CCD782963B3DF7E8783DBF3F78552495639C9C1D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149950
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/FrontierPackages/v1/scenario.json.meta",
+      "bytes": 62,
+      "sha256": "6C6726357BD54C3FEDDF00C31615562F32D804E91AB2DB21242CB9E9614606F6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149952
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentation.meta",
+      "bytes": 121,
+      "sha256": "85A1AF232A6A5F71FA8B7B4421F3BF74D716F9FF5445F1835C9AFACB77A25787",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149953
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentation/Volume.shader.meta",
+      "bytes": 62,
+      "sha256": "F6DD86EF6376684BBFD73694A3C9973A324F8F2A326060573B940A49EF77F53B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149956
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentationV3.meta",
+      "bytes": 121,
+      "sha256": "5F7BAC609205ECC4D2E76326B2DCA2EA41C85CA4748DC158C264FE0638C6025B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149957
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentationV3/Presentation.shader.meta",
+      "bytes": 62,
+      "sha256": "737504DB3C8E1A1560E5B08240DC1BE1B055CE070C6813EF3C449D84024D5892",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149960
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentationV3/galaxy.png.meta",
+      "bytes": 3288,
+      "sha256": "CC214EFA1CF10DCF65A61D6543A0807785141C4EDC654B945C25BFFD45E89056",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149962
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentationV3/nebula.bytes.meta",
+      "bytes": 106,
+      "sha256": "DA57440CAF35C46B6B36DC018B10C0C1D6B51F7C98E68B49917A723DE87A546D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149964
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentationV3/particles.json.meta",
+      "bytes": 106,
+      "sha256": "8BA34BCF1BBFB346D872B8AE6B888E745CEF31A10846AF753501BAA463639587",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149966
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GeneratedGalaxy.uss.meta",
+      "bytes": 62,
+      "sha256": "960F52A47B746C2023D28B0F4A89AD812F57FB355518E30D5FE190FF3EF99B06",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149968
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/IntegratedPackages.meta",
+      "bytes": 177,
+      "sha256": "68762B917893508982CE6FD1532621639C5FAE6C3821A3BA3133026AF38BCC54",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149969
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/IntegratedPackages/v1.meta",
+      "bytes": 177,
+      "sha256": "D36C6AB0B2245A0216EF78C1D42009E96C73A61B028B81EE71CC607DA68ACEB1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149971
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/IntegratedPackages/v1/core.json.meta",
+      "bytes": 62,
+      "sha256": "469A5908FCC55B736C28255924A634A1A06B67C2927E0FFB7E269B0F5E3CFCAE",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149974
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/IntegratedPackages/v1/package.json.meta",
+      "bytes": 62,
+      "sha256": "90A4AB8AD6A9BF1E8AEBCBC2E75ED39CB3C3331A1F0F96A7AD68271F9636BF12",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149976
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/IntegratedPackages/v1/physical.json.meta",
+      "bytes": 62,
+      "sha256": "9CDDA48D6C104E6CED5B31784F209D43952FD365FDFE1F5ABB2A0BE798DAFA51",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149978
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/IntegratedPackages/v1/scenario.json.meta",
+      "bytes": 62,
+      "sha256": "C18090C8CD42E554115266C1D2FECBB9F0EFF7A4F282F73F21449D8119D388C8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149980
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayableFleetPackages.meta",
+      "bytes": 80,
+      "sha256": "C8DB9CF61B2D685B3F5A3DF8A56ABC2F4684219876D06B3A762D8D1E32C5482F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149981
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayableFleetPackages/v1.meta",
+      "bytes": 80,
+      "sha256": "163DE4DAD434F317EAEDFE97E7DAC31AB21F685259163D7CAC91452FFFC3AE60",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149984
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayableFleetPackages/v1/core.json.meta",
+      "bytes": 62,
+      "sha256": "1CF6BF48E16DE33D124298AEA80CCE6E25108FD91DDF6E408C571649A020013B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149987
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayableFleetPackages/v1/package.json.meta",
+      "bytes": 62,
+      "sha256": "9880C8AF5AD1A5607E8B137D6DA9E0C76FEF00944718BCA87329A88A43249FBD",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149989
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayableFleetPackages/v1/physical.json.meta",
+      "bytes": 62,
+      "sha256": "78500C3CB4C76A9A190034DEDA96C04B041737A4F2754F1E41A2DE75484D8973",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149991
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayableFleetPackages/v1/playable.json.meta",
+      "bytes": 62,
+      "sha256": "4B8C8285C3E10C44186075DB5887C68B981044D94550D4603535D0920ED7221B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149993
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayableFleetPackages/v1/scenario.json.meta",
+      "bytes": 62,
+      "sha256": "ABA4F77FD8F91BBC4BF44BB83B7AC487D60A8887893189240819A22CC62D9A75",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149995
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayerArt.meta",
+      "bytes": 177,
+      "sha256": "88DFD1A2E60B6D9951E02409085150E8C020C40747209D309BC45B82837ED80C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149996
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayerArt/space-backdrop.png.meta",
+      "bytes": 263,
+      "sha256": "BFA68D63BDA680E490BA3DC2A8DAF40BF548F78314D3B028C0B2B67CB78EC0EE",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955149999
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayerConsole.uss.meta",
+      "bytes": 62,
+      "sha256": "10EFA15D6C023231894ACA9018B878396453CEEC855F5BE6D1A902E086BAE873",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150001
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PublishedConstructionV1.meta",
+      "bytes": 177,
+      "sha256": "5DF0884E972FF531970DF033B7AED14A71848ECA658847167A108340A43C282F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150002
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PublishedConstructionV1/support.json.meta",
+      "bytes": 62,
+      "sha256": "209EB404B94B370931357E41E1E2A62C76D70046E891538520A3B3D5D63E4EAB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150005
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewCombat.uss.meta",
+      "bytes": 313,
+      "sha256": "79EAA170EE3D2DD4F438F8E3EF15AF4DF0DE2CEBF2C033270584267C8A9828B9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150007
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewControls.uss.meta",
+      "bytes": 313,
+      "sha256": "DC6A2C9FA7B86C4CBB33F2B3C2DBA077C47AE7FF5ECC9B919219C11B092B1993",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150009
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewPackages.meta",
+      "bytes": 121,
+      "sha256": "FFAB74BA5B1F72E2A838DAEB620CC720A3A9A2B752F059D90FA38ED384DCFBAC",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150010
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewPackages/faster.meta",
+      "bytes": 121,
+      "sha256": "2655C3DF2F06230D6D7D6979ADB443D262C364EB288CA5C5D68A350E3142538B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150012
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewPackages/faster/core.json.meta",
+      "bytes": 62,
+      "sha256": "E3AE07B0FB0865F182A494A5DA685D7D32DC093BCDFF5606EED75D1683DD2AED",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150015
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewPackages/faster/package.json.meta",
+      "bytes": 62,
+      "sha256": "F847E1108F75E2BEC9536421B9E2ED55F29C6ACB38C99AA9981FD1A74E79C38F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150017
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewPackages/faster/scenario.json.meta",
+      "bytes": 62,
+      "sha256": "35A22BBE56A20E1AC0C948A6E53EB16E58CAB8D06E41FA0B709715088E993BBE",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150019
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewPackages/slower.meta",
+      "bytes": 121,
+      "sha256": "D9DBF0D4EF844A8A44ADD1191E845049D62E7B619AF5F7647B7F29811D9B108C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150020
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewPackages/slower/core.json.meta",
+      "bytes": 62,
+      "sha256": "75B05CB48FADCCC89B41A2DB354BE52FAE976A8C36E4480D7B5EC3B2F7EF1E4B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150023
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewPackages/slower/package.json.meta",
+      "bytes": 62,
+      "sha256": "12CDD904B8475626FC54AF1978D6C947F33FB3B74AF2DABD479D61F94BF65D5B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150025
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewPackages/slower/scenario.json.meta",
+      "bytes": 62,
+      "sha256": "1D09003D0C1969B6CE1C815B720C56CCA1E4CCB5618961478B249C7FDA56B245",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150028
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ShipNames.meta",
+      "bytes": 80,
+      "sha256": "AECA48F80F06EBB1740CDF8F8614983F11CFD11E506C11863204888834E1206B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 10977524092454687
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ShipNames/starfleet-v1.json.meta",
+      "bytes": 62,
+      "sha256": "37617EF248AADEA1D439C96A29E2F4C892FBBD1EBFE002DAB6AD48D7890A1A81",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 5910974512379242
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt.meta",
+      "bytes": 121,
+      "sha256": "EFAB36F861AF0A4FE5369986DCD7AC5ACF6DF93ED014E4D5F94AD0F0987C89A7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150029
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/ATTRIBUTION.txt.meta",
+      "bytes": 106,
+      "sha256": "38E1998D1447C87E0F1A8A9F323995460EA94DCB8461AD61258794BB78702BFB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150032
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/ProceduralSurface.shader.meta",
+      "bytes": 201,
+      "sha256": "5639B519CD09330B44317527F82E8CED977558747FD333E6773FFBF6CFFDE017",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 19984723347195791
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes.meta",
+      "bytes": 116,
+      "sha256": "0C846E431ACB0F9E40532A6D90DCB39D7DD5AD21989E166DA07E08BEC0C9770B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 17451448556376856
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/ATTRIBUTION.txt.meta",
+      "bytes": 102,
+      "sha256": "44A100619480CA1793F397625EF9589732053D1866EE1C0E2F6512CAAF1FDBB4",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 23080948090583678
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/Earth_LOD1.fbx.meta",
+      "bytes": 888,
+      "sha256": "0B9ED64076E1511B720B766D5417C9D7A0FF22B81E6A167887AA3F49FA0CAA9C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 26177172834401607
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/Jupiter_LOD1.fbx.meta",
+      "bytes": 888,
+      "sha256": "F792490D91082ED199E2337DC4642876C4B741876D115AD6443B294F33051D6E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 12947848929001319
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/Mars_LOD1.fbx.meta",
+      "bytes": 888,
+      "sha256": "99838BC7440188A1E17F2719ECDA7BBA4FA212526A258F4BD5025A3C99120F7B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 12947848929001708
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/Mercury_LOD1.fbx.meta",
+      "bytes": 888,
+      "sha256": "5CB454952852639576666E1FF9E90C0A1214758F94DA6D8CA8B6B259DD2A2A86",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 18858823439925613
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/Neptune_LOD1.fbx.meta",
+      "bytes": 888,
+      "sha256": "3BC262E27FC802D28D65345B31C70E85BCDA8E01E6C9DF32EF4C169094023585",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 16888498602951437
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/Saturn_LOD1.fbx.meta",
+      "bytes": 888,
+      "sha256": "1555DE98C999428E394732D8FD9723943B6D6B61D86A7636BA6EE42BF27F6C6F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 19984723346769309
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/Saturn_Rings_LOD1.fbx.meta",
+      "bytes": 888,
+      "sha256": "8BA4F2D3EA3902C549F1BB9563C2FBCC0AC5D8B6DFB9110CAED9812D6EF5073D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 13510798882425999
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/SolRing.shader.meta",
+      "bytes": 98,
+      "sha256": "75CF684B4907EA6E029E31E3DECC0DDA8365F056C0109311079DEB646D8E6EC5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 8444249301634215
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/Sun_LOD1.fbx.meta",
+      "bytes": 888,
+      "sha256": "7E84824C19CD62FDF437ABCFEC26C825C0509F2F945068B312B3B8CBEA238DF3",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 49258120924680127
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/Uranus_LOD1.fbx.meta",
+      "bytes": 888,
+      "sha256": "5E477D54CEF4FED213FDCC9E82654F98B1A1CA2F754BA1133984E65C9BE5D1FC",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 24206847997432133
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/Venus_LOD1.fbx.meta",
+      "bytes": 888,
+      "sha256": "E5E8742312CB2A2E58AD06BAFA66219D2AC50E5E0DFCF480245F9BCBAA499C25",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 40250921669939963
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolMeshes/saturn_rings.png.meta",
+      "bytes": 362,
+      "sha256": "2065F90251F43B32F563DF473CFCAFD7FCA7703C89F06A8972F3AB1FBF8AC83C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 9570149208476561
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/SolSurface.shader.meta",
+      "bytes": 210,
+      "sha256": "0B16220B1BACA660DFFC04FB2E9338B8F77CF3FD62EC0CD97B4F06B91DD95D68",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150034
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/earth_daymap.jpg.meta",
+      "bytes": 240,
+      "sha256": "25F5C677C29C7E4424F9FEB6F11D966B8523C6C88A77FF72D7683924477602C2",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150036
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/jupiter.jpg.meta",
+      "bytes": 240,
+      "sha256": "D7729B49EDA9FBBAD76B7399FDF2028129C65FD15C15270CE039A2F385EC03F9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150038
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/mars.jpg.meta",
+      "bytes": 240,
+      "sha256": "1DE2D95A70A11689E2AD90ADC650DC001C0BA46298497D3E00A3005E6E0E6CDA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150040
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/mercury.jpg.meta",
+      "bytes": 240,
+      "sha256": "F32DDF8B07D854214609C40A063925F96641CD2578B001667AC4DE289A50F9C0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150042
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/neptune.jpg.meta",
+      "bytes": 240,
+      "sha256": "D31FE4F685FBFD1810905BEBBAC02DF6E63C72A55DD036D782E29770E6812F4C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150044
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/saturn.jpg.meta",
+      "bytes": 240,
+      "sha256": "07A766C3946D28046E8D04342CA31139AAC72275D3F9D93741798D9BD016B5F7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150046
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/sun.jpg.meta",
+      "bytes": 240,
+      "sha256": "C7182E9B02A911F0C7BC2BE266F971198BEC1E3393B6BD8AE88AFC99295236EA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150048
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/uranus.jpg.meta",
+      "bytes": 240,
+      "sha256": "19CD55A3CEB463CE1F38B81E9B5BB619EFB6B1F51C6570529B224F93D5EFBBEA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150050
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/venus_atmosphere.jpg.meta",
+      "bytes": 240,
+      "sha256": "6DC4BCDB2FB5C4A6051E4C683E2AF27A4D2244BD9D48A7888394A5FFA260DF31",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150052
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime.meta",
+      "bytes": 177,
+      "sha256": "3CF1B19C80493565F4460F00089D6D9EAC1DC763B4FB9AFB117893844D47029A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150053
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ActivitiesPlaytestOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "626DE4C3C9D7F4F2E674CB5D9AFF411BDC7FAE87BA9D66344DF48B0CBD9DABBA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150056
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ColonisationCyclePlaytestOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "C46DACD7FE21F59E59D8917F5AD7BF8AE28C77EB8BE016E839024BC3DB1D36E5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150058
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ColonisationExpansionPlaytestOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "36948AE81B6073148CE9FE3F13E9207980AFFBDF6B0EDFE108DEB68E70726D55",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150060
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ColonisationGrowthPlaytestOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "51ADD9D4142AA50A67FAEC14916463615AA7483857BC6BA43688052AE8502A2A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150063
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ColonisationPlaytestOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "AA5D9894D8239E446CDE40B025DE90D6AB4DDE70C371A01A689B1DF74A66566A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150065
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ColonisationRepeatPlaytestOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "895A92F476B19F9C3B360101EA00B53EE709A246AC40251D41023929AFD58A69",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150067
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ConstructionCardArt.cs.meta",
+      "bytes": 62,
+      "sha256": "FD0A548F9CB89C4F6AFBF576116CA4FC264C2D6DEFCAB95BFAF98FA80D30DBE1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150069
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/FrontierPreviewOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "378CBF16EB885E15ED2AFE1B582D45112D4A43FB8AD8BD884A9599C84513279C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150071
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedCampaignLabelLayout.cs.meta",
+      "bytes": 62,
+      "sha256": "7F9FB1BDF6147DECE9A43D6A8A9B3FEB5A1D039770D9E1E0352CC038E94D5ABF",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150073
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedCampaignNodePicker.cs.meta",
+      "bytes": 62,
+      "sha256": "ECEAF2CBB972E344B544DA9713EA3B1235C32DB3C83DBD3012693E1E0036461E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150075
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedCampaignOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "C9A8241990BCF5C78992654C32EFDF481E861CBBEA0FC48C78E08763DFDB7225",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150077
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyChartedMask.cs.meta",
+      "bytes": 62,
+      "sha256": "0D84EB2DB0BC6C0950694C9FB943EC55012B605AF125F5AB5F11204525554C11",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150079
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyCorridorPath.cs.meta",
+      "bytes": 62,
+      "sha256": "DC12375C4D9D8F46A3107FB50C9CCA8735FAFD800627683C73BB6D4BA2F58D2D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150081
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyMapStore.cs.meta",
+      "bytes": 62,
+      "sha256": "5911FBAFF17DDBD259A7DFF2C90BD8F961C28434929751C04DACB30E2349010A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150083
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyMapView.cs.meta",
+      "bytes": 62,
+      "sha256": "D221E5DA9244774461E32D7CC0E62923E4037F9D954BCE87068FBFB354C3BDDA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150085
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyRouteDraft.cs.meta",
+      "bytes": 62,
+      "sha256": "F6E99399E0E455263E967F998186F5609B30C71E5D5FFF18274B7ABA651C11EC",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150087
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyRouteDraftStore.cs.meta",
+      "bytes": 62,
+      "sha256": "6BEA5D9BD9BF7155A8207C216FB8B0912B288E1AE4419C5E354B3A67C4C0CBE1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150089
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyRoutePath.cs.meta",
+      "bytes": 62,
+      "sha256": "7D6141A567E3BD16C66D062C09096C794EBF3F21D32BE0D33100BC7C70A4E97E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150091
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyStarIndex.cs.meta",
+      "bytes": 62,
+      "sha256": "1E4B17E976C94D6B7B7F75FF83BCBC7206A22F2C2B3B2AF6DBC8CB9CA0A9D5E1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150093
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyV3AssetData.cs.meta",
+      "bytes": 62,
+      "sha256": "04331B310C941D0498784D276677FF0E424D57086A8739F27F410FF27E74677D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150095
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyV3Background.cs.meta",
+      "bytes": 62,
+      "sha256": "46774D84094A06BEE5F35E00025FE58E752B16C472F85CDBDDA093C86E6C0B21",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150098
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyV3Math.cs.meta",
+      "bytes": 62,
+      "sha256": "88474E5C020C61C21C55D31E7C1E31DBD7B39FC88C02C81FA2FBB15C5D394860",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150100
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyViewport.cs.meta",
+      "bytes": 62,
+      "sha256": "46892DDF34E49B85B307F8D943077960F60DC8D133BA37ECFB8B026CFC0E5A40",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150102
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyVisualField.cs.meta",
+      "bytes": 62,
+      "sha256": "D9067C51DC76BF38F0BD5858D3A66C71013A99A329A2725A116D465ADC465886",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150104
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyVolumeBackground.cs.meta",
+      "bytes": 62,
+      "sha256": "59A338A2A14201BEE63C133AA6597CB7E3BFF7C67759A5684ECD8812F804215A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150106
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedGalaxyWorkspace.cs.meta",
+      "bytes": 62,
+      "sha256": "D12D8C76707962D3FC2AA1352572280139D61531EE79DE14A67A4B9587EFD70B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150108
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/GeneratedObservationStatus.cs.meta",
+      "bytes": 62,
+      "sha256": "D7748C87B0CBE6F1E3F77A0CB14686F9AB17871775A8F278169CA95CEF6CE460",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150110
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/HobbyDS9.UnityReview.asmdef.meta",
+      "bytes": 62,
+      "sha256": "A608FD2B01E0D14CA92506AF3945D00AABECC164A0A34F75DE45CE2CF646415A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150112
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/IntegratedLaunchOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "A2C9845AE874F3067B3AE1AD4C065D3C22172BC31C6475A6823B02018BDB980A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150115
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/PlanetBodyCard.cs.meta",
+      "bytes": 60,
+      "sha256": "4FB5602BB1C97D10EC3FEFE1534DB2791C00FFD1195D9667A2F87117132E1984",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 3659174698364491
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/PlanetVisualProfile.cs.meta",
+      "bytes": 60,
+      "sha256": "C2B1AFEC1C8BF529F49204FB455AD8BA67400CFC50DC66EC68693441AD4B9BFC",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 16044073673246425
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/PlayableFleetOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "FC8FBC1AE3871AB3F2B8C85CCC96D4CA32EA3CB555350D55575DD69397B8D53C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150117
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/PublishedConstructionPlaytestOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "C88B397F55A7B3AF2075C2A4FC8B21F4FF823B7B1B95443C2C07E12C988EC074",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150119
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewActivitiesPanel.cs.meta",
+      "bytes": 62,
+      "sha256": "AC4C27FD0D478CD635A86907BA2FF2E08637B2E0695923BCFE16DE7D65F545DE",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150121
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewActivitiesSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "30FF024D44CFB511E784CE081D6EA671FAB9D72C3C8A223741152CF18B2C7278",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150123
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewAftermathSummary.cs.meta",
+      "bytes": 62,
+      "sha256": "E78215066331A3A714C44F4A89DA5A2F8646AE8BC793C0FF39E3E555BE7FB8F1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150125
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewAllocationBar.cs.meta",
+      "bytes": 62,
+      "sha256": "B44C07012A8ECA44E1726811F8F9D4949B0A1C344DB166B96891EB15C590545A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150127
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewBattlePanel.cs.meta",
+      "bytes": 62,
+      "sha256": "3AE10B13DECBAC09617837EA53339D655ED3074FFD119D431F671CB7AA8B3842",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150129
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewBattleStage.cs.meta",
+      "bytes": 62,
+      "sha256": "D38C1A2F026607CE1A521041199E886ED7F6550873572E3EAA377206B3AE2F94",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150131
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewBattleVisualBinding.cs.meta",
+      "bytes": 62,
+      "sha256": "51EC4D1199D28FEB19EAEDDF91802CEB8CBA8294B6E9396C8D9F7F2918DB3575",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150134
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewCentralView.cs.meta",
+      "bytes": 62,
+      "sha256": "DA5AB7CAB6F3E5E996B78DCACC75A19D31F1B0B7F2C1EC0C453352556E0FD307",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150136
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewColonisationCycleSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "610104046D27DDE51AAA2242726A31C875D3211E3B6F815DD5A6FDE8B7C5D0EB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150139
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewColonisationExpansionSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "D53E6A5CA8EBFCD843ECB9C7D1BF505D9F11B93D500FC2AC3E172C2E40ED8B12",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150141
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewColonisationGrowthSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "0AE498069B1091B2E92EEB0A98323939A4FBADA4BAAC63A689075B6F213B084B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150143
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewColonisationPanel.cs.meta",
+      "bytes": 62,
+      "sha256": "237662F136B738346F2DF5346195FBDCD9A10D90E3B11B94BDA2BB5A81DF7122",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150145
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewColonisationRepeatSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "4828D3B2119E433C217798D121A372DF96D54F65B7D860BFE332AD18778D329D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150147
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewColonisationSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "5F53415D659CCB5889B96C9F3AF3CAE7BDB79519F501E9C09E497EE6AD716832",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150149
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewCombatFlow.cs.meta",
+      "bytes": 62,
+      "sha256": "8D12D7360A21D88DA8D5E32516E3CD0212F0615E17A13E246CAD8DB1CC831415",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150151
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewConstructionCatalogue.cs.meta",
+      "bytes": 62,
+      "sha256": "F2DF7E70E320EABBF0CA790E4C750BB279498F559C53A3C4F2ACFC4B13D33121",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150153
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewDemoCombatText.cs.meta",
+      "bytes": 62,
+      "sha256": "E25E64777C269B0974648C7EB3B50D43E85731AB48F9EA3C81987D15F562DCF8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150157
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewDemoSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "BEF824660B98BC66F0DDEBB8145D1D7C4B22002F75B2996675906F375EED42ED",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908571472
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewDesignPublication.cs.meta",
+      "bytes": 62,
+      "sha256": "737DD02218F48BC32A7983C036629ED0D2350F3C46EA5E17A427024B07D9D256",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1688849861992786
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.Activities.cs.meta",
+      "bytes": 62,
+      "sha256": "58FB889ECC97A16A38CAADDDAB984F74B90684CEBBD35AE57D682FADCD4F2276",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 2251799815414100
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.Busy.cs.meta",
+      "bytes": 62,
+      "sha256": "11DCEF76254AE98F518AF35764B4C0EA6275DC752D5838B701556E9BE58B4E93",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 8444249303048535
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.CampaignMenus.cs.meta",
+      "bytes": 60,
+      "sha256": "6E7EFCC782C7BDD7F8A5F9184A12A97FEE71AA291FBFD7F005949EE9C4B52D23",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908696779
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.CheckpointDiagnostics.cs.meta",
+      "bytes": 62,
+      "sha256": "D0E59BEBD4098B8E7771C37D661EF81881BF5F033E5A42D337AB935A6444FDF9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 2814749768835417
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.Colonisation.cs.meta",
+      "bytes": 62,
+      "sha256": "567ABBBBB4A323896D17B84D7D6C3587CCCD15EBA809A9C465E4FC66B97EEFC5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860827
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.ColonisationCycle.cs.meta",
+      "bytes": 62,
+      "sha256": "FA10F1CE45A9660E84D3B586CBF51C0779ECAED471591892446C85946D2D3924",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 3659174698967389
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.ColonisationExpansion.cs.meta",
+      "bytes": 62,
+      "sha256": "42E72C8BD564C256422BDEDB67F4B4946D8E60B4BF8C78EFB6E27548FC3DB145",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860831
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.ColonisationGrowth.cs.meta",
+      "bytes": 62,
+      "sha256": "6408949FFD0634B258AF2DFFD421C8F0BE332C9515A556358C9436CB8D89AF9B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 3096224745546081
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.ColonisationInteraction.cs.meta",
+      "bytes": 62,
+      "sha256": "A6E490749A86858CB3A848F89FFD52F6139F6136CE7B827A0DFDDFB6B971CF07",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908571491
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.ColonisationRepeat.cs.meta",
+      "bytes": 62,
+      "sha256": "D2D955DF4F09AA1D4A89C229FF574A77BF5A1D05CC8A3740C61BF13E2D7FECA7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150181
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.ColonisationRoster.cs.meta",
+      "bytes": 62,
+      "sha256": "90EC7886CD43785292057B1177D340C1CA4F5EB69547D6F2A405615164104338",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 2251799815414119
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.Demo.cs.meta",
+      "bytes": 62,
+      "sha256": "D2EB1139D364E89623C34FCE9179C493A499C5F12F8878EC2680080A1A04A679",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860842
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.Frontier.cs.meta",
+      "bytes": 62,
+      "sha256": "CBC0E7089DF96012CE1ACB766AEA9FA1B17DBC51B4FE94520F77D930A03E0F8E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1688849861992812
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.FrontierCommission.cs.meta",
+      "bytes": 62,
+      "sha256": "6EB5D2F9A02F88E04BAAF6954B7E42CCB75EC4CAC4B85ED64B3611F9E23D63EC",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 2533274792124783
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.GeneratedCampaign.cs.meta",
+      "bytes": 62,
+      "sha256": "C953FF29A148820F686914DA212302278D5FD4BF3DBCCFE30BEB0A59BD657539",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1407374885282161
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.GeneratedGalaxy.cs.meta",
+      "bytes": 62,
+      "sha256": "91270C5B2EAE48F6511D6C313B84322BC0C10C25D1FECB497CE5FA223CF09CFB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150195
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.Keyboard.cs.meta",
+      "bytes": 62,
+      "sha256": "7C9F617E2D142C7DCAFF3DD47725C2E585D6DD51C22C0EAD7C45CDBD39D2F130",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150197
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.PlayableFleet.cs.meta",
+      "bytes": 62,
+      "sha256": "AE2AE9D7C0E2086ACE2F25F249DA6FCFAD4E27997B40D14EC83BA49DE7F7FAC1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150199
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.Player.cs.meta",
+      "bytes": 62,
+      "sha256": "ADCA243FB28EE66F05CF99502FE4C17A0D9642DC4F677E4F9FB5C1F8589D3E38",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860857
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.PublishedConstruction.cs.meta",
+      "bytes": 62,
+      "sha256": "34563BB3FA4C095D14E546E6C3684381909C47E1856C8FBD3373C66E68FC0A3F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 11258999070155132
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.StreamedActivities.cs.meta",
+      "bytes": 62,
+      "sha256": "1644B41B6B5C645933860A790B69A841682B887029B92E616CE718999719B635",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150206
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.StreamedInteraction.cs.meta",
+      "bytes": 62,
+      "sha256": "F07E90706EF75515533A0E77AEAF7746523F6EE9F6D9C5D5FC5C842E4588C1EF",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150208
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.cs.meta",
+      "bytes": 62,
+      "sha256": "DB8A1CD63BC77D07DD03C1580C4FB8C599A47204153094AD5694E6083DD7E371",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 4222124652388738
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewExactPackageLoader.cs.meta",
+      "bytes": 62,
+      "sha256": "97953C75D613D5A16E44CE50B24C5571B1B180CF3242E17F60A0FBE5612C9008",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908571524
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewFleetRoster.cs.meta",
+      "bytes": 62,
+      "sha256": "761F36AC3C3BCF4D3B01446B28E6614B3280B46D60B9EA346CB7765340BCF73E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 6755399442784646
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewFrontierMap.cs.meta",
+      "bytes": 62,
+      "sha256": "679E45F54982ABE38BD47BC2A52B659A4D0770C69D191B6C3200F933935EDEA8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 8444249303048585
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewFrontierSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "25B4589A632CABA13171011B1808E007D44702B386045612EAB8A71C4BDBAF2D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150219
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewGeneratedCampaignSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "6CB086985C801089CB2DA102A31E91E28BC9F35369B1CF37F58A67F597D5FECB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 3377699722256781
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewIntegratedSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "988A40CAA6444AD4929B2E52CB7D30FC37EF3E59D1C80C7547F809FF112DB2D1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908571535
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewLaunchOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "B06161479B8081B8BEF5305AF0D4D80458875B38005987E10D5A26DD6C4D2D05",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150225
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewLayoutPolicy.cs.meta",
+      "bytes": 62,
+      "sha256": "D42FF7098AADB422021EACFE12C96EF3722CCD35C5119DC6AE87F09AA90A6E60",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150227
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewModalPermission.cs.meta",
+      "bytes": 62,
+      "sha256": "9392BDA7B8485D3B391BBEED87F053D0A398D1FF7415A39193BB6B09083B2B6E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 2814749768835477
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.Activities.cs.meta",
+      "bytes": 62,
+      "sha256": "2F317506FD359732D462CC2BCE574010F278F246A27E242ADBB8F31796579CF1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1407374885282199
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.Colonisation.cs.meta",
+      "bytes": 62,
+      "sha256": "7123D52311E13C8548B411877724000FBCC432956DA16998A3FA84FF9C62BE04",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150233
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.ColonisationCycle.cs.meta",
+      "bytes": 62,
+      "sha256": "5F34BB9539DAF39BAD63B7619BE1821A8CAA6D255AB5CC9A635AE463EF60E829",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150237
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.ColonisationExpansion.cs.meta",
+      "bytes": 62,
+      "sha256": "DA1DEE42A0259AD9B95028378CFD45DF1DE573FF45D6B80321D11F3F594E7058",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150240
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.ColonisationGrowth.cs.meta",
+      "bytes": 62,
+      "sha256": "B3706CEA55223E2BED4788BFF03CE13043F4F9EFC819924C7600B33E2ACC124C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860898
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.ColonisationRepeat.cs.meta",
+      "bytes": 62,
+      "sha256": "787349A1B56C1BD07E297D145B8C6EBEB130FD1428BABB7F5D22A063C020B0D0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 3096224745546148
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.ColonisationRoster.cs.meta",
+      "bytes": 62,
+      "sha256": "BD74686FF9453C00A778A8B5EAE0EFA99DD153D61B921DDA65AB3B3E07CF9569",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1970324838703526
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.Frontier.cs.meta",
+      "bytes": 62,
+      "sha256": "C57D2474BC24ACB401483675EF14E2DAB5F76426A9F3662C95A65E5A46B800E5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150248
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.GeneratedCampaign.cs.meta",
+      "bytes": 62,
+      "sha256": "574645EF14ED2B01A1E2DC42B86EC34444C33589204D8CDB95BEEEDC4FAC4DE8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1688849861992874
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.GeneratedGalaxy.cs.meta",
+      "bytes": 62,
+      "sha256": "74C82B8BE078CF2036C3352A783034B7D128A07A7FAD72930DD853D11FE9C66C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860908
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.LoadDiagnostics.cs.meta",
+      "bytes": 62,
+      "sha256": "9ED333BA27D2CB60F9210A3B836E32E8BD4AC7192F08D7BACA50CD6BE8AE6A3F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908571566
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.NaturalGalaxy.cs.meta",
+      "bytes": 62,
+      "sha256": "4DB9B262175073E587F27442E0ACC9EA8752292927CD4CE3274ED32C8847EA07",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 3096224745546160
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.PlayableFleet.cs.meta",
+      "bytes": 62,
+      "sha256": "BF2701B5B29A23E91048BEFF61D0F220BB00DD15BA3C6E5C2B839BB138812271",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 7599824372916658
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.PublishedConstruction.cs.meta",
+      "bytes": 62,
+      "sha256": "F8A6801AD460FF0188EF53066DD6363AB9317F8A4B2097955CF0F05F49D084D5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 844424931860916
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.RouteDraft.cs.meta",
+      "bytes": 62,
+      "sha256": "502574229BFEDD45523BAD4C662AC67958454ABA20EA54AE92DA321184D65FBA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150262
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.ScaledGalaxy.cs.meta",
+      "bytes": 62,
+      "sha256": "8080DBA0B4C823DFD03DC5B334B0150DE369AA13F07798E2A593DF14EBFD6145",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150264
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.StaticAstronomy.cs.meta",
+      "bytes": 64,
+      "sha256": "A16AFD4C45E8B3C71D328C7B08CC6042F6FED0AB6E5C0A4430A44340E2867CC6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150266
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.StreamedActivities.cs.meta",
+      "bytes": 62,
+      "sha256": "796D3E38AF5C0EEDC683511933B6DDFB2715EC98CF9843F02A9B69F171F955ED",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150268
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewNewtonsoftCodec.cs.meta",
+      "bytes": 62,
+      "sha256": "7F9BFE838F8348FB4E7711E1BD1458469E398B5E5905CC64475EE38BDC8C872C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150270
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewPlayableFleetSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "251E8B8E50D876CF1FF68FC6B78DCD6AEDFE15C79D84F593E26410A84438C772",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150272
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewPlayableMap.cs.meta",
+      "bytes": 62,
+      "sha256": "09B52061757E372A04E2F355346432EE7AF09D7986AB21463C91EF17C86CAD54",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150274
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewPlayerView.cs.meta",
+      "bytes": 62,
+      "sha256": "F223749B480B7ABFF4A952363E5136CF6C1E3F1B503BB7E39CF24DAF5A54D082",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150276
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewPublishedConstructionSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "BA90D06332B555329F10B3935EFE6977DC84A26331A818451BC186B2A925F648",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150278
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewResearchDraft.cs.meta",
+      "bytes": 62,
+      "sha256": "EBC81DCBD5F57D426AB742184167E08ED55F8B4479654634C6F1B9D0F388364C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150280
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewShipArtPanel.cs.meta",
+      "bytes": 62,
+      "sha256": "2564500D7856EDE0577F069FFFC557B9E3C2F9014419DA4C9831821478ACCE68",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150282
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewShipNames.cs.meta",
+      "bytes": 62,
+      "sha256": "33E3ED48C2B8DFF899CD16C7FBDE6A512A5BB137AF4CDA200EA793CFD8E482AC",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 4785074605605220
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewSolOverview.cs.meta",
+      "bytes": 62,
+      "sha256": "BE66805AF78C2096C5E3F58F04F4946A1FAE0C426C5783BE8303FAD41FF7B3A5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150284
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewSolStage.cs.meta",
+      "bytes": 62,
+      "sha256": "4B1B50104903A782597468D4D71FA569450F1D23DAB2AE192FC6198308BBD851",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150286
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewStaticAstronomyCampaignSlotStore.cs.meta",
+      "bytes": 64,
+      "sha256": "EA446820230F3CDFD0DDFBB4BD91F17E97205898807D86A4DBD0E75424967F11",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150288
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewStrategyView.cs.meta",
+      "bytes": 62,
+      "sha256": "EE3BBB0491EC26F83D99B9F9D1671B6CD92496D3A3895804BD605F86BE9C19C7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150290
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewStreamedActivitiesSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "6B919420CB5230BFFF78DCF43AC47EEE6A9D05A77536C16EC0F127A4EA00FD9B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150292
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.Activities.cs.meta",
+      "bytes": 62,
+      "sha256": "4A835871CEC9BC9D15E99B39C3F6E0245A231A2643C0D005FDF350105B6BF660",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150294
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.CheckpointOperation.cs.meta",
+      "bytes": 62,
+      "sha256": "B20130B5664C733090C2A15EDB9F5EE84E66F80DAF910C10CEAE366435F81126",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150296
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.Colonisation.cs.meta",
+      "bytes": 62,
+      "sha256": "62BE7F6D2CD23520353A25D7153E1F4B346A0C75B449FB7A0974DC7422C813E0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150298
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.ColonisationCycle.cs.meta",
+      "bytes": 62,
+      "sha256": "360549BCBA93AB9596286DB153BF5E05D5999C6AA20929A1F7BF865CBF07FE60",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150300
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.ColonisationExpansion.cs.meta",
+      "bytes": 62,
+      "sha256": "5033A4C857E188626AD682771949DF4B3B40F8246C40E4F11700F8F40852D294",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150302
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.ColonisationGrowth.cs.meta",
+      "bytes": 62,
+      "sha256": "3639E01269896003269A4DE2AAF84D0A6AF8B3D3429F443DE688CA61F3BF1F47",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150304
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.ColonisationInteraction.cs.meta",
+      "bytes": 62,
+      "sha256": "CA1217F0971D584E82911DA5CC0C557D97469682833FF248567D5E82918AAE17",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150306
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.ColonisationRepeat.cs.meta",
+      "bytes": 62,
+      "sha256": "EB230E3AD5CCA9EE0382654DE14787C09D23733838AC0B1979FA8A0ECDA6FEFB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150308
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.ColonisationRoster.cs.meta",
+      "bytes": 62,
+      "sha256": "CDD970D696C22F3FA7EC1141EC3819915A16D71660F5763EC6CC1CB7101214A1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150310
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.GeneratedCampaign.cs.meta",
+      "bytes": 62,
+      "sha256": "FFC9E666AFA6E049BFE66EB5DF360258AD32829CCCE65F1F7804C96CA78DBFC7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150312
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.PlayableFleet.cs.meta",
+      "bytes": 62,
+      "sha256": "9B095C9D33025906E5D5B0EC009D68F9360C9A38BC2B6C168AFB4CCEB396A54C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150314
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.PublishedConstruction.cs.meta",
+      "bytes": 62,
+      "sha256": "9020593E81B21CAC5D45D6450F6E7920C857724A9BC6782C379A8E6095AF38E6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150316
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.StaticAstronomy.cs.meta",
+      "bytes": 64,
+      "sha256": "FE59E27C40133A1126BE3F382686A3CE514D11E6119A736A7B3252EAB9F64495",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150318
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.StreamedActivities.cs.meta",
+      "bytes": 62,
+      "sha256": "11A4341757631A3F2947E58CC276FD72B3F3515ECB2392A66E3B25FCEB2A3998",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150320
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.StreamedInteraction.cs.meta",
+      "bytes": 62,
+      "sha256": "4D28E96FE4CECDE0E878342305E41D91B10C037BDDD84403ECFB32A405AF9DCB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150322
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUiModel.cs.meta",
+      "bytes": 62,
+      "sha256": "5215072198A2E6E72633FC9608D0258625FAE4058DE8A9011385930E49DD672E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150324
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewUnitySlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "4B0AA17588E6E4C1C822D572505718A74802A37947F8E0BAF50707D7B9182DBD",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150326
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewWorkspace.cs.meta",
+      "bytes": 62,
+      "sha256": "719D9362FB23785C264D13353759CC75FDFA1C9FBE94B2D83D9FE1490044BBCB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150328
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewWorldLedger.cs.meta",
+      "bytes": 62,
+      "sha256": "9EA4DF9CE98CE3ECF70310C07E78941F8688D3C51705B29A10F417B8BF80EE64",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150330
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ScaledGalaxyPresentationSummary.cs.meta",
+      "bytes": 62,
+      "sha256": "EE1F9F1F601793A9B7E26E99AF74EC47509E16018C85F9B14B5886A6CA4C0BEE",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150332
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/SingleplayerDemoLaunchOptions.cs.meta",
+      "bytes": 62,
+      "sha256": "698DB241B509BCDC33134477C0AE19284DEF818DD4E8CA45BE834A09D045AB89",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150334
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Scenes.meta",
+      "bytes": 177,
+      "sha256": "1084BEE2EFA0227AAC76BCDA5148C37CB5F2D9226B8713DC8A1FD8427282B938",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150335
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Scenes/IntegratedPlaytest.unity.meta",
+      "bytes": 62,
+      "sha256": "55D381ABD7EBCBAA1E8E8C6836E43E1F818C6F5C46B1A7E057538058F12E52AF",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150338
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Scenes/PhysicalReview.unity.meta",
+      "bytes": 159,
+      "sha256": "BDDAF3A4D8DE400A2077B7EF2AB567B0C948798F1BD74D515A72AC2D037F4615",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150340
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests.meta",
+      "bytes": 177,
+      "sha256": "A72E6E21CDF28EBF9565A293BF58AA3535486E209561DABAE078DEE03C3700C8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150341
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/CentralCombatEditModeTests.cs.meta",
+      "bytes": 62,
+      "sha256": "BF4914D5793E8C3414AC42C41E0A1FEAC807F5718C1C1DC5CEF22DD6BD54046F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150344
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/DemoAftermathSummaryRenderTests.cs.meta",
+      "bytes": 62,
+      "sha256": "2FD1E632B7AC1CD3076AAEE71F069C9A55352E33AD932D008592FFA533698971",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150346
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/DemoCombatOrderPaneChecks.cs.meta",
+      "bytes": 62,
+      "sha256": "EC1096453F96F929078029D522B2E22C72B66E72A8EBF6F53D324436308D847A",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150348
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/DemoCombatRenderTests.cs.meta",
+      "bytes": 62,
+      "sha256": "995149EEAE5ACC33592DD3AD37662902E19132A3F2CCF337AF990306D7B3AEE8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150350
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/DemoKeyboardControlTests.cs.meta",
+      "bytes": 62,
+      "sha256": "FD13608886458BF8F05B74FAA37EA6792CD370A50DE6BE8B9249864B16290282",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150352
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/DemoMapEngineeringContextTests.cs.meta",
+      "bytes": 62,
+      "sha256": "B712E7E8F5644D716780FEA09C9CDA3E486D5811B3C7F081E83310901FC11669",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150354
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/DemoRuntimeAcceptanceTests.cs.meta",
+      "bytes": 62,
+      "sha256": "986577D08B35A315BED058687B4F51F47B2854ED8DA19ED62FD211A609F56106",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150356
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/EngineeringPresentationTests.cs.meta",
+      "bytes": 60,
+      "sha256": "0FD58289A128F766FA48A17A051490FFD9F667DEE83343F4EC1AC34F43B4B5EB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1970324838706728
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/FleetShipCardPresentationTests.cs.meta",
+      "bytes": 61,
+      "sha256": "D973914495908717FCC028F7BB3BAA37C88590127F1F9F4DC139027827C4F537",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908573191
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/FrontierPreviewControlTests.cs.meta",
+      "bytes": 62,
+      "sha256": "38BC2F77B1BE90B7A32CC6F4BA8896754C7EB4CD636D6E183401110F88734FD6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150358
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ActivityBattleHulls.cs.meta",
+      "bytes": 254,
+      "sha256": "1941CE0080943BF85D0CCD90D4BE2573AFDF6554B1AC187E98BBA0B3494FED3D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150360
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.BackgroundCheckpoint.cs.meta",
+      "bytes": 62,
+      "sha256": "403A29A52F029D788DFA7745278EFD0DCE3D80A4CA81AD3A6BA1E0A60180FF01",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150362
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.BattlePresentation.cs.meta",
+      "bytes": 62,
+      "sha256": "39050B768BA329DA56F7609547FA19819540C7FA0A7CF740FEB4E2B11AB7ECBF",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150364
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.Campaign.cs.meta",
+      "bytes": 62,
+      "sha256": "50AFE1483EEC378A6CBC944257593C104DFF99A1FF1E581B57C6D32B97DB855D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150366
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.CampaignScale.cs.meta",
+      "bytes": 62,
+      "sha256": "13174165B6C2D6A28E6CD7C3FD5D0DCF2A3CC45AF478ED3A982656C3F8CEAA54",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150368
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.Colonisation.cs.meta",
+      "bytes": 62,
+      "sha256": "7CD036B59199175F1AAC05353790E7B15336F683141C7C41B277675DE20A1EA5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150370
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationContinuation.cs.meta",
+      "bytes": 62,
+      "sha256": "D708801C9F2DF8A30CBF9574CFBDFF92434E4791FBB7306771A4B71C916A2C1F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150372
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationCycle.cs.meta",
+      "bytes": 62,
+      "sha256": "FDC356578B480FF1F024ADA57AE49C492C7BA1067399E334A026E55CFD32C6D0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150374
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationCycleCheckpointLifecycle.cs.meta",
+      "bytes": 62,
+      "sha256": "393053DF0D1582BBF04D3E562E9CAB3B3D1268702E8BDFC03CDA3AD0E2A5C963",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150376
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationCycleCombat.cs.meta",
+      "bytes": 62,
+      "sha256": "3082FAFC37734852D7ADF32745330C754C78312AFEF1C6091D81436FCB4A967E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150378
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationCycleFleetLoss.cs.meta",
+      "bytes": 62,
+      "sha256": "E297FC8C0DB7ED429C00DDB6FBCD2A5A205895B4223CF61C986B3BA83E3B0C68",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150380
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationCycleVisibleFamily.cs.meta",
+      "bytes": 62,
+      "sha256": "8F936E80035379EB6EA30047A85E3F6D80C437C9998A64F245246E1016602BBE",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150382
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationExpansion.cs.meta",
+      "bytes": 62,
+      "sha256": "034DFA691E12240EA90F8CD7ABE22EC19E115CF6893B5158AD5F5779DE5272C8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150384
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationFood.cs.meta",
+      "bytes": 62,
+      "sha256": "245B2B6E732CC842423ECD4380D45765A43CEE87FB7246A60113F5FAD952033B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150386
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationGrowthHuman.cs.meta",
+      "bytes": 62,
+      "sha256": "B4E3673F70BEF3AB8F555C77D1B0A7B3F591F3473248CDF3F2AEF34760C818ED",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150388
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationHuman.cs.meta",
+      "bytes": 62,
+      "sha256": "F8E85F2969509003AF5C12736F0B685712FDD5AF1D59525E034B6A9EFCCBCA31",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150390
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationNetworkMaterials.cs.meta",
+      "bytes": 62,
+      "sha256": "F653F118F44A79233BC8BA2E06D24415542CBCD87F963EBB93B2BC5B77EE542D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150392
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.ColonisationRepeat.cs.meta",
+      "bytes": 62,
+      "sha256": "B5D848709E9B4F8A042AA92042FA8419B01CB208CCFCD1B0A312D0B1BF395526",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150394
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.Designer.cs.meta",
+      "bytes": 62,
+      "sha256": "EDC8E4091D053188805C1C4BEE1AEB8453704AB55F8D09CCEE78A305AFBE28E0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150396
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.NebulaFeather.cs.meta",
+      "bytes": 62,
+      "sha256": "2C10963A26D7A913DD06907830F3B431F080C722A658970C558EA9A3D3E44C58",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150398
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.PublishedConstruction.cs.meta",
+      "bytes": 62,
+      "sha256": "F288EB2FFF85B2B82DA3F29C64A45402E478801791B810445CA5CDDF09F9EC21",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150400
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.StreamedActivities.cs.meta",
+      "bytes": 62,
+      "sha256": "7BEFF069D39E934F6C574F59D08758FE38F1A9441F93948CA91A0B778F98DD85",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150402
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.V3.cs.meta",
+      "bytes": 62,
+      "sha256": "313A6CA057F4315E5A15F486E700AF6F0B97432A8629B7C01CB391084C891082",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150404
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.Volume.cs.meta",
+      "bytes": 62,
+      "sha256": "2B88546FE6013CB4E8F57AD0E2F7526D8EF6B45AFCACFE174138289AF7269323",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150406
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/GeneratedGalaxyEngineTests.cs.meta",
+      "bytes": 62,
+      "sha256": "60FBBCA3788A1CF22E9454F6C2E3EFDEA374173DC0AFF8DBC8E09BC809129F27",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150408
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/HobbyDS9.UnityReview.Tests.asmdef.meta",
+      "bytes": 62,
+      "sha256": "253EBADFAA4C378B8848902C338B8E5EAB1B0621AEB33C01DFB1688495D37FB3",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150410
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/IntegratedPlaytestEditModeTests.cs.meta",
+      "bytes": 62,
+      "sha256": "F54D5F218A8FDE15A9D3EBDC2083C8B2C07C69F5B5A902FF1134641EBDBD3029",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150412
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/PlayableFleetEngineTests.cs.meta",
+      "bytes": 62,
+      "sha256": "3A8AE5DF2EB3F35245D6AA2549DF8E6360B83E511E20BFC5A94CF054276131CD",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150414
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/PlayerConsoleRenderTests.cs.meta",
+      "bytes": 62,
+      "sha256": "7F5AB8D71F6DB23F98ED31CEAF10BCCA698CB83DC6327CC3E7EF8659C2C369C1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150416
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/ReviewBindingEditModeTests.cs.meta",
+      "bytes": 62,
+      "sha256": "3CE5AC3EB1966A5F657CC30EC6640A66D461C961D47F27A489E12FBB97435AD4",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150418
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/SolAssetBindingTests.cs.meta",
+      "bytes": 62,
+      "sha256": "603E11290548640C5D2FF96C5ED8F2BDC535FC3A7D0CB4F48B3726116D257CCE",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 14636698789270715
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Tests/SystemOverviewTests.cs.meta",
+      "bytes": 60,
+      "sha256": "0A5BADE37C401530C9C280360597716D8316CC9C4C7C98BAF55E8FFCE2315B87",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 1125899908696791
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime.meta",
+      "bytes": 121,
+      "sha256": "BB4422532477FF363B0D84CB5FFC014B44B4E6FD470C2404F48F6BC11A6C5466",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150419
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/AudioDirector.cs.meta",
+      "bytes": 62,
+      "sha256": "9BF5ACBFB40C001B1E9A6088B5ADCC763E5914276F1EF112FFFCB12DC9D99179",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150422
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/AudioOutputListener.cs.meta",
+      "bytes": 62,
+      "sha256": "ED94105B5560F5099234AAB76D16B7EC7AA13921541F572B237DF665FC5F4361",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150424
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/AudioPanel.cs.meta",
+      "bytes": 62,
+      "sha256": "AF82759E59C5EFBA6A952FB80D4443B47A4BE0C6690B55F1E5043909234DD426",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150426
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/CampaignDesigner.cs.meta",
+      "bytes": 60,
+      "sha256": "036A544E31D0B95CBAE45438B5E8D87A216B9536EE926175CB1EAC7646D2B276",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150428
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/CampaignHost.cs.meta",
+      "bytes": 62,
+      "sha256": "429658296B926A0711A9AB388F274FE92D8305063FE1BA956391D7615047FD37",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150430
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ClientEntry.cs.meta",
+      "bytes": 62,
+      "sha256": "3AB5B5D22F5F6262081564DAD1F62539DB1F56CD50177207A1265415D2C667BA",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150432
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/CombatOrchestrator.cs.meta",
+      "bytes": 62,
+      "sha256": "AC214B8755728783D2897516B7641EE078571F81489D44CA963A2DC4DCC1C5DB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150434
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/CombatPanelView.cs.meta",
+      "bytes": 62,
+      "sha256": "6F692F3FC889562C949055C489DDE3199BB10AF8B61F6E33FECD2EDF8CF7D801",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150436
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/FixtureShipDesignPreviewProvider.cs.meta",
+      "bytes": 62,
+      "sha256": "189FA063D2DCCD185FE2E94A81BE63FDAAC95ED5296349E4F3201BC511AB8E03",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150438
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/GalaxyMap.cs.meta",
+      "bytes": 62,
+      "sha256": "316C508F7D8F5E84E88D60A81DCFC8923330D9D2EFD0A9AA32F89BA46C37CA29",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150440
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/GalaxyProjection.cs.meta",
+      "bytes": 62,
+      "sha256": "CF52849F14CB141A4BBDB3AED6E5B9A57D36C74AD24E469F2DBB78C52CF0A1EB",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150442
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/HobbyDS9.UnityClient.asmdef.meta",
+      "bytes": 62,
+      "sha256": "4AD1382B1BE7A6F8559503A06FC6DDBB9E72330A54EDD0A22DC3B5EF82FF1CC9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150444
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/IntegratedAudioPanelBridge.cs.meta",
+      "bytes": 62,
+      "sha256": "FAEC1C26739CC76E7E7629A041A7A46455504AF35E53C18CAFD5F9BE45002E59",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150446
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/IntegratedDesignerPanelBridge.cs.meta",
+      "bytes": 62,
+      "sha256": "4D607CDAB1F9236E57508EFC76BAE2E5466A6F8D0B470C55F2AE5F217979A136",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150448
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/LcarsComponents.cs.meta",
+      "bytes": 62,
+      "sha256": "577264662E95F164C06FEC4BCF969CBF100FDAF2A75FCF691D8E3E315406CA24",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150450
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/LcarsPowerSlider.cs.meta",
+      "bytes": 60,
+      "sha256": "64824A6110317E9799016AC6048044537C9CF274B42FC7E8664E6BEE4EA3911F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150452
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/LcarsSfxCatalog.cs.meta",
+      "bytes": 62,
+      "sha256": "1AEFE22FAF8B86DAC1B7197AA862C11C8394C6B4E8A54C9062A2CC7C7D9EE866",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150454
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/LcarsShell.cs.meta",
+      "bytes": 62,
+      "sha256": "8CE6C5BDC7C7A8911ADBEA526873A6C5F25BC71429C34E865D40430FD8C6DC03",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150456
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/MusicCatalog.cs.meta",
+      "bytes": 62,
+      "sha256": "C81E2CA19D154301CF574CB1287EF9CF564DB61DD8012194E846949AA7F99489",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150458
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/MusicPolicy.cs.meta",
+      "bytes": 62,
+      "sha256": "153AC6239B09356598A57343F0D84E262CBC53545016B3CDCFA9835ABF0069F6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150460
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/NativeAcceptanceProbe.cs.meta",
+      "bytes": 251,
+      "sha256": "CCECAC7233BF37F86FD36C6B035429FBB531B4F7D706D7E5A65478F85CD857C9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150462
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ProductionOverviewView.cs.meta",
+      "bytes": 62,
+      "sha256": "4A36C666D17BE4BD2A723C858F56601BF3B2AC160AC065A8AE73CBDCBD20EE0D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150464
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ResearchPanelView.cs.meta",
+      "bytes": 62,
+      "sha256": "80E3640B72F5D5693CC39F6C596E6148697B91F487BEF6AAC2E366850B55E8E2",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150466
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ResponsiveLayoutPolicy.cs.meta",
+      "bytes": 62,
+      "sha256": "C8B177B01E0BB1CAC102AF86733809D9DBBC4B7F3DCB4CC4D9CB6912F18B1CF5",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150468
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/SaveSlotStore.cs.meta",
+      "bytes": 62,
+      "sha256": "A45C6DDAB64C5A27507FA787746D0C15F9D8F3C1E22C1AF59203C7F696CE0B32",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150470
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ScienceAllocationDraft.cs.meta",
+      "bytes": 62,
+      "sha256": "9E8A023AB064CBFB138FEE6D50C34EF909BA203468AF1C608FB83FBE3DAF2049",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150472
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/SfxActionFeedback.cs.meta",
+      "bytes": 62,
+      "sha256": "5C318499FA5F1ABBEBF6860878226A6E968D779FC917C43119244C18E45018E9",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150474
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/SfxDirector.cs.meta",
+      "bytes": 62,
+      "sha256": "2968E61394579F30770F36F194BEDE8A4B7FAD708DE3B628C09E670149AF3E83",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150476
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/SfxFeedback.cs.meta",
+      "bytes": 62,
+      "sha256": "E817D6A6E95B0E0ACED3F5DBEE1AF64D58A58E247A3DB45F1A651BE891E49D44",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150478
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/SfxPolicy.cs.meta",
+      "bytes": 62,
+      "sha256": "20102E36931AC2D7C86C134129CCEDDCFCC1804366F9DBE67EFFAF92339A4B96",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150480
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ShipDesignDraft.cs.meta",
+      "bytes": 62,
+      "sha256": "8EB1C0952485D66044764488F800D4B8513CE081C75DFCB66CB3765267FA5DC6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150482
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ShipDesignFixtureLoader.cs.meta",
+      "bytes": 62,
+      "sha256": "7610969EABE602C59AD60B543A6E01CA70F59973D6AE789F1AB70698B4DB2E62",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150484
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ShipDesignerGraphics.cs.meta",
+      "bytes": 62,
+      "sha256": "19FF1AEA798799719B3DA08251844E76FAB09A82A485ED2CC98FA8654129E5F8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150486
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ShipDesignerPreview.cs.meta",
+      "bytes": 62,
+      "sha256": "112A154DC8B27E832AD31B054339E1832EC3CF85039A7AD8666CF39970225592",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150488
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/ShipDesignerView.cs.meta",
+      "bytes": 62,
+      "sha256": "9A5574543B6C06BF3A70B240494EA60A675FDA73F274559BAC0A67E2C0F1BD62",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150490
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/StrategicClient.cs.meta",
+      "bytes": 62,
+      "sha256": "BABA6DEFCF3B892EF710DA48C05F66942862417B62D7DDD95E881886DC0A6F38",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150492
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/StrategicPanels.cs.meta",
+      "bytes": 62,
+      "sha256": "0DA6A121D2C4BBBA2CCD810EA022794D4ABA1E2F1FBECF8993EE6D01E83DC2C6",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150494
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/StrategicPrototypePanels.cs.meta",
+      "bytes": 62,
+      "sha256": "43A86AE06C6F435C700EFFC43FD855058FDA90A4DEEA7FD47B44261D7D804261",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150496
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Runtime/StrategicScreenPresentation.cs.meta",
+      "bytes": 62,
+      "sha256": "EC1800BA303E8D60283CDE22259BA1B4C52F296DB622573F5B0A4AAB32765729",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150498
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests.meta",
+      "bytes": 121,
+      "sha256": "4ACAA7C36AAAA09444F39E5CA8048CA7905B88F986D1950BC6884181E89D3110",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150499
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor.meta",
+      "bytes": 121,
+      "sha256": "AF6281CD7ED84D831FF97A3F59921602F6375FBEEB450F82EFDF2276A36BA70D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150501
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor/AudioOutputTests.cs.meta",
+      "bytes": 62,
+      "sha256": "7C384787793D7F2F5062A05F1FED4409150D3301DF64BA0EB92D702FD4D90F8C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150504
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor/AudioTests.cs.meta",
+      "bytes": 62,
+      "sha256": "0209B47F0E04919C87D60AC2D63A206A556F25CF44E555D7EAE48983E8B4E21C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150506
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor/CampaignDesignerTests.cs.meta",
+      "bytes": 60,
+      "sha256": "8E684073F5A163771C95D3719A092D94C1045B16DAC9BFD0634E9C80D7A6C3DD",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150508
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor/ClientTests.cs.meta",
+      "bytes": 62,
+      "sha256": "4C249E69A834207AF745F6984AC8FA8BEE658A4C88551DB39BF5A734923C64E1",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150510
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor/HobbyDS9.UnityClient.Tests.asmdef.meta",
+      "bytes": 62,
+      "sha256": "400D8743703625B3548D341792EBC3D7449EA7D9110A92AA4EB3AD762B804106",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150512
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor/LcarsPowerSliderTests.cs.meta",
+      "bytes": 60,
+      "sha256": "3745D7789C5DE402065944AC184535C7B0A5C89993EFA2AD26840400DEE31484",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150514
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor/LcarsTests.cs.meta",
+      "bytes": 62,
+      "sha256": "D9C536FBF3074A17973C4E9E9F915ADE9FCEE44EA2423F43BA7AD0B908EC8A2E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150516
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor/SfxTests.cs.meta",
+      "bytes": 62,
+      "sha256": "BFFE3226960DF1C88BB70C6D4216248ED733FFD2493D0AC278F99712DD19A3B4",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150518
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor/ShipDesignerTests.cs.meta",
+      "bytes": 62,
+      "sha256": "581D7BD72D71DC6E8D856C2A09A2763B948A4303F636AF5EAAB677BD3B6DC048",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150520
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/Tests/Editor/StrategicPrototypeTests.cs.meta",
+      "bytes": 62,
+      "sha256": "1F87E66F7F3AA7653D3EDCB54EB5C442CD7A820ED09539ED0303454D7C792E9C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150522
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/HobbyDS9/link.xml.meta",
+      "bytes": 62,
+      "sha256": "CFF097764E696BE18271981084BB336CF2FD3E365AE4CF56651669CA027C8588",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150524
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/InputSystem_Actions.inputactions.meta",
+      "bytes": 390,
+      "sha256": "5E2E2329AB736A64146D747108BDE43AFF5F940DA6A98DD48BC35DC7C0B87098",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150526
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Plugins.meta",
+      "bytes": 121,
+      "sha256": "E5ABAD02EC2D6AF4F7696CA78E9F25801E44F927D4B12318F1D7FB357F5AFD66",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150527
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Plugins/HobbyDS9.meta",
+      "bytes": 121,
+      "sha256": "E44BA95BC14475D67185AA156B7F08B8ED0D5C9E8797436FCB6B78B21A6E763F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150529
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Plugins/HobbyDS9/HobbyDS9.Application.dll.meta",
+      "bytes": 428,
+      "sha256": "F33538343778D8BC816313DD8C03B6C6E9230A2B4F9F9E7CC21633766292E311",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150531
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Plugins/HobbyDS9/HobbyDS9.Contracts.dll.meta",
+      "bytes": 428,
+      "sha256": "B8C1EA6219551DBA26DD57FD3D0F1579AE14BDF347EE9B156C57BF9C431566C0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150532
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Plugins/HobbyDS9/HobbyDS9.Simulation.dll.meta",
+      "bytes": 428,
+      "sha256": "D07728904F3333A13DBA1D7C481A7D0B46625AD4065129BF90C100087B2D5374",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150533
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Plugins/HobbyDS9/HobbyDS9.TacticalReviewClient.dll.meta",
+      "bytes": 428,
+      "sha256": "26341169186AE58798AD88C1EBDF9349A4B1EC46E232ACD2C8C917C38B04CC3E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150534
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Readme.asset.meta",
+      "bytes": 190,
+      "sha256": "86B2E76E458E22228995DDDDFABA9422B5DEDCFE216BA9028208D3DD6F831AE7",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150536
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Scenes.meta",
+      "bytes": 180,
+      "sha256": "1E10E142328D62840032ED3035D9492A8AFA3E397694A6C941F8DF3289DEA5D0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150537
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Scenes/SampleScene.unity.meta",
+      "bytes": 162,
+      "sha256": "BAF1A15DF993D52223CE52DAA6BF340FD183FB7E5C3C173ED76FD7F614D6E7F0",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150540
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Settings.meta",
+      "bytes": 180,
+      "sha256": "FA4ADE308D94F4213FE1712FBE10839379C26BC8B4CA3B4C43CF02CCC03A7687",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150541
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Settings/DefaultVolumeProfile.asset.meta",
+      "bytes": 197,
+      "sha256": "43E8F7BED8F99DA631D74EE652953C230594E150CE305D313EC0844E312D574F",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150544
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Settings/Mobile_RPAsset.asset.meta",
+      "bytes": 197,
+      "sha256": "4718CAB1245B68049FC0C4E0ACD26AC7C4A7E8EB7DCDB8F357159A129CA615EC",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150546
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Settings/Mobile_Renderer.asset.meta",
+      "bytes": 197,
+      "sha256": "DA2404303C1D6F6AF244A6BB7AC7D65CC8CBDD741C804CC913BE8BE861E65379",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150548
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Settings/PC_RPAsset.asset.meta",
+      "bytes": 197,
+      "sha256": "DD77AB3EB523C6E234943BC07250360E2AE934CED15C075A56168F2F7A3B5CE4",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150550
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Settings/PC_Renderer.asset.meta",
+      "bytes": 197,
+      "sha256": "0F063B81DB6817DB7EC416712A575DD3E9960330E241DE389115F02ED5B3FFBD",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150552
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Settings/SampleSceneProfile.asset.meta",
+      "bytes": 190,
+      "sha256": "0B8036AF967C670DEB9C96912E7EFDA0895418AD3B2EEB4612B016A4D76A25C8",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150554
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/Settings/UniversalRenderPipelineGlobalSettings.asset.meta",
+      "bytes": 197,
+      "sha256": "9F7756AF7860ADE1E88DB1B5CFFA7DFF8CC535F6AC08819A4E26164BF4018717",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150556
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/TutorialInfo.meta",
+      "bytes": 180,
+      "sha256": "79F6E715F0C28ED4214D96CD73A018A561FC7046E1DEF01A4B46C318A2536F90",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150557
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/TutorialInfo/Editor.meta",
+      "bytes": 202,
+      "sha256": "95691357C049014315FCF6E6F690FCC51CAA2A71AB2ECAEF69FC41674224391B",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150559
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/TutorialInfo/Editor/ReadmeEditor.cs.meta",
+      "bytes": 276,
+      "sha256": "6E8B1ED493B9120709C93FC0C1CA3B5A1F729EA3144EBFC1CE7073EC856F5712",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150562
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/TutorialInfo/Icons.meta",
+      "bytes": 202,
+      "sha256": "50014F60D3214B170318DD12A9201552B6257B8380FB49ECDBA9F90C91A9670E",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150563
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/TutorialInfo/Icons/URP.png.meta",
+      "bytes": 3290,
+      "sha256": "03823EC2C2B908CCB33338F867F94977ED50895D4D692CD4146E15ADA6AE8C8D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150566
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/TutorialInfo/Layout.wlt.meta",
+      "bytes": 184,
+      "sha256": "436FEB69902B5241ED43E01228B8AB54849270CDB6ADCC0F35B83B7E5CE6522D",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150568
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/TutorialInfo/Readme.cs.meta",
+      "bytes": 329,
+      "sha256": "D5FD919374EF6579B847F253237C31E58E1D5D4302A1EBA70B13C9AF7ECA7958",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150570
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/TutorialInfo/StyleSheets.meta",
+      "bytes": 202,
+      "sha256": "C55B750860BB8AA13BDAC48BB17DCF9ABAACD884AEDDE1715957D208E9996A17",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150571
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/TutorialInfo/StyleSheets/ReadmeEditor.uss.meta",
+      "bytes": 316,
+      "sha256": "7427D4562812247963FD9BDF5F7D245980EEB750D0A8DDE7FE5B92DD102014FF",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150574
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/TutorialInfo/StyleSheets/ReadmeEditorDark.uss.meta",
+      "bytes": 316,
+      "sha256": "8B59BC4713C24422F8F2B2276023E1DFE5DBBD4DB4A17813B44808BD23F5043C",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150576
+      }
+    },
+    {
+      "relativePath": "client/HobbyDS9.Unity/Assets/TutorialInfo/StyleSheets/ReadmeEditorLight.uss.meta",
+      "bytes": 316,
+      "sha256": "249FD0525FD86CFDC26D76806CB43A0B39D42019270168D2E79B4F0DCDB56126",
+      "fileIdentity": {
+        "device": 5914021163470869081,
+        "inode": 562949955150578
+      }
+    }
+  ],
+  "prospectivePackageHash": "9b01863cc03265a875ee0ccd20028c7c21b7ade3a741bb6ef566bee176806320",
+  "prospectiveHashBasis": "IN_MEMORY_SOURCE_DATA_RECIPE_ONLY_NOT_WRITER_EXECUTION_OR_PORTABLE_VALIDATION",
+  "prospectiveScenarioContentHash": "ca48bdbe80a3ac56c53871228f33b561a0b89eb85bf1d18195007548d7f17f33",
+  "prospectiveScenarioBytes": 199082,
+  "namespacePairs": 43,
+  "namespaceOriginalToNew": {
+    "component.reactor.v1": "component.utility.reactor.v1",
+    "component-family.reactor": "component-family.utility.reactor",
+    "component.life-support.v1": "component.utility.life-support.v1",
+    "component-family.life-support": "component-family.utility.life-support",
+    "component.command.v1": "component.utility.command.v1",
+    "component-family.command": "component-family.utility.command",
+    "component.propulsion.v1": "component.utility.propulsion.v1",
+    "component-family.propulsion": "component-family.utility.propulsion",
+    "component.survey-sensors.v1": "component.utility.survey-sensors.v1",
+    "component-family.survey-sensors": "component-family.utility.survey-sensors",
+    "component.escort-sensors.v1": "component.utility.escort-sensors.v1",
+    "component-family.escort-sensors": "component-family.utility.escort-sensors",
+    "component.labs.v1": "component.utility.labs.v1",
+    "component-family.labs": "component-family.utility.labs",
+    "component.mission-support.v1": "component.utility.mission-support.v1",
+    "component-family.mission-support": "component-family.utility.mission-support",
+    "component.small-shield.v1": "component.utility.small-shield.v1",
+    "component-family.small-shield": "component-family.utility.small-shield",
+    "component.escort-shield.v1": "component.utility.escort-shield.v1",
+    "component-family.escort-shield": "component-family.utility.escort-shield",
+    "component.energy-bank.v1": "component.utility.energy-bank.v1",
+    "component-family.energy-bank": "component-family.utility.energy-bank",
+    "component.launcher.v1": "component.utility.launcher.v1",
+    "component-family.launcher": "component-family.utility.launcher",
+    "component.escort-support.v1": "component.utility.escort-support.v1",
+    "component-family.escort-support": "component-family.utility.escort-support",
+    "component.reactor.v2": "component.utility.reactor.v2",
+    "component.reactor.v3": "component.utility.reactor.v3",
+    "component.propulsion.v2": "component.utility.propulsion.v2",
+    "component.propulsion.v3": "component.utility.propulsion.v3",
+    "component.propulsion.v4": "component.utility.propulsion.v4",
+    "component.escort-shield.v2": "component.utility.escort-shield.v2",
+    "component.small-shield.v2": "component.utility.small-shield.v2",
+    "component.escort-shield.v3": "component.utility.escort-shield.v3",
+    "component.energy-bank.v2": "component.utility.energy-bank.v2",
+    "component.energy-bank.v3": "component.utility.energy-bank.v3",
+    "component.launcher.v2": "component.utility.launcher.v2",
+    "component.life-support.v2": "component.utility.life-support.v2",
+    "component.life-support.v3": "component.utility.life-support.v3",
+    "component.command.v2": "component.utility.command.v2",
+    "component.command.v3": "component.utility.command.v3",
+    "component.survey-sensors.v2": "component.utility.survey-sensors.v2",
+    "component.labs.v2": "component.utility.labs.v2"
+  },
+  "modernReadyByteSemanticUnchanged": true,
+  "catalogueCounts": {
+    "HullFamilies": 4,
+    "Hulls": 6,
+    "Components": 47,
+    "Roles": 6
+  },
+  "engineeringApplicationCount": 20,
+  "derivedVersionCount": 19,
+  "versionAccessCount": 53,
+  "remainingIdOrFamilyRevisionCollisions": [],
+  "writerImportedOrExecuted": false,
+  "scenarioOrResourceOutputCreated": false,
+  "nativeOrPackageValidityClaim": false,
+  "authorityInputs": [
+    {
+      "sha256": "1E27E18B67F78D8597761082D08115EE58B400008BBBFCA616FC86B17D71DB92",
+      "path": "E:\\HobbyDS9\\docs\\usage-stop-80-owner-20261110.json",
+      "bytes": 2382
+    },
+    {
+      "sha256": "A4EC3AAF91A453BFD8177F704C878CC14AFA8E281E12AC3E8A0A006A024AF344",
+      "path": "E:\\HobbyDS9\\docs\\usage-continuation-owner-20261112.json",
+      "bytes": 3172
+    }
+  ]
+}

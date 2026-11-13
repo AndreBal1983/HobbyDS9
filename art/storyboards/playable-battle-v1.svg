@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1060" viewBox="0 0 1600 1060">
+<defs>
+ <style>text{font-family:Segoe UI,sans-serif;fill:#eeeaf2;font-size:19px}.title{fill:#efb16b;font-size:25px}.small{font-size:16px;fill:#a9b8c8}.panel{fill:#101b29;stroke:#45566a;stroke-width:2}.ui{fill:#1b2a3c;stroke:#b9ace6}.arrow{fill:none;stroke:#9fd8fb;stroke-width:2;stroke-dasharray:8 6}</style>
+ <g id="fed"><ellipse rx="38" ry="18" fill="#a4b6c8" stroke="#eeeaf2"/><path d="M0 15V48M-32 14V58M32 14V58" stroke="#788ca4" stroke-width="9"/><path d="M-32 26V48M32 26V48" stroke="#75baff" stroke-width="4"/><ellipse cy="38" rx="11" ry="21" fill="#8a9bae"/></g>
+ <g id="card"><path d="M-48-6L-40-26-15-34H15L40-26 48-6 16 3 11 57H-11L-16 3Z" fill="#b99556" stroke="#edc589"/><ellipse cy="-22" rx="19" ry="12" fill="#d4b579"/><path d="M0-8V40" stroke="#6e4927" stroke-width="7"/></g>
+</defs>
+<rect width="1600" height="1060" fill="#050a10"/>
+<text x="35" y="44" class="title">PLAYABLE BATTLE / ORIGINAL PRESENTATION STORYBOARD</text>
+<text x="35" y="76" class="small">Schematic framing, not rendered runtime. Stage spacing never decides combat. Show only the actor-filtered current round.</text>
+<g transform="translate(30 105)">
+ <rect class="panel" width="500" height="410" rx="14"/><text x="20" y="36" class="title">01 / PAUSED PLANNING</text>
+ <rect x="15" y="55" width="115" height="290" class="ui"/><text x="25" y="85">Own fleets</text><text x="25" y="116" class="small">Selected unit</text>
+ <g transform="translate(210 235) rotate(48)"><use href="#fed"/></g><g transform="translate(160 290) rotate(48) scale(.7)"><use href="#fed"/></g>
+ <path d="M375 120L398 143 375 166 352 143Z" stroke="#efb16b" fill="none" stroke-width="3"/><text x="310" y="192" class="small">Disclosed contact</text>
+ <text x="145" y="330" class="small">Wide three-quarter / own bow readable</text><text x="20" y="380">Standing intent ≠ unsent replacement</text>
+</g>
+<g transform="translate(550 105)">
+ <rect class="panel" width="500" height="410" rx="14"/><text x="20" y="36" class="title">02 / COMMIT THIS ROUND</text>
+ <g transform="translate(160 180) rotate(48)"><use href="#fed"/></g>
+ <rect x="45" y="280" width="410" height="65" class="ui" rx="9"/><text x="65" y="308">Own order accepted</text><text x="65" y="334" class="small">Waiting for authoritative current-round result</text>
+ <text x="35" y="380">No opposing readiness or future-round movie</text>
+</g>
+<g transform="translate(1070 105)">
+ <rect class="panel" width="500" height="410" rx="14"/><text x="20" y="36" class="title">03 / RESOLVED MANEUVER</text>
+ <g transform="translate(150 235) rotate(65)"><use href="#fed"/></g><g transform="translate(360 155) rotate(-105)"><use href="#card"/></g>
+ <path class="arrow" d="M100 300Q160 180 255 185"/><path class="arrow" d="M450 215Q360 240 305 170"/>
+ <text x="30" y="330" class="small">Dolly follows the accepted result, not request</text><text x="30" y="380">Separate fleet slots / no physics resolver</text>
+</g>
+<g transform="translate(30 540)">
+ <rect class="panel" width="500" height="410" rx="14"/><text x="20" y="36" class="title">04 / LAWFUL EVENT EMPHASIS</text>
+ <g transform="translate(125 225) rotate(70)"><use href="#fed"/></g><g transform="translate(375 150) rotate(-110)"><use href="#card"/></g>
+ <path d="M145 210L350 160" stroke="#ffcd77" stroke-width="4"/><ellipse cx="362" cy="160" rx="42" ry="27" fill="none" stroke="#9fd8fb" stroke-width="5"/>
+ <text x="25" y="300" class="small">Shot / defence / sector hit only when recorded</text><text x="25" y="330" class="small">Unknown launcher: incoming effect from edge</text><text x="25" y="380">Miss gets no hit flash; no invented ammo use</text>
+</g>
+<g transform="translate(550 540)">
+ <rect class="panel" width="500" height="410" rx="14"/><text x="20" y="36" class="title">05 / PAUSE AT CHECKPOINT</text>
+ <rect x="30" y="70" width="440" height="190" class="ui" rx="9"/><text x="50" y="108">Actual hull / shield pools / finite ammo</text><text x="50" y="145" class="small">Round result retained; fresh choices now</text><text x="50" y="184" class="small">Hold · Charge · Flank · Screen</text><text x="50" y="220" class="small">Fighting withdrawal / when legal</text>
+ <text x="25" y="310" class="small">Repeat only while another round is available</text><text x="25" y="380">Maximum three rounds / end sooner if required</text>
+</g>
+<g transform="translate(1070 540)">
+ <rect class="panel" width="500" height="410" rx="14"/><text x="20" y="36" class="title">06 / RESULTS BEFORE SPECTACLE</text>
+ <text x="35" y="100">Own survivors / losses / retained stocks</text><text x="35" y="143" class="small">Per-fleet / ship facts from actual outcome</text><g transform="translate(345 215) rotate(48) scale(.8)"><use href="#fed"/></g>
+ <rect x="35" y="285" width="430" height="55" class="ui" rx="8"/><text x="55" y="319">Confirm aftermath once → strategic map</text><text x="25" y="380">Early defeat skips unused rounds; no refill</text>
+</g>
+<text x="35" y="1005" class="small">Camera / speed / pause / skip are presentation only. No RNG, extra shots, duplicated resolve/finalize or private-state access.</text>
+<text x="35" y="1035" class="small">Reference direction: owner-supplied Endless Space video; exact video unavailable. Original schematic; no borrowed game artwork.</text>
+</svg>

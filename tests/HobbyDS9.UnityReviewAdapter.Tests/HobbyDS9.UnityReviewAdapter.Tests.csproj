@@ -8,6 +8,26 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../scenarios/colonisation-cycle-v1/*.json" Link="scenarios/colonisation-cycle-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRepeatV1/repeat-policy.json" Link="scenarios/colonisation-repeat-v1/repeat-policy.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../scenarios/colonisation-expansion-v1/*.json" Link="scenarios/colonisation-expansion-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRosterV2/roster.json" Link="scenarios/colonisation-roster-v2/roster.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/streamed-native1000-week2.json.gz" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../scenarios/colonisation-v1/*.json" Link="scenarios/colonisation-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../scenarios/activities-v1/*.json" Link="scenarios/activities-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../scenarios/published-construction-v1/support.json" Link="scenarios/published-construction-v1/support.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PublishedConstructionV1/support.json" Link="scenarios/published-construction-v1/unity-support.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentationV3/nebula.bytes" Link="galaxy-v3/nebula.bytes" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentationV3/particles.json" Link="galaxy-v3/particles.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../HobbyDS9.Simulation.Tests/Fixtures/generated-campaign-v1/aftermath.json" Link="static-v1/aftermath.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/samples/galaxy-route-intent-v1/examples.json" Link="galaxy-samples/route-intent/examples.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/samples/natural-galaxy-v5/*.json" Link="galaxy-samples/natural/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/samples/scaled-galaxy-v4/*.json" Link="galaxy-samples/scaled/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/samples/generated-galaxy-v1/*.galaxy.json" Link="galaxy-samples/v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../docs/samples/generated-galaxy-v2/*.galaxy.json" Link="galaxy-samples/v2/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../../src/HobbyDS9.Headless/PlayableFleetPackageReader.cs" Link="PlayableFleetPackageReader.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/PlayableFleetWalkthrough.cs" Link="PlayableFleetWalkthrough.cs" />
+    <None Include="../../scenarios/playable-fleet-v1/*.json" Link="scenarios/playable-fleet-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/HobbyDS9.Headless/FrontierPackageReader.cs" Link="FrontierPackageReader.cs" />
     <Compile Include="../../src/HobbyDS9.Headless/IntegratedPlaytestPackageReader.cs" Link="IntegratedPlaytestPackageReader.cs" />
     <Compile Include="../../src/HobbyDS9.Headless/FrontierWalkthrough.cs" Link="FrontierWalkthrough.cs" />

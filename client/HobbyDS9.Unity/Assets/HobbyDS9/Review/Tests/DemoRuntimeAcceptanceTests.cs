@@ -39,11 +39,32 @@ namespace HobbyDS9.UnityReview.Tests
                 {
                     var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);target.Create();doc.panelSettings.targetTexture=target;
                     var root=doc.rootVisualElement;root.style.width=size.x;root.style.height=size.y;yield return null;yield return null;yield return null;
-                    Assert.That(root.Q("demo-objective").worldBound.yMax,Is.LessThan(root.Q("player-footer").worldBound.yMin));
-                    Assert.That(root.Q("player-footer").worldBound.yMax,Is.LessThanOrEqualTo(size.y+1));
+                    var footer=root.Q("player-footer");
+                    if(footer.resolvedStyle.display==DisplayStyle.None)
+                        Assert.That(footer.Query<Button>().ToList(),Is.Empty,"Landing has no redundant bottom action");
+                    else
+                    {
+                        Assert.That(root.Q("demo-objective").worldBound.yMax,Is.LessThan(footer.worldBound.yMin));
+                        Assert.That(footer.worldBound.yMax,Is.LessThanOrEqualTo(size.y+1));
+                    }
                     var prior=RenderTexture.active;RenderTexture.active=target;var png=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);png.ReadPixels(new Rect(0,0,size.x,size.y),0,0);png.Apply();File.WriteAllBytes(Path.Combine(output,size.x+"x"+size.y+"-"+name+".png"),png.EncodeToPNG());RenderTexture.active=prior;
                     doc.panelSettings.targetTexture=null;target.Release();UnityEngine.Object.Destroy(target);UnityEngine.Object.Destroy(png);
                 }
+            }
+            var landingFrame=entry.Presentation!.Model.Current.Frame;
+            foreach(var settings in new[]{"Audio","Display"})
+            {
+                var root=doc.rootVisualElement;
+                Assert.That(root.Q("player-footer").Query<Button>().ToList(),Is.Empty);
+                Assert.That(root.Q("player-footer").resolvedStyle.display,Is.EqualTo(DisplayStyle.None));
+                var open=root.Q("review-central-content").Query<Button>().ToList().Single(b=>b.text==settings);
+                using(var e=NavigationSubmitEvent.GetPooled()){e.target=open;open.SendEvent(e);}yield return null;
+                root=doc.rootVisualElement;var back=root.Q<Button>("player-back-to-menu");
+                Assert.That(root.Q("player-top-actions").Contains(back),Is.True,"Pre-campaign settings return through the upper action area");
+                Assert.That(root.Q("player-footer").Query<Button>().ToList(),Is.Empty);
+                Click("player-back-to-menu");yield return null;
+                Assert.That(entry.Presentation.Model.Current.Frame,Is.SameAs(landingFrame),"Settings navigation sends no campaign command");
+                Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);
             }
             yield return Capture("Start-menu");Click("demo-start");yield return null;
             var model=entry.Presentation!.Model;var frame=model.Current.Frame;Assert.That(frame.Demo!.Outcome,Is.EqualTo(CampaignDemoOutcome.Active));

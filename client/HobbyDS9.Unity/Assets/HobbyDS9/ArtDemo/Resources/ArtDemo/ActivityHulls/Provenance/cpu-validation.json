@@ -1,0 +1,456 @@
+{
+  "method": "Independent Python/PIL/numpy parsing and CPU painter raster; no GPU/Blender render/Unity",
+  "results": [
+    {
+      "glb": "Defiant-v3\\Models\\Defiant_LOD0.glb",
+      "triangles": 29998,
+      "allPrimitivesNormals": true,
+      "allPrimitivesUV": true,
+      "embeddedImages": [
+        {
+          "name": "Defiant_Image_2",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "mime": "image/jpeg",
+          "sha256": "1fef96e2881a7a24640f23f850433bf52c2f81baa4202bb455995f26badfbcfc"
+        },
+        {
+          "name": "Defiant_Image_0",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "mime": "image/jpeg",
+          "sha256": "1215f1d31321234593a6f2bbbe2cab1e32129d4c313fb8d89a48108945fd2bb4"
+        },
+        {
+          "name": "Defiant_Image_1",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "mime": "image/jpeg",
+          "sha256": "5b1bec88be3f0117115cbc211bde1ed764f1f3124918f42d4879b4595bb1d66f"
+        }
+      ],
+      "materials": [
+        {
+          "doubleSided": true,
+          "name": "Material_0",
+          "normalTexture": {
+            "index": 0
+          },
+          "pbrMetallicRoughness": {
+            "baseColorTexture": {
+              "index": 1
+            },
+            "metallicRoughnessTexture": {
+              "index": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "obj": "Defiant-v3\\Models\\Defiant_LOD0.obj",
+      "vertices": 14906,
+      "triangles": 29998,
+      "finite": true,
+      "nearZeroAreaTriangles": 0,
+      "bounds": [
+        [
+          -64.19637,
+          -12.36895,
+          -85.01908
+        ],
+        [
+          64.01022,
+          13.64885,
+          84.93017
+        ]
+      ]
+    },
+    {
+      "glb": "Constitution\\Models\\ConstitutionExplorer_LOD0.glb",
+      "triangles": 6592,
+      "allPrimitivesNormals": true,
+      "allPrimitivesUV": true,
+      "embeddedImages": [],
+      "materials": [
+        {
+          "doubleSided": true,
+          "name": "CON_Hull_Pearl",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.5199999809265137,
+              0.5899999737739563,
+              0.6499999761581421,
+              1
+            ],
+            "metallicFactor": 0.2800000011920929,
+            "roughnessFactor": 0.4000000059604645
+          }
+        },
+        {
+          "doubleSided": true,
+          "name": "CON_Panel_Silver",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.6800000071525574,
+              0.7200000286102295,
+              0.75,
+              1
+            ],
+            "metallicFactor": 0.33000001311302185,
+            "roughnessFactor": 0.4000000059604645
+          }
+        },
+        {
+          "doubleSided": true,
+          "name": "CON_Panel_Slate",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.25,
+              0.33000001311302185,
+              0.4000000059604645,
+              1
+            ],
+            "metallicFactor": 0.3799999952316284,
+            "roughnessFactor": 0.4300000071525574
+          }
+        },
+        {
+          "doubleSided": true,
+          "name": "CON_Phaser_Bronze",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.2800000011920929,
+              0.20000000298023224,
+              0.10999999940395355,
+              1
+            ],
+            "metallicFactor": 0.6000000238418579,
+            "roughnessFactor": 0.3799999952316284
+          }
+        },
+        {
+          "doubleSided": true,
+          "emissiveFactor": [
+            0.03125,
+            0.337500008381903,
+            1
+          ],
+          "extensions": {
+            "KHR_materials_emissive_strength": {
+              "emissiveStrength": 1.280000038146973
+            }
+          },
+          "name": "CON_Drive_Blue",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.02500000037252903,
+              0.27000001072883606,
+              0.800000011920929,
+              1
+            ],
+            "metallicFactor": 0.20000000298023224,
+            "roughnessFactor": 0.3499999940395355
+          }
+        },
+        {
+          "doubleSided": true,
+          "name": "CON_Recess_Graphite",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.02500000037252903,
+              0.03500000014901161,
+              0.05000000074505806,
+              1
+            ],
+            "metallicFactor": 0.2800000011920929,
+            "roughnessFactor": 0.44999998807907104
+          }
+        },
+        {
+          "doubleSided": true,
+          "emissiveFactor": [
+            0.6000000089406967,
+            0.240000013113022,
+            0.047999999642372115
+          ],
+          "name": "CON_Deflector_Amber",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.75,
+              0.30000001192092896,
+              0.05999999865889549,
+              1
+            ],
+            "metallicFactor": 0.3199999928474426,
+            "roughnessFactor": 0.4000000059604645
+          }
+        },
+        {
+          "doubleSided": true,
+          "emissiveFactor": [
+            0.6000000089406967,
+            0.0360000019669533,
+            0.020000000596046452
+          ],
+          "name": "CON_Collector_Red",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.75,
+              0.04500000178813934,
+              0.02500000037252903,
+              1
+            ],
+            "metallicFactor": 0.2199999988079071,
+            "roughnessFactor": 0.3499999940395355
+          }
+        }
+      ]
+    },
+    {
+      "obj": "Constitution\\Models\\ConstitutionExplorer_LOD0.obj",
+      "vertices": 3690,
+      "triangles": 6592,
+      "finite": true,
+      "nearZeroAreaTriangles": 0,
+      "bounds": [
+        [
+          -86.45504,
+          -45.57734,
+          -150.0
+        ],
+        [
+          86.45504,
+          45.57734,
+          150.0
+        ]
+      ]
+    },
+    {
+      "glb": "Defiant-v3\\Models\\Defiant_LOD1.glb",
+      "triangles": 7998,
+      "allPrimitivesNormals": true,
+      "allPrimitivesUV": true,
+      "embeddedImages": [
+        {
+          "name": "Defiant_Image_2",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "mime": "image/jpeg",
+          "sha256": "1fef96e2881a7a24640f23f850433bf52c2f81baa4202bb455995f26badfbcfc"
+        },
+        {
+          "name": "Defiant_Image_0",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "mime": "image/jpeg",
+          "sha256": "1215f1d31321234593a6f2bbbe2cab1e32129d4c313fb8d89a48108945fd2bb4"
+        },
+        {
+          "name": "Defiant_Image_1",
+          "dimensions": [
+            2048,
+            2048
+          ],
+          "mime": "image/jpeg",
+          "sha256": "5b1bec88be3f0117115cbc211bde1ed764f1f3124918f42d4879b4595bb1d66f"
+        }
+      ],
+      "materials": [
+        {
+          "doubleSided": true,
+          "name": "Material_0",
+          "normalTexture": {
+            "index": 0
+          },
+          "pbrMetallicRoughness": {
+            "baseColorTexture": {
+              "index": 1
+            },
+            "metallicRoughnessTexture": {
+              "index": 2
+            }
+          }
+        }
+      ]
+    },
+    {
+      "glb": "Constitution\\Models\\ConstitutionExplorer_LOD1.glb",
+      "triangles": 2500,
+      "allPrimitivesNormals": true,
+      "allPrimitivesUV": true,
+      "embeddedImages": [],
+      "materials": [
+        {
+          "doubleSided": true,
+          "name": "CON_Hull_Pearl",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.5199999809265137,
+              0.5899999737739563,
+              0.6499999761581421,
+              1
+            ],
+            "metallicFactor": 0.2800000011920929,
+            "roughnessFactor": 0.4000000059604645
+          }
+        },
+        {
+          "doubleSided": true,
+          "name": "CON_Panel_Silver",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.6800000071525574,
+              0.7200000286102295,
+              0.75,
+              1
+            ],
+            "metallicFactor": 0.33000001311302185,
+            "roughnessFactor": 0.4000000059604645
+          }
+        },
+        {
+          "doubleSided": true,
+          "name": "CON_Panel_Slate",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.25,
+              0.33000001311302185,
+              0.4000000059604645,
+              1
+            ],
+            "metallicFactor": 0.3799999952316284,
+            "roughnessFactor": 0.4300000071525574
+          }
+        },
+        {
+          "doubleSided": true,
+          "name": "CON_Phaser_Bronze",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.2800000011920929,
+              0.20000000298023224,
+              0.10999999940395355,
+              1
+            ],
+            "metallicFactor": 0.6000000238418579,
+            "roughnessFactor": 0.3799999952316284
+          }
+        },
+        {
+          "doubleSided": true,
+          "emissiveFactor": [
+            0.03125,
+            0.337500008381903,
+            1
+          ],
+          "extensions": {
+            "KHR_materials_emissive_strength": {
+              "emissiveStrength": 1.280000038146973
+            }
+          },
+          "name": "CON_Drive_Blue",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.02500000037252903,
+              0.27000001072883606,
+              0.800000011920929,
+              1
+            ],
+            "metallicFactor": 0.20000000298023224,
+            "roughnessFactor": 0.3499999940395355
+          }
+        },
+        {
+          "doubleSided": true,
+          "name": "CON_Recess_Graphite",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.02500000037252903,
+              0.03500000014901161,
+              0.05000000074505806,
+              1
+            ],
+            "metallicFactor": 0.2800000011920929,
+            "roughnessFactor": 0.44999998807907104
+          }
+        },
+        {
+          "doubleSided": true,
+          "emissiveFactor": [
+            0.6000000089406967,
+            0.240000013113022,
+            0.047999999642372115
+          ],
+          "name": "CON_Deflector_Amber",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.75,
+              0.30000001192092896,
+              0.05999999865889549,
+              1
+            ],
+            "metallicFactor": 0.3199999928474426,
+            "roughnessFactor": 0.4000000059604645
+          }
+        },
+        {
+          "doubleSided": true,
+          "emissiveFactor": [
+            0.6000000089406967,
+            0.0360000019669533,
+            0.020000000596046452
+          ],
+          "name": "CON_Collector_Red",
+          "pbrMetallicRoughness": {
+            "baseColorFactor": [
+              0.75,
+              0.04500000178813934,
+              0.02500000037252903,
+              1
+            ],
+            "metallicFactor": 0.2199999988079071,
+            "roughnessFactor": 0.3499999940395355
+          }
+        }
+      ]
+    },
+    {
+      "texture": "Defiant-v3\\Textures\\Defiant_Image_0.jpg",
+      "decodedDimensions": [
+        2048,
+        2048
+      ],
+      "mode": "RGB",
+      "sha256": "1215f1d31321234593a6f2bbbe2cab1e32129d4c313fb8d89a48108945fd2bb4"
+    },
+    {
+      "texture": "Defiant-v3\\Textures\\Defiant_Image_1.jpg",
+      "decodedDimensions": [
+        2048,
+        2048
+      ],
+      "mode": "RGB",
+      "sha256": "5b1bec88be3f0117115cbc211bde1ed764f1f3124918f42d4879b4595bb1d66f"
+    },
+    {
+      "texture": "Defiant-v3\\Textures\\Defiant_Image_2.jpg",
+      "decodedDimensions": [
+        2048,
+        2048
+      ],
+      "mode": "RGB",
+      "sha256": "1fef96e2881a7a24640f23f850433bf52c2f81baa4202bb455995f26badfbcfc"
+    }
+  ]
+}

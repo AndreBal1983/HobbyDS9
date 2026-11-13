@@ -1,0 +1,126 @@
+{
+  "Seed": "43",
+  "SystemCount": 40,
+  "ContentHash": "6f2ae2943bb9dd9e69425dbe5956cbca93958e8e3837d8958414c12aa17b3a9c",
+  "OriginNodeId": "nav.generated.078",
+  "DestinationNodeId": "nav.generated.079",
+  "Route": {
+    "ErrorCode": 0,
+    "Success": true,
+    "Steps": [
+      "nav.generated.008",
+      "nav.generated.034",
+      "nav.generated.075",
+      "nav.generated.027",
+      "nav.generated.068",
+      "nav.generated.004",
+      "nav.generated.028",
+      "nav.generated.040",
+      "nav.generated.022",
+      "nav.generated.079"
+    ],
+    "Costs": [
+      {
+        "ConnectionId": "connection.generated.044",
+        "FromNodeId": "nav.generated.078",
+        "ToNodeId": "nav.generated.008",
+        "Kind": 1,
+        "BaseCost": 1,
+        "PhenomenonCost": 0,
+        "ArtificialCost": 0,
+        "EffectiveCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.040",
+        "FromNodeId": "nav.generated.008",
+        "ToNodeId": "nav.generated.034",
+        "Kind": 1,
+        "BaseCost": 1,
+        "PhenomenonCost": 0,
+        "ArtificialCost": 0,
+        "EffectiveCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.148",
+        "FromNodeId": "nav.generated.034",
+        "ToNodeId": "nav.generated.075",
+        "Kind": 1,
+        "BaseCost": 1,
+        "PhenomenonCost": 0,
+        "ArtificialCost": 0,
+        "EffectiveCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.122",
+        "FromNodeId": "nav.generated.075",
+        "ToNodeId": "nav.generated.027",
+        "Kind": 1,
+        "BaseCost": 1,
+        "PhenomenonCost": 0,
+        "ArtificialCost": 0,
+        "EffectiveCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.121",
+        "FromNodeId": "nav.generated.027",
+        "ToNodeId": "nav.generated.068",
+        "Kind": 1,
+        "BaseCost": 1,
+        "PhenomenonCost": 0,
+        "ArtificialCost": 0,
+        "EffectiveCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.022",
+        "FromNodeId": "nav.generated.068",
+        "ToNodeId": "nav.generated.004",
+        "Kind": 1,
+        "BaseCost": 1,
+        "PhenomenonCost": 0,
+        "ArtificialCost": 0,
+        "EffectiveCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.020",
+        "FromNodeId": "nav.generated.004",
+        "ToNodeId": "nav.generated.028",
+        "Kind": 1,
+        "BaseCost": 1,
+        "PhenomenonCost": 0,
+        "ArtificialCost": 0,
+        "EffectiveCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.124",
+        "FromNodeId": "nav.generated.028",
+        "ToNodeId": "nav.generated.040",
+        "Kind": 1,
+        "BaseCost": 1,
+        "PhenomenonCost": 0,
+        "ArtificialCost": 0,
+        "EffectiveCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.095",
+        "FromNodeId": "nav.generated.040",
+        "ToNodeId": "nav.generated.022",
+        "Kind": 1,
+        "BaseCost": 1,
+        "PhenomenonCost": 0,
+        "ArtificialCost": 0,
+        "EffectiveCost": 1
+      },
+      {
+        "ConnectionId": "connection.generated.099",
+        "FromNodeId": "nav.generated.022",
+        "ToNodeId": "nav.generated.079",
+        "Kind": 1,
+        "BaseCost": 1,
+        "PhenomenonCost": 0,
+        "ArtificialCost": 0,
+        "EffectiveCost": 1
+      }
+    ],
+    "TotalCost": 10
+  }
+}

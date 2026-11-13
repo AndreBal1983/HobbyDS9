@@ -8,6 +8,20 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../scenarios/colonisation-v1/*.json" Link="scenarios/colonisation-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../scenarios/activities-v1/*.json" Link="scenarios/activities-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../scenarios/published-construction-v1/support.json" Link="scenarios/published-construction-v1/support.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures/generated-campaign-v1/*.json" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../../src/HobbyDS9.Headless/GeneratedGalaxyJson.cs" Link="GeneratedGalaxyJson.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/EnvironmentGalaxyJson.cs" Link="EnvironmentGalaxyJson.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/ScaledGalaxyJson.cs" Link="ScaledGalaxyJson.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/ScaledGalaxyDiagnostics.cs" Link="ScaledGalaxyDiagnostics.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/NaturalGalaxyJson.cs" Link="NaturalGalaxyJson.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/NaturalGalaxyDiagnostics.cs" Link="NaturalGalaxyDiagnostics.cs" />
+    <None Include="../../docs/samples/generated-galaxy-v1/*.galaxy.json" Link="generated-galaxy-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../../src/HobbyDS9.Headless/PlayableFleetPackageReader.cs" Link="PlayableFleetPackageReader.cs" />
+    <Compile Include="../../src/HobbyDS9.Headless/PlayableFleetWalkthrough.cs" Link="PlayableFleetWalkthrough.cs" />
+    <None Include="../../scenarios/playable-fleet-v1/*.json" Link="scenarios/playable-fleet-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/HobbyDS9.Headless/FrontierPackageReader.cs" Link="FrontierPackageReader.cs" />
     <Compile Include="../../src/HobbyDS9.Headless/FrontierWalkthrough.cs" Link="FrontierWalkthrough.cs" />
     <None Include="../../scenarios/frontier-reconnaissance-v1/*.json" Link="scenarios/frontier-reconnaissance-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

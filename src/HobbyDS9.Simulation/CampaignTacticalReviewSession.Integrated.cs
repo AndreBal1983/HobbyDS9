@@ -34,7 +34,7 @@ namespace HobbyDS9.Simulation
         {
             lock (gate)
             {
-                Require(demo==null&&frontier==null,"Use complete profile export: nested integrated save omits profile authority.");
+                Require(demo==null&&frontier==null&&playableHash==null,"Use complete profile export: nested integrated save omits profile authority.");
                 return ExportIntegratedCore();
             }
         }
@@ -49,13 +49,13 @@ namespace HobbyDS9.Simulation
             ShipId=b.ShipId,ShipDesignDefinitionId=b.ShipDesignDefinitionId,SourceProvisionShipId=b.SourceProvisionShipId,
             OwnerCivilizationId=b.OwnerCivilizationId,FleetIdAtConstruction=b.FleetIdAtConstruction,QueueItemId=b.QueueItemId,TurnBuilt=b.TurnBuilt };
 
-        private static void ValidateIntegratedPackage(CampaignIntegratedPlaytestPackageDto p)
+        private static void ValidateIntegratedPackage(CampaignIntegratedPlaytestPackageDto p,PlanetaryOwnershipContext? ownership=null)
         {
             Require(p != null && p.FormatVersion == CampaignIntegratedPlaytestIdentity.PackageFormat
                 && p.ProfileId == CampaignIntegratedPlaytestIdentity.Profile && Hash(p.PackageHash) && p.PolicyStatus == "proposed"
                 && p.DefaultActivationAllowed == false && p.Physical != null && p.ConstructionTemplates != null
                 && p.ConstructionTemplates.Count > 0, "Unsupported/ungated integrated package.");
-            CampaignTacticalTravelData.ValidatePackage(p.Physical!);
+            CampaignTacticalTravelData.ValidatePackage(p.Physical!,ownership);
             var campaign = p.Physical!.CorePackage!.Campaign!;
             Require(p.ConstructionTemplates!.All(t => t != null && DefinitionId.TryParse(t.ShipDesignDefinitionId, out _)
                 && EntityId.TryParse(t.SourceProvisionShipId, out _)) && p.ConstructionTemplates.Select(t => t.ShipDesignDefinitionId)
@@ -75,38 +75,30 @@ namespace HobbyDS9.Simulation
                 && p.ConstructionTemplates.Any(t => t.ShipDesignDefinitionId == q.ShipDesignDefinitionId)), "Unadmitted initial construction queue.");
         }
 
-        private AuthoredTacticalShipProvisionDto ResolveProvision(string id)
-        {
-            var source = definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.SingleOrDefault(p => p.ShipId == id);
-            if (source != null) return source;
-            var record = BuildRegistry.SingleOrDefault(b => b.ShipId == id);
-            Require(constructionTemplates != null && record != null, "Unbound produced ship source.");
-            var template = constructionTemplates!.Single(t => t.ShipDesignDefinitionId == record!.ShipDesignDefinitionId
-                && t.SourceProvisionShipId == record.SourceProvisionShipId);
-            var original = definitions.AuthoredTacticalEquipment.InitialShipProvisions.Single(p => p.ShipId == template.SourceProvisionShipId);
-            return new AuthoredTacticalShipProvisionDto { ShipId = id, OwnerCivilizationId = record!.OwnerCivilizationId,
-                ShipDesignDefinitionId = original.ShipDesignDefinitionId, FitDefinitionId = original.FitDefinitionId, FitRevision = original.FitRevision,
-                InitialShields = original.InitialShields, InitialAmmunition = original.InitialAmmunition };
-        }
+        private AuthoredTacticalShipProvisionDto ResolveProvision(string id) => Equipment(id).AuthoredProvision;
         private bool KnownSource(string ship) => definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Any(p => p.ShipId == ship)
-            || constructionTemplates != null && BuildRegistry.Any(b => b.ShipId == ship);
+            || constructionTemplates != null && BuildRegistry.Any(b => b.ShipId == ship)||published!=null&&published.Sources.ContainsKey(ship);
         private string? KnownFleetOwner(string fleet)
         {
+            if (playableHash != null && playableCreatedOwners.TryGetValue(fleet, out var createdOwner)) return createdOwner;
             if (authoredFleetOwners != null && authoredFleetOwners.TryGetValue(fleet, out var owner)) return owner;
+            if(published!=null&&published.Records.Any(r=>r.FleetIdAtConstruction==fleet))return published.Records.First(r=>r.FleetIdAtConstruction==fleet).OwnerCivilizationId;
             return constructionTemplates == null ? null : BuildRegistry.FirstOrDefault(b => b.FleetIdAtConstruction == fleet)?.OwnerCivilizationId;
         }
-        private bool AdmittedConstruction(CommandEnvelope command) => constructionTemplates != null
-            && command.Kind == CommandKind.EnqueueProduction && command.EnqueueProduction != null
-            && constructionTemplates.Any(t => t.ShipDesignDefinitionId == command.EnqueueProduction.DefinitionId);
+        private bool AdmittedConstruction(CommandEnvelope command) => activities==null&&(published!=null&&command.Kind==CommandKind.EnqueueBlueprintConstruction&&command.EnqueueBlueprintConstruction!=null
+            ||constructionTemplates != null && command.Kind == CommandKind.EnqueueProduction && command.EnqueueProduction != null
+            && constructionTemplates.Any(t => t.ShipDesignDefinitionId == command.EnqueueProduction.DefinitionId));
 
         private void ValidateBuiltShips(GameStateDto game)
         {
             if (constructionTemplates == null) return;
             var records = BuildRegistry.ToList();
-            Require(game.Colonies!.SelectMany(c=>c.ProductionQueue!).All(q=>q.Blueprint==null&&constructionTemplates.Any(t=>t.ShipDesignDefinitionId==q.ShipDesignDefinitionId)),
+            Require(game.Colonies!.SelectMany(c=>c.ProductionQueue!).All(q=>q.Blueprint!=null?published!=null&&PublishedFit(game,q.Blueprint,false).IsSupportedByCompiler
+                :constructionTemplates.Any(t=>t.ShipDesignDefinitionId==q.ShipDesignDefinitionId)),
                 "Unsupported construction queue in integrated root.");
             Require(game.PopulationStatistics!.ProductionCompleted >= initialProductionCompleted
-                && game.PopulationStatistics.ProductionCompleted-initialProductionCompleted==records.Count, "Produced-source history/completion counter mismatch.");
+                && game.PopulationStatistics.ProductionCompleted-initialProductionCompleted==records.Count+(published?.Records.Count??0)+(activities?.State.Structures!.Count??0)
+                    +(colonisation?.History.Count(r=>r.Completed&&r.Order!.Kind==ColonisationProductionKind.SettlementKit)??0), "Produced-source history/completion counter mismatch.");
             Require(records.All(b => b != null && EntityId.TryParse(b.ShipId, out var id) && b.ShipId!.StartsWith("ship.",StringComparison.Ordinal) && id.TryGetAllocationSequence(out var n)
                     && n < game.NextEntitySequence && !definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Any(p => p.ShipId == b.ShipId)
                     && EntityId.TryParse(b.QueueItemId, out var queue) && b.QueueItemId!.StartsWith("queue-item.",StringComparison.Ordinal) && queue.TryGetAllocationSequence(out var q) && q < n
@@ -120,20 +112,22 @@ namespace HobbyDS9.Simulation
             {
                 var actual = game.Ships!.SingleOrDefault(s => s.ShipId == b.ShipId);
                 Require(actual == null || actual.Blueprint == null && actual.ShipDesignDefinitionId == b.ShipDesignDefinitionId
-                    && actual.OwnerCivilizationId == b.OwnerCivilizationId && actual.FleetId == b.FleetIdAtConstruction,
+                    && actual.OwnerCivilizationId == b.OwnerCivilizationId && (actual.FleetId == b.FleetIdAtConstruction || playableHash != null),
                     "Produced immutable source/owner/fleet substituted.");
                 Require(!game.Colonies!.SelectMany(c => c.ProductionQueue!).Any(q => q.QueueItemId == b.QueueItemId), "Completed production is still queued.");
             }
             Require(records.GroupBy(b => b.FleetIdAtConstruction, StringComparer.Ordinal).All(g => g.Select(b => b.OwnerCivilizationId).Distinct().Count() == 1
                 && (!authoredFleetOwners!.TryGetValue(g.Key!, out var owner) || g.All(b => b.OwnerCivilizationId == owner))), "Forged constructed fleet ownership.");
-            foreach(var group in records.GroupBy(b=>b.FleetIdAtConstruction,StringComparer.Ordinal).Where(g=>!authoredFleetOwners!.ContainsKey(g.Key!)))
+            foreach(var group in records.GroupBy(b=>b.FleetIdAtConstruction,StringComparer.Ordinal).Where(g=>!authoredFleetOwners!.ContainsKey(g.Key!) && !(playableHash != null && playableCreatedOwners.ContainsKey(g.Key!))))
             {
                 Require(group.Key!.StartsWith("fleet.",StringComparison.Ordinal)&&new EntityId(group.Key).TryGetAllocationSequence(out var fleetSequence)
                     &&fleetSequence<game.NextEntitySequence,"Unallocated constructed fleet.");
-                var first=group.Select(b=>{new EntityId(b.ShipId!).TryGetAllocationSequence(out var n);return n;}).Min();
+                var first=group.Select(b=>b.ShipId!).Concat(published?.Records.Where(r=>r.FleetIdAtConstruction==group.Key).Select(r=>r.ShipId!)??Array.Empty<string>())
+                    .Select(id=>{new EntityId(id).TryGetAllocationSequence(out var n);return n;}).Min();
                 new EntityId(group.Key).TryGetAllocationSequence(out var bornSequence);
                 Require(first<ulong.MaxValue&&first+1==bornSequence,"Constructed fleet not allocated immediately after its first ship.");
             }
+            if(published!=null)ValidatePublishedLedger(game);
         }
 
         private void ProvisionCompletedShips(CampaignTacticalTravelSaveDto next, GameStateDto beforeProduction)
@@ -148,6 +142,7 @@ namespace HobbyDS9.Simulation
             for (int i = 0; i < ships.Count; i++)
             {
                 var ship=ships[i]; var colony=completed[i];
+                if(published!=null&&ship.Blueprint!=null){ProvisionPublished(next,beforeProduction,ship,colony);continue;}
                 Require(ship.Blueprint == null && constructionTemplates.Any(t => t.ShipDesignDefinitionId == ship.ShipDesignDefinitionId), "Produced source was not admitted.");
                 var template = constructionTemplates.Single(t => t.ShipDesignDefinitionId == ship.ShipDesignDefinitionId);
                 Require(colony.OwnerCivilizationId == ship.OwnerCivilizationId && colony.ProductionQueue![0].ShipDesignDefinitionId == ship.ShipDesignDefinitionId

@@ -1,0 +1,33 @@
+{
+  "status": "CPU payload checks only; no Unity/Blender/GPU run",
+  "allPassed": true,
+  "results": [
+    {
+      "lod": 0,
+      "passed": true,
+      "triangles": 3320,
+      "objFaces": 3320,
+      "glbMaterials": 6,
+      "anchorCount": 8,
+      "boundsMatch": true
+    },
+    {
+      "lod": 1,
+      "passed": true,
+      "triangles": 1496,
+      "objFaces": 1496,
+      "glbMaterials": 6,
+      "anchorCount": 8,
+      "boundsMatch": true
+    },
+    {
+      "lod": 2,
+      "passed": true,
+      "triangles": 512,
+      "objFaces": 512,
+      "glbMaterials": 6,
+      "anchorCount": 8,
+      "boundsMatch": true
+    }
+  ]
+}

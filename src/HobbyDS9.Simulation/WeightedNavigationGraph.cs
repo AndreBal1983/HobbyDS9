@@ -8,24 +8,42 @@ namespace HobbyDS9.Simulation
     // Immutable authored topology. Dynamic cost and knowledge come from owned state.
     public sealed class WeightedNavigationGraph
     {
+        private readonly DefinitionCatalogDto owner;
         private readonly Dictionary<string,NavigationRegionDefinitionDto> nodes;
         private readonly Dictionary<string,NavigationConnectionDto> edges;
         private readonly Dictionary<string,PhenomenonDefinitionDto> phenomena;
+        private readonly Dictionary<string,Dictionary<string,NavigationConnectionDto>> endpointEdges;
         public IReadOnlyList<NavigationRegionDefinitionSnapshot> Regions { get; }
         public IReadOnlyList<NavigationConnectionSnapshot> Connections { get; }
         public WeightedNavigationGraph(DefinitionCatalogDto definitions)
         {
             Validate(definitions).ThrowIfInvalid(nameof(definitions));
+            owner=definitions;
             nodes=definitions.NavigationRegions!.ToDictionary(n=>n.NodeId,PopulationData.Copy,StringComparer.Ordinal);
             edges=definitions.NavigationConnections!.ToDictionary(e=>e.ConnectionId,PopulationData.Copy,StringComparer.Ordinal);
             phenomena=definitions.Phenomena!.ToDictionary(p=>p.DefinitionId,PopulationData.Copy,StringComparer.Ordinal);
             Regions=nodes.Values.OrderBy(n=>n.NodeId,StringComparer.Ordinal).Select(n=>new NavigationRegionDefinitionSnapshot(n)).ToList().AsReadOnly();
             Connections=edges.Values.OrderBy(e=>e.ConnectionId,StringComparer.Ordinal).Select(e=>new NavigationConnectionSnapshot(e)).ToList().AsReadOnly();
+            endpointEdges=new Dictionary<string,Dictionary<string,NavigationConnectionDto>>(StringComparer.Ordinal);
+            foreach(var edge in edges.Values)
+            {
+                if(!endpointEdges.TryGetValue(edge.EndpointA,out var a))endpointEdges.Add(edge.EndpointA,a=new Dictionary<string,NavigationConnectionDto>(StringComparer.Ordinal));
+                if(!endpointEdges.TryGetValue(edge.EndpointB,out var b))endpointEdges.Add(edge.EndpointB,b=new Dictionary<string,NavigationConnectionDto>(StringComparer.Ordinal));
+                a.Add(edge.EndpointB,edge);b.Add(edge.EndpointA,edge);
+            }
         }
         public string? NodeForSystem(string system)=>Regions.SingleOrDefault(n=>n.AssociatedSystemId==system)?.NodeId;
         public string? SystemForNode(string node)=>nodes.TryGetValue(node,out var region)?region.AssociatedSystemId:null;
-        public IReadOnlyList<string> Neighbors(string node)=>Connections.Where(e=>e.EndpointA==node||e.EndpointB==node).Select(e=>e.EndpointA==node?e.EndpointB:e.EndpointA).OrderBy(n=>n,StringComparer.Ordinal).ToList().AsReadOnly();
-        internal NavigationConnectionDto? Edge(string from,string to)=>edges.Values.FirstOrDefault(e=>(e.EndpointA==from&&e.EndpointB==to)||(e.EndpointB==from&&e.EndpointA==to));
+        public IReadOnlyList<string> Neighbors(string node)
+        {
+            var neighbors=node!=null&&endpointEdges.TryGetValue(node,out var adjacent)?(IEnumerable<string>)adjacent.Keys:Array.Empty<string>();
+            return neighbors.OrderBy(n=>n,StringComparer.Ordinal).ToList().AsReadOnly();
+        }
+        // A retained graph may be shared by detached session forks. Never expose its mutable DTOs.
+        internal NavigationConnectionDto? Edge(string from,string to)
+        {if(from==null||to==null)return null;return endpointEdges.TryGetValue(from,out var adjacent)&&adjacent.TryGetValue(to,out var edge)?PopulationData.Copy(edge):null;}
+        internal void RequireOwner(DefinitionCatalogDto definitions)
+        {if(!ReferenceEquals(owner,definitions))throw new ArgumentException("Navigation topology belongs to different definitions.",nameof(definitions));}
         internal bool KnownNode(GameStateDto state,string actor,string node)=>state.NavigationKnowledge!.Single(k=>k.CivilizationId==actor).Nodes!.Any(k=>k.Id==node&&k.Level!=NavigationKnowledgeLevel.Unknown);
         internal bool KnownEdge(GameStateDto state,string actor,string connection)=>state.NavigationKnowledge!.Single(k=>k.CivilizationId==actor).Connections!.Any(k=>k.Id==connection&&k.Level!=NavigationKnowledgeLevel.Unknown);
         internal IEnumerable<TraversalEffectDto> Effects(GameStateDto state,long? atTurn=null)=>state.TraversalEffects!.Where(e=>e.StartTurn<=(atTurn??state.TurnNumber)&&(atTurn??state.TurnNumber)<=e.EndTurn).OrderBy(e=>e.EffectId,StringComparer.Ordinal);

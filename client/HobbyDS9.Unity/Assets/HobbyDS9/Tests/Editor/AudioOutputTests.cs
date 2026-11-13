@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using UnityEditor.SceneManagement;
@@ -21,9 +22,10 @@ namespace HobbyDS9.UnityClient.Tests
             Assert.That(ActiveListeners(), Is.Empty);
         }
 
-        [TearDown]
-        public void Restore()
+        [UnityTearDown]
+        public IEnumerator Restore()
         {
+            if (UnityEditor.EditorApplication.isPlaying) yield return new ExitPlayMode();
             foreach (var director in Object.FindObjectsByType<AudioDirector>()) Object.DestroyImmediate(director.gameObject);
             foreach (var director in Object.FindObjectsByType<SfxDirector>()) Object.DestroyImmediate(director.gameObject);
             foreach (var output in Object.FindObjectsByType<AudioOutputListener>()) Object.DestroyImmediate(output.gameObject);
@@ -73,6 +75,73 @@ namespace HobbyDS9.UnityClient.Tests
             authored.enabled = true;
             SfxDirector.TryGetOrCreate();
             Assert.That(ActiveListeners(), Is.EqualTo(new[] { authored }));
+        }
+
+        [UnityTest]
+        public IEnumerator AuthoredListenerMusicFirstDefersFallbackAndReleasesLastOwnerInPlayMode()
+            => AuthoredListenerStartupAndRelease(false);
+
+        [UnityTest]
+        public IEnumerator AuthoredListenerSfxFirstDefersFallbackAndReleasesLastOwnerInPlayMode()
+            => AuthoredListenerStartupAndRelease(true);
+
+        private IEnumerator AuthoredListenerStartupAndRelease(bool sfxFirst)
+        {
+            yield return new EnterPlayMode();
+            yield return null; yield return null;
+            // Retire only the actual bootstrap services. Their callbacks must release output;
+            // never delete an output listener to conceal a failed last-owner lifecycle.
+            foreach (var director in Object.FindObjectsByType<AudioDirector>()) Object.Destroy(director.gameObject);
+            foreach (var director in Object.FindObjectsByType<SfxDirector>()) Object.Destroy(director.gameObject);
+            yield return null; yield return null;
+            Assert.That(Object.FindObjectsByType<AudioListener>(FindObjectsInactive.Include), Is.Empty);
+            var authored = new GameObject("Existing authored listener").AddComponent<AudioListener>();
+            var volume = AudioListener.volume; var paused = AudioListener.pause;
+            var keys = new[] { "hobbyds9.audio.v1.master", "hobbyds9.audio.v1.music", "hobbyds9.audio.v1.muted",
+                "hobbyds9.audio.v1.sfx", "hobbyds9.audio.v1.sfx-muted" };
+            var preferences = keys.Select(k => PlayerPrefs.GetFloat(k, -1)).ToArray();
+            var preferenceKeys = keys.Select(PlayerPrefs.HasKey).ToArray();
+            var duplicateWarnings = new List<string>();
+            UnityEngine.Application.LogCallback capture = (message, stack, type) =>
+            {
+                if (message.Contains("audio listeners in the scene")) duplicateWarnings.Add(message);
+            };
+            AudioDirector music; SfxDirector sfx;
+            UnityEngine.Application.logMessageReceived += capture;
+            try
+            {
+                if (sfxFirst) SfxDirector.TryGetOrCreate();
+                music = AudioDirector.TryGetOrCreate(); sfx = SfxDirector.TryGetOrCreate();
+                Assert.That(ActiveListeners(), Is.EqualTo(new[] { authored }));
+                Assert.That(Object.FindObjectsByType<AudioListener>(), Is.EqualTo(new[] { authored }),
+                    "An already-authored output must not cause even a disabled fallback listener to be created.");
+                // This observes only actual messages during these calls; later scene activation is a separate test.
+                Assert.That(duplicateWarnings, Is.Empty);
+            }
+            finally { UnityEngine.Application.logMessageReceived -= capture; }
+
+            authored.enabled = false;
+            AudioDirector.TryGetOrCreate();
+            var fallback = ActiveListeners().Single();
+            Assert.That(fallback, Is.Not.SameAs(authored)); Assert.That(authored.enabled, Is.False);
+            authored.enabled = true;
+            SfxDirector.TryGetOrCreate();
+            Assert.That(ActiveListeners(), Is.EqualTo(new[] { authored })); Assert.That(fallback.enabled, Is.False);
+            Object.Destroy(authored.gameObject);
+            yield return null; yield return null;
+            AudioDirector.TryGetOrCreate();
+            Assert.That(ActiveListeners(), Is.EqualTo(new[] { fallback }));
+            Assert.That(AudioListener.volume, Is.EqualTo(volume)); Assert.That(AudioListener.pause, Is.EqualTo(paused));
+            Assert.That(keys.Select(k => PlayerPrefs.GetFloat(k, -1)).ToArray(), Is.EqualTo(preferences));
+            Assert.That(keys.Select(PlayerPrefs.HasKey).ToArray(), Is.EqualTo(preferenceKeys));
+
+            Object.Destroy(sfxFirst ? sfx.gameObject : music.gameObject);
+            yield return null; yield return null;
+            Assert.That(ActiveListeners(), Is.EqualTo(new[] { fallback }));
+            Object.Destroy(sfxFirst ? music.gameObject : sfx.gameObject);
+            yield return null; yield return null;
+            Assert.That(ActiveListeners(), Is.Empty);
+            yield return new ExitPlayMode();
         }
 
         [Test]

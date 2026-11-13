@@ -1,0 +1,39 @@
+fileFormatVersion: 2
+guid: 1828bbd255a441149a091ac5e778a9b7
+ModelImporter:
+  serializedVersion: 24600
+  internalIDToNameTable: []
+  externalObjects: {}
+  materials:
+    materialImportMode: 0
+  animations:
+    isReadable: 1
+    clipAnimations: []
+  meshes:
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 0
+    importCameras: 0
+    importLights: 0
+    fileIdsGeneration: 2
+    keepQuads: 0
+    weldVertices: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    importUVs: -1
+  tangentSpace:
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 0
+  animationType: 2
+  avatarSetup: 0
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  userData:
+  assetBundleName:
+  assetBundleVariant:

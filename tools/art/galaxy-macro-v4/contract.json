@@ -1,0 +1,47 @@
+{
+  "version": "galaxy-macro-v4",
+  "seed": 420004,
+  "originalProceduralArt": true,
+  "referencePixelsUsed": false,
+  "sourceLineage": "Original HobbyDS9 v3 CPU recipe, rewritten macro morphology; v3 local volume/particles untouched.",
+  "dimensions": [
+    2048,
+    2048
+  ],
+  "format": "RGBA8 PNG, linear numerical channels; sRGB importer OFF",
+  "channels": {
+    "RGB": "Independent unpremultiplied stellar emission, including bulge+nucleus",
+    "A": "Independent dust extinction, not transparency"
+  },
+  "orientation": "PNG row0 is authored y=-1.15; x grows left-to-right, y grows row-down; one existing Unity row/UV correction",
+  "bounds": [
+    -1.15,
+    1.15,
+    -1.15,
+    1.15
+  ],
+  "support": "Smooth zero by radius1; >.15 black padding, explicit zero exterior faces",
+  "import": "RGBA32, uncompressed, linear, nonreadable, Clamp/Trilinear, independent box-filtered complete mips; alphaIsTransparency=false",
+  "gpuAtlasBytesWithMips": 22369620,
+  "runtime": "Use asset-emission partition into thin disk and thick bulge; do not add/replace a second analytical core. Existing12 ray bins and depth unchanged.",
+  "previewLimit": "CPU illustrative single-column .12 RGB exp(-4*A*.65), sRGB output. Not actual Unity shader, parallax, visibility, GPU performance or art acceptance evidence.",
+  "previewStats": {
+    "face-on": {
+      "meanLinear": 0.005420168151466251,
+      "p95Linear": 0.01883439951792395,
+      "p99Linear": 0.03766552270912411
+    },
+    "inclined": {
+      "meanLinear": 0.004372944846957594,
+      "p95Linear": 0.01426203964761599,
+      "p99Linear": 0.0327101174697272
+    }
+  },
+  "generationSeconds": 1.4839999999967404,
+  "hashes": {
+    "generate.py": "f1ff71aefc307b996f2e7eecb74882a42323f24da5d6075571363cfa4c98da17",
+    "galaxy-linear-rgba.png": "5207e26272779e9039907cb559963f99541e1f358972decb6283355cdbf20c1f",
+    "preview-face-on.png": "d20007a4e27caaaf43da0c9e829fba5d3c90277dd638465b624a01476d60b4c5",
+    "preview-inclined.png": "f846afd6819ed663dd246324cb0dcc9751845ac779e28e4451f4df759766e083"
+  }
+}

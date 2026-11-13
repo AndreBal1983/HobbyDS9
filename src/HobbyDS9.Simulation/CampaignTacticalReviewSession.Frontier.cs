@@ -14,7 +14,8 @@ namespace HobbyDS9.Simulation
         private List<CampaignFrontierReceiptDto> discoveries = new List<CampaignFrontierReceiptDto>();
         private readonly List<CampaignFrontierOperationDto> frontierTranscript = new List<CampaignFrontierOperationDto>();
         internal Action? FrontierCommitProbe { get; set; }
-        private bool FrontierTranscriptFull=>frontier!=null&&frontierTranscript.Count>=CampaignFrontierIdentity.TranscriptLimit;
+        private bool FrontierTranscriptFull=>(frontier!=null&&frontierTranscript.Count>=CampaignFrontierIdentity.TranscriptLimit)
+            || (playableHash!=null&&UsedPlayableOperations>=playableOperationLimit);
 
         private static void ValidateFrontierPackage(CampaignFrontierPackageDto p)
         {
@@ -45,7 +46,16 @@ namespace HobbyDS9.Simulation
                     ExpectedTurn=o.Travel.ExpectedTurn,ExpectedRevision=o.Travel.ExpectedRevision,Order=o.Travel.Order==null?null:CampaignTacticalTravelData.Copy(o.Travel.Order)},
                 Strategic=SimulationSession.CopyCommand(o.Strategic),Round=CopyFrontierRound(o.Round)};
         private void RecordFrontier(CampaignFrontierOperationDto operation)
-        {if(frontier!=null)frontierTranscript.Add(CopyFrontierOperation(operation));}
+        {
+            if(frontier!=null)frontierTranscript.Add(CopyFrontierOperation(operation));
+            if(playableHash!=null)
+            {
+                var accepted = CopyFrontierOperation(operation);
+                if(accepted.Round?.Replacements!=null)
+                    accepted.Round.Replacements=accepted.Round.Replacements.OrderBy(o=>o.FleetId,StringComparer.Ordinal).ToList();
+                playableTranscript.Add(new CampaignPlayableOperationDto {Common=accepted});
+            }
+        }
 
         public static CampaignTacticalReviewSession StartFrontier(CampaignFrontierPackageDto p)
         {
@@ -140,7 +150,7 @@ namespace HobbyDS9.Simulation
                 foreach(var arrived in fleet.RouteNodeIds!.Take(checked((int)motion.EdgesCompleted)))
                 {
                     if(!visited.Add(fleet.OwnerCivilizationId+"|"+arrived))continue;
-                    var lanes=definitions.NavigationConnections!.Where(e=>frontier!.PublicLaneIds!.Contains(e.ConnectionId,StringComparer.Ordinal)
+                    var lanes=definitions.NavigationConnections!.Where(e=>(generatedMap != null || frontier!.PublicLaneIds!.Contains(e.ConnectionId,StringComparer.Ordinal))
                         &&(e.EndpointA==arrived||e.EndpointB==arrived)).OrderBy(e=>e.ConnectionId,StringComparer.Ordinal).ToList();
                     var nodes=lanes.SelectMany(e=>new[]{e.EndpointA,e.EndpointB}).Distinct(StringComparer.Ordinal).OrderBy(n=>n,StringComparer.Ordinal).ToList();
                     var row=new CampaignFrontierReceiptDto {ActorId=fleet.OwnerCivilizationId,FleetId=fleet.FleetId,ArrivalNodeId=arrived,Turn=proof.Start.TurnNumber,

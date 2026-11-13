@@ -23,9 +23,11 @@ namespace HobbyDS9.Simulation
         private CampaignTacticalTravelSaveDto TravelCopy()
         {
             Require(travel!=null,"Session has no physical profile.");
-            var copy=CampaignTacticalTravelData.Copy(travel);copy.Core=Copy(state);return copy;
+            var copy=CampaignTacticalTravelData.Copy(travel);
+            if(!ReferenceEquals(travel.Core,state))copy.Core=Copy(state);
+            return copy;
         }
-        public CampaignTacticalTravelSaveDto ExportTravelSave(){lock(gate){Require(demo==null&&frontier==null,"Use complete profile export: bare physical root is incomplete.");return TravelCopy();}}
+        public CampaignTacticalTravelSaveDto ExportTravelSave(){lock(gate){Require(demo==null&&frontier==null&&playableHash==null,"Use complete profile export: bare physical root is incomplete.");return TravelCopy();}}
         public IReadOnlyList<CampaignKnownContact> KnownContacts(string actor)
         {
             lock(gate)
@@ -33,7 +35,7 @@ namespace HobbyDS9.Simulation
                 Require(travel!=null&&Actor(actor)==CampaignTacticalError.None,"Only a controlled human actor can inspect contact knowledge.");
                 var turn=state.Campaign.GameState.TurnNumber;
                 return travel.Contacts.Where(k=>k.ActorId==actor).OrderBy(k=>k.FleetId,StringComparer.Ordinal)
-                    .Select(k=>new CampaignKnownContact(k,(long)turn-k.LastSeenTurn<=contactFreshness)).ToList().AsReadOnly();
+                    .Select(k=>new CampaignKnownContact(k,generatedMap!=null?GeneratedContactFresh(state.Campaign.GameState,k):(long)turn-k.LastSeenTurn<=contactFreshness)).ToList().AsReadOnly();
             }
         }
         public IReadOnlyList<CampaignOwnTravelReceipt> OwnTravelReceipts(string actor)
@@ -58,14 +60,35 @@ namespace HobbyDS9.Simulation
             lock(gate)
             {
                 Require(travel!=null&&Actor(actor)==CampaignTacticalError.None,"Only a controlled human actor can query known routes.");
-                return new WeightedNavigationGraph(definitions).FindRoute(state.Campaign.GameState,actor,origin,destination);
+                var query=state.Campaign.GameState;
+                if(generatedMap!=null){query=SimulationSession.CopyState(query);ChartGeneratedBorders(query,actor);}
+                return physicalNavigation!.FindRoute(query,actor,origin,destination);
+            }
+        }
+        public StrategicRouteSnapshot EvaluateKnownTravelRoute(string actor,string origin,IReadOnlyList<string> steps)
+        {
+            lock(gate)
+            {
+                Require(travel!=null&&Actor(actor)==CampaignTacticalError.None,"Only a controlled human actor can query known routes.");
+                var route=steps.ToArray();var query=state.Campaign.GameState;
+                if(generatedMap!=null){query=SimulationSession.CopyState(query);ChartGeneratedBorders(query,actor);}
+                var graph=physicalNavigation!;
+                if(!graph.ValidateRoute(query,actor,origin,route))return new StrategicRouteSnapshot(RouteErrorCode.Unreachable,Array.Empty<string>(),Array.Empty<NavigationCostSnapshot>(),null);
+                var costs=new List<NavigationCostSnapshot>();long total=0;var from=origin;
+                foreach(var next in route)
+                {
+                    var cost=graph.Cost(query,from,next);
+                    if(cost.EffectiveCost>long.MaxValue-total)return new StrategicRouteSnapshot(RouteErrorCode.CostOverflow,Array.Empty<string>(),Array.Empty<NavigationCostSnapshot>(),null);
+                    total+=cost.EffectiveCost;costs.Add(cost);from=next;
+                }
+                return new StrategicRouteSnapshot(RouteErrorCode.None,route,costs,total);
             }
         }
         private bool ValidTravelOrder(GameStateDto game,CampaignTravelOrderDto? order,IReadOnlyList<CampaignContactKnowledgeDto> contacts,bool allowStale=false)
         {
             if(order==null||order.RouteNodeIds==null||!Enum.IsDefined(typeof(CampaignTravelIntent),order.Intent))return false;
             var fleet=game.Fleets!.SingleOrDefault(f=>f.FleetId==order.FleetId);if(fleet==null)return false;
-            var graph=new WeightedNavigationGraph(definitions);
+            var graph=physicalNavigation!;
             if(fleet.TransitTotalCost>0&&!order.RouteNodeIds.SequenceEqual(fleet.RouteNodeIds!))return false;
             if(!graph.ValidateRoute(game,fleet.OwnerCivilizationId,fleet.LocationNodeId,order.RouteNodeIds,
                 fleet.TransitTotalCost>0?fleet.TransitTotalCost-fleet.TransitProgress:0))return false;
@@ -76,18 +99,20 @@ namespace HobbyDS9.Simulation
             var known=contacts.SingleOrDefault(k=>k.ActorId==fleet.OwnerCivilizationId&&k.FleetId==order.ContactFleetId);
             return order.ContactFleetId!=null&&KnownFleetOwner(order.ContactFleetId) is string targetOwner
                 &&CampaignPhysicalMovement.Hostile(declaredHostilities!,fleet.OwnerCivilizationId,targetOwner)
-                &&known!=null&&known.LastSeenTurn==order.ExpectedContactSeenTurn&&(allowStale||(long)game.TurnNumber-known.LastSeenTurn<=contactFreshness)
+                &&known!=null&&known.LastSeenTurn==order.ExpectedContactSeenTurn&&(allowStale||(generatedMap!=null?GeneratedContactFresh(game,known):(long)game.TurnNumber-known.LastSeenTurn<=contactFreshness))
                 &&(order.RouteNodeIds.Count>0||known.TrackingNodeIds.Contains(fleet.LocationNodeId,StringComparer.Ordinal));
         }
         public CampaignTacticalMutationResult SubmitTravelOrder(SubmitCampaignTravelOrderDto? command)
         {
+            if(published!=null&&!publishedExecuting)return PublishedMutation(c=>c.SubmitTravelOrder(command));
             lock(gate)
             {
                 if(FrontierTranscriptFull)return Result(CampaignTacticalError.Overflow);
                 if(DemoMutationBlocked)return Result(CampaignTacticalError.WrongPhase);
                 if(travel==null)return Result(CampaignTacticalError.InvalidOrder);
-                var error=ValidateTravelCommand(command,TravelCopy(),false);if(error!=CampaignTacticalError.None)return Result(error);
-                var next=TravelCopy();ApplyTravelCommand(next,command!);
+                var next=TravelCopy();
+                var error=ValidateTravelCommand(command,next,false);if(error!=CampaignTacticalError.None)return Result(error);
+                ApplyTravelCommand(next,command!);
                 ValidateTravelSave(next);travel=CampaignTacticalTravelData.Copy(next);state=travel.Core;
                 RecordFrontier(new CampaignFrontierOperationDto {Kind=FrontierOperationKind.Travel,Travel=command});
                 return Result(CampaignTacticalError.None);
@@ -105,8 +130,13 @@ namespace HobbyDS9.Simulation
             if(!EntityId.TryParse(command.CommandId,out _)||command.CommandId.StartsWith("ai-command.",StringComparison.Ordinal)!=trustedAi)return CampaignTacticalError.InvalidOrder;
             if(candidate.Core.AcceptedRoundCommands.Contains(command.CommandId,StringComparer.Ordinal)||game.AcceptedCommandIds!.Contains(command.CommandId))return CampaignTacticalError.DuplicateCommand;
             if(command.ExpectedRevision!=game.StateRevision)return CampaignTacticalError.StaleRevision;
-            if(!game.Fleets!.Any(f=>f.FleetId==command.Order.FleetId&&f.OwnerCivilizationId==command.ActorId)
-                ||!ValidTravelOrder(game,command.Order,candidate.Contacts))return CampaignTacticalError.InvalidOrder;
+            var own=game.Fleets!.SingleOrDefault(f=>f.FleetId==command.Order.FleetId&&f.OwnerCivilizationId==command.ActorId);
+            if(own==null)return CampaignTacticalError.InvalidOrder;
+            // Candidate is a detached command/turn transaction for both humans and AI.
+            // Failed validation never publishes these inferred ordinary borders.
+            if(generatedMap!=null&&command.Order.RouteNodeIds!=null)
+                ChartGeneratedBorders(game,command.ActorId,command.Order.RouteNodeIds,own.LocationNodeId);
+            if(!ValidTravelOrder(game,command.Order,candidate.Contacts))return CampaignTacticalError.InvalidOrder;
             return game.StateRevision==long.MaxValue?CampaignTacticalError.Overflow:CampaignTacticalError.None;
         }
         private static void ApplyTravelCommand(CampaignTacticalTravelSaveDto next,SubmitCampaignTravelOrderDto command)
@@ -163,9 +193,12 @@ namespace HobbyDS9.Simulation
             {
                 void Probe(StrategicTurnPhase phase){if(PhysicalPhaseProbe!=null&&!PhysicalPhaseProbe(phase))throw new InvalidOperationException("Injected phase failure.");}
                 Probe(StrategicTurnPhase.AiPlanning);
+                if(expansion!=null)next=PlanExpansion(next);
                 var beforeAi=SimulationSession.CopyState(next.Core.Campaign.GameState);
-                next.Core.Campaign.GameState=frontier!=null?SimulationSession.CopyState(next.Core.Campaign.GameState):demo==null?Legacy(next.Core).RunPlanningAiForPhysicalReview()
-                    :Legacy(next.Core).RunDemoPlanningAi(demo.OpponentActorId!,constructionTemplates!.Select(t=>t.ShipDesignDefinitionId!).ToList());
+                next.Core.Campaign.GameState=activities!=null?RunActivityPlanningAi(next):published!=null?Legacy(next.Core).RunPublishedPlanningAi(playableOpponent!,constructionTemplates!.Select(t=>t.ShipDesignDefinitionId!).ToList(),
+                    new PublishedPlanningCapacity(published.Package,next,BuildRegistry.ToList(),published.Records,published.RecordBudget,playableTranscript.Count))
+                    :frontier!=null?SimulationSession.CopyState(next.Core.Campaign.GameState):demo==null&&playableHash==null?Legacy(next.Core).RunPlanningAiForPhysicalReview()
+                    :Legacy(next.Core).RunDemoPlanningAi(demo?.OpponentActorId ?? playableOpponent!,constructionTemplates!.Select(t=>t.ShipDesignDefinitionId!).ToList());
                 var game=next.Core.Campaign.GameState;
                 foreach(var order in next.Orders)
                 {
@@ -174,29 +207,38 @@ namespace HobbyDS9.Simulation
                     {order.Intent=f.RouteNodeIds!.Count>0?CampaignTravelIntent.Leave:CampaignTravelIntent.Stay;order.ContactFleetId=null;order.ExpectedContactSeenTurn=null;order.RouteNodeIds=new List<string>(f.RouteNodeIds);}
                 }
                 if(demo!=null)PlanDemoTravel(next);
+                if(generatedMap!=null)PlanGeneratedTravel(next);
+                else if(playableHash!=null)PlanDefenseTravel(next,playableOpponent!,playableDefenseNode!);
                 if(frontier!=null)PlanFrontierTravel(next);
                 void Phase(StrategicTurnPhase phase,Action action)
                 {
                     Probe(phase);var before=SimulationSession.CopyState(game);action();
-                    FoundationValidator.ValidateGameState(game,definitions).ThrowIfInvalid(nameof(game));
-                    SimulationSession.RequirePhaseChanges(before,SimulationSession.CopyState(game),allowEconomy:phase==StrategicTurnPhase.Economy,
-                        allowResearch:phase==StrategicTurnPhase.Research,allowProduction:phase==StrategicTurnPhase.Production);
+                    ValidateOwnedGame(game);
+                    RequireOwnedChanges(before,SimulationSession.CopyState(game),economy:phase==StrategicTurnPhase.Economy,
+                        research:phase==StrategicTurnPhase.Research,production:phase==StrategicTurnPhase.Production);
                 }
-                Phase(StrategicTurnPhase.Economy,()=>EconomyPhase.Execute(game,definitions));
-                Phase(StrategicTurnPhase.Research,()=>ResearchPhase.Execute(game,definitions));
+                Phase(StrategicTurnPhase.Economy,()=>{if(colonisation!=null)ExecuteColonisationEconomy(game);else EconomyPhase.Execute(game,definitions,Streams==null?null:StreamedDemand(game));});
+                Phase(StrategicTurnPhase.Research,()=>ResearchPhase.Execute(game,definitions,colonisation==null?null:PlanetaryOwner(game)));
                 var beforeProduction=SimulationSession.CopyState(game);
-                Phase(StrategicTurnPhase.Production,()=>ProductionPhase.Execute(game,definitions));
-                ProvisionCompletedShips(next,beforeProduction);
+                if(activities!=null)
+                {Probe(StrategicTurnPhase.Production);ExecuteActivityProduction(next);ValidateOwnedGame(game);}
+                else
+                {Phase(StrategicTurnPhase.Production,()=>ProductionPhase.Execute(game,definitions));ProvisionCompletedShips(next,beforeProduction);}
                 if(game.Ships!.Any(s=>!next.Core.Pools.Any(p=>p.ShipId==s.ShipId)))return Result(CampaignTacticalError.UnsupportedSource);
                 Probe(StrategicTurnPhase.Movement);
                 next.MovementProof=new CampaignPhysicalMovementProofDto { Start=SimulationSession.CopyState(game),
                     Orders=next.Orders.Select(CampaignTacticalTravelData.Copy).ToList(),Contacts=next.Contacts.Select(CampaignTacticalTravelData.Copy).ToList() };
-                var movement=CampaignPhysicalMovement.Execute(game,definitions,next.Orders,next.Contacts,declaredHostilities!,contactFreshness);
+                if(colonisation!=null)colonisation.MovementOwnership=new ColonisationMovementOwnershipDto{Turn=game.TurnNumber,Revision=game.StateRevision,
+                    PlanetControls=colonisation.State.PlanetControls!.Select(ColonisationData.Copy).ToList(),
+                    ColonyStages=colonisation.State.CampSources!.GroupBy(c=>c.ColonyId,StringComparer.Ordinal).Select(g=>g.OrderByDescending(c=>c.DeployedTurn).First())
+                        .Select(c=>new ColonisationColonyStageDto{ColonyId=c.ColonyId,Stage=c.Stage}).ToList()};
+                var movement=CampaignPhysicalMovement.Execute(game,definitions,next.Orders,next.Contacts,declaredHostilities!,contactFreshness,physicalNavigation!);
                 var movementGuard=SimulationSession.CopyState(game);
                 foreach(var receipt in movement.Receipts.Where(r=>r.StoppedByEncounter))
                     movementGuard.Fleets!.Single(f=>f.FleetId==receipt.FleetId).RouteNodeIds=next.MovementProof.Start.Fleets!
                         .Single(f=>f.FleetId==receipt.FleetId).RouteNodeIds!.Skip((int)receipt.EdgesCompleted).ToList();
-                SimulationSession.RequirePhaseChanges(next.MovementProof.Start,movementGuard,allowEconomy:false,allowMovement:true);
+                RequireOwnedChanges(next.MovementProof.Start,movementGuard,economy:false,movement:true);
+                if(activities!=null)TickActivityFindings(game);
                 Probe(StrategicTurnPhase.EncounterCreation);next.Requests=FreezePhysical(game,movement);next.LastMovement=movement.Receipts;
                 foreach(var o in next.Orders)
                 {
@@ -209,7 +251,9 @@ namespace HobbyDS9.Simulation
                     next.Core.Battles.Add(Allocate(next.Core,request));
                 }
                 RefreshPhysicalContacts(next.Requests,turn,next.Contacts);
+                if(generatedMap!=null){RefreshGeneratedContacts(game,next.Core.FleetSettings,next.Contacts,turn);RevalidateGeneratedFollow(next);}
                 next.Phase=next.Requests.Count>0?SessionPhase.AwaitingCombat:SessionPhase.Planning;
+                if(next.Phase==SessionPhase.Planning)CompleteColonisationWeek(game);
                 game.StateRevision=checked(game.StateRevision+1);
                 if(next.Phase==SessionPhase.Planning){game.TurnNumber++;game.AcceptedCommandIds!.Clear();}
                 foreach(var b in next.Core.Battles)
@@ -218,8 +262,9 @@ namespace HobbyDS9.Simulation
                     while(b.State.Completion==TacticalCompletion.None&&b.State.Formations.Where(f=>f.Status==TacticalFormationStatus.Active).All(f=>controllers[f.SideId]==ControllerKind.AI))
                     {game.StateRevision=checked(game.StateRevision+1);ResolveJoint(next.Core,b);}
                 }
-                var nextDiscoveries=frontier==null?null:CompleteFrontierPlanning(next);
+                var nextDiscoveries=frontier==null&&generatedMap==null?null:CompleteFrontierPlanning(next);
                 ValidateTravelSave(next);
+                if (!CanPublishPlayableAdvance(next)) return Result(CampaignTacticalError.Overflow);
                 var committed=CampaignTacticalTravelData.Copy(next);
                 if(stagedBuiltShips!=null)builtShips=stagedBuiltShips.Select(CopyBuild).ToList();
                 travel=committed;state=travel.Core;

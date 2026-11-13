@@ -52,24 +52,38 @@ namespace HobbyDS9.TacticalReviewClient
             return new ReviewFrame(id,epoch,actor,status,encounters,own,candidate.GetFleetCloakSettings(actor),candidate.GetOwnStrategicFleets(actor),battle,travel,(candidate as ICampaignIntegratedPlaytestSession)?.CaptureStrategy(actor),(candidate as ICampaignSingleplayerDemoSession)?.CaptureDemo(),(candidate as ICampaignFrontierSession)?.CaptureDiscovery(actor));
         }
         public ReviewFrame Read(string actor,string? encounter=null)
-        { lock(gate) return Capture(session,actor,encounter,generation); }
+        { lock(gate) { RequireNoStreamedInteraction();return Capture(session,actor,encounter,generation); } }
         private void RequireCurrent(Guid host,long epoch)
-        { if(host != id || epoch != generation) throw new InvalidOperationException("Obsolete or foreign physical host request."); }
+        { RequireNoStreamedInteraction();if(host != id || epoch != generation) throw new InvalidOperationException("Obsolete or foreign physical host request."); }
         bool ITacticalClientHost.IsCurrent(ReviewWork work)
-        { lock(gate) return work.HostId == id && work.Generation == generation; }
-        public KnownRouteOffer FindKnownRoute(ReviewFrame observed,string fleet,string destination)
+        { lock(gate) return streamedInteraction==null && colonisationInteraction==null && work.HostId == id && work.Generation == generation; }
+        public KnownRouteOffer FindKnownRoute(ReviewFrame observed,string fleet,string destination,bool append=false)
         {
             lock(gate)
             {
                 RequireCurrent(observed.HostId,observed.Generation);
                 var own=session.GetOwnStrategicFleets(observed.Actor).Single(f=>f.FleetId.Value == fleet);
                 var status=session.CaptureStatus();
-                var route=session.FindKnownRoute(observed.Actor,own.LocationNodeId.Value,destination);
+                KnownRouteOffer Fail(RouteErrorCode error)=>new KnownRouteOffer(id,generation,observed.Actor,fleet,own.LocationNodeId.Value,destination,status,
+                    new StrategicRouteSnapshot(error,Array.Empty<string>(),Array.Empty<NavigationCostSnapshot>(),null));
+                var prefix=append?session.GetOwnTravelOrders(observed.Actor).Single(o=>o.FleetId==fleet).RouteNodeIds:Array.Empty<string>();
+                var steps=new List<string>();var costs=new List<NavigationCostSnapshot>();long total=0;var origin=own.LocationNodeId.Value;
+                if(prefix.Count>0)
+                {
+                    // Preserve the chosen crossings even when a cheaper alternative exists.
+                    var accepted=session.EvaluateKnownRoute(observed.Actor,origin,prefix);
+                    if(!accepted.Success)return Fail(accepted.ErrorCode);
+                    steps.AddRange(accepted.Steps);costs.AddRange(accepted.Costs);total=accepted.TotalCost!.Value;origin=prefix[prefix.Count-1];
+                }
+                var tail=session.FindKnownRoute(observed.Actor,origin,destination);
+                var route=tail;
+                if(prefix.Count>0&&tail.Success)
+                {if(tail.TotalCost!.Value>long.MaxValue-total)return Fail(RouteErrorCode.CostOverflow);steps.AddRange(tail.Steps);costs.AddRange(tail.Costs);total+=tail.TotalCost.Value;route=new StrategicRouteSnapshot(RouteErrorCode.None,steps,costs,total);}
                 return new KnownRouteOffer(id,generation,observed.Actor,fleet,own.LocationNodeId.Value,destination,status,route);
             }
         }
         public CampaignTacticalMutationResult SubmitTravelOrder(SubmitCampaignTravelOrderDto command)
-        { lock(gate) return session.SubmitTravelOrder(command); }
+        { lock(gate) {RequireNoStreamedInteraction();return session.SubmitTravelOrder(command);} }
         public CampaignTacticalMutationResult AdvancePlanning(ReviewFrame observed)
         { lock(gate) { RequireCurrent(observed.HostId,observed.Generation); return session.AdvanceTurn(observed.Status.Turn,observed.Status.CampaignRevision); } }
         public CampaignTacticalMutationResult SetApproachCloak(ReviewFrame observed,string command,string fleet,bool enabled)
@@ -101,6 +115,17 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                RequireNoStreamedInteraction();
+                if(colonisationCyclePackage!=null)return SaveColonisationCycleCommitted();
+                if(colonisationRepeatPackage!=null)return SaveColonisationRepeatCommitted();
+                if(colonisationGrowthPackage!=null)return SaveColonisationGrowthCommitted();
+                if(colonisationExpansionPackage!=null)return SaveColonisationExpansionCommitted();
+                if(colonisationPackage!=null)return SaveColonisationCommitted();
+                if(streamedActivitiesPackage!=null)return SaveStreamedActivitiesCommitted();
+                if(activitiesPackage!=null)return SaveActivitiesCommitted();
+                if(publishedPackage!=null)return SavePublishedCommitted();
+                if(generatedTemplate!=null)return SaveGeneratedCommitted();
+                if(playableFleetPackage!=null)return SavePlayableFleetCommitted();
                 if(frontierPackage!=null)return SaveFrontierCommitted();
                 if(demoPackage!=null)return SaveDemoCommitted();
                 if(integratedPackage!=null)return SaveIntegratedCommitted();
@@ -113,6 +138,17 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                RequireNoStreamedInteraction();
+                if(colonisationCyclePackage!=null)return LoadColonisationCycleCommitted(handle,actor,encounter);
+                if(colonisationRepeatPackage!=null)return LoadColonisationRepeatCommitted(handle,actor,encounter);
+                if(colonisationGrowthPackage!=null)return LoadColonisationGrowthCommitted(handle,actor,encounter);
+                if(colonisationExpansionPackage!=null)return LoadColonisationExpansionCommitted(handle,actor,encounter);
+                if(colonisationPackage!=null)return LoadColonisationCommitted(handle,actor,encounter);
+                if(streamedActivitiesPackage!=null)return LoadStreamedActivitiesCommitted(handle,actor,encounter);
+                if(activitiesPackage!=null)return LoadActivitiesCommitted(handle,actor,encounter);
+                if(publishedPackage!=null)return LoadPublishedCommitted(handle,actor,encounter);
+                if(generatedTemplate!=null)return LoadGeneratedCommitted(handle,actor,encounter);
+                if(playableFleetPackage!=null)return LoadPlayableFleetCommitted(handle,actor,encounter);
                 if(frontierPackage!=null)return LoadFrontierCommitted(handle,actor,encounter);
                 if(demoPackage!=null)return LoadDemoCommitted(handle,actor,encounter);
                 if(integratedPackage!=null)return LoadIntegratedCommitted(handle,actor,encounter);
@@ -126,6 +162,17 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                RequireNoStreamedInteraction();
+                if(colonisationCyclePackage!=null)return SaveColonisationCycleToSlot(slot,overwrite);
+                if(colonisationRepeatPackage!=null)return SaveColonisationRepeatToSlot(slot,overwrite);
+                if(colonisationGrowthPackage!=null)return SaveColonisationGrowthToSlot(slot,overwrite);
+                if(colonisationExpansionPackage!=null)return SaveColonisationExpansionToSlot(slot,overwrite);
+                if(colonisationPackage!=null)return SaveColonisationToSlot(slot,overwrite);
+                if(streamedActivitiesPackage!=null)return SaveStreamedActivitiesToSlot(slot,overwrite);
+                if(activitiesPackage!=null)return SaveActivitiesToSlot(slot,overwrite);
+                if(publishedPackage!=null)return SavePublishedToSlot(slot,overwrite);
+                if(generatedTemplate!=null)return SaveGeneratedToSlot(slot,overwrite);
+                if(playableFleetPackage!=null)return SavePlayableFleetToSlot(slot,overwrite);
                 if(frontierPackage!=null)return SaveFrontierToSlot(slot,overwrite);
                 if(demoPackage!=null)return SaveDemoToSlot(slot,overwrite);
                 if(integratedPackage!=null)return SaveIntegratedToSlot(slot,overwrite);
@@ -143,6 +190,17 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                RequireNoStreamedInteraction();
+                if(colonisationCyclePackage!=null)return LoadColonisationCycleFromSlot(slot,actor,encounter);
+                if(colonisationRepeatPackage!=null)return LoadColonisationRepeatFromSlot(slot,actor,encounter);
+                if(colonisationGrowthPackage!=null)return LoadColonisationGrowthFromSlot(slot,actor,encounter);
+                if(colonisationExpansionPackage!=null)return LoadColonisationExpansionFromSlot(slot,actor,encounter);
+                if(colonisationPackage!=null)return LoadColonisationFromSlot(slot,actor,encounter);
+                if(streamedActivitiesPackage!=null)return LoadStreamedActivitiesFromSlot(slot,actor,encounter);
+                if(activitiesPackage!=null)return LoadActivitiesFromSlot(slot,actor,encounter);
+                if(publishedPackage!=null)return LoadPublishedFromSlot(slot,actor,encounter);
+                if(generatedTemplate!=null)return LoadGeneratedFromSlot(slot,actor,encounter);
+                if(playableFleetPackage!=null)return LoadPlayableFleetFromSlot(slot,actor,encounter);
                 if(frontierPackage!=null)return LoadFrontierFromSlot(slot,actor,encounter);
                 if(demoPackage!=null)return LoadDemoFromSlot(slot,actor,encounter);
                 if(integratedPackage!=null)return LoadIntegratedFromSlot(slot,actor,encounter);
@@ -178,6 +236,69 @@ namespace HobbyDS9.TacticalReviewClient
         {
             lock(gate)
             {
+                RequireNoStreamedInteraction();
+                if(colonisationCyclePackage!=null)
+                {
+                    if(colonisationCycleStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var opened=OpenColonisationCycleFromSlot(colonisationCyclePackage,colonisationCycleCodec!,colonisationCycleStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
+                }
+                if(colonisationRepeatPackage!=null)
+                {
+                    if(colonisationRepeatStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var opened=OpenColonisationRepeatFromSlot(colonisationRepeatPackage,colonisationRepeatCodec!,colonisationRepeatStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
+                }
+                if(colonisationGrowthPackage!=null)
+                {
+                    if(colonisationGrowthStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var opened=OpenColonisationGrowthFromSlot(colonisationGrowthPackage,colonisationGrowthCodec!,colonisationGrowthStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
+                }
+                if(colonisationExpansionPackage!=null)
+                {
+                    if(colonisationExpansionStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var opened=OpenColonisationExpansionFromSlot(colonisationExpansionPackage,colonisationExpansionCodec!,colonisationExpansionStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
+                }
+                if(colonisationPackage!=null)
+                {
+                    if(colonisationStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var opened=OpenColonisationSource(slot,actor,encounter);
+                    return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
+                }
+                if(streamedActivitiesPackage!=null)
+                {
+                    if(streamedActivitiesStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var opened=OpenStreamedActivitiesFromSlot(streamedActivitiesPackage,streamedActivitiesCodec!,streamedActivitiesStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
+                }
+                if(activitiesPackage!=null)
+                {
+                    if(activitiesStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var opened=OpenActivitiesFromSlot(activitiesPackage,activitiesCodec!,activitiesStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
+                }
+                if(publishedPackage!=null)
+                {
+                    if(publishedStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var opened=OpenPublishedConstructionFromSlot(publishedPackage,publishedCodec!,publishedStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(opened.Error,opened.Host,opened.Frame);
+                }
+                if(generatedTemplate!=null)
+                {
+                    if(generatedStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var openedGenerated=staticAstronomy
+                        ?OpenStaticAstronomyCampaignFromSlot(generatedTemplate,(IStaticAstronomyReviewHostCodec)generatedCodec!,((StaticStoreAdapter)generatedStore).Original,slot,actor,encounter)
+                        :OpenGeneratedCampaignFromSlot(generatedTemplate,generatedCodec!,generatedStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(openedGenerated.Error,openedGenerated.Host,openedGenerated.Frame);
+                }
+                if(playableFleetPackage!=null)
+                {
+                    if(playableFleetStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);
+                    var openedPlayable=OpenPlayableFleetFromSlot(playableFleetPackage,playableFleetCodec!,playableFleetStore,slot,actor,encounter);
+                    return new ClientHostReopenResult(openedPlayable.Error,openedPlayable.Host,openedPlayable.Frame);
+                }
                 if(frontierPackage!=null)
                 {
                     if(frontierStore==null)return new ClientHostReopenResult(ReviewCheckpointError.NoStore);

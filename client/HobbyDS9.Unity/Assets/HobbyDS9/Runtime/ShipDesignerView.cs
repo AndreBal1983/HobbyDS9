@@ -12,10 +12,14 @@ namespace HobbyDS9.UnityClient
         public ShipDesignDraft Draft { get; }
         public Button ResetButton { get; }
         public Button CloseButton { get; }
+        public VisualElement InspectorFooter { get; }=new VisualElement{name="designer-inspector-footer"};
         public string SelectedSystem { get; private set; }="Overview";
         public static readonly string[] Systems={"Overview","Hull","Power","Propulsion","Crew","Command","Sensors","Science","Shields","Weapons","Support","Profiles","Validation"};
         private static readonly string[] Captions={"Overview","Hull","Power","Propulsion","Crew / Life support","Command / Computing","Sensors","Science","Shields","Weapons","Mission / Support","Operating profiles","Cost / Validation"};
         private readonly VisualElement workspace=new VisualElement(), confirmation=new VisualElement(), navigation=new VisualElement();
+        private readonly VisualElement liveViewer=new VisualElement();
+        private readonly VisualElement fitActions=new VisualElement();
+        private readonly Button undoButton;
         private readonly Label state=new LcarsReadout(), capacity=new LcarsReadout(), cost=new LcarsReadout(), hullCaption=new LcarsReadout();
         private readonly TextField className;
         private readonly DropdownField templates, roles;
@@ -29,7 +33,11 @@ namespace HobbyDS9.UnityClient
         private string? selectedComponent, replacementSource;
         private string? renderedSystem, renderedComponent;
         private bool comparisonOpen;
+        private ShipDesignerPreview? hullPreview;
+        private string? referenceHull;
+        private VisualElement? overviewFacts,overviewInstalled,overviewTail;
         private string? selectedPowerComponent;
+        private bool outputDetailsOpen;
         private readonly Dictionary<string,LcarsPowerSlider[]> powerEditors=new Dictionary<string,LcarsPowerSlider[]>();
         public ShipDesignerView(ShipDesignDraft draft,Action closeRequested,ShipDesignerGraphics? graphicCatalogue=null,
             CampaignDesigner? campaign=null,Action? campaignChanged=null,Action? restartWorkspace=null,
@@ -47,10 +55,11 @@ namespace HobbyDS9.UnityClient
             templates=new DropdownField("Template",draft.Provider.Templates.Select(t=>t.Caption).ToList(),0) {name="designer-template"};identity.Add(templates);
             templates.RegisterValueChangedCallback(_=>{if(campaign==null)Draft.RequestTemplate(Draft.Provider.Templates[templates.index].Id);else {campaign.NewClass();Refresh();}});
             var actions=Buttons(header);actions.AddToClassList("sd-actions");
-            state.name="designer-state";actions.Add(state);capacity.name="designer-capacity";actions.Add(capacity);cost.name="designer-cost-summary";actions.Add(cost);actions.Add(hullCaption);
+            state.name="designer-state";actions.Add(state);capacity.name="designer-capacity";actions.Add(capacity);cost.name="designer-cost-summary";actions.Add(cost);hullCaption.name="designer-hull-caption";actions.Add(hullCaption);
             ResetButton=new LcarsPillButton("Reset",Draft.RequestReset) {name="designer-reset"};actions.Add(ResetButton);
             CloseButton=new LcarsPillButton("Back",()=>RequestLeave(closeRequested)) {name="designer-close"};actions.Add(CloseButton);
             actions.Add(new LcarsPillButton("Review issues",()=>SelectSystem("Validation")) {name="designer-global-issues"});
+            undoButton=new LcarsPillButton("Undo edit",Draft.Undo){name="designer-undo"};actions.Add(undoButton);
             confirmation.name="designer-confirmation";confirmation.AddToClassList("confirmation");Add(confirmation);confirmation.Add(new LcarsReadout("Discard this modified local draft?"));
             var confirms=Buttons(confirmation);confirms.Add(new LcarsPillButton("Keep edits",Draft.CancelDiscard) {name="designer-keep"});confirms.Add(new LcarsPillButton("Discard / continue",Draft.ConfirmDiscard) {name="designer-discard"});
             var body=new VisualElement {name="designer-body"};body.AddToClassList("sd-body");Add(body);
@@ -58,7 +67,12 @@ namespace HobbyDS9.UnityClient
             for(var i=0;i<Systems.Length;i++){var id=Systems[i];navigation.Add(new LcarsPillButton(Captions[i],()=>SelectSystem(id)) {name="designer-system-"+id.ToLowerInvariant()});}
             systemPicker=new DropdownField("System",Captions.ToList(),0) {name="designer-system-picker"};systemPicker.AddToClassList("sd-system-picker");body.Add(systemPicker);
             systemPicker.RegisterValueChangedCallback(_=>SelectSystem(Systems[systemPicker.index]));
-            workspace.name="designer-workspace";workspace.AddToClassList("sd-workspace");body.Add(workspace);
+            var workbench=new VisualElement{name="designer-workbench"};workbench.AddToClassList("sd-workbench");body.Add(workbench);
+            liveViewer.name="designer-live-viewer";liveViewer.AddToClassList("sd-live-viewer");workbench.Add(liveViewer);
+            var inspector=new VisualElement{name="designer-inspector"};inspector.AddToClassList("sd-inspector");workbench.Add(inspector);
+            workspace.name="designer-workspace";workspace.AddToClassList("sd-workspace");inspector.Add(workspace);
+            fitActions.name="designer-fit-actions";fitActions.AddToClassList("sd-fit-actions");inspector.Add(fitActions);
+            InspectorFooter.AddToClassList("sd-inspector-footer");inspector.Add(InspectorFooter);
             var provenance=Buttons(this);provenance.AddToClassList("sd-provenance");provenance.Add(new LcarsReadout(draft.Provider.StatusLabel) {name="designer-provider-status"});
             publication=new LcarsPillButton("Blueprint publication integration pending",()=> {
                 if(campaign==null || !campaign.CanPublish)return;
@@ -74,7 +88,7 @@ namespace HobbyDS9.UnityClient
             }
             Draft.Changed+=Refresh;RegisterCallback<GeometryChangedEvent>(e=>{ApplyLogicalWidth(e.newRect.width);ApplyLogicalHeight(e.newRect.height);});ApplyLogicalWidth(1700);Refresh();
         }
-        public void Dispose()=>Draft.Changed-=Refresh;
+        public void Dispose() { Draft.Changed-=Refresh; hullPreview?.Dispose(); hullPreview=null; }
         public void RefreshCampaignState()
         {
             publication.SetEnabled(campaign?.CanPublish??false);
@@ -115,18 +129,47 @@ namespace HobbyDS9.UnityClient
                 foreach(var scroll in workspace.Query<ScrollView>().ToList())
                     if(scroll.name!="designer-component-detail" || renderedComponent==selectedComponent)offsets[scroll.name]=scroll.scrollOffset;
             var fit=Draft.Current;var p=Draft.Preview();className.SetValueWithoutNotify(fit.Name);roles.SetValueWithoutNotify(Draft.Provider.Roles.FirstOrDefault(r=>r.Id==fit.Role)?.Caption??fit.Role);templates.SetValueWithoutNotify(Draft.Provider.Templates.FirstOrDefault(t=>t.Id==Draft.TemplateId)?.Caption??(campaign!=null && !campaign.EditingRevision.HasValue?"Empty campaign fit":"Local revision copy"));
-            hullCaption.text=Draft.Provider.Hulls.FirstOrDefault(h=>h.Id==fit.HullId)?.Caption??fit.HullId;state.text=Status(p.Status)+(Draft.Modified?" / EDITED":campaign?.EditingRevision!=null?" / PUBLISHED COPY":" / TEMPLATE");StatusClass(state,p.Status);
+            hullCaption.text=Draft.Provider.Hulls.FirstOrDefault(h=>h.Id==fit.HullId)?.Caption??fit.HullId;state.text="INSTALLED "+Status(p.Status)+(Draft.HasPendingFit?" / PACKAGE PREVIEW":Draft.Modified?" / EDITED":campaign?.EditingRevision!=null?" / PUBLISHED COPY":" / TEMPLATE");StatusClass(state,p.Status);
             RefreshCampaignState();
+            undoButton.SetEnabled(Draft.CanUndo && !Draft.HasPendingFit);
+            className.SetEnabled(!Draft.HasPendingFit);roles.SetEnabled(!Draft.HasPendingFit);templates.SetEnabled(!Draft.HasPendingFit);
+            publication.SetEnabled(!Draft.HasPendingFit && (campaign?.CanPublish??false));
+            RefreshViewer();RefreshFitActions(p);
             capacity.text=p.UsedCapacity.HasValue?$"Capacity {p.UsedCapacity} / {p.TotalCapacity}":"Capacity not evaluated";cost.text=Metric(p.Costs,"Construction");ResetButton.SetEnabled(Draft.Modified);
-            confirmation.style.display=Draft.ConfirmationPending?DisplayStyle.Flex:DisplayStyle.None;this.Q<Button>("designer-global-issues").text=p.Issues.Count+" issues";
+            confirmation.style.display=Draft.ConfirmationPending?DisplayStyle.Flex:DisplayStyle.None;this.Q<Button>("designer-global-issues").text=(Draft.HasPendingFit?Draft.PreviewProposed():p).Issues.Count+" issues";
             foreach(var id in Systems)navigation.Q<Button>("designer-system-"+id.ToLowerInvariant()).EnableInClassList("sd-selected",id==SelectedSystem);
             systemPicker.SetValueWithoutNotify(Caption(SelectedSystem));
+            if(SelectedSystem=="Overview" && renderedSystem=="Overview" && hullPreview!=null && referenceHull==fit.HullId)
+            {
+                RefreshOverview(p);return;
+            }
             workspace.Clear();workspace.EnableInClassList("sd-profile-page",SelectedSystem=="Profiles");workspace.Add(new LcarsSectionHeader(Caption(SelectedSystem).ToUpperInvariant()) {name="designer-workspace-title"});
             if(SelectedSystem=="Overview")Overview(p);else if(SelectedSystem=="Hull")Hull(p);else if(SelectedSystem=="Profiles")Profiles(p);else if(SelectedSystem=="Validation")Validation(p);else SystemPage(p);
             renderedSystem=SelectedSystem;renderedComponent=selectedComponent;
             foreach(var scroll in workspace.Query<ScrollView>().ToList())
                 if(offsets.TryGetValue(scroll.name,out var offset))scroll.schedule.Execute(()=>scroll.scrollOffset=offset);
             if(trackFocus!=null){var track=workspace.Q<VisualElement>(trackFocus);if(track!=null)track.schedule.Execute(()=>track.Focus());}
+            foreach(var field in workspace.Query<BaseField<long>>().ToList())field.SetEnabled(!Draft.HasPendingFit);
+        }
+        private void RefreshViewer()
+        {
+            var fit=Draft.PendingFit??Draft.Current;
+            if(hullPreview==null || referenceHull!=fit.HullId)
+            {
+                hullPreview?.Dispose();liveViewer.Clear();referenceHull=fit.HullId;
+                var scroll=new ScrollView(ScrollViewMode.Vertical){name="designer-viewer-scroll"};scroll.style.flexGrow=1;scroll.style.minHeight=0;liveViewer.Add(scroll);
+                hullPreview=new ShipDesignerPreview(fit.HullId);scroll.Add(hullPreview);hullPreview.BindViewport(scroll.contentViewport);
+            }
+            hullPreview.SetFit(fit.HullId,fit.Installed,Draft.HasPendingFit);
+        }
+        private void RefreshFitActions(DesignerPreview installed)
+        {
+            fitActions.Clear();fitActions.style.display=Draft.HasPendingFit?DisplayStyle.Flex:DisplayStyle.None;
+            if(!Draft.HasPendingFit)return;
+            var next=Draft.PreviewProposed();fitActions.Add(new LcarsReadout("PACKAGE PREVIEW · installed fit unchanged until Fit"));
+            fitActions.Add(new LcarsReadout("Capacity "+installed.UsedCapacity+" → "+next.UsedCapacity+" · "+Metric(installed.Costs,"Construction")+" → "+Metric(next.Costs,"Construction")+" · "+Status(next.Status)));
+            var row=Buttons(fitActions);row.Add(new LcarsPillButton("Fit package",Draft.FitProposed){name="designer-fit-package"});row.Add(new LcarsPillButton("Cancel preview",Draft.CancelFit){name="designer-cancel-fit"});
+            fitActions.Add(new LcarsReadout("Invalid local fits may be studied and undone. Publication still requires full validation."));
         }
         private ShipSystemGraphic Graphic(string id)=>new ShipSystemGraphic(id,Caption(id),graphics!);
         private IEnumerable<DesignerMetric> Headlines(DesignerPreview p,string system)
@@ -145,21 +188,39 @@ namespace HobbyDS9.UnityClient
         }
         private void Overview(DesignerPreview p)
         {
-            var s=Scroll("designer-overview");workspace.Add(s);var stage=new VisualElement();stage.AddToClassList("sd-overview-stage");s.Add(stage);
-            var art=new VisualElement();art.AddToClassList("sd-overview-art");stage.Add(art);art.Add(Graphic("Overview"));art.Add(new LcarsReadout("Illustrative side view / powered performance shown alongside"));
-            var facts=new VisualElement();facts.AddToClassList("sd-overview-facts");stage.Add(facts);Metrics(facts,"SHIP AT A GLANCE / "+Draft.Profile,Headlines(p,"Overview"));Metrics(facts,"POWER",p.Power);Metrics(facts,"CONSTRUCTION / UPKEEP",p.Costs);
-            foreach(var i in p.Issues.Take(2))Issue(s,i);if(p.Issues.Count>2)s.Add(new LcarsReadout("See Cost / Validation for all "+p.Issues.Count+" issues."));Comparison(s,p,true);
+            var s=Scroll("designer-overview");workspace.Add(s);
+            overviewInstalled=new VisualElement();s.Add(overviewInstalled);
+            overviewFacts=new VisualElement();overviewFacts.AddToClassList("sd-overview-facts");s.Add(overviewFacts);
+            overviewTail=new VisualElement();s.Add(overviewTail);RefreshOverview(p);
+        }
+        private void RefreshOverview(DesignerPreview p)
+        {
+            overviewInstalled!.Clear();var installed=Block(overviewInstalled,"INSTALLED FIT");
+            if(Draft.Current.Installed.Count==0)installed.Add(new LcarsReadout("Empty hull · add required systems"));
+            foreach(var item in Draft.Current.Installed.OrderBy(i=>i.Key,StringComparer.Ordinal))
+                installed.Row(Draft.Provider.Catalogue.FirstOrDefault(c=>c.Id==item.Key)?.Name??item.Key,item.Value.ToString());
+            overviewFacts!.Clear();Metrics(overviewFacts,"SHIP AT A GLANCE / "+Draft.Profile,Headlines(p,"Overview"));Metrics(overviewFacts,"POWER",p.Power);Metrics(overviewFacts,"CONSTRUCTION / UPKEEP",p.Costs);
+            var explain=new Foldout{name="designer-output-explanation",text="Explain performance / "+Draft.Profile,value=outputDetailsOpen};overviewFacts.Add(explain);explain.RegisterValueChangedCallback(e=>outputDetailsOpen=e.newValue);
+            explain.Add(new LcarsReadout("These are the actual powered outputs returned by the campaign preview. Reduced allocations may reduce or disable them."));
+            foreach(var item in Draft.Current.ToDto().Installations!)
+            {
+                var component=Draft.Provider.Catalogue.Single(c=>c.Id==item.ComponentVersionId);var power=Draft.Current.Power(component.Id,Draft.Profile);
+                explain.Add(new LcarsDataRow(component.Name+" × "+item.Quantity,Metric(p.Capabilities,item.InstallationId)+" · power "+power.AllocatedPower+" / requested "+power.RequestedPower));
+                explain.Add(new LcarsPillButton("Adjust "+component.Name,()=>{selectedPowerComponent=component.Id;SelectSystem("Profiles");}){name="designer-explain-"+component.Id});
+            }
+            overviewTail!.Clear();foreach(var i in p.Issues.Take(2))Issue(overviewTail,i);
+            if(p.Issues.Count>2)overviewTail.Add(new LcarsReadout("See Cost / Validation for all "+p.Issues.Count+" issues."));Comparison(overviewTail,p,true);
         }
         private void Hull(DesignerPreview p)
         {
-            var s=Scroll("designer-hull-page");workspace.Add(s);s.Add(Graphic("Hull"));var hull=new DropdownField("Hull / version",Draft.Provider.Hulls.Select(h=>h.Caption).ToList(),0) {name="designer-hull"};s.Add(hull);
+            var s=Scroll("designer-hull-page");workspace.Add(s);s.Add(Graphic("Hull"));var hull=new DropdownField("Hull / version",Draft.Provider.Hulls.Select(h=>h.Caption).ToList(),0) {name="designer-hull"};hull.SetEnabled(!Draft.HasPendingFit);s.Add(hull);
             hull.SetValueWithoutNotify(Draft.Provider.Hulls.Single(h=>h.Id==Draft.Current.HullId).Caption);hull.RegisterValueChangedCallback(_=>Draft.SetHull(Draft.Provider.Hulls[hull.index].Id));s.Add(new LcarsReadout(Draft.Provider.Hulls.Single(h=>h.Id==Draft.Current.HullId).Facts));
             if(p.UsedCapacity.HasValue&&p.TotalCapacity.HasValue)s.Add(new LcarsMeter("Used capacity",p.UsedCapacity.Value,p.TotalCapacity.Value));Context(s,p);Comparison(s,p,true);
         }
         private void SystemPage(DesignerPreview p)
         {
             var relevant=Draft.Provider.Catalogue.Where(c=>c.SystemId==SelectedSystem).ToList();if(!relevant.Any(c=>c.Id==selectedComponent))selectedComponent=relevant.FirstOrDefault()?.Id;
-            var split=new VisualElement();split.AddToClassList("sd-focus-columns");workspace.Add(split);var centre=Scroll("designer-system-content");centre.AddToClassList("sd-system-content");split.Add(centre);centre.Add(Graphic(SelectedSystem));
+            var split=new VisualElement();split.AddToClassList("sd-focus-columns");workspace.Add(split);var centre=Scroll("designer-system-content");centre.AddToClassList("sd-system-content");split.Add(centre);
             if(SelectedSystem=="Crew"){var crew=new LongField("Embarked crew") {name="designer-crew",isDelayed=true};crew.SetValueWithoutNotify(Draft.Current.EmbarkedCrew);crew.RegisterValueChangedCallback(e=>Draft.SetCrew(e.newValue));centre.Add(crew);}
             Metrics(centre,"POWERED PERFORMANCE / "+Draft.Profile,SelectedSystem=="Power"?p.Power:Headlines(p,SelectedSystem));
             var list=Block(centre,"PACKAGES / "+SelectedSystem.ToUpperInvariant());list.name="designer-component-list";
@@ -178,47 +239,51 @@ namespace HobbyDS9.UnityClient
             var fit=Draft.Current;var count=fit.Installed.TryGetValue(item.Id,out var q)?q:0;detail.Add(new LcarsSectionHeader(item.Name));detail.Add(new LcarsReadout(Caption(SelectedSystem)+" package / "+Draft.Profile+" performance") {name="designer-component-description"});
             var facts=(Draft.Provider as IShipDesignCatalogueFacts)?.ComponentFacts(item.Id,Draft.Profile);
             var countRow=Block(detail,"INSTALLED");countRow.Row("Quantity",count.ToString());var controls=Buttons(detail);
-            var add=new LcarsPillButton("Add",()=>Draft.Add(item.Id)) {name="designer-add"};add.SetEnabled((Draft.Provider as IShipDesignCatalogueFacts)?.Available(item.Id)??true);controls.Add(add);
-            var remove=new LcarsPillButton("Remove",()=>Draft.Remove(item.Id)) {name="remove-"+item.Id};remove.SetEnabled(count>0);controls.Add(remove);
-            var minus=new LcarsPillButton("−1",()=>Draft.SetQuantity(item.Id,count-1)) {name="quantity-minus-"+item.Id};minus.SetEnabled(count>0);controls.Add(minus);var plus=new LcarsPillButton("+1",()=>Draft.Add(item.Id)) {name="quantity-plus-"+item.Id};plus.SetEnabled(add.enabledSelf);controls.Add(plus);
+            var add=new LcarsPillButton("Preview add",()=>Draft.PreviewAdd(item.Id)) {name="designer-add"};add.SetEnabled((Draft.Provider as IShipDesignCatalogueFacts)?.Available(item.Id)??true);controls.Add(add);
+            var remove=new LcarsPillButton("Preview removal",()=>Draft.PreviewQuantity(item.Id,0)) {name="remove-"+item.Id};remove.SetEnabled(count>0);controls.Add(remove);
+            var minus=new LcarsPillButton("Preview −1",()=>Draft.PreviewQuantity(item.Id,count-1)) {name="quantity-minus-"+item.Id};minus.SetEnabled(count>0);controls.Add(minus);var plus=new LcarsPillButton("Preview +1",()=>Draft.PreviewAdd(item.Id)) {name="quantity-plus-"+item.Id};plus.SetEnabled(add.enabledSelf);controls.Add(plus);
             var installed=Draft.Provider.Catalogue.Where(c=>c.SystemId==SelectedSystem&&fit.Installed.ContainsKey(c.Id)).ToList();
             if(installed.Count>0)
             {
                 if(!installed.Any(c=>c.Id==replacementSource))replacementSource=installed[0].Id;var selector=new DropdownField("Replace installed",installed.Select(c=>c.Name).ToList(),installed.FindIndex(c=>c.Id==replacementSource)) {name="designer-replacement-source"};detail.Add(selector);
-                selector.RegisterValueChangedCallback(_=>{replacementSource=installed[selector.index].Id;Refresh();});var replace=new LcarsPillButton("Replace with this",()=>Draft.Replace(replacementSource!,item.Id)) {name="designer-replace"};replace.SetEnabled(replacementSource!=item.Id&&add.enabledSelf);detail.Add(replace);
+                selector.RegisterValueChangedCallback(_=>{replacementSource=installed[selector.index].Id;Refresh();});var replace=new LcarsPillButton("Preview replacement",()=>Draft.PreviewReplace(replacementSource!,item.Id)) {name="designer-replace"};replace.SetEnabled(replacementSource!=item.Id&&add.enabledSelf);detail.Add(replace);
             }
             if(facts!=null)Metrics(detail,"PACKAGE / "+Draft.Profile,facts);else detail.Add(new LcarsReadout(item.Facts));
-            var proposed=Draft.PreviewCopy();proposed.Add(item.Id);var next=proposed.Preview();var delta=Block(detail,"IF YOU ADD ONE");delta.name="designer-proposed-preview";
+            var proposed=Draft.PreviewCopy();proposed.Add(item.Id);var next=Draft.HasPendingFit?Draft.PreviewProposed():proposed.Preview();var delta=Block(detail,Draft.HasPendingFit?"PENDING PACKAGE / "+Draft.Profile:"IF YOU ADD ONE");delta.name="designer-proposed-preview";
             delta.Row("Capacity",(p.UsedCapacity?.ToString()??"—")+" → "+(next.UsedCapacity?.ToString()??"—"));delta.Row("Allocated power",Metric(p.Power,"Actual allocation")+" → "+Metric(next.Power,"Actual allocation"));delta.Row("Construction",Metric(p.Costs,"Construction")+" → "+Metric(next.Costs,"Construction"));delta.Row("Design status",Status(p.Status)+" → "+Status(next.Status));
-            detail.Add(new LcarsReadout("New or replaced packages start unpowered. Set explicit allocations in Operating profiles."));foreach(var issue in p.Issues.Where(i=>i.SystemId==item.Id))Issue(detail,issue);
+            foreach(var m in Headlines(next,"Overview"))delta.Row(m.Caption,Metric(Headlines(p,"Overview"),m.Caption)+" → "+m.Value);
+            if(Draft.HasPendingFit)foreach(var issue in next.Issues)Issue(delta,issue);
+            detail.Add(new LcarsReadout("New packages start unpowered. Replacements retain your explicit allocations; review every operating profile."));foreach(var issue in p.Issues.Where(i=>i.SystemId==item.Id))Issue(detail,issue);
         }
         private static string Metric(IEnumerable<DesignerMetric> values,string key)=>values.FirstOrDefault(m=>m.Caption==key)?.Value??"Not evaluated";
         private void Profiles(DesignerPreview p)
         {
+            var shownFit=Draft.PendingFit??Draft.Current;if(Draft.HasPendingFit)p=Draft.PreviewProposed();
             this.Q<Label>("designer-workspace-title").text="OPERATING PROFILE / "+Draft.Profile.ToString().ToUpperInvariant();
             var narrow=ClassListContains("sd-narrow")||ClassListContains("sd-short");
             var buttons=Buttons(workspace);buttons.AddToClassList("sd-profile-actions");
             var caption=new Label("OPERATING PROFILE / "+Draft.Profile.ToString().ToUpperInvariant());caption.AddToClassList("sd-profile-caption");buttons.Add(caption);
-            foreach(DesignerProfile mode in Enum.GetValues(typeof(DesignerProfile))){var b=new LcarsPillButton(mode.ToString(),()=>Draft.SelectProfile(mode)) {name="designer-profile-"+mode.ToString().ToLowerInvariant()};b.EnableInClassList("sd-selected",Draft.Profile==mode);buttons.Add(b);}
+            foreach(DesignerProfile mode in Enum.GetValues(typeof(DesignerProfile))){var count=p.Issues.Count(i=>i.Severity==DesignerStatus.HardError && i.Profile==mode);var b=new LcarsPillButton(mode+" · "+count+" errors",()=>Draft.SelectProfile(mode)) {name="designer-profile-"+mode.ToString().ToLowerInvariant()};b.EnableInClassList("sd-selected",Draft.Profile==mode);buttons.Add(b);}
+            var release=new LcarsPillButton("Release unused power",Draft.ReleaseUnusedPower){name="designer-release-unused-power",tooltip="Only this profile: reduce allocations above requests. Never fill shortfalls or rebalance other systems."};release.SetEnabled(Draft.CanReleaseUnusedPower);buttons.Add(release);
             var totals=new VisualElement {name="designer-power-totals"};totals.AddToClassList("sd-power-totals");if(narrow)buttons.Add(totals);else workspace.Add(totals);
             totals.Add(new Label("AVAILABLE / REQUESTED  "+Metric(p.Power,"Available / requested")+"     ALLOCATED  "+Metric(p.Power,"Actual allocation")));
-            // No numeric excess is projected; expose the backend's budget issues.
             var global=p.Issues.Where(i=>i.SystemId=="" && (!i.Profile.HasValue || i.Profile==Draft.Profile)).ToList();
-            totals.Add(new Label(global.Any(i=>i.Severity==DesignerStatus.HardError)?"! BACKEND ERROR • review bank validation":"EXCESS: backend issues"));
+            totals.Add(new Label(global.Any(i=>i.Severity==DesignerStatus.HardError)?"Power budget needs attention":"Allocations stay as entered; unused power is released only on request."));
+            if(Draft.HasPendingFit)totals.Add(new Label("Package preview: power controls are read-only until Fit or Cancel."));
             var scale=new LcarsPowerScale(p.PowerRanges.Select(r=>r.Maximum).DefaultIfEmpty(0).Max(),narrow?128:240,narrow?4:5);
             totals.Add(new Label("COMMON SCALE • "+scale.Legend));
             var s=Scroll("designer-profile-results");s.horizontalScrollerVisibility=ScrollerVisibility.Hidden;s.contentContainer.style.width=Length.Percent(100);workspace.Add(s);
             var bank=new VisualElement {name="designer-power-bank"};bank.AddToClassList("sd-power-bank");s.Add(bank);
             powerEditors.Clear();
-            foreach(var item in Draft.Provider.Catalogue.Where(c=>Draft.Current.Installed.ContainsKey(c.Id)))
+            foreach(var item in Draft.Provider.Catalogue.Where(c=>shownFit.Installed.ContainsKey(c.Id)))
             {
                 var row=new VisualElement {name="power-tile-"+item.Id};row.AddToClassList("sd-profile-row");bank.Add(row);
-                var title=new Button(()=>{SfxDirector.Cue(LcarsSfx.ButtonPress);ShowPowerDetails(item.Id,p);}) {text=item.Name+" × "+Draft.Current.Installed[item.Id],name="select-power-"+item.Id,tooltip="Select "+item.Name+" exact editor"};
+                var title=new Button(()=>{SfxDirector.Cue(LcarsSfx.ButtonPress);ShowPowerDetails(item.Id,p);}) {text=item.Name+" × "+shownFit.Installed[item.Id],name="select-power-"+item.Id,tooltip="Select "+item.Name+" exact editor"};
                 title.AddToClassList("sd-instrument-title");row.Add(title);
-                var power=Draft.Current.Power(item.Id,Draft.Profile);var fields=Buttons(row);
+                var power=shownFit.Power(item.Id,Draft.Profile);var fields=Buttons(row);
                 var range=p.PowerRanges.FirstOrDefault(r=>r.ComponentId==item.Id);
                 var issues=p.Issues.Where(i=>i.SystemId==item.Id && (!i.Profile.HasValue || i.Profile==Draft.Profile)).ToList();
-                var invalid=issues.Concat(global).Any(i=>i.Severity==DesignerStatus.HardError);
+                var invalid=issues.Any(i=>i.Severity==DesignerStatus.HardError);
                 if(range!=null && range.Maximum>=0)
                 {
                     var requested=new LcarsPowerSlider("Requested","power-requested-"+item.Id,power.RequestedPower,range.Maximum,invalid,v=>Draft.SetPower(item.Id,v,Draft.Current.Power(item.Id,Draft.Profile).AllocatedPower),range.PoweredMinimum,scale);
@@ -234,6 +299,9 @@ namespace HobbyDS9.UnityClient
                     row.Add(new LcarsReadout("Range unavailable • exact input."));
                 }
                 if(issues.Any(i=>i.Severity==DesignerStatus.HardError)){var error=new Label("! "+issues.Count(i=>i.Severity==DesignerStatus.HardError)+" ERRORS • select to review");error.AddToClassList("sd-error");row.Add(error);}
+                row.Add(new LcarsReadout("Requested "+power.RequestedPower+" · allocated "+power.AllocatedPower+(range!=null?" · full "+range.Maximum+" · powered minimum "+range.PoweredMinimum:"")));
+                foreach(var issue in issues)Issue(row,issue);
+                fields.SetEnabled(!Draft.HasPendingFit);
             }
             foreach(var issue in global)Issue(s,issue);
             var profileIssues=p.Issues.Where(i=>i.SystemId!="" && (!i.Profile.HasValue || i.Profile==Draft.Profile)).ToList();
@@ -244,6 +312,7 @@ namespace HobbyDS9.UnityClient
             if(narrow){s.Insert(1,detail);}else workspace.Add(detail);
             if(selectedPowerComponent==null || !powerEditors.ContainsKey(selectedPowerComponent))selectedPowerComponent=powerEditors.Keys.FirstOrDefault();
             if(selectedPowerComponent!=null)ShowPowerDetails(selectedPowerComponent,p);
+            detail.SetEnabled(!Draft.HasPendingFit);
         }
         private void ShowPowerDetails(string id,DesignerPreview p)
         {
@@ -262,14 +331,24 @@ namespace HobbyDS9.UnityClient
             detail.Add(new LcarsSectionHeader(item.Name+" / "+Draft.Profile+" • MAX "+range.Maximum+" • POWERED MIN "+range.PoweredMinimum));
             var fields=Buttons(detail);fields.Add(editors[0].Exact);fields.Add(editors[1].Exact);
             detail.Add(new LcarsReadout((editors[0].Scale.Paired?"Either bar in a pair = one whole power unit.":"Coarse bars round upwards to the common scale; use exact entry for smaller changes.")+" Zero strip = 0. Scrub; release to validate. Arrows ±1 • Home 0 • End max. Exact input commits on Return/focus loss; invalid values retained."));
-            var installation=Draft.Current.Power(id,Draft.Profile).InstallationId;
+            var installation=(Draft.PendingFit??Draft.Current).Power(id,Draft.Profile).InstallationId;
             detail.Add(new LcarsReadout("Backend output: "+Metric(p.Capabilities,installation)));
             foreach(var issue in p.Issues.Where(i=>(i.SystemId==id || i.SystemId=="") && (!i.Profile.HasValue || i.Profile==Draft.Profile)))Issue(detail,issue);
         }
         private void Validation(DesignerPreview p)
         {
+            if(Draft.HasPendingFit)p=Draft.PreviewProposed();
             var s=Scroll("designer-validation");workspace.Add(s);if(campaign!=null)CampaignHistory(s);Metrics(s,"TOTAL COST / UPKEEP",p.Costs);var b=Block(s,"COMPLETE VALIDATION / "+Status(p.Status));if(p.Issues.Count==0)b.Add(new LcarsReadout("No validation issues."));
-            foreach(var issue in p.Issues){Issue(b,issue);var system=IssueSystem(issue);b.Add(new LcarsPillButton("Review "+Caption(system),()=>SelectSystem(system)) {name="issue-route-"+b.childCount});}Comparison(s,p,true);
+            foreach(var issue in p.Issues){Issue(b,issue);var system=IssueSystem(issue);b.Add(new LcarsPillButton("Review "+(issue.Profile.HasValue?issue.Profile+" / ":"")+Caption(system),()=>FocusIssue(issue)) {name="issue-route-"+b.childCount});}Comparison(s,p,true);
+        }
+        private void FocusIssue(DesignerIssue issue)
+        {
+            if(issue.Profile.HasValue){Draft.SelectProfile(issue.Profile.Value);SelectSystem("Profiles");}
+            else SelectSystem(IssueSystem(issue));
+            if(issue.SystemId.Length==0)return;
+            selectedPowerComponent=issue.SystemId;Refresh();
+            var field=workspace.Q<VisualElement>("power-"+(issue.Field=="requested"?"requested":"allocated")+"-"+issue.SystemId);
+            if(field!=null)field.schedule.Execute(()=>{field.Focus();field.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(field);});
         }
         private void CampaignHistory(VisualElement parent)
         {

@@ -1,0 +1,348 @@
+{
+  "source": "E:\\HobbyDS9\\artifacts\\art\\galaxy-unity-receiving-20261024-1",
+  "sourceContractSha256": "94773e84f4da03f36e80b1da39222b2e7d060d6b54c42f65e0e5c8e806383539",
+  "selectedParts": {
+    "GalaxyHull": 0,
+    "GalaxyHullCutaway": 1,
+    "SovereignNacelle_Port": 0,
+    "SovereignNacelle_Starboard": 0,
+    "WarpCore": 0,
+    "Deflector_Blue_concentric": 0,
+    "GalaxyNacelle_Port": 1,
+    "GalaxyNacelle_Starboard": 1,
+    "Deflector_Amber_oval": 1,
+    "Deflector_Segmented_survey": 1
+  },
+  "allSelectedResourceTriangles": 90665,
+  "defaultVisibleTriangles": 75534,
+  "materials": 12,
+  "textures": 4,
+  "files": [
+    {
+      "path": "asset-contract.json",
+      "bytes": 28257,
+      "sha256": "94773e84f4da03f36e80b1da39222b2e7d060d6b54c42f65e0e5c8e806383539"
+    },
+    {
+      "path": "asset-contract.json.meta",
+      "bytes": 155,
+      "sha256": "9b18afac5a00317da5dc89573559788726c8f95e97a5e1688a9eaab9c2f43d5b"
+    },
+    {
+      "path": "ATTRIBUTION.txt",
+      "bytes": 644,
+      "sha256": "b7d6e96de2235ea208ce1896f55d0e33aa4ae246937d33480957a05ad4e1a5a0"
+    },
+    {
+      "path": "ATTRIBUTION.txt.meta",
+      "bytes": 155,
+      "sha256": "f3033902fe778f3723c40b064d80b43defb57702a9fd4ade940e617d70bfcad7"
+    },
+    {
+      "path": "delivery-manifest.json",
+      "bytes": 10992,
+      "sha256": "f3c8f615b22d134715f7d39f4dcb8b8f2d3d93f4efc70e2f6318bf07248fbda0"
+    },
+    {
+      "path": "delivery-manifest.json.meta",
+      "bytes": 155,
+      "sha256": "1241a5c32b5481b8b85ea6f126608c76e35f2f5b451ee42398aa3b5962922064"
+    },
+    {
+      "path": "Materials/Galaxy_AmberMetal.mat",
+      "bytes": 1035,
+      "sha256": "eca2e4a029d862688d3fdb78f27e6fae3dfc3021ae5d0783c493d479ac20e2ad"
+    },
+    {
+      "path": "Materials/Galaxy_AmberMetal.mat.meta",
+      "bytes": 185,
+      "sha256": "ce4643af6952bbc0c0aeff1d21f33267eebf76157e8f623e46f24569793d502a"
+    },
+    {
+      "path": "Materials/Galaxy_BlueEnergy.mat",
+      "bytes": 1055,
+      "sha256": "86deeb0c2c6c1e85e3fd91ddfce56fe1130e0f67043c08416446ac5278da1c46"
+    },
+    {
+      "path": "Materials/Galaxy_BlueEnergy.mat.meta",
+      "bytes": 185,
+      "sha256": "7d30411b0f54b72be28c9742009d1cad3bf88900f42f911ab14c972bf20a36e1"
+    },
+    {
+      "path": "Materials/Galaxy_Ceramic.mat",
+      "bytes": 1087,
+      "sha256": "1ee8958e9a83b88240fc72e4da7cb26f4e4c6229fa2291a2ff48beb9089c7b1b"
+    },
+    {
+      "path": "Materials/Galaxy_Ceramic.mat.meta",
+      "bytes": 185,
+      "sha256": "220c6de672e3e98bcd538e4b5f8212dc342271ada71c1990b68b8b0d03e2ac53"
+    },
+    {
+      "path": "Materials/Galaxy_Engineering.mat",
+      "bytes": 1082,
+      "sha256": "02b166eeab2a1d705856161b171e8cbecf4423ba918c2292de177a62c60006ce"
+    },
+    {
+      "path": "Materials/Galaxy_Engineering.mat.meta",
+      "bytes": 185,
+      "sha256": "85405c4e046470a6335bc28374518ed3bfa6e6e23331059781500f9a1f7969a9"
+    },
+    {
+      "path": "Materials/Galaxy_Graphite.mat",
+      "bytes": 1035,
+      "sha256": "cc8d52a0957e4f15a8260e226148d7fa07c2f352a5eb698f0773f927e0baa742"
+    },
+    {
+      "path": "Materials/Galaxy_Graphite.mat.meta",
+      "bytes": 185,
+      "sha256": "70c7b85e2224e1f288152707d9bd1ec42128359f6e06dff75a8a094d9d77ddec"
+    },
+    {
+      "path": "Materials/Galaxy_PlasmaAmber.mat",
+      "bytes": 1040,
+      "sha256": "1c79b887b543e539f0012dd9a5235864cd91eac3d59ffe74af8df9ac50babab2"
+    },
+    {
+      "path": "Materials/Galaxy_PlasmaAmber.mat.meta",
+      "bytes": 185,
+      "sha256": "7091d033f6a4411d2de81fb96a9b8a282342f1a28e7e974f7d43e1c2047389cf"
+    },
+    {
+      "path": "Materials/Galaxy_ReactorEnergy.mat",
+      "bytes": 1040,
+      "sha256": "baf7299a22f7db3431a07d8bc415095164d503f51ef9de87104bb772cdd1703f"
+    },
+    {
+      "path": "Materials/Galaxy_ReactorEnergy.mat.meta",
+      "bytes": 185,
+      "sha256": "ae19687ed7fca20841aa88b206e1a9dbe758c161e564c928b5bc28eb13fb53c9"
+    },
+    {
+      "path": "Materials/Galaxy_RedEnergy.mat",
+      "bytes": 1045,
+      "sha256": "62b128fbc52e7682357b17f1acdd6385be4fcc0a955113d1e140c27555ba9a41"
+    },
+    {
+      "path": "Materials/Galaxy_RedEnergy.mat.meta",
+      "bytes": 185,
+      "sha256": "79754f00463f996b97ca18eb2700270819e3a07cc96286c311d900a6b1fbe311"
+    },
+    {
+      "path": "Materials/Galaxy_SaucerLower.mat",
+      "bytes": 1082,
+      "sha256": "c57a34399f73de5b1ca21cfca641ef5d27f4b4fc5f98d3ed36f70d99db318f6c"
+    },
+    {
+      "path": "Materials/Galaxy_SaucerLower.mat.meta",
+      "bytes": 185,
+      "sha256": "676718b9a8c0d225acf9ac7a828f25ecfad721fbf55df7204b9dde028e8f15f4"
+    },
+    {
+      "path": "Materials/Galaxy_SaucerUpper.mat",
+      "bytes": 1082,
+      "sha256": "25d620ee758cf79e2bec12d62a8da53154a05b986b1897cfe8db19e68e967eb0"
+    },
+    {
+      "path": "Materials/Galaxy_SaucerUpper.mat.meta",
+      "bytes": 185,
+      "sha256": "6ec912db354766bd2a572d5016a6c216ebdef22059f0b18d36aeb29fbc425fba"
+    },
+    {
+      "path": "Materials/Galaxy_Titanium.mat",
+      "bytes": 1032,
+      "sha256": "9501de120060f97b36279d4d4849d9297cef07694c2ce1c96ac5c79788d27811"
+    },
+    {
+      "path": "Materials/Galaxy_Titanium.mat.meta",
+      "bytes": 185,
+      "sha256": "454fd09408bf0c3e328bdc1305ede1da6183f40dba209bf9efcbed601eb5ad6c"
+    },
+    {
+      "path": "Materials/Galaxy_WindowLight.mat",
+      "bytes": 1088,
+      "sha256": "efeced7cf8f8f80b8cf46388eaf22b3119c87cb4555f8d0beca4fe69d0f943dd"
+    },
+    {
+      "path": "Materials/Galaxy_WindowLight.mat.meta",
+      "bytes": 185,
+      "sha256": "397b144b4e2bcfa562757164771c0177efb93464eefbec17ac55ef7cb70c7dc9"
+    },
+    {
+      "path": "Materials.meta",
+      "bytes": 116,
+      "sha256": "d35d6697acc4c0e20306cd00800cb68cdbc90d91f5bcc07b4792876432f6d212"
+    },
+    {
+      "path": "Models/Deflector_Amber_oval_LOD1.fbx",
+      "bytes": 58700,
+      "sha256": "0cf859a77693d1dccac219eb5d9e3d1f6b4f3dc60bdc77f360d88ad3b75ce771"
+    },
+    {
+      "path": "Models/Deflector_Amber_oval_LOD1.fbx.meta",
+      "bytes": 4198,
+      "sha256": "bcfef21b9686d9d481ecdbd7fba72a0865b371a915681b43c5678371a3c3f780"
+    },
+    {
+      "path": "Models/Deflector_Blue_concentric_LOD0.fbx",
+      "bytes": 135516,
+      "sha256": "8b6fc3d73e21e46222120f8eea7c88a86144e191a6ce9233386fe4c8c21d392f"
+    },
+    {
+      "path": "Models/Deflector_Blue_concentric_LOD0.fbx.meta",
+      "bytes": 3813,
+      "sha256": "54af78f4dc9920e26223a32ca0183271d5c58aeb95182181386a2b19b74532db"
+    },
+    {
+      "path": "Models/Deflector_Segmented_survey_LOD1.fbx",
+      "bytes": 59468,
+      "sha256": "a79aefbfbb736fac3fc6acfee1935f7b0001516d29522c30fdf64a6c958695d0"
+    },
+    {
+      "path": "Models/Deflector_Segmented_survey_LOD1.fbx.meta",
+      "bytes": 4006,
+      "sha256": "6985827e0e855e8cd4480a85cf9200f6f9c4096bc457095808fa8f0e44d5cd87"
+    },
+    {
+      "path": "Models/GalaxyHull_LOD0.fbx",
+      "bytes": 3860140,
+      "sha256": "393a51b209e85247dca105333d1d5b9666718b566376867f8f1cdb8f5b4c734b"
+    },
+    {
+      "path": "Models/GalaxyHull_LOD0.fbx.meta",
+      "bytes": 4778,
+      "sha256": "0dba306bf3a7f14780c0811c279708c6940bf6af6716c93fb34fdf03ea158070"
+    },
+    {
+      "path": "Models/GalaxyHullCutaway_LOD1.fbx",
+      "bytes": 735132,
+      "sha256": "68101638a2a38fca614a1ba867abf7aec83b954e825abf95975dff9f35fbd3ed"
+    },
+    {
+      "path": "Models/GalaxyHullCutaway_LOD1.fbx.meta",
+      "bytes": 4778,
+      "sha256": "d27de24b28df9b320590446a2dce82510a1eef7252804ec946e2cb272a53304f"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Port_LOD1.fbx",
+      "bytes": 154924,
+      "sha256": "39994611c644b7b35e2cc0238cfb4fe66fefcea2a87a3681c844a8597457864d"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Port_LOD1.fbx.meta",
+      "bytes": 4585,
+      "sha256": "f286a98fb7b90438feef62bf7c1db7bdf3c05e364af4f8ce7b84ef26df494d9d"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Starboard_LOD1.fbx",
+      "bytes": 155420,
+      "sha256": "702deb937c162ce5d530cef5b94fa5adbcf29d3f9249c2b3e5a4c0da9c5ff3f4"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Starboard_LOD1.fbx.meta",
+      "bytes": 4585,
+      "sha256": "03f140cdd7d069c719fc0f94f536c6f1caf0fcb8acb15ccaa1183544a7a97aa7"
+    },
+    {
+      "path": "Models/SovereignNacelle_Port_LOD0.fbx",
+      "bytes": 140636,
+      "sha256": "31c0965c00cce1f5d2487df8dc44b7bbc3ba8e6198d0e14ab4fe1de5f2cdce32"
+    },
+    {
+      "path": "Models/SovereignNacelle_Port_LOD0.fbx.meta",
+      "bytes": 3814,
+      "sha256": "ffedcfd8f974673f70efbb9c93d31ae0965b4ba01545f8efb3459d7dbc7a4f0a"
+    },
+    {
+      "path": "Models/SovereignNacelle_Starboard_LOD0.fbx",
+      "bytes": 140508,
+      "sha256": "df2c4a4ac9a488ea7964081f532e4547bc4f31c41f575bf9d8398619ff25c980"
+    },
+    {
+      "path": "Models/SovereignNacelle_Starboard_LOD0.fbx.meta",
+      "bytes": 3814,
+      "sha256": "09c984dc343d45a8c3dfaec1c3e109748f72bce0377fd515fc1e90d3651f2ce1"
+    },
+    {
+      "path": "Models/WarpCore_LOD0.fbx",
+      "bytes": 111116,
+      "sha256": "c3ee0eccfd2e34cb72ccf99597ef77275f5213e8e039b09473ba171a7c2079ad"
+    },
+    {
+      "path": "Models/WarpCore_LOD0.fbx.meta",
+      "bytes": 3820,
+      "sha256": "8de6f7561a6739edfbf7c19a0631a5580f1a5ac98bfa5fec373c9656e30a6ce2"
+    },
+    {
+      "path": "Models.meta",
+      "bytes": 116,
+      "sha256": "88438252f054ad9f3cd4364850f63d2fcfdaa330bfdf40adb1e78b1c2444a5c0"
+    },
+    {
+      "path": "RECEIVING.txt",
+      "bytes": 3210,
+      "sha256": "227cc1af6dd2db8c7685d0fb5625ce8e21fe5ce667358445ec9bd10985edeabe"
+    },
+    {
+      "path": "RECEIVING.txt.meta",
+      "bytes": 155,
+      "sha256": "f38341d5b766a4fae0bca841a40c7d19d4aa68906c44cf7f488a24f13b2cf1cf"
+    },
+    {
+      "path": "SOURCE-LICENSE.html",
+      "bytes": 3902,
+      "sha256": "13ceb88d210f769a2f01f24ced0156c8f24e0e94e4041184f9df6c9edcb455ce"
+    },
+    {
+      "path": "SOURCE-LICENSE.html.meta",
+      "bytes": 155,
+      "sha256": "464e32d8c8660784ed2ba26427830224304372c1f23d65aebb9a50a81f8cfcc6"
+    },
+    {
+      "path": "Textures/Galaxy_Ceramic_Albedo.png",
+      "bytes": 97911,
+      "sha256": "da56b123c5b01c517ab63f8c29634934d5a7bdbc202b0754e3aacad988401ccc"
+    },
+    {
+      "path": "Textures/Galaxy_Ceramic_Albedo.png.meta",
+      "bytes": 405,
+      "sha256": "da005c16cf86587644ee60904eec0cbfe5f006637e4398f9b90852674367d05f"
+    },
+    {
+      "path": "Textures/Galaxy_Engineering_Albedo.png",
+      "bytes": 485472,
+      "sha256": "0275d91c6e9ee2c909c0b220fde57909e09e4996c03223e8c6f3012a6eb9fd82"
+    },
+    {
+      "path": "Textures/Galaxy_Engineering_Albedo.png.meta",
+      "bytes": 405,
+      "sha256": "e76394aaab25317acd5134b1678500f5903b2bed55a9752bfde9fca636cda0a6"
+    },
+    {
+      "path": "Textures/Galaxy_SaucerLower_Albedo.png",
+      "bytes": 713652,
+      "sha256": "b6899aa241b0c055b84baa728566a25e2086797516dce9e6e4bbce6a5e5cdaf7"
+    },
+    {
+      "path": "Textures/Galaxy_SaucerLower_Albedo.png.meta",
+      "bytes": 405,
+      "sha256": "41b7bd26f20455434651db1e5496b4084efd6b443ed4afd373dbc359c6fff442"
+    },
+    {
+      "path": "Textures/Galaxy_SaucerUpper_Albedo.png",
+      "bytes": 804311,
+      "sha256": "8e4b042989a4c53b7b2ed3e7f94b7a988cb97a012ffc17ae3aa68e94faff0bb8"
+    },
+    {
+      "path": "Textures/Galaxy_SaucerUpper_Albedo.png.meta",
+      "bytes": 405,
+      "sha256": "94d7accd13e2bc76663bec57466c6c3140ad4cd8c3d218251f6efb8515e7c815"
+    },
+    {
+      "path": "Textures.meta",
+      "bytes": 116,
+      "sha256": "d44c3f7748050fa29418b4599315edc954411efb8f71ff26ae29988170680c17"
+    }
+  ],
+  "runtimeImportAndTextureFidelity": "not yet validated in Unity"
+}

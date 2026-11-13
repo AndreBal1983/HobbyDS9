@@ -22,6 +22,7 @@ namespace HobbyDS9.UnityClient
     [DisallowMultipleComponent]
     public sealed class AudioOutputListener : MonoBehaviour
     {
+        private readonly long shutdownLabel=ClientShutdownLifecycle.NextId();
         private static AudioOutputListener? instance;
         private readonly HashSet<MonoBehaviour> owners = new HashSet<MonoBehaviour>();
         private AudioListener? output;
@@ -57,24 +58,34 @@ namespace HobbyDS9.UnityClient
         {
             if (releasing) return;
             if (output == null) output = GetComponent<AudioListener>();
-            if (output == null) output = gameObject.AddComponent<AudioListener>();
             bool sceneListener = false;
             foreach (var listener in Object.FindObjectsByType<AudioListener>())
                 if (listener != output && listener.isActiveAndEnabled) { sceneListener = true; break; }
             // Never alter another listener, global volume/pause, or client preferences.
-            output.enabled = !sceneListener;
+            if (sceneListener)
+            {
+                if (output != null) output.enabled = false;
+                return;
+            }
+            if (output == null) output = gameObject.AddComponent<AudioListener>();
+            output.enabled = true;
         }
 
         private void ReleaseOutput()
         {
+            ClientShutdownLifecycle.Mark("AudioOutputListener",shutdownLabel,"release.enter");
             releasing = true;
+            ClientShutdownLifecycle.Mark("AudioOutputListener",shutdownLabel,"release.listener-disable.begin");
             if (output != null) output.enabled = false;
+            ClientShutdownLifecycle.Mark("AudioOutputListener",shutdownLabel,"release.listener-disable.return");
             if (instance == this) instance = null;
             if (UnityEngine.Application.isPlaying) Destroy(gameObject);
             else DestroyImmediate(gameObject);
+            ClientShutdownLifecycle.Mark("AudioOutputListener",shutdownLabel,"release.destroy-requested");
+            ClientShutdownLifecycle.Mark("AudioOutputListener",shutdownLabel,"release.return");
         }
 
         private void OnDisable() { if (output != null) output.enabled = false; }
-        private void OnDestroy() { if (instance == this) instance = null; }
+        private void OnDestroy() { ClientShutdownLifecycle.Mark("AudioOutputListener",shutdownLabel,"destroy.enter");if (instance == this) instance = null; ClientShutdownLifecycle.Mark("AudioOutputListener",shutdownLabel,"destroy.return"); }
     }
 }
