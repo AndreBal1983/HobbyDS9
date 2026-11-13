@@ -51,7 +51,7 @@ namespace HobbyDS9.UnityClient.Tests
             }
         }
         [UnityTest]
-        public IEnumerator PowerBankWrapsAtNarrowStandardAndWideWidthsWithReachableExactControls()
+        public IEnumerator PowerWorkbenchRowsKeepTracksAndExactControlsReachableAtSupportedWidths()
         {
             var window=ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();
             var draft=new ShipDesignDraft(ShipDesignFixtureLoader.Load());draft.RequestTemplate("class.escort");
@@ -68,15 +68,20 @@ namespace HobbyDS9.UnityClient.Tests
                         Assert.That(rows.Count,Is.GreaterThan(2));
                         foreach(var row in rows)
                         {
+                            Assert.That(row.worldBound.xMin,Is.GreaterThanOrEqualTo(bank.worldBound.xMin-1));
                             Assert.That(row.worldBound.xMax,Is.LessThanOrEqualTo(bank.worldBound.xMax+1));
+                            Assert.That(row.worldBound.width,Is.EqualTo(bank.contentRect.width).Within(2),"Current workbench uses full-width rows, not the historical156px tile grid.");
+                            var tracks=row.Query<LcarsPowerSlider>().ToList().Select(slider=>slider.Track).OrderBy(track=>track.worldBound.xMin).ToList();
+                            Assert.That(tracks.Count,Is.EqualTo(2),"Requested and allocated tracks remain independent.");
+                            Assert.That(tracks[0].worldBound.xMax,Is.LessThanOrEqualTo(tracks[1].worldBound.xMin),"Independent hit columns may not overlap.");
                             foreach(var slider in row.Query<LcarsPowerSlider>().ToList())
                             {
                                 Assert.That(slider.Track.worldBound.width,Is.EqualTo(44).Within(1));Assert.That(slider.Track.worldBound.height,Is.EqualTo(slider.Scale.Count(slider.Maximum)*slider.Scale.SegmentPitch+14).Within(1));
-                                Assert.That(row.worldBound.width,Is.InRange(120,180));
-                                Assert.That(row.worldBound.xMax,Is.LessThanOrEqualTo(bank.worldBound.xMax+1));
+                                Assert.That(slider.Track.worldBound.xMin,Is.GreaterThanOrEqualTo(row.worldBound.xMin-1));
+                                Assert.That(slider.Track.worldBound.xMax,Is.LessThanOrEqualTo(row.worldBound.xMax+1));
                             }
                         }
-                        if(width<1900)Assert.That(rows.Last().worldBound.yMin,Is.GreaterThan(rows.First().worldBound.yMin),"Many installations wrap when space runs out");
+                        for(var i=1;i<rows.Count;i++)Assert.That(rows[i].worldBound.yMin,Is.GreaterThanOrEqualTo(rows[i-1].worldBound.yMax-1),"Full-width workbench rows must not overlap.");
                         var detail=view.Q<ScrollView>("designer-power-detail");Assert.That(detail.Query<LongField>().ToList().Count,Is.EqualTo(2));
                     }
                 }
@@ -126,8 +131,15 @@ namespace HobbyDS9.UnityClient.Tests
             var provider=ShipDesignFixtureLoader.Load();var draft=new ShipDesignDraft(provider);draft.RequestTemplate("class.escort");draft.SelectProfile(DesignerProfile.Combat);
             var preview=provider.Evaluate(draft.Current).Profiles.Single(p=>p.Kind==OperatingProfileKind.Combat);
             foreach(var i in preview.Installations){var id=draft.Current.ToDto().Installations.Single(x=>x.InstallationId==i.InstallationId).ComponentVersionId;draft.SetPower(id,i.FullPower,i.FullPower);}
-            Assert.That(provider.Evaluate(draft.Current).Issues.Any(i=>i.Code==DesignIssueCode.AvailablePowerExceeded),Is.True);
-            using(var view=new ShipDesignerView(draft,()=>{})){view.SelectSystem("Profiles");Assert.That(view.Query<Label>().ToList().Any(l=>l.text.Contains("BACKEND ERROR")),Is.True);}
+            var budget=provider.Evaluate(draft.Current).Issues.FirstOrDefault(i=>i.Code==DesignIssueCode.AvailablePowerExceeded);
+            Assert.That(budget,Is.Not.Null,"The real backend must still reject the over-budget allocation.");
+            var budgetError=budget!;
+            Assert.That(draft.Preview().Issues.Any(i=>i.SourcePath==budgetError.Path&&i.Explanation.Contains(budgetError.Message)&&i.Severity==DesignerStatus.HardError),Is.True,"Do not lose backend budget evidence in the presentation projection.");
+            using(var view=new ShipDesignerView(draft,()=>{}))
+            {
+                view.SelectSystem("Profiles");
+                Assert.That(view.Query<Label>(className:"sd-error").ToList().Any(l=>l.text.Contains(budgetError.Message)),Is.True,"Current workbench must display the actual backend error, independent of an obsolete caption.");
+            }
         }
         private static void Key(VisualElement track,KeyCode code)
         {
