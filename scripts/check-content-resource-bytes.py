@@ -67,8 +67,8 @@ def main():
             for mode in ("true", "false", "input"):
                 output = Path(temporary) / mode
                 output.mkdir()
-                git("-c", f"core.autocrlf={mode}", "checkout-index", "--force",
-                    f"--prefix={output.as_posix()}/", "--stdin", input="\n".join(sorted(paths)) + "\n", text=True)
+                git("-c", f"core.autocrlf={mode}", "checkout-index", "--force", "-z",
+                    f"--prefix={output.as_posix()}/", "--stdin", input=("\0".join(sorted(paths)) + "\0").encode("utf-8"))
                 check(output)
                 print(f"Committed checkout core.autocrlf={mode}: passed")
 
