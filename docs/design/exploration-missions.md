@@ -21,6 +21,8 @@ Read [the design index](README.md), [ship design](ship-design.md), [strategic AI
 
 All schemas, timing policies, formulas, pacing limits, examples and milestone boundaries below are **proposals** unless explicitly labeled otherwise.
 
+**Owner direction agreed, 13 November 2026:** routine surveying is the foundation, with optional story missions layered on top. Mundane surveys remain useful without requiring a story event. The [survey framework proposal](../survey-framework-v1-proposal.md) inventories existing authority and proposes implementation phases; it does not implement or approve detailed frequency, duration, risk, rewards or balance.
+
 ## System and planetary exploration
 
 Separate navigation region, star system, astronomical body, political actor and population cohort identities. A navigation region may contain no system; a system may contain multiple stars and many bodies. A body is not necessarily owned by one civilization. Preserve existing IDs and associations through explicit adapters until a versioned schema increment is authorized.
