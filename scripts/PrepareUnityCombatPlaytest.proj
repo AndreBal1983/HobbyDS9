@@ -1,0 +1,11 @@
+<Project DefaultTargets="Prepare">
+  <PropertyGroup>
+    <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..'))</RepoRoot>
+    <CombatPlaytestOutput>$(RepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/CombatPlaytestV1</CombatPlaytestOutput>
+  </PropertyGroup>
+  <Target Name="Prepare">
+    <ItemGroup><Content Include="$(RepoRoot)/scenarios/combat-playtest-v1/demo.json;$(RepoRoot)/scenarios/combat-playtest-v1/package.json;$(RepoRoot)/scenarios/combat-playtest-v1/physical.json;$(RepoRoot)/scenarios/combat-playtest-v1/core.json;$(RepoRoot)/scenarios/combat-playtest-v1/scenario.json" /></ItemGroup>
+    <MakeDir Directories="$(CombatPlaytestOutput)" />
+    <Copy SourceFiles="@(Content)" DestinationFolder="$(CombatPlaytestOutput)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

@@ -1,5 +1,6 @@
 # Scenario identity hashes exact file bytes; preserve them across host platforms.
 scenarios/**/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/CombatPlaytestV1/*.json text eol=lf
 # Preserve the original demo pack's manifest-pinned asset bytes. Git policy
 # belongs outside Unity Assets, where every real asset requires metadata.
 client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/** -text

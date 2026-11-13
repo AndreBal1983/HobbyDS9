@@ -1,0 +1,12 @@
+{
+  "FormatVersion": 4,
+  "ProfileId": "campaign-tactical-v2-singleplayer-demo-1",
+  "PolicyStatus": "proposed",
+  "DefaultActivationAllowed": false,
+  "HumanActorId": "civ.federation",
+  "OpponentActorId": "civ.cardassian",
+  "ObjectiveNodeId": "nav.bajor",
+  "LastTurn": 12,
+  "AiPolicyId": "lawful-bajor-defence-demo-v1",
+  "ObjectivePolicyId": "bajor-surviving-hull-presence-demo-v1"
+}
