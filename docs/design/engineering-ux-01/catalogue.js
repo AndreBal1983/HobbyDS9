@@ -1,4 +1,4 @@
-/* Exact EngineeringApplications from PR85 e365ec1; design source only, not integrated content. */
+/* Received EngineeringApplications at Backend fd0bb6c; PR85 lineage with admitted utility namespace. Design data only. */
 const catalogue = [
   {
     "DefinitionId": "engineering.advanced-starship-engineering",
@@ -39,7 +39,7 @@ const catalogue = [
     ],
     "PrerequisiteDefinitionIds": [],
     "Kind": 2,
-    "EffectSummary": "Reactor space 18 → 15 at the same 60 output; credits 6 → 8 and industry 9 → 12. Unlocks component.reactor.v2 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Reactor space 18 → 15 at the same 60 output; credits 6 → 8 and industry 9 → 12. Unlocks component.utility.reactor.v2 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -57,7 +57,7 @@ const catalogue = [
       "engineering.compact-reactor"
     ],
     "Kind": 1,
-    "EffectSummary": "Reactor output 60 → 72; space rises to 20, credits 10 / industry 16. Hull distribution still limits usable power. Unlocks component.reactor.v3 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Reactor output 60 → 72; space rises to 20, credits 10 / industry 16. Hull distribution still limits usable power. Unlocks component.utility.reactor.v3 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -73,7 +73,7 @@ const catalogue = [
     ],
     "PrerequisiteDefinitionIds": [],
     "Kind": 2,
-    "EffectSummary": "Cruise full/minimum power 30/15 → 24/12 at the same movement 4; credits 2 → 4 / industry 3 → 6. Unlocks component.propulsion.v2 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Cruise full/minimum power 30/15 → 24/12 at the same movement 4; credits 2 → 4 / industry 3 → 6. Unlocks component.utility.propulsion.v2 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -91,7 +91,7 @@ const catalogue = [
       "engineering.efficient-drive"
     ],
     "Kind": 1,
-    "EffectSummary": "Cruise movement 4 → 5 at full allocation; space 16 → 20, cruise full/minimum power 32/16, credits 6 / industry 10. Unlocks component.propulsion.v3 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Cruise movement 4 → 5 at full allocation; space 16 → 20, cruise full/minimum power 32/16, credits 6 / industry 10. Unlocks component.utility.propulsion.v3 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -112,7 +112,7 @@ const catalogue = [
     ],
     "PrerequisiteDefinitionIds": [],
     "Kind": 2,
-    "EffectSummary": "Full-power combat evasion 1000 → 1500 basis points; combat full/minimum power 12/6 → 16/8, credits 5 / industry 8. Unlocks component.propulsion.v4 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Full-power combat evasion 1000 → 1500 basis points; combat full/minimum power 12/6 → 16/8, credits 5 / industry 8. Unlocks component.utility.propulsion.v4 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -128,7 +128,7 @@ const catalogue = [
     ],
     "PrerequisiteDefinitionIds": [],
     "Kind": 1,
-    "EffectSummary": "A new higher-capacity shield variant: full-power capacity 20 → 28; space 12 → 15, full/minimum power 18/9, credits 5 / industry 8. Unlocks component.escort-shield.v2 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "A new higher-capacity shield variant: full-power capacity 20 → 28; space 12 → 15, full/minimum power 18/9, credits 5 / industry 8. Unlocks component.utility.escort-shield.v2 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -144,7 +144,7 @@ const catalogue = [
     ],
     "PrerequisiteDefinitionIds": [],
     "Kind": 2,
-    "EffectSummary": "Shield full/minimum power 8/4 → 6/3 at capacity 8; credits 2 → 4 / industry 3 → 6. Unlocks component.small-shield.v2 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Shield full/minimum power 8/4 → 6/3 at capacity 8; credits 2 → 4 / industry 3 → 6. Unlocks component.utility.small-shield.v2 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -162,7 +162,7 @@ const catalogue = [
       "engineering.resilient-shield"
     ],
     "Kind": 1,
-    "EffectSummary": "Full-power shield capacity 28 → 36; space 15 → 18, full/minimum power 22/11, credits 8 / industry 12. Uses existing shield rules, with no new resistance or regeneration mechanic. Unlocks component.escort-shield.v3 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Full-power shield capacity 28 → 36; space 15 → 18, full/minimum power 22/11, credits 8 / industry 12. Uses existing shield rules, with no new resistance or regeneration mechanic. Unlocks component.utility.escort-shield.v3 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -183,7 +183,7 @@ const catalogue = [
     ],
     "PrerequisiteDefinitionIds": [],
     "Kind": 2,
-    "EffectSummary": "Energy-bank space 8 → 6, unchanged firepower and mounts; credits 2 → 4 / industry 3 → 6. Unlocks component.energy-bank.v2 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Energy-bank space 8 → 6, unchanged firepower and mounts; credits 2 → 4 / industry 3 → 6. Unlocks component.utility.energy-bank.v2 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -201,7 +201,7 @@ const catalogue = [
       "engineering.compact-energy-bank"
     ],
     "Kind": 1,
-    "EffectSummary": "Full-power long-range attack 4 → 7; close attack 12 → 8, full/minimum power 10/5, credits 5 / industry 8. Unlocks component.energy-bank.v3 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Full-power long-range attack 4 → 7; close attack 12 → 8, full/minimum power 10/5, credits 5 / industry 8. Unlocks component.utility.energy-bank.v3 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -222,7 +222,7 @@ const catalogue = [
     ],
     "PrerequisiteDefinitionIds": [],
     "Kind": 2,
-    "EffectSummary": "Full-power long-range attack 8 → 11; space 8 → 10, full/minimum power 10/3, credits 5 / industry 8. Retains the campaign v1 aggregate combat model. Unlocks component.launcher.v2 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Full-power long-range attack 8 → 11; space 8 → 10, full/minimum power 10/3, credits 5 / industry 8. Retains the campaign v1 aggregate combat model. Unlocks component.utility.launcher.v2 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -243,7 +243,7 @@ const catalogue = [
     ],
     "PrerequisiteDefinitionIds": [],
     "Kind": 2,
-    "EffectSummary": "Life-support space 12 → 9 at crew support 40; credits 2 → 4 / industry 3 → 6. Unlocks component.life-support.v2 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Life-support space 12 → 9 at crew support 40; credits 2 → 4 / industry 3 → 6. Unlocks component.utility.life-support.v2 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -261,7 +261,7 @@ const catalogue = [
       "engineering.compact-life-support"
     ],
     "Kind": 2,
-    "EffectSummary": "Essential life-support power 6 → 4 in each profile; space 9 → 11, credits 5 / industry 8. Unlocks component.life-support.v3 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Essential life-support power 6 → 4 in each profile; space 9 → 11, credits 5 / industry 8. Unlocks component.utility.life-support.v3 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -277,7 +277,7 @@ const catalogue = [
     ],
     "PrerequisiteDefinitionIds": [],
     "Kind": 2,
-    "EffectSummary": "Computer support 60 → 90 in all profiles; space 8 → 10, essential power 4 → 5, credits 4 / industry 6. Unlocks component.command.v2 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Computer support 60 → 90 in all profiles; space 8 → 10, essential power 4 → 5, credits 4 / industry 6. Unlocks component.utility.command.v2 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -300,7 +300,7 @@ const catalogue = [
       "engineering.expanded-computing"
     ],
     "Kind": 2,
-    "EffectSummary": "Command combat accuracy output 7000 → 8000 basis points; essential power 5 → 7 in all profiles, credits 6 / industry 10. Final accuracy still follows compiler aggregation and caps. Unlocks component.command.v3 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Command combat accuracy output 7000 → 8000 basis points; essential power 5 → 7 in all profiles, credits 6 / industry 10. Final accuracy still follows compiler aggregation and caps. Unlocks component.utility.command.v3 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -321,7 +321,7 @@ const catalogue = [
     ],
     "PrerequisiteDefinitionIds": [],
     "Kind": 1,
-    "EffectSummary": "Survey sensor rating 10 → 15; space 8 → 10, Survey full/minimum power 10 → 12, credits 4 / industry 7. Sensor rating is a designer preview; no campaign detection bonus is implemented. Unlocks component.survey-sensors.v2 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Survey sensor rating 10 → 15; space 8 → 10, Survey full/minimum power 10 → 12, credits 4 / industry 7. Sensor rating is a designer preview; no campaign detection bonus is implemented. Unlocks component.utility.survey-sensors.v2 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {
@@ -342,7 +342,7 @@ const catalogue = [
     ],
     "PrerequisiteDefinitionIds": [],
     "Kind": 2,
-    "EffectSummary": "Laboratory space 22 → 18 at Science rating 100; credits 2 → 4 / industry 3 → 7. Science rating remains a designer preview, not colony R&D income. Unlocks component.labs.v2 for new designs; existing ships and published revisions are unchanged.",
+    "EffectSummary": "Laboratory space 22 → 18 at Science rating 100; credits 2 → 4 / industry 3 → 7. Science rating remains a designer preview, not colony R&D income. Unlocks component.utility.labs.v2 for new designs; existing ships and published revisions are unchanged.",
     "ParameterChange": null
   },
   {

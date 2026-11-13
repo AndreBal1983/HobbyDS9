@@ -1,5 +1,5 @@
 /* ENG-UX-01 target catalogue review. Presentation fixtures only; no game connection. */
-const designSource='PR85 e365ec1 · target catalogue · Backend receiving pending';
+const designSource='Received catalogue · Backend fd0bb6c · PR85 lineage';
 let selectedProject='engineering.compact-reactor', fixture=['locked','available','active','completed','empty','switch'].includes(new URLSearchParams(location.search).get('state'))?new URLSearchParams(location.search).get('state'):'locked', kindFilter='all', searchText='';
 const names=['','Biotech','Computing','Construction','Energy','Propulsion','Weapons'];
 const escaped=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
