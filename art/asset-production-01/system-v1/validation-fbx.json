@@ -1,0 +1,625 @@
+{
+  "pack": "system-v1",
+  "method": "FBX reimport from relocated Models/Textures; no image search",
+  "passed": true,
+  "failures": [],
+  "assets": [
+    {
+      "asset": "Earth_LOD0",
+      "triangles": 9024,
+      "world_bounds_metres": [
+        [
+          -1.0000009536743164,
+          -1.0000005960464478,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\earth_daymap.jpg"
+      ]
+    },
+    {
+      "asset": "Earth_LOD1",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.000001072883606,
+          -1.0000008344650269,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.000001311302185,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\earth_daymap.jpg"
+      ]
+    },
+    {
+      "asset": "Earth_LOD2",
+      "triangles": 528,
+      "world_bounds_metres": [
+        [
+          -0.999999463558197,
+          -0.9999997019767761,
+          -1.0
+        ],
+        [
+          0.9999998211860657,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\earth_daymap.jpg"
+      ]
+    },
+    {
+      "asset": "Mars_LOD0",
+      "triangles": 9024,
+      "world_bounds_metres": [
+        [
+          -1.0000009536743164,
+          -1.0000005960464478,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\mars.jpg"
+      ]
+    },
+    {
+      "asset": "Mars_LOD1",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.000001072883606,
+          -1.0000008344650269,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.000001311302185,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\mars.jpg"
+      ]
+    },
+    {
+      "asset": "Mars_LOD2",
+      "triangles": 528,
+      "world_bounds_metres": [
+        [
+          -0.999999463558197,
+          -0.9999997019767761,
+          -1.0
+        ],
+        [
+          0.9999998211860657,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\mars.jpg"
+      ]
+    },
+    {
+      "asset": "Sun_LOD0",
+      "triangles": 9024,
+      "world_bounds_metres": [
+        [
+          -1.0000009536743164,
+          -1.0000005960464478,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\sun.jpg"
+      ]
+    },
+    {
+      "asset": "Sun_LOD1",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.000001072883606,
+          -1.0000008344650269,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.000001311302185,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\sun.jpg"
+      ]
+    },
+    {
+      "asset": "Sun_LOD2",
+      "triangles": 528,
+      "world_bounds_metres": [
+        [
+          -0.999999463558197,
+          -0.9999997019767761,
+          -1.0
+        ],
+        [
+          0.9999998211860657,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\sun.jpg"
+      ]
+    },
+    {
+      "asset": "Mercury_LOD0",
+      "triangles": 9024,
+      "world_bounds_metres": [
+        [
+          -1.0000009536743164,
+          -1.0000005960464478,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\mercury.jpg"
+      ]
+    },
+    {
+      "asset": "Mercury_LOD1",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.000001072883606,
+          -1.0000008344650269,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.000001311302185,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\mercury.jpg"
+      ]
+    },
+    {
+      "asset": "Mercury_LOD2",
+      "triangles": 528,
+      "world_bounds_metres": [
+        [
+          -0.999999463558197,
+          -0.9999997019767761,
+          -1.0
+        ],
+        [
+          0.9999998211860657,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\mercury.jpg"
+      ]
+    },
+    {
+      "asset": "Venus_LOD0",
+      "triangles": 9024,
+      "world_bounds_metres": [
+        [
+          -1.0000009536743164,
+          -1.0000005960464478,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\venus_atmosphere.jpg"
+      ]
+    },
+    {
+      "asset": "Venus_LOD1",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.000001072883606,
+          -1.0000008344650269,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.000001311302185,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\venus_atmosphere.jpg"
+      ]
+    },
+    {
+      "asset": "Venus_LOD2",
+      "triangles": 528,
+      "world_bounds_metres": [
+        [
+          -0.999999463558197,
+          -0.9999997019767761,
+          -1.0
+        ],
+        [
+          0.9999998211860657,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\venus_atmosphere.jpg"
+      ]
+    },
+    {
+      "asset": "Jupiter_LOD0",
+      "triangles": 9024,
+      "world_bounds_metres": [
+        [
+          -1.0000009536743164,
+          -1.0000005960464478,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\jupiter.jpg"
+      ]
+    },
+    {
+      "asset": "Jupiter_LOD1",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.000001072883606,
+          -1.0000008344650269,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.000001311302185,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\jupiter.jpg"
+      ]
+    },
+    {
+      "asset": "Jupiter_LOD2",
+      "triangles": 528,
+      "world_bounds_metres": [
+        [
+          -0.999999463558197,
+          -0.9999997019767761,
+          -1.0
+        ],
+        [
+          0.9999998211860657,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\jupiter.jpg"
+      ]
+    },
+    {
+      "asset": "Saturn_LOD0",
+      "triangles": 9024,
+      "world_bounds_metres": [
+        [
+          -1.0000009536743164,
+          -1.0000005960464478,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\saturn.jpg"
+      ]
+    },
+    {
+      "asset": "Saturn_LOD1",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.000001072883606,
+          -1.0000008344650269,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.000001311302185,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\saturn.jpg"
+      ]
+    },
+    {
+      "asset": "Saturn_LOD2",
+      "triangles": 528,
+      "world_bounds_metres": [
+        [
+          -0.999999463558197,
+          -0.9999997019767761,
+          -1.0
+        ],
+        [
+          0.9999998211860657,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\saturn.jpg"
+      ]
+    },
+    {
+      "asset": "Uranus_LOD0",
+      "triangles": 9024,
+      "world_bounds_metres": [
+        [
+          -1.0000009536743164,
+          -1.0000005960464478,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\uranus.jpg"
+      ]
+    },
+    {
+      "asset": "Uranus_LOD1",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.000001072883606,
+          -1.0000008344650269,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.000001311302185,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\uranus.jpg"
+      ]
+    },
+    {
+      "asset": "Uranus_LOD2",
+      "triangles": 528,
+      "world_bounds_metres": [
+        [
+          -0.999999463558197,
+          -0.9999997019767761,
+          -1.0
+        ],
+        [
+          0.9999998211860657,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\uranus.jpg"
+      ]
+    },
+    {
+      "asset": "Neptune_LOD0",
+      "triangles": 9024,
+      "world_bounds_metres": [
+        [
+          -1.0000009536743164,
+          -1.0000005960464478,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\neptune.jpg"
+      ]
+    },
+    {
+      "asset": "Neptune_LOD1",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.000001072883606,
+          -1.0000008344650269,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.000001311302185,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\neptune.jpg"
+      ]
+    },
+    {
+      "asset": "Neptune_LOD2",
+      "triangles": 528,
+      "world_bounds_metres": [
+        [
+          -0.999999463558197,
+          -0.9999997019767761,
+          -1.0
+        ],
+        [
+          0.9999998211860657,
+          1.0,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\neptune.jpg"
+      ]
+    },
+    {
+      "asset": "Saturn_Rings",
+      "triangles": 1152,
+      "world_bounds_metres": [
+        [
+          -2.180000066757202,
+          -2.180000066757202,
+          -3.551670602064405e-07
+        ],
+        [
+          2.180000066757202,
+          2.180000066757202,
+          3.551670602064405e-07
+        ]
+      ],
+      "max_bounds_error_metres": 3.551670602064405e-07,
+      "relocated_texture_paths": []
+    },
+    {
+      "asset": "Orbit_Unit",
+      "triangles": 512,
+      "world_bounds_metres": [
+        [
+          -1.003000020980835,
+          -1.003000020980835,
+          -1.6340943886916648e-07
+        ],
+        [
+          1.003000020980835,
+          1.003000020980835,
+          1.6340943886916648e-07
+        ]
+      ],
+      "max_bounds_error_metres": 1.6340943886916648e-07,
+      "relocated_texture_paths": []
+    },
+    {
+      "asset": "Atmosphere_Unit",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.0180010795593262,
+          -1.018000841140747,
+          -1.0180000066757202
+        ],
+        [
+          1.0180003643035889,
+          1.0180013179779053,
+          1.0180000066757202
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": []
+    },
+    {
+      "asset": "Corona_Billboard",
+      "triangles": 2,
+      "world_bounds_metres": [
+        [
+          -1.0,
+          -1.0,
+          -1.6292067073209182e-07
+        ],
+        [
+          1.0,
+          1.0,
+          1.6292067073209182e-07
+        ]
+      ],
+      "max_bounds_error_metres": 1.6292067073209182e-07,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\OriginalCorona.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\OriginalCorona.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\system-v1\\Textures\\OriginalCorona.png"
+      ]
+    }
+  ],
+  "limitation": "Blender FBX reimport is not Unity importer or URP verification"
+}

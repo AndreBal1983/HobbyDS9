@@ -1,0 +1,154 @@
+{
+  "Hull_Pearl": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      0.47999998927116394,
+      0.5600000023841858,
+      0.6399999856948853,
+      1
+    ],
+    "metallic": 0.3499999940395355,
+    "smoothness": 0.6399999856948853,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true
+  },
+  "Hull_Slate": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      0.15000000596046448,
+      0.20999999344348907,
+      0.2800000011920929,
+      1
+    ],
+    "metallic": 0.5,
+    "smoothness": 0.5800000131130219,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true
+  },
+  "Recess_Graphite": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      0.017999999225139618,
+      0.03500000014901161,
+      0.054999999701976776,
+      1
+    ],
+    "metallic": 0.30000001192092896,
+    "smoothness": 0.44999998807907104,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true
+  },
+  "Sensor_Bronze": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      0.36000001430511475,
+      0.23000000417232513,
+      0.10000000149011612,
+      1
+    ],
+    "metallic": 0.6499999761581421,
+    "smoothness": 0.5999999940395355,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true
+  },
+  "Engine_Blue": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      0.02500000037252903,
+      0.2800000011920929,
+      0.800000011920929,
+      1
+    ],
+    "metallic": 0.15000000596046448,
+    "smoothness": 0.7199999988079071,
+    "emission_color_linear": [
+      0.03125,
+      0.34999999627470973,
+      1
+    ],
+    "emission_strength": 1.600000023841858,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true
+  },
+  "Collector_Red": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      0.800000011920929,
+      0.03500000014901161,
+      0.012000000104308128,
+      1
+    ],
+    "metallic": 0.20000000298023224,
+    "smoothness": 0.699999988079071,
+    "emission_color_linear": [
+      1,
+      0.04374999953433872,
+      0.014999999906867744
+    ],
+    "emission_strength": 1.2000000178813934,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true
+  },
+  "Trim_Titanium": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      0.550000011920929,
+      0.5799999833106995,
+      0.5699999928474426,
+      1
+    ],
+    "metallic": 0.6499999761581421,
+    "smoothness": 0.7199999988079071,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true
+  },
+  "Windows_Warm": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      0.800000011920929,
+      0.550000011920929,
+      0.25,
+      1
+    ],
+    "metallic": 0.10000000149011612,
+    "smoothness": 0.5999999940395355,
+    "emission_color_linear": [
+      0.5199999886751172,
+      0.3574999946355817,
+      0.16249999403953552
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true
+  }
+}
