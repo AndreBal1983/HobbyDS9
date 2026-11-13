@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+<title id="title">Proposed Engineering layout at 1280 by 720</title><desc id="desc">Design drawing based on the observed locked project. One project list and named Science blockers. Not a runtime capture.</desc>
+<rect width="1280" height="720" fill="#05070a"/>
+<g font-family="Segoe UI,Arial,sans-serif" font-size="18" fill="#f1e8d8">
+<rect x="0" y="0" width="1280" height="34" fill="#2e2638"/><text x="24" y="24" font-size="15" fill="#e2bc7c">ENG-UX-01 · PROPOSED DESIGN · observed locked state · not a runtime capture</text>
+<path d="M24 110V88Q24 64 48 64H1256" stroke="#d99552" stroke-width="16" fill="none"/>
+<text x="32" y="139" font-size="29" font-weight="600">Engineering</text><text x="32" y="166" fill="#b7bec8">Research / Engineering</text>
+<rect x="1040" y="110" width="216" height="44" rx="22" fill="#152536" stroke="#8cb7d6"/><text x="1070" y="138">R&amp;D allocation</text>
+<g fill="#121d29"><rect x="24" y="190" width="330" height="80" rx="8"/><rect x="366" y="190" width="300" height="80" rx="8"/><rect x="678" y="190" width="578" height="80" rx="8"/></g>
+<g font-size="15" fill="#b7bec8"><text x="42" y="213">AT CURRENT ALLOCATION</text><text x="384" y="213">BANKED ENGINEERING</text><text x="696" y="213">CURRENT PROJECT</text></g>
+<text x="42" y="243" font-size="21">— points / turn</text><text x="384" y="243" font-size="21">— points</text><text x="696" y="243" font-size="21">No active project · points remain banked</text>
+<text x="30" y="293" font-size="14" fill="#b7bec8">Income / bank were not visible in the supplied crop. Actual UI binds authoritative values, including zero.</text>
+<rect x="24" y="310" width="300" height="370" rx="12" fill="#0b1018" stroke="#384d60"/>
+<text x="44" y="344" font-size="23">Projects (1)</text><rect x="40" y="366" width="268" height="151" rx="10" fill="#222b3b" stroke="#bba6da" stroke-width="2"/>
+<text x="56" y="395" font-size="20" font-weight="600"><tspan>Advanced Starship</tspan><tspan x="56" dy="26">Engineering</tspan></text>
+<text x="56" y="455" fill="#e2bc7c">○ Locked</text><text x="56" y="482" font-size="16" fill="#b7bec8">0 / 30 points retained</text>
+<text x="44" y="556" font-size="16" fill="#b7bec8"><tspan>1 application offered.</tspan><tspan x="44" dy="25">No refinement or civil projects.</tspan></text>
+<rect x="344" y="310" width="912" height="370" rx="12" fill="#0b1018" stroke="#384d60"/>
+<text x="366" y="344" font-size="24" font-weight="600">Advanced Starship Engineering</text>
+<rect x="366" y="361" width="868" height="69" fill="#1e2022"/><path d="M366 361V430" stroke="#e2bc7c" stroke-width="4"/>
+<text x="382" y="387" fill="#e2bc7c" font-weight="600">No new construction option in this campaign</text><text x="382" y="413" font-size="16" fill="#b7bec8">The authored Advanced Scout effect belongs to the original catalogue.</text>
+<text x="366" y="461" fill="#bba6da">Two Science requirements missing</text>
+<text x="366" y="490">Construction · level 1 → 2 · discovery 1</text><text x="1100" y="490" fill="#e2bc7c">○ Missing</text>
+<text x="366" y="521">Propulsion · level 1 → 2 · discovery 2</text><text x="1100" y="521" fill="#e2bc7c">○ Missing</text>
+<text x="366" y="558" font-size="17">Retained: 0 / 30 points · 0% <tspan fill="#b7bec8">  |  Total workload: 30 Engineering points</tspan></text>
+<rect x="366" y="581" width="210" height="44" rx="22" fill="#17212c" stroke="#67727d"/><text x="408" y="609" fill="#bbc2cb">Start project</text>
+<rect x="590" y="581" width="334" height="44" rx="22" fill="#152536" stroke="#8cb7d6"/><text x="617" y="609">Review Science requirements</text>
+<text x="366" y="654" font-size="16" fill="#b7bec8">Earn both discoveries first. Selection spends nothing immediately; work advances on End turn.</text>
+<text x="24" y="705" font-size="15" fill="#b7bec8">One active target. Switching or pausing retains earned progress. Other states are labelled hypothetical in the HTML mockup.</text>
+</g></svg>
