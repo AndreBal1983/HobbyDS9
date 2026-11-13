@@ -13,10 +13,11 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 RES = "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/"
-PAIRS = [
+GENERATED_PAIRS = [
     ("scenarios/ds9-slice/scenario.json", "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ds9-slice.json"),
     ("scenarios/ship-design-fixtures/fixture.json", "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ship-design-fixture.json"),
 ]
+PAIRS = []
 for source, target, names in [
     ("tactical-v2-physical-review/faster", "ReviewPackages/faster", "package core scenario"),
     ("tactical-v2-physical-review/slower", "ReviewPackages/slower", "package core scenario"),
@@ -30,8 +31,8 @@ COLONY = "catalogue ready-classes support settlement".split()
 OPTIONS = "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ColonisationPlaytestOptions.cs"
 
 
-def check(root):
-    for source, resource in PAIRS:
+def check(root, prepared=False):
+    for source, resource in PAIRS + (GENERATED_PAIRS if prepared else []):
         raw = (root / source).read_bytes()
         assert b"\r" not in raw, f"Non-LF authoring: {source}"
         assert raw == (root / resource).read_bytes(), f"Prepared bytes differ: {resource}"
@@ -50,10 +51,11 @@ def check(root):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkout-matrix", action="store_true")
+    parser.add_argument("--prepared", action="store_true", help="Also check the two ignored default resources after preparation")
     parser.add_argument("--git", default="git")
     args = parser.parse_args()
-    check(ROOT)
-    print(f"Exact prepared bytes: {len(PAIRS)} pairs; 5 historical CRLF pins passed")
+    check(ROOT, args.prepared)
+    print(f"Exact resource bytes: {len(PAIRS) + (len(GENERATED_PAIRS) if args.prepared else 0)} pairs; 5 historical CRLF pins passed")
     if args.checkout_matrix:
         paths = {p for pair in PAIRS for p in pair} | {".gitattributes", OPTIONS}
         paths |= {f"scenarios/colonisation-v1/{n}.json" for n in COLONY}
