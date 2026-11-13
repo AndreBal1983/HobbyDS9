@@ -1,0 +1,394 @@
+{
+  "status": "not imported; QA/GUI own receiving",
+  "files": [
+    {
+      "path": "Models/Cruiser_Runtime_LOD0.fbx",
+      "sha256": "c5e27324d5df8200617a13ca009a5f2d19fe3558e92454efaaf02321d5c2332e",
+      "bytes": 456236,
+      "proposed_guid": "ece1d33efe3b220944750436616a20b7",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Cruiser_Runtime_LOD0.fbx",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Models/Cruiser_Runtime_LOD0.glb",
+      "sha256": "a746ebae39cdd97a2a7f50e5b7870d0b820a3a4ed42b9d6b08d911d550c7db2f",
+      "bytes": 479864,
+      "proposed_guid": "a593e4dd8c8447305c2c65364b5a2fd8",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Cruiser_Runtime_LOD0.glb",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Models/Cruiser_Runtime_LOD1.fbx",
+      "sha256": "931696edae2cbdda2b5a53616dedfdbc00028b05ca25776b23cbc79cc750e07f",
+      "bytes": 265740,
+      "proposed_guid": "67c58c591d282a535b7e8c80ebfa91bd",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Cruiser_Runtime_LOD1.fbx",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Models/Cruiser_Runtime_LOD1.glb",
+      "sha256": "d5e872cc0aa87cc8411da6989a07a4d95f24871c2ece06d7c3dc364c3ea8438d",
+      "bytes": 296980,
+      "proposed_guid": "19ef05dfb97d99a63ffb63b15044365e",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Cruiser_Runtime_LOD1.glb",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Models/Cruiser_Runtime_LOD2.fbx",
+      "sha256": "1a62e938b9d94f1f020c9c26dde43d673b7102cb24518b091e095f6939a1b741",
+      "bytes": 159372,
+      "proposed_guid": "033eca67333f6c50612a264acb03bbe8",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Cruiser_Runtime_LOD2.fbx",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Models/Cruiser_Runtime_LOD2.glb",
+      "sha256": "89576658e586cee7fc40a7de183f10906bbab13fa6828ae72678b6b258f0e5fc",
+      "bytes": 168788,
+      "proposed_guid": "2a4d4a0c0416a63fe836a168382f6ab8",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Cruiser_Runtime_LOD2.glb",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD0.fbx",
+      "sha256": "8f25b607182c264b247424086c314eddafdd89b37a65fb291883d6f5fa6a59ce",
+      "bytes": 357932,
+      "proposed_guid": "0d4e77b5cb49f1864719a81725a2948e",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Escort_Runtime_LOD0.fbx",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD0.glb",
+      "sha256": "43f082564000a6a585bd7105c003d2b57b0f2b8b5b22e31a4fad9b6b532b7f9b",
+      "bytes": 335652,
+      "proposed_guid": "53393b54caf5856af7df97ec1cf31cc8",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Escort_Runtime_LOD0.glb",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD1.fbx",
+      "sha256": "61654c266023c97933f7f1278f602a1f8bd46c1bb05b43ed02b826ef31fa7347",
+      "bytes": 208268,
+      "proposed_guid": "210fad49f8fdc510496580edbd7638f8",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Escort_Runtime_LOD1.fbx",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD1.glb",
+      "sha256": "ab84fabcf4ab626349c2f5e66f0d62a5da1241b10b79b59efb1e49510c2a5b4d",
+      "bytes": 216420,
+      "proposed_guid": "3df24b6eec7e5a5aedede6343b1b6afa",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Escort_Runtime_LOD1.glb",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD2.fbx",
+      "sha256": "868efad38670ba78f71d2277bac10d93a51a2f758dfe1d519725081fb0a2ade7",
+      "bytes": 130940,
+      "proposed_guid": "48575d4adc15c10d6d6f984dbe7fb0c1",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Escort_Runtime_LOD2.fbx",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD2.glb",
+      "sha256": "23ac03667e273423787e4fe8a660aa1799231cce08a0f5d74ccc29f6d340e2ef",
+      "bytes": 137216,
+      "proposed_guid": "d66223a3fce05539b326eec34e8abd34",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Models/Escort_Runtime_LOD2.glb",
+      "purpose": "Proposed original hull runtime candidate"
+    },
+    {
+      "path": "Textures/Cruiser_BaseColor.png",
+      "sha256": "5609104d73d4e1cf21066a80949e52b29b1bae69cd6ccd880834e8d23b6237f0",
+      "bytes": 2261,
+      "proposed_guid": "4c825cd71bd3334b8d014e5719e1f71b",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Textures/Cruiser_BaseColor.png",
+      "purpose": "Proposed original hull runtime candidate",
+      "image_size": [
+        512,
+        256
+      ]
+    },
+    {
+      "path": "Textures/Cruiser_Emission.png",
+      "sha256": "b83a4a03108b17df7e8697bc6ec1de52fbf31801dfd44c7156657a8df1b94cd0",
+      "bytes": 1518,
+      "proposed_guid": "ce3a06242fe2a9482bed70539beda5e8",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Textures/Cruiser_Emission.png",
+      "purpose": "Proposed original hull runtime candidate",
+      "image_size": [
+        512,
+        256
+      ]
+    },
+    {
+      "path": "Textures/Cruiser_Normal.png",
+      "sha256": "0e2e843ec294d0a5501fa9c9f79fac41ccd2e108fa1ec68392f617e53ffe80d9",
+      "bytes": 951,
+      "proposed_guid": "58ce3e5c7a9438c28804e72ba8240b4b",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Textures/Cruiser_Normal.png",
+      "purpose": "Proposed original hull runtime candidate",
+      "image_size": [
+        512,
+        256
+      ]
+    },
+    {
+      "path": "Textures/Cruiser_ORM.png",
+      "sha256": "d9d463edb26d8387951ee2c67b0cd3a65ea9fd6c36c2f9436321add7d705f1e6",
+      "bytes": 2031,
+      "proposed_guid": "ca351b8fe5e10db7b6575a5a21cd6621",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Textures/Cruiser_ORM.png",
+      "purpose": "Proposed original hull runtime candidate",
+      "image_size": [
+        512,
+        256
+      ]
+    },
+    {
+      "path": "Textures/Escort_BaseColor.png",
+      "sha256": "5609104d73d4e1cf21066a80949e52b29b1bae69cd6ccd880834e8d23b6237f0",
+      "bytes": 2261,
+      "proposed_guid": "34669a48713fa83173732eb984493b02",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Textures/Escort_BaseColor.png",
+      "purpose": "Proposed original hull runtime candidate",
+      "image_size": [
+        512,
+        256
+      ]
+    },
+    {
+      "path": "Textures/Escort_Emission.png",
+      "sha256": "b83a4a03108b17df7e8697bc6ec1de52fbf31801dfd44c7156657a8df1b94cd0",
+      "bytes": 1518,
+      "proposed_guid": "7edda20e8a78b8047100e0a8098d70ea",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Textures/Escort_Emission.png",
+      "purpose": "Proposed original hull runtime candidate",
+      "image_size": [
+        512,
+        256
+      ]
+    },
+    {
+      "path": "Textures/Escort_Normal.png",
+      "sha256": "0e2e843ec294d0a5501fa9c9f79fac41ccd2e108fa1ec68392f617e53ffe80d9",
+      "bytes": 951,
+      "proposed_guid": "8ceb07b258fd30eccad2c5a7a9beaed9",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Textures/Escort_Normal.png",
+      "purpose": "Proposed original hull runtime candidate",
+      "image_size": [
+        512,
+        256
+      ]
+    },
+    {
+      "path": "Textures/Escort_ORM.png",
+      "sha256": "d9d463edb26d8387951ee2c67b0cd3a65ea9fd6c36c2f9436321add7d705f1e6",
+      "bytes": 2031,
+      "proposed_guid": "c5a345dfe94b9ca863cb93fa07aeb9ab",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/hulls-runtime-v2/Textures/Escort_ORM.png",
+      "purpose": "Proposed original hull runtime candidate",
+      "image_size": [
+        512,
+        256
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "art.production02.cruiser_runtime_lod0",
+      "name": "Cruiser_Runtime_LOD0",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 0,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Cruiser_LOD0",
+          "vertices": 5294,
+          "triangles": 9884,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -209.79466247558594,
+              -310.0000305175781,
+              -71.12696838378906
+            ],
+            [
+              209.79466247558594,
+              310.0000305175781,
+              71.12696838378906
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Cruiser_Runtime_LOD0.glb",
+      "fbx": "Models/Cruiser_Runtime_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production02.cruiser_runtime_lod1",
+      "name": "Cruiser_Runtime_LOD1",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 1,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Cruiser_LOD1",
+          "vertices": 2966,
+          "triangles": 5516,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -209.79466247558594,
+              -310.0000305175781,
+              -71.12696838378906
+            ],
+            [
+              209.79466247558594,
+              310.0000305175781,
+              71.12696838378906
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Cruiser_Runtime_LOD1.glb",
+      "fbx": "Models/Cruiser_Runtime_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production02.cruiser_runtime_lod2",
+      "name": "Cruiser_Runtime_LOD2",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 2,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Cruiser_LOD2",
+          "vertices": 1546,
+          "triangles": 2972,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -210.05792236328125,
+              -310.0,
+              -71.21621704101562
+            ],
+            [
+              210.05792236328125,
+              310.0,
+              71.21621704101562
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Cruiser_Runtime_LOD2.glb",
+      "fbx": "Models/Cruiser_Runtime_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production02.escort_runtime_lod0",
+      "name": "Escort_Runtime_LOD0",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 0,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Escort_LOD0",
+          "vertices": 3842,
+          "triangles": 7560,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -68.93830871582031,
+              -85.0,
+              -19.87013053894043
+            ],
+            [
+              68.93830871582031,
+              85.0,
+              19.87013053894043
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Escort_Runtime_LOD0.glb",
+      "fbx": "Models/Escort_Runtime_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production02.escort_runtime_lod1",
+      "name": "Escort_Runtime_LOD1",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 1,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Escort_LOD1",
+          "vertices": 2162,
+          "triangles": 4200,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -68.93830871582031,
+              -85.0,
+              -19.87013053894043
+            ],
+            [
+              68.93830871582031,
+              85.0,
+              19.87013053894043
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Escort_Runtime_LOD1.glb",
+      "fbx": "Models/Escort_Runtime_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production02.escort_runtime_lod2",
+      "name": "Escort_Runtime_LOD2",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 2,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Escort_LOD2",
+          "vertices": 1194,
+          "triangles": 2328,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -68.93830871582031,
+              -85.0,
+              -19.87013053894043
+            ],
+            [
+              68.93830871582031,
+              85.0,
+              19.87013053894043
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Escort_Runtime_LOD2.glb",
+      "fbx": "Models/Escort_Runtime_LOD2.fbx"
+    }
+  ],
+  "existing_project_guids_checked": 557,
+  "guid_collisions": 0,
+  "runtime_policy": "New exact candidate route/material binder required; never overwrite or relabel unreceived approved external models"
+}

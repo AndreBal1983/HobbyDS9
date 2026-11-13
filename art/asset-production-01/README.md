@@ -2,6 +2,8 @@
 
 13 November 2026. **Proposed production assets, not visual acceptance.** This delivery makes editable assets for the System/selected-world, Construction and fleet preview gaps in the GUI register. It changes no runtime binding, hull identity, gameplay statistics, save, availability or authoritative data. Existing Unity assets and metadata remain intact.
 
+Additive [v2 receiving refinements](RECEIVING-V2.md) supply one-slot atlas variants of the same hull geometry and an unchanged-UV globe witness for native axis checks. The original v1 packets below remain byte-preserved.
+
 ## Brief and receiving boundary
 
 The System brief is a large readable selected globe, recognisable Earth/Mars geography, a useful terminator, restrained Earth limb and warm textured stellar core with a bounded corona. The complete nine-body Sol reference library supports lawful disclosed presentations; it is not a campaign snapshot and assigns no hidden planet IDs. The overview composition and orbit spacing are illustrative, not astronomical scale. Decorative star texture is seeded original artwork, not a star catalogue. The current dedicated selected-globe camera and exact `planet.sol`/`planet.mars` selection should remain the integration seam.

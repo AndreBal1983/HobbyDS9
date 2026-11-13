@@ -1,0 +1,59 @@
+{
+  "pack": "hulls-runtime-v2",
+  "passed": true,
+  "assets": [
+    {
+      "asset": "Cruiser_Runtime_LOD0",
+      "same_triangle_geometry_as_v1": true,
+      "primitives": 1,
+      "normal_winding_disagreements": 0,
+      "tangent_vertices": 8575,
+      "atlas_corners_routed_to_wrong_original_role": 0
+    },
+    {
+      "asset": "Cruiser_Runtime_LOD1",
+      "same_triangle_geometry_as_v1": true,
+      "primitives": 1,
+      "normal_winding_disagreements": 0,
+      "tangent_vertices": 5311,
+      "atlas_corners_routed_to_wrong_original_role": 0
+    },
+    {
+      "asset": "Cruiser_Runtime_LOD2",
+      "same_triangle_geometry_as_v1": true,
+      "primitives": 1,
+      "normal_winding_disagreements": 0,
+      "tangent_vertices": 2959,
+      "atlas_corners_routed_to_wrong_original_role": 0
+    },
+    {
+      "asset": "Escort_Runtime_LOD0",
+      "same_triangle_geometry_as_v1": true,
+      "primitives": 1,
+      "normal_winding_disagreements": 0,
+      "tangent_vertices": 5862,
+      "atlas_corners_routed_to_wrong_original_role": 0
+    },
+    {
+      "asset": "Escort_Runtime_LOD1",
+      "same_triangle_geometry_as_v1": true,
+      "primitives": 1,
+      "normal_winding_disagreements": 0,
+      "tangent_vertices": 3798,
+      "atlas_corners_routed_to_wrong_original_role": 0
+    },
+    {
+      "asset": "Escort_Runtime_LOD2",
+      "same_triangle_geometry_as_v1": true,
+      "primitives": 1,
+      "normal_winding_disagreements": 0,
+      "tangent_vertices": 2382,
+      "atlas_corners_routed_to_wrong_original_role": 0
+    }
+  ],
+  "failures": [],
+  "not_executed": [
+    "Unity importer/handedness measurement",
+    "native shader/pixels/performance"
+  ]
+}
