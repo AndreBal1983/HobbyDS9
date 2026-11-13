@@ -35,25 +35,21 @@ namespace HobbyDS9.UnityReview.Tests
             new ReviewPlayerView(model,workspace,(parent,text,action)=>{var button=new Button(action){text=text};parent.Add(button);return button;},
                 action=>{performed++;action();},(_,__)=>confirmed++,_=>{},(_,__,___)=>{},(_,__)=>{}).Render(root,ReviewWorkspacePage.Research);
         }
-        [Test] public void ActualProjectsAreGroupedOnceAndEmptyKindsHaveNoPretendActions()
+        [Test] public void ActualProjectsAppearOnceInTheSearchableWorkbenchWithoutSubmittingCommands()
         {
             var frame=model.Current.Frame;var projects=frame.Strategy!.Research.Engineering;Draw();
-            foreach(var kind in new[]{EngineeringProjectKind.NewCapability,EngineeringProjectKind.Refinement,EngineeringProjectKind.CivilApplication})
+            var list=root.Q<ScrollView>("engineering-goal-list");Assert.That(list,Is.Not.Null);
+            var goals=list.Query<Button>(className:"engineering-goal").ToList();
+            Assert.That(goals.Count,Is.EqualTo(projects.Count));
+            Assert.That(goals.Select(g=>g.name),Is.Unique);
+            Assert.That(root.Q<TextField>("engineering-search"),Is.Not.Null);
+            var filter=root.Q<DropdownField>("engineering-kind-filter");Assert.That(filter,Is.Not.Null);
+            Assert.That(filter.choices,Is.EquivalentTo(new[]{"All kinds","New capability","Refinement","Civil application"}));
+            foreach(var project in projects)
             {
-                var section=root.Q("engineering-kind-"+kind);Assert.That(section,Is.Not.Null);
-                var expected=projects.Where(p=>p.Definition.Kind==kind).ToList();
-                Assert.That(section.Query<VisualElement>(className:"engineering-card").ToList().Count,Is.EqualTo(expected.Count));
-                if(expected.Count==0){Assert.That(section.Q("engineering-empty-"+kind),Is.Not.Null);Assert.That(section.Query<Button>().ToList(),Is.Empty);}
-                foreach(var project in expected)
-                {
-                    var card=section.Q("engineering-project-"+project.Definition.DefinitionId);Assert.That(card,Is.Not.Null);
-                    Assert.That(card.Q<Label>("engineering-project-heading").text,Is.EqualTo(project.Definition.DisplayName));
-                    Assert.That(card.Q<Button>("integrated-develop-"+project.Definition.DefinitionId).enabledSelf,Is.EqualTo(project.CanTarget));
-                    Assert.That(card.Q<Label>("engineering-project-cost").text,Does.EndWith("Engineering points"));
-                    Assert.That(card.Q<Label>("engineering-project-progress"),Is.Not.Null);
-                    Assert.That(card.Q<Label>("engineering-effect-qualifier"),Is.Not.Null);
-                    Assert.That(card.Q<Label>("engineering-authored-effect").text,Is.EqualTo(project.Definition.EffectSummary));
-                }
+                var goal=list.Q<Button>("engineering-goal-"+project.Definition.DefinitionId);
+                Assert.That(goal,Is.Not.Null);
+                Assert.That(goal.Q<Label>(className:"engineering-goal-name").text,Is.EqualTo(project.Definition.DisplayName));
             }
             Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(performed,Is.Zero);Assert.That(confirmed,Is.Zero);
         }
@@ -62,10 +58,10 @@ namespace HobbyDS9.UnityReview.Tests
             var research=model.Current.Frame.Strategy!.Research;Draw();
             var summary=root.Q("engineering-current-summary");Assert.That(summary,Is.Not.Null);
             var current=research.Engineering.FirstOrDefault(p=>p.IsTarget);
-            Assert.That(summary.Query<Label>().ToList().Any(l=>l.text==(current==null?"No active Engineering project":"Current project: "+current.Definition.DisplayName)),Is.True);
-            Assert.That(root.Query<VisualElement>(className:"engineering-card").ToList().Count,Is.EqualTo(research.Engineering.Count));
-            Assert.That(root.Q<Button>("integrated-clear-engineering").enabledSelf,Is.EqualTo(research.Target.HasValue));
-            Assert.That(root.Q("engineering-turn-report"),Is.Not.Null);
+            Assert.That(summary.Q<Label>("engineering-active-name").text,Is.EqualTo(current?.Definition.DisplayName??"No active project"));
+            Assert.That(root.Q<ScrollView>("engineering-goal-list").Query<Button>(className:"engineering-goal").ToList().Count,Is.EqualTo(research.Engineering.Count));
+            Assert.That(root.Q<Button>("integrated-clear-engineering")!=null,Is.EqualTo(current!=null));
+            Assert.That(root.Query<Foldout>().ToList().Any(f=>f.text=="Latest turn: Engineering"),Is.True);
             Assert.That(performed,Is.Zero);Assert.That(confirmed,Is.Zero);
         }
         [Test] public void FreshPresenterTabRoundTripRetainsResearchDraftAndHasNoSharedScopeClass()
@@ -73,12 +69,12 @@ namespace HobbyDS9.UnityReview.Tests
             var frame=model.Current.Frame;var draft=model.ResearchInputs();Draw();
             workspace.ResearchTab="science";Draw();
             Assert.That(root.Q("engineering-current-summary"),Is.Null);
-            Assert.That(root.Q("engineering-kind-Refinement"),Is.Null);
+            Assert.That(root.Q("engineering-goal-list"),Is.Null);
             Assert.That(root.Q("integrated-apply-science"),Is.Not.Null);
             workspace.ResearchTab="engineering";Draw();
             Assert.That(model.ResearchInputs(),Is.SameAs(draft));Assert.That(model.Current.Frame,Is.SameAs(frame));
             Assert.That(root.ClassListContains("engineering-group"),Is.False);
-            Assert.That(root.Q("integrated-apply-split"),Is.Not.Null);
+            Assert.That(root.Q<Button>("engineering-allocation"),Is.Not.Null);
             Assert.That(performed,Is.Zero);Assert.That(confirmed,Is.Zero);
         }
     }

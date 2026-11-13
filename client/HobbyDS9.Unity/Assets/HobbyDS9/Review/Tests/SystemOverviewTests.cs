@@ -189,16 +189,20 @@ namespace HobbyDS9.UnityReview.Tests
             Click(scene,1);Down(card);Click(card,2);Assert.That(opened,Is.Empty);
             Click(scene,1);Down(scene);Click(scene,2);Assert.That(opened,Is.EqualTo(new[]{"scene"}));
         }
-        [Test] public void LateFocusOutFromPreviousTargetCannotCancelNewTargetsFirstClick()
+        [Test] public void LateCancelFromPreviousTargetCannotCancelNewTargetsFirstClick()
         {
             var host=Host();var scope=new PlanetActivationScope(host);var opens=0;
             var first=new PlanetBodyCard(Planet("planet.a"),null,false,()=>{},()=>{},scope);
             var next=new PlanetBodyCard(Planet("planet.b"),null,false,()=>{},()=>opens++,scope);
             host.Add(first);host.Add(next);Click(first,1);Click(next,1);
-            using(var e=FocusOutEvent.GetPooled()){e.target=first;first.SendEvent(e);}
+            // A fabricated FocusOutEvent cannot be dispatched through a live Unity
+            // focus controller: its internal related target is absent. Exercise the
+            // exact target-owned cancellation invoked by that registered callback.
+            var cancel=typeof(PlanetActivationScope).GetMethod("Cancel",BindingFlags.Instance|BindingFlags.NonPublic,null,new[]{typeof(VisualElement)},null)!;
+            cancel.Invoke(scope,new object[]{first});
             Click(next,2);Assert.That(opens,Is.EqualTo(1),"Old focus ownership must not erase the new completed-click chain.");
             Click(next,1);
-            using(var e=FocusOutEvent.GetPooled()){e.target=next;next.SendEvent(e);}
+            cancel.Invoke(scope,new object[]{next});
             Click(next,2);Assert.That(opens,Is.EqualTo(1),"Actual focus loss still cancels the current target.");
         }
         [TestCase("right")]

@@ -148,8 +148,11 @@ namespace HobbyDS9.UnityReview.Tests
         {
             var frame=model.Current.Frame;var fleet=model.NamedFleets().First();workspace.SelectedFleet=fleet.Fleet.FleetId.Value;Draw();
             var first=frame.Strategy!.Ships.First(s=>s.FleetId==fleet.Fleet.FleetId).ShipId.Value;
-            Assert.That(root.Query<Label>().ToList().Any(l=>l.text=="Exact hull image unavailable."),Is.True,"Legacy fleet fixture has no Activity projection");
             Activate("fleet-inspect-"+first);Assert.That(workspace.SelectedOwnShip,Is.EqualTo(first));
+            Draw();
+            var inspector=root.Q("fleet-selected-ship-inspector");Assert.That(inspector,Is.Not.Null);
+            Assert.That(inspector.Q("owned-ship-model"),Is.Not.Null,"Owned design identity supplies the explicit preview even without Activity projection.");
+            Assert.That(inspector.Q<Label>("owned-ship-art-label").text,Is.Not.Empty);
             Assert.That(model.OrganizationShips,Is.Empty);Assert.That(model.Current.Frame,Is.SameAs(frame));
         }
     }
