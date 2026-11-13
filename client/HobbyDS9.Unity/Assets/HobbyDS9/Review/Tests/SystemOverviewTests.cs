@@ -189,6 +189,18 @@ namespace HobbyDS9.UnityReview.Tests
             Click(scene,1);Down(card);Click(card,2);Assert.That(opened,Is.Empty);
             Click(scene,1);Down(scene);Click(scene,2);Assert.That(opened,Is.EqualTo(new[]{"scene"}));
         }
+        [Test] public void LateFocusOutFromPreviousTargetCannotCancelNewTargetsFirstClick()
+        {
+            var host=Host();var scope=new PlanetActivationScope(host);var opens=0;
+            var first=new PlanetBodyCard(Planet("planet.a"),null,false,()=>{},()=>{},scope);
+            var next=new PlanetBodyCard(Planet("planet.b"),null,false,()=>{},()=>opens++,scope);
+            host.Add(first);host.Add(next);Click(first,1);Click(next,1);
+            using(var e=FocusOutEvent.GetPooled()){e.target=first;first.SendEvent(e);}
+            Click(next,2);Assert.That(opens,Is.EqualTo(1),"Old focus ownership must not erase the new completed-click chain.");
+            Click(next,1);
+            using(var e=FocusOutEvent.GetPooled()){e.target=next;next.SendEvent(e);}
+            Click(next,2);Assert.That(opens,Is.EqualTo(1),"Actual focus loss still cancels the current target.");
+        }
         [TestCase("right")]
         [TestCase("wheel")]
         [TestCase("cancel")]

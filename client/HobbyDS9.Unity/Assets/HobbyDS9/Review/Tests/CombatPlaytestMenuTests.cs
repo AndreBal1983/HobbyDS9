@@ -18,7 +18,15 @@ namespace HobbyDS9.UnityReview.Tests
             if(Array.IndexOf(Environment.GetCommandLineArgs(),"--hobbyds9-combat-menu-tests")<0)
                 Assert.Ignore("QA-owned dedicated player-menu receiving run.");
             yield return new EnterPlayMode();yield return null;yield return null;
-            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();Assert.That(entry,Is.Not.Null);
+            // Own the launch profile instead of assuming the Editor's bootstrap
+            // flags/previous test left the application on its main menu.
+            var fixture=new GameObject("Combat menu receiving fixture");fixture.SetActive(false);
+            Assert.That(SingleplayerDemoLaunchOptions.TryParse(new[]{SingleplayerDemoLaunchOptions.Flag},out var options),Is.True);
+            var entry=fixture.AddComponent<ReviewEntry>();entry.ConfigureDemo(options!);fixture.SetActive(true);
+            try
+            {
+            yield return null;yield return null;
+            Assert.That(entry.Presentation!.Model.SingleplayerDemo,Is.True);
             var root=entry.GetComponent<UIDocument>().rootVisualElement;
             void Click(string id)
             {
@@ -57,6 +65,9 @@ namespace HobbyDS9.UnityReview.Tests
                 .Invoke(entry,new object[]{"combat","combat-1"})!;
             Assert.That(Path.GetDirectoryName(path),Is.EqualTo(Path.Combine(UnityEngine.Application.persistentDataPath,CombatPlaytestOptions.SaveDirectory)));
             // No disk write, combat advance or native acceptance is performed by this menu case.
+            }
+            finally{UnityEngine.Object.Destroy(fixture);}
+            yield return null;
         }
     }
 }
