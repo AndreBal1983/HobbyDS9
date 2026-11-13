@@ -1,0 +1,45 @@
+{
+  "pack": "system-receiving-witness-v2",
+  "method": "FBX reimport from relocated Models/Textures; no image search",
+  "passed": true,
+  "failures": [],
+  "assets": [
+    {
+      "asset": "Earth_ReceivingWitness_LOD1",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.000001072883606,
+          -1.0000008344650269,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.000001311302185,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": []
+    },
+    {
+      "asset": "Mars_ReceivingWitness_LOD1",
+      "triangles": 2208,
+      "world_bounds_metres": [
+        [
+          -1.000001072883606,
+          -1.0000008344650269,
+          -1.0
+        ],
+        [
+          1.0000003576278687,
+          1.000001311302185,
+          1.0
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": []
+    }
+  ],
+  "limitation": "Blender FBX reimport is not Unity importer or URP verification"
+}

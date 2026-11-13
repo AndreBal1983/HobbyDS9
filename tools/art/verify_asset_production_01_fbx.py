@@ -11,9 +11,10 @@ import bpy
 
 ROOT = Path(__file__).resolve().parents[2]
 phase = sys.argv[sys.argv.index('--')+1]
-assert phase in ['system', 'hulls']
-pack = ROOT / 'art/asset-production-01' / (phase+'-v1')
-scratch = ROOT / 'artifacts/asset-production-01-fbx-relocation' / (phase+'-v1')
+assert phase in ['system', 'hulls', 'system-receiving-witness-v2', 'hulls-runtime-v2']
+pack_name = phase+'-v1' if phase in ['system','hulls'] else phase
+pack = ROOT / 'art/asset-production-01' / pack_name
+scratch = ROOT / 'artifacts/asset-production-01-fbx-relocation' / pack_name
 assert not scratch.exists(), 'Refusing to overwrite prior relocation evidence'
 scratch.mkdir(parents=True)
 for name in ['Models', 'Textures']:

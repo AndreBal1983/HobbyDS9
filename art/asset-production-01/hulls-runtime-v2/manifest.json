@@ -1,0 +1,374 @@
+{
+  "schema": 1,
+  "phase": "hulls",
+  "status": "proposed runtime receiving refinement; not Unity acceptance",
+  "blender": "5.3.0",
+  "blender_build": "02f0899d78e3",
+  "inputs": [
+    {
+      "path": "art/asset-production-01/hulls-v1/Sources/Cruiser_OriginalCandidate.blend",
+      "sha256": "008c03bbb803a77ee4bcf1afe94dec9c151c57bc86f40afcdb1759b9d88c0fc0"
+    },
+    {
+      "path": "art/asset-production-01/hulls-v1/Sources/Escort_OriginalCandidate.blend",
+      "sha256": "b3cc4513ee3ed4b14c3bf15e21405bb2e113ca7f7a907b8d43c13ac02f9ab745"
+    }
+  ],
+  "texture_sources": [],
+  "assets": [
+    {
+      "asset_id": "art.production02.cruiser_runtime_lod0",
+      "name": "Cruiser_Runtime_LOD0",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 0,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Cruiser_LOD0",
+          "vertices": 5294,
+          "triangles": 9884,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -209.79466247558594,
+              -310.0000305175781,
+              -71.12696838378906
+            ],
+            [
+              209.79466247558594,
+              310.0000305175781,
+              71.12696838378906
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Cruiser_Runtime_LOD0.glb",
+      "fbx": "Models/Cruiser_Runtime_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production02.cruiser_runtime_lod1",
+      "name": "Cruiser_Runtime_LOD1",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 1,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Cruiser_LOD1",
+          "vertices": 2966,
+          "triangles": 5516,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -209.79466247558594,
+              -310.0000305175781,
+              -71.12696838378906
+            ],
+            [
+              209.79466247558594,
+              310.0000305175781,
+              71.12696838378906
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Cruiser_Runtime_LOD1.glb",
+      "fbx": "Models/Cruiser_Runtime_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production02.cruiser_runtime_lod2",
+      "name": "Cruiser_Runtime_LOD2",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 2,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Cruiser_LOD2",
+          "vertices": 1546,
+          "triangles": 2972,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -210.05792236328125,
+              -310.0,
+              -71.21621704101562
+            ],
+            [
+              210.05792236328125,
+              310.0,
+              71.21621704101562
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Cruiser_Runtime_LOD2.glb",
+      "fbx": "Models/Cruiser_Runtime_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production02.escort_runtime_lod0",
+      "name": "Escort_Runtime_LOD0",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 0,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Escort_LOD0",
+          "vertices": 3842,
+          "triangles": 7560,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -68.93830871582031,
+              -85.0,
+              -19.87013053894043
+            ],
+            [
+              68.93830871582031,
+              85.0,
+              19.87013053894043
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Escort_Runtime_LOD0.glb",
+      "fbx": "Models/Escort_Runtime_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production02.escort_runtime_lod1",
+      "name": "Escort_Runtime_LOD1",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 1,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Escort_LOD1",
+          "vertices": 2162,
+          "triangles": 4200,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -68.93830871582031,
+              -85.0,
+              -19.87013053894043
+            ],
+            [
+              68.93830871582031,
+              85.0,
+              19.87013053894043
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Escort_Runtime_LOD1.glb",
+      "fbx": "Models/Escort_Runtime_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production02.escort_runtime_lod2",
+      "name": "Escort_Runtime_LOD2",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 2,
+      "notes": "Same v1 geometry/bounds, original palette atlas, one opaque Material_0 submesh. New candidate resources; current binder must explicitly receive atlas/emission and exact identity.",
+      "meshes": [
+        {
+          "name": "Escort_LOD2",
+          "vertices": 1194,
+          "triangles": 2328,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -68.93830871582031,
+              -85.0,
+              -19.87013053894043
+            ],
+            [
+              68.93830871582031,
+              85.0,
+              19.87013053894043
+            ]
+          ],
+          "materials": [
+            "Material_0"
+          ]
+        }
+      ],
+      "glb": "Models/Escort_Runtime_LOD2.glb",
+      "fbx": "Models/Escort_Runtime_LOD2.fbx"
+    }
+  ],
+  "files": [
+    {
+      "path": "contact-sheet.png",
+      "bytes": 329049,
+      "sha256": "b2a8d75696eefd1bf3ba2a8ffd4c02bfcdf50049b368e92bf33d312f4fda5b3f"
+    },
+    {
+      "path": "gallery.html",
+      "bytes": 1289,
+      "sha256": "efd457c5e6c7beda834998ef853e46ae9725e9501c0f37f317ef7f7804850937"
+    },
+    {
+      "path": "material-contract.json",
+      "bytes": 10272,
+      "sha256": "d2fb738e4b142ece375264233b296c4772d400a4223377d211b41020498e13a9"
+    },
+    {
+      "path": "Models/Cruiser_Runtime_LOD0.fbx",
+      "bytes": 456236,
+      "sha256": "c5e27324d5df8200617a13ca009a5f2d19fe3558e92454efaaf02321d5c2332e"
+    },
+    {
+      "path": "Models/Cruiser_Runtime_LOD0.glb",
+      "bytes": 479864,
+      "sha256": "a746ebae39cdd97a2a7f50e5b7870d0b820a3a4ed42b9d6b08d911d550c7db2f"
+    },
+    {
+      "path": "Models/Cruiser_Runtime_LOD1.fbx",
+      "bytes": 265740,
+      "sha256": "931696edae2cbdda2b5a53616dedfdbc00028b05ca25776b23cbc79cc750e07f"
+    },
+    {
+      "path": "Models/Cruiser_Runtime_LOD1.glb",
+      "bytes": 296980,
+      "sha256": "d5e872cc0aa87cc8411da6989a07a4d95f24871c2ece06d7c3dc364c3ea8438d"
+    },
+    {
+      "path": "Models/Cruiser_Runtime_LOD2.fbx",
+      "bytes": 159372,
+      "sha256": "1a62e938b9d94f1f020c9c26dde43d673b7102cb24518b091e095f6939a1b741"
+    },
+    {
+      "path": "Models/Cruiser_Runtime_LOD2.glb",
+      "bytes": 168788,
+      "sha256": "89576658e586cee7fc40a7de183f10906bbab13fa6828ae72678b6b258f0e5fc"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD0.fbx",
+      "bytes": 357932,
+      "sha256": "8f25b607182c264b247424086c314eddafdd89b37a65fb291883d6f5fa6a59ce"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD0.glb",
+      "bytes": 335652,
+      "sha256": "43f082564000a6a585bd7105c003d2b57b0f2b8b5b22e31a4fad9b6b532b7f9b"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD1.fbx",
+      "bytes": 208268,
+      "sha256": "61654c266023c97933f7f1278f602a1f8bd46c1bb05b43ed02b826ef31fa7347"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD1.glb",
+      "bytes": 216420,
+      "sha256": "ab84fabcf4ab626349c2f5e66f0d62a5da1241b10b79b59efb1e49510c2a5b4d"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD2.fbx",
+      "bytes": 130940,
+      "sha256": "868efad38670ba78f71d2277bac10d93a51a2f758dfe1d519725081fb0a2ade7"
+    },
+    {
+      "path": "Models/Escort_Runtime_LOD2.glb",
+      "bytes": 137216,
+      "sha256": "23ac03667e273423787e4fe8a660aa1799231cce08a0f5d74ccc29f6d340e2ef"
+    },
+    {
+      "path": "Previews/Cruiser_atlas_studio.png",
+      "bytes": 1002320,
+      "sha256": "7bd604fe9af23075b78491d2967cf7ba91fa47ab7b58dc451f24f081aae3cb25"
+    },
+    {
+      "path": "Previews/Cruiser_PreviewStudio_formula_proxy_512x320.png",
+      "bytes": 186910,
+      "sha256": "fb654d95ccd150d7ac946d6ec092527621317d8cb5bb44e307c64ba6be689d82"
+    },
+    {
+      "path": "Previews/Escort_atlas_studio.png",
+      "bytes": 997465,
+      "sha256": "34a290888ec00fbcee7dce8d6e07624865a43f45105d3eb1c7b9ac1daa2c4eb8"
+    },
+    {
+      "path": "Previews/Escort_PreviewStudio_formula_proxy_512x320.png",
+      "bytes": 186708,
+      "sha256": "8ade7f2f0f56a300b3ab7aaa6368e0c42951a68dd64d1eaed3c449ab78e746fe"
+    },
+    {
+      "path": "receiving.json",
+      "bytes": 14518,
+      "sha256": "fbe91db41afda6fc528af824349b3b570f22a64995b7fd687e6388caddca2d34"
+    },
+    {
+      "path": "Sources/Cruiser_RuntimeAtlas.blend",
+      "bytes": 358426,
+      "sha256": "67d13b87eb87496590bf6ecda2ca10d64fdf8364cad514612c65d7d77e4e54a9"
+    },
+    {
+      "path": "Sources/Escort_RuntimeAtlas.blend",
+      "bytes": 288314,
+      "sha256": "97418f4105fa711e0e5d68406ec9917711d1cb52d785fbcf8f27ba22603c3356"
+    },
+    {
+      "path": "Textures/Cruiser_BaseColor.png",
+      "bytes": 2261,
+      "sha256": "5609104d73d4e1cf21066a80949e52b29b1bae69cd6ccd880834e8d23b6237f0"
+    },
+    {
+      "path": "Textures/Cruiser_Emission.png",
+      "bytes": 1518,
+      "sha256": "b83a4a03108b17df7e8697bc6ec1de52fbf31801dfd44c7156657a8df1b94cd0"
+    },
+    {
+      "path": "Textures/Cruiser_Normal.png",
+      "bytes": 951,
+      "sha256": "0e2e843ec294d0a5501fa9c9f79fac41ccd2e108fa1ec68392f617e53ffe80d9"
+    },
+    {
+      "path": "Textures/Cruiser_ORM.png",
+      "bytes": 2031,
+      "sha256": "d9d463edb26d8387951ee2c67b0cd3a65ea9fd6c36c2f9436321add7d705f1e6"
+    },
+    {
+      "path": "Textures/Escort_BaseColor.png",
+      "bytes": 2261,
+      "sha256": "5609104d73d4e1cf21066a80949e52b29b1bae69cd6ccd880834e8d23b6237f0"
+    },
+    {
+      "path": "Textures/Escort_Emission.png",
+      "bytes": 1518,
+      "sha256": "b83a4a03108b17df7e8697bc6ec1de52fbf31801dfd44c7156657a8df1b94cd0"
+    },
+    {
+      "path": "Textures/Escort_Normal.png",
+      "bytes": 951,
+      "sha256": "0e2e843ec294d0a5501fa9c9f79fac41ccd2e108fa1ec68392f617e53ffe80d9"
+    },
+    {
+      "path": "Textures/Escort_ORM.png",
+      "bytes": 2031,
+      "sha256": "d9d463edb26d8387951ee2c67b0cd3a65ea9fd6c36c2f9436321add7d705f1e6"
+    },
+    {
+      "path": "validation-contract.json",
+      "bytes": 1675,
+      "sha256": "e27749e367672898fc13e3f48775088a7ca6f9bbc7b583a5b2440e371cd4d263"
+    },
+    {
+      "path": "validation-fbx.json",
+      "bytes": 6647,
+      "sha256": "03e70c092fdf2012011760e1e86ef87c4cf90512dadf3aedafb0f88e22e4ee55"
+    }
+  ]
+}
