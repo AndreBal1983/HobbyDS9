@@ -417,9 +417,27 @@ Construction may legitimately stall under interrupted supply. No freight travel-
 freighter, treaty, cargo or colonization feature is included.
 ";
 
-        private static void BuildWindows(string stageName,bool checkpointDiagnostics=false)
+        // Separate receiving entry: historical builders keep their exact Editor gate.
+        public static void BuildWindowsPB20261113()
         {
-            if (UnityEngine.Application.unityVersion != "6000.6.5f1")
+            var sha=Environment.GetEnvironmentVariable("HOBBYDS9_BUILD_SOURCE_SHA")??"";
+            if(sha.Length!=40||!System.Text.RegularExpressions.Regex.IsMatch(sha,"\\A[0-9a-f]{40}\\z"))
+                throw new InvalidOperationException("Set HOBBYDS9_BUILD_SOURCE_SHA to the verified clean receiving source SHA.");
+            var resources=Path.Combine(UnityEngine.Application.dataPath,"HobbyDS9/Review/Resources");
+            foreach(var required in new[]{"GalaxyPresentationV3/galaxy.png","GalaxyPresentationV3/nebula.bytes",
+                "GalaxyPresentationV3/particles.json","GalaxyPresentationV3/Presentation.shader",
+                "SystemBodyArt/SolMeshes/Earth_LOD1.fbx","SystemBodyArt/ProceduralSurface.shader",
+                "DemoPackages/v1/demo.json","PlayableFleetPackages/v1/playable.json"})
+                if(!File.Exists(Path.Combine(resources,required)))
+                    throw new InvalidOperationException("PB presentation/preparation resource missing: "+required);
+            BuildWindows("Windows-PB-20261113-"+sha.Substring(0,12)+"-"+UnityEngine.Application.unityVersion,false,true);
+        }
+
+        private static void BuildWindows(string stageName,bool checkpointDiagnostics=false,bool playableBuild=false)
+        {
+            var patchEvaluation=playableBuild&&UnityEngine.Application.unityVersion=="6000.6.9f1"
+                &&Array.IndexOf(Environment.GetCommandLineArgs(),"--hobbyds9-evaluate-editor-patch")>=0;
+            if (UnityEngine.Application.unityVersion != "6000.6.5f1"&&!patchEvaluation)
                 throw new InvalidOperationException("Unity 6000.6.5f1 is required.");
 
             var repository = Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath, "../../.."));
@@ -443,8 +461,10 @@ freighter, treaty, cargo or colonization feature is included.
             var height = PlayerSettings.defaultScreenHeight;
             var mode = PlayerSettings.fullScreenMode;
             var resizable = PlayerSettings.resizableWindow;
+            var version = PlayerSettings.bundleVersion;
             try
             {
+                if(playableBuild)PlayerSettings.bundleVersion="PB-20261113+"+Environment.GetEnvironmentVariable("HOBBYDS9_BUILD_SOURCE_SHA")!.Substring(0,12);
                 PlayerSettings.SetApiCompatibilityLevel(target, ApiCompatibilityLevel.NET_Standard);
                 PlayerSettings.SetScriptingBackend(target, ScriptingImplementation.IL2CPP);
                 PlayerSettings.defaultScreenWidth = 1280;
@@ -458,7 +478,9 @@ freighter, treaty, cargo or colonization feature is included.
                     locationPathName = Path.Combine(stage, "HobbyDS9GeneratedCampaign.exe"),
                     target = BuildTarget.StandaloneWindows64,
                     options = BuildOptions.StrictMode,
-                    extraScriptingDefines = checkpointDiagnostics
+                    extraScriptingDefines = playableBuild
+                        ? new[] { "HOBBYDS9_SINGLEPLAYER_DEMO", "HOBBYDS9_PB_20261113" }
+                        : checkpointDiagnostics
                         ? new[] { "HOBBYDS9_SINGLEPLAYER_DEMO", "HOBBYDS9_CHECKPOINT_DIAGNOSTICS" }
                         : new[] { "HOBBYDS9_SINGLEPLAYER_DEMO" }
                 });
@@ -469,9 +491,19 @@ freighter, treaty, cargo or colonization feature is included.
                     "@echo off\r\n\"%~dp0HobbyDS9GeneratedCampaign.exe\"\r\n");
                 File.WriteAllText(Path.Combine(stage, "README.txt"), Readme);
                 File.WriteAllText(Path.Combine(stage, "PLAY-GENERATED-CAMPAIGN.txt"), Walkthrough);
+                if(playableBuild)
+                {
+                    File.WriteAllText(Path.Combine(stage,"Start-PB-20261113.cmd"),
+                        "@echo off\r\n\"%~dp0HobbyDS9GeneratedCampaign.exe\" --hobbyds9-singleplayer-demo -screen-fullscreen 0\r\n");
+                    File.WriteAllText(Path.Combine(stage,"BUILD-IDENTITY.json"),
+                        "{\n  \"task\": \"PB-20261113\",\n  \"sourceSha\": \""+Environment.GetEnvironmentVariable("HOBBYDS9_BUILD_SOURCE_SHA")+"\",\n  \"editor\": \""+UnityEngine.Application.unityVersion+"\",\n  \"editorPatchEvaluation\": "+(patchEvaluation?"true":"false")+",\n  \"nativeAcceptance\": \"pending\",\n  \"configuration\": \"Campaign menu / existing Cycle14\"\n}\n");
+                    File.WriteAllText(Path.Combine(stage,"README.txt"),
+                        "PB-20261113 playtest candidate. Native acceptance pending.\r\nLaunch Start-PB-20261113.cmd. Choose New campaign (seed 42, 250 systems), or explicitly load a compatible existing campaign.\r\nThe current GUI includes System, fleet cards, Engineering, construction and the tracked V3 galaxy presentation. Browser art proofs are not runtime assets.\r\nInspect Settings / Display for the build identity and actual Editor version. Read docs/pb-20261113-gui.md in the source handoff for scope and validation.\r\n");
+                }
             }
             finally
             {
+                PlayerSettings.bundleVersion=version;
                 PlayerSettings.SetApiCompatibilityLevel(target, api);
                 PlayerSettings.SetScriptingBackend(target, backend);
                 PlayerSettings.defaultScreenWidth = width;

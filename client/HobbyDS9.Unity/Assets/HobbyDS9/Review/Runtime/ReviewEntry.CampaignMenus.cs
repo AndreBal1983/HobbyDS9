@@ -163,6 +163,10 @@ namespace HobbyDS9.UnityReview
             var paused=campaignMenuPage==CampaignMenuPage.Campaign&&demoStarted;
             var panel=PagePanel(paused?"Campaign menu":"HobbyDS9");panel.AddToClassList("campaign-menu");
             panel.Add(Readout("GALACTIC CAMPAIGNS"));
+#if HOBBYDS9_PB_20261113
+            var buildIdentity=Readout(UnityEngine.Application.version+" · Playtest candidate · Unity "+UnityEngine.Application.unityVersion);
+            buildIdentity.name="playtest-build-identity";panel.Add(buildIdentity);
+#endif
             var summary=new VisualElement();summary.AddToClassList("campaign-menu-summary");panel.Add(summary);
             if(demoStarted)
             {

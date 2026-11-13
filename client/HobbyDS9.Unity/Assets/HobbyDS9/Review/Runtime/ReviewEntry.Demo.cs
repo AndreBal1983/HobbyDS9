@@ -74,6 +74,9 @@ namespace HobbyDS9.UnityReview
         {
             var panel=PagePanel("Display preferences");panel.Add(Readout("Window size and fullscreen mode affect presentation only. They do not change your campaign or Windows display settings."));
             var status=Readout(CurrentDisplayStatus());status.name="display-current-status";panel.Add(status);
+#if HOBBYDS9_PB_20261113
+            panel.Add(Readout(UnityEngine.Application.version+" · Playtest candidate · Unity "+UnityEngine.Application.unityVersion));
+#endif
             foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})
                 AddButton(panel,size.x+" × "+size.y,()=>Screen.SetResolution(size.x,size.y,Screen.fullScreen?FullScreenMode.FullScreenWindow:FullScreenMode.Windowed));
             var mode=AddButton(panel,Screen.fullScreen?"Use windowed mode":"Use borderless fullscreen",()=>Screen.SetResolution(Screen.width,Screen.height,Screen.fullScreen?FullScreenMode.Windowed:FullScreenMode.FullScreenWindow));
