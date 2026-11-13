@@ -1,0 +1,19 @@
+# GUI-REFRESH-01 presentation batches
+
+Active source work, based on exact QA `1fb8bbe84543291b191b9074a6b5f84422610f93`. The existing sealed player and its scoped native combat acceptance remain preserved. Unity/Editor/player execution, captures and comparison belong to QA. Source compilation is not visual parity or whole-screen acceptance.
+
+The complete route checklist, references, current batch pins and open native gates are in `artifacts/coordination/GUI-REFRESH-01/gui.md`; Art's received target register is `visual-targets.md` beside it. These shared artifacts are outside the tracked source. Read the [LCARS foundation](lcars-ui-foundation-v1.md), [current implementation](current-demo-implementation.md), [combat layout](art/combat-interface.md), [System](sys-vis-01-gui.md) and [Production](prod-vis-01-gui.md) contracts. Old concept fixtures do not add gameplay or override streamed construction rules.
+
+## Batch A — shell and input receiving
+
+Shared shell: bounded wrapping title/status columns, sectioned navigation, consistent pill controls and readable field interiors, visible hover/focus, full-height central PagePanel and 44-pixel compact navigation targets. Preserve current palette, one inherited font, real button bindings, panel identity, scroll owners and modal permission. This touches existing Science/Engineering controls only through shared styling; it does not implement the proposed Engineering screen.
+
+System activation: each target's FocusOut/Detach previously cancelled the entire shared click chain. A delayed focus transition from the previous card/scene marker could erase the new target's first click. Cancellation now checks the target that owns the pending chain. Pointer-down elsewhere, wheel/cancel, mismatched pointer, current target focus loss and session detach still cancel. Existing positive/negative double-click tests retain their expectations; a new test explicitly delivers the previous target's FocusOut after the new first click. Native marker/picking alignment still requires QA; this source finding alone does not accept it.
+
+Combat-menu test: its previous global FindAnyObject/implicit bootstrap assumption admitted a non-menu profile and failed at campaign-menu-new. The receiving test now creates and disposes its own explicitly configured demo-profile ReviewEntry after PlayMode entry, using the actual normal setup/menu/resource/publication paths. No product field is forced and no expected button, generated setting, combat publication or archive assertion is weakened. QA must rerun it; native menus had already worked on the baseline.
+
+## Remaining batches and boundaries
+
+B: System/selected planet/Production/map visual hierarchy and bounded previews using recovered references. C: fleet, combat, empire/world ledger and Science readability. D: menus/archive/preferences/designer/help; label missing-target mockups as proposed. Each batch publishes a reviewable pin and exact changes for matched QA captures at 1280×720, 1920×1080 and 3440×1440, including empty/long/error/locked/busy states.
+
+Engineering full-screen [design proposal](https://github.com/AndreBal1983/HobbyDS9/blob/1495499b38e5d5a35f1b27a7dad553cdf1306a25/docs/design/engineering-ux-01/brief.md) remains pending owner review; use its [interactive mockup source](https://github.com/AndreBal1983/HobbyDS9/blob/1495499b38e5d5a35f1b27a7dad553cdf1306a25/docs/design/engineering-ux-01/mockup.html) for that review. Preserve all20 actual projects, Scout qualification, one active target and retained progress. The full ship/settlement-kit completion-popup feed is still pending separately; current notices cover research and actual structures. Missing latest System director renders and unreceived replacement hulls remain explicit visual limitations. No new mechanics, hidden disclosure, save schema, default profile, input provider, gameplay values or promotion is part of this task.

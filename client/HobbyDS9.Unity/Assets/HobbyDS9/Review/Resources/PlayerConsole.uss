@@ -24,12 +24,24 @@
 .player-narrow .campaign-dialog-actions { flex-direction: column; align-items: stretch; }
 .player-narrow .campaign-dialog-actions .primary-action { min-width: 0; }
 .player-narrow .campaign-menu-art { margin-left: 0; height: 180px; }
-.player-console .review-action { min-height: 44px; padding: 8px 16px; margin: 3px; border-width: 1px; border-radius: 6px; border-color: #65798e; background-color: #15202d; color: #eeeaf2; font-size: 18px; }
+.player-console .review-action { min-height: 44px; padding: 8px 16px; margin: 3px; border-width: 1px; border-radius: 18px; border-color: #496979; background-color: #15202d; color: #f1e8d8; font-size: 18px; white-space: normal; }
+.player-console .review-action:hover { background-color: #223346; border-color: #a58bc4; }
+.player-console .review-action:active { background-color: #334456; }
 .player-console .review-action:disabled { background-color: #18212b; color: #a8b3c4; border-color: #38485a; }
 .player-console .review-action:focus { border-color: #f5f0dd; border-width: 2px; }
 .player-console .primary-action { background-color: #efb16b; color: #0a1019; border-color: #efb16b; -unity-font-style: bold; min-width: 210px; }
+.player-console .primary-action:hover { background-color: #f5ca90; color: #0a1019; border-color: #f5ca90; }
 .console-spine { position: absolute; left: 8px; top: 16px; bottom: 16px; width: 20px; border-top-left-radius: 22px; border-bottom-left-radius: 22px; background-color: #efb16b; }
 .console-header { flex-direction: row; justify-content: space-between; flex-shrink: 0; min-height: 72px; border-bottom-width: 3px; border-bottom-color: #efb16b; margin-bottom: 8px; }
+.console-header-titles { flex-grow: 1; flex-shrink: 1; min-width: 0; padding-right: 16px; }
+.console-header-titles Label { white-space: normal; }
+.console-header .console-status { width: 204px; flex-shrink: 0; padding-top: 4px; }
+.console-nav-section { color: #b9ace6; font-size: 13px; letter-spacing: 1px; margin-top: 12px; margin-bottom: 6px; padding-left: 8px; }
+.player-console .unity-base-field { min-width: 0; margin-top: 5px; margin-bottom: 7px; }
+.player-console .unity-base-field__label { color: #c3c9d2; white-space: normal; }
+.player-console .unity-base-text-field__input, .player-console .unity-base-popup-field__input { min-height: 36px; padding: 5px 9px; background-color: #080f19; color: #f1e8d8; border-width: 1px; border-color: #496979; border-radius: 5px; }
+.player-console .unity-base-text-field__input:focus, .player-console .unity-base-popup-field__input:focus { border-color: #f1e8d8; border-width: 2px; }
+.console-main > .console-panel { flex-grow: 1; min-height: 0; margin: 0; }
 .console-title { font-size: 28px; -unity-font-style: bold; color: #eeeaf2; margin-bottom: 8px; }
 .console-kicker { color: #efb16b; font-size: 16px; }
 .console-status { color: #9fd8fb; font-size: 18px; white-space: normal; -unity-text-align: middle-right; }
@@ -107,7 +119,9 @@
 .player-narrow { padding: 8px 12px 8px 28px; }
 .player-narrow .console-spine { width: 12px; left: 4px; }
 .player-narrow .console-nav { width: 144px; padding-right: 6px; }
-.player-narrow .console-nav .review-action { font-size: 16px; min-height: 40px; padding: 6px 8px; margin-bottom: 5px; }
+.player-narrow .console-nav .review-action { font-size: 16px; min-height: 44px; padding: 6px 10px; margin-bottom: 4px; }
+.player-narrow .console-header .console-status { width: 164px; font-size: 16px; }
+.player-narrow .console-header-titles { padding-right: 10px; }
 .player-narrow .console-header { min-height: 58px; }
 .player-narrow .console-title { font-size: 24px; margin-bottom: 4px; }
 .player-narrow .console-guidance { font-size: 16px; margin-bottom: 4px; }

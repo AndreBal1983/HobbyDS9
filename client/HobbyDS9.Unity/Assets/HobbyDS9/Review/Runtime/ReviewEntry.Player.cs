@@ -22,7 +22,7 @@ namespace HobbyDS9.UnityReview
             root.style.paddingLeft=40;root.style.paddingRight=24;root.style.paddingTop=14;root.style.paddingBottom=14;
             var spine=new VisualElement();spine.AddToClassList("console-spine");root.Add(spine);
             var header=new VisualElement{name="player-header"};header.AddToClassList("console-header");root.Add(header);
-            var names=new VisualElement();header.Add(names);
+            var names=new VisualElement();names.AddToClassList("console-header-titles");header.Add(names);
             var identity=Readout(PlayerProfile&&!ShowPlayerCampaignFacts?"HOBBYDS9 · GALACTIC CAMPAIGNS":(model!.GeneratedCampaign?"HOBBYDS9 · GENERATED CAMPAIGN · ":model.PlayableFleet?"HOBBYDS9 · FLEET CAMPAIGN · ":model.FrontierPreview?"HOBBYDS9 · FRONTIER EXPLORATION PREVIEW · ":model.CombatPlaytest?"HOBBYDS9 · COMBAT PLAYTEST · ":model.SingleplayerDemo?"HOBBYDS9 · SINGLE PLAYER DEMO · ":"EARLY CAMPAIGN PREVIEW · ")+OwnerName(model.Current.Frame.Actor));identity.name="review-scenario-identity";identity.AddToClassList("console-kicker");names.Add(identity);
             playerTitle=Readout(Title(workspace!.Page));playerTitle.AddToClassList("console-title");names.Add(playerTitle);
             if(model!.Current.Frame.Demo!=null&&ShowPlayerCampaignFacts){var objective=Readout("");objective.name="demo-objective";objective.AddToClassList("console-kicker");names.Add(objective);}
@@ -38,6 +38,11 @@ namespace HobbyDS9.UnityReview
             AddFrontierCommissionNavigation(nav);
             foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Empire,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Display,ReviewWorkspacePage.Designer,ReviewWorkspacePage.Tools}.Where(p=>p!=ReviewWorkspacePage.Empire||model!.PlayableFleet))
             {
+                if(page==ReviewWorkspacePage.Map||page==ReviewWorkspacePage.Combat||page==ReviewWorkspacePage.Saves)
+                {
+                    var section=Readout(page==ReviewWorkspacePage.Map?"CAMPAIGN":page==ReviewWorkspacePage.Combat?"OPERATIONS":"PREFERENCES");
+                    section.AddToClassList("console-nav-section");section.pickingMode=PickingMode.Ignore;nav.Add(section);
+                }
                 var b=AddButton(nav,(page==ReviewWorkspacePage.Map?"Map":model!.ActivitiesCampaign&&page==ReviewWorkspacePage.Production?"Activities":Title(page))+(workspace.Page==page?"  ›":""),()=>Navigate(page));b.name="review-nav-"+page;b.SetEnabled(workspace.CanNavigate);b.EnableInClassList("selected-nav",workspace.Page==page);
             }
             content=new VisualElement{name="review-central-content"};content.AddToClassList("console-main");body.Add(content);
