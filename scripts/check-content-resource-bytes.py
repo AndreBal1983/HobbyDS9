@@ -25,6 +25,7 @@ for source, target, names in [
     ("singleplayer-demo-v1", "DemoPackages/v1", "demo package physical core scenario"),
     ("frontier-reconnaissance-v1", "FrontierPackages/v1", "frontier package physical core scenario"),
     ("playable-fleet-v1", "PlayableFleetPackages/v1", "playable package physical core scenario"),
+    ("combat-playtest-v1", "CombatPlaytestV1", "demo package physical core scenario"),
 ]:
     PAIRS += [(f"scenarios/{source}/{n}.json", f"{RES}{target}/{n}.json") for n in names.split()]
 COLONY = "catalogue ready-classes support settlement".split()
