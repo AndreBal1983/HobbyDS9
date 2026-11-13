@@ -122,6 +122,7 @@ namespace HobbyDS9.UnityReview.Tests
                     if(page==ReviewWorkspacePage.Map)
                     {
                         Assert.That(root.Q<Image>("map-space-backdrop").image,Is.Not.Null,"Live map decorative asset must load");
+                        Assert.That(root.Q("review-central-content").worldBound.xMax,Is.EqualTo(footer.worldBound.xMax).Within(2),"Map workspace must use the available width while its inspector stays bounded.");
                         if(size.y>=1080)
                         {
                             var map=root.Q("integrated-known-map");var viewport=map.GetFirstAncestorOfType<ScrollView>().contentViewport;

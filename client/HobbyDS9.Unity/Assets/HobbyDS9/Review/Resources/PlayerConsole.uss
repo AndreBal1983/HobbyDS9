@@ -53,6 +53,7 @@
 .console-nav .review-action { -unity-text-align: middle-left; -unity-font-style: normal; border-radius: 6px; margin: 0 0 6px 0; }
 .console-nav .selected-nav { border-left-width: 5px; border-left-color: #efb16b; background-color: #2a2c34; color: #ffe0b9; }
 .console-main { flex-grow: 1; min-width: 0; min-height: 0; max-width: 2500px; }
+.console-main.map-workspace { max-width: none; }
 .player-console .review-central { margin: 0; padding: 10px; border-color: #52616e; border-radius: 12px; }
 .player-console .review-heading { font-size: 22px; color: #b9ace6; }
 .player-console .review-panel, .console-panel { background-color: #0d1621; border-width: 1px; border-color: #415365; border-radius: 10px; padding: 18px; min-width: 0; min-height: 0; margin: 5px; }
