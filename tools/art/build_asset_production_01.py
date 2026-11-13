@@ -168,6 +168,7 @@ camera = bpy.data.objects.new('PresentationCamera', cam_data)
 scene.collection.objects.link(camera)
 scene.camera = camera
 cam_data.type = 'ORTHO'
+cam_data.clip_end = 10000
 
 
 def render(name, objects, loc=(0, -4, 1.2), width=720, height=720, ortho=2.65, target=(0, 0, 0)):
@@ -282,7 +283,8 @@ else:
         mesh_finish(o, name, material)
         if bevel:
             mod = o.modifiers.new('Manufactured edge', 'BEVEL')
-            mod.width, mod.segments = bevel, 2
+            # Stay below half the thin dimension: a clamped bevel can collapse edge faces.
+            mod.width, mod.segments = min(bevel, min(size)*.45), 2
             bpy.ops.object.modifier_apply(modifier=mod.name)
         for p in o.data.polygons:
             p.use_smooth = False
@@ -337,6 +339,16 @@ else:
         o.name, o.data.name = name, name + '_mesh'
         return o
 
+    def capsule_y(name, center, rx, rz, length, segments, material):
+        cap = min(14, length*.3)
+        o = saucer(name, (0, 0, 0), rx, rz,
+                   [(0, length/2), (.75, length/2-cap*.3), (1, length/2-cap),
+                    (1, -length/2+cap), (.75, -length/2+cap*.3), (0, -length/2)],
+                   segments, material)
+        o.rotation_euler.x = math.pi/2
+        o.location = center
+        return o
+
     area('Key', (-400, -420, 550), 2800000, 430, (.82, .91, 1))
     area('Warm_Fill', (350, -80, 160), 1100000, 350, (1, .78, .56))
     area('Rim', (50, 450, 330), 3800000, 300, (.2, .5, 1))
@@ -362,21 +374,22 @@ else:
                     pylon.rotation_euler.y = side * math.radians(-15)
                     pylon.rotation_euler.z = side * math.radians(-18)
                     parts.append(pylon)
-                    parts.append(sphere('Nacelle', pearl, seg//2, 16, (21, 128, 18), (side*154, 115, 27)))
-                    parts.append(sphere('Nacelle_cap', red, seg//2, 12, (18, 18, 14), (side*154, -9, 27)))
-                    parts.append(box('Nacelle_grille', (side*174, 123, 29), (2, 170, 10), blue, .7))
+                    parts.append(capsule_y('Nacelle', (side*154, 115, 27), 21, 18, 256, seg//2, pearl))
+                    parts.append(capsule_y('Nacelle_cap', (side*154, -16, 27), 18, 14, 20, seg//2, red))
+                    parts.append(box('Nacelle_grille', (side*174.5, 123, 29), (2, 170, 10), blue, .7))
                     parts.append(box('Nacelle_rail', (side*174, 122, 38), (3, 176, 3), trim, 1))
                 if lod < 2:
                     for j in range(48 if lod == 0 else 24):
                         a = math.tau*j/(48 if lod == 0 else 24)
                         # Small luminous apertures along the rim, illustrative rather than sockets.
-                        o = box('Rim_window', (153*math.cos(a), -135+136*math.sin(a), 38),
+                        o = box('Rim_window', (157.1*math.cos(a), -135+140.1*math.sin(a), 37.5),
                                 (3.3, 1.1, 2), windows)
                         o.rotation_euler.z = a+math.pi/2
                         parts.append(o)
                     for side in [-1, 1]:
                         for y in [-45, -18, 9, 36, 63, 90, 117]:
-                            parts.append(box('Engineering_window', (side*43, y, -10), (1, 8, 2), windows))
+                            x = 45*math.sqrt(1-((y-65)/148)**2-(6/28)**2)+.1
+                            parts.append(box('Engineering_window', (side*x, y, -10), (1, 4, 2), windows))
                 # Recessed sensor annuli break the primary hull's broad surface with original geometry.
                 for radius in ([.72, .88] if lod < 2 else [.82]):
                     ring = annulus('Saucer_sensor_band', dark, radius-.008, radius+.008, seg)
@@ -388,20 +401,20 @@ else:
                 parts.append(saucer('Escort_primary', (0, -4, 0), 49, 77,
                                     [(0, 13), (.38, 12), (.7, 8), (1, 0), (.95, -5),
                                      (.55, -10), (0, -10)], seg, pearl))
-                parts.append(box('Dorsal_deck', (0, -2, 11), (40, 67, 9), panel, 5))
+                parts.append(box('Dorsal_deck', (0, -2, 11), (40, 67, 9), panel, 2))
                 parts.append(sphere('Bridge', pearl, seg//2, 10, (12, 18, 5), (0, -24, 18)))
                 parts.append(box('Spine', (0, 34, 13), (9, 42, 8), trim, 2))
                 for side in [-1, 1]:
-                    parts.append(sphere('Flank_pod', pearl, seg//2, 14, (15, 49, 12), (side*47, 11, -1)))
+                    parts.append(capsule_y('Flank_pod', (side*47, 11, -1), 15, 12, 98, seg//2, pearl))
                     parts.append(sphere('Intake_recess', dark, seg//2, 10, (11, 5, 8), (side*47, -37, 0)))
                     parts.append(sphere('Intake_collector', red, seg//2, 10, (8, 3, 5), (side*47, -41, 0)))
-                    parts.append(box('Engine_grille', (side*61, 18, 0), (1, 46, 7), blue, .5))
+                    parts.append(box('Engine_grille', (side*62.1, 18, 0), (.7, 46, 7), blue, .3))
                     parts.append(box('Pod_shoulder', (side*44, 18, 11), (18, 42, 3), panel, 1.5))
                     if lod < 2:
-                        for y in [-8, 4, 16, 28, 40]:
-                            parts.append(box('Deck_window', (side*20, y, 15), (.7, 4, 1.2), windows))
-                        for y in [-14, 0, 14, 28]:
-                            parts.append(box('Pod_vent', (side*47, y, 13), (9, 2.5, .8), dark))
+                        for y in [-18, -6, 6, 18]:
+                            parts.append(box('Deck_window', (side*20.1, y, 11), (.7, 4, 1.2), windows))
+                        for y in [2, 12, 22, 32]:
+                            parts.append(box('Pod_vent', (side*47, y, 12.7), (9, 2.5, .8), dark))
                 parts.append(sphere('Bow_sensor', gold, seg//2, 8, (12, 4, 5), (0, -76, -1)))
             o = join_normalize(parts, kind + '_LOD' + str(lod), length)
             export(o.name, [o], identity, lod,

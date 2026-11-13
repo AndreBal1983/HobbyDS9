@@ -1,0 +1,55 @@
+{
+  "pack": "hulls-v1",
+  "checks": "manifest byte hashes; source copies; GLB structure/dependency closure; buffer indices, finite UVs/positions/normals, normal length, triangle area/count/budget",
+  "assets": [
+    {
+      "asset": "Cruiser_LOD0",
+      "triangles": 9884,
+      "exported_vertices": 8251,
+      "degenerate_triangles": 0,
+      "embedded_images": 0
+    },
+    {
+      "asset": "Cruiser_LOD1",
+      "triangles": 5516,
+      "exported_vertices": 5155,
+      "degenerate_triangles": 0,
+      "embedded_images": 0
+    },
+    {
+      "asset": "Cruiser_LOD2",
+      "triangles": 2972,
+      "exported_vertices": 2887,
+      "degenerate_triangles": 0,
+      "embedded_images": 0
+    },
+    {
+      "asset": "Escort_LOD0",
+      "triangles": 7560,
+      "exported_vertices": 5674,
+      "degenerate_triangles": 0,
+      "embedded_images": 0
+    },
+    {
+      "asset": "Escort_LOD1",
+      "triangles": 4200,
+      "exported_vertices": 3706,
+      "degenerate_triangles": 0,
+      "embedded_images": 0
+    },
+    {
+      "asset": "Escort_LOD2",
+      "triangles": 2328,
+      "exported_vertices": 2338,
+      "degenerate_triangles": 0,
+      "embedded_images": 0
+    }
+  ],
+  "failures": [],
+  "passed": true,
+  "not_executed": [
+    "Unity importer",
+    "URP shader compilation/render",
+    "native workflow/visual acceptance"
+  ]
+}
