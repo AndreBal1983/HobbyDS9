@@ -362,6 +362,8 @@ The temporary fixture demonstrates the gap: all 19 utility-version rewards curre
 
 These stages identify future scoped contracts and evidence, **not execution authorization or a coding schedule**. GUI refresh and Art production can continue independently.
 
+**Owner execution gate, 13 November 2026:** main-HUD reference fidelity comes before additional gameplay implementation. Align against the recovered mockups and establish actual native comparison, interaction and performance evidence first. Preserve already authorized GUI/assets/QA work; ship and module art may proceed in parallel. New reactor or survey gameplay implementation does not begin under this design record.
+
 **Reactors are the first complete vertical slice across stages 1–5.** Use one reactor lineage to prove development/refinement, version comparison, explicit publication, actual new-build installation and normal-queue refit. The separate rush stage is not a prerequisite for completing this path.
 
 | Stage | Reviewable scope | Required exit evidence |
