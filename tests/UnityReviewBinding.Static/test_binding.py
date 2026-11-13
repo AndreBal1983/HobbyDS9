@@ -58,8 +58,10 @@ class BindingTests(unittest.TestCase):
         self.assertTrue(any("disjoint" in x for x in checker.check(self.root)))
 
     def test_bypassed_portable_modal_permission_rejected(self):
-        path = self.assets / "Review/Runtime/ReviewEntry.cs"
-        path.write_text(path.read_text().replace('"Confirm",callbacks.Confirm', '"Confirm",action'))
+        path = self.assets / "Review/Runtime/ReviewEntry.CampaignMenus.cs"
+        source = path.read_text()
+        self.assertIn('callbacks.Confirm();', source)
+        path.write_text(source.replace('callbacks.Confirm();', 'captured.Run();'))
         self.assertTrue(any("Modal buttons" in x for x in checker.check(self.root)))
 
     def test_duplicate_keyboard_submit_exclusion_cannot_be_removed(self):
@@ -134,7 +136,10 @@ class BindingTests(unittest.TestCase):
 
     def test_shared_origin_cannot_be_removed_while_second_key_is_held(self):
         path = self.assets / "Review/Runtime/ReviewEntry.Keyboard.cs"
-        path.write_text(path.read_text().replace("if(returnHeld&&ReferenceEquals(origin,returnOrigin)||spaceHeld&&ReferenceEquals(origin,spaceOrigin))return;", ""))
+        guard = "if(returnHeld&&ReferenceEquals(origin,returnOrigin)||spaceHeld&&ReferenceEquals(origin,spaceOrigin)||noticeEscapeHeld&&ReferenceEquals(origin,noticeEscapeOrigin))return;"
+        source = path.read_text()
+        self.assertIn(guard, source)
+        path.write_text(source.replace(guard, ""))
         self.assertTrue(any("another held key" in x for x in checker.check(self.root)))
 
     def test_player_keyboard_gate_cannot_enable_legacy_profiles(self):
