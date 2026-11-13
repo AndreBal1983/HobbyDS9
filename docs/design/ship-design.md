@@ -98,6 +98,27 @@ The proposed Engineering portfolio uses the empire R&D split and project weights
 
 Engineering produces a new version, not a free fleet-wide upgrade. Save the old version and its production blueprint. Older, cheaper equipment remains selectable while available. A hull family may have several useful branches, such as a compact escort or a spacious survey platform; refinement should not guarantee one universal best design.
 
+### Reactor-first complete vertical slice — agreed, 13 November 2026
+
+**Reactors are the first complete implementation slice:** scientific eligibility → explicit development → paid refinement → immutable version comparison → designer selection and explicit class publication → new construction → eligible yard refit. The slice must demonstrate actual installed/runtime results, not stop at an unlock or preview. This is agreed future scope, **not runtime implementation authorization in this documentation task**.
+
+**Energy is the primary scientific generation gate.** Supporting Propulsion, Construction and Computing prerequisites should increase logically with generation. Meeting a generation gate enables explicit Engineering; it does not award hardware. Once that generation is enabled, normal refinement within it still needs no fresh Science.
+
+#### Starting reactor prerequisite ladder — provisional
+
+The owner accepted the ladder's direction, but the exact spoken numbers were ambiguous. All numerical rows below are **illustrative or proposed minimum discipline levels**, not settled gates, breakthrough ordinals or current catalogue changes. “Unresolved” means unspecified, not zero or unnecessary.
+
+| Reactor generation | Energy | Propulsion | Construction | Computing | Status |
+| --- | ---: | --- | --- | --- | --- |
+| 1 | 1 suggested | Unresolved | Unresolved | Unresolved | Proposed starting baseline; values not approved. |
+| 2 | 2 | 2 | Unresolved | Unresolved | Owner's illustrative Energy 2 + Propulsion 2 combination. |
+| 3 | 3 suggested | Unresolved | Unresolved | Unresolved | Proposed interpolation; supporting thresholds still open. |
+| 4 | 4 | 3 in the example; requirement unresolved | 3 candidate; 4 also mentioned | 2 | Owner's illustrative Energy 4 + Propulsion 3 + Construction 3 + Computing 2 combination; not an approved exact row. |
+
+Construction 3 versus 4 remains unresolved. “Propulsion optional at generation 4” could mean no additional increase or no Propulsion gate; neither reading is silently selected here, and the table does not imply previously required knowledge disappears. Exact thresholds, introduction points and mapping to versioned Science predicates need a later explicit decision. Energy's primary role is agreed; the numerical generation-to-level mapping is provisional.
+
+Acceptance must carry one reactor lineage through comparison, publication, a **normal-queue new build and normal-queue refit**, with actual materials, correct cost attribution and unchanged historical ships/revisions. Check useful output against hull distribution and operating profiles: a higher reactor supply rating alone does not prove more usable power. See the [scoped stages and acceptance model](engineering-tree-model-01.md#proposed-implementation-stages).
+
 ### Engineering diminishing returns — canon, 13 November 2026
 
 **Agreed owner decision; intended design, not implemented behavior.** Science unlocks a hull/module capability or generation; explicit Engineering develops its hardware. The player can then repeatedly refine a supported target within that generation without fresh Science, conquest or survey while useful potential remains. Every completed refinement improves that target. The initial tunable outcome policy is **70% without a detractor / 30% with a detractor in another supported attribute**; it is not a 30% failure chance.
@@ -166,7 +187,9 @@ Keep class commitments stable. Redesign after a significant mission change, new 
 
 A refit compares the ship's actual installed fit with an **explicit target published class revision** and validates the actual hull. Compatible component replacements are normally eligible. A newer hull version needs an explicit rule identifying which changes can be retrofitted; substantial structural expansion, new geometry or incompatible mounts require new construction.
 
-Refits require an **eligible friendly or treaty-authorized yard/facility**, allocated Industry and actual delivered materials. The ship is unavailable for normal fleet orders while refitting and competes with construction under the yard's supported scheduling rules. No remote fleet upgrade. Credit-based acceleration is a separately scoped rush mechanism, not an additional assumed ordinary refit ingredient.
+Refits require an **eligible friendly or treaty-authorized yard/facility**, allocated Industry and actual delivered materials. **Refit orders join the normal local production queue**, receiving Industry under its scheduling policy. They have no separate production budget and imply no parallel work. Progress requires the actual allocated local Industry, materials and facility readiness; elapsed completion time includes queue waiting. The ship is unavailable for normal fleet orders while refitting. No remote fleet upgrade. Credit-based acceleration is a separately scoped rush mechanism, not an additional assumed ordinary refit ingredient.
+
+For a **new ship**, manufacturing work is the hull's Industry plus the sum of installed component Industry multiplied by quantity; actual material requirements are aggregated too. The [existing compiler](../../src/HobbyDS9.Simulation/ShipDesignCompiler.cs#L140) already totals that complete fit. A refit instead charges only the changes under the rule below; the unchanged hull is free of refit workload.
 
 ### Default refit workload — agreed
 
@@ -185,7 +208,7 @@ RefitIndustry =
 
 This default **supersedes the prior provisional 40–60% blanket replacement-cost guideline for ordinary full component replacements**. Removal and installation/integration coefficients remain tunable/proposed. Explicit future conversion recipes may specify different work and materials; they are not a fallback discount on ordinary replacement.
 
-**Approved illustration, not fixed coefficients:** replacing a reactor whose original manufacture cost 100 Industry with a newly manufactured 90-Industry reactor, plus 10 removal and 18 installation/integration, requires **90 + 10 + 18 = 118 Industry**. The old 100 is not deducted. At 40 Industry per turn, with sole yard allocation and no other supply, timing or facility constraints, this takes **three allocated production turns: 40 + 40 + 38**. It is not a guaranteed campaign arrival-to-completion estimate.
+**Approved illustration, not fixed coefficients:** replacing a reactor whose original manufacture cost 100 Industry with a newly manufactured 90-Industry reactor, plus 10 removal and 18 installation/integration, requires **90 + 10 + 18 = 118 Industry**. The old 100 is not deducted. At 40 Industry per turn, with sole yard allocation and no other supply, timing or facility constraints, this takes **three turns receiving production: 40 + 40 + 38**. Queue waiting, lower allocation or missing materials/facility readiness can extend elapsed time; three turns after ordering is not guaranteed.
 
 Ordinary refitting does not erase persistent hull damage. Repair is separately charged or explicitly included in the work order. When maximum hull changes, preserve the existing damage amount. If the resulting hull would be zero or negative, require explicitly funded repair before release; do not silently clamp it to a healthy ship. Swapping versions grants no free healing or replenished stocks.
 
@@ -193,7 +216,7 @@ A queued build never silently adopts a new revision. Where a separately supporte
 
 Version retention must support save/load, battle snapshots and queued orders. Retired designs remain resolvable for existing ships even if hidden from the normal build list.
 
-**Implementation boundary:** current [whole-design cost compilation](../../src/HobbyDS9.Simulation/ShipDesignCompiler.cs#L140) prices new construction; neither that total nor target-minus-old is a refit estimator. The inspected [command contracts](../../src/HobbyDS9.Contracts/CommandContracts.cs#L5) contain no refit work order. Changed-equipment comparison, removal/installation work, yard scheduling, atomic installed-fit replacement and save compatibility need separate implementation and acceptance.
+**Implementation boundary:** current [whole-design cost compilation](../../src/HobbyDS9.Simulation/ShipDesignCompiler.cs#L140) prices new construction; neither that total nor target-minus-old is a refit estimator. The [streamed queue contract](../campaign-activities-streamed-v1.md#normal-queue-and-physical-inputs) currently has one FIFO/head per colony, at most one completion per turn and no carry to the next item. Its [production kinds](../../src/HobbyDS9.Contracts/CampaignColonisationContracts.cs#L127) and inspected [command contracts](../../src/HobbyDS9.Contracts/CommandContracts.cs#L5) contain no refit order. Refits joining that normal queue, ship locking, active facility readiness, changed-equipment work, atomic installation and save compatibility still need implementation and acceptance.
 
 **Comparative source correction:** the [Galactic Civilizations II manual, p. 41, “Upgrading your ships”](https://archive.stardock.com/files/galciv2manual.pdf#page=41), permits remote upgrading and makes it take longer farther from friendly territory. It does not establish a mandatory yard rule. **HobbyDS9's yard requirement is its own agreed design choice.**
 

@@ -10,7 +10,7 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 | Chapter | Scope | Status |
 | --- | --- | --- |
 | [Strategic AI](strategic-ai.md) | Persistent goals, coordinated plans, editable faction personalities, five fair difficulties, worked diplomacy plan | Direction agreed; detailed tuning proposed |
-| [Ship design](ship-design.md) | Shared capacity and mounting limits, dependencies, power profiles, engineered versions, refits and AI design | Capacity/mounting, refinement curve, independent branches and default yard-refit workload agreed; detailed implementation/tuning proposed |
+| [Ship design](ship-design.md) | Shared capacity and mounting limits, dependencies, power profiles, engineered versions, refits and AI design | Reactor-first slice, refinement/branch rules and normal-queue refit default agreed; exact Science ladder and detailed tuning proposed |
 | [Engineering refinement model](engineering-tree-model-01.md) | Science generations, goal-directed refinement, immutable results, construction/refit dependencies; [temporary fixture audit](engineering-tree-model-01-catalogue-audit.md) | Core loop, curve, fixed initial work, 70/30, independent retained-parent branches and default refit agreed; stopping/quantization and implementation stages proposed |
 | [Exploration and procedural missions](exploration-missions.md) | System/body surveys, first contact, mission director, shared consequences, expedition repair dilemmas | Direction agreed; infrastructure and tuning proposed |
 | [Time, movement and mobilisation](time-movement-mobilisation.md) | Weekly clock, sector travel, expediting, buyout, sensor warning and response | Direction agreed; speeds, prices and detailed timing proposed |
@@ -40,7 +40,7 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 - Separate orbital control, ground control and political integration; resolve invasions through persistent strategic orders and abstract ground campaigns.
 - Preserve population identity and political history through occupation, rebellion and liberation; integration depends on sustained conditions.
 
-The Engineering curve, independent retained-parent branches, outcome choices and default refit workload are agreed as labelled in the ship-design chapter. Detailed power-profile rules, schemas, readiness/stopping policies, example statistics, removal/installation coefficients and implementation stages remain proposals; they are not additional approved balance values or implemented behavior.
+The Engineering curve, independent retained-parent branches, outcome choices, reactor-first complete slice, Energy-led gate direction and normal-queue refit default are agreed as labelled in the ship-design chapter. The exact numeric reactor ladder, detailed power-profile rules, schemas, readiness/stopping policies, example statistics, removal/installation coefficients and implementation stages remain proposals; they are not additional approved balance values or implemented behavior.
 
 Exploration/first-contact decisions and the proposed mission infrastructure are recorded in [exploration-missions.md](exploration-missions.md). Persistent missions, survey/repair integration, diplomacy adapters and consequence schemas require scoped implementation; documenting them does not establish runtime support.
 
