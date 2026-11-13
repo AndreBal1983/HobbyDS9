@@ -111,6 +111,10 @@ namespace HobbyDS9.UnityReview.Tests
                     Assert.That(root.Q("player-console-frame").pickingMode,Is.EqualTo(PickingMode.Ignore));
                     foreach(var stat in new[]{"phase","turn","credits"})
                         Visible(root.Q("player-status-"+stat),header.worldBound,"Header "+stat);
+                    if(size.x==1280)
+                        Assert.That(root.Q("player-status-phase").worldBound.height,
+                            Is.LessThanOrEqualTo(root.Q("player-status-turn").worldBound.height+2),
+                            "Planning must fit on one line in the narrow header.");
                     Assert.That(root.Q<Label>("player-status-turn").text,Is.EqualTo(model.Current.Frame.Status.Turn.ToString()));
                     Assert.That(root.Q<Label>("player-status-credits").text,Is.EqualTo(model.Current.Frame.Strategy!.Civilization.Credits.ToString()));
                     if(root.Q("player-primary-action") is VisualElement primary)
@@ -119,8 +123,13 @@ namespace HobbyDS9.UnityReview.Tests
                     if(page==ReviewWorkspacePage.Research)
                     {
                         var cards=root.Query<VisualElement>().ToList().Where(e=>e.name.StartsWith("science-card-")).ToList();Assert.That(cards.Count,Is.EqualTo(6));
-                        var viewport=root.Q("six-science-cards").GetFirstAncestorOfType<ScrollView>().contentViewport.worldBound;
-                        foreach(var card in cards)Visible(card,viewport,card.name);
+                        var scienceScroll=root.Q("six-science-cards").GetFirstAncestorOfType<ScrollView>();
+                        foreach(var card in cards)
+                        {
+                            scienceScroll.ScrollTo(card);yield return null;yield return null;
+                            Visible(card,scienceScroll.contentViewport.worldBound,card.name);
+                        }
+                        scienceScroll.scrollOffset=Vector2.zero;yield return null;
                         Click("science-plus-Construction");yield return null;yield return null;
                         Visible(root.Q("player-primary-action"),new Rect(0,0,size.x,size.y),"Apply Science action");
                         Assert.That(root.Q<Button>("player-primary-action").text,Is.EqualTo("Apply Science allocation"));
