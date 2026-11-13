@@ -94,7 +94,7 @@ namespace HobbyDS9.UnityReview
             });
         }
 
-        private enum CampaignMenuPage { Start, Campaign, New, Archive, Settings }
+        private enum CampaignMenuPage { Start, Campaign, New, Archive, Settings, Combat }
         private CampaignMenuPage campaignMenuPage;
         private CampaignMenuPage campaignArchiveReturn=CampaignMenuPage.Campaign;
         private bool campaignArchiveSaving=true;
@@ -121,10 +121,10 @@ namespace HobbyDS9.UnityReview
             campaignArchiveOverrideProfile=null;
             demoLanding=false;viewEpoch++;Build();
         }
-        private void OpenCampaignArchive(bool saving)
+        private void OpenCampaignArchive(bool saving,string? profile=null)
         {
             campaignAfterSave=null;campaignContinuationLabel="";campaignProtectedLoadSlot="";
-            campaignArchiveOverrideProfile=null;
+            campaignArchiveOverrideProfile=profile;
             campaignArchiveSaving=saving;campaignArchivePreferEmpty=saving;campaignArchiveRows=null;
             campaignArchiveReturn=demoLanding?campaignMenuPage:CampaignMenuPage.Campaign;
             ShowCampaignMenuPage(CampaignMenuPage.Archive);
@@ -160,6 +160,7 @@ namespace HobbyDS9.UnityReview
             if(campaignMenuPage==CampaignMenuPage.Archive){DrawCampaignArchive();return;}
             if(campaignMenuPage==CampaignMenuPage.New){DrawCampaignNew();return;}
             if(campaignMenuPage==CampaignMenuPage.Settings){DrawCampaignSettings();return;}
+            if(campaignMenuPage==CampaignMenuPage.Combat){DrawCombatPlaytestMenu();return;}
             var paused=campaignMenuPage==CampaignMenuPage.Campaign&&demoStarted;
             var panel=PagePanel(paused?"Campaign menu":"HobbyDS9");panel.AddToClassList("campaign-menu");
             panel.Add(Readout("GALACTIC CAMPAIGNS"));
@@ -172,6 +173,7 @@ namespace HobbyDS9.UnityReview
             {
                 var frame=model!.Current.Frame;
                 summary.Add(Readout(OwnerName(frame.Actor)+" · Week "+frame.Status.Turn));
+                if(model.CombatPlaytest)summary.Add(Readout("Combat playtest · Authored Bajor fixture · Separate test saves"));
                 summary.Add(Readout(frame.Strategy!.Colonies.Count+" owned colonies · "+frame.Strategy.Ships.Count+" owned ships"));
                 summary.Add(Readout(CampaignNeedsSave?"Accepted progress has not been saved since the last successful menu save/load.":"Accepted campaign saved at week "+campaignSavedTurn+"."));
                 if(model.HasLocalEdits)summary.Add(Readout("Unsubmitted edits are held in memory. Saving does not include them."));
@@ -205,6 +207,7 @@ namespace HobbyDS9.UnityReview
             {
                 var start=AddButton(commands,"New campaign",()=>ShowCampaignMenuPage(CampaignMenuPage.New));
                 start.name="campaign-menu-new";if(!demoStarted&&NewestCampaignSave()==null)start.AddToClassList("primary-action");
+                AddButton(commands,"Combat playtest",OpenCombatPlaytestMenu).name="campaign-menu-combat";
             }
             if(paused)AddButton(commands,"Save game",()=>OpenCampaignArchive(true)).name="campaign-menu-save";
             AddButton(commands,"Load game",()=>OpenCampaignArchive(false)).name="campaign-menu-load";
@@ -273,9 +276,9 @@ namespace HobbyDS9.UnityReview
         private string campaignArchiveProfile="";
         private string? campaignArchiveOverrideProfile;
         private string CampaignArchiveProfile()=>campaignArchiveSaving?CurrentCampaignArchiveProfile():campaignArchiveOverrideProfile??CurrentCampaignArchiveProfile();
-        private string CurrentCampaignArchiveProfile()=>!demoStarted||model!.ColonisationCycleCampaign?"cycle":model.ColonisationRepeatCampaign?"repeat":model.ColonisationGrowthCampaign?"growth":model.ColonisationExpansionCampaign?"expansion":model.ColonisationRosterCampaign?"roster":model.ColonisationCampaign?"colony":model.StreamedActivitiesCampaign?"streamed":model.ActivitiesCampaign?"activities":model.PublishedConstructionCampaign?"published":model.GeneratedCampaign?(model.StaticAstronomyCampaign?"astronomy":"generated"):model.FrontierPreview?"frontier":model.SingleplayerDemo?"demo":"fleet";
-        private string[] CampaignArchiveSlots(string profile)=>profile=="frontier"?FrontierPreviewOptions.Slots():profile=="demo"?new[]{"demo-1","demo-2","demo-3"}:profile=="fleet"?PlayableFleetOptions.Slots():GeneratedCampaignOptions.Slots();
-        private static string SlotLabel(string slot)=>"Campaign · Slot "+slot.Substring(slot.Length-1);
+        private string CurrentCampaignArchiveProfile()=>!demoStarted||model!.ColonisationCycleCampaign?"cycle":model.ColonisationRepeatCampaign?"repeat":model.ColonisationGrowthCampaign?"growth":model.ColonisationExpansionCampaign?"expansion":model.ColonisationRosterCampaign?"roster":model.ColonisationCampaign?"colony":model.StreamedActivitiesCampaign?"streamed":model.ActivitiesCampaign?"activities":model.PublishedConstructionCampaign?"published":model.GeneratedCampaign?(model.StaticAstronomyCampaign?"astronomy":"generated"):model.FrontierPreview?"frontier":model.CombatPlaytest?"combat":model.SingleplayerDemo?"demo":"fleet";
+        private string[] CampaignArchiveSlots(string profile)=>profile=="combat"?CombatPlaytestOptions.Slots():profile=="frontier"?FrontierPreviewOptions.Slots():profile=="demo"?new[]{"demo-1","demo-2","demo-3"}:profile=="fleet"?PlayableFleetOptions.Slots():GeneratedCampaignOptions.Slots();
+        private static string SlotLabel(string slot)=>(slot.StartsWith("combat-",StringComparison.Ordinal)?"Combat playtest":"Campaign")+" · Slot "+slot.Substring(slot.Length-1);
         private CampaignArchiveRow? NewestCampaignSave()=>campaignArchiveRows?.Where(r=>r.Compatible)
             .OrderByDescending(r=>r.ModifiedUtc).ThenBy(r=>r.Slot,StringComparer.Ordinal).FirstOrDefault();
         private string CampaignArchivePath(string profile,string slot)
@@ -296,6 +299,7 @@ namespace HobbyDS9.UnityReview
                 case "generated":directory=GeneratedCampaignDirectory(legacy:true);prefix="unity-generated-campaign-v7-";break;
                 case "frontier":directory=Path.Combine(UnityEngine.Application.persistentDataPath,FrontierPreviewOptions.SaveDirectory);prefix="unity-frontier-review-v5-";break;
                 case "demo":directory=Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9SingleplayerDemoOnly-v4");prefix="unity-singleplayer-demo-";break;
+                case "combat":directory=Path.Combine(UnityEngine.Application.persistentDataPath,CombatPlaytestOptions.SaveDirectory);prefix="unity-singleplayer-demo-";break;
                 default:directory=Path.Combine(UnityEngine.Application.persistentDataPath,PlayableFleetOptions.SaveDirectory);prefix="unity-playable-fleet-review-v6-";break;
             }
             if(!CampaignArchiveSlots(profile).Contains(slot))throw new InvalidOperationException("Unknown fixed slot.");
@@ -304,13 +308,13 @@ namespace HobbyDS9.UnityReview
         }
         private async Task<ReviewUiModel> BuildMenuCandidateAsync(string profile,string slot)
         {
-            if(profile!="demo"&&profile!="frontier"&&profile!="fleet")
+            if(profile!="combat"&&profile!="demo"&&profile!="frontier"&&profile!="fleet")
                 return await BuildGeneratedCampaignCandidateAsync(slot,legacy:profile=="generated",published:profile=="published",
                     activities:profile=="activities",streamed:profile=="streamed",colonisation:profile=="colony",
                     colonisationRoster:profile=="roster",colonisationExpansion:profile=="expansion",colonisationGrowth:profile=="growth",
                     colonisationRepeat:profile=="repeat",colonisationCycle:profile=="cycle");
             var codec=new ReviewNewtonsoftCodec();
-            var candidate=profile=="frontier"?NewFrontierModel():profile=="fleet"?NewPlayableFleetModel()
+            var candidate=profile=="combat"?NewCombatPlaytestModel():profile=="frontier"?NewFrontierModel():profile=="fleet"?NewPlayableFleetModel()
                 :new ReviewUiModel(demoSource!,codec,new ReviewDemoSlotStore(Path.Combine(UnityEngine.Application.persistentDataPath,"HobbyDS9SingleplayerDemoOnly-v4"),codec));
             try{if(await Task.Run(()=>candidate.Load(slot,true)))return candidate;throw new InvalidOperationException("Unavailable campaign.");}
             catch{CloseUnpublishedPlayer(candidate);throw;}
@@ -324,7 +328,7 @@ namespace HobbyDS9.UnityReview
             root!.schedule.Execute(()=>{
                 campaignArchiveScanQueued=false;
                 if(this!=null&&isActiveAndEnabled&&confirmation==null&&campaignBusyToken==null
-                    &&(demoLanding&&(campaignMenuPage==CampaignMenuPage.Start||campaignMenuPage==CampaignMenuPage.Archive)
+                    &&(demoLanding&&(campaignMenuPage==CampaignMenuPage.Start||campaignMenuPage==CampaignMenuPage.Archive||campaignMenuPage==CampaignMenuPage.Combat)
                         ||!demoLanding&&workspace?.Page==ReviewWorkspacePage.Saves))ScanCampaignArchive();
             });
         }
@@ -418,8 +422,8 @@ namespace HobbyDS9.UnityReview
             {
                 var earlier=new Foldout{text="Earlier campaign saves · original rules",value=false};panel.Add(earlier);
                 earlier.Add(Readout("Each archive retains its original typed loader and separate save slots. Selecting an archive does not load a campaign."));
-                var profiles=new[]{"cycle","repeat","growth","expansion","roster","colony","streamed","activities","published","astronomy","generated","fleet","frontier","demo"};
-                var labels=new List<string>{"Current Campaign","Repeat Expansion","Colony Growth","Colony Expansion","Colonisation V2","Colonisation","Streamed Activities","Activities","Published Construction","Static Astronomy","Original Generated Galaxy","Fleet Campaign","Frontier Preview","Bajor Demo"};
+                var profiles=new[]{"cycle","repeat","growth","expansion","roster","colony","streamed","activities","published","astronomy","generated","fleet","frontier","demo","combat"};
+                var labels=new List<string>{"Current Campaign","Repeat Expansion","Colony Growth","Colony Expansion","Colonisation V2","Colonisation","Streamed Activities","Activities","Published Construction","Static Astronomy","Original Generated Galaxy","Fleet Campaign","Frontier Preview","Bajor Demo","Combat playtest"};
                 var profile=CampaignArchiveProfile();var index=Array.IndexOf(profiles,profile);
                 var picker=new DropdownField("Archive",labels,index<0?0:index);earlier.Add(picker);var epoch=viewEpoch;
                 picker.RegisterValueChangedCallback(_=>{

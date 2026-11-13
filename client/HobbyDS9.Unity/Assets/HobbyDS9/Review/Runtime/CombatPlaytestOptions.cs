@@ -9,6 +9,7 @@ namespace HobbyDS9.UnityReview
     {
         public const string ResourceRoot="CombatPlaytestV1/";
         public const string SaveDirectory="HobbyDS9CombatPlaytestOnly-v1";
+        public static string[] Slots()=>new[]{"combat-1","combat-2","combat-3"};
         public const string DisplayName="Close-contact combat test (authored fixture)";
         public const string Description="Fixed Bajor military-loop fixture, not a balanced generated campaign. Existing fleets have ordinary initial travel orders. End turn to meet the opponent within 1–3 turns; use the normal planner, explicit rounds and aftermath. Separate test saves.";
         public static string[] InputNames()=>new[]{"demo","package","physical","core","scenario"};

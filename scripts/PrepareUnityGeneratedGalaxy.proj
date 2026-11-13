@@ -6,5 +6,6 @@
     <MSBuild Projects="$(MSBuildThisFileDirectory)PrepareUnityDemo.proj" Targets="Prepare" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)PrepareUnityFrontier.proj" Targets="Prepare" />
     <MSBuild Projects="$(MSBuildThisFileDirectory)PrepareUnityPlayableFleet.proj" Targets="Prepare" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)PrepareUnityCombatPlaytest.proj" Targets="Prepare" />
   </Target>
 </Project>
