@@ -149,11 +149,21 @@ namespace HobbyDS9.UnityReview
             command.style.unityFontStyleAndWeight=FontStyle.Bold;
             Picker(body,"Owned world",observation.Worlds,x=>x.Id,x=>x.Name,world,id=>{world=id;Show(page);},"colonisation-world-selector");
             var w=observation.Worlds.FirstOrDefault(x=>x.Id==world);if(w==null){Text(body,"No owned worlds observed.");return;}
-            Text(body,w.Name+" \u00b7 "+w.Stage+" \u00b7 "+w.Population+" people \u00b7 "+w.Food+" stored food","colonisation-world-facts");
-            Text(body,"Current weekly output: Industry "+w.Industry+", Research "+w.Research+", Food "+w.FoodOutput+". Local stock: "+(Materials(w.Stocks)==""?"none":Materials(w.Stocks)));
-            Text(body,w.FoodDemand.HasValue?"Residents need "+w.FoodDemand.Value+" food/week; local balance "+(w.LocalFoodBalance>=0?"+":"")+w.LocalFoodBalance+" before imports/exports.":"Resident food demand unavailable.","colonisation-food-balance");
-            if(w.Stage==ColonyEstablishmentStage.Established)Text(body,"Consecutive food-shortage weeks: "+w.ShortageWeeks+". Deliveries depend on actual surplus, routes and capacity.","colonisation-food-shortage");
+            Text(body,w.Name+" \u00b7 "+w.Stage,"colonisation-world-facts");
+            var readouts=Row(body);readouts.AddToClassList("construction-world-readouts");
+            void Readout(string caption,long value)
+            {
+                var metric=new VisualElement();metric.AddToClassList("construction-world-readout");readouts.Add(metric);
+                Text(metric,caption).AddToClassList("construction-readout-label");
+                Text(metric,value.ToString()).AddToClassList("construction-readout-value");
+            }
+            Readout("Population",w.Population);Readout("Industry / week",w.Industry);
+            Readout("Research / week",w.Research);Readout("Food output / week",w.FoodOutput);
+            Text(body,"Local stocks · Food "+w.Food+" · "+(Materials(w.Stocks)==""?"no other materials":Materials(w.Stocks)),"construction-local-stocks");
+            var balance=w.LocalFoodBalance.HasValue?(w.LocalFoodBalance.Value>=0?"+":"")+w.LocalFoodBalance.Value:"unknown";
+            Text(body,w.FoodDemand.HasValue?"Residents need "+w.FoodDemand.Value+" food/week; local balance "+balance+" before imports/exports.":"Resident food demand unavailable.","colonisation-food-balance");
             var preparation=new Foldout{text="Prepare a settlement expedition",value=false,name="colonisation-preparation-guide"};preparation.style.flexShrink=0;body.Add(preparation);
+            if(w.Stage==ColonyEstablishmentStage.Established)Text(preparation,"Consecutive food-shortage weeks: "+w.ShortageWeeks+". Deliveries depend on actual surplus, routes and capacity.","colonisation-food-shortage");
             Text(preparation,"Choose a populated source world separately from your industrial yard. Check food output against resident demand before loading voyage food. Planetary buildings show their base effects below.");
             Text(preparation,"At a food-deficit yard, consider a food-producing building before a long ship order. Check its material cost and base effects below. Materials and work are consumed gradually; extra food output begins after actual completion.");
             Text(preparation,"Build a transport at a shipyard and a settlement kit at the source world, then bring the empty transport there. In Transports, review the actual source cohort, remaining residents, local kit and voyage food. Survey a suitable known planet, travel there and review deployment; retain food for establishment and later supply trips. Travel and deliveries are not guaranteed safe.");
@@ -163,17 +173,20 @@ namespace HobbyDS9.UnityReview
             var row=Row(body);
             row.style.flexWrap=Wrap.NoWrap;
             var catalogue=new ScrollView{name="colonisation-catalogue"};
+            var dock=new VisualElement{name="construction-context-dock"};
+            var inspector=new VisualElement{name="construction-selected-hull"};dock.Add(inspector);
             var queue=new ScrollView{name="colonisation-queue"};
-            foreach(var column in new[]{catalogue,queue})
+            queue.style.flexGrow=1;queue.style.flexBasis=0;queue.style.minHeight=120;queue.style.minWidth=0;dock.Add(queue);
+            foreach(var column in new VisualElement[]{catalogue,dock})
             {
                 column.style.flexBasis=0;
                 column.style.minWidth=0;
                 column.style.height=420;
                 row.Add(column);
             }
-            catalogue.style.flexGrow=2;
+            catalogue.style.flexGrow=1;
             catalogue.style.marginRight=16;
-            queue.style.flexGrow=1;
+            dock.style.flexBasis=380;dock.style.flexShrink=0;
             row.RegisterCallback<GeometryChangedEvent>(e=>
             {
                 var sideBySide=e.newRect.width>=760;
@@ -182,9 +195,10 @@ namespace HobbyDS9.UnityReview
                 row.style.flexDirection=direction;
                 catalogue.style.marginRight=sideBySide?16:0;
                 catalogue.style.flexBasis=sideBySide?new StyleLength(0f):new StyleLength(StyleKeyword.Auto);
-                queue.style.flexBasis=catalogue.style.flexBasis;
+                dock.style.flexBasis=sideBySide?new StyleLength(380):new StyleLength(StyleKeyword.Auto);
+                dock.style.height=sideBySide?420:520;
                 catalogue.style.flexShrink=sideBySide?1:0;
-                queue.style.flexShrink=catalogue.style.flexShrink;
+                dock.style.flexShrink=0;
             });
 
             var orders=observation.Production.Where(x=>x.ColonyId==w.Id).ToArray();
@@ -205,9 +219,12 @@ namespace HobbyDS9.UnityReview
                 foreach(var option in activities.BuildOptions.Where(x=>x.Kind==kind))
                 {
                     var selected=option;
-                    var art=ships?ConstructionCardArt.Ship(selected.HullVersionId):ConstructionCardArt.Building(selected.DefinitionId);
+                    // Ship study thumbnails can resemble exploded parts. Exact live hull inspection
+                    // belongs in the shared dock; never enlarge those old pixels into a hero.
+                    var art=ships?null:ConstructionCardArt.Building(selected.DefinitionId);
                     var title=selected.DisplayName+(selected.BlueprintRevision>0?" R"+selected.BlueprintRevision:"");
                     var card=ConstructionCard(cards,title,art);
+                    card.AddToClassList("construction-option-card");
                     card.style.marginRight=6;
                     card.style.width=Length.Percent(100);
                     Text(card,selected.Cost.Industry+" Industry");
@@ -224,34 +241,41 @@ namespace HobbyDS9.UnityReview
                     var unavailable=!selected.Supported?selected.Reason:w.ConstructionUnavailableReason(ships);
                     if(unavailable==null&&!ships&&(built>0||queued>0))unavailable="Unique building: already built or queued.";
                     var actions=Row(card);
-                    var add=Button(actions,"+ Add "+selected.DisplayName,"colonisation-build-"+index++,()=>
+                    var add=Button(actions,"+ Add","colonisation-build-"+index++,()=>
                     {
                         var c=Activity(ships?CampaignActivityCommandKind.EnqueueShip:CampaignActivityCommandKind.EnqueueStructure,w.Id);
                         c.DefinitionId=selected.DefinitionId;
                         c.BlueprintRevision=selected.BlueprintRevision;
                         SendActivity(c);
                     });
+                    add.tooltip="Add "+title+" at "+w.Name;
                     ConstructionPrimary(add);
                     add.SetEnabled(selected.Supported&&unavailable==null);
                     if(unavailable!=null)Text(card,unavailable);
                     if(ships)
                     {
-                        Button(actions,"Inspect "+selected.DisplayName,"colonisation-inspect-"+index,()=>
+                        var inspect=Button(actions,"Inspect hull","colonisation-inspect-"+index,()=>
                         {
                             inspectedBlueprint=selected.DefinitionId;
                             inspectedRevision=selected.BlueprintRevision;
                             inspectedOpen=true;
-                            InspectHull(card,selected);
+                            InspectHull(inspector,selected);
                         });
+                        inspect.tooltip="Inspect "+title+" · exact published hull";
                         if(inspectedBlueprint==selected.DefinitionId&&inspectedRevision==selected.BlueprintRevision)
-                            InspectHull(card,selected);
+                            InspectHull(inspector,selected);
                     }
-                    else ConstructionEffects(card,selected.DefinitionId);
+                    else
+                    {
+                        var effects=new Foldout{text="Effects & conditions",value=false};card.Add(effects);
+                        ConstructionEffects(effects,selected.DefinitionId);
+                    }
                 }
             }
 
             ConstructionHeading(catalogue,"Special projects","colonisation-section-projects");
             var kit=ConstructionCard(catalogue,"Settlement kit",ConstructionCardArt.Kit());
+            kit.AddToClassList("construction-option-card");
             Text(kit,observation.KitIndustry+" Industry · "+ConstructionMaterials(observation.KitResources));
             var addKit=Button(kit,"+ Settlement kit","colonisation-build-kit",()=>
             {
@@ -273,22 +297,22 @@ namespace HobbyDS9.UnityReview
                 var order=orders[i];
                 var artwork=order.Kind switch
                 {
-                    ColonisationProductionKind.PublishedShip => activities.BuildOptions.FirstOrDefault(x=>
-                        x.DefinitionId==order.DefinitionId&&x.BlueprintRevision==order.BlueprintRevision) is ActivityBuildOptionDto option
-                        ? ConstructionCardArt.Ship(option.HullVersionId) : null,
+                    ColonisationProductionKind.PublishedShip => null,
                     ColonisationProductionKind.Infrastructure => ConstructionCardArt.Building(order.DefinitionId),
                     ColonisationProductionKind.SettlementKit => ConstructionCardArt.Kit(),
                     _ => null,
                 };
                 var card=ConstructionCard(queue,order.Name,artwork);
+                card.AddToClassList("construction-queue-row");
                 if(i==0)card.style.borderLeftColor= (Color)new Color32(239,179,107,255);
                 Text(card,(i+1)+" · "+order.Status);
                 Text(card,"Industry progress: "+order.CompletedIndustry+" / "+order.RequiredIndustry);
                 if(order.RequiredIndustry>0)
                     card.Add(new ProgressBar{lowValue=0,highValue=order.RequiredIndustry,value=order.CompletedIndustry});
-                Text(card,"Materials required: "+ConstructionMaterials(order.Required));
-                Text(card,"Materials consumed: "+ConstructionMaterials(order.Consumed));
-                Text(card,"Cancel discards work and consumed materials.");
+                var materialsDetail=new Foldout{text="Materials & cancellation",value=false};card.Add(materialsDetail);
+                Text(materialsDetail,"Materials required: "+ConstructionMaterials(order.Required));
+                Text(materialsDetail,"Materials consumed: "+ConstructionMaterials(order.Consumed));
+                Text(materialsDetail,"Cancel discards work and consumed materials.");
                 var cancel=Button(card,"Cancel order","colonisation-queue-cancel-"+order.Id,
                     ()=>SendActivity(Activity(CampaignActivityCommandKind.CancelProduction,order.Id)));
                 cancel.tooltip="Cancel construction now. Work and consumed materials are not refunded.";
@@ -359,15 +383,19 @@ namespace HobbyDS9.UnityReview
             var fold=new Foldout{text="Inspect "+option.DisplayName+" R"+option.BlueprintRevision,value=inspectedOpen,name="colonisation-hull-inspector"};fold.style.flexShrink=0;fold.style.fontSize=16;parent.Add(fold);
             currentInspector=fold;var inspectorEpoch=controlEpoch;
             bool OwnInspector()=>Live&&inspectorEpoch==controlEpoch&&ReferenceEquals(currentInspector,fold);
-            Text(fold,"Exact published hull art. This image supplies no statistics or unlocks.");
             var image=new Image{name="colonisation-hull-image",scaleMode=ScaleMode.ScaleToFit};image.style.height=180;image.style.minHeight=180;image.style.flexShrink=0;fold.Add(image);
+            image.tooltip="Exact published hull presentation. No statistics or unlocks are supplied by this image.";
             var label=Text(fold,"Expand to inspect exact hull art.");
             void Refresh()
             {
                 if(!OwnInspector())return;
                 if(!fold.value||fold.panel==null){image.image=null;ReleaseHull();return;}
                 if(ActivityHullCatalog.Find(option.HullVersionId)==null){label.text="No exact hull art binding is available.";return;}
-                ReleaseHull();hullPreview=new ShipPreviewStage(512,320);hullPreview.ShowActivityHull(option.HullVersionId);image.image=hullPreview.Texture;label.text=hullPreview.Label;
+                ReleaseHull();hullPreview=new ShipPreviewStage(512,320);hullPreview.ShowActivityHull(option.HullVersionId);
+                image.image=hullPreview.Availability==ShipPreviewAvailability.Model?hullPreview.Texture:null;
+                label.text=hullPreview.Availability==ShipPreviewAvailability.Model&&!hullPreview.Label.Contains("missing art")
+                    ?ActivityHullCatalog.Find(option.HullVersionId).Label:hullPreview.Label;
+                label.tooltip=hullPreview.Label;
             }
             fold.RegisterValueChangedCallback(_=>{if(!OwnInspector())return;inspectedOpen=fold.value;Refresh();});fold.RegisterCallback<AttachToPanelEvent>(_=>Refresh());
             Button(fold,"Rotate hull","colonisation-hull-orbit",()=>{if(OwnInspector())hullPreview?.OrbitReference(80,26);});

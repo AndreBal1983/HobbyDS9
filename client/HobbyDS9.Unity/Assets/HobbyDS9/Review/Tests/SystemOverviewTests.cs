@@ -240,6 +240,19 @@ namespace HobbyDS9.UnityReview.Tests
             ownedViews.Add(panel);Call(panel,"Show","Planet");return panel;
         }
         private static string Labels(VisualElement element)=>string.Join("\n",element.Query<Label>().ToList().Select(l=>l.text));
+        [Test] public void ConstructionContextKeepsOwnFactsAndSeparateCatalogueQueueSurfaces()
+        {
+            var panel=PanelFor(Planet(),own:true);Call(panel,"Show","Worlds");
+            var catalogue=panel.Q<ScrollView>("colonisation-catalogue");var queue=panel.Q<ScrollView>("colonisation-queue");
+            Assert.That(catalogue,Is.Not.Null);Assert.That(queue,Is.Not.Null.And.Not.SameAs(catalogue));
+            var dock=panel.Q("construction-context-dock");
+            Assert.That(dock.Contains(queue),Is.True);Assert.That(dock.Contains(catalogue),Is.False);
+            Assert.That(dock.Q("construction-selected-hull"),Is.Not.Null);
+            Assert.That(panel.Query(className:"construction-world-readout").ToList().Count,Is.EqualTo(4));
+            Assert.That(panel.Q<Label>("colonisation-world-facts").text,Does.Contain("Own world"));
+            Assert.That(panel.Q<Foldout>("colonisation-preparation-guide").value,Is.False);
+            Assert.That(Labels(panel),Does.Contain("No queued orders."));
+        }
         [Test] public void UnknownEnvironmentScaleRetainsObservedNumbersWithoutInventedUnits()
         {
             var text=Labels(PanelFor(Planet()));
