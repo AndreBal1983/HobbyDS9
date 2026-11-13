@@ -293,17 +293,18 @@ namespace HobbyDS9.UnityReview
         }
         private void BuildExpeditions()
         {
-            var own=Card(expeditions,"Expedition ship","activity-owned-ship");
+            var columns=Row(expeditions);columns.AddToClassList("activity-expedition-layout");
+            var own=Card(columns,"Expedition ship","activity-owned-ship");
             if(observation.Ships.Count>0)
                 Picker(own,"Ship",observation.Ships.Select(s=>Friendly(s.DisplayName,"Owned ship")).ToList(),"activity-ship-selector",i=>{shipIndex=i;DismissReview();RefreshShip();RefreshSite();if(panel!=null && expeditionsSelected)UpdateShipPreview();});
             else Text(own,"No owned ships are available.");
             shipFacts=Text(own,"",id:"activity-ship-capabilities");
             previewImage=new Image{name="activity-ship-model",scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};
-            previewImage.style.height=180;previewImage.style.flexShrink=0;previewImage.style.display=DisplayStyle.None;own.Add(previewImage);
+            previewImage.style.height=220;previewImage.style.flexShrink=0;previewImage.style.display=DisplayStyle.None;own.Add(previewImage);
             previewCaption=Text(own,"",id:"activity-ship-art-caption");
             var orbit=Row(own);
             Button(orbit,"Rotate hull","activity-ship-orbit",()=>{if(stage!=null){yaw+=35;stage.OrbitReference(yaw,26);}});
-            var known=Card(expeditions,"Known opportunities","activity-known-sites");
+            var known=Card(columns,"Known opportunities","activity-known-sites");
             if(observation.Sites.Count>0)
                 Picker(known,"Site",observation.Sites.Select(s=>Friendly(s.Definition.Title,"Known opportunity")+" — "+Friendly(s.Body.DisplayName,"Observed body")).ToList(),"activity-site-selector",i=>{siteIndex=i;DismissReview();RefreshSite();});
             else Text(known,"No opportunities have been discovered. Explore the map to reveal them.");

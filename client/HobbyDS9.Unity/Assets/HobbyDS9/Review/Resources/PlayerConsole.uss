@@ -302,7 +302,7 @@
 .engineering-columns { flex-direction: row; flex-wrap: nowrap; flex-basis: 0; flex-grow: 1; flex-shrink: 1; min-height: 0; min-width: 0; }
 .engineering-catalogue { width: 300px; flex-shrink: 0; min-height: 0; margin-right: 16px; padding: 12px; border-top-width: 3px; border-top-color: #efb16b; background-color: #101b29; }
 .engineering-goal-list { flex-grow: 1; flex-shrink: 1; min-height: 0; }
-.player-console .engineering-goal { flex-direction: column; align-items: stretch; flex-shrink: 0; min-width: 0; margin: 0 0 8px; padding: 10px 12px; border-radius: 6px; }
+.player-console .engineering-goal { flex-direction: column; align-items: stretch; flex-shrink: 0; min-width: 0; margin: 0 0 8px 0; padding: 10px 12px; border-radius: 6px; }
 .engineering-goal-name { white-space: normal; color: #eeeaf2; -unity-font-style: bold; font-size: 18px; }
 .engineering-goal-state, .engineering-goal-progress { white-space: normal; color: #a9b8c8; font-size: 16px; margin-top: 4px; }
 .engineering-selected-detail { min-width: 0; min-height: 0; padding: 16px 20px; border-top-width: 3px; border-top-color: #b9ace6; background-color: #101b29; }
@@ -331,3 +331,33 @@
 .construction-option-card .unity-label, .construction-queue-row .unity-label { margin-bottom: 4px; }
 #construction-context-dock { border-top-width: 3px; border-top-color: #efb16b; padding-top: 6px; min-width: 0; }
 #construction-selected-hull { flex-shrink: 0; min-width: 0; padding-left: 8px; }
+
+/* Secondary screens retain the same LCARS grammar and their existing actions. */
+.campaign-menu { max-width: 1280px; }
+.console-main > .campaign-menu { flex-grow: 0; max-height: 100%; margin-top: 12px; }
+.campaign-menu-context { flex-grow: 1; flex-basis: 420px; min-width: 0; padding-left: 24px; }
+.campaign-menu-context .campaign-menu-summary { margin-top: 4px; margin-bottom: 8px; }
+.campaign-menu-context .campaign-menu-art { width: 100%; max-width: 640px; margin-left: 0; height: 300px; }
+.campaign-menu #campaign-menu-quit { margin-top: 16px; border-color: #8c6469; }
+.campaign-setup { max-width: 760px; }
+.campaign-save-row { padding: 12px 16px; margin-bottom: 8px; border-radius: 8px; }
+.settings-groups { flex-direction: row; flex-wrap: wrap; min-width: 0; }
+.settings-group { flex-grow: 1; flex-basis: 280px; min-width: 240px; max-width: 100%; padding: 16px; margin-right: 16px; margin-bottom: 16px; border-top-width: 3px; border-top-color: #b9ace6; background-color: #101b29; }
+.settings-group Label { white-space: normal; margin-bottom: 12px; }
+.player-help { max-width: 1440px; }
+.audio-preference-layout { flex-direction: row; flex-wrap: wrap; min-width: 0; }
+.audio-player-group { flex-grow: 2; flex-basis: 520px; min-width: 0; margin-right: 20px; }
+.audio-levels-group { flex-grow: 1; flex-basis: 280px; min-width: 240px; padding: 16px; margin: 10px 0; border-top-width: 3px; border-top-color: #b9ace6; background-color: #101b29; }
+.audio-levels-group .unity-base-field { flex-direction: column; align-items: stretch; }
+.audio-levels-group .unity-base-field__label { min-width: 0; font-size: 18px; }
+.mission-objective-grid { flex-direction: row; flex-wrap: wrap; min-width: 0; }
+.mission-objective { flex-grow: 1; flex-basis: 44%; min-width: 260px; max-width: 100%; padding: 16px; margin-right: 12px; margin-bottom: 12px; border-top-width: 3px; border-top-color: #b9ace6; background-color: #101b29; }
+.mission-objective Label { white-space: normal; margin-bottom: 10px; }
+.transport-manifest-summary { padding: 12px 16px; margin: 8px 0 16px 0; border-left-width: 3px; border-left-color: #efb16b; background-color: #101b29; }
+.transport-quantities > .unity-base-field { flex-grow: 1; flex-basis: 28%; min-width: 200px; margin-right: 16px; flex-direction: column; }
+.console-main > #colonisation-panel, .console-main > #campaign-activities-panel { padding: 12px 16px; border-width: 1px; border-color: #415365; border-radius: 10px; background-color: #0d1621; }
+.player-narrow .campaign-menu-context { padding-left: 12px; flex-basis: 320px; }
+.player-narrow .campaign-menu-context .campaign-menu-art { height: 200px; }
+.player-narrow .settings-group { margin-right: 8px; padding: 12px; }
+.activity-expedition-layout > #activity-owned-ship { flex-grow: 1; flex-basis: 300px; min-width: 240px; }
+.activity-expedition-layout > #activity-known-sites { flex-grow: 2; flex-basis: 420px; min-width: 260px; }

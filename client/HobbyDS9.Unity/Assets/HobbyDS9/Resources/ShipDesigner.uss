@@ -174,3 +174,10 @@
 .sd-narrow #designer-cost-summary, .sd-narrow #designer-hull-caption { display: none; }
 .sd-narrow .sd-body { padding-top: 4px; }
 .sd-narrow .sd-system-picker { margin-bottom: 4px; }
+/* GUI refresh: retain readable category/template names without shrinking type. */
+.ship-designer .sd-navigation > .lcars-pill { white-space: normal; text-overflow: clip; min-height: 44px; -unity-text-align: middle-left; }
+.ship-designer .unity-base-popup-field__text { white-space: normal; overflow: visible; text-overflow: clip; min-width: 0; }
+.ship-designer .unity-base-popup-field__input { min-height: 44px; }
+.ship-designer .sd-actions > .lcars-pill { min-height: 44px; font-size: 16px; white-space: normal; }
+.ship-designer .sd-profile-row > Label { font-size: 16px; }
+.sd-narrow #designer-cost-summary { display: flex; font-size: 16px; white-space: normal; }

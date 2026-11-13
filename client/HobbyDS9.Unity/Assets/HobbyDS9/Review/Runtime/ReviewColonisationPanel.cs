@@ -100,11 +100,11 @@ namespace HobbyDS9.UnityReview
             this.observation=observation;this.planets=planets;this.activities=activities;this.reviewOrder=reviewOrder;this.submit=submit;this.reviewActivity=reviewActivity;this.submitActivity=submitActivity;this.supportsKitFreePassengers=supportsKitFreePassengers;this.systemNodes=systemNodes;
             name="colonisation-panel";style.flexGrow=1;style.minHeight=0;style.minWidth=0;
             world=observation.Worlds.FirstOrDefault()?.Id??"";ship=observation.Transports.FirstOrDefault()?.ShipId??"";planet=planets.FirstOrDefault()?.PlanetId??"";
-            tabs=Row(this);foreach(var name in new[]{"Worlds","Planets","Transports","Science"}){var captured=name;Button(tabs,name=="Planets"?"System":name,"colonisation-tab-"+name,()=>Show(captured),true);}
+            tabs=Row(this);foreach(var name in new[]{"Worlds","Planets","Transports","Science"}){var captured=name;Button(tabs,name=="Planets"?"System":name=="Worlds"?"Construction":name,"colonisation-tab-"+name,()=>Show(captured),true);}
             body=new ScrollView(ScrollViewMode.Vertical){name="colonisation-scroll"};body.style.flexGrow=1;body.style.minHeight=0;Add(body);
             body.contentViewport.RegisterCallback<GeometryChangedEvent>(_=>fitConstruction?.Invoke());
             review=new VisualElement{name="colonisation-order-review"};review.style.flexShrink=0;review.style.maxHeight=220;review.style.display=DisplayStyle.None;Add(review);
-            status=Text(this,"Provisional colony playtest. Construction uses Industry and delivered materials; credits fund expedition choices.","colonisation-command-status");status.style.flexShrink=0;
+            status=Text(this,"","colonisation-command-status");status.style.flexShrink=0;status.style.display=DisplayStyle.None;
             RegisterCallback<DetachFromPanelEvent>(e=>{if(ReferenceEquals(e.target,this))Dispose();});Show("Worlds");
         }
         private bool Live=>!disposed&&!submitted;
@@ -621,9 +621,12 @@ namespace HobbyDS9.UnityReview
             foreach(var report in observation.Reports)Text(history,report.Stage+" \u00b7 deaths "+report.Deaths+", people transferred "+report.PopulationTransferred+", food consumed "+report.FoodConsumed+", lost "+report.FoodLost+". "+report.Report);
             if(observation.Reports.Count==0)Text(history,"No expedition manifests recorded yet.");
             Picker(body,"Owned transport",observation.Transports,x=>x.ShipId,x=>x.Name,ship,id=>{ship=id;Show(page);},"colonisation-transport-selector");
-            var t=observation.Transports.FirstOrDefault(x=>x.ShipId==ship);if(t==null){Text(body,"Build the ready colony transport at an established owned world.");foreach(var report in observation.Reports)Text(body,report.Stage+" \u00b7 deaths "+report.Deaths+", food consumed "+report.FoodConsumed+". "+report.Report);return;}
-            Text(body,t.Name+" \u00b7 frozen R"+t.BlueprintRevision+" \u00b7 "+(t.Stationary?"stationary":"travelling"));Text(body,"Capacity: "+t.PassengerCapacity+" people, "+t.FoodCapacity+" food, "+t.MaterialCapacity+" materials. Use the Map to issue an ordinary known route.");
-            Text(body,"Aboard: "+t.Population+" people, "+t.Food+" food; "+Materials(t.Cargo)+". "+t.Report);
+            var t=observation.Transports.FirstOrDefault(x=>x.ShipId==ship);if(t==null){Text(body,"Build the ready colony transport at an established owned world.");Button(body,"Open construction","transport-open-construction",()=>Show("Worlds"));return;}
+            var manifest=new VisualElement();manifest.AddToClassList("transport-manifest-summary");body.Add(manifest);
+            Text(manifest,t.Name+" · R"+t.BlueprintRevision+" · "+(t.Stationary?"Stationary":"Travelling")).AddToClassList("console-section");
+            Text(manifest,"People aboard "+t.Population+" / "+t.PassengerCapacity+" · Food aboard "+t.Food+" / "+t.FoodCapacity);
+            Text(manifest,"Materials: "+Materials(t.Cargo)+" · Capacity "+t.MaterialCapacity+". Use the Map to issue an ordinary known route.");
+            var manifestReport=new Foldout{text="Current transport report",value=false};manifest.Add(manifestReport);Text(manifestReport,t.Report);
             Picker(body,"Owned source / receiving world",observation.Worlds,x=>x.Id,x=>x.Name,world,id=>{world=id;Show(page);},"colonisation-transport-world");
             var w=observation.Worlds.FirstOrDefault(x=>x.Id==world);if(w==null)return;
             if(transportDraft==null||!transportDraft.Matches(w,t))transportDraft=new TransportDraft(w,t);
@@ -634,10 +637,11 @@ namespace HobbyDS9.UnityReview
             foreach(var id in draft.Materials.Keys.Where(id=>!resourceIds.Contains(id,StringComparer.Ordinal)).ToList())draft.Materials.Remove(id);
             foreach(var id in resourceIds)if(!draft.Materials.ContainsKey(id))draft.Materials.Add(id,0);
             Text(body,"Embark uses 100 actual settlers and one local kit; at least 500 people must remain, with no more than a quarter of the selected source cohort embarking. Choose 8–20 food for settlers. Carried food is finite; blocked journeys can cause shortages and deaths.");
-            var food=new IntegerField("Food to transfer"){value=draft.Food,name="colonisation-food"};food.style.minHeight=44;food.style.fontSize=16;body.Add(food);food.RegisterValueChangedCallback(_=>{if(OwnDraft())draft.Food=food.value;});
+            var quantities=Row(body);quantities.AddToClassList("transport-quantities");
+            var food=new IntegerField("Food to transfer"){value=draft.Food,name="colonisation-food"};food.style.minHeight=44;food.style.fontSize=18;quantities.Add(food);food.RegisterValueChangedCallback(_=>{if(OwnDraft())draft.Food=food.value;});
             var materialFields=new List<(string id,IntegerField field)>();
             foreach(var resource in resourceIds)
-            {var f=new IntegerField(MaterialName(resource)){value=draft.Materials[resource],name="colonisation-material-"+resource};f.style.minHeight=44;f.style.fontSize=16;body.Add(f);materialFields.Add((resource,f));f.RegisterValueChangedCallback(_=>{if(OwnDraft())draft.Materials[resource]=f.value;});}
+            {var f=new IntegerField(MaterialName(resource)){value=draft.Materials[resource],name="colonisation-material-"+resource};f.style.minHeight=44;f.style.fontSize=18;quantities.Add(f);materialFields.Add((resource,f));f.RegisterValueChangedCallback(_=>{if(OwnDraft())draft.Materials[resource]=f.value;});}
             List<ResourceAmountDto> MaterialsInput()=>materialFields.Where(x=>x.field.value!=0).Select(x=>new ResourceAmountDto{ResourceDefinitionId=x.id,Amount=x.field.value}).ToList();
             if(t.ManifestId==null)
             {
@@ -671,7 +675,7 @@ namespace HobbyDS9.UnityReview
             foreach(var report in observation.Reports.Where(x=>x.ShipId==t.ShipId))Text(body,report.Stage+" \u00b7 deaths "+report.Deaths+", food consumed "+report.FoodConsumed+", lost "+report.FoodLost+". "+report.Report);
         }
         internal void PresentAdmissionRejected(string text){if(disposed)return;submitted=false;PresentStatus(text);}
-        internal void PresentStatus(string? text){if(!disposed&&text!=null)status.text=text;}
+        internal void PresentStatus(string? text){if(!disposed&&text!=null){status.text=text;status.style.display=string.IsNullOrWhiteSpace(text)?DisplayStyle.None:DisplayStyle.Flex;}}
         internal void PresentReviewedOrder(ColonisationCommandDto command,string caption,ColonisationEligibilitySnapshot eligibility)
         {
             if(!Live||eligibility.Actor!=observation.Actor||eligibility.Turn!=observation.Turn||eligibility.Revision!=observation.Revision||command.ActorId!=observation.Actor||command.Turn!=observation.Turn||command.Revision!=observation.Revision||eligibility.Action!=command.Action)return;

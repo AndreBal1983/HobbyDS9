@@ -90,8 +90,18 @@ namespace HobbyDS9.UnityReview
                     ()=>ApplyAllocation(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()),
                         ()=>"Apply this complete Science plan?\n"+string.Join("\n",r.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%. The Science / Engineering split is a separate order."),
                     edit&&d.ScienceChanged,true);
-                var receipts=new Foldout{text="Latest-turn research",value=false};main.Add(receipts);
-                foreach(var receipt in r.Receipts)Text(receipts,receipt.Category+" · "+Units(receipt.Amount)+(receipt.Discipline.HasValue?" · "+receipt.Discipline:""));
+                var receipts=new Foldout{text="Latest-turn Science",value=false};main.Add(receipts);
+                var recorded=false;
+                foreach(var receipt in r.Receipts)
+                {
+                    var discipline=receipt.Discipline?.ToString()??"Science";string? label=null;
+                    if(receipt.Category=="science-allocated")label="Points allocated to Science: "+Units(receipt.Amount);
+                    else if(receipt.Category=="science-spent")label=discipline+" · points spent: "+Units(receipt.Amount);
+                    else if(receipt.Category=="science-level")label=discipline+" reached level "+receipt.Amount;
+                    else if(receipt.Category=="science-breakthrough")label=discipline+" · discovery "+receipt.BreakthroughOrdinal+" · level "+receipt.IntervalStartLevel+" → "+(receipt.IntervalStartLevel+1);
+                    if(label!=null){Text(receipts,label);recorded=true;}
+                }
+                if(!recorded)Text(receipts,"No Science activity recorded for the latest turn.");
             }
             if(workspace.ScienceDetails.HasValue&&workspace.ResearchTab=="science")
             {

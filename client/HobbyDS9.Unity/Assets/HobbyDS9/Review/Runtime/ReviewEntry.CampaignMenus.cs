@@ -187,11 +187,13 @@ namespace HobbyDS9.UnityReview
             }
             var layout=new VisualElement();layout.AddToClassList("campaign-menu-layout");panel.Add(layout);
             var commands=new VisualElement();commands.AddToClassList("campaign-menu-commands");layout.Add(commands);
+            var context=new VisualElement();context.AddToClassList("campaign-menu-context");layout.Add(context);
+            summary.RemoveFromHierarchy();context.Add(summary);
             var art=ConstructionCardArt.Ship("hull.galaxy-cruiser.v1");
             if(art!=null)
             {
                 var image=new Image{image=art,scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};
-                image.AddToClassList("campaign-menu-art");layout.Add(image);
+                image.AddToClassList("campaign-menu-art");context.Add(image);
             }
             if(demoStarted)
             {
@@ -216,12 +218,11 @@ namespace HobbyDS9.UnityReview
             AddButton(commands,"Quit to desktop",()=>RequestCampaignDeparture("Quit to desktop?","Quit",QuitCampaignPlayer)).name="campaign-menu-quit";
             if(campaignMenuNotice.Length>0)panel.Add(Readout(campaignMenuNotice));
             if(profileMenuNotice.Length>0)panel.Add(Readout(profileMenuNotice));
-            var station=AddButton(panel,"Deep Station · Audio preferences",()=>OpenDemoSettings(ReviewWorkspacePage.Audio));
-            station.AddToClassList("campaign-station-link");
         }
         private void DrawCampaignNew()
         {
             var panel=PagePanel("New campaign");panel.AddToClassList("campaign-menu");
+            panel.AddToClassList("campaign-setup");
             var epoch=viewEpoch;var owner=model;
             bool CurrentForm()=>epoch==viewEpoch&&ReferenceEquals(owner,model);
             panel.Add(Readout("Federation · Two empires. Existing save slots remain intact."));
@@ -250,8 +251,13 @@ namespace HobbyDS9.UnityReview
         {
             var panel=PagePanel("Settings");panel.AddToClassList("campaign-menu");
             panel.Add(Readout("Audio and Display use the game's existing controls. Changes apply immediately; Done does not roll them back."));
-            AddButton(panel,"Audio",()=>OpenDemoSettings(ReviewWorkspacePage.Audio));
-            AddButton(panel,"Display",()=>OpenDemoSettings(ReviewWorkspacePage.Display));
+            var groups=new VisualElement();groups.AddToClassList("settings-groups");panel.Add(groups);
+            var audio=new VisualElement();audio.AddToClassList("settings-group");groups.Add(audio);
+            audio.Add(Readout("Sound aboard the console"));audio.Add(Readout("Music playback, master volume and independent button sounds."));
+            AddButton(audio,"Audio",()=>OpenDemoSettings(ReviewWorkspacePage.Audio));
+            var display=new VisualElement();display.AddToClassList("settings-group");groups.Add(display);
+            display.Add(Readout("Window & display"));display.Add(Readout("Current size, windowed mode and borderless fullscreen."));
+            AddButton(display,"Display",()=>OpenDemoSettings(ReviewWorkspacePage.Display));
             AddButton(panel,"Done",()=>ShowCampaignMenuPage(campaignSettingsMenuOrigin));
         }
         private void DrawCampaignSettingsReturn()
@@ -378,6 +384,7 @@ namespace HobbyDS9.UnityReview
         {
             EnsureCampaignArchive();
             var panel=PagePanel(campaignArchiveSaving?"Save game":"Load game");panel.AddToClassList("campaign-menu");
+            panel.Add(Readout("Archive: "+(CampaignArchiveProfile()=="combat"?"Combat playtest":CampaignArchiveProfile()=="cycle"?"Generated campaign":CampaignArchiveProfile()=="demo"?"Bajor demo":"Separate campaign profile")));
             panel.Add(Readout("Three fixed slots. Select a slot, then use the action below. Slot selection never saves or loads."));
             if(campaignAfterSave!=null)panel.Add(Readout("After a successful save: "+campaignContinuationDescription));
             if(campaignArchiveRows==null){panel.Add(Readout("Checking compatible saved campaigns…"));return;}

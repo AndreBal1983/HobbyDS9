@@ -77,8 +77,9 @@ namespace HobbyDS9.UnityReview
 #if HOBBYDS9_PB_20261113
             panel.Add(Readout(UnityEngine.Application.version+" · Playtest candidate · Unity "+UnityEngine.Application.unityVersion));
 #endif
+            var resolution=new VisualElement();resolution.AddToClassList("review-field-row");panel.Add(Readout("Window size"));panel.Add(resolution);
             foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})
-                AddButton(panel,size.x+" × "+size.y,()=>Screen.SetResolution(size.x,size.y,Screen.fullScreen?FullScreenMode.FullScreenWindow:FullScreenMode.Windowed));
+                AddButton(resolution,size.x+" × "+size.y,()=>Screen.SetResolution(size.x,size.y,Screen.fullScreen?FullScreenMode.FullScreenWindow:FullScreenMode.Windowed));
             var mode=AddButton(panel,Screen.fullScreen?"Use windowed mode":"Use borderless fullscreen",()=>Screen.SetResolution(Screen.width,Screen.height,Screen.fullScreen?FullScreenMode.Windowed:FullScreenMode.FullScreenWindow));
             // SetResolution is asynchronous. The element's own scheduler pauses
             // when detached; status and action follow the actual applied mode.
