@@ -1,0 +1,124 @@
+{
+  "pack": "cruiser-modules-v1",
+  "method": "FBX reimport from relocated Models/Textures; no image search",
+  "passed": true,
+  "failures": [],
+  "assets": [
+    {
+      "asset": "OriginalCruiser_Remainder",
+      "triangles": 5580,
+      "world_bounds_metres": [
+        [
+          -188.4565887451172,
+          -310.0000305175781,
+          -71.12698364257812
+        ],
+        [
+          188.4565887451172,
+          274.1379089355469,
+          71.12699127197266
+        ]
+      ],
+      "max_bounds_error_metres": 2.288818359375e-05,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_BaseColor.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_BaseColor.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_Emission.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_Normal.png"
+      ]
+    },
+    {
+      "asset": "OriginalCruiser_Nacelle_A",
+      "triangles": 984,
+      "world_bounds_metres": [
+        [
+          -25.402481079101562,
+          -160.78282165527344,
+          -21.517419815063477
+        ],
+        [
+          25.402496337890625,
+          160.78282165527344,
+          21.517412185668945
+        ]
+      ],
+      "max_bounds_error_metres": 9.5367431640625e-06,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_BaseColor.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_BaseColor.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_Emission.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_Normal.png"
+      ]
+    },
+    {
+      "asset": "OriginalCruiser_Nacelle_B",
+      "triangles": 984,
+      "world_bounds_metres": [
+        [
+          -25.402496337890625,
+          -160.78282165527344,
+          -21.517419815063477
+        ],
+        [
+          25.402481079101562,
+          160.78282165527344,
+          21.517412185668945
+        ]
+      ],
+      "max_bounds_error_metres": 9.5367431640625e-06,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_BaseColor.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_BaseColor.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_Emission.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_Normal.png"
+      ]
+    },
+    {
+      "asset": "OriginalCruiser_Deflector",
+      "triangles": 2336,
+      "world_bounds_metres": [
+        [
+          -29.88530158996582,
+          -9.563289642333984,
+          -20.321990966796875
+        ],
+        [
+          29.88530158996582,
+          9.563289642333984,
+          20.321990966796875
+        ]
+      ],
+      "max_bounds_error_metres": 0.0,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_BaseColor.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_BaseColor.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_Emission.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_Normal.png"
+      ]
+    },
+    {
+      "asset": "OriginalCruiser_ReassembledProof",
+      "triangles": 9884,
+      "world_bounds_metres": [
+        [
+          -209.79466247558594,
+          -310.0000305175781,
+          -71.12698364257812
+        ],
+        [
+          209.79466247558594,
+          310.0000305175781,
+          71.12699127197266
+        ]
+      ],
+      "max_bounds_error_metres": 2.288818359375e-05,
+      "relocated_texture_paths": [
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_BaseColor.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_BaseColor.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_Emission.png",
+        "C:\\HobbyDS9\\artifacts\\worktrees\\ASSET-PRODUCTION-01\\artifacts\\asset-production-01-fbx-relocation\\cruiser-modules-v1\\Textures\\Cruiser_Normal.png"
+      ]
+    }
+  ],
+  "limitation": "Blender FBX reimport is not Unity importer or URP verification"
+}

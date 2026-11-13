@@ -1,0 +1,16 @@
+{
+  "passed": true,
+  "failures": [],
+  "source_triangles": 9884,
+  "part_triangles": {
+    "Remainder": 5580,
+    "Nacelle_A": 984,
+    "Nacelle_B": 984,
+    "Deflector": 2336
+  },
+  "sum_part_triangles": 9884,
+  "assembly_proof_triangles": 9884,
+  "max_reassembly_position_error_metres": 7.152557373046875e-06,
+  "checks": "Raw GLB node transforms, full triangle multiset and UV preservation, standalone modules plus explicit art interface",
+  "not_claimed": "Unity importer axes, gameplay equipment/socket mapping, external Galaxy compatibility or native visual acceptance"
+}

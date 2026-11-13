@@ -1,0 +1,847 @@
+{
+  "status": "Art reassembly interface only; not installed equipment or old Galaxy compatibility",
+  "parent_candidate": "hull.galaxy-cruiser.v1 original procedural candidate",
+  "source_complete_hull": "art/asset-production-01/hulls-runtime-v2/Models/Cruiser_Runtime_LOD0.glb",
+  "source_complete_sha256": "a746ebae39cdd97a2a7f50e5b7870d0b820a3a4ed42b9d6b08d911d550c7db2f",
+  "socket_space": "Blender parent metres, +Z up/-Y bow. Preserve actual FBX transforms exactly once.",
+  "parts": {
+    "Remainder": {
+      "parent_space_translation_blender_metres": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "local_rotation_blender_degrees": [
+        0,
+        0,
+        0
+      ],
+      "local_scale": [
+        1,
+        1,
+        1
+      ],
+      "receiver_X_reflection_candidate_metres": [
+        -0.0,
+        0.0,
+        -0.0
+      ],
+      "receiver_note": "Transform authoring coordinates through the measured actual FBX import basis; candidate values are not native measurements.",
+      "gameplay_component_binding": null
+    },
+    "Nacelle_A": {
+      "parent_space_translation_blender_metres": [
+        -184.39218139648438,
+        149.2172088623047,
+        13.747230529785156
+      ],
+      "local_rotation_blender_degrees": [
+        0,
+        0,
+        0
+      ],
+      "local_scale": [
+        1,
+        1,
+        1
+      ],
+      "receiver_X_reflection_candidate_metres": [
+        184.39218139648438,
+        13.747230529785156,
+        -149.2172088623047
+      ],
+      "receiver_note": "Transform authoring coordinates through the measured actual FBX import basis; candidate values are not native measurements.",
+      "gameplay_component_binding": null
+    },
+    "Nacelle_B": {
+      "parent_space_translation_blender_metres": [
+        184.39218139648438,
+        149.2172088623047,
+        13.747230529785156
+      ],
+      "local_rotation_blender_degrees": [
+        0,
+        0,
+        0
+      ],
+      "local_scale": [
+        1,
+        1,
+        1
+      ],
+      "receiver_X_reflection_candidate_metres": [
+        -184.39218139648438,
+        13.747230529785156,
+        -149.2172088623047
+      ],
+      "receiver_note": "Transform authoring coordinates through the measured actual FBX import basis; candidate values are not native measurements.",
+      "gameplay_component_binding": null
+    },
+    "Deflector": {
+      "parent_space_translation_blender_metres": [
+        -9.5367431640625e-06,
+        -62.96828842163086,
+        -40.0462760925293
+      ],
+      "local_rotation_blender_degrees": [
+        0,
+        0,
+        0
+      ],
+      "local_scale": [
+        1,
+        1,
+        1
+      ],
+      "receiver_X_reflection_candidate_metres": [
+        9.5367431640625e-06,
+        -40.0462760925293,
+        62.96828842163086
+      ],
+      "receiver_note": "Transform authoring coordinates through the measured actual FBX import basis; candidate values are not native measurements.",
+      "gameplay_component_binding": null
+    }
+  },
+  "connected_components": [
+    {
+      "role": "Remainder",
+      "vertices": 674,
+      "centre_blender": [
+        0.0,
+        -141.8654327392578,
+        31.67839813232422
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 146,
+      "centre_blender": [
+        0.0,
+        -123.93425750732422,
+        53.19580078125
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 530,
+      "centre_blender": [
+        -6.67572021484375e-06,
+        -129.91131591796875,
+        62.75908660888672
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 722,
+      "centre_blender": [
+        -2.09808349609375e-05,
+        97.21685791015625,
+        -37.655452728271484
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 56,
+      "centre_blender": [
+        0.0,
+        13.538028717041016,
+        -0.5977048873901367
+      ]
+    },
+    {
+      "role": "Deflector",
+      "vertices": 530,
+      "centre_blender": [
+        -9.5367431640625e-06,
+        -59.38206100463867,
+        -40.0462760925293
+      ]
+    },
+    {
+      "role": "Deflector",
+      "vertices": 530,
+      "centre_blender": [
+        -7.62939453125e-06,
+        -64.16370391845703,
+        -40.0462760925293
+      ]
+    },
+    {
+      "role": "Deflector",
+      "vertices": 114,
+      "centre_blender": [
+        9.5367431640625e-07,
+        -68.94534301757812,
+        -40.0462760925293
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 56,
+      "centre_blender": [
+        -105.19618225097656,
+        139.05621337890625,
+        -18.528873443603516
+      ]
+    },
+    {
+      "role": "Nacelle_A",
+      "vertices": 194,
+      "centre_blender": [
+        -184.09332275390625,
+        156.9873809814453,
+        13.747230529785156
+      ]
+    },
+    {
+      "role": "Nacelle_A",
+      "vertices": 194,
+      "centre_blender": [
+        -184.09332275390625,
+        0.3885049819946289,
+        13.74722957611084
+      ]
+    },
+    {
+      "role": "Nacelle_A",
+      "vertices": 56,
+      "centre_blender": [
+        -208.5992431640625,
+        166.5506591796875,
+        16.138050079345703
+      ]
+    },
+    {
+      "role": "Nacelle_A",
+      "vertices": 56,
+      "centre_blender": [
+        -208.00155639648438,
+        165.35525512695312,
+        26.896751403808594
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 56,
+      "centre_blender": [
+        105.19618225097656,
+        139.05621337890625,
+        -18.528873443603516
+      ]
+    },
+    {
+      "role": "Nacelle_B",
+      "vertices": 194,
+      "centre_blender": [
+        184.09332275390625,
+        156.9873809814453,
+        13.747230529785156
+      ]
+    },
+    {
+      "role": "Nacelle_B",
+      "vertices": 194,
+      "centre_blender": [
+        184.09332275390625,
+        0.3885049819946289,
+        13.74722957611084
+      ]
+    },
+    {
+      "role": "Nacelle_B",
+      "vertices": 56,
+      "centre_blender": [
+        208.5992431640625,
+        166.5506591796875,
+        16.138050079345703
+      ]
+    },
+    {
+      "role": "Nacelle_B",
+      "vertices": 56,
+      "centre_blender": [
+        208.00155639648438,
+        165.35525512695312,
+        26.896751403808594
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        187.79910278320312,
+        -141.86541748046875,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        186.19244384765625,
+        -120.00527954101562,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        181.39999389648438,
+        -98.5191650390625,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        173.50375366210938,
+        -77.77470397949219,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        162.6387939453125,
+        -58.126869201660156,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        148.9910430908203,
+        -39.911827087402344,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        132.79400634765625,
+        -23.44123077392578,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        114.3248519897461,
+        -8.996902465820312,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        93.89955139160156,
+        3.1740033626556396,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        71.86759948730469,
+        12.863245010375977,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        48.605987548828125,
+        19.90503692626953,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        24.5127010345459,
+        24.178892135620117,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        0.0,
+        25.61168098449707,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -24.5127010345459,
+        24.178892135620117,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -48.605987548828125,
+        19.90503692626953,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -71.86759948730469,
+        12.863245010375977,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -93.89955139160156,
+        3.1740033626556396,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -114.3248519897461,
+        -8.996902465820312,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -132.79400634765625,
+        -23.44123077392578,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -148.9910430908203,
+        -39.911827087402344,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -162.6387939453125,
+        -58.126869201660156,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -173.50375366210938,
+        -77.77470397949219,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -181.39999389648438,
+        -98.5191650390625,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -186.19244384765625,
+        -120.00527954101562,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -187.79910278320312,
+        -141.86541748046875,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -186.19244384765625,
+        -163.72557067871094,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -181.39999389648438,
+        -185.21170043945312,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -173.50375366210938,
+        -205.95614624023438,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -162.6387939453125,
+        -225.60397338867188,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -148.9910430908203,
+        -243.81903076171875,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -132.79400634765625,
+        -260.28961181640625,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -114.3248519897461,
+        -274.73394775390625,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -93.89955139160156,
+        -286.90484619140625,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -71.86759948730469,
+        -296.5940856933594,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -48.605987548828125,
+        -303.6358642578125,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -24.5127010345459,
+        -307.9097900390625,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        0.0,
+        -309.3425598144531,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        24.5127010345459,
+        -307.9097900390625,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        48.605987548828125,
+        -303.6358642578125,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        71.86759948730469,
+        -296.5940856933594,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        93.89955139160156,
+        -286.90484619140625,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        114.3248519897461,
+        -274.73394775390625,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        132.79400634765625,
+        -260.28961181640625,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        148.9910430908203,
+        -243.81903076171875,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        162.6387939453125,
+        -225.60397338867188,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        173.50375366210938,
+        -205.95614624023438,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        181.39999389648438,
+        -185.21170043945312,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        186.19244384765625,
+        -163.72557067871094,
+        26.29904556274414
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -34.2125358581543,
+        -34.278419494628906,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -43.139984130859375,
+        -2.002317428588867,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -48.56092834472656,
+        30.273784637451172,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -51.595367431640625,
+        62.549888610839844,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -52.658447265625,
+        94.82598876953125,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -51.87179946899414,
+        127.10209655761719,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        -49.14646530151367,
+        159.37818908691406,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        34.2125358581543,
+        -34.278419494628906,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        43.139984130859375,
+        -2.002317428588867,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        48.56092834472656,
+        30.273784637451172,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        51.595367431640625,
+        62.549888610839844,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        52.658447265625,
+        94.82598876953125,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        51.87179946899414,
+        127.10209655761719,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 8,
+      "centre_blender": [
+        49.14646530151367,
+        159.37818908691406,
+        -30.482986450195312
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 192,
+      "centre_blender": [
+        0.0,
+        -141.86541748046875,
+        38.85086441040039
+      ]
+    },
+    {
+      "role": "Remainder",
+      "vertices": 192,
+      "centre_blender": [
+        0.0,
+        -141.86544799804688,
+        32.873809814453125
+      ]
+    }
+  ],
+  "naming": "A/B denotes authoring negative/positive X; no unverified port/starboard import claim.",
+  "material_contract": "Same Material_0 / four original Cruiser atlases as hulls-runtime-v2/material-contract.json; explicit emission and ORM binding required."
+}

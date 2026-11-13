@@ -11,7 +11,7 @@ import bpy
 
 ROOT = Path(__file__).resolve().parents[2]
 phase = sys.argv[sys.argv.index('--')+1]
-assert phase in ['system', 'hulls', 'system-receiving-witness-v2', 'hulls-runtime-v2']
+assert phase in ['system', 'hulls', 'system-receiving-witness-v2', 'hulls-runtime-v2', 'cruiser-modules-v1']
 pack_name = phase+'-v1' if phase in ['system','hulls'] else phase
 pack = ROOT / 'art/asset-production-01' / pack_name
 scratch = ROOT / 'artifacts/asset-production-01-fbx-relocation' / pack_name
