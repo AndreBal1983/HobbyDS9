@@ -1,0 +1,396 @@
+{
+  "Cruiser": {
+    "candidate_binding": "hull.galaxy-cruiser.v1",
+    "nominal_art_length_metres": 620,
+    "submeshes": 1,
+    "material_slots": [
+      "Material_0"
+    ],
+    "original_role_tiles": [
+      "Collector_Red",
+      "Engine_Blue",
+      "Hull_Pearl",
+      "Hull_Slate",
+      "Recess_Graphite",
+      "Sensor_Bronze",
+      "Trim_Titanium",
+      "Windows_Warm"
+    ],
+    "original_factors": {
+      "Collector_Red": {
+        "color": [
+          0.800000011920929,
+          0.03500000014901161,
+          0.012000000104308128,
+          1.0
+        ],
+        "metallic": 0.20000000298023224,
+        "roughness": 0.30000001192092896,
+        "emission_color": [
+          0.800000011920929,
+          0.03500000014901161,
+          0.012000000104308128,
+          1.0
+        ],
+        "emission_strength": 1.5
+      },
+      "Engine_Blue": {
+        "color": [
+          0.02500000037252903,
+          0.2800000011920929,
+          0.800000011920929,
+          1.0
+        ],
+        "metallic": 0.15000000596046448,
+        "roughness": 0.2800000011920929,
+        "emission_color": [
+          0.02500000037252903,
+          0.2800000011920929,
+          0.800000011920929,
+          1.0
+        ],
+        "emission_strength": 2.0
+      },
+      "Hull_Pearl": {
+        "color": [
+          0.47999998927116394,
+          0.5600000023841858,
+          0.6399999856948853,
+          1.0
+        ],
+        "metallic": 0.3499999940395355,
+        "roughness": 0.36000001430511475,
+        "emission_color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "emission_strength": 0.0
+      },
+      "Hull_Slate": {
+        "color": [
+          0.15000000596046448,
+          0.20999999344348907,
+          0.2800000011920929,
+          1.0
+        ],
+        "metallic": 0.5,
+        "roughness": 0.41999998688697815,
+        "emission_color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "emission_strength": 0.0
+      },
+      "Recess_Graphite": {
+        "color": [
+          0.017999999225139618,
+          0.03500000014901161,
+          0.054999999701976776,
+          1.0
+        ],
+        "metallic": 0.30000001192092896,
+        "roughness": 0.550000011920929,
+        "emission_color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "emission_strength": 0.0
+      },
+      "Sensor_Bronze": {
+        "color": [
+          0.36000001430511475,
+          0.23000000417232513,
+          0.10000000149011612,
+          1.0
+        ],
+        "metallic": 0.6499999761581421,
+        "roughness": 0.4000000059604645,
+        "emission_color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "emission_strength": 0.0
+      },
+      "Trim_Titanium": {
+        "color": [
+          0.550000011920929,
+          0.5799999833106995,
+          0.5699999928474426,
+          1.0
+        ],
+        "metallic": 0.6499999761581421,
+        "roughness": 0.2800000011920929,
+        "emission_color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "emission_strength": 0.0
+      },
+      "Windows_Warm": {
+        "color": [
+          0.800000011920929,
+          0.550000011920929,
+          0.25,
+          1.0
+        ],
+        "metallic": 0.10000000149011612,
+        "roughness": 0.4000000059604645,
+        "emission_color": [
+          0.800000011920929,
+          0.550000011920929,
+          0.25,
+          1.0
+        ],
+        "emission_strength": 0.6499999761581421
+      }
+    },
+    "textures": {
+      "BaseColor": "Textures/Cruiser_BaseColor.png",
+      "ORM": "Textures/Cruiser_ORM.png",
+      "Normal": "Textures/Cruiser_Normal.png",
+      "Emission": "Textures/Cruiser_Emission.png"
+    },
+    "atlas_size": [
+      512,
+      256
+    ],
+    "gutter_pixels": 8,
+    "PreviewStudio": {
+      "_BaseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "_Metallic": 1,
+      "_Smoothness": 0.4,
+      "_UseMetallicRoughnessMap": 1,
+      "_UseNormalMap": 1,
+      "_BumpScale": 1,
+      "_EmissionColor": [
+        2,
+        2,
+        2,
+        1
+      ]
+    },
+    "channels": {
+      "BaseColor": "sRGB RGB, alpha opaque",
+      "ORM": "linear R=1 unused,G=roughness,B=metallic,A=1",
+      "Normal": "linear tangent-space flat +Z; import NormalMap, +Y convention; no invented surface detail",
+      "Emission": "sRGB linear-decoded RGB multiplied by HDR (2,2,2) in runtime"
+    },
+    "receiving_gap": "Current Defiant binder requires new prefix/credit and explicit EmissionMap/EmissionColor. Galaxy needs an exact candidate route, not silent replacement of its existing assembly. The generic studio copier does not copy packed ORM: bind it explicitly or keep that gate open."
+  },
+  "Escort": {
+    "candidate_binding": "hull.defiant-combat.v1",
+    "nominal_art_length_metres": 170,
+    "submeshes": 1,
+    "material_slots": [
+      "Material_0"
+    ],
+    "original_role_tiles": [
+      "Collector_Red",
+      "Engine_Blue",
+      "Hull_Pearl",
+      "Hull_Slate",
+      "Recess_Graphite",
+      "Sensor_Bronze",
+      "Trim_Titanium",
+      "Windows_Warm"
+    ],
+    "original_factors": {
+      "Collector_Red": {
+        "color": [
+          0.800000011920929,
+          0.03500000014901161,
+          0.012000000104308128,
+          1.0
+        ],
+        "metallic": 0.20000000298023224,
+        "roughness": 0.30000001192092896,
+        "emission_color": [
+          0.800000011920929,
+          0.03500000014901161,
+          0.012000000104308128,
+          1.0
+        ],
+        "emission_strength": 1.5
+      },
+      "Engine_Blue": {
+        "color": [
+          0.02500000037252903,
+          0.2800000011920929,
+          0.800000011920929,
+          1.0
+        ],
+        "metallic": 0.15000000596046448,
+        "roughness": 0.2800000011920929,
+        "emission_color": [
+          0.02500000037252903,
+          0.2800000011920929,
+          0.800000011920929,
+          1.0
+        ],
+        "emission_strength": 2.0
+      },
+      "Hull_Pearl": {
+        "color": [
+          0.47999998927116394,
+          0.5600000023841858,
+          0.6399999856948853,
+          1.0
+        ],
+        "metallic": 0.3499999940395355,
+        "roughness": 0.36000001430511475,
+        "emission_color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "emission_strength": 0.0
+      },
+      "Hull_Slate": {
+        "color": [
+          0.15000000596046448,
+          0.20999999344348907,
+          0.2800000011920929,
+          1.0
+        ],
+        "metallic": 0.5,
+        "roughness": 0.41999998688697815,
+        "emission_color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "emission_strength": 0.0
+      },
+      "Recess_Graphite": {
+        "color": [
+          0.017999999225139618,
+          0.03500000014901161,
+          0.054999999701976776,
+          1.0
+        ],
+        "metallic": 0.30000001192092896,
+        "roughness": 0.550000011920929,
+        "emission_color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "emission_strength": 0.0
+      },
+      "Sensor_Bronze": {
+        "color": [
+          0.36000001430511475,
+          0.23000000417232513,
+          0.10000000149011612,
+          1.0
+        ],
+        "metallic": 0.6499999761581421,
+        "roughness": 0.4000000059604645,
+        "emission_color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "emission_strength": 0.0
+      },
+      "Trim_Titanium": {
+        "color": [
+          0.550000011920929,
+          0.5799999833106995,
+          0.5699999928474426,
+          1.0
+        ],
+        "metallic": 0.6499999761581421,
+        "roughness": 0.2800000011920929,
+        "emission_color": [
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ],
+        "emission_strength": 0.0
+      },
+      "Windows_Warm": {
+        "color": [
+          0.800000011920929,
+          0.550000011920929,
+          0.25,
+          1.0
+        ],
+        "metallic": 0.10000000149011612,
+        "roughness": 0.4000000059604645,
+        "emission_color": [
+          0.800000011920929,
+          0.550000011920929,
+          0.25,
+          1.0
+        ],
+        "emission_strength": 0.6499999761581421
+      }
+    },
+    "textures": {
+      "BaseColor": "Textures/Escort_BaseColor.png",
+      "ORM": "Textures/Escort_ORM.png",
+      "Normal": "Textures/Escort_Normal.png",
+      "Emission": "Textures/Escort_Emission.png"
+    },
+    "atlas_size": [
+      512,
+      256
+    ],
+    "gutter_pixels": 8,
+    "PreviewStudio": {
+      "_BaseColor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "_Metallic": 1,
+      "_Smoothness": 0.4,
+      "_UseMetallicRoughnessMap": 1,
+      "_UseNormalMap": 1,
+      "_BumpScale": 1,
+      "_EmissionColor": [
+        2,
+        2,
+        2,
+        1
+      ]
+    },
+    "channels": {
+      "BaseColor": "sRGB RGB, alpha opaque",
+      "ORM": "linear R=1 unused,G=roughness,B=metallic,A=1",
+      "Normal": "linear tangent-space flat +Z; import NormalMap, +Y convention; no invented surface detail",
+      "Emission": "sRGB linear-decoded RGB multiplied by HDR (2,2,2) in runtime"
+    },
+    "receiving_gap": "Current Defiant binder requires new prefix/credit and explicit EmissionMap/EmissionColor. Galaxy needs an exact candidate route, not silent replacement of its existing assembly. The generic studio copier does not copy packed ORM: bind it explicitly or keep that gate open."
+  },
+  "proxy_limits": {
+    "shader_source": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/PreviewStudio.shader",
+    "shader_sha256": "21eb928ab2a834aef99a6897434ec068076d327c9d4f163902554ec423516fed",
+    "method": "Blender CPU node evaluation of current normal-based PreviewStudio formula; no normal perturbation from the flat map.",
+    "basis": "Candidate Unity FBX X reflection: Blender (-X,+Z,-Y); verify native importer.",
+    "camera": "Existing activity defaults yaw37.57/pitch26, projected bounding-box fit with 1.12 margin; 512x320.",
+    "not_claimed": "Native Unity render, colour-management parity, workflow/performance or owner acceptance"
+  }
+}

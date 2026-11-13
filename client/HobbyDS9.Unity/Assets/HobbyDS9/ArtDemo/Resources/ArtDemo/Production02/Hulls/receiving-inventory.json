@@ -1,0 +1,156 @@
+{
+  "schema": 2,
+  "sourcePin": "be7ef4575a7f820741333e2dbd6683da9aa85249",
+  "sourceManifestSha256": "9abb027ed18950bdc7523bcd9a331fb89daeb9cf55676dd061f0acde2c0215e4",
+  "sourceMaterialContractSha256": "d2fb738e4b142ece375264233b296c4772d400a4223377d211b41020498e13a9",
+  "textHashFormat": "UTF-8 with LF newlines",
+  "shader": "HobbyDS9/ArtDemo/PreviewStudio",
+  "shaderGuid": "6ae380f4425f5ce7984d46c8c519a336",
+  "bindings": [
+    {
+      "hullVersionId": "hull.galaxy-cruiser.v1",
+      "candidate": true,
+      "resource": "ArtDemo/Production02/Hulls/Cruiser_Runtime_LOD0",
+      "source": "Models/Cruiser_Runtime_LOD0.fbx",
+      "sha256": "c5e27324d5df8200617a13ca009a5f2d19fe3558e92454efaaf02321d5c2332e",
+      "guid": "cf01d49caa9e5e9e89421fb266ad53f0",
+      "triangles": 9884,
+      "submeshes": 1,
+      "nominalArtLengthMetres": 620,
+      "materialResource": "ArtDemo/Production02/Hulls/Materials/Cruiser",
+      "materialGuid": "63f6b59b165c554486a1854aa16fc113",
+      "textures": [
+        {
+          "role": "BaseColor",
+          "property": "_BaseMap",
+          "source": "Textures/Cruiser_BaseColor.png",
+          "sha256": "5609104d73d4e1cf21066a80949e52b29b1bae69cd6ccd880834e8d23b6237f0",
+          "guid": "3168bf59434a5ea19f712b5f5430bc43",
+          "dimensions": [
+            512,
+            256
+          ],
+          "sRGB": true,
+          "normalMap": false,
+          "mipmaps": true
+        },
+        {
+          "role": "ORM",
+          "property": "_MetallicRoughnessMap",
+          "source": "Textures/Cruiser_ORM.png",
+          "sha256": "d9d463edb26d8387951ee2c67b0cd3a65ea9fd6c36c2f9436321add7d705f1e6",
+          "guid": "b58546c5c2b455fd96fb75fa5de65d5b",
+          "dimensions": [
+            512,
+            256
+          ],
+          "sRGB": false,
+          "normalMap": false,
+          "mipmaps": true
+        },
+        {
+          "role": "Normal",
+          "property": "_BumpMap",
+          "source": "Textures/Cruiser_Normal.png",
+          "sha256": "0e2e843ec294d0a5501fa9c9f79fac41ccd2e108fa1ec68392f617e53ffe80d9",
+          "guid": "5fc22450072c5d3dab171b738e29ba1a",
+          "dimensions": [
+            512,
+            256
+          ],
+          "sRGB": false,
+          "normalMap": true,
+          "mipmaps": true
+        },
+        {
+          "role": "Emission",
+          "property": "_EmissionMap",
+          "source": "Textures/Cruiser_Emission.png",
+          "sha256": "b83a4a03108b17df7e8697bc6ec1de52fbf31801dfd44c7156657a8df1b94cd0",
+          "guid": "4c2df735eee1564faa9d67b81037ee3a",
+          "dimensions": [
+            512,
+            256
+          ],
+          "sRGB": true,
+          "normalMap": false,
+          "mipmaps": true
+        }
+      ]
+    },
+    {
+      "hullVersionId": "hull.defiant-combat.v1",
+      "candidate": true,
+      "resource": "ArtDemo/Production02/Hulls/Escort_Runtime_LOD0",
+      "source": "Models/Escort_Runtime_LOD0.fbx",
+      "sha256": "8f25b607182c264b247424086c314eddafdd89b37a65fb291883d6f5fa6a59ce",
+      "guid": "e6c28fc348d05237ab00d7580b422314",
+      "triangles": 7560,
+      "submeshes": 1,
+      "nominalArtLengthMetres": 170,
+      "materialResource": "ArtDemo/Production02/Hulls/Materials/Escort",
+      "materialGuid": "02bd4f715e605c6d9d4ae77f17055323",
+      "textures": [
+        {
+          "role": "BaseColor",
+          "property": "_BaseMap",
+          "source": "Textures/Escort_BaseColor.png",
+          "sha256": "5609104d73d4e1cf21066a80949e52b29b1bae69cd6ccd880834e8d23b6237f0",
+          "guid": "5113db4812b6516aaf779567e1a7066a",
+          "dimensions": [
+            512,
+            256
+          ],
+          "sRGB": true,
+          "normalMap": false,
+          "mipmaps": true
+        },
+        {
+          "role": "ORM",
+          "property": "_MetallicRoughnessMap",
+          "source": "Textures/Escort_ORM.png",
+          "sha256": "d9d463edb26d8387951ee2c67b0cd3a65ea9fd6c36c2f9436321add7d705f1e6",
+          "guid": "ed1cbbbb426e5f01ad2be99d5da6f1a1",
+          "dimensions": [
+            512,
+            256
+          ],
+          "sRGB": false,
+          "normalMap": false,
+          "mipmaps": true
+        },
+        {
+          "role": "Normal",
+          "property": "_BumpMap",
+          "source": "Textures/Escort_Normal.png",
+          "sha256": "0e2e843ec294d0a5501fa9c9f79fac41ccd2e108fa1ec68392f617e53ffe80d9",
+          "guid": "0613fa973a1c56ef9745c19088c7e892",
+          "dimensions": [
+            512,
+            256
+          ],
+          "sRGB": false,
+          "normalMap": true,
+          "mipmaps": true
+        },
+        {
+          "role": "Emission",
+          "property": "_EmissionMap",
+          "source": "Textures/Escort_Emission.png",
+          "sha256": "b83a4a03108b17df7e8697bc6ec1de52fbf31801dfd44c7156657a8df1b94cd0",
+          "guid": "45f3d3cf3aa1525dad2437bd6dbb3815",
+          "dimensions": [
+            512,
+            256
+          ],
+          "sRGB": true,
+          "normalMap": false,
+          "mipmaps": true
+        }
+      ]
+    }
+  ],
+  "status": "Original candidate exteriors; native/owner artistic acceptance pending",
+  "previousRuntimeSlice": "Production01 superseded; v1 source packet remains outside Assets",
+  "nativePerformance": "Unmeasured; one slot is not an FPS or actual residency result"
+}

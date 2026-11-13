@@ -89,23 +89,21 @@ namespace HobbyDS9.ArtDemo
         }
         private bool ApplyCandidateMaterials(GameObject instance,ActivityHullVisualDefinition definition,Shader shader)
         {
-            // Exact pinned submesh order; never infer mounts or capability from art.
-            var roles=definition.HullVersionId=="hull.galaxy-cruiser.v1"
-                ?new[]{"Hull_Pearl","Hull_Slate","Recess_Graphite","Sensor_Bronze","Engine_Blue","Collector_Red","Trim_Titanium","Windows_Warm"}
-                :new[]{"Hull_Pearl","Hull_Slate","Trim_Titanium","Recess_Graphite","Collector_Red","Engine_Blue","Windows_Warm","Sensor_Bronze"};
+            // Exact candidate IDs/one-slot contract; no mount/capability inference.
+            var name=definition.HullVersionId=="hull.galaxy-cruiser.v1"?"Cruiser":"Escort";
             var filters=instance.GetComponentsInChildren<MeshFilter>(true);
             var renderers=instance.GetComponentsInChildren<MeshRenderer>(true);
-            if(filters.Length!=1 || renderers.Length!=1 || filters[0].sharedMesh==null || filters[0].sharedMesh.subMeshCount!=roles.Length)return false;
+            if(filters.Length!=1 || renderers.Length!=1 || filters[0].sharedMesh==null || filters[0].sharedMesh.subMeshCount!=1)return false;
             var imported=renderers[0].sharedMaterials;
-            if(imported.Length!=roles.Length)return false;
-            for(int i=0;i<roles.Length;i++)
-            {
-                var material=Resources.Load<Material>("ArtDemo/Production01/Hulls/Materials/"+roles[i]);
-                if(material==null || imported[i]!=material)return false;
-            }
-            // Private clones retain the existing studio response and ownership.
-            // Shared imported materials/resources remain unchanged.
-            StudioMaterials(shader);return true;
+            var material=Resources.Load<Material>("ArtDemo/Production02/Hulls/Materials/"+name);
+            if(imported.Length!=1 || material==null || imported[0]!=material || material.shader!=shader)return false;
+            foreach(var property in new[]{"_BaseMap","_MetallicRoughnessMap","_BumpMap","_EmissionMap"})
+                if(!material.HasProperty(property) || material.GetTexture(property)==null)return false;
+            if(material.GetFloat("_UseMetallicRoughnessMap")!=1 || material.GetFloat("_UseNormalMap")!=1)return false;
+            // Clone this explicitly received studio material as a whole so its ORM
+            // and emission bindings survive; the legacy generic copier omits ORM.
+            var clone=new Material(material){name=name+" original candidate preview",hideFlags=HideFlags.DontSave};
+            materialsOwned.Add(clone);renderers[0].sharedMaterials=new[]{clone};return true;
         }
         private static void CopyTexture(Material source,Material target,string from,string to)
         {if(!source.HasProperty(from)||source.GetTexture(from)==null)return;target.SetTexture(to,source.GetTexture(from));target.SetTextureScale(to,source.GetTextureScale(from));target.SetTextureOffset(to,source.GetTextureOffset(from));}

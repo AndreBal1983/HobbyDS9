@@ -1,0 +1,5 @@
+HobbyDS9 original procedural hull/atlas candidates; no borrowed texture pixels.
+Source pin: be7ef4575a7f820741333e2dbd6683da9aa85249
+Sources/provenance: art/asset-production-01/hulls-runtime-v2.
+Same original v1 geometry; one atlas material. Artistic approval and native acceptance pending.
+Approved external replacements remain separately unreceived; existing legacy credits remain unchanged.

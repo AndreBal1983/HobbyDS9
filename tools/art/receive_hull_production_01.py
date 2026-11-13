@@ -109,6 +109,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
+    if (ASSETS / 'HobbyDS9/ArtDemo/Resources/ArtDemo/Production02').exists():
+        parser.error('v1 runtime slice is archived; use receive_hull_production_02.py --check. Reproduce v1 from source07e46c3.')
     outputs, seen = payloads(), {}
     for path in ASSETS.rglob('*.meta'):
         if path in outputs:

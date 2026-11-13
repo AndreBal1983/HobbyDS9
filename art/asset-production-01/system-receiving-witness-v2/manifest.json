@@ -1,0 +1,191 @@
+{
+  "schema": 1,
+  "phase": "system",
+  "status": "proposed runtime receiving refinement; not Unity acceptance",
+  "blender": "5.3.0",
+  "blender_build": "02f0899d78e3",
+  "inputs": [
+    {
+      "path": "art/asset-production-01/system-v1/Sources/SystemBody_Library.blend",
+      "sha256": "e34480ae719f8680b9bf103ac1967e39deb4d07384835372bb854ab3b790fbb7"
+    }
+  ],
+  "texture_sources": [
+    {
+      "path": "Textures/earth_daymap.jpg",
+      "sha256": "767ee1dc6eb3802699bfccf6f264880f8acd0b80de3191cd24984fe279b07b7c",
+      "source_repo_path": "art/asset-production-01/system-v1/Textures/earth_daymap.jpg",
+      "author": "Solar System Scope / INOVE",
+      "license": "CC-BY-4.0",
+      "source_url": "https://www.solarsystemscope.com/textures/",
+      "changes": "None; unchanged existing local source, studio preview only. Runtime borrows current map."
+    },
+    {
+      "path": "Textures/mars.jpg",
+      "sha256": "2d187f3e77a98eaa8cea5f4cc722f633c122ef170b9e94ace6b5fb6cbc3f8e01",
+      "source_repo_path": "art/asset-production-01/system-v1/Textures/mars.jpg",
+      "author": "Solar System Scope / INOVE",
+      "license": "CC-BY-4.0",
+      "source_url": "https://www.solarsystemscope.com/textures/",
+      "changes": "None; unchanged existing local source, studio preview only. Runtime borrows current map."
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "art.production02.earth_receivingwitness_lod1",
+      "name": "Earth_ReceivingWitness_LOD1",
+      "candidate_binding": null,
+      "lod": 1,
+      "notes": "QA witness only; preserves v1 UVs/positions. Not a replacement recommendation or new runtime binding. RH glTF U0=-X,U.25=+Z; X-reflected FBX receiver candidate U0=+X,U.25=+Z. QA must measure actual imported hierarchy; no UV correction is established.",
+      "meshes": [
+        {
+          "name": "Earth_LOD1",
+          "vertices": 1106,
+          "triangles": 2208,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "UnitGlobe_OverrideAtRuntime"
+          ]
+        }
+      ],
+      "glb": "Models/Earth_ReceivingWitness_LOD1.glb",
+      "fbx": "Models/Earth_ReceivingWitness_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production02.mars_receivingwitness_lod1",
+      "name": "Mars_ReceivingWitness_LOD1",
+      "candidate_binding": null,
+      "lod": 1,
+      "notes": "QA witness only; preserves v1 UVs/positions. Not a replacement recommendation or new runtime binding. RH glTF U0=-X,U.25=+Z; X-reflected FBX receiver candidate U0=+X,U.25=+Z. QA must measure actual imported hierarchy; no UV correction is established.",
+      "meshes": [
+        {
+          "name": "Mars_LOD1",
+          "vertices": 1106,
+          "triangles": 2208,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "UnitGlobe_OverrideAtRuntime.001"
+          ]
+        }
+      ],
+      "glb": "Models/Mars_ReceivingWitness_LOD1.glb",
+      "fbx": "Models/Mars_ReceivingWitness_LOD1.fbx"
+    }
+  ],
+  "files": [
+    {
+      "path": "gallery.html",
+      "bytes": 1640,
+      "sha256": "5a85e91f61836d33438ef0cc6b40d133cb36cf027ac0801a663ae2ea5e2bac70"
+    },
+    {
+      "path": "Models/Earth_ReceivingWitness_LOD1.fbx",
+      "bytes": 101324,
+      "sha256": "0881d0570be8a8515593298196b7c6bee97695a3148e18802c3d908b417bf3a7"
+    },
+    {
+      "path": "Models/Earth_ReceivingWitness_LOD1.glb",
+      "bytes": 73336,
+      "sha256": "0c5e31ec032ad192e13823c197e3283ea863293ed95a6263e66e99986554859b"
+    },
+    {
+      "path": "Models/Mars_ReceivingWitness_LOD1.fbx",
+      "bytes": 101228,
+      "sha256": "e36c96e2c4cfa8e8ffb872c975023937242fa0af72578f6e7d94fbdfed809de2"
+    },
+    {
+      "path": "Models/Mars_ReceivingWitness_LOD1.glb",
+      "bytes": 73340,
+      "sha256": "1bbe039e15081109f4b8252a90746f52d40c31fca8d6d59a7be79919bad9861b"
+    },
+    {
+      "path": "Previews/Earth_unchanged_UV_studio.png",
+      "bytes": 306005,
+      "sha256": "2811ece4d338139fbd0313ddae236645d6d86395cd65e73d22edd6ea53acecfc"
+    },
+    {
+      "path": "Previews/Mars_unchanged_UV_studio.png",
+      "bytes": 317646,
+      "sha256": "b83fb7c63010a6ce01c9a0f04a85e146d7fa15b609556ac53808a02b0d2556a6"
+    },
+    {
+      "path": "Previews/UV_witness_FBX_X_reflection_candidate_minus_X.png",
+      "bytes": 277897,
+      "sha256": "6243f51457ff4290c34f1bf0ccc0692c2779bc5ed42e0d2325389f90205f1a9d"
+    },
+    {
+      "path": "Previews/UV_witness_FBX_X_reflection_candidate_minus_Z.png",
+      "bytes": 278792,
+      "sha256": "f3468701556ff505e87432e2dc5ffe8208a0cc3de492e39f3d78b00998b42f20"
+    },
+    {
+      "path": "Previews/UV_witness_FBX_X_reflection_candidate_plus_X.png",
+      "bytes": 283569,
+      "sha256": "23e9df04015a24a9ffb833026d4b4db2954dd572f1cbf2bd7c33183b9c744314"
+    },
+    {
+      "path": "Previews/UV_witness_FBX_X_reflection_candidate_plus_Z.png",
+      "bytes": 283530,
+      "sha256": "bddc50082bf9008741ed47495cd68da8e4848dd5d55d54cff46cfc7d70f65cd1"
+    },
+    {
+      "path": "receiving.json",
+      "bytes": 5271,
+      "sha256": "e8394bc29d94191e2ab8627b187cd946e18d73b498efcd14627e0466092a02f1"
+    },
+    {
+      "path": "Sources/Unchanged_System_ReceivingWitness.blend",
+      "bytes": 153070,
+      "sha256": "644377b495be732187cf519d465104c881af3680d323096f15f6c166876dba32"
+    },
+    {
+      "path": "Textures/earth_daymap.jpg",
+      "bytes": 463087,
+      "sha256": "767ee1dc6eb3802699bfccf6f264880f8acd0b80de3191cd24984fe279b07b7c"
+    },
+    {
+      "path": "Textures/mars.jpg",
+      "bytes": 750547,
+      "sha256": "2d187f3e77a98eaa8cea5f4cc722f633c122ef170b9e94ace6b5fb6cbc3f8e01"
+    },
+    {
+      "path": "Textures/UV_Basis_Witness.png",
+      "bytes": 10621,
+      "sha256": "f0e1b7dd6e451b114d67e32cc322ca023e66e45ac5ef17bade572c036dc98221"
+    },
+    {
+      "path": "validation-contract.json",
+      "bytes": 1424,
+      "sha256": "7cbcd40a8ad4d5f8f85c0c874466fb72cc83433f806a54c4d5eeffeb24139f16"
+    },
+    {
+      "path": "validation-fbx.json",
+      "bytes": 1031,
+      "sha256": "260f0bf0775162e167872ec50378873706b01d77671f9f64f588ecbb21c4fa6a"
+    }
+  ]
+}
