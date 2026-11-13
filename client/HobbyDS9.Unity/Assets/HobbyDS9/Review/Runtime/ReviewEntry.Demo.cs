@@ -24,12 +24,11 @@ namespace HobbyDS9.UnityReview
 #endif
         private void DrawDemoLanding()
         {
-            var panel=PagePanel("HobbyDS9 — Start / Continue");
-            panel.Add(Readout("Explore a galaxy, build fleets and command each battle round. Survivors carry their damage and ammunition into the next turn."));
-            if(demoStarted){var resume=AddButton(panel,"Resume current campaign",()=>{demoLanding=false;viewEpoch++;Build();});resume.name="demo-resume-current";resume.AddToClassList("primary-action");ScheduleDemoMenuFocus(resume);}
-            DrawGeneratedCampaignMenu(panel);
-            try{Type.GetType("HobbyDS9.UnityClient.IntegratedAudioPanelBridge, HobbyDS9.UnityClient",false)?.GetMethod("PresentPlayer")?.Invoke(null,new object[]{panel});}
-            catch(Exception){panel.Add(Readout("Music player unavailable."));}
+            DrawCampaignMenus();
+#if UNITY_EDITOR
+            if(campaignMenuPage!=CampaignMenuPage.Start)return;
+            var panel=content!.Q<ScrollView>();if(panel==null)return;
+#endif
 #if UNITY_EDITOR
             var other=new Foldout{text="Other scenarios & review tools",value=otherCampaignProfilesOpen,name="other-campaign-profiles"};panel.Add(other);
             var epoch=viewEpoch;
@@ -52,10 +51,6 @@ namespace HobbyDS9.UnityReview
             other.Add(Readout("Earlier scenarios keep their original saves. Empty or incompatible slots leave the current game intact."));
             DrawFrontierMenu(other);
 #endif
-            var settings=new VisualElement();settings.AddToClassList("review-field-row");panel.Add(settings);
-            AddButton(settings,"Audio",()=>OpenDemoSettings(ReviewWorkspacePage.Audio));
-            AddButton(settings,"Display",()=>OpenDemoSettings(ReviewWorkspacePage.Display));
-            AddButton(settings,"Quit",()=>Confirm("Quit without automatic saving? Any unsaved progress will be lost.",()=>{ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"close.begin");if(model!.Close(true)){ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"close.return.true");ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"quit.call");UnityEngine.Application.Quit();ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"quit.return");}else{ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"close.return.false");}}));
         }
         private void StartFreshDemo()
         {
@@ -64,8 +59,17 @@ namespace HobbyDS9.UnityReview
             PublishPlayerProfile(next,model?.SingleplayerDemo!=true?"demo-1":slotName);
         }
         private void OpenDemoSettings(ReviewWorkspacePage page)
-        {demoLanding=false;workspace!.Navigate(page);viewEpoch++;Build();}
-        private void OpenDemoMenu(){demoLanding=true;viewEpoch++;Build();}
+        {
+            var returnPage=campaignMenuPage;
+            if(campaignSettingsReturn==null)campaignSettingsPriorPage=workspace!.Page;
+            campaignSettingsReturn=()=>ShowCampaignMenuPage(returnPage);
+            demoLanding=false;workspace!.Navigate(page);viewEpoch++;Build();
+        }
+        private void OpenDemoMenu()
+        {
+            if(campaignSettingsReturn!=null){ReturnFromCampaignSettings();return;}
+            ShowCampaignMenuPage(demoStarted?CampaignMenuPage.Campaign:CampaignMenuPage.Start);
+        }
         private void DrawDisplay()
         {
             var panel=PagePanel("Display preferences");panel.Add(Readout("Window size and fullscreen mode affect presentation only. They do not change your campaign or Windows display settings."));

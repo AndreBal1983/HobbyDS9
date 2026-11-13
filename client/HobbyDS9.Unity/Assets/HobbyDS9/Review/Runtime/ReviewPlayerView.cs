@@ -145,6 +145,14 @@ namespace HobbyDS9.UnityReview
                         Text(requirements,legacyScoutEffect?"The authored effect below applies to the original Scout catalogue.":demo?"Authored effect; the demo construction limits above still apply.":"Authored effect. Ship availability depends on the campaign construction catalogue.",id:"engineering-effect-qualifier");
                         Text(requirements,project.Definition.EffectSummary,id:"engineering-authored-effect");
                         for(int i=0;i<project.Definition.ScienceRequirements.Count;i++){var q=project.Definition.ScienceRequirements[i];Text(requirements,(project.ScienceSatisfied[i]?"✓ ":"○ ")+q.Discipline+" interval "+q.IntervalStartLevel+" breakthrough "+q.BreakthroughOrdinal);}
+                        for(int i=0;i<project.Definition.Prerequisites.Count;i++)
+                        {
+                            var prerequisite=project.Definition.Prerequisites[i];
+                            var name=r.Engineering.FirstOrDefault(p=>p.Definition.DefinitionId==prerequisite)?.Definition.DisplayName
+                                ??"Required Engineering project";
+                            Text(requirements,(project.PrerequisitesSatisfied[i]?"✓ ":"○ ")+name);
+                        }
+                        Text(requirements,"Unlocking a new hull or component version leaves existing ships and published designs unchanged.");
                         Btn(card,"Develop project","integrated-develop-"+project.Definition.DefinitionId,
                             ()=>SelectEngineering(project.Definition.DefinitionId.Value,"Develop "+project.Definition.DisplayName+"? Earned progress is retained when you change targets. Work progresses on End turn."),
                             edit&&project.CanTarget,true);

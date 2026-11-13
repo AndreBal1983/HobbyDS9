@@ -49,6 +49,18 @@ namespace HobbyDS9.UnityReview
             string FleetName(string id)=>names.TryGetValue(id,out var value)?value:"Owned fleet";
             bool Editable()=>ReferenceEquals(frame,model.Current.Frame)&&frame.Status.Phase==SessionPhase.Planning
                 &&!model.HasLocalEdits&&!model.Current.RefreshRequired&&!model.Current.HasPendingWork&&!model.Busy&&!model.Closed;
+            bool InspectSystem(string nodeId)
+            {
+                if(!model.ColonisationCampaign||!ReferenceEquals(frame,model.Current.Frame)||!workspace.CanNavigate)return false;
+                var observed=nodes.FirstOrDefault(n=>n.NodeId.Value==nodeId);if(observed==null)return false;
+                var systemId=observed.AssociatedSystemId?.Value;
+                var blackHole=knownBlackHoles?[nodeId].FirstOrDefault();
+                if(systemId==null&&blackHole==null)return false;
+                workspace.SelectedNode=nodeId;workspace.PendingWorldInspection=null;
+                workspace.PendingSystemInspection=(systemId,blackHole!=null?blackHole.DisplayName+" · Black hole":Name(nodeId));
+                navigate(ReviewWorkspacePage.Worlds);
+                return true;
+            }
 
             var main=new VisualElement();main.AddToClassList("console-panel");main.AddToClassList("console-work");parent.Add(main);
             Text(main,"Galaxy / known space").AddToClassList("console-section");
@@ -183,10 +195,11 @@ namespace HobbyDS9.UnityReview
             button(toolbar,generated==null?"Fit":"Fit known",()=>{if(generated!=null)FitKnown();else{workspace.MapZoom=1;workspace.MapPanX=workspace.MapPanY=0;}Reposition();}).name="map-fit";
             if(generated!=null)button(toolbar,"Fit galaxy",()=>{viewport.Fit();Reposition();}).name="map-fit-galaxy";
             Text(toolbar,"Scroll to zoom · middle-drag to pan");
-            map.RegisterCallback<WheelEvent>(e=>{if(generated!=null){var at=map.WorldToLocal(e.mousePosition)-map.contentRect.position;viewport.ZoomAt(e.delta.y>0?.9:1.1,at.x,at.y);Reposition();}else Zoom(e.delta.y>0?.9f:1.1f);e.StopPropagation();});
+            int inspectionGesture=0;
+            map.RegisterCallback<WheelEvent>(e=>{inspectionGesture++;workspace.LastMapStarClick=null;if(generated!=null){var at=map.WorldToLocal(e.mousePosition)-map.contentRect.position;viewport.ZoomAt(e.delta.y>0?.9:1.1,at.x,at.y);Reposition();}else Zoom(e.delta.y>0?.9f:1.1f);e.StopPropagation();});
             int panPointer=-1;Vector2 panStart=default,panOrigin=default;
             map.RegisterCallback<PointerDownEvent>(e=>{
-                if(e.button!=2)return;panPointer=e.pointerId;panStart=e.position;panOrigin=new Vector2(workspace.MapPanX,workspace.MapPanY);
+                if(e.button!=2)return;inspectionGesture++;workspace.LastMapStarClick=null;panPointer=e.pointerId;panStart=e.position;panOrigin=new Vector2(workspace.MapPanX,workspace.MapPanY);
                 map.CapturePointer(panPointer);e.StopPropagation();
             });
             map.RegisterCallback<PointerMoveEvent>(e=>{
@@ -205,7 +218,7 @@ namespace HobbyDS9.UnityReview
                         if(at.name.StartsWith("map-contact-",StringComparison.Ordinal)||at.name.StartsWith("map-moving-fleet-",StringComparison.Ordinal)||at.name.StartsWith("map-ring-",StringComparison.Ordinal))return true;
                     return false;
                 }
-                string? Resolve(Vector2 world)
+                string? Resolve(Vector2 world,bool includeRegion=true)
                 {
                     var local=map.WorldToLocal(world);
                     if(!map.contentRect.Contains(local))return null;
@@ -213,7 +226,7 @@ namespace HobbyDS9.UnityReview
                         var point=Point(region.NodeId); // Same final projected floats as Place/Paint.
                         return new GeneratedCampaignNodeAnchor(region.NodeId,point.x,point.y);});
                     var hit=GeneratedCampaignNodePicker.Resolve(anchors,local.x,local.y);
-                    if(hit!=null)return hit;
+                    if(hit!=null||!includeRegion)return hit;
                     var content=local-map.contentRect.position;
                     return GeneratedCampaignNodePicker.ResolveRegion(generated.Regions,viewport.WorldX(content.x),viewport.WorldY(content.y));
                 }
@@ -227,20 +240,34 @@ namespace HobbyDS9.UnityReview
                     next=next??Resolve(e.position);if(next==hoveredNode)return;hoveredNode=next;LayoutLabels();
                 });
                 map.RegisterCallback<PointerLeaveEvent>(_=>{if(hoveredNode!=null){hoveredNode=null;LayoutLabels();}});
-                int nodePointer=-1,nodeButton=-1;string? pressedNode=null;
+                int nodePointer=-1,nodeButton=-1,nodeGesture=0;string? pressedNode=null,pressedStar=null;
+                var firstStarClick=workspace.LastMapStarClick;
                 map.RegisterCallback<PointerDownEvent>(e=>{
-                    if((e.button!=0&&e.button!=1)||!map.enabledInHierarchy||!ReferenceEquals(frame,model.Current.Frame)||Priority(e.target as VisualElement))return;
+                    if(e.button!=0&&e.button!=1)return;
+                    firstStarClick=workspace.LastMapStarClick;workspace.LastMapStarClick=null;
+                    if(!map.enabledInHierarchy||!ReferenceEquals(frame,model.Current.Frame)||Priority(e.target as VisualElement))return;
                     var node=Resolve(e.position);if(node==null)return;
-                    nodePointer=e.pointerId;nodeButton=e.button;pressedNode=node;map.CapturePointer(nodePointer);e.StopImmediatePropagation();
+                    nodePointer=e.pointerId;nodeButton=e.button;nodeGesture=inspectionGesture;pressedNode=node;pressedStar=Resolve(e.position,false);map.CapturePointer(nodePointer);e.StopImmediatePropagation();
                 },TrickleDown.TrickleDown);
                 map.RegisterCallback<PointerUpEvent>(e=>{
                     if(nodePointer!=e.pointerId||nodeButton!=e.button)return;
-                    var down=pressedNode;var node=Resolve(e.position);var id=nodePointer;nodePointer=nodeButton=-1;pressedNode=null;
+                    var down=pressedNode;var starDown=pressedStar;var first=firstStarClick;
+                    var node=Resolve(e.position);var id=nodePointer;nodePointer=nodeButton=-1;pressedNode=pressedStar=null;firstStarClick=null;
                     map.ReleasePointer(id);e.StopImmediatePropagation();
                     if(node==null||node!=down||!map.enabledInHierarchy||!ReferenceEquals(frame,model.Current.Frame))return;
-                    if(e.button==0)perform(()=>workspace.SelectedNode=node);else Prepare(node,append:e.shiftKey);
+                    if(e.button==0)
+                    {
+                        // Retain the completed first glyph click across selection's redraw.
+                        // Both presses/releases must hit the same star in the same current frame.
+                        bool glyph=nodeGesture==inspectionGesture&&starDown==node&&Resolve(e.position,false)==node;
+                        if(e.clickCount==2&&glyph&&first.HasValue&&ReferenceEquals(first.Value.Frame,frame)
+                            &&first.Value.Node==node&&first.Value.PointerId==id&&workspace.SelectedNode==node&&InspectSystem(node))return;
+                        bool firstGlyph=e.clickCount==1&&glyph;
+                        perform(()=>{workspace.SelectedNode=node;if(firstGlyph)workspace.LastMapStarClick=(frame,node,id);});
+                    }
+                    else Prepare(node,append:e.shiftKey);
                 },TrickleDown.TrickleDown);
-                map.RegisterCallback<PointerCaptureOutEvent>(e=>{if(e.pointerId==nodePointer){nodePointer=nodeButton=-1;pressedNode=null;}});
+                map.RegisterCallback<PointerCaptureOutEvent>(e=>{if(e.pointerId==nodePointer){nodePointer=nodeButton=-1;pressedNode=pressedStar=null;firstStarClick=null;}});
             }
             map.RegisterCallback<GeometryChangedEvent>(_=>Reposition());
             GeneratedGalaxyCertifiedPath? certifiedRoute=null;
@@ -374,7 +401,8 @@ namespace HobbyDS9.UnityReview
                 var hasPlanets=node.AssociatedSystemId.HasValue&&systemsWithDisclosedPlanets.Contains(node.AssociatedSystemId.Value.Value);
                 var blackHole=knownBlackHoles?.Contains(id)==true;
                 var locationType=blackHole?"black hole":hasPlanets?"known planetary system":isSystem?"star · planetary status unknown":"empty transit region";
-                var star=new Button{name="map-star-"+id,text=blackHole?"◉":hasPlanets?"⊙":isSystem?"●":"·",tooltip=Name(id)+" · "+locationType+"; right-click to prepare navigation."};
+                var inspectHint=model.ColonisationCampaign&&(node.AssociatedSystemId.HasValue||blackHole)?"; double-click to inspect system":"";
+                var star=new Button{name="map-star-"+id,text=blackHole?"◉":hasPlanets?"⊙":isSystem?"●":"·",tooltip=Name(id)+" · "+locationType+inspectHint+"; right-click to prepare navigation."};
                 bindButton(star,()=>perform(()=>workspace.SelectedNode=id));
                 star.AddToClassList("map-star");star.EnableInClassList("selected-map-marker",workspace.SelectedNode==id);
                 if(generated!=null)star.AddToClassList("generated-map-node-hit");
@@ -415,14 +443,7 @@ namespace HobbyDS9.UnityReview
                 var blackHole=knownBlackHoles?[nodeId].FirstOrDefault();
                 if(model.ColonisationCampaign&&(systemId!=null||blackHole!=null))
                 {
-                    var caption=blackHole!=null?blackHole.DisplayName+" · Black hole":Name(nodeId);
-                    button(details,"Inspect system",()=>
-                    {
-                        if(!ReferenceEquals(frame,model.Current.Frame)||!workspace.CanNavigate)return;
-                        workspace.PendingWorldInspection=null;
-                        workspace.PendingSystemInspection=(systemId,caption);
-                        navigate(ReviewWorkspacePage.Worlds);
-                    }).name="map-inspect-system";
+                    button(details,"Inspect system",()=>InspectSystem(nodeId)).name="map-inspect-system";
                 }
                 foreach(var colony in facts.Colonies.Where(c=>selectedNode.AssociatedSystemId.HasValue&&c.SystemId==selectedNode.AssociatedSystemId.Value))
                 {

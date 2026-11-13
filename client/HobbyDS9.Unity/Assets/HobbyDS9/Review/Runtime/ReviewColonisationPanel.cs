@@ -27,7 +27,8 @@ namespace HobbyDS9.UnityReview
         private Action<string>? selectSiteOnMap;
         private ShipPreviewStage? hullPreview;
         private ReviewSolOverview? solOverview;
-        private float solYaw,solZoom=1;
+        private float solYaw,solZoom=1; private bool solReducedMotion;
+        private readonly Dictionary<string,bool> planetSections=new Dictionary<string,bool>(StringComparer.Ordinal);
         private string inspectedBlueprint="";private int inspectedRevision;
         private bool disposed,submitted;private int controlEpoch,reviewEpoch;private bool inspectedOpen;
         private Foldout? currentInspector;
@@ -68,8 +69,8 @@ namespace HobbyDS9.UnityReview
             internal bool Matches(ColonisationWorldSnapshot w,ColonisationTransportSnapshot t)=>World==w.Id&&Ship==t.ShipId&&Node==t.NodeId&&Manifest==t.ManifestId&&Stage==w.Stage;
         }
         internal sealed class Selection
-        {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly string? SystemCaption;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly ReviewActivitiesPanel.Selection? Science;internal readonly TransportDraft? Draft;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science,TransportDraft? draft,string? systemCaption){SystemCaption=systemCaption;Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;Draft=draft?.Copy();}}
-        internal Selection? CaptureSelection()=>disposed?null:new Selection(page,world,ship,planet,surveyShip,inspectedBlueprint,inspectedRevision,this.Q<Foldout>("colonisation-hull-inspector")?.value??inspectedOpen,science?.CaptureSelection(),transportDraft,inspectedSystemCaption);
+        {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly string? SystemCaption;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly float SolYaw,SolZoom;internal readonly bool ReducedMotion;internal readonly ReviewActivitiesPanel.Selection? Science;internal readonly TransportDraft? Draft;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science,TransportDraft? draft,string? systemCaption,float solYaw=0,float solZoom=1,bool reducedMotion=false){SolYaw=solYaw;SolZoom=solZoom;ReducedMotion=reducedMotion;SystemCaption=systemCaption;Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;Draft=draft?.Copy();}}
+        internal Selection? CaptureSelection()=>disposed?null:new Selection(page,world,ship,planet,surveyShip,inspectedBlueprint,inspectedRevision,this.Q<Foldout>("colonisation-hull-inspector")?.value??inspectedOpen,science?.CaptureSelection(),transportDraft,inspectedSystemCaption,solYaw,solZoom,solReducedMotion);
         internal void OpenMissionPage(bool expeditions)
         {
             if(!Live)return;
@@ -84,12 +85,15 @@ namespace HobbyDS9.UnityReview
             if(planets.Any(x=>x.PlanetId==saved.Planet)||saved.Planet.Length==0)
             {planet=saved.Planet;inspectedSystemCaption=saved.SystemCaption;}
             if(activities.Ships.Any(x=>x.ShipId==saved.SurveyShip))surveyShip=saved.SurveyShip;
-            transportDraft=saved.Draft?.Copy();inspectedBlueprint=saved.Blueprint;inspectedRevision=saved.Revision;inspectedOpen=saved.InspectorOpen;Show(saved.Page);science?.RestoreSelection(saved.Science);
+            solYaw=saved.SolYaw;solZoom=saved.SolZoom;solReducedMotion=saved.ReducedMotion;transportDraft=saved.Draft?.Copy();inspectedBlueprint=saved.Blueprint;inspectedRevision=saved.Revision;inspectedOpen=saved.InspectorOpen;Show(saved.Page);science?.RestoreSelection(saved.Science);
         }
         private readonly bool supportsKitFreePassengers;
+        private readonly int? environmentScale;
         public ReviewColonisationPanel(ColonisationCampaignSnapshot observation,IReadOnlyList<ColonisationPlanetSnapshot> planets,CampaignActivityObservationDto activities,
-            Action<ColonisationCommandDto,string> reviewOrder,Action<ColonisationCommandDto> submit,Action<CampaignActivityCommandDto,string> reviewActivity,Action<CampaignActivityCommandDto> submitActivity,bool supportsKitFreePassengers=false, ILookup<string,string>? systemNodes=null)
+            Action<ColonisationCommandDto,string> reviewOrder,Action<ColonisationCommandDto> submit,Action<CampaignActivityCommandDto,string> reviewActivity,Action<CampaignActivityCommandDto> submitActivity,bool supportsKitFreePassengers=false, ILookup<string,string>? systemNodes=null,int? environmentScale=null)
         {
+            if(environmentScale.HasValue&&environmentScale.Value<=0)throw new ArgumentOutOfRangeException(nameof(environmentScale));
+            this.environmentScale=environmentScale;
             this.observation=observation;this.planets=planets;this.activities=activities;this.reviewOrder=reviewOrder;this.submit=submit;this.reviewActivity=reviewActivity;this.submitActivity=submitActivity;this.supportsKitFreePassengers=supportsKitFreePassengers;this.systemNodes=systemNodes;
             name="colonisation-panel";style.flexGrow=1;style.minHeight=0;style.minWidth=0;
             world=observation.Worlds.FirstOrDefault()?.Id??"";ship=observation.Transports.FirstOrDefault()?.ShipId??"";planet=planets.FirstOrDefault()?.PlanetId??"";
@@ -128,9 +132,9 @@ namespace HobbyDS9.UnityReview
         private void Show(string selected)
         {
             if(page=="Transports"&&selected!="Transports")transportDraft=null;
-            if(disposed)return;controlEpoch++;reviewEpoch++;displayedReview=null;currentInspector=null;page=new[]{"Worlds","Planets","Transports","Science"}.Contains(selected)?selected:"Worlds";
+            if(disposed)return;controlEpoch++;reviewEpoch++;displayedReview=null;currentInspector=null;page=new[]{"Worlds","Planets","Planet","Transports","Science"}.Contains(selected)?selected:"Worlds";
             science?.Dispose();science=null;ReleaseHull();ReleaseSolOverview();body.Clear();review.Clear();review.style.display=DisplayStyle.None;
-            if(page=="Worlds")Worlds();else if(page=="Planets")Planets();else if(page=="Transports")Transports();else
+            if(page=="Worlds")Worlds();else if(page=="Planets")Planets();else if(page=="Planet")PlanetInterface();else if(page=="Transports")Transports();else
             {
                 science=new ReviewActivitiesPanel(activities,reviewActivity,submitActivity,true);
                 if(knownSiteLocations!=null&&selectSiteOnMap!=null)science.BindKnownSiteNavigation(knownSiteLocations,selectSiteOnMap);
@@ -380,90 +384,152 @@ namespace HobbyDS9.UnityReview
         }
         internal void InspectSystem(string? systemId,string caption)
         {
+            if(!Live)return;
             inspectedSystemCaption=caption;
-            planet=planets.FirstOrDefault(x=>x.SystemId==systemId)?.PlanetId??"";
+            if(!planets.Any(x=>x.PlanetId==planet&&x.SystemId==systemId)){planet=planets.FirstOrDefault(x=>x.SystemId==systemId)?.PlanetId??"";solYaw=0;}
             Show("Planets");
         }
         private void Planets()
         {
             Text(body,inspectedSystemCaption??"System","colonisation-system-heading").style.unityFontStyleAndWeight=FontStyle.Bold;
-            Text(body,"Only discovered bodies have campaign cards. Survey reveals environment and the last observed control; remote control can change.");
             var p=planets.FirstOrDefault(x=>x.PlanetId==planet);
-            if(p==null){Text(body,inspectedSystemCaption==null?"Travel to a charted system to discover its bodies.":"No planetary bodies have been disclosed here.");return;}
-
+            if(p==null){Text(body,"No planetary bodies have been disclosed here.");return;}
             var systems=planets.GroupBy(x=>x.SystemId,StringComparer.Ordinal).ToArray();
-            Picker(body,"Disclosed system",systems,x=>x.Key,x=>"System containing "+x.First().DisplayName,p.SystemId,id=>
-            {
-                inspectedSystemCaption=null;planet=systems.First(x=>x.Key==id).First().PlanetId;
-                Show(page);
+            Picker(body,"Disclosed system",systems,x=>x.Key,x=>"System containing "+x.First().DisplayName,p.SystemId,id=>{
+                inspectedSystemCaption=null;planet=systems.First(x=>x.Key==id).First().PlanetId;solYaw=0;Show("Planets");
             },"colonisation-system-selector");
-
             var bodies=systems.First(x=>x.Key==p.SystemId).ToArray();
-            Picker(body,"Jump to discovered planet",planets,x=>x.PlanetId,x=>x.DisplayName,planet,id=>{inspectedSystemCaption=null;planet=id;Show(page);},"colonisation-planet-selector");
+            var surface=new VisualElement{name="colonisation-system-content"};body.Add(surface);
+            var activation=new PlanetActivationScope(surface);
+            Text(body,"Click / Space: focus · Double-click / Enter: open planet","colonisation-planet-interaction-hint");
+            var layout=Row(surface);var detail=new VisualElement{name="colonisation-planet-focus"};
+            detail.style.flexBasis=300;detail.style.flexGrow=1;detail.style.minWidth=0;detail.style.paddingLeft=10;
+            var cards=new Dictionary<string,PlanetBodyCard>(StringComparer.Ordinal);var epoch=controlEpoch;
+            void FocusPlanet(ColonisationPlanetSnapshot target)
+            {
+                if(!Live||epoch!=controlEpoch||!bodies.Any(x=>ReferenceEquals(x,target)))return;
+                planet=target.PlanetId;
+                foreach(var pair in cards)pair.Value.SetSelected(pair.Key==planet);
+                // Do not rebuild cards/markers between the first and second click.
+                solOverview?.Select(planet);detail.Clear();PlanetDetails(detail,target);
+            }
+            void OpenPlanet(ColonisationPlanetSnapshot target)
+            {
+                if(!Live||epoch!=controlEpoch||!bodies.Any(x=>ReferenceEquals(x,target)))return;
+                planet=target.PlanetId;Show("Planet");
+            }
+            solOverview=new ReviewSolOverview(bodies,p.PlanetId,solYaw,solZoom,FocusPlanet,
+                (yaw,zoom)=>{if(Live&&epoch==controlEpoch){solYaw=yaw;solZoom=zoom;}},OpenPlanet,solReducedMotion,
+                reduced=>{if(Live&&epoch==controlEpoch)solReducedMotion=reduced;},activation);
+            layout.Add(solOverview);layout.Add(detail);PlanetDetails(detail,p);
+            Text(body,"⌂ Own colony / outpost · ? Colony unknown · Gold edge: selected. Survey and settlement are separate observations.");
+            var strip=Row(surface);strip.name="colonisation-system-bodies";
+            foreach(var disclosed in bodies)
+            {
+                var own=observation.Worlds.Where(x=>x.PlanetId==disclosed.PlanetId).ToArray();
+                var status=own.Length==0?null:string.Join(" / ",own.Select(x=>StageLabel(x.Stage)));
+                var card=new PlanetBodyCard(disclosed,status,disclosed.PlanetId==planet,()=>FocusPlanet(disclosed),()=>OpenPlanet(disclosed),activation);
+                cards.Add(disclosed.PlanetId,card);strip.Add(card);
+            }
+        }
+        private static string StageLabel(ColonyEstablishmentStage stage)=>stage==ColonyEstablishmentStage.EmptyOutpost?"Empty outpost":stage==ColonyEstablishmentStage.Founding?"Founding camp":stage.ToString();
+        private Foldout PlanetSection(VisualElement parent,string id,string label,bool initiallyOpen)
+        {
+            var key=planet+"/"+id;var epoch=controlEpoch;
+            var fold=new Foldout{name="colonisation-planet-"+id,text=label,value=planetSections.TryGetValue(key,out var open)?open:initiallyOpen};
+            fold.style.flexShrink=0;parent.Add(fold);
+            fold.RegisterValueChangedCallback(e=>{if(Live&&epoch==controlEpoch&&ReferenceEquals(e.target,fold))planetSections[key]=e.newValue;});return fold;
+        }
+        private static string ReadableKey(string? key)
+        {
+            if(string.IsNullOrWhiteSpace(key))return "Unknown";
+            var value=key!.Substring(key.LastIndexOf('.')+1).Replace('-',' ').Replace('_',' ');
+            return value.Length==0?"Unknown":char.ToUpperInvariant(value[0])+value.Substring(1);
+        }
+        private void PlanetDetails(VisualElement parent,ColonisationPlanetSnapshot p)
+        {
+            Text(parent,p.DisplayName,"colonisation-focused-planet-name").style.fontSize=24;
+            Text(parent,PlanetVisualProfile.From(p).Caption);
+            if(page=="Planets"&&solOverview!=null)
+            {
+                var portrait=new Image{name="colonisation-focused-planet-portrait",scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};
+                portrait.style.height=144;portrait.style.flexShrink=0;parent.Add(portrait);solOverview.BindPortrait(portrait);
+            }
+            var ownWorlds=observation.Worlds.Where(x=>x.PlanetId==p.PlanetId).ToArray();
+            if(ownWorlds.Length==0)Text(parent,"Colony presence, population, production and build queue: unknown. No own-world record is not proof of an uncolonised body.");
+            foreach(var own in ownWorlds)
+            {
+                Text(parent,own.Name+" · "+StageLabel(own.Stage),"colonisation-colony-"+own.Id);
+                Text(parent,"Population: "+own.Population+" people");
+                Text(parent,"Industry "+own.Industry+" / week · Local Research "+own.Research+" / week");
+                Text(parent,"Food produced "+own.FoodOutput+" / week · Consumed "+(own.FoodDemand.HasValue?own.FoodDemand.Value.ToString():"unknown")+" / week");
+                Text(parent,"Net food "+(own.LocalFoodBalance.HasValue?(own.LocalFoodBalance.Value>=0?"+":"")+own.LocalFoodBalance.Value:"unknown")+" / week · Stored "+own.Food);
+                var queue=PlanetSection(parent,"queue-"+own.Id,"Build queue · "+own.Name,true);
+                var orders=observation.Production.Where(x=>x.ColonyId==own.Id).ToArray();
+                if(orders.Length==0)Text(queue,"No queued orders in this observation.");
+                for(int i=0;i<orders.Length;i++)
+                {
+                    var order=orders[i];
+                    var icon=order.Kind==ColonisationProductionKind.PublishedShip?"◇":order.Kind==ColonisationProductionKind.Infrastructure?"▣":"□";
+                    Text(queue,(i+1)+". "+icon+" "+order.Name+" · "+order.Status);
+                    Text(queue,order.CompletedIndustry+" / "+order.RequiredIndustry+" Industry");
+                    if(order.RequiredIndustry>0)queue.Add(new ProgressBar{lowValue=0,highValue=100,value=Mathf.Clamp01((float)((double)order.CompletedIndustry/order.RequiredIndustry))*100});
+                }
+            }
+            var environment=PlanetSection(parent,"environment",p.Surveyed?"Environment · "+PlanetVisualProfile.From(p).Caption:"Environment · unknown",false);
+            if(p.Surveyed&&p.PlanetClass!=null)
+                Text(environment,ReadableKey(p.PlanetClass)+" · "+ReadableKey(p.Atmosphere)+"\n"+
+                    (environmentScale.HasValue?"Gravity "+((double)p.Gravity/environmentScale.Value).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+" g · Pressure "+((double)p.Pressure/environmentScale.Value).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+" (reference scale)":
+                        "Gravity "+p.Gravity+" · Pressure "+p.Pressure+" (measurement units unavailable)")+" · Radiation index "+p.Radiation);
+            else Text(environment,"Environment not disclosed. Missing values are unknown, not zero.");
+            var resources=PlanetSection(parent,"resources","Resources · initial environment record",false);
+            if(p.Surveyed&&p.PlanetClass!=null)
+                Text(resources,"Initial deposits: "+(p.InitialDeposits.Count==0?"none recorded":string.Join(", ",p.InitialDeposits.Select(r=>MaterialName(r.ResourceDefinitionId)+" "+r.Amount)))+". Observation date unavailable; current remaining stock and access require campaign validation.");
+            else Text(resources,"Deposits unknown.");
+            Text(parent,p.KnownControl.HasValue?"Last observed control: "+p.KnownControl+(p.KnownActor==null?"":" · "+p.KnownActor)+" · week "+(p.ControlObservedTurn?.ToString()??"unknown"):"Last observed control: unknown");
+            if(p.ActiveSurveyId!=null)
+            {
+                var survey=observation.Surveys.FirstOrDefault(x=>x.Id==p.ActiveSurveyId&&x.PlanetId==p.PlanetId);
+                var assigned=survey==null?null:activities.Ships.FirstOrDefault(x=>x.ShipId==survey.ShipId);
+                Text(parent,"Survey in progress · "+p.CompletedSurveyWeeks+" completed weeks · "+(assigned?.DisplayName??"Ship assignment unavailable"));
+                var indeterminate=new VisualElement{name="colonisation-survey-indeterminate",tooltip="Required duration unavailable; no percentage or ETA"};
+                indeterminate.style.height=5;indeterminate.style.backgroundColor=new Color(.16f,.24f,.32f);
+                var segment=new VisualElement{pickingMode=PickingMode.Ignore};segment.style.width=18;segment.style.height=5;segment.style.backgroundColor=new Color(.86f,.65f,.35f);indeterminate.Add(segment);parent.Add(indeterminate);
+                Text(parent,"Survey in progress · duration unavailable");
+            }
+            else
+            {
+                var completed=observation.Surveys.Any(s=>s.PlanetId==p.PlanetId&&s.Stage==PlanetSurveyStage.Completed);
+                Text(parent,completed?"Survey complete":p.Surveyed?"Environment known · no completed survey recorded":"Not surveyed");
+                foreach(var report in observation.Surveys.Where(x=>x.PlanetId==p.PlanetId))Text(parent,"Survey: "+report.Stage+" · "+report.Weeks+" completed weeks");
+            }
+        }
+        private void PlanetInterface()
+        {
+            Button(body,"Back to system","colonisation-planet-back",()=>Show("Planets"));
+            var p=planets.FirstOrDefault(x=>x.PlanetId==planet);
+            if(p==null){Text(body,"This planet is no longer disclosed.");return;}
+            PlanetDetails(body,p);
+            var own=observation.Worlds.Where(x=>x.PlanetId==p.PlanetId).ToArray();
+            foreach(var colony in own)Button(body,"Manage "+colony.Name,"colonisation-planet-colony-"+colony.Id,()=>{world=colony.Id;Show("Worlds");});
             var localShips=systemNodes==null?Array.Empty<ActivityOwnShipDto>():activities.Ships
                 .Where(x=>x.Stationary&&systemNodes[p.SystemId].Contains(x.NodeId,StringComparer.Ordinal)).ToArray();
             var assignedShips=observation.Surveys.Where(s=>s.Stage==PlanetSurveyStage.Active).Select(s=>s.ShipId)
-                .Concat(activities.Findings.Where(f=>f.Stage==ActivityProgressStage.Active||f.Stage==ActivityProgressStage.AwaitingClaim)
-                    .Select(f=>f.ShipId)).ToHashSet(StringComparer.Ordinal);
-            var completedSurveys=observation.Surveys.Where(s=>s.Stage==PlanetSurveyStage.Completed).Select(s=>s.PlanetId)
-                .ToHashSet(StringComparer.Ordinal);
-            var needsSurvey=p.ActiveSurveyId==null&&!completedSurveys.Contains(p.PlanetId);
-            var availableShips=localShips.Where(x=>x.StudyWork>0&&!assignedShips.Contains(x.ShipId)).ToArray();
-            var quickSurveyShip=availableShips.FirstOrDefault(x=>x.ShipId==surveyShip)
-                ?? (availableShips.Length==1?availableShips[0]:null);
-
-            var bodyStrip=Row(body);
-            bodyStrip.name="colonisation-system-bodies";
-            foreach(var discovered in bodies)
-            {
-                var owned=observation.Worlds.FirstOrDefault(x=>x.PlanetId==discovered.PlanetId);
-                var status=owned!=null?owned.Stage.ToString():discovered.Surveyed?"Surveyed":discovered.ActiveSurveyId!=null?"Survey in progress":"Unsurveyed";
-                var card=new VisualElement();
-                card.AddToClassList("console-panel");
-                card.style.width=174;
-                card.style.maxWidth=Length.Percent(100);
-                card.style.marginRight=6;
-                card.style.marginBottom=6;
-                bodyStrip.Add(card);
-                var disk=new VisualElement{pickingMode=PickingMode.Ignore};
-                disk.style.width=36;
-                disk.style.height=36;
-                disk.style.borderTopLeftRadius=18;
-                disk.style.borderTopRightRadius=18;
-                disk.style.borderBottomLeftRadius=18;
-                disk.style.borderBottomRightRadius=18;
-                disk.style.backgroundColor=discovered.Surveyed?new Color(0.36f,0.64f,0.79f):new Color(0.38f,0.42f,0.48f);
-                disk.style.alignSelf=Align.Center;
-                card.Add(disk);
-                var button=Button(card,discovered.DisplayName+"\n"+status,
-                    "colonisation-system-body-"+discovered.BodyId,()=>{planet=discovered.PlanetId;Show(page);});
-                if(discovered.PlanetId!=p.PlanetId)continue;
-                button.style.unityFontStyleAndWeight=FontStyle.Bold;
-                if(needsSurvey&&quickSurveyShip!=null)
-                    Button(card,"Survey with "+quickSurveyShip.DisplayName,"colonisation-system-survey-"+discovered.BodyId,
-                        ()=>StartSurvey(discovered,quickSurveyShip));
-                if(discovered.ActiveSurveyId is string activeSurvey)
-                {
-                    Text(card,discovered.CompletedSurveyWeeks+" completed weeks. Cancelling discards the work.");
-                    Button(card,"Cancel survey","colonisation-survey-cancel",()=>
-                    {
-                        var command=Command(ColonisationAction.CancelPlanetSurvey);
-                        command.CancelSurvey=new CancelPlanetSurveyDto{SurveyId=activeSurvey};
-                        Send(command);
-                    });
-                }
-            }
-
+                .Concat(activities.Findings.Where(f=>f.Stage==ActivityProgressStage.Active||f.Stage==ActivityProgressStage.AwaitingClaim).Select(f=>f.ShipId)).ToHashSet(StringComparer.Ordinal);
+            var completed=observation.Surveys.Any(s=>s.PlanetId==p.PlanetId&&s.Stage==PlanetSurveyStage.Completed);
+            var needsSurvey=p.ActiveSurveyId==null&&!completed;
+            if(p.ActiveSurveyId is string activeSurvey)
+                Button(body,"Review cancel survey","colonisation-survey-cancel",()=>{
+                    var command=Command(ColonisationAction.CancelPlanetSurvey);command.CancelSurvey=new CancelPlanetSurveyDto{SurveyId=activeSurvey};
+                    Check(command,"Cancel this survey; completed work is discarded.");
+                });
             if(localShips.Length>0)
             {
-                Text(body,"Your stationary ships here");
-                var ships=Row(body);
+                Text(body,"Your stationary ships here");var ships=Row(body);
                 foreach(var local in localShips)
                 {
-                    var card=ConstructionCard(ships,local.DisplayName,ConstructionCardArt.Ship(local.HullVersionId));
-                    card.style.marginRight=6;
-                    var select=Button(card,"Select ship","colonisation-survey-select-"+local.ShipId,
-                        ()=>{surveyShip=local.ShipId;Show(page);});
+                    var card=ConstructionCard(ships,local.DisplayName,ConstructionCardArt.Ship(local.HullVersionId));card.style.marginRight=6;
+                    var select=Button(card,"Select ship","colonisation-survey-select-"+local.ShipId,()=>{surveyShip=local.ShipId;Show("Planet");});
                     if(local.ShipId==surveyShip)select.text="Selected ship";
                     if(!needsSurvey)continue;
                     if(local.StudyWork<1)Text(card,"Survey capability unavailable.");
@@ -471,38 +537,9 @@ namespace HobbyDS9.UnityReview
                     else Button(card,"Survey "+p.DisplayName,"colonisation-survey-start-"+local.ShipId,()=>StartSurvey(p,local));
                 }
             }
-            else if(needsSurvey&&!p.Surveyed)Text(body,"Bring a survey-capable ship to this system.");
-
-            if(bodies.Any(ReviewSolOverview.HasReference))
-            {
-                var epoch=controlEpoch;
-                solOverview=new ReviewSolOverview(bodies,p.PlanetId,solYaw,solZoom,target=>{
-                    if(!Live||epoch!=controlEpoch)return;
-                    planet=target.PlanetId;
-                    Show(page);
-                    var selectedEpoch=controlEpoch;
-                    body.schedule.Execute(()=>{
-                        if(Live&&selectedEpoch==controlEpoch&&body.Q<Button>("colonisation-system-body-"+target.BodyId)?.parent is VisualElement card)
-                            body.ScrollTo(card);
-                    });
-                },(yaw,zoom)=>{if(Live&&epoch==controlEpoch){solYaw=yaw;solZoom=zoom;}});
-                body.Add(solOverview);
-            }
-
-            var surfaceArt=p.Surveyed?(p.DisplayName=="Earth"?"earth_daymap":p.DisplayName=="Mars"?"mars":null):null;
-            if(surfaceArt!=null&&Resources.Load<Texture2D>("SystemBodyArt/"+surfaceArt) is Texture2D surface)
-            {
-                Text(body,"Illustrative surface map · Solar System Scope (CC BY 4.0)","colonisation-system-art-credit");
-                var preview=new Image{name="colonisation-system-surface-preview",image=surface,scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};
-                preview.style.height=144;
-                preview.style.flexShrink=0;
-                body.Add(preview);
-            }
-
-            Text(body,p.DisplayName+" \u00b7 "+(completedSurveys.Contains(p.PlanetId)?"Survey complete":p.Surveyed?"Environment known":"Not surveyed"));
-            if(p.PlanetClass!=null){var e=p;Text(body,e.PlanetClass+"; "+e.Atmosphere+"; gravity "+e.Gravity+", pressure "+e.Pressure+", radiation "+e.Radiation);Text(body,"Frozen initial deposits: "+string.Join(", ",e.InitialDeposits.Select(r=>MaterialName(r.ResourceDefinitionId)+" "+r.Amount))+". Remaining deposits and access are rechecked by the campaign.");}
-            if(p.KnownControl!=null)Text(body,"Last observed control: "+p.KnownControl+" \u00b7 week "+p.ControlObservedTurn+". This is not a claim of system sovereignty.");
-            var presence=observation.Presence.FirstOrDefault(x=>x.SystemId==p.SystemId);if(presence!=null)Text(body,presence.Caption+" \u00b7 observed week "+presence.ObservationTurn+". Unobserved bodies may have other governments.");
+            else if(needsSurvey)Text(body,"Bring a survey-capable ship to this system.");
+            var presence=observation.Presence.FirstOrDefault(x=>x.SystemId==p.SystemId);
+            if(presence!=null)Text(body,presence.Caption+" · observed week "+presence.ObservationTurn+". Unobserved bodies may have other governments.");
         }
         private void StartSurvey(ColonisationPlanetSnapshot target,ActivityOwnShipDto local)
         {

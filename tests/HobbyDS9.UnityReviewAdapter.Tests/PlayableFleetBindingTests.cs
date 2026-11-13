@@ -264,6 +264,34 @@ public sealed class PlayableFleetBindingTests : IDisposable
                 TrackingNodeIds = campaign.Definitions.NavigationRegions!.Select(n => n.NodeId).ToList() });
         return p;
     }
+    [Fact] public void BuiltShipNamesSurviveFleetReorganizationAndCompleteReloadWithoutChangingSaveBytes()
+    {
+        var model=Model();
+        Assert.True(model.Enqueue("colony.sol","ship-design.source-cruiser","command.names.build"));
+        for(var turn=0;turn<4;turn++)Assert.True(model.Advance());
+        var ships=model.Current.Frame.Strategy!.Ships;
+        var built=ships.First(s=>s.ShipId.Value.StartsWith("ship.spawn.",StringComparison.Ordinal));
+        var label=ReviewShipNames.Ship(built.ShipId.Value,built.OwnerCivilizationId.Value)!.Label;
+        var automatic=model.NamedFleets();
+        Assert.DoesNotContain(automatic,f=>f.DisplayName.StartsWith("fleet.",StringComparison.Ordinal));
+        Assert.True(model.Save("named"));
+        var path=Path.Combine(root,"unity-playable-fleet-review-v6-named.json");
+        var before=File.ReadAllBytes(path);
+        // Observing labels is pure: neither a new command nor a serialized identity map.
+        for(var i=0;i<3;i++)_ = model.NamedFleets();
+        Assert.True(model.Save("named",true));Assert.Equal(before,File.ReadAllBytes(path));
+        Assert.True(model.OrganizeFleet(model.Current.Frame,CampaignFleetOrganizationKind.Create,
+            new[]{built.ShipId.Value},null,"My expedition","command.names.group"));
+        Assert.Contains(model.NamedFleets(),f=>f.DisplayName=="My expedition");
+        Assert.Equal(label,ReviewShipNames.Ship(built.ShipId.Value,built.OwnerCivilizationId.Value)!.Label);
+        Assert.True(model.Save("renamed"));Assert.True(model.Load("renamed"));
+        Assert.Contains(model.NamedFleets(),f=>f.DisplayName=="My expedition");
+        var reloaded=model.Current.Frame.Strategy!.Ships.Single(s=>s.ShipId==built.ShipId);
+        Assert.Equal(label,ReviewShipNames.Ship(reloaded.ShipId.Value,reloaded.OwnerCivilizationId.Value)!.Label);
+        Assert.True(model.Load("named"));
+        Assert.Equal(automatic.Select(f=>f.DisplayName),model.NamedFleets().Select(f=>f.DisplayName));
+    }
+
     public void Dispose()
     {
         var parent=Path.TrimEndingDirectorySeparator(Path.GetFullPath(Path.GetTempPath()));

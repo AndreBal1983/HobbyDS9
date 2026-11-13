@@ -151,20 +151,24 @@ namespace HobbyDS9.UnityReview
             }
             catch(Exception){ReleaseAudio();Debug.LogWarning("Review audio unavailable; playtest continues.");}
         }
-        private void Build()
+        private void Build()=>Build(null);
+        private void Build(VisualElement? detachedRoot)
         {
-            CaptureActivitiesSelectionForRebuild();CaptureColonisationSelectionForRebuild();
-            modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ReleaseAudio();
+            if(detachedRoot==null)
+            {
+                CaptureActivitiesSelectionForRebuild();CaptureColonisationSelectionForRebuild();
+                modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ReleaseAudio();
+            }
             var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();
+            if(detachedRoot!=null&&(panel==null||doc.panelSettings!=panel||!PlayerProfile))
+                throw new InvalidOperationException("Detached publication requires an initialized player panel.");
             if(!PlayerProfile||panel==null||doc.panelSettings!=panel)
             {
                 ReleasePanel();panel=ScriptableObject.CreateInstance<PanelSettings>();panel.scaleMode=model!.Integrated?PanelScaleMode.ConstantPixelSize:PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
                 panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=1;panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");doc.panelSettings=panel;
             }
-            root=doc.rootVisualElement;root.Clear();root.styleSheets.Clear();confirmation=null;root.AddToClassList("physical-review-root");
-            PreserveDemoKeyOrigins();
-            BindDemoKeyboard();
-            BindAudio();
+            root=detachedRoot??doc.rootVisualElement;root.Clear();root.styleSheets.Clear();confirmation=null;root.AddToClassList("physical-review-root");
+            if(detachedRoot==null){PreserveDemoKeyOrigins();BindDemoKeyboard();BindAudio();}
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.03f,0.05f,0.08f);root.style.color=new Color(0.92f,0.95f,1);root.style.fontSize=16;
             foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ShipDesigner","ReviewControls","ReviewCombat","PlayerConsole","GeneratedGalaxy"})
             {var sheet=Resources.Load<StyleSheet>(resource);if(sheet!=null)root.styleSheets.Add(sheet);}
@@ -258,7 +262,8 @@ namespace HobbyDS9.UnityReview
         }
         private void BindButton(Button button,Action action,bool dialog=false)
         {
-            var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&campaignBusyToken==null&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
+            var publication=playerPublicationAttempt;
+            var epoch=viewEpoch;Action guarded=()=>{if(publication?.Failed!=true&&epoch==viewEpoch&&isActiveAndEnabled&&campaignBusyToken==null&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
             button.clicked+=guarded;
             if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);
         }
@@ -268,36 +273,18 @@ namespace HobbyDS9.UnityReview
             var before=model.Current.Frame;action();
             if(!ReferenceEquals(before,model.Current.Frame)){viewEpoch++;Build();}else Draw();
         }
-        private void Confirm(string title,Action action)
-        {
-            if(confirmation!=null)return;
-            var callbacks=modalPermission.TryOpen(()=>{ClearConfirmation();action();},()=>ClearConfirmation());if(callbacks==null)return;
-            confirmation=new VisualElement{name="review-one-use-confirmation"};confirmation.AddToClassList("review-confirmation");
-            foreach(var child in root!.Children())child.SetEnabled(false);
-            if(model!.Integrated)
-            {
-                confirmation.style.position=Position.Absolute;confirmation.style.left=0;confirmation.style.top=0;confirmation.style.right=0;confirmation.style.bottom=0;
-                confirmation.style.marginLeft=0;confirmation.style.marginRight=0;confirmation.style.marginTop=0;confirmation.style.marginBottom=0;
-                confirmation.style.alignItems=Align.Center;confirmation.style.justifyContent=Justify.Center;confirmation.style.backgroundColor=new Color(.02f,.03f,.06f,.96f);
-                var box=new VisualElement{name="player-confirmation-summary"};box.AddToClassList("console-panel");box.style.width=620;box.style.maxWidth=new Length(90,LengthUnit.Percent);box.style.maxHeight=new Length(80,LengthUnit.Percent);
-                var text=Readout(title);text.style.fontSize=22;
-                if(PlayerProfile)
-                {
-                    box.style.height=new Length(70,LengthUnit.Percent);
-                    var body=new ScrollView(ScrollViewMode.Vertical){name="player-confirmation-details"};body.style.flexGrow=1;body.style.minHeight=0;body.Add(text);box.Add(body);
-                }
-                else box.Add(text);
-                var actions=new VisualElement();actions.AddToClassList("review-field-row");actions.style.flexShrink=0;box.Add(actions);
-                AddButton(actions,"Cancel",callbacks.Cancel,true);var yes=AddButton(actions,"Confirm",callbacks.Confirm,true);yes.AddToClassList("primary-action");
-                confirmation.RegisterCallback<KeyDownEvent>(e=>{if(e.keyCode==KeyCode.Escape){callbacks.Cancel();e.StopPropagation();}});
-                confirmation.Add(box);root.Add(confirmation);yes.Focus();return;
-            }
-            var scroll=new ScrollView();scroll.style.flexGrow=1;scroll.style.minHeight=0;
-            scroll.Add(Readout(title));confirmation.Add(scroll);
-            AddButton(confirmation,"Cancel",callbacks.Cancel,true);var button=AddButton(confirmation,"Confirm",callbacks.Confirm,true);
-            root.Add(confirmation);button.Focus();
-        }
+        private void Confirm(string title,Action action)=>Confirm(title,action,"Confirm","Cancel");
+        private void Confirm(string title,Action action,string commitLabel,string dismissLabel)
+            =>ShowCampaignDialog(title.Length>96||title.Contains("\n")?"Review action":title,
+                title.Length>96||title.Contains("\n")?title:"",dismissLabel,null,new CampaignDialogAction(commitLabel,action));
         private void ClearConfirmation()
-        {modalPermission.Invalidate();confirmation?.RemoveFromHierarchy();confirmation=null;foreach(var child in root!.Children())child.SetEnabled(true);Draw();if(model!.Integrated)root.Q<Button>("player-primary-action")?.Focus();}
+        {
+            var previous=campaignDialogInvoker;var previousName=campaignDialogInvokerName;
+            campaignDialogInvoker=null;campaignDialogInvokerName="";
+            modalPermission.Invalidate();confirmation?.RemoveFromHierarchy();confirmation=null;
+            foreach(var child in root!.Children())child.SetEnabled(true);
+            Draw();RestoreCampaignDialogFocus(previous,previousName);
+        }
+
     }
 }

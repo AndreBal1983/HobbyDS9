@@ -1,0 +1,14 @@
+[
+  {"Name":"Enterprise","ReferenceRegistry":"NCC-1701","Source":"https://www.startrek.com/get-to-know"},
+  {"Name":"Voyager","ReferenceRegistry":"NCC-74656","Source":"https://www.startrek.com/get-to-know"},
+  {"Name":"Defiant","ReferenceRegistry":"NX-74205","Source":"https://www.startrek.com/get-to-know"},
+  {"Name":"Discovery","ReferenceRegistry":"NCC-1031","Source":"https://www.startrek.com/get-to-know"},
+  {"Name":"Cerritos","ReferenceRegistry":"NCC-75567","Source":"https://www.startrek.com/get-to-know"},
+  {"Name":"Protostar","ReferenceRegistry":"NX-76884","Source":"https://www.startrek.com/get-to-know"},
+  {"Name":"Stargazer","ReferenceRegistry":"NCC-2893","Source":"https://www.startrek.com/news/celebrating-the-ships-of-the-line-uss-stargazer-ncc-2893"},
+  {"Name":"Reliant","ReferenceRegistry":"NCC-1864","Source":"https://www.startrek.com/news/celebrating-the-ships-of-the-line-uss-reliant-ncc-1864"},
+  {"Name":"Excelsior","ReferenceRegistry":"NCC-2000","Source":"https://www.startrek.com/news/new-official-star-trek-starships-collection-ships-unveiled"},
+  {"Name":"Bonchune","ReferenceRegistry":"NCC-70915","Source":"https://www.startrek.com/topic/ships"},
+  {"Name":"John Glenn","ReferenceRegistry":"NCC-2707","Source":"https://www.startrek.com/topic/ships"},
+  {"Name":"Thunderchild","ReferenceRegistry":"","Source":"https://www.startrek.com/news/attack-wing-wave-17-federation-u-s-s-thunderchild"}
+]

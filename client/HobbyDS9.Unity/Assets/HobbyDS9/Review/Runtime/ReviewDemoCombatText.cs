@@ -25,7 +25,12 @@ namespace HobbyDS9.UnityReview
             foreach(var id in frame.OwnStrategicFleets.Select(f=>f.FleetId.Value).Concat(frame.OwnShips.Select(s=>s.Condition.FleetId)).Distinct().OrderBy(s=>s,StringComparer.Ordinal))
                 if(!ownFleets.ContainsKey(id))ownFleets.Add(id,"Fleet "+(ownFleets.Count+1));
             foreach(var ship in frame.OwnShips.OrderBy(s=>s.Condition.ShipId,StringComparer.Ordinal))
-                if(!ownShips.ContainsKey(ship.Condition.ShipId))ownShips.Add(ship.Condition.ShipId,OwnType(frame,ship.Condition)+" "+(ownShips.Count+1));
+                if(!ownShips.ContainsKey(ship.Condition.ShipId))
+                {
+                    var observed=frame.Strategy?.Ships.FirstOrDefault(s=>s.ShipId.Value==ship.Condition.ShipId);
+                    var identity=observed==null?null:ReviewShipNames.Ship(observed.ShipId.Value,observed.OwnerCivilizationId.Value);
+                    ownShips.Add(ship.Condition.ShipId,identity?.Label??OwnType(frame,ship.Condition)+" "+(ownShips.Count+1));
+                }
             foreach(var ship in frame.Battle?.VisibleEnemies.OrderBy(s=>s.ShipId,StringComparer.Ordinal)??Enumerable.Empty<CampaignTacticalCondition>())
             {
                 if(!enemyFleets.ContainsKey(ship.FleetId))enemyFleets.Add(ship.FleetId,"Enemy fleet "+(enemyFleets.Count+1));

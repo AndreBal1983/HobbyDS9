@@ -1,118 +1,115 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using HobbyDS9.Contracts;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace HobbyDS9.UnityReview
 {
-    // A schematic presentation scene. Only the caller's disclosed snapshots can become controls.
+    // All geometry except the schematic central star comes from caller-disclosed bodies.
     internal sealed class ReviewSolStage : IDisposable
     {
-        private sealed class Body
-        {
-            internal readonly string Map;
-            internal readonly float Orbit, Angle, Radius;
-            internal readonly string? PlanetId;
-            internal Body(string map, float orbit, float angle, float radius, string? planetId = null)
-            { Map=map; Orbit=orbit; Angle=angle; Radius=radius; PlanetId=planetId; }
-        }
-
-        private static readonly Body[] Bodies =
-        {
-            new Body("sun",0,0,.99f),
-            new Body("mercury",1.72f,-118,.22f),
-            new Body("venus_atmosphere",2.52f,109,.33f),
-            new Body("earth_daymap",3.47f,-22,.46f,"planet.sol"),
-            new Body("mars",4.52f,161,.36f,"planet.mars"),
-            new Body("jupiter",5.65f,65,.82f),
-            new Body("saturn",6.8f,-136,.67f),
-            new Body("uranus",7.97f,-77,.53f),
-            new Body("neptune",9.04f,24,.49f),
-        };
-        private const int Layer = 31;
-        private readonly GameObject root;
-        private readonly Camera camera;
-        private readonly Material material;
-        private readonly Mesh sphere, track, rings;
-        private readonly List<Mesh> importedCopies = new List<Mesh>();
-        private readonly List<string> assetFallbacks = new List<string>();
-        private readonly Material? ringMaterial;
-        internal int ImportedMeshCount => importedCopies.Count;
-        internal IReadOnlyList<string> AssetFallbacks => assetFallbacks.AsReadOnly();
-        private readonly Dictionary<string,Transform> planetTransforms = new Dictionary<string,Transform>(StringComparer.Ordinal);
-        private readonly Dictionary<string,MeshRenderer> planetOrbits = new Dictionary<string,MeshRenderer>(StringComparer.Ordinal);
-        private readonly MaterialPropertyBlock properties = new MaterialPropertyBlock();
-        private static readonly Color OrbitColor = new Color(.15f,.22f,.33f);
+        private const int Layer=31, MaxGeneratedSurfaces=64;
+        private readonly GameObject root=null!;
+        private readonly Transform orbitalRoot=null!;
+        private readonly Camera camera=null!;
+        private readonly Material material=null!;
+        private readonly Mesh sphere=null!,track=null!;
+        private readonly List<Mesh> importedCopies=new List<Mesh>();
+        private readonly List<string> assetFallbacks=new List<string>();
+        private readonly List<Texture2D> ownedTextures=new List<Texture2D>();
+        private readonly Dictionary<string,(Texture2D surface,Texture2D clouds)> surfaces=new Dictionary<string,(Texture2D,Texture2D)>(StringComparer.Ordinal);
+        private readonly Dictionary<string,Transform> planetTransforms=new Dictionary<string,Transform>(StringComparer.Ordinal);
+        private readonly Dictionary<string,float> angles=new Dictionary<string,float>(StringComparer.Ordinal);
+        private readonly Dictionary<string,MeshRenderer> planetOrbits=new Dictionary<string,MeshRenderer>(StringComparer.Ordinal);
+        private readonly MaterialPropertyBlock properties=new MaterialPropertyBlock();
+        private static readonly Color OrbitColor=new Color(.15f,.22f,.33f);
+        private readonly float extent;
         private bool disposed;
-        internal RenderTexture Texture { get; }
+        internal int ImportedMeshCount=>importedCopies.Count;
+        internal IReadOnlyList<string> AssetFallbacks=>assetFallbacks.AsReadOnly();
+        internal RenderTexture Texture {get;}=null!;
 
-        internal ReviewSolStage(Shader shader)
+        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies)
         {
-            root=new GameObject("Sol presentation stage") { hideFlags=HideFlags.HideAndDontSave, layer=Layer };
-            root.SetActive(false);
-            root.transform.position=new Vector3(0,-10000,0);
-            camera=Child("Sol preview camera").AddComponent<Camera>();
-            camera.enabled=false;
-            camera.orthographic=true;
-            camera.nearClipPlane=.1f;
-            camera.farClipPlane=55f;
-            camera.clearFlags=CameraClearFlags.SolidColor;
-            camera.backgroundColor=new Color(.019f,.027f,.049f,1);
-            camera.cullingMask=1<<Layer;
-            camera.allowHDR=false;
-            camera.allowMSAA=false;
+            try
+            {
+            root=new GameObject("Disclosed system presentation"){hideFlags=HideFlags.HideAndDontSave,layer=Layer};
+            root.SetActive(false);root.transform.position=new Vector3(0,-10000,0);
+            orbitalRoot=Child("Presentation rotation").transform;
+            camera=Child("System preview camera").AddComponent<Camera>();
+            camera.enabled=false;camera.orthographic=true;camera.nearClipPlane=.1f;
+            extent=2.4f+bodies.Count*1.2f;
+            camera.farClipPlane=Mathf.Max(55,extent*5);
+            camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.019f,.027f,.049f,1);
+            camera.cullingMask=1<<Layer;camera.allowHDR=false;camera.allowMSAA=false;
             Texture=new RenderTexture(960,400,24,RenderTextureFormat.ARGB32)
-                { name="Sol overview", hideFlags=HideFlags.HideAndDontSave, antiAliasing=1 };
-            Texture.Create();
-            camera.targetTexture=Texture;
-            material=new Material(shader) { hideFlags=HideFlags.HideAndDontSave };
-            sphere=Sphere();
-            track=Annulus(.996f,1, "Sol orbit");
-            rings=Annulus(.83f,1.38f, "Saturn rings");
-            var ringShader=Resources.Load<Shader>("SystemBodyArt/SolMeshes/SolRing");
-            var ringMap=Resources.Load<Texture2D>("SystemBodyArt/SolMeshes/saturn_rings");
-            if(ringShader!=null&&ringShader.isSupported&&ringMap!=null)
+                {name="Disclosed system overview",hideFlags=HideFlags.HideAndDontSave,antiAliasing=1};
+            Texture.Create();camera.targetTexture=Texture;
+            material=new Material(shader){hideFlags=HideFlags.HideAndDontSave};sphere=Sphere();track=Annulus(.996f,1,"Schematic orbit");
+            Part("Schematic central star",sphere,Vector3.zero,.75f,new Color(1,.69f,.29f),false);
+            Mesh? delivered=null;
+            for(int i=0;i<bodies.Count;i++)
             {
-                ringMaterial=new Material(ringShader) { hideFlags=HideFlags.HideAndDontSave };
-                ringMaterial.SetTexture("_Surface",ringMap);
+                var body=bodies[i];
+                var profile=PlanetVisualProfile.From(body);
+                // Layout uses disclosed order/count only, never a hidden catalogue or body class.
+                var orbit=2.4f+i*1.2f;var angle=-22+i*137.508f;
+                var theta=angle*Mathf.Deg2Rad;
+                var mesh=sphere;
+                if(profile.Kind!=PlanetSurfaceKind.Unknown)
+                    mesh=delivered??=DeliveredMesh("Earth_LOD1",false,sphere);
+                var planet=Part(body.PlanetId,mesh,new Vector3(Mathf.Cos(theta)*orbit,0,Mathf.Sin(theta)*orbit),.46f,Color.white,true);
+                planet.transform.SetParent(orbitalRoot,false);
+                var maps=Surface(profile);
+                planet.GetPropertyBlock(properties);properties.SetTexture("_Surface",maps.surface);properties.SetTexture("_Clouds",maps.clouds);
+                properties.SetFloat("_Unknown",profile.Kind==PlanetSurfaceKind.Unknown?1:0);
+                properties.SetFloat("_Atmosphere",profile.AtmosphereStrength);planet.SetPropertyBlock(properties);
+                planetTransforms.Add(body.PlanetId,planet.transform);angles.Add(body.PlanetId,angle);
+                var trackRenderer=Part("Schematic orbit",track,new Vector3(0,-.045f,0),orbit,OrbitColor,false);
+                trackRenderer.transform.SetParent(orbitalRoot,false);planetOrbits.Add(body.PlanetId,trackRenderer);
             }
-            else Fallback("Saturn ring material or alpha texture unavailable; using legacy rings.");
-            foreach(var body in Bodies)
-            {
-                var theta=body.Angle*Mathf.Deg2Rad;
-                var position=new Vector3(Mathf.Cos(theta)*body.Orbit,0,Mathf.Sin(theta)*body.Orbit);
-                var texture=Resources.Load<Texture2D>("SystemBodyArt/"+body.Map);
-                var mesh=DeliveredMesh(BodyMesh(body.Map),false,sphere);
-                var planet=Part(body.Map,mesh,position,body.Radius,Color.white,texture,body.Orbit>0);
-                planet.shadowCastingMode=ShadowCastingMode.Off;planet.receiveShadows=false;
-                if(body.PlanetId!=null)planetTransforms.Add(body.PlanetId,planet.transform);
-                if(body.Orbit==0)continue;
-                var orbit=Part("Schematic orbit",track,new Vector3(0,-.045f,0),body.Orbit,OrbitColor);
-                if(body.PlanetId!=null)planetOrbits.Add(body.PlanetId,orbit);
-                if(body.Map=="saturn")
-                {
-                    var ringMesh=ringMaterial==null?rings:DeliveredMesh("Saturn_Rings_LOD1",true,rings);
-                    var delivered=ringMaterial!=null&&!ReferenceEquals(ringMesh,rings);
-                    var ring=Part("Saturn rings",ringMesh,position,delivered?body.Radius:1,delivered?Color.white:new Color(.72f,.57f,.42f),striped:!delivered);
-                    if(delivered)ring.sharedMaterial=ringMaterial;
-                    ring.shadowCastingMode=ShadowCastingMode.Off;ring.receiveShadows=false;
-                    ring.transform.localRotation=delivered?Quaternion.Euler(26.7f,0,0):Quaternion.Euler(11,0,22);
-                }
             }
+            catch {Dispose();throw;}
         }
-
-        private static string BodyMesh(string map)=>map switch
+        internal float ForegroundYaw(string id)=>angles.TryGetValue(id,out var angle)?angle+90:0;
+        private (Texture2D surface,Texture2D clouds) Surface(PlanetVisualProfile profile)
         {
-            "sun"=>"Sun_LOD1", "mercury"=>"Mercury_LOD1", "venus_atmosphere"=>"Venus_LOD1",
-            "earth_daymap"=>"Earth_LOD1", "mars"=>"Mars_LOD1", "jupiter"=>"Jupiter_LOD1",
-            "saturn"=>"Saturn_LOD1", "uranus"=>"Uranus_LOD1", "neptune"=>"Neptune_LOD1",
-            _=>""
-        };
-
-        private void Fallback(string reason)
-        { assetFallbacks.Add(reason);Debug.LogWarning("Sol asset fallback: "+reason); }
-
+            var key=PlanetVisualProfile.VisualVersion+"/"+profile.Kind+"/"+profile.Seed+"/"+profile.HasAtmosphere+"/"+profile.AuthoredMap;
+            if(surfaces.TryGetValue(key,out var cached))return cached;
+            // Reuse one neutral surface after the texture budget; all bodies still have controls/geometry.
+            if(surfaces.Count>=MaxGeneratedSurfaces)
+                return surfaces["neutral"];
+            if(!surfaces.ContainsKey("neutral"))
+            {
+                var plain=new Texture2D(1,1){name="Neutral unresolved surface",hideFlags=HideFlags.HideAndDontSave};
+                ownedTextures.Add(plain);plain.SetPixel(0,0,new Color(.18f,.24f,.31f));plain.Apply();
+                surfaces.Add("neutral",(plain,Texture2D.blackTexture));
+            }
+            if(profile.Kind==PlanetSurfaceKind.Unknown)return surfaces["neutral"];
+            Texture2D? surface=profile.AuthoredMap==null?null:Resources.Load<Texture2D>("SystemBodyArt/"+profile.AuthoredMap);
+            if(surface==null)surface=Generate(profile,false,256,128);
+            var clouds=profile.HasAtmosphere?Generate(profile,true,128,64):Texture2D.blackTexture;
+            var result=(surface!,clouds);surfaces.Add(key,result);return result;
+        }
+        private Texture2D Generate(PlanetVisualProfile profile,bool clouds,int width,int height)
+        {
+            var texture=new Texture2D(width,height,TextureFormat.RGBA32,true)
+                {name=clouds?"Disclosed clouds":"Disclosed surface",hideFlags=HideFlags.HideAndDontSave,wrapModeU=TextureWrapMode.Repeat,wrapModeV=TextureWrapMode.Clamp};
+            ownedTextures.Add(texture);
+            var pixels=new Color[width*height];
+            for(int y=0;y<height;y++)for(int x=0;x<width;x++)
+            {
+                double longitude=(double)x/width*Math.PI*2,latitude=((double)y/(height-1)-.5)*Math.PI;
+                double a=Math.Cos(latitude)*Math.Cos(longitude),b=Math.Sin(latitude),c=Math.Cos(latitude)*Math.Sin(longitude);
+                if(clouds){var value=PlanetSurfaceGenerator.Clouds(profile,a,b,c);pixels[y*width+x]=new Color(value,value,value,1);}
+                else {var sample=PlanetSurfaceGenerator.Sample(profile,a,b,c);pixels[y*width+x]=new Color(sample.R,sample.G,sample.B,sample.Water);}
+            }
+            texture.SetPixels(pixels);texture.Apply(true,true);return texture;
+        }
+        private void Fallback(string reason){assetFallbacks.Add(reason);Debug.LogWarning("System asset fallback: "+reason);}
         // Bake the IMPORTED prefab transform, never a guessed axis/100x correction.
         // Copies are stage-owned; source FBX meshes/textures remain borrowed Resources.
         private Mesh DeliveredMesh(string name,bool ring,Mesh fallback)
@@ -144,70 +141,66 @@ namespace HobbyDS9.UnityReview
             var triangles=source.triangles;
             if(matrix.determinant<0)for(var i=0;i<triangles.Length;i+=3){var swap=triangles[i];triangles[i]=triangles[i+1];triangles[i+1]=swap;}
             var copy=new Mesh{name="Sol validated "+name,hideFlags=HideFlags.HideAndDontSave};
+            importedCopies.Add(copy);
             copy.vertices=vertices;copy.normals=normals;copy.uv=uv;copy.triangles=triangles;copy.RecalculateBounds();
-            importedCopies.Add(copy);return copy;
+            return copy;
         }
 
         private GameObject Child(string name)
         {
-            var part=new GameObject(name) { hideFlags=HideFlags.HideAndDontSave, layer=Layer };
-            part.transform.SetParent(root.transform,false);
-            return part;
+            var part=new GameObject(name){hideFlags=HideFlags.HideAndDontSave,layer=Layer};
+            part.transform.SetParent(root.transform,false);return part;
         }
-
-        private MeshRenderer Part(string name, Mesh mesh, Vector3 position, float scale, Color color,
-            Texture2D? map=null, bool lit=false, bool striped=false)
+        private MeshRenderer Part(string name,Mesh mesh,Vector3 position,float scale,Color tint,bool lit)
         {
-            var part=Child(name);
-            part.transform.localPosition=position;
-            part.transform.localScale=Vector3.one*scale;
+            var part=Child(name);part.transform.localPosition=position;part.transform.localScale=Vector3.one*scale;
             part.AddComponent<MeshFilter>().sharedMesh=mesh;
-            var renderer=part.AddComponent<MeshRenderer>();
-            renderer.sharedMaterial=material;
-            properties.Clear();
-            properties.SetColor("_Tint",color);
-            properties.SetFloat("_Lit",lit?1:0);
-            properties.SetFloat("_Striped",striped?1:0);
-            properties.SetVector("_StarCenter",root.transform.position);
-            if(map!=null)properties.SetTexture("_Surface",map);
-            renderer.SetPropertyBlock(properties);
-            return renderer;
+            var renderer=part.AddComponent<MeshRenderer>();renderer.sharedMaterial=material;
+            renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=false;
+            properties.Clear();properties.SetColor("_Tint",tint);properties.SetFloat("_Lit",lit?1:0);
+            properties.SetTexture("_Surface",Texture2D.whiteTexture);properties.SetTexture("_Clouds",Texture2D.blackTexture);
+            properties.SetVector("_StarCenter",root.transform.position);renderer.SetPropertyBlock(properties);return renderer;
         }
-
-        internal bool Render(float aspect, float yaw, float zoom, string selectedPlanet)
+        internal bool Render(float aspect,float yaw,float zoom,string selectedPlanet)
         {
             if(disposed||!Texture.IsCreated())return false;
-            camera.aspect=aspect;
-            camera.orthographicSize=Mathf.Max(6.9f,10.4f/aspect)/zoom;
-            var tilt=Quaternion.Euler(54,yaw,0);
-            camera.transform.SetPositionAndRotation(root.transform.position+tilt*new Vector3(0,0,-24),tilt);
+            var pixels=Mathf.Clamp(Mathf.RoundToInt(400*aspect),160,1536);
+            if(Texture.width!=pixels){Texture.Release();Texture.width=pixels;Texture.Create();}
+            camera.aspect=aspect;camera.orthographicSize=Mathf.Max(extent*.92f,extent/aspect)/zoom;
+            var tilt=Quaternion.Euler(54,0,0);
+            orbitalRoot.localRotation=Quaternion.Euler(0,yaw,0);
+            var centre=root.transform.position;
+            if(planetTransforms.TryGetValue(selectedPlanet,out var selected))centre=Vector3.Lerp(centre,selected.position,Mathf.Clamp01((zoom-.9f)*.8f));
+            camera.transform.SetPositionAndRotation(centre+tilt*new Vector3(0,0,-extent*2.5f),tilt);
             foreach(var orbit in planetOrbits)
             {
-                orbit.Value.GetPropertyBlock(properties);
-                properties.SetColor("_Tint",orbit.Key==selectedPlanet?new Color(.95f,.68f,.39f):OrbitColor);
-                orbit.Value.SetPropertyBlock(properties);
+                orbit.Value.GetPropertyBlock(properties);properties.SetColor("_Tint",orbit.Key==selectedPlanet?new Color(.95f,.68f,.39f):OrbitColor);orbit.Value.SetPropertyBlock(properties);
             }
             root.SetActive(true);
             try
             {
-                var request=new RenderPipeline.StandardRequest { destination=Texture };
+                var request=new RenderPipeline.StandardRequest{destination=Texture};
                 if(GraphicsSettings.currentRenderPipeline==null)camera.Render();
                 else if(RenderPipeline.SupportsRenderRequest(camera,request))RenderPipeline.SubmitRenderRequest(camera,request);
                 else return false;
                 return true;
             }
-            finally { root.SetActive(false); }
+            finally{root.SetActive(false);}
         }
-
-        internal bool TryGetPosition(string planetId, out Vector2 position)
+        internal bool TryGetPosition(string id,out Vector2 position)
         {
-            position=default;
-            if(disposed||!planetTransforms.TryGetValue(planetId,out var planet))return false;
-            var p=camera.WorldToViewportPoint(planet.position);
-            position=new Vector2(p.x,1-p.y);
+            position=default;if(disposed||!planetTransforms.TryGetValue(id,out var planet))return false;
+            var p=camera.WorldToViewportPoint(planet.position);position=new Vector2(p.x,1-p.y);
             return p.z>0&&p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1;
         }
-
+        internal bool TryGetPortraitRect(string id,out Rect pixels)
+        {
+            pixels=default;if(disposed||!planetTransforms.TryGetValue(id,out var planet))return false;
+            var centre=camera.WorldToViewportPoint(planet.position);
+            var dx=.65f/(camera.orthographicSize*2*camera.aspect);var dy=.65f/(camera.orthographicSize*2);
+            pixels=new Rect((centre.x-dx)*Texture.width,(centre.y-dy)*Texture.height,dx*2*Texture.width,dy*2*Texture.height);
+            return centre.z>0;
+        }
         private static Mesh Sphere()
         {
             const int rows=24, columns=48;
@@ -231,11 +224,15 @@ namespace HobbyDS9.UnityReview
                 }
             }
             var mesh=new Mesh { name="Sol sphere", hideFlags=HideFlags.HideAndDontSave };
+            try
+            {
             mesh.SetVertices(points);
             mesh.SetNormals(points); // Unit-radius positions are the outward normals.
             mesh.SetUVs(0,uvs);
             mesh.SetTriangles(triangles,0);
             return mesh;
+            }
+            catch {Destroy(mesh);throw;}
         }
 
         private static Mesh Annulus(float inner,float outer,string name)
@@ -256,27 +253,19 @@ namespace HobbyDS9.UnityReview
                 triangles.AddRange(new[]{a,a+2,a+1,a+1,a+2,a+3});
             }
             var mesh=new Mesh { name=name, hideFlags=HideFlags.HideAndDontSave };
-            mesh.SetVertices(points);mesh.SetUVs(0,uvs);mesh.SetTriangles(triangles,0);mesh.RecalculateNormals();
-            return mesh;
+            try {mesh.SetVertices(points);mesh.SetUVs(0,uvs);mesh.SetTriangles(triangles,0);mesh.RecalculateNormals();return mesh;}
+            catch {Destroy(mesh);throw;}
         }
 
-        private static void Destroy(UnityEngine.Object value)
-        {
-            if(UnityEngine.Application.isPlaying)UnityEngine.Object.Destroy(value);
-            else UnityEngine.Object.DestroyImmediate(value);
-        }
-
+        private static void Destroy(UnityEngine.Object? value)
+        {if(value==null)return;if(UnityEngine.Application.isPlaying)UnityEngine.Object.Destroy(value);else UnityEngine.Object.DestroyImmediate(value);}
         public void Dispose()
         {
-            if(disposed)return;
-            disposed=true;
-            root.SetActive(false);
-            camera.targetTexture=null;
-            Texture.Release();
-            Destroy(root);Destroy(Texture);Destroy(material);Destroy(sphere);Destroy(track);Destroy(rings);
-            if(ringMaterial!=null)Destroy(ringMaterial);
-            foreach(var copy in importedCopies)Destroy(copy);
-            importedCopies.Clear();
+            if(disposed)return;disposed=true;if(root!=null)root.SetActive(false);if(camera!=null)camera.targetTexture=null;if(Texture!=null)Texture.Release();
+            Destroy(root);Destroy(Texture);Destroy(material);Destroy(sphere);Destroy(track);
+            foreach(var mesh in importedCopies)Destroy(mesh);
+            foreach(var texture in ownedTextures)Destroy(texture);
+            importedCopies.Clear();ownedTextures.Clear();surfaces.Clear();
         }
     }
 }

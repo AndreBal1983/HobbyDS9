@@ -3,6 +3,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ShipNames/starfleet-v1.json" LogicalName="HobbyDS9.ShipNames.starfleet-v1.json" />
     <ProjectReference Include="../HobbyDS9.TacticalReviewClient/HobbyDS9.TacticalReviewClient.csproj" />
     <!-- Unity package 3.2.1 describes Newtonsoft 13.0.2. This portable proof is not Unity/AOT execution. -->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
@@ -11,4 +12,6 @@
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewColonisationPanel.cs" /></ItemGroup>
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewConstructionCatalogue.cs" /></ItemGroup>
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ConstructionCardArt.cs" /></ItemGroup>
+  <!-- Native rendering views are compiled by the Unity split-assembly proof. -->
+  <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewSolOverview.cs;../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewSolStage.cs;../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/PlanetBodyCard.cs" /></ItemGroup>
 </Project>

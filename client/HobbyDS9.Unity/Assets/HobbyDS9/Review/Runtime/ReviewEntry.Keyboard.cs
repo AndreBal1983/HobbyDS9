@@ -83,6 +83,8 @@ namespace HobbyDS9.UnityReview
         }
         private void PreserveDemoKeyOrigins()
         {
+            // An uncommitted candidate must not move held controls out of the old live tree.
+            if(playerPublicationAttempt!=null)return;
             if(!isActiveAndEnabled||!PlayerProfile||root?.panel==null)return;
             // The engine can address the previous focused control on KeyUp.
             // A detached control cannot dispatch; retain only held origins on

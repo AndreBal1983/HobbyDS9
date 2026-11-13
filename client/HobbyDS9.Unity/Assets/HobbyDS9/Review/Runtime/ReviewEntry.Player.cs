@@ -30,7 +30,7 @@ namespace HobbyDS9.UnityReview
             playerTopActions.style.display=DisplayStyle.None;
             root.Add(playerTopActions);
             var body=new VisualElement();body.AddToClassList("console-body");root.Add(body);
-            var nav=new ScrollView(ScrollViewMode.Vertical){name="review-workspace-navigation"};nav.AddToClassList("console-nav");body.Add(nav);if(PlayerProfile&&(demoLanding||!demoStarted))nav.style.display=DisplayStyle.None;
+            var nav=new ScrollView(ScrollViewMode.Vertical){name="review-workspace-navigation"};nav.AddToClassList("console-nav");body.Add(nav);if(PlayerProfile&&(demoLanding||!demoStarted||campaignSettingsReturn!=null))nav.style.display=DisplayStyle.None;
             if(PlayerProfile){var menu=AddButton(nav,"Menu",OpenDemoMenu);menu.name="demo-menu";}
             AddFrontierCommissionNavigation(nav);
             foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Empire,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Display,ReviewWorkspacePage.Designer,ReviewWorkspacePage.Tools}.Where(p=>p!=ReviewWorkspacePage.Empire||model!.PlayableFleet))
@@ -71,7 +71,7 @@ namespace HobbyDS9.UnityReview
             playerGuidance!.text=demoLanding?(generatedCampaignBusy?"Preparing campaign…":"Start a new galaxy or continue a saved campaign."):PlayerMessage();
             if(DrawCampaignBusy())return;
             var commission=UpdateFrontierCommissionSummary();
-            if(PlayerProfile&&demoLanding){playerTitle.text="Start / Continue";DrawDemoLanding();}
+            if(PlayerProfile&&demoLanding){playerTitle.text=campaignMenuPage==CampaignMenuPage.Campaign?"Campaign menu":campaignMenuPage==CampaignMenuPage.Archive?"Save / Load":campaignMenuPage==CampaignMenuPage.Settings?"Settings":campaignMenuPage==CampaignMenuPage.New?"New campaign":"Start / Continue";DrawDemoLanding();}
             else if(frontierCommissionOpen&&commission!=null)DrawFrontierCommission(commission);
             else if(workspace.Page==ReviewWorkspacePage.Combat)central!.Render();
             else if(workspace.Page==ReviewWorkspacePage.Saves)DrawSaves();
@@ -82,6 +82,7 @@ namespace HobbyDS9.UnityReview
             else if(model.ColonisationCampaign&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds))DrawColonisationPanel(content!);
             else if(model.ActivitiesCampaign&&(workspace.Page==ReviewWorkspacePage.Production||workspace.Page==ReviewWorkspacePage.Worlds))DrawActivitiesPanel(content!);
             else player!.Render(content!,workspace.Page);
+            DrawCampaignSettingsReturn();
             DrawPlayerActions();
         }
         private string PlayerMessage()
@@ -116,7 +117,7 @@ namespace HobbyDS9.UnityReview
             var useTop=PlayerProfile&&demoStarted&&!demoLanding&&model!.ColonisationCampaign;
             playerTopActions!.Clear();
             playerFooter!.Clear();
-            if(PlayerProfile&&demoLanding)
+            if(PlayerProfile&&(demoLanding||workspace!.Page==ReviewWorkspacePage.Saves||campaignSettingsReturn!=null))
             {
                 playerTopActions.style.display=DisplayStyle.None;
                 playerFooter.style.display=DisplayStyle.None;
@@ -132,7 +133,7 @@ namespace HobbyDS9.UnityReview
             actions.Add(left);
             if(PlayerProfile&&!demoStarted){AddButton(left,"Back to menu",OpenDemoMenu).name="player-back-to-menu";return;}
             AddButton(left,"‹ Return to map",()=>Navigate(ReviewWorkspacePage.Map));
-            AddButton(left,"Save",()=>Navigate(ReviewWorkspacePage.Saves));
+            AddButton(left,"Save",()=>{if(PlayerProfile)OpenCampaignArchive(true);else Navigate(ReviewWorkspacePage.Saves);});
             var actionModel=model!;var actionController=actionModel.Current;var actionFrame=actionController.Frame;var actionEpoch=viewEpoch;
             bool CurrentCycleAction()=>actionEpoch==viewEpoch&&ReferenceEquals(model,actionModel)
                 &&ReferenceEquals(actionModel.Current,actionController)&&ReferenceEquals(actionController.Frame,actionFrame)
@@ -171,6 +172,7 @@ namespace HobbyDS9.UnityReview
         {content!.Clear();var p=new ScrollView(ScrollViewMode.Vertical);p.AddToClassList("console-panel");content.Add(p);var h=Readout(heading);h.AddToClassList("console-section");p.Add(h);return p;}
         private void DrawSaves()
         {
+            if(PlayerProfile){DrawCampaignArchive();return;}
             var p=PagePanel("Save & resume");p.Add(Readout("Save your current campaign, or load a compatible save. Saving keeps unsent edits locally; successful loading replaces them."));
             var result=SaveLoadResult();
             if(result.Length>0){var banner=Readout(result);banner.name="save-load-result";banner.AddToClassList("console-queue");p.Add(banner);}
@@ -208,24 +210,31 @@ namespace HobbyDS9.UnityReview
             if(checkpointUiOperation!=null)HideCampaignBusy(checkpointUiOperation);
             checkpointUiOperation=null;checkpointOwner=null;
         }
-        private async void RunPlayerCheckpoint(bool loading,string requestedSlot,bool overwrite=false,Action? occupied=null)
+        private async void RunPlayerCheckpoint(bool loading,string requestedSlot,bool overwrite=false,Action? occupied=null,Action<bool>? completed=null)
         {
             var owner=model!;var epoch=viewEpoch;var before=owner.Current.Frame;
             var operation=owner.BeginStaticCheckpointOperation(requestedSlot,loading,overwrite,discard:true);
-            if(operation==null){Draw();return;}
-            checkpointOwner=owner;checkpointUiOperation=operation;
-            ShowCampaignBusy(operation,loading?"Loading and validating campaign…":"Saving and validating campaign…");
+            if(operation==null){Draw();completed?.Invoke(false);return;}
+            checkpointOwner=owner;checkpointUiOperation=operation;bool? accepted=null;
+            ShowCampaignBusy(operation,loading?"Loading and validating campaign...":"Saving and validating campaign...");
             try
             {
                 var completion=await Task.Run(()=>operation.Execute());
                 if(this==null||!isActiveAndEnabled||viewEpoch!=epoch||!ReferenceEquals(model,owner)
                     ||!ReferenceEquals(checkpointUiOperation,operation)||!ReferenceEquals(checkpointOwner,owner))
                 {owner.AbandonStaticCheckpointOperation(operation);return;}
-                var accepted=owner.CompleteStaticCheckpointOperation(operation,completion);
-                HideCampaignBusy(operation);
-                checkpointUiOperation=null;checkpointOwner=null;
+                accepted=owner.CompleteStaticCheckpointOperation(operation,completion);
+                HideCampaignBusy(operation);checkpointUiOperation=null;checkpointOwner=null;
+                if(accepted.Value){MarkCampaignSaved(owner);if(loading)campaignMenuNotice="Campaign loaded.";}
                 if(!ReferenceEquals(before,owner.Current.Frame)){viewEpoch++;Build();}else Draw();
-                if(!accepted&&!loading&&owner.Message=="Checkpoint result: SlotOccupied")occupied?.Invoke();
+            }
+            catch(Exception)
+            {
+                if(this!=null&&isActiveAndEnabled&&viewEpoch==epoch&&ReferenceEquals(model,owner))
+                {
+                    accepted=false;
+                    campaignMenuNotice="The save/load operation did not complete. Your current campaign and previous save are kept.";
+                }
             }
             finally
             {
@@ -236,6 +245,11 @@ namespace HobbyDS9.UnityReview
                     checkpointUiOperation=null;checkpointOwner=null;
                     if(this!=null&&isActiveAndEnabled&&ReferenceEquals(model,owner))Draw();
                 }
+            }
+            if(accepted.HasValue&&this!=null&&isActiveAndEnabled&&ReferenceEquals(model,owner))
+            {
+                if(!accepted.Value&&!loading&&owner.Message=="Checkpoint result: SlotOccupied")occupied?.Invoke();
+                completed?.Invoke(accepted.Value);
             }
         }
         private string SaveLoadResult()

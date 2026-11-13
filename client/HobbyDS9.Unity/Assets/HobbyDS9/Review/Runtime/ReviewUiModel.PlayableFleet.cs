@@ -24,7 +24,9 @@ namespace HobbyDS9.UnityReview
             if(humans.Count!=1)throw new ArgumentException("Playable fleet requires exactly one human controller.",nameof(package));
             Current=Controller(host,humans[0].CivilizationId);
         }
-        public IReadOnlyList<CampaignNamedFleet> NamedFleets()=>host.CaptureFleetOrganization(Current.Frame);
+        public IReadOnlyList<CampaignNamedFleet> NamedFleets()=>host.CaptureFleetOrganization(Current.Frame)
+            .Select(f=>new CampaignNamedFleet(f.Fleet,ReviewShipNames.Fleet(f,Current.Frame.Strategy!.Ships),f.UnavailableReason))
+            .ToList().AsReadOnly();
         public bool CanDefendFleet(ReviewFrame reviewed,string fleet)=>PlayableFleet&&ReferenceEquals(reviewed,Current.Frame)
             &&reviewed.Status.Phase==SessionPhase.Planning&&!Busy&&!Closed&&!HasLocalEdits&&!Current.HasPendingWork&&!Current.RefreshRequired
             &&reviewed.OwnStrategicFleets.Any(f=>f.FleetId.Value==fleet&&f.TransitTotalCost==0&&f.RouteNodeIds.Count==0);
