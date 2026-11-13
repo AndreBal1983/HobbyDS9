@@ -1,23 +1,23 @@
 # ENG-UX-01 — Engineering decision screen
 
-13 November 2026. **Proposed design for owner review. No implementation.** [Responsive mockup](mockup.html); [compact layout drawing](locked-1280.svg). These are design artifacts, not runtime captures.
+13 November 2026. **R2: proposed design for the intended 20-project catalogue; owner review before implementation.** [Responsive 20-project mockup](mockup.html). [Earlier single-project drawing](locked-1280.svg) is retained as superseded design history, not the target. Artifacts are design demonstrations, not runtime captures.
 
 ## What is wrong, and what data actually exists
 
 Reviewed PB `788190d3dcc2c371d23a694e21b13e08454034ee` and the supplied screenshot: one locked Advanced Starship Engineering project, no active target, 0/30 points, two missing Science requirements. The current card repeats its status, uses a huge empty progress bar, hides named prerequisites in a foldout and fills the page with empty project categories. Income and bank are separated in an aside. These are interface problems.
 
-The separate content problem is that this campaign offers only **one application**, no refinements and no civil projects. Its authored “Unlocks Advanced Scout production” effect belongs to the old catalogue. The current Cycle14 UI correctly warns that Advanced Scout is unavailable here. A new layout cannot create a useful reward. Promote that limitation into the result headline; do not replace it with a fictional hull, reactor or performance gain.
+At PB788190d the content problem is that the campaign offers only **one application**, no refinements and no civil projects. Its authored “Unlocks Advanced Scout production” effect belongs to the old catalogue. The current Cycle14 UI correctly warns that Advanced Scout is unavailable here. Owner correction **ENG-CONTENT-01 requires the existing 20 goals in the next playable build**. The proposed screen therefore targets that actual catalogue, not a polished one-project fallback. Preserve the Scout qualification wherever it remains true after receiving.
 
-PR85 at `e365ec1ecf3d686b114548f805f68f73f742e89b` offers 20 projects in a separate main-based scenario, **not the PB catalogue**. The migration's variant writer is unexecuted source preparation, not received content. No writer is invoked or content integrated by this design.
+PR85 at `e365ec1ecf3d686b114548f805f68f73f742e89b` supplies the 20 actual definitions. [catalogue.js](catalogue.js) copies its complete `EngineeringApplications` array without invented replacement projects. Backend is assigned integration onto PB788190d; the receiving receipt is a dependency, not a claim PR85 has merged. The migration's unexecuted writer proposal is not received content. No writer or content integration is performed by this design.
 
 ## Proposed hierarchy
 
 1. Compact overview: **Engineering at current allocation**, **Banked points**, **Current project**. “No active project — points remain banked” is sufficient. R&D allocation opens the existing accepted/draft split controls; it never silently changes allocations.
-2. Compact project browser: title, state word, retained progress and result qualifier. Current PB shows one row and “1 application · no refinement or civil projects offered.” Hide empty sections. A larger admitted catalogue can add state/kind filters and counts. Selection is local; highlight never starts a project. Deterministic title/ID ordering; preserve selected ID across refresh.
+2. Compact **20-project browser**: title, state word, retained progress and result qualifier. Search names/results; filter actual new-capability/refinement kinds. No empty civil section. State filters/counts bind real snapshot states after integration; the review mockup instead labels its state fixtures hypothetical. Selection is local; highlight never starts a project. Deterministic title/ID ordering; preserve selected ID across refresh and do not hide locked projects by default.
 3. Selected details: result first, named prerequisites, actual cost and retained progress, then one clear action. Keep technical maturity/provenance in a disclosure. **Review Science requirements** opens the relevant discipline without changing shares or targets. No ETA or projected bank spending.
 4. Expandable latest-turn receipt summary: separate points added to bank, project spending and completion. No receipts means “No Engineering activity recorded”; do not fabricate net changes.
 
-For the current project, lead with **“No new construction option in this campaign.”** Then: “The authored Advanced Scout effect belongs to the original catalogue. Advanced Scout is not offered here.” Keep authoritative eligibility: this warning is not a new legality rule. If the project becomes eligible, Start remains possible with the limitation adjacent. Selection changes the target; work occurs on End turn, never instantly.
+Lead with the selected project's actual result and trade-offs: e.g. **Compact Reactor: space 18→15 at output60; credits6→8 / Industry9→12**, immutable new-design version access rather than automatic fleet upgrades. Sensor/lab preview ratings do not promise campaign detection or colony income. The original Advanced Scout project retains its construction warning if still excluded by the integrated catalogue; this is an outcome limitation, not a new legality rule. Selection changes the target; work occurs on End turn, never instantly.
 
 ## State and interaction
 
@@ -33,7 +33,7 @@ For the current project, lead with **“No new construction option in this campa
 
 “Paused” is only a presentation qualifier for saved work on a noncurrent project. There is one active target, no new queue, portfolio, currency, pause order or refit rule. Target/clear retain progress; completion alone releases supported effects. Accepted command feedback names the new target and says work advances on End turn. Selection/navigation issue zero gameplay commands.
 
-The mockup's locked case uses only screenshot facts. Available, active (illustrative 12/30), completed, empty and switch examples are clearly **hypothetical state fixtures**, not earned progress. Cropped-reference income/bank are shown as unavailable, not invented zero; real UI binds supplied values including valid zero. No additional projects appear in the actual PB case.
+The R2 mockup uses the **20 actual PR85 definitions**, including their exact IDs, Science/project prerequisites, base workloads and effect text. It defaults to Compact Reactor. All state examples are **hypothetical fixtures**, not live eligibility or earned progress; current is illustrative12/base40 and switch retains another actual goal, Efficient Drive, at illustrative9/base45. Displayed workload is explicitly before campaign pace; final UI must use authoritative adjusted `Cost`. Income/bank remain explicit unavailable placeholders, not invented zero. The old one-project SVG/PNG is retained only as superseded R1 history.
 
 ## Binding contract
 
@@ -57,4 +57,4 @@ Use existing amber structure, lavender context, blue controls and ready accent. 
 
 ## Review and later acceptance
 
-Review the locked current-PB design, then the labelled hypothetical presets at the three target sizes. The self-contained browser mockup has no external assets or game connection. After owner approval, verify read-only selection, exact prerequisites and outcome warning, existing stamped commands, retained work on switch/clear, zero-income current state, completion and draft/rejection preservation. Larger catalogue admission remains a separate assignment. No consequential question blocks review of this direction.
+Review the 20-project browser, exact Compact Reactor result and named requirements, then other actual project selections and labelled state fixtures at all three sizes. The mockup has no external services or game connection. After Backend delivers ENG-CONTENT-01, Unity must independently confirm **all20 definitions in the prepared runtime scenario and actual GUI binding**, locked choices visible, exact received IDs/prerequisites/version gates, qualified Scout and sensor/lab outcomes, and viable new-design access. Backend tests alone do not establish these. Full screen implementation still waits for owner design review; existing stamped commands, switch/clear retained work, zero-income state and draft/rejection behavior remain required. No consequential question blocks reviewing this direction.
