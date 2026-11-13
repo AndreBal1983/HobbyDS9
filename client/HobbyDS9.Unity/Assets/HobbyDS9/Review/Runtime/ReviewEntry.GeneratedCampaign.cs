@@ -226,6 +226,7 @@ namespace HobbyDS9.UnityReview
             catch(Exception error)
             {
                 diagnostic?.Record(phase,ReviewLoadEvent.Error,error);
+                Debug.LogException(error);
                 if(this!=null&&viewEpoch==epoch){profileMenuNotice="Generated campaign unavailable. Your current game, unsent edits and saves are kept.";if(generatedCampaignNotice!=null)generatedCampaignNotice.text=profileMenuNotice;}
             }
             finally

@@ -222,7 +222,9 @@ namespace HobbyDS9.UnityReview
             var epoch=viewEpoch;var owner=model;
             bool CurrentForm()=>epoch==viewEpoch&&ReferenceEquals(owner,model);
             panel.Add(Readout("Federation · Two empires. Existing save slots remain intact."));
-            var seed=new TextField("Galaxy seed"){value=generatedCampaignSeed,maxLength=20,name="generated-campaign-seed"};panel.Add(seed);
+            if(campaignMenuNotice.Length>0)panel.Add(Readout(campaignMenuNotice));
+            var seed=new TextField("Galaxy seed"){value=generatedCampaignSeed,maxLength=20,name="generated-campaign-seed"};
+            seed.AddToClassList("generated-campaign-seed");panel.Add(seed);
             seed.RegisterValueChangedCallback(e=>{if(CurrentForm())generatedCampaignSeed=e.newValue;});
             var advanced=new Foldout{text="Advanced galaxy settings",value=false};panel.Add(advanced);
             var size=new DropdownField("Systems",new List<string>{"250","1000"},generatedCampaignSize.ToString(CultureInfo.InvariantCulture));advanced.Add(size);
