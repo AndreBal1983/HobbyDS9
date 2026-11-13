@@ -87,6 +87,7 @@ namespace HobbyDS9.UnityReview
             else player!.Render(content!,workspace.Page);
             DrawCampaignSettingsReturn();
             DrawPlayerActions();
+            ScheduleTurnCompletionDialog();
         }
         private string PlayerMessage()
         {

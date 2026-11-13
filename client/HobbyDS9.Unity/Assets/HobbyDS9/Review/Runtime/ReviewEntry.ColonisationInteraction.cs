@@ -45,6 +45,7 @@ namespace HobbyDS9.UnityReview
                 var finished=owner.CompleteColonisationInteraction(work,completion);
                 HideCampaignBusy(work);colonisationUiWork=null;colonisationUiOwner=null;
                 if(!ReferenceEquals(frame,owner.Current.Frame)){viewEpoch++;Build();}else Draw();
+                if(finished&&completion.Committed)CapturePublishedCompletions(owner,frame);
                 var panel=root?.Q<ReviewColonisationPanel>();panel?.RestoreSelection(selection);
                 if(finished&&kind==ColonisationInteractionKind.Preview&&ReferenceEquals(owner.Current.Frame,frame))
                 {

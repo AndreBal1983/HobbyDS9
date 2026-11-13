@@ -13,8 +13,9 @@ namespace HobbyDS9.UnityReview
         // loop, provider replacement, action enablement or gameplay shortcut.
         private VisualElement? keyboardRoot;
         private VisualElement? keyboardReleaseRoot;
-        private bool returnHeld,spaceHeld;
-        private Button? returnOrigin,spaceOrigin;
+        private bool returnHeld,spaceHeld,noticeEscapeHeld;
+        private Button? returnOrigin,spaceOrigin,noticeEscapeOrigin;
+        private long noticeEscapeStarted;
         private VisualElement? keyboardRetired;
         private long returnStarted,spaceStarted;
         private KeyCode returnCode,spaceCode;
@@ -24,6 +25,7 @@ namespace HobbyDS9.UnityReview
             if(!PlayerProfile)return;
             keyboardRoot=root;
             keyboardRoot!.RegisterCallback<KeyDownEvent>(DemoTab);
+            keyboardRoot.RegisterCallback<KeyDownEvent>(CompletionEscapeGuard,TrickleDown.TrickleDown);
             keyboardRoot.RegisterCallback<AttachToPanelEvent>(DemoKeyboardAttached);
             keyboardRoot.RegisterCallback<DetachFromPanelEvent>(DemoKeyboardDetached);
             BindDemoKeyboardRelease(keyboardRoot.panel);
@@ -31,6 +33,7 @@ namespace HobbyDS9.UnityReview
         private void UnbindDemoKeyboard()
         {
             keyboardRoot?.UnregisterCallback<KeyDownEvent>(DemoTab);
+            keyboardRoot?.UnregisterCallback<KeyDownEvent>(CompletionEscapeGuard,TrickleDown.TrickleDown);
             keyboardRoot?.UnregisterCallback<AttachToPanelEvent>(DemoKeyboardAttached);
             keyboardRoot?.UnregisterCallback<DetachFromPanelEvent>(DemoKeyboardDetached);
             BindDemoKeyboardRelease(null);
@@ -54,7 +57,13 @@ namespace HobbyDS9.UnityReview
             keyboardReleaseRoot?.RegisterCallback<KeyDownEvent>(DemoUnfocusedTab);
         }
         private void ResetDemoKeyboard()
-        {returnHeld=false;spaceHeld=false;returnOrigin=null;spaceOrigin=null;keyboardRetired?.RemoveFromHierarchy();keyboardRetired=null;}
+        {returnHeld=false;spaceHeld=false;noticeEscapeHeld=false;returnOrigin=null;spaceOrigin=null;noticeEscapeOrigin=null;keyboardRetired?.RemoveFromHierarchy();keyboardRetired=null;}
+        private void CompletionEscapeGuard(KeyDownEvent e)
+        {
+            if(e.keyCode!=KeyCode.Escape||completionDialogElement==null||!ReferenceEquals(confirmation,completionDialogElement))return;
+            if(noticeEscapeHeld){e.StopImmediatePropagation();return;}
+            noticeEscapeHeld=true;noticeEscapeOrigin=e.target as Button;noticeEscapeStarted=e.timestamp;
+        }
         private void OnApplicationFocus(bool focused){if(!focused)ResetDemoKeyboard();}
         private static bool Unmodified(KeyDownEvent e)=>!e.altKey&&!e.ctrlKey&&!e.commandKey&&!e.shiftKey;
         private bool LiveDemoFocus(VisualElement element)=>isActiveAndEnabled&&model!=null&&PlayerProfile&&!model.Closed&&!model.Busy
@@ -89,7 +98,7 @@ namespace HobbyDS9.UnityReview
             // The engine can address the previous focused control on KeyUp.
             // A detached control cannot dispatch; retain only held origins on
             // the same panel, hidden/disabled, until release or lifecycle reset.
-            foreach(var origin in new[]{returnHeld?returnOrigin:null,spaceHeld?spaceOrigin:null})
+            foreach(var origin in new[]{returnHeld?returnOrigin:null,spaceHeld?spaceOrigin:null,noticeEscapeHeld?noticeEscapeOrigin:null})
             {
                 if(origin==null||root.Contains(origin)||keyboardRetired!=null&&ReferenceEquals(origin.parent,keyboardRetired))continue;
                 if(keyboardRetired==null||keyboardRetired.panel!=root.panel)
@@ -102,12 +111,14 @@ namespace HobbyDS9.UnityReview
         }
         private void RemoveRetiredDemoKeyOrigin(Button? origin)
         {
-            if(returnHeld&&ReferenceEquals(origin,returnOrigin)||spaceHeld&&ReferenceEquals(origin,spaceOrigin))return;
+            if(returnHeld&&ReferenceEquals(origin,returnOrigin)||spaceHeld&&ReferenceEquals(origin,spaceOrigin)||noticeEscapeHeld&&ReferenceEquals(origin,noticeEscapeOrigin))return;
             if(origin!=null&&ReferenceEquals(origin.parent,keyboardRetired))origin.RemoveFromHierarchy();
             if(keyboardRetired?.childCount==0){keyboardRetired.RemoveFromHierarchy();keyboardRetired=null;}
         }
         private void ReleaseDemoKey(KeyUpEvent e)
         {
+            if(e.keyCode==KeyCode.Escape&&noticeEscapeHeld&&e.timestamp>=noticeEscapeStarted)
+            {noticeEscapeHeld=false;RemoveRetiredDemoKeyOrigin(noticeEscapeOrigin);noticeEscapeOrigin=null;}
             if(e.keyCode==KeyCode.Space&&spaceHeld&&e.keyCode==spaceCode&&e.timestamp>=spaceStarted)
             {spaceHeld=false;RemoveRetiredDemoKeyOrigin(spaceOrigin);spaceOrigin=null;}
             if((e.keyCode==KeyCode.Return||e.keyCode==KeyCode.KeypadEnter)&&returnHeld&&e.keyCode==returnCode&&e.timestamp>=returnStarted)
@@ -117,7 +128,7 @@ namespace HobbyDS9.UnityReview
         {
             if(!ReferenceEquals(e.currentTarget,keyboardReleaseRoot)||keyboardRoot?.panel==null)return;
             var target=e.target as VisualElement;
-            var origin=e.keyCode==KeyCode.Space?spaceOrigin:returnOrigin;
+            var origin=e.keyCode==KeyCode.Space?spaceOrigin:e.keyCode==KeyCode.Escape?noticeEscapeOrigin:returnOrigin;
             var focused=keyboardRoot.panel.focusController.focusedElement as VisualElement;
             if(ReferenceEquals(target,keyboardReleaseRoot)||ReferenceEquals(target,origin)
                 ||target!=null&&ReferenceEquals(target,focused)&&keyboardRoot.Contains(target)&&target.enabledInHierarchy)ReleaseDemoKey(e);
