@@ -54,7 +54,7 @@ namespace HobbyDS9.UnityReview
             Texture.Create();camera.targetTexture=Texture;
             material=new Material(shader){hideFlags=HideFlags.HideAndDontSave};sphere=Sphere();track=Annulus(.996f,1,"Schematic orbit");
             Part("Schematic central star",sphere,Vector3.zero,.75f,new Color(1,.69f,.29f),false);
-            Mesh? delivered=null;
+            var delivered=new Dictionary<string,Mesh>(StringComparer.Ordinal);
             for(int i=0;i<bodies.Count;i++)
             {
                 var body=bodies[i];
@@ -64,7 +64,13 @@ namespace HobbyDS9.UnityReview
                 var theta=angle*Mathf.Deg2Rad;
                 var mesh=sphere;
                 if(profile.Kind!=PlanetSurfaceKind.Unknown)
-                    mesh=delivered??=DeliveredMesh("Earth_LOD1",false,sphere);
+                {
+                    // New production art binds only exact disclosed Earth/Mars.
+                    // Other resolved worlds retain the existing shared sphere asset.
+                    var resource=profile.AuthoredMesh??"SolMeshes/Earth_LOD1";
+                    if(!delivered.TryGetValue(resource,out mesh))
+                        delivered.Add(resource,mesh=DeliveredMesh(resource,false,sphere));
+                }
                 var planet=Part(body.PlanetId,mesh,new Vector3(Mathf.Cos(theta)*orbit,0,Mathf.Sin(theta)*orbit),.7f,Color.white,true);
                 planet.transform.SetParent(orbitalRoot,false);
                 var maps=Surface(profile);
@@ -118,7 +124,7 @@ namespace HobbyDS9.UnityReview
         // Copies are stage-owned; source FBX meshes/textures remain borrowed Resources.
         private Mesh DeliveredMesh(string name,bool ring,Mesh fallback)
         {
-            var prefab=Resources.Load<GameObject>("SystemBodyArt/SolMeshes/"+name);
+            var prefab=Resources.Load<GameObject>("SystemBodyArt/"+name);
             if(prefab==null){Fallback(name+": model missing");return fallback;}
             var filters=prefab.GetComponentsInChildren<MeshFilter>(true);
             if(filters.Length!=1||filters[0].sharedMesh==null){Fallback(name+": expected one mesh");return fallback;}

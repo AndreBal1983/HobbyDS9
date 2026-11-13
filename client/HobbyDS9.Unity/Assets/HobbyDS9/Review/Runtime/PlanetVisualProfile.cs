@@ -15,6 +15,10 @@ namespace HobbyDS9.UnityReview
         public bool HasAtmosphere { get; }
         public string Caption { get; }
         public string? AuthoredMap { get; }
+        // Only the same surveyed canonical identities admitted for authored maps.
+        // The rest of the Sol production library is reference art, not campaign data.
+        public string? AuthoredMesh => AuthoredMap=="earth_daymap"?"Production01/Earth_LOD1":
+            AuthoredMap=="mars"?"Production01/Mars_LOD1":null;
         public float CloudCoverage { get; }
         public float AtmosphereStrength { get; }
         private PlanetVisualProfile(PlanetSurfaceKind kind, uint seed, bool atmosphere, string caption, string? map)

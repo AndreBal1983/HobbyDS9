@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "sourcePin": "560d6c13697ba708c5aae4c450c6e5dafa72c837",
+  "sourceManifestSha256": "989dafe315f04e2cc709a4ea468a65fd4e84ea0f76e1401c2c31006e5ca99d5d",
+  "sourceManifestHashFormat": "UTF-8 with LF newlines",
+  "bindings": [
+    {
+      "planetId": "planet.sol",
+      "requiresSurvey": true,
+      "source": "Models/Earth_LOD1.fbx",
+      "sourceAssetId": "art.production01.earth_lod1",
+      "resource": "SystemBodyArt/Production01/Earth_LOD1",
+      "sha256": "6d7fb4adf756c4d9667f21c7f2688638569bed2834ed2cc0b834d1e01009230e",
+      "bytes": 58268,
+      "triangles": 2208,
+      "guid": "dc0e410a018f5bf5a9b97e9c81dc997d",
+      "borrowedTexture": "SystemBodyArt/earth_daymap",
+      "textureSha256": "767ee1dc6eb3802699bfccf6f264880f8acd0b80de3191cd24984fe279b07b7c"
+    },
+    {
+      "planetId": "planet.mars",
+      "requiresSurvey": true,
+      "source": "Models/Mars_LOD1.fbx",
+      "sourceAssetId": "art.production01.mars_lod1",
+      "resource": "SystemBodyArt/Production01/Mars_LOD1",
+      "sha256": "fbec43322ff65624d94b77ac76bede576f3fc280bce170a3076fb39ba68c903e",
+      "bytes": 58268,
+      "triangles": 2208,
+      "guid": "9c03e8c9419b59ea88c24ad76633dc6f",
+      "borrowedTexture": "SystemBodyArt/mars",
+      "textureSha256": "2d187f3e77a98eaa8cea5f4cc722f633c122ef170b9e94ace6b5fb6cbc3f8e01"
+    }
+  ],
+  "material": "HobbyDS9/Review/ProceduralSystemSurface",
+  "materialBinding": "Runtime shared material/property blocks; FBX materials not imported",
+  "atmosphereShell": "Not received or displayed; existing shader rim only",
+  "otherSolBodies": "Source/reference only; no runtime production binding",
+  "nativeAcceptance": "Pending actual Unity import/URP/native QA"
+}
