@@ -1,0 +1,6 @@
+Original unit-sphere geometry: HobbyDS9 ASSET-PRODUCTION-01, Blender 5.3.0.
+Source pin: 560d6c13697ba708c5aae4c450c6e5dafa72c837
+Editable sources, manifests, export recipe and studio evidence: art/asset-production-01/system-v1.
+Runtime borrows unchanged earth_daymap.jpg / mars.jpg from the parent SystemBodyArt folder.
+Textures: Solar System Scope / INOVE, CC BY 4.0; https://www.solarsystemscope.com/textures/
+Retain parent ATTRIBUTION.txt. No studio materials, atmosphere shell or additional Sol identities received.

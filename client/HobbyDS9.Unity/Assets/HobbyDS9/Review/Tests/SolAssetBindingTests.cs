@@ -50,11 +50,11 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(ring,Is.Not.Null);Assert.That(ring.isSupported,Is.True);
             Assert.That(Resources.Load<Texture2D>("SystemBodyArt/SolMeshes/saturn_rings"),Is.Not.Null);
         }
-        [Test] public void DisclosedBodiesReuseOneValidatedMeshAndDisposeOnlyOwnedResources()
+        [Test] public void ExactEarthMarsUseProductionMeshesAndDisposeOnlyOwnedResources()
         {
-            var borrowedPrefab=Resources.Load<GameObject>("SystemBodyArt/SolMeshes/Earth_LOD1");
-            Assert.That(borrowedPrefab,Is.Not.Null);
-            var borrowedMesh=borrowedPrefab.GetComponentInChildren<MeshFilter>().sharedMesh;
+            var borrowedPrefabs=new[]{Resources.Load<GameObject>("SystemBodyArt/Production01/Earth_LOD1"),Resources.Load<GameObject>("SystemBodyArt/Production01/Mars_LOD1")};
+            foreach(var prefab in borrowedPrefabs)Assert.That(prefab,Is.Not.Null);
+            var borrowedMeshes=borrowedPrefabs.Select(p=>p.GetComponentInChildren<MeshFilter>().sharedMesh).ToArray();
             var borrowedMaps=new[]{Resources.Load<Texture2D>("SystemBodyArt/earth_daymap"),Resources.Load<Texture2D>("SystemBodyArt/mars")};
             foreach(var map in borrowedMaps)Assert.That(map,Is.Not.Null);
             var unrelated=new GameObject("Unrelated disposal sentinel");
@@ -64,13 +64,18 @@ namespace HobbyDS9.UnityReview.Tests
                 stage=Stage(Planet("planet.sol"),Planet("planet.mars",kind:"Vacuum"));
                 var transforms=(Dictionary<string,Transform>)Field(stage,"planetTransforms");
                 Assert.That(transforms.Keys,Is.EquivalentTo(new[]{"planet.sol","planet.mars"}),"No decorative undisclosed planet may be instantiated.");
-                Assert.That((int)stage.GetType().GetProperty("ImportedMeshCount",Private)!.GetValue(stage)!,Is.EqualTo(1),"Unit sphere mesh is shared, not one imported copy per body.");
+                Assert.That((int)stage.GetType().GetProperty("ImportedMeshCount",Private)!.GetValue(stage)!,Is.EqualTo(2),"Exactly the two admitted production meshes are copied.");
                 var fallbacks=(IEnumerable)stage.GetType().GetProperty("AssetFallbacks",Private)!.GetValue(stage)!;
                 Assert.That(fallbacks.Cast<object>(),Is.Empty,"A procedural fallback must not pass as the delivered mesh.");
                 var first=transforms["planet.sol"].GetComponent<MeshFilter>().sharedMesh;
-                Assert.That(transforms["planet.mars"].GetComponent<MeshFilter>().sharedMesh,Is.SameAs(first));
-                Assert.That(first,Is.Not.SameAs(borrowedMesh));
-                Assert.That(first.vertices.All(p=>Mathf.Abs(p.magnitude-1)<.02f),Is.True,"Validate actual baked mesh positions.");
+                var second=transforms["planet.mars"].GetComponent<MeshFilter>().sharedMesh;
+                Assert.That(second,Is.Not.SameAs(first));
+                foreach(var mesh in new[]{first,second})
+                {
+                    Assert.That(borrowedMeshes.Contains(mesh),Is.False,"Only stage-owned transformed copies may be disposed.");
+                    Assert.That(mesh.triangles.Length/3,Is.EqualTo(2208));
+                    Assert.That(mesh.vertices.All(p=>Mathf.Abs(p.magnitude-1)<.02f),Is.True,"Validate actual baked mesh positions.");
+                }
                 var root=(GameObject)Field(stage,"root");
                 Assert.That(root.GetComponentsInChildren<MeshRenderer>(true).Length,Is.EqualTo(5),"One star, two disclosed bodies and their two orbits.");
                 Assert.That(root.GetComponentsInChildren<Camera>(true).Length,Is.EqualTo(1));
@@ -86,11 +91,18 @@ namespace HobbyDS9.UnityReview.Tests
                 {
                     Assert.That(owned.All(value=>value==null),Is.True,"All captured stage-owned Unity resources must be destroyed in EditMode.");
                     Assert.That(unrelated!=null,Is.True);
-                    Assert.That(borrowedPrefab!=null&&borrowedMesh!=null,Is.True);
+                    Assert.That(borrowedPrefabs.All(value=>value!=null)&&borrowedMeshes.All(value=>value!=null),Is.True);
                     Assert.That(borrowedMaps.All(value=>value!=null),Is.True,"Borrowed textures must survive.");
                 }
                 finally {if(unrelated!=null)UnityEngine.Object.DestroyImmediate(unrelated);}
             }
+        }
+        [Test] public void ProductionBindingRequiresSurveyAndExactCanonicalIdentity()
+        {
+            Assert.That(PlanetVisualProfile.From(Planet("planet.sol")).AuthoredMesh,Is.EqualTo("Production01/Earth_LOD1"));
+            Assert.That(PlanetVisualProfile.From(Planet("planet.mars")).AuthoredMesh,Is.EqualTo("Production01/Mars_LOD1"));
+            foreach(var body in new[]{Planet("planet.sol",false),Planet("planet.mars",false),Planet("planet.earth"),Planet("planet.jupiter"),Planet("PLANET.SOL")})
+                Assert.That(PlanetVisualProfile.From(body).AuthoredMesh,Is.Null,body.PlanetId);
         }
         [Test] public void MalformedUnsurveyedEnvironmentsBindIdenticalNeutralRenderInputs()
         {
