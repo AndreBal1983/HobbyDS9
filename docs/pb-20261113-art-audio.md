@@ -10,6 +10,8 @@ Use the preserved [laptop snapshot b9401ce](https://github.com/AndreBal1983/Hobb
 
 The snapshot is verified against the actual remote branch `codex/laptop-migration-20261113`. Its top commit explicitly preserves migration work; integrated GUI commit says not native-tested. Do not pick main alone and call its old preview pack the latest graphics. Do not select a draft merely by PR number.
 
+**Newest intended replacement art remains a dependency:** snapshot `docs/ship-designer-hull-preview-routing-20261108.md` explicitly says the approved Defiant and Galaxy replacement GLBs still require separate receiving work (provenance/resource identities, materials, UVs, alpha/glass, emission, dependency closure, framing and disposal). The selected-hull routing fix installs no model. This audit has not recovered those replacement GLBs or their approved replacement credits. The available older received models below are therefore a disclosed build fallback, not a claim that the newest approved replacements are present. Product Desk must retain this visual gap in the build report or supply the exact replacement delivery for a separately scoped import.
+
 ## Available art and import requirements
 
 All paths in this table are repository-relative **at b9401ce**, unless another pin is named. Resources below have tracked bytes/metas and can be recovered without the unavailable original E: folders.
@@ -74,3 +76,5 @@ Existing generated ElevenLabs provenance and user-supplied LCARS source limitati
 Executed: remote pin verification/fetch, live open-PR metadata and source contract reads, Git tracked-path recovery audit, four old-directory availability checks, snapshot asset extraction, 103 receiving hash checks, V3 hashes/particle count/metadata inspection. Historical Unity/CPU/browser pass counts cited by upstream records are **reported evidence**, not rerun here. No gameplay tests were needed for this documentation audit.
 
 Next: Unity confirms the combined recent source candidate and preserves these asset/provenance paths; QA owns the exclusive 9f1 import, graphics, strict build and native/audio checks. The audit itself has no dependency on .NET/Visual Studio installation. It does not certify those prerequisites or a playable executable.
+
+Peer receipts read: Architecture and GUI independently propose b9401ce. Architecture flags Backend/Data admission of the migration's pending source deltas and the approved replacement-model gap. QA reports successful main-only portable checks and a private SDK/Python acquired before dispatch, but no current Unity import/license/IL2CPP proof. Those are peer reports, not Art-executed results.
