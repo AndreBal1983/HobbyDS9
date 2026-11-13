@@ -98,5 +98,18 @@ namespace HobbyDS9.ArtDemo.Tests
                 Assert.That(stage.VisualKey,Is.EqualTo(ShipPreviewStage.DesignerGalaxyKey));
             }
         }
+        [Test]
+        public void FixedGalaxyExteriorDoesNotInstantiateTheDesignerCoreStudy()
+        {
+            var parent=new GameObject("Owned exterior-only test");ActivityHullModel model=null!;
+            try
+            {
+                model=ActivityHullModel.Create(parent.transform,"hull.galaxy-cruiser.v1");
+                Assert.That(model,Is.Not.Null);
+                Assert.That(model.Root.GetComponentsInChildren<Transform>(true).Any(t=>t.name=="CoreCutaway"),Is.False);
+                Assert.That(model.Root.GetComponentsInChildren<MeshRenderer>(true).Length,Is.GreaterThanOrEqualTo(4),"Exterior hull, nacelles and deflector must remain.");
+            }
+            finally{model?.Dispose();UnityEngine.Object.DestroyImmediate(parent);}
+        }
     }
 }
