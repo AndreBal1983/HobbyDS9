@@ -112,21 +112,28 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally {((IDisposable)stage).Dispose();}
         }
-        private static int[] StageResourceIdentities()
+        private static object[] StageResourceIdentities()
         {
             // Only distinctive stage-owned resource names; no assets/files/owner stores.
             var roots=Resources.FindObjectsOfTypeAll<GameObject>().Where(x=>x.name=="Disclosed system presentation").Cast<UnityEngine.Object>();
             var targets=Resources.FindObjectsOfTypeAll<RenderTexture>().Where(x=>x.name=="Disclosed system overview").Cast<UnityEngine.Object>();
             var textures=Resources.FindObjectsOfTypeAll<Texture2D>().Where(x=>x.name=="Neutral unresolved surface"||x.name=="Disclosed surface"||x.name=="Disclosed clouds").Cast<UnityEngine.Object>();
             var meshes=Resources.FindObjectsOfTypeAll<Mesh>().Where(x=>x.name=="Sol sphere"||x.name=="Schematic orbit"||x.name.StartsWith("Sol validated ",StringComparison.Ordinal)).Cast<UnityEngine.Object>();
-            return roots.Concat(targets).Concat(textures).Concat(meshes).Select(x=>x.GetInstanceID()).OrderBy(x=>x).ToArray();
+            return roots.Concat(targets).Concat(textures).Concat(meshes).Cast<object>().ToArray();
+        }
+        private static void AssertSameStageResources(object[] before, string message)
+        {
+            var after=StageResourceIdentities();
+            Assert.That(after.Length,Is.EqualTo(before.Length),message);
+            foreach (var resource in before)
+                Assert.That(after.Any(other=>ReferenceEquals(resource,other)),Is.True,message);
         }
         [Test] public void ConstructorFailureBeforeTextureAllocationStillReleasesRootAndCamera()
         {
             var before=StageResourceIdentities();
             var failure=Assert.Throws<TargetInvocationException>(()=>Stage((ColonisationPlanetSnapshot[])null!));
             Assert.That(failure!.InnerException,Is.TypeOf<NullReferenceException>().Or.TypeOf<ArgumentNullException>());
-            Assert.That(StageResourceIdentities(),Is.EqualTo(before),"Failure before the render target exists must still clean the already allocated root/camera.");
+            AssertSameStageResources(before,"Failure before the render target exists must still clean the already allocated root/camera.");
         }
         [Test] public void ConstructorFailureAfterSurfaceCreationReleasesPartialStageResources()
         {
@@ -135,7 +142,7 @@ namespace HobbyDS9.UnityReview.Tests
             var before=StageResourceIdentities();
             var failure=Assert.Throws<TargetInvocationException>(()=>Stage(Planet("planet.generated"),null!));
             Assert.That(failure!.InnerException,Is.TypeOf<ArgumentNullException>());
-            Assert.That(StageResourceIdentities(),Is.EqualTo(before),"Failed construction must release roots, render targets, generated textures and mesh copies.");
+            AssertSameStageResources(before,"Failed construction must release roots, render targets, generated textures and mesh copies.");
         }
         [Test] public void EmptyDisclosedSetHasOnlyTheSchematicStar()
         {
