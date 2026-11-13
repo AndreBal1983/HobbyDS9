@@ -18,6 +18,7 @@ namespace HobbyDS9.UnityClient.Editor
         private static Action completed;
         private static int index, firstFrame;
         private static double deadline;
+        private static double settleAfter;
         private static string pendingFile;
         private static object gameView;
         private static PropertyInfo selectedSize;
@@ -74,6 +75,9 @@ namespace HobbyDS9.UnityClient.Editor
                 groupClass.GetMethod("AddCustomSize", Flags).Invoke(group, new[] { size }); found = count;
             }
             selectedSize.SetValue(gameView, found);
+            // Client readability scaling polls at 5 Hz. Frame count alone can
+            // capture an intermediate layout in an uncapped Editor Game view.
+            settleAfter = EditorApplication.timeSinceStartup + .6;
             firstFrame = Time.frameCount; deadline = EditorApplication.timeSinceStartup + 30;
             ((EditorWindow)gameView).Repaint();
         }
@@ -99,7 +103,7 @@ namespace HobbyDS9.UnityClient.Editor
                     if (++index == Sizes.Length) { var done = completed; Stop(); Debug.Log("Capture sequence complete. Review wrapping, input and visual balance before accepting."); done(); return; }
                     SelectSize(); return;
                 }
-                if (Screen.width != target.x || Screen.height != target.y || Time.frameCount - firstFrame < 15) return;
+                if (Screen.width != target.x || Screen.height != target.y || Time.frameCount - firstFrame < 15 || EditorApplication.timeSinceStartup < settleAfter) return;
                 var entry = UnityEngine.Object.FindAnyObjectByType<ClientEntry>();
                 var root = entry == null ? null : entry.GetComponent<UIDocument>()?.rootVisualElement;
                 if (root == null) throw new InvalidOperationException("Client UI document is missing.");

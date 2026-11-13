@@ -57,6 +57,7 @@ namespace HobbyDS9.UnityReview
             panel.RestoreSelection(selection);
             var inspection=workspace!.PendingSystemInspection;
             var worldInspection=workspace.PendingWorldInspection;
+            if(workspace.Page==ReviewWorkspacePage.Worlds)workspace.WorldsContextOpen=true;
             workspace.PendingSystemInspection=null;workspace.PendingWorldInspection=null;
             if(worldInspection.HasValue)
             {
@@ -64,7 +65,16 @@ namespace HobbyDS9.UnityReview
             }
             else if(inspection.HasValue)panel.InspectSystem(inspection.Value.SystemId,inspection.Value.Caption);
             else panel.RestoreReview(reviewed);
-            panel.PresentStatus(owner.ColonisationActionStatus());parent.Add(panel);colonisationPanelOwner=owner;colonisationPanelController=controller;colonisationPanelFrame=frame;
+            panel.PresentStatus(owner.ColonisationActionStatus());
+            if(workspace.Page==ReviewWorkspacePage.Worlds)
+            {
+                panel.BindWorldsOverview(()=>{
+                    if(!Current()||workspace?.CanNavigate!=true)return;
+                    workspace.WorldsContextOpen=false;workspace.PendingSystemInspection=null;workspace.PendingWorldInspection=null;
+                    viewEpoch++;Build();
+                });
+            }
+            parent.Add(panel);colonisationPanelOwner=owner;colonisationPanelController=controller;colonisationPanelFrame=frame;
         }
         private void DrawColonisationMenu(VisualElement parent)
         {

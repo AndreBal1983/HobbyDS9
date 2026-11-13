@@ -54,7 +54,7 @@ namespace HobbyDS9.UnityClient
         }
         private static Button Transport(VisualElement row,string name,string tooltip,System.Action action,System.Func<string> symbol)
         {
-            var button=new Button(action){name=name,tooltip=tooltip};button.AddToClassList("review-action");button.style.width=42;button.style.height=36;button.style.flexShrink=0;
+            var button=new Button(action){name=name,tooltip=tooltip};button.AddToClassList("review-action");button.style.width=44;button.style.height=44;button.style.flexShrink=0;
             var icon=new VisualElement{pickingMode=PickingMode.Ignore};icon.style.width=18;icon.style.height=18;icon.style.alignSelf=Align.Center;
             icon.generateVisualContent+=context=>{
                 var p=context.painter2D;p.fillColor=new Color(.92f,.92f,.95f);var kind=symbol();
@@ -74,13 +74,17 @@ namespace HobbyDS9.UnityClient
             if(music==null){root.Add(new Label("Music is currently unavailable. You can continue playing."));}
             else
             {
-                PresentPlayer(root);
+                var layout=new VisualElement();layout.AddToClassList("audio-preference-layout");root.Add(layout);
+                var player=new VisualElement();player.AddToClassList("audio-player-group");layout.Add(player);PresentPlayer(player);
+                var levels=new VisualElement();levels.AddToClassList("audio-levels-group");layout.Add(levels);
+                var heading=new Label("Output levels");heading.AddToClassList("console-section");levels.Add(heading);
                 var master=new Slider("Master volume",0,1){name="audio-master",value=music.Preferences.MasterVolume};
                 var mute=new Toggle("Mute music"){name="audio-music-mute",value=music.Preferences.Muted};
                 master.RegisterValueChangedCallback(e=>music.SetMasterVolume(e.newValue));mute.RegisterValueChangedCallback(e=>music.SetMuted(e.newValue));
-                root.Add(master);root.Add(mute);
+                levels.Add(master);levels.Add(mute);
+                if(sfx!=null)ClientEntry.AddSfxControls(levels,sfx);else levels.Add(new Label("Button sounds are currently unavailable."));
             }
-            if(sfx!=null)ClientEntry.AddSfxControls(root,sfx);else root.Add(new Label("Button sounds are currently unavailable."));
+            if(music==null){if(sfx!=null)ClientEntry.AddSfxControls(root,sfx);else root.Add(new Label("Button sounds are currently unavailable."));}
         }
     }
 }

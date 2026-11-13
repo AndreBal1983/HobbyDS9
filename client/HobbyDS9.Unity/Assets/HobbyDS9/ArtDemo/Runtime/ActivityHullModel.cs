@@ -40,7 +40,8 @@ namespace HobbyDS9.ArtDemo
                         value.Part(part,new Vector3(side=="Port"?-125.6418f:125.4987f,-49.131f,-214.65f),side+" nacelle");
                     }
                     value.Part(Resources.Load<GameObject>(ShipPreviewStage.DesignerResourceRoot+"Models/Deflector_Blue_concentric_LOD0"),new Vector3(0,-64.395f,75.366f),"Deflector");
-                    value.Part(Resources.Load<GameObject>(ShipPreviewStage.DesignerResourceRoot+"Models/WarpCore_LOD0"),new Vector3(0,-56.286f,-64.395f),"CoreCutaway");
+                    // Fixed exterior views (construction/fleet/battle) do not include
+                    // the separate designer study's internal core/cutaway mesh.
                     value.StudioMaterials(shader);
                 }
                 availability=ShipPreviewAvailability.Model;return value;

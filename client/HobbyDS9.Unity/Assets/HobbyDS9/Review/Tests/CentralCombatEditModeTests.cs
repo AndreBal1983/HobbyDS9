@@ -24,7 +24,7 @@ namespace HobbyDS9.UnityReview.Tests
             InvokeEntry("OnEnable");
             Assert.That(entry.Presentation,Is.Not.Null);
         }
-        private void InvokeEntry(string method,params object[] args)=>typeof(ReviewEntry).GetMethod(method,BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entry,args);
+        private void InvokeEntry(string method,params object[] args)=>typeof(ReviewEntry).GetMethod(method,BindingFlags.Instance|BindingFlags.NonPublic,null,Array.ConvertAll(args,arg=>arg.GetType()),null)!.Invoke(entry,args);
         private void ShowCombat(){Assert.That(entry.Workspace!.Navigate(ReviewWorkspacePage.Combat),Is.True);InvokeEntry("Build");}
         [TearDown] public void Cleanup(){if(entry!=null)InvokeEntry("OnDestroy");if(go!=null)UnityEngine.Object.DestroyImmediate(go);}
         [Test] public void ActualOptInEntryExposesCentralSurfaceScenarioIdentityAndPersistentFooter()

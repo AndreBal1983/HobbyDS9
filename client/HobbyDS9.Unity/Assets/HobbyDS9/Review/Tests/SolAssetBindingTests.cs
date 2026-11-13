@@ -112,21 +112,89 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally {((IDisposable)stage).Dispose();}
         }
-        private static int[] StageResourceIdentities()
+        private static Color32[] PortraitPixels(RenderTexture target,string name)
+        {
+            var previous=RenderTexture.active;
+            var copy=new Texture2D(target.width,target.height,TextureFormat.RGBA32,false);
+            try
+            {
+                RenderTexture.active=target;copy.ReadPixels(new Rect(0,0,target.width,target.height),0,0);copy.Apply();
+                var output=Environment.GetEnvironmentVariable("HOBBYDS9_SYSTEM_EVIDENCE");
+                if(!string.IsNullOrWhiteSpace(output))
+                {System.IO.Directory.CreateDirectory(output);System.IO.File.WriteAllBytes(System.IO.Path.Combine(output,name+".png"),copy.EncodeToPNG());}
+                return copy.GetPixels32();
+            }
+            finally{RenderTexture.active=previous;UnityEngine.Object.DestroyImmediate(copy);}
+        }
+        [Test] public void SelectedPortraitUsesDisclosedGlobeOnlyAndSurvivesOverviewChangesWithoutCropping()
+        {
+            var stage=Stage(Planet("planet.sol"),Planet("planet.mars",kind:"Arid"));
+            var type=stage.GetType();var owned=new List<UnityEngine.Object>();
+            bool Render(string id)=>(bool)type.GetMethod("RenderPortrait",Private)!.Invoke(stage,new object[]{id})!;
+            void Overview(float yaw,float zoom)=>Assert.That((bool)type.GetMethod("Render",Private)!.Invoke(stage,new object[]{3f,yaw,zoom,"planet.sol"})!,Is.True);
+            try
+            {
+                Assert.That(type.GetProperty("PortraitTexture",Private)!.GetValue(stage),Is.Null,"Portrait is lazy.");
+                Overview(0,1);Assert.That(Render("planet.sol"),Is.True);
+                var target=(RenderTexture)type.GetProperty("PortraitTexture",Private)!.GetValue(stage)!;owned.Add(target);
+                var portrait=(MeshRenderer)Field(stage,"portraitGlobe");owned.Add(portrait.gameObject);
+                var portraitCamera=(Camera)Field(stage,"portraitCamera");owned.Add(portraitCamera.gameObject);
+                var mainCamera=(Camera)Field(stage,"camera");
+                Assert.That(target,Is.Not.SameAs(type.GetProperty("Texture",Private)!.GetValue(stage)));
+                Assert.That(target.width,Is.EqualTo(512));Assert.That(target.height,Is.EqualTo(512));
+                var transforms=(Dictionary<string,Transform>)Field(stage,"planetTransforms");
+                Assert.That(portrait.GetComponent<MeshFilter>().sharedMesh,Is.SameAs(transforms["planet.sol"].GetComponent<MeshFilter>().sharedMesh));
+                Assert.That(portrait.gameObject.activeSelf,Is.False,"Portrait may never leak into the overview.");
+                Assert.That(((GameObject)Field(stage,"root")).activeSelf,Is.False);
+                var earth=PortraitPixels(target,"earth-portrait");var background=earth[0];var nonbackground=0;var outside=0;
+                for(int y=0;y<512;y++)for(int x=0;x<512;x++)
+                {
+                    var pixel=earth[y*512+x];var differs=Math.Abs(pixel.r-background.r)+Math.Abs(pixel.g-background.g)+Math.Abs(pixel.b-background.b)>9;
+                    if(differs)nonbackground++;
+                    if(differs&&Vector2.Distance(new Vector2(x+.5f,y+.5f),new Vector2(256,256))>232)outside++;
+                }
+                Assert.That(outside,Is.Zero,"Outside the fitted globe must contain no star, orbits or other bodies.");
+                Assert.That(nonbackground,Is.GreaterThan(50000),"A non-null target or an orbit-only crop is insufficient.");
+                Overview(143,1.4f);var pose=mainCamera.transform.position;var size=mainCamera.orthographicSize;
+                Assert.That(Render("planet.sol"),Is.True);Assert.That(mainCamera.transform.position,Is.EqualTo(pose));
+                Assert.That(mainCamera.orthographicSize,Is.EqualTo(size));
+                CollectionAssert.AreEqual(earth,PortraitPixels(target,"earth-after-overview"),"Overview motion must not recrop or relight the portrait.");
+                Assert.That(Render("planet.mars"),Is.True);var mars=PortraitPixels(target,"mars-portrait");
+                Assert.That(mars.Where((pixel,index)=>!pixel.Equals(earth[index])).Count(),Is.GreaterThan(10000));
+                var block=new MaterialPropertyBlock();portrait.GetPropertyBlock(block);
+                Assert.That(block.GetTexture("_Surface"),Is.SameAs(Resources.Load<Texture2D>("SystemBodyArt/mars")));
+                Assert.That(Render("planet.undisclosed"),Is.False,"Never add a body to satisfy a portrait request.");
+                Assert.That(transforms.Keys,Is.EquivalentTo(new[]{"planet.sol","planet.mars"}));
+            }
+            finally
+            {
+                ((IDisposable)stage).Dispose();((IDisposable)stage).Dispose();
+                Assert.That(owned.All(value=>value==null),Is.True,"Both portrait target and owned camera/globe must be released.");
+                Assert.That(Resources.Load<Texture2D>("SystemBodyArt/earth_daymap"),Is.Not.Null);
+            }
+        }
+        private static object[] StageResourceIdentities()
         {
             // Only distinctive stage-owned resource names; no assets/files/owner stores.
             var roots=Resources.FindObjectsOfTypeAll<GameObject>().Where(x=>x.name=="Disclosed system presentation").Cast<UnityEngine.Object>();
-            var targets=Resources.FindObjectsOfTypeAll<RenderTexture>().Where(x=>x.name=="Disclosed system overview").Cast<UnityEngine.Object>();
+            var targets=Resources.FindObjectsOfTypeAll<RenderTexture>().Where(x=>x.name=="Disclosed system overview"||x.name=="Disclosed selected-body portrait").Cast<UnityEngine.Object>();
             var textures=Resources.FindObjectsOfTypeAll<Texture2D>().Where(x=>x.name=="Neutral unresolved surface"||x.name=="Disclosed surface"||x.name=="Disclosed clouds").Cast<UnityEngine.Object>();
             var meshes=Resources.FindObjectsOfTypeAll<Mesh>().Where(x=>x.name=="Sol sphere"||x.name=="Schematic orbit"||x.name.StartsWith("Sol validated ",StringComparison.Ordinal)).Cast<UnityEngine.Object>();
-            return roots.Concat(targets).Concat(textures).Concat(meshes).Select(x=>x.GetInstanceID()).OrderBy(x=>x).ToArray();
+            return roots.Concat(targets).Concat(textures).Concat(meshes).Cast<object>().ToArray();
+        }
+        private static void AssertSameStageResources(object[] before, string message)
+        {
+            var after=StageResourceIdentities();
+            Assert.That(after.Length,Is.EqualTo(before.Length),message);
+            foreach (var resource in before)
+                Assert.That(after.Any(other=>ReferenceEquals(resource,other)),Is.True,message);
         }
         [Test] public void ConstructorFailureBeforeTextureAllocationStillReleasesRootAndCamera()
         {
             var before=StageResourceIdentities();
             var failure=Assert.Throws<TargetInvocationException>(()=>Stage((ColonisationPlanetSnapshot[])null!));
             Assert.That(failure!.InnerException,Is.TypeOf<NullReferenceException>().Or.TypeOf<ArgumentNullException>());
-            Assert.That(StageResourceIdentities(),Is.EqualTo(before),"Failure before the render target exists must still clean the already allocated root/camera.");
+            AssertSameStageResources(before,"Failure before the render target exists must still clean the already allocated root/camera.");
         }
         [Test] public void ConstructorFailureAfterSurfaceCreationReleasesPartialStageResources()
         {
@@ -135,7 +203,7 @@ namespace HobbyDS9.UnityReview.Tests
             var before=StageResourceIdentities();
             var failure=Assert.Throws<TargetInvocationException>(()=>Stage(Planet("planet.generated"),null!));
             Assert.That(failure!.InnerException,Is.TypeOf<ArgumentNullException>());
-            Assert.That(StageResourceIdentities(),Is.EqualTo(before),"Failed construction must release roots, render targets, generated textures and mesh copies.");
+            AssertSameStageResources(before,"Failed construction must release roots, render targets, generated textures and mesh copies.");
         }
         [Test] public void EmptyDisclosedSetHasOnlyTheSchematicStar()
         {

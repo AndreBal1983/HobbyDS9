@@ -189,6 +189,22 @@ namespace HobbyDS9.UnityReview.Tests
             Click(scene,1);Down(card);Click(card,2);Assert.That(opened,Is.Empty);
             Click(scene,1);Down(scene);Click(scene,2);Assert.That(opened,Is.EqualTo(new[]{"scene"}));
         }
+        [Test] public void LateCancelFromPreviousTargetCannotCancelNewTargetsFirstClick()
+        {
+            var host=Host();var scope=new PlanetActivationScope(host);var opens=0;
+            var first=new PlanetBodyCard(Planet("planet.a"),null,false,()=>{},()=>{},scope);
+            var next=new PlanetBodyCard(Planet("planet.b"),null,false,()=>{},()=>opens++,scope);
+            host.Add(first);host.Add(next);Click(first,1);Click(next,1);
+            // A fabricated FocusOutEvent cannot be dispatched through a live Unity
+            // focus controller: its internal related target is absent. Exercise the
+            // exact target-owned cancellation invoked by that registered callback.
+            var cancel=typeof(PlanetActivationScope).GetMethod("Cancel",BindingFlags.Instance|BindingFlags.NonPublic,null,new[]{typeof(VisualElement)},null)!;
+            cancel.Invoke(scope,new object[]{first});
+            Click(next,2);Assert.That(opens,Is.EqualTo(1),"Old focus ownership must not erase the new completed-click chain.");
+            Click(next,1);
+            cancel.Invoke(scope,new object[]{next});
+            Click(next,2);Assert.That(opens,Is.EqualTo(1),"Actual focus loss still cancels the current target.");
+        }
         [TestCase("right")]
         [TestCase("wheel")]
         [TestCase("cancel")]
@@ -240,6 +256,19 @@ namespace HobbyDS9.UnityReview.Tests
             ownedViews.Add(panel);Call(panel,"Show","Planet");return panel;
         }
         private static string Labels(VisualElement element)=>string.Join("\n",element.Query<Label>().ToList().Select(l=>l.text));
+        [Test] public void ConstructionContextKeepsOwnFactsAndSeparateCatalogueQueueSurfaces()
+        {
+            var panel=PanelFor(Planet(),own:true);Call(panel,"Show","Worlds");
+            var catalogue=panel.Q<ScrollView>("colonisation-catalogue");var queue=panel.Q<ScrollView>("colonisation-queue");
+            Assert.That(catalogue,Is.Not.Null);Assert.That(queue,Is.Not.Null.And.Not.SameAs(catalogue));
+            var dock=panel.Q("construction-context-dock");
+            Assert.That(dock.Contains(queue),Is.True);Assert.That(dock.Contains(catalogue),Is.False);
+            Assert.That(dock.Q("construction-selected-hull"),Is.Not.Null);
+            Assert.That(panel.Query(className:"construction-world-readout").ToList().Count,Is.EqualTo(4));
+            Assert.That(panel.Q<Label>("colonisation-world-facts").text,Does.Contain("Own world"));
+            Assert.That(panel.Q<Foldout>("colonisation-preparation-guide").value,Is.False);
+            Assert.That(Labels(panel),Does.Contain("No queued orders."));
+        }
         [Test] public void UnknownEnvironmentScaleRetainsObservedNumbersWithoutInventedUnits()
         {
             var text=Labels(PanelFor(Planet()));
@@ -247,6 +276,18 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(text,Does.Not.Contain("Gravity 1 g"));
             text=Labels(PanelFor(Planet(),10000));
             Assert.That(text,Does.Contain("Gravity 1 g · Pressure 1 (reference scale)"));
+        }
+        [UnityTest] public System.Collections.IEnumerator OpenedPlanetKeepsExactDisclosedGlobeAndReleasesPortraitOnExit()
+        {
+            var host=Host();var earth=Planet("planet.sol",name:"Earth");var panel=PanelFor(earth);host.Add(panel);
+            yield return null;yield return null;
+            var portrait=panel.Q("planet-detail-visual");Assert.That(portrait,Is.Not.Null);
+            var image=portrait.Q<Image>("planet-detail-portrait");Assert.That(image.image,Is.Not.Null,"The Planet page must render a globe, not silently fall back in the graphics fixture.");
+            var stage=Field<object>(portrait,"stage");
+            Assert.That(Field<Dictionary<string,Transform>>(stage,"planetTransforms").Keys,Is.EqualTo(new[]{earth.PlanetId}));
+            Assert.That(stage.GetType().GetProperty("PortraitTexture",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(stage),Is.SameAs(image.image));
+            Call(panel,"Show","Planets");Assert.That(image.image,Is.Null,"Leaving Planet releases its portrait binding and owned stage.");
+            Assert.That(Field<object?>(portrait,"stage"),Is.Null);
         }
         [TestCase(0)] [TestCase(-10000)]
         public void InvalidEnvironmentScaleIsRejected(int scale)

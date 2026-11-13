@@ -60,12 +60,12 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private void Draw(){root.Clear();callbacks.Clear();var presenter=new ReviewFleetRoster(model,workspace,(parent,text,action)=>{var b=new Button{ text=text };parent.Add(b);callbacks[b]=action;return b;},action=>action(),(_,__)=>Assert.Fail("No command review expected"),_=>{});presenter.Render(root);}
         private void Activate(string id){var b=root.Q<Button>(id);Assert.That(b,Is.Not.Null,id);Assert.That(b.enabledSelf,Is.True);callbacks[b]();}
-        [Test] public void SelectionBuildsRightCardsFromActualConditionWithoutChangingCampaign()
+        [Test] public void SelectionBuildsNestedMembersAndRightInspectorFromActualConditionWithoutChangingCampaign()
         {
             var frame=model.Current.Frame;var fleet=model.NamedFleets().First();Draw();Activate("fleet-roster-"+fleet.Fleet.FleetId.Value);Draw();
             Assert.That(root.ClassListContains("fleet-card-workspace"),Is.False,"Shared navigation host must not retain Fleet styling");
-            var aside=root.Q<ScrollView>(className:"fleet-roster-aside");Assert.That(aside.ClassListContains("fleet-card-workspace"),Is.True);var summary=aside.Q("fleet-navigation-summary");var cards=aside.Q("fleet-selected-ship-cards");
-            Assert.That(summary,Is.Not.Null);Assert.That(aside.IndexOf(summary),Is.LessThan(aside.IndexOf(cards)));
+            var aside=root.Q<ScrollView>(className:"fleet-roster-aside");Assert.That(aside.ClassListContains("fleet-card-workspace"),Is.True);var summary=aside.Q("fleet-navigation-summary");var cards=root.Q<ScrollView>(className:"console-work").Q("fleet-selected-ship-cards");
+            Assert.That(summary,Is.Not.Null);Assert.That(cards,Is.Not.Null);Assert.That(aside.Contains(cards),Is.False,"Members belong under the selected fleet; the right panel is its stable inspector.");
             foreach(var ship in frame.Strategy!.Ships.Where(s=>s.FleetId==fleet.Fleet.FleetId))
             {
                 var id=ship.ShipId.Value;var card=cards.Q("fleet-ship-card-"+id);Assert.That(card,Is.Not.Null);
@@ -76,10 +76,15 @@ namespace HobbyDS9.UnityReview.Tests
                     Assert.That(meter.Q<Label>().text,Does.Contain(own.Condition.Shields[i]+" / "+own.ShieldMaximum[i]));
                     Assert.That(meter.Q<ProgressBar>().value,Is.InRange(0f,100f));
                 }
-                Assert.That(card.Q<Label>(className:"fleet-ship-title").text,Does.StartWith("Class / fit: "));
-                Assert.That(card.Query<Label>().ToList().Any(l=>l.text=="Ship ID: "+id),Is.True);
+                Assert.That(card.Q<Label>(className:"fleet-ship-title").text,Is.Not.Empty);
+                Assert.That(card.Query<Label>().ToList().Any(l=>l.text.StartsWith("Class / fit: ",StringComparison.Ordinal)),Is.True);
                 Assert.That(card.Q<Button>("fleet-inspect-"+id),Is.Not.Null);
             }
+            var inspected=frame.Strategy!.Ships.First(s=>s.FleetId==fleet.Fleet.FleetId);
+            Activate("fleet-inspect-"+inspected.ShipId);Draw();
+            aside=root.Q<ScrollView>(className:"fleet-roster-aside");
+            Assert.That(aside.Q("fleet-selected-ship-inspector"),Is.Not.Null);Assert.That(aside.Q("owned-ship-model"),Is.Not.Null);
+            Assert.That(aside.Q("fleet-selected-hull").Q<Label>().text,Does.Contain(frame.OwnShips.Single(s=>s.Condition.ShipId==inspected.ShipId.Value).Condition.Hull.ToString()));
             Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(model.OrganizationShips,Is.Empty);
         }
         [Test] public void MemberSelectionAndFoldoutRedrawRetainUnsentDraftWithoutOrders()
@@ -143,8 +148,11 @@ namespace HobbyDS9.UnityReview.Tests
         {
             var frame=model.Current.Frame;var fleet=model.NamedFleets().First();workspace.SelectedFleet=fleet.Fleet.FleetId.Value;Draw();
             var first=frame.Strategy!.Ships.First(s=>s.FleetId==fleet.Fleet.FleetId).ShipId.Value;
-            Assert.That(root.Query<Label>().ToList().Any(l=>l.text=="Exact hull image unavailable."),Is.True,"Legacy fleet fixture has no Activity projection");
             Activate("fleet-inspect-"+first);Assert.That(workspace.SelectedOwnShip,Is.EqualTo(first));
+            Draw();
+            var inspector=root.Q("fleet-selected-ship-inspector");Assert.That(inspector,Is.Not.Null);
+            Assert.That(inspector.Q("owned-ship-model"),Is.Not.Null,"Owned design identity supplies the explicit preview even without Activity projection.");
+            Assert.That(inspector.Q<Label>("owned-ship-art-label").text,Is.Not.Empty);
             Assert.That(model.OrganizationShips,Is.Empty);Assert.That(model.Current.Frame,Is.SameAs(frame));
         }
     }

@@ -22,6 +22,7 @@ namespace HobbyDS9.UnityReview
             owner.RegisterCallback<DetachFromPanelEvent>(e=>{if(ReferenceEquals(e.target,owner))Cancel();});
         }
         internal void Cancel(){first=null;pointer=-1;}
+        internal void Cancel(VisualElement element){if(ReferenceEquals(first,element))Cancel();}
         internal void Remember(VisualElement element,int pointerId){first=element;pointer=pointerId;}
         internal bool Complete(VisualElement element,int pointerId)
         {var same=ReferenceEquals(first,element)&&pointer==pointerId;Cancel();return same;}
@@ -64,8 +65,10 @@ namespace HobbyDS9.UnityReview
             });
             element.RegisterCallback<NavigationSubmitEvent>(e=>{if(!element.enabledInHierarchy||element.panel==null)return;chain.Cancel();focus();open();e.StopPropagation();});
             element.RegisterCallback<KeyDownEvent>(e=>{chain.Cancel();if(e.keyCode!=KeyCode.Space||!element.enabledInHierarchy||element.panel==null)return;focus();e.StopPropagation();});
-            element.RegisterCallback<FocusOutEvent>(_=>chain.Cancel());
-            element.RegisterCallback<DetachFromPanelEvent>(_=>chain.Cancel());
+            // Focus transfer can finish after the next target's click callback.
+            // A retired target may cancel only its own pending chain.
+            element.RegisterCallback<FocusOutEvent>(_=>chain.Cancel(element));
+            element.RegisterCallback<DetachFromPanelEvent>(e=>{if(ReferenceEquals(e.target,element))chain.Cancel(element);});
         }
         public void SetSelected(bool value){selected=value;Refresh();}
         private void Refresh()

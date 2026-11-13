@@ -43,8 +43,9 @@ def check(root):
             "Review resource loader must consume exact TextAsset bytes")
     require("viewEpoch++" in entry and "epoch==viewEpoch" in entry and "ReferenceEquals(before,model.Current.Frame)" in entry,
             "Missing view epoch replacement guard")
-    require("modalPermission.TryOpen" in entry and '"Cancel",callbacks.Cancel' in entry and
-            '"Confirm",callbacks.Confirm' in entry and "modalPermission.Invalidate()" in entry,
+    menus = (runtime / "ReviewEntry.CampaignMenus.cs").read_text(encoding="utf-8-sig")
+    require("modalPermission.TryOpen" in menus and 'safeLabel,callbacks.Cancel' in menus and
+            'callbacks.Confirm();' in menus and 'if(valid)selected?.Invoke();' in menus and "modalPermission.Invalidate()" in entry,
             "Modal buttons must use the actual portable one-use permission and lifetime invalidation")
     keyboard = (runtime / "ReviewEntry.Keyboard.cs").read_text(encoding="utf-8-sig")
     require('if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);' in entry and
@@ -83,7 +84,7 @@ def check(root):
             "Frontier startup must remain opt-in with disjoint wrapper5 namespace/slots")
     require('origin.SetEnabled(false);origin.focusable=false;keyboardRetired.Add(origin);' in keyboard and
             'keyboardRetired.style.display=DisplayStyle.None;root.panel.visualTree.Add(keyboardRetired);' in keyboard and
-            'new[]{returnHeld?returnOrigin:null,spaceHeld?spaceOrigin:null}' in keyboard and
+            'new[]{returnHeld?returnOrigin:null,spaceHeld?spaceOrigin:null,noticeEscapeHeld?noticeEscapeOrigin:null}' in keyboard and
             'try{action();}finally{PreserveDemoKeyOrigins();}' in entry and
             'try{DrawPlayer();}finally{PreserveDemoKeyOrigins();}' in entry,
             "Removed held origins must stay bounded, hidden and disabled on the original panel after draw/actions")
@@ -92,12 +93,13 @@ def check(root):
             'ReferenceEquals(target,origin)' in keyboard and
             'ReferenceEquals(target,focused)&&keyboardRoot.Contains(target)&&target.enabledInHierarchy' in keyboard,
             "Release must match the accepted physical key/time and reject obsolete nonfocused panel targets")
-    require('returnOrigin=null;spaceOrigin=null;keyboardRetired?.RemoveFromHierarchy();keyboardRetired=null;' in keyboard and
+    require('returnOrigin=null;spaceOrigin=null;noticeEscapeOrigin=null;keyboardRetired?.RemoveFromHierarchy();keyboardRetired=null;' in keyboard and
             'if(!focused)ResetDemoKeyboard();' in keyboard and
             'UnbindDemoKeyboard();ResetDemoKeyboard();' in entry and
-            'private void OnDestroy(){ResetDemoKeyboard();ReleasePanel();}' in entry and
+            re.search(r'private void OnDestroy\(\)\{[^}]*ResetDemoKeyboard\(\);ReleasePanel\(\);', entry) is not None and
             'RemoveRetiredDemoKeyOrigin(spaceOrigin)' in keyboard and 'RemoveRetiredDemoKeyOrigin(returnOrigin)' in keyboard and
-            'if(returnHeld&&ReferenceEquals(origin,returnOrigin)||spaceHeld&&ReferenceEquals(origin,spaceOrigin))return;' in keyboard,
+            'RemoveRetiredDemoKeyOrigin(noticeEscapeOrigin)' in keyboard and
+            'if(returnHeld&&ReferenceEquals(origin,returnOrigin)||spaceHeld&&ReferenceEquals(origin,spaceOrigin)||noticeEscapeHeld&&ReferenceEquals(origin,noticeEscapeOrigin))return;' in keyboard,
             "Release/focus loss/disable/destroy must clean retired origins without removing another held key's origin")
     require('var next=currentPanel?.visualTree;' in keyboard and
             'keyboardReleaseRoot?.RegisterCallback<KeyUpEvent>(DemoKeyUp,TrickleDown.TrickleDown);' in keyboard and

@@ -8,6 +8,23 @@ namespace HobbyDS9.UnityReviewAdapter.Tests;
 public sealed class ReviewWorkspaceTests
 {
     [Fact]
+    public void EngineeringInspectionFiltersStayLocalAndResetOnlyAfterSuccessfulSessionReplacement()
+    {
+        using var f=new UnityReviewFixture();var model=new ReviewUiModel(f.Package,f.Codec,f.Store,A);
+        var workspace=new ReviewWorkspace(new ReviewCombatFlow(model));var frame=model.Current.Frame;
+        workspace.EngineeringProjectId="engineering.example";workspace.EngineeringSearch="reactor";
+        workspace.EngineeringKind=2;workspace.EngineeringAllocationOpen=true;
+        workspace.WorldColumnsExpanded=true;workspace.WorldsContextOpen=true;
+        Assert.True(workspace.Navigate(ReviewWorkspacePage.Research));Assert.True(workspace.Navigate(ReviewWorkspacePage.Map));
+        Assert.Same(frame,model.Current.Frame);Assert.Equal("engineering.example",workspace.EngineeringProjectId);
+        Assert.True(model.Save("engineering-inspection"));Assert.False(model.Load("missing",true));
+        Assert.Equal(ReviewWorkspacePage.Map,workspace.Page);Assert.Equal("reactor",workspace.EngineeringSearch);
+        Assert.True(model.Load("engineering-inspection",true));Assert.Equal(ReviewWorkspacePage.Map,workspace.Page);
+        Assert.Null(workspace.EngineeringProjectId);Assert.Equal("",workspace.EngineeringSearch);
+        Assert.Equal(0,workspace.EngineeringKind);Assert.False(workspace.EngineeringAllocationOpen);
+        Assert.False(workspace.WorldColumnsExpanded);Assert.False(workspace.WorldsContextOpen);
+    }
+    [Fact]
     public void EveryPanelUsesSameControllerAndFrameWithoutResetOrAuthorityRefresh()
     {
         using var f=new UnityReviewFixture();var model=new ReviewUiModel(f.Package,f.Codec,f.Store,A);

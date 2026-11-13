@@ -15,7 +15,7 @@ namespace HobbyDS9.UnityReview.Tests
         private GameObject go=null!;private ReviewEntry entry=null!;
         private VisualElement Root=>go.GetComponent<UIDocument>().rootVisualElement;
         private ReviewUiModel Model=>entry.Presentation!.Model;
-        private void Invoke(string method,params object[] args)=>typeof(ReviewEntry).GetMethod(method,BindingFlags.NonPublic|BindingFlags.Instance)!.Invoke(entry,args);
+        private void Invoke(string method,params object[] args)=>typeof(ReviewEntry).GetMethod(method,BindingFlags.NonPublic|BindingFlags.Instance,null,Array.ConvertAll(args,arg=>arg.GetType()),null)!.Invoke(entry,args);
         [SetUp] public void Setup()
         {
             Assert.That(IntegratedLaunchOptions.TryParse(new[]{"--hobbyds9-integrated-playtest","--hobbyds9-integrated-actor","civ.federation"},out var options),Is.True);

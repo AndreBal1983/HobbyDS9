@@ -20,6 +20,7 @@ namespace HobbyDS9.UnityReview
         private readonly Action<CampaignActivityCommandDto> submitActivity;
         private readonly Action<CampaignActivityCommandDto,string> reviewActivity;
         private readonly ScrollView body;
+        private readonly VisualElement tabs;
         private readonly VisualElement review;
         private readonly Label status;
         private ReviewActivitiesPanel? science;
@@ -27,6 +28,8 @@ namespace HobbyDS9.UnityReview
         private Action<string>? selectSiteOnMap;
         private ShipPreviewStage? hullPreview;
         private ReviewSolOverview? solOverview;
+        private ReviewPlanetPortrait? planetPortrait;
+        private Action? fitConstruction;
         private float solYaw,solZoom=1; private bool solReducedMotion;
         private readonly Dictionary<string,bool> planetSections=new Dictionary<string,bool>(StringComparer.Ordinal);
         private string inspectedBlueprint="";private int inspectedRevision;
@@ -97,10 +100,11 @@ namespace HobbyDS9.UnityReview
             this.observation=observation;this.planets=planets;this.activities=activities;this.reviewOrder=reviewOrder;this.submit=submit;this.reviewActivity=reviewActivity;this.submitActivity=submitActivity;this.supportsKitFreePassengers=supportsKitFreePassengers;this.systemNodes=systemNodes;
             name="colonisation-panel";style.flexGrow=1;style.minHeight=0;style.minWidth=0;
             world=observation.Worlds.FirstOrDefault()?.Id??"";ship=observation.Transports.FirstOrDefault()?.ShipId??"";planet=planets.FirstOrDefault()?.PlanetId??"";
-            var tabs=Row(this);foreach(var name in new[]{"Worlds","Planets","Transports","Science"}){var captured=name;Button(tabs,name=="Planets"?"System":name,"colonisation-tab-"+name,()=>Show(captured),true);}
+            tabs=Row(this);foreach(var name in new[]{"Worlds","Planets","Transports","Science"}){var captured=name;Button(tabs,name=="Planets"?"System":name=="Worlds"?"Construction":name,"colonisation-tab-"+name,()=>Show(captured),true);}
             body=new ScrollView(ScrollViewMode.Vertical){name="colonisation-scroll"};body.style.flexGrow=1;body.style.minHeight=0;Add(body);
+            body.contentViewport.RegisterCallback<GeometryChangedEvent>(_=>fitConstruction?.Invoke());
             review=new VisualElement{name="colonisation-order-review"};review.style.flexShrink=0;review.style.maxHeight=220;review.style.display=DisplayStyle.None;Add(review);
-            status=Text(this,"Provisional colony playtest. Construction uses Industry and delivered materials; credits fund expedition choices.","colonisation-command-status");status.style.flexShrink=0;
+            status=Text(this,"","colonisation-command-status");status.style.flexShrink=0;status.style.display=DisplayStyle.None;
             RegisterCallback<DetachFromPanelEvent>(e=>{if(ReferenceEquals(e.target,this))Dispose();});Show("Worlds");
         }
         private bool Live=>!disposed&&!submitted;
@@ -111,7 +115,7 @@ namespace HobbyDS9.UnityReview
             selectSiteOnMap=select;science?.BindKnownSiteNavigation(knownSiteLocations,select);
         }
         private static Label Text(VisualElement p,string text,string id="")
-        {var l=new Label(text){name=id};l.style.whiteSpace=WhiteSpace.Normal;l.style.fontSize=16;l.style.flexShrink=0;l.style.marginBottom=6;p.Add(l);return l;}
+        {var l=new Label(text){name=id};l.style.whiteSpace=WhiteSpace.Normal;l.style.fontSize=18;l.style.flexShrink=0;l.style.marginBottom=6;p.Add(l);return l;}
         private static VisualElement Row(VisualElement p)
         {var r=new VisualElement();r.style.flexDirection=FlexDirection.Row;r.style.flexWrap=Wrap.Wrap;r.style.minWidth=0;r.style.flexShrink=0;r.style.marginBottom=6;p.Add(r);return r;}
         private Button Button(VisualElement p,string text,string id,Action action,bool persistent=false)
@@ -122,6 +126,7 @@ namespace HobbyDS9.UnityReview
             var f=new DropdownField(caption,labels,index){name=control};f.style.minHeight=44;f.style.fontSize=16;f.style.flexShrink=0;p.Add(f);f.SetEnabled(values.Count>0);
             f.RegisterValueChangedCallback(_=>{if(Live&&epoch==controlEpoch&&f.index>=0&&f.index<values.Count)changed(id(values[f.index]));});
         }
+        internal void BindWorldsOverview(Action back)=>Button(tabs,"Owned worlds overview","worlds-back-to-overview",back,true);
         private static string MaterialName(string id)=>id=="resource.dilithium"?"Dilithium":id=="resource.settlement-kit"?"Settlement kits":"Material";
         private static string Materials(IEnumerable<ResourceAmountSnapshot> rows)=>string.Join(", ",rows.Where(x=>x.Amount!=0).Select(x=>MaterialName(x.ResourceDefinitionId)+" "+x.Amount));
         private ColonisationCommandDto Command(ColonisationAction action)=>new ColonisationCommandDto{ActorId=observation.Actor,Turn=observation.Turn,Revision=observation.Revision,Action=action,CommandId="command.colony.ui."+Guid.NewGuid().ToString("N")};
@@ -133,7 +138,7 @@ namespace HobbyDS9.UnityReview
         {
             if(page=="Transports"&&selected!="Transports")transportDraft=null;
             if(disposed)return;controlEpoch++;reviewEpoch++;displayedReview=null;currentInspector=null;page=new[]{"Worlds","Planets","Planet","Transports","Science"}.Contains(selected)?selected:"Worlds";
-            science?.Dispose();science=null;ReleaseHull();ReleaseSolOverview();body.Clear();review.Clear();review.style.display=DisplayStyle.None;
+            fitConstruction=null;science?.Dispose();science=null;ReleaseHull();ReleaseSolOverview();body.Clear();review.Clear();review.style.display=DisplayStyle.None;
             if(page=="Worlds")Worlds();else if(page=="Planets")Planets();else if(page=="Planet")PlanetInterface();else if(page=="Transports")Transports();else
             {
                 science=new ReviewActivitiesPanel(activities,reviewActivity,submitActivity,true);
@@ -149,11 +154,21 @@ namespace HobbyDS9.UnityReview
             command.style.unityFontStyleAndWeight=FontStyle.Bold;
             Picker(body,"Owned world",observation.Worlds,x=>x.Id,x=>x.Name,world,id=>{world=id;Show(page);},"colonisation-world-selector");
             var w=observation.Worlds.FirstOrDefault(x=>x.Id==world);if(w==null){Text(body,"No owned worlds observed.");return;}
-            Text(body,w.Name+" \u00b7 "+w.Stage+" \u00b7 "+w.Population+" people \u00b7 "+w.Food+" stored food","colonisation-world-facts");
-            Text(body,"Current weekly output: Industry "+w.Industry+", Research "+w.Research+", Food "+w.FoodOutput+". Local stock: "+(Materials(w.Stocks)==""?"none":Materials(w.Stocks)));
-            Text(body,w.FoodDemand.HasValue?"Residents need "+w.FoodDemand.Value+" food/week; local balance "+(w.LocalFoodBalance>=0?"+":"")+w.LocalFoodBalance+" before imports/exports.":"Resident food demand unavailable.","colonisation-food-balance");
-            if(w.Stage==ColonyEstablishmentStage.Established)Text(body,"Consecutive food-shortage weeks: "+w.ShortageWeeks+". Deliveries depend on actual surplus, routes and capacity.","colonisation-food-shortage");
+            Text(body,w.Name+" \u00b7 "+w.Stage,"colonisation-world-facts");
+            var readouts=Row(body);readouts.AddToClassList("construction-world-readouts");
+            void Readout(string caption,long value)
+            {
+                var metric=new VisualElement();metric.AddToClassList("construction-world-readout");readouts.Add(metric);
+                Text(metric,caption).AddToClassList("construction-readout-label");
+                Text(metric,value.ToString()).AddToClassList("construction-readout-value");
+            }
+            Readout("Population",w.Population);Readout("Industry / week",w.Industry);
+            Readout("Research / week",w.Research);Readout("Food output / week",w.FoodOutput);
+            Text(body,"Local stocks · Food "+w.Food+" · "+(Materials(w.Stocks)==""?"no other materials":Materials(w.Stocks)),"construction-local-stocks");
+            var balance=w.LocalFoodBalance.HasValue?(w.LocalFoodBalance.Value>=0?"+":"")+w.LocalFoodBalance.Value:"unknown";
+            Text(body,w.FoodDemand.HasValue?"Residents need "+w.FoodDemand.Value+" food/week; local balance "+balance+" before imports/exports.":"Resident food demand unavailable.","colonisation-food-balance");
             var preparation=new Foldout{text="Prepare a settlement expedition",value=false,name="colonisation-preparation-guide"};preparation.style.flexShrink=0;body.Add(preparation);
+            if(w.Stage==ColonyEstablishmentStage.Established)Text(preparation,"Consecutive food-shortage weeks: "+w.ShortageWeeks+". Deliveries depend on actual surplus, routes and capacity.","colonisation-food-shortage");
             Text(preparation,"Choose a populated source world separately from your industrial yard. Check food output against resident demand before loading voyage food. Planetary buildings show their base effects below.");
             Text(preparation,"At a food-deficit yard, consider a food-producing building before a long ship order. Check its material cost and base effects below. Materials and work are consumed gradually; extra food output begins after actual completion.");
             Text(preparation,"Build a transport at a shipyard and a settlement kit at the source world, then bring the empty transport there. In Transports, review the actual source cohort, remaining residents, local kit and voyage food. Survey a suitable known planet, travel there and review deployment; retain food for establishment and later supply trips. Travel and deliveries are not guaranteed safe.");
@@ -163,29 +178,36 @@ namespace HobbyDS9.UnityReview
             var row=Row(body);
             row.style.flexWrap=Wrap.NoWrap;
             var catalogue=new ScrollView{name="colonisation-catalogue"};
+            var dock=new VisualElement{name="construction-context-dock"};
+            var inspector=new VisualElement{name="construction-selected-hull"};dock.Add(inspector);
             var queue=new ScrollView{name="colonisation-queue"};
-            foreach(var column in new[]{catalogue,queue})
+            queue.style.flexGrow=1;queue.style.flexBasis=0;queue.style.minHeight=120;queue.style.minWidth=0;dock.Add(queue);
+            foreach(var column in new VisualElement[]{catalogue,dock})
             {
                 column.style.flexBasis=0;
                 column.style.minWidth=0;
                 column.style.height=420;
                 row.Add(column);
             }
-            catalogue.style.flexGrow=2;
+            catalogue.style.flexGrow=1;
             catalogue.style.marginRight=16;
-            queue.style.flexGrow=1;
-            row.RegisterCallback<GeometryChangedEvent>(e=>
+            dock.style.flexBasis=380;dock.style.flexShrink=0;
+            fitConstruction=()=>
             {
-                var sideBySide=e.newRect.width>=760;
+                if(!Live||page!="Worlds"||row.panel==null)return;
+                var sideBySide=row.layout.width>=760;
                 var direction=sideBySide?FlexDirection.Row:FlexDirection.Column;
-                if(row.style.flexDirection.value==direction)return;
                 row.style.flexDirection=direction;
                 catalogue.style.marginRight=sideBySide?16:0;
                 catalogue.style.flexBasis=sideBySide?new StyleLength(0f):new StyleLength(StyleKeyword.Auto);
-                queue.style.flexBasis=catalogue.style.flexBasis;
+                dock.style.flexBasis=sideBySide?new StyleLength(380):new StyleLength(StyleKeyword.Auto);
+                var available=Mathf.Clamp(body.contentViewport.layout.height-row.layout.y-12,320,680);
+                if(Mathf.Abs(catalogue.style.height.value.value-(sideBySide?available:420))>.5f)catalogue.style.height=sideBySide?available:420;
+                if(Mathf.Abs(dock.style.height.value.value-(sideBySide?available:520))>.5f)dock.style.height=sideBySide?available:520;
                 catalogue.style.flexShrink=sideBySide?1:0;
-                queue.style.flexShrink=catalogue.style.flexShrink;
-            });
+                dock.style.flexShrink=0;
+            };
+            row.RegisterCallback<GeometryChangedEvent>(_=>fitConstruction?.Invoke());
 
             var orders=observation.Production.Where(x=>x.ColonyId==w.Id).ToArray();
             ConstructionHeading(queue,"Build queue · "+orders.Length+(orders.Length==1?" order":" orders"),"colonisation-queue-heading");
@@ -205,9 +227,12 @@ namespace HobbyDS9.UnityReview
                 foreach(var option in activities.BuildOptions.Where(x=>x.Kind==kind))
                 {
                     var selected=option;
-                    var art=ships?ConstructionCardArt.Ship(selected.HullVersionId):ConstructionCardArt.Building(selected.DefinitionId);
+                    // Ship study thumbnails can resemble exploded parts. Exact live hull inspection
+                    // belongs in the shared dock; never enlarge those old pixels into a hero.
+                    var art=ships?null:ConstructionCardArt.Building(selected.DefinitionId);
                     var title=selected.DisplayName+(selected.BlueprintRevision>0?" R"+selected.BlueprintRevision:"");
                     var card=ConstructionCard(cards,title,art);
+                    card.AddToClassList("construction-option-card");
                     card.style.marginRight=6;
                     card.style.width=Length.Percent(100);
                     Text(card,selected.Cost.Industry+" Industry");
@@ -224,34 +249,41 @@ namespace HobbyDS9.UnityReview
                     var unavailable=!selected.Supported?selected.Reason:w.ConstructionUnavailableReason(ships);
                     if(unavailable==null&&!ships&&(built>0||queued>0))unavailable="Unique building: already built or queued.";
                     var actions=Row(card);
-                    var add=Button(actions,"+ Add "+selected.DisplayName,"colonisation-build-"+index++,()=>
+                    var add=Button(actions,"+ Add","colonisation-build-"+index++,()=>
                     {
                         var c=Activity(ships?CampaignActivityCommandKind.EnqueueShip:CampaignActivityCommandKind.EnqueueStructure,w.Id);
                         c.DefinitionId=selected.DefinitionId;
                         c.BlueprintRevision=selected.BlueprintRevision;
                         SendActivity(c);
                     });
+                    add.tooltip="Add "+title+" at "+w.Name;
                     ConstructionPrimary(add);
                     add.SetEnabled(selected.Supported&&unavailable==null);
                     if(unavailable!=null)Text(card,unavailable);
                     if(ships)
                     {
-                        Button(actions,"Inspect "+selected.DisplayName,"colonisation-inspect-"+index,()=>
+                        var inspect=Button(actions,"Inspect hull","colonisation-inspect-"+index,()=>
                         {
                             inspectedBlueprint=selected.DefinitionId;
                             inspectedRevision=selected.BlueprintRevision;
                             inspectedOpen=true;
-                            InspectHull(card,selected);
+                            InspectHull(inspector,selected);
                         });
+                        inspect.tooltip="Inspect "+title+" · exact published hull";
                         if(inspectedBlueprint==selected.DefinitionId&&inspectedRevision==selected.BlueprintRevision)
-                            InspectHull(card,selected);
+                            InspectHull(inspector,selected);
                     }
-                    else ConstructionEffects(card,selected.DefinitionId);
+                    else
+                    {
+                        var effects=new Foldout{text="Effects & conditions",value=false};card.Add(effects);
+                        ConstructionEffects(effects,selected.DefinitionId);
+                    }
                 }
             }
 
             ConstructionHeading(catalogue,"Special projects","colonisation-section-projects");
             var kit=ConstructionCard(catalogue,"Settlement kit",ConstructionCardArt.Kit());
+            kit.AddToClassList("construction-option-card");
             Text(kit,observation.KitIndustry+" Industry · "+ConstructionMaterials(observation.KitResources));
             var addKit=Button(kit,"+ Settlement kit","colonisation-build-kit",()=>
             {
@@ -273,22 +305,22 @@ namespace HobbyDS9.UnityReview
                 var order=orders[i];
                 var artwork=order.Kind switch
                 {
-                    ColonisationProductionKind.PublishedShip => activities.BuildOptions.FirstOrDefault(x=>
-                        x.DefinitionId==order.DefinitionId&&x.BlueprintRevision==order.BlueprintRevision) is ActivityBuildOptionDto option
-                        ? ConstructionCardArt.Ship(option.HullVersionId) : null,
+                    ColonisationProductionKind.PublishedShip => null,
                     ColonisationProductionKind.Infrastructure => ConstructionCardArt.Building(order.DefinitionId),
                     ColonisationProductionKind.SettlementKit => ConstructionCardArt.Kit(),
                     _ => null,
                 };
                 var card=ConstructionCard(queue,order.Name,artwork);
+                card.AddToClassList("construction-queue-row");
                 if(i==0)card.style.borderLeftColor= (Color)new Color32(239,179,107,255);
                 Text(card,(i+1)+" · "+order.Status);
                 Text(card,"Industry progress: "+order.CompletedIndustry+" / "+order.RequiredIndustry);
                 if(order.RequiredIndustry>0)
                     card.Add(new ProgressBar{lowValue=0,highValue=order.RequiredIndustry,value=order.CompletedIndustry});
-                Text(card,"Materials required: "+ConstructionMaterials(order.Required));
-                Text(card,"Materials consumed: "+ConstructionMaterials(order.Consumed));
-                Text(card,"Cancel discards work and consumed materials.");
+                var materialsDetail=new Foldout{text="Materials & cancellation",value=false};card.Add(materialsDetail);
+                Text(materialsDetail,"Materials required: "+ConstructionMaterials(order.Required));
+                Text(materialsDetail,"Materials consumed: "+ConstructionMaterials(order.Consumed));
+                Text(materialsDetail,"Cancel discards work and consumed materials.");
                 var cancel=Button(card,"Cancel order","colonisation-queue-cancel-"+order.Id,
                     ()=>SendActivity(Activity(CampaignActivityCommandKind.CancelProduction,order.Id)));
                 cancel.tooltip="Cancel construction now. Work and consumed materials are not refunded.";
@@ -359,15 +391,19 @@ namespace HobbyDS9.UnityReview
             var fold=new Foldout{text="Inspect "+option.DisplayName+" R"+option.BlueprintRevision,value=inspectedOpen,name="colonisation-hull-inspector"};fold.style.flexShrink=0;fold.style.fontSize=16;parent.Add(fold);
             currentInspector=fold;var inspectorEpoch=controlEpoch;
             bool OwnInspector()=>Live&&inspectorEpoch==controlEpoch&&ReferenceEquals(currentInspector,fold);
-            Text(fold,"Exact published hull art. This image supplies no statistics or unlocks.");
             var image=new Image{name="colonisation-hull-image",scaleMode=ScaleMode.ScaleToFit};image.style.height=180;image.style.minHeight=180;image.style.flexShrink=0;fold.Add(image);
+            image.tooltip="Exact published hull presentation. No statistics or unlocks are supplied by this image.";
             var label=Text(fold,"Expand to inspect exact hull art.");
             void Refresh()
             {
                 if(!OwnInspector())return;
                 if(!fold.value||fold.panel==null){image.image=null;ReleaseHull();return;}
                 if(ActivityHullCatalog.Find(option.HullVersionId)==null){label.text="No exact hull art binding is available.";return;}
-                ReleaseHull();hullPreview=new ShipPreviewStage(512,320);hullPreview.ShowActivityHull(option.HullVersionId);image.image=hullPreview.Texture;label.text=hullPreview.Label;
+                ReleaseHull();hullPreview=new ShipPreviewStage(512,320);hullPreview.ShowActivityHull(option.HullVersionId);
+                image.image=hullPreview.Availability==ShipPreviewAvailability.Model?hullPreview.Texture:null;
+                label.text=hullPreview.Availability==ShipPreviewAvailability.Model&&!hullPreview.Label.Contains("missing art")
+                    ?ActivityHullCatalog.Find(option.HullVersionId).Label:hullPreview.Label;
+                label.tooltip=hullPreview.Label;
             }
             fold.RegisterValueChangedCallback(_=>{if(!OwnInspector())return;inspectedOpen=fold.value;Refresh();});fold.RegisterCallback<AttachToPanelEvent>(_=>Refresh());
             Button(fold,"Rotate hull","colonisation-hull-orbit",()=>{if(OwnInspector())hullPreview?.OrbitReference(80,26);});
@@ -402,8 +438,21 @@ namespace HobbyDS9.UnityReview
             var surface=new VisualElement{name="colonisation-system-content"};body.Add(surface);
             var activation=new PlanetActivationScope(surface);
             Text(body,"Click / Space: focus · Double-click / Enter: open planet","colonisation-planet-interaction-hint");
-            var layout=Row(surface);var detail=new VisualElement{name="colonisation-planet-focus"};
-            detail.style.flexBasis=300;detail.style.flexGrow=1;detail.style.minWidth=0;detail.style.paddingLeft=10;
+            var layout=Row(surface);layout.name="colonisation-system-layout";
+            var visual=new VisualElement{name="colonisation-system-visual"};visual.style.flexBasis=520;visual.style.flexGrow=1;visual.style.minWidth=0;
+            var detail=new ScrollView(ScrollViewMode.Vertical){name="colonisation-planet-focus"};detail.AddToClassList("system-selected-inspector");
+            detail.style.height=420;detail.style.minHeight=300;
+            detail.style.width=360;detail.style.flexShrink=0;detail.style.minWidth=0;
+            layout.Add(visual);layout.Add(detail);
+            bool? compact=null;
+            surface.RegisterCallback<GeometryChangedEvent>(e=>{
+                if(!ReferenceEquals(e.target,surface))return;
+                var narrow=e.newRect.width<940;if(compact==narrow)return;compact=narrow;
+                layout.style.flexDirection=narrow?FlexDirection.Column:FlexDirection.Row;
+                visual.style.flexBasis=narrow?StyleKeyword.Auto:new StyleLength(520);
+                detail.style.width=narrow?new StyleLength(Length.Percent(100)):new StyleLength(360);
+                detail.style.marginLeft=narrow?0:12;
+            });
             var cards=new Dictionary<string,PlanetBodyCard>(StringComparer.Ordinal);var epoch=controlEpoch;
             void FocusPlanet(ColonisationPlanetSnapshot target)
             {
@@ -421,9 +470,9 @@ namespace HobbyDS9.UnityReview
             solOverview=new ReviewSolOverview(bodies,p.PlanetId,solYaw,solZoom,FocusPlanet,
                 (yaw,zoom)=>{if(Live&&epoch==controlEpoch){solYaw=yaw;solZoom=zoom;}},OpenPlanet,solReducedMotion,
                 reduced=>{if(Live&&epoch==controlEpoch)solReducedMotion=reduced;},activation);
-            layout.Add(solOverview);layout.Add(detail);PlanetDetails(detail,p);
+            visual.Add(solOverview);PlanetDetails(detail,p);
             Text(body,"⌂ Own colony / outpost · ? Colony unknown · Gold edge: selected. Survey and settlement are separate observations.");
-            var strip=Row(surface);strip.name="colonisation-system-bodies";
+            var strip=Row(visual);strip.name="colonisation-system-bodies";
             foreach(var disclosed in bodies)
             {
                 var own=observation.Worlds.Where(x=>x.PlanetId==disclosed.PlanetId).ToArray();
@@ -453,7 +502,9 @@ namespace HobbyDS9.UnityReview
             if(page=="Planets"&&solOverview!=null)
             {
                 var portrait=new Image{name="colonisation-focused-planet-portrait",scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};
-                portrait.style.height=144;portrait.style.flexShrink=0;parent.Add(portrait);solOverview.BindPortrait(portrait);
+                portrait.style.height=220;portrait.style.flexShrink=0;parent.Add(portrait);
+                var portraitStatus=Text(parent,"Selected-body preview unavailable.","colonisation-portrait-unavailable");
+                portraitStatus.style.display=DisplayStyle.None;solOverview.BindPortrait(portrait,portraitStatus);
             }
             var ownWorlds=observation.Worlds.Where(x=>x.PlanetId==p.PlanetId).ToArray();
             if(ownWorlds.Length==0)Text(parent,"Colony presence, population, production and build queue: unknown. No own-world record is not proof of an uncolonised body.");
@@ -509,7 +560,16 @@ namespace HobbyDS9.UnityReview
             Button(body,"Back to system","colonisation-planet-back",()=>Show("Planets"));
             var p=planets.FirstOrDefault(x=>x.PlanetId==planet);
             if(p==null){Text(body,"This planet is no longer disclosed.");return;}
-            PlanetDetails(body,p);
+            var context=Row(body);context.name="planet-detail-context";context.style.flexWrap=Wrap.NoWrap;
+            var portrait=new ReviewPlanetPortrait(p);planetPortrait=portrait;context.Add(portrait);
+            var detail=new VisualElement{name="planet-detail-facts"};detail.style.minWidth=0;detail.style.flexGrow=1;context.Add(detail);
+            context.RegisterCallback<GeometryChangedEvent>(e=>{
+                if(!ReferenceEquals(e.target,context))return;
+                var narrow=e.newRect.width<860;
+                context.style.flexDirection=narrow?FlexDirection.Column:FlexDirection.Row;
+                portrait.style.width=narrow?new StyleLength(Length.Percent(100)):new StyleLength(380);
+            });
+            PlanetDetails(detail,p);
             var own=observation.Worlds.Where(x=>x.PlanetId==p.PlanetId).ToArray();
             foreach(var colony in own)Button(body,"Manage "+colony.Name,"colonisation-planet-colony-"+colony.Id,()=>{world=colony.Id;Show("Worlds");});
             var localShips=systemNodes==null?Array.Empty<ActivityOwnShipDto>():activities.Ships
@@ -561,9 +621,12 @@ namespace HobbyDS9.UnityReview
             foreach(var report in observation.Reports)Text(history,report.Stage+" \u00b7 deaths "+report.Deaths+", people transferred "+report.PopulationTransferred+", food consumed "+report.FoodConsumed+", lost "+report.FoodLost+". "+report.Report);
             if(observation.Reports.Count==0)Text(history,"No expedition manifests recorded yet.");
             Picker(body,"Owned transport",observation.Transports,x=>x.ShipId,x=>x.Name,ship,id=>{ship=id;Show(page);},"colonisation-transport-selector");
-            var t=observation.Transports.FirstOrDefault(x=>x.ShipId==ship);if(t==null){Text(body,"Build the ready colony transport at an established owned world.");foreach(var report in observation.Reports)Text(body,report.Stage+" \u00b7 deaths "+report.Deaths+", food consumed "+report.FoodConsumed+". "+report.Report);return;}
-            Text(body,t.Name+" \u00b7 frozen R"+t.BlueprintRevision+" \u00b7 "+(t.Stationary?"stationary":"travelling"));Text(body,"Capacity: "+t.PassengerCapacity+" people, "+t.FoodCapacity+" food, "+t.MaterialCapacity+" materials. Use the Map to issue an ordinary known route.");
-            Text(body,"Aboard: "+t.Population+" people, "+t.Food+" food; "+Materials(t.Cargo)+". "+t.Report);
+            var t=observation.Transports.FirstOrDefault(x=>x.ShipId==ship);if(t==null){Text(body,"Build the ready colony transport at an established owned world.");Button(body,"Open construction","transport-open-construction",()=>Show("Worlds"));return;}
+            var manifest=new VisualElement();manifest.AddToClassList("transport-manifest-summary");body.Add(manifest);
+            Text(manifest,t.Name+" · R"+t.BlueprintRevision+" · "+(t.Stationary?"Stationary":"Travelling")).AddToClassList("console-section");
+            Text(manifest,"People aboard "+t.Population+" / "+t.PassengerCapacity+" · Food aboard "+t.Food+" / "+t.FoodCapacity);
+            Text(manifest,"Materials: "+Materials(t.Cargo)+" · Capacity "+t.MaterialCapacity+". Use the Map to issue an ordinary known route.");
+            var manifestReport=new Foldout{text="Current transport report",value=false};manifest.Add(manifestReport);Text(manifestReport,t.Report);
             Picker(body,"Owned source / receiving world",observation.Worlds,x=>x.Id,x=>x.Name,world,id=>{world=id;Show(page);},"colonisation-transport-world");
             var w=observation.Worlds.FirstOrDefault(x=>x.Id==world);if(w==null)return;
             if(transportDraft==null||!transportDraft.Matches(w,t))transportDraft=new TransportDraft(w,t);
@@ -574,10 +637,11 @@ namespace HobbyDS9.UnityReview
             foreach(var id in draft.Materials.Keys.Where(id=>!resourceIds.Contains(id,StringComparer.Ordinal)).ToList())draft.Materials.Remove(id);
             foreach(var id in resourceIds)if(!draft.Materials.ContainsKey(id))draft.Materials.Add(id,0);
             Text(body,"Embark uses 100 actual settlers and one local kit; at least 500 people must remain, with no more than a quarter of the selected source cohort embarking. Choose 8–20 food for settlers. Carried food is finite; blocked journeys can cause shortages and deaths.");
-            var food=new IntegerField("Food to transfer"){value=draft.Food,name="colonisation-food"};food.style.minHeight=44;food.style.fontSize=16;body.Add(food);food.RegisterValueChangedCallback(_=>{if(OwnDraft())draft.Food=food.value;});
+            var quantities=Row(body);quantities.AddToClassList("transport-quantities");
+            var food=new IntegerField("Food to transfer"){value=draft.Food,name="colonisation-food"};food.style.minHeight=44;food.style.fontSize=18;quantities.Add(food);food.RegisterValueChangedCallback(_=>{if(OwnDraft())draft.Food=food.value;});
             var materialFields=new List<(string id,IntegerField field)>();
             foreach(var resource in resourceIds)
-            {var f=new IntegerField(MaterialName(resource)){value=draft.Materials[resource],name="colonisation-material-"+resource};f.style.minHeight=44;f.style.fontSize=16;body.Add(f);materialFields.Add((resource,f));f.RegisterValueChangedCallback(_=>{if(OwnDraft())draft.Materials[resource]=f.value;});}
+            {var f=new IntegerField(MaterialName(resource)){value=draft.Materials[resource],name="colonisation-material-"+resource};f.style.minHeight=44;f.style.fontSize=18;quantities.Add(f);materialFields.Add((resource,f));f.RegisterValueChangedCallback(_=>{if(OwnDraft())draft.Materials[resource]=f.value;});}
             List<ResourceAmountDto> MaterialsInput()=>materialFields.Where(x=>x.field.value!=0).Select(x=>new ResourceAmountDto{ResourceDefinitionId=x.id,Amount=x.field.value}).ToList();
             if(t.ManifestId==null)
             {
@@ -611,7 +675,7 @@ namespace HobbyDS9.UnityReview
             foreach(var report in observation.Reports.Where(x=>x.ShipId==t.ShipId))Text(body,report.Stage+" \u00b7 deaths "+report.Deaths+", food consumed "+report.FoodConsumed+", lost "+report.FoodLost+". "+report.Report);
         }
         internal void PresentAdmissionRejected(string text){if(disposed)return;submitted=false;PresentStatus(text);}
-        internal void PresentStatus(string? text){if(!disposed&&text!=null)status.text=text;}
+        internal void PresentStatus(string? text){if(!disposed&&text!=null){status.text=text;status.style.display=string.IsNullOrWhiteSpace(text)?DisplayStyle.None:DisplayStyle.Flex;}}
         internal void PresentReviewedOrder(ColonisationCommandDto command,string caption,ColonisationEligibilitySnapshot eligibility)
         {
             if(!Live||eligibility.Actor!=observation.Actor||eligibility.Turn!=observation.Turn||eligibility.Revision!=observation.Revision||command.ActorId!=observation.Actor||command.Turn!=observation.Turn||command.Revision!=observation.Revision||eligibility.Action!=command.Action)return;
@@ -624,7 +688,7 @@ namespace HobbyDS9.UnityReview
          var activity=new ReviewActivitiesPanel.ReviewState(command,caption,eligibility);displayedReview=new ReviewState(activity);command=activity.Command;
          var token=++reviewEpoch;review.Clear();review.style.display=DisplayStyle.Flex;Text(review,caption);Text(review,eligibility.Accepted?"Available at this observed state.":eligibility.Reason);if(eligibility.Accepted)Button(review,"Confirm order","colonisation-order-confirm",()=>{if(token==reviewEpoch)SendActivity(command);});Button(review,"Back","colonisation-order-back",()=>DismissReview(token));}
         private void DismissReview(int token){if(token!=reviewEpoch)return;reviewEpoch++;displayedReview=null;review.Clear();review.style.display=DisplayStyle.None;}
-        private void ReleaseSolOverview(){solOverview?.Dispose();solOverview=null;}
-        public void Dispose(){if(disposed)return;disposed=true;reviewEpoch++;displayedReview=null;currentInspector=null;science?.Dispose();science=null;knownSiteLocations=null;selectSiteOnMap=null;ReleaseHull();ReleaseSolOverview();review.Clear();}
+        private void ReleaseSolOverview(){solOverview?.Dispose();solOverview=null;planetPortrait?.Dispose();planetPortrait=null;}
+        public void Dispose(){if(disposed)return;disposed=true;fitConstruction=null;reviewEpoch++;displayedReview=null;currentInspector=null;science?.Dispose();science=null;knownSiteLocations=null;selectSiteOnMap=null;ReleaseHull();ReleaseSolOverview();review.Clear();}
     }
 }

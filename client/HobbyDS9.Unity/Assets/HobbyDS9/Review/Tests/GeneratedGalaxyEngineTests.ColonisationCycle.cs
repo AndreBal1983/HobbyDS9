@@ -295,6 +295,14 @@ namespace HobbyDS9.UnityReview.Tests
                 CycleActivate(t,()=>{pending.SetValue(workspace,request);CampaignPage(doc,ReviewWorkspacePage.Worlds);});
                 yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);AssertWorld(worlds[1].Id);
             }
+            var back=doc.rootVisualElement.Q<Button>("worlds-back-to-overview");yield return ColonyReach(doc,back);
+            CycleActivate(t,()=>Click(back));yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);
+            Assert.That(doc.rootVisualElement.Q("world-ledger-scroll"),Is.Not.Null);
+            Assert.That(model.Current.Frame,Is.SameAs(frame),"World overview/detail navigation changes no authority.");
+            var own=doc.rootVisualElement.Q<Button>("world-select-"+worlds[1].Id);yield return ColonyReach(doc,own);
+            CycleActivate(t,()=>Click(own));yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);
+            var details=doc.rootVisualElement.Q<Button>("world-open-details");yield return ColonyReach(doc,details);
+            CycleActivate(t,()=>Click(details));yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);AssertWorld(worlds[1].Id);
         }
         private static IEnumerator CycleOperation(CycleReceivingState t,UIDocument doc,string phase,string busyTitle,Action activate)
         {

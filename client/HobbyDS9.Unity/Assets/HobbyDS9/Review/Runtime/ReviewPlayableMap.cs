@@ -76,7 +76,8 @@ namespace HobbyDS9.UnityReview
             Label? visualStatus=null;
             if(presentation!=null)
             {
-                var controls=new VisualElement();controls.AddToClassList("review-field-row");main.Insert(main.IndexOf(map),controls);
+                var appearance=new Foldout{text="Map appearance",value=false,name="campaign-map-appearance"};main.Insert(main.IndexOf(map),appearance);
+                var controls=new VisualElement();controls.AddToClassList("review-field-row");appearance.Add(controls);
                 Button? depthButton=null,effectsButton=null;
                 depthButton=button(controls,"Depth: on",()=>{depthV3=!depthV3;depthButton!.text=depthV3?"Depth: on":"Depth: off";RefreshBackground();});depthButton.name="campaign-visual-depth";
                 effectsButton=button(controls,"Nebulae: on",()=>{effectsV3=!effectsV3;effectsButton!.text=effectsV3?"Nebulae: on":"Nebulae: off";RefreshBackground();});effectsButton.name="campaign-visual-effects";

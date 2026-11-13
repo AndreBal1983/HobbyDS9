@@ -87,7 +87,7 @@ namespace HobbyDS9.UnityReview
             {
                 // Resource access is main-thread only. The portable factory/load and trusted file IO run away from the UI.
                 diagnostic?.Record(phase,ReviewLoadEvent.Begin);
-                var template=LoadPlayableFleetTemplate();var codec=colonisationCycle||colonisationRepeat||colonisationGrowth||colonisationRoster||colonisationExpansion?new ReviewNewtonsoftCodec(diagnostic):new ReviewNewtonsoftCodec();
+                var template=LoadPlayableFleetTemplate(colonisationCycle);var codec=colonisationCycle||colonisationRepeat||colonisationGrowth||colonisationRoster||colonisationExpansion?new ReviewNewtonsoftCodec(diagnostic):new ReviewNewtonsoftCodec();
                 diagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
                 phase=ReviewLoadPhase.Resources;
                 diagnostic?.Record(phase,ReviewLoadEvent.Begin);
@@ -226,6 +226,7 @@ namespace HobbyDS9.UnityReview
             catch(Exception error)
             {
                 diagnostic?.Record(phase,ReviewLoadEvent.Error,error);
+                Debug.LogException(error);
                 if(this!=null&&viewEpoch==epoch){profileMenuNotice="Generated campaign unavailable. Your current game, unsent edits and saves are kept.";if(generatedCampaignNotice!=null)generatedCampaignNotice.text=profileMenuNotice;}
             }
             finally
