@@ -24,8 +24,8 @@ namespace HobbyDS9.ArtDemo
             switch(exactHullVersionId)
             {
                 case "hull.constitution-explorer.v1": return new ActivityHullVisualDefinition(exactHullVersionId,"activity.constitution-explorer.v1","Constitution-style Explorer \u00b7 original hull art","ArtDemo/ActivityHulls/Constitution/Models/ConstitutionExplorer_LOD0",300);
-                case "hull.galaxy-cruiser.v1": return new ActivityHullVisualDefinition(exactHullVersionId,"activity.galaxy-cruiser.v1","Galaxy Cruiser \u00b7 original candidate exterior","ArtDemo/Production01/Hulls/Cruiser_LOD0",620,true);
-                case "hull.defiant-combat.v1": return new ActivityHullVisualDefinition(exactHullVersionId,"activity.defiant-combat.v1","Defiant Combat \u00b7 original candidate exterior","ArtDemo/Production01/Hulls/Escort_LOD0",170,true);
+                case "hull.galaxy-cruiser.v1": return new ActivityHullVisualDefinition(exactHullVersionId,"activity.galaxy-cruiser.v1","Galaxy Cruiser \u00b7 original candidate exterior","ArtDemo/Production02/Hulls/Cruiser_Runtime_LOD0",620,true);
+                case "hull.defiant-combat.v1": return new ActivityHullVisualDefinition(exactHullVersionId,"activity.defiant-combat.v1","Defiant Combat \u00b7 original candidate exterior","ArtDemo/Production02/Hulls/Escort_Runtime_LOD0",170,true);
                 default:return null;
             }
         }

@@ -55,6 +55,10 @@ namespace HobbyDS9.ArtDemo.Tests
                 var importedJson=UnityEditor.EditorJsonUtility.ToJson(imported);
                 var a=first.Root.GetComponentInChildren<MeshRenderer>(true).sharedMaterial;var b=second.Root.GetComponentInChildren<MeshRenderer>(true).sharedMaterial;
                 Assert.That(a,Is.Not.SameAs(imported));Assert.That(b,Is.Not.SameAs(imported));Assert.That(a,Is.Not.SameAs(b));var original=b.GetColor("_BaseColor");a.SetColor("_BaseColor",Color.magenta);Assert.That(b.GetColor("_BaseColor"),Is.EqualTo(original));
+                foreach(var property in new[]{"_BaseMap","_MetallicRoughnessMap","_BumpMap","_EmissionMap"})
+                {Assert.That(a.GetTexture(property),Is.SameAs(imported.GetTexture(property)),property);Assert.That(b.GetTexture(property),Is.SameAs(imported.GetTexture(property)),property);}
+                Assert.That(a.GetFloat("_UseMetallicRoughnessMap"),Is.EqualTo(1));Assert.That(a.GetFloat("_UseNormalMap"),Is.EqualTo(1));
+                Assert.That(a.GetColor("_EmissionColor"),Is.EqualTo(new Color(2,2,2,1)));
                 var root=first.Root;first.Dispose();first.Dispose();
                 if(Application.isPlaying)Assert.That(root.activeSelf,Is.False);else{Assert.That(root==null,Is.True);Assert.That(a==null,Is.True);}
                 Assert.That(second.Root!=null,Is.True);Assert.That(b!=null,Is.True);Assert.That(UnityEditor.EditorJsonUtility.ToJson(imported),Is.EqualTo(importedJson));
@@ -123,21 +127,26 @@ namespace HobbyDS9.ArtDemo.Tests
             var prefab=Resources.Load<GameObject>(definition.ResourcePath);Assert.That(prefab,Is.Not.Null);
             var filter=prefab.GetComponentInChildren<MeshFilter>(true);var mesh=filter.sharedMesh;
             Assert.That(mesh.isReadable,Is.True);Assert.That(mesh.triangles.Length/3,Is.EqualTo(triangles));
-            Assert.That(mesh.subMeshCount,Is.EqualTo(8));Assert.That(mesh.uv.Length,Is.EqualTo(mesh.vertexCount));
+            Assert.That(mesh.subMeshCount,Is.EqualTo(1));Assert.That(mesh.uv.Length,Is.EqualTo(mesh.vertexCount));
             Assert.That(mesh.normals.Length,Is.EqualTo(mesh.vertexCount));
+            Assert.That(mesh.tangents.Length,Is.EqualTo(mesh.vertexCount));
             var bounds=new Bounds(filter.transform.TransformPoint(mesh.vertices[0]),Vector3.zero);
             foreach(var point in mesh.vertices)bounds.Encapsulate(filter.transform.TransformPoint(point));
             Assert.That(bounds.size.z,Is.EqualTo(length).Within(.02f));Assert.That(bounds.center.magnitude,Is.LessThan(.02f));
-            var roles=hull=="hull.galaxy-cruiser.v1"
-                ?new[]{"Hull_Pearl","Hull_Slate","Recess_Graphite","Sensor_Bronze","Engine_Blue","Collector_Red","Trim_Titanium","Windows_Warm"}
-                :new[]{"Hull_Pearl","Hull_Slate","Trim_Titanium","Recess_Graphite","Collector_Red","Engine_Blue","Windows_Warm","Sensor_Bronze"};
+            var name=hull=="hull.galaxy-cruiser.v1"?"Cruiser":"Escort";
             var materials=prefab.GetComponentInChildren<MeshRenderer>(true).sharedMaterials;
-            Assert.That(materials.Length,Is.EqualTo(roles.Length));
-            for(int i=0;i<roles.Length;i++)
+            Assert.That(materials.Length,Is.EqualTo(1));
+            var material=materials[0];
+            Assert.That(material,Is.SameAs(Resources.Load<Material>("ArtDemo/Production02/Hulls/Materials/"+name)));
+            Assert.That(material.shader,Is.SameAs(Resources.Load<Shader>("ArtDemo/PreviewStudio")));
+            foreach(var property in new[]{"_BaseMap","_MetallicRoughnessMap","_BumpMap","_EmissionMap"})
             {
-                Assert.That(materials[i],Is.SameAs(Resources.Load<Material>("ArtDemo/Production01/Hulls/Materials/"+roles[i])));
-                Assert.That(materials[i].shader,Is.SameAs(Resources.Load<Shader>("ArtDemo/PreviewStudio")));
+                var texture=material.GetTexture(property);Assert.That(texture,Is.Not.Null,property);
+                Assert.That(texture.width,Is.EqualTo(512));Assert.That(texture.height,Is.EqualTo(256));
             }
+            Assert.That(material.GetFloat("_UseMetallicRoughnessMap"),Is.EqualTo(1));
+            Assert.That(material.GetFloat("_UseNormalMap"),Is.EqualTo(1));
+            Assert.That(material.GetColor("_EmissionColor"),Is.EqualTo(new Color(2,2,2,1)));
             Assert.That(prefab.GetComponentsInChildren<Collider>(true),Is.Empty);Assert.That(prefab.GetComponentsInChildren<Camera>(true),Is.Empty);
         }
     }

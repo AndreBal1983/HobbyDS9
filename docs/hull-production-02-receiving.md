@@ -1,0 +1,26 @@
+# Original hull atlas receiving 02
+
+13 November 2026. **Optional comparison source candidate; actual Unity import/material/performance and owner artistic acceptance OPEN.** On this isolated branch it supersedes the eight-slot runtime slice from [receiving01](hull-production-01-receiving.md) with the same original hull geometry and exact identities. PR108/source07e46c3 remains unchanged for its queued native baseline; fewer slots trade against texture memory/sampling and are not a mandatory replacement or measured improvement. Main-HUD reference fidelity remains the gate for more gameplay.
+
+Art source [PR105](https://github.com/AndreBal1983/HobbyDS9/pull/105), pin `be7ef4575a7f820741333e2dbd6683da9aa85249`; [material contract](../art/asset-production-01/hulls-runtime-v2/material-contract.json), [manifest](../art/asset-production-01/hulls-runtime-v2/manifest.json), [source gallery](../art/asset-production-01/hulls-runtime-v2/contact-sheet.png) and [Art guide](../art/asset-production-01/RECEIVING-V2.md). Gallery was inspected. Cycles and CPU-formula proxy images are not Unity/native captures or owner approval.
+
+## Runtime result
+
+- Exact disclosed Galaxy/Defiant candidate IDs, visual keys, original-candidate captions, nominal lengths and complete exterior triangle counts remain unchanged:9,884/620m and7,560/170m. Constitution, legacy owner art, designer studies, saves, simulation and actor-safe bindings are unchanged.
+- Two LOD0 FBXs now have **one opaque submesh/material each**. Eight original material roles are represented through four512x256 maps per hull: sRGB colour/emission, linear roughnessG/metallicB and flat tangent-space normal. Other LODs/blends/GLBs/proofs remain outside Assets. Source geometry-preservation/role-routing audits are separate from native import.
+- New explicit Resources root: `ArtDemo/Production02/Hulls`. Slot `Material_0` remaps to one candidate material per model. Runtime requires that exact material, all four textures and enabled normal/ORM flags. It clones the explicitly received PreviewStudio material as a whole, preserving packed ORM and emission; it does not use the legacy generic copier that omits ORM.
+- Base colour is white, metallic multiplier1, ORM flag1, normal flag1/BumpScale1, HDR emission(2,2,2). Current PreviewStudio shader is unchanged. Actual Unity colour space, normal import/tangents, atlas orientation/mip gutters, emission and native shader output remain receiving gates.
+- Imported maps request mips,512maximum dimension, CPU-unreadable, compression and clamp wrapping. Four RGBA8 mip chains total about2.67MiB per hull before compression/driver overhead; actual formats/residency are unmeasured. One material slot is not a measured FPS or draw-call result.
+- The27 byte-verified GUI v1 runtime copies were moved intact outside Assets into `art/asset-production-01/gui-receiving-archive/Production01/`, after absolute-path/expected-file verification. Their original source packet/binaries and metadata are preserved; they no longer add a second runtime candidate pack. The old receiver explicitly directs current-tree callers to v2. Older source07e46c3 reproduces v1.
+
+## Reproduce and verify
+
+Use `python -B tools/art/receive_hull_production_02.py --check`; it verifies32 deterministic receiving files, raw model/map hashes, canonical manifest/material-contract hashes, exact IDs/counts/slot/property bindings,512x256 PNG headers and GUID collisions without writing or launching Blender/Unity. [Runtime inventory](../client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Production02/Hulls/receiving-inventory.json) records the exact source and import policy. The previous Earth/Mars receiver remains unchanged and still passes.
+
+Run the existing independent GLB verifier and `audit_runtime_asset_slice_02.py art/asset-production-01/hulls-runtime-v2` for six source models. The latter checks triangle preservation, winding/normals/tangents and all atlas corners against original roles; these are not Unity renderer tests. The received meshes stay readable for native metre-bound/UV/tangent checks. Stage-private material clones borrow shared textures and are disposed through the existing activity-model owner.
+
+The graphics fixture still requires original-candidate labels, complete received exterior counts, centred metre bounds, no cutaway, exact material remaps, all four maps/flags/HDR emission and existing independent-material/orbit/switch/disposal guards. QA must run it and capture Construction/Activities/Fleet/Battle at agreed sizes. Check atlas bleed at small sizes and exact normal/ORM/emission appearance; measure real material passes, memory and idle/interaction frame time. A fallback does not pass the delivered-model gate. Approved external replacements remain separately unreceived.
+
+## Globe witness boundary
+
+The Art source also includes unchanged-UV Earth/Mars diagnostic witnesses. No new witness model/texture/shader is received into the player, no UV flip/axis guess is applied to PR106, and the Earth shell remains disabled. QA may temporarily apply the labelled witness texture to its isolated imported globe and restore production properties afterward; full imported transforms/handedness establish the basis. Source hypotheses alone do not establish a defect.

@@ -2,6 +2,8 @@
 
 13 November 2026. **Source receiving candidate; Unity import/material/native/owner artistic acceptance OPEN.** These are original proposals, not the approved external replacement hulls. Further gameplay remains gated by main-HUD reference fidelity.
 
+Historical v1 receiving record, superseded by [the one-slot atlas slice](hull-production-02-receiving.md). The27 byte-verified v1 runtime files are archived outside Assets under `art/asset-production-01/gui-receiving-archive/Production01/`; the original Art source packet and previous source pin remain intact. Use the v2 receiver for the current tree.
+
 ## Scope and exact bindings
 
 Art source [PR105](https://github.com/AndreBal1983/HobbyDS9/pull/105) final guide pin `70d55db18f2fb3be4e0196094736c799a88aa3f9`, binary pin `bfaa434babba12839be38b9a1cb44c4f973db427`. The final [manifest](../art/asset-production-01/hulls-v1/manifest.json), [material recipes](../art/asset-production-01/hulls-v1/material-recipes.json), editable sources, six inspection renders and [contact sheet](../art/asset-production-01/hulls-v1/contact-sheet.png) remain outside Unity Assets. The contact sheet was inspected; it is Cycles/AgX source evidence, not this game's native appearance.
@@ -19,7 +21,7 @@ Actor-filtered Battle keeps its current owned exact-hull and permitted enemy-fam
 
 ## Import/material/lifetime contract
 
-`tools/art/receive_hull_production_01.py` writes/checks deterministic new files from the pinned source records and factor recipes. It records exact source payload hashes, canonical UTF-8/LF manifest/recipe hashes, slot order, nominal lengths and unique GUIDs in the [runtime inventory](../client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Production01/Hulls/receiving-inventory.json). Import metadata remaps each named source slot explicitly; runtime also requires the imported slot to reference that exact Resources material before displaying the candidate. Missing/wrong mappings produce honest unavailable/schematic fallback.
+`tools/art/receive_hull_production_01.py` writes/checks deterministic v1 files from the pinned source records and factor recipes when reproducing source07e46c3. It records exact source payload hashes, canonical UTF-8/LF manifest/recipe hashes, slot order, nominal lengths and unique GUIDs in the [archived v1 inventory](../art/asset-production-01/gui-receiving-archive/Production01/Hulls/receiving-inventory.json). Import metadata remaps each named source slot explicitly; runtime also requires the imported slot to reference that exact Resources material before displaying the candidate. Missing/wrong mappings produce honest unavailable/schematic fallback.
 
 Materials use the current URP `HobbyDS9/ArtDemo/PreviewStudio` shader, with source linear colour, metallic, smoothness and emission colour multiplied by strength. No unique hull texture, normal map, new shader, studio environment, bloom, camera, animation, rig, collider or listener is introduced. The shader is opaque/back-face culled with bounded studio lighting, not a physical Cycles material match; glTF double-sided flags do not change its culling. Normals/winding and appearance need actual native receiving.
 
