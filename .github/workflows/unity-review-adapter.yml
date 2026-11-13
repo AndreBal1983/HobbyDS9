@@ -40,6 +40,7 @@ jobs:
           python-version: '3.12'
       - name: Binding configuration and adversarial source checks only
         run: |
+          python scripts/check-content-resource-bytes.py --checkout-matrix
           python scripts/check-unity-review-binding.py
           python -B -m unittest discover -s tests/UnityReviewBinding.Static -p "test_*.py" -v
       - name: Prepare and check additive integrated opt-in resources and source boundaries
