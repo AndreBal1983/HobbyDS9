@@ -116,7 +116,7 @@ namespace HobbyDS9.UnityReview.Tests
                     var phaseValue=root.Q<Label>("player-status-phase");
                     if(phaseValue.text=="Planning")
                     {
-                        var singleLine=phaseValue.MeasureTextSize(phaseValue.text,0,MeasureMode.Undefined,0,MeasureMode.Undefined);
+                        var singleLine=phaseValue.MeasureTextSize(phaseValue.text,0,VisualElement.MeasureMode.Undefined,0,VisualElement.MeasureMode.Undefined);
                         Assert.That(phaseValue.contentRect.width,Is.GreaterThanOrEqualTo(singleLine.x-1),"Planning must fit without a second header line.");
                     }
                     if(root.Q("player-primary-action") is VisualElement primary)
