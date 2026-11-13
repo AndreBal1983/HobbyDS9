@@ -24,7 +24,7 @@ namespace HobbyDS9.UnityReview
             try
             {
                 // Exact actor-filtered identities are supplied by the receiving projection.
-                stage=new ReviewBattleStage(boundary,pending,ReviewBattleVisualBinding.Identity,ReviewBattleVisualBinding.OwnHullVersion,ReviewBattleVisualBinding.VisibleHullFamily);image.image=stage.Texture;caption.text=stage.Caption;caption.tooltip=caption.text;
+                stage=new ReviewBattleStage(boundary,pending,ReviewBattleVisualBinding.Identity,ReviewBattleVisualBinding.OwnHullVersion,ReviewBattleVisualBinding.VisibleHullFamily);image.image=stage.Texture;caption.text=stage.Caption+stage.ArtNotice;caption.tooltip=caption.text;
             }
             catch(Exception)
             {stage?.Dispose();stage=null;caption.text="3D presentation unavailable. The resolved report is still available; playback can be skipped.";}
@@ -43,7 +43,7 @@ namespace HobbyDS9.UnityReview
                 schedule.Execute(()=>{
                     if(stage==null||panel==null)return;
                     var now=Time.realtimeSinceStartup;stage.Tick(now-lastTime);lastTime=now;
-                    caption.text=stage.Caption+(stage.GenericMarkers>0?" · Some models unavailable; generic markers shown":"");
+                    caption.text=stage.Caption+stage.ArtNotice+(stage.GenericMarkers>0?" · Some models unavailable; generic markers shown":"");
                     caption.tooltip=caption.text;
                     done.SetEnabled(stage.Complete);
                 }).Every(33);

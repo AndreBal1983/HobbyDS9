@@ -76,6 +76,7 @@ namespace HobbyDS9.ArtDemo.Tests
                     Assert.That(stage.Availability,Is.EqualTo(ShipPreviewAvailability.Model),stage.Label);
                     Assert.That(stage.VisualKey,Is.EqualTo(ActivityHullCatalog.Find(hull).VisualKey));
                     Assert.That(stage.Label,Does.Contain("fixed hull presentation"));
+                    if(hull!="hull.constitution-explorer.v1")Assert.That(stage.Label,Does.Contain("original candidate exterior"));
                     var before=stage.CaptureArtDiagnostics();
                     Assert.That(before.AssembledBoundsSize.Max(),Is.InRange(5f,20f));
                     Assert.That(before.VisibleMinDepth,Is.GreaterThan(before.CameraNear));
@@ -107,9 +108,37 @@ namespace HobbyDS9.ArtDemo.Tests
                 model=ActivityHullModel.Create(parent.transform,"hull.galaxy-cruiser.v1");
                 Assert.That(model,Is.Not.Null);
                 Assert.That(model.Root.GetComponentsInChildren<Transform>(true).Any(t=>t.name=="CoreCutaway"),Is.False);
-                Assert.That(model.Root.GetComponentsInChildren<MeshRenderer>(true).Length,Is.GreaterThanOrEqualTo(4),"Exterior hull, nacelles and deflector must remain.");
+                Assert.That(model.Definition.IsOriginalCandidate,Is.True);
+                Assert.That(model.Root.GetComponentsInChildren<MeshRenderer>(true).Length,Is.EqualTo(1),"The new complete exterior is one merged source mesh.");
+                Assert.That(model.Root.GetComponentInChildren<MeshFilter>(true).sharedMesh.triangles.Length/3,Is.EqualTo(9884),"Require the complete pinned exterior, not a partial mesh.");
             }
             finally{model?.Dispose();UnityEngine.Object.DestroyImmediate(parent);}
+        }
+        [TestCase("hull.galaxy-cruiser.v1",9884,620f)]
+        [TestCase("hull.defiant-combat.v1",7560,170f)]
+        public void OriginalCandidatesRetainExactMaterialRolesAndMetreBounds(string hull,int triangles,float length)
+        {
+            var definition=ActivityHullCatalog.Find(hull);
+            Assert.That(definition.IsOriginalCandidate,Is.True);Assert.That(definition.Label,Does.Contain("original candidate"));
+            var prefab=Resources.Load<GameObject>(definition.ResourcePath);Assert.That(prefab,Is.Not.Null);
+            var filter=prefab.GetComponentInChildren<MeshFilter>(true);var mesh=filter.sharedMesh;
+            Assert.That(mesh.isReadable,Is.True);Assert.That(mesh.triangles.Length/3,Is.EqualTo(triangles));
+            Assert.That(mesh.subMeshCount,Is.EqualTo(8));Assert.That(mesh.uv.Length,Is.EqualTo(mesh.vertexCount));
+            Assert.That(mesh.normals.Length,Is.EqualTo(mesh.vertexCount));
+            var bounds=new Bounds(filter.transform.TransformPoint(mesh.vertices[0]),Vector3.zero);
+            foreach(var point in mesh.vertices)bounds.Encapsulate(filter.transform.TransformPoint(point));
+            Assert.That(bounds.size.z,Is.EqualTo(length).Within(.02f));Assert.That(bounds.center.magnitude,Is.LessThan(.02f));
+            var roles=hull=="hull.galaxy-cruiser.v1"
+                ?new[]{"Hull_Pearl","Hull_Slate","Recess_Graphite","Sensor_Bronze","Engine_Blue","Collector_Red","Trim_Titanium","Windows_Warm"}
+                :new[]{"Hull_Pearl","Hull_Slate","Trim_Titanium","Recess_Graphite","Collector_Red","Engine_Blue","Windows_Warm","Sensor_Bronze"};
+            var materials=prefab.GetComponentInChildren<MeshRenderer>(true).sharedMaterials;
+            Assert.That(materials.Length,Is.EqualTo(roles.Length));
+            for(int i=0;i<roles.Length;i++)
+            {
+                Assert.That(materials[i],Is.SameAs(Resources.Load<Material>("ArtDemo/Production01/Hulls/Materials/"+roles[i])));
+                Assert.That(materials[i].shader,Is.SameAs(Resources.Load<Shader>("ArtDemo/PreviewStudio")));
+            }
+            Assert.That(prefab.GetComponentsInChildren<Collider>(true),Is.Empty);Assert.That(prefab.GetComponentsInChildren<Camera>(true),Is.Empty);
         }
     }
 }

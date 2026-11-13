@@ -136,7 +136,7 @@ namespace HobbyDS9.UnityReview
                         var inspection=new VisualElement{name="fleet-selected-ship-inspector"};aside.Add(inspection);
                         Text(inspection,identity?.Label??"Selected vessel","fleet-ship-title");
                         Text(inspection,"Class / fit: "+(source?.DisplayName??design));
-                        inspection.Add(new ReviewShipArtPanel(facts.Civilization.DefinitionId.Value,ship.ShipDesignDefinitionId.Value));
+                        inspection.Add(new ReviewShipArtPanel(facts.Civilization.DefinitionId.Value,ship.ShipDesignDefinitionId.Value,exactHullVersionId:source?.HullVersionId));
                         if(condition!=null)
                         {
                             var stocks=new VisualElement();stocks.AddToClassList("fleet-card-meters");inspection.Add(stocks);

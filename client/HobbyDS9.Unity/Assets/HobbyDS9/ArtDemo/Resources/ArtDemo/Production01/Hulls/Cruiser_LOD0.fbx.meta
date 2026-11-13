@@ -1,0 +1,79 @@
+fileFormatVersion: 2
+guid: f7443a6d6a6a580eb5e8e988d175de28
+ModelImporter:
+  serializedVersion: 24600
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Hull_Pearl
+    second: {fileID: 2100000, guid: 6d659f664c5a54019f6f2c31c8eb1b92, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Hull_Slate
+    second: {fileID: 2100000, guid: 724c31c384a658bcb33674922f528e44, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Recess_Graphite
+    second: {fileID: 2100000, guid: 006819f6bff052d0abed19146247c5a8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Sensor_Bronze
+    second: {fileID: 2100000, guid: b55460e79efd5a13b69614a12fb8729a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Engine_Blue
+    second: {fileID: 2100000, guid: f3a9bd4eac4456b2a47c004f057a33ee, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Collector_Red
+    second: {fileID: 2100000, guid: be5d2e490840508d947ecb7490f18db3, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Trim_Titanium
+    second: {fileID: 2100000, guid: 5d0f58f326545af2b5e27ece836d885a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Windows_Warm
+    second: {fileID: 2100000, guid: 1d7ce28da71e5951b3a28c1f842d01d9, type: 2}
+  materials:
+    materialImportMode: 2
+  animations:
+    isReadable: 1
+    clipAnimations: []
+  meshes:
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useFileUnits: 1
+    useFileScale: 1
+    importBlendShapes: 0
+    importVisibility: 0
+    importCameras: 0
+    importLights: 0
+    fileIdsGeneration: 2
+    keepQuads: 0
+    weldVertices: 1
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    importUVs: -1
+  tangentSpace:
+    normalImportMode: 0
+    tangentImportMode: 3
+  importAnimation: 0
+  animationType: 2
+  avatarSetup: 0
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  userData:
+  assetBundleName:
+  assetBundleVariant:

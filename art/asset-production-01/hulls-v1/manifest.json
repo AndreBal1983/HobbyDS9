@@ -1,0 +1,390 @@
+{
+  "schema": 1,
+  "phase": "hulls",
+  "status": "proposed original asset candidate; native receiving outstanding",
+  "generator": "tools/art/build_asset_production_01.py",
+  "blender": "5.3.0",
+  "blender_build": "02f0899d78e3",
+  "coordinates": {
+    "blender": "metres, +Z up; hull bow -Y",
+    "gltf": "metres, +Y up; hull bow +Z",
+    "fbx": "metres; axis_forward=-Z, axis_up=Y; verify receiving root TRS"
+  },
+  "texture_sources": [],
+  "assets": [
+    {
+      "asset_id": "art.production01.cruiser_lod0",
+      "name": "Cruiser_LOD0",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 0,
+      "notes": "PROPOSED original procedural candidate, not the unreceived approved external replacement; no sockets/stats",
+      "meshes": [
+        {
+          "name": "Cruiser_LOD0",
+          "triangles": 9884,
+          "vertices": 5294,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -209.79466247558594,
+              -310.0000305175781,
+              -71.12696838378906
+            ],
+            [
+              209.79466247558594,
+              310.0000305175781,
+              71.12696838378906
+            ]
+          ],
+          "materials": [
+            "Hull_Pearl",
+            "Hull_Slate",
+            "Recess_Graphite",
+            "Sensor_Bronze",
+            "Engine_Blue",
+            "Collector_Red",
+            "Trim_Titanium",
+            "Windows_Warm"
+          ]
+        }
+      ],
+      "glb": "Models/Cruiser_LOD0.glb",
+      "fbx": "Models/Cruiser_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.cruiser_lod1",
+      "name": "Cruiser_LOD1",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 1,
+      "notes": "PROPOSED original procedural candidate, not the unreceived approved external replacement; no sockets/stats",
+      "meshes": [
+        {
+          "name": "Cruiser_LOD1",
+          "triangles": 5516,
+          "vertices": 2966,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -209.79466247558594,
+              -310.0000305175781,
+              -71.12696838378906
+            ],
+            [
+              209.79466247558594,
+              310.0000305175781,
+              71.12696838378906
+            ]
+          ],
+          "materials": [
+            "Hull_Pearl",
+            "Hull_Slate",
+            "Recess_Graphite",
+            "Sensor_Bronze",
+            "Engine_Blue",
+            "Collector_Red",
+            "Trim_Titanium",
+            "Windows_Warm"
+          ]
+        }
+      ],
+      "glb": "Models/Cruiser_LOD1.glb",
+      "fbx": "Models/Cruiser_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.cruiser_lod2",
+      "name": "Cruiser_LOD2",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 2,
+      "notes": "PROPOSED original procedural candidate, not the unreceived approved external replacement; no sockets/stats",
+      "meshes": [
+        {
+          "name": "Cruiser_LOD2",
+          "triangles": 2972,
+          "vertices": 1546,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -210.05792236328125,
+              -310.0,
+              -71.21621704101562
+            ],
+            [
+              210.05792236328125,
+              310.0,
+              71.21621704101562
+            ]
+          ],
+          "materials": [
+            "Hull_Pearl",
+            "Hull_Slate",
+            "Recess_Graphite",
+            "Sensor_Bronze",
+            "Engine_Blue",
+            "Collector_Red",
+            "Trim_Titanium"
+          ]
+        }
+      ],
+      "glb": "Models/Cruiser_LOD2.glb",
+      "fbx": "Models/Cruiser_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.escort_lod0",
+      "name": "Escort_LOD0",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 0,
+      "notes": "PROPOSED original procedural candidate, not the unreceived approved external replacement; no sockets/stats",
+      "meshes": [
+        {
+          "name": "Escort_LOD0",
+          "triangles": 7560,
+          "vertices": 3842,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -68.93830871582031,
+              -85.0,
+              -19.87013053894043
+            ],
+            [
+              68.93830871582031,
+              85.0,
+              19.87013053894043
+            ]
+          ],
+          "materials": [
+            "Hull_Pearl",
+            "Hull_Slate",
+            "Trim_Titanium",
+            "Recess_Graphite",
+            "Collector_Red",
+            "Engine_Blue",
+            "Windows_Warm",
+            "Sensor_Bronze"
+          ]
+        }
+      ],
+      "glb": "Models/Escort_LOD0.glb",
+      "fbx": "Models/Escort_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.escort_lod1",
+      "name": "Escort_LOD1",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 1,
+      "notes": "PROPOSED original procedural candidate, not the unreceived approved external replacement; no sockets/stats",
+      "meshes": [
+        {
+          "name": "Escort_LOD1",
+          "triangles": 4200,
+          "vertices": 2162,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -68.93830871582031,
+              -85.0,
+              -19.87013053894043
+            ],
+            [
+              68.93830871582031,
+              85.0,
+              19.87013053894043
+            ]
+          ],
+          "materials": [
+            "Hull_Pearl",
+            "Hull_Slate",
+            "Trim_Titanium",
+            "Recess_Graphite",
+            "Collector_Red",
+            "Engine_Blue",
+            "Windows_Warm",
+            "Sensor_Bronze"
+          ]
+        }
+      ],
+      "glb": "Models/Escort_LOD1.glb",
+      "fbx": "Models/Escort_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.escort_lod2",
+      "name": "Escort_LOD2",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 2,
+      "notes": "PROPOSED original procedural candidate, not the unreceived approved external replacement; no sockets/stats",
+      "meshes": [
+        {
+          "name": "Escort_LOD2",
+          "triangles": 2328,
+          "vertices": 1194,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -68.93830871582031,
+              -85.0,
+              -19.87013053894043
+            ],
+            [
+              68.93830871582031,
+              85.0,
+              19.87013053894043
+            ]
+          ],
+          "materials": [
+            "Hull_Pearl",
+            "Hull_Slate",
+            "Trim_Titanium",
+            "Recess_Graphite",
+            "Collector_Red",
+            "Engine_Blue",
+            "Sensor_Bronze"
+          ]
+        }
+      ],
+      "glb": "Models/Escort_LOD2.glb",
+      "fbx": "Models/Escort_LOD2.fbx"
+    }
+  ],
+  "files": [
+    {
+      "path": "contact-sheet.png",
+      "bytes": 408719,
+      "sha256": "8e4f0edc5cf598a273f5fc583344e1b25fc242ba0b222aab236b70c43aa1382b"
+    },
+    {
+      "path": "gallery.html",
+      "bytes": 1536,
+      "sha256": "ec12956766acd5a5f5cf0203974119814208f9602c1dee102bc98a5b0d61b48a"
+    },
+    {
+      "path": "material-recipes.json",
+      "bytes": 3479,
+      "sha256": "73367212d7889dba43560e3d6fbdd997ad76579e48703a56918c18ebb6a48ae7"
+    },
+    {
+      "path": "Models/Cruiser_LOD0.fbx",
+      "bytes": 231548,
+      "sha256": "c42ecad3260ccc29c00914583f6e0d6a47f145a72ec3f927fc8a4e6788231d40"
+    },
+    {
+      "path": "Models/Cruiser_LOD0.glb",
+      "bytes": 331752,
+      "sha256": "b97e6a4e91c2b72b288102e742ae1c5ab84954c9ddd1b0325aa45015ab3e0e60"
+    },
+    {
+      "path": "Models/Cruiser_LOD1.fbx",
+      "bytes": 137484,
+      "sha256": "dddf32176a84acd449eb3d89791ca1224ed026a21941a369ad272e58fcb26e75"
+    },
+    {
+      "path": "Models/Cruiser_LOD1.glb",
+      "bytes": 206456,
+      "sha256": "27c1779780ab6589f0019fad1ac5fddeb2e39be71af772c952f35955e795f817"
+    },
+    {
+      "path": "Models/Cruiser_LOD2.fbx",
+      "bytes": 84476,
+      "sha256": "748230ffd1b07407e6fd4dc506f177c317d3baa7e95a650722dbd57b689f3b28"
+    },
+    {
+      "path": "Models/Cruiser_LOD2.glb",
+      "bytes": 117536,
+      "sha256": "36787807c070f4fadeda2462da127bb6f4f405fbc97525cb50a202bc1806df98"
+    },
+    {
+      "path": "Models/Escort_LOD0.fbx",
+      "bytes": 178956,
+      "sha256": "b647e2674360065c82ce46b9931766b8b51d1922648bd54d5e5a1dcae8fbf870"
+    },
+    {
+      "path": "Models/Escort_LOD0.glb",
+      "bytes": 235288,
+      "sha256": "f0220553102216710edbefe4b59defd506c38ff6bddc29f4d9d247e301abda39"
+    },
+    {
+      "path": "Models/Escort_LOD1.fbx",
+      "bytes": 107292,
+      "sha256": "497e4a332ee4ecac99318d8fa509c2c65a15d0b44d535c74bda195df4a0d5939"
+    },
+    {
+      "path": "Models/Escort_LOD1.glb",
+      "bytes": 152128,
+      "sha256": "2a94e959962b72f897971a05d0dd5a0a215066f0deccdc9c1061bc47be5dee8c"
+    },
+    {
+      "path": "Models/Escort_LOD2.fbx",
+      "bytes": 68604,
+      "sha256": "70faffa6445cff6334d570f61a04020f568a61357fdd3cb9278b77e5033c32ac"
+    },
+    {
+      "path": "Models/Escort_LOD2.glb",
+      "bytes": 93360,
+      "sha256": "e3c391c0e957ba19c46806f14b993900f52e2eaea9ae4f7c75a8f4e8329d95cb"
+    },
+    {
+      "path": "Previews/Cruiser_side_reference.png",
+      "bytes": 706501,
+      "sha256": "5728cff2d5568bec17aa51382f9fd365e3f9b25f64365ac64f4c6af34774e659"
+    },
+    {
+      "path": "Previews/Cruiser_three_quarter_studio.png",
+      "bytes": 1074411,
+      "sha256": "fd89a9df1d9b1baf950f8c34337425fbd574a483dfaf96b3bc34a676fffbc81c"
+    },
+    {
+      "path": "Previews/Cruiser_top_reference.png",
+      "bytes": 889054,
+      "sha256": "8ae30a7e9dd58b9425f96b63736692c8a257fe4dcdc3fa72604b38ed2d4d2a65"
+    },
+    {
+      "path": "Previews/Escort_side_reference.png",
+      "bytes": 709720,
+      "sha256": "522510c29bd08322843b5e1b1d72103d769590bf8372b819fc9c28d940eaafac"
+    },
+    {
+      "path": "Previews/Escort_three_quarter_studio.png",
+      "bytes": 1072699,
+      "sha256": "5de89d4356225872744c3975210ce3041575799a6abb366f6920d78f3dd43cd0"
+    },
+    {
+      "path": "Previews/Escort_top_reference.png",
+      "bytes": 846557,
+      "sha256": "c8e884a4ff128cee260de3f9f765f989e83ca37160c5d0a0ff6c5f67ddc66956"
+    },
+    {
+      "path": "receiving.json",
+      "bytes": 5124,
+      "sha256": "d5f0129aec4ce4cdc207703eb645ad1647aae077746c32eb42f23a50f901c03f"
+    },
+    {
+      "path": "Sources/Cruiser_OriginalCandidate.blend",
+      "bytes": 353109,
+      "sha256": "008c03bbb803a77ee4bcf1afe94dec9c151c57bc86f40afcdb1759b9d88c0fc0"
+    },
+    {
+      "path": "Sources/Cruiser_Studio.blend",
+      "bytes": 353109,
+      "sha256": "008c03bbb803a77ee4bcf1afe94dec9c151c57bc86f40afcdb1759b9d88c0fc0"
+    },
+    {
+      "path": "Sources/Escort_OriginalCandidate.blend",
+      "bytes": 283420,
+      "sha256": "b3cc4513ee3ed4b14c3bf15e21405bb2e113ca7f7a907b8d43c13ac02f9ab745"
+    },
+    {
+      "path": "Sources/Escort_Studio.blend",
+      "bytes": 283420,
+      "sha256": "b3cc4513ee3ed4b14c3bf15e21405bb2e113ca7f7a907b8d43c13ac02f9ab745"
+    },
+    {
+      "path": "validation-fbx.json",
+      "bytes": 2631,
+      "sha256": "0e04fc53ce67658fb5933b1b147ba6fd0368060d9f9e9e4be8ff2e5e1f03dd96"
+    },
+    {
+      "path": "validation-glb.json",
+      "bytes": 1346,
+      "sha256": "c672e4dcd198c74ae5d749aabb034e2a79a75b1427874bece5eb6c23baad15a8"
+    }
+  ]
+}
