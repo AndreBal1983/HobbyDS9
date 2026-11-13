@@ -11,7 +11,8 @@ namespace HobbyDS9.UnityReview
     {
         private ReviewPlayerView? player;
         private VisualElement? playerTopActions,playerFooter;
-        private Label? playerStatus,playerTitle,playerGuidance;
+        private VisualElement? playerStatus;
+        private Label? playerTitle,playerGuidance;
         private object? designState;private HobbyDS9.TacticalReviewClient.ReviewController? designContext;
         private bool ShowPlayerCampaignFacts=>!demoLanding&&(!PlayerProfile||demoStarted);
         private void BuildPlayerShell()
@@ -20,13 +21,19 @@ namespace HobbyDS9.UnityReview
             // Published campaigns render into a detached root before it is attached to the UIDocument.
             // Keep the console inset on that root when the old document host is reset at commit.
             root.style.paddingLeft=40;root.style.paddingRight=24;root.style.paddingTop=14;root.style.paddingBottom=14;
-            var spine=new VisualElement();spine.AddToClassList("console-spine");root.Add(spine);
+            var spine=new VisualElement{name="player-console-frame",pickingMode=PickingMode.Ignore};spine.AddToClassList("console-spine");root.Add(spine);
             var header=new VisualElement{name="player-header"};header.AddToClassList("console-header");root.Add(header);
             var names=new VisualElement();names.AddToClassList("console-header-titles");header.Add(names);
             var identity=Readout(PlayerProfile&&!ShowPlayerCampaignFacts?"HOBBYDS9 · GALACTIC CAMPAIGNS":(model!.GeneratedCampaign?"HOBBYDS9 · GENERATED CAMPAIGN · ":model.PlayableFleet?"HOBBYDS9 · FLEET CAMPAIGN · ":model.FrontierPreview?"HOBBYDS9 · FRONTIER EXPLORATION PREVIEW · ":model.CombatPlaytest?"HOBBYDS9 · COMBAT PLAYTEST · ":model.SingleplayerDemo?"HOBBYDS9 · SINGLE PLAYER DEMO · ":"EARLY CAMPAIGN PREVIEW · ")+OwnerName(model.Current.Frame.Actor));identity.name="review-scenario-identity";identity.AddToClassList("console-kicker");names.Add(identity);
             playerTitle=Readout(Title(workspace!.Page));playerTitle.AddToClassList("console-title");names.Add(playerTitle);
             if(model!.Current.Frame.Demo!=null&&ShowPlayerCampaignFacts){var objective=Readout("");objective.name="demo-objective";objective.AddToClassList("console-kicker");names.Add(objective);}
-            playerStatus=Readout("");playerStatus.AddToClassList("console-status");header.Add(playerStatus);
+            playerStatus=new VisualElement{name="player-status",pickingMode=PickingMode.Ignore};playerStatus.AddToClassList("console-status");header.Add(playerStatus);
+            foreach(var stat in new[]{("CAMPAIGN","phase"),("TURN","turn"),("CREDITS","credits")})
+            {
+                var cell=new VisualElement{pickingMode=PickingMode.Ignore};cell.AddToClassList("console-stat");playerStatus.Add(cell);
+                var key=Readout(stat.Item1);key.AddToClassList("console-stat-key");cell.Add(key);
+                var value=Readout("");value.name="player-status-"+stat.Item2;value.AddToClassList("console-stat-value");cell.Add(value);
+            }
             playerGuidance=Readout("");playerGuidance.name="player-guidance";playerGuidance.AddToClassList("console-guidance");root.Add(playerGuidance);
             playerTopActions=new VisualElement{name="player-top-actions"};
             playerTopActions.AddToClassList("console-top-actions");
@@ -75,7 +82,10 @@ namespace HobbyDS9.UnityReview
         {
             RestoreStreamedBusy();RestoreColonisationBusy();var frame=model!.Current.Frame;playerTitle!.text=PlayerProfile&&workspace!.Page==ReviewWorkspacePage.Tools?"Help & credits":Title(workspace!.Page);
             content!.EnableInClassList("review-central",!demoLanding&&workspace.Page==ReviewWorkspacePage.Combat);
-            playerStatus!.text=ShowPlayerCampaignFacts?"Turn "+frame.Status.Turn+" · "+(frame.Status.Phase==SessionPhase.Planning?"Planning":"Combat pending")+"\nCredits "+frame.Strategy!.Civilization.Credits:"";
+            playerStatus!.style.display=ShowPlayerCampaignFacts?DisplayStyle.Flex:DisplayStyle.None;
+            playerStatus.Q<Label>("player-status-phase").text=ShowPlayerCampaignFacts?(frame.Status.Phase==SessionPhase.Planning?"Planning":"Combat pending"):"";
+            playerStatus.Q<Label>("player-status-turn").text=ShowPlayerCampaignFacts?frame.Status.Turn.ToString():"";
+            playerStatus.Q<Label>("player-status-credits").text=ShowPlayerCampaignFacts?frame.Strategy!.Civilization.Credits.ToString():"";
             if(frame.Demo!=null&&ShowPlayerCampaignFacts){var goal=frame.Strategy!.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==frame.Demo.ObjectiveNodeId)?.DisplayName??"Objective sector";var objective=root!.Q<Label>("demo-objective");if(objective!=null)objective.text="Objective: "+goal+" · Through turn "+frame.Demo.LastTurn+" · "+frame.Demo.Outcome;}
             playerGuidance!.text=demoLanding?(generatedCampaignBusy?"Preparing campaign…":"Start a new galaxy or continue a saved campaign."):PlayerMessage();
             if(DrawCampaignBusy())return;
@@ -126,7 +136,9 @@ namespace HobbyDS9.UnityReview
         }
         private void DrawPlayerActions()
         {
-            var useTop=PlayerProfile&&demoStarted&&!demoLanding&&model!.ColonisationCampaign;
+            // Active campaigns keep primary actions in the fixed footer on every
+            // profile/width, matching the command-console reference hierarchy.
+            var useTop=PlayerProfile&&!demoStarted;
             playerTopActions!.Clear();
             playerFooter!.Clear();
             if(PlayerProfile&&(demoLanding||workspace!.Page==ReviewWorkspacePage.Saves||campaignSettingsReturn!=null))
@@ -135,7 +147,6 @@ namespace HobbyDS9.UnityReview
                 playerFooter.style.display=DisplayStyle.None;
                 return;
             }
-            if(PlayerProfile&&!demoStarted)useTop=true;
             playerTopActions.style.display=useTop?DisplayStyle.Flex:DisplayStyle.None;
             playerFooter.style.display=DisplayStyle.Flex;
             playerFooter.EnableInClassList("console-footer",!useTop);
