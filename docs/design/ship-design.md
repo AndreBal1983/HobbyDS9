@@ -92,11 +92,31 @@ Science creates the possibility; Engineering turns it into deployable hull/compo
 
 A proposal for each project shows Engineering workload, prerequisite knowledge, intended improvements, explicit trade-offs and deployment compatibility. Mount rearrangement or adding a new mount may require a major redesign; a modest efficiency refinement cannot arbitrarily change a hull's architecture. New qualitative capabilities still need their enabling Science.
 
-Use the existing maturity bands, specialized refinement tracks, saturating benefits and cost floors. Do not add a second independent maturity currency or award the same compactness benefit both through maturity and a hull-version bonus. The new version records the resolved outcome of the project.
+Use the agreed diminishing-return curve below, specialized refinement tracks and positive cost floors. Readiness/release thresholds remain separate from resolved performance. Do not add a second independent maturity currency or award the same compactness benefit both through maturity and a hull-version bonus. The new version records the resolved outcome of the project.
 
-The Engineering portfolio uses the existing empire R&D split and project weights. A hull project competes with reactor refinement, diplomatic equipment and colony Engineering; it does not receive free ship-design points. Work can be paused and resumed. Release follows the existing maturity/deployability rules.
+The proposed Engineering portfolio uses the empire R&D split and project weights. A hull project competes with reactor refinement, diplomatic equipment and colony Engineering; it does not receive free ship-design points. Work can be paused and resumed. Future readiness/release thresholds remain separately scoped; the [implemented foundation](../science-engineering-v1.md#engineering) still has one target and authored completion at 100%.
 
 Engineering produces a new version, not a free fleet-wide upgrade. Save the old version and its production blueprint. Older, cheaper equipment remains selectable while available. A hull family may have several useful branches, such as a compact escort or a spacious survey platform; refinement should not guarantee one universal best design.
+
+### Engineering diminishing returns — canon, 13 November 2026
+
+**Agreed owner decision; intended design, not implemented behavior.** Science unlocks a hull/module capability or generation; explicit Engineering develops its hardware. The player can then repeatedly refine a supported target within that generation without fresh Science, conquest or survey while useful potential remains. Every completed refinement improves that target. The initial tunable outcome policy is **70% without a detractor / 30% with a detractor in another supported attribute**; it is not a 30% failure chance.
+
+The agreed factor is:
+
+~~~text
+r(M) = 1                 when M <= 100
+       (150 - M) / 50    when 100 < M < 150
+       0                 when M >= 150
+~~~
+
+Apply the same factor to the **achieved target-stat improvement**, the **maturity increment** and, in the detractor category, the **downside magnitude**. Do not scale the 70/30 probabilities. Initially use a **fixed standard workload per cycle**: useful gains shrink for the same work, so cost per useful improvement rises without an additional exponential cost multiplier.
+
+**Provisional example parameters:** a base step of 5 maturity points, roughly 10% target improvement (illustrative 8–12% range), 2–5% downside and normal-like distribution width remain tuning proposals. With base 5 / 10% / 3%, starting at maturity 125 gives factor 0.5, hence 2.5 maturity, 5% target improvement and a 1.5% downside only if that category is drawn. The same illustrative cycle at maturity 145 gives 0.5 maturity, 1% improvement and a 0.3% downside. These examples demonstrate the agreed scaling, not final balance. **Maturity 150 does not mean 50% improvement in every stat.**
+
+For the illustrative base step 5 and pre-cycle evaluation, maturity starting at 100 follows `M_n = 150 - 50 × 0.9^n`: it approaches 150 asymptotically. Practical stopping tolerance, useful quanta, finite precision and rounding therefore need explicit policy. The [detailed model and worked examples](engineering-tree-model-01.md#diminishing-returns--agreed-canon-13-november-2026) propose admission only when both outcome categories contain useful representable results, preserving actual maturity below 150 on practical exhaustion. Do not silently snap to 150, charge for no gain, round away a detractor or reroll outcomes on reload/render.
+
+Results remain immutable and deterministically persisted. The next interview concerns [branching from retained older versions and the maturity/history used for new work](engineering-tree-model-01.md#next-interview-branching-from-retained-versions). Those branch rules, contextual net-improvement evaluation, generation envelopes and the practical stopping proposal remain **open/proposed**. The [implementation stages](engineering-tree-model-01.md#proposed-implementation-stages) describe future scoped work; current authored-project completion and save contracts remain unchanged.
 
 ## Worked example: one hull, two missions
 
@@ -168,7 +188,7 @@ Playtest that both configurations in the example are useful, mature older system
 
 ## Open choices and design handoff
 
-Open for later review: whether mass needs a separate budget beyond space and hull compatibility; how many weapon coverage groups are worth exposing; whether class-wide integration workload is needed for more ordinary designs; which hull improvements are retrofittable; final maturity penalties and refinement limits; fleet speed/range aggregation; and whether per-phase power profiles add enough value to justify extra complexity.
+Open for later review: whether mass needs a separate budget beyond space and hull compatibility; how many weapon coverage groups are worth exposing; whether class-wide integration workload is needed for more ordinary designs; which hull improvements are retrofittable; refinement base magnitudes, practical stopping/quantization and branch/history rules within the agreed curve; fleet speed/range aggregation; and whether per-phase power profiles add enough value to justify extra complexity.
 
 Default proposal until review: abstract capacity, package-level mount limits, ordinary compatible designs released immediately, one Combat profile, class-level templates and shared player/AI validation. Treat this as a coherent first implementation target, not a mandate to implement every proposed subsystem at once.
 
