@@ -105,6 +105,16 @@ namespace HobbyDS9.UnityReview.Tests
                     if(page==ReviewWorkspacePage.Production){Click("production-colony-colony.sol");yield return null;yield return null;}
                     Assert.That(root.Q("player-footer"),Is.Not.Null);Assert.That(root.Q("review-workspace-navigation"),Is.Not.Null);
                     Assert.That(root.Q("player-footer").worldBound.yMax,Is.LessThanOrEqualTo(size.y+1),"Footer clipped");
+                    var footer=root.Q("player-footer");var header=root.Q("player-header");
+                    Assert.That(footer.GetFirstAncestorOfType<ScrollView>(),Is.Null,"Campaign actions stay outside scrolling content.");
+                    Assert.That(root.Q("review-central-content").worldBound.yMax,Is.LessThanOrEqualTo(footer.worldBound.yMin+1),"Content must stop above the fixed footer.");
+                    Assert.That(root.Q("player-console-frame").pickingMode,Is.EqualTo(PickingMode.Ignore));
+                    foreach(var stat in new[]{"phase","turn","credits"})
+                        Visible(root.Q("player-status-"+stat),header.worldBound,"Header "+stat);
+                    Assert.That(root.Q<Label>("player-status-turn").text,Is.EqualTo(model.Current.Frame.Status.Turn.ToString()));
+                    Assert.That(root.Q<Label>("player-status-credits").text,Is.EqualTo(model.Current.Frame.Strategy!.Civilization.Credits.ToString()));
+                    if(root.Q("player-primary-action") is VisualElement primary)
+                        Assert.That(footer.Contains(primary),Is.True,"Profile changes must not move the primary action above the workspace.");
                     if(page==ReviewWorkspacePage.Map)Assert.That(root.Q<Image>("map-space-backdrop").image,Is.Not.Null,"Live map decorative asset must load");
                     if(page==ReviewWorkspacePage.Research)
                     {
