@@ -239,7 +239,7 @@ namespace HobbyDS9.UnityReview
             source.GetPropertyBlock(properties);
             // Stable decorative illumination; no dependency on overview yaw, zoom or location.
             properties.SetFloat("_NightFill",.025f);
-            properties.SetVector("_StarCenter",portraitGlobe.transform.position+new Vector3(-3.6f,1.4f,-1.2f));
+            properties.SetVector("_StarCenter",portraitGlobe.transform.position+new Vector3(-6.3f,2.45f,-2.8f));
             portraitGlobe.SetPropertyBlock(properties);
             root.SetActive(true);portraitGlobe.gameObject.SetActive(true);
             try
