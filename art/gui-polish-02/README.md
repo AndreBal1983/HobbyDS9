@@ -2,6 +2,8 @@
 
 14 November2026. **Receiving candidate; native shader/input/performance and owner visual acceptance remain open.** [Machine recipe](receiving-recipe.json), [complete shader source](PlanetSurfaceLighting.shader). This packet contains no new hull, planet map, simulation rule, gameplay binding or runtime edit. Existing assets and approved/proposed/open distinctions remain intact.
 
+Earth/Mars source maps and derived globe proofs retain **Solar System Scope / INOVE**, [CC BY4.0](https://creativecommons.org/licenses/by/4.0/), [official source](https://www.solarsystemscope.com/textures/). Existing local maps are read unchanged; their hashes and original attribution file remain intact. Shader/formula/source-control changes are original project work. Legacy Defiant evidence remains local review only under its retained source limitation.
+
 ## Planet result and receiving
 
 The current opaque shader leaves16%albedo fill on the night hemisphere, blends clouds at.8 and adds an independent cubic blue rim around the whole silhouette. The current portrait light(-3,2,-4) is also close to the viewing direction. Those are concrete causes of the flat/washed edge appearance in the supplied image. The retained unit mesh and detailed Earth/Mars maps need no replacement to address this lighting increment.

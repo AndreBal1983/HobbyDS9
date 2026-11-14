@@ -33,7 +33,9 @@ a{color:#b8d8ff}</style><h1>GUI-POLISH-02 · exact-source receiving comparisons<
 Planet controls: same retained960-triangle sphere, same albedo/pose, .7radius/.875ortho/512², no cloud fixture. Final key=(-6.3,2.45,-2.8).
 Orbit figures share actual circular3D geometry/poses. Defiant shows retained legacy Meshy model; its source gray/red palette is unchanged.
 The approved external palette files remain unreceived. <a href="https://nightfever77.artstation.com/projects/2xm8eA">Recovered primary Klemm reference</a>
-is distinct and is not a received numeric material contract. Native compilation/appearance, matched current-state clouds, picking and performance remain open.</p><main>'''+figures+'</main>'
+is distinct and is not a received numeric material contract. Native compilation/appearance, matched current-state clouds, picking and performance remain open.
+Earth/Mars maps: Solar System Scope / INOVE, <a href="https://www.solarsystemscope.com/textures/">source</a>,
+<a href="https://creativecommons.org/licenses/by/4.0/">CC BY4.0</a>; unchanged local maps, derived globe proofs.</p><main>'''+figures+'</main>'
 (OUT/'comparison.html').write_bytes(page.encode())
 files=[]
 for directory in [ROOT/'art/gui-polish-02',ROOT/'tools/art/gui-polish-02']:
