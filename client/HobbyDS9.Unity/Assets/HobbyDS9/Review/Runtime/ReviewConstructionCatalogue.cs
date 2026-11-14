@@ -102,7 +102,7 @@ namespace HobbyDS9.UnityReview
                 var reason=Unavailable(option);if(reason.Length>0)Copy(tile,reason,"construction-reason");
                 var add=Action(tile,"+","construction-add-"+ordinal,()=>AddOne(option),"construction-add");
                 add.tooltip="Add one "+option.DisplayName+" to this world's queue.";add.SetEnabled(reason.Length==0);
-                add.RegisterCallback<FocusInEvent>(_=>{focused=option;focusAdd=true;});addButtons.Add(add);
+                add.userData=option;add.RegisterCallback<FocusInEvent>(_=>{focused=option;focusAdd=true;});addButtons.Add(add);
             }
             if(grid.childCount==0)Copy(section,"No construction options in this observation.");
         }
@@ -224,6 +224,12 @@ namespace HobbyDS9.UnityReview
         internal void SetActive(bool value){active=value;if(!value)ReleaseStage();else if(panel!=null&&inspector.value)RefreshInspector();}
         internal void PresentStatus(string? text)
         {if(!disposed)feedback.text=string.IsNullOrEmpty(text)?"Normal construction charges no credits. Work consumes delivered materials; interruptions pause progress.":text;}
+        internal void CompleteSubmission(string? text)
+        {
+            if(disposed)return;submitted=false;
+            foreach(var button in addButtons)if(button.userData is ActivityBuildOptionDto option)button.SetEnabled(Unavailable(option).Length==0);
+            PresentStatus(text);
+        }
         private void ReleaseStage(){if(preview!=null)preview.image=null;stage?.Dispose();stage=null;}
         public void Dispose(){if(disposed)return;disposed=true;ReleaseStage();}
     }

@@ -675,6 +675,8 @@ namespace HobbyDS9.UnityReview
             foreach(var report in observation.Reports.Where(x=>x.ShipId==t.ShipId))Text(body,report.Stage+" \u00b7 deaths "+report.Deaths+", food consumed "+report.FoodConsumed+", lost "+report.FoodLost+". "+report.Report);
         }
         internal void PresentAdmissionRejected(string text){if(disposed)return;submitted=false;PresentStatus(text);}
+        internal void CompleteSubmission(string text)
+        {if(disposed)return;submitted=false;DismissReview(reviewEpoch);science?.CompleteSubmission(text);PresentStatus(text);}
         internal void PresentStatus(string? text){if(!disposed&&text!=null){status.text=text;status.style.display=string.IsNullOrWhiteSpace(text)?DisplayStyle.None:DisplayStyle.Flex;}}
         internal void PresentReviewedOrder(ColonisationCommandDto command,string caption,ColonisationEligibilitySnapshot eligibility)
         {

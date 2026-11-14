@@ -23,6 +23,7 @@ namespace HobbyDS9.UnityReview.Tests
             internal readonly ManualResetEventSlim Entered=new ManualResetEventSlim(),Release=new ManualResetEventSlim();
             internal ColonisationInteractionWork? Work;internal CheckpointContext? Context;internal StreamedContinuationHold? Continuation;
             internal int Hits,Thread;internal long Epoch;
+            internal MountedRoutineProof? Mounted;
         }
         private sealed class ColonyCase
         {
@@ -173,7 +174,7 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static ColonyHold ColonyStartHold(ColonyCase s,Action activate,bool continuation=false)
         {
-            var h=new ColonyHold();s.Holds.Add(h);var host=StreamHost(ColonyModel(s));if(!s.Hosts.Contains(host))s.Hosts.Add(host);
+            var h=new ColonyHold{Mounted=new MountedRoutineProof(s.Shared.Entry!)};s.Holds.Add(h);var host=StreamHost(ColonyModel(s));if(!s.Hosts.Contains(host))s.Hosts.Add(host);
             ColonyProbe(host,p=>{if(p!="before-action")return;Interlocked.Increment(ref h.Hits);h.Thread=Thread.CurrentThread.ManagedThreadId;h.Entered.Set();if(!h.Release.Wait(TimeSpan.FromSeconds(90)))throw new TimeoutException("Colonisation receiving hold");});
             var prior=SynchronizationContext.Current;Assert.That(prior,Is.Not.Null);h.Context=new CheckpointContext(prior!);if(continuation){h.Continuation=new StreamedContinuationHold(h.Context);SynchronizationContext.SetSynchronizationContext(h.Continuation);}else SynchronizationContext.SetSynchronizationContext(h.Context);
             try{activate();}finally{SynchronizationContext.SetSynchronizationContext(prior);}h.Epoch=(long)CheckpointField(s.Shared.Entry!,"viewEpoch")!;h.Work=(ColonisationInteractionWork?)CheckpointField(s.Shared.Entry!,"colonisationUiWork");Assert.That(h.Work,Is.Not.Null);return h;
@@ -182,8 +183,9 @@ namespace HobbyDS9.UnityReview.Tests
         {var clock=System.Diagnostics.Stopwatch.StartNew();while(!h.Entered.IsSet){Assert.That(clock.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}Assert.That(h.Hits,Is.EqualTo(1));Assert.That(h.Thread,Is.Not.EqualTo(Thread.CurrentThread.ManagedThreadId));}
         private static IEnumerator ColonyBusy(ColonyCase s,UIDocument doc,ColonyHold h,byte[] before,ReviewFrame frame)
         {
-            CheckpointBusy(doc,h.Work!.Kind==ColonisationInteractionKind.Preview?"Checking":h.Work.Kind==ColonisationInteractionKind.Submission?"Applying":"Advancing");int ticks=0;var positions=new HashSet<float>();var heartbeat=doc.rootVisualElement.schedule.Execute(()=>ticks++).Every(10);var clock=System.Diagnostics.Stopwatch.StartNew();
-            try{while(clock.Elapsed.TotalSeconds<.3){positions.Add(doc.rootVisualElement.Q("campaign-operation-indicator").style.left.value.value);yield return null;}Assert.That(ticks,Is.GreaterThanOrEqualTo(3));Assert.That(positions.Count,Is.GreaterThan(1));Assert.That(ColonyModel(s).Current.Frame,Is.SameAs(frame));Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(before),"audit only after source fork has released its lock");Assert.That((long)CheckpointField(s.Shared.Entry!,"viewEpoch")!,Is.EqualTo(h.Epoch));var page=s.Shared.Entry!.Workspace!.Page;Click(doc.rootVisualElement.Q<Button>("review-nav-Map"));Assert.That(s.Shared.Entry.Workspace.Page,Is.EqualTo(page));Assert.That(ColonyModel(s).BeginColonisationInteraction(ColonisationInteractionKind.PlanningAdvance),Is.Null);}finally{heartbeat.Pause();}
+            h.Mounted!.AssertRetained(doc);
+            InteractionPending(doc,h.Work!.Kind==ColonisationInteractionKind.Preview?"Checking":h.Work.Kind==ColonisationInteractionKind.Submission?"Applying":"Advancing");int ticks=0;var positions=new HashSet<float>();var heartbeat=doc.rootVisualElement.schedule.Execute(()=>ticks++).Every(10);var clock=System.Diagnostics.Stopwatch.StartNew();
+            try{while(clock.Elapsed.TotalSeconds<.3){if(doc.rootVisualElement.Q("campaign-operation-indicator") is VisualElement indicator)positions.Add(indicator.style.left.value.value);yield return null;}Assert.That(ticks,Is.GreaterThanOrEqualTo(3));if(positions.Count>0)Assert.That(positions.Count,Is.GreaterThan(1));Assert.That(ColonyModel(s).Current.Frame,Is.SameAs(frame));Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(before),"audit only after source fork has released its lock");Assert.That((long)CheckpointField(s.Shared.Entry!,"viewEpoch")!,Is.EqualTo(h.Epoch));var page=s.Shared.Entry!.Workspace!.Page;Click(doc.rootVisualElement.Q<Button>("review-nav-Map"));Assert.That(s.Shared.Entry.Workspace.Page,Is.EqualTo(page));Assert.That(ColonyModel(s).BeginColonisationInteraction(ColonisationInteractionKind.PlanningAdvance),Is.Null);}finally{heartbeat.Pause();}
         }
         private static IEnumerator ColonySave(ColonyCase s,UIDocument doc,string label,int slot=1)
         {
@@ -350,9 +352,9 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(s.Contexts.Count,Is.EqualTo(tracked),"synchronous activation cannot inherit an older held continuation");Assert.That(CheckpointField(s.Shared.Entry,"colonisationUiWork"),Is.SameAs(oldUi));
                 // Do not globally await the deliberately held OLD finally before creating its replacement lease.
                 button=doc.rootVisualElement.Q<Button>("colonisation-embark");yield return ColonyReach(doc,button,target:"fresh selected Embark while old finally is held");
-                var next=ColonyStartHold(s,()=>Click(button));yield return ColonyEntered(next);var token=CheckpointField(s.Shared.Entry,"campaignBusyToken");cancelled.Continuation.Forward();
+                var next=ColonyStartHold(s,()=>Click(button));yield return ColonyEntered(next);var token=CheckpointField(s.Shared.Entry,"routinePendingToken");cancelled.Continuation.Forward();
                 wait.Restart();while(Volatile.Read(ref cancelled.Context!.Finished)==0){Assert.That(wait.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}
-                Assert.That(CheckpointField(s.Shared.Entry,"colonisationUiWork"),Is.SameAs(next.Work));Assert.That(CheckpointField(s.Shared.Entry,"campaignBusyToken"),Is.SameAs(token));Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(root));
+                Assert.That(CheckpointField(s.Shared.Entry,"colonisationUiWork"),Is.SameAs(next.Work));Assert.That(CheckpointField(s.Shared.Entry,"routinePendingToken"),Is.SameAs(token));Assert.That(ColonyBytes(ColonyModel(s)),Is.EqualTo(root));
                 next.Release.Set();yield return ColonyIdle(s,"new-preview-after-cancel-drain");ColonyProbe(StreamHost(ColonyModel(s)),null);
                 Assert.That(ColonyDraft(doc),Is.EqualTo(drafted),"pure preview completion preserves food/cohort/material draft");
                 yield return ColonyConfirmNegatives(s,doc);yield return ColonyCapture(s,doc,new Vector2Int(1920,1080),"colony-03-embark-review-1920.png");

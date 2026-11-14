@@ -1,5 +1,7 @@
 # Streamed interaction workers
 
+14 November 2026 GUI source follow-up: [GUI-POLISH-02](gui-polish-02.md) replaces the routine full-screen busy/rebuild presentation described below with a mounted page and local pending cue. The worker/lease/transaction contracts remain; native receiving of that presentation follow-up is pending. The paragraphs below record the original worker increment.
+
 Status: source/CPU candidate; Unity receiving and native responsiveness are not yet
 established. This presentation increment changes no gameplay, content identity,
 save bytes, codec, profile or balance.

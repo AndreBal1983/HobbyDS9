@@ -124,8 +124,9 @@ namespace HobbyDS9.UnityReview
             viewEpoch++;modalPermission.Invalidate();
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.begin");
             AbandonPlayerCheckpoint();CancelStreamedUiWork();CancelColonisationUiWork();
+            if(routinePendingToken!=null)HideRoutinePending(routinePendingToken);
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.return");
-            campaignBusyToken=null;root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;ReleaseAudio();
+            campaignBusyToken=null;root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;campaignDialogCurrent=null;ReleaseAudio();
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.return");
         }
         private void OnDestroy(){ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"destroy.enter");ResetDemoKeyboard();ReleasePanel();ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"destroy.return");}
@@ -167,7 +168,7 @@ namespace HobbyDS9.UnityReview
                 ReleasePanel();panel=ScriptableObject.CreateInstance<PanelSettings>();panel.scaleMode=model!.Integrated?PanelScaleMode.ConstantPixelSize:PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
                 panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=1;panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");doc.panelSettings=panel;
             }
-            root=detachedRoot??doc.rootVisualElement;root.Clear();root.styleSheets.Clear();confirmation=null;root.AddToClassList("physical-review-root");
+            root=detachedRoot??doc.rootVisualElement;root.Clear();root.styleSheets.Clear();confirmation=null;campaignDialogCurrent=null;root.AddToClassList("physical-review-root");
             if(detachedRoot==null){PreserveDemoKeyOrigins();BindDemoKeyboard();BindAudio();}
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.03f,0.05f,0.08f);root.style.color=new Color(0.92f,0.95f,1);root.style.fontSize=16;
             foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ShipDesigner","ReviewControls","ReviewCombat","PlayerConsole","GeneratedGalaxy"})
@@ -275,16 +276,19 @@ namespace HobbyDS9.UnityReview
             CapturePublishedCompletions(owner,before);
         }
         private void Confirm(string title,Action action)=>Confirm(title,action,"Confirm","Cancel");
+        private void ConfirmConsequence(string title,string detail,string commitLabel,Action action)
+            =>ShowCampaignDialog(title,detail,"Keep survey",null,new CampaignDialogAction(commitLabel,action));
         private void Confirm(string title,Action action,string commitLabel,string dismissLabel)
             =>ShowCampaignDialog(title.Length>96||title.Contains("\n")?"Review action":title,
                 title.Length>96||title.Contains("\n")?title:"",dismissLabel,null,new CampaignDialogAction(commitLabel,action));
         private void ClearConfirmation()
         {
+            var stale=campaignDialogCurrent?.Invoke()==false;campaignDialogCurrent=null;
             var previous=campaignDialogInvoker;var previousName=campaignDialogInvokerName;
             campaignDialogInvoker=null;campaignDialogInvokerName="";
             modalPermission.Invalidate();confirmation?.RemoveFromHierarchy();confirmation=null;
             foreach(var child in root!.Children())child.SetEnabled(true);
-            Draw();RestoreCampaignDialogFocus(previous,previousName);
+            if(stale)Draw();RestoreCampaignDialogFocus(previous,previousName);
         }
 
     }

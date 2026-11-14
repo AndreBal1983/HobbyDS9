@@ -20,6 +20,7 @@ namespace HobbyDS9.UnityReview
         }
         private VisualElement? campaignDialogInvoker;
         private string campaignDialogInvokerName="";
+        private Func<bool>? campaignDialogCurrent;
         private void ShowCampaignDialog(string title,string detail,string safeLabel,Action? safe,
             params CampaignDialogAction[] choices)
         {
@@ -32,15 +33,29 @@ namespace HobbyDS9.UnityReview
                 var valid=Current();ClearConfirmation();if(valid)selected?.Invoke();
             },()=>{ClearConfirmation();safe?.Invoke();});
             if(callbacks==null)return;
+            campaignDialogCurrent=Current;
             campaignDialogInvoker=root!.panel?.focusController.focusedElement as VisualElement;
             campaignDialogInvokerName=campaignDialogInvoker?.name??"";
             foreach(var child in root.Children())child.SetEnabled(false);
             confirmation=new VisualElement{name="review-one-use-confirmation"};
             confirmation.AddToClassList("review-confirmation");confirmation.AddToClassList("campaign-dialog-backdrop");
             var box=new VisualElement{name="player-confirmation-summary"};box.AddToClassList("campaign-dialog");
-            var heading=Readout(title);heading.AddToClassList("campaign-menu-title");box.Add(heading);
+            var heading=Readout(title);heading.name="campaign-dialog-title";heading.AddToClassList("campaign-menu-title");box.Add(heading);
             var body=new ScrollView(ScrollViewMode.Vertical){name="player-confirmation-details"};
-            body.AddToClassList("campaign-dialog-body");if(detail.Length>0)body.Add(Readout(detail));box.Add(body);
+            body.AddToClassList("campaign-dialog-body");
+            foreach(var paragraph in detail.Split(new[]{"\n\n"},StringSplitOptions.RemoveEmptyEntries))
+            {
+                if(paragraph.StartsWith("Travel details\n",StringComparison.Ordinal))
+                {var travel=new Foldout{text="Travel details",value=false,name="campaign-dialog-travel"};travel.Add(Readout(paragraph.Substring("Travel details\n".Length)));body.Add(travel);}
+                else
+                {
+                    var fact=Readout(paragraph);
+                    if(title=="Interrupt survey?"&&body.childCount==0)
+                    {fact.name="campaign-dialog-survey-targets";fact.style.unityFontStyleAndWeight=FontStyle.Bold;fact.style.marginBottom=10;}
+                    body.Add(fact);
+                }
+            }
+            box.Add(body);
             var footer=new VisualElement();footer.AddToClassList("campaign-dialog-actions");box.Add(footer);
             var dismiss=AddButton(footer,safeLabel,callbacks.Cancel,true);dismiss.name="campaign-dialog-safe";
             var footerButtons=new List<Button>{dismiss};
@@ -55,12 +70,12 @@ namespace HobbyDS9.UnityReview
                 if(e.keyCode==KeyCode.Escape){e.StopImmediatePropagation();callbacks.Cancel();return;}
                 if(e.keyCode!=KeyCode.Tab||e.altKey||e.ctrlKey||e.commandKey)return;
                 // The documented FocusController hook suppresses its default Tab
-                // traversal; only these explicit footer actions own this ring.
+                // traversal; the detail disclosure and footer actions own this ring.
                 root?.panel?.focusController.IgnoreEvent(e);e.StopImmediatePropagation();
-                var controls=footerButtons.Where(CampaignCanFocus).ToList();
+                var controls=body.Query<Toggle>().ToList().Cast<VisualElement>().Concat(footerButtons).Where(CampaignCanFocus).ToList();
                 if(controls.Count==0)return;
                 var focused=root?.panel?.focusController.focusedElement as VisualElement;
-                var index=focused is Button focusedButton?controls.IndexOf(focusedButton):-1;
+                var index=focused!=null?controls.IndexOf(focused):-1;
                 var next=e.shiftKey?(index<=0?controls.Count-1:index-1):(index+1)%controls.Count;
                 e.StopImmediatePropagation();controls[next].Focus();
             },TrickleDown.TrickleDown);

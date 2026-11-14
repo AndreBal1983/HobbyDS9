@@ -18,10 +18,11 @@ namespace HobbyDS9.UnityReview
         private readonly Action<Button,Action> bindButton;
         private readonly Action<Action> perform;
         private readonly Action<string,Action> confirm;
+        private readonly Action<string,string,string,Action>? confirmConsequence;
         private readonly Action<ReviewWorkspacePage> navigate;
         public ReviewPlayableMap(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,
-            Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate,Action<Button,Action> bindButton)
-        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;this.bindButton=bindButton;}
+            Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate,Action<Button,Action> bindButton,Action<string,string,string,Action>? confirmConsequence=null)
+        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;this.bindButton=bindButton;this.confirmConsequence=confirmConsequence;}
         private static Label Text(VisualElement parent,string text,string id="")
         {var label=new Label(text){name=id};label.AddToClassList("console-copy");parent.Add(label);return label;}
         public void Render(VisualElement parent)
@@ -364,7 +365,16 @@ namespace HobbyDS9.UnityReview
                 });
                 var standing=frame.Travel?.OwnOrders.FirstOrDefault(o=>o.FleetId==fleet.FleetId.Value);
                 if(model.DepartureInterruptsPlanetSurvey(offer))
-                    confirm("Leaving interrupts the planetary survey; its work is discarded at the weekly boundary.\n"+summary,submit);
+                {
+                    var ownShips=model.ColonisationActivities().Ships.Where(s=>s.FleetId==offer.Fleet).Select(s=>s.ShipId).ToHashSet(StringComparer.Ordinal);
+                    var planets=model.ColonisationPlanets().ToDictionary(p=>p.PlanetId,StringComparer.Ordinal);
+                    var surveys=model.Colonisation().Surveys.Where(s=>s.Stage==PlanetSurveyStage.Active&&ownShips.Contains(s.ShipId))
+                        .OrderBy(s=>s.PlanetId,StringComparer.Ordinal).ThenBy(s=>s.Id,StringComparer.Ordinal);
+                    var targets=string.Join("\n",surveys.Select(s=>"• "+(planets.TryGetValue(s.PlanetId,out var p)?p.DisplayName:"Survey target")+": "+s.Weeks+" completed survey week"+(s.Weeks==1?"":"s")));
+                    var detail=targets+"\n\n• Leaving interrupts the active planetary survey.\n• Its completed work is discarded at the weekly boundary.\n• Keeping the survey sends no travel order.\n\nTravel details\n"+summary;
+                    if(confirmConsequence!=null)confirmConsequence("Interrupt survey?",detail,"Interrupt survey & depart",submit);
+                    else confirm("Interrupt survey?\n\n"+detail,submit);
+                }
                 else if(model.DepartureInterruptsExpedition(offer))
                     confirm("Leaving ends this expedition; consumed funding is not refunded.\n"+summary,submit);
                 else if(standing?.Intent==CampaignTravelIntent.StayEngage||standing?.Intent==CampaignTravelIntent.Follow)

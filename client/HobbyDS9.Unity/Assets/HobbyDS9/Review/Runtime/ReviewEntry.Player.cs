@@ -56,7 +56,7 @@ namespace HobbyDS9.UnityReview
             if(central==null||!ReferenceEquals(centralContext,model.Current))
             {central=new ReviewCentralView(content,flow!,(p,t,a)=>AddButton(p,t,a),Do,Confirm);centralContext=model.Current;}
             else central.Bind(content);
-            player=new ReviewPlayerView(model,workspace,(p,t,a)=>AddButton(p,t,a),Do,Confirm,Navigate,(fleet,node,ship)=>{workspace.SelectedFleet=fleet;central.SelectStrategicFleet(fleet,node,ship);Navigate(ReviewWorkspacePage.FleetOrders);},(b,a)=>BindButton(b,a));
+            player=new ReviewPlayerView(model,workspace,(p,t,a)=>AddButton(p,t,a),Do,Confirm,Navigate,(fleet,node,ship)=>{workspace.SelectedFleet=fleet;central.SelectStrategicFleet(fleet,node,ship);Navigate(ReviewWorkspacePage.FleetOrders);},(b,a)=>BindButton(b,a),ConfirmConsequence);
             playerFooter=new VisualElement{name="player-footer"};playerFooter.AddToClassList("console-footer");root.Add(playerFooter);
         }
         private static string OwnerName(string actor)=>actor=="civ.federation"?"Federation":actor=="civ.cardassian"?"Cardassian Union":actor;
@@ -80,7 +80,8 @@ namespace HobbyDS9.UnityReview
         }
         private void DrawPlayer()
         {
-            RestoreStreamedBusy();RestoreColonisationBusy();var frame=model!.Current.Frame;playerTitle!.text=PlayerProfile&&workspace!.Page==ReviewWorkspacePage.Tools?"Help & credits":Title(workspace!.Page);
+            RestoreStreamedBusy();RestoreColonisationBusy();if(routinePendingToken!=null)return;
+            var frame=model!.Current.Frame;playerTitle!.text=PlayerProfile&&workspace!.Page==ReviewWorkspacePage.Tools?"Help & credits":Title(workspace!.Page);
             content!.EnableInClassList("review-central",!demoLanding&&workspace.Page==ReviewWorkspacePage.Combat);
             content.EnableInClassList("map-workspace",!demoLanding&&workspace.Page==ReviewWorkspacePage.Map&&!frontierCommissionOpen&&campaignSettingsReturn==null);
             playerStatus!.style.display=ShowPlayerCampaignFacts?DisplayStyle.Flex:DisplayStyle.None;
@@ -231,7 +232,7 @@ namespace HobbyDS9.UnityReview
         private void AbandonPlayerCheckpoint()
         {
             if(checkpointUiOperation!=null)checkpointOwner?.AbandonStaticCheckpointOperation(checkpointUiOperation);
-            if(checkpointUiOperation!=null)HideCampaignBusy(checkpointUiOperation);
+            if(checkpointUiOperation!=null){HideCampaignBusy(checkpointUiOperation);HideRoutinePending(checkpointUiOperation);}
             checkpointUiOperation=null;checkpointOwner=null;
         }
         private async void RunPlayerCheckpoint(bool loading,string requestedSlot,bool overwrite=false,Action? occupied=null,Action<bool>? completed=null)
@@ -240,17 +241,20 @@ namespace HobbyDS9.UnityReview
             var operation=owner.BeginStaticCheckpointOperation(requestedSlot,loading,overwrite,discard:true);
             if(operation==null){Draw();completed?.Invoke(false);return;}
             checkpointOwner=owner;checkpointUiOperation=operation;bool? accepted=null;
-            ShowCampaignBusy(operation,loading?"Loading and validating campaign...":"Saving and validating campaign...");
+            RoutineViewState? saved=null;
             try
             {
+                if(loading)ShowCampaignBusy(operation,"Loading and validating campaign...");
+                else saved=ShowRoutinePending(operation,"Saving campaign…");
                 var completion=await Task.Run(()=>operation.Execute());
                 if(this==null||!isActiveAndEnabled||viewEpoch!=epoch||!ReferenceEquals(model,owner)
                     ||!ReferenceEquals(checkpointUiOperation,operation)||!ReferenceEquals(checkpointOwner,owner))
                 {owner.AbandonStaticCheckpointOperation(operation);return;}
                 accepted=owner.CompleteStaticCheckpointOperation(operation,completion);
-                HideCampaignBusy(operation);checkpointUiOperation=null;checkpointOwner=null;
+                HideCampaignBusy(operation);HideRoutinePending(operation);checkpointUiOperation=null;checkpointOwner=null;
                 if(accepted.Value){MarkCampaignSaved(owner);if(loading)campaignMenuNotice="Campaign loaded.";}
-                if(!ReferenceEquals(before,owner.Current.Frame)){viewEpoch++;Build();}else Draw();
+                if(saved!=null)ReceiveRoutineView(saved,!ReferenceEquals(before,owner.Current.Frame));
+                else if(!ReferenceEquals(before,owner.Current.Frame)){viewEpoch++;Build();}else Draw();
             }
             catch(Exception)
             {
@@ -263,11 +267,11 @@ namespace HobbyDS9.UnityReview
             finally
             {
                 owner.AbandonStaticCheckpointOperation(operation);
-                HideCampaignBusy(operation);
+                HideCampaignBusy(operation);HideRoutinePending(operation);
                 if(ReferenceEquals(checkpointUiOperation,operation))
                 {
                     checkpointUiOperation=null;checkpointOwner=null;
-                    if(this!=null&&isActiveAndEnabled&&ReferenceEquals(model,owner))Draw();
+                    if(this!=null&&isActiveAndEnabled&&ReferenceEquals(model,owner)){if(saved!=null)ReceiveRoutineView(saved,false);else Draw();}
                 }
             }
             if(accepted.HasValue&&this!=null&&isActiveAndEnabled&&ReferenceEquals(model,owner))

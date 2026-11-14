@@ -86,6 +86,11 @@ namespace HobbyDS9.UnityReview
         }
         internal void RefreshConstructionStatus()
         {if(!disposed&&Colony!=null)construction?.PresentStatus(constructionStatus?.Invoke(Colony.ColonyId));}
+        internal void CompleteSubmission(string text)
+        {
+            if(disposed)return;submitted=false;DismissReview();status.text=text;
+            construction?.CompleteSubmission(Colony==null?text:constructionStatus?.Invoke(Colony.ColonyId)??text);
+        }
 
         public ReviewActivitiesPanel(CampaignActivityObservationDto observation,
             Func<CampaignActivityCommandDto,CampaignActivityEligibilityDto> evaluate,
