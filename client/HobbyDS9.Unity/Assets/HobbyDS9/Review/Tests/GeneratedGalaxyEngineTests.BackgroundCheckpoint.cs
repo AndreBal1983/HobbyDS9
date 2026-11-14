@@ -70,6 +70,34 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(doc.rootVisualElement.Q<Label>("campaign-operation-title").text,Does.Contain(title));
             Assert.That(doc.rootVisualElement.Q("campaign-operation-activity").worldBound.height,Is.GreaterThan(0));
         }
+        private static void RoutinePending(UIDocument doc,string title,bool requireMounted=true)
+        {
+            var root=doc.rootVisualElement;
+            Assert.That(root.Q("campaign-operation-busy"),Is.Null,"Routine commands must not replace the campaign screen.");
+            Assert.That(root.Q<Label>("routine-command-pending")?.text,Does.Contain(title));
+            if(requireMounted)Assert.That(root.Q("review-central-content").childCount,Is.GreaterThan(1),"Existing page remains mounted beside the local notice.");
+            Assert.That(root.Q("player-footer"),Is.Not.Null);
+        }
+        private static void InteractionPending(UIDocument doc,string title)
+        {if(doc.rootVisualElement.Q("routine-command-pending")!=null)RoutinePending(doc,title);else CheckpointBusy(doc,title);}
+        private sealed class MountedRoutineProof
+        {
+            private readonly VisualElement[] mounted;
+            private readonly (ScrollView view,Vector2 offset)[] scrolls;
+            internal MountedRoutineProof(ReviewEntry entry)
+            {
+                var root=entry.GetComponent<UIDocument>().rootVisualElement;
+                mounted=root.Q("review-central-content").Children().ToArray();
+                var dialog=root.Q("review-one-use-confirmation");
+                scrolls=root.Query<ScrollView>().ToList().Where(s=>dialog?.Contains(s)!=true).Select(s=>(s,s.scrollOffset)).ToArray();
+            }
+            internal void AssertRetained(UIDocument doc)
+            {
+                foreach(var element in mounted)Assert.That(doc.rootVisualElement.Contains(element),Is.True,"Routine admission must retain the actual mounted page.");
+                foreach(var scroll in scrolls)
+                {Assert.That(doc.rootVisualElement.Contains(scroll.view),Is.True);Assert.That(scroll.view.scrollOffset,Is.EqualTo(scroll.offset),"Routine admission must retain scroll context.");}
+            }
+        }
         [UnityTest,Timeout(600000)]
         public IEnumerator BackgroundCheckpointOperationsKeepActualUiResponsiveAndAtomic()
         {
@@ -141,15 +169,15 @@ namespace HobbyDS9.UnityReview.Tests
                 writeProbe=s=>{if(s==UnityReviewWriteStage.AfterPartialWrite){writerThread=Thread.CurrentThread.ManagedThreadId;Interlocked.Increment(ref writes);entered.Set();if(!release.Wait(TimeSpan.FromSeconds(90)))throw new TimeoutException();}};
                 var save=CheckpointActivate(state,()=>Click(doc.rootVisualElement.Q<Button>("player-save")));timer.Restart();
                 while(!entered.IsSet){Assert.That(timer.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}
-                CheckpointBusy(doc,"Saving");Assert.That(writerThread,Is.Not.EqualTo(mainThread));var active=CheckpointField(entry,"checkpointUiOperation");
+                RoutinePending(doc,"Saving");Assert.That(writerThread,Is.Not.EqualTo(mainThread));var active=CheckpointField(entry,"checkpointUiOperation");
                 int ticks=0,frames=0;var heartbeat=doc.rootVisualElement.schedule.Execute(()=>ticks++).Every(10);var positions=new HashSet<float>();timer.Restart();
                 while(frames<8||timer.Elapsed.TotalSeconds<.3)
-                {positions.Add(doc.rootVisualElement.Q("campaign-operation-indicator").style.left.value.value);frames++;yield return null;}
-                Assert.That(ticks,Is.GreaterThanOrEqualTo(3));Assert.That(positions.Count,Is.GreaterThan(1));
+                {RoutinePending(doc,"Saving");frames++;yield return null;}
+                Assert.That(ticks,Is.GreaterThanOrEqualTo(3));
                 // Real attached navigation/menu actions must be refused while the work owns the UI.
                 Click(doc.rootVisualElement.Q<Button>("demo-menu"));Click(doc.rootVisualElement.Q<Button>("review-nav-Map"));
                 Assert.That(CheckpointField(entry,"checkpointUiOperation"),Is.SameAs(active));Assert.That(model.BeginStaticCheckpointOperation("other",false),Is.Null);Assert.That(model.Advance(),Is.False);
-                doc.rootVisualElement.style.width=1200;yield return null;yield return null;CheckpointBusy(doc,"Saving");Assert.That(model.Current.Frame,Is.SameAs(before));
+                doc.rootVisualElement.style.width=1200;yield return null;yield return null;RoutinePending(doc,"Saving");Assert.That(model.Current.Frame,Is.SameAs(before));
                 CheckpointCapture(doc,"saving-responsive-resized");state.Outcomes.Add(new{phase="blocked-save",ticks,frames,indicatorPositions=positions.Count,writerThread,mainThread});
                 release.Set();timer.Restart();while(model.Busy){Assert.That(timer.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}
                 yield return null;Assert.That(save.Finished,Is.GreaterThan(0));Assert.That(save.Thread,Is.EqualTo(mainThread));Assert.That(writes,Is.EqualTo(1));heartbeat.Pause();writeProbe=null;

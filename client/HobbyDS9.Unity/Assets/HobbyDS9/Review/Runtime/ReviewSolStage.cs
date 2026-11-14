@@ -70,7 +70,11 @@ namespace HobbyDS9.UnityReview
                 var maps=Surface(profile);
                 planet.GetPropertyBlock(properties);properties.SetTexture("_Surface",maps.surface);properties.SetTexture("_Clouds",maps.clouds);
                 properties.SetFloat("_Unknown",profile.Kind==PlanetSurfaceKind.Unknown?1:0);
-                properties.SetFloat("_Atmosphere",profile.AtmosphereStrength);planet.SetPropertyBlock(properties);
+                properties.SetFloat("_Atmosphere",profile.AtmosphereStrength);
+                // Exact disclosed authored Mars art has no Earth-like cloud/blue
+                // limb treatment. Snapshot atmosphere/pressure facts are unchanged.
+                properties.SetFloat("_CloudOpacity",profile.AuthoredMap=="mars"?0:.55f);
+                properties.SetFloat("_LimbStrength",profile.AuthoredMap=="mars"?0:.12f);planet.SetPropertyBlock(properties);
                 planetTransforms.Add(body.PlanetId,planet.transform);angles.Add(body.PlanetId,angle);
                 var trackRenderer=Part("Schematic orbit",track,new Vector3(0,-.045f,0),orbit,OrbitColor,false);
                 trackRenderer.transform.SetParent(orbitalRoot,false);planetOrbits.Add(body.PlanetId,trackRenderer);
@@ -100,7 +104,7 @@ namespace HobbyDS9.UnityReview
         }
         private Texture2D Generate(PlanetVisualProfile profile,bool clouds,int width,int height)
         {
-            var texture=new Texture2D(width,height,TextureFormat.RGBA32,true)
+            var texture=new Texture2D(width,height,TextureFormat.RGBA32,true,clouds)
                 {name=clouds?"Disclosed clouds":"Disclosed surface",hideFlags=HideFlags.HideAndDontSave,wrapModeU=TextureWrapMode.Repeat,wrapModeV=TextureWrapMode.Clamp};
             ownedTextures.Add(texture);
             var pixels=new Color[width*height];
@@ -172,8 +176,11 @@ namespace HobbyDS9.UnityReview
             if(Texture.width!=pixels){Texture.Release();Texture.width=pixels;Texture.Create();}
             // Fit the actual disclosed orbit envelope, not an extra empty orbit.
             var outerRadius=Mathf.Max(0,extent-1.2f);
-            camera.aspect=aspect;camera.orthographicSize=Mathf.Max(outerRadius*.81f+.7f,(outerRadius+.7f)/aspect)*1.1f/zoom;
-            var tilt=Quaternion.Euler(54,0,0);
+            const float elevation=24;
+            camera.aspect=aspect;camera.orthographicSize=Mathf.Max(outerRadius*Mathf.Sin(elevation*Mathf.Deg2Rad)+.7f,(outerRadius+.7f)/aspect)*1.1f/zoom;
+            // Circular tracks and bodies share the actual XZ plane. The camera's
+            // elevation makes that plane read as ellipses; picking uses this camera.
+            var tilt=Quaternion.Euler(elevation,0,0);
             orbitalRoot.localRotation=Quaternion.Euler(0,yaw,0);
             var centre=root.transform.position;
             if(planetTransforms.TryGetValue(selectedPlanet,out var selected))centre=Vector3.Lerp(centre,selected.position,Mathf.Clamp01((zoom-.9f)*.8f));
@@ -231,7 +238,8 @@ namespace HobbyDS9.UnityReview
             portraitGlobe!.GetComponent<MeshFilter>().sharedMesh=selected.GetComponent<MeshFilter>().sharedMesh;
             source.GetPropertyBlock(properties);
             // Stable decorative illumination; no dependency on overview yaw, zoom or location.
-            properties.SetVector("_StarCenter",portraitGlobe.transform.position+new Vector3(-3,2,-4));
+            properties.SetFloat("_NightFill",.025f);
+            properties.SetVector("_StarCenter",portraitGlobe.transform.position+new Vector3(-3.6f,1.4f,-1.2f));
             portraitGlobe.SetPropertyBlock(properties);
             root.SetActive(true);portraitGlobe.gameObject.SetActive(true);
             try

@@ -126,6 +126,46 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally{RenderTexture.active=previous;UnityEngine.Object.DestroyImmediate(copy);}
         }
+        [Test] public void SharedCircularPlaneProjectsAsFlatterEllipsesAndMarkersUseTheSameCamera()
+        {
+            var stage=Stage(Planet("planet.sol"),Planet("planet.mars",kind:"Arid"));var type=stage.GetType();
+            try
+            {
+                foreach(var yaw in new[]{0f,75f,-130f})
+                {
+                    Assert.That((bool)type.GetMethod("Render",Private)!.Invoke(stage,new object[]{3f,yaw,1f,"planet.sol"})!,Is.True);
+                    var camera=(Camera)Field(stage,"camera");var centre=((GameObject)Field(stage,"root")).transform.position;
+                    var horizontal=Vector2.Distance(camera.WorldToViewportPoint(centre+Vector3.right),camera.WorldToViewportPoint(centre-Vector3.right))*camera.aspect;
+                    var vertical=Vector2.Distance(camera.WorldToViewportPoint(centre+Vector3.forward),camera.WorldToViewportPoint(centre-Vector3.forward));
+                    Assert.That(vertical/horizontal,Is.InRange(.35f,.45f),"Flatten the perspective of the shared plane, not the body's shape or orbit geometry.");
+                    foreach(var pair in (Dictionary<string,Transform>)Field(stage,"planetTransforms"))
+                    {
+                        Assert.That(pair.Value.localPosition.y,Is.Zero);Assert.That(pair.Value.localScale.x,Is.EqualTo(pair.Value.localScale.y));
+                        var expected=camera.WorldToViewportPoint(pair.Value.position);var args=new object[]{pair.Key,default(Vector2)};
+                        Assert.That((bool)type.GetMethod("TryGetPosition",Private)!.Invoke(stage,args)!,Is.True);
+                        Assert.That(Vector2.Distance((Vector2)args[1],new Vector2(expected.x,1-expected.y)),Is.LessThan(.00001f));
+                    }
+                }
+            }
+            finally{((IDisposable)stage).Dispose();}
+        }
+        [Test] public void WhiteGlobeShowsDirectionalTerminatorWithoutCloudOrMapContrast()
+        {
+            var stage=Stage(Planet("planet.sol"));var type=stage.GetType();
+            try
+            {
+                var globe=((Dictionary<string,Transform>)Field(stage,"planetTransforms"))["planet.sol"].GetComponent<MeshRenderer>();
+                var block=new MaterialPropertyBlock();globe.GetPropertyBlock(block);
+                block.SetTexture("_Surface",Texture2D.whiteTexture);block.SetTexture("_Clouds",Texture2D.blackTexture);block.SetFloat("_Atmosphere",0);globe.SetPropertyBlock(block);
+                Assert.That((bool)type.GetMethod("RenderPortrait",Private)!.Invoke(stage,new object[]{"planet.sol"})!,Is.True);
+                var target=(RenderTexture)type.GetProperty("PortraitTexture",Private)!.GetValue(stage)!;
+                var pixels=PortraitPixels(target,"white-globe-terminator");
+                float Luma(int x){var c=pixels[256*512+x];return .2126f*c.r+.7152f*c.g+.0722f*c.b;}
+                Assert.That(Luma(160),Is.GreaterThan(Luma(352)*3),"Day/night contrast must come from directional illumination, not colored textures.");
+                Assert.That(Luma(160),Is.GreaterThan(70));Assert.That(Luma(352),Is.LessThan(90));
+            }
+            finally{((IDisposable)stage).Dispose();}
+        }
         [Test] public void SelectedPortraitUsesDisclosedGlobeOnlyAndSurvivesOverviewChangesWithoutCropping()
         {
             var stage=Stage(Planet("planet.sol"),Planet("planet.mars",kind:"Arid"));

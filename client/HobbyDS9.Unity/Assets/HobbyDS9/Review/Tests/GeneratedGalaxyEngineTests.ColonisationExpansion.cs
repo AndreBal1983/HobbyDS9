@@ -129,12 +129,12 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static IEnumerator ExpansionBusy(ExpansionReceivingState t,UIDocument doc,ColonyHold hold,byte[] before,ReviewFrame frame)
         {
-            var s=t.Case;CheckpointBusy(doc,"Applying");int ticks=0;var positions=new HashSet<float>();
+            var s=t.Case;InteractionPending(doc,"Applying");int ticks=0;var positions=new HashSet<float>();
             var pulse=doc.rootVisualElement.schedule.Execute(()=>ticks++).Every(10);var clock=System.Diagnostics.Stopwatch.StartNew();
             try
             {
-                while(clock.Elapsed.TotalSeconds<.3){positions.Add(doc.rootVisualElement.Q("campaign-operation-indicator").style.left.value.value);yield return null;}
-                Assert.That(ticks,Is.GreaterThanOrEqualTo(3));Assert.That(positions.Count,Is.GreaterThan(1));
+                while(clock.Elapsed.TotalSeconds<.3){if(doc.rootVisualElement.Q("campaign-operation-indicator") is VisualElement indicator)positions.Add(indicator.style.left.value.value);yield return null;}
+                Assert.That(ticks,Is.GreaterThanOrEqualTo(3));if(positions.Count>0)Assert.That(positions.Count,Is.GreaterThan(1));
                 Assert.That(ColonyModel(s).Current.Frame,Is.SameAs(frame));Assert.That(ExpansionBytes(ColonyModel(s)),Is.EqualTo(before));
                 var page=s.Shared.Entry!.Workspace!.Page;Click(doc.rootVisualElement.Q<Button>("review-nav-Map"));Assert.That(s.Shared.Entry.Workspace.Page,Is.EqualTo(page));
                 Assert.That(ColonyModel(s).BeginColonisationInteraction(ColonisationInteractionKind.PlanningAdvance),Is.Null);

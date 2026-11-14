@@ -29,6 +29,30 @@ public sealed class ColonisationCycleIntegrationTests:IDisposable
     static ICampaignColonisationCycleSession Session(ReviewUiModel m)=>(ICampaignColonisationCycleSession)typeof(PhysicalReviewHost).GetField("session",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(Host(m))!;
     byte[] Root(ReviewUiModel m)=>codec.EncodeCycleRoot(Session(m).ExportCycleSave());
     static ColonisationCommandDto Kit(ReviewUiModel m)=>new(){ActorId=m.Current.Frame.Actor,CommandId="command.roster.kit",Turn=m.Current.Frame.Status.Turn,Revision=m.Current.Frame.Status.CampaignRevision,Action=ColonisationAction.EnqueueKit,EnqueueKit=new(){ColonyId="colony.sol"}};
+    [Theory][InlineData(30)][InlineData(250)]
+    public async Task RoutineCommandProfileKeepsPreviewReadOnlyAndPublishesExactlyOnce(int systemCount)
+    {
+        var settings=Settings();settings.Map!.SystemCount=systemCount;settings.Map.EmptyRegionCount=systemCount;
+        if(systemCount==250){settings.Map.Width=2000000;settings.Map.Height=2000000;}
+        var m=new ReviewUiModel(Package(),settings,codec,Store());var before=Root(m);
+        var frame=m.Current.Frame;var option=m.ColonisationActivities().BuildOptions.First(o=>o.Kind==ActivityProductionKind.PublishedShip&&o.Supported);
+        var command=new CampaignActivityCommandDto{ActorId=frame.Actor,CommandId="command.polish.production",ExpectedTurn=frame.Status.Turn,ExpectedRevision=frame.Status.CampaignRevision,
+            Kind=CampaignActivityCommandKind.EnqueueShip,TargetId="colony.sol",DefinitionId=option.DefinitionId,BlueprintRevision=option.BlueprintRevision};
+        foreach(var kind in new[]{ColonisationInteractionKind.Preview,ColonisationInteractionKind.Submission})
+        {
+            var clock=System.Diagnostics.Stopwatch.StartNew();var marks=new Dictionary<string,double>();
+            typeof(PhysicalReviewHost).GetProperty("ColonisationInteractionProbe",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(Host(m),(Action<string>)(phase=>marks[phase]=clock.Elapsed.TotalMilliseconds));
+            var work=m.BeginColonisationInteraction(kind,command)!;var beginMs=clock.Elapsed.TotalMilliseconds;Assert.NotNull(work);
+            Assert.Null(m.BeginColonisationInteraction(kind,command));
+            var result=await Task.Run(work.Execute);var workerEnd=clock.Elapsed.TotalMilliseconds;
+            Assert.True(m.CompleteColonisationInteraction(work,result),m.Message);var receiveEnd=clock.Elapsed.TotalMilliseconds;
+            output.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(new{systemCount,kind=kind.ToString(),beginMs,workerMs=workerEnd-beginMs,receiveMs=receiveEnd-workerEnd,marks,noUnity=true,noLatencyThreshold=true}));
+            Assert.False(m.CompleteColonisationInteraction(work,result));Assert.False(m.Busy);
+            if(kind==ColonisationInteractionKind.Preview){Assert.True(result.Eligibility!.Accepted);Assert.Equal(before,Root(m));Assert.Same(frame,m.Current.Frame);}
+            else {Assert.True(result.Committed);Assert.NotSame(frame,m.Current.Frame);var accepted=Root(m);Assert.NotEqual(before,accepted);Assert.False(m.CompleteColonisationInteraction(work,result));Assert.Equal(accepted,Root(m));}
+        }
+        typeof(PhysicalReviewHost).GetProperty("ColonisationInteractionProbe",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(Host(m),null);
+    }
     [Fact]public void PinnedCompositionAndSeparateNamespaceNeverReinterpretOldSlots()
     {
         var p=Package();var m=Model();Assert.True(m.ColonisationCycleCampaign);Assert.True(m.SupportsKitFreePassengers);Assert.False(m.ColonisationExpansionCampaign);Assert.True(m.ColonisationCampaign);Assert.False(m.ColonisationRosterCampaign);

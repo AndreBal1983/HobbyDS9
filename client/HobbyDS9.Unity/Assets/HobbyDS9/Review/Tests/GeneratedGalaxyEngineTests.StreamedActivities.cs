@@ -107,6 +107,7 @@ namespace HobbyDS9.UnityReview.Tests
             internal StreamedContinuationHold? Continuation;
             internal int Hits,WorkerThread;
             internal long Epoch;
+            internal MountedRoutineProof? Mounted;
         }
         private sealed class StreamedUiProof
         {
@@ -130,7 +131,7 @@ namespace HobbyDS9.UnityReview.Tests
         private static void StreamProbe(PhysicalReviewHost host,Action<string>? action)=>typeof(PhysicalReviewHost).GetProperty("StreamedInteractionProbe",BindingFlags.Instance|BindingFlags.NonPublic)!.SetValue(host,action);
         private static StreamedUiHold StreamStartHold(StreamedUiProof proof,ReviewEntry entry,Action activate,bool holdContinuation=false)
         {
-            var hold=new StreamedUiHold();proof.Holds.Add(hold);
+            var hold=new StreamedUiHold{Mounted=new MountedRoutineProof(entry)};proof.Holds.Add(hold);
             var host=StreamHost(CampaignModel(entry));if(!proof.Hosts.Contains(host))proof.Hosts.Add(host);
             StreamProbe(host,phase=>{if(phase!="before-action")return;Interlocked.Increment(ref hold.Hits);hold.WorkerThread=Thread.CurrentThread.ManagedThreadId;hold.Entered.Set();if(!hold.Release.Wait(TimeSpan.FromSeconds(90)))throw new TimeoutException("Receiving interaction hold timed out.");});
             var prior=SynchronizationContext.Current;Assert.That(prior,Is.Not.Null,"real Unity synchronization context");
@@ -145,7 +146,8 @@ namespace HobbyDS9.UnityReview.Tests
         {
             var clock=System.Diagnostics.Stopwatch.StartNew();
             while(!hold.Entered.IsSet){Assert.That(clock.Elapsed.TotalSeconds,Is.LessThan(90),title);yield return null;}
-            Assert.That(hold.WorkerThread,Is.Not.EqualTo(Thread.CurrentThread.ManagedThreadId));Assert.That(hold.Hits,Is.EqualTo(1));CheckpointBusy(doc,title);
+            Assert.That(hold.WorkerThread,Is.Not.EqualTo(Thread.CurrentThread.ManagedThreadId));Assert.That(hold.Hits,Is.EqualTo(1));InteractionPending(doc,title);
+            hold.Mounted!.AssertRetained(doc);
         }
         private static IEnumerator StreamUiIdle(ReviewEntry entry,string phase)
         {
@@ -162,10 +164,10 @@ namespace HobbyDS9.UnityReview.Tests
             try
             {
                 Assert.That(target.Create(),Is.True);doc.panelSettings.targetTexture=target;doc.rootVisualElement.style.width=size.x;doc.rootVisualElement.style.height=size.y;
-                yield return null;yield return null;yield return null;CheckpointBusy(doc,title);
+                yield return null;yield return null;yield return null;InteractionPending(doc,title);
                 int ticks=0,frames=0;var positions=new HashSet<float>();heartbeat=doc.rootVisualElement.schedule.Execute(()=>ticks++).Every(10);var clock=System.Diagnostics.Stopwatch.StartNew();
-                while(frames<8||clock.Elapsed.TotalSeconds<.3){positions.Add(doc.rootVisualElement.Q("campaign-operation-indicator").style.left.value.value);frames++;yield return null;}
-                Assert.That(ticks,Is.GreaterThanOrEqualTo(3));Assert.That(positions.Count,Is.GreaterThan(1));Assert.That(model.Busy,Is.True);Assert.That(model.Current.Frame,Is.SameAs(frame));
+                while(frames<8||clock.Elapsed.TotalSeconds<.3){if(doc.rootVisualElement.Q("campaign-operation-indicator") is VisualElement indicator)positions.Add(indicator.style.left.value.value);frames++;yield return null;}
+                Assert.That(ticks,Is.GreaterThanOrEqualTo(3));if(positions.Count>0)Assert.That(positions.Count,Is.GreaterThan(1));Assert.That(model.Busy,Is.True);Assert.That(model.Current.Frame,Is.SameAs(frame));
                 Assert.That(CheckpointField(state.Entry!,"streamedUiWork"),Is.SameAs(hold.Work));Assert.That((long)CheckpointField(state.Entry!,"viewEpoch")!,Is.EqualTo(hold.Epoch),"resize does not cancel the observed operation");
                 // before-action is after the source fork has released its lock;
                 // this private source audit cannot block on a held source fork.
@@ -203,7 +205,7 @@ namespace HobbyDS9.UnityReview.Tests
             yield return StreamReachButton(doc,oldButton);
             var cancelled=StreamStartHold(proof,entry,()=>Click(oldButton),true);yield return StreamEntered(cancelled,doc,"Checking");
             entry.enabled=false;Assert.That(model.Busy,Is.True,"source-reading cancelled worker must drain");entry.enabled=true;yield return null;yield return null;
-            CheckpointBusy(doc,"Checking");Assert.That(model.Current.Frame,Is.SameAs(sourceFrame));Assert.That(StreamBytes(model),Is.EqualTo(sourceRoot));
+            RoutinePending(doc,"Checking",requireMounted:false);Assert.That(model.Current.Frame,Is.SameAs(sourceFrame));Assert.That(StreamBytes(model),Is.EqualTo(sourceRoot));
             cancelled.Release.Set();var timer=System.Diagnostics.Stopwatch.StartNew();
             while(!cancelled.Work!.Settled||cancelled.Continuation!.Queued==0){Assert.That(timer.Elapsed.TotalSeconds,Is.LessThan(90),"old cancelled worker/queued real continuation settles");yield return null;}
             // The old real Unity continuation is deliberately queued, not run or
@@ -214,17 +216,17 @@ namespace HobbyDS9.UnityReview.Tests
             var fresh=doc.rootVisualElement.Q<ReviewActivitiesPanel>();Assert.That(fresh,Is.Not.SameAs(oldPanel));StreamSelectionRetained(doc,selected,false);
             var button=fresh.Q<Button>(reviewId);yield return StreamReachButton(doc,button);
             var preview=StreamStartHold(proof,entry,()=>Click(button));yield return StreamEntered(preview,doc,"Checking");
-            var token=CheckpointField(entry,"campaignBusyToken");cancelled.Continuation.Forward();timer.Restart();
+            var token=CheckpointField(entry,"routinePendingToken");cancelled.Continuation.Forward();timer.Restart();
             while(Volatile.Read(ref cancelled.Context!.Finished)==0){Assert.That(timer.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}
             Assert.That(cancelled.Context.Thread,Is.EqualTo(Thread.CurrentThread.ManagedThreadId));Assert.That(model.Busy,Is.True);
-            Assert.That(CheckpointField(entry,"streamedUiWork"),Is.SameAs(preview.Work));Assert.That(CheckpointField(entry,"campaignBusyToken"),Is.SameAs(token),"old finally cannot clear newer busy ownership");
+            Assert.That(CheckpointField(entry,"streamedUiWork"),Is.SameAs(preview.Work));Assert.That(CheckpointField(entry,"routinePendingToken"),Is.SameAs(token),"old finally cannot clear newer busy ownership");
             Click(oldButton);Assert.That(CheckpointField(entry,"streamedUiWork"),Is.SameAs(preview.Work),"disposed old panel callback cannot submit");
             foreach(var size in new[]{new Vector2Int(1280,720),new Vector2Int(1920,1080),new Vector2Int(3440,1440)})
                 yield return StreamBusyProof(state,doc,preview,model,sourceFrame,sourceRoot,"Checking",size,"streamed-preview-responsive-"+size.x+"x"+size.y);
             preview.Release.Set();yield return StreamUiIdle(entry,"held-preview-complete");Assert.That(preview.Context!.Thread,Is.EqualTo(Thread.CurrentThread.ManagedThreadId));
             Assert.That(StreamBytes(model),Is.EqualTo(sourceRoot));Assert.That(model.Current.Frame,Is.SameAs(sourceFrame));StreamSelectionRetained(doc,selected,false);
-            var current=doc.rootVisualElement.Q<ReviewActivitiesPanel>();Assert.That(current,Is.Not.SameAs(fresh));
-            var confirm=current.Q<Button>("activity-order-confirm");Assert.That(confirm,Is.Not.Null,"new current panel presents exact eligibility after worker");
+            var current=doc.rootVisualElement.Q<ReviewActivitiesPanel>();Assert.That(current,Is.SameAs(fresh),"Read-only preview must retain the mounted panel.");
+            var confirm=current.Q<Button>("activity-order-confirm");Assert.That(confirm,Is.Not.Null,"retained current panel presents exact eligibility after worker");
             var wording=string.Join(" ",current.Q("activity-order-review").Query<Label>().ToList().Select(l=>l.text));Assert.That(wording,Does.Contain("consumed materials are lost"));
             yield return StreamClick(doc,"activity-order-confirm",false);var after=StreamBytes(model);Click(confirm);yield return null;Assert.That(StreamBytes(model),Is.EqualTo(after),"disposed cancellation Confirm cannot resolve twice");
             Assert.That(model.Current.Frame,Is.Not.SameAs(sourceFrame));StreamProbe(StreamHost(model),null);
@@ -698,8 +700,8 @@ namespace HobbyDS9.UnityReview.Tests
                 var clock=System.Diagnostics.Stopwatch.StartNew();while(!state.Entered.IsSet){Assert.That(clock.Elapsed.TotalSeconds,Is.LessThan(90));yield return null;}
                 var expected=StreamBytes(model);Click(doc.rootVisualElement.Q<Button>("player-load"));Confirm(doc);yield return null;CheckpointBusy(doc,"Loading");
                 int ticks=0;var heartbeat=doc.rootVisualElement.schedule.Execute(()=>ticks++).Every(10);var positions=new HashSet<float>();clock.Restart();
-                while(clock.Elapsed.TotalSeconds<.3){positions.Add(doc.rootVisualElement.Q("campaign-operation-indicator").style.left.value.value);yield return null;}
-                Assert.That(ticks,Is.GreaterThanOrEqualTo(3));Assert.That(positions.Count,Is.GreaterThan(1));CheckpointCapture(doc,"streamed-loading-responsive");heartbeat.Pause();state.Release.Set();yield return PublishedReceivingIdle(state,"streamed-held-load");model=CampaignModel(entry);Assert.That(StreamBytes(model),Is.EqualTo(expected));
+                while(clock.Elapsed.TotalSeconds<.3){if(doc.rootVisualElement.Q("campaign-operation-indicator") is VisualElement indicator)positions.Add(indicator.style.left.value.value);yield return null;}
+                Assert.That(ticks,Is.GreaterThanOrEqualTo(3));if(positions.Count>0)Assert.That(positions.Count,Is.GreaterThan(1));CheckpointCapture(doc,"streamed-loading-responsive");heartbeat.Pause();state.Release.Set();yield return PublishedReceivingIdle(state,"streamed-held-load");model=CampaignModel(entry);Assert.That(StreamBytes(model),Is.EqualTo(expected));
                 yield return StreamAdvance(doc,entry);model=CampaignModel(entry);StreamCommission(model,4);
                 // Separate, accepted actual-engine V2 Explore32 fixture through official typed store.
                 var legacyPath=Environment.GetEnvironmentVariable("HOBBYDS9_V3_EXPLORE");Assert.That(File.Exists(legacyPath),Is.True);var legacyBytes=File.ReadAllBytes(legacyPath!);

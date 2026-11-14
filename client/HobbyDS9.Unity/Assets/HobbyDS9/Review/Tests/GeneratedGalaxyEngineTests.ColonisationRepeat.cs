@@ -183,14 +183,14 @@ namespace HobbyDS9.UnityReview.Tests
                     // Worker completion may remove the overlay between frames; inspect only its real lifetime.
                     if(ColonyPending(s.Shared.Entry!))
                     {
-                        CheckpointBusy(doc,busyTitle);
-                        var indicator=doc.rootVisualElement.Q("campaign-operation-indicator");Assert.That(indicator,Is.Not.Null);
-                        positions.Add(indicator.style.left.value.value);
+                        InteractionPending(doc,busyTitle);
+                        var indicator=doc.rootVisualElement.Q("campaign-operation-indicator");
+                        if(indicator!=null)positions.Add(indicator.style.left.value.value);
                     }
                 }
                 busyClock.Stop();yield return null;yield return null;
                 Assert.That(sawBusy,Is.True,"normal asynchronous operation presented busy ownership");
-                if(busyClock.Elapsed.TotalMilliseconds>=250){Assert.That(ticks,Is.GreaterThanOrEqualTo(3));Assert.That(positions.Count,Is.GreaterThan(1),"indeterminate indicator changed while real work was busy");}
+                if(busyClock.Elapsed.TotalMilliseconds>=250){Assert.That(ticks,Is.GreaterThanOrEqualTo(3));if(positions.Count>0)Assert.That(positions.Count,Is.GreaterThan(1),"indeterminate checkpoint indicator changed while real work was busy");}
                 s.Shared.Timings.Add(new{phase,observedWallMs=clock.Elapsed.TotalMilliseconds,busyMs=busyClock.Elapsed.TotalMilliseconds,busyFrames,uiTicks=ticks,indicatorPositions=positions.Count,notFps=true,noLatencyThreshold=true});
                 File.AppendAllText(Path.Combine(CampaignOutput(),"repeat-operation-observations.jsonl"),JsonConvert.SerializeObject(new{phase,wallMs=clock.Elapsed.TotalMilliseconds,busyMs=busyClock.Elapsed.TotalMilliseconds,busyFrames,uiTicks=ticks,indicatorPositions=positions.Count,sawBusy,noLatencyThreshold=true})+Environment.NewLine);
             }
