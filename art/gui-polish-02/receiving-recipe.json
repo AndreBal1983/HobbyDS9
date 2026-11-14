@@ -1,0 +1,38 @@
+{
+  "schema": 1,
+  "status": "proposed receiving recipe; native compilation/rendering/performance unexecuted",
+  "baseline": {"owner_playable_source_reported": "f5cdac08c4ba2ca9de491747bd8da0cc8a1357e7", "asset_source_branch": "0de6eee979333d9eabdf4a59cedcfaf85dda7a08", "owner_images_have_no_embedded_build_identity": true},
+  "planet_shader": {
+    "source": "PlanetSurfaceLighting.shader",
+    "receiving_target": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/ProceduralSurface.shader",
+    "policy": "Copy reviewed shader contents into existing logical shader, retain its existing meta/GUID. No new runtime shader name or duplicate Resources identity.",
+    "retain_properties": ["_Surface", "_Clouds", "_Tint", "_StarCenter", "_Lit", "_Unknown", "_Atmosphere"],
+    "overview": {"_NightFill": 0.04, "_DayStrength": 1.15, "_CloudOpacity": 0.55, "_LimbStrength": 0.12, "_LimbTint": [0.055, 0.24, 0.70, 1], "light": "existing central star position, not a new camera-facing light per planet"},
+    "selected_portrait": {"_NightFill": 0.025, "_DayStrength": 1.15, "_CloudOpacity": 0.55, "_LimbStrength": 0.12, "_LimbTint": [0.055, 0.24, 0.70, 1], "presentation_light_offset_world": [-6.3, 2.45, -2.8], "retain_camera": "radius .7, orthographicSize .875, camera centre+(0,0,-2.8), 512-square existing target"},
+    "known_authored_mars": {"match_only_after_existing_disclosure_gate": "planet.mars", "_CloudOpacity": 0, "_LimbStrength": 0, "policy": "Decorative art treatment only; retain snapshot atmosphere/pressure facts and neutral unknown behavior"},
+    "texture_policy": "Existing exact Earth/Mars source maps, sRGB albedo, U repeat/V clamp. No baked lighting, new map admission, UV flip, texture-cache growth or extra sphere/shell.",
+    "budget": "Existing one opaque pass and surface/cloud samples; no new textures, targets, shadows, lights, bloom or per-frame work. Native GPU cost still requires measurement."
+  },
+  "orbit_camera": {
+    "old_elevation_degrees": 54,
+    "proposed_elevation_degrees": 24,
+    "old_projected_circle_minor_major": 0.8090169944,
+    "proposed_projected_circle_minor_major": 0.4067366431,
+    "unity_rotation": "Quaternion.Euler(24,0,0), preserve existing yaw/zoom and actual XZ circular orbital geometry",
+    "fit": "max(outerRadius*sin(elevationRadians)+bodyRadius,(outerRadius+bodyRadius)/aspect)*1.1/zoom; verify actual full projected bounds and current focus interpolation",
+    "policy": "Shared 3D plane, no nonuniform ellipse scaling, no simulation orbital mechanics. Project markers/picking through the same actual camera; test body strips, overlap, full orbit edges and planet reentry."
+  },
+  "legacy_defiant": {
+    "identification": "Owner image visually matches detailed legacy Meshy study, not the round original Escort candidate. Confirm actual resource hash in next native run.",
+    "source_contract": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/Defiant/source-contract.json",
+    "mesh_resource": "ArtDemo/ActivityHulls/Defiant/Models/Defiant_LOD0",
+    "source_triangles": 29998,
+    "slots": ["Material_0"],
+    "base_color": {"resource": "ArtDemo/ActivityHulls/Defiant/Textures/Defiant_Image_0", "sRGB": true, "tint": [1,1,1,1], "palette": "retained source image: neutral gray plates, red markings, sparse cyan details"},
+    "roughness_metallic": {"resource": "ArtDemo/ActivityHulls/Defiant/Textures/Defiant_Image_1", "sRGB": false, "roughness_channel": "G", "metallic_channel": "B", "_Metallic": 1, "_UseMetallicRoughnessMap": 1},
+    "normal": {"resource": "ArtDemo/ActivityHulls/Defiant/Textures/Defiant_Image_2", "sRGB": false, "import": "NormalMap; verify native handedness and tangents", "_UseNormalMap": 1, "_BumpScale": 1},
+    "emission": {"source_emission_link_recorded": false, "restored_emission_claim": "none", "_EmissionColor": [0,0,0,0]},
+    "approved_replacement": "A. Klemm replacement palette/material files remain unreceived; public artist reference is not the missing approved payload or numeric material contract",
+    "action": "Verify exact current map hashes/slot/color-space/white tint first. Do not recolor the unrelated original Escort, add guessed blue emission, or silently swap models to resolve this feedback. No legacy mesh/texture replacement is supplied."
+  }
+}

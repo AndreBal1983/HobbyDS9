@@ -1,0 +1,37 @@
+# GUI-POLISH-02 · planet lighting and exact Defiant identity
+
+14 November2026. **Receiving candidate; native shader/input/performance and owner visual acceptance remain open.** [Machine recipe](receiving-recipe.json), [complete shader source](PlanetSurfaceLighting.shader). This packet contains no new hull, planet map, simulation rule, gameplay binding or runtime edit. Existing assets and approved/proposed/open distinctions remain intact.
+
+## Planet result and receiving
+
+The current opaque shader leaves16%albedo fill on the night hemisphere, blends clouds at.8 and adds an independent cubic blue rim around the whole silhouette. The current portrait light(-3,2,-4) is also close to the viewing direction. Those are concrete causes of the flat/washed edge appearance in the supplied image. The retained unit mesh and detailed Earth/Mars maps need no replacement to address this lighting increment.
+
+Copy the reviewed candidate shader contents into the existing `Review/Resources/SystemBodyArt/ProceduralSurface.shader`, retaining its current metadata GUID and shader name. **Do not import a second shader with the same name.** Existing `_Surface`, `_Clouds`, `_Tint`, `_StarCenter`, `_Lit`, `_Unknown`, `_Atmosphere` remain. One opaque pass, two existing texture roles, unchanged targets/cache/ownership. Native compilation/render cost still requires QA.
+
+The new defaults use.04night fill,1.15direct strength,.55cloud multiplier and a fifth-power narrow limb gated by the lit side. For a portrait, copy the selected property block as before, then set `_NightFill=.025` and `_StarCenter=portraitGlobe.position+(-6.3,2.45,-2.8)`. Keep the existing .7radius,.875orthographic size, camera offset(0,0,-2.8) and512²target. The final key is farther away than the exploratory close key, preserving side-light contrast without making most of the face unnecessarily dark. Source-formula face-centre day dot is about.297 instead of.675 under the current key.
+
+GUI's frozen PR114 source `448add385c392b4239912a6dbb79143a546bf501` already receives this exact shader byte hash but uses the **exploratory** light(-3.6,1.4,-1.2). The [final-key caller patch](PortraitKeyFinal.patch) is a separate one-line follow-up against that exact source. Do not compare its earlier native batch to the final-key proof as though the vectors match; record which vector is actually received. Art does not mutate GUI's frozen branch.
+
+Known authored Mars gets `_CloudOpacity=0` and `_LimbStrength=0` after the existing surveyed/authored-map gate. This removes Earth-like decorative cloud/rim treatment without changing atmosphere/pressure facts. Unknown stays neutral and does not sample authored textures. Earth retains unchanged sRGB source colour, longitude/poles and generated cloud input. No baked illumination, UV flip, added atmosphere shell, city-light/normal map, shadow pass, bloom or extra idle render is introduced.
+
+## Flatter shared orbit view
+
+Change camera elevation54°→24° while retaining the actual circular XZ geometry and existing orbital-root yaw. The orthographic minor/major ratio becomes `sin(24°)=.4067` instead of`.8090`. Fit the same projected envelope with `max(outerRadius*sin(elevation)+bodyRadius,(outerRadius+bodyRadius)/aspect)*1.1/zoom`, then verify full actual bounds/default focus. Do not stretch circles/globes or move labels independently. All body markers, picking, keyboard focus and double-click targets must use the same camera projection. Test reduced motion, resize, selected-world return and overlap; no orbital mechanics/time rule changes.
+
+## Defiant: verified current source, missing replacement contract
+
+The owner crop visually matches the **detailed legacy Meshy study**, not the round original Escort in PR105/108. Current resource is `ArtDemo/ActivityHulls/Defiant/Models/Defiant_LOD0`,29,998triangles, one `Material_0`. Its retained source contract calls it owner-provided Meshy work, without redistribution clearance. This packet references the existing files for local review; it does not re-export/relicense/recolour them.
+
+Exact current source assignments are verified: Image_0→sRGB base colour, white tint; Image_1→linear roughnessG/metallicB; Image_2→linear tangent normal/NormalMap import. Source texture hashes and current metadata are checked by the validator. The complete gray/red/cyan palette is in the source colour image, not a replacement uniform swatch. The retained source links contain **no emission link** and current Defiant binder sets no emission. No blue-emission restoration is claimed or guessed. Runtime QA should record actual resource/material/texture hashes before declaring a mapping defect fixed.
+
+The documented approved A.Klemm replacement is a distinct missing package. Recovered primary reference: [Alexander Klemm — USS Defiant NX-74205](https://nightfever77.artstation.com/projects/2xm8eA), describing roughly435kpolygons,355objects,22materials and multiple large texture sets. That page does not supply the approved received bytes, exact numeric palette, per-slot/emission map assignments or a license transfer. Its palette cannot honestly be reconstructed by tinting the unrelated original Escort or arbitrarily recolouring the legacy atlas. **Approved replacement palette/material receiving remains blocked on that actual package.** No purchases/downloads/new catalogue were used to substitute another model.
+
+## Reference and proof limits
+
+Available recovered concept: PR60`b3496b6`/owner revision PR68`7419313`, SYS-VIS-01's `coherent-system-1920.png` source reproduction. It shows the stronger shaded fictional blue-globe direction; it is not Earth geography or runtime proof. Art's13Nov Earth studio/direct-light proofs also remain available. The latest standalone director scene/render and exact approval record remain unrecovered; migrated planet/system branch names resolve to historical0edad84 and do not establish another recovered target.
+
+Local evidence is in `C:/HobbyDS9/artifacts/coordination/GUI-POLISH-02/art-proofs/`, with manifests, source hashes and reproducible scripts under `tools/art/gui-polish-02/`. Controlled formula probes hold the retained sphere/albedo/pose/camera fixed, changing shader and key separately; cloud is zero to isolate lighting, so they are not the owner frame's unknown cloud seed or exact native pixels. Shared-plane proofs retain the same illustrative poses/radii. Legacy Defiant probes retain its actual mesh/maps and bracket yaw at a low approximate owner elevation; the crop has no camera metadata. They establish source identity/palette, not the unreceived target's intended colours.
+
+Run the full probe driver first, then `render_legacy_matched_pose.py` and `render_final_portrait_key.py`, each through installed Blender background CPU mode in a fresh evidence directory. Completed proof files are not silently overwritten. `verify_recipe.py` checks retained source hashes/roles, shader property/name/pass contract and key/projection mathematics; `package_evidence.py` builds the comparison gallery and exact inventory. These helpers install nothing and export no legacy model/texture derivatives.
+
+Blender/formula images are supporting evidence only. QA must compile/render the actual receiving shader and compare the same native body/pose, verify albedo/normal/gamma and unknown cases, test projected controls, inspect aliasing/full bounds and measure frame/resource cost. Keep current packages/saves and current candidate captions; no source proof relabels these gates passed.
