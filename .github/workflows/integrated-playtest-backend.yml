@@ -2,6 +2,7 @@ name: Integrated campaign playtest backend (headless only)
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 jobs:
