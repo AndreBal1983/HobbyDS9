@@ -50,7 +50,8 @@ namespace HobbyDS9.UnityReview
         internal RenderTexture? PortraitTexture {get;private set;}
 
         internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies):this(shader,bodies,null){}
-        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies,IReadOnlyDictionary<string,long>? meanDistances,IReadOnlyList<BeltVisualSlot>? belts=null)
+        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies,IReadOnlyDictionary<string,long>? meanDistances):this(shader,bodies,meanDistances,null){}
+        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies,IReadOnlyDictionary<string,long>? meanDistances,IReadOnlyList<BeltVisualSlot>? belts)
         {
             try
             {
