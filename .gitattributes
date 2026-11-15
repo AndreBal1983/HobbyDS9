@@ -1,6 +1,8 @@
 # Scenario identity hashes exact file bytes; preserve them across host platforms.
 # Belt manifests pin exact artifact bytes; keep source recipe hashes portable.
 art/system-richness-01/belt-v1/** -text
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/** -text
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/*.meta text eol=lf
 tools/art/build_asteroid_belt_v1.py text eol=lf
 tools/art/verify_asteroid_belt_v1.py text eol=lf
 scenarios/**/*.json text eol=lf

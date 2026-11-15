@@ -21,11 +21,13 @@ namespace HobbyDS9.UnityReview
         private readonly Foldout viewControls;
         private readonly Image image;
         private readonly Label unavailable;
+        private readonly Label beltUnavailable;
         private Image? focusedPortrait;
         private Label? portraitUnavailable;
         private readonly Action<float,float> onView;
         private readonly PlanetActivationScope activation;
         private readonly IReadOnlyDictionary<string,long>? meanDistances;
+        private readonly IReadOnlyList<BeltVisualSlot> belts;
         private readonly Action<bool,bool>? onFrame;
         private bool innerFrame,focusFrame;
         private ReviewSolStage? stage;
@@ -39,14 +41,17 @@ namespace HobbyDS9.UnityReview
             :this(bodies,selectedPlanet,yaw,zoom,onSelect,onView,onOpen,reducedMotion,onReducedMotion,activation,null,false,false,null){}
         internal ReviewSolOverview(IEnumerable<ColonisationPlanetSnapshot> bodies,string selectedPlanet,float yaw,float zoom,
             Action<ColonisationPlanetSnapshot> onSelect,Action<float,float> onView,
-            Action<ColonisationPlanetSnapshot> onOpen,bool reducedMotion,Action<bool>? onReducedMotion,PlanetActivationScope? activation,IReadOnlyDictionary<string,long>? meanDistances,bool innerFrame,bool focusFrame,Action<bool,bool>? onFrame)
+            Action<ColonisationPlanetSnapshot> onOpen,bool reducedMotion,Action<bool>? onReducedMotion,PlanetActivationScope? activation,IReadOnlyDictionary<string,long>? meanDistances,bool innerFrame,bool focusFrame,Action<bool,bool>? onFrame,IReadOnlyList<BeltVisualSlot>? belts=null)
         {
+            this.belts=belts??Array.Empty<BeltVisualSlot>();
             this.activation=activation??new PlanetActivationScope(this);this.meanDistances=meanDistances;this.innerFrame=innerFrame;this.focusFrame=focusFrame;this.onFrame=onFrame;
             this.bodies=bodies.ToArray();this.yaw=yaw;this.zoom=zoom;selected=selectedPlanet;this.onView=onView;this.reducedMotion=reducedMotion;
             name="sol-overview";style.flexGrow=0;style.flexShrink=0;style.minWidth=0;
             var title=new Label("System overview");title.AddToClassList("console-section");Add(title);
             var scale=new Label(meanDistances==null?"Schematic spacing · Exaggerated body sizes · Only disclosed bodies":"Schematic spacing · Exaggerated body sizes · AU readouts: mean Sun distance"){name="system-scale-caption"};
             scale.style.whiteSpace=WhiteSpace.Normal;scale.style.flexShrink=0;Add(scale);
+            foreach(var belt in this.belts){var fact=new Label("Asteroid belt · "+belt.Feature.FeatureId+" · procedural reference "+belt.Feature.InnerRadiusMilliAu+"–"+belt.Feature.OuterRadiusMilliAu+" milli-AU · schematic spacing"){name="system-belt-"+belt.Feature.FeatureId};fact.style.whiteSpace=WhiteSpace.Normal;fact.style.fontSize=14;Add(fact);}
+            beltUnavailable=new Label("Belt rendering unavailable; the disclosed feature is listed above."){name="system-belt-render-unavailable"};beltUnavailable.style.whiteSpace=WhiteSpace.Normal;beltUnavailable.style.display=DisplayStyle.None;Add(beltUnavailable);
             viewControls=new Foldout{text="View controls",value=false,name="system-view-controls"};Add(viewControls);
             controls=new VisualElement();controls.style.flexDirection=FlexDirection.Row;controls.style.flexWrap=Wrap.Wrap;viewControls.Add(controls);
             Control("Rotate left",()=>SetView(this.yaw-25,this.zoom));Control("Rotate right",()=>SetView(this.yaw+25,this.zoom));
@@ -123,8 +128,9 @@ namespace HobbyDS9.UnityReview
             float width=viewport.layout.width,height=viewport.layout.height;if(!(width>=80&&height>=80))return;
             var shader=Resources.Load<Shader>("SystemBodyArt/ProceduralSurface");
             if(stage==null&&(shader==null||!shader.isSupported||SystemInfo.graphicsDeviceType==UnityEngine.Rendering.GraphicsDeviceType.Null)){Fallback();return;}
-            try {stage??=new ReviewSolStage(shader!,bodies,meanDistances);}
+            try {stage??=new ReviewSolStage(shader!,bodies,meanDistances,belts);}
             catch(Exception){Fallback();return;}
+            beltUnavailable.style.display=stage.AssetFallbacks.Any(f=>f.StartsWith("Asteroid belt:",StringComparison.Ordinal))?DisplayStyle.Flex:DisplayStyle.None;
             if(pendingFocus)
             {
                 // Interrupt from the actual displayed pose, never the previous destination.

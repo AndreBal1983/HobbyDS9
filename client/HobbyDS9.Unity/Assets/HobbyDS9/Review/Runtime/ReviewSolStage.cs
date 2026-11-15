@@ -17,6 +17,7 @@ namespace HobbyDS9.UnityReview
         private readonly Camera camera=null!;
         private readonly Material material=null!;
         private Material? ringMaterial;
+        private ReviewSystemBelts? systemBelts;
         private readonly Transform sun=null!;
         private readonly Mesh sphere=null!,track=null!;
         private readonly List<Mesh> importedCopies=new List<Mesh>();
@@ -49,7 +50,7 @@ namespace HobbyDS9.UnityReview
         internal RenderTexture? PortraitTexture {get;private set;}
 
         internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies):this(shader,bodies,null){}
-        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies,IReadOnlyDictionary<string,long>? meanDistances)
+        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies,IReadOnlyDictionary<string,long>? meanDistances,IReadOnlyList<BeltVisualSlot>? belts=null)
         {
             try
             {
@@ -66,7 +67,7 @@ namespace HobbyDS9.UnityReview
                 if(bodies[i]==null)continue;
                 orbitRadii.Add(bodies[i].PlanetId,(float)SolSchematicLayout.Radius(KnownSol?SolSchematicLayout.Ordinal(bodies[i].PlanetId):i));
             }
-            extent=orbitRadii.Values.DefaultIfEmpty(2.4f).Max()+1.2f;
+            extent=Mathf.Max(orbitRadii.Values.DefaultIfEmpty(2.4f).Max(),(float)(belts??Array.Empty<BeltVisualSlot>()).Select(b=>b.Envelope).DefaultIfEmpty(0).Max())+1.2f;
             camera.farClipPlane=Mathf.Max(55,extent*5);
             camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.019f,.027f,.049f,1);
             camera.cullingMask=1<<Layer;camera.allowHDR=false;camera.allowMSAA=false;
@@ -106,6 +107,7 @@ namespace HobbyDS9.UnityReview
                 trackRenderer.GetPropertyBlock(properties);properties.SetFloat("_Orbit",1);properties.SetFloat("_OrbitWidth",1.8f);trackRenderer.SetPropertyBlock(properties);
                 planetOrbits.Add(body.PlanetId,trackRenderer);
             }
+            if(belts?.Count>0)systemBelts=new ReviewSystemBelts(orbitalRoot,Layer,belts,root.transform.position,Fallback);
             }
             catch {Dispose();throw;}
         }
@@ -223,6 +225,7 @@ namespace HobbyDS9.UnityReview
             if(FocusSelected&&planetTransforms.TryGetValue(selectedPlanet,out var selected))centre=selected.position;
             foreach(var planet in planetTransforms)planet.Value.localScale=Vector3.one*Mathf.Max(.55f,camera.orthographicSize*(float)SolSchematicLayout.GlyphFraction(planet.Key,KnownSol));
             sun.localScale=Vector3.one*Mathf.Max(1.15f,camera.orthographicSize*.075f);
+            systemBelts?.SetDetail(camera.orthographicSize,Texture.height);
             camera.transform.SetPositionAndRotation(centre+tilt*new Vector3(0,0,-extent*2.5f),tilt);
             foreach(var orbit in planetOrbits)
             {
@@ -350,6 +353,7 @@ namespace HobbyDS9.UnityReview
         {
             if(disposed)return;disposed=true;if(root!=null)root.SetActive(false);if(camera!=null)camera.targetTexture=null;if(Texture!=null)Texture.Release();
             ReleasePortrait();
+            systemBelts?.Dispose();systemBelts=null;
             Destroy(root);Destroy(Texture);Destroy(material);Destroy(ringMaterial);Destroy(sphere);Destroy(track);
             foreach(var mesh in importedCopies)Destroy(mesh);
             foreach(var texture in ownedTextures)Destroy(texture);

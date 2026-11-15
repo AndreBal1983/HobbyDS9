@@ -136,16 +136,22 @@ public sealed class SystemRichnessTests
             Assert.Equal(node,Assert.Single(session.GetOwnStrategicFleets(Human)).LocationNodeId.Value);
         }
         Assert.Empty(session.CaptureKnownAstronomy(Human).SystemBelts);
+        System.Collections.Generic.IReadOnlyList<BeltVisualSlot> Visuals()
+        {var sky=session.CaptureKnownAstronomy(Human);return BeltVisualLayout.ForSystem(sky,Human,sky.ObservationTurn,sky.CampaignRevision,target.SystemId);}
+        Assert.Empty(Visuals());
         Travel(target.NodeId,"command.richness.arrive");
         var visible=Assert.Single(session.CaptureKnownAstronomy(Human).SystemBelts,b=>b.SystemId==target.SystemId);
         var frozen=root.SystemBelts!.Single(b=>b.SystemId==target.SystemId);
         Assert.Equal(frozen.VisualSeed,visible.VisualSeed);Assert.Equal(frozen.InnerRadiusMilliAu,visible.InnerRadiusMilliAu);
         Assert.Equal(CampaignSystemRichnessIdentity.Disclosure,visible.DisclosurePolicy);
+        Assert.Equal(visible.FeatureId,Assert.Single(Visuals()).Feature.FeatureId);
         Assert.All(session.CaptureColonisationPlanets(Human).Where(p=>p.SystemId==target.SystemId),p=>{Assert.False(p.Surveyed);Assert.Null(p.Environment);});
         Travel(home,"command.richness.depart");
         Assert.Contains(session.CaptureKnownAstronomy(Human).SystemBelts,b=>b.FeatureId==visible.FeatureId);
+        Assert.Equal(visible.VisualSeed,Assert.Single(Visuals()).Feature.VisualSeed);
         var save=Wire(session);var loaded=CampaignColonisationCycleApplication.LoadCycleSave(package,codec.DecodeCycleRoot(save));
         Assert.Equal(save,Wire(loaded));Assert.Equal(Json(session.CaptureKnownAstronomy(Human).SystemBelts),Json(loaded.CaptureKnownAstronomy(Human).SystemBelts));
+        var sky=loaded.CaptureKnownAstronomy(Human);Assert.Equal(visible.VisualSeed,Assert.Single(BeltVisualLayout.ForSystem(sky,Human,sky.ObservationTurn,sky.CampaignRevision,target.SystemId)).Feature.VisualSeed);
     }
 
     [Fact]
