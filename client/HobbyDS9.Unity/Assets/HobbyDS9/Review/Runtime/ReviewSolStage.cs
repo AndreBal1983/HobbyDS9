@@ -53,8 +53,14 @@ namespace HobbyDS9.UnityReview
             orbitalRoot=Child("Presentation rotation").transform;
             camera=Child("System preview camera").AddComponent<Camera>();
             camera.enabled=false;camera.orthographic=true;camera.nearClipPlane=.1f;
-            MeanDistances=meanDistances!=null&&bodies.All(b=>meanDistances.ContainsKey(b.PlanetId));
-            for(int i=0;i<bodies.Count;i++)orbitRadii.Add(bodies[i].PlanetId,MeanDistances?(float)((double)meanDistances![bodies[i].PlanetId]/149600000*12):2.4f+i*1.2f);
+            MeanDistances=meanDistances!=null&&bodies.All(b=>b!=null&&meanDistances.ContainsKey(b.PlanetId));
+            for(int i=0;i<bodies.Count;i++)
+            {
+                // Let the construction loop validate a malformed body after earlier
+                // stage resources exist, so its catch path still releases them.
+                if(bodies[i]==null)continue;
+                orbitRadii.Add(bodies[i].PlanetId,MeanDistances?(float)((double)meanDistances![bodies[i].PlanetId]/149600000*12):2.4f+i*1.2f);
+            }
             extent=orbitRadii.Values.DefaultIfEmpty(2.4f).Max()+1.2f;
             camera.farClipPlane=Mathf.Max(55,extent*5);
             camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.019f,.027f,.049f,1);
