@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using HobbyDS9.TacticalReviewClient;
 using UnityEngine;
@@ -126,10 +127,10 @@ namespace HobbyDS9.UnityReview
         private void MarkCampaignSaved(ReviewUiModel owner)
         {
             campaignSavedOwner=owner;campaignSavedRevision=owner.Current.Frame.Status.CampaignRevision;
-            campaignSavedTurn=owner.Current.Frame.Status.Turn;campaignArchiveRows=null;
+            campaignSavedTurn=owner.Current.Frame.Status.Turn;
         }
         private void ShowCampaignMenuPage(CampaignMenuPage page)
-        {campaignMenuPage=page;demoLanding=true;viewEpoch++;Build();}
+        {campaignMenuPage=page;demoLanding=true;campaignArchiveNeedsRefresh=true;viewEpoch++;Build();}
         private void ResumeCampaign()
         {
             campaignAfterSave=null;campaignContinuationLabel="";campaignProtectedLoadSlot="";
@@ -176,6 +177,7 @@ namespace HobbyDS9.UnityReview
             if(campaignMenuPage==CampaignMenuPage.New){DrawCampaignNew();return;}
             if(campaignMenuPage==CampaignMenuPage.Settings){DrawCampaignSettings();return;}
             if(campaignMenuPage==CampaignMenuPage.Combat){DrawCombatPlaytestMenu();return;}
+            var menuClock=System.Diagnostics.Stopwatch.StartNew();
             var paused=campaignMenuPage==CampaignMenuPage.Campaign&&demoStarted;
             var panel=PagePanel(paused?"Campaign menu":"HobbyDS9");panel.AddToClassList("campaign-menu");
             panel.Add(Readout("GALACTIC CAMPAIGNS"));
@@ -197,8 +199,8 @@ namespace HobbyDS9.UnityReview
             {
                 EnsureCampaignArchive();
                 var latest=NewestCampaignSave();
-                summary.Add(Readout(latest==null?"Explore a galaxy, research technology and build your fleet.":latest.Summary));
-                if(campaignArchiveRows==null)summary.Add(Readout("Checking saved campaigns before offering Continue…"));
+                var saveSummary=Readout(latest==null?"Explore a galaxy, research technology and build your fleet.":latest.Summary);saveSummary.name="campaign-archive-summary";summary.Add(saveSummary);
+                var archiveStatus=Readout(campaignArchiveRows==null||campaignArchiveScanQueued||campaignArchiveScanToken!=null?"Checking saved slots…":"Save compatibility is validated when loading.");archiveStatus.name="campaign-archive-status";summary.Add(archiveStatus);
             }
             var layout=new VisualElement();layout.AddToClassList("campaign-menu-layout");panel.Add(layout);
             var commands=new VisualElement();commands.AddToClassList("campaign-menu-commands");layout.Add(commands);
@@ -215,10 +217,11 @@ namespace HobbyDS9.UnityReview
                 var resume=AddButton(commands,"Resume campaign",ResumeCampaign);resume.name="campaign-menu-resume";
                 resume.AddToClassList("primary-action");ScheduleDemoMenuFocus(resume);
             }
-            else if(NewestCampaignSave() is CampaignArchiveRow continuedSave)
+            else
             {
-                var next=AddButton(commands,"Continue · "+SlotLabel(continuedSave.Slot),()=>LoadCampaignMenuSlot(continuedSave.Slot));
-                next.name="campaign-menu-continue";next.AddToClassList("primary-action");ScheduleDemoMenuFocus(next);
+                var latest=NewestCampaignSave();
+                var next=AddButton(commands,latest==null?"Continue · Checking saved slots…":"Continue · "+SlotLabel(latest.Slot),()=>{var selected=NewestCampaignSave();if(selected!=null)LoadCampaignMenuSlot(selected.Slot);});
+                next.name="campaign-menu-continue";next.SetEnabled(latest!=null);if(latest!=null)next.AddToClassList("primary-action");
             }
             if(!paused)
             {
@@ -233,6 +236,8 @@ namespace HobbyDS9.UnityReview
             AddButton(commands,"Quit to desktop",()=>RequestCampaignDeparture("Quit to desktop?","Quit",QuitCampaignPlayer)).name="campaign-menu-quit";
             if(campaignMenuNotice.Length>0)panel.Add(Readout(campaignMenuNotice));
             if(profileMenuNotice.Length>0)panel.Add(Readout(profileMenuNotice));
+            if(Environment.GetCommandLineArgs().Contains("--hobbyds9-command-timing"))
+                Debug.Log(FormattableString.Invariant($"HOBBYDS9_MENU_READY startupMs={Time.realtimeSinceStartupAsDouble*1000:F2} buildMs={menuClock.Elapsed.TotalMilliseconds:F2} archivePending={campaignArchiveScanQueued||campaignArchiveScanToken!=null}"));
         }
         private void DrawCampaignNew()
         {
@@ -288,19 +293,38 @@ namespace HobbyDS9.UnityReview
 
         private sealed class CampaignArchiveRow
         {
-            internal string Slot="",Summary="";internal bool Occupied,Compatible;
-            internal DateTime ModifiedUtc;
+            internal readonly ReviewArchiveFile File;
+            internal string Slot=>File.Slot;
+            internal bool Occupied=>File.Occupied;
+            internal bool CanAttemptLoad=>Occupied&&!File.Unavailable&&!Rejected;
+            internal DateTime ModifiedUtc=>File.ModifiedUtc;
+            internal readonly bool Rejected;
+            internal string Summary=>SlotLabel(Slot)+(!Occupied?" · Empty":File.Unavailable?" · Unavailable":Rejected?" · Unavailable or incompatible":" · Saved file · "+ModifiedUtc.ToLocalTime().ToString("g",CultureInfo.CurrentCulture)+" · Validate on load");
+            internal CampaignArchiveRow(ReviewArchiveFile file,bool rejected=false){File=file;Rejected=rejected;}
         }
         private List<CampaignArchiveRow>? campaignArchiveRows;
         private bool campaignArchiveScanQueued;
         private object? campaignArchiveScanToken;
         private string campaignArchiveProfile="";
+        private readonly Dictionary<string,List<CampaignArchiveRow>> campaignArchiveCache=new Dictionary<string,List<CampaignArchiveRow>>(StringComparer.Ordinal);
+        private bool campaignArchiveNeedsRefresh=true;
+        private int campaignArchiveGeneration;
+        private ReviewUiModel? campaignArchiveScanOwner;
+        private Action<string>? campaignArchiveMetadataProbe=null; // Dedicated receiving hold; no player delay.
+        private void CancelCampaignArchiveScan()
+        {
+            campaignArchiveGeneration++;campaignArchiveScanQueued=false;campaignArchiveNeedsRefresh=true;
+            if(campaignArchiveScanToken is CancellationTokenSource cancellation)cancellation.Cancel();
+            campaignArchiveScanToken=null;campaignArchiveScanOwner=null;
+        }
+        private bool ObservingCampaignArchive=>demoLanding&&(campaignMenuPage==CampaignMenuPage.Start||campaignMenuPage==CampaignMenuPage.Archive||campaignMenuPage==CampaignMenuPage.Combat)
+            ||!demoLanding&&workspace?.Page==ReviewWorkspacePage.Saves;
         private string? campaignArchiveOverrideProfile;
         private string CampaignArchiveProfile()=>campaignArchiveSaving?CurrentCampaignArchiveProfile():campaignArchiveOverrideProfile??CurrentCampaignArchiveProfile();
         private string CurrentCampaignArchiveProfile()=>!demoStarted||model!.ColonisationCycleCampaign?"cycle":model.ColonisationRepeatCampaign?"repeat":model.ColonisationGrowthCampaign?"growth":model.ColonisationExpansionCampaign?"expansion":model.ColonisationRosterCampaign?"roster":model.ColonisationCampaign?"colony":model.StreamedActivitiesCampaign?"streamed":model.ActivitiesCampaign?"activities":model.PublishedConstructionCampaign?"published":model.GeneratedCampaign?(model.StaticAstronomyCampaign?"astronomy":"generated"):model.FrontierPreview?"frontier":model.CombatPlaytest?"combat":model.SingleplayerDemo?"demo":"fleet";
         private string[] CampaignArchiveSlots(string profile)=>profile=="combat"?CombatPlaytestOptions.Slots():profile=="frontier"?FrontierPreviewOptions.Slots():profile=="demo"?new[]{"demo-1","demo-2","demo-3"}:profile=="fleet"?PlayableFleetOptions.Slots():GeneratedCampaignOptions.Slots();
         private static string SlotLabel(string slot)=>(slot.StartsWith("combat-",StringComparison.Ordinal)?"Combat playtest":"Campaign")+" · Slot "+slot.Substring(slot.Length-1);
-        private CampaignArchiveRow? NewestCampaignSave()=>campaignArchiveRows?.Where(r=>r.Compatible)
+        private CampaignArchiveRow? NewestCampaignSave()=>campaignArchiveRows?.Where(r=>r.CanAttemptLoad)
             .OrderByDescending(r=>r.ModifiedUtc).ThenBy(r=>r.Slot,StringComparer.Ordinal).FirstOrDefault();
         private string CampaignArchivePath(string profile,string slot)
         {
@@ -343,66 +367,95 @@ namespace HobbyDS9.UnityReview
         private void EnsureCampaignArchive()
         {
             var profile=CampaignArchiveProfile();
-            if(campaignArchiveProfile!=profile){campaignArchiveRows=null;campaignArchiveProfile=profile;}
-            if(campaignArchiveRows!=null||campaignArchiveScanQueued||campaignArchiveScanToken!=null)return;
-            campaignArchiveScanQueued=true;
+            if(campaignArchiveProfile!=profile)
+            {
+                CancelCampaignArchiveScan();campaignArchiveProfile=profile;
+                campaignArchiveRows=campaignArchiveCache.TryGetValue(profile,out var cached)?cached:null;
+            }
+            if(campaignArchiveRows!=null&&campaignArchiveRows.Count!=CampaignArchiveSlots(profile).Length)campaignArchiveNeedsRefresh=true;
+            if((campaignArchiveRows!=null&&!campaignArchiveNeedsRefresh)||campaignArchiveScanQueued||campaignArchiveScanToken!=null)return;
+            campaignArchiveScanQueued=true;var generation=campaignArchiveGeneration;
             root!.schedule.Execute(()=>{
+                if(generation!=campaignArchiveGeneration)return;
                 campaignArchiveScanQueued=false;
-                if(this!=null&&isActiveAndEnabled&&confirmation==null&&campaignBusyToken==null
-                    &&(demoLanding&&(campaignMenuPage==CampaignMenuPage.Start||campaignMenuPage==CampaignMenuPage.Archive||campaignMenuPage==CampaignMenuPage.Combat)
-                        ||!demoLanding&&workspace?.Page==ReviewWorkspacePage.Saves))ScanCampaignArchive();
+                if(this!=null&&isActiveAndEnabled&&confirmation==null&&campaignBusyToken==null&&ObservingCampaignArchive)ScanCampaignArchive();
             });
         }
-        private async void ScanCampaignArchive()
+        private async void ScanCampaignArchive(string[]? slots=null,string? requestedProfile=null)
         {
-            var owner=model;var epoch=viewEpoch;var profile=CampaignArchiveProfile();
-            var token=new object();campaignArchiveScanToken=token;ShowCampaignBusy(token,"Checking saved campaign compatibility…");
-            var rows=new List<CampaignArchiveRow>();
+            var owner=model;var profile=requestedProfile??CampaignArchiveProfile();
+            CancelCampaignArchiveScan();var generation=campaignArchiveGeneration;
+            var cancellation=new CancellationTokenSource();var token=cancellation.Token;
+            campaignArchiveScanToken=cancellation;campaignArchiveScanOwner=owner;campaignArchiveNeedsRefresh=false;
+            // Resolve Unity-owned directories/profile data on the owning thread.
+            var paths=Array.Empty<KeyValuePair<string,string>>();
+            var probe=campaignArchiveMetadataProbe;var clock=System.Diagnostics.Stopwatch.StartNew();
             try
             {
-                foreach(var slot in CampaignArchiveSlots(profile))
+                paths=(slots??CampaignArchiveSlots(profile)).Select(slot=>new KeyValuePair<string,string>(slot,CampaignArchivePath(profile,slot))).ToArray();
+                var files=await Task.Run(()=>ReviewArchiveMetadata.Read(paths,token,probe));
+                if(this==null||!isActiveAndEnabled||token.IsCancellationRequested||generation!=campaignArchiveGeneration
+                    ||!ReferenceEquals(model,owner)||!ReferenceEquals(campaignArchiveScanToken,cancellation))return;
+                var rows=campaignArchiveCache.TryGetValue(profile,out var cached)?new List<CampaignArchiveRow>(cached):new List<CampaignArchiveRow>();
+                foreach(var file in files)
                 {
-                    var row=new CampaignArchiveRow{Slot=slot,Summary=SlotLabel(slot)+" · Empty"};rows.Add(row);
-                    ReviewUiModel? candidate=null;
-                    try
-                    {
-                        var path=CampaignArchivePath(profile,slot);
-                        // No content is trusted from timestamps. Only the detached typed
-                        // candidate below can establish compatibility and campaign facts.
-                        try
-                        {
-                            var attributes=File.GetAttributes(path);
-                            row.Occupied=true;
-                            if((attributes&(FileAttributes.ReparsePoint|FileAttributes.Directory))!=0)throw new InvalidOperationException("Unavailable save path.");
-                        }
-                        catch(FileNotFoundException){continue;}
-                        catch(DirectoryNotFoundException){continue;}
-                        row.ModifiedUtc=File.GetLastWriteTimeUtc(path);
-                        candidate=await BuildMenuCandidateAsync(profile,slot);
-                        if(File.GetLastWriteTimeUtc(path)!=row.ModifiedUtc)throw new InvalidOperationException("Save changed during inspection.");
-                        row.Compatible=true;row.Summary=SlotLabel(slot)+" · "+OwnerName(candidate.Current.Frame.Actor)
-                            +" · Week "+candidate.Current.Frame.Status.Turn+" · "+row.ModifiedUtc.ToLocalTime().ToString("g",CultureInfo.CurrentCulture);
-                    }
-                    catch(Exception){row.Summary=SlotLabel(slot)+" · Unavailable or incompatible";row.Compatible=false;}
-                    finally{CloseUnpublishedPlayer(candidate);}
-                    if(this==null||!isActiveAndEnabled||viewEpoch!=epoch||!ReferenceEquals(model,owner))return;
+                    var previous=rows.FirstOrDefault(row=>row.Slot==file.Slot);
+                    var replacement=previous!=null&&previous.File.SameObservation(file)?previous:new CampaignArchiveRow(file);
+                    rows.RemoveAll(row=>row.Slot==file.Slot);rows.Add(replacement);
                 }
-                if(viewEpoch==epoch&&ReferenceEquals(model,owner)){campaignArchiveRows=rows;campaignArchiveProfile=profile;}
+                rows=rows.OrderBy(row=>row.Slot,StringComparer.Ordinal).ToList();campaignArchiveCache[profile]=rows;
+                if(CampaignArchiveProfile()==profile){campaignArchiveProfile=profile;campaignArchiveRows=rows;}
+                if(Environment.GetCommandLineArgs().Contains("--hobbyds9-command-timing"))
+                    Debug.Log(FormattableString.Invariant($"HOBBYDS9_ARCHIVE_TIMING profile={profile} slots={paths.Length} elapsedMs={clock.Elapsed.TotalMilliseconds:F2} payloadLoads=0"));
+            }
+            catch(OperationCanceledException){} // Superseded scans never publish partial results.
+            catch(Exception)
+            {
+                if(generation==campaignArchiveGeneration&&ReferenceEquals(model,owner))campaignMenuNotice="Saved slots could not be listed. You can start a new campaign or refresh the archive.";
             }
             finally
             {
-                if(ReferenceEquals(campaignArchiveScanToken,token))campaignArchiveScanToken=null;
-                var hidden=HideCampaignBusy(token);if(hidden&&this!=null&&isActiveAndEnabled&&ReferenceEquals(model,owner))Draw();
+                var current=ReferenceEquals(campaignArchiveScanToken,cancellation);
+                if(current){campaignArchiveScanToken=null;campaignArchiveScanOwner=null;}
+                cancellation.Dispose();
+                if(current&&this!=null&&isActiveAndEnabled&&ReferenceEquals(model,owner)&&CampaignArchiveProfile()==profile
+                    &&confirmation==null&&campaignBusyToken==null&&!owner!.Busy&&!owner.Closed)RefreshCampaignArchivePresentation();
             }
+        }
+        private void RefreshCampaignArchivePresentation()
+        {
+            if(!ObservingCampaignArchive)return;
+            if(campaignMenuPage==CampaignMenuPage.Archive||!demoLanding&&workspace?.Page==ReviewWorkspacePage.Saves){Draw();return;}
+            // Keep New/Settings and the focused menu control mounted throughout discovery.
+            var latest=NewestCampaignSave();
+            var summary=root?.Q<Label>("campaign-archive-summary");if(summary!=null)summary.text=latest?.Summary??"Explore a galaxy, research technology and build your fleet.";
+            var status=root?.Q<Label>("campaign-archive-status");if(status!=null)status.text=campaignMenuNotice.Length>0?campaignMenuNotice:"Save compatibility is validated when loading.";
+            var next=root?.Q<Button>("campaign-menu-continue");if(next!=null){next.text=latest==null?"Continue · No saved slot":"Continue · "+SlotLabel(latest.Slot);next.SetEnabled(latest!=null);next.EnableInClassList("primary-action",latest!=null);}
+            var combat=root?.Q<Button>("combat-playtest-continue");if(combat!=null)combat.SetEnabled(latest!=null);
+        }
+        private void RefreshSavedCampaignSlot(string profile,string slot)
+        {
+            // An accepted write invalidates only this row; unrelated saves are not replayed.
+            if(campaignArchiveCache.TryGetValue(profile,out var rows))
+                campaignArchiveCache[profile]=rows.Where(row=>row.Slot!=slot).ToList();
+            ScanCampaignArchive(new[]{slot},profile);
+        }
+        private void RejectCampaignArchiveRow(string profile,CampaignArchiveRow? observed)
+        {
+            if(observed==null||!campaignArchiveCache.TryGetValue(profile,out var rows))return;
+            var index=rows.FindIndex(row=>ReferenceEquals(row,observed));if(index<0)return;
+            var changed=new List<CampaignArchiveRow>(rows);changed[index]=new CampaignArchiveRow(observed.File,true);campaignArchiveCache[profile]=changed;
+            if(CampaignArchiveProfile()==profile)campaignArchiveRows=changed;
         }
         private void DrawCampaignArchive()
         {
             EnsureCampaignArchive();
             var panel=PagePanel(campaignArchiveSaving?"Save game":"Load game");panel.AddToClassList("campaign-menu");
             panel.Add(Readout("Archive: "+(CampaignArchiveProfile()=="combat"?"Combat playtest":CampaignArchiveProfile()=="cycle"?"Generated campaign":CampaignArchiveProfile()=="demo"?"Bajor demo":"Separate campaign profile")));
-            panel.Add(Readout("Three fixed slots. Select a slot, then use the action below. Slot selection never saves or loads."));
+            panel.Add(Readout("Three fixed slots. Compatibility is validated only when loading. Slot selection never saves or loads."));
             if(campaignAfterSave!=null)panel.Add(Readout("After a successful save: "+campaignContinuationDescription));
-            if(campaignArchiveRows==null){panel.Add(Readout("Checking compatible saved campaigns…"));return;}
+            if(campaignArchiveRows==null){panel.Add(Readout("Checking saved slots…"));AddButton(panel,"Back",()=>ShowCampaignMenuPage(campaignArchiveReturn));return;}
+            if(campaignArchiveScanQueued||campaignArchiveScanToken!=null)panel.Add(Readout("Refreshing saved slots…"));
             var selectable=campaignArchiveRows.Where(r=>!campaignArchiveSaving||r.Slot!=campaignProtectedLoadSlot).ToList();
             if(campaignArchiveSaving&&campaignArchivePreferEmpty)
             {
@@ -410,14 +463,14 @@ namespace HobbyDS9.UnityReview
                     ??selectable.FirstOrDefault()?.Slot??"";
                 campaignArchivePreferEmpty=false;
             }
-            if(!selectable.Any(r=>r.Slot==slotName))slotName=(campaignArchiveSaving?selectable.FirstOrDefault(r=>!r.Occupied):selectable.FirstOrDefault(r=>r.Compatible))?.Slot??selectable.FirstOrDefault()?.Slot??"";
+            if(!selectable.Any(r=>r.Slot==slotName))slotName=(campaignArchiveSaving?selectable.FirstOrDefault(r=>!r.Occupied):selectable.FirstOrDefault(r=>r.CanAttemptLoad))?.Slot??selectable.FirstOrDefault()?.Slot??"";
             foreach(var row in campaignArchiveRows)
             {
                 var captured=row;
                 var select=AddButton(panel,(slotName==row.Slot?"Selected · ":"")+row.Summary,()=>{slotName=captured.Slot;campaignMenuNotice="";Draw();});
                 select.name="save-slot-"+row.Slot;select.AddToClassList("campaign-save-row");
                 select.EnableInClassList("selected-nav",slotName==row.Slot);
-                select.SetEnabled(row.Slot!=campaignProtectedLoadSlot&&(campaignArchiveSaving||row.Compatible));
+                select.SetEnabled(row.Slot!=campaignProtectedLoadSlot&&(campaignArchiveSaving||row.CanAttemptLoad));
                 if(row.Slot==campaignProtectedLoadSlot)panel.Add(Readout("This is the requested load target. It cannot be overwritten before loading."));
             }
             var selected=campaignArchiveRows.FirstOrDefault(r=>r.Slot==slotName);
@@ -428,7 +481,7 @@ namespace HobbyDS9.UnityReview
             AddButton(actions,campaignAfterSave!=null?"Keep playing":"Back",()=>{
                 if(campaignAfterSave!=null)ResumeCampaign();else ShowCampaignMenuPage(campaignArchiveReturn);
             });
-            AddButton(actions,"Refresh slots",()=>{campaignArchiveRows=null;Draw();});
+            AddButton(actions,"Refresh slots",()=>{CancelCampaignArchiveScan();campaignArchiveCache.Remove(CampaignArchiveProfile());campaignArchiveRows=null;Draw();});
             var commit=AddButton(actions,campaignArchiveSaving?(campaignAfterSave==null?"Save selected slot":"Save and "+campaignContinuationLabel):"Load selected campaign",()=>{
                 if(campaignArchiveSaving)SaveCampaignMenuSlot(slotName);
                 else
@@ -439,7 +492,7 @@ namespace HobbyDS9.UnityReview
                 }
             });
             commit.name=campaignArchiveSaving?"player-save":"player-load";commit.AddToClassList("primary-action");
-            commit.SetEnabled(selected!=null&&selected.Slot!=campaignProtectedLoadSlot&&(campaignArchiveSaving&&demoStarted||!campaignArchiveSaving&&selected.Compatible));
+            commit.SetEnabled(selected!=null&&selected.Slot!=campaignProtectedLoadSlot&&(campaignArchiveSaving&&demoStarted||!campaignArchiveSaving&&selected.CanAttemptLoad));
             if(!campaignArchiveSaving)
             {
                 var earlier=new Foldout{text="Earlier campaign saves · original rules",value=false};panel.Add(earlier);
@@ -472,7 +525,7 @@ namespace HobbyDS9.UnityReview
                     if(!overwrite&&owner.Message=="Checkpoint result: SlotOccupied"){Replace();return;}
                     campaignMenuNotice="Saving did not complete. Your current campaign, previous save and requested next action are kept.";Draw();return;
                 }
-                MarkCampaignSaved(owner);campaignMenuNotice="Accepted campaign saved. Unsubmitted edits remain local.";
+                MarkCampaignSaved(owner);RefreshSavedCampaignSlot(CurrentCampaignArchiveProfile(),requestedSlot);campaignMenuNotice="Accepted campaign saved. Unsubmitted edits remain local.";
                 var next=campaignAfterSave;campaignAfterSave=null;campaignContinuationLabel="";campaignProtectedLoadSlot="";
                 if(next!=null)next();else Draw();
             }
@@ -482,6 +535,7 @@ namespace HobbyDS9.UnityReview
         private async void LoadCampaignMenuSlot(string requestedSlot,string? requestedProfile=null)
         {
             var owner=model;var epoch=viewEpoch;var profile=requestedProfile??CampaignArchiveProfile();
+            var observed=campaignArchiveRows?.FirstOrDefault(row=>row.Slot==requestedSlot);CancelCampaignArchiveScan();
             var token=new object();ReviewUiModel? candidate=null;ShowCampaignBusy(token,"Loading and validating selected campaign…");
             try
             {
@@ -496,7 +550,7 @@ namespace HobbyDS9.UnityReview
             catch(Exception)
             {
                 if(this!=null&&viewEpoch==epoch&&ReferenceEquals(model,owner))
-                    campaignMenuNotice="This selected save could not be loaded. Your current campaign and unsubmitted edits are kept. No other save was loaded.";
+                    {RejectCampaignArchiveRow(profile,observed);campaignMenuNotice="This selected save could not be loaded. Your current campaign and unsubmitted edits are kept. No other save was loaded.";}
             }
             finally
             {
