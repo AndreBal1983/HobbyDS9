@@ -387,5 +387,24 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(Mathf.Abs(offset.x),Is.LessThan(.001f));Assert.That(offset.z,Is.LessThan(0));
             Assert.That(Field<Dictionary<string,VisualElement>>(view,"markers")[c.PlanetId],Is.SameAs(marker));
         }
+        [UnityTest] public IEnumerator ViewControlsAccumulateFromCurrentPoseAndReduceMotionCompletesFocus()
+        {
+            var host=Host();var view=Overview(new[]{Planet("planet.a",false)});host.Add(view);yield return null;yield return null;
+            void Press(string caption)
+            {
+                var button=view.Query<Button>().ToList().Single(b=>b.text==caption);
+                using var e=NavigationSubmitEvent.GetPooled();e.target=button;button.SendEvent(e);
+            }
+            Press("Rotate right");Press("Rotate right");
+            Assert.That(Field<float>(view,"yaw"),Is.EqualTo(50).Within(.001f));
+            Press("Zoom in");Press("Zoom in");
+            Assert.That(Field<float>(view,"zoom"),Is.EqualTo(1.69f).Within(.001f));
+            Press("Focus selected");Call(view,"Draw");
+            Assert.That(Field<bool>(view,"animating"),Is.True);
+            var destination=Field<float>(view,"targetYaw");
+            view.Q<Toggle>("system-reduce-motion").value=true;
+            Assert.That(Field<bool>(view,"animating"),Is.False);
+            Assert.That(Field<float>(view,"yaw"),Is.EqualTo(destination).Within(.001f));
+        }
     }
 }
