@@ -78,7 +78,8 @@ namespace HobbyDS9.Simulation
         internal bool EmpireControls(string planetId,string actor)=>controls.TryGetValue(planetId,out var c)&&c.Kind==PlanetControllerKind.Empire&&c.ActorId==actor;
         internal void ValidateOwnership()
         {
-            if(state.Planets==null||state.Planets.Count>1040||state.Planets.Any(p=>p==null)||state.StarSystems==null||state.StarSystems.Any(s=>s==null||s.OwnerCivilizationId!=null)
+            // Shared structural ceiling; older closed inventory/profile admission still caps at1040.
+            if(state.Planets==null||state.Planets.Count>CampaignSystemRichnessIdentity.MaximumPlanets||state.Planets.Any(p=>p==null)||state.StarSystems==null||state.StarSystems.Any(s=>s==null||s.OwnerCivilizationId!=null)
                 ||state.Civilizations==null||state.Civilizations.Any(c=>c==null)||state.Colonies==null||state.Colonies.Any(c=>c==null)
                 ||state.Planets.Select(p=>p.PlanetId).Distinct(StringComparer.Ordinal).Count()!=state.Planets.Count
                 ||controls.Count!=state.Planets.Count||state.Planets.Any(p=>!controls.ContainsKey(p.PlanetId)))throw new ArgumentException("Different planetary ownership inventory.");

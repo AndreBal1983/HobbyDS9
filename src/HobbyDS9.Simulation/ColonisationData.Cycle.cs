@@ -7,6 +7,8 @@ namespace HobbyDS9.Simulation
     {
         internal static string CycleHash(CampaignColonisationCyclePackageDto p)
         {
+            if(p is CampaignSystemRichnessPackageDto rich)return SystemRichnessData.Hash(rich);
+            Require(p!=null&&p.GetType()==typeof(CampaignColonisationCyclePackageDto),"Unknown cycle package carrier type.");
             Require(p!=null&&p.FormatVersion==1&&p.ProfileId==CampaignColonisationCycleIdentity.PackageProfile&&p.BaseGrowth!=null
                 &&p.BaseGrowth.PackageHash==GrowthHash(p.BaseGrowth)&&p.Policy!=null&&p.Policy.Algorithm==CampaignColonisationCycleIdentity.Planner&&p.Policy.ActiveMissions==1,"Different closed cycle source.");
             return CampaignActivitiesData.Identity(p!.ProfileId,p.BaseGrowth!.PackageHash,CampaignColonisationCycleIdentity.Profile,CampaignColonisationCycleIdentity.Planner,

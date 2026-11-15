@@ -8,6 +8,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="../../scenarios/system-richness-v1/policy.json" Link="scenarios/system-richness-v1/policy.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../scenarios/engineering-development-v1/scenario.json" Link="scenarios/engineering-development-v1/scenario.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../scenarios/sol-eight-planets-v1/*.json" Link="scenarios/sol-eight-planets-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../scenarios/combat-playtest-v1/*.json" Link="scenarios/combat-playtest-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

@@ -80,12 +80,12 @@ namespace HobbyDS9.Simulation
             CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash,CampaignActivityStateDto seededActivities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained=null)
             =>BuildColonisationCore(template,map,wrapperHash,seededActivities,policy,retained,ColonisationInventoryVersion.Legacy);
         internal static (CampaignPlayableFleetPackageDto Package,CampaignColonisationStateDto Inventory,FrozenColonisationPlanetsDto Frozen) BuildExpansionColonisation(
-            CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash,CampaignActivityStateDto seededActivities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained=null)
-            =>BuildColonisationCore(template,map,wrapperHash,seededActivities,policy,retained,ColonisationInventoryVersion.Expansion);
+            CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash,CampaignActivityStateDto seededActivities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained=null,SystemRichnessPolicyDto? richness=null)
+            =>BuildColonisationCore(template,map,wrapperHash,seededActivities,policy,retained,richness==null?ColonisationInventoryVersion.Expansion:ColonisationInventoryVersion.Richness,richness);
         private static (CampaignPlayableFleetPackageDto Package,CampaignColonisationStateDto Inventory,FrozenColonisationPlanetsDto Frozen) BuildColonisationCore(
-            CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash,CampaignActivityStateDto seededActivities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained,ColonisationInventoryVersion version)
+            CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,string wrapperHash,CampaignActivityStateDto seededActivities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained,ColonisationInventoryVersion version,SystemRichnessPolicyDto? richness=null)
         {
-            var input=new ColonisationGenerationInput(seededActivities,policy,retained,version);
+            var input=new ColonisationGenerationInput(seededActivities,policy,retained,version,richness);
             var package=BuildFacts(template,map,true,wrapperHash,true,true,input);
             return(package,input.Inventory!,input.Frozen!);
         }
@@ -94,11 +94,12 @@ namespace HobbyDS9.Simulation
             internal readonly CampaignActivityStateDto Activities;
             internal readonly ColonisationPolicyDto Policy;
             internal readonly ColonisationInventoryVersion Version;
+            internal readonly SystemRichnessPolicyDto? Richness;
             internal CampaignColonisationStateDto? Inventory;
             internal FrozenColonisationPlanetsDto? Frozen;
             internal readonly FrozenColonisationPlanetsDto? Retained;
-            internal ColonisationGenerationInput(CampaignActivityStateDto activities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained,ColonisationInventoryVersion version)
-            {Version=version;Activities=CampaignActivitiesData.Copy(activities);Policy=ColonisationData.Copy(policy);Retained=retained;}
+            internal ColonisationGenerationInput(CampaignActivityStateDto activities,ColonisationPolicyDto policy,FrozenColonisationPlanetsDto? retained,ColonisationInventoryVersion version,SystemRichnessPolicyDto? richness=null)
+            {Version=version;Richness=richness;Activities=CampaignActivitiesData.Copy(activities);Policy=ColonisationData.Copy(policy);Retained=retained;}
         }
         private static CampaignPlayableFleetPackageDto BuildFacts(CampaignPlayableFleetPackageDto template,NaturalGalaxyDocumentDto map,bool staticAstronomy,string? wrapperHash,bool activities=false,bool streamed=false,ColonisationGenerationInput? colonisation=null)
         {
@@ -169,7 +170,7 @@ namespace HobbyDS9.Simulation
             game.RngState.State = ulong.Parse(map.Settings.Map.Seed, CultureInfo.InvariantCulture) ^ 0x47454e43414d5031UL;
             if(colonisation!=null)
             {
-                colonisation.Inventory=colonisation.Version==ColonisationInventoryVersion.Legacy?ColonisationPlanetInventory.Populate(definitions,game,map,colonisation.Activities,colonisation.Policy):ColonisationPlanetInventory.PopulateExpansion(definitions,game,map,colonisation.Activities,colonisation.Policy);
+                colonisation.Inventory=colonisation.Version==ColonisationInventoryVersion.Legacy?ColonisationPlanetInventory.Populate(definitions,game,map,colonisation.Activities,colonisation.Policy):colonisation.Version==ColonisationInventoryVersion.Richness?ColonisationPlanetInventory.PopulateRichness(definitions,game,map,colonisation.Activities,colonisation.Policy,colonisation.Richness!):ColonisationPlanetInventory.PopulateExpansion(definitions,game,map,colonisation.Activities,colonisation.Policy);
                 colonisation.Frozen=ColonisationData.Freeze(definitions,game,colonisation.Inventory,colonisation.Version);
                 if(colonisation.Retained!=null)
                 {

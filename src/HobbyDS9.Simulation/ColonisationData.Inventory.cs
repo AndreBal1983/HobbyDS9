@@ -17,12 +17,12 @@ namespace HobbyDS9.Simulation
                 Bodies=inventory.Bodies!.Select(Copy).ToList(),GenesisControls=inventory.PlanetControls!.Select(Copy).ToList()};
             result.ContentHash=InventoryHash(result,expected);return result;
         }
-        internal static string InventoryPolicy(ColonisationInventoryVersion expected)=>expected==ColonisationInventoryVersion.Legacy?CampaignColonisationIdentity.InventoryPolicy:expected==ColonisationInventoryVersion.Expansion?CampaignColonisationExpansionIdentity.InventoryPolicy:throw new ArgumentException("Unsupported inventory policy.");
-        internal static string InventoryAuthoring(ColonisationInventoryVersion expected)=>expected==ColonisationInventoryVersion.Legacy?CampaignColonisationIdentity.InventoryAuthoring:expected==ColonisationInventoryVersion.Expansion?CampaignColonisationExpansionIdentity.InventoryAuthoring:throw new ArgumentException("Unsupported inventory authoring.");
+        internal static string InventoryPolicy(ColonisationInventoryVersion expected)=>expected==ColonisationInventoryVersion.Legacy?CampaignColonisationIdentity.InventoryPolicy:expected==ColonisationInventoryVersion.Expansion?CampaignColonisationExpansionIdentity.InventoryPolicy:expected==ColonisationInventoryVersion.Richness?CampaignSystemRichnessIdentity.Inventory:throw new ArgumentException("Unsupported inventory policy.");
+        internal static string InventoryAuthoring(ColonisationInventoryVersion expected)=>expected==ColonisationInventoryVersion.Legacy?CampaignColonisationIdentity.InventoryAuthoring:expected==ColonisationInventoryVersion.Expansion?CampaignColonisationExpansionIdentity.InventoryAuthoring:expected==ColonisationInventoryVersion.Richness?CampaignSystemRichnessIdentity.Generation:throw new ArgumentException("Unsupported inventory authoring.");
         internal static string InventoryHash(FrozenColonisationPlanetsDto f,ColonisationInventoryVersion expected=ColonisationInventoryVersion.Legacy)
         {
             Require(f!=null&&f.PolicyId==InventoryPolicy(expected)&&f.Definitions!=null&&f.InitialPlanets!=null&&f.Bodies!=null&&f.GenesisControls!=null
-                &&f.Definitions.Count>0&&f.Definitions.Count<=1040&&f.Definitions.Count==f.InitialPlanets.Count&&f.InitialPlanets.Count==f.Bodies.Count&&f.Bodies.Count==f.GenesisControls.Count
+                &&f.Definitions.Count>0&&f.Definitions.Count<=(expected==ColonisationInventoryVersion.Richness?CampaignSystemRichnessIdentity.MaximumPlanets:1040)&&f.Definitions.Count==f.InitialPlanets.Count&&f.InitialPlanets.Count==f.Bodies.Count&&f.Bodies.Count==f.GenesisControls.Count
                 &&f.Definitions.All(p=>p!=null&&p.Habitats!=null&&p.Habitats.Count==9&&p.Habitats.All(h=>h!=null)&&p.Deposits!=null&&p.Deposits.Count<=32&&p.Deposits.All(r=>r!=null))
                 &&f.InitialPlanets.All(p=>p!=null&&p.RemainingDeposits!=null&&p.RemainingDeposits.Count<=32&&p.RemainingDeposits.All(r=>r!=null))
                 &&f.Bodies.All(b=>b!=null)&&f.GenesisControls.All(c=>c!=null),"Incomplete frozen physical planet inventory.");
