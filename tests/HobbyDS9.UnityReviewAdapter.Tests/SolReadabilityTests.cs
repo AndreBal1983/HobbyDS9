@@ -17,13 +17,15 @@ public sealed class SolReadabilityTests
             for(int i=0;i<points.Length;i++)
             {
                 Assert.InRange(points[i].X,120,width-120);Assert.InRange(points[i].Y,12,height-12);
-                for(int j=0;j<i;j++)Assert.True(Math.Sqrt(Math.Pow(points[i].X-points[j].X,2)+Math.Pow(points[i].Y-points[j].Y,2))>height*.055,"Actual planet glyphs must not overlap.");
+                for(int j=0;j<i;j++)Assert.True(Math.Sqrt(Math.Pow(points[i].X-points[j].X,2)+Math.Pow(points[i].Y-points[j].Y,2))>height*.062,"Actual planet glyphs must not overlap.");
+                Assert.True(Math.Sqrt(Math.Pow(points[i].X-width/2,2)+Math.Pow(points[i].Y-height/2,2))>height*(.075+.062)/2,"The central Sun must not be covered by a planet glyph.");
             }
             var labels=SolSchematicLayout.Labels(points,width,height);Assert.Equal(8,labels.Count);
             foreach(var label in labels){Assert.InRange(label.X,0,width-108);Assert.InRange(label.Y,0,height-44);}
             foreach(var rail in labels.GroupBy(p=>p.X))foreach(var pair in rail.OrderBy(p=>p.Y).Zip(rail.OrderBy(p=>p.Y).Skip(1)))Assert.True(pair.Second.Y-pair.First.Y>=44);
         }
         Assert.Equal(Enumerable.Range(0,8),Ids.Select(SolSchematicLayout.Ordinal));Assert.Equal(1,SolSchematicLayout.Au(149600000));
+        Assert.All(Ids,id=>Assert.InRange(SolSchematicLayout.GlyphFraction(id,true),.05,.062));
     }
     [Theory][InlineData("planet.mercury","mercury")][InlineData("planet.venus","venus_atmosphere")][InlineData("planet.jupiter","jupiter")]
     [InlineData("planet.saturn","saturn")][InlineData("planet.uranus","uranus")][InlineData("planet.neptune","neptune")]

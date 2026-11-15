@@ -13,6 +13,7 @@ namespace HobbyDS9.UnityReview
         public static double Radius(int index)=>18+4*index;
         public static double Angle(int index)=>-22+index*137.508;
         public static double Au(long kilometres)=>(double)kilometres/149600000;
+        public static double GlyphFraction(string id,bool namedSol)=>namedSol?(Ordinal(id)>=4?.062:.05):.05+(PlanetVisualProfile.StableSeed(id)%3)*.004;
         public readonly struct Point
         {
             public string Id {get;} public double X {get;} public double Y {get;}

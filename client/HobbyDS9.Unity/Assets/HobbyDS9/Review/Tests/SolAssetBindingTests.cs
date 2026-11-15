@@ -202,7 +202,8 @@ namespace HobbyDS9.UnityReview.Tests
                     int checkedPoints=0,missing=0;
                     for(int i=0;i<720;i++)
                     {
-                        var angle=i*Mathf.PI*2/720;var point=Pixel(centre+new Vector3(Mathf.Cos(angle)*2.4f,-.045f,Mathf.Sin(angle)*2.4f));
+                        var radius=(float)type.GetMethod("Radius",Private)!.Invoke(stage,new object[]{"planet.sol"})!;
+                        var angle=i*Mathf.PI*2/720;var point=Pixel(centre+new Vector3(Mathf.Cos(angle)*radius,-.045f,Mathf.Sin(angle)*radius));
                         if(Vector2.Distance(point,sunPixel)<bodyRadius||Vector2.Distance(point,bodyPixel)<bodyRadius||point.x<3||point.x>target.width-4||point.y<3||point.y>target.height-4)continue;
                         bool found=false;checkedPoints++;
                         for(int y=-2;y<=2;y++)for(int x=-2;x<=2;x++)
@@ -213,6 +214,23 @@ namespace HobbyDS9.UnityReview.Tests
                 }
             }
             finally{((IDisposable)stage).Dispose();}
+        }
+        [Test]public void SparseSystemsKeepMinimumOverviewSpaceAndExplicitFocusCanZoomCloser()
+        {
+            float firstSize=0;
+            foreach(var count in new[]{1,2,6})
+            {
+                var stage=Stage(Enumerable.Range(0,count).Select(i=>Planet("generated.body."+i,false)).ToArray());var type=stage.GetType();
+                try
+                {
+                    Assert.That((bool)type.GetMethod("Render",Private)!.Invoke(stage,new object[]{2.1f,0f,1f,"generated.body.0"})!,Is.True);
+                    var camera=(Camera)Field(stage,"camera");Assert.That(camera.orthographicSize,Is.GreaterThan(12));
+                    if(count==1)firstSize=camera.orthographicSize;if(count==2)Assert.That(camera.orthographicSize,Is.EqualTo(firstSize).Within(.001));
+                    type.GetProperty("FrameRadius",Private)!.SetValue(stage,3.5f);type.GetProperty("FocusSelected",Private)!.SetValue(stage,true);
+                    Assert.That((bool)type.GetMethod("Render",Private)!.Invoke(stage,new object[]{2.1f,0f,1f,"generated.body.0"})!,Is.True);Assert.That(camera.orthographicSize,Is.LessThan(firstSize));
+                }
+                finally{((IDisposable)stage).Dispose();}
+            }
         }
         [Test] public void SelectedPortraitUsesDisclosedGlobeOnlyAndSurvivesOverviewChangesWithoutCropping()
         {

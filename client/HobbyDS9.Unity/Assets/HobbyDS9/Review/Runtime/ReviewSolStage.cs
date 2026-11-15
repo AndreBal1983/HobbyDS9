@@ -33,6 +33,7 @@ namespace HobbyDS9.UnityReview
         internal bool KnownSol {get;}
         internal float HorizontalPaddingPixels {get;set;}
         internal float ViewportWidthPixels {get;set;}
+        internal const float MinimumOverviewRadius=24;
         internal float OuterRadius=>extent-1.2f;
         internal float InnerRadius=>orbitRadii.Where(r=>SolSchematicLayout.Ordinal(r.Key)>=0&&SolSchematicLayout.Ordinal(r.Key)<=3).Select(r=>r.Value).DefaultIfEmpty(OuterRadius).Max();
         internal float? FrameRadius {get;set;}
@@ -63,7 +64,7 @@ namespace HobbyDS9.UnityReview
                 // Let the construction loop validate a malformed body after earlier
                 // stage resources exist, so its catch path still releases them.
                 if(bodies[i]==null)continue;
-                orbitRadii.Add(bodies[i].PlanetId,KnownSol?(float)SolSchematicLayout.Radius(SolSchematicLayout.Ordinal(bodies[i].PlanetId)):2.4f+i*1.2f);
+                orbitRadii.Add(bodies[i].PlanetId,(float)SolSchematicLayout.Radius(KnownSol?SolSchematicLayout.Ordinal(bodies[i].PlanetId):i));
             }
             extent=orbitRadii.Values.DefaultIfEmpty(2.4f).Max()+1.2f;
             camera.farClipPlane=Mathf.Max(55,extent*5);
@@ -210,7 +211,7 @@ namespace HobbyDS9.UnityReview
             var pixels=Mathf.Clamp(Mathf.RoundToInt(400*aspect),160,1536);
             if(Texture.width!=pixels){Texture.Release();Texture.width=pixels;Texture.Create();}
             // Fit the actual disclosed orbit envelope, not an extra empty orbit.
-            var outerRadius=Mathf.Max(0,FrameRadius??OuterRadius);
+            var outerRadius=Mathf.Max(0,FrameRadius??Mathf.Max(MinimumOverviewRadius,OuterRadius));
             const float elevation=24;
             var fraction=FocusSelected?1:Mathf.Clamp(1-2*HorizontalPaddingPixels/Mathf.Max(1,ViewportWidthPixels),.3f,1);
             camera.aspect=aspect;camera.orthographicSize=Mathf.Max(outerRadius*Mathf.Sin(elevation*Mathf.Deg2Rad)+1.5f,(outerRadius+1.5f)/(aspect*fraction))*1.1f/zoom;
@@ -220,12 +221,8 @@ namespace HobbyDS9.UnityReview
             orbitalRoot.localRotation=Quaternion.Euler(0,yaw,0);
             var centre=root.transform.position;
             if(FocusSelected&&planetTransforms.TryGetValue(selectedPlanet,out var selected))centre=selected.position;
-            if(KnownSol)
-            {
-                var glyph=Mathf.Max(.7f,camera.orthographicSize*.055f);
-                foreach(var planet in planetTransforms.Values)planet.localScale=Vector3.one*glyph;
-                sun.localScale=Vector3.one*Mathf.Max(1.1f,camera.orthographicSize*.085f);
-            }
+            foreach(var planet in planetTransforms)planet.Value.localScale=Vector3.one*Mathf.Max(.55f,camera.orthographicSize*(float)SolSchematicLayout.GlyphFraction(planet.Key,KnownSol));
+            sun.localScale=Vector3.one*Mathf.Max(1.15f,camera.orthographicSize*.075f);
             camera.transform.SetPositionAndRotation(centre+tilt*new Vector3(0,0,-extent*2.5f),tilt);
             foreach(var orbit in planetOrbits)
             {
