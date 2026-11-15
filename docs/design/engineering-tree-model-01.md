@@ -360,6 +360,8 @@ The temporary fixture demonstrates the gap: all 19 utility-version rewards curre
 
 ## Proposed implementation stages
 
+**ENG-UI-02 owner decision, 15 November 2026:** Engineering uses two sections, New Engineering Projects and Technology Refinement, each with technology-category filters and a standard LCARS management popup on selection. New-project detail shows expected output and qualified development time; refinement detail shows genuine version maturity and chosen attribute when supported. The [current support matrix and proposed projection/API boundary](engineering-ui-02-support-seam.md) distinguish today's authored project completion from future per-version maturity, Science-permitted goals and retained-parent choices. The layout is approved; the 100–150 model, new commands/save fields and tree GUI are not implemented or authorized by that approval.
+
 These stages identify future scoped contracts and evidence, **not execution authorization or a coding schedule**. GUI refresh and Art production can continue independently.
 
 **Owner execution gate, 13 November 2026:** main-HUD reference fidelity comes before additional gameplay implementation. Align against the recovered mockups and establish actual native comparison, interaction and performance evidence first. Preserve already authorized GUI/assets/QA work; ship and module art may proceed in parallel. New reactor or survey gameplay implementation does not begin under this design record.
