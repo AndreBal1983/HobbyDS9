@@ -200,6 +200,7 @@ namespace HobbyDS9.UnityClient
             foreach(var item in Draft.Current.Installed.OrderBy(i=>i.Key,StringComparer.Ordinal))
                 installed.Row(Draft.Provider.Catalogue.FirstOrDefault(c=>c.Id==item.Key)?.Name??item.Key,item.Value.ToString());
             overviewFacts!.Clear();Metrics(overviewFacts,"SHIP AT A GLANCE / "+Draft.Profile,Headlines(p,"Overview"));Metrics(overviewFacts,"POWER",p.Power);Metrics(overviewFacts,"CONSTRUCTION / UPKEEP",p.Costs);
+            CapacityFacts(overviewFacts,p);
             var explain=new Foldout{name="designer-output-explanation",text="Explain performance / "+Draft.Profile,value=outputDetailsOpen};overviewFacts.Add(explain);explain.RegisterValueChangedCallback(e=>outputDetailsOpen=e.newValue);
             explain.Add(new LcarsReadout("These are the actual powered outputs returned by the campaign preview. Reduced allocations may reduce or disable them."));
             foreach(var item in Draft.Current.ToDto().Installations!)
@@ -215,7 +216,7 @@ namespace HobbyDS9.UnityClient
         {
             var s=Scroll("designer-hull-page");workspace.Add(s);s.Add(Graphic("Hull"));var hull=new DropdownField("Hull / version",Draft.Provider.Hulls.Select(h=>h.Caption).ToList(),0) {name="designer-hull"};hull.SetEnabled(!Draft.HasPendingFit);s.Add(hull);
             hull.SetValueWithoutNotify(Draft.Provider.Hulls.Single(h=>h.Id==Draft.Current.HullId).Caption);hull.RegisterValueChangedCallback(_=>Draft.SetHull(Draft.Provider.Hulls[hull.index].Id));s.Add(new LcarsReadout(Draft.Provider.Hulls.Single(h=>h.Id==Draft.Current.HullId).Facts));
-            if(p.UsedCapacity.HasValue&&p.TotalCapacity.HasValue)s.Add(new LcarsMeter("Used capacity",p.UsedCapacity.Value,p.TotalCapacity.Value));Context(s,p);Comparison(s,p,true);
+            if(p.UsedCapacity.HasValue&&p.TotalCapacity.HasValue)s.Add(new LcarsCapacityMeter("Hull space used",p.UsedCapacity.Value,p.TotalCapacity.Value));Context(s,p);Comparison(s,p,true);
         }
         private void SystemPage(DesignerPreview p)
         {
@@ -223,6 +224,7 @@ namespace HobbyDS9.UnityClient
             var split=new VisualElement();split.AddToClassList("sd-focus-columns");workspace.Add(split);var centre=Scroll("designer-system-content");centre.AddToClassList("sd-system-content");split.Add(centre);
             if(SelectedSystem=="Crew"){var crew=new LongField("Embarked crew") {name="designer-crew",isDelayed=true};crew.SetValueWithoutNotify(Draft.Current.EmbarkedCrew);crew.RegisterValueChangedCallback(e=>Draft.SetCrew(e.newValue));centre.Add(crew);}
             Metrics(centre,"POWERED PERFORMANCE / "+Draft.Profile,SelectedSystem=="Power"?p.Power:Headlines(p,SelectedSystem));
+            if(SelectedSystem=="Power"||SelectedSystem=="Crew")CapacityFacts(centre,p);
             var list=Block(centre,"PACKAGES / "+SelectedSystem.ToUpperInvariant());list.name="designer-component-list";
             foreach(var c in relevant)
             {
@@ -249,6 +251,9 @@ namespace HobbyDS9.UnityClient
                 selector.RegisterValueChangedCallback(_=>{replacementSource=installed[selector.index].Id;Refresh();});var replace=new LcarsPillButton("Preview replacement",()=>Draft.PreviewReplace(replacementSource!,item.Id)) {name="designer-replace"};replace.SetEnabled(replacementSource!=item.Id&&add.enabledSelf);detail.Add(replace);
             }
             if(facts!=null)Metrics(detail,"PACKAGE / "+Draft.Profile,facts);else detail.Add(new LcarsReadout(item.Facts));
+            var catalogue=(Draft.Provider as ApplicationShipDesignPreviewProvider)?.Designer.Catalogue;
+            var module=catalogue?.Components.FirstOrDefault(c=>c.VersionId==item.Id);
+            if(module!=null)detail.Add(LcarsCapacityDetails.Module(module,catalogue!.Components.FirstOrDefault(c=>c.VersionId==module.ParentVersionId),DesignerFit.Kind(Draft.Profile)));
             var proposed=Draft.PreviewCopy();proposed.Add(item.Id);var next=Draft.HasPendingFit?Draft.PreviewProposed():proposed.Preview();var delta=Block(detail,Draft.HasPendingFit?"PENDING PACKAGE / "+Draft.Profile:"IF YOU ADD ONE");delta.name="designer-proposed-preview";
             delta.Row("Capacity",(p.UsedCapacity?.ToString()??"—")+" → "+(next.UsedCapacity?.ToString()??"—"));delta.Row("Allocated power",Metric(p.Power,"Actual allocation")+" → "+Metric(next.Power,"Actual allocation"));delta.Row("Construction",Metric(p.Costs,"Construction")+" → "+Metric(next.Costs,"Construction"));delta.Row("Design status",Status(p.Status)+" → "+Status(next.Status));
             foreach(var m in Headlines(next,"Overview"))delta.Row(m.Caption,Metric(Headlines(p,"Overview"),m.Caption)+" → "+m.Value);
@@ -256,6 +261,23 @@ namespace HobbyDS9.UnityClient
             detail.Add(new LcarsReadout("New packages start unpowered. Replacements retain your explicit allocations; review every operating profile."));foreach(var issue in p.Issues.Where(i=>i.SystemId==item.Id))Issue(detail,issue);
         }
         private static string Metric(IEnumerable<DesignerMetric> values,string key)=>values.FirstOrDefault(m=>m.Caption==key)?.Value??"Not evaluated";
+        private void CapacityFacts(VisualElement root,DesignerPreview preview)
+        {
+            var facts=preview.CapacityFacts;if(facts==null)return;
+            var section=Block(root,"CAPACITY / "+Draft.Profile);
+            if(facts.CapacityUsed.HasValue&&facts.CapacityLimit.HasValue)section.Add(new LcarsCapacityMeter("Hull space used",facts.CapacityUsed.Value,facts.CapacityLimit.Value));
+            section.Add(new LcarsReadout("Raw reactor supply "+(facts.ReactorPower?.ToString()??"unavailable")+" · hull distribution limit "+(facts.DistributionLimit?.ToString()??"unavailable")));
+            var profile=facts.Profiles.SingleOrDefault(p=>p.Kind==DesignerFit.Kind(Draft.Profile));
+            if(profile!=null)
+            {
+                section.Add(new LcarsReadout("Usable power "+profile.AvailablePower+" · installed peak "+profile.InstalledPeakPower+" · compiler results for this profile"));
+                section.Add(new LcarsCapacityMeter("Requested power",profile.RequestedPower,profile.AvailablePower));
+                section.Add(new LcarsCapacityMeter("Allocated power",profile.AllocatedPower,profile.AvailablePower));
+                var support=profile.Output(HobbyDS9.Contracts.ShipDesign.ShipOutputKind.CrewSupport);
+                section.Add(new LcarsCapacityMeter("Embarked crew / powered support",Draft.Current.EmbarkedCrew,support));
+            }
+            if(facts.RequiredCrew.HasValue)section.Add(new LcarsCapacityMeter("Required crew / embarked",facts.RequiredCrew.Value,Draft.Current.EmbarkedCrew));
+        }
         private void Profiles(DesignerPreview p)
         {
             var shownFit=Draft.PendingFit??Draft.Current;if(Draft.HasPendingFit)p=Draft.PreviewProposed();

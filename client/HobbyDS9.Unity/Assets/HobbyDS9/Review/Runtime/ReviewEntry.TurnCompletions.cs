@@ -53,6 +53,7 @@ namespace HobbyDS9.UnityReview
         }
         private void ShowPendingCompletion()
         {
+            if(confirmation!=null)return;
             var owner=model!;var frame=owner.Current.Frame;var boundary=NoticeBoundary(frame);
             var notice=turnCompletions.Peek(owner,boundary);if(notice==null||frame.Battle!=null)return;
             bool Current()=>this!=null&&isActiveAndEnabled&&ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current.Frame,frame)
@@ -103,6 +104,8 @@ namespace HobbyDS9.UnityReview
             ShowCampaignDialog(notice.Title,detail,
                 turnCompletions.Position<turnCompletions.Count?"Next":"Close",Acknowledge,choices.ToArray());
             completionDialogElement=confirmation;
+            var completedProject=frame.Strategy?.Research.Engineering.FirstOrDefault(p=>p.Definition.DefinitionId.Value==notice.EngineeringProjectId);
+            if(completedProject!=null&&EngineeringPresentation.SupportedOutput(completedProject,owner.ColonisationCycleCampaign))AppendEngineeringOutputs(completedProject.Definition.Outputs);
             var heading=confirmation?.Q<Label>("campaign-dialog-title");
             if(heading!=null)
             {
@@ -110,7 +113,7 @@ namespace HobbyDS9.UnityReview
                 var kind=notice.ResearchTab=="engineering"?ReviewIconKind.Engineering:ReviewIconKind.Building;
                 if(notice.Discipline.HasValue&&Enum.TryParse<ReviewIconKind>(notice.Discipline.Value.ToString(),out var disciplineIcon))kind=disciplineIcon;
                 var icon=new ReviewIcon(kind,notice.Discipline?.ToString()??(notice.ResearchTab=="engineering"?"Engineering completion":"Construction completion"));icon.style.marginRight=12;row.Add(icon);row.Add(heading);container.Insert(index,row);
-                var meta=confirmation!.Q("player-confirmation-details").Query<Label>().ToList().LastOrDefault();if(meta!=null){meta.style.fontSize=14;meta.style.color=new Color(.65f,.71f,.79f);}
+                var meta=confirmation!.Q("player-confirmation-details").Query<Label>().ToList().FirstOrDefault(l=>l.text.StartsWith("Resolved week ",StringComparison.Ordinal));if(meta!=null){meta.style.fontSize=14;meta.style.color=new Color(.65f,.71f,.79f);}
             }
         }
     }

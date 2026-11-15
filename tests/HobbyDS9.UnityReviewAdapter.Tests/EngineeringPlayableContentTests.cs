@@ -1,6 +1,7 @@
 using System.Text.Json;
 using HobbyDS9.Application;
 using HobbyDS9.Contracts;
+using HobbyDS9.Contracts.ShipDesign;
 using HobbyDS9.UnityReview;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -37,6 +38,25 @@ public sealed class EngineeringPlayableContentTests
     static NaturalGalaxySettingsDto Settings(int size=30)=>new(){Map=new(){Seed="42",SystemCount=size,EmptyRegionCount=size,Width=size==30?750000:2500000,Height=size==30?600000:2000000,
         HomeCivilizationDefinitionIds=new(){"civilization.federation","civilization.cardassian"}}};
     byte[] Wire(ICampaignColonisationCycleSession s)=>codec.EncodeCycleRoot(s.ExportCycleSave());
+
+    [Fact]public void TypedOutputsJoinActualVersionGatesAndPreserveAuthoredParentFactsWithoutMutation()
+    {
+        var session=CampaignColonisationCycleApplication.StartCycleGame(Package(),Settings());var before=Wire(session);
+        var projects=session.CaptureStrategy(Human).Research.Engineering;
+        var outputs=projects.SelectMany(p=>p.Definition.Outputs).ToArray();
+        Assert.Equal(17,outputs.Count(o=>o.Kind==EngineeringOutputKind.Module));
+        Assert.Equal(2,outputs.Count(o=>o.Kind==EngineeringOutputKind.Hull));
+        Assert.Single(outputs,o=>o.Kind==EngineeringOutputKind.ShipDesign);
+        var compact=Assert.Single(projects.Single(p=>p.Definition.DefinitionId.Value=="engineering.compact-life-support").Definition.Outputs);
+        Assert.Equal("component.utility.life-support.v2",compact.Identity);
+        var current=Assert.IsType<ComponentVersionSnapshot>(compact.Component);var parent=Assert.IsType<ComponentVersionSnapshot>(compact.ParentComponent);
+        Assert.Equal("component.utility.life-support.v1",parent.VersionId);Assert.Equal(parent.VersionId,current.ParentVersionId);
+        Assert.Equal(12,parent.Capacity);Assert.Equal(9,current.Capacity);Assert.Equal(1,current.CrewRequired);Assert.Equal(1,parent.CrewRequired);
+        Assert.All(current.Modes,m=>{Assert.Equal(6,m.FullPower);Assert.Equal(6,m.MinimumPower);Assert.Equal(40,Assert.Single(m.Outputs,o=>o.Kind==ShipOutputKind.CrewSupport).Amount);});
+        Assert.Equal(3,parent.Cost.Industry);Assert.Equal(6,current.Cost.Industry);Assert.Equal(2,parent.Cost.Credits);Assert.Equal(4,current.Cost.Credits);
+        Assert.Contains(compact.RequiredProjects,id=>id.Value=="engineering.compact-life-support");
+        Assert.Equal(before,Wire(session));
+    }
 
     [Fact]public void VisibleProjectsFollowFullAuthoritativeEligibilityAndKeepActiveAndCompletedWork()
     {

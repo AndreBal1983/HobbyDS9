@@ -104,6 +104,7 @@ namespace HobbyDS9.UnityClient
     }
     public sealed class DesignerPreview
     {
+        public ShipDesignPreview? CapacityFacts { get; }
         public IReadOnlyList<DesignerPowerRange> PowerRanges { get; }
         public DesignerStatus Status { get; }
         public string Notice { get; }
@@ -115,8 +116,9 @@ namespace HobbyDS9.UnityClient
         public IReadOnlyList<DesignerMetric> Costs { get; }
         public IReadOnlyList<DesignerIssue> Issues { get; }
         public DesignerPreview(DesignerStatus status,string notice,long? used=null,long? total=null,long? free=null,
-            IEnumerable<DesignerMetric>? power=null,IEnumerable<DesignerMetric>? capabilities=null,IEnumerable<DesignerMetric>? costs=null,IEnumerable<DesignerIssue>? issues=null,IEnumerable<DesignerPowerRange>? powerRanges=null)
+            IEnumerable<DesignerMetric>? power=null,IEnumerable<DesignerMetric>? capabilities=null,IEnumerable<DesignerMetric>? costs=null,IEnumerable<DesignerIssue>? issues=null,IEnumerable<DesignerPowerRange>? powerRanges=null,ShipDesignPreview? capacityFacts=null)
         {
+            CapacityFacts=capacityFacts;
             PowerRanges=(powerRanges??Array.Empty<DesignerPowerRange>()).ToList().AsReadOnly();
             Status=status; Notice=notice; UsedCapacity=used; TotalCapacity=total; FreeCapacity=free;
             Power=(power??Array.Empty<DesignerMetric>()).ToList().AsReadOnly(); Capabilities=(capabilities??Array.Empty<DesignerMetric>()).ToList().AsReadOnly();

@@ -12,14 +12,14 @@ Project cards open the existing LCARS one-use campaign dialog, with background e
 | --- | --- |
 | Authored start/resume/switch/pause | Existing stamped SetEngineeringTarget, one active project, retained progress. Current Colonisation direct policy and other profiles' confirmation preserved. |
 | Completion, cost, prerequisites, income, reserve | Actual immutable Research snapshot. `MaturityPercent` is explicitly project completion. |
-| Expected output | Actual authored EffectSummary, with current profile construction exclusions. The Research projection has no typed output/version/parent relation; the popup labels that gap instead of parsing prose or inventing links. |
+| Expected output | Actual authored EffectSummary, with current profile construction exclusions. The [capacity slice](capacity-blocks-01-gui.md) adds immutable typed catalogue outputs and genuine authored parent links through actual access gates. Missing relations stay explicitly unavailable. |
 | Equipment maturity / scientific generation | Unavailable. VersionNumber is not maturity and project completion is not equipment maturity. |
 | Attribute selection / parent selection / 100–150% repeatable refinement | Unavailable explanation. Fixed authored project actions remain the only executable work. |
 | Deployment | No automatic refit, blueprint publication or construction. Current catalogue and explicit publication remain separate. |
 
 ## Proposed Backend seam
 
-Add an immutable actor/frame-bound `CaptureEngineeringWorkspace(actorId)` projection carrying accepted income/reserve, turn/revision/content identity, current target, stable project IDs, eligibility, adjusted cost/progress, named requirements and support flags. Typed `ExpectedOutputs` should reverse-join authoritative version access gates to component/hull catalogue snapshots and join static ship-design Engineering prerequisites separately. Each output needs kind, version/design ID, display name, actual capabilities and genuine ancestry where present. No UI title parsing or new save fields are needed for that read-only increment.
+An expanded actor/frame-bound `CaptureEngineeringWorkspace(actorId)` remains proposed. The narrow read-only output relation is now supplied by `EngineeringDefinitionSnapshot.Outputs`: authoritative version access gates join component/hull catalogue snapshots, and static ship-design Engineering prerequisites join separately. Each output carries kind, version/design ID, display name, actual capabilities, required project IDs and genuine authored ancestry where present. Existing Research snapshots still supply eligibility/stamps/cost/progress. No UI title parsing or new save fields are used.
 
 Future refinement requires real parent/version state, independent equipment maturity, Science-permitted goal IDs and action-specific reasons. Proposed command: `BeginRefinement(parentVersionId, goalId, contextId, expectedStamp, commandId)`. The simulation validates ownership, retained parent, Science, branch maturity, bounds and paid work. Client supplies no outcome statistics, maturity, RNG seed or refund. This proposal does not implement or approve those rules. See the [design index](design/README.md), [ship design](design/ship-design.md) and [current foundation](science-engineering-v1.md).
 

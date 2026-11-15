@@ -37,7 +37,8 @@ namespace HobbyDS9.UnityReview
     {
         public string Title {get;} public string Detail {get;} public string ActionLabel {get;}
         public Action? Commit {get;} public Action? Pause {get;}
-        public ReviewEngineeringDialog(string title,string detail,string actionLabel,Action? commit,Action? pause)
-        {Title=title;Detail=detail;ActionLabel=actionLabel;Commit=commit;Pause=pause;}
+        public IReadOnlyList<EngineeringOutputSnapshot> Outputs {get;}
+        public ReviewEngineeringDialog(string title,string detail,string actionLabel,Action? commit,Action? pause,IReadOnlyList<EngineeringOutputSnapshot>? outputs=null)
+        {Title=title;Detail=detail;ActionLabel=actionLabel;Commit=commit;Pause=pause;Outputs=outputs??Array.Empty<EngineeringOutputSnapshot>();}
     }
 }

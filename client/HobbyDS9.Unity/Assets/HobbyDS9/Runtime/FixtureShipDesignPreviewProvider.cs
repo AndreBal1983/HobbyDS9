@@ -102,6 +102,7 @@ namespace HobbyDS9.UnityClient
             if(result.Cost!=null)
             {
                 costs.Add(M("Construction",$"{result.Cost.Credits} credits / {result.Cost.Industry} industry"));
+                costs.Add(M("Credit policy","Compiled valuation; actual legacy/static and published orders retain credit charges. Normal streamed Cycle construction uses Industry/materials without a credit debit."));
                 costs.Add(M("Maintenance (informational)",result.Cost.Maintenance));
                 foreach(var resource in result.Cost.Resources) costs.Add(M(resource.ResourceDefinitionId,resource.Amount));
             }
@@ -122,7 +123,7 @@ namespace HobbyDS9.UnityClient
             return new DesignerPreview(!result.IsValid?DesignerStatus.HardError:result.Issues.Count>0?DesignerStatus.Warning:DesignerStatus.Valid,
                 "Portable backend preview • all profiles validated • no campaign order", result.CapacityUsed,result.CapacityLimit,
                 result.CapacityLimit.HasValue && result.CapacityUsed.HasValue ? result.CapacityLimit-result.CapacityUsed : null,
-                power,capabilities,costs,issues,selected?.Installations.Select(i=>new DesignerPowerRange(dto.Installations!.Single(x=>x.InstallationId==i.InstallationId).ComponentVersionId,i.FullPower,i.MinimumPower)));
+                power,capabilities,costs,issues,selected?.Installations.Select(i=>new DesignerPowerRange(dto.Installations!.Single(x=>x.InstallationId==i.InstallationId).ComponentVersionId,i.FullPower,i.MinimumPower)),result);
         }
     }
 }

@@ -84,7 +84,7 @@ namespace HobbyDS9.UnityReview
             {
                 var parts=new List<string>{EngineeringState(selected)+" · "+EngineeringPresentation.Category(selected.Definition.DefinitionId.Value)};
                 var scoutExcluded=model.ColonisationCycleCampaign&&selected.Definition.DefinitionId.Value=="engineering.advanced-starship-engineering";
-                parts.Add(scoutExcluded?"Expected output unavailable\nAdvanced Scout is unavailable in this campaign's construction catalogue. This retained/completed project does not create a buildable Scout.":"Expected output — authored capability\n"+selected.Definition.EffectSummary+"\nThe current Research projection does not expose an output version or parent link. Equipment-version maturity is unavailable.");
+                parts.Add(scoutExcluded?"Expected output unavailable\nAdvanced Scout is unavailable in this campaign's construction catalogue. This retained/completed project does not create a buildable Scout.":"Expected output — authored capability\n"+selected.Definition.EffectSummary+(selected.Definition.Outputs.Count==0?"\nTyped output and parent details are unavailable.":"\n"+string.Join("\n",selected.Definition.Outputs.Select(o=>o.Kind+" · "+o.DisplayName+" · "+o.Identity+" · requires "+string.Join(", ",o.RequiredProjects))))+"\nEquipment-version maturity is unavailable.");
                 if(frame.Demo!=null)parts.Add("Demo construction: "+string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct())+" only. Other class unlocks are unavailable here.");
                 parts.Add("Project completion: "+selected.MaturityPercent+"% · "+selected.Band+"\nEarned progress: "+Units(selected.Progress)+" / "+Units(selected.Cost)+" Engineering points\nProject cost: "+Units(selected.Cost)+" Engineering points");
                 if(selected.Band!=EngineeringMaturityBand.Mature&&(selected.IsTarget||selected.CanTarget))
@@ -103,7 +103,7 @@ namespace HobbyDS9.UnityReview
                 parts.Add("One active project. Selecting spends nothing immediately; work advances on End turn. Switching or pausing retains all earned progress. New access does not refit existing ships or published designs. Fitting and construction use the current catalogue.");
                 if(!edit)parts.Add("Research is read-only at this boundary. Finish pending combat or refresh stale authority before changing projects.");
                 var label=selected.Band==EngineeringMaturityBand.Mature?"Completed":selected.IsTarget?"Current project":current!=null?"Switch project":selected.Progress>0?"Resume project":"Start project";
-                showEngineering?.Invoke(new ReviewEngineeringDialog(selected.Definition.DisplayName,string.Join("\n\n",parts),label,edit&&selected.CanTarget?()=>Select(selected.Definition.DefinitionId.Value):null,edit&&selected.IsTarget?()=>Select(null):null));
+                showEngineering?.Invoke(new ReviewEngineeringDialog(selected.Definition.DisplayName,string.Join("\n\n",parts),label,edit&&selected.CanTarget?()=>Select(selected.Definition.DefinitionId.Value):null,edit&&selected.IsTarget?()=>Select(null):null,scoutExcluded?null:selected.Definition.Outputs));
             }
         }
     }

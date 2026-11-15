@@ -24,10 +24,28 @@ namespace HobbyDS9.UnityReview
         private Func<bool>? campaignDialogCurrent;
         private void ShowEngineeringDialog(ReviewEngineeringDialog project)
         {
+            if(confirmation!=null)return;
             var choices=new List<CampaignDialogAction>();
             if(project.Commit!=null)choices.Add(new CampaignDialogAction(project.ActionLabel,project.Commit));
             if(project.Pause!=null)choices.Add(new CampaignDialogAction("Pause project",project.Pause));
             ShowCampaignDialog(project.Title,project.Detail,"Close",null,choices.ToArray());
+            AppendEngineeringOutputs(project.Outputs);
+        }
+        private void AppendEngineeringOutputs(IReadOnlyList<HobbyDS9.Application.EngineeringOutputSnapshot> outputs)
+        {
+            var body=confirmation?.Q<ScrollView>("player-confirmation-details");if(body==null)return;
+            var bridge=Type.GetType("HobbyDS9.UnityClient.LcarsCapacityDetails, HobbyDS9.UnityClient");
+            foreach(var output in outputs)
+            {
+                VisualElement? widget=null;
+                if(output.Component!=null)
+                    widget=bridge?.GetMethod("Module")?.Invoke(null,new object?[]{output.Component,output.ParentComponent,HobbyDS9.Contracts.ShipDesign.OperatingProfileKind.Cruise}) as VisualElement;
+                else if(output.Hull!=null)widget=bridge?.GetMethod("Hull")?.Invoke(null,new object?[]{output.Hull,output.ParentHull}) as VisualElement;
+                if(widget!=null)body.Add(widget);
+                else if(output.Component!=null)body.Add(Readout(output.DisplayName+" · capacity blocks unavailable · module space "+output.Component.Capacity+" · required crew "+output.Component.CrewRequired+" · raw power supply "+output.Component.PowerSupply+" · Industry "+output.Component.Cost.Industry+" · catalogue credits "+output.Component.Cost.Credits));
+                else if(output.Hull!=null)body.Add(Readout(output.DisplayName+" · capacity blocks unavailable · hull space "+output.Hull.Capacity+" · distribution "+output.Hull.PowerDistributionLimit+" · minimum crew "+output.Hull.MinimumCrew+" · Industry "+output.Hull.Cost.Industry+" · catalogue credits "+output.Hull.Cost.Credits));
+                else body.Add(Readout("Static design · "+output.DisplayName+" · module capacity details unavailable."));
+            }
         }
         private void ShowCampaignDialog(string title,string detail,string safeLabel,Action? safe,
             params CampaignDialogAction[] choices)
