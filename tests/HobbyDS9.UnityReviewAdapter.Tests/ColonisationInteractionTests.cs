@@ -7,6 +7,13 @@ using Xunit;
 namespace HobbyDS9.UnityReviewAdapter.Tests;
 public sealed class ColonisationInteractionTests:IDisposable
 {
+    [Fact]public async Task PlanningAdvanceRetainsUnpublishedSessionDesignWithoutBlockingOrPublishing()
+    {
+        var m=Model();var controller=m.Current;var turn=controller.Frame.Status.Turn;var published=Newtonsoft.Json.JsonConvert.SerializeObject(m.DesignLibrary().Published);bool reset=false;m.LocalDesignDirty=true;m.ResetLocalDesign=()=>reset=true;
+        var work=m.BeginColonisationInteraction(ColonisationInteractionKind.PlanningAdvance);Assert.NotNull(work);
+        Assert.True(m.CompleteColonisationInteraction(work,await Task.Run(work.Execute)),m.Message);Assert.Same(controller,m.Current);
+        Assert.Equal(turn+1,m.Current.Frame.Status.Turn);Assert.True(m.LocalDesignDirty);Assert.False(reset);Assert.Equal(published,Newtonsoft.Json.JsonConvert.SerializeObject(m.DesignLibrary().Published));
+    }
     readonly string directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Colonisation-Interaction-"+Guid.NewGuid().ToString("N"));
     readonly ReviewNewtonsoftCodec codec=new();
     CampaignColonisationPackageDto Package()

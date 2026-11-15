@@ -399,18 +399,14 @@ namespace HobbyDS9.UnityReview.Tests
                 var initialActor=AssertSingleCycle(initial.CycleActors!);Assert.That(initialActor.Receipts,Is.Empty);Assert.That(initialActor.Active,Is.Null);Assert.That(initialActor.NextOrdinal,Is.EqualTo(1));
                 CycleCensus(t,initial);t.Mark("explicit-new-complete");
                 yield return CycleWorldNavigation(t,doc,oldModel.Current.Frame);
-                // A local Research edit must never become an implicit order or a week advance.
+                // A committed Science change applies once; it never advances the week.
                 var acceptedFrame=model.Current.Frame;
                 CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Research));yield return CyclePageSettled(t,ReviewWorkspacePage.Research);
                 var science=model.Current.Frame.Strategy!.Research.Science.First().Discipline;
-                CycleActivate(t,()=>Click(doc.rootVisualElement.Q<Button>("science-plus-"+science)));yield return CyclePageSettled(t,ReviewWorkspacePage.Research);
-                Assert.That(model.HasLocalEdits,Is.True);
-                Assert.That(doc.rootVisualElement.Q<Button>("player-primary-action").enabledInHierarchy,Is.False,"End turn stays blocked by an unsent Science draft");
-                Assert.That(model.Current.Frame,Is.SameAs(acceptedFrame),"editing the draft submits no campaign command");
-                CycleActivate(t,()=>Click(doc.rootVisualElement.Q<Button>("player-discard-changes")));yield return CyclePageSettled(t,ReviewWorkspacePage.Research);
-                Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null,"Cycle discards local changes directly");
-                Assert.That(model.HasLocalEdits,Is.False);
-                Assert.That(model.Current.Frame,Is.SameAs(acceptedFrame),"discard preserves all accepted campaign state");
+                CycleActivate(t,()=>Click(doc.rootVisualElement.Q<Button>("science-plus-"+science)));yield return new WaitForSecondsRealtime(.06f);yield return CyclePageSettled(t,ReviewWorkspacePage.Research);
+                Assert.That(model.HasLocalEdits,Is.False);Assert.That(model.Current.Frame.Status.Turn,Is.EqualTo(acceptedFrame.Status.Turn));
+                Assert.That(model.Current.Frame.Status.CampaignRevision,Is.EqualTo(acceptedFrame.Status.CampaignRevision+1));
+                Assert.That(doc.rootVisualElement.Q("review-one-use-confirmation"),Is.Null);Assert.That(doc.rootVisualElement.Q("player-discard-changes"),Is.Null);
                 Assert.That(doc.rootVisualElement.Q<Button>("player-primary-action").enabledInHierarchy,Is.True);
                 if(t.InterfaceOnly)
                 {

@@ -5,18 +5,21 @@ using UnityEngine.UIElements;
 
 namespace HobbyDS9.UnityReview
 {
-    // Presentation-only local editor. A release edits the draft; it never submits research.
+    // Preview stays local during a drag. The owner receives one committed release/key change.
     public sealed class ReviewAllocationBar : VisualElement
     {
         private readonly Action<int> change;
+        private readonly Action<int>? previewChange;
         private readonly Color colour;
         private int value,preview,pointer=-1;
         private float origin,width;
         public ReviewAllocationBar(string id,int units,Color colour,Action<int> change)
+            :this(id,units,colour,change,null){}
+        public ReviewAllocationBar(string id,int units,Color colour,Action<int> change,Action<int>? previewChange)
         {
-            name=id;value=preview=units;this.colour=colour;this.change=change;
+            name=id;value=preview=units;this.colour=colour;this.change=change;this.previewChange=previewChange;
             focusable=true;tabIndex=0;AddToClassList("science-allocation-track");
-            tooltip="Science share. Left / Right: 1%. Page Up / Down: 5%. Home: zero. End: available budget. Release pointer to edit; Escape cancels the drag.";
+            tooltip="Allocation. Left / Right: 1%. Page Up / Down: 5%. Home: zero. End: available budget. Release pointer to apply; Escape cancels the drag.";
             generateVisualContent+=Paint;
             RegisterCallback<PointerDownEvent>(e=>{
                 if(e.button!=0||pointer>=0||!enabledInHierarchy)return;
@@ -29,7 +32,7 @@ namespace HobbyDS9.UnityReview
                 Scrub(e.position.x);var next=preview;CancelDrag();e.StopPropagation();Commit(next);
             });
             RegisterCallback<PointerCancelEvent>(_=>CancelDrag());
-            RegisterCallback<PointerCaptureOutEvent>(_=>{pointer=-1;preview=value;MarkDirtyRepaint();});
+            RegisterCallback<PointerCaptureOutEvent>(_=>{pointer=-1;preview=value;previewChange?.Invoke(value);MarkDirtyRepaint();});
             RegisterCallback<DetachFromPanelEvent>(_=>{pointer=-1;});
             RegisterCallback<KeyDownEvent>(e=>{
                 if(!enabledInHierarchy)return;
@@ -50,16 +53,19 @@ namespace HobbyDS9.UnityReview
             });
             RegisterCallback<NavigationSubmitEvent>(e=>e.StopPropagation());
         }
-        private void Scrub(float x){preview=Mathf.RoundToInt(Mathf.Clamp01((x-origin)/Math.Max(1,width))*100)*6;MarkDirtyRepaint();}
+        public void SetUnits(int units){preview=units;if(pointer<0)value=units;MarkDirtyRepaint();}
+        private void Scrub(float x){preview=Mathf.RoundToInt(Mathf.Clamp01((x-origin)/Math.Max(1,width))*100)*6;previewChange?.Invoke(preview);MarkDirtyRepaint();}
         private void CancelDrag()
         {
             var old=pointer;pointer=-1;preview=value;
             if(old>=0&&this.HasPointerCapture(old))this.ReleasePointer(old);
+            previewChange?.Invoke(value);
             MarkDirtyRepaint();
         }
         private void Commit(int next)
         {
             if(next==value)return;
+            value=preview=next;MarkDirtyRepaint();
             var tree=panel?.visualTree;var id=name;
             change(next);
             // The panel redraw retains the draft; restore the editor rather than moving focus to a submit action.

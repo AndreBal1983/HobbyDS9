@@ -41,10 +41,11 @@ namespace HobbyDS9.UnityReview.Tests
                 window.position=new Rect(80,80,1280,720);window.Show();var root=window.rootVisualElement;
                 root.AddToClassList("player-console");root.style.flexGrow=1;
                 root.styleSheets.Add(Resources.Load<StyleSheet>("PlayerConsole"));
+                ReviewEngineeringDialog? popup=null;
                 var view=new ReviewPlayerView(model,workspace,(parent,text,action)=>
                 {var button=new Button(action){text=text};parent.Add(button);return button;},action=>action(),
                     (_,__)=>Assert.Fail("Inspection must not request gameplay confirmation"),_=>{},(_,__,___)=>{},
-                    (button,action)=>button.clicked+=action);
+                    (button,action)=>button.clicked+=action,showEngineering:dialog=>popup=dialog);
                 view.Render(root,ReviewWorkspacePage.Research);yield return null;yield return null;
                 var projects=frame.Strategy!.Research.Engineering;Assert.That(projects.Count,Is.EqualTo(20));
                 Assert.That(root.Query<Button>().ToList().Count(e=>e.name.StartsWith("engineering-goal-engineering.",StringComparison.Ordinal)),Is.EqualTo(20));
@@ -55,25 +56,24 @@ namespace HobbyDS9.UnityReview.Tests
                     Assert.That(goal.Q<Label>(className:"engineering-goal-name").text,Is.EqualTo(project.Definition.DisplayName));
                     goal.Focus();using(var e=NavigationSubmitEvent.GetPooled()){e.target=goal;goal.SendEvent(e);}
                     Assert.That(workspace.EngineeringProjectId,Is.EqualTo(project.Definition.DefinitionId.Value));
-                    view.Render(root,ReviewWorkspacePage.Research);yield return null;
-                    var card=root.Q("engineering-project-"+project.Definition.DefinitionId);
-                    Assert.That(card,Is.Not.Null,project.Definition.DefinitionId.Value);
-                    Assert.That(card.Q<Label>("engineering-project-heading").text,Is.EqualTo(project.Definition.DisplayName));
-                    Assert.That(card.Q<Label>("engineering-authored-effect").text,Is.EqualTo(project.Definition.EffectSummary));
-                    Assert.That(card.Q<Button>("integrated-develop-"+project.Definition.DefinitionId).enabledSelf,Is.False,"All initial source projects are lawfully locked, not omitted.");
+                    Assert.That(popup,Is.Not.Null);Assert.That(popup!.Title,Is.EqualTo(project.Definition.DisplayName));
+                    Assert.That(popup.Detail,Does.Contain(project.Definition.EffectSummary).And.Contain("Project completion").And.Contain("Science & project requirements"));
+                    Assert.That(popup.Commit,Is.Null,"All initial source projects are lawfully locked, not omitted.");
+                    if(project.Definition.Kind==EngineeringProjectKind.Refinement)Assert.That(popup.Detail,Does.Contain("Refinement attribute selection — unavailable").And.Contain("not equipment maturity"));
                 }
                 foreach(var id in new[]{"engineering.reinforced-hull","engineering.expanded-hull"})Assert.That(root.Q("engineering-goal-"+id),Is.Not.Null);
                 var scout=root.Q<Button>("engineering-goal-engineering.advanced-starship-engineering");
-                using(var e=NavigationSubmitEvent.GetPooled()){e.target=scout;scout.SendEvent(e);}view.Render(root,ReviewWorkspacePage.Research);yield return null;
-                var legacy=root.Q("engineering-project-engineering.advanced-starship-engineering");
-                Assert.That(legacy.Q<Label>("engineering-cycle-construction").text,Does.Contain("unavailable"));
+                using(var e=NavigationSubmitEvent.GetPooled()){e.target=scout;scout.SendEvent(e);}yield return null;
+                Assert.That(popup!.Detail,Does.Contain("Advanced Scout is unavailable"));
                 var selected=workspace.EngineeringProjectId;
-                root.Q<TextField>("engineering-search").value="no-such-project";
-                Assert.That(root.Query<Button>().ToList().Where(b=>b.name.StartsWith("engineering-goal-")).All(b=>b.style.display.value==DisplayStyle.None),Is.True);
+                root.Q<TextField>("engineering-search-new").value="no-such-project";
+                Assert.That(root.Q("engineering-projects-new").Query<Button>().ToList().All(b=>b.style.display.value==DisplayStyle.None),Is.True);
+                Assert.That(root.Q("engineering-projects-refinement").Query<Button>().ToList().Count(b=>b.style.display.value!=DisplayStyle.None),Is.EqualTo(12));
                 Assert.That(workspace.EngineeringProjectId,Is.EqualTo(selected),"Filtering must not silently select or start a project.");
-                root.Q<TextField>("engineering-search").value="";
-                root.Q<DropdownField>("engineering-kind-filter").index=2;
-                Assert.That(root.Query<Button>().ToList().Count(b=>b.name.StartsWith("engineering-goal-")&&b.style.display.value!=DisplayStyle.None),Is.EqualTo(projects.Count(p=>p.Definition.Kind==EngineeringProjectKind.Refinement)));
+                root.Q<TextField>("engineering-search-new").value="";
+                var categories=root.Q<DropdownField>("engineering-category-refinement");categories.value="Reactors";
+                Assert.That(root.Q("engineering-projects-refinement").Query<Button>().ToList().Count(b=>b.style.display.value!=DisplayStyle.None),Is.EqualTo(1));
+                Assert.That(root.Q("engineering-projects-new").Query<Button>().ToList().Count(b=>b.style.display.value!=DisplayStyle.None),Is.EqualTo(8));
                 Assert.That(workspace.EngineeringProjectId,Is.EqualTo(selected));
                 Assert.That(model.Current.Frame,Is.SameAs(frame),"Rendering must submit no commands or advance state.");
             }

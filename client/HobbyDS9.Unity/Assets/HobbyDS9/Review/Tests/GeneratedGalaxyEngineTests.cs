@@ -408,10 +408,10 @@ namespace HobbyDS9.UnityReview.Tests
             var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var doc=entry.GetComponent<UIDocument>();
             Click(doc.rootVisualElement.Q<Button>("playable-fleet-start"));yield return null;
             Click(doc.rootVisualElement.Q<Button>("review-nav-Research"));yield return null;
-            Click(doc.rootVisualElement.Q<Button>("science-plus-Computing"));yield return null;
+            Click(doc.rootVisualElement.Q<Button>("science-plus-Computing"));yield return new WaitForSecondsRealtime(.06f);yield return null;
             var campaign=entry.Presentation!.Model;var accepted=campaign.Current.Frame;
             var draft=campaign.ResearchInputs()!;var weight=draft.Weight(ScienceDiscipline.Computing);
-            Assert.That(campaign.HasLocalEdits,Is.True);
+            Assert.That(campaign.HasLocalEdits,Is.False);
             Click(doc.rootVisualElement.Q<Button>("demo-menu"));yield return null;
             directory=Path.Combine(Path.GetTempPath(),"HobbyDS9-Galaxy-Engine-"+Guid.NewGuid().ToString("N"));
             var scenario=new ReviewNewtonsoftCodec().DecodeScenario(Resources.Load<TextAsset>(PlayableFleetOptions.ResourceRoot+"scenario").bytes);
@@ -454,7 +454,7 @@ namespace HobbyDS9.UnityReview.Tests
             Click(root.Q<Button>("demo-resume-current"));yield return null;
             Assert.That(entry.Presentation.Model,Is.SameAs(campaign));Assert.That(campaign.Current.Frame,Is.SameAs(accepted));
             Assert.That(campaign.ResearchInputs(),Is.SameAs(draft));Assert.That(draft.Weight(ScienceDiscipline.Computing),Is.EqualTo(weight));
-            Assert.That(campaign.HasLocalEdits,Is.True);Assert.That(root.Q<Button>("integrated-apply-science").enabledInHierarchy,Is.True);
+            Assert.That(campaign.HasLocalEdits,Is.False);Assert.That(root.Q("integrated-apply-science"),Is.Null);
             yield return new ExitPlayMode();
         }
         [UnityTest] public IEnumerator EnvironmentFeaturesAndOldMapFormatsUseDisplayedControls()

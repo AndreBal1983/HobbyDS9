@@ -36,11 +36,11 @@ public sealed class IntegratedUiTests
         var frame=m.Current.Frame;Assert.False(m.SendPreviewedTravel(offer,ReviewUiModel.NewCommandId()));Assert.Same(frame,m.Current.Frame);
     }
     [Fact]
-    public void LocalDesignDraftBlocksAdvanceTravelAndActorReplacementButSaveKeepsIt()
+    public void LocalDesignDraftAllowsAdvanceAndStillProtectsActorReplacementAndSave()
     {
         using var f=new IntegratedUiFixture();var m=f.Model;var frame=m.Current.Frame;
         m.LocalDesignDirty=true;bool reset=false;m.ResetLocalDesign=()=>reset=true;
-        Assert.True(m.HasLocalEdits);Assert.False(m.Advance());
+        Assert.True(m.HasLocalEdits);Assert.False(m.HasPlanningEdits);Assert.True(m.Advance());frame=m.Current.Frame;
         Assert.False(m.DraftTravel("fleet.federation-scout",CampaignTravelIntent.Leave,"nav.bajor",null));
         Assert.False(m.SwitchActor(B));Assert.Same(frame,m.Current.Frame);
         Assert.True(m.Save("design-local"));Assert.True(m.LocalDesignDirty);Assert.False(reset);

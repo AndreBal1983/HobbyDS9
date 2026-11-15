@@ -56,10 +56,34 @@ namespace HobbyDS9.UnityReview
             if(central==null||!ReferenceEquals(centralContext,model.Current))
             {central=new ReviewCentralView(content,flow!,(p,t,a)=>AddButton(p,t,a),Do,Confirm);centralContext=model.Current;}
             else central.Bind(content);
-            player=new ReviewPlayerView(model,workspace,(p,t,a)=>AddButton(p,t,a),Do,Confirm,Navigate,(fleet,node,ship)=>{workspace.SelectedFleet=fleet;central.SelectStrategicFleet(fleet,node,ship);Navigate(ReviewWorkspacePage.FleetOrders);},(b,a)=>BindButton(b,a),ConfirmConsequence,ShowEngineeringDialog);
+            var researchOwner=model;
+            player=new ReviewPlayerView(model,workspace,(p,t,a)=>AddButton(p,t,a),Do,Confirm,Navigate,(fleet,node,ship)=>{workspace.SelectedFleet=fleet;central.SelectStrategicFleet(fleet,node,ship);Navigate(ReviewWorkspacePage.FleetOrders);},(b,a)=>BindButton(b,a),ConfirmConsequence,ShowEngineeringDialog,
+                action=>{if(ReferenceEquals(model,researchOwner))DoResearchAllocation(action);else researchOwner.CancelResearchAllocations();});
             playerFooter=new VisualElement{name="player-footer"};playerFooter.AddToClassList("console-footer");root.Add(playerFooter);
         }
         private static string OwnerName(string actor)=>actor=="civ.federation"?"Federation":actor=="civ.cardassian"?"Cardassian Union":actor;
+        private void DoResearchAllocation(Action action)
+        {
+            if(this==null||!isActiveAndEnabled||model==null||model.Closed||root?.panel==null)return;
+            if(model.Busy){model.CancelResearchAllocations("The campaign is busy. Accepted allocations restored; change the control again when it is ready.");return;}
+            var owner=model;var controller=owner.Current;var before=controller.Frame;var target=root;
+            var saved=new RoutineViewState{Focus=(target.panel.focusController.focusedElement as VisualElement)?.name??""};
+            foreach(var scroll in target.Query<ScrollView>().ToList())saved.Scrolls.Add((scroll.name,scroll.scrollOffset));
+            action();
+            if(!ReferenceEquals(model,owner)||!ReferenceEquals(owner.Current,controller))return;
+            // The shell remains mounted, so its navigation bindings retain their epoch.
+            // Page actions are replaced by Draw; detached buttons cannot dispatch.
+            var changed=!ReferenceEquals(before,controller.Frame);
+            if(confirmation!=null){if(changed)ClearConfirmation();else return;}else Draw();
+            var epoch=viewEpoch;var frame=controller.Frame;
+            target.schedule.Execute(()=>{
+                if(this==null||!isActiveAndEnabled||!ReferenceEquals(root,target)||viewEpoch!=epoch||!ReferenceEquals(model,owner)
+                    ||!ReferenceEquals(owner.Current,controller)||!ReferenceEquals(controller.Frame,frame)||confirmation!=null)return;
+                var scrolls=target.Query<ScrollView>().ToList();
+                for(int i=0;i<saved.Scrolls.Count&&i<scrolls.Count;i++)if(scrolls[i].name==saved.Scrolls[i].name)scrolls[i].scrollOffset=saved.Scrolls[i].offset;
+                if(saved.Focus.Length>0){var control=target.Q(saved.Focus);if(control?.enabledInHierarchy==true)control.Focus();}
+            });
+        }
         private static string Title(ReviewWorkspacePage page)
         {
             switch(page)
@@ -111,7 +135,9 @@ namespace HobbyDS9.UnityReview
         }
         private string PlayerMessage()
         {
-            if(model!.HasLocalEdits)return model.Current.RefreshRequired?"Unsent changes kept · refresh your view before applying. Saving committed state keeps these edits locally.":"Unsent changes · apply or discard them before ending the turn. Navigation keeps your edits.";
+            if(model!.ResearchCommitPending)return "Applying allocation. End turn is available after the campaign accepts it.";
+            if(model!.HasPlanningEdits)return model.Current.RefreshRequired?"Unsent changes kept · refresh your view before applying. Saving committed state keeps these edits locally.":"Unsent changes · apply or discard them before ending the turn. Navigation keeps your edits.";
+            if(model.LocalDesignDirty)return "Unpublished design kept in this session; it does not block End turn. Campaign saves exclude this draft. Publish explicitly after refreshing validation.";
             var demo=model.Current.Frame.Demo;
             if(demo!=null&&demo.Outcome!=CampaignDemoOutcome.Active)return "Demo outcome: "+demo.Outcome+". You may inspect or save the completed campaign, or start a new demo from Menu.";
             if(model!.Message.Contains("Stale"))return "Your view changed. Open "+(PlayerProfile?"Help & credits":"Test Tools")+" to refresh it before trying again. Your edits are kept.";
@@ -127,14 +153,14 @@ namespace HobbyDS9.UnityReview
             if(flow.Stage==ReviewCombatStage.AftermathPending)return "Battle complete. Confirm the campaign aftermath in Combat, then give survivors fresh fleet orders.";
             if(flow.Stage==ReviewCombatStage.RoundResult)return "Round resolved. Review the report and retained stocks in Combat, then plan the next round.";
             if(flow.Stage==ReviewCombatStage.AftermathConfirmed)return "Aftermath confirmed. Return to the map or give surviving fleets fresh strategic orders.";
-            if(model.HasLocalEdits)return "Unsent changes · apply or discard them before ending the turn. Navigation keeps your edits.";
+            if(model.HasPlanningEdits)return "Unsent changes · apply or discard them before ending the turn. Navigation keeps your edits.";
             if(model.Current.Frame.Status.Phase!=SessionPhase.Planning)return "A battle needs your attention. Open Combat, resolve its rounds, then confirm the aftermath.";
             if(workspace!.Page==ReviewWorkspacePage.Research&&model.ColonisationCycleCampaign)
-                return "Apply each allocation beside its controls. Select Engineering projects directly. Research progresses on End turn.";
+                return "Release allocation controls to apply. Select Engineering projects directly. Research progresses on End turn.";
             if(workspace!.Page==ReviewWorkspacePage.Research&&model.ColonisationCampaign)
-                return "Apply Science allocations to commit them. Select Engineering projects directly. Research progresses on End turn.";
+                return "Release allocation controls to apply. Select Engineering projects directly. Research progresses on End turn.";
             if(model.FrontierPreview&&workspace!.Page==ReviewWorkspacePage.Map)return "Frontier preview: select your fleet and a known node, preview/review the route, then end turns. Actual arrivals chart branches at the next Planning boundary.";
-            return workspace!.Page==ReviewWorkspacePage.Map?"Select a fleet to plot a course, visit Research, or build a ship in Production.":workspace.Page==ReviewWorkspacePage.Research?"Science and Engineering progress when you end a turn. Changes apply only when you confirm them.":workspace.Page==ReviewWorkspacePage.Production?((model!.StreamedActivitiesCampaign||model.ColonisationCampaign)?"Choose a world and use + to add an order. Industry and delivered materials advance construction each week.":"Choose a shipyard, inspect the cost, then build. Industry progresses on End turn."):"Inspection and navigation never submit an order.";
+            return workspace!.Page==ReviewWorkspacePage.Map?"Select a fleet to plot a course, visit Research, or build a ship in Production.":workspace.Page==ReviewWorkspacePage.Research?"Release allocation controls to apply. Science and Engineering progress on End turn.":workspace.Page==ReviewWorkspacePage.Production?((model!.StreamedActivitiesCampaign||model.ColonisationCampaign)?"Choose a world and use + to add an order. Industry and delivered materials advance construction each week.":"Choose a shipyard, inspect the cost, then build. Industry progresses on End turn."):"Inspection and navigation never submit an order.";
         }
         private void DrawPlayerActions()
         {
@@ -163,33 +189,27 @@ namespace HobbyDS9.UnityReview
             bool CurrentCycleAction()=>actionEpoch==viewEpoch&&ReferenceEquals(model,actionModel)
                 &&ReferenceEquals(actionModel.Current,actionController)&&ReferenceEquals(actionController.Frame,actionFrame)
                 &&isActiveAndEnabled&&!actionModel.Busy&&!actionModel.Closed&&campaignBusyToken==null;
-            if(actionModel.HasLocalEdits)
+            if(actionModel.HasOrderDraft)
             {
                 var discard=AddButton(left,"Discard changes",()=>{
                     if(actionModel.ColonisationCycleCampaign)
-                    {if(CurrentCycleAction()&&actionModel.HasLocalEdits)Do(()=>actionModel.Reset());}
+                    {if(CurrentCycleAction()&&actionModel.HasOrderDraft)Do(()=>actionModel.Reset());}
                     else Confirm("Discard your unsent edits? Your accepted orders and campaign remain unchanged.",()=>Do(()=>model!.Reset()));
                 });
                 discard.name="player-discard-changes";
             }
             if(workspace!.Page==ReviewWorkspacePage.Combat)return; // Central view owns the battle primary action.
-            if(workspace.Page==ReviewWorkspacePage.Research&&!model!.ColonisationCycleCampaign)
-            {
-                var d=model.ResearchInputs()!;
-                if(d.ScienceChanged){Primary(actions,"Apply Science allocation",()=>Confirm("Apply this complete Science plan?\n"+string.Join("\n",model.Current.Frame.Strategy!.Research.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%.",()=>Do(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
-                if(d.SplitChanged){Primary(actions,"Apply R&D split",()=>Confirm("Apply this Science / Engineering split?",()=>Do(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()))),d.Current(model.Current.Frame)&&CanPlan());return;}
-            }
             if(model!.Current.Frame.Status.Phase!=SessionPhase.Planning){Primary(actions,"Open combat",()=>Navigate(ReviewWorkspacePage.Combat));return;}
             if(actionModel.ColonisationCycleCampaign)
             {
                 var endTurn=Primary(actions,"End turn →",()=>{
-                    if(!CurrentCycleAction()||!CanPlan()||actionModel.HasLocalEdits)return;
+                    if(!CurrentCycleAction()||!CanPlan()||actionModel.HasPlanningEdits)return;
                     RunColonisationInteraction(actionModel,actionController,actionFrame,HobbyDS9.TacticalReviewClient.ColonisationInteractionKind.PlanningAdvance);
-                },CanPlan()&&!actionModel.HasLocalEdits);
-                endTurn.tooltip="Advance one week with your accepted orders. Apply or discard unsent changes first.";
+                },CanPlan()&&!actionModel.HasPlanningEdits);
+                endTurn.tooltip="Advance one week with accepted orders. Unpublished designs stay editable in this session.";
                 return;
             }
-            Primary(actions,"End turn →",()=>Confirm("End turn with your accepted orders? Research and Industry will progress. Unsent edits must be applied or discarded first.",()=>{if(model.ColonisationCampaign)RunColonisationInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.ColonisationInteractionKind.PlanningAdvance);else if(model.StreamedActivitiesCampaign)RunStreamedInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.PlanningAdvance);else Do(()=>model.Advance());}),CanPlan()&&!model.HasLocalEdits);
+            Primary(actions,"End turn →",()=>Confirm("End turn with your accepted orders? Research and Industry will progress. Unpublished design drafts stay editable in this session.",()=>{if(model.ColonisationCampaign)RunColonisationInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.ColonisationInteractionKind.PlanningAdvance);else if(model.StreamedActivitiesCampaign)RunStreamedInteraction(model,model.Current,model.Current.Frame,HobbyDS9.TacticalReviewClient.StreamedInteractionKind.PlanningAdvance);else Do(()=>model.Advance());}),CanPlan()&&!model.HasPlanningEdits);
         }
         private bool CanPlan()=>model!.Current.Frame.Status.Phase==SessionPhase.Planning&&(model.Current.Frame.Demo==null||model.Current.Frame.Demo.Outcome==CampaignDemoOutcome.Active)&&!model.Current.RefreshRequired&&!model.Current.HasPendingWork&&!model.Busy&&!model.Closed;
         private Button Primary(VisualElement parent,string label,Action action,bool enabled=true){var b=AddButton(parent,label,action);b.AddToClassList("primary-action");b.name="player-primary-action";b.SetEnabled(enabled);return b;}

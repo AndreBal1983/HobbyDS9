@@ -120,6 +120,7 @@ namespace HobbyDS9.UnityReview
         }
         private void OnDisable()
         {
+            model?.CancelResearchAllocations();
             CancelCampaignArchiveScan();
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.enter");
             viewEpoch++;modalPermission.Invalidate();
@@ -266,7 +267,7 @@ namespace HobbyDS9.UnityReview
         private void BindButton(Button button,Action action,bool dialog=false)
         {
             var publication=playerPublicationAttempt;
-            var epoch=viewEpoch;Action guarded=()=>{if(publication?.Failed!=true&&epoch==viewEpoch&&isActiveAndEnabled&&campaignBusyToken==null&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
+            var epoch=viewEpoch;Action guarded=()=>{if(button.panel!=null&&root?.Contains(button)==true&&publication?.Failed!=true&&epoch==viewEpoch&&isActiveAndEnabled&&campaignBusyToken==null&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
             button.clicked+=guarded;
             if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);
         }

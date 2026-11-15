@@ -161,13 +161,12 @@ namespace HobbyDS9.UnityReview.Tests
                 PublishedReceivingSelect(doc,"Checkpoint Escort",colony);yield return null;Click(doc.rootVisualElement.Q<Button>("published-construction-queue"));
                 var abandonedConfirm=doc.rootVisualElement.Q("review-one-use-confirmation").Query<Button>().ToList().Single(b=>b.text=="Confirm");Confirm(doc,false);
                 var priorRevision=model.Current.Frame.Status.CampaignRevision;
-                CampaignPage(doc,ReviewWorkspacePage.Research);var split=doc.rootVisualElement.Q<SliderInt>("integrated-research-split");split.value=(split.value+1)%21;yield return null;
-                Click(doc.rootVisualElement.Q<Button>("player-primary-action"));Confirm(doc);yield return null;
+                CampaignPage(doc,ReviewWorkspacePage.Research);var split=doc.rootVisualElement.Q<SliderInt>("integrated-research-split");split.value=(split.value+1)%21;yield return new WaitForSecondsRealtime(.06f);yield return null;
                 Assert.That(model.Current.Frame.Status.CampaignRevision,Is.GreaterThan(priorRevision),"real R&D command changes the observation stamp");
-                split=doc.rootVisualElement.Q<SliderInt>("integrated-research-split");split.value=(split.value+1)%21;yield return null;
+                model.ResearchInputs()!.ScienceUnits=(model.ResearchInputs()!.ScienceUnits+30)%630;yield return null; // Adversarial manual draft for stale-callback isolation.
                 var draft=model.ResearchInputs();Assert.That(draft!.Dirty,Is.True);var beforeStale=PublishedReceivingBytes(model);var cash=model.Current.Frame.Strategy!.Civilization.Credits;
                 Click(abandonedConfirm);yield return null;Assert.That(PublishedReceivingBytes(model),Is.EqualTo(beforeStale));Assert.That(model.Current.Frame.Strategy!.Civilization.Credits,Is.EqualTo(cash));Assert.That(model.ResearchInputs(),Is.SameAs(draft));Assert.That(draft.Dirty,Is.True);
-                Click(CampaignButton(doc,"Discard changes"));Confirm(doc);yield return null;
+                Assert.That(model.Reset(),Is.True);CampaignPage(doc,ReviewWorkspacePage.Research);yield return null;
                 CampaignPage(doc,ReviewWorkspacePage.Designer);Click(doc.rootVisualElement.Q<Button>("integrated-design-refresh"));yield return null;
                 PublishedReceivingSelect(doc,"Checkpoint Escort",colony);yield return null;var cost=revision1.Blueprint.Performance.Cost!;
                 var queueButton=doc.rootVisualElement.Q<Button>("published-construction-queue");

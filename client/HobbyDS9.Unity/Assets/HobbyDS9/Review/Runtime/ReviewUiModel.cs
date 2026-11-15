@@ -55,11 +55,12 @@ namespace HobbyDS9.UnityReview
         public bool LocalDesignDirty {get;set;}
         public Action? ResetLocalDesign {get;set;}
         public HobbyDS9.Application.CampaignIntegratedDesignLibrarySnapshot DesignLibrary()=>host.CaptureDesignLibrary(Current.Frame);
-        public bool HasLocalEdits=>Current.Dirty||(ResearchDraft?.Dirty??false)||LocalDesignDirty||OrganizationDirty;
+        public bool HasLocalEdits=>HasPlanningEdits||LocalDesignDirty;
         public ReviewResearchDraft? ResearchInputs()
         {
             if(Current.Frame.Strategy==null)return null;
-            if(ResearchDraft==null||!ResearchDraft.Dirty&&!ResearchDraft.Current(Current.Frame))ResearchDraft=new ReviewResearchDraft(Current.Frame);
+            if(ResearchDraft==null)ResearchDraft=new ReviewResearchDraft(Current.Frame);
+            else if(!ResearchDraft.Dirty&&!ResearchDraft.Current(Current.Frame))ResearchDraft=ResearchDraft.RestoreAccepted(Current.Frame);
             return ResearchDraft;
         }
         public CommandEnvelope StrategicEnvelope(CommandKind kind,string command)=>new CommandEnvelope {
@@ -105,7 +106,7 @@ namespace HobbyDS9.UnityReview
             if(PlayableFleet||FrontierPreview){Message="This frontier preview has one human side. The opponent chooses its own orders.";return false;}
             if(SingleplayerDemo){Message="This demo has one human side. The opponent chooses its own orders.";return false;}
             if(Current.HasPendingWork || HasLocalEdits&&!discard){Message="Explicit discard is required before switching actor.";return false;}
-            var next=Controller(host,actor); Current=next;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null; Message="Actor view changed; inspection and local edits cleared."; return true;
+            var next=Controller(host,actor); Current=next;ClearResearchQueue();ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null; Message="Actor view changed; inspection and local edits cleared."; return true;
         });
         public bool SelectEncounter(string id,bool discard=false)=>Run(()=>{
             var result=Current.SelectEncounter(id,discard);Message=result?"Encounter selected.":"Encounter unavailable or explicit discard required.";return result;
@@ -147,7 +148,7 @@ namespace HobbyDS9.UnityReview
         public bool CommitRound(string command)=>Run(()=>Current.ReviewRound()?Dispatch(Current.ConfirmRound(command)):Unavailable());
         private bool Unavailable(){Message="Operation unavailable in the current authoritative boundary.";return false;}
         public bool Advance()=>Run(()=>{
-            if(HasLocalEdits||Current.HasPendingWork){Message="Submit or explicitly reset local edits before advance.";return false;}
+            if(HasPlanningEdits||Current.HasPendingWork){Message="Finish pending allocations or unsent orders before advance.";return false;}
             var r=host.AdvancePlanning(Current.Frame);Message="Authoritative result: "+r.Error;
             if(!r.Accepted)return false; Current.Refresh();
             if(Current.Frame.Encounters.Count==1)Current.SelectEncounter(Current.Frame.Encounters[0]);return true;
@@ -184,12 +185,12 @@ namespace HobbyDS9.UnityReview
                 :integratedPackage!=null?PhysicalReviewHost.OpenIntegratedFromSlot(integratedPackage,codec,integratedSlots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId)
                 :PhysicalReviewHost.OpenFromSlot(package!,codec,slots!,slot,Current.Frame.Actor,Current.Frame.Battle?.EncounterId);
             if(!opened.Succeeded){Message="Checkpoint result: "+opened.Error;return false;}
-            var next=Controller(opened.Host!,Current.Frame.Actor);host=opened.Host!;Current=next;if(GeneratedCampaign)GeneratedViewportNeedsFit=true;ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null;ResetOrganization();Message="Validated complete-root checkpoint loaded.";return true;
+            var next=Controller(opened.Host!,Current.Frame.Actor);host=opened.Host!;Current=next;if(GeneratedCampaign)GeneratedViewportNeedsFit=true;ClearResearchQueue();ResearchDraft=null;LocalDesignDirty=false;ResetLocalDesign=null;ResetOrganization();Message="Validated complete-root checkpoint loaded.";return true;
         });
         public bool Reset()=>Run(()=>{
             if(Current.HasPendingWork)return Unavailable();
             var r=Current.TravelDraft!=null?Current.ResetTravelDraft():!Current.Dirty||Current.ResetDraft();
-            if(r){ResearchDraft=null;ResetLocalDesign?.Invoke();LocalDesignDirty=false;ResetOrganization();}
+            if(r){ClearResearchQueue();ResearchDraft=null;ResetLocalDesign?.Invoke();LocalDesignDirty=false;ResetOrganization();}
             Message=r?"Local edits cleared; no command submitted.":"Reset unavailable.";return r;
         });
         public bool Close(bool discard=false)=>Run(()=>{
