@@ -15,5 +15,6 @@
     <Copy SourceFiles="$(RepoRoot)/scenarios/engineering-development-v1/scenario.json" DestinationFiles="$(PlayableFleetOutput)/engineering-scenario.json" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(RepoRoot)/scenarios/sol-eight-planets-v1/scenario.json" DestinationFiles="$(PlayableFleetOutput)/sol08-scenario.json" SkipUnchangedFiles="true" />
     <Copy SourceFiles="$(RepoRoot)/scenarios/sol-eight-planets-v1/astronomy.json" DestinationFiles="$(PlayableFleetOutput)/sol08-astronomy.json" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(RepoRoot)/scenarios/system-richness-v1/policy.json" DestinationFiles="$(PlayableFleetOutput)/system-richness-policy.json" SkipUnchangedFiles="true" />
   </Target>
 </Project>

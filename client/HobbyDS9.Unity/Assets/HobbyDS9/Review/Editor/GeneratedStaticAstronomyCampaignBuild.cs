@@ -428,7 +428,7 @@ freighter, treaty, cargo or colonization feature is included.
             foreach(var required in new[]{"GalaxyPresentationV3/galaxy.png","GalaxyPresentationV3/nebula.bytes",
                 "GalaxyPresentationV3/particles.json","GalaxyPresentationV3/Presentation.shader",
                 "SystemBodyArt/SolMeshes/Earth_LOD1.fbx","SystemBodyArt/ProceduralSurface.shader",
-                "DemoPackages/v1/demo.json","PlayableFleetPackages/v1/playable.json","PlayableFleetPackages/v1/sol08-scenario.json","PlayableFleetPackages/v1/sol08-astronomy.json"})
+                "DemoPackages/v1/demo.json","PlayableFleetPackages/v1/playable.json","PlayableFleetPackages/v1/sol08-scenario.json","PlayableFleetPackages/v1/sol08-astronomy.json","PlayableFleetPackages/v1/system-richness-policy.json"})
                 if(!File.Exists(Path.Combine(resources,required)))
                     throw new InvalidOperationException("PB presentation/preparation resource missing: "+required);
             var engineering=new ReviewNewtonsoftCodec().DecodeScenario(File.ReadAllBytes(Path.Combine(resources,"PlayableFleetPackages/v1/sol08-scenario.json")));
@@ -503,7 +503,7 @@ freighter, treaty, cargo or colonization feature is included.
                     File.WriteAllText(Path.Combine(stage,"Start-PB-20261113.cmd"),
                         "@echo off\r\n\"%~dp0HobbyDS9GeneratedCampaign.exe\" --hobbyds9-singleplayer-demo -screen-fullscreen 0\r\n");
                     File.WriteAllText(Path.Combine(stage,"BUILD-IDENTITY.json"),
-                        "{\n  \"task\": \"PB-20261113\",\n  \"sourceSha\": \""+Environment.GetEnvironmentVariable("HOBBYDS9_BUILD_SOURCE_SHA")+"\",\n  \"editor\": \""+UnityEngine.Application.unityVersion+"\",\n  \"editorPatchEvaluation\": "+(patchEvaluation?"true":"false")+",\n  \"nativeAcceptance\": \"pending\",\n  \"configuration\": \"Campaign menu / Sol08 / Engineering20 / Cycle14\"\n}\n");
+                        "{\n  \"task\": \"PB-20261113\",\n  \"sourceSha\": \""+Environment.GetEnvironmentVariable("HOBBYDS9_BUILD_SOURCE_SHA")+"\",\n  \"editor\": \""+UnityEngine.Application.unityVersion+"\",\n  \"editorPatchEvaluation\": "+(patchEvaluation?"true":"false")+",\n  \"nativeAcceptance\": \"pending\",\n  \"configuration\": \"Campaign menu / Sol08 / Engineering20 / SystemRichness15\"\n}\n");
                     File.WriteAllText(Path.Combine(stage,"README.txt"),
                         "PB-20261113 playtest candidate. Native acceptance pending.\r\nLaunch Start-PB-20261113.cmd. Choose New campaign (seed 42, 250 systems), or explicitly load a compatible existing campaign.\r\nThe current GUI includes System, fleet cards, Engineering, construction and the tracked V3 galaxy presentation. Browser art proofs are not runtime assets.\r\nInspect Settings / Display for the build identity and actual Editor version. Read docs/pb-20261113-gui.md in the source handoff for scope and validation.\r\n");
                 }

@@ -6,7 +6,7 @@ using HobbyDS9.Contracts;
 
 namespace HobbyDS9.Simulation
 {
-    internal enum ColonisationInventoryVersion { Legacy=1,Expansion=2 }
+    internal enum ColonisationInventoryVersion { Legacy=1,Expansion=2,Richness=3 }
     // Frozen start authoring only. Survey/deployment never creates or improves a planet.
     internal static class ColonisationPlanetInventory
     {
@@ -16,8 +16,10 @@ namespace HobbyDS9.Simulation
         internal static CampaignColonisationStateDto PopulateExpansion(DefinitionCatalogDto definitions,GameStateDto game,
             NaturalGalaxyDocumentDto map,CampaignActivityStateDto activities,ColonisationPolicyDto policy)
             =>PopulateCore(definitions,game,map,activities,policy,ColonisationInventoryVersion.Expansion);
+        internal static CampaignColonisationStateDto PopulateRichness(DefinitionCatalogDto definitions,GameStateDto game,NaturalGalaxyDocumentDto map,CampaignActivityStateDto activities,ColonisationPolicyDto policy,SystemRichnessPolicyDto richness)
+            =>PopulateCore(definitions,game,map,activities,policy,ColonisationInventoryVersion.Richness,richness);
         private static CampaignColonisationStateDto PopulateCore(DefinitionCatalogDto definitions,GameStateDto game,
-            NaturalGalaxyDocumentDto map,CampaignActivityStateDto activities,ColonisationPolicyDto policy,ColonisationInventoryVersion version)
+            NaturalGalaxyDocumentDto map,CampaignActivityStateDto activities,ColonisationPolicyDto policy,ColonisationInventoryVersion version,SystemRichnessPolicyDto? richness=null)
         {
             if(policy.PlanetInventoryPolicy!=CampaignColonisationIdentity.InventoryPolicy||policy.MaximumPlanets!=1040
                 ||policy.MaximumStarterPlanets!=32||game.Planets==null||game.Planets.Count>policy.MaximumStarterPlanets
@@ -47,8 +49,8 @@ namespace HobbyDS9.Simulation
                 var variant=Convert.ToInt32(Rank("environment",id).Substring(0,2),16)%5;
                 var d=environment==null?new PlanetDefinitionDto {
                     PlanetClass=new[]{"Temperate","Arid","Oceanic","Frozen","Vacuum"}[variant],
-                    Gravity=new[]{100,120,90,80,30}[variant]*(version==ColonisationInventoryVersion.Expansion?100:1),Pressure=new[]{100,40,150,20,0}[variant]*(version==ColonisationInventoryVersion.Expansion?100:1),
-                    Radiation=new[]{10,30,20,50,200}[variant],Atmosphere=variant==4?"atmosphere.vacuum":version==ColonisationInventoryVersion.Expansion?"atmosphere.oxygen-nitrogen":"atmosphere.oxygen",
+                    Gravity=new[]{100,120,90,80,30}[variant]*(version!=ColonisationInventoryVersion.Legacy?100:1),Pressure=new[]{100,40,150,20,0}[variant]*(version!=ColonisationInventoryVersion.Legacy?100:1),
+                    Radiation=new[]{10,30,20,50,200}[variant],Atmosphere=variant==4?"atmosphere.vacuum":version!=ColonisationInventoryVersion.Legacy?"atmosphere.oxygen-nitrogen":"atmosphere.oxygen",
                     Habitats=Enum.GetValues(typeof(HabitatKind)).Cast<HabitatKind>().Select(h=>new HabitatDefinitionDto {
                         Kind=h,ShareBps=h==new[]{HabitatKind.Temperate,HabitatKind.Arid,HabitatKind.Oceanic,HabitatKind.Polar,HabitatKind.Volcanic}[variant]?10000:0,
                         NaturalCapacity=h==new[]{HabitatKind.Temperate,HabitatKind.Arid,HabitatKind.Oceanic,HabitatKind.Polar,HabitatKind.Volcanic}[variant]&&variant!=4?1000:0}).ToList(),
@@ -75,7 +77,7 @@ namespace HobbyDS9.Simulation
                         :throw new ArgumentException("Unsupported minor physical environment binding.");
                     var environment=definitions.Planets!.Single(d=>d.DefinitionId==planet.DefinitionId);
                     environment.PlanetClass=habitat==HabitatKind.Wetland?"Wetland":"Temperate";
-                    environment.Gravity=version==ColonisationInventoryVersion.Expansion?10000:100;environment.Pressure=version==ColonisationInventoryVersion.Expansion?10000:100;environment.Radiation=10;environment.Atmosphere=version==ColonisationInventoryVersion.Expansion?"atmosphere.oxygen-nitrogen":"atmosphere.oxygen";
+                    environment.Gravity=version!=ColonisationInventoryVersion.Legacy?10000:100;environment.Pressure=version!=ColonisationInventoryVersion.Legacy?10000:100;environment.Radiation=10;environment.Atmosphere=version!=ColonisationInventoryVersion.Legacy?"atmosphere.oxygen-nitrogen":"atmosphere.oxygen";
                     foreach(var h in environment.Habitats!){h.ShareBps=h.Kind==habitat?10000:0;h.NaturalCapacity=h.Kind==habitat?1000:0;}
                 }
                 result.Bodies!.Add(new PlanetBodyBindingDto{BodyId=body.BodyId,PlanetId=planet.PlanetId,SystemId=body.SystemId,MinorActorId=minor?.ActorId});
@@ -101,6 +103,18 @@ namespace HobbyDS9.Simulation
                     if(i==0)Add(system.SystemId,"sibling."+system.SystemId);
                 }
             }
+            if(richness!=null)
+            {
+                SystemRichnessData.Validate(richness);
+                var authoredSystems=originals.Select(p=>p.SystemId).ToHashSet(StringComparer.Ordinal);
+                foreach(var system in map.Layout.Systems.OrderBy(s=>s.SystemId,StringComparer.Ordinal))
+                {
+                    if(authoredSystems.Contains(system.SystemId))continue;
+                    var count=game.Planets.Count(p=>p.SystemId==system.SystemId);
+                    var target=SystemRichnessData.Target(seed,system.SystemId,richness);
+                    for(var ordinal=count+1;ordinal<=target;ordinal++)Add(system.SystemId,"zz.richness.v1."+system.SystemId+"."+ordinal.ToString(CultureInfo.InvariantCulture));
+                }
+            }
             foreach(var planet in game.Planets.OrderBy(p=>p.PlanetId,StringComparer.Ordinal))
                 if(!result.Bodies!.Any(b=>b.PlanetId==planet.PlanetId))result.Bodies!.Add(new PlanetBodyBindingDto{
                     PlanetId=planet.PlanetId,SystemId=planet.SystemId,BodyId="body.physical."+planet.PlanetId});
@@ -121,7 +135,7 @@ namespace HobbyDS9.Simulation
                 var minor=result.Bodies!.SingleOrDefault(b=>b.PlanetId==planet.PlanetId)?.MinorActorId;
                 result.PlanetControls!.Add(new PlanetControlDto{PlanetId=planet.PlanetId,Kind=colony!=null?PlanetControllerKind.Empire:minor!=null?PlanetControllerKind.IndependentGovernment:PlanetControllerKind.Unclaimed,ActorId=colony?.OwnerCivilizationId??minor});
             }
-            if(game.Planets.Count>policy.MaximumPlanets||game.Planets.Count>map.Layout.Systems.Count+originals.Count+8)
+            if(game.Planets.Count>(richness==null?policy.MaximumPlanets:CampaignSystemRichnessIdentity.MaximumPlanets)||game.Planets.Count>(richness==null?map.Layout.Systems.Count+originals.Count+8:map.Layout.Systems.Count*6+originals.Count+8))
                 throw new ArgumentException("Frozen physical planet inventory exceeds its technical bound.");
             definitions.DefinitionIds=definitions.DefinitionIds.OrderBy(id=>id,StringComparer.Ordinal).ToList();
             game.Planets=game.Planets.OrderBy(p=>p.PlanetId,StringComparer.Ordinal).ToList();

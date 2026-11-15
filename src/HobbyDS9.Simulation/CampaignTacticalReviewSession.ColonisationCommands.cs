@@ -16,13 +16,18 @@ namespace HobbyDS9.Simulation
                 return ColonisationPlanetsForActor(state.Campaign.GameState,actor);
             }
         }
+        private HashSet<string> ColonisationSystemsForActor(GameStateDto game,string actor)
+        {
+            var nodes=GeneratedCoverage(game,actor).Concat(discoveries.Where(d=>d.ActorId==actor).Select(d=>d.ArrivalNodeId)).ToHashSet(StringComparer.Ordinal);
+            return definitions.NavigationRegions!.Where(r=>r.AssociatedSystemId!=null&&nodes.Contains(r.NodeId)).Select(r=>r.AssociatedSystemId!).ToHashSet(StringComparer.Ordinal);
+        }
         private IReadOnlyList<ColonisationPlanetObservationDto> ColonisationPlanetsForActor(GameStateDto game,string actor)
         {
                 // Star-chart adjacency is not body discovery. Only actual presence,
                 // retained arrival receipts and owned worlds disclose a body's existence.
                 var coverage=GeneratedCoverage(game,actor).ToHashSet(StringComparer.Ordinal);
-                var arrivals=coverage.Concat(discoveries.Where(d=>d.ActorId==actor).Select(d=>d.ArrivalNodeId)).ToHashSet(StringComparer.Ordinal);
-                return game.Planets!.Where(p=>arrivals.Contains(definitions.NavigationRegions!.Single(r=>r.AssociatedSystemId==p.SystemId).NodeId))
+                var systems=ColonisationSystemsForActor(game,actor);
+                return game.Planets!.Where(p=>systems.Contains(p.SystemId))
                     .OrderBy(p=>p.PlanetId,StringComparer.Ordinal).Select(p=>{
                         var survey=colonisation!.State.Surveys!.SingleOrDefault(s=>s.ActorId==actor&&s.PlanetId==p.PlanetId);
                         var known=survey?.Stage==PlanetSurveyStage.Completed||game.Colonies!.Any(c=>c.PlanetId==p.PlanetId&&c.OwnerCivilizationId==actor);

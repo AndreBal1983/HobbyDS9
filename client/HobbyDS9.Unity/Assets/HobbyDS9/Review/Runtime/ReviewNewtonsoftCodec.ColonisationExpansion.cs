@@ -63,12 +63,12 @@ namespace HobbyDS9.UnityReview
             }
             catch (Exception e) { loadDiagnostic?.Record(phase,ReviewLoadEvent.Error,e);throw new InvalidDataException("Invalid colonisation campaign carrier."); }
         }
-        private static void RequireColonisationExpansionCarrier(CampaignColonisationExpansionSaveDto root,ColonisationCarrierVocabulary vocabulary=ColonisationCarrierVocabulary.Original)
+        private static void RequireColonisationExpansionCarrier(CampaignColonisationExpansionSaveDto root,ColonisationCarrierVocabulary vocabulary=ColonisationCarrierVocabulary.Original,string? inventoryPolicy=null)
         {
             if(root==null||root.FormatVersion!=CampaignColonisationExpansionIdentity.Format
                 ||root.ProfileId!=(vocabulary!=ColonisationCarrierVocabulary.Original?CampaignColonisationGrowthIdentity.Profile:CampaignColonisationExpansionIdentity.Profile)||root.PackageHash==null||root.PackageHash.Length!=64
                 ||!root.PackageHash.All(c=>c>='0'&&c<='9'||c>='a'&&c<='f')||(!ActivityRows(root.AiPlans)||root.AiPlans!.Count>4))throw Invalid();
-            RequireColonisationCarrier(root.BaseCampaign,CampaignColonisationExpansionIdentity.InventoryPolicy,vocabulary);
+            RequireColonisationCarrier(root.BaseCampaign,inventoryPolicy??CampaignColonisationExpansionIdentity.InventoryPolicy,vocabulary);
             RequireColonisationAiPlans(root.AiPlans!,vocabulary,"establish-first-frontier-colony-v1");
         }
         private static void RequireColonisationAiPlans(List<ColonisationAiPlanDto> plans,ColonisationCarrierVocabulary vocabulary,string goal)
