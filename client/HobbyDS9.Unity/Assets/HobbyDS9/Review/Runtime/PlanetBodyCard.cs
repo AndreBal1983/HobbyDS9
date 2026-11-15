@@ -37,14 +37,13 @@ namespace HobbyDS9.UnityReview
         {
             name="colonisation-system-body-"+planet.BodyId;focusable=true;tabIndex=0;this.selected=selected;
             colonyRail=ownStage==null?new Color(.40f,.47f,.55f):new Color(.30f,.66f,.50f);
-            style.width=184;style.maxWidth=Length.Percent(100);style.minHeight=80;style.flexShrink=0;
-            style.marginRight=6;style.marginBottom=6;style.paddingLeft=8;style.paddingRight=6;style.paddingTop=6;style.paddingBottom=6;
-            style.borderLeftWidth=4;style.borderLeftColor=colonyRail;
-            style.borderTopWidth=style.borderBottomWidth=style.borderRightWidth=2;
-            var label=new Label(planet.DisplayName){pickingMode=PickingMode.Ignore};label.style.whiteSpace=WhiteSpace.Normal;label.style.unityFontStyleAndWeight=FontStyle.Bold;Add(label);
-            Add(new Label(ownStage==null?"? Colony unknown":"⌂ "+ownStage){pickingMode=PickingMode.Ignore});
+            style.width=118;style.minWidth=110;style.maxWidth=180;style.minHeight=64;style.flexGrow=1;style.flexShrink=0;AddToClassList("planet-selector-segment");
+            style.marginRight=2;style.marginBottom=2;style.paddingLeft=8;style.paddingRight=6;style.paddingTop=6;style.paddingBottom=6;
+            style.borderLeftWidth=0;style.borderBottomColor=colonyRail;
+            style.borderTopWidth=style.borderRightWidth=0;style.borderBottomWidth=4;
+            var label=new Label((ownStage==null?"":"⌂ ")+planet.DisplayName){pickingMode=PickingMode.Ignore};label.style.whiteSpace=WhiteSpace.Normal;label.style.unityFontStyleAndWeight=FontStyle.Bold;Add(label);
             Add(new Label(planet.ActiveSurveyId!=null?"Survey in progress · "+planet.CompletedSurveyWeeks+" weeks":planet.Surveyed?"Environment known":"Not surveyed"){pickingMode=PickingMode.Ignore});
-            tooltip="Click / Space to focus · Double-click / Enter to open "+planet.DisplayName;
+            tooltip=(ownStage==null?"No owned settlement in this observation":ownStage)+" · Click / Space to focus · Double-click / Enter to open "+planet.DisplayName;
             BindActivation(this,focus,open,activation);
             RegisterCallback<FocusInEvent>(_=>{keyboardFocus=true;Refresh();});
             RegisterCallback<FocusOutEvent>(_=>{keyboardFocus=false;Refresh();});Refresh();
@@ -74,8 +73,8 @@ namespace HobbyDS9.UnityReview
         private void Refresh()
         {
             var edge=keyboardFocus?new Color(.88f,.84f,1):selected?new Color(.95f,.72f,.39f):new Color(.17f,.25f,.34f);
-            style.borderTopColor=style.borderBottomColor=style.borderRightColor=edge;style.borderLeftColor=colonyRail;
-            style.backgroundColor=selected?new Color(.12f,.14f,.19f):new Color(.035f,.065f,.09f);
+            style.borderBottomColor=keyboardFocus||selected?edge:colonyRail;
+            style.backgroundColor=selected?new Color(.85f,.57f,.31f):new Color(.19f,.20f,.31f);style.color=selected?new Color(.03f,.05f,.08f):new Color(.92f,.94f,1);
         }
     }
 }

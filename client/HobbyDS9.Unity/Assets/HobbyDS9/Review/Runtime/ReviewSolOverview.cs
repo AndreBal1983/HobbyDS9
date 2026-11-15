@@ -21,25 +21,38 @@ namespace HobbyDS9.UnityReview
         private Label? portraitUnavailable;
         private readonly Action<float,float> onView;
         private readonly PlanetActivationScope activation;
+        private readonly IReadOnlyDictionary<string,long>? meanDistances;
+        private readonly Action<bool,bool>? onFrame;
+        private bool innerFrame,focusFrame;
         private ReviewSolStage? stage;
         private string selected;
         private float yaw,zoom,startYaw,targetYaw,animationStart;
         private bool disposed,failed,queued,animating,reducedMotion,pendingFocus;
         internal static bool HasReference(ColonisationPlanetSnapshot body)=>PlanetVisualProfile.From(body).AuthoredMap!=null;
         internal ReviewSolOverview(IEnumerable<ColonisationPlanetSnapshot> bodies,string selectedPlanet,float yaw,float zoom,
+            Action<ColonisationPlanetSnapshot> onSelect,Action<float,float> onView,Action<ColonisationPlanetSnapshot> onOpen,
+            bool reducedMotion=false,Action<bool>? onReducedMotion=null,PlanetActivationScope? activation=null)
+            :this(bodies,selectedPlanet,yaw,zoom,onSelect,onView,onOpen,reducedMotion,onReducedMotion,activation,null,false,false,null){}
+        internal ReviewSolOverview(IEnumerable<ColonisationPlanetSnapshot> bodies,string selectedPlanet,float yaw,float zoom,
             Action<ColonisationPlanetSnapshot> onSelect,Action<float,float> onView,
-            Action<ColonisationPlanetSnapshot> onOpen,bool reducedMotion=false,Action<bool>? onReducedMotion=null,PlanetActivationScope? activation=null)
+            Action<ColonisationPlanetSnapshot> onOpen,bool reducedMotion,Action<bool>? onReducedMotion,PlanetActivationScope? activation,IReadOnlyDictionary<string,long>? meanDistances,bool innerFrame,bool focusFrame,Action<bool,bool>? onFrame)
         {
-            this.activation=activation??new PlanetActivationScope(this);
+            this.activation=activation??new PlanetActivationScope(this);this.meanDistances=meanDistances;this.innerFrame=innerFrame;this.focusFrame=focusFrame;this.onFrame=onFrame;
             this.bodies=bodies.ToArray();this.yaw=yaw;this.zoom=zoom;selected=selectedPlanet;this.onView=onView;this.reducedMotion=reducedMotion;
-            name="sol-overview";style.flexGrow=1;style.flexBasis=520;style.minWidth=0;
+            name="sol-overview";style.flexGrow=0;style.flexShrink=0;style.minWidth=0;
             var title=new Label("System overview");title.AddToClassList("console-section");Add(title);
-            Add(new Label("Schematic orbits and sizes · Only disclosed bodies"));
+            var scale=new Label(meanDistances==null?"Schematic orbit spacing · Exaggerated body sizes · Only disclosed bodies":"Mean Sun-distance radii · Exaggerated body sizes · Not current positions"){name="system-scale-caption"};
+            scale.style.whiteSpace=WhiteSpace.Normal;scale.style.flexShrink=0;Add(scale);
             viewControls=new Foldout{text="View controls",value=false,name="system-view-controls"};Add(viewControls);
             controls=new VisualElement();controls.style.flexDirection=FlexDirection.Row;controls.style.flexWrap=Wrap.Wrap;viewControls.Add(controls);
             Control("Rotate left",()=>SetView(yaw-25,zoom));Control("Rotate right",()=>SetView(yaw+25,zoom));
-            Control("Zoom out",()=>SetView(yaw,zoom-.14f));Control("Zoom in",()=>SetView(yaw,zoom+.14f));
-            Control("Overview",()=>SetView(0,1));
+            Control("Zoom out",()=>SetView(yaw,zoom/1.3f));Control("Zoom in",()=>SetView(yaw,zoom*1.3f));
+            void Frame(bool inner,bool focus){this.innerFrame=inner;this.focusFrame=focus;this.onFrame?.Invoke(inner,focus);SetView(yaw,1);}
+            var framing=new VisualElement{name="system-framing-controls"};framing.style.flexDirection=FlexDirection.Row;framing.style.flexWrap=Wrap.Wrap;framing.style.flexShrink=0;Add(framing);
+            void FrameControl(string text,Action action){var button=new Button(()=>{if(!disposed&&!failed)action();}){text=text};button.style.minHeight=44;button.style.marginRight=4;framing.Add(button);}
+            FrameControl("Overview",()=>Frame(false,false));
+            if(meanDistances!=null)FrameControl("Inner system",()=>Frame(true,false));
+            FrameControl("Focus selected",()=>Frame(false,true));
             var motion=new Toggle("Reduce motion"){value=reducedMotion,name="system-reduce-motion"};controls.Add(motion);
             motion.RegisterValueChangedCallback(e=>{this.activation.Cancel();this.reducedMotion=e.newValue;onReducedMotion?.Invoke(e.newValue);if(e.newValue&&animating){yaw=targetYaw;animating=false;onView(yaw,zoom);QueueDraw();}});
             viewport=new VisualElement{name="sol-viewport"};viewport.style.height=340;viewport.style.flexShrink=0;viewport.style.overflow=Overflow.Hidden;
@@ -64,7 +77,7 @@ namespace HobbyDS9.UnityReview
             }
             unavailable=new Label("3D overview unavailable. Use the disclosed body list."){name="sol-overview-unavailable"};unavailable.style.display=DisplayStyle.None;Add(unavailable);
             var credits=new Foldout{text="Surface map credits",value=false};
-            credits.Add(new Label("Earth/Mars surface maps: Solar System Scope · CC BY 4.0. Other terrain is decorative."));Add(credits);
+            credits.Add(new Label("Surface maps: Solar System Scope · CC BY 4.0. Other terrain is decorative."));Add(credits);
             viewport.RegisterCallback<GeometryChangedEvent>(e=>{if(e.oldRect.size!=e.newRect.size)QueueDraw();});
             RegisterCallback<GeometryChangedEvent>(e=>{
                 if(ReferenceEquals(e.target,this))viewport.style.height=Mathf.Clamp(e.newRect.width/2.1f,260,420);
@@ -87,7 +100,7 @@ namespace HobbyDS9.UnityReview
         private void Control(string text,Action action)
         {var b=new Button(()=>{if(!disposed&&!failed)action();}){text=text};b.style.minHeight=44;b.style.marginRight=4;controls.Add(b);}
         private void SetView(float angle,float scale)
-        {activation.Cancel();animating=false;pendingFocus=false;yaw=Mathf.Repeat(angle+180,360)-180;zoom=Mathf.Clamp(scale,.76f,1.42f);onView(yaw,zoom);QueueDraw();}
+        {activation.Cancel();animating=false;pendingFocus=false;yaw=Mathf.Repeat(angle+180,360)-180;zoom=Mathf.Clamp(scale,.5f,64f);onView(yaw,zoom);QueueDraw();}
         private void QueueDraw()
         {
             if(disposed||failed||queued)return;queued=true;
@@ -99,7 +112,7 @@ namespace HobbyDS9.UnityReview
             float width=viewport.layout.width,height=viewport.layout.height;if(!(width>=80&&height>=80))return;
             var shader=Resources.Load<Shader>("SystemBodyArt/ProceduralSurface");
             if(stage==null&&(shader==null||!shader.isSupported||SystemInfo.graphicsDeviceType==UnityEngine.Rendering.GraphicsDeviceType.Null)){Fallback();return;}
-            try {stage??=new ReviewSolStage(shader!,bodies);}
+            try {stage??=new ReviewSolStage(shader!,bodies,meanDistances);}
             catch(Exception){Fallback();return;}
             if(pendingFocus)
             {
@@ -113,6 +126,8 @@ namespace HobbyDS9.UnityReview
                 if(t>=1)animating=false;
             }
             onView(yaw,zoom);
+            stage.FrameRadius=focusFrame?Mathf.Max(stage.Radius(selected)*.22f,3.5f):innerFrame&&stage.MeanDistances?stage.InnerRadius:null;
+            stage.FocusSelected=focusFrame;
             try {if(!stage.Render(width/height,yaw,zoom,selected)){Fallback();return;}}
             catch(Exception){Fallback();return;}
             image.image=stage.Texture;

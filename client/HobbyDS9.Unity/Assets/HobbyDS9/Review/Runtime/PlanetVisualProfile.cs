@@ -41,7 +41,9 @@ namespace HobbyDS9.UnityReview
                 !planet.Atmosphere!.EndsWith("vacuum",StringComparison.OrdinalIgnoreCase) &&
                 !planet.Atmosphere.Equals("none",StringComparison.OrdinalIgnoreCase) && planet.Pressure>0 && kind!=PlanetSurfaceKind.Airless;
             // Exact canonical IDs, never a localized display-name match.
-            string? map=planet.PlanetId=="planet.sol"?"earth_daymap":planet.PlanetId=="planet.mars"?"mars":null;
+            string? map=planet.PlanetId switch {
+                "planet.sol"=>"earth_daymap","planet.mars"=>"mars","planet.mercury"=>"mercury","planet.venus"=>"venus_atmosphere",
+                "planet.jupiter"=>"jupiter","planet.saturn"=>"saturn","planet.uranus"=>"uranus","planet.neptune"=>"neptune",_=>null};
             return new PlanetVisualProfile(kind,StableSeed(planet.SystemId+"/"+planet.BodyId+"/"+planet.PlanetId),air,
                 kind==PlanetSurfaceKind.Airless?"Airless world":kind==PlanetSurfaceKind.Unclassified?"Class "+planet.PlanetClass:kind.ToString()+" world",map);
         }
