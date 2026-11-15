@@ -1,5 +1,7 @@
 # ENG-UI-02 GUI candidate
 
+Superseded presentation details: the [15 November owner polish](eng-ui-02-polish-20261115.md) uses side-by-side columns, hides unavailable projects and replaces native menus. The earlier preview below records the previous all-project/full-width proposal, not the current eligibility or layout contract.
+
 15 November 2026. Source candidate; native acceptance pending. The approved two-section layout supersedes the earlier catalogue/detail split. [Reviewable layout preview](mockups/engineering-two-sections.html) uses the 20 authored project names and proposed presentation categories; its commands are disabled and campaign metrics are labelled placeholders. It is not a gameplay screenshot or native rendering evidence.
 
 Exactly **New engineering projects** and **Technology refinement**, each with independent search/category state. Current content maps 8 NewCapability and 12 Refinement entries; CivilApplication uses the first section, and unknown category IDs remain visible under Other technologies. Categories are presentation suggestions, not approved simulation taxonomy. Tabs remain the navigation between Science and Engineering. The shared allocation control stays in Science's R&D direction panel; the Engineering-only allocation page and redundant crosslinks are removed.

@@ -38,6 +38,21 @@ public sealed class EngineeringPlayableContentTests
         HomeCivilizationDefinitionIds=new(){"civilization.federation","civilization.cardassian"}}};
     byte[] Wire(ICampaignColonisationCycleSession s)=>codec.EncodeCycleRoot(s.ExportCycleSave());
 
+    [Fact]public void VisibleProjectsFollowFullAuthoritativeEligibilityAndKeepActiveAndCompletedWork()
+    {
+        var locked=CampaignColonisationCycleApplication.StartCycleGame(Package(),Settings()).CaptureStrategy(Human).Research.Engineering;
+        Assert.Equal(20,locked.Count);Assert.DoesNotContain(locked,p=>EngineeringPresentation.Visible(p,true));
+        var session=CampaignColonisationCycleApplication.StartCycleGame(Package(scienceReady:true),Settings());var cards=session.CaptureStrategy(Human).Research.Engineering;
+        Assert.Contains(cards,p=>p.CanTarget&&EngineeringPresentation.Visible(p,true));
+        Assert.All(cards.Where(p=>p.ScienceSatisfied.All(v=>v)&&p.PrerequisitesSatisfied.Any(v=>!v)),p=>Assert.False(EngineeringPresentation.Visible(p,true)));
+        var scout=cards.Single(p=>p.Definition.DefinitionId.Value=="engineering.advanced-starship-engineering");Assert.True(scout.CanTarget);Assert.False(EngineeringPresentation.Visible(scout,true));
+        var project=cards.First(p=>p.CanTarget&&EngineeringPresentation.SupportedOutput(p,true));var stamp=session.CaptureStatus();
+        Assert.True(session.SubmitStrategicCommand(new(){ActorCivilizationId=Human,CommandId="command.visible-project",ExpectedTurn=stamp.Turn,ExpectedRevision=stamp.CampaignRevision,Kind=CommandKind.SetEngineeringTarget,SetEngineeringTarget=new(){TargetDefinitionId=project.Definition.DefinitionId.Value}}).Accepted);
+        var active=session.CaptureStrategy(Human).Research.Engineering.Single(p=>p.IsTarget);Assert.False(active.CanTarget);Assert.True(EngineeringPresentation.Visible(active,true));
+        stamp=session.CaptureStatus();Assert.True(session.AdvanceTurn(stamp.Turn,stamp.CampaignRevision).Accepted);
+        var completed=session.CaptureStrategy(Human).Research.Engineering.Single(p=>p.Definition.DefinitionId==project.Definition.DefinitionId);Assert.Equal(EngineeringMaturityBand.Mature,completed.Band);Assert.True(EngineeringPresentation.Visible(completed,true));
+    }
+
     [Theory][InlineData(30)][InlineData(250)]
     public void ActualPlayableCompositionExposesTwentyLockedProjectsAndRejectsOtherContentSaves(int size)
     {

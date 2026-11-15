@@ -32,6 +32,7 @@ namespace HobbyDS9.UnityReview
         private void ShowCampaignDialog(string title,string detail,string safeLabel,Action? safe,
             params CampaignDialogAction[] choices)
         {
+            ReviewLcarsSelector.CloseOpen();
             if(confirmation!=null||campaignBusyToken!=null||model==null||model.Busy||model.Closed)return;
             var owner=model;var controller=owner.Current;var frame=controller.Frame;var epoch=viewEpoch;
             Action? selected=null;

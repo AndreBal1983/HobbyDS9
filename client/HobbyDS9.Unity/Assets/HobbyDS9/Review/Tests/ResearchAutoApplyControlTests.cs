@@ -53,6 +53,10 @@ namespace HobbyDS9.UnityReview.Tests
             ReviewPlayerView? player=null;
             player=new ReviewPlayerView(model,workspace,(p,t,a)=>{var b=new Button(a){text=t};p.Add(b);return b;},a=>{a();player!.Render(host,ReviewWorkspacePage.Research);},(_,__)=>Assert.Fail("Allocations must not confirm"),_=>{},(_,__,___)=>{},(_,__)=>{});
             player.Render(host,ReviewWorkspacePage.Research);yield return null;yield return null;
+            var lockToggle=host.Q<Toggle>("science-lock-Computing");var lockFrame=model.Current.Frame;
+            using(var e=NavigationSubmitEvent.GetPooled()){e.target=lockToggle;lockToggle.SendEvent(e);}yield return null;
+            Assert.That(model.ResearchInputs()!.IsLocked(ScienceDiscipline.Computing),Is.True);Assert.That(model.Current.Frame,Is.SameAs(lockFrame));
+            Assert.That(host.Q<Toggle>("science-lock-Computing").tooltip,Does.Contain("Unlock allocation"));Assert.That(host.Q("lcars-icon-LockClosed"),Is.Not.Null);
             var frame=model.Current.Frame;var before=model.ResearchInputs()!.Weight(ScienceDiscipline.Construction);var bar=host.Q<ReviewAllocationBar>("science-bar-Construction");bar.Focus();
             Key(bar,KeyCode.RightArrow);Key(bar,KeyCode.RightArrow);Key(bar,KeyCode.RightArrow);
             Assert.That(model.Current.Frame,Is.SameAs(frame));Assert.That(model.ResearchCommitPending,Is.True);

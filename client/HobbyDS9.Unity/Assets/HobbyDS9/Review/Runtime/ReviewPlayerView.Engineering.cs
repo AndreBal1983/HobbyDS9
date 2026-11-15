@@ -10,7 +10,7 @@ namespace HobbyDS9.UnityReview
 {
     public sealed partial class ReviewPlayerView
     {
-        private static string EngineeringState(EngineeringCardSnapshot p)=>p.Band==EngineeringMaturityBand.Mature?"Completed":p.IsTarget?"In progress":p.CanTarget?"Available":
+        private static string EngineeringState(EngineeringCardSnapshot p)=>p.Band==EngineeringMaturityBand.Mature?"Completed":p.IsTarget?"Active":p.CanTarget?"Available":
             (p.UnavailableReason==CommandErrorCode.EngineeringScienceRequirementMissing||p.UnavailableReason==CommandErrorCode.EngineeringPrerequisiteMissing?"Locked · ":"Unavailable · ")+Reason(p.UnavailableReason);
         private void Engineering(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
@@ -28,31 +28,36 @@ namespace HobbyDS9.UnityReview
             Metric("At current accepted allocation",Units(r.EngineeringAllocation)+" points / week","engineering-income");
             Metric("Banked Engineering",r.EngineeringReserveConceptual+" Engineering points","engineering-reserve");
             Metric("Current project",current?.Definition.DisplayName??"No active project","engineering-active-name");
-            var sections=new ScrollView(ScrollViewMode.Vertical){name="engineering-sections"};sections.AddToClassList("engineering-sections");page.Add(sections);
+            var sections=new VisualElement{name="engineering-sections"};sections.AddToClassList("engineering-sections");page.Add(sections);
+            sections.RegisterCallback<GeometryChangedEvent>(e=>{if(ReferenceEquals(e.target,sections))sections.EnableInClassList("engineering-stacked",e.newRect.width<600);});
             Section(false,"New engineering projects","new");Section(true,"Technology refinement","refinement");
-            var receipts=new Foldout{text="Latest turn: Engineering",value=false};sections.Add(receipts);EngineeringTurnReport(receipts,r);
+            var receipts=new Foldout{text="Latest turn: Engineering",value=false};page.Add(receipts);EngineeringTurnReport(receipts,r);
             void Section(bool refinement,string heading,string key)
             {
-                var projects=r.Engineering.Where(p=>EngineeringPresentation.IsRefinement(p.Definition.Kind)==refinement).OrderBy(p=>p.Definition.DisplayName,StringComparer.Ordinal).ToList();
+                var projects=r.Engineering.Where(p=>EngineeringPresentation.IsRefinement(p.Definition.Kind)==refinement&&EngineeringPresentation.Visible(p,model.ColonisationCycleCampaign)).OrderBy(p=>p.Definition.DisplayName,StringComparer.Ordinal).ToList();
                 var section=new VisualElement{name="engineering-section-"+key};section.AddToClassList("engineering-group");sections.Add(section);
-                Text(section,heading+" · "+projects.Count,"console-section");
+                var title=Text(section,heading+" · "+projects.Count,"console-section");
                 string Search()=>refinement?workspace.EngineeringRefinementSearch:workspace.EngineeringNewSearch;
                 string Category()=>refinement?workspace.EngineeringRefinementCategory:workspace.EngineeringNewCategory;
-                var filters=Row(section);filters.style.flexWrap=Wrap.Wrap;
-                var search=new TextField("Search projects"){name="engineering-search-"+key,value=Search()};search.style.minWidth=240;search.style.maxWidth=360;search.style.flexGrow=1;filters.Add(search);
+                var filters=new VisualElement();filters.AddToClassList("engineering-filters");section.Add(filters);
+                var search=new TextField("Search projects"){name="engineering-search-"+key,value=Search()};filters.Add(search);
                 var categories=new List<string>{"All technologies"};categories.AddRange(projects.Select(p=>EngineeringPresentation.Category(p.Definition.DefinitionId.Value)).Distinct().OrderBy(v=>v,StringComparer.Ordinal));
-                var category=new DropdownField("Technology",categories,Math.Max(0,categories.IndexOf(Category()))){name="engineering-category-"+key};filters.Add(category);
-                var grid=new VisualElement{name="engineering-projects-"+key};grid.AddToClassList("engineering-project-grid");section.Add(grid);
+                if(!categories.Contains(Category())){if(refinement)workspace.EngineeringRefinementCategory="All technologies";else workspace.EngineeringNewCategory="All technologies";}
+                Action filter=()=>{};
+                var category=new ReviewLcarsSelector("Technology",categories,Category(),value=>{if(Current()){if(refinement)workspace.EngineeringRefinementCategory=value;else workspace.EngineeringNewCategory=value;filter();}},Current){name="engineering-category-"+key};filters.Add(category);category.SetEnabled(categories.Count>1);
+                var grid=new ScrollView(ScrollViewMode.Vertical){name="engineering-projects-"+key,horizontalScrollerVisibility=ScrollerVisibility.Hidden,verticalScrollerVisibility=ScrollerVisibility.Auto};grid.AddToClassList("engineering-project-grid");section.Add(grid);
                 var entries=new List<(EngineeringCardSnapshot project,Button button)>();
                 foreach(var p in projects)
                 {
                     var id=p.Definition.DefinitionId.Value;
                     var goal=Btn(grid,"","engineering-goal-"+id,()=>{if(Current()){workspace.EngineeringProjectId=id;Open(p);}});goal.AddToClassList("engineering-goal");
                     goal.EnableInClassList("selected-nav",p.IsTarget);goal.tooltip=p.Definition.EffectSummary;
-                    Text(goal,p.Definition.DisplayName,"engineering-goal-name");Text(goal,EngineeringPresentation.Category(id)+" · "+EngineeringState(p),"engineering-goal-state");
+                    Text(goal,p.Definition.DisplayName,"engineering-goal-name");
+                    var state=Text(goal,EngineeringState(p)+(EngineeringPresentation.SupportedOutput(p,model.ColonisationCycleCampaign)?"":" · catalogue output unavailable"),"engineering-goal-state");
+                    state.AddToClassList(p.IsTarget?"engineering-state-active":p.Band==EngineeringMaturityBand.Mature?"engineering-state-completed":"engineering-state-available");
                     Text(goal,Units(p.Progress)+" / "+Units(p.Cost)+" points · "+p.MaturityPercent+"% complete","engineering-goal-progress");entries.Add((p,goal));
                 }
-                var empty=Text(section,projects.Count==0?"No projects in this section.":"No projects match these filters.",id:"engineering-filter-empty-"+key);
+                var empty=Text(grid,"No projects available.",id:"engineering-filter-empty-"+key);
                 void Filter()
                 {
                     var count=0;
@@ -64,9 +69,10 @@ namespace HobbyDS9.UnityReview
                         row.button.style.display=match?DisplayStyle.Flex:DisplayStyle.None;if(match)count++;
                     }
                     empty.style.display=count==0?DisplayStyle.Flex:DisplayStyle.None;
+                    title.text=heading+" · "+count;
                 }
                 search.RegisterValueChangedCallback(e=>{if(Current()){if(refinement)workspace.EngineeringRefinementSearch=e.newValue;else workspace.EngineeringNewSearch=e.newValue;Filter();}});
-                category.RegisterValueChangedCallback(e=>{if(Current()){if(refinement)workspace.EngineeringRefinementCategory=e.newValue;else workspace.EngineeringNewCategory=e.newValue;Filter();}});Filter();
+                filter=Filter;Filter();
             }
             void Select(string? target)
             {
@@ -78,8 +84,7 @@ namespace HobbyDS9.UnityReview
             {
                 var parts=new List<string>{EngineeringState(selected)+" · "+EngineeringPresentation.Category(selected.Definition.DefinitionId.Value)};
                 var scoutExcluded=model.ColonisationCycleCampaign&&selected.Definition.DefinitionId.Value=="engineering.advanced-starship-engineering";
-                parts.Add("Expected output — authored capability\n"+selected.Definition.EffectSummary+"\nThe current Research projection does not expose an output version or parent link. Equipment-version maturity is unavailable.");
-                if(scoutExcluded)parts.Add("Advanced Scout is unavailable in this campaign's construction catalogue.");
+                parts.Add(scoutExcluded?"Expected output unavailable\nAdvanced Scout is unavailable in this campaign's construction catalogue. This retained/completed project does not create a buildable Scout.":"Expected output — authored capability\n"+selected.Definition.EffectSummary+"\nThe current Research projection does not expose an output version or parent link. Equipment-version maturity is unavailable.");
                 if(frame.Demo!=null)parts.Add("Demo construction: "+string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct())+" only. Other class unlocks are unavailable here.");
                 parts.Add("Project completion: "+selected.MaturityPercent+"% · "+selected.Band+"\nEarned progress: "+Units(selected.Progress)+" / "+Units(selected.Cost)+" Engineering points\nProject cost: "+Units(selected.Cost)+" Engineering points");
                 if(selected.Band!=EngineeringMaturityBand.Mature&&(selected.IsTarget||selected.CanTarget))

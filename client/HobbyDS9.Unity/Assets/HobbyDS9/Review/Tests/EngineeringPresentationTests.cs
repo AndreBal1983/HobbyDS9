@@ -38,15 +38,15 @@ namespace HobbyDS9.UnityReview.Tests
         [Test] public void ActualProjectsAppearOnceInTheSearchableWorkbenchWithoutSubmittingCommands()
         {
             var frame=model.Current.Frame;var projects=frame.Strategy!.Research.Engineering;Draw();
-            var list=root.Q<ScrollView>("engineering-sections");Assert.That(list,Is.Not.Null);
+            var list=root.Q("engineering-sections");Assert.That(list,Is.Not.Null);
             var goals=list.Query<Button>(className:"engineering-goal").ToList();
-            Assert.That(goals.Count,Is.EqualTo(projects.Count));
+            Assert.That(goals.Count,Is.EqualTo(projects.Count(p=>EngineeringPresentation.Visible(p,model.ColonisationCycleCampaign))));
             Assert.That(goals.Select(g=>g.name),Is.Unique);
             Assert.That(root.Q<TextField>("engineering-search-new"),Is.Not.Null);
-            var filter=root.Q<DropdownField>("engineering-category-new");Assert.That(filter,Is.Not.Null);
-            Assert.That(filter.choices.First(),Is.EqualTo("All technologies"));
-            Assert.That(root.Q<TextField>("engineering-search-refinement"),Is.Not.Null);Assert.That(root.Q<DropdownField>("engineering-category-refinement"),Is.Not.Null);
-            foreach(var project in projects)
+            var filter=root.Q<ReviewLcarsSelector>("engineering-category-new");Assert.That(filter,Is.Not.Null);
+            Assert.That(filter.Choices.First(),Is.EqualTo("All technologies"));
+            Assert.That(root.Q<TextField>("engineering-search-refinement"),Is.Not.Null);Assert.That(root.Q<ReviewLcarsSelector>("engineering-category-refinement"),Is.Not.Null);
+            foreach(var project in projects.Where(p=>EngineeringPresentation.Visible(p,model.ColonisationCycleCampaign)))
             {
                 var goal=list.Q<Button>("engineering-goal-"+project.Definition.DefinitionId);
                 Assert.That(goal,Is.Not.Null);
@@ -60,7 +60,7 @@ namespace HobbyDS9.UnityReview.Tests
             var summary=root.Q("engineering-current-summary");Assert.That(summary,Is.Not.Null);
             var current=research.Engineering.FirstOrDefault(p=>p.IsTarget);
             Assert.That(summary.Q<Label>("engineering-active-name").text,Is.EqualTo(current?.Definition.DisplayName??"No active project"));
-            Assert.That(root.Q<ScrollView>("engineering-sections").Query<Button>(className:"engineering-goal").ToList().Count,Is.EqualTo(research.Engineering.Count));
+            Assert.That(root.Q("engineering-sections").Query<Button>(className:"engineering-goal").ToList().Count,Is.EqualTo(research.Engineering.Count(p=>EngineeringPresentation.Visible(p,model.ColonisationCycleCampaign))));
             Assert.That(root.Q("engineering-selected-detail"),Is.Null);
             Assert.That(root.Query<Foldout>().ToList().Any(f=>f.text=="Latest turn: Engineering"),Is.True);
             Assert.That(performed,Is.Zero);Assert.That(confirmed,Is.Zero);

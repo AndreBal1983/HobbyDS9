@@ -16,4 +16,6 @@
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewPlanetPortrait.cs" /></ItemGroup>
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewPlayerView.Engineering.cs" /></ItemGroup>
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewSolOverview.cs;../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewSolStage.cs;../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/PlanetBodyCard.cs" /></ItemGroup>
+  <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewLcarsSelector.cs" /></ItemGroup>
+  <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewIcon.cs" /></ItemGroup>
 </Project>
