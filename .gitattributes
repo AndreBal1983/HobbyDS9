@@ -35,3 +35,5 @@ client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewPackages/**/*.json 
 # exact bytes without changing the LF authoring sources or existing save hashes.
 client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationV1/*.json text eol=crlf
 client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRosterV2/*.json text eol=crlf
+# The V3 particle identity was authored from CRLF bytes, including on Unix checkouts.
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentationV3/particles.json text eol=crlf
