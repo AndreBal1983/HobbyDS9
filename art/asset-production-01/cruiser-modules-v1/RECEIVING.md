@@ -1,0 +1,17 @@
+# Original cruiser · separated existing components
+
+Proposed art-only interface,13 November2026. This separates geometry that already exists in the original cruiser candidate. It adds no component design, variant, equipment capability or gameplay socket. It does not replace the current external Galaxy modules or imply compatibility with their old socket offsets.
+
+`OriginalCruiser_Nacelle_A` and `_B` are984triangles each; `_Deflector` is2,336. `_Remainder` is the5,580-triangle parent body; `ReassembledProof` combines all four groups. The sum is exactly the original9,884triangles. No faces are cut, added or simplified. UVs, original atlas roles, normals and silhouette are retained. Parts are partitioned by existing disconnected authoring components, not clipped through a connected hull surface.
+
+Each standalone module has a centred local pivot, neutral rotation/scale and metre coordinates. The remainder deliberately keeps the complete hull's parent origin. `art-interface.json` records each parent-space translation and an explicitly labelled receiver-basis candidate. A/B means authoring negative/positive X; port/starboard naming waits for actual native import orientation. GUI must transform source coordinates through the measured full imported FBX hierarchy exactly once. Do not add an unexplained100x or second axis correction.
+
+The four explicit transforms reassemble the standalone files into the original complete hull. Independent raw-GLB verification compares every triangle and atlas UV against the parent, both for the exported assembly and for standalone files plus interface transforms. Recorded maximum position error is about7.2e−6metres from float precision. This is art reassembly evidence, not a simulation equipment contract.
+
+All parts use one opaque `Material_0`, with exact copies of the cruiser's four512×256 original atlas PNGs. `material-contract.json` retains their complete colour/roughness/metallic/normal/emission recipe. Explicit packed-ORM and emission binding is required by the current PreviewStudio path; do not rely on generated FBX material names alone. The full assembly has four visible mesh nodes/material draws; the existing complete one-slot hull remains preferable for a fixed exterior preview. No rig, animation, collider, particle, weapon origin or authority is supplied.
+
+The ORM layout is the PreviewStudio/glTF roughnessG/metallicB contract, not a promise of direct packed-map compatibility with a different world shader. GUI's already queued PR108 receives the factor-only eight-slot v1 hulls; these separated parts do not require changing that native QA batch.
+
+FBX is the current Unity receiving route; GLB is self-contained interchange/evidence. The blend source preserves the named parts in their assembled pose. Actual PBR renders include each module and the reassembled exterior; they are Blender CPU proofs. Native axis/material/UV/tangent checks, module-control integration, lifetime/disposal, framing/performance and owner acceptance remain open. Current activity exteriors intentionally hide their module-study controls; these art files do not change that behavior.
+
+Provenance: existing original procedural cruiser from `hulls-runtime-v2`, derived from the original v1 recipe, with input/source/atlas hashes recorded. No external mesh, reference pixel or new texture source was used. The previously approved external hull replacements remain separately unreceived.

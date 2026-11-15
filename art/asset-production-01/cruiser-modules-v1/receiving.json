@@ -1,0 +1,361 @@
+{
+  "status": "not imported; QA/GUI own receiving",
+  "files": [
+    {
+      "path": "Models/OriginalCruiser_Deflector.fbx",
+      "sha256": "ce18475aa7a4baf7aa367fa8069539a94e94c6d45f387920f3e3bb655d357f3c",
+      "bytes": 123724,
+      "proposed_guid": "ed9591835f12dd85b72290952eeda915",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Models/OriginalCruiser_Deflector.fbx",
+      "purpose": "Separated existing original components; unbound art interface"
+    },
+    {
+      "path": "Models/OriginalCruiser_Deflector.glb",
+      "sha256": "c6d4aca4f87c881ad8c2e52b4c89252335d9fe32af85cd73808defa856a717a5",
+      "bytes": 91196,
+      "proposed_guid": "9a4a829066a8a06822329ad45e567b9f",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Models/OriginalCruiser_Deflector.glb",
+      "purpose": "Separated existing original components; unbound art interface"
+    },
+    {
+      "path": "Models/OriginalCruiser_Nacelle_A.fbx",
+      "sha256": "372eb55a87a33be8cee5afba0651e0d673eba6de7aef7337e9d09f62840a5d69",
+      "bytes": 64652,
+      "proposed_guid": "c234a2b66f531020195d5f5ea5267c5c",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Models/OriginalCruiser_Nacelle_A.fbx",
+      "purpose": "Separated existing original components; unbound art interface"
+    },
+    {
+      "path": "Models/OriginalCruiser_Nacelle_A.glb",
+      "sha256": "b588b440dd050b941bcc326de574f92848a2a1502fc35af4c8b4a831655bcbcd",
+      "bytes": 58648,
+      "proposed_guid": "2e4d8c35825648f2523434dc3f87aacc",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Models/OriginalCruiser_Nacelle_A.glb",
+      "purpose": "Separated existing original components; unbound art interface"
+    },
+    {
+      "path": "Models/OriginalCruiser_Nacelle_B.fbx",
+      "sha256": "2c30b4aca9c9005b58c6e4169bb8fe062d99f3fca5e19135c6c48ca8f884eb3b",
+      "bytes": 64716,
+      "proposed_guid": "027b1a81f69305a2ebd6701aae65718d",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Models/OriginalCruiser_Nacelle_B.fbx",
+      "purpose": "Separated existing original components; unbound art interface"
+    },
+    {
+      "path": "Models/OriginalCruiser_Nacelle_B.glb",
+      "sha256": "e4b901a966fcd9d0be7fdb69cfc1d6b974edcb086804e148935ae2c6f5b1c963",
+      "bytes": 58648,
+      "proposed_guid": "290696bd7e4ef6ab4da1f48ee02c051b",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Models/OriginalCruiser_Nacelle_B.glb",
+      "purpose": "Separated existing original components; unbound art interface"
+    },
+    {
+      "path": "Models/OriginalCruiser_ReassembledProof.fbx",
+      "sha256": "445055223bf814a03cc4902566c078c48693ac28909808568c4bc770b614ad31",
+      "bytes": 461132,
+      "proposed_guid": "919222a93eb1431b79e9237eec22ade5",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Models/OriginalCruiser_ReassembledProof.fbx",
+      "purpose": "Separated existing original components; unbound art interface"
+    },
+    {
+      "path": "Models/OriginalCruiser_ReassembledProof.glb",
+      "sha256": "5bbf599e3f0c4e50ea055635967d7e4bf7cc2a8709a120a7fb2225c60adebd47",
+      "bytes": 477040,
+      "proposed_guid": "9b5d0da011b0bcd8cd971ce6121a8080",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Models/OriginalCruiser_ReassembledProof.glb",
+      "purpose": "Separated existing original components; unbound art interface"
+    },
+    {
+      "path": "Models/OriginalCruiser_Remainder.fbx",
+      "sha256": "02888bf2a81097d650e4132f8a3fe04bd0f01c5628ad945ed7769e02aaff4c0e",
+      "bytes": 263708,
+      "proposed_guid": "558970592e65752f1680b3680713e292",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Models/OriginalCruiser_Remainder.fbx",
+      "purpose": "Separated existing original components; unbound art interface"
+    },
+    {
+      "path": "Models/OriginalCruiser_Remainder.glb",
+      "sha256": "005df5474a46975489d6c8ed5f82a6fef35cb9372b3206b2d4461a547700d5c3",
+      "bytes": 298300,
+      "proposed_guid": "43f733a95cf664089523c30dbd05b73f",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Models/OriginalCruiser_Remainder.glb",
+      "purpose": "Separated existing original components; unbound art interface"
+    },
+    {
+      "path": "Textures/Cruiser_BaseColor.png",
+      "sha256": "5609104d73d4e1cf21066a80949e52b29b1bae69cd6ccd880834e8d23b6237f0",
+      "bytes": 2261,
+      "proposed_guid": "6a382f5c74298ca19bb67f8e991ed959",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Textures/Cruiser_BaseColor.png",
+      "purpose": "Separated existing original components; unbound art interface",
+      "image_size": [
+        512,
+        256
+      ]
+    },
+    {
+      "path": "Textures/Cruiser_Emission.png",
+      "sha256": "b83a4a03108b17df7e8697bc6ec1de52fbf31801dfd44c7156657a8df1b94cd0",
+      "bytes": 1518,
+      "proposed_guid": "b3cc9711d1437b8d281750f4b32f7957",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Textures/Cruiser_Emission.png",
+      "purpose": "Separated existing original components; unbound art interface",
+      "image_size": [
+        512,
+        256
+      ]
+    },
+    {
+      "path": "Textures/Cruiser_Normal.png",
+      "sha256": "0e2e843ec294d0a5501fa9c9f79fac41ccd2e108fa1ec68392f617e53ffe80d9",
+      "bytes": 951,
+      "proposed_guid": "d7e4126a895812447437260bf1b1a406",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Textures/Cruiser_Normal.png",
+      "purpose": "Separated existing original components; unbound art interface",
+      "image_size": [
+        512,
+        256
+      ]
+    },
+    {
+      "path": "Textures/Cruiser_ORM.png",
+      "sha256": "d9d463edb26d8387951ee2c67b0cd3a65ea9fd6c36c2f9436321add7d705f1e6",
+      "bytes": 2031,
+      "proposed_guid": "e17edcca0f9890b9b10dcb792b30a992",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/cruiser-modules-v1/Textures/Cruiser_ORM.png",
+      "purpose": "Separated existing original components; unbound art interface",
+      "image_size": [
+        512,
+        256
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "art.production02.originalcruiser_remainder",
+      "name": "OriginalCruiser_Remainder",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Existing original candidate geometry separated for art study; no gameplay socket/module admission.",
+      "meshes": [
+        {
+          "name": "OriginalCruiser_Remainder",
+          "vertices": 3120,
+          "triangles": 5580,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -188.4565887451172,
+              -310.0000305175781,
+              -71.12696838378906
+            ],
+            [
+              188.4565887451172,
+              274.1379089355469,
+              71.12696838378906
+            ]
+          ]
+        }
+      ],
+      "glb": "Models/OriginalCruiser_Remainder.glb",
+      "fbx": "Models/OriginalCruiser_Remainder.fbx"
+    },
+    {
+      "asset_id": "art.production02.originalcruiser_nacelle_a",
+      "name": "OriginalCruiser_Nacelle_A",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Existing original candidate geometry separated for art study; no gameplay socket/module admission.",
+      "meshes": [
+        {
+          "name": "OriginalCruiser_Nacelle_A",
+          "vertices": 500,
+          "triangles": 984,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -25.402481079101562,
+              -160.78282165527344,
+              -21.517410278320312
+            ],
+            [
+              25.402496337890625,
+              160.78282165527344,
+              21.517410278320312
+            ]
+          ]
+        }
+      ],
+      "glb": "Models/OriginalCruiser_Nacelle_A.glb",
+      "fbx": "Models/OriginalCruiser_Nacelle_A.fbx"
+    },
+    {
+      "asset_id": "art.production02.originalcruiser_nacelle_b",
+      "name": "OriginalCruiser_Nacelle_B",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Existing original candidate geometry separated for art study; no gameplay socket/module admission.",
+      "meshes": [
+        {
+          "name": "OriginalCruiser_Nacelle_B",
+          "vertices": 500,
+          "triangles": 984,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -25.402496337890625,
+              -160.78282165527344,
+              -21.517410278320312
+            ],
+            [
+              25.402481079101562,
+              160.78282165527344,
+              21.517410278320312
+            ]
+          ]
+        }
+      ],
+      "glb": "Models/OriginalCruiser_Nacelle_B.glb",
+      "fbx": "Models/OriginalCruiser_Nacelle_B.fbx"
+    },
+    {
+      "asset_id": "art.production02.originalcruiser_deflector",
+      "name": "OriginalCruiser_Deflector",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Existing original candidate geometry separated for art study; no gameplay socket/module admission.",
+      "meshes": [
+        {
+          "name": "OriginalCruiser_Deflector",
+          "vertices": 1174,
+          "triangles": 2336,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -29.88530158996582,
+              -9.563289642333984,
+              -20.321990966796875
+            ],
+            [
+              29.88530158996582,
+              9.563289642333984,
+              20.321990966796875
+            ]
+          ]
+        }
+      ],
+      "glb": "Models/OriginalCruiser_Deflector.glb",
+      "fbx": "Models/OriginalCruiser_Deflector.fbx"
+    },
+    {
+      "asset_id": "art.production02.originalcruiser_reassembledproof",
+      "name": "OriginalCruiser_ReassembledProof",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Existing original candidate geometry separated for art study; no gameplay socket/module admission.",
+      "meshes": [
+        {
+          "name": "OriginalCruiser_Remainder",
+          "vertices": 3120,
+          "triangles": 5580,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -188.4565887451172,
+              -310.0000305175781,
+              -71.12696838378906
+            ],
+            [
+              188.4565887451172,
+              274.1379089355469,
+              71.12696838378906
+            ]
+          ]
+        },
+        {
+          "name": "OriginalCruiser_Nacelle_A",
+          "vertices": 500,
+          "triangles": 984,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -209.79466247558594,
+              -11.56561279296875,
+              -7.770179748535156
+            ],
+            [
+              -158.98968505859375,
+              310.0000305175781,
+              35.26464080810547
+            ]
+          ]
+        },
+        {
+          "name": "OriginalCruiser_Nacelle_B",
+          "vertices": 500,
+          "triangles": 984,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              158.98968505859375,
+              -11.56561279296875,
+              -7.770179748535156
+            ],
+            [
+              209.79466247558594,
+              310.0000305175781,
+              35.26464080810547
+            ]
+          ]
+        },
+        {
+          "name": "OriginalCruiser_Deflector",
+          "vertices": 1174,
+          "triangles": 2336,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -29.885311126708984,
+              -72.53157806396484,
+              -60.36826705932617
+            ],
+            [
+              29.885292053222656,
+              -53.404998779296875,
+              -19.724285125732422
+            ]
+          ]
+        }
+      ],
+      "glb": "Models/OriginalCruiser_ReassembledProof.glb",
+      "fbx": "Models/OriginalCruiser_ReassembledProof.fbx"
+    }
+  ],
+  "existing_project_guids_checked": 557,
+  "guid_collisions": 0,
+  "runtime_policy": "Art-only parent reassembly; no existing equipment/socket or external Galaxy compatibility"
+}

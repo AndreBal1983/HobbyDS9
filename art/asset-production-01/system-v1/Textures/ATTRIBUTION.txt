@@ -1,0 +1,8 @@
+Solar body JPEG maps: Solar System Scope / INOVE.
+Source: https://www.solarsystemscope.com/textures/
+License: CC BY 4.0, https://creativecommons.org/licenses/by/4.0/
+License page checked 2026-11-13. JPEGs copied unchanged from the local
+repository art handoff. Source paths and SHA-256 are in manifest.json.
+No new remote texture download or remote-byte equivalence is claimed.
+OriginalCorona.png and DecorativeStars.png are original procedural art
+created for HobbyDS9, not Solar System Scope maps.

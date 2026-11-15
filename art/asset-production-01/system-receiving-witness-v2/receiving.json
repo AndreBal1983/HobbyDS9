@@ -1,0 +1,134 @@
+{
+  "status": "not imported; QA/GUI own receiving",
+  "files": [
+    {
+      "path": "Models/Earth_ReceivingWitness_LOD1.fbx",
+      "sha256": "0881d0570be8a8515593298196b7c6bee97695a3148e18802c3d908b417bf3a7",
+      "bytes": 101324,
+      "proposed_guid": "866fe10d7b157ea57fabb7a5605f4b32",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/system-receiving-witness-v2/Models/Earth_ReceivingWitness_LOD1.fbx",
+      "purpose": "QA witness only; no runtime admission"
+    },
+    {
+      "path": "Models/Earth_ReceivingWitness_LOD1.glb",
+      "sha256": "0c5e31ec032ad192e13823c197e3283ea863293ed95a6263e66e99986554859b",
+      "bytes": 73336,
+      "proposed_guid": "7fe96e5101acacea426860738cc550e2",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/system-receiving-witness-v2/Models/Earth_ReceivingWitness_LOD1.glb",
+      "purpose": "QA witness only; no runtime admission"
+    },
+    {
+      "path": "Models/Mars_ReceivingWitness_LOD1.fbx",
+      "sha256": "e36c96e2c4cfa8e8ffb872c975023937242fa0af72578f6e7d94fbdfed809de2",
+      "bytes": 101228,
+      "proposed_guid": "61c0d876ec6bc507c4a0751939665c60",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/system-receiving-witness-v2/Models/Mars_ReceivingWitness_LOD1.fbx",
+      "purpose": "QA witness only; no runtime admission"
+    },
+    {
+      "path": "Models/Mars_ReceivingWitness_LOD1.glb",
+      "sha256": "1bbe039e15081109f4b8252a90746f52d40c31fca8d6d59a7be79919bad9861b",
+      "bytes": 73340,
+      "proposed_guid": "0f4e4bcc482f255c2a07365a2582ea68",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/system-receiving-witness-v2/Models/Mars_ReceivingWitness_LOD1.glb",
+      "purpose": "QA witness only; no runtime admission"
+    },
+    {
+      "path": "Textures/earth_daymap.jpg",
+      "sha256": "767ee1dc6eb3802699bfccf6f264880f8acd0b80de3191cd24984fe279b07b7c",
+      "bytes": 463087,
+      "proposed_guid": "4b2842670fd28ebf2ce5d3be38bd837a",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/system-receiving-witness-v2/Textures/earth_daymap.jpg",
+      "purpose": "QA witness only; no runtime admission"
+    },
+    {
+      "path": "Textures/mars.jpg",
+      "sha256": "2d187f3e77a98eaa8cea5f4cc722f633c122ef170b9e94ace6b5fb6cbc3f8e01",
+      "bytes": 750547,
+      "proposed_guid": "cb6292cabd2771b898f52b7dae480d7b",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/system-receiving-witness-v2/Textures/mars.jpg",
+      "purpose": "QA witness only; no runtime admission"
+    },
+    {
+      "path": "Textures/UV_Basis_Witness.png",
+      "sha256": "f0e1b7dd6e451b114d67e32cc322ca023e66e45ac5ef17bade572c036dc98221",
+      "bytes": 10621,
+      "proposed_guid": "009922b389b2643ecd7ecbfdd20dcf31",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction02/system-receiving-witness-v2/Textures/UV_Basis_Witness.png",
+      "purpose": "QA witness only; no runtime admission",
+      "image_size": [
+        1024,
+        512
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "art.production02.earth_receivingwitness_lod1",
+      "name": "Earth_ReceivingWitness_LOD1",
+      "candidate_binding": null,
+      "lod": 1,
+      "notes": "QA witness only; preserves v1 UVs/positions. Not a replacement recommendation or new runtime binding. RH glTF U0=-X,U.25=+Z; X-reflected FBX receiver candidate U0=+X,U.25=+Z. QA must measure actual imported hierarchy; no UV correction is established.",
+      "meshes": [
+        {
+          "name": "Earth_LOD1",
+          "vertices": 1106,
+          "triangles": 2208,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "UnitGlobe_OverrideAtRuntime"
+          ]
+        }
+      ],
+      "glb": "Models/Earth_ReceivingWitness_LOD1.glb",
+      "fbx": "Models/Earth_ReceivingWitness_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production02.mars_receivingwitness_lod1",
+      "name": "Mars_ReceivingWitness_LOD1",
+      "candidate_binding": null,
+      "lod": 1,
+      "notes": "QA witness only; preserves v1 UVs/positions. Not a replacement recommendation or new runtime binding. RH glTF U0=-X,U.25=+Z; X-reflected FBX receiver candidate U0=+X,U.25=+Z. QA must measure actual imported hierarchy; no UV correction is established.",
+      "meshes": [
+        {
+          "name": "Mars_LOD1",
+          "vertices": 1106,
+          "triangles": 2208,
+          "uv_sets": 1,
+          "bounds_blender": [
+            [
+              -1.000001072883606,
+              -1.0000008344650269,
+              -1.0
+            ],
+            [
+              1.0000003576278687,
+              1.000001311302185,
+              1.0
+            ]
+          ],
+          "materials": [
+            "UnitGlobe_OverrideAtRuntime.001"
+          ]
+        }
+      ],
+      "glb": "Models/Mars_ReceivingWitness_LOD1.glb",
+      "fbx": "Models/Mars_ReceivingWitness_LOD1.fbx"
+    }
+  ],
+  "existing_project_guids_checked": 557,
+  "guid_collisions": 0,
+  "runtime_policy": "Keep PR106 globe UVs unchanged; witness only"
+}

@@ -1,0 +1,265 @@
+{
+  "Earth_Surface": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0.18000000715255737,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true,
+    "texture_image_name": "earth_daymap",
+    "texture_color_space": "sRGB"
+  },
+  "Mars_Surface": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0.18000000715255737,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true,
+    "texture_image_name": "mars",
+    "texture_color_space": "sRGB"
+  },
+  "Sun_Surface": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0.18000000715255737,
+    "emission_color_linear": [
+      1,
+      1,
+      1
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true,
+    "texture_image_name": "sun",
+    "texture_color_space": "sRGB"
+  },
+  "Mercury_Surface": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0.18000000715255737,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true,
+    "texture_image_name": "mercury",
+    "texture_color_space": "sRGB"
+  },
+  "Venus_Surface": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0.18000000715255737,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true,
+    "texture_image_name": "venus_atmosphere",
+    "texture_color_space": "sRGB"
+  },
+  "Jupiter_Surface": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0.18000000715255737,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true,
+    "texture_image_name": "jupiter",
+    "texture_color_space": "sRGB"
+  },
+  "Saturn_Surface": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0.18000000715255737,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true,
+    "texture_image_name": "saturn",
+    "texture_color_space": "sRGB"
+  },
+  "Uranus_Surface": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0.18000000715255737,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true,
+    "texture_image_name": "uranus",
+    "texture_color_space": "sRGB"
+  },
+  "Neptune_Surface": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0.18000000715255737,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true,
+    "texture_image_name": "neptune",
+    "texture_color_space": "sRGB"
+  },
+  "Saturn_Rings": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      0.47999998927116394,
+      0.4000000059604645,
+      0.27000001072883606,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0.10000002384185791,
+    "emission_color_linear": [
+      0,
+      0,
+      0
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true
+  },
+  "Orbit_Tint": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      0.07999999821186066,
+      0.18000000715255737,
+      0.27000001072883606,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0,
+    "emission_color_linear": [
+      0.019999999552965164,
+      0.04500000178813934,
+      0.06750000268220901
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "OPAQUE",
+    "double_sided": true
+  },
+  "Atmosphere_Placeholder": {
+    "shader_source": "Shaders/PlanetLimb01.shader",
+    "enabled_by_default": false,
+    "_BaseColor": [
+      0.035,
+      0.24,
+      0.65,
+      0.25
+    ],
+    "_LimbPower": 5,
+    "note": "Replace exported solid placeholder before enabling. Native shader compilation unexecuted."
+  },
+  "Corona_Alpha_Emission": {
+    "shader": "Universal Render Pipeline/Lit",
+    "base_color_linear_factor": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "metallic": 0,
+    "smoothness": 0,
+    "emission_color_linear": [
+      1,
+      1,
+      1
+    ],
+    "emission_strength": 1,
+    "alpha_mode": "BLEND",
+    "double_sided": true,
+    "texture_image_name": "OriginalCorona",
+    "texture_color_space": "sRGB",
+    "z_write": false,
+    "cast_shadows": false,
+    "camera_facing": true
+  }
+}

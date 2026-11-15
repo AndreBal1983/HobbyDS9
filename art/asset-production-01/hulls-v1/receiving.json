@@ -1,0 +1,131 @@
+{
+  "status": "proposed paths/GUIDs only; not imported",
+  "namespace": "hobbyds9.art.production01",
+  "existing_project_guids_checked": 557,
+  "collisions": 0,
+  "route": "Use FBX plus explicit URP material remaps; GLB is alternate interchange, not duplicate runtime import",
+  "files": [
+    {
+      "path": "Models/Cruiser_LOD0.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Cruiser_LOD0.fbx",
+      "proposed_guid": "a81e889c6df5df4d33fde322b83c335b",
+      "sha256": "c42ecad3260ccc29c00914583f6e0d6a47f145a72ec3f927fc8a4e6788231d40",
+      "bytes": 231548
+    },
+    {
+      "path": "Models/Cruiser_LOD0.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Cruiser_LOD0.glb",
+      "proposed_guid": "4759695cdc29a1d9f0b3176194d1e43d",
+      "sha256": "b97e6a4e91c2b72b288102e742ae1c5ab84954c9ddd1b0325aa45015ab3e0e60",
+      "bytes": 331752
+    },
+    {
+      "path": "Models/Cruiser_LOD1.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Cruiser_LOD1.fbx",
+      "proposed_guid": "add112f1dc53d9d7652f1db947d980e8",
+      "sha256": "dddf32176a84acd449eb3d89791ca1224ed026a21941a369ad272e58fcb26e75",
+      "bytes": 137484
+    },
+    {
+      "path": "Models/Cruiser_LOD1.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Cruiser_LOD1.glb",
+      "proposed_guid": "233314be9550df34979c712c138b2915",
+      "sha256": "27c1779780ab6589f0019fad1ac5fddeb2e39be71af772c952f35955e795f817",
+      "bytes": 206456
+    },
+    {
+      "path": "Models/Cruiser_LOD2.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Cruiser_LOD2.fbx",
+      "proposed_guid": "25bec4d8d88b0b1fe90f98cd36412113",
+      "sha256": "748230ffd1b07407e6fd4dc506f177c317d3baa7e95a650722dbd57b689f3b28",
+      "bytes": 84476
+    },
+    {
+      "path": "Models/Cruiser_LOD2.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Cruiser_LOD2.glb",
+      "proposed_guid": "7bf75c1a3f3b8dcb6a8101e1c46f8597",
+      "sha256": "36787807c070f4fadeda2462da127bb6f4f405fbc97525cb50a202bc1806df98",
+      "bytes": 117536
+    },
+    {
+      "path": "Models/Escort_LOD0.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Escort_LOD0.fbx",
+      "proposed_guid": "253fa2cca97a95e0857017b6300d0f7a",
+      "sha256": "b647e2674360065c82ce46b9931766b8b51d1922648bd54d5e5a1dcae8fbf870",
+      "bytes": 178956
+    },
+    {
+      "path": "Models/Escort_LOD0.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Escort_LOD0.glb",
+      "proposed_guid": "9940ab18427b85e4eb7e86e5c73a9f3c",
+      "sha256": "f0220553102216710edbefe4b59defd506c38ff6bddc29f4d9d247e301abda39",
+      "bytes": 235288
+    },
+    {
+      "path": "Models/Escort_LOD1.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Escort_LOD1.fbx",
+      "proposed_guid": "b3208a297ee3f91038c83e25aa8074ec",
+      "sha256": "497e4a332ee4ecac99318d8fa509c2c65a15d0b44d535c74bda195df4a0d5939",
+      "bytes": 107292
+    },
+    {
+      "path": "Models/Escort_LOD1.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Escort_LOD1.glb",
+      "proposed_guid": "643e139193f240563a262c4a3f77fee3",
+      "sha256": "2a94e959962b72f897971a05d0dd5a0a215066f0deccdc9c1061bc47be5dee8c",
+      "bytes": 152128
+    },
+    {
+      "path": "Models/Escort_LOD2.fbx",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Escort_LOD2.fbx",
+      "proposed_guid": "9dee07705cbf404cd6b33a241eac1e96",
+      "sha256": "70faffa6445cff6334d570f61a04020f568a61357fdd3cb9278b77e5033c32ac",
+      "bytes": 68604
+    },
+    {
+      "path": "Models/Escort_LOD2.glb",
+      "proposed_unity_path": "Assets/HobbyDS9/ArtProduction01/hulls-v1/Models/Escort_LOD2.glb",
+      "proposed_guid": "858e5fa76eb281522dc98836c07e3e72",
+      "sha256": "e3c391c0e957ba19c46806f14b993900f52e2eaea9ae4f7c75a8f4e8329d95cb",
+      "bytes": 93360
+    }
+  ],
+  "exact_bindings": [
+    {
+      "asset_id": "art.production01.cruiser_lod0",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 0,
+      "fbx": "Models/Cruiser_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.cruiser_lod1",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 1,
+      "fbx": "Models/Cruiser_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.cruiser_lod2",
+      "candidate_binding": "hull.galaxy-cruiser.v1",
+      "lod": 2,
+      "fbx": "Models/Cruiser_LOD2.fbx"
+    },
+    {
+      "asset_id": "art.production01.escort_lod0",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 0,
+      "fbx": "Models/Escort_LOD0.fbx"
+    },
+    {
+      "asset_id": "art.production01.escort_lod1",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 1,
+      "fbx": "Models/Escort_LOD1.fbx"
+    },
+    {
+      "asset_id": "art.production01.escort_lod2",
+      "candidate_binding": "hull.defiant-combat.v1",
+      "lod": 2,
+      "fbx": "Models/Escort_LOD2.fbx"
+    }
+  ]
+}

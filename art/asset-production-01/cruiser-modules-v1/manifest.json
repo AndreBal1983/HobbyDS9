@@ -1,0 +1,404 @@
+{
+  "schema": 1,
+  "phase": "modules",
+  "status": "proposed separated existing art; native receiving outstanding",
+  "blender": "5.3.0",
+  "inputs": [
+    {
+      "path": "art\\asset-production-01\\hulls-runtime-v2\\Sources\\Cruiser_RuntimeAtlas.blend",
+      "sha256": "67d13b87eb87496590bf6ecda2ca10d64fdf8364cad514612c65d7d77e4e54a9"
+    }
+  ],
+  "texture_sources": [
+    {
+      "path": "Textures/Cruiser_BaseColor.png",
+      "sha256": "5609104d73d4e1cf21066a80949e52b29b1bae69cd6ccd880834e8d23b6237f0",
+      "source_repo_path": "art/asset-production-01/hulls-runtime-v2/Textures/Cruiser_BaseColor.png",
+      "author": "Original HobbyDS9 procedural atlas",
+      "changes": "None; exact copy from own hulls-runtime-v2 packet"
+    },
+    {
+      "path": "Textures/Cruiser_Emission.png",
+      "sha256": "b83a4a03108b17df7e8697bc6ec1de52fbf31801dfd44c7156657a8df1b94cd0",
+      "source_repo_path": "art/asset-production-01/hulls-runtime-v2/Textures/Cruiser_Emission.png",
+      "author": "Original HobbyDS9 procedural atlas",
+      "changes": "None; exact copy from own hulls-runtime-v2 packet"
+    },
+    {
+      "path": "Textures/Cruiser_Normal.png",
+      "sha256": "0e2e843ec294d0a5501fa9c9f79fac41ccd2e108fa1ec68392f617e53ffe80d9",
+      "source_repo_path": "art/asset-production-01/hulls-runtime-v2/Textures/Cruiser_Normal.png",
+      "author": "Original HobbyDS9 procedural atlas",
+      "changes": "None; exact copy from own hulls-runtime-v2 packet"
+    },
+    {
+      "path": "Textures/Cruiser_ORM.png",
+      "sha256": "d9d463edb26d8387951ee2c67b0cd3a65ea9fd6c36c2f9436321add7d705f1e6",
+      "source_repo_path": "art/asset-production-01/hulls-runtime-v2/Textures/Cruiser_ORM.png",
+      "author": "Original HobbyDS9 procedural atlas",
+      "changes": "None; exact copy from own hulls-runtime-v2 packet"
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "art.production02.originalcruiser_remainder",
+      "name": "OriginalCruiser_Remainder",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Existing original candidate geometry separated for art study; no gameplay socket/module admission.",
+      "meshes": [
+        {
+          "name": "OriginalCruiser_Remainder",
+          "vertices": 3120,
+          "triangles": 5580,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -188.4565887451172,
+              -310.0000305175781,
+              -71.12696838378906
+            ],
+            [
+              188.4565887451172,
+              274.1379089355469,
+              71.12696838378906
+            ]
+          ]
+        }
+      ],
+      "glb": "Models/OriginalCruiser_Remainder.glb",
+      "fbx": "Models/OriginalCruiser_Remainder.fbx"
+    },
+    {
+      "asset_id": "art.production02.originalcruiser_nacelle_a",
+      "name": "OriginalCruiser_Nacelle_A",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Existing original candidate geometry separated for art study; no gameplay socket/module admission.",
+      "meshes": [
+        {
+          "name": "OriginalCruiser_Nacelle_A",
+          "vertices": 500,
+          "triangles": 984,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -25.402481079101562,
+              -160.78282165527344,
+              -21.517410278320312
+            ],
+            [
+              25.402496337890625,
+              160.78282165527344,
+              21.517410278320312
+            ]
+          ]
+        }
+      ],
+      "glb": "Models/OriginalCruiser_Nacelle_A.glb",
+      "fbx": "Models/OriginalCruiser_Nacelle_A.fbx"
+    },
+    {
+      "asset_id": "art.production02.originalcruiser_nacelle_b",
+      "name": "OriginalCruiser_Nacelle_B",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Existing original candidate geometry separated for art study; no gameplay socket/module admission.",
+      "meshes": [
+        {
+          "name": "OriginalCruiser_Nacelle_B",
+          "vertices": 500,
+          "triangles": 984,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -25.402496337890625,
+              -160.78282165527344,
+              -21.517410278320312
+            ],
+            [
+              25.402481079101562,
+              160.78282165527344,
+              21.517410278320312
+            ]
+          ]
+        }
+      ],
+      "glb": "Models/OriginalCruiser_Nacelle_B.glb",
+      "fbx": "Models/OriginalCruiser_Nacelle_B.fbx"
+    },
+    {
+      "asset_id": "art.production02.originalcruiser_deflector",
+      "name": "OriginalCruiser_Deflector",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Existing original candidate geometry separated for art study; no gameplay socket/module admission.",
+      "meshes": [
+        {
+          "name": "OriginalCruiser_Deflector",
+          "vertices": 1174,
+          "triangles": 2336,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -29.88530158996582,
+              -9.563289642333984,
+              -20.321990966796875
+            ],
+            [
+              29.88530158996582,
+              9.563289642333984,
+              20.321990966796875
+            ]
+          ]
+        }
+      ],
+      "glb": "Models/OriginalCruiser_Deflector.glb",
+      "fbx": "Models/OriginalCruiser_Deflector.fbx"
+    },
+    {
+      "asset_id": "art.production02.originalcruiser_reassembledproof",
+      "name": "OriginalCruiser_ReassembledProof",
+      "candidate_binding": null,
+      "lod": 0,
+      "notes": "Existing original candidate geometry separated for art study; no gameplay socket/module admission.",
+      "meshes": [
+        {
+          "name": "OriginalCruiser_Remainder",
+          "vertices": 3120,
+          "triangles": 5580,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -188.4565887451172,
+              -310.0000305175781,
+              -71.12696838378906
+            ],
+            [
+              188.4565887451172,
+              274.1379089355469,
+              71.12696838378906
+            ]
+          ]
+        },
+        {
+          "name": "OriginalCruiser_Nacelle_A",
+          "vertices": 500,
+          "triangles": 984,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -209.79466247558594,
+              -11.56561279296875,
+              -7.770179748535156
+            ],
+            [
+              -158.98968505859375,
+              310.0000305175781,
+              35.26464080810547
+            ]
+          ]
+        },
+        {
+          "name": "OriginalCruiser_Nacelle_B",
+          "vertices": 500,
+          "triangles": 984,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              158.98968505859375,
+              -11.56561279296875,
+              -7.770179748535156
+            ],
+            [
+              209.79466247558594,
+              310.0000305175781,
+              35.26464080810547
+            ]
+          ]
+        },
+        {
+          "name": "OriginalCruiser_Deflector",
+          "vertices": 1174,
+          "triangles": 2336,
+          "uv_sets": 1,
+          "materials": [
+            "Material_0"
+          ],
+          "bounds_blender": [
+            [
+              -29.885311126708984,
+              -72.53157806396484,
+              -60.36826705932617
+            ],
+            [
+              29.885292053222656,
+              -53.404998779296875,
+              -19.724285125732422
+            ]
+          ]
+        }
+      ],
+      "glb": "Models/OriginalCruiser_ReassembledProof.glb",
+      "fbx": "Models/OriginalCruiser_ReassembledProof.fbx"
+    }
+  ],
+  "files": [
+    {
+      "path": "art-interface.json",
+      "bytes": 17798,
+      "sha256": "32edeaca41e8395c33e2b6bc3a3700560025512045a8b844f5b79987221d14c2"
+    },
+    {
+      "path": "contact-sheet.png",
+      "bytes": 276798,
+      "sha256": "8c7f2efbc7cecf8f0c6f4c771a99f9a26eeaf135415858eda6329f8a18c19f12"
+    },
+    {
+      "path": "gallery.html",
+      "bytes": 1189,
+      "sha256": "4413ce577dc3241363391e79ebd176c2f0c174535fa09e5ee93234daa7d4d515"
+    },
+    {
+      "path": "material-contract.json",
+      "bytes": 4902,
+      "sha256": "8f41916ad69c73d5ce479c8003b5360bb6255ad48ef33b8dc4c5df52f548b6ea"
+    },
+    {
+      "path": "Models/OriginalCruiser_Deflector.fbx",
+      "bytes": 123724,
+      "sha256": "ce18475aa7a4baf7aa367fa8069539a94e94c6d45f387920f3e3bb655d357f3c"
+    },
+    {
+      "path": "Models/OriginalCruiser_Deflector.glb",
+      "bytes": 91196,
+      "sha256": "c6d4aca4f87c881ad8c2e52b4c89252335d9fe32af85cd73808defa856a717a5"
+    },
+    {
+      "path": "Models/OriginalCruiser_Nacelle_A.fbx",
+      "bytes": 64652,
+      "sha256": "372eb55a87a33be8cee5afba0651e0d673eba6de7aef7337e9d09f62840a5d69"
+    },
+    {
+      "path": "Models/OriginalCruiser_Nacelle_A.glb",
+      "bytes": 58648,
+      "sha256": "b588b440dd050b941bcc326de574f92848a2a1502fc35af4c8b4a831655bcbcd"
+    },
+    {
+      "path": "Models/OriginalCruiser_Nacelle_B.fbx",
+      "bytes": 64716,
+      "sha256": "2c30b4aca9c9005b58c6e4169bb8fe062d99f3fca5e19135c6c48ca8f884eb3b"
+    },
+    {
+      "path": "Models/OriginalCruiser_Nacelle_B.glb",
+      "bytes": 58648,
+      "sha256": "e4b901a966fcd9d0be7fdb69cfc1d6b974edcb086804e148935ae2c6f5b1c963"
+    },
+    {
+      "path": "Models/OriginalCruiser_ReassembledProof.fbx",
+      "bytes": 461132,
+      "sha256": "445055223bf814a03cc4902566c078c48693ac28909808568c4bc770b614ad31"
+    },
+    {
+      "path": "Models/OriginalCruiser_ReassembledProof.glb",
+      "bytes": 477040,
+      "sha256": "5bbf599e3f0c4e50ea055635967d7e4bf7cc2a8709a120a7fb2225c60adebd47"
+    },
+    {
+      "path": "Models/OriginalCruiser_Remainder.fbx",
+      "bytes": 263708,
+      "sha256": "02888bf2a81097d650e4132f8a3fe04bd0f01c5628ad945ed7769e02aaff4c0e"
+    },
+    {
+      "path": "Models/OriginalCruiser_Remainder.glb",
+      "bytes": 298300,
+      "sha256": "005df5474a46975489d6c8ed5f82a6fef35cb9372b3206b2d4461a547700d5c3"
+    },
+    {
+      "path": "Previews/Deflector_studio.png",
+      "bytes": 323536,
+      "sha256": "2641760839126b7374fb420d7ae915395d20f5dba2f02e7b50fe3619b9e443ec"
+    },
+    {
+      "path": "Previews/Nacelle_A_studio.png",
+      "bytes": 338003,
+      "sha256": "05a6e49b9a10b6f9e95df591298265fff8c380e663e19e80e3ab4c891b99573f"
+    },
+    {
+      "path": "Previews/Nacelle_B_studio.png",
+      "bytes": 325513,
+      "sha256": "8bf5d7affa626200b4072455389d82fb3fa7690f61a4fe85df107af26173fdca"
+    },
+    {
+      "path": "Previews/Reassembled_original_geometry_studio.png",
+      "bytes": 1037460,
+      "sha256": "86faf70a40452e02c30bf9936cbb31e72f8d03db311faaece5ba5637a17e8e66"
+    },
+    {
+      "path": "receiving.json",
+      "bytes": 12721,
+      "sha256": "473b6a86fd6b2fafdb569561a4383019546a8901403501cb33bc949520ea68e9"
+    },
+    {
+      "path": "RECEIVING.md",
+      "bytes": 3442,
+      "sha256": "c7d97b4acc0e64010ba749bbc6106d78ce1db7b34c6082317ecef04fa62fa626"
+    },
+    {
+      "path": "Sources/OriginalCruiser_SeparatedParts.blend",
+      "bytes": 251707,
+      "sha256": "fe99b458fab957eaf2c8f2d1c1021eca47b93e78781853f4e9649e46b52602c5"
+    },
+    {
+      "path": "Textures/Cruiser_BaseColor.png",
+      "bytes": 2261,
+      "sha256": "5609104d73d4e1cf21066a80949e52b29b1bae69cd6ccd880834e8d23b6237f0"
+    },
+    {
+      "path": "Textures/Cruiser_Emission.png",
+      "bytes": 1518,
+      "sha256": "b83a4a03108b17df7e8697bc6ec1de52fbf31801dfd44c7156657a8df1b94cd0"
+    },
+    {
+      "path": "Textures/Cruiser_Normal.png",
+      "bytes": 951,
+      "sha256": "0e2e843ec294d0a5501fa9c9f79fac41ccd2e108fa1ec68392f617e53ffe80d9"
+    },
+    {
+      "path": "Textures/Cruiser_ORM.png",
+      "bytes": 2031,
+      "sha256": "d9d463edb26d8387951ee2c67b0cd3a65ea9fd6c36c2f9436321add7d705f1e6"
+    },
+    {
+      "path": "validation-fbx.json",
+      "bytes": 5740,
+      "sha256": "60659389b1ea031dd3b2b4265b61d464c3c540300ad0ee410151a093cd0b0d47"
+    },
+    {
+      "path": "validation-reassembly.json",
+      "bytes": 579,
+      "sha256": "14e918a26583820f55491df5ac72a94e1538342591a121bb5eb2b5e7e663efbe"
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "pack": "hulls-v1",
+  "method": "FBX reimport from relocated Models/Textures; no image search",
+  "passed": true,
+  "failures": [],
+  "assets": [
+    {
+      "asset": "Cruiser_LOD0",
+      "triangles": 9884,
+      "world_bounds_metres": [
+        [
+          -209.79466247558594,
+          -310.0000305175781,
+          -71.12698364257812
+        ],
+        [
+          209.79466247558594,
+          310.0000305175781,
+          71.12699127197266
+        ]
+      ],
+      "max_bounds_error_metres": 2.288818359375e-05,
+      "relocated_texture_paths": []
+    },
+    {
+      "asset": "Cruiser_LOD1",
+      "triangles": 5516,
+      "world_bounds_metres": [
+        [
+          -209.79466247558594,
+          -310.0000305175781,
+          -71.12698364257812
+        ],
+        [
+          209.79466247558594,
+          310.0000305175781,
+          71.12699127197266
+        ]
+      ],
+      "max_bounds_error_metres": 2.288818359375e-05,
+      "relocated_texture_paths": []
+    },
+    {
+      "asset": "Cruiser_LOD2",
+      "triangles": 2972,
+      "world_bounds_metres": [
+        [
+          -210.05792236328125,
+          -310.0,
+          -71.21623229980469
+        ],
+        [
+          210.05792236328125,
+          310.0,
+          71.21623992919922
+        ]
+      ],
+      "max_bounds_error_metres": 2.288818359375e-05,
+      "relocated_texture_paths": []
+    },
+    {
+      "asset": "Escort_LOD0",
+      "triangles": 7560,
+      "world_bounds_metres": [
+        [
+          -68.93830871582031,
+          -85.0,
+          -19.870136260986328
+        ],
+        [
+          68.93830871582031,
+          85.0,
+          19.870134353637695
+        ]
+      ],
+      "max_bounds_error_metres": 5.7220458984375e-06,
+      "relocated_texture_paths": []
+    },
+    {
+      "asset": "Escort_LOD1",
+      "triangles": 4200,
+      "world_bounds_metres": [
+        [
+          -68.93830871582031,
+          -85.0,
+          -19.870136260986328
+        ],
+        [
+          68.93830871582031,
+          85.0,
+          19.870134353637695
+        ]
+      ],
+      "max_bounds_error_metres": 5.7220458984375e-06,
+      "relocated_texture_paths": []
+    },
+    {
+      "asset": "Escort_LOD2",
+      "triangles": 2328,
+      "world_bounds_metres": [
+        [
+          -68.93830871582031,
+          -85.0,
+          -19.870136260986328
+        ],
+        [
+          68.93830871582031,
+          85.0,
+          19.870134353637695
+        ]
+      ],
+      "max_bounds_error_metres": 5.7220458984375e-06,
+      "relocated_texture_paths": []
+    }
+  ],
+  "limitation": "Blender FBX reimport is not Unity importer or URP verification"
+}
