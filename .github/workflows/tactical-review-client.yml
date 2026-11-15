@@ -2,6 +2,7 @@ name: Tactical review client (real Application and preserved mock tests)
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
