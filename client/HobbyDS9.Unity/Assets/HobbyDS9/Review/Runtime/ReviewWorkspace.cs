@@ -27,9 +27,10 @@ namespace HobbyDS9.UnityReview
         public HobbyDS9.Contracts.ScienceDiscipline? ScienceDetails { get; set; }
         public string ResearchTab { get; set; }="science";
         public string? EngineeringProjectId { get; set; }
-        public string EngineeringSearch { get; set; }="";
-        public int EngineeringKind { get; set; }
-        public bool EngineeringAllocationOpen { get; set; }
+        public string EngineeringNewSearch { get; set; }="";
+        public string EngineeringRefinementSearch { get; set; }="";
+        public string EngineeringNewCategory { get; set; }="All technologies";
+        public string EngineeringRefinementCategory { get; set; }="All technologies";
         public bool Compact { get; set; }
         public float MapZoom { get; set; }=1;
         public float MapPanX { get; set; }
@@ -61,7 +62,7 @@ namespace HobbyDS9.UnityReview
             if(ReferenceEquals(context,Model.Current))return;
             context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;PendingSystemInspection=null;PendingWorldInspection=null;LastMapStarClick=null;SelectedOwnShip=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";MapZoom=1;MapPanX=MapPanY=0;NavigationEpoch=checked(NavigationEpoch+1);
             FleetSort="Name";FleetSortDescending=false;FleetOrganizationExpanded=false;WorldFilters.Clear();CollapsedSystems.Clear();WorldSort="World";WorldSortDescending=false;
-            EngineeringProjectId=null;EngineeringSearch="";EngineeringKind=0;EngineeringAllocationOpen=false;
+            EngineeringProjectId=null;EngineeringNewSearch=EngineeringRefinementSearch="";EngineeringNewCategory=EngineeringRefinementCategory="All technologies";
             WorldColumnsExpanded=false;WorldsContextOpen=false;
         }
         public ReviewWorkspacePage Page { get {Context();return page;} }
