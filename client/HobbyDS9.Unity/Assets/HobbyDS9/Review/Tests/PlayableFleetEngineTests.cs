@@ -124,6 +124,14 @@ namespace HobbyDS9.UnityReview.Tests
         {
             yield return new EnterPlayMode();yield return null;yield return null;
             var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var model=Model(entry);var doc=entry.GetComponent<UIDocument>();yield return null;
+            // EditMode defaults to a 640x480 panel, where the footer covers the
+            // map ring. Probe pointer ownership at the supported desktop minimum.
+            var texture=new RenderTexture(1280,720,24,RenderTextureFormat.ARGB32);texture.Create();
+            var oldTexture=doc.panelSettings.targetTexture;
+            doc.panelSettings.targetTexture=texture;doc.rootVisualElement.style.width=1280;doc.rootVisualElement.style.height=720;
+            try
+            {
+            yield return null;yield return null;
             var frame=model.Current.Frame;var group=frame.OwnStrategicFleets.GroupBy(f=>f.LocationNodeId.Value).First();var id="map-ring-"+group.Key;
             void Pointer(Button target,EventType kind,Vector2 point,int clicks)
             {
@@ -148,6 +156,12 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(entry.Workspace.Page,Is.EqualTo(ReviewWorkspacePage.Map));Assert.That(model.Current.Frame,Is.SameAs(frame));
             Assert.That(model.Refresh(),Is.True);var refreshed=model.Current.Frame;Pointer(ring,EventType.MouseDown,start,2);Pointer(ring,EventType.MouseUp,start,2);
             Assert.That(entry.Workspace.Page,Is.EqualTo(ReviewWorkspacePage.Map));Assert.That(model.Current.Frame,Is.SameAs(refreshed));
+            }
+            finally
+            {
+                doc.panelSettings.targetTexture=oldTexture;doc.rootVisualElement.style.width=StyleKeyword.Null;doc.rootVisualElement.style.height=StyleKeyword.Null;
+                texture.Release();UnityEngine.Object.Destroy(texture);
+            }
             yield return new ExitPlayMode();
         }
 
