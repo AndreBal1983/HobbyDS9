@@ -64,7 +64,7 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(root.Q<Button>("save-slot-demo-1"),Is.Null);
             var path=(string)typeof(ReviewEntry).GetMethod("CampaignArchivePath",BindingFlags.NonPublic|BindingFlags.Instance)!
                 .Invoke(entry,new object[]{"combat","combat-1"})!;
-            Assert.That(Path.GetDirectoryName(path),Is.EqualTo(Path.Combine(UnityEngine.Application.persistentDataPath,CombatPlaytestOptions.SaveDirectory)));
+            Assert.That(Path.GetFullPath(Path.GetDirectoryName(path)!),Is.EqualTo(Path.GetFullPath(Path.Combine(UnityEngine.Application.persistentDataPath,CombatPlaytestOptions.SaveDirectory))));
             var backToMenu=root.Query<Button>().ToList().Single(b=>b.text=="Back");
             using(var e=NavigationSubmitEvent.GetPooled()){e.target=backToMenu;backToMenu.SendEvent(e);}yield return null;
             Click("campaign-menu-main");yield return null;Click("campaign-menu-new");yield return null;
