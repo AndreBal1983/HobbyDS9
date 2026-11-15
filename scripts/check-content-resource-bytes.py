@@ -19,6 +19,8 @@ GENERATED_PAIRS = [
 ]
 PAIRS = []
 PAIRS += [("scenarios/engineering-development-v1/scenario.json", f"{RES}PlayableFleetPackages/v1/engineering-scenario.json")]
+PAIRS += [(f"scenarios/sol-eight-planets-v1/{source}.json", f"{RES}PlayableFleetPackages/v1/sol08-{resource}.json")
+          for source, resource in [("scenario", "scenario"), ("astronomy", "astronomy")]]
 for source, target, names in [
     ("tactical-v2-physical-review/faster", "ReviewPackages/faster", "package core scenario"),
     ("tactical-v2-physical-review/slower", "ReviewPackages/slower", "package core scenario"),
