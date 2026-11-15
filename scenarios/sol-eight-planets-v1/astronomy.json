@@ -1,0 +1,65 @@
+{
+  "Version": "sol-mean-orbits-v1",
+  "Source": "NASA NSSDCA Planetary Fact Sheet - Metric",
+  "SourceUrl": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/",
+  "SourceVersion": "Last Updated: 13 November 2026, SAM",
+  "NotesUrl": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/planetfact_notes.html",
+  "NotesVersion": "20 December 2021, DRW",
+  "RetrievedOn": "2026-11-15",
+  "DistanceUnit": "km",
+  "SourceDistanceUnit": "10^6 km",
+  "DistanceMeaning": "Semi-major axis / mean Sun distance as tabulated; static visual radius, not current ephemeris or orbital motion.",
+  "AuthoredSystemId": "system.sol",
+  "Mapping": "Retain PlanetId; generated SystemId is the current actor-known planet.sol SystemId.",
+  "Disclosure": "Only join entries to existing actor-observed planet IDs. No extra bodies, surveyed knowledge or global reveal.",
+  "Planets": [
+    {
+      "PlanetId": "planet.mercury",
+      "DisplayName": "Mercury",
+      "Order": 1,
+      "MeanSunDistanceKm": 57900000
+    },
+    {
+      "PlanetId": "planet.venus",
+      "DisplayName": "Venus",
+      "Order": 2,
+      "MeanSunDistanceKm": 108200000
+    },
+    {
+      "PlanetId": "planet.sol",
+      "DisplayName": "Earth",
+      "Order": 3,
+      "MeanSunDistanceKm": 149600000
+    },
+    {
+      "PlanetId": "planet.mars",
+      "DisplayName": "Mars",
+      "Order": 4,
+      "MeanSunDistanceKm": 228000000
+    },
+    {
+      "PlanetId": "planet.jupiter",
+      "DisplayName": "Jupiter",
+      "Order": 5,
+      "MeanSunDistanceKm": 778500000
+    },
+    {
+      "PlanetId": "planet.saturn",
+      "DisplayName": "Saturn",
+      "Order": 6,
+      "MeanSunDistanceKm": 1432000000
+    },
+    {
+      "PlanetId": "planet.uranus",
+      "DisplayName": "Uranus",
+      "Order": 7,
+      "MeanSunDistanceKm": 2867000000
+    },
+    {
+      "PlanetId": "planet.neptune",
+      "DisplayName": "Neptune",
+      "Order": 8,
+      "MeanSunDistanceKm": 4515000000
+    }
+  ]
+}
