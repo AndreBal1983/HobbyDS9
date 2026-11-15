@@ -2,6 +2,7 @@ name: Durable tactical review checkpoints (headless only)
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
