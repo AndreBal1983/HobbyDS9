@@ -36,15 +36,12 @@ namespace HobbyDS9.UnityReview
             panel.Add(Readout("Combat playtest saves have their own slots. Continue loads only this authored fixture."));
             EnsureCampaignArchive();
             var next=NewestCampaignSave();
-            if(next!=null)
-            {
-                panel.Add(Readout(next.Summary));
-                var slot=next.Slot;
-                AddButton(panel,"Continue combat playtest",()=>RequestCampaignDeparture("Load the combat playtest?","Load",
-                    ()=>LoadCampaignMenuSlot(slot,"combat"),CurrentCampaignArchiveProfile()=="combat"?slot:null,next.Summary))
-                    .name="combat-playtest-continue";
-            }
-            else panel.Add(Readout(campaignArchiveRows==null?"Checking combat playtest saves…":"No compatible combat playtest save. Start a new test or inspect its slots."));
+            var summary=Readout(next?.Summary??(campaignArchiveRows==null?"Checking combat playtest saves…":"No saved combat slot available. Start a new test or inspect its slots."));summary.name="campaign-archive-summary";panel.Add(summary);
+            var status=Readout("Save compatibility is validated when loading.");status.name="campaign-archive-status";panel.Add(status);
+            var resume=AddButton(panel,"Continue combat playtest",()=>{
+                var selected=NewestCampaignSave();if(selected==null)return;
+                RequestCampaignDeparture("Load the combat playtest?","Load",()=>LoadCampaignMenuSlot(selected.Slot,"combat"),CurrentCampaignArchiveProfile()=="combat"?selected.Slot:null,selected.Summary);
+            });resume.name="combat-playtest-continue";resume.SetEnabled(next!=null);
             var start=AddButton(panel,"New combat playtest",()=>RequestCampaignDeparture("Start a new combat playtest?","Start",StartCombatPlaytest));
             start.name="combat-playtest-start";start.SetEnabled(CombatPlaytestResourcesAvailable());
             AddButton(panel,"Combat playtest saves",()=>OpenCampaignArchive(false,"combat")).name="combat-playtest-saves";
