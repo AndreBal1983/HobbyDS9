@@ -2,6 +2,7 @@ name: Physical travel client and complete-root storage (headless)
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:

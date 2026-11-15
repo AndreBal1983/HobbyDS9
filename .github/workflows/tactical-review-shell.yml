@@ -2,6 +2,7 @@ name: Authoritative explanations and trusted review shell (headless)
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:

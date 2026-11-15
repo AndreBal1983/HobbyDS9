@@ -2,6 +2,7 @@ name: Restore, build and test
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
