@@ -15,11 +15,12 @@ namespace HobbyDS9.UnityReview
         private ReviewController context;
         private ReviewWorkspacePage page=ReviewWorkspacePage.Map;
         private string? selectedNode,selectedFleet;
-        public string? SelectedNode { get=>selectedNode;set{if(selectedNode!=value){RoutePreview=null;LastMapStarClick=null;}selectedNode=value;} }
+        public string? SelectedNode { get=>selectedNode;set{if(selectedNode!=value){RoutePreview=null;LastMapStarClick=null;LastMapFleetClick=null;}selectedNode=value;} }
         public string? SelectedFleet { get=>selectedFleet;set{if(selectedFleet!=value)RoutePreview=null;selectedFleet=value;} }
         internal (string? SystemId,string Caption)? PendingSystemInspection { get; set; }
         internal (ReviewFrame Frame,string World)? PendingWorldInspection { get; set; }
         internal (ReviewFrame Frame,string Node,int PointerId)? LastMapStarClick { get; set; }
+        internal (ReviewFrame Frame,string Node,int PointerId)? LastMapFleetClick { get; set; }
         public string? SelectedColony { get; set; }
         public string? SelectedOwnShip { get; set; }
         public KnownRouteOffer? RoutePreview { get; set; }
@@ -60,7 +61,7 @@ namespace HobbyDS9.UnityReview
         private void Context()
         {
             if(ReferenceEquals(context,Model.Current))return;
-            context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;PendingSystemInspection=null;PendingWorldInspection=null;LastMapStarClick=null;SelectedOwnShip=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";MapZoom=1;MapPanX=MapPanY=0;NavigationEpoch=checked(NavigationEpoch+1);
+            context=Model.Current;page=ReviewWorkspacePage.Map;SelectedNode=null;SelectedFleet=null;SelectedColony=null;PendingSystemInspection=null;PendingWorldInspection=null;LastMapStarClick=null;LastMapFleetClick=null;SelectedOwnShip=null;RoutePreview=null;ScienceDetails=null;ResearchTab="science";MapZoom=1;MapPanX=MapPanY=0;NavigationEpoch=checked(NavigationEpoch+1);
             FleetSort="Name";FleetSortDescending=false;FleetOrganizationExpanded=false;WorldFilters.Clear();CollapsedSystems.Clear();WorldSort="World";WorldSortDescending=false;
             EngineeringProjectId=null;EngineeringNewSearch=EngineeringRefinementSearch="";EngineeringNewCategory=EngineeringRefinementCategory="All technologies";
             WorldColumnsExpanded=false;WorldsContextOpen=false;
@@ -70,8 +71,8 @@ namespace HobbyDS9.UnityReview
         public bool Navigate(ReviewWorkspacePage next)
         {
             Context();if(!Enum.IsDefined(typeof(ReviewWorkspacePage),next)||!CanNavigate)return false;
-            if(page==next)return true;
-            page=next;LastMapStarClick=null;NavigationEpoch=checked(NavigationEpoch+1);
+            if(page==next){LastMapFleetClick=null;return true;}
+            page=next;LastMapStarClick=null;LastMapFleetClick=null;NavigationEpoch=checked(NavigationEpoch+1);
             if(next==ReviewWorkspacePage.Combat)Combat.Open();
             return true;
         }

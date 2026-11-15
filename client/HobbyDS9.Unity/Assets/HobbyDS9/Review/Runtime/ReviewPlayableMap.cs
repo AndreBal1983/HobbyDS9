@@ -191,17 +191,17 @@ namespace HobbyDS9.UnityReview
                 foreach(var item in packed)
                 {var label=generatedLabels[item.Key];var r=item.Value;label.style.left=(float)r.X+map.contentRect.x-map.resolvedStyle.borderLeftWidth;label.style.top=(float)r.Y+map.contentRect.y-map.resolvedStyle.borderTopWidth;label.style.width=(float)r.Width;label.style.height=(float)r.Height;label.style.visibility=Visibility.Visible;}
             }
-            void Zoom(float factor){if(generated!=null)viewport.ZoomAt(factor,map.contentRect.width/2,map.contentRect.height/2);else workspace.MapZoom=Mathf.Clamp(workspace.MapZoom*factor,.7f,2.4f);Reposition();}
+            void Zoom(float factor){workspace.LastMapFleetClick=null;if(generated!=null)viewport.ZoomAt(factor,map.contentRect.width/2,map.contentRect.height/2);else workspace.MapZoom=Mathf.Clamp(workspace.MapZoom*factor,.7f,2.4f);Reposition();}
             button(toolbar,"−",()=>Zoom(.8f)).name="map-zoom-out";
             button(toolbar,"+",()=>Zoom(1.25f)).name="map-zoom-in";
-            button(toolbar,generated==null?"Fit":"Fit known",()=>{if(generated!=null)FitKnown();else{workspace.MapZoom=1;workspace.MapPanX=workspace.MapPanY=0;}Reposition();}).name="map-fit";
-            if(generated!=null)button(toolbar,"Fit galaxy",()=>{viewport.Fit();Reposition();}).name="map-fit-galaxy";
+            button(toolbar,generated==null?"Fit":"Fit known",()=>{workspace.LastMapFleetClick=null;if(generated!=null)FitKnown();else{workspace.MapZoom=1;workspace.MapPanX=workspace.MapPanY=0;}Reposition();}).name="map-fit";
+            if(generated!=null)button(toolbar,"Fit galaxy",()=>{workspace.LastMapFleetClick=null;viewport.Fit();Reposition();}).name="map-fit-galaxy";
             Text(toolbar,"Scroll to zoom · middle-drag to pan");
             int inspectionGesture=0;
-            map.RegisterCallback<WheelEvent>(e=>{inspectionGesture++;workspace.LastMapStarClick=null;if(generated!=null){var at=map.WorldToLocal(e.mousePosition)-map.contentRect.position;viewport.ZoomAt(e.delta.y>0?.9:1.1,at.x,at.y);Reposition();}else Zoom(e.delta.y>0?.9f:1.1f);e.StopPropagation();});
+            map.RegisterCallback<WheelEvent>(e=>{inspectionGesture++;workspace.LastMapStarClick=null;workspace.LastMapFleetClick=null;if(generated!=null){var at=map.WorldToLocal(e.mousePosition)-map.contentRect.position;viewport.ZoomAt(e.delta.y>0?.9:1.1,at.x,at.y);Reposition();}else Zoom(e.delta.y>0?.9f:1.1f);e.StopPropagation();});
             int panPointer=-1;Vector2 panStart=default,panOrigin=default;
             map.RegisterCallback<PointerDownEvent>(e=>{
-                if(e.button!=2)return;inspectionGesture++;workspace.LastMapStarClick=null;panPointer=e.pointerId;panStart=e.position;panOrigin=new Vector2(workspace.MapPanX,workspace.MapPanY);
+                if(e.button!=2)return;inspectionGesture++;workspace.LastMapStarClick=null;workspace.LastMapFleetClick=null;panPointer=e.pointerId;panStart=e.position;panOrigin=new Vector2(workspace.MapPanX,workspace.MapPanY);
                 map.CapturePointer(panPointer);e.StopPropagation();
             });
             map.RegisterCallback<PointerMoveEvent>(e=>{
@@ -400,7 +400,33 @@ namespace HobbyDS9.UnityReview
                 if(atNode.Count>0)
                 {
                     var ring=new ReviewMapRing{name="map-ring-"+id,tooltip=atNode.Count+" own fleets. Select the ring to open the roster."};
-                    bindButton(ring,()=>perform(()=>{workspace.SelectedNode=id;workspace.SelectedFleet=atNode[0].FleetId.Value;}));
+                    bool RingLive()=>ring.panel!=null&&ring.enabledInHierarchy&&ReferenceEquals(frame,model.Current.Frame)
+                        &&workspace.Page==ReviewWorkspacePage.Map&&workspace.CanNavigate&&!model.Current.RefreshRequired;
+                    void InspectRing()
+                    {
+                        if(!RingLive())return;
+                        workspace.LastMapFleetClick=null;workspace.SelectedNode=id;
+                        // An aggregate opens the existing lawful roster as a chooser.
+                        // A singleton opens its exact ID and expanded detail.
+                        workspace.SelectedFleet=atNode.Count==1?atNode[0].FleetId.Value:null;
+                        navigate(ReviewWorkspacePage.FleetOrders);
+                    }
+                    bindButton(ring,InspectRing);
+                    int ringPointer=-1,ringGesture=0;Vector2 pressed=default;
+                    ring.RegisterCallback<PointerDownEvent>(e=>{
+                        if(e.button!=0){workspace.LastMapFleetClick=null;return;}
+                        if(!RingLive())return;ringPointer=e.pointerId;ringGesture=inspectionGesture;pressed=e.position;ring.Focus();ring.CapturePointer(e.pointerId);e.StopImmediatePropagation();
+                    },TrickleDown.TrickleDown);
+                    ring.RegisterCallback<PointerUpEvent>(e=>{
+                        if(e.button!=0||ringPointer!=e.pointerId)return;
+                        var pointer=ringPointer;ringPointer=-1;ring.ReleasePointer(pointer);e.StopImmediatePropagation();
+                        var first=workspace.LastMapFleetClick;workspace.LastMapFleetClick=null;
+                        if(!RingLive()||ringGesture!=inspectionGesture||Vector2.Distance(pressed,e.position)>5||!ring.ContainsPoint(ring.WorldToLocal(e.position)))return;
+                        if(e.clickCount==2&&first.HasValue&&ReferenceEquals(first.Value.Frame,frame)&&first.Value.Node==id&&first.Value.PointerId==pointer){InspectRing();return;}
+                        perform(()=>{workspace.SelectedNode=id;workspace.SelectedFleet=atNode[0].FleetId.Value;if(e.clickCount==1)workspace.LastMapFleetClick=(frame,id,pointer);});
+                    },TrickleDown.TrickleDown);
+                    ring.RegisterCallback<PointerCancelEvent>(_=>{ringPointer=-1;workspace.LastMapFleetClick=null;});
+                    ring.RegisterCallback<PointerCaptureOutEvent>(e=>{if(e.pointerId==ringPointer){ringPointer=-1;workspace.LastMapFleetClick=null;}});
                     ContextAction(ring,append=>Prepare(id,append:append));
                     Place(ring,()=>Point(id),74,74);
                     ring.EnableInClassList("selected-map-marker",atNode.Any(f=>f.FleetId.Value==workspace.SelectedFleet));
