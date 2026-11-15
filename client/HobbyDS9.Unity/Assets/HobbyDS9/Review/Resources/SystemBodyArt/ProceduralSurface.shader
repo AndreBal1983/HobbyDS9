@@ -11,6 +11,7 @@ Shader "HobbyDS9/Review/ProceduralSystemSurface"
   _Lit("Star lighting",Float)=1
   _Orbit("Analytic orbit",Float)=0
   _OrbitWidth("Orbit width pixels",Float)=1.8
+  _Emission("Unlit star emission",Float)=0
   _Unknown("Unresolved",Float)=0
   _Atmosphere("Existing disclosed atmosphere strength",Float)=0
   _NightFill("Readability fill",Range(0,0.12))=0.04
@@ -36,7 +37,7 @@ Shader "HobbyDS9/Review/ProceduralSystemSurface"
    TEXTURE2D(_Clouds);SAMPLER(sampler_Clouds);
    CBUFFER_START(UnityPerMaterial)
    float4 _Tint,_StarCenter,_LimbTint;
-   float _Lit,_Unknown,_Atmosphere,_NightFill,_DayStrength,_CloudOpacity,_LimbStrength,_Orbit,_OrbitWidth;
+   float _Lit,_Unknown,_Atmosphere,_NightFill,_DayStrength,_CloudOpacity,_LimbStrength,_Orbit,_OrbitWidth,_Emission;
    CBUFFER_END
    struct A{float4 positionOS:POSITION;float3 normalOS:NORMAL;float2 uv:TEXCOORD0;};
    struct V{float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;float3 normalWS:TEXCOORD1;float2 uv:TEXCOORD2;float3 positionOS:TEXCOORD3;};
@@ -62,7 +63,7 @@ Shader "HobbyDS9/Review/ProceduralSystemSurface"
     if(_Lit>.5 && _Unknown>.5)
      return half4(half3(.09,.14,.20)*(.35+.65*day)+half3(.11,.23,.34)*pow(1-facing,3),1);
     half3 albedo=SAMPLE_TEXTURE2D(_Surface,sampler_Surface,input.uv).rgb*_Tint.rgb;
-    if(_Lit<.5)return half4(albedo,1); // Existing star/orbit unlit roles retained.
+    if(_Lit<.5)return half4(albedo*(1+max(0,_Emission)),1);
     float illumination=clamp(_NightFill,0,.12)+clamp(_DayStrength,0,1.5)*day;
     half3 color=albedo*illumination;
     float cloud=SAMPLE_TEXTURE2D(_Clouds,sampler_Clouds,input.uv).r*saturate(_CloudOpacity);

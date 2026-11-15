@@ -31,6 +31,25 @@ namespace HobbyDS9.UnityReview.Tests
             var type=typeof(ReviewPlayerView).Assembly.GetType("HobbyDS9.UnityReview.ReviewSolStage",true)!;
             return Activator.CreateInstance(type,Private,null,new object[]{shader,bodies},null)!;
         }
+        [Test] public void ObservedSolHasVisibleEmissiveSunPublicMapsAndOwnedSaturnRingWithoutSurveyFacts()
+        {
+            var ids=new[]{"planet.mercury","planet.venus","planet.sol","planet.mars","planet.jupiter","planet.saturn","planet.uranus","planet.neptune"};
+            var bodies=ids.Select(id=>Planet(id,false)).ToArray();var distances=SolMeanOrbitData.Read(Resources.Load<TextAsset>("PlayableFleetPackages/v1/sol08-astronomy").text).JoinDisclosed(bodies,bodies)!;
+            var type=typeof(ReviewPlayerView).Assembly.GetType("HobbyDS9.UnityReview.ReviewSolStage",true)!;
+            var stage=Activator.CreateInstance(type,Private,null,new object[]{Resources.Load<Shader>("SystemBodyArt/ProceduralSurface"),bodies,distances},null)!;
+            try
+            {
+                Assert.That((bool)type.GetMethod("Render",Private)!.Invoke(stage,new object[]{2.1f,0f,1f,"planet.sol"})!,Is.True);
+                var root=(GameObject)Field(stage,"root");var sun=root.transform.Find("Schematic central star");var camera=(Camera)Field(stage,"camera");
+                var z=camera.WorldToViewportPoint(sun.position).z;Assert.That(z,Is.GreaterThan(camera.nearClipPlane+sun.localScale.x));Assert.That(z,Is.LessThan(camera.farClipPlane-sun.localScale.x));
+                var block=new MaterialPropertyBlock();sun.GetComponent<MeshRenderer>().GetPropertyBlock(block);Assert.That(block.GetFloat("_Emission"),Is.GreaterThan(0));Assert.That(block.GetTexture("_Surface"),Is.SameAs(Resources.Load<Texture2D>("SystemBodyArt/sun")));
+                var target=(RenderTexture)type.GetProperty("Texture",Private)!.GetValue(stage)!;var pixels=PortraitPixels(target,"sol-schematic-visible-sun");var centre=pixels[(target.height/2)*target.width+target.width/2];Assert.That(centre.r,Is.GreaterThan(100),"The real Sun draw, not merely its label, must survive clipping/depth/culling.");
+                var transforms=(Dictionary<string,Transform>)Field(stage,"planetTransforms");
+                foreach(var body in bodies){transforms[body.PlanetId].GetComponent<MeshRenderer>().GetPropertyBlock(block);Assert.That(block.GetTexture("_Surface"),Is.SameAs(Resources.Load<Texture2D>("SystemBodyArt/"+PlanetVisualProfile.From(body,true).AuthoredMap)));Assert.That(block.GetFloat("_Atmosphere"),Is.Zero);Assert.False(body.Surveyed);}
+                Assert.That(transforms["planet.saturn"].Find("Public Saturn rings"),Is.Not.Null);
+            }
+            finally{((IDisposable)stage).Dispose();}
+        }
         [Test] public void DeliveredMeshAndRingAssetsRetainTheirImportContract()
         {
             // Asset presence is distinct from permission to put a body in a campaign scene.

@@ -11,6 +11,10 @@ namespace HobbyDS9.UnityReview
     internal sealed class ReviewSolOverview : VisualElement,IDisposable
     {
         private readonly Dictionary<string,VisualElement> markers=new Dictionary<string,VisualElement>(StringComparer.Ordinal);
+        private readonly Dictionary<string,VisualElement> bodyHits=new Dictionary<string,VisualElement>(StringComparer.Ordinal);
+        private readonly List<(Vector2 body,Vector2 label)> leaderSegments=new List<(Vector2,Vector2)>();
+        private readonly VisualElement leaders;
+        private readonly Label sunLabel;
         private readonly Dictionary<string,float> markerHoldUntil=new Dictionary<string,float>(StringComparer.Ordinal);
         private readonly ColonisationPlanetSnapshot[] bodies;
         private readonly VisualElement viewport,controls;
@@ -41,13 +45,13 @@ namespace HobbyDS9.UnityReview
             this.bodies=bodies.ToArray();this.yaw=yaw;this.zoom=zoom;selected=selectedPlanet;this.onView=onView;this.reducedMotion=reducedMotion;
             name="sol-overview";style.flexGrow=0;style.flexShrink=0;style.minWidth=0;
             var title=new Label("System overview");title.AddToClassList("console-section");Add(title);
-            var scale=new Label(meanDistances==null?"Schematic orbit spacing · Exaggerated body sizes · Only disclosed bodies":"Mean Sun-distance radii · Exaggerated body sizes · Not current positions"){name="system-scale-caption"};
+            var scale=new Label(meanDistances==null?"Schematic spacing · Exaggerated body sizes · Only disclosed bodies":"Schematic spacing · Exaggerated body sizes · AU readouts: mean Sun distance"){name="system-scale-caption"};
             scale.style.whiteSpace=WhiteSpace.Normal;scale.style.flexShrink=0;Add(scale);
             viewControls=new Foldout{text="View controls",value=false,name="system-view-controls"};Add(viewControls);
             controls=new VisualElement();controls.style.flexDirection=FlexDirection.Row;controls.style.flexWrap=Wrap.Wrap;viewControls.Add(controls);
             Control("Rotate left",()=>SetView(yaw-25,zoom));Control("Rotate right",()=>SetView(yaw+25,zoom));
             Control("Zoom out",()=>SetView(yaw,zoom/1.3f));Control("Zoom in",()=>SetView(yaw,zoom*1.3f));
-            void Frame(bool inner,bool focus){this.innerFrame=inner;this.focusFrame=focus;this.onFrame?.Invoke(inner,focus);SetView(yaw,1);}
+            void Frame(bool inner,bool focus){this.innerFrame=inner;this.focusFrame=focus;this.onFrame?.Invoke(inner,focus);SetView(yaw,1);if(focus)pendingFocus=true;}
             var framing=new VisualElement{name="system-framing-controls"};framing.style.flexDirection=FlexDirection.Row;framing.style.flexWrap=Wrap.Wrap;framing.style.flexShrink=0;Add(framing);
             void FrameControl(string text,Action action){var button=new Button(()=>{if(!disposed&&!failed)action();}){text=text};button.style.minHeight=44;button.style.marginRight=4;framing.Add(button);}
             FrameControl("Overview",()=>Frame(false,false));
@@ -58,12 +62,16 @@ namespace HobbyDS9.UnityReview
             viewport=new VisualElement{name="sol-viewport"};viewport.style.height=340;viewport.style.flexShrink=0;viewport.style.overflow=Overflow.Hidden;
             viewport.style.backgroundColor=new Color(.019f,.027f,.049f);Add(viewport);
             image=new Image{scaleMode=ScaleMode.StretchToFill,pickingMode=PickingMode.Ignore};image.StretchToParentSize();viewport.Add(image);
+            leaders=new VisualElement{pickingMode=PickingMode.Ignore};leaders.StretchToParentSize();viewport.Add(leaders);
+            leaders.generateVisualContent+=context=>{var painter=context.painter2D;painter.strokeColor=new Color(.35f,.45f,.58f);painter.lineWidth=1;foreach(var line in leaderSegments){painter.BeginPath();painter.MoveTo(line.body);painter.LineTo(line.label);painter.Stroke();}};
+            sunLabel=new Label(meanDistances==null?"Star":"Sun"){name="sol-sun-label",pickingMode=PickingMode.Ignore};sunLabel.style.position=Position.Absolute;sunLabel.style.color=new Color(1,.77f,.4f);sunLabel.style.fontSize=15;viewport.Add(sunLabel);
             foreach(var body in this.bodies)
             {
                 var marker=new VisualElement{name="sol-body-"+body.PlanetId,tooltip="Click / Space to focus · Double-click / Enter to open "+body.DisplayName};
-                marker.style.position=Position.Absolute;marker.style.width=108;marker.style.height=58;marker.style.paddingTop=24;
+                marker.style.position=Position.Absolute;marker.style.width=108;marker.style.height=44;marker.style.paddingTop=2;marker.style.backgroundColor=new Color(.04f,.07f,.11f,.95f);
                 marker.style.color=new Color(.81f,.9f,1);marker.style.display=DisplayStyle.None;
-                var label=new Label(body.DisplayName+(body.ActiveSurveyId!=null?"\nSurvey in progress":"")){pickingMode=PickingMode.Ignore};
+                var distance=meanDistances!=null&&meanDistances.TryGetValue(body.PlanetId,out var km)?"\n"+SolSchematicLayout.Au(km).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+" AU":"";
+                var label=new Label(body.DisplayName+distance){pickingMode=PickingMode.Ignore};
                 label.style.whiteSpace=WhiteSpace.Normal;label.style.unityTextAlign=TextAnchor.MiddleCenter;label.style.fontSize=16;marker.Add(label);
                 if(body.ActiveSurveyId!=null)
                 {
@@ -74,6 +82,9 @@ namespace HobbyDS9.UnityReview
                 }
                 PlanetBodyCard.BindActivation(marker,()=>{if(!disposed&&!failed){markerHoldUntil[body.PlanetId]=Time.realtimeSinceStartup+.6f;onSelect(body);schedule.Execute(QueueDraw).StartingIn(610);}},()=>{if(!disposed&&!failed)onOpen(body);},this.activation);
                 viewport.Add(marker);markers.Add(body.PlanetId,marker);
+                var hit=new VisualElement{name="sol-body-hit-"+body.PlanetId,tooltip=body.DisplayName+" · "+(body.Surveyed?"Surveyed":"UNSURVEYED · cosmetic appearance only")};
+                hit.style.position=Position.Absolute;hit.style.width=hit.style.height=28;hit.style.display=DisplayStyle.None;
+                PlanetBodyCard.BindActivation(hit,()=>{if(!disposed&&!failed)onSelect(body);},()=>{if(!disposed&&!failed)onOpen(body);},this.activation);hit.focusable=false;hit.tabIndex=-1;viewport.Add(hit);bodyHits.Add(body.PlanetId,hit);
             }
             unavailable=new Label("3D overview unavailable. Use the disclosed body list."){name="sol-overview-unavailable"};unavailable.style.display=DisplayStyle.None;Add(unavailable);
             var credits=new Foldout{text="Surface map credits",value=false};
@@ -82,7 +93,7 @@ namespace HobbyDS9.UnityReview
             RegisterCallback<GeometryChangedEvent>(e=>{
                 if(ReferenceEquals(e.target,this))viewport.style.height=Mathf.Clamp(e.newRect.width/2.1f,260,420);
             });
-            RegisterCallback<AttachToPanelEvent>(_=>{pendingFocus=true;QueueDraw();});
+            RegisterCallback<AttachToPanelEvent>(_=>QueueDraw());
             RegisterCallback<DetachFromPanelEvent>(e=>{if(ReferenceEquals(e.target,this))Dispose();});
         }
         internal void BindPortrait(Image portrait,Label? unavailable=null)
@@ -95,7 +106,7 @@ namespace HobbyDS9.UnityReview
         internal void Select(string id)
         {
             if(disposed||!markers.ContainsKey(id))return;
-            selected=id;pendingFocus=true;QueueDraw();
+            selected=id;pendingFocus=false;QueueDraw();
         }
         private void Control(string text,Action action)
         {var b=new Button(()=>{if(!disposed&&!failed)action();}){text=text};b.style.minHeight=44;b.style.marginRight=4;controls.Add(b);}
@@ -126,11 +137,14 @@ namespace HobbyDS9.UnityReview
                 if(t>=1)animating=false;
             }
             onView(yaw,zoom);
-            stage.FrameRadius=focusFrame?Mathf.Max(stage.Radius(selected)*.22f,3.5f):innerFrame&&stage.MeanDistances?stage.InnerRadius:null;
+            stage.FrameRadius=focusFrame?Mathf.Max(stage.Radius(selected)*.22f,3.5f):innerFrame&&stage.KnownSol?stage.InnerRadius:null;
             stage.FocusSelected=focusFrame;
+            stage.HorizontalPaddingPixels=bodies.Length<=8?120:0;stage.ViewportWidthPixels=width;
             try {if(!stage.Render(width/height,yaw,zoom,selected)){Fallback();return;}}
             catch(Exception){Fallback();return;}
             image.image=stage.Texture;
+            var sunVisible=stage.TryGetSunPosition(out var sunPoint);sunLabel.style.display=sunVisible?DisplayStyle.Flex:DisplayStyle.None;
+            sunLabel.style.left=sunPoint.x*width-14;sunLabel.style.top=sunPoint.y*height+Mathf.Max(12,height*.0425f);
             if(focusedPortrait!=null&&focusedPortrait.panel!=null)
             {
                 bool ready;
@@ -138,19 +152,30 @@ namespace HobbyDS9.UnityReview
                 focusedPortrait.image=ready?stage.PortraitTexture:null;
                 if(portraitUnavailable!=null)portraitUnavailable.style.display=ready?DisplayStyle.None:DisplayStyle.Flex;
             }
+            leaderSegments.Clear();
+            var points=new Dictionary<string,Vector2>(StringComparer.Ordinal);
+            foreach(var body in bodies)
+            {
+                var hit=bodyHits[body.PlanetId];var visible=stage.TryGetPosition(body.PlanetId,out var point);
+                hit.style.display=visible?DisplayStyle.Flex:DisplayStyle.None;
+                if(visible){points.Add(body.PlanetId,new Vector2(point.x*width,point.y*height));hit.style.left=point.x*width-14;hit.style.top=point.y*height-14;}
+            }
+            var railLabels=bodies.Length<=8?SolSchematicLayout.Labels(points.Select(p=>new SolSchematicLayout.Point(p.Key,p.Value.x,p.Value.y)),width,height).ToDictionary(p=>p.Id):null;
             var occupied=new List<Rect>();
             foreach(var entry in markers.OrderBy(x=>x.Key==selected?0:bodies.First(b=>b.PlanetId==x.Key).ActiveSurveyId!=null?1:2))
             {
                 var marker=entry.Value;bool visible=stage.TryGetPosition(entry.Key,out var point);
-                var rectangle=new Rect(Mathf.Clamp(point.x*width-54,0,Mathf.Max(0,width-108)),Mathf.Clamp(point.y*height-25,0,height-58),108,58);
+                var rectangle=railLabels!=null&&railLabels.TryGetValue(entry.Key,out var placed)?new Rect((float)placed.X,(float)placed.Y,108,44):new Rect(Mathf.Clamp(point.x*width-54,0,Mathf.Max(0,width-108)),Mathf.Clamp(point.y*height-25,0,height-44),108,44);
                 // Keep a just-clicked label hit target stationary through the double-click window.
                 if(markerHoldUntil.TryGetValue(entry.Key,out var until)&&Time.realtimeSinceStartup<until&&marker.style.display.value!=DisplayStyle.None)
-                {rectangle=new Rect(marker.resolvedStyle.left,marker.resolvedStyle.top,108,58);visible=true;}
-                if(visible&&entry.Key!=selected&&occupied.Any(r=>r.Overlaps(rectangle)))visible=false;
+                {rectangle=new Rect(marker.resolvedStyle.left,marker.resolvedStyle.top,108,44);visible=true;}
+                if(railLabels==null&&visible&&entry.Key!=selected&&occupied.Any(r=>r.Overlaps(rectangle)))visible=false;
                 marker.style.display=visible?DisplayStyle.Flex:DisplayStyle.None;if(!visible)continue;
                 occupied.Add(rectangle);marker.style.left=rectangle.x;marker.style.top=rectangle.y;
                 marker.style.color=entry.Key==selected?new Color(.98f,.76f,.48f):new Color(.81f,.9f,1);
+                if(railLabels!=null&&points.TryGetValue(entry.Key,out var centre))leaderSegments.Add((centre,new Vector2(rectangle.center.x<width/2?rectangle.xMax:rectangle.xMin,rectangle.center.y)));
             }
+            leaders.MarkDirtyRepaint();
             if(animating)QueueDraw();
         }
         private void Fallback()
