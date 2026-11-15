@@ -137,13 +137,16 @@ namespace HobbyDS9.Simulation
                 SystemId = s.SystemId, DefinitionId = SystemDefinition(s.SystemId), OwnerCivilizationId = homes.FirstOrDefault(h => h.Value.SystemId == s.SystemId).Key }).ToList();
             game.Colonies = game.Colonies!.Where(c => c.OwnerCivilizationId != null && actors.Contains(c.OwnerCivilizationId)).OrderBy(c => c.ColonyId, StringComparer.Ordinal).ToList();
             Require(game.Colonies.All(c => c.ProductionQueue!.Count == 0), "Generated starter template must not contain queued construction.");
+            // Retain authored uncolonised bodies beside the selected home colonies, too.
+            // Association follows the source system, never a body name or an assumed owner.
+            var sourceHomes = game.Colonies.GroupBy(c => c.SystemId, StringComparer.Ordinal)
+                .ToDictionary(g => g.Key, g => homes[g.Select(c => c.OwnerCivilizationId!).Distinct(StringComparer.Ordinal).Single()].SystemId, StringComparer.Ordinal);
             foreach (var colony in game.Colonies) colony.SystemId = homes[colony.OwnerCivilizationId!].SystemId;
-            var planets = new HashSet<string>(game.Colonies.Select(c => c.PlanetId), StringComparer.Ordinal);
-            game.Planets = game.Planets!.Where(p => planets.Contains(p.PlanetId)).OrderBy(p => p.PlanetId, StringComparer.Ordinal).ToList();
+            game.Planets = game.Planets!.Where(p => sourceHomes.ContainsKey(p.SystemId)).OrderBy(p => p.PlanetId, StringComparer.Ordinal).ToList();
             definitions.Planets = definitions.Planets!.Where(p => game.Planets.Any(s => s.DefinitionId == p.DefinitionId)).ToList();
             foreach (var planet in game.Planets)
             {
-                planet.SystemId = game.Colonies.Single(c => c.PlanetId == planet.PlanetId).SystemId;
+                planet.SystemId = sourceHomes[planet.SystemId];
                 definitions.Planets.Single(p => p.DefinitionId == planet.DefinitionId).SystemDefinitionId = SystemDefinition(planet.SystemId);
             }
             definitions.DefinitionIds = definitions.DefinitionIds.Where(id => !oldSystemDefinitions.Contains(id) && !oldPlanetDefinitions.Contains(id)&&!omittedDefinitions.Contains(id))

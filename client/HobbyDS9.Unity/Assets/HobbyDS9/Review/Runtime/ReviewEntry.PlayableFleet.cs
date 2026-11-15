@@ -21,7 +21,7 @@ namespace HobbyDS9.UnityReview
             }
             var codec=new ReviewNewtonsoftCodec();
 #if HOBBYDS9_PB_20261113
-            var scenario=engineeringContent?"engineering-scenario":"scenario";
+            var scenario=engineeringContent?"sol08-scenario":"scenario";
 #else
             const string scenario="scenario";
 #endif
