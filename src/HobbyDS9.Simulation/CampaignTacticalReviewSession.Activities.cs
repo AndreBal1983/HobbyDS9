@@ -54,7 +54,7 @@ namespace HobbyDS9.Simulation
             var catalogue=colonisationPackage?.Catalogue??p.Catalogue!;var readyClasses=colonisationPackage?.ReadyClasses??p.ReadyClasses!;
             CampaignColonisationStateDto? inventory=null;FrozenColonisationPlanetsDto? frozenPlanets=null;CampaignActivityStateDto? seeded=null;CampaignPlayableFleetPackageDto built;
             if(colonisationPackage!=null)
-            {seeded=SeedColonisationActivities(p,map);var facts=expansionSource==null?GeneratedCampaignFactory.BuildColonisation(p.BaseTemplate!,map,startingRoster?.Hash??colonisationPackage.PackageHash,seeded,colonisationPackage.Settlement!,retainedPlanets):GeneratedCampaignFactory.BuildExpansionColonisation(p.BaseTemplate!,map,expansionSource.Hash,seeded,colonisationPackage.Settlement!,retainedPlanets);built=facts.Package;inventory=facts.Inventory;frozenPlanets=facts.Frozen;}
+            {seeded=SeedColonisationActivities(p,map);var facts=expansionSource==null?GeneratedCampaignFactory.BuildColonisation(p.BaseTemplate!,map,startingRoster?.Hash??colonisationPackage.PackageHash,seeded,colonisationPackage.Settlement!,retainedPlanets):GeneratedCampaignFactory.BuildExpansionColonisation(p.BaseTemplate!,map,expansionSource.Hash,seeded,colonisationPackage.Settlement!,retainedPlanets,expansionSource.Richness);built=facts.Package;inventory=facts.Inventory;frozenPlanets=facts.Frozen;}
             else built=streamed==null?GeneratedCampaignFactory.BuildActivities(p.BaseTemplate!,map,p.PackageHash)
                 :GeneratedCampaignFactory.BuildStreamedActivities(p.BaseTemplate!,map,streamed.PackageHash);
             var physical=built.Integrated!.Physical!;var core=physical.CorePackage!;var scenario=core.Campaign!;var game=scenario.InitialState;var d=scenario.Definitions;
@@ -141,6 +141,7 @@ namespace HobbyDS9.Simulation
             if(colonisationPackage!=null)session.WarmColonisationViews(session.state.Campaign.GameState);
             if(expansionSource!=null)session.expansion=new ExpansionContext(expansionSource,session.state.Campaign.GameState.Civilizations!
                 .Where(c=>c.ControllerKind==ControllerKind.AI).OrderBy(c=>c.CivilizationId,StringComparer.Ordinal).Select(c=>new ColonisationAiPlanDto{ActorId=c.CivilizationId}));
+            if(expansionSource?.Richness!=null)session.expansion!.Belts=SystemRichnessData.Belts(map,expansionSource.Richness);
             if(session.RepeatEnabled)session.expansion!.RepeatGoals=session.expansion.Plans.Select(p=>new ColonisationRepeatGoalDto{ActorId=p.ActorId,
                 Assignment=new ColonisationAiPlanDto{ActorId=p.ActorId,GoalId=CampaignColonisationRepeatIdentity.Goal}}).ToList();
             if(session.CycleEnabled)session.expansion!.CycleActors=session.expansion.Plans.Select(p=>new ColonisationCycleActorDto{ActorId=p.ActorId}).ToList();

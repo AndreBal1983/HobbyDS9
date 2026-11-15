@@ -12,13 +12,15 @@ namespace HobbyDS9.Simulation
             internal readonly string Hash;
             internal readonly ColonisationPlannerPolicyDto Policy;
             internal readonly ColonisationSourceEdition Edition;
-            internal string Profile=>Edition==ColonisationSourceEdition.Cycle?CampaignColonisationCycleIdentity.Profile:Edition==ColonisationSourceEdition.Repeat?CampaignColonisationRepeatIdentity.Profile:Edition==ColonisationSourceEdition.Growth?CampaignColonisationGrowthIdentity.Profile:CampaignColonisationExpansionIdentity.Profile;
+            internal readonly SystemRichnessPolicyDto? Richness;
+            internal string Profile=>Richness!=null?CampaignSystemRichnessIdentity.Profile:Edition==ColonisationSourceEdition.Cycle?CampaignColonisationCycleIdentity.Profile:Edition==ColonisationSourceEdition.Repeat?CampaignColonisationRepeatIdentity.Profile:Edition==ColonisationSourceEdition.Growth?CampaignColonisationGrowthIdentity.Profile:CampaignColonisationExpansionIdentity.Profile;
             internal ExpansionSource(CampaignColonisationExpansionPackageDto p,ColonisationSourceEdition edition=ColonisationSourceEdition.Original)
             {Require(edition==ColonisationSourceEdition.Original||edition==ColonisationSourceEdition.Growth,"Unsupported closed source edition.");
                 Require(p!=null&&p.PackageHash==(edition==ColonisationSourceEdition.Growth?ColonisationData.GrowthHash(p):ColonisationData.ExpansionHash(p)),"Different approved expansion package.");
                 Hash=p!.PackageHash;Policy=ColonisationData.Copy(p.PlannerPolicy!);Edition=edition;}
             internal ExpansionSource(CampaignColonisationCyclePackageDto p)
-            {Hash=ColonisationData.CycleHash(p);Require(p.PackageHash==Hash,"Different cycle package hash.");Policy=ColonisationData.Copy(p.BaseGrowth!.PlannerPolicy!);Edition=ColonisationSourceEdition.Cycle;}
+            {Hash=ColonisationData.CycleHash(p);Require(p.PackageHash==Hash,"Different cycle package hash.");Policy=ColonisationData.Copy(p.BaseGrowth!.PlannerPolicy!);Edition=ColonisationSourceEdition.Cycle;
+                if(p is CampaignSystemRichnessPackageDto rich)Richness=SystemRichnessData.Copy(rich.Generation!);}
             internal ExpansionSource(CampaignColonisationRepeatPackageDto p)
             {
                 Hash=ColonisationData.RepeatHash(p);Require(p.PackageHash==Hash,"Different repeat package hash.");Policy=ColonisationData.Copy(p.BaseGrowth!.PlannerPolicy!);Edition=ColonisationSourceEdition.Repeat;
@@ -30,8 +32,9 @@ namespace HobbyDS9.Simulation
             internal List<ColonisationAiPlanDto> Plans;
             internal ExpansionContext(ExpansionSource source,IEnumerable<ColonisationAiPlanDto> plans){Source=source;Plans=plans.Select(ColonisationData.Copy).ToList();}
             internal List<ColonisationCycleActorDto> CycleActors=new List<ColonisationCycleActorDto>();
+            internal List<SystemAsteroidBeltDto> Belts=new List<SystemAsteroidBeltDto>();
             internal List<ColonisationRepeatGoalDto> RepeatGoals=new List<ColonisationRepeatGoalDto>();
-            internal ExpansionContext Copy(){var copy=new ExpansionContext(Source,Plans);copy.RepeatGoals=RepeatGoals.Select(ColonisationData.Copy).ToList();copy.CycleActors=CycleActors.Select(ColonisationData.Copy).ToList();return copy;}
+            internal ExpansionContext Copy(){var copy=new ExpansionContext(Source,Plans);copy.RepeatGoals=RepeatGoals.Select(ColonisationData.Copy).ToList();copy.CycleActors=CycleActors.Select(ColonisationData.Copy).ToList();copy.Belts=Belts.Select(SystemRichnessData.Copy).ToList();return copy;}
         }
         private ExpansionContext? expansion;
         private bool GrowthEnabled=>expansion?.Source.Edition==ColonisationSourceEdition.Growth||RepeatEnabled||CycleEnabled;

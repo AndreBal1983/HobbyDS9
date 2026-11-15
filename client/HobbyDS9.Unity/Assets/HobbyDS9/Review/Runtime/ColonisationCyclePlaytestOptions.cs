@@ -9,6 +9,12 @@ namespace HobbyDS9.UnityReview
 {
     public static class ColonisationCyclePlaytestOptions
     {
+        public static CampaignSystemRichnessPackageDto CreateRichnessPackage(CampaignColonisationExpansionPackageDto growth,byte[] bytes,ReviewNewtonsoftCodec codec)
+        {
+            using(var sha=SHA256.Create())
+                if(bytes==null||string.Concat(sha.ComputeHash(bytes).Select(b=>b.ToString("x2",CultureInfo.InvariantCulture)))!="e5265cc508f7dd217fe4850a20386b717d279c17aa26971bd731e1a875b0666f")throw new ArgumentException("Different system richness recipe resource.");
+            return CampaignColonisationCycleApplication.CreateSystemRichnessPackage(growth,codec.DecodeSystemRichnessPolicy(bytes));
+        }
         public const string PolicyAssetHash="b496e0b6e7ea4ddaa7d789ee43f38511b7b363fb47c8856d4dcfe2e20c1779e9";
         public static CampaignColonisationCyclePackageDto CreatePackage(CampaignColonisationExpansionPackageDto growth,byte[] bytes,ReviewNewtonsoftCodec codec)
         {

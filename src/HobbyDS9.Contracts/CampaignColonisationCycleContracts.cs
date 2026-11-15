@@ -9,7 +9,7 @@ namespace HobbyDS9.Contracts
     }
     public sealed class ColonisationCyclePolicyDto
     { public string Algorithm {get;set;}=CampaignColonisationCycleIdentity.Planner;public int ActiveMissions {get;set;}=1; }
-    public sealed class CampaignColonisationCyclePackageDto
+    public class CampaignColonisationCyclePackageDto
     {
         public int FormatVersion {get;set;}=1;public string ProfileId {get;set;}=CampaignColonisationCycleIdentity.PackageProfile;
         public string PackageHash {get;set;}="";public CampaignColonisationExpansionPackageDto? BaseGrowth {get;set;}
@@ -34,7 +34,7 @@ namespace HobbyDS9.Contracts
         public ColonisationCycleMissionDto? Active {get;set;}
         public List<ColonisationCycleReceiptDto>? Receipts {get;set;}=new List<ColonisationCycleReceiptDto>();
     }
-    public sealed class CampaignColonisationCycleSaveDto
+    public class CampaignColonisationCycleSaveDto
     {
         public int FormatVersion {get;set;}=CampaignColonisationCycleIdentity.Format;public string ProfileId {get;set;}=CampaignColonisationCycleIdentity.Profile;
         public string PackageHash {get;set;}="";public CampaignColonisationSaveDto? BaseCampaign {get;set;}

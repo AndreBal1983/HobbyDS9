@@ -13,7 +13,10 @@ namespace HobbyDS9.UnityReview
     public sealed partial class ReviewNewtonsoftCodec:IBackgroundColonisationCycleCheckpointCodec
     {
         public CampaignColonisationCyclePackageDto CopyCyclePackage(CampaignColonisationCyclePackageDto package)
-            =>Decode<CampaignColonisationCyclePackageDto>(Encode(package));
+        {
+            if(package==null||package.GetType()!=typeof(CampaignColonisationCyclePackageDto)&&!(package is CampaignSystemRichnessPackageDto))throw Invalid();
+            return package is CampaignSystemRichnessPackageDto?Decode<CampaignSystemRichnessPackageDto>(Encode(package)):Decode<CampaignColonisationCyclePackageDto>(Encode(package));
+        }
         public CampaignColonisationCycleSaveDto CopyCycleSave(CampaignColonisationCycleSaveDto root)
             =>DecodeCycleRoot(EncodeCycleRoot(root));
         public byte[] EncodeCycleRoot(CampaignColonisationCycleSaveDto root)
@@ -44,7 +47,8 @@ namespace HobbyDS9.UnityReview
                 // This adapter-only reflection closes the fixed contract graph; portable
                 // simulation uses its independently versioned non-reflective preflight.
                 int visits = 2000000;
-                ColonisationWire(wire, typeof(CampaignColonisationCycleSaveDto), ref visits, new Dictionary<Type, PropertyInfo[]>(),ColonisationCarrierVocabulary.Cycle);
+                var rich=(string?)wire["ProfileId"]==CampaignSystemRichnessIdentity.Profile;
+                ColonisationWire(wire, rich?typeof(CampaignSystemRichnessSaveDto):typeof(CampaignColonisationCycleSaveDto), ref visits, new Dictionary<Type, PropertyInfo[]>(),ColonisationCarrierVocabulary.Cycle);
                 loadDiagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
                 phase=ReviewLoadPhase.DecodeNatural;
                 loadDiagnostic?.Record(phase,ReviewLoadEvent.Begin);
@@ -52,7 +56,7 @@ namespace HobbyDS9.UnityReview
                 loadDiagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
                 phase=ReviewLoadPhase.DecodeTyped;
                 loadDiagnostic?.Record(phase,ReviewLoadEvent.Begin);
-                var root = Decode<CampaignColonisationCycleSaveDto>(bytes);
+                CampaignColonisationCycleSaveDto root = rich?Decode<CampaignSystemRichnessSaveDto>(bytes):Decode<CampaignColonisationCycleSaveDto>(bytes);
                 loadDiagnostic?.Record(phase,ReviewLoadEvent.NormalReturn);
                 phase=ReviewLoadPhase.DecodeCarrier;
                 loadDiagnostic?.Record(phase,ReviewLoadEvent.Begin);
@@ -62,14 +66,18 @@ namespace HobbyDS9.UnityReview
             }
             catch (Exception e) { loadDiagnostic?.Record(phase,ReviewLoadEvent.Error,e);throw new InvalidDataException("Invalid colonisation campaign carrier."); }
         }
+        public SystemRichnessPolicyDto DecodeSystemRichnessPolicy(byte[] bytes)=>DecodeActivityResource<SystemRichnessPolicyDto>(bytes);
         public ColonisationCyclePolicyDto DecodeColonisationCyclePolicy(byte[] bytes)=>DecodeActivityResource<ColonisationCyclePolicyDto>(bytes);
         private static void RequireColonisationCycleCarrier(CampaignColonisationCycleSaveDto root)
         {
-            if(root==null||root.FormatVersion!=CampaignColonisationCycleIdentity.Format||root.ProfileId!=CampaignColonisationCycleIdentity.Profile
+            var rich=root as CampaignSystemRichnessSaveDto;
+            if(root!=null&&rich==null&&root.GetType()!=typeof(CampaignColonisationCycleSaveDto))throw Invalid();
+            if(rich!=null&&(rich.GenerationVersion!=CampaignSystemRichnessIdentity.Generation||!ActivityRows(rich.SystemBelts)||rich.SystemBelts!.Count>1000))throw Invalid();
+            if(root==null||root.FormatVersion!=(rich==null?CampaignColonisationCycleIdentity.Format:CampaignSystemRichnessIdentity.Format)||root.ProfileId!=(rich==null?CampaignColonisationCycleIdentity.Profile:CampaignSystemRichnessIdentity.Profile)
                 ||!ActivityRows(root.CycleActors)||root.CycleActors!.Count>4)throw Invalid();
             // Shared carrier shape only; this does not select a loader or trusted edition.
             RequireColonisationExpansionCarrier(new CampaignColonisationExpansionSaveDto{FormatVersion=CampaignColonisationExpansionIdentity.Format,
-                ProfileId=CampaignColonisationGrowthIdentity.Profile,PackageHash=root.PackageHash,BaseCampaign=root.BaseCampaign,AiPlans=root.AiPlans},ColonisationCarrierVocabulary.Cycle);
+                ProfileId=CampaignColonisationGrowthIdentity.Profile,PackageHash=root.PackageHash,BaseCampaign=root.BaseCampaign,AiPlans=root.AiPlans},ColonisationCarrierVocabulary.Cycle,rich==null?null:CampaignSystemRichnessIdentity.Inventory);
             var actors=new HashSet<string>(root.AiPlans!.Select(p=>p.ActorId),StringComparer.Ordinal);
             var seen=new HashSet<string>(StringComparer.Ordinal);long records=0;
             bool Text(string? value)=>value==null||value.Length<=512;
