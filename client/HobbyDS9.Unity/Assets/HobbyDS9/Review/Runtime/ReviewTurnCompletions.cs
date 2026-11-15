@@ -19,8 +19,9 @@ namespace HobbyDS9.UnityReview
     {
         public string Identity {get;} public string Title {get;} public string Detail {get;}
         public string? ResearchTab {get;} public string? ColonyId {get;}
-        public ReviewCompletionNotice(string identity,string title,string detail,string? researchTab=null,string? colonyId=null)
-        {Identity=identity;Title=title;Detail=detail;ResearchTab=researchTab;ColonyId=colonyId;}
+        public ScienceDiscipline? Discipline {get;}
+        public ReviewCompletionNotice(string identity,string title,string detail,string? researchTab=null,string? colonyId=null,ScienceDiscipline? discipline=null)
+        {Identity=identity;Title=title;Detail=detail;ResearchTab=researchTab;ColonyId=colonyId;Discipline=discipline;}
     }
     public sealed class ReviewEngineeringNoticeDefinition
     {
@@ -58,8 +59,8 @@ namespace HobbyDS9.UnityReview
                     var detail=receipt.Category=="science-level"
                         ?name+" reached level "+Number(receipt.Amount)+"."
                         :name+" · level "+receipt.IntervalStartLevel+" → "+(receipt.IntervalStartLevel+1)+" · discovery "+receipt.BreakthroughOrdinal+" reached.";
-                    rows.Add(new ReviewCompletionNotice(key,receipt.Category=="science-level"?name+" level completed":name+" discovery completed",
-                        detail+"\n\nEngineering eligibility follows its named Science and project prerequisites.","science"));
+                    rows.Add(new ReviewCompletionNotice(key,receipt.Category=="science-level"?name+" · level "+Number(receipt.Amount):name+" · discovery "+receipt.BreakthroughOrdinal,
+                        detail,"science",discipline:receipt.Discipline));
                 }
             }
             return rows.GroupBy(r=>r.Identity,StringComparer.Ordinal).Select(g=>g.First()).ToList().AsReadOnly();
