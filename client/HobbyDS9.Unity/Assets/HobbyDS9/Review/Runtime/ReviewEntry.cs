@@ -120,6 +120,7 @@ namespace HobbyDS9.UnityReview
         }
         private void OnDisable()
         {
+            CancelCampaignArchiveScan();
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.enter");
             viewEpoch++;modalPermission.Invalidate();
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.begin");
@@ -155,6 +156,7 @@ namespace HobbyDS9.UnityReview
         private void Build()=>Build(null);
         private void Build(VisualElement? detachedRoot)
         {
+            if(campaignArchiveScanOwner!=null&&!ReferenceEquals(model,campaignArchiveScanOwner))CancelCampaignArchiveScan();
             if(detachedRoot==null)
             {
                 CaptureActivitiesSelectionForRebuild();CaptureColonisationSelectionForRebuild();
