@@ -8,7 +8,10 @@ internal static class NaturalGalaxyJson
     internal const int MaximumBytes = ScaledGalaxyIdentity.MaximumJsonBytes;
     internal static string Write(NaturalGalaxyReview review)
     {
-        string json = JsonSerializer.Serialize(review.Export(), new JsonSerializerOptions { WriteIndented = true });
+        // JsonSerializer's indented newline follows the host OS. Preserve the
+        // original Windows bytes for this version on every runner.
+        string json = JsonSerializer.Serialize(review.Export(), new JsonSerializerOptions { WriteIndented = true })
+            .Replace("\r\n", "\n").Replace("\n", "\r\n");
         if (Encoding.UTF8.GetByteCount(json) > MaximumBytes) throw new ArgumentException("Natural-map JSON exceeds the byte budget.");
         return json;
     }

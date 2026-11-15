@@ -2,6 +2,7 @@ name: Authoritative explanations and trusted review shell (headless)
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
@@ -25,7 +26,7 @@ jobs:
         run: |
           $suites = @(
             @{ Project = 'tests/HobbyDS9.TacticalReviewShell.Tests/HobbyDS9.TacticalReviewShell.Tests.csproj'; Kind = 'new'; Name = 'explanations-shell.trx'; Expected = 23 },
-            @{ Project = 'tests/HobbyDS9.TacticalTravelClient.Tests/HobbyDS9.TacticalTravelClient.Tests.csproj'; Kind = 'physical'; Name = 'physical.trx'; Expected = 89 },
+            @{ Project = 'tests/HobbyDS9.TacticalTravelClient.Tests/HobbyDS9.TacticalTravelClient.Tests.csproj'; Kind = 'physical'; Name = 'physical.trx' },
             @{ Project = 'tests/HobbyDS9.TacticalReviewStorage.Tests/HobbyDS9.TacticalReviewStorage.Tests.csproj'; Kind = 'storage'; Name = 'storage.trx'; Expected = 47 },
             @{ Project = 'tests/HobbyDS9.TacticalReviewClient.Tests/HobbyDS9.TacticalReviewClient.Tests.csproj'; Kind = 'real'; Name = 'real-client.trx'; Expected = 51 },
             @{ Project = 'tests/HobbyDS9.TacticalUxPrototype.Tests/HobbyDS9.TacticalUxPrototype.Tests.csproj'; Kind = 'mock'; Name = 'mock.trx'; Expected = 115 }
@@ -40,6 +41,10 @@ jobs:
             if ($LASTEXITCODE -ne 0) { throw "Tests failed for $($suite.Kind)" }
             [xml]$trx = Get-Content -LiteralPath "$directory/$($suite.Name)"
             $c = $trx.TestRun.ResultSummary.Counters
+            if ($suite.Kind -eq 'physical') {
+              & tools/ci/Assert-PhysicalTravelTrx.ps1 -Path "$directory/$($suite.Name)"
+              continue
+            }
             if ([int]$c.total -ne $suite.Expected -or [int]$c.passed -ne $suite.Expected -or [int]$c.failed -ne 0 -or [int]$c.notExecuted -ne 0) {
               throw "Unexpected evidence for $($suite.Kind): $($c.OuterXml)"
             }

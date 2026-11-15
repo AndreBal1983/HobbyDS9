@@ -1,6 +1,7 @@
 name: Single-player demo backend (headless only)
 on:
   push:
+    branches: [main]
   pull_request:
 jobs:
   verify:
