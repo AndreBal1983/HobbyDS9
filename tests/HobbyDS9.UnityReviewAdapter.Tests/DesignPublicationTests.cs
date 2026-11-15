@@ -6,6 +6,15 @@ using Xunit;
 namespace HobbyDS9.UnityReviewAdapter.Tests;
 public sealed class DesignPublicationTests : IDisposable
 {
+    [Fact]public void InvalidUnpublishedFitSurvivesTurnAndSaveWithoutPublishingAndRequiresFreshValidation()
+    {
+        var m=Model();var p=new ReviewDesignPublication(m);var fit=Fit(p);fit.DisplayName="Unfinished session class";fit.Installations!.Clear();
+        m.LocalDesignDirty=true;bool reset=false;m.ResetLocalDesign=()=>reset=true;var controller=m.Current;
+        Assert.False(p.CanPublish(fit));Assert.True(m.Advance());Assert.Same(controller,m.Current);Assert.False(reset);Assert.True(m.LocalDesignDirty);
+        Assert.Empty(m.DesignLibrary().Published);Assert.Equal("Unfinished session class",fit.DisplayName);Assert.Empty(fit.Installations);
+        Assert.False(p.Current);Assert.False(p.Publish(fit));Assert.True(p.Refresh());Assert.False(p.CanPublish(fit));
+        Assert.True(m.Save("unfinished"));Assert.True(m.LocalDesignDirty);Assert.False(m.Load("unfinished"));Assert.False(m.Close());Assert.Empty(m.DesignLibrary().Published);
+    }
     readonly string directory=Path.Combine(Path.GetTempPath(),"hobby-design-publish-"+Guid.NewGuid().ToString("N"));
     readonly ReviewNewtonsoftCodec codec=new();
     static CampaignPlayableFleetPackageDto Template()=>PlayableFleetPackageReader.Read(Path.Combine(AppContext.BaseDirectory,"scenarios/playable-fleet-v1"));

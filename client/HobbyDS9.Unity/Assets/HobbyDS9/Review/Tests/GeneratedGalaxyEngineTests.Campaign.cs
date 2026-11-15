@@ -391,7 +391,7 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return CampaignPointerRight(doc,entry,CrowdedPoint());if(doc.rootVisualElement.Q("review-one-use-confirmation")!=null)Confirm(doc,false);Click(doc.rootVisualElement.Q<Button>("map-fit"));yield return null;
                 var initialShips=model.Current.Frame.Strategy!.Ships.Select(s=>s.ShipId.Value).ToHashSet(StringComparer.Ordinal);
                 CampaignPage(doc,ReviewWorkspacePage.Research);doc.rootVisualElement.Q<SliderInt>("integrated-research-split").value=10;
-                Click(doc.rootVisualElement.Q<Button>("integrated-apply-split"));Confirm(doc);
+                yield return new WaitForSecondsRealtime(.06f);yield return null;Assert.That(model.HasPlanningEdits,Is.False);
                 CampaignTrace(entry,"research-split-confirmed");
                 CampaignPage(doc,ReviewWorkspacePage.Production);
                 var colony=model.Current.Frame.Strategy!.Construction.First(c=>c.CanEnqueue&&c.Design.DefinitionId.Value=="ship-design.source-cruiser").ColonyId.Value;

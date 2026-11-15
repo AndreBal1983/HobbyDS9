@@ -161,7 +161,7 @@ namespace HobbyDS9.UnityReview.Tests
                 var model=ReviewUiModel.ContinueStaticAstronomyCampaign(template,codec,store,"generated-1");
                 void Publish(ReviewUiModel next)=>typeof(ReviewEntry).GetMethod("PublishPlayerProfile",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(entry,new object[]{next,"generated-1"});
                 Publish(model);yield return null;yield return null;
-                CampaignPage(doc,ReviewWorkspacePage.Research);var split=doc.rootVisualElement.Q<SliderInt>("integrated-research-split");split.value=(split.value+1)%21;
+                CampaignPage(doc,ReviewWorkspacePage.Research);model.ResearchInputs()!.ScienceUnits=(model.ResearchInputs()!.ScienceUnits+30)%630; // Adversarial unsent input exercises checkpoint isolation, outside auto-commit controls.
                 var draft=model.ResearchInputs()!;int desired=draft.ScienceUnits;Assert.That(draft.Dirty,Is.True);
                 CampaignPage(doc,ReviewWorkspacePage.Saves);Click(doc.rootVisualElement.Q<Button>("save-slot-generated-2"));
                 var before=model.Current.Frame;var beforeController=model.Current;double zoom=model.GeneratedViewport.Zoom,worldX=model.GeneratedViewport.WorldX(0),worldY=model.GeneratedViewport.WorldY(0);
