@@ -156,6 +156,8 @@ namespace HobbyDS9.UnityReview.Tests
                         Click("research-tab-engineering");yield return null;yield return null;yield return null;
                         Assert.That(root.Q("engineering-section-new"),Is.Not.Null);
                         Assert.That(root.Q("engineering-section-refinement"),Is.Not.Null);
+                        Assert.That(root.Q<TextField>("engineering-search-new").worldBound.width,Is.GreaterThanOrEqualTo(240));
+                        Assert.That(root.Q<TextField>("engineering-search-refinement").worldBound.width,Is.GreaterThanOrEqualTo(240));
                         Assert.That(root.Q("engineering-allocation"),Is.Null);
                         Assert.That(root.Q("open-other-research"),Is.Null);
                         var goals=root.Query<Button>().ToList().Where(e=>e.name.StartsWith("engineering-goal-")).ToList();

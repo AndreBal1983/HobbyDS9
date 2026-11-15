@@ -38,8 +38,8 @@ namespace HobbyDS9.UnityReview
                 Text(section,heading+" · "+projects.Count,"console-section");
                 string Search()=>refinement?workspace.EngineeringRefinementSearch:workspace.EngineeringNewSearch;
                 string Category()=>refinement?workspace.EngineeringRefinementCategory:workspace.EngineeringNewCategory;
-                var filters=Row(section);
-                var search=new TextField("Search projects"){name="engineering-search-"+key,value=Search()};filters.Add(search);
+                var filters=Row(section);filters.style.flexWrap=Wrap.Wrap;
+                var search=new TextField("Search projects"){name="engineering-search-"+key,value=Search()};search.style.minWidth=240;search.style.maxWidth=360;search.style.flexGrow=1;filters.Add(search);
                 var categories=new List<string>{"All technologies"};categories.AddRange(projects.Select(p=>EngineeringPresentation.Category(p.Definition.DefinitionId.Value)).Distinct().OrderBy(v=>v,StringComparer.Ordinal));
                 var category=new DropdownField("Technology",categories,Math.Max(0,categories.IndexOf(Category()))){name="engineering-category-"+key};filters.Add(category);
                 var grid=new VisualElement{name="engineering-projects-"+key};grid.AddToClassList("engineering-project-grid");section.Add(grid);
