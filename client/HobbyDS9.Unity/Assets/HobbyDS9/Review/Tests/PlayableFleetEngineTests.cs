@@ -80,12 +80,15 @@ namespace HobbyDS9.UnityReview.Tests
             var doc=entry.GetComponent<UIDocument>();yield return null;
             var initial=model.Current.Frame;var panel=doc.rootVisualElement.panel.visualTree;
             var ring=doc.rootVisualElement.Q<Button>("map-ring-nav.sol");ring.Focus();Key(ring,KeyCode.Return);
-            Assert.That(entry.Workspace!.SelectedFleet,Is.Not.Null);
+            Assert.That(entry.Workspace!.Page,Is.EqualTo(ReviewWorkspacePage.FleetOrders));
+            var atSol=initial.OwnStrategicFleets.Where(f=>f.LocationNodeId.Value=="nav.sol").ToList();
+            Assert.That(entry.Workspace.SelectedFleet,Is.EqualTo(atSol.Count==1?atSol[0].FleetId.Value:null));
             Assert.That(ring.panel,Is.SameAs(doc.rootVisualElement.panel),"held origin survives the repaint");
             Assert.That(ring.enabledInHierarchy,Is.False);
+            var back=doc.rootVisualElement.Q<Button>("review-nav-Map");back.Focus();Key(back,KeyCode.Return);
+            Assert.That(entry.Workspace.Page,Is.EqualTo(ReviewWorkspacePage.FleetOrders),"held ring inspection must not activate a replacement control");
+            Key(panel,KeyCode.Return,true);back.Focus();Key(back,KeyCode.Return);Key(panel,KeyCode.Return,true);
             var star=doc.rootVisualElement.Q<Button>("map-star-nav.bajor");star.Focus();Key(star,KeyCode.Return);
-            Assert.That(entry.Workspace.SelectedNode,Is.EqualTo("nav.sol"),"held key must not select another marker");
-            Key(panel,KeyCode.Return,true);star.Focus();Key(star,KeyCode.Return);
             Assert.That(entry.Workspace.SelectedNode,Is.EqualTo("nav.bajor"));Key(panel,KeyCode.Return,true);
             Assert.That(model.Current.Frame,Is.SameAs(initial),"selection never submits an order");
 
@@ -115,6 +118,50 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(model.Current.Frame.Travel!.OwnReceipts.Any(r=>r.FleetId==fleet&&r.TransitDestinationId!=null),Is.True);
             var moving=doc.rootVisualElement.Query<Button>().ToList().First(b=>b.name.StartsWith("map-moving-fleet-",StringComparison.Ordinal));
             moving.Focus();Key(moving,KeyCode.Space);Assert.That(entry.Workspace.SelectedFleet,Is.EqualTo(fleet));Key(panel,KeyCode.Space,true);
+            yield return new ExitPlayMode();
+        }
+        [UnityTest]public IEnumerator RingDoubleClickInspectsOnlyItsLawfulFleetAndRejectsDragOrStaleFrame()
+        {
+            yield return new EnterPlayMode();yield return null;yield return null;
+            var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var model=Model(entry);var doc=entry.GetComponent<UIDocument>();yield return null;
+            // EditMode defaults to a 640x480 panel, where the footer covers the
+            // map ring. Probe pointer ownership at the supported desktop minimum.
+            var texture=new RenderTexture(1280,720,24,RenderTextureFormat.ARGB32);texture.Create();
+            var oldTexture=doc.panelSettings.targetTexture;
+            doc.panelSettings.targetTexture=texture;doc.rootVisualElement.style.width=1280;doc.rootVisualElement.style.height=720;
+            try
+            {
+            yield return null;yield return null;
+            var frame=model.Current.Frame;var group=frame.OwnStrategicFleets.GroupBy(f=>f.LocationNodeId.Value).First();var id="map-ring-"+group.Key;
+            void Pointer(Button target,EventType kind,Vector2 point,int clicks)
+            {
+                var input=new Event{type=kind,button=0,mousePosition=point,clickCount=clicks};
+                if(kind==EventType.MouseDown){using var e=PointerDownEvent.GetPooled(input);e.target=target;target.SendEvent(e);}
+                else if(kind==EventType.MouseUp){using var e=PointerUpEvent.GetPooled(input);e.target=target;target.SendEvent(e);}
+                else{using var e=PointerMoveEvent.GetPooled(input);e.target=target;target.SendEvent(e);}
+            }
+            void ClickRing(int count)
+            {
+                var target=doc.rootVisualElement.Q<Button>(id);var point=target.worldBound.center+new Vector2(32,0);var picked=target.panel.Pick(point);
+                while(picked!=null&&!ReferenceEquals(picked,target))picked=picked.parent;Assert.That(picked,Is.SameAs(target),"Actual ring hit area/layer owns this click.");
+                Pointer(target,EventType.MouseDown,point,count);Pointer(target,EventType.MouseUp,point,count);
+            }
+            model.LocalDesignDirty=true;ClickRing(1);yield return null;
+            Assert.That(entry.Workspace!.Page,Is.EqualTo(ReviewWorkspacePage.Map));Assert.That(model.Current.Frame,Is.SameAs(frame));
+            ClickRing(2);yield return null;
+            Assert.That(entry.Workspace.Page,Is.EqualTo(ReviewWorkspacePage.FleetOrders));Assert.That(entry.Workspace.SelectedFleet,Is.EqualTo(group.Count()==1?group.Single().FleetId.Value:null));Assert.That(model.LocalDesignDirty,Is.True);Assert.That(model.Current.Frame,Is.SameAs(frame));
+            if(group.Count()==1)Assert.That(doc.rootVisualElement.Q("fleet-navigation-summary"),Is.Not.Null);
+            Page(entry,ReviewWorkspacePage.Map);yield return null;var ring=doc.rootVisualElement.Q<Button>(id);var start=ring.worldBound.center+new Vector2(32,0);
+            Pointer(ring,EventType.MouseDown,start,1);Pointer(ring,EventType.MouseDrag,start+new Vector2(16,0),1);Pointer(ring,EventType.MouseUp,start+new Vector2(16,0),1);
+            Assert.That(entry.Workspace.Page,Is.EqualTo(ReviewWorkspacePage.Map));Assert.That(model.Current.Frame,Is.SameAs(frame));
+            Assert.That(model.Refresh(),Is.True);var refreshed=model.Current.Frame;Pointer(ring,EventType.MouseDown,start,2);Pointer(ring,EventType.MouseUp,start,2);
+            Assert.That(entry.Workspace.Page,Is.EqualTo(ReviewWorkspacePage.Map));Assert.That(model.Current.Frame,Is.SameAs(refreshed));
+            }
+            finally
+            {
+                doc.panelSettings.targetTexture=oldTexture;doc.rootVisualElement.style.width=StyleKeyword.Null;doc.rootVisualElement.style.height=StyleKeyword.Null;
+                texture.Release();UnityEngine.Object.Destroy(texture);
+            }
             yield return new ExitPlayMode();
         }
 

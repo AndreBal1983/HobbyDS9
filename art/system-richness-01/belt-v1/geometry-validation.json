@@ -1,0 +1,79 @@
+{
+  "schema": 1,
+  "assets": [
+    {
+      "path": "Models/Belt_Rock_0_LOD0.fbx",
+      "triangles": 80,
+      "vertices": 42,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_1_LOD0.fbx",
+      "triangles": 80,
+      "vertices": 42,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_2_LOD0.fbx",
+      "triangles": 80,
+      "vertices": 42,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_3_LOD0.fbx",
+      "triangles": 80,
+      "vertices": 42,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_0_LOD1.fbx",
+      "triangles": 20,
+      "vertices": 12,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_1_LOD1.fbx",
+      "triangles": 20,
+      "vertices": 12,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_2_LOD1.fbx",
+      "triangles": 20,
+      "vertices": 12,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_3_LOD1.fbx",
+      "triangles": 20,
+      "vertices": 12,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Example_LOD0.fbx",
+      "triangles": 25600,
+      "vertices": 13440,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Example_LOD1.fbx",
+      "triangles": 2400,
+      "vertices": 1440,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_SoftAnnulus.fbx",
+      "triangles": 384,
+      "vertices": 386,
+      "materialSlots": 1
+    }
+  ],
+  "seedU32": 342353800,
+  "rockCountLOD0": 320,
+  "rockCountLOD1": 120,
+  "assertions": {
+    "finiteVertices": true,
+    "prototypeMaxRadiusAtMostOne": true,
+    "onlyOriginalGeometry": true
+  }
+}

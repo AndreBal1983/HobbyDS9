@@ -16,6 +16,9 @@ namespace HobbyDS9.UnityReview
         private readonly Transform orbitalRoot=null!;
         private readonly Camera camera=null!;
         private readonly Material material=null!;
+        private Material? ringMaterial;
+        private ReviewSystemBelts? systemBelts;
+        private readonly Transform sun=null!;
         private readonly Mesh sphere=null!,track=null!;
         private readonly List<Mesh> importedCopies=new List<Mesh>();
         private readonly List<string> assetFallbacks=new List<string>();
@@ -28,9 +31,12 @@ namespace HobbyDS9.UnityReview
         private static readonly Color OrbitColor=new Color(.15f,.22f,.33f);
         private readonly float extent;
         private readonly Dictionary<string,float> orbitRadii=new Dictionary<string,float>(StringComparer.Ordinal);
-        internal bool MeanDistances {get;}
+        internal bool KnownSol {get;}
+        internal float HorizontalPaddingPixels {get;set;}
+        internal float ViewportWidthPixels {get;set;}
+        internal const float MinimumOverviewRadius=24;
         internal float OuterRadius=>extent-1.2f;
-        internal float InnerRadius=>orbitRadii.Values.Where(r=>r<=18.4f).DefaultIfEmpty(OuterRadius).Max();
+        internal float InnerRadius=>orbitRadii.Where(r=>SolSchematicLayout.Ordinal(r.Key)>=0&&SolSchematicLayout.Ordinal(r.Key)<=3).Select(r=>r.Value).DefaultIfEmpty(OuterRadius).Max();
         internal float? FrameRadius {get;set;}
         internal bool FocusSelected {get;set;}
         internal float Radius(string id)=>orbitRadii.TryGetValue(id,out var radius)?radius:0;
@@ -44,7 +50,8 @@ namespace HobbyDS9.UnityReview
         internal RenderTexture? PortraitTexture {get;private set;}
 
         internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies):this(shader,bodies,null){}
-        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies,IReadOnlyDictionary<string,long>? meanDistances)
+        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies,IReadOnlyDictionary<string,long>? meanDistances):this(shader,bodies,meanDistances,null){}
+        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies,IReadOnlyDictionary<string,long>? meanDistances,IReadOnlyList<BeltVisualSlot>? belts)
         {
             try
             {
@@ -53,15 +60,15 @@ namespace HobbyDS9.UnityReview
             orbitalRoot=Child("Presentation rotation").transform;
             camera=Child("System preview camera").AddComponent<Camera>();
             camera.enabled=false;camera.orthographic=true;camera.nearClipPlane=.1f;
-            MeanDistances=meanDistances!=null&&bodies.All(b=>b!=null&&meanDistances.ContainsKey(b.PlanetId));
+            KnownSol=meanDistances!=null&&bodies.All(b=>b!=null&&meanDistances.ContainsKey(b.PlanetId)&&SolSchematicLayout.Ordinal(b.PlanetId)>=0);
             for(int i=0;i<bodies.Count;i++)
             {
                 // Let the construction loop validate a malformed body after earlier
                 // stage resources exist, so its catch path still releases them.
                 if(bodies[i]==null)continue;
-                orbitRadii.Add(bodies[i].PlanetId,MeanDistances?(float)((double)meanDistances![bodies[i].PlanetId]/149600000*12):2.4f+i*1.2f);
+                orbitRadii.Add(bodies[i].PlanetId,(float)SolSchematicLayout.Radius(KnownSol?SolSchematicLayout.Ordinal(bodies[i].PlanetId):i));
             }
-            extent=orbitRadii.Values.DefaultIfEmpty(2.4f).Max()+1.2f;
+            extent=Mathf.Max(orbitRadii.Values.DefaultIfEmpty(2.4f).Max(),(float)(belts??Array.Empty<BeltVisualSlot>()).Select(b=>b.Envelope).DefaultIfEmpty(0).Max())+1.2f;
             camera.farClipPlane=Mathf.Max(55,extent*5);
             camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.019f,.027f,.049f,1);
             camera.cullingMask=1<<Layer;camera.allowHDR=false;camera.allowMSAA=false;
@@ -69,38 +76,52 @@ namespace HobbyDS9.UnityReview
                 {name="Disclosed system overview",hideFlags=HideFlags.HideAndDontSave,antiAliasing=1};
             Texture.Create();camera.targetTexture=Texture;
             material=new Material(shader){hideFlags=HideFlags.HideAndDontSave};sphere=Sphere();track=OrbitPlane();
-            Part("Schematic central star",sphere,Vector3.zero,.75f,new Color(1,.69f,.29f),false);
+            var star=Part("Schematic central star",sphere,Vector3.zero,.75f,new Color(1,.83f,.55f),false);sun=star.transform;
+            star.GetPropertyBlock(properties);properties.SetFloat("_Emission",.45f);
+            if(KnownSol){var map=Resources.Load<Texture2D>("SystemBodyArt/sun");if(map!=null)properties.SetTexture("_Surface",map);}
+            star.SetPropertyBlock(properties);
             Mesh? delivered=null;
             for(int i=0;i<bodies.Count;i++)
             {
                 var body=bodies[i];
-                var profile=PlanetVisualProfile.From(body);
+                var profile=PlanetVisualProfile.From(body,KnownSol);
                 // Layout uses disclosed order/count only, never a hidden catalogue or body class.
-                var orbit=orbitRadii[body.PlanetId];var angle=-22+i*137.508f;
+                var orbit=orbitRadii[body.PlanetId];var angle=(float)SolSchematicLayout.Angle(KnownSol?SolSchematicLayout.Ordinal(body.PlanetId):i);
                 var theta=angle*Mathf.Deg2Rad;
                 var mesh=sphere;
-                if(profile.Kind!=PlanetSurfaceKind.Unknown)
+                if(profile.Kind!=PlanetSurfaceKind.Unknown||profile.AuthoredMap!=null)
                     mesh=delivered??=DeliveredMesh("Earth_LOD1",false,sphere);
                 var planet=Part(body.PlanetId,mesh,new Vector3(Mathf.Cos(theta)*orbit,0,Mathf.Sin(theta)*orbit),.7f,Color.white,true);
                 planet.transform.SetParent(orbitalRoot,false);
                 var maps=Surface(profile);
                 planet.GetPropertyBlock(properties);properties.SetTexture("_Surface",maps.surface);properties.SetTexture("_Clouds",maps.clouds);
-                properties.SetFloat("_Unknown",profile.Kind==PlanetSurfaceKind.Unknown?1:0);
+                properties.SetFloat("_Unknown",profile.Kind==PlanetSurfaceKind.Unknown&&profile.AuthoredMap==null?1:0);
                 properties.SetFloat("_Atmosphere",profile.AtmosphereStrength);
                 // Exact disclosed authored Mars art has no Earth-like cloud/blue
                 // limb treatment. Snapshot atmosphere/pressure facts are unchanged.
                 properties.SetFloat("_CloudOpacity",profile.AuthoredMap=="mars"?0:.55f);
                 properties.SetFloat("_LimbStrength",profile.AuthoredMap=="mars"?0:.12f);planet.SetPropertyBlock(properties);
                 planetTransforms.Add(body.PlanetId,planet.transform);angles.Add(body.PlanetId,angle);
+                if(KnownSol&&body.PlanetId=="planet.saturn")AddSaturnRing(planet.transform);
                 var trackRenderer=Part("Schematic orbit",track,new Vector3(0,-.045f,0),orbit,OrbitColor,false);
                 trackRenderer.transform.SetParent(orbitalRoot,false);
                 trackRenderer.GetPropertyBlock(properties);properties.SetFloat("_Orbit",1);properties.SetFloat("_OrbitWidth",1.8f);trackRenderer.SetPropertyBlock(properties);
                 planetOrbits.Add(body.PlanetId,trackRenderer);
             }
+            if(belts?.Count>0)systemBelts=new ReviewSystemBelts(orbitalRoot,Layer,belts,root.transform.position,Fallback);
             }
             catch {Dispose();throw;}
         }
         internal float ForegroundYaw(string id)=>angles.TryGetValue(id,out var angle)?angle+90:0;
+        private void AddSaturnRing(Transform planet)
+        {
+            var shader=Resources.Load<Shader>("SystemBodyArt/SolMeshes/SolRing");var texture=Resources.Load<Texture2D>("SystemBodyArt/SolMeshes/saturn_rings");
+            if(shader==null||!shader.isSupported||texture==null){Fallback("Saturn ring resources unavailable");return;}
+            var mesh=DeliveredMesh("Saturn_Rings_LOD1",true,track);if(ReferenceEquals(mesh,track))return;
+            ringMaterial=new Material(shader){hideFlags=HideFlags.HideAndDontSave};ringMaterial.SetTexture("_Surface",texture);
+            var ring=Child("Public Saturn rings");ring.transform.SetParent(planet,false);ring.AddComponent<MeshFilter>().sharedMesh=mesh;
+            var renderer=ring.AddComponent<MeshRenderer>();renderer.sharedMaterial=ringMaterial;renderer.shadowCastingMode=ShadowCastingMode.Off;renderer.receiveShadows=false;
+        }
         private (Texture2D surface,Texture2D clouds) Surface(PlanetVisualProfile profile)
         {
             var key=PlanetVisualProfile.VisualVersion+"/"+profile.Kind+"/"+profile.Seed+"/"+profile.HasAtmosphere+"/"+profile.AuthoredMap;
@@ -114,7 +135,7 @@ namespace HobbyDS9.UnityReview
                 ownedTextures.Add(plain);plain.SetPixel(0,0,new Color(.18f,.24f,.31f));plain.Apply();
                 surfaces.Add("neutral",(plain,Texture2D.blackTexture));
             }
-            if(profile.Kind==PlanetSurfaceKind.Unknown)return surfaces["neutral"];
+            if(profile.Kind==PlanetSurfaceKind.Unknown&&profile.AuthoredMap==null)return surfaces["neutral"];
             Texture2D? surface=profile.AuthoredMap==null?null:Resources.Load<Texture2D>("SystemBodyArt/"+profile.AuthoredMap);
             if(surface==null)surface=Generate(profile,false,256,128);
             var clouds=profile.HasAtmosphere?Generate(profile,true,128,64):Texture2D.blackTexture;
@@ -193,20 +214,19 @@ namespace HobbyDS9.UnityReview
             var pixels=Mathf.Clamp(Mathf.RoundToInt(400*aspect),160,1536);
             if(Texture.width!=pixels){Texture.Release();Texture.width=pixels;Texture.Create();}
             // Fit the actual disclosed orbit envelope, not an extra empty orbit.
-            var outerRadius=Mathf.Max(0,FrameRadius??OuterRadius);
+            var outerRadius=Mathf.Max(0,FrameRadius??Mathf.Max(MinimumOverviewRadius,OuterRadius));
             const float elevation=24;
-            camera.aspect=aspect;camera.orthographicSize=Mathf.Max(outerRadius*Mathf.Sin(elevation*Mathf.Deg2Rad)+.7f,(outerRadius+.7f)/aspect)*1.1f/zoom;
+            var fraction=FocusSelected?1:Mathf.Clamp(1-2*HorizontalPaddingPixels/Mathf.Max(1,ViewportWidthPixels),.3f,1);
+            camera.aspect=aspect;camera.orthographicSize=Mathf.Max(outerRadius*Mathf.Sin(elevation*Mathf.Deg2Rad)+1.5f,(outerRadius+1.5f)/(aspect*fraction))*1.1f/zoom;
             // Circular tracks and bodies share the actual XZ plane. The camera's
             // elevation makes that plane read as ellipses; picking uses this camera.
             var tilt=Quaternion.Euler(elevation,0,0);
             orbitalRoot.localRotation=Quaternion.Euler(0,yaw,0);
             var centre=root.transform.position;
             if(FocusSelected&&planetTransforms.TryGetValue(selectedPlanet,out var selected))centre=selected.position;
-            if(MeanDistances)
-            {
-                var glyph=Mathf.Max(.7f,camera.orthographicSize*.055f);
-                foreach(var planet in planetTransforms.Values)planet.localScale=Vector3.one*glyph;
-            }
+            foreach(var planet in planetTransforms)planet.Value.localScale=Vector3.one*Mathf.Max(.55f,camera.orthographicSize*(float)SolSchematicLayout.GlyphFraction(planet.Key,KnownSol));
+            sun.localScale=Vector3.one*Mathf.Max(1.15f,camera.orthographicSize*.075f);
+            systemBelts?.SetDetail(camera.orthographicSize,Texture.height);
             camera.transform.SetPositionAndRotation(centre+tilt*new Vector3(0,0,-extent*2.5f),tilt);
             foreach(var orbit in planetOrbits)
             {
@@ -229,6 +249,8 @@ namespace HobbyDS9.UnityReview
             var p=camera.WorldToViewportPoint(planet.position);position=new Vector2(p.x,1-p.y);
             return p.z>0&&p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1;
         }
+        internal bool TryGetSunPosition(out Vector2 position)
+        {var p=camera.WorldToViewportPoint(sun.position);position=new Vector2(p.x,1-p.y);return p.z>camera.nearClipPlane&&p.z<camera.farClipPlane&&p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1;}
         internal bool RenderPortrait(string id)
         {
             if(disposed||!planetTransforms.TryGetValue(id,out var selected)){portraitId=null;return false;}
@@ -332,7 +354,8 @@ namespace HobbyDS9.UnityReview
         {
             if(disposed)return;disposed=true;if(root!=null)root.SetActive(false);if(camera!=null)camera.targetTexture=null;if(Texture!=null)Texture.Release();
             ReleasePortrait();
-            Destroy(root);Destroy(Texture);Destroy(material);Destroy(sphere);Destroy(track);
+            systemBelts?.Dispose();systemBelts=null;
+            Destroy(root);Destroy(Texture);Destroy(material);Destroy(ringMaterial);Destroy(sphere);Destroy(track);
             foreach(var mesh in importedCopies)Destroy(mesh);
             foreach(var texture in ownedTextures)Destroy(texture);
             importedCopies.Clear();ownedTextures.Clear();surfaces.Clear();

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using HobbyDS9.Contracts;
+using HobbyDS9.Application;
 
 namespace HobbyDS9.UnityReview
 {
@@ -19,6 +20,8 @@ namespace HobbyDS9.UnityReview
         };
         public static string Category(string id)=>id.StartsWith("engineering.",StringComparison.Ordinal)&&categories.TryGetValue(id.Substring(12),out var category)?category:"Other technologies";
         public static bool IsRefinement(EngineeringProjectKind kind)=>kind==EngineeringProjectKind.Refinement;
+        public static bool SupportedOutput(EngineeringCardSnapshot project,bool scoutExcluded)=>!scoutExcluded||project.Definition.DefinitionId.Value!="engineering.advanced-starship-engineering";
+        public static bool Visible(EngineeringCardSnapshot project,bool scoutExcluded)=>project.IsTarget||project.Band==EngineeringMaturityBand.Mature||project.CanTarget&&SupportedOutput(project,scoutExcluded);
         public static long? ResearchPhases(long cost,long progress,long reserve,long income)
         {
             if(cost<0||progress<0||reserve<0||income<0)throw new ArgumentOutOfRangeException();
@@ -34,7 +37,8 @@ namespace HobbyDS9.UnityReview
     {
         public string Title {get;} public string Detail {get;} public string ActionLabel {get;}
         public Action? Commit {get;} public Action? Pause {get;}
-        public ReviewEngineeringDialog(string title,string detail,string actionLabel,Action? commit,Action? pause)
-        {Title=title;Detail=detail;ActionLabel=actionLabel;Commit=commit;Pause=pause;}
+        public IReadOnlyList<EngineeringOutputSnapshot> Outputs {get;}
+        public ReviewEngineeringDialog(string title,string detail,string actionLabel,Action? commit,Action? pause,IReadOnlyList<EngineeringOutputSnapshot>? outputs=null)
+        {Title=title;Detail=detail;ActionLabel=actionLabel;Commit=commit;Pause=pause;Outputs=outputs??Array.Empty<EngineeringOutputSnapshot>();}
     }
 }

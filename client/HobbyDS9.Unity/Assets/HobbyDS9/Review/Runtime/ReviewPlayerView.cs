@@ -79,10 +79,13 @@ namespace HobbyDS9.UnityReview
                         });bar.SetEnabled(canAdjust);c.Add(bar);bars.Add(discipline,bar);
                     var exact=new VisualElement();exact.AddToClassList("science-allocation-exact");c.Add(exact);
                     labels.Add(discipline,Text(exact,d.PercentLabel(discipline),"science-allocation-percent"));
-                    var lockButton=Btn(c,d.IsLocked(discipline)?"Locked":"Unlock","science-lock-"+discipline,()=>perform(()=>d.SetLocked(discipline,!d.IsLocked(discipline))),edit);
-                    lockButton.text=d.IsLocked(discipline)?"Locked":"Lock";lockButton.AddToClassList("science-allocation-lock");
-                    lockButton.tooltip=d.IsLocked(discipline)?"Keep this exact share fixed. Select to unlock without redistributing.":"Lock this exact share while editing other disciplines.";
-                    lockButton.EnableInClassList("selected-tab",d.IsLocked(discipline));
+                    var locked=d.IsLocked(discipline);var actionLabel=(locked?"Unlock allocation":"Lock allocation")+" · "+discipline;
+                    var lockToggle=new Toggle(actionLabel){name="science-lock-"+discipline,value=locked,tooltip=actionLabel+(locked?" · share locked":" · share unlocked")};
+                    lockToggle.AddToClassList("science-allocation-lock");lockToggle.EnableInClassList("allocation-is-locked",locked);lockToggle.labelElement.style.display=DisplayStyle.None;
+                    var check=lockToggle.Q(className:"unity-toggle__checkmark");if(check!=null)check.style.display=DisplayStyle.None;
+                    var icon=new ReviewIcon(locked?ReviewIconKind.LockClosed:ReviewIconKind.LockOpen,actionLabel);icon.style.position=Position.Absolute;icon.style.left=6;icon.style.top=5;
+                    icon.style.color=locked?new Color(.94f,.69f,.42f):new Color(.73f,.67f,.9f);lockToggle.Add(icon);lockToggle.SetEnabled(edit);c.Add(lockToggle);
+                    lockToggle.RegisterValueChangedCallback(e=>{if(Editable&&d.Current(model.Current.Frame))perform(()=>d.SetLocked(discipline,e.newValue));});
                     var steps=new VisualElement();steps.AddToClassList("science-allocation-steps");c.Add(steps);
                     Btn(steps,"−","science-minus-"+discipline,()=>CommitScience(()=>d.Adjust(discipline,-30)),canAdjust&&d.Weight(discipline)>0);
                     Btn(steps,"+","science-plus-"+discipline,()=>CommitScience(()=>d.Adjust(discipline,30)),canAdjust&&d.Weight(discipline)<600);

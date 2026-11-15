@@ -42,11 +42,17 @@ namespace HobbyDS9.Contracts
         public long CampaignRevision { get; }
         public string ObservationPolicy => CampaignStaticAstronomyIdentity.ObservationPolicy;
         public IReadOnlyList<CampaignNebulaVisualProxy> Nebulae { get; }
-        public CampaignStaticAstronomySnapshot(string actorId, string mapContentHash, int turn, long revision, IEnumerable<CampaignNebulaVisualProxy> nebulae)
+        public IReadOnlyList<SystemAsteroidBeltSnapshot> SystemBelts {get;}
+        public string? SystemBeltGeneration {get;}
+        public CampaignStaticAstronomySnapshot(string actorId,string mapContentHash,int turn,long revision,IEnumerable<CampaignNebulaVisualProxy> nebulae)
+            :this(actorId,mapContentHash,turn,revision,nebulae,null){}
+        public CampaignStaticAstronomySnapshot(string actorId, string mapContentHash, int turn, long revision, IEnumerable<CampaignNebulaVisualProxy> nebulae,IEnumerable<SystemAsteroidBeltDto>? belts)
         {
             ActorId = actorId; MapContentHash = mapContentHash; ObservationTurn = turn; CampaignRevision = revision;
             Nebulae = nebulae.OrderBy(n => n.FeatureId, StringComparer.Ordinal).Select(n => new CampaignNebulaVisualProxy(
                 n.FeatureId, n.CentreX, n.CentreY, n.VisualReferenceRadiusX, n.VisualReferenceRadiusY)).ToList().AsReadOnly();
+            SystemBelts=(belts??Enumerable.Empty<SystemAsteroidBeltDto>()).OrderBy(b=>b.FeatureId,StringComparer.Ordinal).Select(b=>new SystemAsteroidBeltSnapshot(b)).ToList().AsReadOnly();
+            SystemBeltGeneration=belts==null?null:CampaignSystemRichnessIdentity.Generation;
         }
     }
 }

@@ -2,6 +2,7 @@ name: Tactical presenter prototype (test-owned only)
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:

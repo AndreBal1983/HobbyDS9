@@ -38,7 +38,7 @@ namespace HobbyDS9.UnityReview
                 command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,colonyCommand:command,selection:Selection());},
                 (command,caption)=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Preview,command:command,caption:caption,selection:Selection());},
                 command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,command:command,selection:Selection());},owner.SupportsKitFreePassengers,systemNodes,
-                owner.ColonisationExpansionCampaign||owner.ColonisationGrowthCampaign||owner.ColonisationRepeatCampaign||owner.ColonisationCycleCampaign?10000:(int?)null);
+                owner.ColonisationExpansionCampaign||owner.ColonisationGrowthCampaign||owner.ColonisationRepeatCampaign||owner.ColonisationCycleCampaign?10000:(int?)null,owner.StaticAstronomyCampaign?owner.GeneratedPresentation().Astronomy:null);
             if(frame.Strategy!=null&&observation.Actor==frame.Actor&&activities.ActorId==frame.Actor
                 &&observation.Turn==frame.Status.Turn&&activities.Turn==frame.Status.Turn
                 &&observation.Revision==frame.Status.CampaignRevision&&activities.Revision==frame.Status.CampaignRevision)

@@ -24,11 +24,18 @@ namespace HobbyDS9.UnityReview
             AtmosphereStrength=atmosphere?.7f:0;
         }
         public static PlanetVisualProfile From(ColonisationPlanetSnapshot planet)
+            =>From(planet,false);
+        // Only the observed-Sol join may request public reference art. No environment
+        // or gameplay fields are inferred from a familiar name or from these maps.
+        public static PlanetVisualProfile From(ColonisationPlanetSnapshot planet,bool publicSolAppearance)
         {
             if(planet==null)throw new ArgumentNullException(nameof(planet));
+            string? map=planet.PlanetId switch {
+                "planet.sol"=>"earth_daymap","planet.mars"=>"mars","planet.mercury"=>"mercury","planet.venus"=>"venus_atmosphere",
+                "planet.jupiter"=>"jupiter","planet.saturn"=>"saturn","planet.uranus"=>"uranus","planet.neptune"=>"neptune",_=>null};
             // Survey is the disclosure boundary, even if malformed input contains hidden fields.
             if(!planet.Surveyed || string.IsNullOrWhiteSpace(planet.PlanetClass))
-                return new PlanetVisualProfile(PlanetSurfaceKind.Unknown,0,false,"Surface unresolved",null);
+                return new PlanetVisualProfile(PlanetSurfaceKind.Unknown,0,false,publicSolAppearance&&map!=null?(planet.Surveyed?"Environment unresolved":"UNSURVEYED")+" · public Sol appearance":"Surface unresolved",publicSolAppearance?map:null);
             var type=planet.PlanetClass!.Trim().ToLowerInvariant();
             var kind=type=="temperate"||type=="m"?PlanetSurfaceKind.Temperate:
                 type=="arid"||type=="desert"?PlanetSurfaceKind.Arid:
@@ -41,9 +48,6 @@ namespace HobbyDS9.UnityReview
                 !planet.Atmosphere!.EndsWith("vacuum",StringComparison.OrdinalIgnoreCase) &&
                 !planet.Atmosphere.Equals("none",StringComparison.OrdinalIgnoreCase) && planet.Pressure>0 && kind!=PlanetSurfaceKind.Airless;
             // Exact canonical IDs, never a localized display-name match.
-            string? map=planet.PlanetId switch {
-                "planet.sol"=>"earth_daymap","planet.mars"=>"mars","planet.mercury"=>"mercury","planet.venus"=>"venus_atmosphere",
-                "planet.jupiter"=>"jupiter","planet.saturn"=>"saturn","planet.uranus"=>"uranus","planet.neptune"=>"neptune",_=>null};
             return new PlanetVisualProfile(kind,StableSeed(planet.SystemId+"/"+planet.BodyId+"/"+planet.PlanetId),air,
                 kind==PlanetSurfaceKind.Airless?"Airless world":kind==PlanetSurfaceKind.Unclassified?"Class "+planet.PlanetClass:kind.ToString()+" world",map);
         }

@@ -9,7 +9,10 @@ namespace HobbyDS9.Simulation
         internal const long CycleActorVisits=512,CycleActorBytes=262144,CycleReceiptVisits=128,CycleReceiptBytes=16384,CycleOuterVisits=64,CycleOuterBytes=16384;
         internal static void ValidateCycle(CampaignColonisationCycleSaveDto root,ColonisationPolicyDto policy)
         {
-            if(root==null||root.FormatVersion!=CampaignColonisationCycleIdentity.Format||root.ProfileId!=CampaignColonisationCycleIdentity.Profile||root.BaseCampaign==null
+            var rich=root as CampaignSystemRichnessSaveDto;
+            if(root!=null&&rich==null&&root.GetType()!=typeof(CampaignColonisationCycleSaveDto))Fail("Unknown cycle save carrier type.");
+            if(rich!=null){SystemRichnessData.ValidateBelts(rich);policy=SystemRichnessData.Effective(policy,true);}
+            if(root==null||root.FormatVersion!=(rich==null?CampaignColonisationCycleIdentity.Format:CampaignSystemRichnessIdentity.Format)||root.ProfileId!=(rich==null?CampaignColonisationCycleIdentity.Profile:CampaignSystemRichnessIdentity.Profile)||root.BaseCampaign==null
                 ||root.AiPlans==null||root.CycleActors==null||root.AiPlans.Count>4||root.CycleActors.Count!=root.AiPlans.Count)Fail("Complete bounded cycle root required.");
             void Text(string? x,int max=512){if(x!=null&&x.Length>max)Fail("Cycle string bound.");}
             void Plan(ColonisationAiPlanDto p,string goal,bool shared)
@@ -31,7 +34,8 @@ namespace HobbyDS9.Simulation
                 if(a.Active!=null){if(a.Active.Assignment==null)Fail("Active cycle assignment required.");Plan(a.Active.Assignment,CampaignColonisationCycleIdentity.Goal,false);Text(a.Active.SettlementManifestId);Text(a.Active.CommittedTargetPlanetId);}
                 foreach(var x in a.Receipts){if(x==null||x.SettlementManifestId==null||x.TargetPlanetId==null||!Enum.IsDefined(typeof(ColonisationCycleOutcome),x.Outcome))Fail("Invalid cycle terminal receipt.");Text(x.SettlementManifestId);Text(x.TargetPlanetId);Text(x.CampId);}
             }
-            ValidateCore(root.BaseCampaign,policy,checked(CycleOuterVisits+actors.Count*CycleActorVisits+receipts*CycleReceiptVisits),checked(CycleOuterBytes+actors.Count*CycleActorBytes+receipts*CycleReceiptBytes),ColonisationSourceEdition.Growth,true);
+            var belts=rich?.SystemBelts!.Count??0;
+            ValidateCore(root.BaseCampaign,policy,checked(CycleOuterVisits+actors.Count*CycleActorVisits+receipts*CycleReceiptVisits+belts*16L),checked(CycleOuterBytes+actors.Count*CycleActorBytes+receipts*CycleReceiptBytes+belts*4096L),ColonisationSourceEdition.Growth,true);
         }
     }
 }

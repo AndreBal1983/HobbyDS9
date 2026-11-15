@@ -61,6 +61,7 @@ public sealed class TurnCompletionTests
             Receipt("science-breakthrough",actor:"opponent",discipline:ScienceDiscipline.Weapons,ordinal:1)};
         var facts=ReviewCompletionFacts.Research(receipts,"human",5,Definitions,true);
         Assert.Equal(3,facts.Count);Assert.Contains("discovery 1 reached",facts[0].Detail);Assert.Contains("level 2",facts[1].Detail);
+        Assert.Equal(ScienceDiscipline.Energy,facts[0].Discipline);Assert.DoesNotContain("eligibility follows",facts[0].Detail);Assert.Contains("discovery 1",facts[0].Title);
         Assert.Equal("Compact Reactor completed",facts[2].Title);Assert.DoesNotContain(facts,n=>n.Detail.Contains("Weapons"));
         Assert.Equal(facts.Select(n=>n.Identity),ReviewCompletionFacts.Research(receipts.Reverse().Concat(receipts),"human",5,Definitions,true).Select(n=>n.Identity));
     }

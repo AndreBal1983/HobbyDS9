@@ -37,8 +37,10 @@ namespace HobbyDS9.Application
         public EngineeringProjectKind Kind { get; } public string EffectSummary { get; }
         public IReadOnlyList<EngineeringRequirementSnapshot> ScienceRequirements { get; }
         public IReadOnlyList<DefinitionId> Prerequisites { get; }
-        internal EngineeringDefinitionSnapshot(EngineeringApplicationDefinitionDto dto)
+        public IReadOnlyList<EngineeringOutputSnapshot> Outputs {get;}
+        internal EngineeringDefinitionSnapshot(EngineeringApplicationDefinitionDto dto,DefinitionCatalogDto? content=null)
         {
+            Outputs=content==null?Array.Empty<EngineeringOutputSnapshot>():EngineeringOutputSnapshot.For(dto.DefinitionId,content);
             DefinitionId = new DefinitionId(dto.DefinitionId); DisplayName = dto.DisplayName; BaseEngineeringCost = dto.BaseEngineeringCost;Kind=dto.Kind;EffectSummary=dto.EffectSummary;
             ScienceRequirements=dto.ScienceRequirements!.OrderBy(q=>q.Discipline).ThenBy(q=>q.IntervalStartLevel).ThenBy(q=>q.RequiredBreakthroughOrdinal).Select(q=>new EngineeringRequirementSnapshot(q)).ToList().AsReadOnly();
             Prerequisites = dto.PrerequisiteDefinitionIds!.OrderBy(id => id, StringComparer.Ordinal)
@@ -70,7 +72,7 @@ namespace HobbyDS9.Application
             StarSystems = definitions.StarSystems!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal)
                 .Select(d => new NamedDefinitionSnapshot(d.DefinitionId, d.DisplayName)).ToList().AsReadOnly();
             Engineering = definitions.EngineeringApplications!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal)
-                .Select(d => new EngineeringDefinitionSnapshot(d)).ToList().AsReadOnly();
+                .Select(d => new EngineeringDefinitionSnapshot(d,definitions)).ToList().AsReadOnly();
         }
     }
 }

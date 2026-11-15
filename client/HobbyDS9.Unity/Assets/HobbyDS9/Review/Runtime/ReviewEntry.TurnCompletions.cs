@@ -5,6 +5,7 @@ using System.Linq;
 using HobbyDS9.Contracts;
 using HobbyDS9.TacticalReviewClient;
 using UnityEngine.UIElements;
+using UnityEngine;
 
 namespace HobbyDS9.UnityReview
 {
@@ -52,6 +53,7 @@ namespace HobbyDS9.UnityReview
         }
         private void ShowPendingCompletion()
         {
+            if(confirmation!=null)return;
             var owner=model!;var frame=owner.Current.Frame;var boundary=NoticeBoundary(frame);
             var notice=turnCompletions.Peek(owner,boundary);if(notice==null||frame.Battle!=null)return;
             bool Current()=>this!=null&&isActiveAndEnabled&&ReferenceEquals(model,owner)&&ReferenceEquals(owner.Current.Frame,frame)
@@ -62,6 +64,29 @@ namespace HobbyDS9.UnityReview
                 PreserveDemoKeyOrigins();ScheduleTurnCompletionDialog();
             }
             var choices=new List<CampaignDialogAction>();
+            var available=frame.Strategy?.Research.Engineering.Where(p=>p.CanTarget&&EngineeringPresentation.SupportedOutput(p,owner.ColonisationCycleCampaign)).OrderBy(p=>p.Definition.DisplayName,StringComparer.Ordinal).ToList();
+            var detail=notice.Detail;
+            if(notice.Discipline.HasValue)
+            {
+                var science=frame.Strategy?.Research.Science.FirstOrDefault(p=>p.Discipline==notice.Discipline.Value);
+                if(science!=null)detail+="\n\nCurrent Science · level "+science.Level+(science.Maxed?" · complete":" · "+science.ProgressPercent.ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+"% toward the next level");
+            }
+            if(notice.ResearchTab!=null)
+            {
+                if(available?.Count>0)
+                {
+                    detail+="\n\nAvailable Engineering · "+available.Count+"\n"+string.Join("\n",available.Take(4).Select(p=>p.Definition.DisplayName))+(available.Count>4?"\n+ "+(available.Count-4)+" more":"");
+                    var project=available[0];
+                    if(workspace?.CanNavigate==true)choices.Add(new CampaignDialogAction("Open Engineering",()=>{
+                        if(!Current())return;Acknowledge();workspace!.ResearchTab="engineering";workspace.EngineeringProjectId=project.Definition.DefinitionId.Value;
+                        if(EngineeringPresentation.IsRefinement(project.Definition.Kind)){workspace.EngineeringRefinementSearch="";workspace.EngineeringRefinementCategory=EngineeringPresentation.Category(project.Definition.DefinitionId.Value);}
+                        else {workspace.EngineeringNewSearch="";workspace.EngineeringNewCategory=EngineeringPresentation.Category(project.Definition.DefinitionId.Value);}
+                        Navigate(ReviewWorkspacePage.Research);
+                        var target=root;if(target!=null)target.schedule.Execute(()=>{if(confirmation!=null||!ReferenceEquals(root,target)||!ReferenceEquals(model,owner)||!ReferenceEquals(owner.Current.Frame,frame))return;var card=target.Q("engineering-goal-"+project.Definition.DefinitionId);if(card!=null){card.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(card);card.Focus();}});
+                    }));
+                }
+                else detail+="\n\nNo Engineering projects are available at this boundary.";
+            }
             if(notice.ResearchTab!=null&&workspace?.CanNavigate==true)
                 choices.Add(new CampaignDialogAction("Inspect "+(notice.ResearchTab=="science"?"Science":"Engineering"),()=>
                 {
@@ -75,9 +100,21 @@ namespace HobbyDS9.UnityReview
                     if(!Current())return;Acknowledge();Navigate(ReviewWorkspacePage.Production);
                     root?.Q<ReviewColonisationPanel>()?.InspectOwnedWorld(notice.ColonyId);
                 }));
-            ShowCampaignDialog(notice.Title,"Resolved week "+(frame.Status.Turn-1)+" · "+turnCompletions.Position+" of "+turnCompletions.Count+"\n\n"+notice.Detail,
+            detail+="\n\nResolved week "+(frame.Status.Turn-1)+" · event "+turnCompletions.Position+" of "+turnCompletions.Count;
+            ShowCampaignDialog(notice.Title,detail,
                 turnCompletions.Position<turnCompletions.Count?"Next":"Close",Acknowledge,choices.ToArray());
             completionDialogElement=confirmation;
+            var completedProject=frame.Strategy?.Research.Engineering.FirstOrDefault(p=>p.Definition.DefinitionId.Value==notice.EngineeringProjectId);
+            if(completedProject!=null&&EngineeringPresentation.SupportedOutput(completedProject,owner.ColonisationCycleCampaign))AppendEngineeringOutputs(completedProject.Definition.Outputs);
+            var heading=confirmation?.Q<Label>("campaign-dialog-title");
+            if(heading!=null)
+            {
+                var container=heading.parent;var index=container.IndexOf(heading);heading.RemoveFromHierarchy();var row=new VisualElement();row.style.flexDirection=FlexDirection.Row;row.style.alignItems=Align.Center;
+                var kind=notice.ResearchTab=="engineering"?ReviewIconKind.Engineering:ReviewIconKind.Building;
+                if(notice.Discipline.HasValue&&Enum.TryParse<ReviewIconKind>(notice.Discipline.Value.ToString(),out var disciplineIcon))kind=disciplineIcon;
+                var icon=new ReviewIcon(kind,notice.Discipline?.ToString()??(notice.ResearchTab=="engineering"?"Engineering completion":"Construction completion"));icon.style.marginRight=12;row.Add(icon);row.Add(heading);container.Insert(index,row);
+                var meta=confirmation!.Q("player-confirmation-details").Query<Label>().ToList().FirstOrDefault(l=>l.text.StartsWith("Resolved week ",StringComparison.Ordinal));if(meta!=null){meta.style.fontSize=14;meta.style.color=new Color(.65f,.71f,.79f);}
+            }
         }
     }
 }

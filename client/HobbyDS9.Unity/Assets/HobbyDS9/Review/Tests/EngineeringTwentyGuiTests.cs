@@ -48,33 +48,16 @@ namespace HobbyDS9.UnityReview.Tests
                     (button,action)=>button.clicked+=action,showEngineering:dialog=>popup=dialog);
                 view.Render(root,ReviewWorkspacePage.Research);yield return null;yield return null;
                 var projects=frame.Strategy!.Research.Engineering;Assert.That(projects.Count,Is.EqualTo(20));
-                Assert.That(root.Query<Button>().ToList().Count(e=>e.name.StartsWith("engineering-goal-engineering.",StringComparison.Ordinal)),Is.EqualTo(20));
-                foreach(var project in projects)
-                {
-                    var goal=root.Q<Button>("engineering-goal-"+project.Definition.DefinitionId);
-                    Assert.That(goal,Is.Not.Null,project.Definition.DefinitionId.Value);
-                    Assert.That(goal.Q<Label>(className:"engineering-goal-name").text,Is.EqualTo(project.Definition.DisplayName));
-                    goal.Focus();using(var e=NavigationSubmitEvent.GetPooled()){e.target=goal;goal.SendEvent(e);}
-                    Assert.That(workspace.EngineeringProjectId,Is.EqualTo(project.Definition.DefinitionId.Value));
-                    Assert.That(popup,Is.Not.Null);Assert.That(popup!.Title,Is.EqualTo(project.Definition.DisplayName));
-                    Assert.That(popup.Detail,Does.Contain(project.Definition.EffectSummary).And.Contain("Project completion").And.Contain("Science & project requirements"));
-                    Assert.That(popup.Commit,Is.Null,"All initial source projects are lawfully locked, not omitted.");
-                    if(project.Definition.Kind==EngineeringProjectKind.Refinement)Assert.That(popup.Detail,Does.Contain("Refinement attribute selection — unavailable").And.Contain("not equipment maturity"));
-                }
-                foreach(var id in new[]{"engineering.reinforced-hull","engineering.expanded-hull"})Assert.That(root.Q("engineering-goal-"+id),Is.Not.Null);
-                var scout=root.Q<Button>("engineering-goal-engineering.advanced-starship-engineering");
-                using(var e=NavigationSubmitEvent.GetPooled()){e.target=scout;scout.SendEvent(e);}yield return null;
-                Assert.That(popup!.Detail,Does.Contain("Advanced Scout is unavailable"));
-                var selected=workspace.EngineeringProjectId;
-                root.Q<TextField>("engineering-search-new").value="no-such-project";
-                Assert.That(root.Q("engineering-projects-new").Query<Button>().ToList().All(b=>b.style.display.value==DisplayStyle.None),Is.True);
-                Assert.That(root.Q("engineering-projects-refinement").Query<Button>().ToList().Count(b=>b.style.display.value!=DisplayStyle.None),Is.EqualTo(12));
-                Assert.That(workspace.EngineeringProjectId,Is.EqualTo(selected),"Filtering must not silently select or start a project.");
-                root.Q<TextField>("engineering-search-new").value="";
-                var categories=root.Q<DropdownField>("engineering-category-refinement");categories.value="Reactors";
-                Assert.That(root.Q("engineering-projects-refinement").Query<Button>().ToList().Count(b=>b.style.display.value!=DisplayStyle.None),Is.EqualTo(1));
-                Assert.That(root.Q("engineering-projects-new").Query<Button>().ToList().Count(b=>b.style.display.value!=DisplayStyle.None),Is.EqualTo(8));
-                Assert.That(workspace.EngineeringProjectId,Is.EqualTo(selected));
+                Assert.That(projects.Count(p=>p.Definition.Kind==EngineeringProjectKind.NewCapability),Is.EqualTo(8));
+                Assert.That(projects.Count(p=>p.Definition.Kind==EngineeringProjectKind.Refinement),Is.EqualTo(12));
+                Assert.That(projects.All(p=>!p.CanTarget),Is.True);
+                Assert.That(root.Query<Button>().ToList().Count(e=>e.name.StartsWith("engineering-goal-engineering.",StringComparison.Ordinal)),Is.Zero,"Unavailable technology is hidden, not presented as selectable work.");
+                Assert.That(root.Q<Label>("engineering-filter-empty-new").text,Is.EqualTo("No projects available."));
+                Assert.That(root.Q<Label>("engineering-filter-empty-refinement").text,Is.EqualTo("No projects available."));
+                var left=root.Q("engineering-section-new");var right=root.Q("engineering-section-refinement");
+                Assert.That(left.worldBound.xMax,Is.LessThanOrEqualTo(right.worldBound.xMin+1));Assert.That(left.worldBound.width,Is.EqualTo(right.worldBound.width).Within(2));
+                Assert.That(root.Q<ReviewLcarsSelector>("engineering-category-new"),Is.Not.Null);Assert.That(root.Q<ReviewLcarsSelector>("engineering-category-refinement"),Is.Not.Null);
+                Assert.That(root.Query<DropdownField>().ToList(),Is.Empty);Assert.That(popup,Is.Null);
                 Assert.That(model.Current.Frame,Is.SameAs(frame),"Rendering must submit no commands or advance state.");
             }
             finally{window.Close();if(window!=null)UnityEngine.Object.DestroyImmediate(window);model.Close(true);}

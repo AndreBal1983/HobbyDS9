@@ -31,6 +31,25 @@ namespace HobbyDS9.UnityReview.Tests
             var type=typeof(ReviewPlayerView).Assembly.GetType("HobbyDS9.UnityReview.ReviewSolStage",true)!;
             return Activator.CreateInstance(type,Private,null,new object[]{shader,bodies},null)!;
         }
+        [Test] public void ObservedSolHasVisibleEmissiveSunPublicMapsAndOwnedSaturnRingWithoutSurveyFacts()
+        {
+            var ids=new[]{"planet.mercury","planet.venus","planet.sol","planet.mars","planet.jupiter","planet.saturn","planet.uranus","planet.neptune"};
+            var bodies=ids.Select(id=>Planet(id,false)).ToArray();var distances=SolMeanOrbitData.Read(Resources.Load<TextAsset>("PlayableFleetPackages/v1/sol08-astronomy").text).JoinDisclosed(bodies,bodies)!;
+            var type=typeof(ReviewPlayerView).Assembly.GetType("HobbyDS9.UnityReview.ReviewSolStage",true)!;
+            var stage=Activator.CreateInstance(type,Private,null,new object[]{Resources.Load<Shader>("SystemBodyArt/ProceduralSurface"),bodies,distances},null)!;
+            try
+            {
+                Assert.That((bool)type.GetMethod("Render",Private)!.Invoke(stage,new object[]{2.1f,0f,1f,"planet.sol"})!,Is.True);
+                var root=(GameObject)Field(stage,"root");var sun=root.transform.Find("Schematic central star");var camera=(Camera)Field(stage,"camera");
+                var z=camera.WorldToViewportPoint(sun.position).z;Assert.That(z,Is.GreaterThan(camera.nearClipPlane+sun.localScale.x));Assert.That(z,Is.LessThan(camera.farClipPlane-sun.localScale.x));
+                var block=new MaterialPropertyBlock();sun.GetComponent<MeshRenderer>().GetPropertyBlock(block);Assert.That(block.GetFloat("_Emission"),Is.GreaterThan(0));Assert.That(block.GetTexture("_Surface"),Is.SameAs(Resources.Load<Texture2D>("SystemBodyArt/sun")));
+                var target=(RenderTexture)type.GetProperty("Texture",Private)!.GetValue(stage)!;var pixels=PortraitPixels(target,"sol-schematic-visible-sun");var centre=pixels[(target.height/2)*target.width+target.width/2];Assert.That(centre.r,Is.GreaterThan(100),"The real Sun draw, not merely its label, must survive clipping/depth/culling.");
+                var transforms=(Dictionary<string,Transform>)Field(stage,"planetTransforms");
+                foreach(var body in bodies){transforms[body.PlanetId].GetComponent<MeshRenderer>().GetPropertyBlock(block);Assert.That(block.GetTexture("_Surface"),Is.SameAs(Resources.Load<Texture2D>("SystemBodyArt/"+PlanetVisualProfile.From(body,true).AuthoredMap)));Assert.That(block.GetFloat("_Atmosphere"),Is.Zero);Assert.False(body.Surveyed);}
+                Assert.That(transforms["planet.saturn"].Find("Public Saturn rings"),Is.Not.Null);
+            }
+            finally{((IDisposable)stage).Dispose();}
+        }
         [Test] public void DeliveredMeshAndRingAssetsRetainTheirImportContract()
         {
             // Asset presence is distinct from permission to put a body in a campaign scene.
@@ -183,7 +202,8 @@ namespace HobbyDS9.UnityReview.Tests
                     int checkedPoints=0,missing=0;
                     for(int i=0;i<720;i++)
                     {
-                        var angle=i*Mathf.PI*2/720;var point=Pixel(centre+new Vector3(Mathf.Cos(angle)*2.4f,-.045f,Mathf.Sin(angle)*2.4f));
+                        var radius=(float)type.GetMethod("Radius",Private)!.Invoke(stage,new object[]{"planet.sol"})!;
+                        var angle=i*Mathf.PI*2/720;var point=Pixel(centre+new Vector3(Mathf.Cos(angle)*radius,-.045f,Mathf.Sin(angle)*radius));
                         if(Vector2.Distance(point,sunPixel)<bodyRadius||Vector2.Distance(point,bodyPixel)<bodyRadius||point.x<3||point.x>target.width-4||point.y<3||point.y>target.height-4)continue;
                         bool found=false;checkedPoints++;
                         for(int y=-2;y<=2;y++)for(int x=-2;x<=2;x++)
@@ -194,6 +214,23 @@ namespace HobbyDS9.UnityReview.Tests
                 }
             }
             finally{((IDisposable)stage).Dispose();}
+        }
+        [Test]public void SparseSystemsKeepMinimumOverviewSpaceAndExplicitFocusCanZoomCloser()
+        {
+            float firstSize=0;
+            foreach(var count in new[]{1,2,6})
+            {
+                var stage=Stage(Enumerable.Range(0,count).Select(i=>Planet("generated.body."+i,false)).ToArray());var type=stage.GetType();
+                try
+                {
+                    Assert.That((bool)type.GetMethod("Render",Private)!.Invoke(stage,new object[]{2.1f,0f,1f,"generated.body.0"})!,Is.True);
+                    var camera=(Camera)Field(stage,"camera");Assert.That(camera.orthographicSize,Is.GreaterThan(12));
+                    if(count==1)firstSize=camera.orthographicSize;if(count==2)Assert.That(camera.orthographicSize,Is.EqualTo(firstSize).Within(.001));
+                    type.GetProperty("FrameRadius",Private)!.SetValue(stage,3.5f);type.GetProperty("FocusSelected",Private)!.SetValue(stage,true);
+                    Assert.That((bool)type.GetMethod("Render",Private)!.Invoke(stage,new object[]{2.1f,0f,1f,"generated.body.0"})!,Is.True);Assert.That(camera.orthographicSize,Is.LessThan(firstSize));
+                }
+                finally{((IDisposable)stage).Dispose();}
+            }
         }
         [Test] public void SelectedPortraitUsesDisclosedGlobeOnlyAndSurvivesOverviewChangesWithoutCropping()
         {

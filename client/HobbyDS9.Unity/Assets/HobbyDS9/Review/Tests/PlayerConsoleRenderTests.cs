@@ -30,7 +30,7 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(root.Q<Button>("integrated-design-publish").enabledSelf,Is.True,"The real campaign starter must pass publication validation.");
             yield return null;yield return null;
             var prior=RenderTexture.active;RenderTexture.active=target;var png=new Texture2D(1280,720,TextureFormat.RGBA32,false);png.ReadPixels(new Rect(0,0,1280,720),0,0);png.Apply();
-            var output=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/early-game-player-ui/designer-probe.png"));File.WriteAllBytes(output,png.EncodeToPNG());RenderTexture.active=prior;
+            var output=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/early-game-player-ui/designer-probe.png"));Directory.CreateDirectory(Path.GetDirectoryName(output)!);File.WriteAllBytes(output,png.EncodeToPNG());RenderTexture.active=prior;
             var bounds=back.worldBound;int ink=0;
             for(int x=(int)bounds.xMin+12;x<(int)bounds.xMax-12;x++)for(int y=(int)bounds.yMin+8;y<(int)bounds.yMax-8;y++)
             {var pixel=png.GetPixel(x,719-y);if(pixel.r<.2f&&pixel.g<.2f&&pixel.b<.2f)ink++;}
@@ -158,16 +158,17 @@ namespace HobbyDS9.UnityReview.Tests
                         Assert.That(root.Q("engineering-allocation"),Is.Null);
                         Assert.That(root.Q("open-other-research"),Is.Null);
                         var goals=root.Query<Button>().ToList().Where(e=>e.name.StartsWith("engineering-goal-")).ToList();
-                        Assert.That(goals.Count,Is.EqualTo(model.Current.Frame.Strategy.Research.Engineering.Count));
-                        var refinement=model.Current.Frame.Strategy.Research.Engineering.FirstOrDefault(p=>p.Definition.Kind==EngineeringProjectKind.Refinement);
-                        var inspect=refinement==null?goals.First():root.Q<Button>("engineering-goal-"+refinement.Definition.DefinitionId);
-                        var engineeringScroll=root.Q<ScrollView>("engineering-sections");engineeringScroll.ScrollTo(inspect);yield return null;
-                        Click(inspect.name);yield return null;
-                        Assert.That(document.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null);
-                        var popupText=string.Join("\n",document.rootVisualElement.Q("player-confirmation-details").Query<Label>().ToList().Select(l=>l.text));
-                        Assert.That(popupText,Does.Contain("Project completion").And.Contain("Science & project requirements"));
-                        if(refinement!=null)Assert.That(popupText,Does.Contain("Refinement attribute selection — unavailable").And.Contain("not equipment maturity"));
-                        EscapeModal();yield return null;
+                        Assert.That(goals.Count,Is.EqualTo(model.Current.Frame.Strategy.Research.Engineering.Count(p=>EngineeringPresentation.Visible(p,model.ColonisationCycleCampaign))));
+                        if(goals.Count>0)
+                        {
+                            var inspect=goals.First();inspect.GetFirstAncestorOfType<ScrollView>().ScrollTo(inspect);yield return null;
+                            Click(inspect.name);yield return null;
+                            Assert.That(document.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null);
+                            var popupText=string.Join("\n",document.rootVisualElement.Q("player-confirmation-details").Query<Label>().ToList().Select(l=>l.text));
+                            Assert.That(popupText,Does.Contain("Project completion").And.Contain("Science & project requirements"));EscapeModal();yield return null;
+                        }
+                        if(size.x>=1280)
+                        {var left=root.Q("engineering-section-new").worldBound;var right=root.Q("engineering-section-refinement").worldBound;Assert.That(left.xMax,Is.LessThanOrEqualTo(right.xMin+1));}
                         prior=RenderTexture.active;RenderTexture.active=target;image=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);image.ReadPixels(new Rect(0,0,size.x,size.y),0,0);image.Apply();File.WriteAllBytes(Path.Combine(output,size.x+"x"+size.y+"-Engineering.png"),image.EncodeToPNG());RenderTexture.active=prior;UnityEngine.Object.Destroy(image);
                         Click("research-tab-science");yield return null;
                     }

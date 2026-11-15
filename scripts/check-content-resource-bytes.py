@@ -17,7 +17,7 @@ GENERATED_PAIRS = [
     ("scenarios/ds9-slice/scenario.json", "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ds9-slice.json"),
     ("scenarios/ship-design-fixtures/fixture.json", "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ship-design-fixture.json"),
 ]
-PAIRS = []
+PAIRS = [("scenarios/system-richness-v1/policy.json", f"{RES}PlayableFleetPackages/v1/system-richness-policy.json")]
 PAIRS += [("scenarios/engineering-development-v1/scenario.json", f"{RES}PlayableFleetPackages/v1/engineering-scenario.json")]
 PAIRS += [(f"scenarios/sol-eight-planets-v1/{source}.json", f"{RES}PlayableFleetPackages/v1/sol08-{resource}.json")
           for source, resource in [("scenario", "scenario"), ("astronomy", "astronomy")]]

@@ -15,6 +15,7 @@ namespace HobbyDS9.UnityReview
         private readonly IReadOnlyList<ColonisationPlanetSnapshot> planets;
         private readonly CampaignActivityObservationDto activities;
         private readonly ILookup<string,string>? systemNodes;
+        private readonly CampaignStaticAstronomySnapshot? astronomy;
         private readonly Action<ColonisationCommandDto,string> reviewOrder;
         private readonly Action<ColonisationCommandDto> submit;
         private readonly Action<CampaignActivityCommandDto> submitActivity;
@@ -94,8 +95,9 @@ namespace HobbyDS9.UnityReview
         private readonly bool supportsKitFreePassengers;
         private readonly int? environmentScale;
         public ReviewColonisationPanel(ColonisationCampaignSnapshot observation,IReadOnlyList<ColonisationPlanetSnapshot> planets,CampaignActivityObservationDto activities,
-            Action<ColonisationCommandDto,string> reviewOrder,Action<ColonisationCommandDto> submit,Action<CampaignActivityCommandDto,string> reviewActivity,Action<CampaignActivityCommandDto> submitActivity,bool supportsKitFreePassengers=false, ILookup<string,string>? systemNodes=null,int? environmentScale=null)
+            Action<ColonisationCommandDto,string> reviewOrder,Action<ColonisationCommandDto> submit,Action<CampaignActivityCommandDto,string> reviewActivity,Action<CampaignActivityCommandDto> submitActivity,bool supportsKitFreePassengers=false, ILookup<string,string>? systemNodes=null,int? environmentScale=null,CampaignStaticAstronomySnapshot? astronomy=null)
         {
+            this.astronomy=astronomy;
             if(environmentScale.HasValue&&environmentScale.Value<=0)throw new ArgumentOutOfRangeException(nameof(environmentScale));
             this.environmentScale=environmentScale;
             this.observation=observation;this.planets=planets;this.activities=activities;this.reviewOrder=reviewOrder;this.submit=submit;this.reviewActivity=reviewActivity;this.submitActivity=submitActivity;this.supportsKitFreePassengers=supportsKitFreePassengers;this.systemNodes=systemNodes;
@@ -478,7 +480,7 @@ namespace HobbyDS9.UnityReview
             }
             solOverview=new ReviewSolOverview(bodies,p.PlanetId,solYaw,solZoom,FocusPlanet,
                 (yaw,zoom)=>{if(Live&&epoch==controlEpoch){solYaw=yaw;solZoom=zoom;}},OpenPlanet,solReducedMotion,
-                reduced=>{if(Live&&epoch==controlEpoch)solReducedMotion=reduced;},activation,distances,solInnerFrame,solFocusFrame,(inner,focus)=>{if(Live&&epoch==controlEpoch){solInnerFrame=inner;solFocusFrame=focus;}});
+                reduced=>{if(Live&&epoch==controlEpoch)solReducedMotion=reduced;},activation,distances,solInnerFrame,solFocusFrame,(inner,focus)=>{if(Live&&epoch==controlEpoch){solInnerFrame=inner;solFocusFrame=focus;}},BeltVisualLayout.ForSystem(astronomy,observation.Actor,observation.Turn,observation.Revision,p.SystemId));
             visual.Add(solOverview);PlanetDetails(detail,p);
             var selectorTitle=Text(visual,"PLANETS","system-selector-title");selectorTitle.style.marginTop=12;selectorTitle.style.marginBottom=6;
             var strip=Row(visual);strip.name="colonisation-system-bodies";strip.AddToClassList("system-selector");
