@@ -28,6 +28,7 @@ namespace HobbyDS9.UnityReview
         private Action<string>? selectSiteOnMap;
         private ShipPreviewStage? hullPreview;
         private ReviewSolOverview? solOverview;
+        private bool solInnerFrame,solFocusFrame;
         private ReviewPlanetPortrait? planetPortrait;
         private Action? fitConstruction;
         private float solYaw,solZoom=1; private bool solReducedMotion;
@@ -72,8 +73,8 @@ namespace HobbyDS9.UnityReview
             internal bool Matches(ColonisationWorldSnapshot w,ColonisationTransportSnapshot t)=>World==w.Id&&Ship==t.ShipId&&Node==t.NodeId&&Manifest==t.ManifestId&&Stage==w.Stage;
         }
         internal sealed class Selection
-        {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly string? SystemCaption;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly float SolYaw,SolZoom;internal readonly bool ReducedMotion;internal readonly ReviewActivitiesPanel.Selection? Science;internal readonly TransportDraft? Draft;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science,TransportDraft? draft,string? systemCaption,float solYaw=0,float solZoom=1,bool reducedMotion=false){SolYaw=solYaw;SolZoom=solZoom;ReducedMotion=reducedMotion;SystemCaption=systemCaption;Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;Draft=draft?.Copy();}}
-        internal Selection? CaptureSelection()=>disposed?null:new Selection(page,world,ship,planet,surveyShip,inspectedBlueprint,inspectedRevision,this.Q<Foldout>("colonisation-hull-inspector")?.value??inspectedOpen,science?.CaptureSelection(),transportDraft,inspectedSystemCaption,solYaw,solZoom,solReducedMotion);
+        {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly string? SystemCaption;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly float SolYaw,SolZoom;internal readonly bool ReducedMotion,InnerFrame,FocusFrame;internal readonly ReviewActivitiesPanel.Selection? Science;internal readonly TransportDraft? Draft;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science,TransportDraft? draft,string? systemCaption,float solYaw=0,float solZoom=1,bool reducedMotion=false,bool innerFrame=false,bool focusFrame=false){InnerFrame=innerFrame;FocusFrame=focusFrame;SolYaw=solYaw;SolZoom=solZoom;ReducedMotion=reducedMotion;SystemCaption=systemCaption;Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;Draft=draft?.Copy();}}
+        internal Selection? CaptureSelection()=>disposed?null:new Selection(page,world,ship,planet,surveyShip,inspectedBlueprint,inspectedRevision,this.Q<Foldout>("colonisation-hull-inspector")?.value??inspectedOpen,science?.CaptureSelection(),transportDraft,inspectedSystemCaption,solYaw,solZoom,solReducedMotion,solInnerFrame,solFocusFrame);
         internal void OpenMissionPage(bool expeditions)
         {
             if(!Live)return;
@@ -88,7 +89,7 @@ namespace HobbyDS9.UnityReview
             if(planets.Any(x=>x.PlanetId==saved.Planet)||saved.Planet.Length==0)
             {planet=saved.Planet;inspectedSystemCaption=saved.SystemCaption;}
             if(activities.Ships.Any(x=>x.ShipId==saved.SurveyShip))surveyShip=saved.SurveyShip;
-            solYaw=saved.SolYaw;solZoom=saved.SolZoom;solReducedMotion=saved.ReducedMotion;transportDraft=saved.Draft?.Copy();inspectedBlueprint=saved.Blueprint;inspectedRevision=saved.Revision;inspectedOpen=saved.InspectorOpen;Show(saved.Page);science?.RestoreSelection(saved.Science);
+            solYaw=saved.SolYaw;solZoom=saved.SolZoom;solReducedMotion=saved.ReducedMotion;solInnerFrame=saved.InnerFrame;solFocusFrame=saved.FocusFrame;transportDraft=saved.Draft?.Copy();inspectedBlueprint=saved.Blueprint;inspectedRevision=saved.Revision;inspectedOpen=saved.InspectorOpen;Show(saved.Page);science?.RestoreSelection(saved.Science);
         }
         private readonly bool supportsKitFreePassengers;
         private readonly int? environmentScale;
@@ -453,6 +454,14 @@ namespace HobbyDS9.UnityReview
                 detail.style.width=narrow?new StyleLength(Length.Percent(100)):new StyleLength(360);
                 detail.style.marginLeft=narrow?0:12;
             });
+            IReadOnlyDictionary<string,long>? distances=null;
+            try
+            {
+                var resource=Resources.Load<TextAsset>("PlayableFleetPackages/v1/sol08-astronomy");
+                if(resource!=null)distances=SolMeanOrbitData.Read(resource.text).JoinDisclosed(bodies,planets);
+            }
+            catch(Exception){/* Explicit schematic fallback; never synthesize a body. */}
+            if(distances!=null)bodies=bodies.OrderBy(b=>distances[b.PlanetId]).ToArray();
             var cards=new Dictionary<string,PlanetBodyCard>(StringComparer.Ordinal);var epoch=controlEpoch;
             void FocusPlanet(ColonisationPlanetSnapshot target)
             {
@@ -469,10 +478,10 @@ namespace HobbyDS9.UnityReview
             }
             solOverview=new ReviewSolOverview(bodies,p.PlanetId,solYaw,solZoom,FocusPlanet,
                 (yaw,zoom)=>{if(Live&&epoch==controlEpoch){solYaw=yaw;solZoom=zoom;}},OpenPlanet,solReducedMotion,
-                reduced=>{if(Live&&epoch==controlEpoch)solReducedMotion=reduced;},activation);
+                reduced=>{if(Live&&epoch==controlEpoch)solReducedMotion=reduced;},activation,distances,solInnerFrame,solFocusFrame,(inner,focus)=>{if(Live&&epoch==controlEpoch){solInnerFrame=inner;solFocusFrame=focus;}});
             visual.Add(solOverview);PlanetDetails(detail,p);
-            Text(body,"⌂ Own colony / outpost · ? Colony unknown · Gold edge: selected. Survey and settlement are separate observations.");
-            var strip=Row(visual);strip.name="colonisation-system-bodies";
+            var selectorTitle=Text(visual,"PLANETS","system-selector-title");selectorTitle.style.marginTop=12;selectorTitle.style.marginBottom=6;
+            var strip=Row(visual);strip.name="colonisation-system-bodies";strip.AddToClassList("system-selector");
             foreach(var disclosed in bodies)
             {
                 var own=observation.Worlds.Where(x=>x.PlanetId==disclosed.PlanetId).ToArray();
@@ -480,6 +489,7 @@ namespace HobbyDS9.UnityReview
                 var card=new PlanetBodyCard(disclosed,status,disclosed.PlanetId==planet,()=>FocusPlanet(disclosed),()=>OpenPlanet(disclosed),activation);
                 cards.Add(disclosed.PlanetId,card);strip.Add(card);
             }
+            var legend=Text(visual,"⌂ Own settlement · Survey and settlement are separate observations.","system-disclosure-legend");legend.style.marginTop=8;legend.style.flexShrink=0;
         }
         private static string StageLabel(ColonyEstablishmentStage stage)=>stage==ColonyEstablishmentStage.EmptyOutpost?"Empty outpost":stage==ColonyEstablishmentStage.Founding?"Founding camp":stage.ToString();
         private Foldout PlanetSection(VisualElement parent,string id,string label,bool initiallyOpen)

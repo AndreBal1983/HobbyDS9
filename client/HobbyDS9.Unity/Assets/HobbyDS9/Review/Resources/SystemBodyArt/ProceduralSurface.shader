@@ -9,6 +9,8 @@ Shader "HobbyDS9/Review/ProceduralSystemSurface"
   _Tint("Tint",Color)=(1,1,1,1)
   _StarCenter("Presentation light position",Vector)=(0,0,0,0)
   _Lit("Star lighting",Float)=1
+  _Orbit("Analytic orbit",Float)=0
+  _OrbitWidth("Orbit width pixels",Float)=1.8
   _Unknown("Unresolved",Float)=0
   _Atmosphere("Existing disclosed atmosphere strength",Float)=0
   _NightFill("Readability fill",Range(0,0.12))=0.04
@@ -24,6 +26,7 @@ Shader "HobbyDS9/Review/ProceduralSystemSurface"
   {
    Tags {"LightMode"="UniversalForwardOnly"}
    ZWrite On
+   Blend SrcAlpha OneMinusSrcAlpha, One OneMinusSrcAlpha
    Cull Off
    HLSLPROGRAM
    #pragma vertex Vert
@@ -33,17 +36,24 @@ Shader "HobbyDS9/Review/ProceduralSystemSurface"
    TEXTURE2D(_Clouds);SAMPLER(sampler_Clouds);
    CBUFFER_START(UnityPerMaterial)
    float4 _Tint,_StarCenter,_LimbTint;
-   float _Lit,_Unknown,_Atmosphere,_NightFill,_DayStrength,_CloudOpacity,_LimbStrength;
+   float _Lit,_Unknown,_Atmosphere,_NightFill,_DayStrength,_CloudOpacity,_LimbStrength,_Orbit,_OrbitWidth;
    CBUFFER_END
    struct A{float4 positionOS:POSITION;float3 normalOS:NORMAL;float2 uv:TEXCOORD0;};
-   struct V{float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;float3 normalWS:TEXCOORD1;float2 uv:TEXCOORD2;};
+   struct V{float4 positionCS:SV_POSITION;float3 positionWS:TEXCOORD0;float3 normalWS:TEXCOORD1;float2 uv:TEXCOORD2;float3 positionOS:TEXCOORD3;};
    V Vert(A input)
    {
     V o;o.positionWS=TransformObjectToWorld(input.positionOS.xyz);o.positionCS=TransformWorldToHClip(o.positionWS);
-    o.normalWS=TransformObjectToWorldNormal(input.normalOS);o.uv=input.uv;return o;
+    o.normalWS=TransformObjectToWorldNormal(input.normalOS);o.uv=input.uv;o.positionOS=input.positionOS.xyz;return o;
    }
    half4 Frag(V input):SV_Target
    {
+    if(_Orbit>.5)
+    {
+     float radius=length(input.positionOS.xz);
+     float pixel=max(fwidth(radius),.000001);
+     float coverage=saturate(_OrbitWidth*.5+.5-abs(radius-1)/pixel);
+     clip(coverage-.001);return half4(_Tint.rgb,coverage);
+    }
     float3 n=SafeNormalize(input.normalWS),light=SafeNormalize(_StarCenter.xyz-input.positionWS);
     float signedDay=dot(n,light),day=saturate(signedDay);
     float facing=saturate(dot(n,SafeNormalize(_WorldSpaceCameraPos-input.positionWS)));

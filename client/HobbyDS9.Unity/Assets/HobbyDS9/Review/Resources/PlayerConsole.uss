@@ -324,7 +324,9 @@
 /* SYS-VIS-01: selected disclosed-world context, using existing console tokens. */
 .system-selected-inspector { margin-left: 12px; padding: 16px; background-color: #111e2b; border-left-width: 3px; border-left-color: #efb16b; border-radius: 7px; }
 #colonisation-system-visual { margin-bottom: 10px; }
-#colonisation-system-bodies { padding-top: 10px; border-top-width: 1px; border-top-color: #52677c; }
+#colonisation-system-bodies { padding: 5px; flex-wrap: wrap; flex-shrink: 0; border-top-width: 4px; border-top-color: #b6a0d5; border-top-left-radius: 12px; background-color: #101724; }
+#system-selector-title { color: #c0afd9; font-size: 15px; }
+#system-disclosure-legend { font-size: 14px; color: #b5c5d5; }
 .planet-detail-visual { width: 380px; max-width: 100%; min-width: 0; flex-shrink: 0; margin-right: 20px; padding: 12px; border-top-width: 3px; border-top-color: #efb16b; background-color: #080f19; }
 .planet-detail-portrait { height: 320px; min-height: 240px; flex-shrink: 0; }
 #planet-detail-facts { padding: 12px; border-top-width: 3px; border-top-color: #b9ace6; }

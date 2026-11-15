@@ -166,6 +166,35 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally{((IDisposable)stage).Dispose();}
         }
+        [Test] public void OrbitIsContinuousAtDifferentAspectsWithoutSubpixelTriangleGaps()
+        {
+            var stage=Stage(Planet("planet.sol"));var type=stage.GetType();
+            try
+            {
+                foreach(var aspect in new[]{1f,3f,6f})
+                {
+                    Assert.That((bool)type.GetMethod("Render",Private)!.Invoke(stage,new object[]{aspect,0f,1f,"planet.sol"})!,Is.True);
+                    var target=(RenderTexture)type.GetProperty("Texture",Private)!.GetValue(stage)!;
+                    var pixels=PortraitPixels(target,"continuous-orbit-"+aspect);var camera=(Camera)Field(stage,"camera");
+                    var centre=((GameObject)Field(stage,"root")).transform.position;
+                    var planet=((Dictionary<string,Transform>)Field(stage,"planetTransforms"))["planet.sol"].position;
+                    Vector2 Pixel(Vector3 world){var p=camera.WorldToViewportPoint(world);return new Vector2(p.x*target.width,p.y*target.height);}
+                    var sunPixel=Pixel(centre);var bodyPixel=Pixel(planet);var bodyRadius=.8f/camera.orthographicSize*target.height*.5f;
+                    int checkedPoints=0,missing=0;
+                    for(int i=0;i<720;i++)
+                    {
+                        var angle=i*Mathf.PI*2/720;var point=Pixel(centre+new Vector3(Mathf.Cos(angle)*2.4f,-.045f,Mathf.Sin(angle)*2.4f));
+                        if(Vector2.Distance(point,sunPixel)<bodyRadius||Vector2.Distance(point,bodyPixel)<bodyRadius||point.x<3||point.x>target.width-4||point.y<3||point.y>target.height-4)continue;
+                        bool found=false;checkedPoints++;
+                        for(int y=-2;y<=2;y++)for(int x=-2;x<=2;x++)
+                        {var c=pixels[(Mathf.RoundToInt(point.y)+y)*target.width+Mathf.RoundToInt(point.x)+x];if(c.r>100&&c.r>c.g+15)found=true;}
+                        if(!found)missing++;
+                    }
+                    Assert.That(checkedPoints,Is.GreaterThan(100));Assert.That(missing,Is.LessThanOrEqualTo(checkedPoints*.02f),"Closed projected curve must remain visible outside actual globe occlusion.");
+                }
+            }
+            finally{((IDisposable)stage).Dispose();}
+        }
         [Test] public void SelectedPortraitUsesDisclosedGlobeOnlyAndSurvivesOverviewChangesWithoutCropping()
         {
             var stage=Stage(Planet("planet.sol"),Planet("planet.mars",kind:"Arid"));

@@ -238,7 +238,7 @@ namespace HobbyDS9.UnityReview.Tests
             Click(card,1);view.Q<Toggle>("system-reduce-motion").value=true;Click(card,2);Assert.That(opens,Is.Zero);
             Click(card,1);Click(card,2);Assert.That(opens,Is.EqualTo(1));
         }
-        private ReviewColonisationPanel PanelFor(ColonisationPlanetSnapshot planet,int? scale=null,bool own=false,PlanetSurveyStage? recorded=null)
+        private ReviewColonisationPanel PanelFor(ColonisationPlanetSnapshot planet,int? scale=null,bool own=false,PlanetSurveyStage? recorded=null,ColonisationPlanetSnapshot[]? all=null)
         {
             var worlds=own?new[]{new ColonisationWorldSnapshot(id:"colony.fixture",planet:planet.PlanetId,system:planet.SystemId,name:"Own world",
                 stage:ColonyEstablishmentStage.Established,camp:null,people:100,food:20,industry:9,research:7,output:4,work:0,fed:0,shortage:0,deaths:0,report:"",
@@ -249,13 +249,35 @@ namespace HobbyDS9.UnityReview.Tests
                 Array.Empty<ColonisationIntentSnapshot>(),1,Array.Empty<ResourceAmountSnapshot>());
             var activities=new CampaignActivityObservationDto{ActorId="actor.fixture",Turn=1,Revision=1};
             activities.Ships.Add(new ActivityOwnShipDto{ShipId="ship.fixture",NodeId="node.fixture",DisplayName="Surveyor",Stationary=true,StudyWork=1});
-            var nodes=new[]{planet}.ToLookup(p=>p.SystemId,_=>"node.fixture",StringComparer.Ordinal);
-            var panel=new ReviewColonisationPanel(observation,new[]{planet},activities,(_,__)=>Assert.Fail("Inspection cannot review an order"),
+            var nodes=(all??new[]{planet}).ToLookup(p=>p.SystemId,_=>"node.fixture",StringComparer.Ordinal);
+            var panel=new ReviewColonisationPanel(observation,all??new[]{planet},activities,(_,__)=>Assert.Fail("Inspection cannot review an order"),
                 _=>Assert.Fail("Inspection cannot submit an order"),(_,__)=>Assert.Fail("Inspection cannot review an activity"),
                 _=>Assert.Fail("Inspection cannot submit an activity"),systemNodes:nodes,environmentScale:scale);
             ownedViews.Add(panel);Call(panel,"Show","Planet");return panel;
         }
         private static string Labels(VisualElement element)=>string.Join("\n",element.Query<Label>().ToList().Select(l=>l.text));
+        [UnityTest] public IEnumerator EightBodySelectorAndCaptionsOccupySeparateNaturalLayoutRows()
+        {
+            var host=Host();var ids=new[]{"mercury","venus","sol","mars","jupiter","saturn","uranus","neptune"};
+            var bodies=ids.Select(id=>Planet("planet."+id,surveyed:false,name:id=="sol"?"Earth":id)).ToArray();
+            var panel=PanelFor(bodies[2],all:bodies);host.Add(panel);Call(panel,"Show","Planets");
+            foreach(var width in new[]{600f,1200f,2200f})
+            {
+                host.style.width=width;yield return null;yield return null;yield return null;
+                var cards=panel.Query<PlanetBodyCard>().ToList();Assert.That(cards.Count,Is.EqualTo(8));
+                var selector=panel.Q("colonisation-system-bodies");var overview=panel.Q("sol-overview");var legend=panel.Q("system-disclosure-legend");
+                Assert.That(selector.worldBound.yMin,Is.GreaterThanOrEqualTo(overview.worldBound.yMax));
+                Assert.That(legend.worldBound.yMin,Is.GreaterThanOrEqualTo(selector.worldBound.yMax));
+                for(int i=0;i<cards.Count;i++)
+                {
+                    Assert.That(cards[i].worldBound.height,Is.GreaterThanOrEqualTo(44));
+                    Assert.That(selector.worldBound.yMax,Is.GreaterThanOrEqualTo(cards[i].worldBound.yMax-1));
+                    for(int j=i+1;j<cards.Count;j++)Assert.That(cards[i].worldBound.Overlaps(cards[j].worldBound),Is.False);
+                }
+                Assert.That(panel.Q<Label>("system-scale-caption").text,Does.Contain("Mean Sun-distance").And.Contain("Exaggerated body sizes"));
+                Assert.That(panel.Query<Button>().ToList().Any(b=>b.text=="Inner system"),Is.True);
+            }
+        }
         [Test] public void ConstructionContextKeepsOwnFactsAndSeparateCatalogueQueueSurfaces()
         {
             var panel=PanelFor(Planet(),own:true);Call(panel,"Show","Worlds");

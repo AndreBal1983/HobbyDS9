@@ -27,6 +27,13 @@ namespace HobbyDS9.UnityReview
         private readonly MaterialPropertyBlock properties=new MaterialPropertyBlock();
         private static readonly Color OrbitColor=new Color(.15f,.22f,.33f);
         private readonly float extent;
+        private readonly Dictionary<string,float> orbitRadii=new Dictionary<string,float>(StringComparer.Ordinal);
+        internal bool MeanDistances {get;}
+        internal float OuterRadius=>extent-1.2f;
+        internal float InnerRadius=>orbitRadii.Values.Where(r=>r<=18.4f).DefaultIfEmpty(OuterRadius).Max();
+        internal float? FrameRadius {get;set;}
+        internal bool FocusSelected {get;set;}
+        internal float Radius(string id)=>orbitRadii.TryGetValue(id,out var radius)?radius:0;
         private Camera? portraitCamera;
         private MeshRenderer? portraitGlobe;
         private string? portraitId;
@@ -36,7 +43,8 @@ namespace HobbyDS9.UnityReview
         internal RenderTexture Texture {get;}=null!;
         internal RenderTexture? PortraitTexture {get;private set;}
 
-        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies)
+        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies):this(shader,bodies,null){}
+        internal ReviewSolStage(Shader shader,IReadOnlyList<ColonisationPlanetSnapshot> bodies,IReadOnlyDictionary<string,long>? meanDistances)
         {
             try
             {
@@ -45,14 +53,16 @@ namespace HobbyDS9.UnityReview
             orbitalRoot=Child("Presentation rotation").transform;
             camera=Child("System preview camera").AddComponent<Camera>();
             camera.enabled=false;camera.orthographic=true;camera.nearClipPlane=.1f;
-            extent=2.4f+bodies.Count*1.2f;
+            MeanDistances=meanDistances!=null&&bodies.All(b=>meanDistances.ContainsKey(b.PlanetId));
+            for(int i=0;i<bodies.Count;i++)orbitRadii.Add(bodies[i].PlanetId,MeanDistances?(float)((double)meanDistances![bodies[i].PlanetId]/149600000*12):2.4f+i*1.2f);
+            extent=orbitRadii.Values.DefaultIfEmpty(2.4f).Max()+1.2f;
             camera.farClipPlane=Mathf.Max(55,extent*5);
             camera.clearFlags=CameraClearFlags.SolidColor;camera.backgroundColor=new Color(.019f,.027f,.049f,1);
             camera.cullingMask=1<<Layer;camera.allowHDR=false;camera.allowMSAA=false;
             Texture=new RenderTexture(960,400,24,RenderTextureFormat.ARGB32)
                 {name="Disclosed system overview",hideFlags=HideFlags.HideAndDontSave,antiAliasing=1};
             Texture.Create();camera.targetTexture=Texture;
-            material=new Material(shader){hideFlags=HideFlags.HideAndDontSave};sphere=Sphere();track=Annulus(.996f,1,"Schematic orbit");
+            material=new Material(shader){hideFlags=HideFlags.HideAndDontSave};sphere=Sphere();track=OrbitPlane();
             Part("Schematic central star",sphere,Vector3.zero,.75f,new Color(1,.69f,.29f),false);
             Mesh? delivered=null;
             for(int i=0;i<bodies.Count;i++)
@@ -60,7 +70,7 @@ namespace HobbyDS9.UnityReview
                 var body=bodies[i];
                 var profile=PlanetVisualProfile.From(body);
                 // Layout uses disclosed order/count only, never a hidden catalogue or body class.
-                var orbit=2.4f+i*1.2f;var angle=-22+i*137.508f;
+                var orbit=orbitRadii[body.PlanetId];var angle=-22+i*137.508f;
                 var theta=angle*Mathf.Deg2Rad;
                 var mesh=sphere;
                 if(profile.Kind!=PlanetSurfaceKind.Unknown)
@@ -77,7 +87,9 @@ namespace HobbyDS9.UnityReview
                 properties.SetFloat("_LimbStrength",profile.AuthoredMap=="mars"?0:.12f);planet.SetPropertyBlock(properties);
                 planetTransforms.Add(body.PlanetId,planet.transform);angles.Add(body.PlanetId,angle);
                 var trackRenderer=Part("Schematic orbit",track,new Vector3(0,-.045f,0),orbit,OrbitColor,false);
-                trackRenderer.transform.SetParent(orbitalRoot,false);planetOrbits.Add(body.PlanetId,trackRenderer);
+                trackRenderer.transform.SetParent(orbitalRoot,false);
+                trackRenderer.GetPropertyBlock(properties);properties.SetFloat("_Orbit",1);properties.SetFloat("_OrbitWidth",1.8f);trackRenderer.SetPropertyBlock(properties);
+                planetOrbits.Add(body.PlanetId,trackRenderer);
             }
             }
             catch {Dispose();throw;}
@@ -175,7 +187,7 @@ namespace HobbyDS9.UnityReview
             var pixels=Mathf.Clamp(Mathf.RoundToInt(400*aspect),160,1536);
             if(Texture.width!=pixels){Texture.Release();Texture.width=pixels;Texture.Create();}
             // Fit the actual disclosed orbit envelope, not an extra empty orbit.
-            var outerRadius=Mathf.Max(0,extent-1.2f);
+            var outerRadius=Mathf.Max(0,FrameRadius??OuterRadius);
             const float elevation=24;
             camera.aspect=aspect;camera.orthographicSize=Mathf.Max(outerRadius*Mathf.Sin(elevation*Mathf.Deg2Rad)+.7f,(outerRadius+.7f)/aspect)*1.1f/zoom;
             // Circular tracks and bodies share the actual XZ plane. The camera's
@@ -183,7 +195,12 @@ namespace HobbyDS9.UnityReview
             var tilt=Quaternion.Euler(elevation,0,0);
             orbitalRoot.localRotation=Quaternion.Euler(0,yaw,0);
             var centre=root.transform.position;
-            if(planetTransforms.TryGetValue(selectedPlanet,out var selected))centre=Vector3.Lerp(centre,selected.position,Mathf.Clamp01((zoom-.9f)*.8f));
+            if(FocusSelected&&planetTransforms.TryGetValue(selectedPlanet,out var selected))centre=selected.position;
+            if(MeanDistances)
+            {
+                var glyph=Mathf.Max(.7f,camera.orthographicSize*.055f);
+                foreach(var planet in planetTransforms.Values)planet.localScale=Vector3.one*glyph;
+            }
             camera.transform.SetPositionAndRotation(centre+tilt*new Vector3(0,0,-extent*2.5f),tilt);
             foreach(var orbit in planetOrbits)
             {
@@ -286,26 +303,14 @@ namespace HobbyDS9.UnityReview
             catch {Destroy(mesh);throw;}
         }
 
-        private static Mesh Annulus(float inner,float outer,string name)
+        private static Mesh OrbitPlane()
         {
-            const int segments=128;
-            var points=new List<Vector3>();
-            var uvs=new List<Vector2>();
-            var triangles=new List<int>();
-            for(int i=0;i<=segments;i++)
-            {
-                var u=(float)i/segments;
-                var theta=u*2*Mathf.PI;
-                var ray=new Vector3(Mathf.Cos(theta),0,Mathf.Sin(theta));
-                points.Add(ray*inner);points.Add(ray*outer);
-                uvs.Add(new Vector2(u,0));uvs.Add(new Vector2(u,1));
-                if(i==segments)continue;
-                var a=2*i;
-                triangles.AddRange(new[]{a,a+2,a+1,a+1,a+2,a+3});
-            }
-            var mesh=new Mesh { name=name, hideFlags=HideFlags.HideAndDontSave };
-            try {mesh.SetVertices(points);mesh.SetUVs(0,uvs);mesh.SetTriangles(triangles,0);mesh.RecalculateNormals();return mesh;}
-            catch {Destroy(mesh);throw;}
+            // An analytic circle replaces a subpixel annulus tessellation. The
+            // shader derives its continuous edge and AA width in screen pixels.
+            var mesh=new Mesh{name="Schematic orbit",hideFlags=HideFlags.HideAndDontSave};
+            mesh.vertices=new[]{new Vector3(-2,0,-2),new Vector3(2,0,-2),new Vector3(2,0,2),new Vector3(-2,0,2)};
+            mesh.normals=Enumerable.Repeat(Vector3.up,4).ToArray();
+            mesh.uv=new[]{Vector2.zero,Vector2.right,Vector2.one,Vector2.up};mesh.triangles=new[]{0,2,1,0,3,2};mesh.RecalculateBounds();return mesh;
         }
 
         private static void Destroy(UnityEngine.Object? value)
