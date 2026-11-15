@@ -154,7 +154,21 @@ namespace HobbyDS9.UnityReview.Tests
                     if(page==ReviewWorkspacePage.Research)
                     {
                         Click("research-tab-engineering");yield return null;yield return null;yield return null;
-                        Assert.That(root.Query<VisualElement>().ToList().Any(e=>e.name.StartsWith("engineering-project-")),Is.True);
+                        Assert.That(root.Q("engineering-section-new"),Is.Not.Null);
+                        Assert.That(root.Q("engineering-section-refinement"),Is.Not.Null);
+                        Assert.That(root.Q("engineering-allocation"),Is.Null);
+                        Assert.That(root.Q("open-other-research"),Is.Null);
+                        var goals=root.Query<Button>().ToList().Where(e=>e.name.StartsWith("engineering-goal-")).ToList();
+                        Assert.That(goals.Count,Is.EqualTo(model.Current.Frame.Strategy.Research.Engineering.Count));
+                        var refinement=model.Current.Frame.Strategy.Research.Engineering.FirstOrDefault(p=>p.Definition.Kind==EngineeringProjectKind.Refinement);
+                        var inspect=refinement==null?goals.First():root.Q<Button>("engineering-goal-"+refinement.Definition.DefinitionId);
+                        var engineeringScroll=root.Q<ScrollView>("engineering-sections");engineeringScroll.ScrollTo(inspect);yield return null;
+                        Click(inspect.name);yield return null;
+                        Assert.That(document.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null);
+                        var popupText=string.Join("\n",document.rootVisualElement.Q("player-confirmation-details").Query<Label>().ToList().Select(l=>l.text));
+                        Assert.That(popupText,Does.Contain("Project completion").And.Contain("Science & project requirements"));
+                        if(refinement!=null)Assert.That(popupText,Does.Contain("Refinement attribute selection — unavailable").And.Contain("not equipment maturity"));
+                        EscapeModal();yield return null;
                         prior=RenderTexture.active;RenderTexture.active=target;image=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);image.ReadPixels(new Rect(0,0,size.x,size.y),0,0);image.Apply();File.WriteAllBytes(Path.Combine(output,size.x+"x"+size.y+"-Engineering.png"),image.EncodeToPNG());RenderTexture.active=prior;UnityEngine.Object.Destroy(image);
                         Click("research-tab-science");yield return null;
                     }

@@ -1,0 +1,72 @@
+<div id="hds9-engineering-preview" aria-label="HobbyDS9 Engineering preview">
+  <header><span>HOBBYDS9 · FEDERATION</span><strong>Research</strong><span>Layout preview · authored 20-project catalogue</span></header>
+  <div class="shell">
+    <nav aria-label="Campaign navigation"><span>CAMPAIGN</span><span>Map</span><span>Empire</span><span>Worlds</span><strong>Research</strong><span>Production</span><span>Fleets</span></nav>
+    <main>
+      <div class="tabs"><span>Science</span><strong>Engineering</strong></div>
+      <div class="overview"><div>At current accepted allocation<strong>Campaign income</strong></div><div>Banked Engineering<strong>Campaign reserve</strong></div><div>Current project<strong>Campaign target</strong></div></div>
+      <section data-section="new"><h2>New engineering projects <small>8</small></h2><div class="filters"><label>Search projects<input type="search"></label><label>Technology<select><option>All technologies</option></select></label></div><div class="projects"></div><p class="empty" hidden>No projects match these filters.</p></section>
+      <section data-section="refinement"><h2>Technology refinement <small>12</small></h2><div class="filters"><label>Search projects<input type="search"></label><label>Technology<select><option>All technologies</option></select></label></div><div class="projects"></div><p class="empty" hidden>No projects match these filters.</p></section>
+      <p class="status" aria-live="polite">Select a project to preview its management popup.</p>
+    </main>
+  </div>
+  <dialog aria-labelledby="engineering-preview-title"><h2 id="engineering-preview-title"></h2><div class="details"></div><div class="actions"><button type="button" data-close>Close</button><button type="button" disabled>Project command · preview only</button></div></dialog>
+</div>
+<style>
+#hds9-engineering-preview {color:#eeeaf2;background:#080f19;font:16px/1.5 system-ui,sans-serif;border-top:10px solid #b9ace6;border-radius:26px 0 0 0;overflow-wrap:anywhere;color-scheme:dark}
+#hds9-engineering-preview * {box-sizing:border-box}
+#hds9-engineering-preview header {display:flex;flex-wrap:wrap;gap:12px;padding:16px 22px;border-bottom:4px solid #efb16b;align-items:center}
+#hds9-engineering-preview header strong {font-size:26px;margin-right:auto}
+#hds9-engineering-preview header span {color:#b9ace6}
+#hds9-engineering-preview .shell {display:flex}
+#hds9-engineering-preview nav {width:140px;flex-shrink:0;display:flex;flex-direction:column;gap:12px;padding:20px 12px;color:#b9ace6}
+#hds9-engineering-preview nav strong {color:#101b29;background:#efb16b;padding:8px;border-radius:18px 0 0 18px}
+#hds9-engineering-preview main {min-width:0;flex:1;padding:20px}
+#hds9-engineering-preview .tabs {display:flex;gap:8px;margin-bottom:16px}
+#hds9-engineering-preview .tabs span,#hds9-engineering-preview .tabs strong {padding:8px 22px;border-radius:20px;background:#182739}
+#hds9-engineering-preview .tabs strong {background:#b9ace6;color:#101b29}
+#hds9-engineering-preview .overview {display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+#hds9-engineering-preview .overview div {flex:1 1 180px;background:#101b29;border-left:3px solid #b9ace6;padding:8px 12px;color:#a9b8c8}
+#hds9-engineering-preview .overview strong {display:block;color:#eeeaf2;font-size:19px;font-weight:500}
+#hds9-engineering-preview section {border-top:3px solid #b9ace6;padding:12px 0 20px}
+#hds9-engineering-preview h2 {font-size:21px;font-weight:500;margin:0 0 12px}
+#hds9-engineering-preview small {color:#a9b8c8;font-size:16px}
+#hds9-engineering-preview .filters {display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+#hds9-engineering-preview label {display:flex;flex-direction:column;flex:1 1 200px;gap:4px;color:#a9b8c8}
+#hds9-engineering-preview input,#hds9-engineering-preview select {width:100%;min-height:44px;padding:8px;background:#101b29;border:1px solid #65728b;border-radius:4px;color:#eeeaf2;font:inherit}
+#hds9-engineering-preview .projects {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:8px}
+#hds9-engineering-preview button {font:inherit;min-height:44px;color:#eeeaf2;background:#182739;border:1px solid #65728b;border-radius:6px;padding:10px 12px;text-align:left}
+#hds9-engineering-preview .projects button strong,#hds9-engineering-preview .projects button span {display:block}
+#hds9-engineering-preview .projects button span {color:#a9b8c8}
+#hds9-engineering-preview .projects button:hover {background:#263b50}
+#hds9-engineering-preview button:disabled {opacity:.55}
+#hds9-engineering-preview .status {color:#a9b8c8}
+#hds9-engineering-preview dialog {max-width:min(680px,calc(100% - 24px));max-height:85%;color:#eeeaf2;background:#101b29;border:0;border-top:8px solid #efb16b;border-radius:24px 0 0 0;padding:22px}
+#hds9-engineering-preview dialog::backdrop {background:#000b}
+#hds9-engineering-preview dialog p {white-space:pre-line}
+#hds9-engineering-preview .actions {display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+@media(max-width:600px){#hds9-engineering-preview nav{display:none}#hds9-engineering-preview main{padding:12px}#hds9-engineering-preview header{padding:12px}}
+</style>
+<script>
+(()=>{
+const root=document.getElementById('hds9-engineering-preview');
+const projects=[
+['Advanced Starship Engineering','Hulls & ship capabilities','new'],['Expanded Utility Hull','Hulls & ship capabilities','new'],['High-output Reactor','Reactors','new'],['High-speed Drive','Propulsion','new'],['Long-range Energy Bank','Weapons','new'],['Long-range Sensors','Sensors','new'],['Multilayer Shield','Shields','new'],['Resilient Shield','Shields','new'],
+['Compact Energy Bank','Weapons','refinement'],['Compact Laboratories','Laboratories','refinement'],['Compact Life Support','Life support','refinement'],['Compact Reactor','Reactors','refinement'],['Efficient Drive','Propulsion','refinement'],['Efficient Life Support','Life support','refinement'],['Efficient Shield','Shields','refinement'],['Expanded Computing','Computing','refinement'],['Improved Launcher','Weapons','refinement'],['Maneuver Drive','Propulsion','refinement'],['Precision Fire Control','Computing','refinement'],['Reinforced Utility Hull','Hulls & ship capabilities','refinement']
+];
+const popup=root.querySelector('dialog');let invoker=null;
+for(const section of root.querySelectorAll('section')){
+ const search=section.querySelector('input'),select=section.querySelector('select'),grid=section.querySelector('.projects');
+ const rows=projects.filter(p=>p[2]===section.dataset.section);
+ for(const category of [...new Set(rows.map(p=>p[1]))].sort()){const o=document.createElement('option');o.textContent=category;select.append(o);}
+ for(const p of rows){const b=document.createElement('button');b.type='button';b.dataset.category=p[1];b.dataset.name=p[0];const name=document.createElement('strong'),category=document.createElement('span');name.textContent=p[0];category.textContent=p[1]+' · Inspect project';b.append(name,category);grid.append(b);
+ b.addEventListener('click',()=>{invoker=b;root.querySelector('#engineering-preview-title').textContent=p[0];const detail=popup.querySelector('.details');detail.replaceChildren();
+ const paragraphs=['Layout preview — campaign values are supplied by the live Research snapshot.','Expected output\nThe popup displays the authored capability, project cost, earned progress, named Science discoveries and required projects. Version/parent links are labelled unavailable when absent from the projection.','Completion estimate\nUses accepted Engineering income and reserve. Noncurrent eligible work says “if selected now, income/allocation unchanged.” Zero income without enough bank has no finite estimate.'];
+ if(p[2]==='refinement')paragraphs.push('Refinement attribute selection — unavailable\nThe current project has a fixed authored outcome. Parent selection, equipment-version maturity and repeatable 100–150% refinement are unsupported. Project completion is not equipment maturity.');
+ paragraphs.push('One active project. Switching or pausing retains earned work. New access does not refit existing ships or published designs.');
+ for(const text of paragraphs){const para=document.createElement('p');para.textContent=text;detail.append(para);}popup.showModal();});}
+ const filter=()=>{let count=0;for(const b of grid.children){b.hidden=!(b.dataset.name.toLowerCase().includes(search.value.toLowerCase())&&(select.value==='All technologies'||select.value===b.dataset.category));if(!b.hidden)count++;}section.querySelector('.empty').hidden=count!==0;};search.addEventListener('input',filter);select.addEventListener('change',filter);
+}
+root.querySelector('[data-close]').addEventListener('click',()=>popup.close());popup.addEventListener('close',()=>invoker?.focus());
+})();
+</script>

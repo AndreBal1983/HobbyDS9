@@ -22,6 +22,13 @@ namespace HobbyDS9.UnityReview
         private VisualElement? campaignDialogInvoker;
         private string campaignDialogInvokerName="";
         private Func<bool>? campaignDialogCurrent;
+        private void ShowEngineeringDialog(ReviewEngineeringDialog project)
+        {
+            var choices=new List<CampaignDialogAction>();
+            if(project.Commit!=null)choices.Add(new CampaignDialogAction(project.ActionLabel,project.Commit));
+            if(project.Pause!=null)choices.Add(new CampaignDialogAction("Pause project",project.Pause));
+            ShowCampaignDialog(project.Title,project.Detail,"Close",null,choices.ToArray());
+        }
         private void ShowCampaignDialog(string title,string detail,string safeLabel,Action? safe,
             params CampaignDialogAction[] choices)
         {
