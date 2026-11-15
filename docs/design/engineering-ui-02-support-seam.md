@@ -8,6 +8,8 @@ Engineering has exactly two sections: **New Engineering Projects** and **Technol
 
 New-project management presents the expected module/outcome and development time where supported. Refinement management presents the current version's maturity and chosen attribute where supported. This approval does not make unsupported fields authoritative, implement the 100–150 model, authorize new gameplay/save schemas or reopen a tree-GUI design.
 
+The shared [capacity-block presentation](capacity-blocks-01.md), also agreed 15 November, applies to actual module/fit values in this popup as in Ship Design. Keep supply/demand and CrewRequired/CrewSupport distinct, Industry numeric and actual credit charges visible without a Credit meter. Missing typed output/parent facts remain unsupported; blocks do not justify fabricating values or future refinement effects.
+
 The existing shared Science/Engineering split belongs under Science Research, not a second Engineering allocation subscreen. Popup navigation/filtering is local presentation state; it must not submit work or apply an unsent Research allocation draft.
 
 **Inspected baseline:** GUI-POLISH-02 commit `b330f96b04f58bddf270393257c8630d1540c6dc`. Engineering Contracts, Simulation and Application sources are unchanged from the model's `1fb8bbe` source pin. The baseline remains a full-screen authored catalogue/detail view; no ENG-UI-02 candidate or native acceptance is claimed here. Receiving must record the actual GUI candidate separately.

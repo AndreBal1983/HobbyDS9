@@ -32,6 +32,8 @@ The three agreed universal combat weapon classes are Beam/Array, Cannon/Pulse an
 
 ## Components and shared capacity
 
+**Presentation agreed 15 November 2026:** Engineering, Ship Design and module statistics share [capacity blocks](capacity-blocks-01.md) for actual power, space, crew and other capacity measures. Supply and consumption have distinct benefit directions; CrewRequired, embarked crew and powered CrewSupport remain separate. Industry stays numeric, with no Credit meter. Preserve actual profile-specific numeric charges and flag the future Industry-linked credit gap; this visual rule changes no costs.
+
 Major component families are power generation, power distribution where represented, propulsion, life support and accommodation, computing/command, sensors, shields, energy weapons, torpedoes, science facilities and mission/support equipment. Sensor and computer packages may be grouped in the MVP while retaining explicit dependency ratings.
 
 Every component version defines its internal capacity demand, operational power demand, crew requirement, dependencies, compatible hull/mount tags, costs, reliability and role outputs. A reactor supplies power and consumes capacity; crew accommodation and life support also consume capacity. The hull's published usable capacity already excludes non-configurable structure, so the validator must not charge that structure twice.
