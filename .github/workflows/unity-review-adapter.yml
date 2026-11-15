@@ -2,6 +2,7 @@ name: Unity review adapter actual-source portable checks
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:

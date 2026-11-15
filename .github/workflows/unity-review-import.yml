@@ -2,6 +2,7 @@ name: Explicit Unity review import (static only)
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
