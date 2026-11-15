@@ -30,7 +30,7 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(root.Q<Button>("integrated-design-publish").enabledSelf,Is.True,"The real campaign starter must pass publication validation.");
             yield return null;yield return null;
             var prior=RenderTexture.active;RenderTexture.active=target;var png=new Texture2D(1280,720,TextureFormat.RGBA32,false);png.ReadPixels(new Rect(0,0,1280,720),0,0);png.Apply();
-            var output=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/early-game-player-ui/designer-probe.png"));File.WriteAllBytes(output,png.EncodeToPNG());RenderTexture.active=prior;
+            var output=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/early-game-player-ui/designer-probe.png"));Directory.CreateDirectory(Path.GetDirectoryName(output)!);File.WriteAllBytes(output,png.EncodeToPNG());RenderTexture.active=prior;
             var bounds=back.worldBound;int ink=0;
             for(int x=(int)bounds.xMin+12;x<(int)bounds.xMax-12;x++)for(int y=(int)bounds.yMin+8;y<(int)bounds.yMax-8;y++)
             {var pixel=png.GetPixel(x,719-y);if(pixel.r<.2f&&pixel.g<.2f&&pixel.b<.2f)ink++;}

@@ -49,16 +49,16 @@ namespace HobbyDS9.UnityReview
             scale.style.whiteSpace=WhiteSpace.Normal;scale.style.flexShrink=0;Add(scale);
             viewControls=new Foldout{text="View controls",value=false,name="system-view-controls"};Add(viewControls);
             controls=new VisualElement();controls.style.flexDirection=FlexDirection.Row;controls.style.flexWrap=Wrap.Wrap;viewControls.Add(controls);
-            Control("Rotate left",()=>SetView(yaw-25,zoom));Control("Rotate right",()=>SetView(yaw+25,zoom));
-            Control("Zoom out",()=>SetView(yaw,zoom/1.3f));Control("Zoom in",()=>SetView(yaw,zoom*1.3f));
-            void Frame(bool inner,bool focus){this.innerFrame=inner;this.focusFrame=focus;this.onFrame?.Invoke(inner,focus);SetView(yaw,1);if(focus)pendingFocus=true;}
+            Control("Rotate left",()=>SetView(this.yaw-25,this.zoom));Control("Rotate right",()=>SetView(this.yaw+25,this.zoom));
+            Control("Zoom out",()=>SetView(this.yaw,this.zoom/1.3f));Control("Zoom in",()=>SetView(this.yaw,this.zoom*1.3f));
+            void Frame(bool inner,bool focus){this.innerFrame=inner;this.focusFrame=focus;this.onFrame?.Invoke(inner,focus);SetView(this.yaw,1);if(focus)pendingFocus=true;}
             var framing=new VisualElement{name="system-framing-controls"};framing.style.flexDirection=FlexDirection.Row;framing.style.flexWrap=Wrap.Wrap;framing.style.flexShrink=0;Add(framing);
             void FrameControl(string text,Action action){var button=new Button(()=>{if(!disposed&&!failed)action();}){text=text};button.style.minHeight=44;button.style.marginRight=4;framing.Add(button);}
             FrameControl("Overview",()=>Frame(false,false));
             if(meanDistances!=null)FrameControl("Inner system",()=>Frame(true,false));
             FrameControl("Focus selected",()=>Frame(false,true));
             var motion=new Toggle("Reduce motion"){value=reducedMotion,name="system-reduce-motion"};controls.Add(motion);
-            motion.RegisterValueChangedCallback(e=>{this.activation.Cancel();this.reducedMotion=e.newValue;onReducedMotion?.Invoke(e.newValue);if(e.newValue&&animating){yaw=targetYaw;animating=false;onView(yaw,zoom);QueueDraw();}});
+            motion.RegisterValueChangedCallback(e=>{this.activation.Cancel();this.reducedMotion=e.newValue;onReducedMotion?.Invoke(e.newValue);if(e.newValue&&animating){this.yaw=targetYaw;animating=false;onView(this.yaw,this.zoom);QueueDraw();}});
             viewport=new VisualElement{name="sol-viewport"};viewport.style.height=340;viewport.style.flexShrink=0;viewport.style.overflow=Overflow.Hidden;
             viewport.style.backgroundColor=new Color(.019f,.027f,.049f);Add(viewport);
             image=new Image{scaleMode=ScaleMode.StretchToFill,pickingMode=PickingMode.Ignore};image.StretchToParentSize();viewport.Add(image);
