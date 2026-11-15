@@ -36,7 +36,7 @@ namespace HobbyDS9.UnityReview
         public StreamedInteractionWork? BeginStreamedInteraction(StreamedInteractionKind kind,CampaignActivityCommandDto? command=null)
         {
             if(!StreamedActivitiesCampaign||Busy||Closed||Current.HasPendingWork||Current.RefreshRequired
-                ||kind!=StreamedInteractionKind.Preview&&Current.Dirty||kind==StreamedInteractionKind.PlanningAdvance&&HasLocalEdits)
+                ||kind!=StreamedInteractionKind.Preview&&Current.Dirty||kind==StreamedInteractionKind.PlanningAdvance&&HasPlanningEdits)
             {
                 if(StreamedActivitiesCampaign&&!Busy&&!Closed&&IsConstruction(kind,command))
                     ConstructionFeedbackFor(command!,Current.RefreshRequired?"The campaign changed. Refresh before adding construction.":"Finish or discard the pending order before adding construction.");

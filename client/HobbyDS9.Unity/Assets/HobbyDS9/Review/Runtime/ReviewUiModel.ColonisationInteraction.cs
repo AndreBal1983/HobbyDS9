@@ -48,7 +48,7 @@ namespace HobbyDS9.UnityReview
         public ColonisationInteractionWork? BeginColonisationInteraction(ColonisationInteractionKind kind,CampaignActivityCommandDto? command=null,ColonisationCommandDto? colonyCommand=null)
         {
             if(!ColonisationCampaign||Busy||Closed||Current.HasPendingWork||Current.RefreshRequired
-                ||kind!=ColonisationInteractionKind.Preview&&Current.Dirty||kind==ColonisationInteractionKind.PlanningAdvance&&HasLocalEdits)
+                ||kind!=ColonisationInteractionKind.Preview&&Current.Dirty||kind==ColonisationInteractionKind.PlanningAdvance&&HasPlanningEdits)
             {
                 if(ColonisationCampaign&&!Busy&&!Closed&&IsColonisationConstruction(kind,command))
                     ColonisationFeedbackFor(command!,Current.RefreshRequired?"The campaign changed. Refresh before adding construction.":"Finish or discard the pending order before adding construction.");

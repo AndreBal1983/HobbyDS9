@@ -1,5 +1,7 @@
 # Unity Ship Designer — Campaign Blueprint Integration
 
+Later GUI candidate: [SCIENCE-AUTOAPPLY-01](science-autoapply-01-gui.md) lets unpublished, including invalid, session drafts survive End turn without automatic publication. Campaign saves still exclude unpublished fits; explicit publication and session replacement safeguards remain.
+
 Status: **proposed milestone; implementation candidate on `codex/unity-designer-campaign-blueprints`, pending combined review and merge**. Local validation and Windows demonstration evidence are recorded in [campaign integration acceptance](unity-campaign-blueprint-integration-acceptance.md). This does not change the agreed/proposed/open labels in the design chapters.
 
 Before this candidate, the accepted Ship Designer UX rebuild edited a local fixture-backed draft and requested portable Application previews. The campaign backend already supports publication and construction through [Blueprint Construction v1](blueprint-construction-v1.md). The candidate connects the live campaign provider, stamped publication and exact-revision construction. Offline designer previews retain disabled publication; live actions require authoritative gates. Earlier UX acceptance documents describe their historical local-only scope.

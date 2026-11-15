@@ -85,6 +85,12 @@ namespace HobbyDS9.UnityReview
         public ReviewResearchDraft Acknowledge(ReviewFrame frame,CommandKind submitted)
             =>Rebase(frame,submitted==CommandKind.SetResearchAllocation,submitted==CommandKind.SetScienceAllocation);
         public ReviewResearchDraft PreserveUnsubmittedEdits(ReviewFrame frame)=>Rebase(frame,false,false);
+        public ReviewResearchDraft RestoreAccepted(ReviewFrame frame)
+        {
+            var next=Rebase(frame,true,true);var display=Apportion(next.weights,100);
+            for(int i=0;i<weights.Length;i++)if(weights[i]!=next.weights[i])next.lockedDisplay[i]=display[i];
+            return next;
+        }
         private ReviewResearchDraft Rebase(ReviewFrame frame,bool allocationAccepted,bool weightsAccepted)
         {
             var next=new ReviewResearchDraft(frame);

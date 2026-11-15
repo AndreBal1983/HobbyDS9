@@ -17,11 +17,12 @@ namespace HobbyDS9.UnityReview
         private readonly Action<Action> perform;private readonly Action<string,Action> confirm;
         private readonly Action<string,string,string,Action>? confirmConsequence;
         private readonly Action<ReviewEngineeringDialog>? showEngineering;
+        private readonly Action<Action>? performResearch;
         private readonly Action<ReviewWorkspacePage> navigate;private readonly Action<string,string?,string?> selectFleet;
         private string? colony {get=>workspace.SelectedColony;set=>workspace.SelectedColony=value;}
         private KnownRouteOffer? route {get=>workspace.RoutePreview;set=>workspace.RoutePreview=value;}
-        public ReviewPlayerView(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate,Action<string,string?,string?> selectFleet,Action<Button,Action> bindButton,Action<string,string,string,Action>? confirmConsequence=null,Action<ReviewEngineeringDialog>? showEngineering=null)
-        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;this.selectFleet=selectFleet;this.bindButton=bindButton;this.confirmConsequence=confirmConsequence;this.showEngineering=showEngineering;}
+        public ReviewPlayerView(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate,Action<string,string?,string?> selectFleet,Action<Button,Action> bindButton,Action<string,string,string,Action>? confirmConsequence=null,Action<ReviewEngineeringDialog>? showEngineering=null,Action<Action>? performResearch=null)
+        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;this.selectFleet=selectFleet;this.bindButton=bindButton;this.confirmConsequence=confirmConsequence;this.showEngineering=showEngineering;this.performResearch=performResearch;}
         private bool Editable=>model.Current.Frame.Status.Phase==SessionPhase.Planning&&(model.Current.Frame.Demo==null||model.Current.Frame.Demo.Outcome==CampaignDemoOutcome.Active)&&!model.Current.HasPendingWork&&!model.Current.RefreshRequired&&!model.Current.Dirty&&!model.Busy&&!model.Closed;
         private static Label Text(VisualElement p,string text,string cls="console-copy",string? id=null)
         {var l=new Label(text){name=id??""};l.AddToClassList(cls);p.Add(l);return l;}
@@ -47,13 +48,16 @@ namespace HobbyDS9.UnityReview
             var tabs=Row(main,"console-tabs");
             foreach(var tab in new[]{"science","engineering"}){var b=Btn(tabs,tab=="science"?"Science":"Engineering","research-tab-"+tab,()=>perform(()=>workspace.ResearchTab=tab));b.EnableInClassList("selected-tab",workspace.ResearchTab==tab);}
             var r=facts.Research;var d=model.ResearchInputs()!;bool edit=Editable&&d.Current(model.Current.Frame);
-            var directAllocations=model.ColonisationCycleCampaign;
-            void ApplyAllocation(Action action, Func<string> confirmation)
+            var frame=model.Current.Frame;
+            var bars=new System.Collections.Generic.Dictionary<ScienceDiscipline,ReviewAllocationBar>();
+            var labels=new System.Collections.Generic.Dictionary<ScienceDiscipline,Label>();
+            void Preview(ReviewResearchDraft values)
+            {foreach(var pair in bars)pair.Value.SetUnits(values.Weight(pair.Key));foreach(var pair in labels)pair.Value.text=values.PercentLabel(pair.Key);}
+            void CommitScience(Action editPlan)
             {
-                if(directAllocations)
-                    perform(action);
-                else
-                    confirm(confirmation(),()=>perform(action));
+                if(!Editable||!d.Current(model.Current.Frame)||!ReferenceEquals(frame,model.Current.Frame))return;
+                editPlan();Preview(d);
+                if(model.QueueScienceAllocation(d))ScheduleResearchCommit(root);
             }
 
             if(workspace.ResearchTab=="science")
@@ -68,30 +72,25 @@ namespace HobbyDS9.UnityReview
                     var label=new VisualElement();label.AddToClassList("science-allocation-label");c.Add(label);
                     Btn(label,discipline.ToString(),"science-details-"+discipline,()=>perform(()=>workspace.ScienceDetails=workspace.ScienceDetails==discipline?null:discipline));
                     Text(label,"Level "+card.Level+" · "+card.ProgressPercent.ToString("0.##")+"%","science-allocation-level");
-                    var bar=new ReviewAllocationBar("science-bar-"+discipline,d.Weight(discipline),colours[(int)discipline-1],value=>{
-                        if(Editable&&d.Current(model.Current.Frame))perform(()=>d.SetWeight(discipline,value));
-                    });bar.SetEnabled(canAdjust);c.Add(bar);
+                    var bar=new ReviewAllocationBar("science-bar-"+discipline,d.Weight(discipline),colours[(int)discipline-1],
+                        value=>CommitScience(()=>d.SetWeight(discipline,value)),value=>{
+                            if(!d.Current(model.Current.Frame))return;
+                            var preview=d.PreserveUnsubmittedEdits(frame);preview.SetWeight(discipline,value);Preview(preview);
+                        });bar.SetEnabled(canAdjust);c.Add(bar);bars.Add(discipline,bar);
                     var exact=new VisualElement();exact.AddToClassList("science-allocation-exact");c.Add(exact);
-                    Text(exact,d.PercentLabel(discipline),"science-allocation-percent");
+                    labels.Add(discipline,Text(exact,d.PercentLabel(discipline),"science-allocation-percent"));
                     var lockButton=Btn(c,d.IsLocked(discipline)?"Locked":"Unlock","science-lock-"+discipline,()=>perform(()=>d.SetLocked(discipline,!d.IsLocked(discipline))),edit);
                     lockButton.text=d.IsLocked(discipline)?"Locked":"Lock";lockButton.AddToClassList("science-allocation-lock");
                     lockButton.tooltip=d.IsLocked(discipline)?"Keep this exact share fixed. Select to unlock without redistributing.":"Lock this exact share while editing other disciplines.";
                     lockButton.EnableInClassList("selected-tab",d.IsLocked(discipline));
                     var steps=new VisualElement();steps.AddToClassList("science-allocation-steps");c.Add(steps);
-                    Btn(steps,"−","science-minus-"+discipline,()=>perform(()=>d.Adjust(discipline,-30)),canAdjust&&d.Weight(discipline)>0);
-                    Btn(steps,"+","science-plus-"+discipline,()=>perform(()=>d.Adjust(discipline,30)),canAdjust&&d.Weight(discipline)<600);
+                    Btn(steps,"−","science-minus-"+discipline,()=>CommitScience(()=>d.Adjust(discipline,-30)),canAdjust&&d.Weight(discipline)>0);
+                    Btn(steps,"+","science-plus-"+discipline,()=>CommitScience(()=>d.Adjust(discipline,30)),canAdjust&&d.Weight(discipline)<600);
                 }
-                Text(main,(d.ScienceChanged?"Unsent Science allocation":"Accepted Science allocation")+" · total 100%. Locks keep their shares fixed; other unlocked shares rebalance proportionally.","console-copy");
+                Text(main,"Release a slider or use the keyboard to apply. Total 100%; locked shares stay fixed while unlocked shares rebalance proportionally.","console-copy");
                 if(!r.Science.Any(c=>d.CanAdjust(c.Discipline)))Text(main,"Unlock at least two disciplines to redistribute Science.","console-copy","science-lock-reason");
                 var scienceActions=Row(main);
-                Btn(scienceActions,"Equalize unlocked","integrated-equalize-science",()=>perform(()=>d.Equalize()),edit&&r.Science.Any(c=>d.CanAdjust(c.Discipline)));
-                Btn(scienceActions,"Restore accepted shares","science-restore",
-                    ()=>ApplyAllocation(d.ResetScience,()=>"Discard only the six unsent Science shares? Allocation locks and the separate R&D split remain."),
-                    edit&&d.ScienceChanged);
-                Btn(scienceActions,directAllocations?"Apply Science allocation":"Review all six allocations","integrated-apply-science",
-                    ()=>ApplyAllocation(()=>model.AllocateScience(d.Values(),ReviewUiModel.NewCommandId()),
-                        ()=>"Apply this complete Science plan?\n"+string.Join("\n",r.Science.Select(c=>c.Discipline+": "+d.PercentLabel(c.Discipline)))+"\nTotal 100%. The Science / Engineering split is a separate order."),
-                    edit&&d.ScienceChanged,true);
+                Btn(scienceActions,"Equalize unlocked","integrated-equalize-science",()=>CommitScience(d.Equalize),edit&&r.Science.Any(c=>d.CanAdjust(c.Discipline)));
                 var receipts=new Foldout{text="Latest-turn Science",value=false};main.Add(receipts);
                 var recorded=false;
                 foreach(var receipt in r.Receipts)
@@ -116,20 +115,46 @@ namespace HobbyDS9.UnityReview
         }
         private void ResearchDirection(VisualElement aside,ResearchOverviewSnapshot r,ReviewResearchDraft d,bool edit)
         {
-            void ApplyAllocation(Action action,Func<string> warning)
-            {if(model.ColonisationCycleCampaign)perform(action);else confirm(warning(),()=>perform(action));}
             Text(aside,"R&D capacity","console-copy");Text(aside,r.ResearchOutput.ToString(),"console-metric");
             Text(aside,"Science / Engineering");
             var split=new SliderInt(0,20){name="integrated-research-split",value=d.ScienceUnits/30};split.SetEnabled(edit);aside.Add(split);
-            Text(aside,(100m*d.ScienceUnits/600).ToString("0.##")+"% / "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"%","console-metric");
-            split.RegisterValueChangedCallback(e=>perform(()=>d.ScienceUnits=e.newValue*30));
-            Btn(aside,"Apply R&D split","integrated-apply-split",
-                ()=>ApplyAllocation(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()),
-                    ()=>"Apply "+(100m*d.ScienceUnits/600).ToString("0.##")+"% Science and "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"% Engineering? Other Science-share edits remain unsent."),
-                edit&&d.SplitChanged);
+            var splitLabel=Text(aside,"","console-metric");
+            void ShowSplit(int units)=>splitLabel.text=(100m*units/600).ToString("0.##")+"% / "+(100m*(600-units)/600).ToString("0.##")+"%";
+            ShowSplit(d.ScienceUnits);int pointer=-1,start=split.value;
+            void CommitSplit(int value)
+            {
+                if(!Editable||!d.Current(model.Current.Frame))return;
+                d.ScienceUnits=value*30;ShowSplit(d.ScienceUnits);
+                if(model.QueueResearchSplit(d))ScheduleResearchCommit(aside);
+            }
+            split.RegisterCallback<PointerDownEvent>(e=>{if(e.button==0&&edit){pointer=e.pointerId;start=split.value;}},TrickleDown.TrickleDown);
+            split.RegisterValueChangedCallback(e=>{ShowSplit(e.newValue*30);if(pointer<0)CommitSplit(e.newValue);});
+            split.RegisterCallback<PointerUpEvent>(e=>{if(pointer!=e.pointerId)return;pointer=-1;CommitSplit(split.value);},TrickleDown.TrickleDown);
+            void CancelSplit(){if(pointer<0)return;pointer=-1;split.SetValueWithoutNotify(start);ShowSplit(d.ScienceUnits);}
+            split.RegisterCallback<PointerCancelEvent>(_=>CancelSplit(),TrickleDown.TrickleDown);
+            split.RegisterCallback<PointerCaptureOutEvent>(_=>CancelSplit());
+            split.RegisterCallback<KeyDownEvent>(e=>{if(e.keyCode==KeyCode.Escape&&pointer>=0){CancelSplit();e.StopImmediatePropagation();}},TrickleDown.TrickleDown);
+            Text(aside,"Release to apply the split. Keyboard changes apply directly.");
+            Text(aside,model.ResearchCommitNotice,id:"research-allocation-status");
             Text(aside,"Science reserve: "+r.ScienceReserveConceptual);Text(aside,"Engineering reserve: "+r.EngineeringReserveConceptual+(model.Current.Frame.Demo!=null?" Engineering points":""),id:"engineering-reserve");
             Text(aside,"One Engineering project at a time. Progress and eligibility are checked by the campaign.");
             if(!edit)Text(aside,model.Current.Frame.Demo!=null&&model.Current.Frame.Demo.Outcome!=CampaignDemoOutcome.Active?"Campaign complete. Research is available for inspection; further changes are unavailable.":"Research changes are unavailable at this boundary. Finish pending combat, refresh stale authority, or submit/discard unsent orders before editing.",id:"research-readonly-reason");
+        }
+        private bool researchFlushScheduled;
+        private void ScheduleResearchCommit(VisualElement source)
+        {
+            var status=source.panel?.visualTree.Q<Label>("research-allocation-status");if(status!=null)status.text=model.ResearchCommitNotice;
+            var tree=source.panel?.visualTree;
+            if(tree==null||researchFlushScheduled)return;
+            researchFlushScheduled=true;
+            tree.schedule.Execute(()=>{
+                researchFlushScheduled=false;
+                if(model.Closed)return;
+                var focus=(tree.panel?.focusController.focusedElement as VisualElement)?.name;
+                (performResearch??perform)(()=>model.FlushResearchAllocations());
+                if(tree.Q("review-one-use-confirmation")==null&&!string.IsNullOrEmpty(focus))
+                {var target=tree.Q<VisualElement>(focus);if(target!=null&&target.enabledInHierarchy&&target.focusable)target.Focus();}
+            }).StartingIn(20);
         }
         private static void EngineeringTurnReport(VisualElement parent,ResearchOverviewSnapshot research)
         {
