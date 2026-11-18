@@ -122,7 +122,7 @@ namespace HobbyDS9.UnityReview
         {
             modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ReleaseAudio();
             var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();
-            if(model?.SingleplayerDemo!=true||panel==null||doc.panelSettings!=panel)
+            if(!PlayerProfile||panel==null||doc.panelSettings!=panel)
             {
                 ReleasePanel();panel=ScriptableObject.CreateInstance<PanelSettings>();panel.scaleMode=model!.Integrated?PanelScaleMode.ConstantPixelSize:PanelScaleMode.ScaleWithScreenSize;panel.referenceResolution=new Vector2Int(1920,1080);
                 panel.screenMatchMode=PanelScreenMatchMode.MatchWidthOrHeight;panel.match=1;panel.themeStyleSheet=Resources.Load<ThemeStyleSheet>("HobbyTheme");doc.panelSettings=panel;
@@ -134,7 +134,7 @@ namespace HobbyDS9.UnityReview
             root.style.flexGrow=1;root.style.backgroundColor=new Color(0.03f,0.05f,0.08f);root.style.color=new Color(0.92f,0.95f,1);root.style.fontSize=16;
             foreach(var resource in new[]{"HobbyClient","LcarsTokens","Lcars","ShipDesigner","ReviewControls","ReviewCombat","PlayerConsole"})
             {var sheet=Resources.Load<StyleSheet>(resource);if(sheet!=null)root.styleSheets.Add(sheet);}
-            if(model.Integrated){workspace!.Compact=Screen.width<1600||Screen.height<850;root.EnableInClassList("player-narrow",workspace.Compact);BuildPlayerShell();root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();return;}
+            if(model!.Integrated){workspace!.Compact=Screen.width<1600||Screen.height<850;root.EnableInClassList("player-narrow",workspace.Compact);BuildPlayerShell();root.RegisterCallback<GeometryChangedEvent>(Geometry);Draw();return;}
             var identity=Readout((model!.Integrated?"OPT-IN INTEGRATED PLAYTEST | SCENARIO: integrated-playtest-v1":"OPT-IN PHYSICAL TACTICAL V2 | SCENARIO: "+options!.Profile)+" | ACTOR VIEW: "+model.Current.Frame.Actor+" | Proposed policies; default campaign activation disabled");
             identity.name="review-scenario-identity";identity.AddToClassList("review-heading");root.Add(identity);
             root.Add(Readout(workspace!.BoundaryIdentity));
@@ -216,7 +216,7 @@ namespace HobbyDS9.UnityReview
         {
             var epoch=viewEpoch;Action guarded=()=>{if(epoch==viewEpoch&&isActiveAndEnabled&&!model!.Busy&&!model.Closed&&(dialog?modalPermission.IsOpen:confirmation==null)){buttonSound?.Invoke();try{action();}finally{PreserveDemoKeyOrigins();}}};
             var button=new Button(guarded){text=title};
-            if(model!.SingleplayerDemo)BindDemoButtonKeyboard(button,guarded);
+            if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);
             button.AddToClassList("review-action");button.style.minHeight=36;parent.Add(button);return button;
         }
         private void Do(Action action)

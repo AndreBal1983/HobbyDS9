@@ -37,7 +37,10 @@ namespace HobbyDS9.UnityReview
         {selectedFleet=fleet;SyncFleetOrder();if(node!=null)destination=node;if(ship!=null)selectedShip=ship;}
         public void Render()
         {
-            root.Clear();var model=flow.Model;var c=model.Current;var frame=c.Frame;var stage=flow.Stage;var battle=frame.Battle;var demo=frame.Demo!=null;
+            root.Clear();var model=flow.Model;var c=model.Current;var frame=c.Frame;var stage=flow.Stage;var battle=frame.Battle;
+            // Both single-human profiles use the readable player presentation.
+            // Objective/terminal semantics remain in the authoritative Demo snapshot.
+            var demo=model.SingleplayerDemo||model.FrontierPreview;
             var aftermath=demo?flow.AftermathSummary:null;
             if(aftermath==null)displayedAftermath=null;
             else if(!ReferenceEquals(displayedAftermath,aftermath)){displayedAftermath=aftermath;tab="report";}

@@ -47,17 +47,28 @@ def check(root):
             '"Confirm",callbacks.Confirm' in entry and "modalPermission.Invalidate()" in entry,
             "Modal buttons must use the actual portable one-use permission and lifetime invalidation")
     keyboard = (runtime / "ReviewEntry.Keyboard.cs").read_text(encoding="utf-8-sig")
-    require('if(model!.SingleplayerDemo)BindDemoButtonKeyboard(button,guarded);' in entry and
+    require('if(PlayerProfile)BindDemoButtonKeyboard(button,guarded);' in entry and
             'new Button(guarded)' in entry and 'if(SubmitAlreadyPerformed())' in keyboard and
             'if(!(enter?returnHeld:spaceHeld))LatchDemoKey(button,e.keyCode,e.timestamp);return;' in keyboard and
             'if(enter?returnHeld:spaceHeld){e.StopPropagation();return;}' in keyboard and
             'WasPerformedThisFrame()' in keyboard and 'returnHeld' in keyboard and 'DemoKeyUp' in keyboard,
             "Keyboard buttons must share the guarded click and defer real Submit, with held-key suppression")
-    require('if(model?.SingleplayerDemo!=true||panel==null||doc.panelSettings!=panel)' in entry and
+    require('if(!PlayerProfile||panel==null||doc.panelSettings!=panel)' in entry and
             'UnbindDemoKeyboard();ReleaseAudio();' in entry and
             'root=doc.rootVisualElement;root.Clear();' in entry and
             'PreserveDemoKeyOrigins();' in entry.split('private void Build()',1)[1].split('private void Navigate(',1)[0],
             "Demo rebuild must preserve its original panel while disposing audio and retaining held origins")
+    frontier_entry = (runtime / "ReviewEntry.Frontier.cs").read_text(encoding="utf-8-sig")
+    require('private bool PlayerProfile=>model?.SingleplayerDemo==true||model?.FrontierPreview==true;' in frontier_entry,
+            "Player keyboard/panel behavior must be limited to explicit demo/frontier player profiles")
+    frontier_map = (runtime / "ReviewFrontierMap.cs").read_text(encoding="utf-8-sig")
+    require('var known=frame.Frontier;' in frontier_map and 'known==null||known.ActorId!=frame.Actor' in frontier_map and
+            not any(term in frontier_map for term in ('facts.Navigation', 'CampaignFrontierPackageDto', 'CampaignFrontierSaveDto', 'FrontierPackages/')),
+            "Frontier map must use only the selected actor discovery view, never unrestricted navigation or private roots")
+    frontier_options = (runtime / "FrontierPreviewOptions.cs").read_text(encoding="utf-8-sig")
+    require('DefaultEnabled=false' in frontier_options and 'SaveDirectory="HobbyDS9FrontierPreviewOnly-v5"' in frontier_options and
+            'new[]{"frontier-1","frontier-2","frontier-3"}' in frontier_options,
+            "Frontier startup must remain opt-in with disjoint wrapper5 namespace/slots")
     require('origin.SetEnabled(false);origin.focusable=false;keyboardRetired.Add(origin);' in keyboard and
             'keyboardRetired.style.display=DisplayStyle.None;root.panel.visualTree.Add(keyboardRetired);' in keyboard and
             'new[]{returnHeld?returnOrigin:null,spaceHeld?spaceOrigin:null}' in keyboard and

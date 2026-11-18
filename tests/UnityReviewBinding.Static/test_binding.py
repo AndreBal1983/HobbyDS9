@@ -99,7 +99,7 @@ class BindingTests(unittest.TestCase):
 
     def test_demo_rebuild_cannot_replace_the_dispatch_panel(self):
         path = self.assets / "Review/Runtime/ReviewEntry.cs"
-        path.write_text(path.read_text().replace("if(model?.SingleplayerDemo!=true||panel==null||doc.panelSettings!=panel)", "if(true)"))
+        path.write_text(path.read_text().replace("if(!PlayerProfile||panel==null||doc.panelSettings!=panel)", "if(true)"))
         self.assertTrue(any("original panel" in x for x in checker.check(self.root)))
 
     def test_retired_origin_cannot_remain_actionable(self):
@@ -136,6 +136,26 @@ class BindingTests(unittest.TestCase):
         path = self.assets / "Review/Runtime/ReviewEntry.Keyboard.cs"
         path.write_text(path.read_text().replace("if(returnHeld&&ReferenceEquals(origin,returnOrigin)||spaceHeld&&ReferenceEquals(origin,spaceOrigin))return;", ""))
         self.assertTrue(any("another held key" in x for x in checker.check(self.root)))
+
+    def test_player_keyboard_gate_cannot_enable_legacy_profiles(self):
+        path = self.assets / "Review/Runtime/ReviewEntry.Frontier.cs"
+        path.write_text(path.read_text().replace("model?.SingleplayerDemo==true||model?.FrontierPreview==true", "true"))
+        self.assertTrue(any("explicit demo/frontier" in x for x in checker.check(self.root)))
+
+    def test_frontier_map_cannot_ignore_observation_actor(self):
+        path = self.assets / "Review/Runtime/ReviewFrontierMap.cs"
+        path.write_text(path.read_text().replace("known==null||known.ActorId!=frame.Actor", "known==null"))
+        self.assertTrue(any("selected actor discovery" in x for x in checker.check(self.root)))
+
+    def test_frontier_map_cannot_fall_back_to_unrestricted_navigation(self):
+        path = self.assets / "Review/Runtime/ReviewFrontierMap.cs"
+        path.write_text(path.read_text()+"\n// facts.Navigation fallback\n")
+        self.assertTrue(any("unrestricted navigation" in x for x in checker.check(self.root)))
+
+    def test_frontier_slots_cannot_alias_bajor_directory(self):
+        path = self.assets / "Review/Runtime/FrontierPreviewOptions.cs"
+        path.write_text(path.read_text().replace("HobbyDS9FrontierPreviewOnly-v5", "HobbyDS9SingleplayerDemoOnly-v4"))
+        self.assertTrue(any("disjoint wrapper5" in x for x in checker.check(self.root)))
 
 
 if __name__ == "__main__":
