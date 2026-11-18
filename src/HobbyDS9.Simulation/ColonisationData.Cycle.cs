@@ -7,6 +7,7 @@ namespace HobbyDS9.Simulation
     {
         internal static string CycleHash(CampaignColonisationCyclePackageDto p)
         {
+            if(p is CampaignAuthoredSolPackageDto authored)return AuthoredSolEditionData.Hash(authored);
             if(p is CampaignSystemRichnessPackageDto rich)return SystemRichnessData.Hash(rich);
             Require(p!=null&&p.GetType()==typeof(CampaignColonisationCyclePackageDto),"Unknown cycle package carrier type.");
             Require(p!=null&&p.FormatVersion==1&&p.ProfileId==CampaignColonisationCycleIdentity.PackageProfile&&p.BaseGrowth!=null

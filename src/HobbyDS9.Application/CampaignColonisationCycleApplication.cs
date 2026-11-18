@@ -13,6 +13,7 @@ namespace HobbyDS9.Application
         private CampaignColonisationCycleApplication(CampaignTacticalReviewSession backend):base(backend){}
         public static CampaignColonisationCyclePackageDto CreateCyclePackage(CampaignColonisationExpansionPackageDto original)=>CampaignTacticalReviewSession.CreateCyclePackage(original);
         public static CampaignSystemRichnessPackageDto CreateSystemRichnessPackage(CampaignColonisationExpansionPackageDto original,SystemRichnessPolicyDto policy)=>CampaignTacticalReviewSession.CreateSystemRichnessPackage(original,policy);
+        public static CampaignAuthoredSolPackageDto CreateAuthoredSolPackage(CampaignColonisationExpansionPackageDto original)=>CampaignTacticalReviewSession.CreateAuthoredSolPackage(original);
         public static ICampaignColonisationCycleSession StartCycleGame(CampaignColonisationCyclePackageDto package,NaturalGalaxySettingsDto settings)
             =>new CampaignColonisationCycleApplication(CampaignTacticalReviewSession.StartCycleGame(package,settings));
         public static ICampaignColonisationCycleSession LoadCycleSave(CampaignColonisationCyclePackageDto package,CampaignColonisationCycleSaveDto root)

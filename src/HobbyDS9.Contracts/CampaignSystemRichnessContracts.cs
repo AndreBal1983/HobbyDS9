@@ -40,7 +40,7 @@ namespace HobbyDS9.Contracts
     public sealed class SystemAsteroidBeltSnapshot
     {
         public string FeatureId {get;}public string SystemId {get;}public int InnerRadiusMilliAu {get;}public int OuterRadiusMilliAu {get;}public string VisualSeed {get;}
-        public string RadiusUnit=>CampaignSystemRichnessIdentity.RadiusUnit;
+        public string RadiusUnit=>FeatureId==CampaignAuthoredSolIdentity.FeatureId?CampaignAuthoredSolIdentity.RadiusUnit:CampaignSystemRichnessIdentity.RadiusUnit;
         public string DisclosurePolicy=>CampaignSystemRichnessIdentity.Disclosure;
         public SystemAsteroidBeltSnapshot(SystemAsteroidBeltDto b)
         {FeatureId=b.FeatureId;SystemId=b.SystemId;InnerRadiusMilliAu=b.InnerRadiusMilliAu;OuterRadiusMilliAu=b.OuterRadiusMilliAu;VisualSeed=b.VisualSeed;}
