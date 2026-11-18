@@ -9,6 +9,8 @@ namespace HobbyDS9.Simulation
         {var p=new CampaignColonisationCyclePackageDto{BaseGrowth=growth};p.PackageHash=ColonisationData.CycleHash(p);return p;}
         public static CampaignSystemRichnessPackageDto CreateSystemRichnessPackage(CampaignColonisationExpansionPackageDto growth,SystemRichnessPolicyDto policy)
         {SystemRichnessData.Validate(policy);var p=new CampaignSystemRichnessPackageDto{BaseGrowth=growth,Generation=SystemRichnessData.Copy(policy)};p.PackageHash=ColonisationData.CycleHash(p);return p;}
+        public static CampaignAuthoredSolPackageDto CreateAuthoredSolPackage(CampaignColonisationExpansionPackageDto growth)
+        {var p=new CampaignAuthoredSolPackageDto{BaseGrowth=growth};p.PackageHash=ColonisationData.CycleHash(p);return p;}
         public static CampaignTacticalReviewSession StartCycleGame(CampaignColonisationCyclePackageDto p,NaturalGalaxySettingsDto settings)
         {
             var source=new ExpansionSource(p);var roster=p.BaseGrowth!.BaseRosterV2!;var b=roster.BaseV1!;
@@ -19,7 +21,7 @@ namespace HobbyDS9.Simulation
         public static CampaignTacticalReviewSession LoadCycleSave(CampaignColonisationCyclePackageDto p,CampaignColonisationCycleSaveDto root)
         {
             var source=new ExpansionSource(p);var roster=p.BaseGrowth!.BaseRosterV2!;
-            Require((source.Richness!=null)==(root is CampaignSystemRichnessSaveDto),"Different system-generation save edition; new campaign required.");
+            Require(root!=null&&(source.AuthoredSol?root is CampaignAuthoredSolSaveDto:source.Richness!=null?root is CampaignSystemRichnessSaveDto:root.GetType()==typeof(CampaignColonisationCycleSaveDto)),"Different system-generation save edition; new campaign required.");
             ColonisationRootBudget.ValidateCycle(root,roster.BaseV1!.Settlement!);Require(root.PackageHash==source.Hash,"Different cycle source.");
             var replay=LoadColonisationCoreWithVerifiedExport(roster.BaseV1,root.BaseCampaign!,new ColonisationRosterSource(roster),out var verifiedBase,source);
             CampaignColonisationCycleSaveDto canonical;
@@ -34,7 +36,8 @@ namespace HobbyDS9.Simulation
         {lock(gate){Require(CycleEnabled,"Explicit cycle root required.");return CycleRoot(ExportColonisationCore());}}
         private CampaignColonisationCycleSaveDto CycleRoot(CampaignColonisationSaveDto core)
         {
-            CampaignColonisationCycleSaveDto root=expansion!.Source.Richness==null?new CampaignColonisationCycleSaveDto():new CampaignSystemRichnessSaveDto{SystemBelts=expansion.Belts.Select(SystemRichnessData.Copy).ToList()};
+            CampaignColonisationCycleSaveDto root=expansion!.Source.AuthoredSol?new CampaignAuthoredSolSaveDto{SystemBelts=expansion.Belts.Select(SystemRichnessData.Copy).ToList()}
+                :expansion.Source.Richness==null?new CampaignColonisationCycleSaveDto():new CampaignSystemRichnessSaveDto{SystemBelts=expansion.Belts.Select(SystemRichnessData.Copy).ToList()};
             root.PackageHash=expansion.Source.Hash;root.BaseCampaign=core;root.AiPlans=expansion.Plans.Select(ColonisationData.Copy).ToList();root.CycleActors=expansion.CycleActors.Select(ColonisationData.Copy).ToList();return root;
         }
         private ColonisationCycleActorDto CycleActor(string actor)=>expansion!.CycleActors.Single(a=>a.ActorId==actor);
