@@ -15,6 +15,25 @@ namespace HobbyDS9.UnityReview
         private readonly Action<Action> perform;
         private readonly Action<string,Action> confirm;
         private readonly Action<ReviewWorkspacePage> navigate;
+        // Exact original 30-unit no-fill strokes from art/playtest-20261118/icon-strokes.json.
+        // Kept fleet-local: no global icon enum, SVG importer or additional package.
+        private sealed class FleetStatusIcon:VisualElement
+        {
+            private static readonly float[][] Supply={new float[]{6,11,24,11,24,26,6,26,6,11},new float[]{10,11,10,6,20,6,20,11},new float[]{6,17,24,17},new float[]{15,11,15,26}};
+            private static readonly float[][] Shield={new float[]{15,3,25,7,24,18,21,23,15,27,9,23,6,18,5,7,15,3}};
+            private static readonly float[][] Mission={new float[]{5,23,11,23,11,15,20,15,20,7,26,7},new float[]{22,3,26,7,22,11},new float[]{3,20,7,20,7,26,3,26,3,20}};
+            private static readonly float[][] Ship={new float[]{3,19,7,13,11,13,11,7,15,4,19,7,19,13,23,13,27,19,21,21,9,21,3,19},new float[]{7,13,7,6},new float[]{23,13,23,6},new float[]{12,24,18,24}};
+            internal FleetStatusIcon(string kind,string label,bool reported)
+            {
+                name="fleet-status-icon-"+kind;tooltip=label;pickingMode=PickingMode.Ignore;style.width=style.height=30;style.flexShrink=0;
+                style.color=reported?new Color(.73f,.67f,.9f):new Color(.57f,.63f,.7f);
+                var lines=kind=="supply"?Supply:kind=="shield"?Shield:kind=="mission"?Mission:Ship;
+                generateVisualContent+=context=>{
+                    var painter=context.painter2D;painter.lineWidth=2;painter.strokeColor=resolvedStyle.color;
+                    foreach(var line in lines){painter.BeginPath();for(var i=0;i<line.Length;i+=2){var point=new Vector2(line[i],line[i+1]);if(i==0)painter.MoveTo(point);else painter.LineTo(point);}painter.Stroke();}
+                };
+            }
+        }
         public ReviewFleetRoster(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,
             Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate)
         {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;}
@@ -23,7 +42,9 @@ namespace HobbyDS9.UnityReview
         private static void Status(VisualElement parent,string title,string value,string name)
         {
             var cell=new VisualElement{name=name,tooltip=title+": "+value};cell.AddToClassList("fleet-roster-status");parent.Add(cell);
-            Text(cell,title,"fleet-roster-status-title");Text(cell,value,"fleet-roster-status-value");
+            var heading=new VisualElement();heading.style.flexDirection=FlexDirection.Row;heading.style.alignItems=Align.Center;cell.Add(heading);
+            heading.Add(new FleetStatusIcon(title=="Shields"?"shield":title.ToLowerInvariant(),title+": "+value,value!="Not reported"));
+            Text(heading,title,"fleet-roster-status-title");Text(cell,value,"fleet-roster-status-value");
         }
         private static void Meter(VisualElement parent,string title,long current,long maximum,string id)
         {
@@ -129,7 +150,7 @@ namespace HobbyDS9.UnityReview
                     var identity=ReviewShipNames.Ship(sid,ship.OwnerCivilizationId.Value);
                     var texture=source==null?null:ConstructionCardArt.Ship(source.HullVersionId);
                     var icon=new VisualElement{name="fleet-ship-icon-"+sid,tooltip=texture==null?"Matching approved ship icon not available":source!.HullVersionId=="hull.defiant-combat.v1"?"Defiant art · review-only reference":"Approved hull reference icon"};icon.AddToClassList("fleet-roster-ship-icon");
-                    if(texture!=null){var image=new Image{image=texture,scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};image.StretchToParentSize();icon.Add(image);}else icon.Add(new Label("Art —"));row.Add(icon);
+                    if(texture!=null){var image=new Image{image=texture,scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};image.StretchToParentSize();icon.Add(image);}else{icon.style.alignItems=Align.Center;icon.Add(new FleetStatusIcon("ship","Generic vessel; matching hull image not reported",false));icon.Add(new Label("Art —"));}row.Add(icon);
                     var identityCell=new VisualElement();identityCell.AddToClassList("fleet-roster-identity");row.Add(identityCell);
                     var inspect=button(identityCell,identity?.Label??"Vessel",()=>{if(CurrentFleetRender())perform(()=>{workspace.SelectedFleet=id;workspace.SelectedOwnShip=sid;});});inspect.name="fleet-inspect-"+sid;inspect.AddToClassList("fleet-ship-title");
                     Text(identityCell,"Class / fit: "+(source!=null&&!string.IsNullOrWhiteSpace(source.DisplayName)?source.DisplayName:design),"fleet-roster-class");

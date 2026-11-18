@@ -74,6 +74,8 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(shield.Query<Label>().ToList().Any(l=>l.text==FleetRosterPresentation.Shields(own.Condition.Shields,own.ShieldMaximum).Caption),Is.True);
                 Assert.That(card.Q<Button>("fleet-inspect-"+id).text,Is.Not.Empty);
                 Assert.That(card.Q("fleet-supply-"+id).Query<Label>().ToList().Any(l=>l.text=="Not reported"),Is.True,"No general supply gauge exists in this campaign contract.");
+                foreach(var kind in new[]{"supply","shield","mission"})
+                {var glyph=card.Q("fleet-status-icon-"+kind);Assert.That(glyph,Is.Not.Null);Assert.That(glyph.pickingMode,Is.EqualTo(PickingMode.Ignore));Assert.That(glyph.tooltip,Is.Not.Empty);}
                 Assert.That(card.Query<Label>().ToList().Any(l=>l.text.StartsWith("Class / fit: ",StringComparison.Ordinal)),Is.True);
                 Assert.That(card.Q<Button>("fleet-inspect-"+id),Is.Not.Null);
             }
