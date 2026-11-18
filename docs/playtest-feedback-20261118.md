@@ -8,7 +8,7 @@ Deliver a new verified Windows playable candidate with visible improvements, tru
 
 Shared account usage: check before sustained work and at handoff. Checkpoint by 72% consumed, hard stop at 75%, leaving 25% reserve. Do not use credits or reset credits to evade the restriction. Latest initial reading: 0% consumed in the current weekly window. Coordinate aggregate consumption across chats.
 
-Read repository contributor instructions, [design index](design/README.md), [architecture](architecture.md), and relevant chapters before implementation. Intended and shipped behavior must remain distinct. In particular consult [ship design](design/ship-design.md) and [Engineering model](design/engineering-tree-model-01.md) for module work. Preserve deterministic saves, shared validation and portable simulation authority.
+Read repository contributor instructions, [design index](design/README.md), [architecture](architecture.md), and relevant chapters before implementation. Intended and shipped behavior must remain distinct. For module work consult the [updated ship design](https://github.com/AndreBal1983/HobbyDS9/blob/0bbb381de78db46d440fd7dd5f86b261552387d2/docs/design/ship-design.md) and [Engineering model](https://github.com/AndreBal1983/HobbyDS9/blob/0bbb381de78db46d440fd7dd5f86b261552387d2/docs/design/engineering-tree-model-01.md) on the separate Engineering documentation branch; they are not yet in this playable baseline. Preserve deterministic saves, shared validation and portable simulation authority.
 
 ## Owner feedback and acceptance
 
