@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "date": "2026-11-18",
+  "baseline": "af0273c2ab89ff199e8e7dfb57d8a69dfbb896c8",
+  "referenceStatus": "proposed, static fixture, not native acceptance",
+  "existingImageBindingsVerified": 8,
+  "originalVectorGlyphsValidated": 5,
+  "existingBeltRuntimeHashesVerified": 11,
+  "mainOnlyPushAndPRTriggersRetained": 11,
+  "JSON_SVG_localLinks_scriptSyntax": "pass",
+  "nativeExecution": false,
+  "gameplayChanges": false,
+  "sourceGenerator": "tools/art/build_playtest_reference_20261118.py",
+  "sourceGeneratorSha256": "23573c8572048470ca3669eede3a1dffa7d1df9490df90d35bbebf5218462841"
+}
