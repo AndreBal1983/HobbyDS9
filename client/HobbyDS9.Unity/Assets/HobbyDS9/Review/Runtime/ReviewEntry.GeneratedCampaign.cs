@@ -131,7 +131,7 @@ namespace HobbyDS9.UnityReview
                             var growth=ColonisationGrowthPlaytestOptions.CreatePackage(roster,plannerBytes!,codec);
                             var cycle=ColonisationCyclePlaytestOptions.CreatePackage(growth,cycleBytes!,codec);
 #if HOBBYDS9_PB_20261113
-                            cycle=ColonisationCyclePlaytestOptions.CreateRichnessPackage(growth,Resources.Load<TextAsset>(PlayableFleetOptions.ResourceRoot+"system-richness-policy").bytes,codec);
+                            cycle=AuthoredSolPlaytestOptions.CreatePackage(growth);
 #endif
                             var cycleStore=new ReviewColonisationCycleSlotStore(directory,codec);
                             return slot==null?new ReviewUiModel(cycle,settings,codec,cycleStore):ReviewUiModel.ContinueColonisationCycle(cycle,codec,cycleStore,slot,diagnostic);

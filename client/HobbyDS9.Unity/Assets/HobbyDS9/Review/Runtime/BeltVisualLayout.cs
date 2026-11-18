@@ -10,8 +10,14 @@ namespace HobbyDS9.UnityReview
     public sealed class BeltVisualSlot
     {
         public SystemAsteroidBeltSnapshot Feature {get;}
+        public bool AuthoredSolMainBelt {get;}
         public double Inner {get;} public double Outer {get;} public double Envelope=>Outer+.0208*(Inner+Outer)/2;
-        internal BeltVisualSlot(SystemAsteroidBeltSnapshot feature){Feature=feature;Inner=12+feature.InnerRadiusMilliAu*.004;Outer=12+feature.OuterRadiusMilliAu*.004;}
+        internal BeltVisualSlot(SystemAsteroidBeltSnapshot feature,bool authoredSol=false)
+        {
+            Feature=feature;AuthoredSolMainBelt=authoredSol;
+            if(authoredSol){var mars=SolSchematicLayout.Radius(3);var gap=SolSchematicLayout.Radius(4)-mars;Inner=mars+gap*.25;Outer=mars+gap*.75;}
+            else {Inner=12+feature.InnerRadiusMilliAu*.004;Outer=12+feature.OuterRadiusMilliAu*.004;}
+        }
     }
     public sealed class BeltRockPlacement
     {
@@ -28,14 +34,19 @@ namespace HobbyDS9.UnityReview
     public static class BeltVisualLayout
     {
         public const int MaximumFeatures=8,MaximumRocks=384;
+        public const string AuthoredSolGeneration=CampaignAuthoredSolIdentity.Generation,AuthoredSolFeature=CampaignAuthoredSolIdentity.FeatureId;
         public static IReadOnlyList<BeltVisualSlot> ForSystem(CampaignStaticAstronomySnapshot? sky,string actor,int turn,long revision,string system)
         {
-            if(sky==null||sky.ActorId!=actor||sky.ObservationTurn!=turn||sky.CampaignRevision!=revision||sky.SystemBeltGeneration!=CampaignSystemRichnessIdentity.Generation)return Array.Empty<BeltVisualSlot>();
+            if(sky==null||sky.ActorId!=actor||sky.ObservationTurn!=turn||sky.CampaignRevision!=revision||(sky.SystemBeltGeneration!=CampaignSystemRichnessIdentity.Generation&&sky.SystemBeltGeneration!=AuthoredSolGeneration))return Array.Empty<BeltVisualSlot>();
             var features=sky.SystemBelts.Where(b=>b.SystemId==system).OrderBy(b=>b.FeatureId,StringComparer.Ordinal).ToArray();
             if(features.Length>MaximumFeatures)throw new ArgumentException("Disclosed belt rendering limit exceeded; use the feature list.");
             foreach(var f in features)
-                if(!EntityId.FromAuthored(f.SystemId).IsValid||!EntityId.FromAuthored(f.FeatureId).IsValid||f.InnerRadiusMilliAu<2200||f.InnerRadiusMilliAu>4199||f.OuterRadiusMilliAu-f.InnerRadiusMilliAu<300||f.OuterRadiusMilliAu-f.InnerRadiusMilliAu>999||f.VisualSeed.Length!=64||f.VisualSeed.Any(c=>!(c>='0'&&c<='9'||c>='a'&&c<='f')))throw new ArgumentException("Invalid disclosed belt visual contract.");
-            return features.Select(f=>new BeltVisualSlot(f)).ToList().AsReadOnly();
+            {
+                var authored=f.FeatureId==AuthoredSolFeature;
+                var radii=authored?sky.SystemBeltGeneration==AuthoredSolGeneration&&f.InnerRadiusMilliAu==2200&&f.OuterRadiusMilliAu==3200:f.InnerRadiusMilliAu>=2200&&f.InnerRadiusMilliAu<=4199&&f.OuterRadiusMilliAu-f.InnerRadiusMilliAu>=300&&f.OuterRadiusMilliAu-f.InnerRadiusMilliAu<=999;
+                if(!EntityId.FromAuthored(f.SystemId).IsValid||!EntityId.FromAuthored(f.FeatureId).IsValid||!radii||f.VisualSeed.Length!=64||f.VisualSeed.Any(c=>!(c>='0'&&c<='9'||c>='a'&&c<='f')))throw new ArgumentException("Invalid disclosed belt visual contract.");
+            }
+            return features.Select(f=>new BeltVisualSlot(f,f.FeatureId==AuthoredSolFeature)).ToList().AsReadOnly();
         }
         public static uint Seed(string system,string feature,string? persistedSeed=null)
         {
