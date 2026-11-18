@@ -22,6 +22,7 @@ namespace HobbyDS9.UnityReview
         private void BindDemoKeyboard()
         {
             UnbindDemoKeyboard();
+            BindMouseHistory();
             if(!PlayerProfile)return;
             keyboardRoot=root;
             keyboardRoot!.RegisterCallback<KeyDownEvent>(DemoTab);
@@ -32,6 +33,7 @@ namespace HobbyDS9.UnityReview
         }
         private void UnbindDemoKeyboard()
         {
+            UnbindMouseHistory();
             keyboardRoot?.UnregisterCallback<KeyDownEvent>(DemoTab);
             keyboardRoot?.UnregisterCallback<KeyDownEvent>(CompletionEscapeGuard,TrickleDown.TrickleDown);
             keyboardRoot?.UnregisterCallback<AttachToPanelEvent>(DemoKeyboardAttached);

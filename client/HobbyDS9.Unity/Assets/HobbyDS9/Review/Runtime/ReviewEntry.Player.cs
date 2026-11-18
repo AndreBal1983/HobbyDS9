@@ -43,7 +43,7 @@ namespace HobbyDS9.UnityReview
             var nav=new ScrollView(ScrollViewMode.Vertical){name="review-workspace-navigation"};nav.AddToClassList("console-nav");body.Add(nav);if(PlayerProfile&&(demoLanding||!demoStarted||campaignSettingsReturn!=null))nav.style.display=DisplayStyle.None;
             if(PlayerProfile){var menu=AddButton(nav,"Menu",OpenDemoMenu);menu.name="demo-menu";}
             AddFrontierCommissionNavigation(nav);
-            foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Empire,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Display,ReviewWorkspacePage.Designer,ReviewWorkspacePage.Tools}.Where(p=>p!=ReviewWorkspacePage.Empire||model!.PlayableFleet))
+            foreach(var page in new[]{ReviewWorkspacePage.Map,ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders,ReviewWorkspacePage.Combat,ReviewWorkspacePage.Saves,ReviewWorkspacePage.Audio,ReviewWorkspacePage.Display,ReviewWorkspacePage.Designer,ReviewWorkspacePage.Tools})
             {
                 if(page==ReviewWorkspacePage.Map||page==ReviewWorkspacePage.Combat||page==ReviewWorkspacePage.Saves)
                 {
@@ -97,7 +97,7 @@ namespace HobbyDS9.UnityReview
                 case ReviewWorkspacePage.Audio:return "Audio";
                 case ReviewWorkspacePage.Designer:return "Ship Design";
                 case ReviewWorkspacePage.Worlds:return "Worlds";
-                case ReviewWorkspacePage.Empire:return "Empire";
+                case ReviewWorkspacePage.Empire:return "Worlds";
                 case ReviewWorkspacePage.Display:return "Display";
                 default:return "Test Tools";
             }

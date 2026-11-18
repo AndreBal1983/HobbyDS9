@@ -17,11 +17,12 @@ namespace HobbyDS9.UnityReview
         private readonly Func<VisualElement,string,Action,Button> button;
         private readonly Action<Action> perform;
         private readonly Action<ReviewWorkspacePage> navigate;
+        private readonly Action<string,Action>? confirm;
         private static readonly string[] Columns={"World","Population","Credits / turn","Research / turn","Industry / turn","Food / turn","Food stock","Dilithium stock","Logistics capacity","Current build","Work completed","Work required","Queue count","ETA","Resource output","Unexploited deposits","Power"};
         private static readonly HashSet<string> Numeric=new HashSet<string>(Columns.Skip(1).Take(8).Concat(new[]{"Work completed","Work required","Queue count"}),StringComparer.Ordinal);
         private static readonly HashSet<string> OverviewColumns=new HashSet<string>(new[]{"World","Population","Research / turn","Industry / turn","Food stock","Current build","Queue count"},StringComparer.Ordinal);
-        public ReviewWorldLedger(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<ReviewWorkspacePage> navigate)
-        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.navigate=navigate;}
+        public ReviewWorldLedger(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<ReviewWorkspacePage> navigate,Action<string,Action>? confirm=null)
+        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.navigate=navigate;this.confirm=confirm;}
         private static Label Text(VisualElement parent,string text,string id="")
         {var l=new Label(text){name=id};l.AddToClassList("console-copy");parent.Add(l);return l;}
         private static string SystemName(CampaignIntegratedStrategySnapshot facts,ColonySnapshot colony)
@@ -72,7 +73,25 @@ namespace HobbyDS9.UnityReview
             // Streamed orders deliberately leave the legacy prepaid queue empty.
             var production=model.ColonisationCampaign?model.Colonisation().Production.ToLookup(q=>q.ColonyId,StringComparer.Ordinal):null;
             var main=new VisualElement();main.AddToClassList("console-panel");main.AddToClassList("console-work");parent.Add(main);
-            Text(main,workspace.Page==ReviewWorkspacePage.Worlds?"Owned worlds":"Empire / owned worlds").AddToClassList("console-section");
+            Text(main,"Owned worlds").AddToClassList("console-section");
+            var activation=new PlanetActivationScope(main);
+            var mountedRows=new Dictionary<string,VisualElement>(StringComparer.Ordinal);Action? refreshSelected=null;
+            void SelectWorld(string id)
+            {
+                if(!ReferenceEquals(frame,model.Current.Frame)||model.Closed||model.Busy)return;
+                workspace.SelectedColony=id;
+                foreach(var pair in mountedRows)pair.Value.EnableInClassList("world-row-selected",pair.Key==id);
+                refreshSelected?.Invoke();
+            }
+            void OpenWorld(string id,ReviewWorkspacePage page,bool details)
+            {
+                if(!ReferenceEquals(frame,model.Current.Frame)||!workspace.CanNavigate||model.Current.RefreshRequired)return;
+                workspace.SelectedColony=id;workspace.PendingSystemInspection=null;
+                workspace.PendingWorldInspection=null;
+                if(model.ColonisationCampaign||details)workspace.PendingWorldInspection=(frame,id);
+                workspace.PendingWorldDetails=details;
+                navigate(page);
+            }
             Text(main,"Current owned observations · turn "+model.Current.Frame.Status.Turn+" · Sorted by "+workspace.WorldSort+(workspace.WorldSortDescending?" ↓":" ↑")+". Per-turn output, stock and capacity are separate.");
             var toolbar=new VisualElement();toolbar.AddToClassList("review-field-row");main.Add(toolbar);
             var scope=button(toolbar,"Owned worlds",()=>{});scope.SetEnabled(false);
@@ -139,18 +158,27 @@ namespace HobbyDS9.UnityReview
                 foreach(var colony in group)
                 {
                     var row=new VisualElement{name="world-row-"+colony.ColonyId};row.AddToClassList("world-ledger-row");
+                    mountedRows.Add(colony.ColonyId.Value,row);
                     row.EnableInClassList("world-row-selected",workspace.SelectedColony==colony.ColonyId.Value);table.Add(row);
                     foreach(var column in Columns)
                     {
                         var cell=new VisualElement();cell.AddToClassList("world-ledger-cell");row.Add(cell);
                     cell.EnableInClassList("world-ledger-numeric",Numeric.Contains(column));cell.style.display=workspace.WorldColumnsExpanded||OverviewColumns.Contains(column)?DisplayStyle.Flex:DisplayStyle.None;
-                        if(column=="World"){var choose=button(cell,colony.Environment.DisplayName,()=>perform(()=>workspace.SelectedColony=colony.ColonyId.Value));choose.name="world-select-"+colony.ColonyId;}
+                        if(column=="World")
+                        {
+                            var id=colony.ColonyId.Value;var choose=button(cell,colony.Environment.DisplayName,()=>SelectWorld(id));choose.name="world-select-"+colony.ColonyId;
+                            choose.tooltip="Click / Space to select · Double-click / Enter to open planet details";
+                            PlanetBodyCard.BindActivation(choose,()=>SelectWorld(id),()=>OpenWorld(id,ReviewWorkspacePage.Worlds,true),activation);
+                        }
                         else Text(cell,Cell(facts,colony,column,production),"world-cell-"+column);
                     }
                 }
             }
             if(rows.Count==0)Text(table,"No owned worlds match these filters.");
             var aside=new ScrollView(ScrollViewMode.Vertical);aside.AddToClassList("console-panel");aside.AddToClassList("console-aside");parent.Add(aside);
+            void RenderSelected()
+            {
+            aside.Clear();
             Text(aside,"Selected world").AddToClassList("console-section");
             var selected=facts.Colonies.FirstOrDefault(c=>c.ColonyId.Value==workspace.SelectedColony);
             if(selected==null){Text(aside,"Select an owned world to inspect its current construction and open its queue.");return;}
@@ -183,18 +211,23 @@ namespace HobbyDS9.UnityReview
                 }
             }
             Text(aside,"Foreign queues, power supply and unexploited deposits are unavailable in this observation; they are not counted as zero.");
-            void OpenSelectedWorld(ReviewWorkspacePage page)
-            {
-                if(!ReferenceEquals(frame,model.Current.Frame)||!workspace.CanNavigate)return;
-                workspace.SelectedColony=selected.ColonyId.Value;
-                workspace.PendingSystemInspection=null;
-                if(model.ColonisationCampaign)workspace.PendingWorldInspection=(frame,selected.ColonyId.Value);
-                navigate(page);
-            }
-            var queueButton=button(aside,"Open queue",()=>OpenSelectedWorld(ReviewWorkspacePage.Production));queueButton.name="world-open-exact-queue";
+            var queueButton=button(aside,"Open queue",()=>OpenWorld(selected.ColonyId.Value,ReviewWorkspacePage.Production,false));queueButton.name="world-open-exact-queue";
             queueButton.tooltip="Open this world's production queue";
-            var detailsButton=button(aside,"World details",()=>OpenSelectedWorld(ReviewWorkspacePage.Worlds));detailsButton.name="world-open-details";
-            detailsButton.tooltip="Inspect this world's details";
+            if(!model.ColonisationCampaign)
+            {
+                var governance=new Foldout{text="Governance",value=false};aside.Add(governance);
+                var current=facts.References.GovernancePolicies.FirstOrDefault(p=>p.DefinitionId==selected.State.Politics.GovernancePolicyDefinitionId);
+                Text(governance,"Current: "+(current?.DisplayName??"Unavailable"));
+                foreach(var policy in facts.References.GovernancePolicies)
+                {
+                    var choose=button(governance,policy.DisplayName,()=>confirm?.Invoke("Apply "+policy.DisplayName+" at "+selected.Environment.DisplayName+"? The campaign validates ownership and timing.",()=>perform(()=>{
+                        var command=model.StrategicEnvelope(CommandKind.SetWorldGovernancePolicy,ReviewUiModel.NewCommandId());command.SetWorldGovernancePolicy=new SetWorldGovernancePolicyPayload{ColonyId=selected.ColonyId.Value,PolicyDefinitionId=policy.DefinitionId};model.Strategic(command);
+                    })));choose.name="world-policy-"+policy.DefinitionId;
+                    choose.tooltip=policy.Description;choose.SetEnabled(confirm!=null&&frame.Status.Phase==SessionPhase.Planning&&(frame.Demo==null||frame.Demo.Outcome==CampaignDemoOutcome.Active)&&!model.Current.HasPendingWork&&!model.Current.RefreshRequired&&!model.Current.Dirty&&!model.HasLocalEdits&&!model.Busy&&!model.Closed&&policy.DefinitionId!=current?.DefinitionId);
+                }
+            }
+            }
+            refreshSelected=RenderSelected;RenderSelected();
         }
     }
 }
