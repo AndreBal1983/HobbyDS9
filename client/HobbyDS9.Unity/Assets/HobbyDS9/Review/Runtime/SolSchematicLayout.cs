@@ -10,7 +10,15 @@ namespace HobbyDS9.UnityReview
     {
         private static readonly string[] order={"planet.mercury","planet.venus","planet.sol","planet.mars","planet.jupiter","planet.saturn","planet.uranus","planet.neptune"};
         public static int Ordinal(string id)=>Array.IndexOf(order,id);
-        public static double Radius(int index)=>18+4*index;
+        public const double MinimumOrbitSeparation=3.2;
+        private static readonly double[] gaps={3.2,3.5,4,6,4.5,5.2,5.6};
+        // Compressed display slots, not physical distance. Keep all disclosed order.
+        public static double Radius(int index)
+        {
+            if(index<0)throw new ArgumentOutOfRangeException(nameof(index));
+            var radius=18+32.0*(index/gaps.Length);
+            for(var i=0;i<index%gaps.Length;i++)radius+=gaps[i];return radius;
+        }
         public static double Angle(int index)=>-22+index*137.508;
         public static double Au(long kilometres)=>(double)kilometres/149600000;
         public static double GlyphFraction(string id,bool namedSol)=>namedSol?(Ordinal(id)>=4?.062:.05):.05+(PlanetVisualProfile.StableSeed(id)%3)*.004;

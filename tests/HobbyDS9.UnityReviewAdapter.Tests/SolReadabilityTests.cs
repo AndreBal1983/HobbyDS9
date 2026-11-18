@@ -10,7 +10,8 @@ public sealed class SolReadabilityTests
     public void SchematicBodiesStaySeparatedAndEveryLabelFitsAtAllOverviewRotations(double width,double height)
     {
         const double elevation=24*Math.PI/180;double aspect=width/height,fraction=1-240/width;
-        double size=Math.Max(46*Math.Sin(elevation)+1.5,47.5/(aspect*fraction))*1.1;
+        var outer=SolSchematicLayout.Radius(7);
+        double size=Math.Max(outer*Math.Sin(elevation)+1.5,(outer+1.5)/(aspect*fraction))*1.1;
         for(int yaw=-180;yaw<=180;yaw+=5)
         {
             var points=Ids.Select((id,i)=>{double a=(SolSchematicLayout.Angle(i)+yaw)*Math.PI/180,r=SolSchematicLayout.Radius(i);return new SolSchematicLayout.Point(id,width/2+r*Math.Cos(a)/size*height/2,height/2+r*Math.Sin(a)*Math.Sin(elevation)/size*height/2);}).ToArray();
@@ -26,6 +27,14 @@ public sealed class SolReadabilityTests
         }
         Assert.Equal(Enumerable.Range(0,8),Ids.Select(SolSchematicLayout.Ordinal));Assert.Equal(1,SolSchematicLayout.Au(149600000));
         Assert.All(Ids,id=>Assert.InRange(SolSchematicLayout.GlyphFraction(id,true),.05,.062));
+    }
+    [Fact]public void CompressedSlotsVaryWithoutChangingOrderOrMeanDistanceUnits()
+    {
+        var radii=Enumerable.Range(0,8).Select(SolSchematicLayout.Radius).ToArray();
+        var steps=radii.Zip(radii.Skip(1),(a,b)=>b-a).ToArray();
+        Assert.All(steps,step=>Assert.True(step>=SolSchematicLayout.MinimumOrbitSeparation-1e-9));
+        Assert.True(steps.Distinct().Count()>3);Assert.Equal(50,radii[7],9);Assert.Equal(1,SolSchematicLayout.Au(149600000));
+        Assert.Throws<ArgumentOutOfRangeException>(()=>SolSchematicLayout.Radius(-1));
     }
     [Theory][InlineData("planet.mercury","mercury")][InlineData("planet.venus","venus_atmosphere")][InlineData("planet.jupiter","jupiter")]
     [InlineData("planet.saturn","saturn")][InlineData("planet.uranus","uranus")][InlineData("planet.neptune","neptune")]

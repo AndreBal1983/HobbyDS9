@@ -354,8 +354,8 @@ namespace HobbyDS9.UnityReview.Tests
             var host=Host();var a=Planet("planet.a",false);var b=Planet("planet.b",false);var c=Planet("planet.c",false);
             var view=Overview(new[]{a,b,c});host.Add(view);yield return null;yield return null;
             var viewport=view.Q("sol-viewport");Assert.That(viewport.layout.width,Is.GreaterThan(80));Assert.That(viewport.layout.height,Is.GreaterThan(80));
-            void FocusSelected(){var control=view.Query<Button>().ToList().Single(button=>button.text=="Focus selected");using var e=NavigationSubmitEvent.GetPooled();e.target=control;control.SendEvent(e);}
-            Call(view,"SetView",-179f,1f);Call(view,"Select",b.PlanetId);FocusSelected();Call(view,"Draw");
+            Call(view,"SetView",-179f,1f);Call(view,"Select",b.PlanetId);Call(view,"Draw");
+            Assert.That(Field<bool>(view,"focusFrame"),Is.False,"Ordinary selection animates while retaining the Overview framing.");
             Assert.That(Field<bool>(view,"failed"),Is.False,"Graphics fixture must render, not silently exercise fallback.");
             var stage=Field<object>(view,"stage");var transforms=Field<Dictionary<string,Transform>>(stage,"planetTransforms");
             var original=transforms.ToDictionary(x=>x.Key,x=>x.Value.localPosition,StringComparer.Ordinal);
@@ -364,7 +364,7 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(delta,Is.GreaterThan(0).And.LessThan(40),"The actual implementation must cross the wrap boundary by the short arc.");
             Set(view,"animationStart",Time.realtimeSinceStartup-.6f);Call(view,"Draw");
             var interruptedYaw=Field<float>(view,"yaw");
-            Call(view,"Select",a.PlanetId);FocusSelected();Call(view,"Draw");
+            Call(view,"Select",a.PlanetId);Call(view,"Draw");
             Assert.That(Field<float>(view,"startYaw"),Is.EqualTo(interruptedYaw).Within(.001f),"New selection starts from the actual displayed intermediate pose.");
             var interruptedDelta=Field<float>(view,"targetYaw")-Field<float>(view,"startYaw");
             Assert.That(interruptedDelta,Is.LessThan(0).And.GreaterThan(-180));
@@ -381,7 +381,7 @@ namespace HobbyDS9.UnityReview.Tests
             }
             Assert.That(Field<List<Texture2D>>(stage,"ownedTextures").Count,Is.EqualTo(textureCount),"Selection/animation must not regenerate terrain.");
             var marker=Field<Dictionary<string,VisualElement>>(view,"markers")[c.PlanetId];
-            view.Q<Toggle>("system-reduce-motion").value=true;Call(view,"Select",c.PlanetId);FocusSelected();Call(view,"Draw");
+            view.Q<Toggle>("system-reduce-motion").value=true;Call(view,"Select",c.PlanetId);Call(view,"Draw");
             Assert.That(Field<bool>(view,"animating"),Is.False);
             offset=transforms[c.PlanetId].position-root.transform.position;
             Assert.That(Mathf.Abs(offset.x),Is.LessThan(.001f));Assert.That(offset.z,Is.LessThan(0));
