@@ -64,19 +64,16 @@ namespace HobbyDS9.UnityReview.Tests
         {
             var frame=model.Current.Frame;var fleet=model.NamedFleets().First();Draw();Activate("fleet-roster-"+fleet.Fleet.FleetId.Value);Draw();
             Assert.That(root.ClassListContains("fleet-card-workspace"),Is.False,"Shared navigation host must not retain Fleet styling");
-            var aside=root.Q<ScrollView>(className:"fleet-roster-aside");Assert.That(aside.ClassListContains("fleet-card-workspace"),Is.True);var summary=aside.Q("fleet-navigation-summary");var cards=root.Q<ScrollView>(className:"console-work").Q("fleet-selected-ship-cards");
+            var aside=root.Q<ScrollView>(className:"fleet-roster-aside");Assert.That(aside.ClassListContains("fleet-card-workspace"),Is.True);var summary=aside.Q("fleet-navigation-summary");var cards=root.Q("fleet-roster-main").Q("fleet-selected-ship-cards");
             Assert.That(summary,Is.Not.Null);Assert.That(cards,Is.Not.Null);Assert.That(aside.Contains(cards),Is.False,"Members belong under the selected fleet; the right panel is its stable inspector.");
             foreach(var ship in frame.Strategy!.Ships.Where(s=>s.FleetId==fleet.Fleet.FleetId))
             {
                 var id=ship.ShipId.Value;var card=cards.Q("fleet-ship-card-"+id);Assert.That(card,Is.Not.Null);
                 var own=frame.OwnShips.Single(s=>s.Condition.ShipId==id);
-                foreach(var i in Enumerable.Range(0,4))
-                {
-                    var meter=card.Q("fleet-shield-"+id+"-"+i);Assert.That(meter,Is.Not.Null);
-                    Assert.That(meter.Q<Label>().text,Does.Contain(own.Condition.Shields[i]+" / "+own.ShieldMaximum[i]));
-                    Assert.That(meter.Q<ProgressBar>().value,Is.InRange(0f,100f));
-                }
-                Assert.That(card.Q<Label>(className:"fleet-ship-title").text,Is.Not.Empty);
+                var shield=card.Q("fleet-shield-summary-"+id);Assert.That(shield,Is.Not.Null);
+                Assert.That(shield.Query<Label>().ToList().Any(l=>l.text==FleetRosterPresentation.Shields(own.Condition.Shields,own.ShieldMaximum).Caption),Is.True);
+                Assert.That(card.Q<Button>("fleet-inspect-"+id).text,Is.Not.Empty);
+                Assert.That(card.Q("fleet-supply-"+id).Query<Label>().ToList().Any(l=>l.text=="Not reported"),Is.True,"No general supply gauge exists in this campaign contract.");
                 Assert.That(card.Query<Label>().ToList().Any(l=>l.text.StartsWith("Class / fit: ",StringComparison.Ordinal)),Is.True);
                 Assert.That(card.Q<Button>("fleet-inspect-"+id),Is.Not.Null);
             }
@@ -154,6 +151,20 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(inspector.Q("owned-ship-model"),Is.Not.Null,"Owned design identity supplies the explicit preview even without Activity projection.");
             Assert.That(inspector.Q<Label>("owned-ship-art-label").text,Is.Not.Empty);
             Assert.That(model.OrganizationShips,Is.Empty);Assert.That(model.Current.Frame,Is.SameAs(frame));
+        }
+        [Test] public void CompactRowsAndFiltersInspectAllShipsWithoutOrdersOrDiscardingOrganizationDraft()
+        {
+            var frame=model.Current.Frame;Draw();
+            Assert.That(root.Query<VisualElement>().ToList().Count(e=>e.ClassListContains("fleet-roster-ship-row")),Is.EqualTo(frame.Strategy!.Ships.Count));
+            var first=frame.Strategy.Ships.First();var shipName=ReviewShipNames.Ship(first.ShipId.Value,first.OwnerCivilizationId.Value)?.Label??"Vessel";
+            model.OrganizationName="Retained organization draft";model.OrganizationShips.Add(first.ShipId.Value);
+            root.Q<TextField>("fleet-roster-search").value=shipName;Draw();
+            Assert.That(root.Q("fleet-ship-card-"+first.ShipId.Value),Is.Not.Null);Assert.That(root.Q<Label>("fleet-roster-visible-count").text,Does.EndWith(" / "+frame.Strategy.Ships.Count+" owned ships"));
+            root.Q<TextField>("fleet-roster-search").value="No matching vessel name";Draw();
+            Assert.That(root.Query<VisualElement>().ToList().Count(e=>e.ClassListContains("fleet-roster-ship-row")),Is.Zero);
+            Activate("fleet-roster-clear");Draw();
+            Assert.That(root.Query<VisualElement>().ToList().Count(e=>e.ClassListContains("fleet-roster-ship-row")),Is.EqualTo(frame.Strategy.Ships.Count));
+            Assert.That(model.OrganizationName,Is.EqualTo("Retained organization draft"));Assert.That(model.OrganizationShips,Does.Contain(first.ShipId.Value));Assert.That(model.Current.Frame,Is.SameAs(frame));
         }
     }
 }

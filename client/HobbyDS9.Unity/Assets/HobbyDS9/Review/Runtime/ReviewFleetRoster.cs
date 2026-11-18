@@ -20,6 +20,11 @@ namespace HobbyDS9.UnityReview
         {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;}
         private static void Text(VisualElement p,string value,string cls="console-copy")
         {var l=new Label(value);l.AddToClassList(cls);p.Add(l);}
+        private static void Status(VisualElement parent,string title,string value,string name)
+        {
+            var cell=new VisualElement{name=name,tooltip=title+": "+value};cell.AddToClassList("fleet-roster-status");parent.Add(cell);
+            Text(cell,title,"fleet-roster-status-title");Text(cell,value,"fleet-roster-status-value");
+        }
         private static void Meter(VisualElement parent,string title,long current,long maximum,string id)
         {
             var group=new VisualElement{name=id};group.AddToClassList("fleet-condition-meter");parent.Add(group);
@@ -37,21 +42,32 @@ namespace HobbyDS9.UnityReview
             }
             string Location(CampaignNamedFleet f)=>facts.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==f.Fleet.LocationNodeId.Value)?.DisplayName??"Known location";
             decimal Damage(CampaignNamedFleet f)=>frame.OwnShips.Where(s=>s.Condition.FleetId==f.Fleet.FleetId.Value).Sum(s=>(decimal)s.Condition.MaxHull-s.Condition.Hull);
-            var main=new ScrollView(ScrollViewMode.Vertical);main.AddToClassList("console-panel");main.AddToClassList("console-work");main.AddToClassList("fleet-card-workspace");parent.Add(main);
+            var state=FleetRosterViewState.For(workspace);
+            var main=new VisualElement{name="fleet-roster-main"};main.AddToClassList("console-panel");main.AddToClassList("console-work");main.AddToClassList("fleet-card-workspace");main.AddToClassList("fleet-compact-roster");parent.Add(main);
             var aside=new ScrollView(ScrollViewMode.Vertical);aside.AddToClassList("console-panel");aside.AddToClassList("console-aside");aside.AddToClassList("fleet-roster-aside");aside.AddToClassList("fleet-card-workspace");parent.Add(aside);
+            aside.AddToClassList("fleet-compact-roster");var sheet=Resources.Load<StyleSheet>("FleetRosterCompact");if(sheet!=null){main.styleSheets.Add(sheet);aside.styleSheets.Add(sheet);}
             var renderController=model.Current;var renderEpoch=workspace.NavigationEpoch;
             bool CurrentFleetRender()=>ReferenceEquals(model.Current,renderController)&&ReferenceEquals(model.Current.Frame,frame)
                 &&workspace.NavigationEpoch==renderEpoch&&!model.Busy&&!model.Closed
                 &&!model.Current.HasPendingWork&&!model.Current.RefreshRequired
                 &&main.panel!=null&&aside.panel!=null&&ReferenceEquals(main.parent,parent)&&ReferenceEquals(aside.parent,parent);
-            Text(main,"Fleet roster","console-section");
+            Text(main,"Ships & fleets","console-section");
+            var filters=new VisualElement{name="fleet-roster-filters"};filters.AddToClassList("review-field-row");main.Add(filters);
+            var search=new TextField("Search ships"){name="fleet-roster-search",value=state.Search,isDelayed=true,tooltip="Ship name, class, fleet, location or current mission"};search.AddToClassList("review-input");search.style.flexGrow=1;search.style.flexDirection=FlexDirection.Column;filters.Add(search);
+            search.RegisterValueChangedCallback(e=>{if(CurrentFleetRender())perform(()=>state.Search=e.newValue);});
+            var fleetNames=new[]{"All fleets"}.Concat(fleets.Select(f=>f.DisplayName).Distinct(StringComparer.Ordinal).OrderBy(n=>n,StringComparer.Ordinal)).ToArray();
+            if(!fleetNames.Contains(state.Fleet,StringComparer.Ordinal))state.Fleet="All fleets";
+            var fleetFilter=new ReviewLcarsSelector("Fleet",fleetNames,state.Fleet,value=>{if(CurrentFleetRender())perform(()=>state.Fleet=value);},CurrentFleetRender){name="fleet-roster-fleet-filter"};filters.Add(fleetFilter);
+            var conditionFilter=new ReviewLcarsSelector("Condition",new[]{"All conditions","Hull damage","Reduced shields","Status not reported"},state.Condition,value=>{if(CurrentFleetRender())perform(()=>state.Condition=value);},CurrentFleetRender){name="fleet-roster-condition-filter"};filters.Add(conditionFilter);
+            button(filters,"Clear",()=>{if(CurrentFleetRender())perform(()=>{state.Search="";state.Fleet="All fleets";state.Condition="All conditions";});}).name="fleet-roster-clear";
             var sorts=new VisualElement();sorts.AddToClassList("review-field-row");main.Add(sorts);
             foreach(var sort in new[]{"Name","System","Hull damage","Ship count"})
                 button(sorts,sort+(workspace.FleetSort==sort?(workspace.FleetSortDescending?" ↓":" ↑"):""),()=>perform(()=>{
+                    if(!CurrentFleetRender())return;
                     if(workspace.FleetSort==sort)workspace.FleetSortDescending=!workspace.FleetSortDescending;
                     else{workspace.FleetSort=sort;workspace.FleetSortDescending=false;}
                 }));
-            Text(main,"Power rating unavailable. Hull damage is the sum of known missing hull points; it is not combat strength.");
+            Text(main,"Current owned condition · Supply not reported · Shields are the actual sum of directional sectors.","fleet-roster-key");
             var ordered=fleets.OrderBy(f=>f.Fleet.FleetId.Value,StringComparer.Ordinal).ToList();
             ordered.Sort((a,b)=>{
                 int result=workspace.FleetSort=="System"?StringComparer.OrdinalIgnoreCase.Compare(Location(a),Location(b)):
@@ -62,18 +78,32 @@ namespace HobbyDS9.UnityReview
                 return result!=0?result:StringComparer.Ordinal.Compare(a.Fleet.FleetId.Value,b.Fleet.FleetId.Value);
             });
             bool editable=frame.Status.Phase==SessionPhase.Planning&&!model.Busy&&!model.Closed&&!model.Current.HasPendingWork&&!model.Current.RefreshRequired;
+            var list=new ScrollView(ScrollViewMode.VerticalAndHorizontal){name="fleet-roster-list"};list.style.flexGrow=1;list.style.minHeight=0;main.Add(list);
+            var table=new VisualElement{name="fleet-roster-table"};table.AddToClassList("fleet-roster-table");list.Add(table);
+            var visibleShips=0;var totalShips=facts.Ships.Count;
             foreach(var fleet in ordered)
             {
                 var id=fleet.Fleet.FleetId.Value;var expanded=workspace.SelectedFleet==id;
-                var card=new VisualElement();card.AddToClassList("console-queue");main.Add(card);
-                var select=button(card,(expanded?"▾ ":"▸ ")+fleet.DisplayName+" · "+Location(fleet)+" · "+fleet.Fleet.ShipIds.Count+" ships",()=>perform(()=>workspace.SelectedFleet=expanded?null:id));
+                var order=frame.Travel?.OwnOrders.FirstOrDefault(v=>v.FleetId==id);
+                var finalDestination=order?.RouteNodeIds.LastOrDefault()??(fleet.Fleet.RouteNodeIds.Count>0?fleet.Fleet.RouteNodeIds[fleet.Fleet.RouteNodeIds.Count-1].Value:null);
+                var destinationName=finalDestination==null?null:facts.Navigation.Nodes.FirstOrDefault(n=>n.NodeId.Value==finalDestination)?.DisplayName;
+                var mission=FleetRosterPresentation.Mission(order?.Intent,fleet.Fleet.RouteNodeIds.Count,destinationName,activity?.Findings.Any(f=>f.FleetId==id&&f.Stage==ActivityProgressStage.Active)==true,fleet.Fleet.TransitTotalCost>0);
+                var ships=facts.Ships.Where(s=>s.FleetId==fleet.Fleet.FleetId).OrderBy(s=>s.ShipId.Value,StringComparer.Ordinal).Where(ship=>{
+                    var sid=ship.ShipId.Value;var known=frame.OwnShips.FirstOrDefault(s=>s.Condition.ShipId==sid);var source=activity?.Ships.FirstOrDefault(s=>s.ShipId==sid&&s.FleetId==id);
+                    var design=source!=null&&!string.IsNullOrWhiteSpace(source.DisplayName)?source.DisplayName:facts.Construction.FirstOrDefault(c=>c.Design.DefinitionId==ship.ShipDesignDefinitionId)?.Design.DisplayName??"Class not reported";
+                    return FleetRosterPresentation.Matches(state.Search,state.Condition,state.Fleet,fleet.DisplayName,ReviewShipNames.Ship(sid,ship.OwnerCivilizationId.Value)?.Label??"Vessel",design,Location(fleet),mission,known==null?(bool?)null:known.Condition.Hull<known.Condition.MaxHull,FleetRosterPresentation.Shields(known?.Condition.Shields,known?.ShieldMaximum));
+                }).ToList();
+                if(ships.Count==0)continue;visibleShips+=ships.Count;
+                var card=new VisualElement();card.AddToClassList("fleet-roster-group");table.Add(card);
+                var select=button(card,fleet.DisplayName+" · "+Location(fleet)+" · "+fleet.Fleet.ShipIds.Count+" ships",()=>{if(CurrentFleetRender())perform(()=>workspace.SelectedFleet=expanded?null:id);});
+                select.tooltip="Inspect fleet navigation and organization; ship rows remain visible.";
                 select.name="fleet-roster-"+id;select.EnableInClassList("selected-nav",expanded);
-                Text(card,"Missing hull: "+Damage(fleet)+" · "+(fleet.CanOrganize?"Stationary · available to organize":"Organization unavailable: "+fleet.UnavailableReason));
-                if(!expanded)continue;
+                select.AddToClassList("fleet-roster-group-title");
+                if(expanded)
+                {
                 Text(aside,fleet.DisplayName,"console-section");
                 var summary=new VisualElement{name="fleet-navigation-summary"};summary.AddToClassList("fleet-navigation-summary");aside.Add(summary);
                 Text(summary,"Navigation & tasks","console-section");Text(summary,"Location: "+Location(fleet));
-                var order=frame.Travel?.OwnOrders.FirstOrDefault(v=>v.FleetId==id);
                 Text(summary,order==null?"Accepted travel/task details unavailable in this campaign view.":"Accepted intent: "+order.Intent);
                 if(order!=null&&order.RouteNodeIds.Count>0)
                 {
@@ -88,21 +118,26 @@ namespace HobbyDS9.UnityReview
                 else foreach(var task in tasks)Text(summary,"Active study: "+task.FindingId+" · work "+task.WorkDone);
                 Text(summary,"ETA unavailable in this view. Review travel on the map.");
                 if(model.HasLocalEdits)Text(summary,"Unsent edits remain separate from accepted orders.");
-                var members=new VisualElement{name="fleet-selected-ship-cards"};card.Add(members);
-                Text(members,"Members of "+fleet.DisplayName,"console-section");
-                Text(members,"Select members for assembly or transfer. Inspection does not change fleet membership.");
-                foreach(var ship in facts.Ships.Where(s=>s.FleetId==fleet.Fleet.FleetId).OrderBy(s=>s.ShipId.Value,StringComparer.Ordinal))
+                }
+                var members=new VisualElement{name=expanded?"fleet-selected-ship-cards":"fleet-members-"+id};card.Add(members);
+                foreach(var ship in ships)
                 {
                     var sid=ship.ShipId.Value;var condition=frame.OwnShips.FirstOrDefault(s=>s.Condition.ShipId==sid);
                     var design=facts.Construction.FirstOrDefault(c=>c.Design.DefinitionId==ship.ShipDesignDefinitionId)?.Design.DisplayName??"unavailable";
-                    var row=new VisualElement{name="fleet-ship-card-"+sid};row.AddToClassList("fleet-ship-card");members.Add(row);
+                    var row=new VisualElement{name="fleet-ship-card-"+sid};row.AddToClassList("fleet-roster-ship-row");row.EnableInClassList("fleet-roster-ship-selected",workspace.SelectedOwnShip==sid);members.Add(row);
                     var source=activity?.Ships.FirstOrDefault(v=>v.ShipId==sid&&v.FleetId==id);
                     var identity=ReviewShipNames.Ship(sid,ship.OwnerCivilizationId.Value);
-                    Text(row,identity?.Label??"Vessel","fleet-ship-title");
-                    Text(row,"Class / fit: "+(source!=null&&!string.IsNullOrWhiteSpace(source.DisplayName)?source.DisplayName:design));
-                    var conditionArea=new VisualElement();conditionArea.AddToClassList("fleet-card-condition-area");row.Add(conditionArea);
-                    var meters=new VisualElement();meters.AddToClassList("fleet-card-meters");conditionArea.Add(meters);
-                    var pick=new Toggle("Select member for organization"){value=model.OrganizationShips.Contains(sid),name="fleet-member-"+sid};
+                    var texture=source==null?null:ConstructionCardArt.Ship(source.HullVersionId);
+                    var icon=new VisualElement{name="fleet-ship-icon-"+sid,tooltip=texture==null?"Matching approved ship icon not available":source!.HullVersionId=="hull.defiant-combat.v1"?"Defiant art · review-only reference":"Approved hull reference icon"};icon.AddToClassList("fleet-roster-ship-icon");
+                    if(texture!=null){var image=new Image{image=texture,scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};image.StretchToParentSize();icon.Add(image);}else icon.Add(new Label("Art —"));row.Add(icon);
+                    var identityCell=new VisualElement();identityCell.AddToClassList("fleet-roster-identity");row.Add(identityCell);
+                    var inspect=button(identityCell,identity?.Label??"Vessel",()=>{if(CurrentFleetRender())perform(()=>{workspace.SelectedFleet=id;workspace.SelectedOwnShip=sid;});});inspect.name="fleet-inspect-"+sid;inspect.AddToClassList("fleet-ship-title");
+                    Text(identityCell,"Class / fit: "+(source!=null&&!string.IsNullOrWhiteSpace(source.DisplayName)?source.DisplayName:design),"fleet-roster-class");
+                    var shield=FleetRosterPresentation.Shields(condition?.Condition.Shields,condition?.ShieldMaximum);
+                    Status(row,"Supply","Not reported","fleet-supply-"+sid);
+                    Status(row,"Shields",shield.Caption,"fleet-shield-summary-"+sid);
+                    Status(row,"Mission",mission,"fleet-mission-"+sid);
+                    var pick=new Toggle("Select"){value=model.OrganizationShips.Contains(sid),name="fleet-member-"+sid,tooltip="Select member for organization"};pick.AddToClassList("fleet-roster-member-toggle");
                     pick.SetEnabled(editable&&fleet.CanOrganize);row.Add(pick);
                     pick.RegisterValueChangedCallback(e=>
                     {
@@ -115,22 +150,6 @@ namespace HobbyDS9.UnityReview
                             else model.OrganizationShips.Remove(sid);
                         });
                     });
-                    if(condition!=null)
-                    {
-                        Meter(meters,"Hull",condition.Condition.Hull,condition.Condition.MaxHull,"fleet-hull-"+sid);
-                        meters.Q("fleet-hull-"+sid).AddToClassList("fleet-hull-meter");
-                        var sectors=new[]{"Fore","Port","Starboard","Aft"};
-                        for(var i=0;i<4;i++)
-                        {
-                            if(condition.Condition.Shields.Count>i&&condition.ShieldMaximum.Count>i)
-                                Meter(meters,sectors[i],condition.Condition.Shields[i],condition.ShieldMaximum[i],"fleet-shield-"+sid+"-"+i);
-                            else Text(meters,sectors[i]+": unavailable");
-                        }
-                        foreach(var weapon in condition.Weapons.Where(w=>w.Class==TacticalWeaponClass.Torpedo))
-                            Text(row,"Torpedoes "+weapon.Ammunition+" / "+weapon.MagazineCapacity);
-                    }
-                    else Text(row,"Hull, shields and ammunition unavailable.");
-                    var inspect=button(row,"Inspect ship",()=>perform(()=>workspace.SelectedOwnShip=sid));inspect.name="fleet-inspect-"+sid;
                     if(workspace.SelectedOwnShip==sid)
                     {
                         var inspection=new VisualElement{name="fleet-selected-ship-inspector"};aside.Add(inspection);
@@ -150,6 +169,8 @@ namespace HobbyDS9.UnityReview
                     }
                 }
             }
+            var count=new Label(visibleShips+" / "+totalShips+" owned ships"){name="fleet-roster-visible-count"};main.Insert(main.IndexOf(list),count);
+            if(visibleShips==0)Text(table,totalShips==0?"No surviving owned ships.":"No ships match these filters.");
             if(ordered.Count==0)Text(main,"No surviving owned fleets. Supported ships can still be built at eligible shipyards.");
             if(!ordered.Any(f=>f.Fleet.FleetId.Value==workspace.SelectedFleet))Text(aside,"Select a fleet to inspect its ships.");
             else if(aside.Q("fleet-selected-ship-inspector")==null)Text(aside,"Inspect a member in the roster to view its full hull and current condition.");
@@ -161,19 +182,21 @@ namespace HobbyDS9.UnityReview
                 var expanded=e.newValue;
                 perform(()=>{if(CurrentOrganizationRender())workspace.FleetOrganizationExpanded=expanded;});
             });
-            Text(organization,"Organize fleet","console-section");
-            Text(organization,"Choose ships from owned fleets in the same location. Clear routes and use Remain before organizing. No damage, ammunition or hardware is reset.");
-            Text(organization,model.OrganizationShips.Count+" selected members · unsent changes");
+            var organizationContent=new ScrollView(ScrollViewMode.Vertical){name="fleet-organization-content"};organizationContent.style.maxHeight=235;organizationContent.style.minHeight=0;organization.Add(organizationContent);
+            Text(organizationContent,"Select co-located ships with cleared routes. Existing condition and hardware are retained.");
+            Text(organizationContent,model.OrganizationShips.Count+" selected members · unsent changes");
             var name=new TextField("Fleet name"){value=model.OrganizationName,isDelayed=true,name="fleet-organization-name"};
             name.AddToClassList("review-input");
-            name.SetEnabled(editable);organization.Add(name);name.RegisterValueChangedCallback(e=>perform(()=>model.OrganizationName=e.newValue));
+            name.SetEnabled(editable);organizationContent.Add(name);name.RegisterValueChangedCallback(e=>{if(CurrentOrganizationRender())perform(()=>model.OrganizationName=e.newValue);});
             void Review(CampaignFleetOrganizationKind kind,string? target)
             {
+                if(!CurrentOrganizationRender())return;
                 var reviewed=model.Current.Frame;var members=model.OrganizationShips.OrderBy(s=>s,StringComparer.Ordinal).ToArray();
                 var display=model.OrganizationName;
                 confirm(kind+" fleet?\n"+(kind==CampaignFleetOrganizationKind.Rename?"":members.Length+" selected ships\n")+
                     (kind==CampaignFleetOrganizationKind.Transfer?"Destination: "+fleets.Single(f=>f.Fleet.FleetId.Value==target).DisplayName:"Name: "+display)+
                     "\nThe campaign validates membership, position and accepted orders.",()=>perform(()=>{
+                        if(!CurrentOrganizationRender())return;
                         if(model.OrganizeFleet(reviewed,kind,kind==CampaignFleetOrganizationKind.Rename?Array.Empty<string>():members,target,
                             kind==CampaignFleetOrganizationKind.Transfer?null:display,ReviewUiModel.NewCommandId()))
                         {
@@ -182,35 +205,35 @@ namespace HobbyDS9.UnityReview
                         }
                     }));
             }
-            var create=button(organization,"Review new fleet",()=>Review(CampaignFleetOrganizationKind.Create,null));create.name="fleet-create";
+            var create=button(organizationContent,"Review new fleet",()=>Review(CampaignFleetOrganizationKind.Create,null));create.name="fleet-create";
             create.SetEnabled(editable&&model.OrganizationShips.Count>0&&!string.IsNullOrWhiteSpace(model.OrganizationName));
             var selected=fleets.FirstOrDefault(f=>f.Fleet.FleetId.Value==workspace.SelectedFleet);
             if(selected!=null)
             {
-                var rename=button(organization,"Review rename of "+selected.DisplayName,()=>Review(CampaignFleetOrganizationKind.Rename,selected.Fleet.FleetId.Value));
+                var rename=button(organizationContent,"Review rename of "+selected.DisplayName,()=>Review(CampaignFleetOrganizationKind.Rename,selected.Fleet.FleetId.Value));
                 rename.name="fleet-rename";rename.SetEnabled(editable&&selected.CanOrganize&&!string.IsNullOrWhiteSpace(model.OrganizationName));
-                Text(organization,"Selected fleet: "+selected.DisplayName,"console-section");
-                button(organization,"Locate on map",()=>{workspace.SelectedNode=selected.Fleet.LocationNodeId.Value;navigate(ReviewWorkspacePage.Map);});
-                var stay=button(organization,"Remain / clear accepted travel",()=>confirm("Replace this fleet's route and intent with Remain? This does not move or repair ships.",()=>perform(()=>{
+                Text(organizationContent,"Selected fleet: "+selected.DisplayName,"console-section");
+                button(organizationContent,"Locate on map",()=>{workspace.SelectedNode=selected.Fleet.LocationNodeId.Value;navigate(ReviewWorkspacePage.Map);});
+                var stay=button(organizationContent,"Remain / clear accepted travel",()=>confirm("Replace this fleet's route and intent with Remain? This does not move or repair ships.",()=>perform(()=>{
                     if(model.DraftTravel(selected.Fleet.FleetId.Value,CampaignTravelIntent.Stay,null,null))model.SendTravel(ReviewUiModel.NewCommandId());
                 })));stay.name="fleet-clear-route";stay.SetEnabled(editable&&!model.HasLocalEdits);
-                var defend=button(organization,"Defend this region",()=>confirm("Hold here and engage hostile fleets when a lawful encounter is possible.",()=>perform(()=>{
+                var defend=button(organizationContent,"Defend this region",()=>confirm("Hold here and engage hostile fleets when a lawful encounter is possible.",()=>perform(()=>{
                     if(model.CanDefendFleet(frame,selected.Fleet.FleetId.Value)&&model.DraftTravel(selected.Fleet.FleetId.Value,CampaignTravelIntent.StayEngage,null,null))
                         model.SendTravel(ReviewUiModel.NewCommandId());
                 })));defend.name="player-stay-engage";defend.SetEnabled(model.CanDefendFleet(frame,selected.Fleet.FleetId.Value));
                 var setting=frame.CloakSettings.FirstOrDefault(s=>s.FleetId==selected.Fleet.FleetId.Value);
                 if(setting!=null)
-                    button(organization,"Approach cloak: "+(setting.Enabled?"enabled":"disabled"),()=>confirm("Change the selected fleet's approach cloak setting? Only explicitly capable ships can cloak.",()=>perform(()=>model.SetCloak(selected.Fleet.FleetId.Value,!setting.Enabled,ReviewUiModel.NewCommandId()))))
+                    button(organizationContent,"Approach cloak: "+(setting.Enabled?"enabled":"disabled"),()=>confirm("Change the selected fleet's approach cloak setting? Only explicitly capable ships can cloak.",()=>perform(()=>model.SetCloak(selected.Fleet.FleetId.Value,!setting.Enabled,ReviewUiModel.NewCommandId()))))
                         .SetEnabled(editable&&!model.HasLocalEdits);
             }
-            Text(organization,"Transfer selected members to:","console-section");
+            Text(organizationContent,"Transfer selected members to:","console-section");
             foreach(var destination in ordered)
             {
-                var transfer=button(organization,destination.DisplayName+" · "+Location(destination),()=>Review(CampaignFleetOrganizationKind.Transfer,destination.Fleet.FleetId.Value));
+                var transfer=button(organizationContent,destination.DisplayName+" · "+Location(destination),()=>Review(CampaignFleetOrganizationKind.Transfer,destination.Fleet.FleetId.Value));
                 transfer.name="fleet-transfer-"+destination.Fleet.FleetId;transfer.SetEnabled(editable&&destination.CanOrganize&&model.OrganizationShips.Count>0);
             }
-            button(organization,"Discard organization draft",()=>perform(model.ResetOrganization)).SetEnabled(model.OrganizationDirty);
-            button(organization,"Build existing ships",()=>navigate(ReviewWorkspacePage.Production));
+            button(organizationContent,"Discard organization draft",()=>perform(model.ResetOrganization)).SetEnabled(model.OrganizationDirty);
+            button(organizationContent,"Build existing ships",()=>navigate(ReviewWorkspacePage.Production));
         }
     }
 }
