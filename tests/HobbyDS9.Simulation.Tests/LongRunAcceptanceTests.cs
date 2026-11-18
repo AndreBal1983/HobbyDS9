@@ -14,7 +14,7 @@ public sealed class LongRunAcceptanceTests
     public void TwentyFiveAutonomousTurnsRepeatExactlyAcrossReloadsAndReorderedContentAndState()
     {
         var totals = new CombatTotals(); var builtBy = new HashSet<string>(); var travelledBy = new HashSet<string>();
-        var scenario = Scenario(false, weighted:true); var baseline = Session(scenario); var repeated = Session(Clone(scenario)); var resumed = Session(Clone(scenario));
+        var scenario = Scenario(false, weighted:true, fullEngineeringTree:true); var baseline = Session(scenario); var repeated = Session(Clone(scenario)); var resumed = Session(Clone(scenario));
         var reorderedScenario = Clone(scenario); var state = reorderedScenario.InitialState; var defs = reorderedScenario.Definitions;
         state.Civilizations!.Reverse(); state.StarSystems!.Reverse(); state.Colonies!.Reverse(); state.Ships!.Reverse(); state.Fleets!.Reverse(); state.EntityIdentities.Reverse();
         defs.DefinitionIds.Reverse(); defs.Civilizations!.Reverse(); defs.StarSystems!.Reverse(); defs.GalaxyEdges!.Reverse(); defs.EngineeringApplications!.Reverse(); defs.ShipDesigns!.Reverse(); defs.Planets!.Reverse(); defs.Species!.Reverse(); defs.Infrastructure!.Reverse(); defs.Resources!.Reverse();
@@ -47,7 +47,7 @@ public sealed class LongRunAcceptanceTests
         Assert.Equal((43, 98, 68, 126L, 116L, 10, 10, 0), (totals.Phases, totals.Shots, totals.Hits, totals.ShieldDamage, totals.HullDamage, totals.ShipsDestroyed, totals.FleetsDestroyed, totals.Retreated));
         Assert.True(totals.Hits > 0 && totals.HullDamage > 0 && totals.ShipsDestroyed > 0);
         Assert.Equal(2, final.Colonies.Sum(c => c.ProductionQueue.Count)); Assert.Equal(0, final.Civilizations.Sum(c => c.MatureEngineeringApplicationDefinitionIds.Count));
-        Assert.Equal("fb2b75f18c8c5423f3a0850f38f6e53ee8249d3d08385978b5b2532041cc6089", Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(baseline.ExportSave()))).ToLowerInvariant());
+        Assert.Equal("fb2b75f18c8c5423f3a0850f38f6e53ee8249d3d08385978b5b2532041cc6089", LegacyGameplayHash(baseline.ExportSave()));
         foreach (var actor in new[] { "civ.cardassian", "civ.dominion" })
         {
             Assert.Empty(final.Civilizations.Single(c => c.CivilizationId.Value == actor).MatureEngineeringApplicationDefinitionIds);

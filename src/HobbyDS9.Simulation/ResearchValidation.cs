@@ -8,6 +8,12 @@ namespace HobbyDS9.Simulation
 {
     public static partial class FoundationValidator
     {
+        private static bool ReleasesDerivedVersion(DefinitionCatalogDto content, string? projectId) =>
+            projectId != null && content.ShipDesignVersionAccess?.Any(g => g != null &&
+                g.RequiredEngineeringApplicationDefinitionIds?.Contains(projectId) == true &&
+                (content.ShipDesignCatalogue?.Hulls?.Any(v => v != null && v.VersionId == g.VersionId && v.ParentVersionId != null) == true ||
+                 content.ShipDesignCatalogue?.Components?.Any(v => v != null && v.VersionId == g.VersionId && v.ParentVersionId != null) == true)) == true;
+
         private static void ValidateResearchDefinitions(DefinitionCatalogDto dto, HashSet<DefinitionId> definitions,
             HashSet<string> typed, string path, List<ValidationIssue> issues)
         {
@@ -33,7 +39,14 @@ namespace HobbyDS9.Simulation
                 if(!Enum.IsDefined(typeof(EngineeringProjectKind),node.Kind))Add(issues,ValidationCode.InvalidResearchValue,p+".Kind");
                 if(node.Kind==EngineeringProjectKind.Refinement)
                 {
-                    if(node.ParameterChange==null||!DefinitionId.TryParse(node.ParameterChange.ParameterDefinitionId,out var parameter)||!definitions.Contains(parameter)||nodes.ContainsKey(node.ParameterChange.ParameterDefinitionId)||node.ParameterChange.Value<0||node.ParameterChange.Value>10000)Add(issues,ValidationCode.InvalidResearchValue,p+".ParameterChange");
+                    // Refinements release a gated derived version or change a declared
+                    // implementation parameter; installed fleet fits are never rewritten.
+                    if (node.ParameterChange == null)
+                    {
+                        if (!ReleasesDerivedVersion(dto, node.DefinitionId))
+                            Add(issues, ValidationCode.InvalidResearchValue, p + ".ParameterChange");
+                    }
+                    else if(!DefinitionId.TryParse(node.ParameterChange.ParameterDefinitionId,out var parameter)||!definitions.Contains(parameter)||nodes.ContainsKey(node.ParameterChange.ParameterDefinitionId)||node.ParameterChange.Value<0||node.ParameterChange.Value>10000)Add(issues,ValidationCode.InvalidResearchValue,p+".ParameterChange");
                 }
                 else if(node.ParameterChange!=null)Add(issues,ValidationCode.InvalidResearchValue,p+".ParameterChange");
                 if (node.BaseEngineeringCost <= 0) Add(issues, ValidationCode.InvalidResearchValue, p + ".BaseEngineeringCost");

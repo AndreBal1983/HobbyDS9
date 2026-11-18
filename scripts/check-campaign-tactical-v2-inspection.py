@@ -2,7 +2,10 @@
 import re
 import subprocess
 
-BASELINE = "fb2b75f18c8c5423f3a0850f38f6e53ee8249d3d08385978b5b2532041cc6089"
+# The 20-project catalogue changes only this run's content identity. The .NET
+# long-run test separately normalizes that identity and still proves the original
+# fb2b75... gameplay golden, including every state byte and the campaign RNG.
+BASELINE = "7175f06f9ee72be793acacba3e40f20313169aba6d7602a6a6b5c419d555053c"
 
 
 def run(extra):
