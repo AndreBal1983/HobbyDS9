@@ -176,17 +176,17 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(world.Stage,Is.EqualTo(ColonyEstablishmentStage.Established));Assert.That(queue.Kind,Is.EqualTo(ColonisationProductionKind.SettlementKit));Assert.That(queue.DefinitionId,Is.EqualTo("resource.settlement-kit"));
                 Assert.That(queue.CompletedIndustry,Is.EqualTo(12));var consumed=NetworkMaterialConsumed(queue);Assert.That(consumed,Is.EqualTo(2));
                 Assert.That(NetworkMaterialStock(world,"resource.dilithium"),Is.EqualTo(0));var initialKits=NetworkMaterialStock(world,"resource.settlement-kit");Assert.That(initialKits,Is.EqualTo(0));
-                // Empire must read the same owned streamed queue as Construction Command.
+                // Worlds must read the same owned streamed queue as Construction Command.
                 var ledgerFrame=model.Current.Frame;var workspace=entry.Workspace!;
-                IEnumerator EmpireSettled()
+                IEnumerator WorldsLedgerSettled()
                 {
-                    Assert.That(workspace.Page,Is.EqualTo(ReviewWorkspacePage.Empire),"Empire page opened before layout");
+                    Assert.That(workspace.Page,Is.EqualTo(ReviewWorkspacePage.Worlds),"Worlds page opened before layout");
                     yield return null;yield return null;
-                    Assert.That(workspace.Page,Is.EqualTo(ReviewWorkspacePage.Empire),"Empire page remains selected after layout");
+                    Assert.That(workspace.Page,Is.EqualTo(ReviewWorkspacePage.Worlds),"Worlds page remains selected after layout");
                 }
                 var ownQueue=model.Colonisation().Production.Where(q=>q.ColonyId==world.Id).ToArray();var head=ownQueue.First();
                 Assert.That(ledgerFrame.Strategy!.Colonies.Single(c=>c.ColonyId.Value==world.Id).ProductionQueue,Is.Empty,"streamed orders do not populate the prepaid queue");
-                ColonyActivate(s,()=>CampaignPage(doc,ReviewWorkspacePage.Empire));yield return EmpireSettled();
+                ColonyActivate(s,()=>CampaignPage(doc,ReviewWorkspacePage.Worlds));yield return WorldsLedgerSettled();
                 yield return ColonyClick(s,doc,"world-ledger-columns-toggle");
                 yield return ColonyClick(s,doc,"world-select-"+world.Id);
                 var ledgerRow=doc.rootVisualElement.Q("world-row-"+world.Id);Assert.That(ledgerRow,Is.Not.Null);
@@ -203,11 +203,11 @@ namespace HobbyDS9.UnityReview.Tests
                 foreach(var column in new[]{"Current build","Queue count","Work completed"})
                 {
                     var filter=doc.rootVisualElement.Q<TextField>("world-filter-"+column);
-                    ColonyActivate(s,()=>filter.value=column=="Current build"?head.Name:column=="Queue count"?ownQueue.Length.ToString():head.CompletedIndustry.ToString());yield return EmpireSettled();
+                    ColonyActivate(s,()=>filter.value=column=="Current build"?head.Name:column=="Queue count"?ownQueue.Length.ToString():head.CompletedIndustry.ToString());yield return WorldsLedgerSettled();
                     Assert.That(doc.rootVisualElement.Q("world-row-"+world.Id),Is.Not.Null,"visible queue agrees with its own text/numeric filters");
                 }
                 var minimum=doc.rootVisualElement.Q<TextField>("world-filter-Work completed");
-                ColonyActivate(s,()=>minimum.value=(head.CompletedIndustry+1).ToString());yield return EmpireSettled();
+                ColonyActivate(s,()=>minimum.value=(head.CompletedIndustry+1).ToString());yield return WorldsLedgerSettled();
                 Assert.That(doc.rootVisualElement.Q("world-row-"+world.Id),Is.Null,"minimum filter uses actual completed Industry");
                 yield return ColonyClick(s,doc,"world-ledger-clear");
                 Assert.That(workspace.WorldFilters,Is.Empty);Assert.That(doc.rootVisualElement.Q("world-row-"+world.Id),Is.Not.Null);

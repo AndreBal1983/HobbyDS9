@@ -282,27 +282,46 @@ namespace HobbyDS9.UnityReview.Tests
             }
             for(int i=0;i<2;i++)
             {
-                var target=worlds[1-i];CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Empire));yield return CyclePageSettled(t,ReviewWorkspacePage.Empire);
+                var target=worlds[1-i];CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Worlds));yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);
+                Assert.That(doc.rootVisualElement.Q("review-nav-Empire"),Is.Null,"Worlds is the single owned-world navigation destination");
+                Assert.That(doc.rootVisualElement.Q("world-open-details"),Is.Null,"planet names own detail activation");
                 var select=doc.rootVisualElement.Q<Button>("world-select-"+target.Id);yield return ColonyReach(doc,select);
-                CycleActivate(t,()=>Click(select));yield return CyclePageSettled(t,ReviewWorkspacePage.Empire);
-                var open=doc.rootVisualElement.Q<Button>(i==0?"world-open-exact-queue":"world-open-details");yield return ColonyReach(doc,open);
-                CycleActivate(t,()=>Click(open));yield return CyclePageSettled(t,i==0?ReviewWorkspacePage.Production:ReviewWorkspacePage.Worlds);AssertWorld(target.Id);
-            }
-            yield return CycleWorld(t,doc,worlds[1].Id);
-            CycleActivate(t,()=>CampaignPage(doc,ReviewWorkspacePage.Worlds));yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);AssertWorld(worlds[1].Id);
-            foreach(var request in new[]{(Frame:frame,World:"world.not-owned"),(Frame:staleFrame,World:worlds[0].Id)})
-            {
-                CycleActivate(t,()=>{pending.SetValue(workspace,request);CampaignPage(doc,ReviewWorkspacePage.Worlds);});
-                yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);AssertWorld(worlds[1].Id);
+                CycleActivate(t,()=>Click(select));yield return null;
+                Assert.That(doc.rootVisualElement.Q<Button>(select.name),Is.SameAs(select),"selection keeps the name mounted for a completed double-click");
+                if(i==0)
+                {
+                    var open=doc.rootVisualElement.Q<Button>("world-open-exact-queue");yield return ColonyReach(doc,open);
+                    CycleActivate(t,()=>Click(open));yield return CyclePageSettled(t,ReviewWorkspacePage.Production);AssertWorld(target.Id);
+                }
+                else
+                {
+                    void NameClick(int count){using(var e=ClickEvent.GetPooled(new Event{type=EventType.MouseUp,button=0,clickCount=count})){e.target=select;select.SendEvent(e);}}
+                    CycleActivate(t,()=>{NameClick(1);NameClick(2);});yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);
+                    Assert.That(doc.rootVisualElement.Q("planet-detail-facts"),Is.Not.Null);
+                    Assert.That(doc.rootVisualElement.Q("colonisation-planet-colony-"+target.Id),Is.Not.Null,"double-click opens exactly this owned planet");
+                    Assert.That(pending.GetValue(workspace),Is.Null);Assert.That(model.Current.Frame,Is.SameAs(frame));
+                    void HistoryMouse(int button)
+                    {
+                        var root=(VisualElement)typeof(ReviewEntry).GetField("root",HullPrivate)!.GetValue(t.Case.Shared.Entry!)!;
+                        using(var e=PointerDownEvent.GetPooled(new Event{type=EventType.MouseDown,button=button,clickCount=1})){e.target=root;root.SendEvent(e);}
+                        using(var e=PointerUpEvent.GetPooled(new Event{type=EventType.MouseUp,button=button,clickCount=1})){e.target=root;root.SendEvent(e);}
+                    }
+                    CycleActivate(t,()=>HistoryMouse(3));yield return null;yield return null;
+                    Assert.That(doc.rootVisualElement.Q("world-ledger-scroll"),Is.Not.Null,"mouse Back returns to the owned-world overview");
+                    CycleActivate(t,()=>HistoryMouse(4));yield return null;yield return null;
+                    Assert.That(doc.rootVisualElement.Q("colonisation-planet-colony-"+target.Id),Is.Not.Null,"mouse Forward restores the exact planet");
+                    foreach(var request in new[]{(Frame:frame,World:"world.not-owned"),(Frame:staleFrame,World:worlds[0].Id)})
+                    {
+                        CycleActivate(t,()=>{pending.SetValue(workspace,request);CampaignPage(doc,ReviewWorkspacePage.Worlds);});
+                        yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);
+                        Assert.That(doc.rootVisualElement.Q("colonisation-planet-colony-"+target.Id),Is.Not.Null,"stale/foreign navigation stays on the current lawful planet");
+                    }
+                }
             }
             var back=doc.rootVisualElement.Q<Button>("worlds-back-to-overview");yield return ColonyReach(doc,back);
             CycleActivate(t,()=>Click(back));yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);
             Assert.That(doc.rootVisualElement.Q("world-ledger-scroll"),Is.Not.Null);
-            Assert.That(model.Current.Frame,Is.SameAs(frame),"World overview/detail navigation changes no authority.");
-            var own=doc.rootVisualElement.Q<Button>("world-select-"+worlds[1].Id);yield return ColonyReach(doc,own);
-            CycleActivate(t,()=>Click(own));yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);
-            var details=doc.rootVisualElement.Q<Button>("world-open-details");yield return ColonyReach(doc,details);
-            CycleActivate(t,()=>Click(details));yield return CyclePageSettled(t,ReviewWorkspacePage.Worlds);AssertWorld(worlds[1].Id);
+            Assert.That(model.Current.Frame,Is.SameAs(frame),"World overview/detail/history changes no authority.");
         }
         private static IEnumerator CycleOperation(CycleReceivingState t,UIDocument doc,string phase,string busyTitle,Action activate)
         {

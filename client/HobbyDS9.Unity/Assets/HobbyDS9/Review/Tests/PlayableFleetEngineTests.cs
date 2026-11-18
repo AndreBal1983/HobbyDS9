@@ -171,7 +171,7 @@ namespace HobbyDS9.UnityReview.Tests
             var entry=UnityEngine.Object.FindAnyObjectByType<ReviewEntry>();var model=Model(entry);
             var doc=entry.GetComponent<UIDocument>();yield return null;
             yield return Capture(entry,doc,"map");
-            foreach(var page in new[]{ReviewWorkspacePage.Empire,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders})
+            foreach(var page in new[]{ReviewWorkspacePage.Worlds,ReviewWorkspacePage.Research,ReviewWorkspacePage.Production,ReviewWorkspacePage.FleetOrders})
             {Page(entry,page);yield return Capture(entry,doc,page.ToString());}
             Page(entry,ReviewWorkspacePage.Production);
             for(int i=0;i<2;i++)

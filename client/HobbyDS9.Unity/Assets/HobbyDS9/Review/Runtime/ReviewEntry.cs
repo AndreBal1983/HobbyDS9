@@ -161,6 +161,7 @@ namespace HobbyDS9.UnityReview
             if(detachedRoot==null)
             {
                 CaptureActivitiesSelectionForRebuild();CaptureColonisationSelectionForRebuild();
+                RestoreNavigationInspectionForRebuild();
                 modalPermission.Invalidate();root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ReleaseAudio();
             }
             var doc=GetComponent<UIDocument>()??gameObject.AddComponent<UIDocument>();
@@ -215,7 +216,9 @@ namespace HobbyDS9.UnityReview
         }
         private void Navigate(ReviewWorkspacePage page)
         {
-            if(workspace==null||confirmation!=null||!workspace.Navigate(page))return;
+            if(workspace==null||confirmation!=null)return;
+            RememberNavigationInspection();if(!workspace.Navigate(page))return;
+            navigationInspectionRestorePending=true;
             frontierCommissionOpen=false;
             viewEpoch++;Build(); // Old detached controls/modal permissions cannot act on another panel.
         }
