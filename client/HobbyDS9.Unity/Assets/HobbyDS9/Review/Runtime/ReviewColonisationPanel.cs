@@ -414,11 +414,11 @@ namespace HobbyDS9.UnityReview
             if(fold.panel!=null)Refresh();
         }
         private string? inspectedSystemCaption;
-        internal bool InspectOwnedWorld(string worldId)
+        internal bool InspectOwnedWorld(string worldId,bool planetDetails=false)
         {
             if(!Live||!observation.Worlds.Any(x=>x.Id==worldId))return false;
             world=worldId;transportDraft=null;
-            Show("Worlds");
+            if(planetDetails){planet=observation.Worlds.Single(x=>x.Id==worldId).PlanetId;Show("Planet");}else Show("Worlds");
             return true;
         }
         internal void InspectSystem(string? systemId,string caption)
