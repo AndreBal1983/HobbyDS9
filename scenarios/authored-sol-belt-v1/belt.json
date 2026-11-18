@@ -1,0 +1,18 @@
+{
+  "Version": "authored-sol-main-belt-v1",
+  "FeatureId": "belt.authored.sol.asteroid.v1",
+  "Source": "NASA Science - Dawn FAQ; answer by Marc Rayman, Dawn Chief Engineer, JPL",
+  "SourceUrl": "https://science.nasa.gov/mission/dawn/faq/",
+  "SourceQuestion": "What is the average distance between individual asteroids?",
+  "SourceQuestionDate": "2010-06-13",
+  "RetrievedOn": "2026-11-18",
+  "SourceUnit": "AU",
+  "StoredUnit": "milli-AU",
+  "InnerRadiusMilliAu": 2200,
+  "OuterRadiusMilliAu": 3200,
+  "ApproximateBand": true,
+  "Meaning": "NASA FAQ approximation used as a static authored illustration band, not exact dynamical boundaries or a current ephemeris.",
+  "Association": "One coherent authored planet.sol, planet.mars and planet.jupiter physical inventory association; use their actual mapped SystemId.",
+  "VisualSeedDomain": "authored-sol-main-belt-v1 / map seed / mapped SystemId / feature identity / visual-scatter",
+  "Gameplay": "No new planets, resources, colonies, ownership, mining, navigation hazard, reward or motion."
+}
