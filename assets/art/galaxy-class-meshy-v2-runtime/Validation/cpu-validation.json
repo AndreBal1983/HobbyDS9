@@ -1,0 +1,71 @@
+{
+  "glbLod0": {
+    "triangles": 60000,
+    "exportVertices": 49129,
+    "sizeXYZMetres": [
+      451.75048828125,
+      131.74686431884766,
+      619.8270568847656
+    ],
+    "uvRange": [
+      5.626355778076686e-05,
+      0.9999679923057556
+    ],
+    "normalAndTangentsFiniteUnit": true
+  },
+  "allPassed": true,
+  "scope": "CPU GLB/export/texture data only; Unity FBX import and textured render pending",
+  "engineBow": [
+    0.0,
+    0.0,
+    310.0
+  ],
+  "engineUp": [
+    0.0,
+    93.0,
+    0.0
+  ],
+  "maps": [
+    {
+      "role": "BaseColor",
+      "size": [
+        4096,
+        4096
+      ],
+      "diagnosticGlbPixelsEqualSource": true
+    },
+    {
+      "role": "MetallicRoughness",
+      "size": [
+        2048,
+        2048
+      ],
+      "diagnosticGlbPixelsEqualSource": true
+    },
+    {
+      "role": "Normal",
+      "size": [
+        4096,
+        4096
+      ],
+      "diagnosticGlbPixelsEqualSource": true
+    },
+    {
+      "role": "Emission",
+      "size": [
+        2048,
+        2048
+      ],
+      "diagnosticGlbPixelsEqualSource": true
+    }
+  ],
+  "metallicSmoothness": {
+    "file": "Textures/MetallicSmoothness.png",
+    "size": [
+      2048,
+      2048
+    ],
+    "sha256": "c85c4b3183f8cb75975700ed93f99c340f7910cd0654f887407dc761c7b17a6e",
+    "channels": "R=MR.B;A=255-MR.G;G=B=0;linear"
+  }
+}

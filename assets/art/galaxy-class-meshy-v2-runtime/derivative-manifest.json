@@ -1,0 +1,139 @@
+{
+  "sourceCommit": "22a5ad955e3e45a01981b4bc7fedcdb256718b68",
+  "sourceGlbSha256": "3464ee3faa5aa4e41d01baf08d7403ebb28075a950dceb311b68e467660a67aa",
+  "sourceTriangles": 1067410,
+  "sourceVertices": 580755,
+  "blenderVersion": "5.2.2 LTS",
+  "status": "CPU-prepared candidate; Unity/textured-preview/mapping activation pending",
+  "nominalArtLengthMetres": 620.0,
+  "rawGlTfBow": "-X",
+  "rawGlTfUp": "+Y",
+  "authoringBow": "-Y",
+  "authoringUp": "+Z",
+  "expectedEngineBow": "+Z",
+  "expectedEngineUp": "+Y",
+  "pivot": "source bounding-box centre",
+  "sourceToBlenderScale": 325.99305985520743,
+  "textureExtraction": [
+    {
+      "role": "BaseColor",
+      "file": "Textures/BaseColor.jpg",
+      "bytes": 13730145,
+      "sha256": "4f6d73c8e9c75b95a9e9231248c5ec8d99cbc26f33777495516f114d4d1f29b7"
+    },
+    {
+      "role": "MetallicRoughness",
+      "file": "Textures/MetallicRoughness.jpg",
+      "bytes": 2056144,
+      "sha256": "7244ff813ac983464eed7d3572d3b11b91bb4a7d8549eb03f54ba626e1288c70"
+    },
+    {
+      "role": "Normal",
+      "file": "Textures/Normal.jpg",
+      "bytes": 9249889,
+      "sha256": "9f4eafd39b2593253cf7c1374159f82976434db7c6a4f0f21c2c17d6c9fa40ee"
+    },
+    {
+      "role": "Emission",
+      "file": "Textures/Emission.jpg",
+      "bytes": 75606,
+      "sha256": "7ca6a2c097c5be26cb91a4fa9d078abf36a53702ead63a24dae16c6dee193342"
+    }
+  ],
+  "blenderImages": [
+    {
+      "role": "BaseColor",
+      "size": [
+        4096,
+        4096
+      ],
+      "colourSpace": "sRGB"
+    },
+    {
+      "role": "MetallicRoughness",
+      "size": [
+        2048,
+        2048
+      ],
+      "colourSpace": "Non-Color"
+    },
+    {
+      "role": "Normal",
+      "size": [
+        4096,
+        4096
+      ],
+      "colourSpace": "Non-Color"
+    },
+    {
+      "role": "Emission",
+      "size": [
+        2048,
+        2048
+      ],
+      "colourSpace": "sRGB"
+    }
+  ],
+  "lods": [
+    {
+      "level": 0,
+      "targetTriangles": 60000,
+      "triangles": 60000,
+      "vertices": 29840,
+      "loops": 180000,
+      "uvLayers": 1,
+      "materialSlots": 1,
+      "blenderSizeXYZMetres": [
+        451.75048828125,
+        619.8270568847656,
+        131.74686431884766
+      ],
+      "fbx": "Models/GalaxyMeshyV2_LOD0.fbx",
+      "fbxBytes": 2292844,
+      "fbxSha256": "0e9dac75f2b82ec90d49d926f03938ade4c13da1b97fe6b51cfbdf0af960d828"
+    },
+    {
+      "level": 1,
+      "targetTriangles": 20000,
+      "triangles": 20000,
+      "vertices": 9840,
+      "loops": 60000,
+      "uvLayers": 1,
+      "materialSlots": 1,
+      "blenderSizeXYZMetres": [
+        451.5371398925781,
+        619.6868591308594,
+        131.54004669189453
+      ],
+      "fbx": "Models/GalaxyMeshyV2_LOD1.fbx",
+      "fbxBytes": 808796,
+      "fbxSha256": "6feb4ac75637e12ffa8cfc85aa6db32c17cffcc6b94b83b85a8f12387f5d7c56"
+    },
+    {
+      "level": 2,
+      "targetTriangles": 7000,
+      "triangles": 7000,
+      "vertices": 3340,
+      "loops": 21000,
+      "uvLayers": 1,
+      "materialSlots": 1,
+      "blenderSizeXYZMetres": [
+        451.58673095703125,
+        618.1264953613281,
+        130.8933563232422
+      ],
+      "fbx": "Models/GalaxyMeshyV2_LOD2.fbx",
+      "fbxBytes": 315596,
+      "fbxSha256": "2c41498b50bc27801164d5fa62904c59809dd271f274bdc1b18d6fc1fa939adc"
+    }
+  ],
+  "elapsedSeconds": 31.191170700000043,
+  "recipe": "tools/art/prepare_galaxy_v2.py",
+  "notes": [
+    "Original source remains intact.",
+    "No mesh generation, GPU render or Unity invocation.",
+    "Collapse simplification retains/interpolates per-loop UV charts; no re-unwrap/retexture.",
+    "One material/double-sided source; no new equipment interfaces or gameplay statistics.",
+    "FBX axes and texture fidelity still require receiving Unity graphics validation."
+  ]
+}

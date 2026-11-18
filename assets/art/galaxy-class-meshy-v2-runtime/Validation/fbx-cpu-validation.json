@@ -1,0 +1,82 @@
+{
+  "allGeometryChecksPassed": true,
+  "scope": "Fresh Blender FBX re-import, not Unity/graphics acceptance",
+  "lods": [
+    {
+      "level": 0,
+      "triangles": 60000,
+      "vertices": 29840,
+      "oneMeshOneMaterial": true,
+      "sizeBlenderXYZMetres": [
+        451.75048828125,
+        619.8270568847656,
+        131.74689483642578
+      ],
+      "bowBlender": [
+        0.0,
+        -310.0,
+        5.050540858064778e-05
+      ],
+      "upBlender": [
+        0.0,
+        1.5151622392295394e-05,
+        93.0
+      ],
+      "uvFinite": true,
+      "normalsFinite": true,
+      "blenderRecalculatedZeroTangentLoops": 3,
+      "nativeTangentGate": "Unity MikkTSpace generation; explicit finite/unit frame test and UV-gradient fallback if needed"
+    },
+    {
+      "level": 1,
+      "triangles": 20000,
+      "vertices": 9840,
+      "oneMeshOneMaterial": true,
+      "sizeBlenderXYZMetres": [
+        451.5371398925781,
+        619.6868591308594,
+        131.54007720947266
+      ],
+      "bowBlender": [
+        0.0,
+        -310.0,
+        5.050540858064778e-05
+      ],
+      "upBlender": [
+        0.0,
+        1.5151622392295394e-05,
+        93.0
+      ],
+      "uvFinite": true,
+      "normalsFinite": true,
+      "blenderRecalculatedZeroTangentLoops": 1,
+      "nativeTangentGate": "Unity MikkTSpace generation; explicit finite/unit frame test and UV-gradient fallback if needed"
+    },
+    {
+      "level": 2,
+      "triangles": 7000,
+      "vertices": 3340,
+      "oneMeshOneMaterial": true,
+      "sizeBlenderXYZMetres": [
+        451.58673095703125,
+        618.1264953613281,
+        130.8933868408203
+      ],
+      "bowBlender": [
+        0.0,
+        -310.0,
+        5.050540858064778e-05
+      ],
+      "upBlender": [
+        0.0,
+        1.5151622392295394e-05,
+        93.0
+      ],
+      "uvFinite": true,
+      "normalsFinite": true,
+      "blenderRecalculatedZeroTangentLoops": 1,
+      "nativeTangentGate": "Unity MikkTSpace generation; explicit finite/unit frame test and UV-gradient fallback if needed"
+    }
+  ],
+  "textureAndTangentGraphicsAcceptance": "pending"
+}

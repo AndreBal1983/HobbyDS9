@@ -1,0 +1,10 @@
+{
+  "name": "HobbyDS9.GalaxyCandidate.Editor",
+  "references": [
+    "HobbyDS9.GalaxyCandidate"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "autoReferenced": false
+}
