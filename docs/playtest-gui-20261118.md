@@ -1,0 +1,25 @@
+# November18 GUI receiving checkpoint
+
+Source batch over exact combined playable baseline `af0273c2ab89ff199e8e7dfb57d8a69dfbb896c8`. Owner's new brief governs the changes below. The inherited main-only push /PR CI coverage and prior QA corrections are preserved. Source implementation is distinct from Editor/native/visual acceptance; QA owns the desktop and playable build.
+
+## Implemented presentation and navigation
+
+- System overview uses varied compressed display slots18/21.2/24.7/28.7/34.7/39.2/44.4/50, minimum separation3.2, Mercury→Neptune ordering and unchanged real mean-distance AU captions. These are schematic slots, not physical orbital ratios. Ordinary selection smoothly rotates from the current visible pose through the shortest arc; reduced motion jumps directly. Existing lighting, smooth analytical tracks, overview/minimum framing and explicit focus/zoom remain. Updated native fixture now tests ordinary selection, interruption, retained terrain/radii and reduced motion without pressing Focus selected first.
+- [Production](playtest-production-20261118-gui.md) uses compact comparable catalogue rows and a concise independently scrolling world FIFO. Existing exact Industry/materials/building deltas,44px direct+, queue identity and stamped commands remain. Ship exploration/combat fields stay unavailable until the real Backend projection is received.
+- [Navigation](playtest-navigation-20261118.md) has one visible Worlds destination with Empire as a source-compatibility alias. Mounted planet-name double-click/Enter opens the exact owned planet; Open queue remains separate. The parent integration passes the explicit planet-details flag. Back/Forward uses bounded per-session/per-visit history, preserved panel selections/drafts and guarded mouse events; no order or old reviewed command is replayed.
+- [Fleet roster](playtest-fleet-20261118.md) uses compact grouped/filterable ship rows, exact available hull-reference thumbnails, original status strokes, actual four-sector shield summaries and accepted missions. General supply remains Not reported. Existing detailed selected inspector, fleet organization and drafts stay separate.
+- Legacy authored Engineering projects use concise Target research /Expected outcome labels and exact capacity comparisons, Industry numbers, named requirements disclosure and explicit Version maturity: not tracked. Current fixed catalogue completion is not presented as generated equipment maturity or a new experiment. No Accept/Continue/Discard actions are fabricated. Shared capacity blocks remain unit-labelled with large-value scaling, numeric arrows and non-color explanations.
+
+## Backend-dependent requests still open at this checkpoint
+
+Sol must receive its actual authored main belt from the new versioned campaign edition, not a GUI-only ring. Existing art is present; old generation excluded home systems. GUI will admit only the exact disclosed authored feature/new generation and map its schematic band between Mars/Jupiter. New-vs-existing-save policy and actual activation must be delivered with the Backend pin.
+
+Targeted refinement and persisted outcome actions require the real new Backend lifecycle, true maturity, supported goal/range/action flags and stamped commands. Close/Escape must retain pending results. Continue must use explicit next-goal selection and paid work; no implicit release or free downside removal. An allocation drain that changes revision invalidates old reviewed intent. The owner-requested complete result path and generated hardware construction remain pending until received and tested; this checkpoint is not full Engineering completion.
+
+Production's requested supported exploration/combat comparison awaits the optional typed frozen-build projection. Unknown supply/rating data remains explicit. Existing material/payment/save/gameplay rules have not been changed by this GUI batch.
+
+## Source evidence and receiving
+
+19focused Sol geometry/order/AU/privacy cases PASS;12focused presentation/typed-output cases PASS;Navigation's36focused Workspace/IntegratedUi cases PASS in its source tree. Default runtime/all Default Editor-test sources compiled on the interim tree with0errors/4 inherited obsolete warnings; combined Review runtime/all Review Editor-test sources compiled at the integrated navigation checkpoint with0errors/1 inherited CS8602. Source binding/assembly checks and594valid unique asset GUIDs pass. Final exact-head checks are recorded in the receiving receipt after dependencies land; earlier passes are not silently attributed to later changes.
+
+Native tests are authored/source-compiled only. QA must inspect1280/1920/ultrawide rendering/density/long/empty states, actual pointer/keyboard/history/double-click and no lost edits/orders, Sol lighting/motion/belt pixels, current profile/data truth, allocation/end-turn, save/reload/new-edition behavior, and all real Engineering actions. Build identity, package verification, screenshots and known window-X shutdown failure remain separate gates. No Unity/native/player run, user save operation or package promotion was performed by GUI.
