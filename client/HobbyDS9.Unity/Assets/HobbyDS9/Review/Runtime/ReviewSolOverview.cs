@@ -111,7 +111,7 @@ namespace HobbyDS9.UnityReview
         internal void Select(string id)
         {
             if(disposed||!markers.ContainsKey(id))return;
-            selected=id;pendingFocus=false;QueueDraw();
+            if(selected!=id){selected=id;pendingFocus=true;}QueueDraw();
         }
         private void Control(string text,Action action)
         {var b=new Button(()=>{if(!disposed&&!failed)action();}){text=text};b.style.minHeight=44;b.style.marginRight=4;controls.Add(b);}
