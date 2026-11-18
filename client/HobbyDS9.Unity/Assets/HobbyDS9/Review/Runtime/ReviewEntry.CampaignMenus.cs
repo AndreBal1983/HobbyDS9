@@ -248,12 +248,12 @@ namespace HobbyDS9.UnityReview
             else
             {
                 var latest=NewestCampaignSave();
-                var next=AddButton(commands,latest==null?"Continue · Checking saved slots…":"Continue · "+SlotLabel(latest.Slot),()=>{var selected=NewestCampaignSave();if(selected!=null)LoadCampaignMenuSlot(selected.Slot);});
+                var next=AddButton(commands,CampaignContinueLabel(latest,campaignArchiveRows==null||campaignArchiveScanQueued||campaignArchiveScanToken!=null),()=>{var selected=NewestCampaignSave();if(selected!=null)LoadCampaignMenuSlot(selected.Slot);});
                 next.name="campaign-menu-continue";next.SetEnabled(latest!=null);if(latest!=null)next.AddToClassList("primary-action");
             }
             if(!paused)
             {
-                var start=AddButton(commands,"New campaign",()=>ShowCampaignMenuPage(CampaignMenuPage.New));
+                var start=AddButton(commands,NewCampaignLabel,()=>ShowCampaignMenuPage(CampaignMenuPage.New));
                 start.name="campaign-menu-new";if(!demoStarted&&NewestCampaignSave()==null)start.AddToClassList("primary-action");
                 AddButton(commands,"Combat playtest",OpenCombatPlaytestMenu).name="campaign-menu-combat";
             }
@@ -269,11 +269,14 @@ namespace HobbyDS9.UnityReview
         }
         private void DrawCampaignNew()
         {
-            var panel=PagePanel("New campaign");panel.AddToClassList("campaign-menu");
+            var panel=PagePanel(NewCampaignLabel);panel.AddToClassList("campaign-menu");
             panel.AddToClassList("campaign-setup");
             var epoch=viewEpoch;var owner=model;
             bool CurrentForm()=>epoch==viewEpoch&&ReferenceEquals(owner,model);
             panel.Add(Readout("Federation · Two empires. Existing save slots remain intact."));
+#if HOBBYDS9_PB_20261113
+            panel.Add(Readout("Eight-planet Sol with its main asteroid belt. This edition uses separate saves; earlier campaigns remain with the earlier build."));
+#endif
             if(campaignMenuNotice.Length>0)panel.Add(Readout(campaignMenuNotice));
             var seed=new TextField("Galaxy seed"){value=generatedCampaignSeed,maxLength=20,name="generated-campaign-seed"};
             seed.AddToClassList("generated-campaign-seed");panel.Add(seed);
@@ -285,7 +288,7 @@ namespace HobbyDS9.UnityReview
             var quiet=new DropdownField("Quiet area",values.Select(GeneratedGalaxyWorkspace.QuietTargetLabel).ToList(),GeneratedGalaxyWorkspace.QuietTargetLabel(generatedCampaignQuiet));advanced.Add(quiet);
             quiet.RegisterValueChangedCallback(_=>{if(CurrentForm()&&quiet.index>=0)generatedCampaignQuiet=values[quiet.index];});
             AddButton(panel,"Back",()=>ShowCampaignMenuPage(demoStarted?CampaignMenuPage.Campaign:CampaignMenuPage.Start));
-            var start=AddButton(panel,"Start campaign",()=>RequestCampaignDeparture("Replace the open campaign?","Start",()=>
+            var start=AddButton(panel,StartCampaignLabel,()=>RequestCampaignDeparture("Replace the open campaign?","Start",()=>
                 RunGeneratedCampaignOperation(null,colonisationCycle:true,completed:ok=>{
                     if(ok){campaignSavedOwner=null;campaignArchiveRows=null;campaignMenuNotice="";}
                     else{campaignMenuNotice="The new campaign could not be prepared. Your current session and saves are kept.";Draw();}
@@ -352,6 +355,24 @@ namespace HobbyDS9.UnityReview
         private string CurrentCampaignArchiveProfile()=>!demoStarted||model!.ColonisationCycleCampaign?"cycle":model.ColonisationRepeatCampaign?"repeat":model.ColonisationGrowthCampaign?"growth":model.ColonisationExpansionCampaign?"expansion":model.ColonisationRosterCampaign?"roster":model.ColonisationCampaign?"colony":model.StreamedActivitiesCampaign?"streamed":model.ActivitiesCampaign?"activities":model.PublishedConstructionCampaign?"published":model.GeneratedCampaign?(model.StaticAstronomyCampaign?"astronomy":"generated"):model.FrontierPreview?"frontier":model.CombatPlaytest?"combat":model.SingleplayerDemo?"demo":"fleet";
         private string[] CampaignArchiveSlots(string profile)=>profile=="combat"?CombatPlaytestOptions.Slots():profile=="frontier"?FrontierPreviewOptions.Slots():profile=="demo"?new[]{"demo-1","demo-2","demo-3"}:profile=="fleet"?PlayableFleetOptions.Slots():GeneratedCampaignOptions.Slots();
         private static string SlotLabel(string slot)=>(slot.StartsWith("combat-",StringComparison.Ordinal)?"Combat playtest":"Campaign")+" · Slot "+slot.Substring(slot.Length-1);
+#if HOBBYDS9_PB_20261113
+        private const string CycleArchiveDisplayName=AuthoredSolPlaytestOptions.DisplayName;
+        private const string NewCampaignLabel="New "+AuthoredSolPlaytestOptions.DisplayName;
+        private const string StartCampaignLabel="Start "+AuthoredSolPlaytestOptions.DisplayName;
+#else
+        private const string CycleArchiveDisplayName="Generated campaign";
+        private const string NewCampaignLabel="New campaign";
+        private const string StartCampaignLabel="Start campaign";
+#endif
+        private string CampaignContinueLabel(CampaignArchiveRow? latest,bool checking=false)
+        {
+            var prefix="Continue · ";
+#if HOBBYDS9_PB_20261113
+            if(CampaignArchiveProfile()=="cycle")
+                return prefix+CycleArchiveDisplayName+" · "+(latest!=null?"Slot "+latest.Slot.Substring(latest.Slot.Length-1):checking?"Checking saved slots…":"No saved slot");
+#endif
+            return prefix+(latest!=null?SlotLabel(latest.Slot):checking?"Checking saved slots…":"No saved slot");
+        }
         private CampaignArchiveRow? NewestCampaignSave()=>campaignArchiveRows?.Where(r=>r.CanAttemptLoad)
             .OrderByDescending(r=>r.ModifiedUtc).ThenBy(r=>r.Slot,StringComparer.Ordinal).FirstOrDefault();
         private string CampaignArchivePath(string profile,string slot)
@@ -458,7 +479,7 @@ namespace HobbyDS9.UnityReview
             var latest=NewestCampaignSave();
             var summary=root?.Q<Label>("campaign-archive-summary");if(summary!=null)summary.text=latest?.Summary??"Explore a galaxy, research technology and build your fleet.";
             var status=root?.Q<Label>("campaign-archive-status");if(status!=null)status.text=campaignMenuNotice.Length>0?campaignMenuNotice:"Save compatibility is validated when loading.";
-            var next=root?.Q<Button>("campaign-menu-continue");if(next!=null){next.text=latest==null?"Continue · No saved slot":"Continue · "+SlotLabel(latest.Slot);next.SetEnabled(latest!=null);next.EnableInClassList("primary-action",latest!=null);}
+            var next=root?.Q<Button>("campaign-menu-continue");if(next!=null){next.text=CampaignContinueLabel(latest);next.SetEnabled(latest!=null);next.EnableInClassList("primary-action",latest!=null);}
             var combat=root?.Q<Button>("combat-playtest-continue");if(combat!=null)combat.SetEnabled(latest!=null);
         }
         private void RefreshSavedCampaignSlot(string profile,string slot)
@@ -479,7 +500,7 @@ namespace HobbyDS9.UnityReview
         {
             EnsureCampaignArchive();
             var panel=PagePanel(campaignArchiveSaving?"Save game":"Load game");panel.AddToClassList("campaign-menu");
-            panel.Add(Readout("Archive: "+(CampaignArchiveProfile()=="combat"?"Combat playtest":CampaignArchiveProfile()=="cycle"?"Generated campaign":CampaignArchiveProfile()=="demo"?"Bajor demo":"Separate campaign profile")));
+            panel.Add(Readout("Archive: "+(CampaignArchiveProfile()=="combat"?"Combat playtest":CampaignArchiveProfile()=="cycle"?CycleArchiveDisplayName:CampaignArchiveProfile()=="demo"?"Bajor demo":"Separate campaign profile")));
             panel.Add(Readout("Three fixed slots. Compatibility is validated only when loading. Slot selection never saves or loads."));
             if(campaignAfterSave!=null)panel.Add(Readout("After a successful save: "+campaignContinuationDescription));
             if(campaignArchiveRows==null){panel.Add(Readout("Checking saved slots…"));AddButton(panel,"Back",()=>ShowCampaignMenuPage(campaignArchiveReturn));return;}
@@ -526,7 +547,7 @@ namespace HobbyDS9.UnityReview
                 var earlier=new Foldout{text="Earlier campaign saves · original rules",value=false};panel.Add(earlier);
                 earlier.Add(Readout("Each archive retains its original typed loader and separate save slots. Selecting an archive does not load a campaign."));
                 var profiles=new[]{"cycle","repeat","growth","expansion","roster","colony","streamed","activities","published","astronomy","generated","fleet","frontier","demo","combat"};
-                var labels=new List<string>{"Current Campaign","Repeat Expansion","Colony Growth","Colony Expansion","Colonisation V2","Colonisation","Streamed Activities","Activities","Published Construction","Static Astronomy","Original Generated Galaxy","Fleet Campaign","Frontier Preview","Bajor Demo","Combat playtest"};
+                var labels=new List<string>{CycleArchiveDisplayName,"Repeat Expansion","Colony Growth","Colony Expansion","Colonisation V2","Colonisation","Streamed Activities","Activities","Published Construction","Static Astronomy","Original Generated Galaxy","Fleet Campaign","Frontier Preview","Bajor Demo","Combat playtest"};
                 var profile=CampaignArchiveProfile();var index=Array.IndexOf(profiles,profile);
                 var picker=new DropdownField("Archive",labels,index<0?0:index);earlier.Add(picker);var epoch=viewEpoch;
                 picker.RegisterValueChangedCallback(_=>{

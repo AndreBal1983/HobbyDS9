@@ -116,7 +116,7 @@ namespace HobbyDS9.UnityReview
             playerGuidance!.text=demoLanding?(generatedCampaignBusy?"Preparing campaign…":"Start a new galaxy or continue a saved campaign."):PlayerMessage();
             if(DrawCampaignBusy())return;
             var commission=UpdateFrontierCommissionSummary();
-            if(PlayerProfile&&demoLanding){playerTitle.text=campaignMenuPage==CampaignMenuPage.Campaign?"Campaign menu":campaignMenuPage==CampaignMenuPage.Archive?"Save / Load":campaignMenuPage==CampaignMenuPage.Settings?"Settings":campaignMenuPage==CampaignMenuPage.New?"New campaign":"Start / Continue";DrawDemoLanding();}
+            if(PlayerProfile&&demoLanding){playerTitle.text=campaignMenuPage==CampaignMenuPage.Campaign?"Campaign menu":campaignMenuPage==CampaignMenuPage.Archive?"Save / Load":campaignMenuPage==CampaignMenuPage.Settings?"Settings":campaignMenuPage==CampaignMenuPage.New?NewCampaignLabel:"Start / Continue";DrawDemoLanding();}
             else if(frontierCommissionOpen&&commission!=null)DrawFrontierCommission(commission);
             else if(workspace.Page==ReviewWorkspacePage.Combat)central!.Render();
             else if(workspace.Page==ReviewWorkspacePage.Saves)DrawSaves();
