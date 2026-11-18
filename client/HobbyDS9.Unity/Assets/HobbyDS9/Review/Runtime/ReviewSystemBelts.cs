@@ -33,6 +33,7 @@ namespace HobbyDS9.UnityReview
                 var dust=BuildDust(slots,annulus);
                 var opaque=new Material(rockShader){name="Disclosed belt rocks",hideFlags=HideFlags.HideAndDontSave};materials.Add(opaque);opaque.SetVector("_StarCenter",star);
                 var soft=new Material(dustShader){name="Disclosed belt haze",hideFlags=HideFlags.HideAndDontSave};materials.Add(soft);soft.SetFloat("_Opacity",.065f);
+                if(slots.Any(s=>s.AuthoredSolMainBelt)){soft.SetFloat("_Opacity",.08f);soft.SetColor("_Tint",new Color(.56f,.50f,.40f,1));}
                 rocks=Object("Disclosed asteroid belt rocks",high,opaque,parent,layer);rockFilter=rocks.GetComponent<MeshFilter>();
                 Object("Disclosed asteroid belt haze",dust,soft,parent,layer);
             }

@@ -23,6 +23,16 @@ public sealed class BeltVisualLayoutTests
         Assert.All(full,p=>{Assert.InRange(p.Turns,0,1);Assert.InRange(p.Radial,0,1);Assert.InRange(p.Height,-.006,.006);Assert.InRange(p.Radius,.006,.016);Assert.InRange(p.Prototype,0,3);Assert.InRange(p.Sx,.8,1.3);});
         Assert.Throws<ArgumentOutOfRangeException>(()=>BeltVisualLayout.Rocks(seed,385));Assert.Throws<ArgumentException>(()=>BeltVisualLayout.Seed("system.a\nother","belt.a"));
     }
+    [Fact]public void AuthoredSolBandRequiresItsActualEditionAndSitsBetweenCompressedMarsAndJupiter()
+    {
+        var belt=Belt(id:CampaignAuthoredSolIdentity.FeatureId);belt.OuterRadiusMilliAu=3200;
+        Assert.Throws<ArgumentException>(()=>BeltVisualLayout.ForSystem(Sky(belt),"human",3,7,"system.a"));
+        var sky=new CampaignStaticAstronomySnapshot("human","map",3,7,Array.Empty<CampaignNebulaVisualProxy>(),new[]{belt},CampaignAuthoredSolIdentity.Generation);
+        var slot=Assert.Single(BeltVisualLayout.ForSystem(sky,"human",3,7,"system.a"));
+        Assert.True(slot.AuthoredSolMainBelt);Assert.True(slot.Inner>SolSchematicLayout.Radius(3));Assert.True(slot.Envelope<SolSchematicLayout.Radius(4));
+        Assert.Equal(2200,slot.Feature.InnerRadiusMilliAu);Assert.Equal(3200,slot.Feature.OuterRadiusMilliAu);
+        Assert.Empty(BeltVisualLayout.ForSystem(sky,"other",3,7,"system.a"));
+    }
     [Fact]public void WorkBudgetsAndHysteresisStayBoundedWithoutRerolls()
     {
         Assert.Equal(320,BeltVisualLayout.RockBudget(0,1,false));

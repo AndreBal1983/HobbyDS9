@@ -50,6 +50,30 @@ namespace HobbyDS9.UnityReview.Tests
             }
             finally{((IDisposable)stage).Dispose();}
         }
+        [Test] public void ActualAuthoredSolBeltDrawChangesVisiblePixelsBetweenMarsAndJupiter()
+        {
+            var ids=new[]{"planet.mercury","planet.venus","planet.sol","planet.mars","planet.jupiter","planet.saturn","planet.uranus","planet.neptune"};
+            var bodies=ids.Select(id=>Planet(id,false)).ToArray();
+            var distances=SolMeanOrbitData.Read(Resources.Load<TextAsset>("PlayableFleetPackages/v1/sol08-astronomy").text).JoinDisclosed(bodies,bodies)!;
+            var sky=new CampaignStaticAstronomySnapshot("human","map",1,1,Array.Empty<CampaignNebulaVisualProxy>(),new[]{new SystemAsteroidBeltDto{FeatureId=CampaignAuthoredSolIdentity.FeatureId,SystemId="system.fixture",InnerRadiusMilliAu=2200,OuterRadiusMilliAu=3200,VisualSeed=new string('a',64)}},CampaignAuthoredSolIdentity.Generation);
+            var slots=BeltVisualLayout.ForSystem(sky,"human",1,1,"system.fixture");Assert.That(slots.Count,Is.EqualTo(1));
+            Assert.That(slots[0].Inner,Is.GreaterThan(SolSchematicLayout.Radius(3)));Assert.That(slots[0].Envelope,Is.LessThan(SolSchematicLayout.Radius(4)));
+            var type=typeof(ReviewPlayerView).Assembly.GetType("HobbyDS9.UnityReview.ReviewSolStage",true)!;
+            var shader=Resources.Load<Shader>("SystemBodyArt/ProceduralSurface");
+            var without=Activator.CreateInstance(type,Private,null,new object[]{shader,bodies,distances},null)!;
+            var with=Activator.CreateInstance(type,Private,null,new object[]{shader,bodies,distances,slots},null)!;
+            try
+            {
+                Assert.That((bool)type.GetMethod("Render",Private)!.Invoke(without,new object[]{2.1f,0f,1f,"planet.sol"})!,Is.True);
+                var before=PortraitPixels((RenderTexture)type.GetProperty("Texture",Private)!.GetValue(without)!,"sol-belt-before");
+                Assert.That((bool)type.GetMethod("Render",Private)!.Invoke(with,new object[]{2.1f,0f,1f,"planet.sol"})!,Is.True);
+                var after=PortraitPixels((RenderTexture)type.GetProperty("Texture",Private)!.GetValue(with)!,"sol-belt-after");
+                Assert.That((System.Collections.ICollection)Field(with,"assetFallbacks"),Is.Empty,"Actual FBX/shader resources must bind.");
+                var changed=before.Zip(after,(a,b)=>Math.Abs(a.r-b.r)+Math.Abs(a.g-b.g)+Math.Abs(a.b-b.b)).Count(delta=>delta>12);
+                Assert.That(changed,Is.GreaterThan(40),"The actual belt draw must visibly change pixels, not just add a caption or empty mesh.");
+            }
+            finally{((IDisposable)with).Dispose();((IDisposable)without).Dispose();}
+        }
         [Test] public void DeliveredMeshAndRingAssetsRetainTheirImportContract()
         {
             // Asset presence is distinct from permission to put a body in a campaign scene.
