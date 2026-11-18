@@ -30,6 +30,8 @@ namespace HobbyDS9.UnityReview
             if(project.Pause!=null)choices.Add(new CampaignDialogAction("Pause project",project.Pause));
             ShowCampaignDialog(project.Title,project.Detail,"Close",null,choices.ToArray());
             AppendEngineeringOutputs(project.Outputs);
+            var body=confirmation?.Q<ScrollView>("player-confirmation-details");
+            if(body!=null&&project.Requirements.Length>0){var requirements=new Foldout{text="Science & project requirements",value=false};requirements.Add(Readout(project.Requirements));body.Add(requirements);}
         }
         private void AppendEngineeringOutputs(IReadOnlyList<HobbyDS9.Application.EngineeringOutputSnapshot> outputs)
         {
@@ -39,8 +41,8 @@ namespace HobbyDS9.UnityReview
             {
                 VisualElement? widget=null;
                 if(output.Component!=null)
-                    widget=bridge?.GetMethod("Module")?.Invoke(null,new object?[]{output.Component,output.ParentComponent,HobbyDS9.Contracts.ShipDesign.OperatingProfileKind.Cruise}) as VisualElement;
-                else if(output.Hull!=null)widget=bridge?.GetMethod("Hull")?.Invoke(null,new object?[]{output.Hull,output.ParentHull}) as VisualElement;
+                    widget=bridge?.GetMethod("EngineeringModule")?.Invoke(null,new object?[]{output.Component,output.ParentComponent,"Not tracked"}) as VisualElement;
+                else if(output.Hull!=null)widget=bridge?.GetMethod("EngineeringHull")?.Invoke(null,new object?[]{output.Hull,output.ParentHull,"Not tracked"}) as VisualElement;
                 if(widget!=null)body.Add(widget);
                 else if(output.Component!=null)body.Add(Readout(output.DisplayName+" · capacity blocks unavailable · module space "+output.Component.Capacity+" · required crew "+output.Component.CrewRequired+" · raw power supply "+output.Component.PowerSupply+" · Industry "+output.Component.Cost.Industry+" · catalogue credits "+output.Component.Cost.Credits));
                 else if(output.Hull!=null)body.Add(Readout(output.DisplayName+" · capacity blocks unavailable · hull space "+output.Hull.Capacity+" · distribution "+output.Hull.PowerDistributionLimit+" · minimum crew "+output.Hull.MinimumCrew+" · Industry "+output.Hull.Cost.Industry+" · catalogue credits "+output.Hull.Cost.Credits));

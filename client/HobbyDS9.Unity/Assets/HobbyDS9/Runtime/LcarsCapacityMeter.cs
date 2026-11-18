@@ -9,6 +9,11 @@ namespace HobbyDS9.UnityClient
     public sealed class LcarsCapacityMeter : VisualElement
     {
         public long UnitsPerBlock {get;} public int BlockCount {get;}
+        private string compactLegend="";
+        public void Compact()
+        {
+            style.marginBottom=8;var legend=this.Q<Label>("capacity-legend");if(legend!=null)legend.text=compactLegend;
+        }
         public LcarsCapacityMeter(string label,long value,long budget):this(label,value,budget,null,false){}
         [Preserve]public LcarsCapacityMeter(string label,long value,long budget,long? previous,bool higherBetter)
         {
@@ -38,7 +43,8 @@ namespace HobbyDS9.UnityClient
             }
             string meaning=comparison?(delta<0?(-delta)+" less":delta>0?delta+" more":"Unchanged")+(benefit?" · beneficial for this measure":""):
                 value>budget?(value-budget)+" over budget":(budget-value)+" unused";
-            var legend=new Label(meaning+" · filled: current value · hollow: "+(comparison&&value<previous?(higherBetter?"lost capacity":"freed positions"):"unused reference")+" · 1 block = "+UnitsPerBlock+" unit"+(UnitsPerBlock==1?"":"s; final positions may be partial"));legend.style.whiteSpace=WhiteSpace.Normal;legend.style.fontSize=14;Add(legend);
+            compactLegend=meaning+" · 1 block = "+UnitsPerBlock+(UnitsPerBlock==1?" unit":" units; partial end");
+            var legend=new Label(meaning+" · filled: current value · hollow: "+(comparison&&value<previous?(higherBetter?"lost capacity":"freed positions"):"unused reference")+" · 1 block = "+UnitsPerBlock+" unit"+(UnitsPerBlock==1?"":"s; final positions may be partial")){name="capacity-legend"};legend.style.whiteSpace=WhiteSpace.Normal;legend.style.fontSize=14;Add(legend);
             tooltip=caption.text+". "+legend.text;
         }
     }
