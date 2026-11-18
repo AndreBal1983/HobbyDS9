@@ -57,11 +57,12 @@ namespace HobbyDS9.UnityReview
             panel.RestoreSelection(selection);
             var inspection=workspace!.PendingSystemInspection;
             var worldInspection=workspace.PendingWorldInspection;
+            var planetDetails=workspace.PendingWorldDetails;
             if(workspace.Page==ReviewWorkspacePage.Worlds)workspace.WorldsContextOpen=true;
-            workspace.PendingSystemInspection=null;workspace.PendingWorldInspection=null;
+            workspace.PendingSystemInspection=null;workspace.PendingWorldInspection=null;workspace.PendingWorldDetails=false;
             if(worldInspection.HasValue)
             {
-                if(ReferenceEquals(worldInspection.Value.Frame,frame))panel.InspectOwnedWorld(worldInspection.Value.World);
+                if(ReferenceEquals(worldInspection.Value.Frame,frame))panel.InspectOwnedWorld(worldInspection.Value.World,planetDetails);
             }
             else if(inspection.HasValue)panel.InspectSystem(inspection.Value.SystemId,inspection.Value.Caption);
             else panel.RestoreReview(reviewed);
@@ -70,8 +71,8 @@ namespace HobbyDS9.UnityReview
             {
                 panel.BindWorldsOverview(()=>{
                     if(!Current()||workspace?.CanNavigate!=true)return;
-                    workspace.WorldsContextOpen=false;workspace.PendingSystemInspection=null;workspace.PendingWorldInspection=null;
-                    viewEpoch++;Build();
+                    workspace.PendingSystemInspection=null;workspace.PendingWorldInspection=null;workspace.PendingWorldDetails=false;
+                    Navigate(ReviewWorkspacePage.Worlds);
                 });
             }
             parent.Add(panel);colonisationPanelOwner=owner;colonisationPanelController=controller;colonisationPanelFrame=frame;
