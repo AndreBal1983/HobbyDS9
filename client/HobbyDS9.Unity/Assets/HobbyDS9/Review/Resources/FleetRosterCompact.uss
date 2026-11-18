@@ -15,6 +15,7 @@
 .fleet-compact-roster .fleet-roster-ship-row { flex-direction: row; align-items: center; min-height: 64px; min-width: 0; flex-shrink: 0; padding: 3px 6px 3px 12px; border-bottom-width: 1px; border-bottom-color: #344759; }
 .fleet-compact-roster .fleet-roster-ship-selected { background-color: #192633; border-left-width: 3px; border-left-color: #efb16b; }
 .fleet-compact-roster .fleet-roster-ship-icon { width: 60px; height: 48px; flex-shrink: 0; margin-right: 6px; -unity-text-align: middle-center; }
+.fleet-compact-roster .fleet-roster-ship-icon Label { font-size: 14px; }
 .fleet-compact-roster .fleet-roster-identity { flex-basis: 220px; min-width: 190px; flex-grow: 1; flex-shrink: 0; padding-right: 6px; }
 .fleet-compact-roster .fleet-ship-title { font-size: 16px; min-height: 40px; margin: 0; padding: 2px 6px; color: #ffe0b9; white-space: normal; -unity-text-align: middle-left; }
 .fleet-compact-roster .fleet-roster-class { font-size: 14px; white-space: normal; color: #c1ccdc; margin: 2px 0 0 6px; }
