@@ -84,26 +84,23 @@ namespace HobbyDS9.UnityReview
             {
                 var parts=new List<string>{EngineeringState(selected)+" · "+EngineeringPresentation.Category(selected.Definition.DefinitionId.Value)};
                 var scoutExcluded=model.ColonisationCycleCampaign&&selected.Definition.DefinitionId.Value=="engineering.advanced-starship-engineering";
-                parts.Add(scoutExcluded?"Expected output unavailable\nAdvanced Scout is unavailable in this campaign's construction catalogue. This retained/completed project does not create a buildable Scout.":"Expected output — authored capability\n"+selected.Definition.EffectSummary+(selected.Definition.Outputs.Count==0?"\nTyped output and parent details are unavailable.":"\n"+string.Join("\n",selected.Definition.Outputs.Select(o=>o.Kind+" · "+o.DisplayName+" · "+o.Identity+" · requires "+string.Join(", ",o.RequiredProjects))))+"\nEquipment-version maturity is unavailable.");
+                parts.Add(scoutExcluded?"Expected outcome · unavailable\nAdvanced Scout is not buildable in this campaign.":"Target research · "+(selected.Definition.Outputs.Count==0?selected.Definition.DisplayName:string.Join(" / ",selected.Definition.Outputs.Select(EngineeringPresentation.Target)))+"\nExpected outcome · "+(selected.Definition.Outputs.Count==0?selected.Definition.EffectSummary:string.Join(" / ",selected.Definition.Outputs.Select(EngineeringPresentation.Expected))));
                 if(frame.Demo!=null)parts.Add("Demo construction: "+string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct())+" only. Other class unlocks are unavailable here.");
-                parts.Add("Project completion: "+selected.MaturityPercent+"% · "+selected.Band+"\nEarned progress: "+Units(selected.Progress)+" / "+Units(selected.Cost)+" Engineering points\nProject cost: "+Units(selected.Cost)+" Engineering points");
+                parts.Add("Project completion · "+selected.MaturityPercent+"%\nEngineering work · "+Units(selected.Progress)+" / "+Units(selected.Cost));
                 if(selected.Band!=EngineeringMaturityBand.Mature&&(selected.IsTarget||selected.CanTarget))
                 {
                     var phases=EngineeringPresentation.ResearchPhases(selected.Cost,selected.Progress,r.EngineeringReserve,r.EngineeringAllocation);
-                    parts.Add("Estimated completion: "+(!phases.HasValue?"no finite estimate at zero accepted income":phases==1?"next Research phase":phases+" weekly Research phases")+". If selected now, banked work is available and accepted income/allocation remain unchanged. This is a conditional estimate.");
+                    parts.Add("Estimated completion · "+(!phases.HasValue?"unavailable at current income":phases==1?"next Research phase":phases+" weekly Research phases")+" · current income/bank, if selected now");
                 }
-                else parts.Add("Completion estimate unavailable for completed or currently unavailable work.");
                 var requirements=new List<string>();
                 for(int i=0;i<selected.Definition.ScienceRequirements.Count;i++)
                 {var q=selected.Definition.ScienceRequirements[i];requirements.Add((selected.ScienceSatisfied[i]?"Met · ":"Missing · ")+q.Discipline+" · level "+q.IntervalStartLevel+" → "+(q.IntervalStartLevel+1)+" · discovery "+q.BreakthroughOrdinal);}
                 for(int i=0;i<selected.Definition.Prerequisites.Count;i++)
-                {var required=r.Engineering.FirstOrDefault(p=>p.Definition.DefinitionId==selected.Definition.Prerequisites[i]);requirements.Add((selected.PrerequisitesSatisfied[i]?"Met · ":"Missing · ")+(required?.Definition.DisplayName??selected.Definition.Prerequisites[i].Value));}
-                parts.Add("Science & project requirements\n"+(requirements.Count==0?"No prerequisites.":string.Join("\n",requirements)));
-                if(EngineeringPresentation.IsRefinement(selected.Definition.Kind))parts.Add("Refinement attribute selection — unavailable\nThis authored project has a fixed outcome. Parent selection, retained-parent experiments, equipment maturity and repeatable 100–150% refinement are not supported by the current campaign. Project completion above is not equipment maturity.");
-                parts.Add("One active project. Selecting spends nothing immediately; work advances on End turn. Switching or pausing retains all earned progress. New access does not refit existing ships or published designs. Fitting and construction use the current catalogue.");
-                if(!edit)parts.Add("Research is read-only at this boundary. Finish pending combat or refresh stale authority before changing projects.");
+                {var required=r.Engineering.FirstOrDefault(p=>p.Definition.DefinitionId==selected.Definition.Prerequisites[i]);requirements.Add((selected.PrerequisitesSatisfied[i]?"Met · ":"Missing · ")+(required?.Definition.DisplayName??"Required project"));}
+                parts.Add("Fixed catalogue project · Version maturity: not tracked");
+                if(!edit)parts.Add("Read-only at this boundary");
                 var label=selected.Band==EngineeringMaturityBand.Mature?"Completed":selected.IsTarget?"Current project":current!=null?"Switch project":selected.Progress>0?"Resume project":"Start project";
-                showEngineering?.Invoke(new ReviewEngineeringDialog(selected.Definition.DisplayName,string.Join("\n\n",parts),label,edit&&selected.CanTarget?()=>Select(selected.Definition.DefinitionId.Value):null,edit&&selected.IsTarget?()=>Select(null):null,scoutExcluded?null:selected.Definition.Outputs));
+                showEngineering?.Invoke(new ReviewEngineeringDialog(selected.Definition.DisplayName,string.Join("\n\n",parts),label,edit&&selected.CanTarget?()=>Select(selected.Definition.DefinitionId.Value):null,edit&&selected.IsTarget?()=>Select(null):null,scoutExcluded?null:selected.Definition.Outputs,requirements.Count==0?"No prerequisites.":string.Join("\n",requirements)));
             }
         }
     }

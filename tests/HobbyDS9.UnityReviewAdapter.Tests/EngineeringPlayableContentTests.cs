@@ -49,6 +49,7 @@ public sealed class EngineeringPlayableContentTests
         Assert.Single(outputs,o=>o.Kind==EngineeringOutputKind.ShipDesign);
         var compact=Assert.Single(projects.Single(p=>p.Definition.DefinitionId.Value=="engineering.compact-life-support").Definition.Outputs);
         Assert.Equal("component.utility.life-support.v2",compact.Identity);
+        Assert.Equal("Reduce module hull space",EngineeringPresentation.Target(compact));Assert.Equal("12 → 9 hull space",EngineeringPresentation.Expected(compact));
         var current=Assert.IsType<ComponentVersionSnapshot>(compact.Component);var parent=Assert.IsType<ComponentVersionSnapshot>(compact.ParentComponent);
         Assert.Equal("component.utility.life-support.v1",parent.VersionId);Assert.Equal(parent.VersionId,current.ParentVersionId);
         Assert.Equal(12,parent.Capacity);Assert.Equal(9,current.Capacity);Assert.Equal(1,current.CrewRequired);Assert.Equal(1,parent.CrewRequired);
