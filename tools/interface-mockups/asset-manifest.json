@@ -1,0 +1,16 @@
+[
+  {
+    "file": "tools/interface-mockups/assets/exploration-cruiser.png",
+    "bytes": 1663166,
+    "sha256": "9976e5d52b8c60265a9635813210746ad82a5ad9ce680fcd7afd6ad1cc98956e",
+    "provenance": "Original procedural Federation hull preview,14Oct2026; no downloaded third-party geometry",
+    "use": "Decorative bounded viewer only; no text, controls, authoritative geometry or hidden data"
+  },
+  {
+    "file": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayerArt/space-backdrop.png",
+    "bytes": 1834702,
+    "sha256": "0e21c74b9fd78dd0a6153b82dfb4fade395586f9c57945495cfcf1ea0607aecc",
+    "provenance": "Existing project-owned generated space backdrop already tracked in PlayerArt; no new generation",
+    "use": "Decorative bounded viewer only; no text, controls, authoritative geometry or hidden data"
+  }
+]
