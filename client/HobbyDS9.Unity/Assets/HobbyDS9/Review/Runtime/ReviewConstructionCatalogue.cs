@@ -53,7 +53,7 @@ namespace HobbyDS9.UnityReview
             inspector=new Foldout{text="Inspect construction",value=false,name="construction-inspector-toggle"};inspector.AddToClassList("construction-inspector");catalogue.Add(inspector);
             detail=new VisualElement{name="construction-inspector"};inspector.Add(detail);
             inspector.RegisterValueChangedCallback(_=>{if(inspector.value)RefreshInspector();else ReleaseStage();});
-            Copy(detail,"Select a tile to inspect it. Inspecting does not add an order.");
+            Copy(detail,"Select a construction row to inspect it.");
             feedback=Copy(this,"Normal construction charges no credits. Work consumes delivered materials; interruptions pause progress.","construction-status");
             feedback.name="construction-command-status";feedback.focusable=true;
             DrawQueue();
@@ -91,15 +91,20 @@ namespace HobbyDS9.UnityReview
             {
                 int ordinal=snapshot.Activities.BuildOptions.IndexOf(option);
                 var tile=new VisualElement{name="construction-tile-"+ordinal};tile.AddToClassList("construction-tile");grid.Add(tile);
-                var inspect=Action(tile,option.DisplayName+(option.Kind==ActivityProductionKind.PublishedShip?" · revision "+option.BlueprintRevision:""),"construction-inspect-"+ordinal,()=>Inspect(option),"construction-inspect");
+                var art=option.Kind==ActivityProductionKind.PublishedShip?ConstructionCardArt.Ship(option.HullVersionId):ConstructionCardArt.Building(option.DefinitionId);
+                if(art!=null){var image=new Image{image=art,scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore,name="construction-icon-"+ordinal};image.AddToClassList("construction-icon");tile.Add(image);}
+                var content=new VisualElement();content.AddToClassList("construction-row-content");tile.Add(content);
+                var heading=new VisualElement();heading.AddToClassList("construction-row-heading");content.Add(heading);
+                var inspect=Action(heading,option.DisplayName+(option.Kind==ActivityProductionKind.PublishedShip?" · R"+option.BlueprintRevision:""),"construction-inspect-"+ordinal,()=>Inspect(option),"construction-inspect");
                 inspect.tooltip="Inspect "+option.DisplayName+". This does not add an order.";
                 inspect.RegisterCallback<FocusInEvent>(_=>{focused=option;focusAdd=false;});
+                var industry=Copy(heading,Number(option.Cost.Industry)+" Industry","construction-industry");industry.name="construction-industry-"+ordinal;industry.tooltip="Exact Industry workload; normal streamed construction has no upfront credit charge.";
+                var facts=new VisualElement();facts.AddToClassList("construction-row-facts");content.Add(facts);
+                var materials=Copy(facts,"Materials: "+Materials(option.Cost.Resources),"construction-comparison");materials.name="construction-materials-"+ordinal;
                 if(option.Kind==ActivityProductionKind.PublishedShip)
-                {var art=ActivityHullCatalog.Find(option.HullVersionId);Copy(tile,art!=null?art.Label+" · inspect hull":"Published class · exact hull art unavailable.");}
-                else DrawBuilding(tile,option);
-                Copy(tile,Number(option.Cost.Industry)+" Industry work · no credit charge");
-                Copy(tile,"Materials: "+Materials(option.Cost.Resources));
-                var reason=Unavailable(option);if(reason.Length>0)Copy(tile,reason,"construction-reason");
+                {var capabilities=Copy(facts,"Exploration unavailable · Combat unavailable","construction-comparison");capabilities.name="construction-capabilities-"+ordinal;capabilities.tooltip="Capability values are unavailable in this observation. A hull image or name is not a capability rating.";}
+                else DrawBuildingSummary(content,option);
+                var reason=Unavailable(option);if(reason.Length>0)Copy(content,reason,"construction-reason");
                 var add=Action(tile,"+","construction-add-"+ordinal,()=>AddOne(option),"construction-add");
                 add.tooltip="Add one "+option.DisplayName+" to this world's queue.";add.SetEnabled(reason.Length==0);
                 add.userData=option;add.RegisterCallback<FocusInEvent>(_=>{focused=option;focusAdd=true;});addButtons.Add(add);
@@ -107,13 +112,25 @@ namespace HobbyDS9.UnityReview
             if(grid.childCount==0)Copy(section,"No construction options in this observation.");
         }
         private void EmptySection(string title,string id,string text)
-        {var section=new VisualElement{name=id};section.AddToClassList("construction-section");catalogue.Add(section);Copy(section,title,"construction-heading");Copy(section,text);}
+        {var section=new VisualElement{name=id};section.AddToClassList("construction-section");catalogue.Add(section);Copy(section,title+" · "+text,"construction-empty");}
+        private void DrawBuildingSummary(VisualElement parent,ActivityBuildOptionDto option)
+        {
+            var fact=Building(option);if(fact==null){Copy(parent,"Building details unavailable.","construction-comparison");return;}
+            var row=new VisualElement();row.AddToClassList("construction-row-facts");parent.Add(row);
+            Copy(row,Number(fact.BuiltCount)+" built · "+Number(fact.QueuedCount)+" queued","construction-comparison");
+            if(fact.AfterOne?.Status==StreamedConstructionProjectionStatus.Available&&fact.AfterOne.Output!=null&&Facts!=null)
+            {
+                var after=fact.AfterOne.Output;var before=Facts.Current;
+                Copy(row,"Gain / week: Industry "+Change(after.Industry-before.Industry)+" · Research "+Change(after.Research-before.Research)+" · Food "+Change(after.Food-before.Food),"construction-comparison");
+            }
+            else if(fact.AfterOne!=null)Copy(row,"Gain: "+Projection(fact.AfterOne),"construction-comparison");
+        }
         private void DrawBuilding(VisualElement parent,ActivityBuildOptionDto option)
         {
             var fact=Building(option);if(fact==null){Copy(parent,"Building details unavailable.");return;}
             Copy(parent,Number(fact.BuiltCount)+" built · "+Number(fact.QueuedCount)+" queued");
             if(Facts!=null)Copy(parent,"Current weekly output: "+Output(Facts.Current));
-            if(fact.AfterOne?.Output!=null&&Facts!=null)
+            if(fact.AfterOne?.Status==StreamedConstructionProjectionStatus.Available&&fact.AfterOne.Output!=null&&Facts!=null)
             {
                 var after=fact.AfterOne.Output;var before=Facts.Current;
                 Copy(parent,"One additional: Industry "+Change(after.Industry-before.Industry)+" · Research "+Change(after.Research-before.Research)+" · Food "+Change(after.Food-before.Food));
@@ -147,7 +164,7 @@ namespace HobbyDS9.UnityReview
         private void RefreshInspector()
         {
             if(disposed)return;ReleaseStage();detail.Clear();
-            if(selected==null){Copy(detail,"Select a tile to inspect it. Inspecting does not add an order.");return;}
+            if(selected==null){Copy(detail,"Select a construction row to inspect it.");return;}
             Copy(detail,selected.DisplayName,"construction-heading");
             Copy(detail,selected.Kind==ActivityProductionKind.PublishedShip?"Published revision "+selected.BlueprintRevision:"Planetary building");
             Copy(detail,Number(selected.Cost.Industry)+" Industry work · no normal credit charge");Copy(detail,"Materials: "+Materials(selected.Cost.Resources));
@@ -189,14 +206,15 @@ namespace HobbyDS9.UnityReview
                 var option=snapshot.Activities.BuildOptions.FirstOrDefault(o=>o.DefinitionId==order.DefinitionId&&o.BlueprintRevision==(order.Blueprint?.Revision??0));
                 var availability=snapshot.Availability.SingleOrDefault(a=>a.QueueItemId==order.QueueItemId);
                 var item=new VisualElement{name="construction-queue-item-"+index};item.AddToClassList("construction-queue-item");queue.Add(item);
-                Copy(item,(index==0?"Working: ":"Queued: ")+(option?.DisplayName??"Construction"),"construction-item-title");
-                if(order.Blueprint!=null)Copy(item,"Revision "+order.Blueprint.Revision);
+                var heading=new VisualElement();heading.AddToClassList("construction-queue-heading");item.Add(heading);
+                Copy(heading,(index+1)+" · "+(option?.DisplayName??"Construction")+(order.Blueprint==null?"":" · R"+order.Blueprint.Revision),"construction-item-title");
+                var id=order.QueueItemId;Action(heading,"Cancel…","activity-queue-cancel-"+index,()=>{if(!disposed&&!submitted&&active)cancel(id);});
                 Copy(item,index==0?availability?.Status??"Awaiting materials":"Waiting for earlier orders");
                 Copy(item,Number(order.CompletedIndustry)+" / "+Number(order.RequiredIndustry)+" Industry work");
-                var bar=new ProgressBar{lowValue=0,highValue=100,value=(float)(100d*order.CompletedIndustry/order.RequiredIndustry)};bar.style.height=14;item.Add(bar);
-                Copy(item,"Consumed: "+(order.RequiredResources!.Count==0?"No material inputs required":string.Join(" · ",order.RequiredResources.Select(r=>(r.ResourceDefinitionId=="resource.dilithium"?"Dilithium":r.ResourceDefinitionId)+" "+Number(order.ConsumedResources!.Single(c=>c.ResourceDefinitionId==r.ResourceDefinitionId).Amount)+" / "+Number(r.Amount)))));
-                if(availability!=null)Copy(item,"Current stocks allow "+Number(availability.WorkWithCurrentStocks)+" Industry; deliveries may change this.");
-                var id=order.QueueItemId;Action(item,"Cancel order…","activity-queue-cancel-"+index,()=>{if(!disposed&&!submitted&&active)cancel(id);});index++;
+                var bar=new ProgressBar{lowValue=0,highValue=100,value=(float)(100d*order.CompletedIndustry/order.RequiredIndustry),tooltip=Number(order.CompletedIndustry)+" / "+Number(order.RequiredIndustry)+" Industry"};bar.style.height=8;item.Add(bar);
+                Copy(item,"Materials used: "+(order.RequiredResources!.Count==0?"None required":string.Join(" · ",order.RequiredResources.Select(r=>(r.ResourceDefinitionId=="resource.dilithium"?"Dilithium":r.ResourceDefinitionId)+" "+Number(order.ConsumedResources!.Single(c=>c.ResourceDefinitionId==r.ResourceDefinitionId).Amount)+" / "+Number(r.Amount)))));
+                if(availability!=null){var supplyDetail=new Foldout{text="Supply detail",value=false};item.Add(supplyDetail);Copy(supplyDetail,"Current stocks allow "+Number(availability.WorkWithCurrentStocks)+" Industry; deliveries may change this.");}
+                index++;
             }
             if(index==0)Copy(queue,"No construction orders at this world.");
             Copy(queue,"No guaranteed completion date: supply interruptions retain progress and pause work.");
