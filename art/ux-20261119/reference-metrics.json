@@ -1,0 +1,93 @@
+{
+  "schema": 1,
+  "status": "static browser reference only, not native acceptance",
+  "originalOwnerProductionCrop": [
+    1865,
+    682
+  ],
+  "metrics": [
+    {
+      "view": "credits",
+      "width": 1280,
+      "height": 720,
+      "catalogueEntries": 0,
+      "fullyVisibleCatalogueEntries": 0,
+      "visibleShipRows": 0,
+      "visibleInstallationRows": 0,
+      "rowHeights": [],
+      "minimumActionWidth": null,
+      "minimumActionHeight": null,
+      "horizontalDocumentOverflow": false
+    },
+    {
+      "view": "credits",
+      "width": 1920,
+      "height": 1080,
+      "catalogueEntries": 0,
+      "fullyVisibleCatalogueEntries": 0,
+      "visibleShipRows": 0,
+      "visibleInstallationRows": 0,
+      "rowHeights": [],
+      "minimumActionWidth": null,
+      "minimumActionHeight": null,
+      "horizontalDocumentOverflow": false
+    },
+    {
+      "view": "production",
+      "width": 1280,
+      "height": 720,
+      "catalogueEntries": 8,
+      "fullyVisibleCatalogueEntries": 7,
+      "visibleShipRows": 4,
+      "visibleInstallationRows": 3,
+      "rowHeights": [
+        48
+      ],
+      "minimumActionWidth": 44,
+      "minimumActionHeight": 44,
+      "horizontalDocumentOverflow": false
+    },
+    {
+      "view": "production",
+      "width": 1920,
+      "height": 1080,
+      "catalogueEntries": 8,
+      "fullyVisibleCatalogueEntries": 8,
+      "visibleShipRows": 4,
+      "visibleInstallationRows": 4,
+      "rowHeights": [
+        48
+      ],
+      "minimumActionWidth": 44,
+      "minimumActionHeight": 44,
+      "horizontalDocumentOverflow": false
+    },
+    {
+      "view": "world",
+      "width": 1280,
+      "height": 720,
+      "catalogueEntries": 0,
+      "fullyVisibleCatalogueEntries": 0,
+      "visibleShipRows": 0,
+      "visibleInstallationRows": 0,
+      "rowHeights": [],
+      "minimumActionWidth": null,
+      "minimumActionHeight": null,
+      "horizontalDocumentOverflow": false
+    },
+    {
+      "view": "world",
+      "width": 1920,
+      "height": 1080,
+      "catalogueEntries": 0,
+      "fullyVisibleCatalogueEntries": 0,
+      "visibleShipRows": 0,
+      "visibleInstallationRows": 0,
+      "rowHeights": [],
+      "minimumActionWidth": null,
+      "minimumActionHeight": null,
+      "horizontalDocumentOverflow": false
+    }
+  ],
+  "note": "DOM probes use compensated outer headless Chrome dimensions to match actual inner target viewport; PNG capture independently uses its exact requested pixel dimensions. Final PNGs inspected. Original owner image is a crop; native same-viewport comparison remains open."
+}

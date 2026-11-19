@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "date": "2026-11-19",
+  "base": "fec332ee8af4e4c28054239c73b347dd0778fa4c",
+  "sourceSHA256": "692b2f30a6c488817abbc00eef589738e98afe93ff61a4bb7425d139aae8c149",
+  "existingImageBindings": 4,
+  "unchangedAttributionSource": true,
+  "newOriginalStrokeGlyphs": 4,
+  "renderedPNGViews": 6,
+  "SVG_JSON_links_scriptSyntax": "pass",
+  "mainOnlyPushAndPRTriggersRetained": 11,
+  "runtimeGameplayAssetEdits": 0,
+  "nativeExecution": false
+}
