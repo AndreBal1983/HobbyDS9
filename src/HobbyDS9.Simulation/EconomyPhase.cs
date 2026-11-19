@@ -5,7 +5,7 @@ namespace HobbyDS9.Simulation
 {
     internal static class EconomyPhase
     {
-        internal static void Execute(GameStateDto s, DefinitionCatalogDto d,System.Collections.Generic.IReadOnlyDictionary<string,System.Collections.Generic.IReadOnlyList<ResourceAmountDto>>? constructionDemand=null,PlanetaryOwnershipContext? ownership=null)
+        internal static void Execute(GameStateDto s, DefinitionCatalogDto d,System.Collections.Generic.IReadOnlyDictionary<string,System.Collections.Generic.IReadOnlyList<ResourceAmountDto>>? constructionDemand=null,PlanetaryOwnershipContext? ownership=null,Action? beforeFreight=null,Action<System.Collections.Generic.IDictionary<string,long>,WeightedNavigationGraph>? afterFreight=null)
         {
             ownership?.RequireOwner(d,s);
             foreach (var c in s.Colonies!.Where(c=>ownership==null||PopulationRules.Population(c)>0).OrderBy(c => c.ColonyId, StringComparer.Ordinal))
@@ -20,7 +20,8 @@ namespace HobbyDS9.Simulation
                         s.PopulationStatistics!.ResourceExtracted = checked(s.PopulationStatistics!.ResourceExtracted + amount);
                     }
             }
-            PopulationLogistics.Execute(s, d,constructionDemand,ownership);
+            beforeFreight?.Invoke();
+            PopulationLogistics.Execute(s,d,constructionDemand,ownership,afterFreight);
             foreach (var c in s.Colonies.Where(c=>ownership==null||PopulationRules.Population(c)>0).OrderBy(c => c.ColonyId, StringComparer.Ordinal))
             {
                 var facts = WorldEconomy.Project(c, s, d,ownership); var sufficient = c.Food >= facts.FoodDemand;

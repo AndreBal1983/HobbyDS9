@@ -17,6 +17,7 @@ namespace HobbyDS9.Simulation
             colonisation.SettlementProof=new ColonisationSettlementProofDto{Turn=game.TurnNumber,BeforeGameState=before,BeforeColonisation=input,
                 AfterGameState=SimulationSession.CopyState(game),AfterColonisation=ColonisationData.Copy(colonisation.State),Receipts=receipts};
             ReconcileExpansion(game);
+            TickBeltSurveys(game);
         }
         private List<ColonisationDeploymentReceiptDto> ApplyColonisationWeek(GameStateDto game,CampaignColonisationStateDto a)
         {

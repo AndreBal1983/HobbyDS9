@@ -55,7 +55,7 @@ namespace HobbyDS9.TacticalReviewClient
     public sealed partial class PhysicalReviewHost
     {
         private EngineeringRefinementInteractionWork? engineeringRefinementInteraction;
-        public bool SupportsEngineeringRefinement=>colonisationCyclePackage is CampaignEngineeringRefinementPackageDto;
+        public bool SupportsEngineeringRefinement=>colonisationCyclePackage is CampaignEngineeringRefinementPackageDto||colonisationCyclePackage is CampaignBeltBodiesPackageDto;
         internal Action<string>? EngineeringRefinementInteractionProbe {get;set;}
         public EngineeringRefinementSnapshot? CaptureEngineeringRefinement(ReviewFrame frame)
         {lock(gate){RequireCurrent(frame.HostId,frame.Generation);var status=session.CaptureStatus();

@@ -21,7 +21,7 @@ namespace HobbyDS9.Simulation
             return (path, Math.Min(interference, path.Select(graph.LogisticsFactor).Min()), route.TotalCost!.Value);
         }
         private static string Edge(string a, string b) => StringComparer.Ordinal.Compare(a, b) < 0 ? a + "|" + b : b + "|" + a;
-        internal static void Execute(GameStateDto s, DefinitionCatalogDto d,IReadOnlyDictionary<string,IReadOnlyList<ResourceAmountDto>>? constructionDemand=null,PlanetaryOwnershipContext? ownership=null)
+        internal static void Execute(GameStateDto s, DefinitionCatalogDto d,IReadOnlyDictionary<string,IReadOnlyList<ResourceAmountDto>>? constructionDemand=null,PlanetaryOwnershipContext? ownership=null,Action<IDictionary<string,long>,WeightedNavigationGraph>? afterFreight=null)
         {
             ownership?.RequireOwner(d,s);
             s.LastDeliveries!.Clear(); var graph = Graph(s, d);
@@ -66,6 +66,9 @@ namespace HobbyDS9.Simulation
                         else s.PopulationStatistics!.ResourceDelivered = checked(s.PopulationStatistics.ResourceDelivered + delivered);
                     }
             }
+            // Optional new-edition consumers share the exact remaining endpoint
+            // budget after food and ordinary materials; no capacity is replenished.
+            afterFreight?.Invoke(endpoints,graph);
         }
     }
 }

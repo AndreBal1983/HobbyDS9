@@ -56,7 +56,7 @@ namespace HobbyDS9.TacticalReviewClient
         private void RequireCurrent(Guid host,long epoch)
         { RequireNoStreamedInteraction();if(host != id || epoch != generation) throw new InvalidOperationException("Obsolete or foreign physical host request."); }
         bool ITacticalClientHost.IsCurrent(ReviewWork work)
-        { lock(gate) return streamedInteraction==null && colonisationInteraction==null && engineeringRefinementInteraction==null && work.HostId == id && work.Generation == generation; }
+        { lock(gate) return streamedInteraction==null && colonisationInteraction==null && engineeringRefinementInteraction==null&&beltBodyInteraction==null && work.HostId == id && work.Generation == generation; }
         public KnownRouteOffer FindKnownRoute(ReviewFrame observed,string fleet,string destination,bool append=false)
         {
             lock(gate)
