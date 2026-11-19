@@ -1,5 +1,7 @@
 # Gameplay design decisions
 
+Current UI acceptance follows the [display policy](../display-policy.md): 1280×720 is no longer required (owner decision, 19 November 2026).
+
 Decision date: 12 October 2026.
 Colonisation and conquest decisions added: 16 October 2026.
 
