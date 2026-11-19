@@ -23,12 +23,21 @@ namespace HobbyDS9.UnityReview.Tests
             if(!Environment.GetCommandLineArgs().Contains("--hobbyds9-sol-asset-tests"))Assert.Ignore("Dedicated graphics-capable portrait receiving run required.");
             window=ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();window.titleContent=new GUIContent("Planet portrait interaction fixture");window.position=new Rect(80,80,400,600);window.Show();window.Focus();return window.rootVisualElement;
         }
-        private static void Pointer(VisualElement target,EventType type,Vector2 local,int button=0)
+        private static void Pointer(VisualElement target,EventType type,Vector2 local,int button=0,Vector2 delta=default)
         {
-            var native=new Event{type=type,button=button,mousePosition=target.LocalToWorld(local)};
+            var native=new Event{type=type,button=button,mousePosition=target.LocalToWorld(local),delta=delta};
             if(type==EventType.MouseDown){using(var e=PointerDownEvent.GetPooled(native)){e.target=target;target.SendEvent(e);}}
             else if(type==EventType.MouseUp){using(var e=PointerUpEvent.GetPooled(native)){e.target=target;target.SendEvent(e);}}
             else {using(var e=PointerMoveEvent.GetPooled(native)){e.target=target;target.SendEvent(e);}}
+        }
+        private IEnumerator AwaitRenderedPose(MeshRenderer globe,Quaternion expected)
+        {
+            // EditMode coroutine yields are not panel scheduler/repaint fences. Exercise the
+            // queued production render, rather than invoking Render or changing the transform.
+            var deadline=UnityEditor.EditorApplication.timeSinceStartup+3;
+            while(Quaternion.Angle(globe.transform.localRotation,expected)>.1f&&UnityEditor.EditorApplication.timeSinceStartup<deadline)
+            {window!.Repaint();UnityEditor.EditorApplication.QueuePlayerLoopUpdate();yield return null;}
+            Assert.That(Quaternion.Angle(globe.transform.localRotation,expected),Is.LessThanOrEqualTo(.1f),"the scheduled renderer applies the accepted pointer pose to the actual globe");
         }
         [TearDown]public void Cleanup()
         {owned?.Dispose();owned=null;window?.rootVisualElement.Clear();if(window!=null){window.Close();if(window!=null)UnityEngine.Object.DestroyImmediate(window);}window=null;}
@@ -45,7 +54,12 @@ namespace HobbyDS9.UnityReview.Tests
             var before=new MaterialPropertyBlock();globe.GetPropertyBlock(before);var surface=before.GetTexture("_Surface");var light=before.GetVector("_StarCenter");
             Pointer(viewport,EventType.MouseDown,new Vector2(100,100));yield return null;
             Assert.That(motion.Dragging,Is.True);Assert.That(viewport.HasPointerCapture(0),Is.True);
-            Pointer(viewport,EventType.MouseDrag,new Vector2(180,140));yield return null;yield return null;
+            var startYaw=motion.Yaw;var startPitch=motion.Pitch;
+            Pointer(viewport,EventType.MouseDrag,new Vector2(180,140),delta:new Vector2(80,40));
+            Assert.That(motion.Dragging,Is.True,"move retains the captured drag");
+            Assert.That(motion.Yaw,Is.EqualTo(startYaw-28).Within(.001),"the pooled move reaches pointer handling before deferred rendering");
+            Assert.That(motion.Pitch,Is.EqualTo(startPitch-10).Within(.001),"both pointer axes change the accepted pose");
+            yield return AwaitRenderedPose(globe,Quaternion.Euler((float)motion.Pitch,(float)motion.Yaw,0));
             Assert.That(Quaternion.Angle(globe.transform.localRotation,initialRotation),Is.GreaterThan(5),"actual mesh orientation changes");
             Assert.That(image.resolvedStyle.rotate.angle.value,Is.Zero,"the raster Image itself is not rotated");
             var draggedYaw=motion.Yaw;Assert.That(motion.Advance(.2,true),Is.False);Assert.That(motion.Yaw,Is.EqualTo(draggedYaw));
