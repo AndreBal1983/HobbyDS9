@@ -15,7 +15,7 @@ namespace HobbyDS9.UnityReview
             var key=planet+"/"+id;var epoch=controlEpoch;
             var fold=new Foldout{name="colonisation-planet-"+id,text=label,value=planetSections.TryGetValue(key,out var open)?open:initiallyOpen};
             fold.style.flexShrink=0;parent.Add(fold);
-            fold.RegisterValueChangedCallback(e=>{if(Live&&epoch==controlEpoch&&ReferenceEquals(e.target,fold))planetSections[key]=e.newValue;});return fold;
+            fold.RegisterValueChangedCallback(e=>{if(Live&&epoch==controlEpoch&&Contains(fold)&&fold.enabledInHierarchy&&ReferenceEquals(e.target,fold))planetSections[key]=e.newValue;});return fold;
         }
         private static string ReadableKey(string? key)
         {
@@ -23,64 +23,125 @@ namespace HobbyDS9.UnityReview
             var value=key!.Substring(key.LastIndexOf('.')+1).Replace('-',' ').Replace('_',' ');
             return value.Length==0?"Unknown":char.ToUpperInvariant(value[0])+value.Substring(1);
         }
+        private static Label WorldLabel(VisualElement parent,string text,string name,string cls)
+        {var label=new Label(text){name=name};label.AddToClassList(cls);parent.Add(label);return label;}
+        private static void WorldChip(VisualElement parent,string text,string name,string tooltip,bool muted=false)
+        {var label=WorldLabel(parent,text,name,"world-info-chip");label.tooltip=tooltip;label.EnableInClassList("world-info-muted",muted);}
+        private static string WorldNumber(long? value)=>value?.ToString("N0",System.Globalization.CultureInfo.InvariantCulture)??"—";
+        private static VisualElement WorldGrid(VisualElement parent,string name)
+        {var grid=new VisualElement{name=name};grid.AddToClassList("world-info-grid");parent.Add(grid);return grid;}
+        private static void WorldStat(VisualElement parent,string key,string label,long? value,string unit,ReviewIconKind icon)
+        {
+            var cell=new VisualElement{name="world-stat-"+key,tooltip=label+": "+(value.HasValue?WorldNumber(value)+" "+unit:"Not reported")};cell.AddToClassList("world-info-stat");cell.EnableInClassList("world-info-muted",!value.HasValue);parent.Add(cell);
+            var heading=new VisualElement();heading.AddToClassList("world-info-stat-heading");cell.Add(heading);heading.Add(new ReviewIcon(icon,label));
+            WorldLabel(heading,label,"world-stat-label-"+key,"world-info-stat-label");
+            var number=new VisualElement();number.AddToClassList("world-info-stat-number");cell.Add(number);
+            WorldLabel(number,WorldNumber(value),"world-stat-value-"+key,"world-info-stat-value").tooltip=cell.tooltip;
+            WorldLabel(number,value.HasValue?unit:"Not reported","world-stat-unit-"+key,"world-info-stat-unit");
+        }
+        private static string ControlCaption(ColonisationPlanetSnapshot p,string actor)
+            =>!p.KnownControl.HasValue?"Control unknown":p.KnownControl==PlanetControllerKind.Unclaimed?"Unclaimed record":p.KnownControl==PlanetControllerKind.IndependentGovernment?"Independent government":p.KnownActor==actor?"Own empire record":"Other empire record";
+        private static string ObservationStamp(int? turn,int current)
+            =>!turn.HasValue||turn.Value<0||turn.Value>current?"Date not supplied":turn.Value==current?"Observed week "+turn:"Last observed week "+turn;
+        private void WorldQueue(VisualElement root,ColonisationWorldSnapshot own)
+        {
+            var orders=observation.Production.Where(x=>x.ColonyId==own.Id).ToArray();
+            var caption=orders.Length==0?"Queue · Idle":"Queue · "+orders[0].Name+" · "+WorldNumber(orders[0].CompletedIndustry)+" / "+WorldNumber(orders[0].RequiredIndustry)+" Industry"+(orders.Length>1?" · +"+(orders.Length-1):"");
+            var queue=PlanetSection(root,"queue-"+own.Id,caption,false);queue.AddToClassList("world-info-disclosure");queue.tooltip="Own production record · week "+observation.Turn;
+            if(orders.Length==0){WorldLabel(queue,"No queued orders","world-queue-empty","world-info-secondary");return;}
+            foreach(var order in orders)
+            {
+                var row=new VisualElement{name="world-queue-"+order.Id};row.AddToClassList("world-info-queue-row");queue.Add(row);
+                row.Add(new ReviewIcon(order.Kind==ColonisationProductionKind.PublishedShip?ReviewIconKind.Propulsion:ReviewIconKind.Construction,"Queued construction"));
+                WorldLabel(row,order.Name,"world-queue-name-"+order.Id,"world-info-row-name");
+                WorldLabel(row,WorldNumber(order.CompletedIndustry)+" / "+WorldNumber(order.RequiredIndustry)+" Industry","world-queue-work-"+order.Id,"world-info-row-value");
+                WorldLabel(queue,order.Status,"world-queue-status-"+order.Id,"world-info-secondary");
+            }
+        }
         private void PlanetDetails(VisualElement parent,ColonisationPlanetSnapshot p)
         {
-            Text(parent,p.DisplayName,"colonisation-focused-planet-name").style.fontSize=24;
-            Text(parent,PlanetVisualProfile.From(p).Caption);
+            var root=new VisualElement{name="world-info"};root.AddToClassList("world-info-compact");parent.Add(root);
+            var sheet=Resources.Load<StyleSheet>("WorldInfoCompact");if(sheet!=null)root.styleSheets.Add(sheet);
+            var environmentKnown=p.Surveyed&&!string.IsNullOrWhiteSpace(p.PlanetClass);
+            WorldLabel(root,p.DisplayName,"colonisation-focused-planet-name","world-info-title");
+            var ownWorlds=observation.Worlds.Where(x=>x.PlanetId==p.PlanetId).ToArray();
+            var identity=WorldGrid(root,"world-identity-chips");
+            WorldChip(identity,environmentKnown?PlanetVisualProfile.From(p).Caption:"Type not reported","world-type-chip","Only disclosed environment classification; decorative appearance is not a survey.",!environmentKnown);
+            if(ownWorlds.Length==0)WorldChip(identity,"Settlement not reported","world-settlement-chip","No own-world record does not establish an empty or uncolonised body.",true);
+            else foreach(var own in ownWorlds)WorldChip(identity,StageLabel(own.Stage),"world-settlement-chip-"+own.Id,"Owned settlement: "+own.Name);
             if(page=="Planets"&&solOverview!=null)
             {
                 var portrait=new Image{name="colonisation-focused-planet-portrait",scaleMode=ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};
-                portrait.style.height=220;portrait.style.flexShrink=0;parent.Add(portrait);
-                var portraitStatus=Text(parent,"Selected-body preview unavailable.","colonisation-portrait-unavailable");
+                portrait.style.height=180;portrait.style.flexShrink=0;root.Add(portrait);
+                var portraitStatus=WorldLabel(root,"Selected-body preview unavailable.","colonisation-portrait-unavailable","world-info-secondary");
                 portraitStatus.style.display=DisplayStyle.None;solOverview.BindPortrait(portrait,portraitStatus);
             }
-            var ownWorlds=observation.Worlds.Where(x=>x.PlanetId==p.PlanetId).ToArray();
-            if(ownWorlds.Length==0)Text(parent,"Colony presence, population, production and build queue: unknown. No own-world record is not proof of an uncolonised body.");
+            if(ownWorlds.Length==0)
+            {
+                var unknown=WorldGrid(root,"world-economy-unknown");
+                WorldStat(unknown,"population","Population",null,"people",ReviewIconKind.Biotech);
+                WorldStat(unknown,"industry","Industry",null,"/ week",ReviewIconKind.Construction);
+                WorldStat(unknown,"research","Research",null,"/ week",ReviewIconKind.Computing);
+                WorldChip(root,"Economy, food & queue not reported","world-economy-unknown-chip","Only an own-world economy observation supplies these values. Unknown is not zero.",true);
+            }
             foreach(var own in ownWorlds)
             {
-                Text(parent,own.Name+" · "+StageLabel(own.Stage),"colonisation-colony-"+own.Id);
-                Text(parent,"Population: "+own.Population+" people");
-                Text(parent,"Industry "+own.Industry+" / week · Local Research "+own.Research+" / week");
-                Text(parent,"Food produced "+own.FoodOutput+" / week · Consumed "+(own.FoodDemand.HasValue?own.FoodDemand.Value.ToString():"unknown")+" / week");
-                Text(parent,"Net food "+(own.LocalFoodBalance.HasValue?(own.LocalFoodBalance.Value>=0?"+":"")+own.LocalFoodBalance.Value:"unknown")+" / week · Stored "+own.Food);
-                var queue=PlanetSection(parent,"queue-"+own.Id,"Build queue · "+own.Name,true);
-                var orders=observation.Production.Where(x=>x.ColonyId==own.Id).ToArray();
-                if(orders.Length==0)Text(queue,"No queued orders in this observation.");
-                for(int i=0;i<orders.Length;i++)
-                {
-                    var order=orders[i];
-                    var icon=order.Kind==ColonisationProductionKind.PublishedShip?"◇":order.Kind==ColonisationProductionKind.Infrastructure?"▣":"□";
-                    Text(queue,(i+1)+". "+icon+" "+order.Name+" · "+order.Status);
-                    Text(queue,order.CompletedIndustry+" / "+order.RequiredIndustry+" Industry");
-                    if(order.RequiredIndustry>0)queue.Add(new ProgressBar{lowValue=0,highValue=100,value=Mathf.Clamp01((float)((double)order.CompletedIndustry/order.RequiredIndustry))*100});
-                }
+                var economy=new VisualElement{name="colonisation-colony-"+own.Id};root.Add(economy);
+                if(ownWorlds.Length>1||own.Name!=p.DisplayName)WorldLabel(economy,own.Name,"world-economy-name-"+own.Id,"world-info-section-title");
+                WorldChip(economy,"Own figures · week "+observation.Turn,"world-economy-stamp-"+own.Id,"Owned-world observation for this week; this date does not apply to environment or resource records.");
+                var grid=WorldGrid(economy,"world-economy-grid-"+own.Id);
+                WorldStat(grid,"population","Population",own.Population,"people",ReviewIconKind.Biotech);
+                WorldStat(grid,"industry","Industry",own.Industry,"/ week",ReviewIconKind.Construction);
+                WorldStat(grid,"research","Research",own.Research,"/ week",ReviewIconKind.Computing);
+                WorldStat(grid,"food-output","Food output",own.FoodOutput,"/ week",ReviewIconKind.Biotech);
+                WorldStat(grid,"food-demand","Food demand",own.FoodDemand,"/ week",ReviewIconKind.Biotech);
+                WorldStat(grid,"food-stock","Food stored",own.Food,"stock",ReviewIconKind.Biotech);
+                var balance=new VisualElement{name="world-food-balance"};balance.AddToClassList("world-info-balance");balance.EnableInClassList("world-info-warning",own.LocalFoodBalance<0);economy.Add(balance);
+                balance.EnableInClassList("world-info-muted",!own.LocalFoodBalance.HasValue);
+                WorldLabel(balance,"Food balance","world-food-balance-label","world-info-stat-label");
+                WorldLabel(balance,own.LocalFoodBalance.HasValue?(own.LocalFoodBalance>=0?"+":"")+WorldNumber(own.LocalFoodBalance)+" / week":"Not reported","world-food-balance-value","world-info-balance-value");
+                WorldQueue(economy,own);
             }
-            var environment=PlanetSection(parent,"environment",p.Surveyed?"Environment · "+PlanetVisualProfile.From(p).Caption:"Environment · unknown",false);
-            if(p.Surveyed&&p.PlanetClass!=null)
-                Text(environment,ReadableKey(p.PlanetClass)+" · "+ReadableKey(p.Atmosphere)+"\n"+
-                    (environmentScale.HasValue?"Gravity "+((double)p.Gravity/environmentScale.Value).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+" g · Pressure "+((double)p.Pressure/environmentScale.Value).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+" (reference scale)":
-                        "Gravity "+p.Gravity+" · Pressure "+p.Pressure+" (measurement units unavailable)")+" · Radiation index "+p.Radiation);
-            else Text(environment,"Environment not disclosed. Missing values are unknown, not zero.");
-            var resources=PlanetSection(parent,"resources","Resources · initial environment record",false);
-            if(p.Surveyed&&p.PlanetClass!=null)
-                Text(resources,"Initial deposits: "+(p.InitialDeposits.Count==0?"none recorded":string.Join(", ",p.InitialDeposits.Select(r=>MaterialName(r.ResourceDefinitionId)+" "+r.Amount)))+". Observation date unavailable; current remaining stock and access require campaign validation.");
-            else Text(resources,"Deposits unknown.");
-            Text(parent,p.KnownControl.HasValue?"Last observed control: "+p.KnownControl+(p.KnownActor==null?"":" · "+p.KnownActor)+" · week "+(p.ControlObservedTurn?.ToString()??"unknown"):"Last observed control: unknown");
+            var knowledge=WorldGrid(root,"world-knowledge-chips");
+            WorldChip(knowledge,ControlCaption(p,observation.Actor),"world-control-chip","Recorded control is distinct from current settlement and access.",!p.KnownControl.HasValue);
+            WorldChip(knowledge,ObservationStamp(p.ControlObservedTurn,observation.Turn),"world-control-date-chip","Control observation date only; not a date for environment, resources or economic figures.",!p.ControlObservedTurn.HasValue||p.ControlObservedTurn!=observation.Turn);
+            var environment=PlanetSection(root,"environment",environmentKnown?"Environment · known record":"Environment · not reported",false);environment.AddToClassList("world-info-disclosure");
+            WorldChip(environment,"Record date not supplied","world-environment-date-chip","No environment observation date is supplied by this projection.",true);
+            if(environmentKnown)
+            {
+                WorldLabel(environment,ReadableKey(p.PlanetClass)+" · "+ReadableKey(p.Atmosphere),"world-environment-class","world-info-secondary");
+                WorldLabel(environment,environmentScale.HasValue?"Gravity "+((double)p.Gravity/environmentScale.Value).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+" g · Pressure "+((double)p.Pressure/environmentScale.Value).ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+" (reference scale)":"Gravity "+p.Gravity+" · Pressure "+p.Pressure+" (measurement units unavailable)","world-environment-measurements","world-info-secondary");
+                WorldLabel(environment,"Radiation index "+p.Radiation,"world-environment-radiation","world-info-secondary");
+            }
+            else WorldLabel(environment,"Not reported","world-environment-unknown","world-info-secondary");
+            var resources=PlanetSection(root,"resources",environmentKnown?"Initial deposits · "+(p.InitialDeposits.Count==0?"none recorded":p.InitialDeposits.Count+" types"):"Resources · not reported",false);resources.AddToClassList("world-info-disclosure");
+            WorldChip(resources,"Initial record · date not supplied","world-resources-date-chip","Current remaining deposits, extraction permission and observation date are not supplied here.",true);
+            if(environmentKnown)foreach(var deposit in p.InitialDeposits)WorldLabel(resources,MaterialName(deposit.ResourceDefinitionId)+" · "+WorldNumber(deposit.Amount),"world-deposit-"+deposit.ResourceDefinitionId,"world-info-secondary");
+            else WorldLabel(resources,"Not reported","world-resources-unknown","world-info-secondary");
+            var surveyArea=WorldGrid(root,"world-survey-status");
             if(p.ActiveSurveyId!=null)
             {
                 var survey=observation.Surveys.FirstOrDefault(x=>x.Id==p.ActiveSurveyId&&x.PlanetId==p.PlanetId);
                 var assigned=survey==null?null:activities.Ships.FirstOrDefault(x=>x.ShipId==survey.ShipId);
-                Text(parent,"Survey in progress · "+p.CompletedSurveyWeeks+" completed weeks · "+(assigned?.DisplayName??"Ship assignment unavailable"));
+                WorldChip(surveyArea,"Survey active · "+p.CompletedSurveyWeeks+" weeks done","world-survey-chip","Required duration and completion date are not reported.");
+                if(assigned!=null)WorldChip(surveyArea,assigned.DisplayName,"world-survey-ship-chip","Assigned ship in this observation.");
                 var indeterminate=new VisualElement{name="colonisation-survey-indeterminate",tooltip="Required duration unavailable; no percentage or ETA"};
                 indeterminate.style.height=5;indeterminate.style.backgroundColor=new Color(.16f,.24f,.32f);
-                var segment=new VisualElement{pickingMode=PickingMode.Ignore};segment.style.width=18;segment.style.height=5;segment.style.backgroundColor=new Color(.86f,.65f,.35f);indeterminate.Add(segment);parent.Add(indeterminate);
-                Text(parent,"Survey in progress · duration unavailable");
+                var segment=new VisualElement{pickingMode=PickingMode.Ignore};segment.style.width=18;segment.style.height=5;segment.style.backgroundColor=new Color(.86f,.65f,.35f);indeterminate.Add(segment);root.Add(indeterminate);
             }
             else
             {
                 var completed=observation.Surveys.Any(s=>s.PlanetId==p.PlanetId&&s.Stage==PlanetSurveyStage.Completed);
-                Text(parent,completed?"Survey complete":p.Surveyed?"Environment known · no completed survey recorded":"Not surveyed");
-                foreach(var report in observation.Surveys.Where(x=>x.PlanetId==p.PlanetId))Text(parent,"Survey: "+report.Stage+" · "+report.Weeks+" completed weeks");
+                WorldChip(surveyArea,completed?"Survey complete":p.Surveyed?"No completed survey record":"Not surveyed","world-survey-chip","Environment knowledge alone does not establish a completed survey.",!completed);
+            }
+            var reports=observation.Surveys.Where(x=>x.PlanetId==p.PlanetId).ToArray();
+            if(reports.Length>0){var history=PlanetSection(root,"survey-records","Survey records",false);history.AddToClassList("world-info-disclosure");foreach(var report in reports)WorldLabel(history,report.Stage+" · "+report.Weeks+" weeks done","world-survey-record-"+report.Id,"world-info-secondary");}
+            var presence=observation.Presence.FirstOrDefault(x=>x.SystemId==p.SystemId);
+            if(presence!=null)
+            {
+                var local=WorldGrid(root,"world-system-presence");
+                WorldChip(local,presence.Caption,"world-presence-chip","System presence does not establish control or the absence of other governments on unobserved bodies.");
+                WorldChip(local,ObservationStamp(presence.ObservationTurn,observation.Turn),"world-presence-date-chip","System presence observation date only.",presence.ObservationTurn!=observation.Turn);
             }
         }
         private void PlanetInterface()
@@ -89,7 +150,7 @@ namespace HobbyDS9.UnityReview
             var p=planets.FirstOrDefault(x=>x.PlanetId==planet);
             if(p==null){Text(body,"This planet is no longer disclosed.");return;}
             var context=Row(body);context.name="planet-detail-context";context.style.flexWrap=Wrap.NoWrap;
-            var portrait=new ReviewPlanetPortrait(p);planetPortrait=portrait;context.Add(portrait);
+            var portrait=new ReviewPlanetPortrait(p,solReducedMotion,value=>solReducedMotion=value);planetPortrait=portrait;context.Add(portrait);
             var detail=new VisualElement{name="planet-detail-facts"};detail.style.minWidth=0;detail.style.flexGrow=1;context.Add(detail);
             context.RegisterCallback<GeometryChangedEvent>(e=>{
                 if(!ReferenceEquals(e.target,context))return;
@@ -126,8 +187,6 @@ namespace HobbyDS9.UnityReview
                 }
             }
             else if(needsSurvey)Text(body,"Bring a survey-capable ship to this system.");
-            var presence=observation.Presence.FirstOrDefault(x=>x.SystemId==p.SystemId);
-            if(presence!=null)Text(body,presence.Caption+" · observed week "+presence.ObservationTurn+". Unobserved bodies may have other governments.");
         }
     }
 }
