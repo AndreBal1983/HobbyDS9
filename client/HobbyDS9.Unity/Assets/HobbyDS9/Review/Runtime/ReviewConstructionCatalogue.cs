@@ -159,7 +159,7 @@ namespace HobbyDS9.UnityReview
             if(disposed||submitted||!active)return;
             selected=option;focused=option;focusAdd=false;
             if(inspector.value)RefreshInspector();else inspector.value=true;
-            catalogue.ScrollTo(inspector);
+            if(catalogue.panel!=null)catalogue.ScrollTo(inspector);
         }
         private void RefreshInspector()
         {
