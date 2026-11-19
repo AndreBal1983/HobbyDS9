@@ -102,7 +102,7 @@ namespace HobbyDS9.UnityReview
                 var facts=new VisualElement();facts.AddToClassList("construction-row-facts");content.Add(facts);
                 var materials=Copy(facts,"Materials: "+Materials(option.Cost.Resources),"construction-comparison");materials.name="construction-materials-"+ordinal;
                 if(option.Kind==ActivityProductionKind.PublishedShip)
-                {var capabilities=Copy(facts,"Exploration unavailable · Combat unavailable","construction-comparison");capabilities.name="construction-capabilities-"+ordinal;capabilities.tooltip="Capability values are unavailable in this observation. A hull image or name is not a capability rating.";}
+                {var capabilities=Copy(facts,ProductionComparisonPresentation.Summary(option.Comparison),"construction-comparison");capabilities.name="construction-capabilities-"+ordinal;capabilities.tooltip="Supported published-class capabilities. Tactical speed and strategic movement budget are separate values. These are not live ship condition or final hit chances.";}
                 else DrawBuildingSummary(content,option);
                 var reason=Unavailable(option);if(reason.Length>0)Copy(content,reason,"construction-reason");
                 var add=Action(tile,"+","construction-add-"+ordinal,()=>AddOne(option),"construction-add");
@@ -187,6 +187,10 @@ namespace HobbyDS9.UnityReview
                     preview.style.display=stage.Availability==ShipPreviewAvailability.Model?DisplayStyle.Flex:DisplayStyle.None;artCaption.text=stage.Label;
                 }
                 else preview.style.display=DisplayStyle.None;
+                Copy(detail,"Published class capabilities","construction-heading");
+                var comparison=new VisualElement{name="construction-comparison-details"};comparison.style.flexDirection=FlexDirection.Row;comparison.style.flexWrap=Wrap.Wrap;detail.Add(comparison);
+                foreach(var value in ProductionComparisonPresentation.Details(selected.Comparison))
+                {var fact=Copy(comparison,value);fact.style.flexBasis=Length.Percent(48);fact.style.flexGrow=1;fact.style.minWidth=170;fact.style.marginRight=8;}
             }
         }
         private void DrawQueue()

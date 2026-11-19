@@ -9,6 +9,23 @@ namespace HobbyDS9.UnityReview.Tests
 {
     public sealed class ConstructionCompactTests
     {
+        [Test]public void SupportedComparisonBindsToRowAndSelectedInspectorWithoutSubmitting()
+        {
+            var observed=new CampaignStreamedActivityObservationDto();observed.Activities.Colonies.Add(new(){ColonyId="colony.a",DisplayName="World A"});
+            var option=new ActivityBuildOptionDto{Kind=ActivityProductionKind.PublishedShip,DefinitionId="blueprint.a",BlueprintRevision=2,DisplayName="Explorer",Supported=true,Cost=new(){Industry=123},Comparison=new(){StudyWork=3,ContactCapacity=1,MaxHull=30,Armor=0,ShieldCapacity=0,Speed=30,MovementBudget=6,Weapons=new()}};
+            observed.Activities.BuildOptions.Add(option);var sent=0;
+            var type=typeof(ReviewEntry).Assembly.GetType("HobbyDS9.UnityReview.ReviewConstructionCatalogue",true)!;
+            var view=(VisualElement)Activator.CreateInstance(type,BindingFlags.Instance|BindingFlags.NonPublic,null,new object[]{observed,"colony.a",(Action<CampaignActivityCommandDto>)(_=>sent++),(Action<string>)(_=>sent++)},null)!;
+            try
+            {
+                var row=view.Q<Label>("construction-capabilities-0");StringAssert.Contains("Study work 3",row.text);StringAssert.Contains("Shields 0",row.text);StringAssert.Contains("Unarmed",row.text);
+                type.GetMethod("Inspect",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(view,new object[]{option});
+                var detail=view.Q("construction-comparison-details");Assert.That(detail,Is.Not.Null);
+                Assert.That(detail.Query<Label>().ToList().Any(l=>l.text=="Maximum hull · 30"),Is.True);Assert.That(detail.Query<Label>().ToList().Any(l=>l.text=="Weapons · Unarmed"),Is.True);
+                Assert.That(sent,Is.Zero);
+            }
+            finally{((IDisposable)view).Dispose();}
+        }
         [Test]public void ComparableRowsKeepRealCostsBuildingChangesAndUnavailableShipCapabilities()
         {
             var observation=new CampaignStreamedActivityObservationDto();
