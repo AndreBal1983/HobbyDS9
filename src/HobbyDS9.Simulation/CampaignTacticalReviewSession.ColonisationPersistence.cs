@@ -11,7 +11,7 @@ namespace HobbyDS9.Simulation
             =>LoadColonisationCore(package,root,null);
         private static CampaignTacticalReviewSession LoadColonisationCore(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster,ExpansionSource? expansionSource=null,ColonisationReplayTiming? timing=null)
             =>LoadColonisationCoreWithVerifiedExport(package,root,roster,out _,expansionSource,timing);
-        private static CampaignTacticalReviewSession LoadColonisationCoreWithVerifiedExport(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster,out CampaignColonisationSaveDto verifiedBase,ExpansionSource? expansionSource=null,ColonisationReplayTiming? timing=null,EngineeringRefinementStateDto? refinementState=null)
+        private static CampaignTacticalReviewSession LoadColonisationCoreWithVerifiedExport(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster,out CampaignColonisationSaveDto verifiedBase,ExpansionSource? expansionSource=null,ColonisationReplayTiming? timing=null,EngineeringRefinementStateDto? refinementState=null,BeltBodyStateDto? beltBodyState=null)
         {
             timing?.Begin(ColonisationReplayPhase.CorePreflight);
             Require(package!=null&&package.PackageHash==ColonisationData.PackageHash(package),"Different approved colonisation package.");
@@ -42,9 +42,32 @@ namespace HobbyDS9.Simulation
                     Require(replay.SubmitEngineeringRefinement(operation.Command!).Accepted,"Illegal or reordered refinement operation.");
                 }
             }
+            var beltIndex=0;
+            void ExtensionsAt(int offset)
+            {
+                // Preserve the Format17 replay path exactly. The new edition merges
+                // typed extension commands by their unique accepted revision stamp.
+                if(beltBodyState==null){RefinementsAt(offset);return;}
+                while(true)
+                {
+                    var r=refinementState!=null&&refinementIndex<refinementState.Operations!.Count
+                        &&refinementState.Operations[refinementIndex].BaseJournalOffset==offset?refinementState.Operations[refinementIndex]:null;
+                    var b=beltIndex<beltBodyState.Operations!.Count&&beltBodyState.Operations[beltIndex].BaseJournalOffset==offset?beltBodyState.Operations[beltIndex]:null;
+                    if(r==null&&b==null)return;
+                    Require(r==null||b==null||r.Command!.ExpectedRevision!=b.Command!.ExpectedRevision,"Extension commands require unique revision ordering.");
+                    if(r!=null&&(b==null||r.Command!.ExpectedRevision<b.Command!.ExpectedRevision))
+                    {refinementIndex++;Require(replay.SubmitEngineeringRefinement(r.Command!).Accepted,"Illegal or reordered refinement operation.");}
+                    else
+                    {
+                        beltIndex++;Require(b!.Command!.ActorId!=null,"Belt-body actor required.");
+                        Require(replay.controllers.TryGetValue(b.Command.ActorId!,out var controller),"Unknown belt-body actor.");
+                        Require(replay.SubmitBeltCommandForController(b.Command,controller).Accepted,"Illegal or reordered belt-body operation.");
+                    }
+                }
+            }
             for(var journalIndex=0;journalIndex<root.Journal!.Count;journalIndex++)
             {
-                RefinementsAt(journalIndex);var op=root.Journal[journalIndex];
+                ExtensionsAt(journalIndex);var op=root.Journal[journalIndex];
                 var kind=timing==null?default:ColonisationReplayTiming.Kind(op);
                 timing?.Count(kind,0);
                 Require(op!=null&&(op.Colonisation==null)!=(op.Existing==null),"Closed colonisation operation required.");
@@ -55,8 +78,9 @@ namespace HobbyDS9.Simulation
                 Require(accepted&&FrontierSame(op,replay.colonisation!.Journal.Last()),"Illegal or reordered colonisation journal operation.");
                 timing?.Count(kind,3);
             }
-            RefinementsAt(root.Journal.Count);
+            ExtensionsAt(root.Journal.Count);
             Require(refinementState==null||refinementIndex==refinementState.Operations!.Count,"Unreplayed refinement operations.");
+            Require(beltBodyState==null||beltIndex==beltBodyState.Operations!.Count,"Unreplayed belt-body operations.");
             timing?.End(ColonisationReplayPhase.Journal);
             timing?.Begin(ColonisationReplayPhase.CoreEquality);
             var exported=replay.ExportColonisationCore();
