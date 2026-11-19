@@ -327,7 +327,7 @@ namespace HobbyDS9.UnityReview.Tests
         public void EnvironmentKnownOrOwnWorldDoesNotImplyACompletedSurvey(bool own)
         {
             var panel=PanelFor(Planet(),own:own);
-            Assert.That(Labels(panel),Does.Contain("Environment known · no completed survey recorded"));
+            Assert.That(Labels(panel),Does.Contain("No completed survey record"));
             Assert.That(Labels(panel),Does.Not.Contain("Survey complete"));
             Assert.That(panel.Q<Button>("colonisation-survey-start-ship.fixture"),Is.Not.Null,"Known environment must not remove a legally available survey action.");
         }
@@ -339,13 +339,13 @@ namespace HobbyDS9.UnityReview.Tests
             var panel=PanelFor(Planet(),recorded:stage);var completed=stage==PlanetSurveyStage.Completed;
             Assert.That(panel.Q<Button>("colonisation-survey-start-ship.fixture")==null,Is.EqualTo(completed));
             if(completed)Assert.That(Labels(panel),Does.Contain("Survey complete"));
-            else {Assert.That(Labels(panel),Does.Not.Contain("Survey complete"));Assert.That(Labels(panel),Does.Contain("Survey: "+stage));}
+            else {Assert.That(Labels(panel),Does.Not.Contain("Survey complete"));Assert.That(Labels(panel),Does.Contain(stage+" · 1 weeks done"));}
         }
         [Test] public void ActiveSurveyUsesIndeterminateProgressAndExposesOnlyCancelReview()
         {
             var panel=PanelFor(Planet(activeSurvey:"survey.fixture",weeks:1),recorded:PlanetSurveyStage.Active);
             Assert.That(panel.Q("colonisation-survey-indeterminate"),Is.Not.Null);
-            Assert.That(Labels(panel),Does.Contain("duration unavailable"));Assert.That(Labels(panel),Does.Contain("Surveyor"));
+            Assert.That(panel.Q("colonisation-survey-indeterminate").tooltip,Does.Contain("duration unavailable"));Assert.That(Labels(panel),Does.Contain("Surveyor"));
             Assert.That(panel.Q<Button>("colonisation-survey-start-ship.fixture"),Is.Null);
             Assert.That(panel.Q<Button>("colonisation-survey-cancel"),Is.Not.Null);
         }
