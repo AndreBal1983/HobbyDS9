@@ -27,6 +27,10 @@ namespace HobbyDS9.Simulation
                 && initialTurn>=1 && game.TurnNumber>=initialTurn,"Missing or excessive detached inputs.");
             Require(records!.All(r=>r!=null) && records.Select(r=>r.ShipId).Distinct(StringComparer.Ordinal).Count()==records.Count
                 && records.Select(r=>r.QueueItemId).Distinct(StringComparer.Ordinal).Count()==records.Count,"Duplicate provenance identity.");
+            if(colonisationSupport!=null)Require(
+                colonisationSupport.FormatVersion==ColonisationSupportIdentity.Format&&colonisationSupport.SchemaId==ColonisationSupportIdentity.Schema&&colonisationSupport.CompilerId==ColonisationSupportIdentity.Compiler
+                ||colonisationSupport.FormatVersion==ColonisationRefinementSupportIdentity.Format&&colonisationSupport.SchemaId==ColonisationRefinementSupportIdentity.Schema&&colonisationSupport.CompilerId==ColonisationRefinementSupportIdentity.Compiler,
+                "Unsupported retained colonisation support edition.");
             var sources=new List<ValidatedPublishedBuiltSource>();
             foreach(var supplied in records.OrderBy(r=>r.ShipId,StringComparer.Ordinal))
             {

@@ -12,7 +12,7 @@ namespace HobbyDS9.Simulation
 {
     public static partial class PublishedTacticalSupportCompiler
     {
-        // Constructed only after exact v4 metadata and every installed allocation are checked.
+        // Constructed only after explicit v4/v5 metadata and installed allocations are checked.
         private sealed class ColonisationCompilation
         {
             internal readonly ColonisationSupportCatalogueDto Support;
@@ -28,8 +28,7 @@ namespace HobbyDS9.Simulation
             try
             {
                 if(catalogue==null||publication?.Fit?.Installations==null||publication.Fit.Profiles==null||access==null||support==null
-                    ||support.FormatVersion!=ColonisationSupportIdentity.Format||support.SchemaId!=ColonisationSupportIdentity.Schema
-                    ||support.CompilerId!=ColonisationSupportIdentity.Compiler||!DefinitionId.TryParse(support.CatalogueId,out _)||support.Revision<1
+                    ||!ColonisationSupportVersion(support)||!DefinitionId.TryParse(support.CatalogueId,out _)||support.Revision<1
                     ||support.Activity?.Tactical?.Components==null||support.Activity.Modules==null||support.SettlerModules==null||support.SettlerModules.Count!=1)
                     return Reject("$.ColonisationSupport");
                 if(publication.Fit.Installations.Any(i=>i==null)||publication.Fit.Profiles.Any(p=>p==null||p.Allocations==null||p.Allocations.Any(a=>a==null))
@@ -54,7 +53,8 @@ namespace HobbyDS9.Simulation
                     if(allocation==null||allocation.RequestedPower!=m.RequiredPower||allocation.AllocatedPower!=m.RequiredPower)return Reject("$.Publication.SettlerPower."+kind);
                 }
                 // Complete ordinary recompile, source identity, v3 modules, tactical validation and access remain shared.
-                var inner=EvaluateActivitiesCore(catalogue,publication,access,support.Activity,new ColonisationCompilation(support,installed.Count==1?m:null));
+                var effective=support.FormatVersion==ColonisationRefinementSupportIdentity.Format?RefinementReactorMappings(catalogue,publication,support):support;
+                var inner=EvaluateActivitiesCore(catalogue,publication,access,effective.Activity!,new ColonisationCompilation(effective,installed.Count==1?m:null));
                 if(!inner.Supported)return new ColonisationSupportResult(null,inner.Issues);
                 return new ColonisationSupportResult(new ColonisationSupportedShip(inner.Ship!.Tactical,inner.Ship.StudyWork,inner.Ship.ContactCapacity,installed.Count==1?m:null,support),issues);
             }
@@ -67,7 +67,7 @@ namespace HobbyDS9.Simulation
             using(var bytes=new MemoryStream())using(var writer=new BinaryWriter(bytes,Encoding.UTF8,true))
             {
                 void Text(string value){if(value==null||value.Length>256)throw new ArgumentException("Colonisation identity string.");var b=Encoding.UTF8.GetBytes(value);writer.Write(b.Length);writer.Write(b);}
-                Text(ColonisationSupportIdentity.Compiler);writer.Write(s.FormatVersion);Text(s.SchemaId);Text(s.CompilerId);Text(s.CatalogueId);writer.Write(s.Revision);Text(completeActivityHash);
+                Text(s.CompilerId);writer.Write(s.FormatVersion);Text(s.SchemaId);Text(s.CompilerId);Text(s.CatalogueId);writer.Write(s.Revision);Text(completeActivityHash);
                 writer.Write(s.SettlerModules!.Count);
                 foreach(var m in s.SettlerModules.OrderBy(x=>x.ComponentVersionId,StringComparer.Ordinal))
                 {Text(m.ComponentVersionId);writer.Write(m.RequiredPower);writer.Write(m.Passengers);writer.Write(m.Food);writer.Write(m.Equipment);writer.Write(m.Materials);}

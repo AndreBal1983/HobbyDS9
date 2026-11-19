@@ -47,7 +47,7 @@ namespace HobbyDS9.Application
             References=new CampaignIntegratedReferenceSnapshot(privateFacts,actor);
         }
     }
-    public class CampaignIntegratedPlaytestApplication : ICampaignIntegratedPlaytestSession
+    public partial class CampaignIntegratedPlaytestApplication : ICampaignIntegratedPlaytestSession
     {
         protected readonly CampaignTacticalReviewSession session;
         internal CampaignIntegratedPlaytestApplication(CampaignTacticalReviewSession session) { this.session=session; }

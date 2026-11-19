@@ -11,10 +11,12 @@ namespace HobbyDS9.Simulation
         {
             var rich=root as CampaignSystemRichnessSaveDto;
             var authored=root as CampaignAuthoredSolSaveDto;
-            if(root!=null&&rich==null&&authored==null&&root.GetType()!=typeof(CampaignColonisationCycleSaveDto))Fail("Unknown cycle save carrier type.");
+            var refinement=root as CampaignEngineeringRefinementSaveDto;
+            if(root!=null&&rich==null&&authored==null&&refinement==null&&root.GetType()!=typeof(CampaignColonisationCycleSaveDto))Fail("Unknown cycle save carrier type.");
             if(rich!=null){SystemRichnessData.ValidateBelts(rich);policy=SystemRichnessData.Effective(policy,true);}
             if(authored!=null){AuthoredSolEditionData.ValidateBelts(authored);policy=SystemRichnessData.Effective(policy,true);}
-            if(root==null||root.FormatVersion!=(authored!=null?CampaignAuthoredSolIdentity.Format:rich==null?CampaignColonisationCycleIdentity.Format:CampaignSystemRichnessIdentity.Format)||root.ProfileId!=(authored!=null?CampaignAuthoredSolIdentity.Profile:rich==null?CampaignColonisationCycleIdentity.Profile:CampaignSystemRichnessIdentity.Profile)||root.BaseCampaign==null
+            if(refinement!=null){AuthoredSolEditionData.ValidateBelts(new CampaignAuthoredSolSaveDto{GenerationVersion=refinement.GenerationVersion,SystemBelts=refinement.SystemBelts,BaseCampaign=refinement.BaseCampaign});policy=SystemRichnessData.Effective(policy,true);}
+            if(root==null||root.FormatVersion!=(refinement!=null?EngineeringRefinementIdentity.Format:authored!=null?CampaignAuthoredSolIdentity.Format:rich==null?CampaignColonisationCycleIdentity.Format:CampaignSystemRichnessIdentity.Format)||root.ProfileId!=(refinement!=null?EngineeringRefinementIdentity.Profile:authored!=null?CampaignAuthoredSolIdentity.Profile:rich==null?CampaignColonisationCycleIdentity.Profile:CampaignSystemRichnessIdentity.Profile)||root.BaseCampaign==null
                 ||root.AiPlans==null||root.CycleActors==null||root.AiPlans.Count>4||root.CycleActors.Count!=root.AiPlans.Count)Fail("Complete bounded cycle root required.");
             void Text(string? x,int max=512){if(x!=null&&x.Length>max)Fail("Cycle string bound.");}
             void Plan(ColonisationAiPlanDto p,string goal,bool shared)
@@ -36,8 +38,9 @@ namespace HobbyDS9.Simulation
                 if(a.Active!=null){if(a.Active.Assignment==null)Fail("Active cycle assignment required.");Plan(a.Active.Assignment,CampaignColonisationCycleIdentity.Goal,false);Text(a.Active.SettlementManifestId);Text(a.Active.CommittedTargetPlanetId);}
                 foreach(var x in a.Receipts){if(x==null||x.SettlementManifestId==null||x.TargetPlanetId==null||!Enum.IsDefined(typeof(ColonisationCycleOutcome),x.Outcome))Fail("Invalid cycle terminal receipt.");Text(x.SettlementManifestId);Text(x.TargetPlanetId);Text(x.CampId);}
             }
-            var belts=authored?.SystemBelts!.Count??rich?.SystemBelts!.Count??0;
-            ValidateCore(root.BaseCampaign,policy,checked(CycleOuterVisits+actors.Count*CycleActorVisits+receipts*CycleReceiptVisits+belts*16L),checked(CycleOuterBytes+actors.Count*CycleActorBytes+receipts*CycleReceiptBytes+belts*4096L),ColonisationSourceEdition.Growth,true);
+            var refinementCost=refinement==null?(Visits:0L,Bytes:0L):RefinementCost(refinement,policy);
+            var belts=refinement?.SystemBelts!.Count??authored?.SystemBelts!.Count??rich?.SystemBelts!.Count??0;
+            ValidateCore(root.BaseCampaign,policy,checked(CycleOuterVisits+actors.Count*CycleActorVisits+receipts*CycleReceiptVisits+belts*16L+refinementCost.Visits),checked(CycleOuterBytes+actors.Count*CycleActorBytes+receipts*CycleReceiptBytes+belts*4096L+refinementCost.Bytes),ColonisationSourceEdition.Growth,true);
         }
     }
 }
