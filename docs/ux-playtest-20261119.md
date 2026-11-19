@@ -2,6 +2,8 @@
 
 Status: owner-requested, delegated; implementation/native acceptance pending. Baseline is verified playable `fec332ee8af4e4c28054239c73b347dd0778fa4c`, not older intermediate packages. This brief captures the four remarks received after that build; the owner has finished and authorized action.
 
+Owner update, 19 November: [display policy](display-policy.md) supersedes the 1280×720 references below. They are historical scope from the initial brief, not required delivery gates. Use 1920×1080 for the current design/native acceptance; smaller windows are best-effort.
+
 ## Requested changes
 
 1. **Planet portrait:** remove the Surface map credits disclosure from the portrait panel. Preserve attribution in a central credits/help location rather than deleting the source record. Make the actual 3D planet rotate by mouse drag and slowly auto-rotate. Pause auto-rotation while dragging; respect reduced motion, pointer capture, focus and panel disposal. Avoid accidental navigation/orders while manipulating it. Keep current lighting and textures.
