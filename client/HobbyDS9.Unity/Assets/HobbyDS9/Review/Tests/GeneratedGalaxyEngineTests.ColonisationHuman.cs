@@ -123,7 +123,8 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static IEnumerator HumanCapture(HumanReceivingState t,UIDocument doc,Vector2Int size,string filename,string hydroId)
         {
-            var s=t.Case;var selection=ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>());
+            var s=t.Case;yield return ColonyClick(s,doc,"colonisation-installation-inspect-"+ColonyBuildIndex(ColonyModel(s),hydroId));
+            var selection=ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>());
             var oldTarget=doc.panelSettings.targetTexture;var oldWidth=doc.rootVisualElement.style.width;var oldHeight=doc.rootVisualElement.style.height;
             var active=RenderTexture.active;var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);Texture2D? pixels=null;
             try
@@ -132,12 +133,12 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return null;yield return null;yield return null;
                 var panel=doc.rootVisualElement.Q<ReviewColonisationPanel>();Assert.That(panel,Is.Not.Null);
                 var guide=panel.Q<Foldout>("colonisation-preparation-guide");Assert.That(guide,Is.Not.Null);guide.value=size.x==1280;yield return null;yield return null;
-                var outer=panel.Q<ScrollView>("colonisation-scroll");var catalogue=panel.Q<ScrollView>("colonisation-catalogue");
+                var outer=panel.Q<ScrollView>("colonisation-scroll");
                 var effects=panel.Q<Label>("colonisation-building-effects-"+hydroId);Assert.That(effects,Is.Not.Null);
                 for(var ancestor=effects.parent;ancestor!=null;ancestor=ancestor.parent)
                     if(ancestor is Foldout disclosure)disclosure.value=true;
                 yield return null;yield return null;
-                catalogue.ScrollTo(effects);outer.ScrollTo(size.x==1280?(VisualElement)guide:panel.Q("colonisation-food-balance"));yield return null;yield return null;
+                panel.Q<ScrollView>("construction-selected-hull").ScrollTo(effects);outer.ScrollTo(size.x==1280?(VisualElement)guide:panel.Q("colonisation-food-balance"));yield return null;yield return null;
                 RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
                 File.WriteAllBytes(Path.Combine(CampaignOutput(),filename),pixels.EncodeToPNG()); // Actual intended image precedes geometry assertions.
                 File.WriteAllText(Path.Combine(CampaignOutput(),filename.Replace(".png",".layout.json")),JsonConvert.SerializeObject(new{

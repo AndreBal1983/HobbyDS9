@@ -125,7 +125,8 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static IEnumerator FoodCapture(FoodReceivingState t,UIDocument doc,Vector2Int size,string filename,string hydroId)
         {
-            var s=t.Case;var selection=ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>());
+            var s=t.Case;yield return ColonyClick(s,doc,"colonisation-installation-inspect-"+ColonyBuildIndex(ColonyModel(s),hydroId));
+            var selection=ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>());
             var oldTarget=doc.panelSettings.targetTexture;var oldWidth=doc.rootVisualElement.style.width;var oldHeight=doc.rootVisualElement.style.height;
             var active=RenderTexture.active;var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);Texture2D? pixels=null;
             try
@@ -134,9 +135,9 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return null;yield return null;yield return null;
                 var panel=doc.rootVisualElement.Q<ReviewColonisationPanel>();Assert.That(panel,Is.Not.Null);
                 var guide=panel.Q<Foldout>("colonisation-preparation-guide");Assert.That(guide,Is.Not.Null);guide.value=size.x==1280;yield return null;yield return null;
-                var outer=panel.Q<ScrollView>("colonisation-scroll");var catalogue=panel.Q<ScrollView>("colonisation-catalogue");
+                var outer=panel.Q<ScrollView>("colonisation-scroll");
                 var effects=panel.Q<Label>("colonisation-building-effects-"+hydroId);Assert.That(effects,Is.Not.Null);
-                catalogue.ScrollTo(effects);outer.ScrollTo(size.x==1280?(VisualElement)guide:panel.Q("colonisation-food-balance"));yield return null;yield return null;
+                panel.Q<ScrollView>("construction-selected-hull").ScrollTo(effects);outer.ScrollTo(size.x==1280?(VisualElement)guide:panel.Q("colonisation-food-balance"));yield return null;yield return null;
                 RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
                 File.WriteAllBytes(Path.Combine(CampaignOutput(),filename),pixels.EncodeToPNG()); // Actual intended image precedes geometry assertions.
                 File.WriteAllText(Path.Combine(CampaignOutput(),filename.Replace(".png",".layout.json")),JsonConvert.SerializeObject(new{
@@ -183,9 +184,11 @@ namespace HobbyDS9.UnityReview.Tests
                 var activities=ColonyModel(s).ColonisationActivities();var hydro=activities.BuildOptions.Single(b=>b.Kind==ActivityProductionKind.Infrastructure&&b.DisplayName=="Hydroponic extension");
                 var benefit=initial.BuildingBenefits.Single(b=>b.DefinitionId==hydro.DefinitionId);Assert.That(benefit.FoodOutput,Is.EqualTo(6));Assert.That(benefit.PowerDemand,Is.EqualTo(1));
                 Assert.That(hydro.Cost.Industry,Is.EqualTo(40));Assert.That(hydro.Cost.Resources!.Single().ResourceDefinitionId,Is.EqualTo("resource.dilithium"));Assert.That(hydro.Cost.Resources.Single().Amount,Is.EqualTo(1));
-                var effects=doc.rootVisualElement.Q<Label>("colonisation-building-effects-"+hydro.DefinitionId);Assert.That(effects.text,Does.Contain("Food +6"));Assert.That(effects.text,Does.Contain("power demand +1"));
+                yield return ColonyClick(s,doc,"colonisation-installation-inspect-"+ColonyBuildIndex(ColonyModel(s),hydro.DefinitionId));
+                var effects=doc.rootVisualElement.Q<Label>("colonisation-building-effects-"+hydro.DefinitionId);Assert.That(effects.text,Does.Contain("Food +6"));
+                Assert.That(doc.rootVisualElement.Q<Label>("colonisation-building-power-"+hydro.DefinitionId).text,Does.Contain("power demand +1"));
                 t.Mark("initial-visible-food-and-benefits");var credits=activities.Credits;
-                var add=doc.rootVisualElement.Query<Button>().ToList().Single(b=>b.text=="+ Add "+hydro.DisplayName);yield return ColonyReach(doc,add,target:"normal enabled Hydroponic Add");
+                var add=doc.rootVisualElement.Q<Button>("colonisation-build-"+ColonyBuildIndex(ColonyModel(s),hydro.DefinitionId));yield return ColonyReach(doc,add,target:"normal enabled Hydroponic Add");
                 yield return ColonyClick(s,doc,add.name);Assert.That(ColonyModel(s).ColonisationActivities().Credits,Is.EqualTo(credits),"streamed construction has no upfront normal-credit debit");
                 var order=ColonyModel(s).Colonisation().Production.Single(q=>q.ColonyId==yard.Id&&q.DefinitionId==hydro.DefinitionId);
                 Assert.That(order.RequiredIndustry,Is.EqualTo(40));Assert.That(order.CompletedIndustry,Is.Zero);Assert.That(order.Required.Single().Amount,Is.EqualTo(1));
