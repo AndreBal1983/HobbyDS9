@@ -1,10 +1,10 @@
 .world-info-compact { min-width: 0; flex-shrink: 0; color: #eeeaf2; }
 .world-info-compact .world-info-title { font-size: 25px; color: #ffe0b9; margin-bottom: 6px; white-space: normal; }
 .world-info-compact .world-info-grid { flex-direction: row; flex-wrap: wrap; min-width: 0; flex-shrink: 0; margin-bottom: 4px; }
-.world-info-compact .world-info-chip { font-size: 14px; color: #d2c5ed; background-color: #101b29; border-left-width: 2px; border-left-color: #b9ace6; padding: 3px 6px; margin: 0 5px 4px 0; white-space: normal; flex-shrink: 0; max-width: 100%; }
+.world-info-compact .world-info-chip { font-size: 14px; color: #d2c5ed; background-color: #101b29; border-left-width: 2px; border-left-color: #b9ace6; padding: 3px 6px; margin: 0 5px 4px 0; white-space: normal; flex-shrink: 0; align-self: flex-start; max-width: 100%; }
 .world-info-compact .world-info-muted { color: #a8b8c8; border-left-color: #536777; }
 .world-info-compact .world-info-section-title { font-size: 17px; color: #efb16b; margin: 5px 0; white-space: normal; }
-.world-info-compact .world-info-stat { flex-basis: 104px; min-width: 104px; flex-grow: 1; flex-shrink: 0; background-color: #101b29; border-left-width: 3px; border-left-color: #b9ace6; padding: 4px 6px; margin: 0 5px 5px 0; }
+.world-info-compact .world-info-stat { flex-basis: 104px; min-width: 104px; max-width: 220px; flex-grow: 1; flex-shrink: 0; background-color: #101b29; border-left-width: 3px; border-left-color: #b9ace6; padding: 4px 6px; margin: 0 5px 5px 0; }
 .world-info-compact .world-info-stat-heading { flex-direction: row; align-items: center; min-width: 0; }
 .world-info-compact .world-info-stat-heading .lcars-icon { margin-right: 3px; }
 .world-info-compact .world-info-stat-label { font-size: 16px; white-space: normal; color: #c8d5e5; }
