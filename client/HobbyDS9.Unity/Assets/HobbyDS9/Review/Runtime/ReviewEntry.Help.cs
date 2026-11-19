@@ -22,7 +22,11 @@ namespace HobbyDS9.UnityReview
             Group("Battle decisions","You command your own fleets. Review and commit one joint round at a time, then confirm the complete aftermath. Inspection, static ship previews and resolved-event playback do not change orders or stocks. Enemy orders and private ammunition remain hidden.");
             Group("Saving & separate campaigns","Save keeps accepted state. Unsubmitted orders and allocation edits remain local. Each campaign edition has separate compatible slots; Combat playtest uses its own archive and Continue. A failed load keeps your current campaign.");
             var credits=new Foldout{text="Visual & audio credits",value=false};page.Add(credits);
-            credits.Add(Readout("Earth/Mars surface maps: Solar System Scope · CC BY 4.0. Other planetary terrain is decorative. Ship previews use the received project asset catalogue; a preview does not supply gameplay statistics."));
+            credits.Add(Readout("Sun, Mercury, Venus Atmosphere, Earth Day Map, Mars, Jupiter, Saturn, Uranus and Neptune surface maps by Solar System Scope (INOVE) · CC BY 4.0."));
+            credits.Add(Readout("Original JPEG maps are unchanged, with shortened filenames. Unity imports the 2K maps at up to 1024 pixels in sRGB. The maps are projected and lit on schematic spheres; orbits and Saturn's separate ring mesh are illustrative and not to scale. Other planetary terrain is decorative."));
+            AddButton(credits,"Surface map source",()=>UnityEngine.Application.OpenURL("https://www.solarsystemscope.com/textures/"));
+            AddButton(credits,"CC BY 4.0 licence",()=>UnityEngine.Application.OpenURL("https://creativecommons.org/licenses/by/4.0/"));
+            credits.Add(Readout("Ship previews use the received project asset catalogue; a preview does not supply gameplay statistics."));
             credits.Add(Readout("Music and console sounds are controlled separately in Audio. Track selection and the current playback state are shown there."));
             AddButton(credits,"Open Audio",()=>Navigate(ReviewWorkspacePage.Audio));
             var diagnostics=new Foldout{text="View diagnostics",value=false};page.Add(diagnostics);
