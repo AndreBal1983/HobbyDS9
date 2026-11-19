@@ -248,6 +248,7 @@ namespace HobbyDS9.UnityReview
                         ?observation.OwnShipSources.Count(x=>x.BlueprintId==selected.DefinitionId&&x.Revision==selected.BlueprintRevision)
                         :activities.Structures.Count(x=>x.ColonyId==w.Id&&x.DefinitionId==selected.DefinitionId);
                     Text(card,ships?"Owned ships: "+built+" · queued here: "+queued:"Built here: "+built+" · queued here: "+queued);
+                    if(ships)Text(card,ProductionComparisonPresentation.Summary(selected.Comparison),"colonisation-ship-capabilities-"+index);
 
                     var unavailable=!selected.Supported?selected.Reason:w.ConstructionUnavailableReason(ships);
                     if(unavailable==null&&!ships&&(built>0||queued>0))unavailable="Unique building: already built or queued.";
@@ -410,6 +411,8 @@ namespace HobbyDS9.UnityReview
             }
             fold.RegisterValueChangedCallback(_=>{if(!OwnInspector())return;inspectedOpen=fold.value;Refresh();});fold.RegisterCallback<AttachToPanelEvent>(_=>Refresh());
             Button(fold,"Rotate hull","colonisation-hull-orbit",()=>{if(OwnInspector())hullPreview?.OrbitReference(80,26);});
+            Text(fold,"Published class capabilities");
+            foreach(var fact in ProductionComparisonPresentation.Details(option.Comparison))Text(fold,fact);
             // An inspector added to an attached page has already received its attach event.
             if(fold.panel!=null)Refresh();
         }
