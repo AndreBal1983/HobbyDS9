@@ -10,6 +10,7 @@ namespace HobbyDS9.UnityReview
 {
     public sealed partial class ReviewPlayerView
     {
+        public Func<VisualElement,bool>? RenderGeneratedEngineeringRefinement {get;set;}
         private static string EngineeringState(EngineeringCardSnapshot p)=>p.Band==EngineeringMaturityBand.Mature?"Completed":p.IsTarget?"Active":p.CanTarget?"Available":
             (p.UnavailableReason==CommandErrorCode.EngineeringScienceRequirementMissing||p.UnavailableReason==CommandErrorCode.EngineeringPrerequisiteMissing?"Locked · ":"Unavailable · ")+Reason(p.UnavailableReason);
         private void Engineering(VisualElement root,CampaignIntegratedStrategySnapshot facts)
@@ -25,17 +26,23 @@ namespace HobbyDS9.UnityReview
             void Metric(string label,string value,string id)
             {var cell=new VisualElement();cell.AddToClassList("engineering-overview-cell");overview.Add(cell);Text(cell,label,"engineering-overview-label");Text(cell,value,"engineering-overview-value",id);}
             var current=r.Engineering.FirstOrDefault(p=>p.IsTarget);
+            var generated=model.SupportsEngineeringRefinement?model.CaptureEngineeringRefinement(frame.Actor):null;
+            var active=generated?.Projects.FirstOrDefault(p=>p.IsActive);
+            var currentName=current?.Definition.DisplayName??"No active project";
+            if(model.SupportsEngineeringRefinement&&generated==null)currentName="Temporarily unavailable";
+            if(active!=null)currentName=(generated!.Parents.FirstOrDefault(p=>p.Vector.VersionId==active.Before.VersionId)?.DisplayName??"Module development")+" · "+EngineeringRefinementPresentation.Goal(active.Goal);
             Metric("At current accepted allocation",Units(r.EngineeringAllocation)+" points / week","engineering-income");
             Metric("Banked Engineering",r.EngineeringReserveConceptual+" Engineering points","engineering-reserve");
-            Metric("Current project",current?.Definition.DisplayName??"No active project","engineering-active-name");
+            Metric("Current project",currentName,"engineering-active-name");
             var sections=new VisualElement{name="engineering-sections"};sections.AddToClassList("engineering-sections");page.Add(sections);
             sections.RegisterCallback<GeometryChangedEvent>(e=>{if(ReferenceEquals(e.target,sections))sections.EnableInClassList("engineering-stacked",e.newRect.width<600);});
             Section(false,"New engineering projects","new");Section(true,"Technology refinement","refinement");
             var receipts=new Foldout{text="Latest turn: Engineering",value=false};page.Add(receipts);EngineeringTurnReport(receipts,r);
             void Section(bool refinement,string heading,string key)
             {
-                var projects=r.Engineering.Where(p=>EngineeringPresentation.IsRefinement(p.Definition.Kind)==refinement&&EngineeringPresentation.Visible(p,model.ColonisationCycleCampaign)).OrderBy(p=>p.Definition.DisplayName,StringComparer.Ordinal).ToList();
                 var section=new VisualElement{name="engineering-section-"+key};section.AddToClassList("engineering-group");sections.Add(section);
+                if(refinement&&RenderGeneratedEngineeringRefinement?.Invoke(section)==true)return;
+                var projects=r.Engineering.Where(p=>EngineeringPresentation.IsRefinement(p.Definition.Kind)==refinement&&EngineeringPresentation.Visible(p,model.ColonisationCycleCampaign)).OrderBy(p=>p.Definition.DisplayName,StringComparer.Ordinal).ToList();
                 var title=Text(section,heading+" · "+projects.Count,"console-section");
                 string Search()=>refinement?workspace.EngineeringRefinementSearch:workspace.EngineeringNewSearch;
                 string Category()=>refinement?workspace.EngineeringRefinementCategory:workspace.EngineeringNewCategory;

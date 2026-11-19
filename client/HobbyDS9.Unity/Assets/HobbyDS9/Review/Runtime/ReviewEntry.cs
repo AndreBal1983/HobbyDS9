@@ -125,7 +125,7 @@ namespace HobbyDS9.UnityReview
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.enter");
             viewEpoch++;modalPermission.Invalidate();
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.begin");
-            AbandonPlayerCheckpoint();CancelStreamedUiWork();CancelColonisationUiWork();
+            AbandonPlayerCheckpoint();CancelStreamedUiWork();CancelColonisationUiWork();CancelEngineeringRefinementUiWork();
             if(routinePendingToken!=null)HideRoutinePending(routinePendingToken);
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.return");
             campaignBusyToken=null;root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;campaignDialogCurrent=null;ReleaseAudio();
@@ -294,7 +294,7 @@ namespace HobbyDS9.UnityReview
             campaignDialogInvoker=null;campaignDialogInvokerName="";
             modalPermission.Invalidate();confirmation?.RemoveFromHierarchy();confirmation=null;
             foreach(var child in root!.Children())child.SetEnabled(true);
-            if(stale)Draw();RestoreCampaignDialogFocus(previous,previousName);
+            if(stale)Draw();RestoreCampaignDialogFocus(previous,previousName);ScheduleEngineeringOutcomeDialog();
         }
 
     }

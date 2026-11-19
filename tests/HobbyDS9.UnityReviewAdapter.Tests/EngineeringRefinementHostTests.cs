@@ -22,7 +22,7 @@ public sealed class EngineeringRefinementHostTests:IDisposable
         return refinement?CampaignColonisationCycleApplication.CreateEngineeringRefinementPackage(growth):CampaignColonisationCycleApplication.CreateAuthoredSolPackage(growth);
     }
     static NaturalGalaxySettingsDto Settings()=>new(){Map=new(){Seed="42",SystemCount=30,EmptyRegionCount=30,Width=750000,Height=600000,HomeCivilizationDefinitionIds=new(){"civilization.federation","civilization.cardassian"}}};
-    ReviewUiModel Model()=>new(Package(),Settings(),codec,new ReviewColonisationCycleSlotStore(directory,codec));
+    ReviewUiModel Model(bool refinement=false)=>new(Package(refinement),Settings(),codec,new ReviewColonisationCycleSlotStore(directory,codec));
     static PhysicalReviewHost Host(ReviewUiModel m)=>(PhysicalReviewHost)typeof(ReviewUiModel).GetField("host",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(m)!;
     static ICampaignColonisationCycleSession Session(ReviewUiModel m)=>(ICampaignColonisationCycleSession)typeof(PhysicalReviewHost).GetField("session",BindingFlags.Instance|BindingFlags.NonPublic)!.GetValue(Host(m))!;
     byte[] Wire(ReviewUiModel m)=>codec.EncodeCycleRoot(Session(m).ExportCycleSave());
@@ -96,6 +96,55 @@ public sealed class EngineeringRefinementHostTests:IDisposable
             Action=ColonisationAction.EnqueueKit,EnqueueKit=new(){ColonyId="colony.sol"}}).Accepted);
         Assert.Throws<InvalidOperationException>(()=>host.CaptureEngineeringRefinement(frame));
         Assert.Throws<InvalidOperationException>(()=>host.PrepareEngineeringRefinementInteraction(frame,EngineeringRefinementInteractionKind.Preview,Command(frame)));
+    }
+    [Fact] public async Task ModelPreviewAndSubmissionPreserveDraftsAndPublishOnlyOnce()
+    {
+        var m=Model(true);var frame=m.Current.Frame;var before=Wire(m);
+        Assert.True(m.SupportsEngineeringRefinement);Assert.NotNull(m.CaptureEngineeringRefinement(frame.Actor));
+        Assert.Null(m.CaptureEngineeringRefinement("civ.cardassian"));
+        var draft=m.ResearchInputs()!;draft.SetWeight(ScienceDiscipline.Energy,700);
+        var weights=draft.Values().Select(v=>v.Weight).ToArray();Assert.True(draft.Dirty);
+        var preview=m.BeginEngineeringRefinementInteraction(EngineeringRefinementInteractionKind.Preview,Command(frame))!;
+        Assert.NotNull(preview);Assert.True(m.Busy);Assert.True(m.SupportsEngineeringRefinement);
+        Assert.Null(m.CaptureEngineeringRefinement(frame.Actor));
+        var checkedGoal=await Task.Run(preview.Execute);Assert.True(checkedGoal.Preview!.CanStart);
+        Assert.True(m.CompleteEngineeringRefinementInteraction(preview,checkedGoal),m.Message);
+        Assert.False(m.Busy);Assert.Same(frame,m.Current.Frame);Assert.Equal(before,Wire(m));
+        var work=m.BeginEngineeringRefinementInteraction(EngineeringRefinementInteractionKind.Submission,Command(frame))!;
+        var completion=await Task.Run(work.Execute);Assert.True(completion.Result!.Accepted);
+        Assert.True(m.CompleteEngineeringRefinementInteraction(work,completion),m.Message);
+        Assert.True(completion.Committed);Assert.False(m.Busy);Assert.NotSame(frame,m.Current.Frame);
+        Assert.True(m.ResearchDraft!.Dirty);Assert.True(m.ResearchDraft.Current(m.Current.Frame));
+        Assert.Equal(weights,m.ResearchDraft.Values().Select(v=>v.Weight));
+        Assert.False(m.CompleteEngineeringRefinementInteraction(work,completion));
+        Assert.Single(m.CaptureEngineeringRefinement(m.Current.Frame.Actor)!.Projects);
+        Assert.Null(m.BeginEngineeringRefinementInteraction(EngineeringRefinementInteractionKind.Submission,Command(frame)));
+        Assert.False(m.Busy);
+    }
+    [Fact] public async Task ModelCancellationRetainsBusyUntilWorkerDrainsAndCannotPublish()
+    {
+        var m=Model(true);var host=Host(m);var frame=m.Current.Frame;var before=Wire(m);
+        using var entered=new ManualResetEventSlim();using var release=new ManualResetEventSlim();
+        var probe=typeof(PhysicalReviewHost).GetProperty("EngineeringRefinementInteractionProbe",BindingFlags.Instance|BindingFlags.NonPublic)!;
+        probe.SetValue(host,(Action<string>)(phase=>{if(phase=="before-fork"){entered.Set();if(!release.Wait(TimeSpan.FromSeconds(15)))throw new TimeoutException();}}));
+        var work=m.BeginEngineeringRefinementInteraction(EngineeringRefinementInteractionKind.Submission,Command(frame))!;
+        var task=Task.Run(work.Execute);
+        try
+        {
+            Assert.True(entered.Wait(TimeSpan.FromSeconds(5)));m.AbandonEngineeringRefinementInteraction(work);
+            Assert.True(m.Busy);Assert.Null(m.BeginEngineeringRefinementInteraction(EngineeringRefinementInteractionKind.Preview,Command(frame)));
+            release.Set();var completion=await task.WaitAsync(TimeSpan.FromSeconds(20));
+            Assert.False(m.CompleteEngineeringRefinementInteraction(work,completion));
+            Assert.False(m.Busy);Assert.False(completion.Committed);Assert.Same(frame,m.Current.Frame);Assert.Equal(before,Wire(m));
+        }
+        finally{release.Set();await task.WaitAsync(TimeSpan.FromSeconds(20));probe.SetValue(host,null);m.AbandonEngineeringRefinementInteraction(work);}
+    }
+    [Fact] public void ModelKeepsOlderEditionUnavailableWithoutStartingWork()
+    {
+        var m=Model();var frame=m.Current.Frame;var before=Wire(m);
+        Assert.False(m.SupportsEngineeringRefinement);Assert.Null(m.CaptureEngineeringRefinement(frame.Actor));
+        Assert.Null(m.BeginEngineeringRefinementInteraction(EngineeringRefinementInteractionKind.Submission,Command(frame)));
+        Assert.False(m.Busy);Assert.Same(frame,m.Current.Frame);Assert.Equal(before,Wire(m));
     }
     public void Dispose(){if(Directory.Exists(directory))Directory.Delete(directory,true);}
 }

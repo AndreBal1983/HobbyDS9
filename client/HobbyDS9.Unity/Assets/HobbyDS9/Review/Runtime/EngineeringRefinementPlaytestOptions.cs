@@ -6,6 +6,7 @@ namespace HobbyDS9.UnityReview
     // Explicit successor activation; GUI chooses this source for a new campaign.
     public static class EngineeringRefinementPlaytestOptions
     {
+        public const string DisplayName="Refinement campaign";
         public const string SaveDirectorySuffix=EngineeringRefinementIdentity.SaveDirectorySuffix;
         public static CampaignEngineeringRefinementPackageDto CreatePackage(CampaignColonisationExpansionPackageDto growth)
             =>CampaignColonisationCycleApplication.CreateEngineeringRefinementPackage(growth);
