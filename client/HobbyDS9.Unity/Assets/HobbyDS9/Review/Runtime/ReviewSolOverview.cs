@@ -92,8 +92,6 @@ namespace HobbyDS9.UnityReview
                 PlanetBodyCard.BindActivation(hit,()=>{if(!disposed&&!failed)onSelect(body);},()=>{if(!disposed&&!failed)onOpen(body);},this.activation);hit.focusable=false;hit.tabIndex=-1;viewport.Add(hit);bodyHits.Add(body.PlanetId,hit);
             }
             unavailable=new Label("3D overview unavailable. Use the disclosed body list."){name="sol-overview-unavailable"};unavailable.style.display=DisplayStyle.None;Add(unavailable);
-            var credits=new Foldout{text="Surface map credits",value=false};
-            credits.Add(new Label("Surface maps: Solar System Scope · CC BY 4.0. Other terrain is decorative."));Add(credits);
             viewport.RegisterCallback<GeometryChangedEvent>(e=>{if(e.oldRect.size!=e.newRect.size)QueueDraw();});
             RegisterCallback<GeometryChangedEvent>(e=>{
                 if(ReferenceEquals(e.target,this))viewport.style.height=Mathf.Clamp(e.newRect.width/2.1f,260,420);

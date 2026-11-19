@@ -43,6 +43,7 @@ namespace HobbyDS9.UnityReview
         private Camera? portraitCamera;
         private MeshRenderer? portraitGlobe;
         private string? portraitId;
+        private float portraitYaw,portraitPitch;
         private bool disposed;
         internal int ImportedMeshCount=>importedCopies.Count;
         internal IReadOnlyList<string> AssetFallbacks=>assetFallbacks.AsReadOnly();
@@ -251,10 +252,12 @@ namespace HobbyDS9.UnityReview
         }
         internal bool TryGetSunPosition(out Vector2 position)
         {var p=camera.WorldToViewportPoint(sun.position);position=new Vector2(p.x,1-p.y);return p.z>camera.nearClipPlane&&p.z<camera.farClipPlane&&p.x>=0&&p.x<=1&&p.y>=0&&p.y<=1;}
-        internal bool RenderPortrait(string id)
+        internal bool RenderPortrait(string id)=>RenderPortraitPose(id,0,0);
+        internal bool RenderPortraitPose(string id,float yaw,float pitch)
         {
-            if(disposed||!planetTransforms.TryGetValue(id,out var selected)){portraitId=null;return false;}
-            if(portraitId==id&&PortraitTexture!=null&&PortraitTexture.IsCreated())return true;
+            if(disposed||float.IsNaN(yaw)||float.IsInfinity(yaw)||float.IsNaN(pitch)||float.IsInfinity(pitch)||!planetTransforms.TryGetValue(id,out var selected)){portraitId=null;return false;}
+            yaw=Mathf.Repeat(yaw+180,360)-180;pitch=Mathf.Clamp(pitch,-65,65);
+            if(portraitId==id&&portraitYaw==yaw&&portraitPitch==pitch&&PortraitTexture!=null&&PortraitTexture.IsCreated())return true;
             portraitId=null;
             if(portraitCamera==null)
             {
@@ -281,6 +284,7 @@ namespace HobbyDS9.UnityReview
             if(!PortraitTexture!.IsCreated())PortraitTexture.Create();
             var source=selected.GetComponent<MeshRenderer>();
             portraitGlobe!.GetComponent<MeshFilter>().sharedMesh=selected.GetComponent<MeshFilter>().sharedMesh;
+            portraitGlobe.transform.localRotation=Quaternion.Euler(pitch,yaw,0);
             source.GetPropertyBlock(properties);
             // Stable decorative illumination; no dependency on overview yaw, zoom or location.
             properties.SetFloat("_NightFill",.025f);
@@ -293,7 +297,7 @@ namespace HobbyDS9.UnityReview
                 if(GraphicsSettings.currentRenderPipeline==null)portraitCamera.Render();
                 else if(RenderPipeline.SupportsRenderRequest(portraitCamera,request))RenderPipeline.SubmitRenderRequest(portraitCamera,request);
                 else return false;
-                portraitId=id;return true;
+                portraitId=id;portraitYaw=yaw;portraitPitch=pitch;return true;
             }
             finally{portraitGlobe.gameObject.SetActive(false);root.SetActive(false);}
         }
