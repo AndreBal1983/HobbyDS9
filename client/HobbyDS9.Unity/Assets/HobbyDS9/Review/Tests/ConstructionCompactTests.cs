@@ -20,6 +20,7 @@ namespace HobbyDS9.UnityReview.Tests
             {
                 var row=view.Q<Label>("construction-capabilities-0");StringAssert.Contains("Study work 3",row.text);StringAssert.Contains("Shields 0",row.text);StringAssert.Contains("Unarmed",row.text);
                 type.GetMethod("Inspect",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(view,new object[]{option});
+                type.GetMethod("RefreshInspector",BindingFlags.Instance|BindingFlags.NonPublic)!.Invoke(view,null);
                 var detail=view.Q("construction-comparison-details");Assert.That(detail,Is.Not.Null);
                 Assert.That(detail.Query<Label>().ToList().Any(l=>l.text=="Maximum hull · 30"),Is.True);Assert.That(detail.Query<Label>().ToList().Any(l=>l.text=="Weapons · Unarmed"),Is.True);
                 Assert.That(sent,Is.Zero);
