@@ -275,7 +275,7 @@ namespace HobbyDS9.UnityReview
             bool CurrentForm()=>epoch==viewEpoch&&ReferenceEquals(owner,model);
             panel.Add(Readout("Federation · Two empires. Existing save slots remain intact."));
 #if HOBBYDS9_PB_20261113
-            panel.Add(Readout("Eight-planet Sol with its main asteroid belt. This edition uses separate saves; earlier campaigns remain with the earlier build."));
+            panel.Add(Readout("Paid reactor refinement with persistent Accept, Continue and Discard decisions. Eight-planet Sol and its main asteroid belt. This edition uses separate saves; earlier campaigns remain with the earlier build."));
 #endif
             if(campaignMenuNotice.Length>0)panel.Add(Readout(campaignMenuNotice));
             var seed=new TextField("Galaxy seed"){value=generatedCampaignSeed,maxLength=20,name="generated-campaign-seed"};
@@ -356,9 +356,9 @@ namespace HobbyDS9.UnityReview
         private string[] CampaignArchiveSlots(string profile)=>profile=="combat"?CombatPlaytestOptions.Slots():profile=="frontier"?FrontierPreviewOptions.Slots():profile=="demo"?new[]{"demo-1","demo-2","demo-3"}:profile=="fleet"?PlayableFleetOptions.Slots():GeneratedCampaignOptions.Slots();
         private static string SlotLabel(string slot)=>(slot.StartsWith("combat-",StringComparison.Ordinal)?"Combat playtest":"Campaign")+" · Slot "+slot.Substring(slot.Length-1);
 #if HOBBYDS9_PB_20261113
-        private const string CycleArchiveDisplayName=AuthoredSolPlaytestOptions.DisplayName;
-        private const string NewCampaignLabel="New "+AuthoredSolPlaytestOptions.DisplayName;
-        private const string StartCampaignLabel="Start "+AuthoredSolPlaytestOptions.DisplayName;
+        private const string CycleArchiveDisplayName=EngineeringRefinementPlaytestOptions.DisplayName;
+        private const string NewCampaignLabel="New refinement campaign";
+        private const string StartCampaignLabel="Start refinement campaign";
 #else
         private const string CycleArchiveDisplayName="Generated campaign";
         private const string NewCampaignLabel="New campaign";

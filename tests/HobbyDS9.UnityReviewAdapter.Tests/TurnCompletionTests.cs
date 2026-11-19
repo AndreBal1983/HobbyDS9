@@ -71,6 +71,23 @@ public sealed class TurnCompletionTests
         Assert.Single(facts);Assert.Equal("Advanced Starship Engineering completed",facts[0].Title);
         Assert.Contains("not offered",facts[0].Detail);Assert.DoesNotContain("Unlocks Advanced Scout",facts[0].Detail);
     }
+    [Fact] public void PaidRefinementWorkDoesNotDuplicateTheDedicatedPendingOutcomeReview()
+    {
+        const string work="engineering.refinement.work.human.1";
+        var definitions=new Dictionary<string,ReviewEngineeringNoticeDefinition>(Definitions)
+        { [work]=new("Paid experiment","Work finished; outcome still pending.") };
+        var receipts=new[]{Receipt("engineering-mature",application:work,amount:24000),
+            Receipt("engineering-mature",application:"engineering.compact-reactor",amount:24000),
+            Receipt("science-level",discipline:ScienceDiscipline.Energy,amount:2)};
+        foreach(var catalogue in new[]{definitions,Definitions})
+        {
+            var facts=ReviewCompletionFacts.Research(receipts,"human",2,catalogue,true);
+            Assert.Equal(2,facts.Count);
+            Assert.DoesNotContain(facts,n=>n.EngineeringProjectId==work);
+            Assert.Contains(facts,n=>n.Title=="Compact Reactor completed");
+            Assert.Contains(facts,n=>n.Discipline==ScienceDiscipline.Energy);
+        }
+    }
     [Fact] public void ExistingStructureReceiptsFilterOwnerWeekAndQueueIdentity()
     {
         var own=new ActivityStructureReceiptDto{QueueItemId="q.2",OwnerId="human",ColonyId="c",DefinitionId="lab",CompletedTurn=4};

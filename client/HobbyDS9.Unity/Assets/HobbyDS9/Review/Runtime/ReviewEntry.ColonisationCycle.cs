@@ -13,7 +13,7 @@ namespace HobbyDS9.UnityReview
             if(generatedCampaignTestDirectory!=null)return generatedCampaignTestDirectory;
 #endif
 #if HOBBYDS9_PB_20261113
-            return Path.Combine(UnityEngine.Application.persistentDataPath,ReviewColonisationCycleSlotStore.Namespace+AuthoredSolPlaytestOptions.SaveDirectorySuffix);
+            return Path.Combine(UnityEngine.Application.persistentDataPath,ReviewColonisationCycleSlotStore.Namespace+EngineeringRefinementPlaytestOptions.SaveDirectorySuffix);
 #else
             return Path.Combine(UnityEngine.Application.persistentDataPath,ReviewColonisationCycleSlotStore.Namespace);
 #endif
@@ -23,9 +23,9 @@ namespace HobbyDS9.UnityReview
             var fold=new Foldout{text="Campaign",value=true,name="colonisation-cycle-campaign-menu"};parent.Add(fold);
             fold.Add(Readout("Found and grow your colonies. Rival empires can prepare successive resource-limited frontier expeditions while their colonies remain viable, using real ships, settlers and supplies. Provisional playtest; earlier campaigns keep their separate saves."));
 #if HOBBYDS9_PB_20261113
-            fold.Add(Readout("Campaign edition: 3–6 generated planets and eight-planet Sol with its main asteroid belt. Start a new campaign; Continue uses this edition's separate saves. Earlier campaign saves remain with the earlier build."));
+            fold.Add(Readout("Refinement campaign: paid reactor development and persistent outcome decisions, with eight-planet Sol and its main asteroid belt. This edition uses separate saves; earlier campaigns remain with the earlier build."));
 #endif
-            var start=AddButton(fold,"New Campaign",()=>{void Start()=>RunGeneratedCampaignOperation(null,colonisationCycle:true);
+            var start=AddButton(fold,NewCampaignLabel,()=>{void Start()=>RunGeneratedCampaignOperation(null,colonisationCycle:true);
                 if(demoStarted||model!.HasLocalEdits)Confirm("Start a new continuous expansion campaign? Unsaved progress is replaced only after validation. Earlier saves stay in their own slots.",Start);else Start();});start.name="colonisation-cycle-campaign-start";
             ReviewColonisationCycleSlotStore? store = null;
             try { store = new ReviewColonisationCycleSlotStore(ColonisationCycleCampaignDirectory(), new ReviewNewtonsoftCodec()); }

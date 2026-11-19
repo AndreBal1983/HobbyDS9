@@ -4,6 +4,10 @@ Status checked 6 November 2026. The newest scoped human-playtest handover is the
 
 This is an implementation and evidence map, not approval of the full design roadmap. Source review, compilation, an executable build and a focused native check establish different things. Later source or documentation commits do not change an executable's identity or expand an earlier test's scope.
 
+## 19 November refinement source receiving
+
+The separate GUI receiving branch now combines Backend `3d0dcaa` with the [targeted-refinement UI](playtest-engineering-refinement-20261118-gui.md), explicit Refinement campaign New/Continue labels and a new isolated Format17 save store. It preserves authored Sol and its real main belt. Portable/source evidence and the native gates are recorded in that receiving note and the [Backend edition contract](engineering-refinement-v1.md). This source increment does not replace any historical executable identity or claim a newly accepted playable package. Refits and general supply remain pending.
+
 ## 6 November Campaign consolidation
 
 The current build brings together the implemented Campaign controls and reviewed usability corrections: direct current-Cycle toolbar actions and Research Applies, exact-world navigation, streamed Empire queue facts, readable Empire handoff labels, accepted-versus-unsent Science wording, pre-campaign settings headers and synchronized Display mode-action captions. Its latest runtime increment reuses the existing navigation endpoint index for neighbor lookup while preserving ordinal ordering and fresh read-only results. It retains existing costs, knowledge, validation, save formats, campaign editions and construction rules below. This is not the complete strategic-AI, exploration, ship-design or conquest roadmap, and no measured speedup is claimed.

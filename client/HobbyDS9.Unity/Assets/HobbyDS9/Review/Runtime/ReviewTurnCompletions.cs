@@ -46,6 +46,10 @@ namespace HobbyDS9.UnityReview
                 var key="research/"+resolvedTurn+"/"+receipt.Category+"/"+receipt.Discipline+"/"+receipt.IntervalStartLevel+"/"+receipt.BreakthroughOrdinal+"/"+application+"/"+Number(receipt.Amount);
                 if(receipt.Category=="engineering-mature")
                 {
+                    // Paid refinement work resolves into a separately persisted
+                    // pending outcome. Its dedicated ProjectId review owns the
+                    // notice; a work receipt does not mean equipment matured.
+                    if(application.StartsWith("engineering.refinement.work.",StringComparison.Ordinal))continue;
                     definitions.TryGetValue(application,out var definition);
                     var name=definition?.Name??"Engineering project";
                     var effect=scoutExcluded&&application=="engineering.advanced-starship-engineering"

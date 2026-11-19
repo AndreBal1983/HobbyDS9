@@ -47,11 +47,14 @@ namespace HobbyDS9.UnityReview.Tests
             yield return Settle();
             var original=entry.Presentation!.Model.Current.Frame;
 #if HOBBYDS9_PB_20261113
-            Assert.That(root.Q<Button>("campaign-menu-new").text,Is.EqualTo("New Sol belt campaign"));
-            Assert.That(root.Q<Button>("campaign-menu-continue").text,Does.StartWith("Continue · Sol belt campaign · "),"Archive discovery must retain the edition name.");
+            Assert.That(root.Q<Button>("campaign-menu-new").text,Is.EqualTo("New refinement campaign"));
+            Assert.That(root.Q<Button>("campaign-menu-continue").text,Does.StartWith("Continue · Refinement campaign · "),"Archive discovery must retain the edition name.");
             Click("campaign-menu-load");yield return Settle();
-            Assert.That(root.Query<Label>().ToList().Any(l=>l.text=="Archive: Sol belt campaign"),Is.True);
-            Assert.That(root.Query<DropdownField>().ToList().Single(d=>d.label=="Archive").value,Is.EqualTo("Sol belt campaign"));
+            Assert.That(root.Query<Label>().ToList().Any(l=>l.text=="Archive: Refinement campaign"),Is.True);
+            Assert.That(root.Query<DropdownField>().ToList().Single(d=>d.label=="Archive").value,Is.EqualTo("Refinement campaign"));
+            var refinementPath=(string)typeof(ReviewEntry).GetMethod("CampaignArchivePath",BindingFlags.NonPublic|BindingFlags.Instance)!
+                .Invoke(entry,new object[]{"cycle","generated-1"})!;
+            Assert.That(Path.GetFileName(Path.GetDirectoryName(refinementPath)),Is.EqualTo(ReviewColonisationCycleSlotStore.Namespace+EngineeringRefinementPlaytestOptions.SaveDirectorySuffix));
             var archiveBack=root.Query<Button>().ToList().Single(b=>b.text=="Back");
             using(var e=NavigationSubmitEvent.GetPooled()){e.target=archiveBack;archiveBack.SendEvent(e);}
             yield return Settle();
@@ -60,8 +63,8 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(root.Q("generated-campaign-seed"),Is.Not.Null);
             Assert.That(root.Q<Button>("colonisation-cycle-campaign-start"),Is.Not.Null);
 #if HOBBYDS9_PB_20261113
-            Assert.That(root.Query<Label>().ToList().Any(l=>l.text=="New Sol belt campaign"),Is.True);
-            Assert.That(root.Q<Button>("colonisation-cycle-campaign-start").text,Is.EqualTo("Start Sol belt campaign"));
+            Assert.That(root.Query<Label>().ToList().Any(l=>l.text=="New refinement campaign"),Is.True);
+            Assert.That(root.Q<Button>("colonisation-cycle-campaign-start").text,Is.EqualTo("Start refinement campaign"));
             Assert.That(root.Query<Label>().ToList().Any(l=>l.text.Contains("This edition uses separate saves")),Is.True);
 #endif
             var back=root.Query<Button>().ToList().Single(b=>b.text=="Back");
@@ -119,8 +122,8 @@ namespace HobbyDS9.UnityReview.Tests
                 Assert.That(root.Q<Button>("campaign-menu-settings").enabledInHierarchy,Is.True);
                 Assert.That(root.Q<Button>("campaign-menu-continue").enabledInHierarchy,Is.False);
 #if HOBBYDS9_PB_20261113
-                Assert.That(root.Q<Button>("campaign-menu-continue").text,Is.EqualTo("Continue · Sol belt campaign · Checking saved slots…"));
-                Assert.That(root.Q<Button>("campaign-menu-new").text,Is.EqualTo("New Sol belt campaign"));
+                Assert.That(root.Q<Button>("campaign-menu-continue").text,Is.EqualTo("Continue · Refinement campaign · Checking saved slots…"));
+                Assert.That(root.Q<Button>("campaign-menu-new").text,Is.EqualTo("New refinement campaign"));
 #endif
                 Click("campaign-menu-new");yield return null;Assert.That(root.Q("generated-campaign-seed"),Is.Not.Null);
                 probe.SetValue(entry,null);

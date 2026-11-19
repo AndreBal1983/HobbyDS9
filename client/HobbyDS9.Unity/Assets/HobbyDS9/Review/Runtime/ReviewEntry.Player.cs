@@ -59,6 +59,7 @@ namespace HobbyDS9.UnityReview
             var researchOwner=model;
             player=new ReviewPlayerView(model,workspace,(p,t,a)=>AddButton(p,t,a),Do,Confirm,Navigate,(fleet,node,ship)=>{workspace.SelectedFleet=fleet;central.SelectStrategicFleet(fleet,node,ship);Navigate(ReviewWorkspacePage.FleetOrders);},(b,a)=>BindButton(b,a),ConfirmConsequence,ShowEngineeringDialog,
                 action=>{if(ReferenceEquals(model,researchOwner))DoResearchAllocation(action);else researchOwner.CancelResearchAllocations();});
+            player.RenderGeneratedEngineeringRefinement=DrawEngineeringRefinement;
             playerFooter=new VisualElement{name="player-footer"};playerFooter.AddToClassList("console-footer");root.Add(playerFooter);
         }
         private static string OwnerName(string actor)=>actor=="civ.federation"?"Federation":actor=="civ.cardassian"?"Cardassian Union":actor;
@@ -104,7 +105,7 @@ namespace HobbyDS9.UnityReview
         }
         private void DrawPlayer()
         {
-            RestoreStreamedBusy();RestoreColonisationBusy();if(routinePendingToken!=null)return;
+            RestoreStreamedBusy();RestoreColonisationBusy();RestoreEngineeringRefinementBusy();if(routinePendingToken!=null)return;
             var frame=model!.Current.Frame;playerTitle!.text=PlayerProfile&&workspace!.Page==ReviewWorkspacePage.Tools?"Help & credits":Title(workspace!.Page);
             content!.EnableInClassList("review-central",!demoLanding&&workspace.Page==ReviewWorkspacePage.Combat);
             content.EnableInClassList("map-workspace",!demoLanding&&workspace.Page==ReviewWorkspacePage.Map&&!frontierCommissionOpen&&campaignSettingsReturn==null);
@@ -132,6 +133,7 @@ namespace HobbyDS9.UnityReview
             DrawCampaignSettingsReturn();
             DrawPlayerActions();
             ScheduleTurnCompletionDialog();
+            ScheduleEngineeringOutcomeDialog();
         }
         private string PlayerMessage()
         {

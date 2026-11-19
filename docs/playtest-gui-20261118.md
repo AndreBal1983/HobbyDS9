@@ -1,5 +1,7 @@
 # November18 GUI receiving checkpoint
 
+**19 November follow-up:** the real Format17 Backend and [generated Engineering UI](playtest-engineering-refinement-20261118-gui.md) are now received in source, including new-edition activation and the separate save store. The November18 pending statements below describe that earlier checkpoint; they do not supersede the dated follow-up. Combined player/native acceptance remains open.
+
 Source batch over exact combined playable baseline `af0273c2ab89ff199e8e7dfb57d8a69dfbb896c8`. Owner's new brief governs the changes below. The inherited main-only push /PR CI coverage and prior QA corrections are preserved. Source implementation is distinct from Editor/native/visual acceptance; QA owns the desktop and playable build.
 
 ## Implemented presentation and navigation
