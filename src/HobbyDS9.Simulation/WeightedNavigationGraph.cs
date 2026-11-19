@@ -32,6 +32,18 @@ namespace HobbyDS9.Simulation
                 a.Add(edge.EndpointB,edge);b.Add(edge.EndpointA,edge);
             }
         }
+        // Refinement forks own changing equipment definitions but share privately owned,
+        // immutable topology. Reference checks certify that no topology was substituted.
+        internal WeightedNavigationGraph BindSameTopology(DefinitionCatalogDto definitions)
+        {
+            if(!ReferenceEquals(owner.NavigationRegions,definitions.NavigationRegions)
+                ||!ReferenceEquals(owner.NavigationConnections,definitions.NavigationConnections)
+                ||!ReferenceEquals(owner.Phenomena,definitions.Phenomena))
+                throw new ArgumentException("Navigation topology identity changed.",nameof(definitions));
+            return new WeightedNavigationGraph(this,definitions);
+        }
+        private WeightedNavigationGraph(WeightedNavigationGraph source,DefinitionCatalogDto definitions)
+        {owner=definitions;nodes=source.nodes;edges=source.edges;phenomena=source.phenomena;endpointEdges=source.endpointEdges;Regions=source.Regions;Connections=source.Connections;}
         public string? NodeForSystem(string system)=>Regions.SingleOrDefault(n=>n.AssociatedSystemId==system)?.NodeId;
         public string? SystemForNode(string node)=>nodes.TryGetValue(node,out var region)?region.AssociatedSystemId:null;
         public IReadOnlyList<string> Neighbors(string node)

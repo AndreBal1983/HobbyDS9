@@ -205,6 +205,8 @@ namespace HobbyDS9.Contracts
         public ActivityProductionKind Kind {get;set;}public string DefinitionId {get;set;}="";public int BlueprintRevision {get;set;}
         public string DisplayName {get;set;}="";public string HullVersionId {get;set;}="";public ShipDesignCostDto Cost {get;set;}=new ShipDesignCostDto();
         public bool Supported {get;set;}public string Reason {get;set;}="";
+        // Projection only; null means no supported ship comparison is available.
+        public ActivityBuildComparisonDto? Comparison {get;set;}
     }
     public sealed class CampaignActivityEligibilityDto
     {

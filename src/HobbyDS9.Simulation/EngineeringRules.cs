@@ -16,6 +16,7 @@ namespace HobbyDS9.Simulation
         }
         public static CommandErrorCode Availability(ScienceEngineeringStateDto state,EngineeringApplicationDefinitionDto application,int pace)
         {
+            if(application.Kind==EngineeringProjectKind.ManagedRelease||(application.Kind==EngineeringProjectKind.TargetedRefinement&&!state.EngineeringProgress!.Any(p=>p.DefinitionId==application.DefinitionId)))return CommandErrorCode.EngineeringPrerequisiteMissing;
             if(state.MatureEngineeringApplicationDefinitionIds!.Contains(application.DefinitionId,StringComparer.Ordinal))return CommandErrorCode.EngineeringAlreadyMature;
             if(application.ScienceRequirements!.Any(r=>!ScienceSatisfied(state,r,pace)))return CommandErrorCode.EngineeringScienceRequirementMissing;
             if(application.PrerequisiteDefinitionIds!.Any(id=>!state.MatureEngineeringApplicationDefinitionIds.Contains(id,StringComparer.Ordinal)))return CommandErrorCode.EngineeringPrerequisiteMissing;

@@ -97,7 +97,7 @@ namespace HobbyDS9.Simulation
                     var supported=colonisation==null?PublishedFit(game,new BlueprintReferenceDto{BlueprintId=record.BlueprintId,Revision=record.Revision},true).IsSupportedByCompiler:ColonisationViewSupported(game,record);
                     result.BuildOptions.Add(new ActivityBuildOptionDto{Kind=ActivityProductionKind.PublishedShip,DefinitionId=record.BlueprintId,BlueprintRevision=record.Revision,
                         DisplayName=record.Fit!.DisplayName,HullVersionId=record.Fit.HullVersionId,Cost=BlueprintCopies.Copy(record.Cost!),Supported=supported,
-                        Reason=supported?"":"This class contains equipment outside the supported activity/tactical package."});
+                        Reason=supported?"":"This class contains equipment outside the supported activity/tactical package.",Comparison=ProductionComparison(game,record,supported)});
                 }
                 foreach(var structure in activities.Content.Structures!)result.BuildOptions.Add(new ActivityBuildOptionDto{Kind=ActivityProductionKind.Infrastructure,
                     DefinitionId=structure.DefinitionId,DisplayName=structure.DisplayName,Cost=BlueprintCopies.Copy(structure.Cost!),Supported=true});

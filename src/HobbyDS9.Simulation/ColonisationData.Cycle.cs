@@ -7,8 +7,19 @@ namespace HobbyDS9.Simulation
     {
         internal static string CycleHash(CampaignColonisationCyclePackageDto p)
         {
+            if(p is CampaignEngineeringRefinementPackageDto refinement)return EngineeringRefinementEditionData.Hash(refinement);
+            Require(p?.BaseGrowth?.BaseRosterV2?.BaseV1?.Support?.FormatVersion==4,"Older cycle sources require their original support v4.");
             if(p is CampaignAuthoredSolPackageDto authored)return AuthoredSolEditionData.Hash(authored);
             if(p is CampaignSystemRichnessPackageDto rich)return SystemRichnessData.Hash(rich);
+            return CycleBaseHash(p!);
+        }
+        internal static string RefinementCycleBaseHash(CampaignColonisationCyclePackageDto p)
+        {
+            Require(p?.BaseGrowth?.BaseRosterV2?.BaseV1?.Support?.FormatVersion==5,"Explicit refinement support source required.");
+            return CycleBaseHash(p!);
+        }
+        private static string CycleBaseHash(CampaignColonisationCyclePackageDto p)
+        {
             Require(p!=null&&p.GetType()==typeof(CampaignColonisationCyclePackageDto),"Unknown cycle package carrier type.");
             Require(p!=null&&p.FormatVersion==1&&p.ProfileId==CampaignColonisationCycleIdentity.PackageProfile&&p.BaseGrowth!=null
                 &&p.BaseGrowth.PackageHash==GrowthHash(p.BaseGrowth)&&p.Policy!=null&&p.Policy.Algorithm==CampaignColonisationCycleIdentity.Planner&&p.Policy.ActiveMissions==1,"Different closed cycle source.");

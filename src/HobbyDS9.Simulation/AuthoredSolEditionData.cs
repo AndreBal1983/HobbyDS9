@@ -7,13 +7,13 @@ namespace HobbyDS9.Simulation
 {
     internal static class AuthoredSolEditionData
     {
-        internal static string Hash(CampaignAuthoredSolPackageDto p)
+        internal static string Hash(CampaignAuthoredSolPackageDto p,bool refinementSource=false)
         {
             Require(p!=null&&p.FormatVersion==CampaignAuthoredSolIdentity.PackageFormat&&p.ProfileId==CampaignAuthoredSolIdentity.PackageProfile
                 &&p.BaseGrowth!=null&&p.Generation!=null&&p.Generation.GenerationVersion==CampaignAuthoredSolIdentity.Generation
                 &&p.Generation.MinimumPlanets==3&&p.Generation.MaximumPlanets==6&&p.Generation.BeltChanceBps==7500,"Different authored Sol belt package.");
             var old=new CampaignSystemRichnessPackageDto{BaseGrowth=p!.BaseGrowth,Policy=p.Policy};
-            return CampaignActivitiesData.Identity(CampaignAuthoredSolIdentity.Profile,SystemRichnessData.Hash(old),CampaignAuthoredSolIdentity.Generation,
+            return CampaignActivitiesData.Identity(CampaignAuthoredSolIdentity.Profile,SystemRichnessData.Hash(old,refinementSource),CampaignAuthoredSolIdentity.Generation,
                 AuthoredSolBeltData.Version,"sol-physical-association;inner2200;outer3200;no-mechanics;carrier16-v1");
         }
         internal static List<SystemAsteroidBeltDto> Belts(NaturalGalaxyDocumentDto map,FrozenColonisationPlanetsDto inventory)

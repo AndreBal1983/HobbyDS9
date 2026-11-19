@@ -64,4 +64,5 @@
     <None Include="../../scenarios/ds9-slice/scenario.json" Link="scenarios/ds9-slice/scenario.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../scenarios/tactical-v2-equipment-source/scenario.json" Link="scenarios/tactical-v2-equipment-source/scenario.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup><None Include="../../scenarios/sol-eight-planets-v1/scenario.json" Link="scenarios/sol-eight-planets-v1/scenario.json" CopyToOutputDirectory="PreserveNewest" /></ItemGroup>
 </Project>
