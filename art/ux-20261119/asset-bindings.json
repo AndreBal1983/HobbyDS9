@@ -1,0 +1,40 @@
+{
+  "schema": 1,
+  "baseline": "fec332ee8af4e4c28054239c73b347dd0778fa4c",
+  "existingInstallationImages": [
+    {
+      "identity": "infrastructure.fabrication-annex.v1",
+      "resource": "ConstructionCardArt/fusion",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/fusion.png",
+      "sha256": "f86c178824676203020881ce528566e55ac163fc9b456e2da2ec43d0025635ce",
+      "guid": "32d685d3f1c84060b2a544a3c9f7fdbc"
+    },
+    {
+      "identity": "infrastructure.research-laboratory.v1",
+      "resource": "ConstructionCardArt/research",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/research.png",
+      "sha256": "679d90f24ad36852497c9e50bc9552e8b5e7e971c15534e3d81246550d64c390",
+      "guid": "d2da978d50c944438fbeabc5917fed8f"
+    },
+    {
+      "identity": "infrastructure.hydroponic-extension.v1",
+      "resource": "ConstructionCardArt/hydroponics",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/hydroponics.png",
+      "sha256": "97f00aed9117836c03ab941647352e3dadde028c5d62eeea0a3ce9892da94632",
+      "guid": "5388324fa11c4ae3bbe5000b14da6a42"
+    },
+    {
+      "identity": "existing-settlement-kit",
+      "resource": "ConstructionCardArt/kit",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/kit.png",
+      "sha256": "16e5b31b7d572a6d1dd45f094cc9849d645ec2fcdb58719c29320bf8cf29197f",
+      "guid": "d26345e4f7d04f818bf03b3bd9529251"
+    }
+  ],
+  "shipRows": "Reuse original art/playtest-20261118 ship stroke as a generic vessel icon. Do not restore exploded proof thumbnails.",
+  "selectedExactHullInspector": "Existing ActivityHullCatalog.Find(exact HullVersionId) -> ShipPreviewStage.ShowActivityHull; reuse current special Galaxy resolver.",
+  "centralCreditsSource": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/ATTRIBUTION.txt",
+  "centralCreditsSourceSha256": "05ee42946ea1282882fa4e3c7396382217930420a3a29236c488934640cabd9d",
+  "newPlanetOrBeltTexturesOrMeshes": 0,
+  "newRuntimeImports": 0
+}

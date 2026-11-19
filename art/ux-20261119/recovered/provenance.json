@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "date": "2026-11-19",
+  "baseline": "fec332ee8af4e4c28054239c73b347dd0778fa4c",
+  "screenshots": [
+    {
+      "path": "recovered/portrait-owner.png",
+      "source": "C:/Users/ambal/AppData/Local/Temp/codex-clipboard-2cfe4add-9781-4b70-8ac0-1ab88bc649e5.png",
+      "sha256": "34ba1a2d0e37d7a3516273647916cd666b1b9e230ec6ac7963b3be9ed2d496da",
+      "status": "unchanged owner screenshot of baseline; rejected layout is not approval"
+    },
+    {
+      "path": "recovered/world-owner.png",
+      "source": "C:/Users/ambal/AppData/Local/Temp/codex-clipboard-fdda60df-3a58-4a3e-be90-2a109520d576.png",
+      "sha256": "5a4d79ad418c4f8a4537018cb3d4eae1aecd0b5b47ed44b436ea34d8c40168fb",
+      "status": "unchanged owner screenshot of baseline; rejected layout is not approval"
+    },
+    {
+      "path": "recovered/belt-owner.png",
+      "source": "C:/Users/ambal/AppData/Local/Temp/codex-clipboard-96be212c-0c0e-45ef-854e-ca2cb855d92b.png",
+      "sha256": "bbdef2084a74d51da735fd0625cd9a81520f1b9fe6aed413cfd9f6aacc4e24a1",
+      "status": "unchanged owner screenshot of baseline; rejected layout is not approval"
+    },
+    {
+      "path": "recovered/production-owner.png",
+      "source": "C:/Users/ambal/AppData/Local/Temp/codex-clipboard-d8a7a9b5-1b8c-4437-88e7-6a313e148208.png",
+      "sha256": "1f830fa6cd825d874c2f047679d082112384f01aab38cb00e5a352bf333d67df",
+      "status": "unchanged owner screenshot of baseline; rejected layout is not approval"
+    }
+  ]
+}

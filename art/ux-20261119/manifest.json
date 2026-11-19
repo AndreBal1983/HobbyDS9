@@ -1,0 +1,120 @@
+{
+  "schema": 1,
+  "version": "ux-reference-v1-20261119",
+  "status": "proposed art reference; not runtime/native acceptance",
+  "baseline": "fec332ee8af4e4c28054239c73b347dd0778fa4c",
+  "newRuntimeTextures": 0,
+  "newRuntimeModels": 0,
+  "files": [
+    {
+      "path": "asset-bindings.json",
+      "bytes": 2112,
+      "sha256": "17b02de06eb5bb902d4530078dcc7305396cbd9b622b7348c741c7e141ffaed4"
+    },
+    {
+      "path": "central-credits.txt",
+      "bytes": 580,
+      "sha256": "1b7bac3959ee4e86cf226fcfb26e3357bb7d8256289e638c2fada802cfd2aa15"
+    },
+    {
+      "path": "compact-reference.html",
+      "bytes": 23175,
+      "sha256": "ea87388052c748d197e66774439245d9d0564c94d2f5b862e809ad38ab1c0019"
+    },
+    {
+      "path": "credits-1280.png",
+      "bytes": 59609,
+      "sha256": "f7e47f75022a572322d89f4f90e9ad3d7b6450c20596f16cbdb4633e6bb34f34"
+    },
+    {
+      "path": "credits-1920.png",
+      "bytes": 65361,
+      "sha256": "846b2c7438c4d82f0a6de0900df9954954efbd37b09b0555da2f0ecff163c52c"
+    },
+    {
+      "path": "icons/asteroid-body.svg",
+      "bytes": 376,
+      "sha256": "edcb292c39ecdf596466564609de311b172c2d5a52e125f4b30b67ccc001bcba"
+    },
+    {
+      "path": "icons/food.svg",
+      "bytes": 327,
+      "sha256": "af47e6eb0ae57d261f9eb4dd8cb1ec2215245bb4609b7c16fdcf6cb94bea488e"
+    },
+    {
+      "path": "icons/population.svg",
+      "bytes": 381,
+      "sha256": "bd6c78562331798c965d8c90239eac6ef38e44589bb09bf92a490cc56063a878"
+    },
+    {
+      "path": "icons/queue.svg",
+      "bytes": 389,
+      "sha256": "476e9204c817a3e9777c1ea7bf461b1854d97f472ee621b1eee92034bae279f5"
+    },
+    {
+      "path": "production-1280.png",
+      "bytes": 92964,
+      "sha256": "1e2c6d88f0cd7287b494baf2329c3add8d17ab61f674e99ed185be6ed6b40461"
+    },
+    {
+      "path": "production-1920.png",
+      "bytes": 105423,
+      "sha256": "4f15605df6f1d40d1672227cc16f25a8823c5447dfd4fede7ae6663c9c9264ea"
+    },
+    {
+      "path": "README.md",
+      "bytes": 11073,
+      "sha256": "e20ab8d7b6f2a02641023acd9e7b8c20ebb722fe95894ae8ea6478904d98e529"
+    },
+    {
+      "path": "recovered/belt-owner.png",
+      "bytes": 174050,
+      "sha256": "bbdef2084a74d51da735fd0625cd9a81520f1b9fe6aed413cfd9f6aacc4e24a1"
+    },
+    {
+      "path": "recovered/portrait-owner.png",
+      "bytes": 81044,
+      "sha256": "34ba1a2d0e37d7a3516273647916cd666b1b9e230ec6ac7963b3be9ed2d496da"
+    },
+    {
+      "path": "recovered/production-owner.png",
+      "bytes": 115430,
+      "sha256": "1f830fa6cd825d874c2f047679d082112384f01aab38cb00e5a352bf333d67df"
+    },
+    {
+      "path": "recovered/provenance.json",
+      "bytes": 1490,
+      "sha256": "29e7af7b1676b979b727149292a83ce2801736a9607ea0a35e5e9acfdb119e68"
+    },
+    {
+      "path": "recovered/world-owner.png",
+      "bytes": 63615,
+      "sha256": "5a4d79ad418c4f8a4537018cb3d4eae1aecd0b5b47ed44b436ea34d8c40168fb"
+    },
+    {
+      "path": "reference-metrics.json",
+      "bytes": 2571,
+      "sha256": "305d3de70c7164b51014388aaef96f72d5d4549ad1bcf779c2b401aadb958fbb"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 453,
+      "sha256": "a9848699bb37ff5e497d76347652f9166b8c77d9daee7edf9d3910dea18903cc"
+    },
+    {
+      "path": "world-1280.png",
+      "bytes": 118989,
+      "sha256": "c3c194f4174e0dd4b8274a805d5ae63e5447cda3c654e25a823623d49fef942f"
+    },
+    {
+      "path": "world-1920.png",
+      "bytes": 136831,
+      "sha256": "ad6456709aabdfbb4afb7e138acf81ef2acb77b9389dff871b33fea9be3a4a30"
+    },
+    {
+      "path": "world-icon-strokes.json",
+      "bytes": 2250,
+      "sha256": "68cfe1ffebd4f08205be83303ad67313ca3fa532acfcf0576dca1bc5c83572a8"
+    }
+  ]
+}
