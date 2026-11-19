@@ -11,7 +11,7 @@ namespace HobbyDS9.Simulation
             =>LoadColonisationCore(package,root,null);
         private static CampaignTacticalReviewSession LoadColonisationCore(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster,ExpansionSource? expansionSource=null,ColonisationReplayTiming? timing=null)
             =>LoadColonisationCoreWithVerifiedExport(package,root,roster,out _,expansionSource,timing);
-        private static CampaignTacticalReviewSession LoadColonisationCoreWithVerifiedExport(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster,out CampaignColonisationSaveDto verifiedBase,ExpansionSource? expansionSource=null,ColonisationReplayTiming? timing=null)
+        private static CampaignTacticalReviewSession LoadColonisationCoreWithVerifiedExport(CampaignColonisationPackageDto package,CampaignColonisationSaveDto root,ColonisationRosterSource? roster,out CampaignColonisationSaveDto verifiedBase,ExpansionSource? expansionSource=null,ColonisationReplayTiming? timing=null,EngineeringRefinementStateDto? refinementState=null)
         {
             timing?.Begin(ColonisationReplayPhase.CorePreflight);
             Require(package!=null&&package.PackageHash==ColonisationData.PackageHash(package),"Different approved colonisation package.");
@@ -32,8 +32,19 @@ namespace HobbyDS9.Simulation
             Require(root.PackageHash==replay.playableHash&&root.SupportHash==replay.published!.SupportHash,"Different frozen colonisation source identity.");
             timing?.End(ColonisationReplayPhase.InitialState);
             timing?.Begin(ColonisationReplayPhase.Journal);
-            foreach(var op in root.Journal!)
+            var refinementIndex=0;
+            void RefinementsAt(int offset)
             {
+                if(refinementState==null)return;
+                while(refinementIndex<refinementState.Operations!.Count&&refinementState.Operations[refinementIndex].BaseJournalOffset==offset)
+                {
+                    var operation=refinementState.Operations[refinementIndex++];
+                    Require(replay.SubmitEngineeringRefinement(operation.Command!).Accepted,"Illegal or reordered refinement operation.");
+                }
+            }
+            for(var journalIndex=0;journalIndex<root.Journal!.Count;journalIndex++)
+            {
+                RefinementsAt(journalIndex);var op=root.Journal[journalIndex];
                 var kind=timing==null?default:ColonisationReplayTiming.Kind(op);
                 timing?.Count(kind,0);
                 Require(op!=null&&(op.Colonisation==null)!=(op.Existing==null),"Closed colonisation operation required.");
@@ -44,6 +55,8 @@ namespace HobbyDS9.Simulation
                 Require(accepted&&FrontierSame(op,replay.colonisation!.Journal.Last()),"Illegal or reordered colonisation journal operation.");
                 timing?.Count(kind,3);
             }
+            RefinementsAt(root.Journal.Count);
+            Require(refinementState==null||refinementIndex==refinementState.Operations!.Count,"Unreplayed refinement operations.");
             timing?.End(ColonisationReplayPhase.Journal);
             timing?.Begin(ColonisationReplayPhase.CoreEquality);
             var exported=replay.ExportColonisationCore();

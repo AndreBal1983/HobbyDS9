@@ -141,10 +141,12 @@ namespace HobbyDS9.Simulation
             if(colonisationPackage!=null)session.WarmColonisationViews(session.state.Campaign.GameState);
             if(expansionSource!=null)session.expansion=new ExpansionContext(expansionSource,session.state.Campaign.GameState.Civilizations!
                 .Where(c=>c.ControllerKind==ControllerKind.AI).OrderBy(c=>c.CivilizationId,StringComparer.Ordinal).Select(c=>new ColonisationAiPlanDto{ActorId=c.CivilizationId}));
-            if(expansionSource?.Richness!=null)session.expansion!.Belts=SystemRichnessData.Belts(map,expansionSource.Richness);
+            if(expansionSource?.AuthoredSol==true)session.expansion!.Belts=AuthoredSolEditionData.Belts(map,frozenPlanets!);
+            else if(expansionSource?.Richness!=null)session.expansion!.Belts=SystemRichnessData.Belts(map,expansionSource.Richness);
             if(session.RepeatEnabled)session.expansion!.RepeatGoals=session.expansion.Plans.Select(p=>new ColonisationRepeatGoalDto{ActorId=p.ActorId,
                 Assignment=new ColonisationAiPlanDto{ActorId=p.ActorId,GoalId=CampaignColonisationRepeatIdentity.Goal}}).ToList();
             if(session.CycleEnabled)session.expansion!.CycleActors=session.expansion.Plans.Select(p=>new ColonisationCycleActorDto{ActorId=p.ActorId}).ToList();
+            if(expansionSource?.Refinement==true)session.refinement=new EngineeringRefinementStateDto();
             if(expansionSource!=null)session.ValidateActivityState();
             return session;
         }

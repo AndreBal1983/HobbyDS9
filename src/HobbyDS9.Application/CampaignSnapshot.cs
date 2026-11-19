@@ -71,7 +71,7 @@ namespace HobbyDS9.Application
                 .Select(d => new NamedDefinitionSnapshot(d.DefinitionId, d.DisplayName)).ToList().AsReadOnly();
             StarSystems = definitions.StarSystems!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal)
                 .Select(d => new NamedDefinitionSnapshot(d.DefinitionId, d.DisplayName)).ToList().AsReadOnly();
-            Engineering = definitions.EngineeringApplications!.OrderBy(d => d.DefinitionId, StringComparer.Ordinal)
+            Engineering = definitions.EngineeringApplications!.Where(d=>d.Kind<EngineeringProjectKind.TargetedRefinement).OrderBy(d => d.DefinitionId, StringComparer.Ordinal)
                 .Select(d => new EngineeringDefinitionSnapshot(d,definitions)).ToList().AsReadOnly();
         }
     }

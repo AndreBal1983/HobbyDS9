@@ -11,9 +11,9 @@ namespace HobbyDS9.Simulation
     public sealed partial class CampaignTacticalReviewSession
     {
         private readonly object gate = new object();
-        private readonly DefinitionCatalogDto definitions;
+        private DefinitionCatalogDto definitions;
         // Fixed topology belongs to these privately copied definitions; dynamic state is never retained here.
-        private readonly WeightedNavigationGraph? physicalNavigation;
+        private WeightedNavigationGraph? physicalNavigation;
         private readonly SaveCompatibility compatibility;
         private readonly TacticalRulesV2Dto rules;
         private readonly List<CampaignTacticalCloakSourceDto> cloak;
@@ -168,6 +168,9 @@ namespace HobbyDS9.Simulation
                 if (command != null && state.AcceptedRoundCommands.Contains(command.CommandId, StringComparer.Ordinal)) return Result(CampaignTacticalError.DuplicateCommand);
                 if (command != null && (command.Kind == CommandKind.EnqueueProduction || command.Kind == CommandKind.EnqueueBlueprintConstruction) && !AdmittedConstruction(command))
                     return Result(CampaignTacticalError.UnsupportedSource); // no authored-v2 construction/provisioning contract.
+                if(refinement!=null&&command?.Kind==CommandKind.SetEngineeringTarget&&command.SetEngineeringTarget?.TargetDefinitionId!=null
+                    &&(definitions.EngineeringApplications!.Any(a=>a.DefinitionId==command.SetEngineeringTarget.TargetDefinitionId&&a.Kind>=EngineeringProjectKind.TargetedRefinement)
+                    ||refinement.Projects!.Any(p=>p.ActorId==command.ActorCivilizationId&&p.Stage==EngineeringRefinementStage.Pending)))return Result(CampaignTacticalError.InvalidOrder);
                 var session = Legacy(state); var result = session.SubmitCommand(command);
                 if (!result.Accepted)
                     return Result(result.ErrorCode == CommandErrorCode.StaleTurn ? CampaignTacticalError.StaleTurn

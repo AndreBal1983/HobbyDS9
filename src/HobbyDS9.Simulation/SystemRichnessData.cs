@@ -11,11 +11,11 @@ namespace HobbyDS9.Simulation
         internal static SystemRichnessPolicyDto Copy(SystemRichnessPolicyDto p)=>new SystemRichnessPolicyDto{GenerationVersion=p.GenerationVersion,MinimumPlanets=p.MinimumPlanets,MaximumPlanets=p.MaximumPlanets,BeltChanceBps=p.BeltChanceBps};
         internal static void Validate(SystemRichnessPolicyDto? p)
             =>Require(p!=null&&p.GenerationVersion==CampaignSystemRichnessIdentity.Generation&&p.MinimumPlanets==3&&p.MaximumPlanets==6&&p.BeltChanceBps==7500,"Unsupported provisional system richness recipe.");
-        internal static string Hash(CampaignSystemRichnessPackageDto p)
+        internal static string Hash(CampaignSystemRichnessPackageDto p,bool refinementSource=false)
         {
             Require(p.FormatVersion==2&&p.ProfileId==CampaignSystemRichnessIdentity.PackageProfile&&p.BaseGrowth!=null,"Different richness package.");Validate(p.Generation);
             var old=new CampaignColonisationCyclePackageDto{BaseGrowth=p.BaseGrowth,Policy=p.Policy};
-            return CampaignActivitiesData.Identity(CampaignSystemRichnessIdentity.Profile,ColonisationData.CycleHash(old),CampaignSystemRichnessIdentity.Generation,
+            return CampaignActivitiesData.Identity(CampaignSystemRichnessIdentity.Profile,(refinementSource?ColonisationData.RefinementCycleBaseHash(old):ColonisationData.CycleHash(old)),CampaignSystemRichnessIdentity.Generation,
                 "uniform-count=3,4,5,6;preserve-starters;existing-environments;belts=7500bps;inner=2200..4199;thickness=300..999;max=6040,1000;carrier15-v1");
         }
         internal static string Rank(string seed,string system,string domain)

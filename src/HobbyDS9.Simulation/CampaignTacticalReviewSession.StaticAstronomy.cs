@@ -35,7 +35,8 @@ namespace HobbyDS9.Simulation
                 var known = game.NavigationKnowledge!.Single(k => k.CivilizationId == actor).Nodes!;
                 var systems=expansion?.Source.Richness==null?new System.Collections.Generic.HashSet<string>():ColonisationSystemsForActor(game,actor);
                 return new CampaignStaticAstronomySnapshot(actor, generatedMap!.ContentHash, game.TurnNumber, game.StateRevision, astronomyIndex.VisibleKnown(known),
-                    expansion?.Source.Richness==null?null:expansion.Belts.Where(b=>systems.Contains(b.SystemId)));
+                    expansion?.Source.Richness==null?null:expansion.Belts.Where(b=>systems.Contains(b.SystemId)),
+                    expansion?.Source.Richness==null?null:expansion.Source.AuthoredSol?CampaignAuthoredSolIdentity.Generation:CampaignSystemRichnessIdentity.Generation);
             }
         }
     }

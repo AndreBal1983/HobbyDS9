@@ -97,7 +97,7 @@ namespace HobbyDS9.Simulation
                 FrontierOperationKind.Finalize=>payloadFree&&x.ActorId==null&&x.CommandId==null&&x.FleetId==null&&x.Enabled==null&&x.Turn.HasValue&&x.Revision.HasValue,_=>false};
             if(!matches)Fail("Malformed closed inherited operation.");
         }
-        private sealed class Counter
+        private sealed partial class Counter
         {
             private long remainingVisits,remainingBytes;
             private readonly ColonisationSourceEdition edition;
