@@ -125,7 +125,8 @@ namespace HobbyDS9.UnityReview.Tests
         }
         private static IEnumerator GrowthHumanCapture(GrowthHumanReceivingState t,UIDocument doc,Vector2Int size,string filename,string hydroId)
         {
-            var s=t.Case;var selection=ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>());
+            var s=t.Case;yield return ColonyClick(s,doc,"colonisation-installation-inspect-"+ColonyBuildIndex(ColonyModel(s),hydroId));
+            var selection=ColonySelection(doc.rootVisualElement.Q<ReviewColonisationPanel>());
             var oldTarget=doc.panelSettings.targetTexture;var oldWidth=doc.rootVisualElement.style.width;var oldHeight=doc.rootVisualElement.style.height;
             var active=RenderTexture.active;var target=new RenderTexture(size.x,size.y,24,RenderTextureFormat.ARGB32);Texture2D? pixels=null;
             try
@@ -134,9 +135,9 @@ namespace HobbyDS9.UnityReview.Tests
                 yield return null;yield return null;yield return null;
                 var panel=doc.rootVisualElement.Q<ReviewColonisationPanel>();Assert.That(panel,Is.Not.Null);
                 var guide=panel.Q<Foldout>("colonisation-preparation-guide");Assert.That(guide,Is.Not.Null);guide.value=size.x==1280;yield return null;yield return null;
-                var outer=panel.Q<ScrollView>("colonisation-scroll");var catalogue=panel.Q<ScrollView>("colonisation-catalogue");
+                var outer=panel.Q<ScrollView>("colonisation-scroll");
                 var effects=panel.Q<Label>("colonisation-building-effects-"+hydroId);Assert.That(effects,Is.Not.Null);
-                catalogue.ScrollTo(effects);outer.ScrollTo(size.x==1280?(VisualElement)guide:panel.Q("colonisation-food-balance"));yield return null;yield return null;
+                panel.Q<ScrollView>("construction-selected-hull").ScrollTo(effects);outer.ScrollTo(size.x==1280?(VisualElement)guide:panel.Q("colonisation-food-balance"));yield return null;yield return null;
                 RenderTexture.active=target;pixels=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);pixels.ReadPixels(new Rect(0,0,size.x,size.y),0,0);pixels.Apply();
                 File.WriteAllBytes(Path.Combine(CampaignOutput(),filename),pixels.EncodeToPNG()); // Actual intended image precedes geometry assertions.
                 File.WriteAllText(Path.Combine(CampaignOutput(),filename.Replace(".png",".layout.json")),JsonConvert.SerializeObject(new{
@@ -290,9 +291,9 @@ namespace HobbyDS9.UnityReview.Tests
                 var escort=options.Single(x=>x.Supported&&x.HullVersionId=="hull.defiant-combat.v1"&&x.BlueprintRevision==1);
                 var hydro=options.Where(x=>x.Kind==ActivityProductionKind.Infrastructure).Join(own.BuildingBenefits,b=>b.DefinitionId,b=>b.DefinitionId,(o,b)=>new{o,b}).Where(x=>x.b.FoodOutput>0).OrderBy(x=>x.o.Cost.Industry).ThenBy(x=>x.o.DefinitionId,StringComparer.Ordinal).First().o;
                 var requiredFoodInvestment=yard.LocalFoodBalance<0;var initialCredits=model.ColonisationActivities().Credits;
-                yield return ColonyWorld(s,doc,yard.Id);if(yard.LocalFoodBalance<0)yield return ColonyClick(s,doc,doc.rootVisualElement.Query<Button>().ToList().Single(b=>b.text=="+ Add "+hydro.DisplayName).name);
-                yield return ColonyClick(s,doc,doc.rootVisualElement.Query<Button>().ToList().Single(b=>b.text=="+ Add "+transport.DisplayName).name);
-                yield return ColonyWorld(s,doc,home.Id);yield return ColonyClick(s,doc,"colonisation-build-kit");yield return ColonyClick(s,doc,doc.rootVisualElement.Query<Button>().ToList().Single(b=>b.text=="+ Add "+escort.DisplayName).name);
+                yield return ColonyWorld(s,doc,yard.Id);if(yard.LocalFoodBalance<0)yield return ColonyClick(s,doc,"colonisation-build-"+ColonyBuildIndex(ColonyModel(s),hydro.DefinitionId));
+                yield return ColonyClick(s,doc,"colonisation-build-"+ColonyBuildIndex(ColonyModel(s),transport.DefinitionId));
+                yield return ColonyWorld(s,doc,home.Id);yield return ColonyClick(s,doc,"colonisation-build-kit");yield return ColonyClick(s,doc,"colonisation-build-"+ColonyBuildIndex(ColonyModel(s),escort.DefinitionId));
                 Assert.That(ColonyModel(s).ColonisationActivities().Credits,Is.EqualTo(initialCredits),"no upfront normal credits for any of the real streamed orders");
                 var capturedOrders=ColonyModel(s).Colonisation().Production.ToArray();var orders=capturedOrders.Select(x=>x.Id).ToArray();Assert.That(orders.Length,Is.EqualTo(yard.LocalFoodBalance<0?4:3));bool consumed=false;
                 for(int week=0;week<32&&ColonyModel(s).Colonisation().Production.Any(q=>orders.Contains(q.Id));week++)

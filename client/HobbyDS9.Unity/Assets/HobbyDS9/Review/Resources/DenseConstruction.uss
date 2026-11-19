@@ -1,0 +1,17 @@
+/* Actual generated-campaign Construction route. Column dimensions live with its row factory. */
+.dense-construction-ledger { min-width: 0; flex-shrink: 0; }
+.dense-construction-row { background-color: #111f2d; border-left-width: 3px; border-left-color: #8d81b3; border-bottom-width: 1px; border-bottom-color: #26394a; }
+.dense-construction-columns { background-color: #243447; border-left-color: #efb36b; color: #cabbea; }
+.dense-construction-columns .unity-label { color: #cabbea; -unity-font-style: bold; }
+.dense-construction-cell { padding-right: 4px; }
+.dense-construction-value { color: #d9e5ef; }
+.dense-construction-industry .dense-construction-value { color: #efc58c; -unity-font-style: bold; }
+.dense-construction-key { color: #aabed4; }
+.dense-construction-row .dense-construction-name { padding: 0 4px; background-color: #152638; border-width: 0; color: #e5e8ef; -unity-text-align: middle-left; }
+.dense-construction-row .dense-construction-name:hover { background-color: #263b52; }
+.dense-construction-row .dense-construction-name:focus { border-width: 1px; border-color: #f5e6c8; }
+.dense-construction-row .dense-construction-add { padding: 0 2px; }
+.dense-construction-unavailable { border-left-color: #be8e67; }
+.dense-construction-unavailable .dense-construction-name { color: #d9b89d; }
+.dense-construction-selected { border-left-color: #efb36b; background-color: #1d3042; }
+.dense-construction-narrow .dense-construction-cell { margin-bottom: 4px; }
