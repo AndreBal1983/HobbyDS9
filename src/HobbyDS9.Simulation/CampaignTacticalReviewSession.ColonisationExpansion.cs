@@ -14,14 +14,17 @@ namespace HobbyDS9.Simulation
             internal readonly ColonisationSourceEdition Edition;
             internal readonly SystemRichnessPolicyDto? Richness;
             internal readonly bool AuthoredSol;
-            internal string Profile=>AuthoredSol?CampaignAuthoredSolIdentity.Profile:Richness!=null?CampaignSystemRichnessIdentity.Profile:Edition==ColonisationSourceEdition.Cycle?CampaignColonisationCycleIdentity.Profile:Edition==ColonisationSourceEdition.Repeat?CampaignColonisationRepeatIdentity.Profile:Edition==ColonisationSourceEdition.Growth?CampaignColonisationGrowthIdentity.Profile:CampaignColonisationExpansionIdentity.Profile;
+            internal readonly bool Refinement;
+            internal string Profile=>Refinement?EngineeringRefinementIdentity.Profile:AuthoredSol?CampaignAuthoredSolIdentity.Profile:Richness!=null?CampaignSystemRichnessIdentity.Profile:Edition==ColonisationSourceEdition.Cycle?CampaignColonisationCycleIdentity.Profile:Edition==ColonisationSourceEdition.Repeat?CampaignColonisationRepeatIdentity.Profile:Edition==ColonisationSourceEdition.Growth?CampaignColonisationGrowthIdentity.Profile:CampaignColonisationExpansionIdentity.Profile;
             internal ExpansionSource(CampaignColonisationExpansionPackageDto p,ColonisationSourceEdition edition=ColonisationSourceEdition.Original)
             {Require(edition==ColonisationSourceEdition.Original||edition==ColonisationSourceEdition.Growth,"Unsupported closed source edition.");
                 Require(p!=null&&p.PackageHash==(edition==ColonisationSourceEdition.Growth?ColonisationData.GrowthHash(p):ColonisationData.ExpansionHash(p)),"Different approved expansion package.");
                 Hash=p!.PackageHash;Policy=ColonisationData.Copy(p.PlannerPolicy!);Edition=edition;}
             internal ExpansionSource(CampaignColonisationCyclePackageDto p)
-            {Hash=ColonisationData.CycleHash(p);Require(p.PackageHash==Hash,"Different cycle package hash.");Policy=ColonisationData.Copy(p.BaseGrowth!.PlannerPolicy!);Edition=ColonisationSourceEdition.Cycle;
-                if(p is CampaignAuthoredSolPackageDto){AuthoredSol=true;Richness=new SystemRichnessPolicyDto();}
+            {Require(p is CampaignEngineeringRefinementPackageDto||p?.BaseGrowth?.BaseRosterV2?.BaseV1?.Support?.FormatVersion==4,"Older cycle sources require their original support v4.");
+                Hash=ColonisationData.CycleHash(p!);Require(p!.PackageHash==Hash,"Different cycle package hash.");Policy=ColonisationData.Copy(p.BaseGrowth!.PlannerPolicy!);Edition=ColonisationSourceEdition.Cycle;
+                if(p is CampaignEngineeringRefinementPackageDto){Refinement=true;AuthoredSol=true;Richness=new SystemRichnessPolicyDto();}
+                else if(p is CampaignAuthoredSolPackageDto){AuthoredSol=true;Richness=new SystemRichnessPolicyDto();}
                 else if(p is CampaignSystemRichnessPackageDto rich)Richness=SystemRichnessData.Copy(rich.Generation!);}
             internal ExpansionSource(CampaignColonisationRepeatPackageDto p)
             {

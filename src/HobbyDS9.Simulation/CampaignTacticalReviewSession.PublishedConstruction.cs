@@ -103,9 +103,9 @@ namespace HobbyDS9.Simulation
         private CampaignTacticalReviewSession(CampaignTacticalReviewSession source)
         {
             Require(source.published!=null,"Published fork only.");
-            // These are privately owned fixed metadata, never returned as mutable DTOs
-            // and never modified by commands. No caller-owned package/map is shared.
-            definitions=source.definitions;physicalNavigation=source.physicalNavigation;compatibility=source.compatibility;rules=source.rules;cloak=source.cloak;controllers=source.controllers;
+            // Fixed metadata is privately owned. The explicit refinement edition
+            // detaches changing equipment/Engineering metadata and rebinds stable topology.
+            definitions=source.refinement==null?source.definitions:CopyRefinementDefinitions(source.definitions);refinement=source.refinement==null?null:RefinementCopies.Copy(source.refinement);physicalNavigation=source.refinement==null?source.physicalNavigation:source.physicalNavigation?.BindSameTopology(definitions);compatibility=source.compatibility;rules=source.rules;cloak=source.cloak;controllers=source.controllers;
             initialTurn=source.initialTurn;generatedMap=source.generatedMap;generatedTemplateHash=source.generatedTemplateHash;astronomyIndex=source.astronomyIndex;
             declaredHostilities=source.declaredHostilities;authoredContactGrids=source.authoredContactGrids;contactFreshness=source.contactFreshness;authoredFleetOwners=source.authoredFleetOwners;
             playableHash=source.playableHash;playableOperationLimit=source.playableOperationLimit;playableOpponent=source.playableOpponent;playableDefenseNode=source.playableDefenseNode;
@@ -131,7 +131,7 @@ namespace HobbyDS9.Simulation
         {
             // All potentially throwing copies/validation/probes precede these assignments.
             state=c.state;travel=c.travel;builtShips=c.builtShips;published=c.published;activities=c.activities;colonisation=c.colonisation;discoveries=c.discoveries;
-            expansion=c.expansion;
+            expansion=c.expansion;refinement=c.refinement;definitions=c.definitions;physicalNavigation=c.physicalNavigation;
             playableNames=c.playableNames;playableCreatedOwners=c.playableCreatedOwners;
             playableTranscript=c.playableTranscript;playableRetiredFleets=c.playableRetiredFleets;playableHistory=c.playableHistory;
         }

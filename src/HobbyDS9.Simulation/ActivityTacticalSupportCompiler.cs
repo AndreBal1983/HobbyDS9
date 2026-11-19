@@ -79,7 +79,7 @@ namespace HobbyDS9.Simulation
                 var hash=ActivityHash(support,innerHash,modules.Values);
                 // Recompile the COMPLETE ordinary publication, source facts and costs before any successful result.
                 var tactical=EvaluateCore(catalogue,publication,access,support.Tactical,colonisation==null?new ActivityCompilation(modules,hash,support.CatalogueId,support.Revision):
-                    new ActivityCompilation(modules,ColonisationHash(colonisation.Support,hash),colonisation.Support.CatalogueId,colonisation.Support.Revision,colonisation.Installed,ColonisationSupportIdentity.Compiler),out var canonical);
+                    new ActivityCompilation(modules,ColonisationHash(colonisation.Support,hash),colonisation.Support.CatalogueId,colonisation.Support.Revision,colonisation.Installed,colonisation.Support.CompilerId),out var canonical);
                 if(!tactical.IsSupportedByCompiler)return new ActivitySupportResult(null,tactical.Issues);
                 // Inspect independently compiled Survey power too; input allocations alone are not output evidence.
                 var survey=canonical!.Performance.Profiles.Single(p=>p.Kind==OperatingProfileKind.Survey);

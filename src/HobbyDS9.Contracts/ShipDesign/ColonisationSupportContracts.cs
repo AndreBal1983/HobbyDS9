@@ -7,6 +7,11 @@ namespace HobbyDS9.Contracts.ShipDesign
         public const int Format=4;
         public const string Schema="published-colonisation-support-v4",Compiler="published-colonisation-compiler-v4";
     }
+    public static class ColonisationRefinementSupportIdentity
+    {
+        public const int Format=5;
+        public const string Schema="published-colonisation-reactor-refinement-support-v5",Compiler="published-colonisation-reactor-refinement-compiler-v5";
+    }
     public sealed class ColonisationSupportCatalogueDto
     {
         public int FormatVersion {get;set;}
@@ -31,7 +36,7 @@ namespace HobbyDS9.Contracts.ShipDesign
     {
         private readonly ColonisationSupportCatalogueDto metadata;
         public SupportedPublishedTacticalFit Tactical {get;}
-        public string CompilerId=>ColonisationSupportIdentity.Compiler;
+        public string CompilerId=>metadata.CompilerId;
         public int StudyWork {get;}
         public int ContactCapacity {get;}
         public int Passengers {get;}

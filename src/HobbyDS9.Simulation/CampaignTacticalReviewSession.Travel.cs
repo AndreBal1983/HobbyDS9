@@ -218,7 +218,7 @@ namespace HobbyDS9.Simulation
                         research:phase==StrategicTurnPhase.Research,production:phase==StrategicTurnPhase.Production);
                 }
                 Phase(StrategicTurnPhase.Economy,()=>{if(colonisation!=null)ExecuteColonisationEconomy(game);else EconomyPhase.Execute(game,definitions,Streams==null?null:StreamedDemand(game));});
-                Phase(StrategicTurnPhase.Research,()=>ResearchPhase.Execute(game,definitions,colonisation==null?null:PlanetaryOwner(game)));
+                Phase(StrategicTurnPhase.Research,()=>{ResearchPhase.Execute(game,definitions,colonisation==null?null:PlanetaryOwner(game));ResolveCompletedRefinements(game);});
                 var beforeProduction=SimulationSession.CopyState(game);
                 if(activities!=null)
                 {Probe(StrategicTurnPhase.Production);ExecuteActivityProduction(next);ValidateOwnedGame(game);}
