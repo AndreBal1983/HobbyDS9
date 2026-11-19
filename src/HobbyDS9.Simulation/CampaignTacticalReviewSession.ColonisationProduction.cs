@@ -44,6 +44,7 @@ namespace HobbyDS9.Simulation
         {
             var q=colonisation!.Production.SingleOrDefault(q=>q.QueueItemId==command.TargetId&&q.OwnerId==command.ActorId);
             if(q==null)return CampaignTacticalError.InvalidOrder;
+            if(q.Kind==ColonisationProductionKind.BeltMining)CancelBeltMineQueue(game,q);
             colonisation.History.Add(new ColonisationProductionReceiptDto{Order=ColonisationData.Copy(q),ResolvedTurn=game.TurnNumber});
             colonisation.Production.Remove(q);game.EntityIdentities.RemoveAll(i=>i.EntityId==q.QueueItemId);
             // No refund: consumed material is gone, unconsumed local stocks never left the colony.
@@ -69,8 +70,9 @@ namespace HobbyDS9.Simulation
             var phaseBefore=SimulationSession.CopyState(game);var historyBefore=colonisation!.History.Count;
             var cycleConsumption=new List<(string ColonyId,string ResourceDefinitionId,long Amount)>();
             var heads=colonisation!.Production.GroupBy(q=>q.ColonyId,StringComparer.Ordinal).Select(g=>g.First())
-                .Where(q=>EstablishedColony(q.ColonyId)&&PopulationRules.Population(game.Colonies!.Single(c=>c.ColonyId==q.ColonyId))>0).OrderBy(q=>q.ColonyId,StringComparer.Ordinal).ToList();
-            var outputs=heads.ToDictionary(q=>q.ColonyId,q=>ProjectOwnedWorld(game.Colonies!.Single(c=>c.ColonyId==q.ColonyId),game).Industry,StringComparer.Ordinal);
+                .Where(q=>EstablishedColony(q.ColonyId)&&PopulationRules.Population(game.Colonies!.Single(c=>c.ColonyId==q.ColonyId))>0
+                    &&(q.Kind!=ColonisationProductionKind.BeltMining||BeltMineOrderSponsor(game,q)!=null)).OrderBy(q=>q.ColonyId,StringComparer.Ordinal).ToList();
+            var outputs=heads.ToDictionary(q=>q.ColonyId,q=>ProjectOwnedWorld(q.Kind==ColonisationProductionKind.BeltMining?BeltMineOrderSponsor(game,q)!:game.Colonies!.Single(c=>c.ColonyId==q.ColonyId),game).Industry,StringComparer.Ordinal);
             foreach(var q in heads)
             {
                 var colony=game.Colonies!.Single(c=>c.ColonyId==q.ColonyId);
@@ -97,6 +99,11 @@ namespace HobbyDS9.Simulation
                     Require(!colony.Infrastructure!.Any(i=>i.DefinitionId==q.DefinitionId&&i.Count>0),"Duplicate streamed structure completion.");
                     colony.Infrastructure!.Add(new InfrastructureStateDto{DefinitionId=q.DefinitionId,Count=1});
                     activities!.State.Structures!.Add(new ActivityStructureReceiptDto{QueueItemId=q.QueueItemId,ColonyId=q.ColonyId,OwnerId=q.OwnerId,DefinitionId=q.DefinitionId,CompletedTurn=game.TurnNumber});
+                }
+                else if(q.Kind==ColonisationProductionKind.BeltMining)
+                {
+                    Require(beltBodies!=null,"Belt construction requires its explicit edition.");
+                    if(!CompleteBeltMine(game,q))continue;
                 }
                 else
                 {
@@ -164,7 +171,7 @@ namespace HobbyDS9.Simulation
             foreach(var q in orders)
             {
                 Require(EntityId.TryParse(q.QueueItemId,out var id)&&q.QueueItemId.StartsWith("queue-item.",StringComparison.Ordinal)&&id.TryGetAllocationSequence(out var seq)&&seq<game.NextEntitySequence
-                    &&game.Colonies!.Count(c=>c.ColonyId==q.ColonyId&&c.OwnerCivilizationId==q.OwnerId)==1&&q.RequiredIndustry>0&&q.CompletedIndustry>=0&&q.CompletedIndustry<=q.RequiredIndustry
+                    &&game.Colonies!.Count(c=>c.ColonyId==q.ColonyId&&(c.OwnerCivilizationId==q.OwnerId||beltBodies!=null&&q.Kind==ColonisationProductionKind.BeltMining))==1&&q.RequiredIndustry>0&&q.CompletedIndustry>=0&&q.CompletedIndustry<=q.RequiredIndustry
                     &&q.RequiredResources!=null&&q.ConsumedResources!=null,"Complete streamed order association.");
                 List<ResourceAmountDto> expected;long work;
                 if(q.Kind==ColonisationProductionKind.PublishedShip)
@@ -179,6 +186,12 @@ namespace HobbyDS9.Simulation
                     Require(q.Kind==ColonisationProductionKind.Infrastructure&&q.Blueprint==null&&cost!=null,"Streamed structure source.");
                     expected=StreamResources(cost!.Resources!);work=cost.Industry;
                 }
+                else if(q.Kind==ColonisationProductionKind.BeltMining)
+                {
+                    Require(beltBodies!=null&&q.Blueprint==null&&q.DefinitionId==BeltMiningPolicy.InstallationDefinition
+                        &&beltBodies.Mines!.Count(m=>m.QueueItemId==q.QueueItemId&&m.ActorId==q.OwnerId&&m.ColonyId==q.ColonyId)==1,"Explicit paid belt mine recipe source.");
+                    expected=new List<ResourceAmountDto>();work=BeltMiningPolicy.Industry;
+                }
                 else
                 {
                     Require(q.Kind==ColonisationProductionKind.SettlementKit&&q.Blueprint==null&&q.DefinitionId==colonisation!.Policy.EquipmentResourceId,"Settlement equipment recipe source.");
@@ -189,12 +202,12 @@ namespace HobbyDS9.Simulation
                     &&expected.All(r=>r.ResourceDefinitionId!="resource.food"&&definitions.Resources!.Any(d=>d.DefinitionId==r.ResourceDefinitionId)),"Canonical streamed requirements.");
                 foreach(var r in q.ConsumedResources!)
                 {Require(r.Amount==StreamedMaterialWork.Cumulative(expected.Single(e=>e.ResourceDefinitionId==r.ResourceDefinitionId).Amount,work,q.CompletedIndustry),"Consumed vector differs from cumulative work.");consumed+=r.Amount;}
-                if(stream.Production.Contains(q))Require(q.CompletedIndustry<q.RequiredIndustry&&game.EntityIdentities.Any(e=>e.EntityId==q.QueueItemId),"Live streamed queue identity.");
+                if(stream.Production.Contains(q))Require((q.CompletedIndustry<q.RequiredIndustry||q.Kind==ColonisationProductionKind.BeltMining&&beltBodies!=null)&&game.EntityIdentities.Any(e=>e.EntityId==q.QueueItemId),"Live streamed queue identity.");
             }
             foreach(var r in stream.History)
             {
                 var q=r.Order!;Require(r.ResolvedTurn>=initialTurn&&r.ResolvedTurn<=game.TurnNumber&&!game.EntityIdentities.Any(e=>e.EntityId==q.QueueItemId)
-                    &&(r.Completed?q.CompletedIndustry==q.RequiredIndustry:q.CompletedIndustry<q.RequiredIndustry),"Streamed terminal receipt.");
+                    &&(r.Completed?q.CompletedIndustry==q.RequiredIndustry:q.CompletedIndustry<q.RequiredIndustry||q.Kind==ColonisationProductionKind.BeltMining&&beltBodies!=null),"Streamed terminal receipt.");
                 if(r.Completed&&q.Kind==ColonisationProductionKind.PublishedShip)Require(r.ShipId!=null&&published.Records.Count(p=>p.QueueItemId==q.QueueItemId&&p.ShipId==r.ShipId&&p.BlueprintId==q.Blueprint!.BlueprintId&&p.BlueprintRevision==q.Blueprint.Revision&&p.OwnerCivilizationId==q.OwnerId&&p.TurnBuilt==r.ResolvedTurn)==1,"Streamed retained built association.");
                 else Require(r.ShipId==null,"No fabricated streamed ship.");
                 if(r.Completed&&q.Kind==ColonisationProductionKind.Infrastructure)Require(activities.State.Structures!.Count(s=>s.QueueItemId==q.QueueItemId&&s.ColonyId==q.ColonyId&&s.DefinitionId==q.DefinitionId&&s.OwnerId==q.OwnerId&&s.CompletedTurn==r.ResolvedTurn)==1,"Streamed retained structure association.");

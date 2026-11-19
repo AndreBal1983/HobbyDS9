@@ -147,6 +147,7 @@ namespace HobbyDS9.Simulation
                 Assignment=new ColonisationAiPlanDto{ActorId=p.ActorId,GoalId=CampaignColonisationRepeatIdentity.Goal}}).ToList();
             if(session.CycleEnabled)session.expansion!.CycleActors=session.expansion.Plans.Select(p=>new ColonisationCycleActorDto{ActorId=p.ActorId}).ToList();
             if(expansionSource?.Refinement==true)session.refinement=new EngineeringRefinementStateDto();
+            if(expansionSource?.BeltBodies==true)session.beltBodies=session.CreateBeltBodies();
             if(expansionSource!=null)session.ValidateActivityState();
             return session;
         }

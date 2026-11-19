@@ -6,7 +6,7 @@
 
 Format17 (`generated-engineering-refinement-v1`) is an explicit peer of the previous Cycle editions. It includes the authored Sol belt generation and opts into reactor refinement support v5. Earlier campaign/save identities remain closed. Start a new campaign in the separate `-engineering-refinement-v1` directory. Previous saves remain for their original executable; there is no migration.
 
-The two supported starting generations are the authored Reactor and Compact Reactor. Baseline versions carry untracked public maturity; a newly started lineage explicitly uses maturity0 under this versioned provisional policy. Completed legacy catalogue-project percentages remain work completion, separately from equipment maturity. Science grants generation access; refining within an available generation needs no new Science level.
+The two supported authored baseline reactor families/roots are the authored Reactor and Compact Reactor. Baseline versions carry untracked public maturity; a newly started lineage explicitly uses maturity0 under this versioned provisional policy. Completed legacy catalogue-project percentages remain work completion, separately from equipment maturity. Science grants generation access; refining within an available generation needs no new Science level.
 
 A project chooses one of reactor capacity decrease, reactor supply increase or Industry decrease. Reactor supply is distinct from demand. Its cost is fixed at24000 internal Engineering units (40 displayed), adjusted once by the campaign research pace. Ordinary Engineering reserve/spending/receipts and one active target provide paid work; paused work retains progress. Managed project definitions appear only in the dedicated projection, preserving the 20 legacy cards.
 

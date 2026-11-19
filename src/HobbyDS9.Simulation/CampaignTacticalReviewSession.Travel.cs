@@ -239,6 +239,7 @@ namespace HobbyDS9.Simulation
                         .Single(f=>f.FleetId==receipt.FleetId).RouteNodeIds!.Skip((int)receipt.EdgesCompleted).ToList();
                 RequireOwnedChanges(next.MovementProof.Start,movementGuard,economy:false,movement:true);
                 if(activities!=null)TickActivityFindings(game);
+                RefreshBeltObservations(game);
                 Probe(StrategicTurnPhase.EncounterCreation);next.Requests=FreezePhysical(game,movement);next.LastMovement=movement.Receipts;
                 foreach(var o in next.Orders)
                 {

@@ -7,6 +7,7 @@ namespace HobbyDS9.Simulation
     {
         internal static string CycleHash(CampaignColonisationCyclePackageDto p)
         {
+            if(p is CampaignBeltBodiesPackageDto belts)return BeltBodiesEditionData.Hash(belts);
             if(p is CampaignEngineeringRefinementPackageDto refinement)return EngineeringRefinementEditionData.Hash(refinement);
             Require(p?.BaseGrowth?.BaseRosterV2?.BaseV1?.Support?.FormatVersion==4,"Older cycle sources require their original support v4.");
             if(p is CampaignAuthoredSolPackageDto authored)return AuthoredSolEditionData.Hash(authored);

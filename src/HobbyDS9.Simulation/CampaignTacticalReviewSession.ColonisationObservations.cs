@@ -79,10 +79,10 @@ namespace HobbyDS9.Simulation
                 {
                     foreach(var order in group)
                     {
-                        var first=ReferenceEquals(group.First(),order);var world=worlds.Single(c=>c.Id==order.ColonyId);var colony=game.Colonies!.Single(c=>c.ColonyId==order.ColonyId);
-                        var work=first?StreamedMaterialWork.Plan(order.RequiredResources!,colony.Stockpiles!,order.RequiredIndustry,order.CompletedIndustry,world.Stage==ColonyEstablishmentStage.Established?world.Industry:0).CompletedWork-order.CompletedIndustry:0;
-                        var status=!first?"Waiting behind earlier order":world.Stage!=ColonyEstablishmentStage.Established?"Requires an active established world":world.Industry<=0?"Awaiting Industry":work==0?"Awaiting materials":"Ready with current stocks";
-                        var name=order.Kind==ColonisationProductionKind.PublishedShip?CampaignBlueprints.Find(game,order.Blueprint!)!.Fit!.DisplayName:order.Kind==ColonisationProductionKind.SettlementKit?"Settlement kit":definitions.Infrastructure!.Single(i=>i.DefinitionId==order.DefinitionId).DisplayName;
+                        var first=ReferenceEquals(group.First(),order);var world=worlds.SingleOrDefault(c=>c.Id==order.ColonyId);var colony=game.Colonies!.SingleOrDefault(c=>c.ColonyId==order.ColonyId&&c.OwnerCivilizationId==actor);
+                        var work=first&&world!=null&&colony!=null?StreamedMaterialWork.Plan(order.RequiredResources!,colony.Stockpiles!,order.RequiredIndustry,order.CompletedIndustry,world.Stage==ColonyEstablishmentStage.Established?world.Industry:0).CompletedWork-order.CompletedIndustry:0;
+                        var status=world==null||colony==null?"Original sponsor unavailable":order.Kind==ColonisationProductionKind.BeltMining&&order.CompletedIndustry==order.RequiredIndustry?beltBodies!.Mines!.Single(m=>m.QueueItemId==order.QueueItemId).LatestReport:!first?"Waiting behind earlier order":world.Stage!=ColonyEstablishmentStage.Established?"Requires an active established world":world.Industry<=0?"Awaiting Industry":work==0?"Awaiting materials":"Ready with current stocks";
+                        var name=order.Kind==ColonisationProductionKind.PublishedShip?CampaignBlueprints.Find(game,order.Blueprint!)!.Fit!.DisplayName:order.Kind==ColonisationProductionKind.SettlementKit?"Settlement kit":order.Kind==ColonisationProductionKind.BeltMining?"Belt mining installation":definitions.Infrastructure!.Single(i=>i.DefinitionId==order.DefinitionId).DisplayName;
                         queue.Add(new ColonisationQueueSnapshot(order.QueueItemId,order.ColonyId,order.Kind,order.DefinitionId,name,order.Blueprint?.Revision??0,order.RequiredIndustry,order.CompletedIndustry,status,
                             ResourceAmountSnapshot.Copy(order.ConsumedResources!),ResourceAmountSnapshot.Copy(order.RequiredResources!)));
                     }

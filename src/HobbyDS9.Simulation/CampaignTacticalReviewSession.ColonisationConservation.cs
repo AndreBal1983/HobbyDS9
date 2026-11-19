@@ -13,7 +13,10 @@ namespace HobbyDS9.Simulation
         {
             var before=game.Colonies!.Aggregate(BigInteger.Zero,(n,c)=>n+c.Food);
             var produced=game.Colonies!.Aggregate(BigInteger.Zero,(n,c)=>n+ProjectOwnedWorld(c,game).FoodOutput);
-            EconomyPhase.Execute(game,definitions,ColonisationDemand(game),PlanetaryOwner(game));
+            EconomyPhase.Execute(game,definitions,ColonisationDemand(game),PlanetaryOwner(game),
+                beltBodies==null?(Action?)null:()=>ExecuteBeltExtraction(game),
+                beltBodies==null?(Action<System.Collections.Generic.IDictionary<string,long>,WeightedNavigationGraph>?)null:(residual,graph)=>DeliverBeltOre(game,residual,graph));
+            RefreshBeltObservations(game);
             var after=game.Colonies!.Aggregate(BigInteger.Zero,(n,c)=>n+c.Food);var consumed=before+produced-after;
             Require(consumed>=0,"Colony economy created unaccounted food.");
             colonisation!.State.FoodProduced=checked(colonisation.State.FoodProduced+(long)produced);
@@ -34,10 +37,12 @@ namespace HobbyDS9.Simulation
             {
                 BigInteger Stock(System.Collections.Generic.IEnumerable<ResourceAmountDto> rows)=>rows.Where(r=>r.ResourceDefinitionId==resource.DefinitionId).Aggregate(BigInteger.Zero,(n,r)=>n+r.Amount);
                 BigInteger source=Stock(original.Colonies.SelectMany(w=>w.Stockpiles!))+Stock(c.FrozenPlanets.InitialPlanets!.SelectMany(p=>p.RemainingDeposits!));
+                if(beltBodies!=null&&resource.DefinitionId==BeltMiningPolicy.Resource)source+=beltBodies.Definitions!.Aggregate(BigInteger.Zero,(sum,b)=>sum+b.InitialDeposit);
                 if(resource.DefinitionId==c.Policy.EquipmentResourceId)source+=c.History.Count(r=>r.Completed&&r.Order!.Kind==ColonisationProductionKind.SettlementKit);
                 BigInteger current=Stock(game.Colonies.SelectMany(w=>w.Stockpiles!))+Stock(game.Planets!.SelectMany(p=>p.RemainingDeposits!))
                     +Stock(a.ManifestRecords.Where(m=>m.Stage==SettlerManifestStage.Loaded).SelectMany(m=>m.Cargo!))+Stock(a.ManifestRecords.SelectMany(m=>m.MaterialsLost!))
                     +Stock(c.Production.Concat(c.History.Select(h=>h.Order!)).SelectMany(q=>q.ConsumedResources!));
+                if(beltBodies!=null&&resource.DefinitionId==BeltMiningPolicy.Resource)current+=beltBodies.Deposits!.Aggregate(BigInteger.Zero,(sum,b)=>sum+b.Remaining+b.LocalStock);
                 if(resource.DefinitionId==c.Policy.EquipmentResourceId)current+=a.ManifestRecords.Sum(m=>(long)m.EquipmentConsumed);
                 Require(source==current,"Physical deposits, local/carried materials and exact consumption are not conserved.");
             }

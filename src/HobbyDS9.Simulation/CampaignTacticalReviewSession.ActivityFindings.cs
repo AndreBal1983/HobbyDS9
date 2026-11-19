@@ -139,6 +139,7 @@ namespace HobbyDS9.Simulation
             if(fleet.LocationNodeId!=site.NodeId||fleet.TransitTotalCost!=0||fleet.RouteNodeIds!.Count!=0||ship.CurrentHull<=0)return CampaignTacticalError.InvalidOrder;
             var capability=ActivityCapability(game,ship);
             if(capability==null||capability.StudyWork<choice.RequiredStudy||capability.ContactCapacity<choice.RequiredContact)return CampaignTacticalError.UnsupportedSource;
+            if(BeltSurveyBusy(ship.ShipId)||(beltBodies!=null&&colonisation!.State.Surveys!.Any(s=>s.ShipId==ship.ShipId&&s.Stage==PlanetSurveyStage.Active)))return CampaignTacticalError.InvalidOrder;
             if(a.Findings!.Any(f=>f.ActorId==command.ActorId&&f.SiteId==site.SiteId&&f.FindingId==choice.FindingId)
                 ||a.Findings.Any(f=>f.ShipId==ship.ShipId&&(f.Stage==ActivityProgressStage.Active||f.Stage==ActivityProgressStage.AwaitingClaim)))return CampaignTacticalError.InvalidOrder;
             if(choice.RequiredRelation.HasValue)
