@@ -30,7 +30,7 @@ namespace HobbyDS9.Simulation
             if(!BeltMinePowered())return BeltBodyError.MineUnavailable;
             var game=state.Campaign.GameState;var body=beltBodies.Definitions!.SingleOrDefault(b=>b.BodyId==c.BodyId);
             if(body==null)return BeltBodyError.UnknownBody;
-            if(!ColonisationSystemsForActor(game,c.ActorId).Contains(body.SystemId))return BeltBodyError.BodyNotObserved;
+            if(!BeltCurrentlyObserved(game,c.ActorId,body.SystemId))return BeltBodyError.BodyNotObserved;
             if(!beltBodies.Observations!.Any(o=>o.ActorId==c.ActorId&&o.BodyId==body.BodyId))return BeltBodyError.SurveyRequired;
             var colony=game.Colonies!.SingleOrDefault(w=>w.ColonyId==c.ColonyId&&w.OwnerCivilizationId==c.ActorId);
             if(colony==null||!EstablishedColony(colony.ColonyId)||PopulationRules.Population(colony)==0)return BeltBodyError.ColonyUnavailable;

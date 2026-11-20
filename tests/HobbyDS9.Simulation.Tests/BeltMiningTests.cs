@@ -66,7 +66,8 @@ public sealed class BeltMiningTests
     [Fact] public void CancellingPaidQueuedMineKeepsSpentWorkAndAllowsReplacementWithoutReward()
     {
         var s=Fresh();Survey(s);var id=Enqueue(s);Advance(s);var root=Root(s);var q=root.BaseCampaign!.Production!.Single(q=>q.QueueItemId==Mine(s,id).QueueItemId);Assert.True(q.CompletedIndustry>0);Assert.True(q.CompletedIndustry<BeltMiningPolicy.Industry);
-        var cancel=Command(s,BeltBodyAction.CancelMine);cancel.MineId=id;Assert.True(s.SubmitBeltCommand(cancel).Accepted);var cancelled=Root(s);Assert.Equal(BeltMineStage.Cancelled,Mine(s,id).Stage);
+        Assert.True(Sol(s).OperatingReservationOccupied);
+        var cancel=Command(s,BeltBodyAction.CancelMine);cancel.MineId=id;Assert.True(s.SubmitBeltCommand(cancel).Accepted);var cancelled=Root(s);Assert.Equal(BeltMineStage.Cancelled,Mine(s,id).Stage);Assert.False(Sol(s).OperatingReservationOccupied);
         Assert.Equal(0,Mine(s,id).TotalExtracted);Assert.Equal(0,Mine(s,id).TotalDelivered);var receipt=Assert.Single(cancelled.BaseCampaign!.ProductionHistory!,r=>r.Order!.QueueItemId==q.QueueItemId);Assert.False(receipt.Completed);Assert.Equal(q.CompletedIndustry,receipt.Order!.CompletedIndustry);
         Assert.DoesNotContain(Game(cancelled.BaseCampaign).EntityIdentities,e=>e.EntityId==id);Assert.NotEqual(id,Enqueue(s));
         var wire=Wire(s);Assert.Equal(wire,Wire(CampaignTacticalReviewSession.LoadCycleSave(Package(),Root(s))));
@@ -124,6 +125,53 @@ public sealed class BeltMiningTests
         game.TurnNumber++;extract.Invoke(s,new object[]{game});var stock=deposit.LocalStock;budget[sponsor.ColonyId]=3;deliver.Invoke(s,new object[]{game,budget,graph});
         Assert.Equal(stock,deposit.LocalStock);Assert.Equal(3,budget[sponsor.ColonyId]);Assert.Equal(1,mine.TotalDelivered);
         var frozenRemaining=deposit.Remaining;sponsor.Cohorts!.ForEach(c=>c.Population=0);game.TurnNumber++;extract.Invoke(s,new object[]{game});deliver.Invoke(s,new object[]{game,budget,graph});Assert.Equal(frozenRemaining,deposit.Remaining);Assert.Equal(stock,deposit.LocalStock);
+    }
+
+    [Fact] public void ForeignQueuedReservationIsPublicOnlyUnderSurveyAndCurrentCoverageAndCancellationReleasesIt()
+    {
+        var s=Fresh();Survey(s);var id=Enqueue(s);
+        // Start with a real queued reservation. Isolate a foreign owner and loss
+        // of coverage without inventing a conquest/colony-sharing command.
+        var flags=System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic;
+        var state=(CampaignTacticalReviewSaveDto)typeof(CampaignTacticalReviewSession).GetField("state",flags)!.GetValue(s)!;
+        var game=state.Campaign.GameState;
+        var belts=(BeltBodyStateDto)typeof(CampaignTacticalReviewSession).GetField("beltBodies",flags)!.GetValue(s)!;
+        var mine=belts.Mines!.Single(m=>m.InstallationId==id);
+        mine.ActorId=game.Civilizations!.First(c=>c.CivilizationId!=Human).CivilizationId;
+        var c=Command(s,BeltBodyAction.EnqueueMine);c.ColonyId="colony.sol";
+        var before=JsonSerializer.Serialize(new{Game=game,Belts=belts});
+        Assert.True(Sol(s).OperatingReservationOccupied);Assert.Null(Sol(s).Mine);
+        Assert.Equal(BeltBodyError.MineExists,s.PreviewBeltCommand(c).Error);
+        Assert.Equal(BeltBodyError.MineExists,s.SubmitBeltCommand(c).Error);
+        Assert.Equal(before,JsonSerializer.Serialize(new{Game=game,Belts=belts}));
+        var observation=belts.Observations!.Single(o=>o.ActorId==Human&&o.BodyId==c.BodyId);
+        belts.Observations!.Remove(observation);
+        Assert.Null(Sol(s).OperatingReservationOccupied);Assert.Null(Sol(s).Mine);
+        Assert.Equal(BeltBodyError.SurveyRequired,s.PreviewBeltCommand(c).Error);
+        mine.Stage=BeltMineStage.Cancelled;
+        Assert.Null(Sol(s).OperatingReservationOccupied);
+        Assert.Equal(BeltBodyError.SurveyRequired,s.PreviewBeltCommand(c).Error);
+        belts.Observations.Add(observation);
+        Assert.False(Sol(s).OperatingReservationOccupied);Assert.True(s.PreviewBeltCommand(c).CanSubmit);
+        mine.Stage=BeltMineStage.Queued;
+        var graph=(WeightedNavigationGraph)typeof(CampaignTacticalReviewSession).GetField("physicalNavigation",flags)!.GetValue(s)!;
+        var visits=(List<CampaignFrontierReceiptDto>)typeof(CampaignTacticalReviewSession).GetField("discoveries",flags)!.GetValue(s)!;
+        visits.Add(new(){ActorId=Human,ArrivalNodeId=graph.NodeForSystem(Sol(s).SystemId)!});
+        game.Colonies!.RemoveAll(x=>x.OwnerCivilizationId==Human);
+        game.Fleets!.RemoveAll(x=>x.OwnerCivilizationId==Human);
+        var remote=s.CaptureBeltBodies(Human)!.Bodies.Single(b=>b.BodyId==c.BodyId);
+        Assert.False(remote.CurrentlyObserved);Assert.True(remote.Surveyed);Assert.Null(remote.OperatingReservationOccupied);Assert.Null(remote.Mine);
+        Assert.Equal(BeltBodyError.BodyNotObserved,s.PreviewBeltCommand(c).Error);
+        // Removing sponsors deliberately invalidates this isolated world fixture.
+        // Assert the shared validator directly; the publication layer can reject
+        // its detached copy before command validation and must still reject it.
+        var validate=typeof(CampaignTacticalReviewSession).GetMethod("ValidateBeltCommand",flags)!;
+        Assert.Equal(BeltBodyError.BodyNotObserved,(BeltBodyError)validate.Invoke(s,new object[]{c,ControllerKind.Human})!);
+        var remoteRejection=s.SubmitBeltCommand(c);Assert.False(remoteRejection.Accepted);
+        mine.Stage=BeltMineStage.Cancelled;
+        Assert.Equal(BeltBodyError.BodyNotObserved,s.PreviewBeltCommand(c).Error);
+        Assert.Equal(BeltBodyError.BodyNotObserved,(BeltBodyError)validate.Invoke(s,new object[]{c,ControllerKind.Human})!);
+        Assert.Equal(remoteRejection.Error,s.SubmitBeltCommand(c).Error);
     }
 
     [Fact] public void BeltEditionKeepsRealRefinementAcceptContinueDiscardAndInterleavedReload()
