@@ -157,7 +157,11 @@ namespace HobbyDS9.Simulation
                     var mine=m==null?null:new BeltMineSnapshot(m,beltBodies.Deposits!.Single(p=>p.BodyId==d.BodyId).LocalStock,q?.CompletedIndustry??BeltMiningPolicy.Industry);
                     var sponsors=game.Colonies!.Where(c=>c.OwnerCivilizationId==actor&&c.SystemId==d.SystemId&&EstablishedColony(c.ColonyId)&&PopulationRules.Population(c)>0).OrderBy(c=>c.ColonyId,StringComparer.Ordinal).Select(c=>c.ColonyId);
                     var ships=game.Ships!.Where(s=>s.OwnerCivilizationId==actor&&ShipAt(game,s,d.SystemId)&&!AnyBeltSurveyTaskBusy(game,s.ShipId)&&(ActivityCapability(game,s)?.StudyWork??0)>=1).OrderBy(s=>s.ShipId,StringComparer.Ordinal).Select(s=>s.ShipId);
-                    rows.Add(new BeltBodySnapshot(d,current,o,survey,mine,sponsors,ships));
+                    // The aggregate's public operating reservation shares the survey
+                    // and current-coverage gate used before mine admission. It exposes
+                    // no foreign installation identity, work, stock or sponsor.
+                    var occupied=current&&o!=null?(bool?)beltBodies.Mines.Any(m=>m.BodyId==d.BodyId&&m.Stage!=BeltMineStage.Cancelled):null;
+                    rows.Add(new BeltBodySnapshot(d,current,o,survey,mine,sponsors,ships,occupied));
                 }
                 return new BeltBodiesSnapshot(actor,game.TurnNumber,game.StateRevision,rows);
             }

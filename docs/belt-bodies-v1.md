@@ -18,6 +18,8 @@ Current coverage projects live remaining ore using a detached observation; remot
 
 The player's order fixes one surveyed belt and an owned populated Established same-system sponsoring colony. The first version admits one queued/built installation per aggregate globally; queued cancellation can release that reservation, and completed installations cannot be deleted/retargeted through Cancel. This avoids mixing ownership of the single local ore buffer. This exclusivity is versioned implementation policy, not a broad territorial claim system.
 
+The aggregate's operating reservation is public under completed survey **and current coverage**, including queued reservations. `OperatingReservationOccupied` projects only occupied/free; it reveals no foreign actor, sponsor, installation ID, queue work or stocks. Outside that gate it is null, with no retained reservation claim. Mine admission requires current coverage before inspecting deposits/reservations, so rejection cannot probe remote private changes. Own mine details remain separate operational telemetry. Cancellation releases the public reservation immediately. This narrow public-reservation rule is proposed versioned policy, not general visibility into foreign construction.
+
 All numbers here are **proposed, pinned tuning**, not owner-approved numeric canon:
 
 - Setup is60 Industry,0 credits and no material ingredient, following the existing frontier-mine work-cost precedent. `ColonisationProductionKind.BeltMining` is an explicit target-bearing recipe in the existing mixed FIFO, not a second Industry authority or fake planet infrastructure.
