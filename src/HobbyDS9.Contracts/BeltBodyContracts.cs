@@ -80,9 +80,12 @@ namespace HobbyDS9.Contracts
         public int? HabitabilityBps {get;}public string? HabitabilityBasis=>Surveyed?"Unassisted biological habitation in vacuum; no supported orbital habitat.":null;public int? NaturalSettlementCapacity=>Surveyed?(int?)0:null;public string? ResourceDefinitionId {get;}public long? ObservedRemaining {get;}public bool SettlementSupported=>false;
         public string SettlementReason=>"No supported orbital habitat; this uncrewed installation provides no housing.";
         public string? ActiveSurveyId {get;}public int CompletedSurveyWeeks {get;}public string? SurveyShipId {get;}
+        // Public operating reservation only while surveyed and currently observed.
+        // Foreign identity, sponsor, queue work and stocks remain private.
+        public bool? OperatingReservationOccupied {get;}
         public BeltMineSnapshot? Mine {get;}public IReadOnlyList<string> SponsorColonyIds {get;}public IReadOnlyList<string> SurveyShipIds {get;}
-        public BeltBodySnapshot(BeltBodyDefinitionDto d,bool current,BeltBodyObservationDto? observation,BeltBodySurveyDto? survey,BeltMineSnapshot? mine,IEnumerable<string> sponsors,IEnumerable<string> ships)
-        {BodyId=d.BodyId;FeatureId=d.FeatureId;SystemId=d.SystemId;DisplayName=d.DisplayName;CurrentlyObserved=current;Surveyed=observation!=null;SurveyedTurn=observation?.SurveyedTurn;ResourceObservedTurn=observation?.ObservedTurn;ResourceIsCurrent=observation!=null&&current;HabitabilityBps=observation==null?(int?)null:d.HabitabilityBps;ResourceDefinitionId=observation==null?null:d.ResourceDefinitionId;ObservedRemaining=observation?.ObservedRemaining;ActiveSurveyId=survey?.SurveyId;CompletedSurveyWeeks=survey?.CompletedWeeks??0;SurveyShipId=survey?.ShipId;Mine=mine;SponsorColonyIds=new List<string>(sponsors).AsReadOnly();SurveyShipIds=new List<string>(ships).AsReadOnly();}
+        public BeltBodySnapshot(BeltBodyDefinitionDto d,bool current,BeltBodyObservationDto? observation,BeltBodySurveyDto? survey,BeltMineSnapshot? mine,IEnumerable<string> sponsors,IEnumerable<string> ships,bool? operatingReservationOccupied=null)
+        {BodyId=d.BodyId;FeatureId=d.FeatureId;SystemId=d.SystemId;DisplayName=d.DisplayName;CurrentlyObserved=current;Surveyed=observation!=null;SurveyedTurn=observation?.SurveyedTurn;ResourceObservedTurn=observation?.ObservedTurn;ResourceIsCurrent=observation!=null&&current;HabitabilityBps=observation==null?(int?)null:d.HabitabilityBps;ResourceDefinitionId=observation==null?null:d.ResourceDefinitionId;ObservedRemaining=observation?.ObservedRemaining;ActiveSurveyId=survey?.SurveyId;CompletedSurveyWeeks=survey?.CompletedWeeks??0;SurveyShipId=survey?.ShipId;OperatingReservationOccupied=current&&observation!=null?operatingReservationOccupied:null;Mine=mine;SponsorColonyIds=new List<string>(sponsors).AsReadOnly();SurveyShipIds=new List<string>(ships).AsReadOnly();}
     }
     public sealed class BeltBodiesSnapshot
     {
