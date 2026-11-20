@@ -14,9 +14,10 @@ namespace HobbyDS9.UnityReview.Tests
         private static BeltBodySnapshot Belt(bool current,BeltBodyObservationDto? observation=null)=>new BeltBodySnapshot(
             new BeltBodyDefinitionDto{BodyId="body.belt.fixture",FeatureId="belt.fixture",SystemId="system.fixture",DisplayName="Fixture belt",InitialDeposit=999,HabitabilityBps=0},
             current,observation,null,null,Array.Empty<string>(),Array.Empty<string>());
-        private static ReviewColonisationPanel Panel(BeltBodiesSnapshot snapshot,Action<BeltBodyCommandDto,string>? review=null)
+        private static ReviewColonisationPanel Panel(BeltBodiesSnapshot snapshot,Action<BeltBodyCommandDto,string>? review=null,bool sponsor=false)
         {
-            var observation=new ColonisationCampaignSnapshot("actor.fixture",5,9,"fixture-not-a-package",Array.Empty<ColonisationWorldSnapshot>(),Array.Empty<ColonisationTransportSnapshot>(),
+            var worlds=sponsor?new[]{new ColonisationWorldSnapshot("colony.fixture","planet.fixture","system.fixture","Sponsor",ColonyEstablishmentStage.Established,null,20,15,10,2,4,0,0,0,0,"",Array.Empty<ResourceAmountSnapshot>(),Array.Empty<ColonisationCohortSnapshot>(),true)}:Array.Empty<ColonisationWorldSnapshot>();
+            var observation=new ColonisationCampaignSnapshot("actor.fixture",5,9,"fixture-not-a-package",worlds,Array.Empty<ColonisationTransportSnapshot>(),
                 Array.Empty<ColonisationQueueSnapshot>(),Array.Empty<ColonisationPresenceSnapshot>(),Array.Empty<ColonisationManifestReport>(),Array.Empty<ColonisationSurveySnapshot>(),
                 Array.Empty<ColonisationIntentSnapshot>(),0,Array.Empty<ResourceAmountSnapshot>());
             var activities=new CampaignActivityObservationDto{ActorId="actor.fixture",Turn=5,Revision=9};
@@ -27,6 +28,22 @@ namespace HobbyDS9.UnityReview.Tests
                 beltBodies:snapshot,reviewBelt:review,supportsBeltBodies:true);
         }
         private static void Inspect(ReviewColonisationPanel panel)=>typeof(ReviewColonisationPanel).GetMethod("InspectSystem",Flags)!.Invoke(panel,new object[]{"system.fixture","Known system"});
+        [TestCase(true,true,"Operating slot occupied","already queued")]
+        [TestCase(true,false,"Operating slot available","No eligible established sponsor")]
+        [TestCase(true,null,"Operating slot unknown","has not been disclosed")]
+        [TestCase(false,true,"Operating slot unknown","Current observation")]
+        public void PublicSlotStatusAndDisabledReasonDoNotInventForeignMineDetails(bool current,bool? occupied,string slot,string reason)
+        {
+            var body=new BeltBodySnapshot(new BeltBodyDefinitionDto{BodyId="body.slot",FeatureId="belt.slot",SystemId="system.fixture",DisplayName="Slot belt"},
+                current,new BeltBodyObservationDto{BodyId="body.slot",ActorId="actor.fixture",SurveyedTurn=2,ObservedTurn=4},null,null,
+                Array.Empty<string>(),Array.Empty<string>(),occupied);
+            var reviewed=0;using var panel=Panel(new BeltBodiesSnapshot("actor.fixture",5,9,new[]{body}),(_,__)=>reviewed++);Inspect(panel);
+            Assert.That(panel.Q<Label>("belt-operating-slot").text,Is.EqualTo(slot));
+            Assert.That(panel.Q<Label>("belt-mine-unavailable").text,Does.Contain(reason));
+            Assert.That(panel.Q<Button>("belt-mine-enqueue").enabledSelf,Is.False);
+            Assert.That(panel.Q("belt-mining-status"),Is.Null);
+            Assert.That(reviewed,Is.Zero);
+        }
         [Test] public void DisclosedBeltOnlySystemHasDistinctBodyAndUnknownValuesWithoutOrders()
         {
             var reviewed=0;
@@ -62,6 +79,21 @@ namespace HobbyDS9.UnityReview.Tests
             true,null,null,null,Array.Empty<string>(),new[]{"ship.fixture"});
         // Model a retained button callback already queued before a view rebuild.
         private static void InvokeRetained(Button button)=>typeof(Clickable).GetMethod("Invoke",Flags)!.Invoke(button.clickable,new object?[]{null});
+        [Test] public void ExplicitFreeSlotWithEligibleSponsorReviewsTheExactStampedIntent()
+        {
+            var body=new BeltBodySnapshot(new BeltBodyDefinitionDto{BodyId="body.free",FeatureId="belt.free",SystemId="system.fixture",DisplayName="Free belt"},
+                true,new BeltBodyObservationDto{BodyId="body.free",ActorId="actor.fixture",SurveyedTurn=2,ObservedTurn=4},null,null,
+                new[]{"colony.fixture"},Array.Empty<string>(),false);
+            BeltBodyCommandDto? reviewed=null;
+            using var panel=Panel(new BeltBodiesSnapshot("actor.fixture",5,9,new[]{body}),(c,_)=>reviewed=c,true);Inspect(panel);
+            var enqueue=panel.Q<Button>("belt-mine-enqueue");Assert.That(enqueue.enabledSelf,Is.True);
+            Assert.That(panel.Q<Label>("belt-operating-slot").text,Is.EqualTo("Operating slot available"));
+            Assert.That(panel.Q("belt-mine-unavailable"),Is.Null);Assert.That(reviewed,Is.Null);
+            InvokeRetained(enqueue);Assert.That(reviewed,Is.Not.Null);
+            Assert.That(reviewed!.BodyId,Is.EqualTo("body.free"));Assert.That(reviewed.ColonyId,Is.EqualTo("colony.fixture"));
+            Assert.That(reviewed.ActorId,Is.EqualTo("actor.fixture"));Assert.That(reviewed.ExpectedTurn,Is.EqualTo(5));Assert.That(reviewed.ExpectedRevision,Is.EqualTo(9));
+            Assert.That(reviewed.Action,Is.EqualTo(BeltBodyAction.EnqueueMine));
+        }
         [Test] public void RetiredBodyCardCannotReplaceTheCurrentSystemSelection()
         {
             var rows=new[]{NamedBelt("body.first","system.fixture"),NamedBelt("body.second","system.other")};

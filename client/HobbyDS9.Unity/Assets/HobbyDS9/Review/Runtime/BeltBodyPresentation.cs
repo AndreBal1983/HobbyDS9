@@ -16,6 +16,14 @@ namespace HobbyDS9.UnityReview
         public static string SurveyStamp(BeltBodySnapshot body)=>body.Surveyed
             ?"Surveyed · "+(body.SurveyedTurn.HasValue?"week "+body.SurveyedTurn.Value:"date not supplied")
             :body.ActiveSurveyId!=null?"Survey active · "+body.CompletedSurveyWeeks+" weeks completed":"Not surveyed";
+        public static string OperatingSlot(BeltBodySnapshot body)=>body.OperatingReservationOccupied.HasValue
+            ?body.OperatingReservationOccupied.Value?"Operating slot occupied":"Operating slot available"
+            :"Operating slot unknown";
+        public static string MiningUnavailable(BeltBodySnapshot body)=>!body.CurrentlyObserved
+            ?"Current observation is required to review a mining installation."
+            :body.OperatingReservationOccupied==true?"A mining installation is already queued or recorded here."
+            :body.OperatingReservationOccupied==null?"The operating slot has not been disclosed."
+            :"No eligible established sponsor in this system.";
         public static string Reason(BeltBodyError error)
         {
             switch(error)
