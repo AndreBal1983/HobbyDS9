@@ -74,8 +74,8 @@ namespace HobbyDS9.UnityReview
             internal bool Matches(ColonisationWorldSnapshot w,ColonisationTransportSnapshot t)=>World==w.Id&&Ship==t.ShipId&&Node==t.NodeId&&Manifest==t.ManifestId&&Stage==w.Stage;
         }
         internal sealed class Selection
-        {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint;internal readonly string? SystemCaption;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly float SolYaw,SolZoom;internal readonly bool ReducedMotion,InnerFrame,FocusFrame;internal readonly ReviewActivitiesPanel.Selection? Science;internal readonly TransportDraft? Draft;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science,TransportDraft? draft,string? systemCaption,float solYaw=0,float solZoom=1,bool reducedMotion=false,bool innerFrame=false,bool focusFrame=false){InnerFrame=innerFrame;FocusFrame=focusFrame;SolYaw=solYaw;SolZoom=solZoom;ReducedMotion=reducedMotion;SystemCaption=systemCaption;Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;Draft=draft?.Copy();}}
-        internal Selection? CaptureSelection()=>disposed?null:new Selection(page,world,ship,planet,surveyShip,inspectedBlueprint,inspectedRevision,this.Q<Foldout>("colonisation-hull-inspector")?.value??inspectedOpen,science?.CaptureSelection(),transportDraft,inspectedSystemCaption,solYaw,solZoom,solReducedMotion,solInnerFrame,solFocusFrame);
+        {internal readonly string Page,World,Ship,Planet,SurveyShip,Blueprint,BeltSurveyShip,BeltSponsor;internal readonly string? SystemCaption,SelectedSystem;internal readonly BodySelectionKey Body;internal readonly int Revision;internal readonly bool InspectorOpen;internal readonly float SolYaw,SolZoom;internal readonly bool ReducedMotion,InnerFrame,FocusFrame;internal readonly ReviewActivitiesPanel.Selection? Science;internal readonly TransportDraft? Draft;internal Selection(string page,string world,string ship,string planet,string surveyShip,string blueprint,int revision,bool open,ReviewActivitiesPanel.Selection? science,TransportDraft? draft,string? systemCaption,float solYaw=0,float solZoom=1,bool reducedMotion=false,bool innerFrame=false,bool focusFrame=false,BodySelectionKey selectedBody=default,string? selectedSystem=null,string beltSurveyShip="",string beltSponsor=""){BeltSurveyShip=beltSurveyShip;BeltSponsor=beltSponsor;Body=selectedBody;SelectedSystem=selectedSystem;InnerFrame=innerFrame;FocusFrame=focusFrame;SolYaw=solYaw;SolZoom=solZoom;ReducedMotion=reducedMotion;SystemCaption=systemCaption;Page=page;World=world;Ship=ship;Planet=planet;SurveyShip=surveyShip;Blueprint=blueprint;Revision=revision;InspectorOpen=open;Science=science;Draft=draft?.Copy();}}
+        internal Selection? CaptureSelection()=>disposed?null:new Selection(page,world,ship,planet,surveyShip,inspectedBlueprint,inspectedRevision,this.Q<Foldout>("colonisation-hull-inspector")?.value??inspectedOpen,science?.CaptureSelection(),transportDraft,inspectedSystemCaption,solYaw,solZoom,solReducedMotion,solInnerFrame,solFocusFrame,selectedBody.Kind==BodySelectionKind.None?new BodySelectionKey(BodySelectionKind.Planet,planet):selectedBody,inspectedSystemId,beltSurveyShip,beltSponsor);
         internal void OpenMissionPage(bool expeditions)
         {
             if(!Live)return;
@@ -89,15 +89,21 @@ namespace HobbyDS9.UnityReview
             if(observation.Transports.Any(x=>x.ShipId==saved.Ship))ship=saved.Ship;
             if(planets.Any(x=>x.PlanetId==saved.Planet)||saved.Planet.Length==0)
             {planet=saved.Planet;inspectedSystemCaption=saved.SystemCaption;}
+            selectedBody=KnownBody(saved.Body)?saved.Body:new BodySelectionKey(BodySelectionKind.Planet,planet);
+            inspectedSystemId=saved.SelectedSystem!=null&&DisclosedBodySystems().Contains(saved.SelectedSystem,StringComparer.Ordinal)?saved.SelectedSystem:null;
             if(activities.Ships.Any(x=>x.ShipId==saved.SurveyShip))surveyShip=saved.SurveyShip;
+            beltSurveyShip=activities.Ships.Any(x=>x.ShipId==saved.BeltSurveyShip)?saved.BeltSurveyShip:"";
+            beltSponsor=observation.Worlds.Any(x=>x.Id==saved.BeltSponsor)?saved.BeltSponsor:"";
             solYaw=saved.SolYaw;solZoom=saved.SolZoom;solReducedMotion=saved.ReducedMotion;solInnerFrame=saved.InnerFrame;solFocusFrame=saved.FocusFrame;transportDraft=saved.Draft?.Copy();inspectedBlueprint=saved.Blueprint;inspectedRevision=saved.Revision;inspectedOpen=saved.InspectorOpen;Show(saved.Page);science?.RestoreSelection(saved.Science);
         }
         private readonly bool supportsKitFreePassengers;
         private readonly int? environmentScale;
         public ReviewColonisationPanel(ColonisationCampaignSnapshot observation,IReadOnlyList<ColonisationPlanetSnapshot> planets,CampaignActivityObservationDto activities,
-            Action<ColonisationCommandDto,string> reviewOrder,Action<ColonisationCommandDto> submit,Action<CampaignActivityCommandDto,string> reviewActivity,Action<CampaignActivityCommandDto> submitActivity,bool supportsKitFreePassengers=false, ILookup<string,string>? systemNodes=null,int? environmentScale=null,CampaignStaticAstronomySnapshot? astronomy=null)
+            Action<ColonisationCommandDto,string> reviewOrder,Action<ColonisationCommandDto> submit,Action<CampaignActivityCommandDto,string> reviewActivity,Action<CampaignActivityCommandDto> submitActivity,bool supportsKitFreePassengers=false, ILookup<string,string>? systemNodes=null,int? environmentScale=null,CampaignStaticAstronomySnapshot? astronomy=null,BeltBodiesSnapshot? beltBodies=null,Action<BeltBodyCommandDto,string>? reviewBelt=null,bool supportsBeltBodies=false,IReadOnlyDictionary<string,string>? disclosedSystemNames=null)
         {
-            this.astronomy=astronomy;
+            this.astronomy=astronomy;this.supportsBeltBodies=supportsBeltBodies;this.reviewBelt=reviewBelt;
+            this.disclosedSystemNames=disclosedSystemNames?.ToDictionary(x=>x.Key,x=>x.Value,StringComparer.Ordinal);
+            this.beltBodies=supportsBeltBodies&&beltBodies!=null&&beltBodies.ActorId==observation.Actor&&beltBodies.Turn==observation.Turn&&beltBodies.Revision==observation.Revision?beltBodies:null;
             if(environmentScale.HasValue&&environmentScale.Value<=0)throw new ArgumentOutOfRangeException(nameof(environmentScale));
             this.environmentScale=environmentScale;
             this.observation=observation;this.planets=planets;this.activities=activities;this.reviewOrder=reviewOrder;this.submit=submit;this.reviewActivity=reviewActivity;this.submitActivity=submitActivity;this.supportsKitFreePassengers=supportsKitFreePassengers;this.systemNodes=systemNodes;
@@ -153,27 +159,40 @@ namespace HobbyDS9.UnityReview
         internal bool InspectOwnedWorld(string worldId,bool planetDetails=false)
         {
             if(!Live||!observation.Worlds.Any(x=>x.Id==worldId))return false;
-            world=worldId;transportDraft=null;
-            if(planetDetails){planet=observation.Worlds.Single(x=>x.Id==worldId).PlanetId;Show("Planet");}else Show("Worlds");
+            world=worldId;transportDraft=null;inspectedSystemCaption=null;
+            if(planetDetails){planet=observation.Worlds.Single(x=>x.Id==worldId).PlanetId;selectedBody=new BodySelectionKey(BodySelectionKind.Planet,planet);inspectedSystemId=planets.FirstOrDefault(x=>x.PlanetId==planet)?.SystemId;Show("Planet");}else Show("Worlds");
             return true;
         }
         internal void InspectSystem(string? systemId,string caption)
         {
             if(!Live)return;
-            inspectedSystemCaption=caption;
+            inspectedSystemCaption=caption;inspectedSystemId=systemId;
             if(!planets.Any(x=>x.PlanetId==planet&&x.SystemId==systemId)){planet=planets.FirstOrDefault(x=>x.SystemId==systemId)?.PlanetId??"";solYaw=0;}
+            if(selectedBody.Kind!=BodySelectionKind.Belt||!KnownBelts.Any(b=>b.BodyId==selectedBody.Id&&b.SystemId==systemId))
+                selectedBody=planet.Length>0?new BodySelectionKey(BodySelectionKind.Planet,planet):new BodySelectionKey(BodySelectionKind.Belt,KnownBelts.FirstOrDefault(b=>b.SystemId==systemId)?.BodyId??"");
             Show("Planets");
         }
         private void Planets()
         {
             Text(body,inspectedSystemCaption??"System","colonisation-system-heading").style.unityFontStyleAndWeight=FontStyle.Bold;
-            var p=planets.FirstOrDefault(x=>x.PlanetId==planet);
-            if(p==null){Text(body,"No planetary bodies have been disclosed here.");return;}
-            var systems=planets.GroupBy(x=>x.SystemId,StringComparer.Ordinal).ToArray();
-            Picker(body,"Disclosed system",systems,x=>x.Key,x=>"System containing "+x.First().DisplayName,p.SystemId,id=>{
-                inspectedSystemCaption=null;planet=systems.First(x=>x.Key==id).First().PlanetId;solYaw=0;Show("Planets");
+            if(inspectedSystemCaption!=null&&inspectedSystemId==null)
+            {Text(body,supportsBeltBodies&&beltBodies==null?"Belt body information is temporarily unavailable.":"No celestial bodies have been disclosed here.","celestial-body-availability");return;}
+            var systems=DisclosedBodySystems();
+            var system=inspectedSystemId??(selectedBody.Kind==BodySelectionKind.Belt?KnownBelts.FirstOrDefault(x=>x.BodyId==selectedBody.Id)?.SystemId:null)
+                ??planets.FirstOrDefault(x=>x.PlanetId==planet)?.SystemId??systems.FirstOrDefault();
+            if(system==null||!systems.Contains(system,StringComparer.Ordinal))
+            {Text(body,supportsBeltBodies&&beltBodies==null?"Belt body information is temporarily unavailable.":"No celestial bodies have been disclosed here.","celestial-body-availability");return;}
+            if(supportsBeltBodies&&beltBodies==null)Text(body,"Belt body information is temporarily unavailable.","celestial-body-availability");
+            inspectedSystemId=system;
+            Picker(body,"Disclosed system",systems,x=>x,BodySystemName,system,id=>{
+                inspectedSystemCaption=null;inspectedSystemId=id;planet=planets.FirstOrDefault(x=>x.SystemId==id)?.PlanetId??"";
+                selectedBody=planet.Length>0?new BodySelectionKey(BodySelectionKind.Planet,planet):new BodySelectionKey(BodySelectionKind.Belt,KnownBelts.First(b=>b.SystemId==id).BodyId);
+                solYaw=0;Show("Planets");
             },"colonisation-system-selector");
-            var bodies=systems.First(x=>x.Key==p.SystemId).ToArray();
+            var bodies=planets.Where(x=>x.SystemId==system).ToArray();
+            if(bodies.Length==0){BeltOnlySystem(body,system);return;}
+            var p=bodies.FirstOrDefault(x=>x.PlanetId==planet)??bodies[0];planet=p.PlanetId;
+            if(!KnownBody(selectedBody))selectedBody=new BodySelectionKey(BodySelectionKind.Planet,planet);
             var surface=new VisualElement{name="colonisation-system-content"};body.Add(surface);
             var activation=new PlanetActivationScope(surface);
             Text(body,"Click / Space: focus · Double-click / Enter: open planet","colonisation-planet-interaction-hint");
@@ -204,7 +223,8 @@ namespace HobbyDS9.UnityReview
             void FocusPlanet(ColonisationPlanetSnapshot target)
             {
                 if(!Live||epoch!=controlEpoch||!bodies.Any(x=>ReferenceEquals(x,target)))return;
-                planet=target.PlanetId;
+                planet=target.PlanetId;selectedBody=new BodySelectionKey(BodySelectionKind.Planet,planet);
+                foreach(var beltButton in this.Query<Button>(className:"system-belt-body").ToList())beltButton.RemoveFromClassList("selected-nav");
                 foreach(var pair in cards)pair.Value.SetSelected(pair.Key==planet);
                 // Do not rebuild cards/markers between the first and second click.
                 solOverview?.Select(planet);detail.Clear();PlanetDetails(detail,target);
@@ -212,21 +232,24 @@ namespace HobbyDS9.UnityReview
             void OpenPlanet(ColonisationPlanetSnapshot target)
             {
                 if(!Live||epoch!=controlEpoch||!bodies.Any(x=>ReferenceEquals(x,target)))return;
-                planet=target.PlanetId;Show("Planet");
+                planet=target.PlanetId;selectedBody=new BodySelectionKey(BodySelectionKind.Planet,planet);Show("Planet");
             }
             solOverview=new ReviewSolOverview(bodies,p.PlanetId,solYaw,solZoom,FocusPlanet,
                 (yaw,zoom)=>{if(Live&&epoch==controlEpoch){solYaw=yaw;solZoom=zoom;}},OpenPlanet,solReducedMotion,
                 reduced=>{if(Live&&epoch==controlEpoch)solReducedMotion=reduced;},activation,distances,solInnerFrame,solFocusFrame,(inner,focus)=>{if(Live&&epoch==controlEpoch){solInnerFrame=inner;solFocusFrame=focus;}},BeltVisualLayout.ForSystem(astronomy,observation.Actor,observation.Turn,observation.Revision,p.SystemId));
-            visual.Add(solOverview);PlanetDetails(detail,p);
-            var selectorTitle=Text(visual,"PLANETS","system-selector-title");selectorTitle.style.marginTop=12;selectorTitle.style.marginBottom=6;
+            visual.Add(solOverview);
+            var selectedBelt=selectedBody.Kind==BodySelectionKind.Belt?KnownBelts.FirstOrDefault(b=>b.BodyId==selectedBody.Id&&b.SystemId==system):null;
+            if(selectedBelt!=null){solOverview.ClearSelection();BeltDetails(detail,selectedBelt);}else PlanetDetails(detail,p);
+            var selectorTitle=Text(visual,"CELESTIAL BODIES","system-selector-title");selectorTitle.style.marginTop=12;selectorTitle.style.marginBottom=6;
             var strip=Row(visual);strip.name="colonisation-system-bodies";strip.AddToClassList("system-selector");
             foreach(var disclosed in bodies)
             {
                 var own=observation.Worlds.Where(x=>x.PlanetId==disclosed.PlanetId).ToArray();
                 var status=own.Length==0?null:string.Join(" / ",own.Select(x=>StageLabel(x.Stage)));
-                var card=new PlanetBodyCard(disclosed,status,disclosed.PlanetId==planet,()=>FocusPlanet(disclosed),()=>OpenPlanet(disclosed),activation);
+                var card=new PlanetBodyCard(disclosed,status,selectedBody.Kind!=BodySelectionKind.Belt&&disclosed.PlanetId==planet,()=>FocusPlanet(disclosed),()=>OpenPlanet(disclosed),activation);
                 cards.Add(disclosed.PlanetId,card);strip.Add(card);
             }
+            BeltButtons(strip,KnownBelts.Where(b=>b.SystemId==system),detail);
             var legend=Text(visual,"⌂ Own settlement · Survey and settlement are separate observations.","system-disclosure-legend");legend.style.marginTop=8;legend.style.flexShrink=0;
         }
         private static string StageLabel(ColonyEstablishmentStage stage)=>stage==ColonyEstablishmentStage.EmptyOutpost?"Empty outpost":stage==ColonyEstablishmentStage.Founding?"Founding camp":stage.ToString();

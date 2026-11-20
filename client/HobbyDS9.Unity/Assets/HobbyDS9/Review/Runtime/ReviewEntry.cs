@@ -125,7 +125,7 @@ namespace HobbyDS9.UnityReview
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.enter");
             viewEpoch++;modalPermission.Invalidate();
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.begin");
-            AbandonPlayerCheckpoint();CancelStreamedUiWork();CancelColonisationUiWork();CancelEngineeringRefinementUiWork();
+            AbandonPlayerCheckpoint();CancelStreamedUiWork();CancelColonisationUiWork();CancelEngineeringRefinementUiWork();CancelBeltUiWork();
             if(routinePendingToken!=null)HideRoutinePending(routinePendingToken);
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.cancel.return");
             campaignBusyToken=null;root?.UnregisterCallback<GeometryChangedEvent>(Geometry);UnbindDemoKeyboard();ResetDemoKeyboard();confirmation=null;campaignDialogCurrent=null;ReleaseAudio();

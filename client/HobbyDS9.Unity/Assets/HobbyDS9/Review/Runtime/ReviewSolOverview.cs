@@ -29,6 +29,7 @@ namespace HobbyDS9.UnityReview
         private readonly IReadOnlyDictionary<string,long>? meanDistances;
         private readonly IReadOnlyList<BeltVisualSlot> belts;
         private readonly Action<bool,bool>? onFrame;
+        private readonly Button focusSelected;
         private bool innerFrame,focusFrame;
         private ReviewSolStage? stage;
         private string selected;
@@ -58,10 +59,10 @@ namespace HobbyDS9.UnityReview
             Control("Zoom out",()=>SetView(this.yaw,this.zoom/1.3f));Control("Zoom in",()=>SetView(this.yaw,this.zoom*1.3f));
             void Frame(bool inner,bool focus){this.innerFrame=inner;this.focusFrame=focus;this.onFrame?.Invoke(inner,focus);SetView(this.yaw,1);if(focus)pendingFocus=true;}
             var framing=new VisualElement{name="system-framing-controls"};framing.style.flexDirection=FlexDirection.Row;framing.style.flexWrap=Wrap.Wrap;framing.style.flexShrink=0;Add(framing);
-            void FrameControl(string text,Action action){var button=new Button(()=>{if(!disposed&&!failed)action();}){text=text};button.style.minHeight=44;button.style.marginRight=4;framing.Add(button);}
+            Button FrameControl(string text,Action action){var button=new Button(()=>{if(!disposed&&!failed)action();}){text=text};button.style.minHeight=44;button.style.marginRight=4;framing.Add(button);return button;}
             FrameControl("Overview",()=>Frame(false,false));
             if(meanDistances!=null)FrameControl("Inner system",()=>Frame(true,false));
-            FrameControl("Focus selected",()=>Frame(false,true));
+            focusSelected=FrameControl("Focus selected",()=>Frame(false,true));
             var motion=new Toggle("Reduce motion"){value=reducedMotion,name="system-reduce-motion"};controls.Add(motion);
             motion.RegisterValueChangedCallback(e=>{this.activation.Cancel();this.reducedMotion=e.newValue;onReducedMotion?.Invoke(e.newValue);if(e.newValue&&animating){this.yaw=targetYaw;animating=false;onView(this.yaw,this.zoom);QueueDraw();}});
             viewport=new VisualElement{name="sol-viewport"};viewport.style.height=340;viewport.style.flexShrink=0;viewport.style.overflow=Overflow.Hidden;
@@ -109,7 +110,12 @@ namespace HobbyDS9.UnityReview
         internal void Select(string id)
         {
             if(disposed||!markers.ContainsKey(id))return;
-            if(selected!=id){selected=id;pendingFocus=true;}QueueDraw();
+            focusSelected.SetEnabled(true);if(selected!=id){selected=id;pendingFocus=true;}QueueDraw();
+        }
+        internal void ClearSelection()
+        {
+            if(disposed)return;activation.Cancel();selected="";animating=false;pendingFocus=false;focusFrame=false;focusSelected.SetEnabled(false);
+            onFrame?.Invoke(innerFrame,false);QueueDraw();
         }
         private void Control(string text,Action action)
         {var b=new Button(()=>{if(!disposed&&!failed)action();}){text=text};b.style.minHeight=44;b.style.marginRight=4;controls.Add(b);}
