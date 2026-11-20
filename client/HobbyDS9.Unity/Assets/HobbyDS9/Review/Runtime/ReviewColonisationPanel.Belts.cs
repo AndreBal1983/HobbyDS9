@@ -83,6 +83,8 @@ namespace HobbyDS9.UnityReview
             WorldStat(resources,"belt-ore","Observed remaining · "+BeltBodyPresentation.Resource(target),target.ObservedRemaining,"units",ReviewIconKind.Construction);
             WorldChip(root,BeltBodyPresentation.ResourceStamp(target),"belt-resource-stamp","Initial deposits are not inferred from an old remaining-resource report.",!target.ResourceIsCurrent);
             WorldChip(root,"Settlement unavailable","belt-settlement-status",target.SettlementReason,true);
+            WorldChip(root,BeltBodyPresentation.OperatingSlot(target),"belt-operating-slot",
+                "Public operating reservation requires completed survey and current observation. It reveals no operator, construction progress or stored resources.",!target.OperatingReservationOccupied.HasValue);
             var epoch=controlEpoch;
             bool Current()=>Live&&epoch==controlEpoch&&Contains(root)&&selectedBody.Kind==BodySelectionKind.Belt
                 &&selectedBody.Id==target.BodyId&&KnownBelts.Any(b=>ReferenceEquals(b,target));
@@ -107,10 +109,11 @@ namespace HobbyDS9.UnityReview
             {
                 var sponsors=observation.Worlds.Where(w=>target.SponsorColonyIds.Contains(w.Id,StringComparer.Ordinal)).OrderBy(w=>w.Name,StringComparer.Ordinal).ToArray();
                 if(!sponsors.Any(w=>w.Id==beltSponsor))beltSponsor=sponsors.FirstOrDefault()?.Id??"";
-                if(sponsors.Length>0)Picker(root,"Mining sponsor",sponsors,w=>w.Id,w=>w.Name,beltSponsor,id=>{if(Current())beltSponsor=id;},"belt-mine-sponsor");
+                var slotAvailable=target.OperatingReservationOccupied==false;
+                if(slotAvailable&&sponsors.Length>0)Picker(root,"Mining sponsor",sponsors,w=>w.Id,w=>w.Name,beltSponsor,id=>{if(Current())beltSponsor=id;},"belt-mine-sponsor");
                 var enqueue=Button(root,"Review mining installation","belt-mine-enqueue",()=>{if(Current()){var c=BeltCommand(BeltBodyAction.EnqueueMine,target);c.ColonyId=beltSponsor;AskBelt(c,"Build a mining installation at "+target.DisplayName);}});
-                enqueue.SetEnabled(reviewBelt!=null&&Live&&sponsors.Length>0);
-                if(sponsors.Length==0)Text(root,"No eligible established sponsor in this system.");
+                enqueue.SetEnabled(reviewBelt!=null&&Live&&slotAvailable&&sponsors.Length>0);
+                if(!slotAvailable||sponsors.Length==0)Text(root,BeltBodyPresentation.MiningUnavailable(target),"belt-mine-unavailable");
             }
             if(target.ActiveSurveyId!=null)
             {

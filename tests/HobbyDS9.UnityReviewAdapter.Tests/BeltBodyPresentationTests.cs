@@ -4,9 +4,31 @@ using Xunit;
 namespace HobbyDS9.UnityReviewAdapter.Tests;
 public sealed class BeltBodyPresentationTests
 {
-    static BeltBodySnapshot Body(bool current,BeltBodyObservationDto? observation=null)=>new(
+    static BeltBodySnapshot Body(bool current,BeltBodyObservationDto? observation=null,bool? occupied=null)=>new(
         new(){BodyId="body.test",FeatureId="belt.test",SystemId="system.test",DisplayName="Test belt",InitialDeposit=999,HabitabilityBps=0},
-        current,observation,null,null,Array.Empty<string>(),Array.Empty<string>());
+        current,observation,null,null,Array.Empty<string>(),Array.Empty<string>(),occupied);
+    [Theory]
+    [InlineData(true,"Operating slot occupied")]
+    [InlineData(false,"Operating slot available")]
+    [InlineData(null,"Operating slot unknown")]
+    public void PublicOccupancyDistinguishesKnownFreeFromUnknown(bool? occupied,string expected)
+    {
+        var body=Body(true,new(){BodyId="body.test",ActorId="human",SurveyedTurn=2,ObservedTurn=4},occupied);
+        Assert.Equal(expected,BeltBodyPresentation.OperatingSlot(body));
+        if(occupied==true)Assert.DoesNotContain("sponsor",BeltBodyPresentation.MiningUnavailable(body));
+        if(occupied==null)Assert.Equal("The operating slot has not been disclosed.",BeltBodyPresentation.MiningUnavailable(body));
+    }
+    [Theory]
+    [InlineData(false,true)]
+    [InlineData(true,false)]
+    [InlineData(false,false)]
+    public void HiddenOrRetainedReservationDoesNotBecomeAFreeOrOccupiedClaim(bool current,bool surveyed)
+    {
+        var body=Body(current,surveyed?new(){BodyId="body.test",ActorId="human",SurveyedTurn=2,ObservedTurn=4}:null,true);
+        Assert.Equal("Operating slot unknown",BeltBodyPresentation.OperatingSlot(body));
+        Assert.Null(body.Mine);
+        if(!current)Assert.Contains("Current observation",BeltBodyPresentation.MiningUnavailable(body));
+    }
     [Fact]public void UnobservedDefinitionDepositAndScoreAreNeverDisplayedAsKnown()
     {
         var body=Body(true);
