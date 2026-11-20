@@ -38,7 +38,9 @@ namespace HobbyDS9.UnityReview
                 command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,colonyCommand:command,selection:Selection());},
                 (command,caption)=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Preview,command:command,caption:caption,selection:Selection());},
                 command=>{if(Current())RunColonisationInteraction(owner,controller,frame,ColonisationInteractionKind.Submission,command:command,selection:Selection());},owner.SupportsKitFreePassengers,systemNodes,
-                owner.ColonisationExpansionCampaign||owner.ColonisationGrowthCampaign||owner.ColonisationRepeatCampaign||owner.ColonisationCycleCampaign?10000:(int?)null,owner.StaticAstronomyCampaign?owner.GeneratedPresentation().Astronomy:null);
+                owner.ColonisationExpansionCampaign||owner.ColonisationGrowthCampaign||owner.ColonisationRepeatCampaign||owner.ColonisationCycleCampaign?10000:(int?)null,owner.StaticAstronomyCampaign?owner.GeneratedPresentation().Astronomy:null,owner.CaptureBeltBodies(frame.Actor),
+                (command,caption)=>{if(Current()&&epoch==viewEpoch)RunBeltBodyInteraction(owner,controller,frame,BeltBodyInteractionKind.Preview,command,caption);},owner.SupportsBeltBodies,frame.Strategy?.Navigation.Nodes.Where(n=>n.AssociatedSystemId.HasValue)
+                    .GroupBy(n=>n.AssociatedSystemId!.Value.Value,StringComparer.Ordinal).ToDictionary(g=>g.Key,g=>g.OrderBy(n=>n.NodeId.Value,StringComparer.Ordinal).First().DisplayName,StringComparer.Ordinal));
             if(frame.Strategy!=null&&observation.Actor==frame.Actor&&activities.ActorId==frame.Actor
                 &&observation.Turn==frame.Status.Turn&&activities.Turn==frame.Status.Turn
                 &&observation.Revision==frame.Status.CampaignRevision&&activities.Revision==frame.Status.CampaignRevision)

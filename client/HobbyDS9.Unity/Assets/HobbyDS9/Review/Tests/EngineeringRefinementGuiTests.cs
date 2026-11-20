@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using HobbyDS9.Contracts;
+using HobbyDS9.TacticalReviewClient;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -58,11 +60,19 @@ namespace HobbyDS9.UnityReview.Tests
                 typeof(ReviewEntry).GetMethod("Navigate",flags)!.Invoke(entry,new object[]{ReviewWorkspacePage.Research});
                 yield return null;yield return null;
                 var frame=model.Current.Frame;
+                var expected=model.BeginEngineeringRefinementInteraction(EngineeringRefinementInteractionKind.Preview,new EngineeringRefinementCommandDto{
+                    ActorId=frame.Actor,CommandId=ReviewUiModel.NewCommandId(),ExpectedTurn=frame.Status.Turn,ExpectedRevision=frame.Status.CampaignRevision,
+                    Action=EngineeringRefinementAction.Start,ParentVersionId="component.reactor.v1",Goal=EngineeringRefinementGoal.ReduceCapacity})!;
+                Assert.That(expected,Is.Not.Null);var check=Task.Run(expected.Execute);
+                while(!check.IsCompleted)yield return null;
+                Assert.That(model.CompleteEngineeringRefinementInteraction(expected,check.Result),Is.True);
+                Assert.That(check.Result.Preview!.CanStart,Is.True);
+                var expectedWork=EngineeringRefinementPresentation.Work(check.Result.Preview.Work);
                 Click(root.Q<Button>("engineering-generated-parent-component.reactor.v1"));yield return null;
                 Click(TextButton("Review target · Reduce module hull space"));yield return Settle();
                 Assert.That(model.Current.Frame,Is.SameAs(frame),"Preview must not publish a decision.");
                 Assert.That(model.CaptureEngineeringRefinement(frame.Actor)!.Projects,Is.Empty);
-                Assert.That(root.Query<Label>().ToList().Any(l=>l.text.Contains("Engineering work · 40 points")),Is.True);
+                Assert.That(root.Query<Label>().ToList().Any(l=>l.text.Contains("Engineering work · "+expectedWork+" points")),Is.True,"Show the actual pace-adjusted preview work.");
                 Click(TextButton("Start targeted refinement"));yield return Settle();
                 var project=model.CaptureEngineeringRefinement(model.Current.Frame.Actor)!.Projects.Single();
                 Assert.That(project.Stage,Is.EqualTo(EngineeringRefinementStage.Working));Assert.That(project.IsActive,Is.True);

@@ -105,7 +105,7 @@ namespace HobbyDS9.UnityReview
         }
         private void DrawPlayer()
         {
-            RestoreStreamedBusy();RestoreColonisationBusy();RestoreEngineeringRefinementBusy();if(routinePendingToken!=null)return;
+            RestoreStreamedBusy();RestoreColonisationBusy();RestoreEngineeringRefinementBusy();RestoreBeltBodiesBusy();if(routinePendingToken!=null)return;
             var frame=model!.Current.Frame;playerTitle!.text=PlayerProfile&&workspace!.Page==ReviewWorkspacePage.Tools?"Help & credits":Title(workspace!.Page);
             content!.EnableInClassList("review-central",!demoLanding&&workspace.Page==ReviewWorkspacePage.Combat);
             content.EnableInClassList("map-workspace",!demoLanding&&workspace.Page==ReviewWorkspacePage.Map&&!frontierCommissionOpen&&campaignSettingsReturn==null);
