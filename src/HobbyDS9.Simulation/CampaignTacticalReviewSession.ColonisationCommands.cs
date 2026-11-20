@@ -91,6 +91,7 @@ namespace HobbyDS9.Simulation
             var planet=game.Planets!.SingleOrDefault(p=>p.PlanetId==order.PlanetId);var ship=game.Ships!.SingleOrDefault(s=>s.ShipId==order.ShipId&&s.OwnerCivilizationId==actor);
             if(planet==null||ship==null||!ShipAt(game,ship,planet.SystemId)||(ActivityCapability(game,ship)?.StudyWork??0)<1)return CampaignTacticalError.InvalidOrder;
             var a=colonisation!.State;var prior=a.Surveys!.SingleOrDefault(s=>s.ActorId==actor&&s.PlanetId==planet.PlanetId);
+            if(BeltSurveyBusy(ship.ShipId))return CampaignTacticalError.InvalidOrder;
             if(prior?.Stage==PlanetSurveyStage.Completed||prior?.Stage==PlanetSurveyStage.Active||a.Surveys!.Any(s=>s.ShipId==ship.ShipId&&s.Stage==PlanetSurveyStage.Active)
                 ||activities!.State.Findings!.Any(f=>f.ShipId==ship.ShipId&&(f.Stage==ActivityProgressStage.Active||f.Stage==ActivityProgressStage.AwaitingClaim)))return CampaignTacticalError.InvalidOrder;
             if(prior!=null)a.Surveys!.Remove(prior);

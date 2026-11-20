@@ -98,7 +98,8 @@ namespace HobbyDS9.Simulation
                 "Unsupported construction queue in integrated root.");
             Require(game.PopulationStatistics!.ProductionCompleted >= initialProductionCompleted
                 && game.PopulationStatistics.ProductionCompleted-initialProductionCompleted==records.Count+(published?.Records.Count??0)+(activities?.State.Structures!.Count??0)
-                    +(colonisation?.History.Count(r=>r.Completed&&r.Order!.Kind==ColonisationProductionKind.SettlementKit)??0), "Produced-source history/completion counter mismatch.");
+                    +(colonisation?.History.Count(r=>r.Completed&&r.Order!.Kind==ColonisationProductionKind.SettlementKit)??0)
+                    +(beltBodies==null?0:colonisation!.History.Count(r=>r.Completed&&r.Order!.Kind==ColonisationProductionKind.BeltMining)), "Produced-source history/completion counter mismatch.");
             Require(records.All(b => b != null && EntityId.TryParse(b.ShipId, out var id) && b.ShipId!.StartsWith("ship.",StringComparison.Ordinal) && id.TryGetAllocationSequence(out var n)
                     && n < game.NextEntitySequence && !definitions.AuthoredTacticalEquipment!.InitialShipProvisions!.Any(p => p.ShipId == b.ShipId)
                     && EntityId.TryParse(b.QueueItemId, out var queue) && b.QueueItemId!.StartsWith("queue-item.",StringComparison.Ordinal) && queue.TryGetAllocationSequence(out var q) && q < n

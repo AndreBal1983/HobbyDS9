@@ -124,7 +124,7 @@ namespace HobbyDS9.Contracts
         public int FormatVersion {get;set;}=1;public string ProfileId {get;set;}=CampaignColonisationIdentity.PackageProfile;public string PackageHash {get;set;}="";
         public CampaignActivitiesPackageDto? Activities {get;set;}public ShipDesignCatalogueDto? Catalogue {get;set;}public List<ShipClassDraftDto>? ReadyClasses {get;set;}public ColonisationSupportCatalogueDto? Support {get;set;}public ColonisationPolicyDto? Settlement {get;set;}
     }
-    public enum ColonisationProductionKind { PublishedShip=1,Infrastructure=2,SettlementKit=3 }
+    public enum ColonisationProductionKind { PublishedShip=1,Infrastructure=2,SettlementKit=3,BeltMining=4 }
     public sealed class ColonisationProductionItemDto
     {
         public string QueueItemId {get;set;}="";public string ColonyId {get;set;}="";public string OwnerId {get;set;}="";
