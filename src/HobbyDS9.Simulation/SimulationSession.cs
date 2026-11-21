@@ -16,6 +16,7 @@ namespace HobbyDS9.Simulation
         private GameStateDto state;
         private readonly DefinitionCatalogDto definitions;
         private readonly SaveCompatibility compatibility;
+        private readonly PlanetaryOwnershipContext? ownership;
         public WeightedNavigationGraph Navigation { get; }
         public GalaxyGraph Galaxy { get; }
         private readonly Dictionary<CommandKind, ICommandHandler> handlers;
@@ -27,16 +28,18 @@ namespace HobbyDS9.Simulation
 
         internal SimulationSession(SaveEnvelopeDto save, DefinitionCatalogDto definitions, SaveCompatibility compatibility,
             IReadOnlyDictionary<CommandKind, ICommandHandler> commandHandlers,
-            Func<StrategicTurnPhase, GameStateDto, bool>? turnPhaseProbe = null, Func<GameStateDto, bool>? combatCheckpointProbe = null, Action<int, GameStateDto>? combatApplicationProbe = null, Action<GameStateDto>? combatFinalizationProbe = null)
+            Func<StrategicTurnPhase, GameStateDto, bool>? turnPhaseProbe = null, Func<GameStateDto, bool>? combatCheckpointProbe = null, Action<int, GameStateDto>? combatApplicationProbe = null, Action<GameStateDto>? combatFinalizationProbe = null,PlanetaryOwnershipContext? planetaryOwnership = null)
         {
-            FoundationValidator.ValidateSave(save, definitions, compatibility).ThrowIfInvalid(nameof(save));
+            if(planetaryOwnership==null)FoundationValidator.ValidateSave(save,definitions,compatibility).ThrowIfInvalid(nameof(save));
+            else{planetaryOwnership.RequireOwner(definitions,save.GameState);FoundationValidator.ValidatePlanetarySave(save,definitions,compatibility,planetaryOwnership).ThrowIfInvalid(nameof(save));}
             this.compatibility = compatibility;
             this.turnPhaseProbe = turnPhaseProbe;
             this.combatCheckpointProbe = combatCheckpointProbe;
             this.combatApplicationProbe = combatApplicationProbe;
             this.combatFinalizationProbe = combatFinalizationProbe;
-            this.definitions = CopyDefinitions(definitions);
             state = CopyState(save.GameState);
+            if(planetaryOwnership==null)this.definitions=CopyDefinitions(definitions);
+            else{var retained=planetaryOwnership.CopyDefinitionsForState(state);this.definitions=retained.Definitions;ownership=retained.Ownership;}
             Galaxy = new GalaxyGraph(state.StarSystems!.Select(n => new EntityId(n.SystemId)), this.definitions.GalaxyEdges!);
             Navigation = new WeightedNavigationGraph(this.definitions);
             if (commandHandlers == null) throw new ArgumentNullException(nameof(commandHandlers));
@@ -108,7 +111,7 @@ namespace HobbyDS9.Simulation
             if (staging.Phase != current.Phase || staging.TurnNumber != current.TurnNumber || staging.StateRevision != current.StateRevision
                 || staging.AcceptedCommandIds == null || !staging.AcceptedCommandIds.SequenceEqual(current.AcceptedCommandIds!))
                 throw new InvalidOperationException("Handlers cannot change phase, turn, revision or command deduplication bookkeeping.");
-            var validation = FoundationValidator.ValidateGameState(staging, definitions);
+            var validation = ValidateOwnedState(staging);
             if (!validation.IsValid) throw new InvalidOperationException("Handler violated state invariants: " + validation.Issues[0].Code);
             if (!staging.Civilizations!.Select(c => c.CivilizationId).SequenceEqual(current.Civilizations!.Select(c => c.CivilizationId))
                 || !staging.StarSystems!.Select(c => c.SystemId).SequenceEqual(current.StarSystems!.Select(c => c.SystemId)))
@@ -150,14 +153,14 @@ namespace HobbyDS9.Simulation
                         afterAi = CopyState(staging);
                     };
                     Action encounterCreation = () => CampaignCombatState.Detect(staging, definitions, compatibility);
-                    if (!StrategicTurnPhases.Execute(ref staging, definitions, turnPhaseProbe, aiPlanning, encounterCreation)) return Reject(TurnErrorCode.PhaseFailed);
+                    if (!StrategicTurnPhases.Execute(ref staging, definitions, turnPhaseProbe, aiPlanning, encounterCreation,ownership?.CopyForState(staging))) return Reject(TurnErrorCode.PhaseFailed);
                     if (combatCheckpointProbe != null)
                     {
                         var beforeProbe = CopyState(staging);
                         if (!combatCheckpointProbe(staging)) return Reject(TurnErrorCode.PhaseFailed);
-                        RequirePhaseChanges(beforeProbe, CopyState(staging), allowEconomy: false);
+                        RequireOwnedPhaseChanges(beforeProbe, CopyState(staging), allowEconomy: false);
                     }
-                    var validation = FoundationValidator.ValidateGameState(staging, definitions);
+                    var validation = ValidateOwnedState(staging);
                     if (!validation.IsValid) throw new InvalidOperationException("Turn phase violated state invariants: " + validation.Issues[0].Code);
                     // Copy again before committing: retained phase references are
                     // never authoritative. Empty phases must preserve all facts.
@@ -165,12 +168,12 @@ namespace HobbyDS9.Simulation
                     var protectedCandidate = CopyState(candidate);
                     protectedCandidate.Phase = afterAi!.Phase; protectedCandidate.RngState = afterAi.RngState;
                     protectedCandidate.PendingCombats = afterAi.PendingCombats; protectedCandidate.ResolvedCombats = afterAi.ResolvedCombats;
-                    RequirePhaseChanges(afterAi, protectedCandidate, allowEconomy: true, allowResearch: true, allowProduction: true, allowMovement: true);
+                    RequireOwnedPhaseChanges(afterAi, protectedCandidate, allowEconomy: true, allowResearch: true, allowProduction: true, allowMovement: true);
                     var awaiting = candidate.Phase == SessionPhase.AwaitingCombat;
                     candidate.TurnNumber = awaiting ? attemptedTurn : checked(attemptedTurn + 1);
                     candidate.StateRevision = checked(staging.StateRevision + 1);
                     if (!awaiting) candidate.AcceptedCommandIds!.Clear();
-                    FoundationValidator.ValidateGameState(candidate, definitions).ThrowIfInvalid(nameof(candidate));
+                    ValidateOwnedState(candidate).ThrowIfInvalid(nameof(candidate));
                     var result = new TurnResult(awaiting ? TurnStatus.AwaitingCombat : TurnStatus.Completed, TurnErrorCode.None, attemptedTurn,
                         candidate.TurnNumber, candidate.StateRevision, candidate.Phase!.Value,
                         Array.Empty<StrategicEvent>(), commandResults);
@@ -187,10 +190,29 @@ namespace HobbyDS9.Simulation
         {
             var staging=CopyState(state);var results=new List<CommandResult>();
             AiPlanningPhase.Execute(()=>staging,definitions,Navigation,c=>ExecuteCommand(ref staging,c,trustedAi:true),results);
-            FoundationValidator.ValidateGameState(staging,definitions).ThrowIfInvalid(nameof(staging));
+            ValidateOwnedState(staging).ThrowIfInvalid(nameof(staging));
             return CopyState(staging);
         }
 
+        internal SimulationSession(SaveEnvelopeDto save,DefinitionCatalogDto definitions,SaveCompatibility compatibility,PlanetaryOwnershipContext planetaryOwnership)
+            :this(save,definitions,compatibility,new Dictionary<CommandKind,ICommandHandler>(),planetaryOwnership:planetaryOwnership){}
+        private ValidationReport ValidateOwnedState(GameStateDto value)=>ownership==null?FoundationValidator.ValidateGameState(value,definitions)
+            :FoundationValidator.ValidatePlanetaryGameState(value,definitions,ownership.CopyForState(value));
+        private ValidationReport ValidateOwnedSave(SaveEnvelopeDto value)=>ownership==null?FoundationValidator.ValidateSave(value,definitions,compatibility)
+            :FoundationValidator.ValidatePlanetarySave(value,definitions,compatibility,ownership.CopyForState(value.GameState));
+        private void RequireOwnedPhaseChanges(GameStateDto before,GameStateDto after,bool allowEconomy,bool allowResearch=false,bool allowProduction=false,bool allowMovement=false)
+        {
+            if(ownership==null)RequirePhaseChanges(before,after,allowEconomy,allowResearch,allowProduction,allowMovement);
+            else RequirePlanetaryPhaseChanges(before,after,definitions,ownership.CopyForState(before),ownership.CopyForState(after),allowEconomy,allowResearch,allowProduction,allowMovement);
+        }
+        internal static void RequirePlanetaryPhaseChanges(GameStateDto before,GameStateDto after,DefinitionCatalogDto definitions,
+            PlanetaryOwnershipContext beforeOwnership,PlanetaryOwnershipContext afterOwnership,bool allowEconomy,bool allowResearch=false,bool allowProduction=false,bool allowMovement=false)
+        {
+            beforeOwnership.RequireOwner(definitions,before);afterOwnership.RequireOwner(definitions,after);
+            beforeOwnership.ValidateOwnership();afterOwnership.ValidateOwnership();beforeOwnership.RequireSameControls(afterOwnership);
+            // This is the SAME old phase surface. Settlement has a separate exact receipted phase, never allow-all economy.
+            RequirePhaseChanges(before,after,allowEconomy,allowResearch,allowProduction,allowMovement);
+        }
         // Economy and Research each have a distinct allowed mutation surface.
         internal static void RequirePhaseChanges(GameStateDto state, GameStateDto candidate, bool allowEconomy, bool allowResearch = false, bool allowProduction = false, bool allowMovement = false)
         {
@@ -233,7 +255,7 @@ namespace HobbyDS9.Simulation
                         c.EngineeringTargetDefinitionId == null ? (DefinitionId?)null : new DefinitionId(c.EngineeringTargetDefinitionId),
                         c.MatureEngineeringApplicationDefinitionIds!.Select(id => new DefinitionId(id)), new ScienceEngineeringSnapshot(c))),
                     state.StarSystems!.Select(n => new StarSystemSnapshot(new EntityId(n.SystemId), new DefinitionId(n.DefinitionId),
-                        n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges, state.Phase!.Value, state.Colonies!.Select(c => new ColonySnapshot(c, WorldEconomy.Planet(c, state, definitions), WorldEconomy.Project(c, state, definitions))),
+                        n.OwnerCivilizationId == null ? (EntityId?)null : new EntityId(n.OwnerCivilizationId))), Galaxy.Edges, state.Phase!.Value, state.Colonies!.Select(c => new ColonySnapshot(c, WorldEconomy.Planet(c, state, definitions), WorldEconomy.Project(c, state, definitions,ownership?.CopyForState(state)))),
                     state.Ships!.Select(s => new ShipSnapshot(s, CampaignShipDesignResolver.Ship(state, definitions, s))), state.Fleets!.Select(f => new FleetSnapshot(f)), definitions.ShipDesigns!.Select(d => new ShipDesignSnapshot(d)),
                     CampaignCombatState.AllRequests(state).Select(r => new CombatEncounterSnapshot(r, state.ResolvedCombats!.Any(c => c.Request.EncounterId == r.EncounterId))),
                     state.Planets!.Select(p => new PlanetStateSnapshot(p)), state.Displacements!.Select(r => new DisplacementSnapshot(r)),

@@ -1,0 +1,28 @@
+{
+  "FormatVersion": 2,
+  "SchemaId": "published-tactical-support-v2",
+  "CatalogueId": "support.playtest.utility-escort.v1",
+  "Revision": 1,
+  "SourceCompilerId": "ship-design-compiler-v1",
+  "BalanceStatus": "provisional-test-only",
+  "CloakPolicyId": "unsupported-no-cloak-v1",
+  "Hulls": [{
+    "HullVersionId": "hull.utility.v1",
+    "SupportedRoleIds": ["role.escort", "role.surveyor"],
+    "Armor": 0,
+    "TacticalRole": 1,
+    "Capabilities": {"Speed":30,"Agility":20,"Sensors":20,"Command":20,"Cohesion":30},
+    "Mounts": [{"SourceMountId":"mount.energy.forward","SourceCoverageTag":"coverage.forward","Coverage":1,"Slots":2}]
+  }],
+  "Components": [
+    {"ComponentVersionId":"component.reactor.v1","Kind":1,"TacticalSensorRating":null,"Beam":null},
+    {"ComponentVersionId":"component.life-support.v1","Kind":2,"TacticalSensorRating":null,"Beam":null},
+    {"ComponentVersionId":"component.command.v1","Kind":3,"TacticalSensorRating":null,"Beam":null},
+    {"ComponentVersionId":"component.propulsion.v1","Kind":4,"TacticalSensorRating":null,"Beam":null},
+    {"ComponentVersionId":"component.escort-sensors.v1","Kind":6,"TacticalSensorRating":40,"Beam":null},
+    {"ComponentVersionId":"component.energy-bank.v1","Kind":5,"TacticalSensorRating":null,"Beam":{
+      "SourceMountId":"mount.energy.forward","SlotsRequired":1,"Coverage":1,"Damage":7,
+      "AccuracyBps":6500,"TrackingBps":4200,"OpportunitiesPerRound":2,"CadenceRounds":2,"InitialNextFireRound":1
+    }}
+  ]
+}

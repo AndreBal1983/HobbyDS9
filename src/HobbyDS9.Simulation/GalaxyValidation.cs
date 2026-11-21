@@ -45,9 +45,10 @@ namespace HobbyDS9.Simulation
         }
 
         private static void ValidateTypedState(GameStateDto? dto, DefinitionCatalogDto? catalog,
-            string path, List<ValidationIssue> issues)
+            string path, List<ValidationIssue> issues,PlanetaryOwnershipContext? ownership=null)
         {
             if (dto == null) return;
+            if(ownership!=null){ownership.RequireOwner(catalog!,dto);ownership.ValidateOwnership();}
             var civDefinitions = new HashSet<string>(catalog?.Civilizations?.Where(c => c != null).Select(c => c.DefinitionId) ?? Array.Empty<string>(), StringComparer.Ordinal);
             var systemDefinitions = new HashSet<string>(catalog?.StarSystems?.Where(c => c != null).Select(c => c.DefinitionId) ?? Array.Empty<string>(), StringComparer.Ordinal);
             var headers = (dto.EntityIdentities ?? new List<EntityIdentityDto>()).Where(e => e != null && EntityId.TryParse(e.EntityId, out _))
@@ -91,7 +92,7 @@ namespace HobbyDS9.Simulation
                 }
             }
             ValidateNavigationState(dto,catalog,path,issues);
-            ValidateColonies(dto, catalog, headers, typedIds, civilizationIds, path, issues);
+            ValidateColonies(dto, catalog, headers, typedIds, civilizationIds, path, issues,ownership);
             ValidateResearchState(dto, catalog, path, issues);
             ValidateProductionFleets(dto, catalog, headers, typedIds, civilizationIds, path, issues);
             ValidateAuthoredTacticalEquipmentBindings(dto, catalog, false, issues);

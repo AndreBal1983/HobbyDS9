@@ -1,0 +1,15 @@
+{
+  "FormatVersion": 5,
+  "ProfileId": "campaign-tactical-v2-frontier-review-1",
+  "PolicyId": "arrival-public-lanes-provisional-v1",
+  "PolicyStatus": "proposed",
+  "DefaultActivationAllowed": false,
+  "PublicLaneIds": [
+    "connection.sol-bajor",
+    "connection.cardassia-badlands",
+    "connection.badlands-bajor",
+    "connection.bajor-wormhole",
+    "connection.wormhole",
+    "connection.gamma-founders"
+  ]
+}

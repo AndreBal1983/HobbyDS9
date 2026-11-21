@@ -27,10 +27,10 @@ namespace HobbyDS9.UnityReview.Tests
                 var b=root.Q<Button>(id);Debug.Log("DESIGN CAPTION "+id+" text="+b.text+" color="+b.resolvedStyle.color+" background="+b.resolvedStyle.backgroundColor+" size="+b.resolvedStyle.fontSize+" font="+b.resolvedStyle.unityFont+" fontDefinition="+b.resolvedStyle.unityFontDefinition+" bounds="+b.worldBound);
             }
             var back=root.Q<Button>("designer-close");
-            Assert.That(root.Q<Label>("designer-state").text,Is.EqualTo("Incomplete local preview"));
+            Assert.That(root.Q<Button>("integrated-design-publish").enabledSelf,Is.True,"The real campaign starter must pass publication validation.");
             yield return null;yield return null;
             var prior=RenderTexture.active;RenderTexture.active=target;var png=new Texture2D(1280,720,TextureFormat.RGBA32,false);png.ReadPixels(new Rect(0,0,1280,720),0,0);png.Apply();
-            var output=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/early-game-player-ui/designer-probe.png"));File.WriteAllBytes(output,png.EncodeToPNG());RenderTexture.active=prior;
+            var output=Path.GetFullPath(Path.Combine(UnityEngine.Application.dataPath,"../../..","artifacts/early-game-player-ui/designer-probe.png"));Directory.CreateDirectory(Path.GetDirectoryName(output)!);File.WriteAllBytes(output,png.EncodeToPNG());RenderTexture.active=prior;
             var bounds=back.worldBound;int ink=0;
             for(int x=(int)bounds.xMin+12;x<(int)bounds.xMax-12;x++)for(int y=(int)bounds.yMin+8;y<(int)bounds.yMax-8;y++)
             {var pixel=png.GetPixel(x,719-y);if(pixel.r<.2f&&pixel.g<.2f&&pixel.b<.2f)ink++;}
@@ -105,33 +105,77 @@ namespace HobbyDS9.UnityReview.Tests
                     if(page==ReviewWorkspacePage.Production){Click("production-colony-colony.sol");yield return null;yield return null;}
                     Assert.That(root.Q("player-footer"),Is.Not.Null);Assert.That(root.Q("review-workspace-navigation"),Is.Not.Null);
                     Assert.That(root.Q("player-footer").worldBound.yMax,Is.LessThanOrEqualTo(size.y+1),"Footer clipped");
-                    if(page==ReviewWorkspacePage.Map)Assert.That(root.Q<Image>("map-space-backdrop").image,Is.Not.Null,"Live map decorative asset must load");
+                    var footer=root.Q("player-footer");var header=root.Q("player-header");
+                    Assert.That(footer.GetFirstAncestorOfType<ScrollView>(),Is.Null,"Campaign actions stay outside scrolling content.");
+                    Assert.That(root.Q("review-central-content").worldBound.yMax,Is.LessThanOrEqualTo(footer.worldBound.yMin+1),"Content must stop above the fixed footer.");
+                    Assert.That(root.Q("player-console-frame").pickingMode,Is.EqualTo(PickingMode.Ignore));
+                    foreach(var stat in new[]{"phase","turn","credits"})
+                        Visible(root.Q("player-status-"+stat),header.worldBound,"Header "+stat);
+                    if(size.x==1280)
+                        Assert.That(root.Q("player-status-phase").worldBound.height,
+                            Is.LessThanOrEqualTo(root.Q("player-status-turn").worldBound.height+2),
+                            "Planning must fit on one line in the narrow header.");
+                    Assert.That(root.Q<Label>("player-status-turn").text,Is.EqualTo(model.Current.Frame.Status.Turn.ToString()));
+                    Assert.That(root.Q<Label>("player-status-credits").text,Is.EqualTo(model.Current.Frame.Strategy!.Civilization.Credits.ToString()));
+                    if(root.Q("player-primary-action") is VisualElement primary)
+                        Assert.That(footer.Contains(primary),Is.True,"Profile changes must not move the primary action above the workspace.");
+                    if(page==ReviewWorkspacePage.Map)
+                    {
+                        Assert.That(root.Q<Image>("map-space-backdrop").image,Is.Not.Null,"Live map decorative asset must load");
+                        Assert.That(root.Q("review-central-content").worldBound.xMax,Is.EqualTo(footer.worldBound.xMax).Within(2),"Map workspace must use the available width while its inspector stays bounded.");
+                        if(size.y>=1080)
+                        {
+                            var map=root.Q("integrated-known-map");var viewport=map.GetFirstAncestorOfType<ScrollView>().contentViewport;
+                            var caption=root.Q("integrated-map-caption");
+                            Assert.That(viewport.worldBound.yMax-caption.worldBound.yMax,Is.LessThanOrEqualTo(24),"Tall schematic map must use the panel height instead of leaving a blank lower canvas.");
+                            Assert.That(caption.worldBound.yMax,Is.LessThanOrEqualTo(viewport.worldBound.yMax+1),"Map caption remains inside its viewport.");
+                        }
+                    }
                     if(page==ReviewWorkspacePage.Research)
                     {
                         var cards=root.Query<VisualElement>().ToList().Where(e=>e.name.StartsWith("science-card-")).ToList();Assert.That(cards.Count,Is.EqualTo(6));
-                        var viewport=root.Q("six-science-cards").GetFirstAncestorOfType<ScrollView>().contentViewport.worldBound;
-                        foreach(var card in cards)Visible(card,viewport,card.name);
-                        Click("science-plus-Construction");yield return null;yield return null;
-                        Visible(root.Q("player-primary-action"),new Rect(0,0,size.x,size.y),"Apply Science action");
-                        Assert.That(root.Q<Button>("player-primary-action").text,Is.EqualTo("Apply Science allocation"));
-                        Assert.That(model.HasLocalEdits,Is.True);
-                        Click("player-primary-action");yield return null;EscapeModal();yield return null;
-                        Assert.That(model.HasLocalEdits,Is.True,"Cancel must preserve the research draft");
-                        Assert.That(document.rootVisualElement.Q("review-one-use-confirmation"),Is.Null,"Escape closes only the confirmation");
-                        model.Reset();Invoke("Draw");yield return null;yield return null;
+                        var scienceScroll=root.Q("six-science-cards").GetFirstAncestorOfType<ScrollView>();
+                        foreach(var card in cards)
+                        {
+                            scienceScroll.ScrollTo(card);yield return null;yield return null;
+                            Visible(card,scienceScroll.contentViewport.worldBound,card.name);
+                        }
+                        scienceScroll.scrollOffset=Vector2.zero;yield return null;
+                        Click("science-plus-Construction");yield return new WaitForSecondsRealtime(.06f);yield return null;
+                        Visible(root.Q("player-primary-action"),new Rect(0,0,size.x,size.y),"End turn action after accepted Science change");
+                        Assert.That(root.Q<Button>("player-primary-action").text,Does.StartWith("End turn"));
+                        Assert.That(model.HasLocalEdits,Is.False);Assert.That(root.Q("player-discard-changes"),Is.Null);
+                        Assert.That(root.Q("integrated-apply-science"),Is.Null);Assert.That(root.Q("review-one-use-confirmation"),Is.Null);
                     }
                     var prior=RenderTexture.active;RenderTexture.active=target;var image=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);image.ReadPixels(new Rect(0,0,size.x,size.y),0,0);image.Apply();File.WriteAllBytes(Path.Combine(output,size.x+"x"+size.y+"-"+page+".png"),image.EncodeToPNG());RenderTexture.active=prior;UnityEngine.Object.Destroy(image);
                     if(page==ReviewWorkspacePage.Research)
                     {
                         Click("research-tab-engineering");yield return null;yield return null;yield return null;
-                        Assert.That(root.Query<VisualElement>().ToList().Any(e=>e.name.StartsWith("engineering-project-")),Is.True);
+                        Assert.That(root.Q("engineering-section-new"),Is.Not.Null);
+                        Assert.That(root.Q("engineering-section-refinement"),Is.Not.Null);
+                        Assert.That(root.Q<TextField>("engineering-search-new").worldBound.width,Is.GreaterThanOrEqualTo(240));
+                        Assert.That(root.Q<TextField>("engineering-search-refinement").worldBound.width,Is.GreaterThanOrEqualTo(240));
+                        Assert.That(root.Q("engineering-allocation"),Is.Null);
+                        Assert.That(root.Q("open-other-research"),Is.Null);
+                        var goals=root.Query<Button>().ToList().Where(e=>e.name.StartsWith("engineering-goal-")).ToList();
+                        Assert.That(goals.Count,Is.EqualTo(model.Current.Frame.Strategy.Research.Engineering.Count(p=>EngineeringPresentation.Visible(p,model.ColonisationCycleCampaign))));
+                        if(goals.Count>0)
+                        {
+                            var inspect=goals.First();inspect.GetFirstAncestorOfType<ScrollView>().ScrollTo(inspect);yield return null;
+                            Click(inspect.name);yield return null;
+                            Assert.That(document.rootVisualElement.Q("review-one-use-confirmation"),Is.Not.Null);
+                            var popupText=string.Join("\n",document.rootVisualElement.Q("player-confirmation-details").Query<Label>().ToList().Select(l=>l.text));
+                            Assert.That(popupText,Does.Contain("Project completion").And.Contain("Science & project requirements"));EscapeModal();yield return null;
+                        }
+                        if(size.x>=1280)
+                        {var left=root.Q("engineering-section-new").worldBound;var right=root.Q("engineering-section-refinement").worldBound;Assert.That(left.xMax,Is.LessThanOrEqualTo(right.xMin+1));}
                         prior=RenderTexture.active;RenderTexture.active=target;image=new Texture2D(size.x,size.y,TextureFormat.RGBA32,false);image.ReadPixels(new Rect(0,0,size.x,size.y),0,0);image.Apply();File.WriteAllBytes(Path.Combine(output,size.x+"x"+size.y+"-Engineering.png"),image.EncodeToPNG());RenderTexture.active=prior;UnityEngine.Object.Destroy(image);
                         Click("research-tab-science");yield return null;
                     }
                     if(page==ReviewWorkspacePage.Designer&&size.x==1280)
                     {
                         var oldName=root.Q<TextField>("designer-name");oldName.value="Edited preview";yield return null;
-                        Assert.That(model.LocalDesignDirty,Is.True);Assert.That(root.Q<Button>("player-primary-action").enabledInHierarchy,Is.False);
+                        Assert.That(model.LocalDesignDirty,Is.True);Assert.That(root.Q<Button>("player-primary-action").enabledInHierarchy,Is.True);Assert.That(root.Q("player-discard-changes"),Is.Null);
                         Click("review-nav-Map");yield return null;Click("review-nav-Designer");yield return null;
                         Assert.That(document.rootVisualElement.Q<TextField>("designer-name").value,Is.EqualTo("Edited preview"));
                         Click("review-nav-Tools");yield return null;Click("player-switch-civ.cardassian");yield return null;Modal("Confirm");yield return null;
@@ -143,14 +187,10 @@ namespace HobbyDS9.UnityReview.Tests
                 document.panelSettings.targetTexture=null;target.Release();UnityEngine.Object.Destroy(target);
             }
             Invoke("Navigate",ReviewWorkspacePage.Research);yield return null;root=document.rootVisualElement;var frame=model.Current.Frame;
-            Click("science-plus-Construction");yield return null;Assert.That(model.HasLocalEdits,Is.True);Assert.That(model.Current.Frame,Is.SameAs(frame));
-            Click("player-primary-action");yield return null;Assert.That(root.Q("player-confirmation-summary"),Is.Not.Null);
-            Modal("Cancel");yield return null;
-            Assert.That(model.HasLocalEdits,Is.True);Assert.That(model.Current.Frame,Is.SameAs(frame));
-            Click("player-primary-action");yield return null;Modal("Confirm");yield return null;
-            Assert.That(model.HasLocalEdits,Is.False);Assert.That(model.Current.Frame,Is.Not.SameAs(frame));
-            root=document.rootVisualElement;root.Q<SliderInt>("integrated-research-split").value=20;yield return null;
-            Click("player-primary-action");yield return null;Modal("Confirm");yield return null;
+            Click("science-plus-Construction");yield return new WaitForSecondsRealtime(.06f);yield return null;
+            Assert.That(model.HasLocalEdits,Is.False);Assert.That(model.Current.Frame,Is.Not.SameAs(frame));Assert.That(root.Q("review-one-use-confirmation"),Is.Null);
+            root=document.rootVisualElement;root.Q<SliderInt>("integrated-research-split").value=20;yield return new WaitForSecondsRealtime(.06f);yield return null;
+            Assert.That(model.Current.Frame.Strategy!.Research.ScienceAllocationUnits,Is.EqualTo(600));
             Invoke("Navigate",ReviewWorkspacePage.Production);yield return null;root=document.rootVisualElement;
             Click("production-colony-colony.sol");yield return null;
             Click("integrated-queue-ship-design.source-cruiser");yield return null;

@@ -1,7 +1,7 @@
 {
   "name": "HobbyDS9.UnityClient",
   "rootNamespace": "HobbyDS9.UnityClient",
-  "references": [],
+  "references": ["HobbyDS9.ArtDemo"],
   "overrideReferences": true,
   "precompiledReferences": [
     "HobbyDS9.Application.dll",

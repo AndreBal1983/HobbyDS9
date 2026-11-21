@@ -3,54 +3,79 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HobbyDS9.Application;
+using HobbyDS9.Contracts;
 using HobbyDS9.Contracts.ShipDesign;
 using UnityEngine.UIElements;
 namespace HobbyDS9.UnityClient
 {
-    // Reuses the existing editor with a scoped catalogue. No campaign factory or v2 conversion.
+    // Cross-assembly callbacks carry only catalogue facts, input drafts and outcomes.
     public static class IntegratedDesignerPanelBridge
     {
         private sealed class State
         {
             public CampaignIntegratedDesignLibrarySnapshot Library=null!;
-            public ShipDesignDraft? Draft;
-            public ShipDesignerView? View;
-            public Action<bool> Changed=null!;
-            public Action Back=null!;
-            public Action? PreviewCaption;
+            public ShipDesignDraft? Draft; public ShipDesignerView? View;
+            public Action<bool> Changed=null!; public Action Back=null!;
+            public Func<ShipClassDraftDto,bool> CanPublish=null!,Publish=null!;
+            public Func<bool,CampaignIntegratedDesignLibrarySnapshot?> Refresh=null!;
+            public Func<CampaignBlueprintSnapshot,ShipClassDraftDto> Edit=null!;
+            public Action New=null!; public Func<string> Notice=null!;
+            public Func<string> ClassId=null!;
+            public string TemplateCaption="";
+            public Action? Update;
+            public Action<VisualElement>? Construction;
         }
-        public static object Create(CampaignIntegratedDesignLibrarySnapshot library,Action<bool> changed,Action back)
+        public static object Create(CampaignIntegratedDesignLibrarySnapshot library,Action<bool> changed,Action back,
+            Func<ShipClassDraftDto,bool> canPublish,Func<ShipClassDraftDto,bool> publish,
+            Func<bool,CampaignIntegratedDesignLibrarySnapshot?> refresh,Func<CampaignBlueprintSnapshot,ShipClassDraftDto> edit,Action newClass,
+            Func<string> notice,ShipClassDraftDto? starter,Func<string> classId)
         {
-            var state=new State{Library=library,Changed=changed,Back=back};var source=library.Catalogue;
-            if(source==null||source.Catalogue.Hulls.Count==0||source.Catalogue.Roles.Count==0)return state;
-            var hull=source.Catalogue.Hulls.FirstOrDefault(h=>source.AvailableVersionIds.Contains(h.VersionId));
-            if(hull==null)return state;
-            var blank=new ShipClassDraftDto{ClassId="class.local",DisplayName="New preview class",HullVersionId=hull.VersionId,
-                RoleId=source.Catalogue.Roles[0].RoleId,EmbarkedCrew=hull.MinimumCrew,Installations=new List<ShipInstallationDto>(),
-                Profiles=Enum.GetValues(typeof(DesignerProfile)).Cast<DesignerProfile>().Select(p=>new ShipOperatingProfileDto{Kind=DesignerFit.Kind(p),Allocations=new List<ProfilePowerAllocationDto>()}).ToList()};
-            var provider=new ApplicationShipDesignPreviewProvider(ShipDesignApplication.FromCampaignCatalogue(source.Catalogue),source.AvailableVersionIds,
-                new[]{new DesignerTemplate("blank","Empty available hull",new DesignerFit(blank))},"OWN CAMPAIGN CATALOGUE · v1 preview · custom v2 construction unavailable");
-            state.Draft=new ShipDesignDraft(provider);state.Draft.Changed+=()=>state.Changed(state.Draft.Modified);
-            return state;
+            var state=new State{Library=library,Changed=changed,Back=back,CanPublish=canPublish,Publish=publish,Refresh=refresh,Edit=edit,New=newClass,Notice=notice,ClassId=classId,TemplateCaption=starter!=null?"Utility starter":"Empty available hull (advanced)"};
+            var source=library.Catalogue;if(source==null||source.Catalogue.Hulls.Count==0||source.Catalogue.Roles.Count==0)return state;
+            var hull=source.Catalogue.Hulls.FirstOrDefault(h=>source.AvailableVersionIds.Contains(h.VersionId));if(hull==null)return state;
+            var blank=new ShipClassDraftDto{ClassId="class.local",DisplayName="New class",HullVersionId=hull.VersionId,RoleId=source.Catalogue.Roles[0].RoleId,
+                EmbarkedCrew=hull.MinimumCrew,Installations=new List<ShipInstallationDto>(),Profiles=Enum.GetValues(typeof(DesignerProfile)).Cast<DesignerProfile>()
+                    .Select(p=>new ShipOperatingProfileDto{Kind=DesignerFit.Kind(p),Allocations=new List<ProfilePowerAllocationDto>()}).ToList()};
+            var templates=new List<DesignerTemplate>();if(starter!=null)templates.Add(new DesignerTemplate("starter","Validated utility starter",new DesignerFit(starter)));
+            templates.Add(new DesignerTemplate("blank","Empty available hull (advanced)",new DesignerFit(blank)));
+            foreach(var record in library.Published.Where(CanEdit))templates.Add(new DesignerTemplate("published."+record.Blueprint.BlueprintId+"."+record.Blueprint.Revision,
+                record.Blueprint.Fit.DisplayName+" / revision "+record.Blueprint.Revision,CampaignDesigner.FromSnapshot(record.Blueprint.Fit)));
+            var provider=new ApplicationShipDesignPreviewProvider(ShipDesignApplication.FromCampaignCatalogue(source.Catalogue),source.AvailableVersionIds,templates,
+                "YOUR CAMPAIGN CATALOGUE · class revisions · custom construction not available yet");
+            state.Draft=new ShipDesignDraft(provider);
+            var first=state.Draft.Current.ToDto();first.ClassId=state.ClassId();state.Draft.StartFit(new DesignerFit(first));
+            state.Draft.Changed+=()=>{if(state.Draft.TemplateId.Length>0)state.TemplateCaption=state.Draft.Provider.Templates.Single(t=>t.Id==state.Draft.TemplateId).Caption;
+                if(state.Draft.Current.ToDto().ClassId!=state.ClassId()){var fit=state.Draft.Current.ToDto();fit.ClassId=state.ClassId();state.Draft.StartFit(new DesignerFit(fit));return;}state.Changed(state.Draft.Modified || state.Draft.HasPendingFit);};return state;
         }
+        private static bool CanEdit(CampaignBlueprintSnapshot r)=>r.Blueprint.Fit.Installations.All(i=>i.Quantity<=int.MaxValue)
+            && r.Blueprint.Fit.Installations.Select(i=>i.ComponentVersionId).Distinct(StringComparer.Ordinal).Count()==r.Blueprint.Fit.Installations.Count;
+        public static void SetConstructionPanel(object context,Action<VisualElement>? draw)=>((State)context).Construction=draw;
         public static void Present(VisualElement root,object context)
         {
-            var state=(State)context;root.Clear();
-            var note=new Label("Local v1 design preview. Start with Hull, then add required Power, Crew, Command and Propulsion systems; Cost / Validation explains remaining requirements. Publication from this page is pending; custom v2 construction is unsupported."){name="integrated-design-scope"};note.style.whiteSpace=WhiteSpace.Normal;root.Add(note);
-            if(state.Draft==null){root.Add(new Label("No available ship-design hull for this actor."));return;}
-            if(state.PreviewCaption!=null)state.Draft.Changed-=state.PreviewCaption;
-            state.View?.Dispose();state.View=new ShipDesignerView(state.Draft,state.Back);state.View.style.flexGrow=1;state.View.style.minHeight=0;
-            root.Add(state.View);
-            state.PreviewCaption=()=>{if(state.Draft.Current.Installed.Count==0){var caption=state.View.Q<Label>("designer-state");caption.text="Incomplete local preview";caption.tooltip="This empty fit has actual backend validation errors. Add required systems and inspect Cost / Validation; it is not publishable.";}};
-            state.Draft.Changed+=state.PreviewCaption;state.PreviewCaption();
-            var history=new Foldout{text="Your published revisions (read only)",value=false};root.Add(history);
-            if(state.Library.Published.Count==0)history.Add(new Label("No published revisions."));
-            foreach(var record in state.Library.Published)history.Add(new Label(record.Blueprint.Fit.DisplayName+" · revision "+record.Blueprint.Revision));
+            var s=(State)context;root.Clear();var scope=new Label(s.Construction==null?"Design and publish class revisions. Building custom classes is not available yet.":"Provisional construction playtest · publish a class, then build an eligible revision at your colony."){name="integrated-design-scope"};scope.style.whiteSpace=WhiteSpace.Normal;root.Add(scope);
+            if(s.Draft==null){root.Add(new Label("No available ship-design hull for this actor."));return;}
+            if(s.Update!=null)s.Draft.Changed-=s.Update;s.View?.Dispose();
+            var actions=new VisualElement();actions.AddToClassList("sd-buttons");actions.style.flexDirection=FlexDirection.Row;actions.style.flexShrink=0;root.Add(actions);
+            var feedback=new Label(){name="integrated-design-feedback"};feedback.style.whiteSpace=WhiteSpace.Normal;root.Add(feedback);
+            var publish=new Button(()=>{if(s.Draft.HasPendingFit)return;if(s.Publish(s.Draft.Current.ToDto())){s.Draft.MarkPublished();var library=s.Refresh(false);if(library!=null)s.Library=library;Present(root,s);}else s.Update?.Invoke();}){name="integrated-design-publish",text="Publish class revision"};actions.Add(publish);
+            actions.Add(new Button(()=>s.Draft.RequestDiscard(()=>{s.New();s.TemplateCaption=s.Draft.Provider.Templates[0].Caption;s.Draft.StartFit(s.Draft.Provider.Templates[0].Fit);s.Update?.Invoke();})){name="integrated-design-new",text="New class"});
+            actions.Add(new Button(()=>{var library=s.Refresh(true);if(library!=null){s.Library=library;
+                var provider=new ApplicationShipDesignPreviewProvider(ShipDesignApplication.FromCampaignCatalogue(library.Catalogue!.Catalogue),library.Catalogue.AvailableVersionIds,s.Draft.Provider.Templates,"OWN CAMPAIGN CATALOGUE · custom construction unavailable");s.Draft.RefreshProvider(provider);Present(root,s);}else s.Update?.Invoke();}){name="integrated-design-refresh",text="Refresh campaign"});
+            foreach(var button in actions.Children().OfType<Button>())button.AddToClassList("lcars-pill");
+            s.View=new ShipDesignerView(s.Draft,s.Back);s.View.Q<Button>("designer-construction").style.display=DisplayStyle.None;
+            var provenance=s.View.Q<VisualElement>(className:"sd-provenance");if(provenance!=null)provenance.style.display=DisplayStyle.None;
+            s.View.style.flexGrow=1;s.View.style.flexShrink=1;s.View.style.flexBasis=0;s.View.style.minHeight=0;root.Add(s.View);
+            var history=new Foldout{text=s.Construction==null?"Published class revisions — edit a copy":"Class revisions",value=false,name="integrated-design-history",tooltip="Published class revisions — edit a local copy"};
+            history.style.flexShrink=0;history.style.overflow=Overflow.Hidden;s.View.InspectorFooter.Add(history);
+            var revisions=new ScrollView(ScrollViewMode.Vertical){name="integrated-design-history-scroll"};
+            revisions.style.maxHeight=108;revisions.style.minHeight=0;revisions.style.flexShrink=0;history.Add(revisions);
+            if(s.Construction!=null){s.View.InspectorFooter.AddToClassList("sd-construction-dock");
+                var build=new Foldout{text="Build a class",name="integrated-design-construction",value=false};build.style.flexShrink=0;s.View.InspectorFooter.Add(build);s.Construction(build);}
+            if(s.Library.Published.Count==0)revisions.Add(new Label("No published revisions. Refresh after publishing to review history."));
+            foreach(var record in s.Library.Published){var r=record;var button=new Button(()=>s.Draft.RequestDiscard(()=>{var fit=s.Edit(r);s.TemplateCaption="Revision "+r.Blueprint.Revision+" (local copy)";s.Draft.StartFit(new DesignerFit(fit));s.Update?.Invoke();}))
+                {name="integrated-design-edit-"+r.Blueprint.BlueprintId+"-"+r.Blueprint.Revision,text=r.Blueprint.Fit.DisplayName+" · revision "+r.Blueprint.Revision,tooltip=r.Blueprint.Fit.DisplayName+" · revision "+r.Blueprint.Revision};button.AddToClassList("lcars-pill");button.style.flexShrink=0;button.SetEnabled(CanEdit(r));revisions.Add(button);}
+            s.Update=()=>{publish.SetEnabled(!s.Draft.HasPendingFit && s.CanPublish(s.Draft.Current.ToDto()));feedback.text=s.Notice();feedback.style.display=string.IsNullOrWhiteSpace(feedback.text)?DisplayStyle.None:DisplayStyle.Flex;s.View.Q<DropdownField>("designer-template").SetValueWithoutNotify(s.TemplateCaption);};s.Draft.Changed+=s.Update;s.Update();
         }
-        public static void Reset(object context)
-        {
-            var state=(State)context;if(state.Draft==null)return;
-            state.Draft.StartFit(state.Draft.Starting);
-        }
+        public static void Reset(object context){var s=(State)context;if(s.Draft!=null)s.Draft.StartFit(s.Draft.Starting);}
     }
 }

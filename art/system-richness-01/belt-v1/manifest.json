@@ -1,0 +1,287 @@
+{
+  "schema": 1,
+  "assetVersion": "asteroid-belt-v1",
+  "date": "2026-11-15",
+  "status": "original art candidate; Blender preview only; Unity receiving pending",
+  "generator": "tools/art/build_asteroid_belt_v1.py",
+  "blender": "5.3.0",
+  "blenderBuild": "02f0899d78e3",
+  "provenance": {
+    "geometry": "Original procedural mesh generation for HobbyDS9; no external model/texture input.",
+    "materials": "Original factor/vertex-color rocks and analytic annulus; no new raster textures.",
+    "previewOnlyMaps": "Existing Solar System Scope / INOVE CC BY 4.0 maps from system-v1; not belt dependencies.",
+    "licenceURL": "https://creativecommons.org/licenses/by/4.0/",
+    "mapSourceURL": "https://www.solarsystemscope.com/textures/"
+  },
+  "coordinates": {
+    "authoring": "Blender XY orbital plane, +Z up; origin central star",
+    "fbx": "axis_forward=-Z axis_up=Y; receiver verifies centered Unity XZ plane and positive scale",
+    "radius": "Unit annulus inner1 outer1.24; prototype sphere bound1; baked example is a fixture"
+  },
+  "geometry": [
+    {
+      "path": "Models/Belt_Rock_0_LOD0.fbx",
+      "triangles": 80,
+      "vertices": 42,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_1_LOD0.fbx",
+      "triangles": 80,
+      "vertices": 42,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_2_LOD0.fbx",
+      "triangles": 80,
+      "vertices": 42,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_3_LOD0.fbx",
+      "triangles": 80,
+      "vertices": 42,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_0_LOD1.fbx",
+      "triangles": 20,
+      "vertices": 12,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_1_LOD1.fbx",
+      "triangles": 20,
+      "vertices": 12,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_2_LOD1.fbx",
+      "triangles": 20,
+      "vertices": 12,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Rock_3_LOD1.fbx",
+      "triangles": 20,
+      "vertices": 12,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Example_LOD0.fbx",
+      "triangles": 25600,
+      "vertices": 13440,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_Example_LOD1.fbx",
+      "triangles": 2400,
+      "vertices": 1440,
+      "materialSlots": 1
+    },
+    {
+      "path": "Models/Belt_SoftAnnulus.fbx",
+      "triangles": 384,
+      "vertices": 386,
+      "materialSlots": 1
+    }
+  ],
+  "files": [
+    {
+      "path": "geometry-validation.json",
+      "bytes": 1655,
+      "sha256": "e5ffde1e01a69e7c7a9a4a6e9bc264d6f27fffcaf626fafc8cd7855f1289f5b7"
+    },
+    {
+      "path": "layout-example.json",
+      "bytes": 161038,
+      "sha256": "01352ca3cdf79aa0f4587d7cbde58d2573a4fa1f025abade5f5b63971766977e"
+    },
+    {
+      "path": "Models/Belt_Example_LOD0.fbx",
+      "bytes": 790540,
+      "sha256": "1ff0ee449a548b29bee684eec80b2f4e45c6abec0a2dba8b45351369eef7efc1"
+    },
+    {
+      "path": "Models/Belt_Example_LOD1.fbx",
+      "bytes": 89436,
+      "sha256": "4cba93a645720cf97c4e9d30565bcc282e405c51ed6c271bec24a1c3c04fd780"
+    },
+    {
+      "path": "Models/Belt_Rock_0_LOD0.fbx",
+      "bytes": 18364,
+      "sha256": "a0773fbc247c7c1b4d8e905ef5eafa8d83eb4a83f1624d67f80f3f6cb63b9fae"
+    },
+    {
+      "path": "Models/Belt_Rock_0_LOD1.fbx",
+      "bytes": 16204,
+      "sha256": "4e980b6e094905e8aaa12b6e8c4546fc77562f89bfe281bbf08cb7a7d8cca4f3"
+    },
+    {
+      "path": "Models/Belt_Rock_1_LOD0.fbx",
+      "bytes": 18364,
+      "sha256": "fd50438ea1195edd87d8f70225ed4ca45412271b594beb93c0d79d6b3bba3c3c"
+    },
+    {
+      "path": "Models/Belt_Rock_1_LOD1.fbx",
+      "bytes": 16204,
+      "sha256": "66f20e71071992a141228ce7e4a5de325f51db4dfa267d84975a32fea2d948cd"
+    },
+    {
+      "path": "Models/Belt_Rock_2_LOD0.fbx",
+      "bytes": 18364,
+      "sha256": "bee8ae32a6252bc4ee4e3a92051153223a9caa2d6f04bcf17fd7a1b62c088161"
+    },
+    {
+      "path": "Models/Belt_Rock_2_LOD1.fbx",
+      "bytes": 16188,
+      "sha256": "21962853b70537baa66cfd87ca20c7975362f184f5f25d866a752e517054e035"
+    },
+    {
+      "path": "Models/Belt_Rock_3_LOD0.fbx",
+      "bytes": 18348,
+      "sha256": "e2734ea8a379ac057490f7eb36b0dbfcb40c6baf63fa9e9d60ae588a39cc74be"
+    },
+    {
+      "path": "Models/Belt_Rock_3_LOD1.fbx",
+      "bytes": 16204,
+      "sha256": "9953b6137a71d469ca45504d3630a402b099586cc80b9a456af4d5342e1dd012"
+    },
+    {
+      "path": "Models/Belt_SoftAnnulus.fbx",
+      "bytes": 22236,
+      "sha256": "71ab4c68a223f265e0cf368d558f5fbf00f646cc96cfed66949ead9d508be47b"
+    },
+    {
+      "path": "Previews/belt-detail.png",
+      "bytes": 775773,
+      "sha256": "eb81aabe8407b547af4e895a51182a5c1ff054b44d1ae1642ab4496fdb5a5af8"
+    },
+    {
+      "path": "Previews/overview-24deg.png",
+      "bytes": 968737,
+      "sha256": "5f255454399710176c310f43c4dfe58791a83b92d40166916680d3ae92999770"
+    },
+    {
+      "path": "README.md",
+      "bytes": 9871,
+      "sha256": "6502a43aa3e8357fe2e38f9590055f85d6e1497baf8fc53e0dd8fd2a42948ecc"
+    },
+    {
+      "path": "Shaders/BeltRock.shader",
+      "bytes": 1763,
+      "sha256": "dc97f3f6f305d0b5e90aa41f5fd43ae107fe7824b0a710f86671b24ab1b61d96"
+    },
+    {
+      "path": "Shaders/BeltSoftAnnulus.shader",
+      "bytes": 1469,
+      "sha256": "87136ad80a43884da69045fd1136ddd9dacba7023f0bc44ba0bf1e64221e0fb4"
+    },
+    {
+      "path": "Sources/AsteroidBelt_v1.blend",
+      "bytes": 907787,
+      "sha256": "2f4848f6c48903722c4a484304b0b94c29aa54557d269f875838bd2449c309d8"
+    },
+    {
+      "path": "validation-fbx.json",
+      "bytes": 3819,
+      "sha256": "eb6df5798d0f1db06b041ee6ca9b7f9d56401f1edd4c9a41ddefea4311913620"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "tools/art/build_asteroid_belt_v1.py",
+      "sha256": "c51c987d21d1b9cbfd8b5a3298c49cff43e72c43c9db8cbcdbc8138f8b9d5e01"
+    },
+    {
+      "path": "tools/art/verify_asteroid_belt_v1.py",
+      "sha256": "e3138ffe6e7a0f40ac58245a8731f1b3159fa73754071cab8aa412bf0a63a762"
+    }
+  ],
+  "proposedRuntimeReceiving": {
+    "status": "paths only; not imported; shared material remaps and native validation required",
+    "meshImport": "scale1, preserve normals/vertex colors/UV; no auto materials, animation, lights or cameras; prototypes Read/Write on for bounded combine",
+    "paths": [
+      {
+        "source": "Models/Belt_Rock_0_LOD0.fbx",
+        "unityPath": "Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/Belt_Rock_0_LOD0.fbx",
+        "resourceKey": "SystemBodyArt/AsteroidBeltV1/Belt_Rock_0_LOD0",
+        "bytes": 18364,
+        "sha256": "a0773fbc247c7c1b4d8e905ef5eafa8d83eb4a83f1624d67f80f3f6cb63b9fae"
+      },
+      {
+        "source": "Models/Belt_Rock_0_LOD1.fbx",
+        "unityPath": "Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/Belt_Rock_0_LOD1.fbx",
+        "resourceKey": "SystemBodyArt/AsteroidBeltV1/Belt_Rock_0_LOD1",
+        "bytes": 16204,
+        "sha256": "4e980b6e094905e8aaa12b6e8c4546fc77562f89bfe281bbf08cb7a7d8cca4f3"
+      },
+      {
+        "source": "Models/Belt_Rock_1_LOD0.fbx",
+        "unityPath": "Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/Belt_Rock_1_LOD0.fbx",
+        "resourceKey": "SystemBodyArt/AsteroidBeltV1/Belt_Rock_1_LOD0",
+        "bytes": 18364,
+        "sha256": "fd50438ea1195edd87d8f70225ed4ca45412271b594beb93c0d79d6b3bba3c3c"
+      },
+      {
+        "source": "Models/Belt_Rock_1_LOD1.fbx",
+        "unityPath": "Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/Belt_Rock_1_LOD1.fbx",
+        "resourceKey": "SystemBodyArt/AsteroidBeltV1/Belt_Rock_1_LOD1",
+        "bytes": 16204,
+        "sha256": "66f20e71071992a141228ce7e4a5de325f51db4dfa267d84975a32fea2d948cd"
+      },
+      {
+        "source": "Models/Belt_Rock_2_LOD0.fbx",
+        "unityPath": "Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/Belt_Rock_2_LOD0.fbx",
+        "resourceKey": "SystemBodyArt/AsteroidBeltV1/Belt_Rock_2_LOD0",
+        "bytes": 18364,
+        "sha256": "bee8ae32a6252bc4ee4e3a92051153223a9caa2d6f04bcf17fd7a1b62c088161"
+      },
+      {
+        "source": "Models/Belt_Rock_2_LOD1.fbx",
+        "unityPath": "Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/Belt_Rock_2_LOD1.fbx",
+        "resourceKey": "SystemBodyArt/AsteroidBeltV1/Belt_Rock_2_LOD1",
+        "bytes": 16188,
+        "sha256": "21962853b70537baa66cfd87ca20c7975362f184f5f25d866a752e517054e035"
+      },
+      {
+        "source": "Models/Belt_Rock_3_LOD0.fbx",
+        "unityPath": "Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/Belt_Rock_3_LOD0.fbx",
+        "resourceKey": "SystemBodyArt/AsteroidBeltV1/Belt_Rock_3_LOD0",
+        "bytes": 18348,
+        "sha256": "e2734ea8a379ac057490f7eb36b0dbfcb40c6baf63fa9e9d60ae588a39cc74be"
+      },
+      {
+        "source": "Models/Belt_Rock_3_LOD1.fbx",
+        "unityPath": "Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/Belt_Rock_3_LOD1.fbx",
+        "resourceKey": "SystemBodyArt/AsteroidBeltV1/Belt_Rock_3_LOD1",
+        "bytes": 16204,
+        "sha256": "9953b6137a71d469ca45504d3630a402b099586cc80b9a456af4d5342e1dd012"
+      },
+      {
+        "source": "Models/Belt_SoftAnnulus.fbx",
+        "unityPath": "Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/Belt_SoftAnnulus.fbx",
+        "resourceKey": "SystemBodyArt/AsteroidBeltV1/Belt_SoftAnnulus",
+        "bytes": 22236,
+        "sha256": "71ab4c68a223f265e0cf368d558f5fbf00f646cc96cfed66949ead9d508be47b"
+      },
+      {
+        "source": "Shaders/BeltRock.shader",
+        "unityPath": "Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/BeltRock.shader",
+        "resourceKey": "SystemBodyArt/AsteroidBeltV1/BeltRock",
+        "bytes": 1763,
+        "sha256": "dc97f3f6f305d0b5e90aa41f5fd43ae107fe7824b0a710f86671b24ab1b61d96"
+      },
+      {
+        "source": "Shaders/BeltSoftAnnulus.shader",
+        "unityPath": "Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/BeltSoftAnnulus.shader",
+        "resourceKey": "SystemBodyArt/AsteroidBeltV1/BeltSoftAnnulus",
+        "bytes": 1469,
+        "sha256": "87136ad80a43884da69045fd1136ddd9dacba7023f0bc44ba0bf1e64221e0fb4"
+      }
+    ],
+    "sourceBytes": 163708,
+    "bakedExamplesExcluded": true,
+    "newRasterTextures": 0
+  }
+}

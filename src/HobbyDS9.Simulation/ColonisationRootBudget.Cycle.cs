@@ -1,0 +1,48 @@
+using System;
+using System.Collections.Generic;
+using HobbyDS9.Contracts;
+namespace HobbyDS9.Simulation
+{
+    internal sealed class ColonisationRootCapacityException:ArgumentException { internal ColonisationRootCapacityException():base("Cycle root work or byte capacity exhausted."){} }
+    internal static partial class ColonisationRootBudget
+    {
+        internal const long CycleActorVisits=512,CycleActorBytes=262144,CycleReceiptVisits=128,CycleReceiptBytes=16384,CycleOuterVisits=64,CycleOuterBytes=16384;
+        internal static void ValidateCycle(CampaignColonisationCycleSaveDto root,ColonisationPolicyDto policy)
+        {
+            var rich=root as CampaignSystemRichnessSaveDto;
+            var authored=root as CampaignAuthoredSolSaveDto;
+            var beltBodies=root as CampaignBeltBodiesSaveDto;
+            var refinement=root as CampaignEngineeringRefinementSaveDto??(beltBodies==null?null:new CampaignEngineeringRefinementSaveDto{GenerationVersion=beltBodies.GenerationVersion,SystemBelts=beltBodies.SystemBelts,Refinement=beltBodies.Refinement,BaseCampaign=beltBodies.BaseCampaign});
+            if(root!=null&&rich==null&&authored==null&&refinement==null&&beltBodies==null&&root.GetType()!=typeof(CampaignColonisationCycleSaveDto))Fail("Unknown cycle save carrier type.");
+            if(rich!=null){SystemRichnessData.ValidateBelts(rich);policy=SystemRichnessData.Effective(policy,true);}
+            if(authored!=null){AuthoredSolEditionData.ValidateBelts(authored);policy=SystemRichnessData.Effective(policy,true);}
+            if(refinement!=null){AuthoredSolEditionData.ValidateBelts(new CampaignAuthoredSolSaveDto{GenerationVersion=refinement.GenerationVersion,SystemBelts=refinement.SystemBelts,BaseCampaign=refinement.BaseCampaign});policy=SystemRichnessData.Effective(policy,true);}
+            if(root==null||root.FormatVersion!=(beltBodies!=null?BeltBodiesEditionIdentity.Format:refinement!=null?EngineeringRefinementIdentity.Format:authored!=null?CampaignAuthoredSolIdentity.Format:rich==null?CampaignColonisationCycleIdentity.Format:CampaignSystemRichnessIdentity.Format)||root.ProfileId!=(beltBodies!=null?BeltBodiesEditionIdentity.Profile:refinement!=null?EngineeringRefinementIdentity.Profile:authored!=null?CampaignAuthoredSolIdentity.Profile:rich==null?CampaignColonisationCycleIdentity.Profile:CampaignSystemRichnessIdentity.Profile)||root.BaseCampaign==null
+                ||root.AiPlans==null||root.CycleActors==null||root.AiPlans.Count>4||root.CycleActors.Count!=root.AiPlans.Count)Fail("Complete bounded cycle root required.");
+            void Text(string? x,int max=512){if(x!=null&&x.Length>max)Fail("Cycle string bound.");}
+            void Plan(ColonisationAiPlanDto p,string goal,bool shared)
+            {
+                if(p==null||p.ActorId==null||p.GoalId!=goal||!Enum.IsDefined(typeof(ColonisationAiStage),p.Stage)||!shared&&(int)p.Stage>8||p.OwnAttemptedTargets==null||p.OwnAttemptedTargets.Count>8
+                    ||p.LatestActions==null||p.LatestActions.Count>(shared?8:0)||p.HoldReason==null)Fail("Bounded cycle assignment required.");
+                Text(p.ActorId);Text(p.GoalId);Text(p.HomeColonyId);Text(p.YardColonyId);Text(p.SourceCohortId);Text(p.ScoutShipId);Text(p.TransportShipId);Text(p.BlueprintId);
+                Text(p.TargetPlanetId);Text(p.TargetNodeId);Text(p.KitQueueId);Text(p.TransportQueueId);Text(p.ManifestId);Text(p.CampId);Text(p.EstablishedColonyId);Text(p.HoldReason,128);
+                foreach(var id in p.OwnAttemptedTargets){if(id==null)Fail("Null cycle target.");Text(id);}
+                foreach(var a in p.LatestActions){if(a==null||a.CommandId==null||!Enum.IsDefined(typeof(ColonisationAiAction),a.Action)||!Enum.IsDefined(typeof(CampaignTacticalError),a.Error))Fail("Invalid cycle receipt.");Text(a.CommandId,128);}
+            }
+            Text(root.PackageHash);var actors=new HashSet<string>(StringComparer.Ordinal);var cycles=new HashSet<string>(StringComparer.Ordinal);long receipts=0;
+            foreach(var p in root.AiPlans){Plan(p,"establish-first-frontier-colony-v1",true);if(!actors.Add(p.ActorId))Fail("Duplicate cycle actor.");}
+            foreach(var a in root.CycleActors)
+            {
+                if(a==null||a.ActorId==null||!actors.Contains(a.ActorId)||!cycles.Add(a.ActorId)||a.Receipts==null||a.Receipts.Count>policy.RecordBudget)Fail("Invalid cycle actor census.");
+                Text(a.ActorId);Text(a.SupplyCampId);receipts=checked(receipts+a.Receipts.Count+(a.Active==null?0:1));
+                if(receipts>policy.RecordBudget)Fail("Cycle receipt record bound.");
+                if(a.Active!=null){if(a.Active.Assignment==null)Fail("Active cycle assignment required.");Plan(a.Active.Assignment,CampaignColonisationCycleIdentity.Goal,false);Text(a.Active.SettlementManifestId);Text(a.Active.CommittedTargetPlanetId);}
+                foreach(var x in a.Receipts){if(x==null||x.SettlementManifestId==null||x.TargetPlanetId==null||!Enum.IsDefined(typeof(ColonisationCycleOutcome),x.Outcome))Fail("Invalid cycle terminal receipt.");Text(x.SettlementManifestId);Text(x.TargetPlanetId);Text(x.CampId);}
+            }
+            var refinementCost=refinement==null?(Visits:0L,Bytes:0L):RefinementCost(refinement,policy);
+            var beltBodiesCost=beltBodies==null?(Visits:0L,Bytes:0L):BeltBodiesCost(beltBodies,policy);
+            var belts=refinement?.SystemBelts!.Count??authored?.SystemBelts!.Count??rich?.SystemBelts!.Count??0;
+            ValidateCore(root.BaseCampaign,policy,checked(CycleOuterVisits+actors.Count*CycleActorVisits+receipts*CycleReceiptVisits+belts*16L+refinementCost.Visits+beltBodiesCost.Visits),checked(CycleOuterBytes+actors.Count*CycleActorBytes+receipts*CycleReceiptBytes+belts*4096L+refinementCost.Bytes+beltBodiesCost.Bytes),ColonisationSourceEdition.Growth,true);
+        }
+    }
+}

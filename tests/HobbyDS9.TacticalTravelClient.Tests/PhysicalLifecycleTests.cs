@@ -92,6 +92,25 @@ public sealed class PhysicalLifecycleTests
         Assert.True(f.Own.LoadCommitted(before));
     }
     [Fact]
+    public void WaypointAppendPreservesAcceptedWeightedCrossingWithCheaperAlternative()
+    {
+        using var f=new PhysicalFixture(adjust:p=>{
+            var campaign=p.CorePackage!.Campaign!;
+            campaign.Definitions.NavigationConnections!.Single(e=>e.ConnectionId=="connection.bajor-wormhole").BaseTraversalCost=1;
+            campaign.Definitions.NavigationConnections!.Add(new NavigationConnectionDto{ConnectionId="connection.sol-wormhole",EndpointA="nav.sol",EndpointB="nav.bajoran-wormhole",Kind=GalaxyEdgeKind.Normal,BaseTraversalCost=1});
+            foreach(var k in campaign.InitialState.NavigationKnowledge!)k.Connections!.Add(new NavigationKnowledgeEntryDto{Id="connection.sol-wormhole",Level=NavigationKnowledgeLevel.Charted});
+        });
+        var result=f.Host.SubmitTravelOrder(new SubmitCampaignTravelOrderDto{ActorId=A,CommandId="command.chosen-direct",ExpectedTurn=f.Own.Frame.Status.Turn,ExpectedRevision=f.Own.Frame.Status.CampaignRevision,
+            Order=new CampaignTravelOrderDto{FleetId=FA,Intent=CampaignTravelIntent.Leave,RouteNodeIds=new List<string>{"nav.bajor"}}});
+        Assert.True(result.Accepted);Assert.True(f.Own.Refresh());
+        Assert.Equal(new[]{"nav.bajoran-wormhole","nav.bajor"},f.Own.FindKnownRoute(FA,"nav.bajor")!.Route.Steps);
+        var before=f.Own.SaveCommitted();var revision=f.Own.Frame.Status.CampaignRevision;
+        var append=f.Own.FindKnownRoute(FA,"nav.gamma-exit",true)!;
+        Assert.True(append.Route.Success);Assert.Equal(new[]{"nav.bajor","nav.bajoran-wormhole","nav.gamma-exit"},append.Route.Steps);
+        Assert.Equal(5,append.Route.TotalCost);Assert.Equal(3,append.Route.Costs[0].EffectiveCost);
+        Assert.Equal(revision,f.Host.Read(A).Status.CampaignRevision);Assert.True(f.Own.LoadCommitted(before));
+    }
+    [Fact]
     public void MutualLeaveDoesNotForceCombatAndStationaryEngageCreatesANewBattleOnlyOnStrategicAdvance()
     {
         using var leave=new PhysicalFixture();

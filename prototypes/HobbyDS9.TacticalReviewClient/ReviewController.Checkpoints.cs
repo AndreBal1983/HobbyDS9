@@ -3,6 +3,13 @@ namespace HobbyDS9.TacticalReviewClient
     public sealed partial class ReviewController
     {
         public ReviewCheckpointError LastCheckpointError { get; private set; }
+        public bool TryCheckWriteAdmission(string slot,out ReviewCheckpointError error)
+        {
+            error=ReviewCheckpointError.Busy;
+            if(pending!=null)return true;
+            if(host is IReviewCheckpointWriteAdmissionHost admission)return admission.TryCheckWriteAdmission(Frame,slot,out error);
+            error=ReviewCheckpointError.None;return false;
+        }
         public ReviewCheckpointResult SaveCommittedToSlot(string slot, bool overwrite = false)
         {
             var result=pending == null ? host.SaveCommittedToSlot(slot,overwrite)

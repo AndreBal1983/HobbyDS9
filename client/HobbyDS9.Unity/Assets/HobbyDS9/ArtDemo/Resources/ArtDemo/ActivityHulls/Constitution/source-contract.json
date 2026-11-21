@@ -1,0 +1,168 @@
+{
+  "visualKey": "activity.constitution-explorer.v1",
+  "hullVersionId": "hull.constitution-explorer.v1",
+  "classId": "class.constitution-explorer.v1",
+  "creator": "HobbyDS9 original procedural geometry, no third-party mesh/reference pixels",
+  "status": "Original Constitution-style silhouette study; no native acceptance or exact-canon claim",
+  "helperRecipe": "E:\\HobbyDS9\\tools\\art\\build_federation_fleet.py",
+  "helperRecipeSha256": "4ca0f16e025b0877f73d9d4e4595a2140f4efbc5c271707dd8f3cab30505f0c9",
+  "nominalArtLengthMetres": 300,
+  "axesUnity": "+Z bow,+Y up,+X starboard; metre vertices",
+  "lods": [
+    {
+      "lod": 0,
+      "triangles": 6592,
+      "vertices": 3690,
+      "materialRoles": [
+        "CON_Hull_Pearl",
+        "CON_Panel_Silver",
+        "CON_Panel_Slate",
+        "CON_Phaser_Bronze",
+        "CON_Drive_Blue",
+        "CON_Recess_Graphite",
+        "CON_Deflector_Amber",
+        "CON_Collector_Red"
+      ],
+      "boundsUnity": [
+        [
+          -86.45503997802734,
+          86.45503997802734
+        ],
+        [
+          -45.577335357666016,
+          45.57733917236328
+        ],
+        [
+          -150.0,
+          150.0
+        ]
+      ],
+      "meshValidationRepaired": false,
+      "UVLayers": 1
+    },
+    {
+      "lod": 1,
+      "triangles": 2500,
+      "vertices": 1416,
+      "materialRoles": [
+        "CON_Hull_Pearl",
+        "CON_Panel_Silver",
+        "CON_Panel_Slate",
+        "CON_Phaser_Bronze",
+        "CON_Drive_Blue",
+        "CON_Recess_Graphite",
+        "CON_Deflector_Amber",
+        "CON_Collector_Red"
+      ],
+      "boundsUnity": [
+        [
+          -86.45503997802734,
+          86.45503997802734
+        ],
+        [
+          -45.53956985473633,
+          45.53956985473633
+        ],
+        [
+          -150.0,
+          150.0
+        ]
+      ],
+      "meshValidationRepaired": false,
+      "UVLayers": 1
+    }
+  ],
+  "materials": {
+    "CON_Phaser_Bronze": {
+      "baseColorLinear": [
+        0.2800000011920929,
+        0.20000000298023224,
+        0.10999999940395355,
+        1.0
+      ],
+      "metallic": 0.6000000238418579,
+      "roughness": 0.3799999952316284,
+      "emissionStrength": 0.0
+    },
+    "CON_Collector_Red": {
+      "baseColorLinear": [
+        0.75,
+        0.04500000178813934,
+        0.02500000037252903,
+        1.0
+      ],
+      "metallic": 0.2199999988079071,
+      "roughness": 0.3499999940395355,
+      "emissionStrength": 0.800000011920929
+    },
+    "CON_Hull_Pearl": {
+      "baseColorLinear": [
+        0.5199999809265137,
+        0.5899999737739563,
+        0.6499999761581421,
+        1.0
+      ],
+      "metallic": 0.2800000011920929,
+      "roughness": 0.4000000059604645,
+      "emissionStrength": 0.0
+    },
+    "CON_Panel_Silver": {
+      "baseColorLinear": [
+        0.6800000071525574,
+        0.7200000286102295,
+        0.75,
+        1.0
+      ],
+      "metallic": 0.33000001311302185,
+      "roughness": 0.4000000059604645,
+      "emissionStrength": 0.0
+    },
+    "CON_Panel_Slate": {
+      "baseColorLinear": [
+        0.25,
+        0.33000001311302185,
+        0.4000000059604645,
+        1.0
+      ],
+      "metallic": 0.3799999952316284,
+      "roughness": 0.4300000071525574,
+      "emissionStrength": 0.0
+    },
+    "CON_Deflector_Amber": {
+      "baseColorLinear": [
+        0.75,
+        0.30000001192092896,
+        0.05999999865889549,
+        1.0
+      ],
+      "metallic": 0.3199999928474426,
+      "roughness": 0.4000000059604645,
+      "emissionStrength": 0.800000011920929
+    },
+    "CON_Drive_Blue": {
+      "baseColorLinear": [
+        0.02500000037252903,
+        0.27000001072883606,
+        0.800000011920929,
+        1.0
+      ],
+      "metallic": 0.20000000298023224,
+      "roughness": 0.3499999940395355,
+      "emissionStrength": 1.600000023841858
+    },
+    "CON_Recess_Graphite": {
+      "baseColorLinear": [
+        0.02500000037252903,
+        0.03500000014901161,
+        0.05000000074505806,
+        1.0
+      ],
+      "metallic": 0.2800000011920929,
+      "roughness": 0.44999998807907104,
+      "emissionStrength": 0.0
+    }
+  },
+  "textures": [],
+  "renderInvoked": false,
+  "elapsedSeconds": 0.8813011999882292
+}

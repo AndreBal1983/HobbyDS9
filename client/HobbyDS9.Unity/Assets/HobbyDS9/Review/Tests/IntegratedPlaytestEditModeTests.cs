@@ -15,7 +15,7 @@ namespace HobbyDS9.UnityReview.Tests
         private GameObject go=null!;private ReviewEntry entry=null!;
         private VisualElement Root=>go.GetComponent<UIDocument>().rootVisualElement;
         private ReviewUiModel Model=>entry.Presentation!.Model;
-        private void Invoke(string method,params object[] args)=>typeof(ReviewEntry).GetMethod(method,BindingFlags.NonPublic|BindingFlags.Instance)!.Invoke(entry,args);
+        private void Invoke(string method,params object[] args)=>typeof(ReviewEntry).GetMethod(method,BindingFlags.NonPublic|BindingFlags.Instance,null,Array.ConvertAll(args,arg=>arg.GetType()),null)!.Invoke(entry,args);
         [SetUp] public void Setup()
         {
             Assert.That(IntegratedLaunchOptions.TryParse(new[]{"--hobbyds9-integrated-playtest","--hobbyds9-integrated-actor","civ.federation"},out var options),Is.True);
@@ -54,13 +54,13 @@ namespace HobbyDS9.UnityReview.Tests
         {
             var controller=Model.Current;var frame=controller.Frame;Invoke("Navigate",ReviewWorkspacePage.Research);
             Assert.That(Root.Q("integrated-research-split"),Is.TypeOf<SliderInt>());
-            Assert.That(Root.Q<Button>("integrated-apply-split").enabledSelf,Is.False);
+            Assert.That(Root.Q("integrated-apply-split"),Is.Null);
             Model.ResearchInputs()!.ScienceUnits=300;Invoke("Navigate",ReviewWorkspacePage.Production);
             Assert.That(Root.Q("integrated-queue-ship-design.source-cruiser"),Is.Not.Null);
             Assert.That(Root.Q<Button>("player-primary-action").enabledSelf,Is.False);
             Invoke("Navigate",ReviewWorkspacePage.Map);Invoke("Navigate",ReviewWorkspacePage.Research);
             Assert.That(Model.Current,Is.SameAs(controller));Assert.That(Model.Current.Frame,Is.SameAs(frame));Assert.That(Model.HasLocalEdits,Is.True);
-            Assert.That(Root.Q<Button>("integrated-apply-split").enabledSelf,Is.True);
+            Assert.That(Root.Q("integrated-apply-split"),Is.Null); // Adversarial manual draft stays local; UI controls commit directly.
         }
         [TestCase(1280,720,true)][TestCase(1920,1080,false)][TestCase(3440,1440,false)]
         public void ActualIntegratedGeometryHandlerRetainsSameFrameAndNavigation(int width,int height,bool compact)

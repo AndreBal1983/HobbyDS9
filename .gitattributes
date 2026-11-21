@@ -1,7 +1,48 @@
 # Scenario identity hashes exact file bytes; preserve them across host platforms.
+art/ux-20261119/** -text
+tools/art/build_ux_reference_20261119.py text eol=lf
+art/playtest-20261118/** -text
+tools/art/build_playtest_reference_20261118.py text eol=lf
+# Belt manifests pin exact artifact bytes; keep source recipe hashes portable.
+art/system-richness-01/belt-v1/** -text
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/** -text
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/*.meta text eol=lf
+tools/art/build_asteroid_belt_v1.py text eol=lf
+tools/art/verify_asteroid_belt_v1.py text eol=lf
 scenarios/**/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/CombatPlaytestV1/*.json text eol=lf
 # Preserve the original demo pack's manifest-pinned asset bytes. Git policy
 # belongs outside Unity Assets, where every real asset requires metadata.
 client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/** -text
 client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/source-manifest.json -text
 client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/runtime-manifest.json -text
+# New campaign identity and original model receipts also depend on exact bytes.
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PlayableFleetPackages/**/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/PublishedConstructionV1/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/ActivitiesV1/*.json text eol=lf
+art/ships/cardassian-cruiser-v1/** -text
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian/** -text
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/BattlePresentation/Cardassian/*.meta text eol=lf
+
+# Expansion composition pins the exact planner asset bytes.
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationExpansionV1/*.json text eol=lf
+# Repeat composition also pins exact policy bytes.
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRepeatV1/*.json text eol=lf
+
+# Cycle composition pins exact policy bytes in both authoring locations.
+scenarios/colonisation-cycle-v1/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationCycleV1/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ShipNames/*.json text eol=lf
+
+# Prepared packages retain the authoring LF bytes on every platform.
+client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/DemoPackages/**/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/FrontierPackages/**/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/IntegratedPackages/**/*.json text eol=lf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ReviewPackages/**/*.json text eol=lf
+# Historical composition pins identify CRLF presentation assets; retain those
+# exact bytes without changing the LF authoring sources or existing save hashes.
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationV1/*.json text eol=crlf
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRosterV2/*.json text eol=crlf
+# The V3 particle identity was authored from CRLF bytes, including on Unix checkouts.
+client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/GalaxyPresentationV3/particles.json text eol=crlf

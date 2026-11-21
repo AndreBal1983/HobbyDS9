@@ -81,16 +81,18 @@ namespace HobbyDS9.Simulation
         internal static CampaignDemoOutcome DemoDeadlineOutcome(long human,long opponent)=>human==0||human<opponent
             ?CampaignDemoOutcome.Defeat:human>opponent?CampaignDemoOutcome.Victory:CampaignDemoOutcome.Stalemate;
         private void PlanDemoTravel(CampaignTacticalTravelSaveDto staged)
+            => PlanDefenseTravel(staged, demo!.OpponentActorId!, demo.ObjectiveNodeId!);
+        private void PlanDefenseTravel(CampaignTacticalTravelSaveDto staged, string actor, string objective)
         {
-            var game=staged.Core.Campaign.GameState;var actor=demo!.OpponentActorId!;
+            var game=staged.Core.Campaign.GameState;
             foreach(var fleet in game.Fleets!.Where(f=>f.OwnerCivilizationId==actor).OrderBy(f=>f.FleetId,StringComparer.Ordinal))
             {
                 if(fleet.TransitTotalCost>0)continue; // Locked partial-edge route remains authoritative.
-                var route=new WeightedNavigationGraph(definitions).FindRoute(game,actor,fleet.LocationNodeId,demo.ObjectiveNodeId!);
-                var order=new CampaignTravelOrderDto {FleetId=fleet.FleetId,Intent=fleet.LocationNodeId==demo.ObjectiveNodeId?CampaignTravelIntent.StayEngage:CampaignTravelIntent.Leave,
+                var route=new WeightedNavigationGraph(definitions).FindRoute(game,actor,fleet.LocationNodeId,objective);
+                var order=new CampaignTravelOrderDto {FleetId=fleet.FleetId,Intent=fleet.LocationNodeId==objective?CampaignTravelIntent.StayEngage:CampaignTravelIntent.Leave,
                     RouteNodeIds=route.Success?route.Steps.ToList():new List<string>()};
-                if(fleet.LocationNodeId==demo.ObjectiveNodeId){order.RouteNodeIds.Clear();}
-                if(!route.Success&&fleet.LocationNodeId!=demo.ObjectiveNodeId){order.Intent=CampaignTravelIntent.Stay;}
+                if(fleet.LocationNodeId==objective){order.RouteNodeIds.Clear();}
+                if(!route.Success&&fleet.LocationNodeId!=objective){order.Intent=CampaignTravelIntent.Stay;}
                 var command=new SubmitCampaignTravelOrderDto {ActorId=actor,CommandId="ai-command.demo.route.t"+game.TurnNumber.ToString("D10",CultureInfo.InvariantCulture)+"."+fleet.FleetId,
                     ExpectedTurn=game.TurnNumber,ExpectedRevision=game.StateRevision,Order=order};
                 var error=ValidateTravelCommand(command,staged,true);

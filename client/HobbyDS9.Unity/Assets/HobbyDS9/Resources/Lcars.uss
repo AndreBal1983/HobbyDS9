@@ -86,6 +86,7 @@
 .research-card { margin-top: 8px; margin-bottom: 8px; padding-bottom: 8px; border-bottom-width: 1px; border-bottom-color: rgb(92, 84, 122); }
 .research-card Label { white-space: normal; }
 .research-panel ProgressBar { min-height: 24px; margin-top: 4px; margin-bottom: 4px; }
+.research-panel .unity-progress-bar__title { color: rgb(8, 12, 18); -unity-font-style: bold; }
 /* Strategic prototype: extends the existing shell, not an alternate UI stack. */
 .strategic-prototype .lcars-header { min-height: var(--lcars-header-height); }
 .strategic-prototype .lcars-title { width: var(--lcars-rail-width); font-size: 20px; padding: 16px; border-top-left-radius: 40px; }

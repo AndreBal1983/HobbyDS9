@@ -1,0 +1,3208 @@
+{
+  "FormatVersion": 1,
+  "ProfileId": "generated-galaxy-review-v1",
+  "GeneratorVersion": "irregular-regions-v1",
+  "TuningVersion": "provisional-review-30-40-50-v1",
+  "ContentHash": "85dac90f91180327f0fad3b915ca3145fdd8a1d1108d7b4f543c8c300d655884",
+  "Settings": {
+    "Seed": "12345",
+    "SystemCount": 30,
+    "HomeCivilizationDefinitionIds": [
+      "civilization.cardassian",
+      "civilization.federation"
+    ]
+  },
+  "Width": 1000000,
+  "Height": 600000,
+  "Regions": [
+    {
+      "NodeId": "nav.generated.001",
+      "DisplayName": "Region 001",
+      "SystemId": null,
+      "Center": {
+        "X": 33885,
+        "Y": 48002
+      },
+      "Boundary": [
+        {
+          "X": 0,
+          "Y": 0
+        },
+        {
+          "X": 93137,
+          "Y": 0
+        },
+        {
+          "X": 71782,
+          "Y": 86267
+        },
+        {
+          "X": 0,
+          "Y": 117573
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.002",
+      "DisplayName": "Region 002",
+      "SystemId": "system.generated.001",
+      "Center": {
+        "X": 123153,
+        "Y": 70100
+      },
+      "Boundary": [
+        {
+          "X": 71782,
+          "Y": 86267
+        },
+        {
+          "X": 93137,
+          "Y": 0
+        },
+        {
+          "X": 176945,
+          "Y": 0
+        },
+        {
+          "X": 186037,
+          "Y": 103972
+        },
+        {
+          "X": 176289,
+          "Y": 117982
+        },
+        {
+          "X": 123354,
+          "Y": 122463
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.003",
+      "DisplayName": "Region 003",
+      "SystemId": "system.generated.002",
+      "Center": {
+        "X": 242087,
+        "Y": 59700
+      },
+      "Boundary": [
+        {
+          "X": 176945,
+          "Y": 0
+        },
+        {
+          "X": 304162,
+          "Y": 0
+        },
+        {
+          "X": 313434,
+          "Y": 71186
+        },
+        {
+          "X": 277490,
+          "Y": 106403
+        },
+        {
+          "X": 186037,
+          "Y": 103972
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.004",
+      "DisplayName": "Region 004",
+      "SystemId": "system.generated.003",
+      "Center": {
+        "X": 379458,
+        "Y": 41807
+      },
+      "Boundary": [
+        {
+          "X": 304162,
+          "Y": 0
+        },
+        {
+          "X": 427435,
+          "Y": 0
+        },
+        {
+          "X": 416253,
+          "Y": 91122
+        },
+        {
+          "X": 387553,
+          "Y": 112303
+        },
+        {
+          "X": 313434,
+          "Y": 71186
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.005",
+      "DisplayName": "Region 005",
+      "SystemId": null,
+      "Center": {
+        "X": 463880,
+        "Y": 52167
+      },
+      "Boundary": [
+        {
+          "X": 416253,
+          "Y": 91122
+        },
+        {
+          "X": 427435,
+          "Y": 0
+        },
+        {
+          "X": 507429,
+          "Y": 0
+        },
+        {
+          "X": 513895,
+          "Y": 82867
+        },
+        {
+          "X": 492480,
+          "Y": 100882
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.006",
+      "DisplayName": "Region 006",
+      "SystemId": null,
+      "Center": {
+        "X": 558543,
+        "Y": 44780
+      },
+      "Boundary": [
+        {
+          "X": 507429,
+          "Y": 0
+        },
+        {
+          "X": 624328,
+          "Y": 0
+        },
+        {
+          "X": 605719,
+          "Y": 102563
+        },
+        {
+          "X": 603579,
+          "Y": 105102
+        },
+        {
+          "X": 513895,
+          "Y": 82867
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.007",
+      "DisplayName": "Region 007",
+      "SystemId": "system.generated.004",
+      "Center": {
+        "X": 670188,
+        "Y": 65036
+      },
+      "Boundary": [
+        {
+          "X": 605719,
+          "Y": 102563
+        },
+        {
+          "X": 624328,
+          "Y": 0
+        },
+        {
+          "X": 696030,
+          "Y": 0
+        },
+        {
+          "X": 700802,
+          "Y": 101982
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.008",
+      "DisplayName": "Region 008",
+      "SystemId": "system.generated.005",
+      "Center": {
+        "X": 727832,
+        "Y": 62339
+      },
+      "Boundary": [
+        {
+          "X": 696030,
+          "Y": 0
+        },
+        {
+          "X": 797765,
+          "Y": 0
+        },
+        {
+          "X": 785751,
+          "Y": 83308
+        },
+        {
+          "X": 769572,
+          "Y": 108654
+        },
+        {
+          "X": 724787,
+          "Y": 119806
+        },
+        {
+          "X": 700802,
+          "Y": 101982
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.009",
+      "DisplayName": "Region 009",
+      "SystemId": "system.generated.006",
+      "Center": {
+        "X": 847235,
+        "Y": 79558
+      },
+      "Boundary": [
+        {
+          "X": 785751,
+          "Y": 83308
+        },
+        {
+          "X": 797765,
+          "Y": 0
+        },
+        {
+          "X": 883752,
+          "Y": 0
+        },
+        {
+          "X": 898317,
+          "Y": 126193
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.010",
+      "DisplayName": "Region 010",
+      "SystemId": "system.generated.007",
+      "Center": {
+        "X": 937432,
+        "Y": 69148
+      },
+      "Boundary": [
+        {
+          "X": 883752,
+          "Y": 0
+        },
+        {
+          "X": 1000000,
+          "Y": 0
+        },
+        {
+          "X": 1000000,
+          "Y": 82368
+        },
+        {
+          "X": 902454,
+          "Y": 133934
+        },
+        {
+          "X": 898317,
+          "Y": 126193
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.011",
+      "DisplayName": "Region 011",
+      "SystemId": "system.generated.008",
+      "Center": {
+        "X": 74041,
+        "Y": 140074
+      },
+      "Boundary": [
+        {
+          "X": 0,
+          "Y": 117573
+        },
+        {
+          "X": 71782,
+          "Y": 86267
+        },
+        {
+          "X": 123354,
+          "Y": 122463
+        },
+        {
+          "X": 72645,
+          "Y": 208740
+        },
+        {
+          "X": 69563,
+          "Y": 211092
+        },
+        {
+          "X": 0,
+          "Y": 186459
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.012",
+      "DisplayName": "Region 012",
+      "SystemId": "system.generated.009",
+      "Center": {
+        "X": 131958,
+        "Y": 174115
+      },
+      "Boundary": [
+        {
+          "X": 72645,
+          "Y": 208740
+        },
+        {
+          "X": 123354,
+          "Y": 122463
+        },
+        {
+          "X": 176289,
+          "Y": 117982
+        },
+        {
+          "X": 192025,
+          "Y": 191811
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.013",
+      "DisplayName": "Region 013",
+      "SystemId": "system.generated.010",
+      "Center": {
+        "X": 239656,
+        "Y": 151159
+      },
+      "Boundary": [
+        {
+          "X": 176289,
+          "Y": 117982
+        },
+        {
+          "X": 186037,
+          "Y": 103972
+        },
+        {
+          "X": 277490,
+          "Y": 106403
+        },
+        {
+          "X": 285081,
+          "Y": 182086
+        },
+        {
+          "X": 210273,
+          "Y": 216454
+        },
+        {
+          "X": 192025,
+          "Y": 191811
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.014",
+      "DisplayName": "Region 014",
+      "SystemId": null,
+      "Center": {
+        "X": 323459,
+        "Y": 142753
+      },
+      "Boundary": [
+        {
+          "X": 277490,
+          "Y": 106403
+        },
+        {
+          "X": 313434,
+          "Y": 71186
+        },
+        {
+          "X": 387553,
+          "Y": 112303
+        },
+        {
+          "X": 388598,
+          "Y": 182085
+        },
+        {
+          "X": 379742,
+          "Y": 196400
+        },
+        {
+          "X": 340397,
+          "Y": 208292
+        },
+        {
+          "X": 285081,
+          "Y": 182086
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.015",
+      "DisplayName": "Region 015",
+      "SystemId": "system.generated.011",
+      "Center": {
+        "X": 452530,
+        "Y": 140820
+      },
+      "Boundary": [
+        {
+          "X": 387553,
+          "Y": 112303
+        },
+        {
+          "X": 416253,
+          "Y": 91122
+        },
+        {
+          "X": 492480,
+          "Y": 100882
+        },
+        {
+          "X": 495807,
+          "Y": 181636
+        },
+        {
+          "X": 388598,
+          "Y": 182085
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.016",
+      "DisplayName": "Region 016",
+      "SystemId": null,
+      "Center": {
+        "X": 535580,
+        "Y": 137399
+      },
+      "Boundary": [
+        {
+          "X": 492480,
+          "Y": 100882
+        },
+        {
+          "X": 513895,
+          "Y": 82867
+        },
+        {
+          "X": 603579,
+          "Y": 105102
+        },
+        {
+          "X": 602386,
+          "Y": 189905
+        },
+        {
+          "X": 589227,
+          "Y": 202488
+        },
+        {
+          "X": 526313,
+          "Y": 211175
+        },
+        {
+          "X": 495807,
+          "Y": 181636
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.017",
+      "DisplayName": "Region 017",
+      "SystemId": "system.generated.012",
+      "Center": {
+        "X": 670642,
+        "Y": 139299
+      },
+      "Boundary": [
+        {
+          "X": 602386,
+          "Y": 189905
+        },
+        {
+          "X": 603579,
+          "Y": 105102
+        },
+        {
+          "X": 605719,
+          "Y": 102563
+        },
+        {
+          "X": 700802,
+          "Y": 101982
+        },
+        {
+          "X": 724787,
+          "Y": 119806
+        },
+        {
+          "X": 700795,
+          "Y": 187181
+        },
+        {
+          "X": 672811,
+          "Y": 200961
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.018",
+      "DisplayName": "Region 018",
+      "SystemId": null,
+      "Center": {
+        "X": 754426,
+        "Y": 169134
+      },
+      "Boundary": [
+        {
+          "X": 700795,
+          "Y": 187181
+        },
+        {
+          "X": 724787,
+          "Y": 119806
+        },
+        {
+          "X": 769572,
+          "Y": 108654
+        },
+        {
+          "X": 819301,
+          "Y": 196889
+        },
+        {
+          "X": 792595,
+          "Y": 231134
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.019",
+      "DisplayName": "Region 019",
+      "SystemId": null,
+      "Center": {
+        "X": 829154,
+        "Y": 127018
+      },
+      "Boundary": [
+        {
+          "X": 769572,
+          "Y": 108654
+        },
+        {
+          "X": 785751,
+          "Y": 83308
+        },
+        {
+          "X": 898317,
+          "Y": 126193
+        },
+        {
+          "X": 902454,
+          "Y": 133934
+        },
+        {
+          "X": 898263,
+          "Y": 176293
+        },
+        {
+          "X": 819301,
+          "Y": 196889
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.020",
+      "DisplayName": "Region 020",
+      "SystemId": "system.generated.013",
+      "Center": {
+        "X": 975688,
+        "Y": 141516
+      },
+      "Boundary": [
+        {
+          "X": 898263,
+          "Y": 176293
+        },
+        {
+          "X": 902454,
+          "Y": 133934
+        },
+        {
+          "X": 1000000,
+          "Y": 82368
+        },
+        {
+          "X": 1000000,
+          "Y": 195546
+        },
+        {
+          "X": 904404,
+          "Y": 182552
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.021",
+      "DisplayName": "Region 021",
+      "SystemId": "system.generated.014",
+      "Center": {
+        "X": 28350,
+        "Y": 269102
+      },
+      "Boundary": [
+        {
+          "X": 0,
+          "Y": 186459
+        },
+        {
+          "X": 69563,
+          "Y": 211092
+        },
+        {
+          "X": 96833,
+          "Y": 280465
+        },
+        {
+          "X": 0,
+          "Y": 317525
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.022",
+      "DisplayName": "Region 022",
+      "SystemId": null,
+      "Center": {
+        "X": 139246,
+        "Y": 225509
+      },
+      "Boundary": [
+        {
+          "X": 69563,
+          "Y": 211092
+        },
+        {
+          "X": 72645,
+          "Y": 208740
+        },
+        {
+          "X": 192025,
+          "Y": 191811
+        },
+        {
+          "X": 210273,
+          "Y": 216454
+        },
+        {
+          "X": 205360,
+          "Y": 277800
+        },
+        {
+          "X": 202168,
+          "Y": 281099
+        },
+        {
+          "X": 116403,
+          "Y": 295852
+        },
+        {
+          "X": 96833,
+          "Y": 280465
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.023",
+      "DisplayName": "Region 023",
+      "SystemId": null,
+      "Center": {
+        "X": 278953,
+        "Y": 236697
+      },
+      "Boundary": [
+        {
+          "X": 205360,
+          "Y": 277800
+        },
+        {
+          "X": 210273,
+          "Y": 216454
+        },
+        {
+          "X": 285081,
+          "Y": 182086
+        },
+        {
+          "X": 340397,
+          "Y": 208292
+        },
+        {
+          "X": 303297,
+          "Y": 295593
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.024",
+      "DisplayName": "Region 024",
+      "SystemId": "system.generated.015",
+      "Center": {
+        "X": 362594,
+        "Y": 272241
+      },
+      "Boundary": [
+        {
+          "X": 303297,
+          "Y": 295593
+        },
+        {
+          "X": 340397,
+          "Y": 208292
+        },
+        {
+          "X": 379742,
+          "Y": 196400
+        },
+        {
+          "X": 428223,
+          "Y": 284949
+        },
+        {
+          "X": 425969,
+          "Y": 289068
+        },
+        {
+          "X": 314380,
+          "Y": 311888
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.025",
+      "DisplayName": "Region 025",
+      "SystemId": null,
+      "Center": {
+        "X": 452874,
+        "Y": 222813
+      },
+      "Boundary": [
+        {
+          "X": 379742,
+          "Y": 196400
+        },
+        {
+          "X": 388598,
+          "Y": 182085
+        },
+        {
+          "X": 495807,
+          "Y": 181636
+        },
+        {
+          "X": 526313,
+          "Y": 211175
+        },
+        {
+          "X": 492220,
+          "Y": 272537
+        },
+        {
+          "X": 428223,
+          "Y": 284949
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.026",
+      "DisplayName": "Region 026",
+      "SystemId": "system.generated.016",
+      "Center": {
+        "X": 555224,
+        "Y": 279679
+      },
+      "Boundary": [
+        {
+          "X": 492220,
+          "Y": 272537
+        },
+        {
+          "X": 526313,
+          "Y": 211175
+        },
+        {
+          "X": 589227,
+          "Y": 202488
+        },
+        {
+          "X": 611597,
+          "Y": 306985
+        },
+        {
+          "X": 611085,
+          "Y": 308299
+        },
+        {
+          "X": 520059,
+          "Y": 314492
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.027",
+      "DisplayName": "Region 027",
+      "SystemId": null,
+      "Center": {
+        "X": 651851,
+        "Y": 258993
+      },
+      "Boundary": [
+        {
+          "X": 589227,
+          "Y": 202488
+        },
+        {
+          "X": 602386,
+          "Y": 189905
+        },
+        {
+          "X": 672811,
+          "Y": 200961
+        },
+        {
+          "X": 694965,
+          "Y": 282058
+        },
+        {
+          "X": 611597,
+          "Y": 306985
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.028",
+      "DisplayName": "Region 028",
+      "SystemId": null,
+      "Center": {
+        "X": 720364,
+        "Y": 240276
+      },
+      "Boundary": [
+        {
+          "X": 672811,
+          "Y": 200961
+        },
+        {
+          "X": 700795,
+          "Y": 187181
+        },
+        {
+          "X": 792595,
+          "Y": 231134
+        },
+        {
+          "X": 787749,
+          "Y": 284893
+        },
+        {
+          "X": 710315,
+          "Y": 290894
+        },
+        {
+          "X": 694965,
+          "Y": 282058
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.029",
+      "DisplayName": "Region 029",
+      "SystemId": null,
+      "Center": {
+        "X": 862027,
+        "Y": 253046
+      },
+      "Boundary": [
+        {
+          "X": 787749,
+          "Y": 284893
+        },
+        {
+          "X": 792595,
+          "Y": 231134
+        },
+        {
+          "X": 819301,
+          "Y": 196889
+        },
+        {
+          "X": 898263,
+          "Y": 176293
+        },
+        {
+          "X": 904404,
+          "Y": 182552
+        },
+        {
+          "X": 915829,
+          "Y": 278514
+        },
+        {
+          "X": 796825,
+          "Y": 298981
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.030",
+      "DisplayName": "Region 030",
+      "SystemId": null,
+      "Center": {
+        "X": 962148,
+        "Y": 241126
+      },
+      "Boundary": [
+        {
+          "X": 904404,
+          "Y": 182552
+        },
+        {
+          "X": 1000000,
+          "Y": 195546
+        },
+        {
+          "X": 1000000,
+          "Y": 282193
+        },
+        {
+          "X": 918597,
+          "Y": 281601
+        },
+        {
+          "X": 915829,
+          "Y": 278514
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.031",
+      "DisplayName": "Region 031",
+      "SystemId": "system.generated.017",
+      "Center": {
+        "X": 53436,
+        "Y": 334647
+      },
+      "Boundary": [
+        {
+          "X": 0,
+          "Y": 317525
+        },
+        {
+          "X": 96833,
+          "Y": 280465
+        },
+        {
+          "X": 116403,
+          "Y": 295852
+        },
+        {
+          "X": 101353,
+          "Y": 377651
+        },
+        {
+          "X": 0,
+          "Y": 377640
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.032",
+      "DisplayName": "Region 032",
+      "SystemId": null,
+      "Center": {
+        "X": 161438,
+        "Y": 354519
+      },
+      "Boundary": [
+        {
+          "X": 101353,
+          "Y": 377651
+        },
+        {
+          "X": 116403,
+          "Y": 295852
+        },
+        {
+          "X": 202168,
+          "Y": 281099
+        },
+        {
+          "X": 215295,
+          "Y": 385594
+        },
+        {
+          "X": 194726,
+          "Y": 404526
+        },
+        {
+          "X": 123642,
+          "Y": 414059
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.033",
+      "DisplayName": "Region 033",
+      "SystemId": "system.generated.018",
+      "Center": {
+        "X": 259792,
+        "Y": 342163
+      },
+      "Boundary": [
+        {
+          "X": 202168,
+          "Y": 281099
+        },
+        {
+          "X": 205360,
+          "Y": 277800
+        },
+        {
+          "X": 303297,
+          "Y": 295593
+        },
+        {
+          "X": 314380,
+          "Y": 311888
+        },
+        {
+          "X": 320510,
+          "Y": 366977
+        },
+        {
+          "X": 280120,
+          "Y": 397290
+        },
+        {
+          "X": 215295,
+          "Y": 385594
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.034",
+      "DisplayName": "Region 034",
+      "SystemId": "system.generated.019",
+      "Center": {
+        "X": 374288,
+        "Y": 329424
+      },
+      "Boundary": [
+        {
+          "X": 314380,
+          "Y": 311888
+        },
+        {
+          "X": 425969,
+          "Y": 289068
+        },
+        {
+          "X": 422959,
+          "Y": 365478
+        },
+        {
+          "X": 371446,
+          "Y": 390226
+        },
+        {
+          "X": 320510,
+          "Y": 366977
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.035",
+      "DisplayName": "Region 035",
+      "SystemId": null,
+      "Center": {
+        "X": 474316,
+        "Y": 333364
+      },
+      "Boundary": [
+        {
+          "X": 422959,
+          "Y": 365478
+        },
+        {
+          "X": 425969,
+          "Y": 289068
+        },
+        {
+          "X": 428223,
+          "Y": 284949
+        },
+        {
+          "X": 492220,
+          "Y": 272537
+        },
+        {
+          "X": 520059,
+          "Y": 314492
+        },
+        {
+          "X": 508651,
+          "Y": 404113
+        },
+        {
+          "X": 498056,
+          "Y": 408950
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.036",
+      "DisplayName": "Region 036",
+      "SystemId": null,
+      "Center": {
+        "X": 559615,
+        "Y": 344221
+      },
+      "Boundary": [
+        {
+          "X": 508651,
+          "Y": 404113
+        },
+        {
+          "X": 520059,
+          "Y": 314492
+        },
+        {
+          "X": 611085,
+          "Y": 308299
+        },
+        {
+          "X": 621419,
+          "Y": 368509
+        },
+        {
+          "X": 564217,
+          "Y": 412522
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.037",
+      "DisplayName": "Region 037",
+      "SystemId": "system.generated.020",
+      "Center": {
+        "X": 671588,
+        "Y": 325003
+      },
+      "Boundary": [
+        {
+          "X": 611085,
+          "Y": 308299
+        },
+        {
+          "X": 611597,
+          "Y": 306985
+        },
+        {
+          "X": 694965,
+          "Y": 282058
+        },
+        {
+          "X": 710315,
+          "Y": 290894
+        },
+        {
+          "X": 684359,
+          "Y": 392961
+        },
+        {
+          "X": 621419,
+          "Y": 368509
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.038",
+      "DisplayName": "Region 038",
+      "SystemId": null,
+      "Center": {
+        "X": 728043,
+        "Y": 339360
+      },
+      "Boundary": [
+        {
+          "X": 684359,
+          "Y": 392961
+        },
+        {
+          "X": 710315,
+          "Y": 290894
+        },
+        {
+          "X": 787749,
+          "Y": 284893
+        },
+        {
+          "X": 796825,
+          "Y": 298981
+        },
+        {
+          "X": 806590,
+          "Y": 374333
+        },
+        {
+          "X": 795913,
+          "Y": 384354
+        },
+        {
+          "X": 691969,
+          "Y": 400881
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.039",
+      "DisplayName": "Region 039",
+      "SystemId": null,
+      "Center": {
+        "X": 873627,
+        "Y": 320493
+      },
+      "Boundary": [
+        {
+          "X": 796825,
+          "Y": 298981
+        },
+        {
+          "X": 915829,
+          "Y": 278514
+        },
+        {
+          "X": 918597,
+          "Y": 281601
+        },
+        {
+          "X": 915904,
+          "Y": 388633
+        },
+        {
+          "X": 891863,
+          "Y": 397867
+        },
+        {
+          "X": 806590,
+          "Y": 374333
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.040",
+      "DisplayName": "Region 040",
+      "SystemId": null,
+      "Center": {
+        "X": 961554,
+        "Y": 322705
+      },
+      "Boundary": [
+        {
+          "X": 915904,
+          "Y": 388633
+        },
+        {
+          "X": 918597,
+          "Y": 281601
+        },
+        {
+          "X": 1000000,
+          "Y": 282193
+        },
+        {
+          "X": 1000000,
+          "Y": 406886
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.041",
+      "DisplayName": "Region 041",
+      "SystemId": "system.generated.021",
+      "Center": {
+        "X": 53427,
+        "Y": 420645
+      },
+      "Boundary": [
+        {
+          "X": 0,
+          "Y": 377640
+        },
+        {
+          "X": 101353,
+          "Y": 377651
+        },
+        {
+          "X": 123642,
+          "Y": 414059
+        },
+        {
+          "X": 107879,
+          "Y": 461228
+        },
+        {
+          "X": 53720,
+          "Y": 500688
+        },
+        {
+          "X": 0,
+          "Y": 495487
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.042",
+      "DisplayName": "Region 042",
+      "SystemId": null,
+      "Center": {
+        "X": 175789,
+        "Y": 461537
+      },
+      "Boundary": [
+        {
+          "X": 107879,
+          "Y": 461228
+        },
+        {
+          "X": 123642,
+          "Y": 414059
+        },
+        {
+          "X": 194726,
+          "Y": 404526
+        },
+        {
+          "X": 222719,
+          "Y": 498337
+        },
+        {
+          "X": 194060,
+          "Y": 523166
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.043",
+      "DisplayName": "Region 043",
+      "SystemId": "system.generated.022",
+      "Center": {
+        "X": 241808,
+        "Y": 441837
+      },
+      "Boundary": [
+        {
+          "X": 194726,
+          "Y": 404526
+        },
+        {
+          "X": 215295,
+          "Y": 385594
+        },
+        {
+          "X": 280120,
+          "Y": 397290
+        },
+        {
+          "X": 290736,
+          "Y": 491641
+        },
+        {
+          "X": 222719,
+          "Y": 498337
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.044",
+      "DisplayName": "Region 044",
+      "SystemId": "system.generated.023",
+      "Center": {
+        "X": 327373,
+        "Y": 432209
+      },
+      "Boundary": [
+        {
+          "X": 280120,
+          "Y": 397290
+        },
+        {
+          "X": 320510,
+          "Y": 366977
+        },
+        {
+          "X": 371446,
+          "Y": 390226
+        },
+        {
+          "X": 378151,
+          "Y": 491089
+        },
+        {
+          "X": 308076,
+          "Y": 502666
+        },
+        {
+          "X": 290736,
+          "Y": 491641
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.045",
+      "DisplayName": "Region 045",
+      "SystemId": null,
+      "Center": {
+        "X": 420688,
+        "Y": 426006
+      },
+      "Boundary": [
+        {
+          "X": 371446,
+          "Y": 390226
+        },
+        {
+          "X": 422959,
+          "Y": 365478
+        },
+        {
+          "X": 498056,
+          "Y": 408950
+        },
+        {
+          "X": 463687,
+          "Y": 490053
+        },
+        {
+          "X": 415151,
+          "Y": 510424
+        },
+        {
+          "X": 378151,
+          "Y": 491089
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.046",
+      "DisplayName": "Region 046",
+      "SystemId": null,
+      "Center": {
+        "X": 539611,
+        "Y": 476403
+      },
+      "Boundary": [
+        {
+          "X": 463687,
+          "Y": 490053
+        },
+        {
+          "X": 498056,
+          "Y": 408950
+        },
+        {
+          "X": 508651,
+          "Y": 404113
+        },
+        {
+          "X": 564217,
+          "Y": 412522
+        },
+        {
+          "X": 608515,
+          "Y": 507021
+        },
+        {
+          "X": 528526,
+          "Y": 533908
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.047",
+      "DisplayName": "Region 047",
+      "SystemId": "system.generated.024",
+      "Center": {
+        "X": 629058,
+        "Y": 434473
+      },
+      "Boundary": [
+        {
+          "X": 564217,
+          "Y": 412522
+        },
+        {
+          "X": 621419,
+          "Y": 368509
+        },
+        {
+          "X": 684359,
+          "Y": 392961
+        },
+        {
+          "X": 691969,
+          "Y": 400881
+        },
+        {
+          "X": 680605,
+          "Y": 497294
+        },
+        {
+          "X": 616847,
+          "Y": 510446
+        },
+        {
+          "X": 608515,
+          "Y": 507021
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.048",
+      "DisplayName": "Region 048",
+      "SystemId": "system.generated.025",
+      "Center": {
+        "X": 745345,
+        "Y": 448179
+      },
+      "Boundary": [
+        {
+          "X": 680605,
+          "Y": 497294
+        },
+        {
+          "X": 691969,
+          "Y": 400881
+        },
+        {
+          "X": 795913,
+          "Y": 384354
+        },
+        {
+          "X": 787798,
+          "Y": 493869
+        },
+        {
+          "X": 771815,
+          "Y": 511003
+        },
+        {
+          "X": 684251,
+          "Y": 499794
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.049",
+      "DisplayName": "Region 049",
+      "SystemId": null,
+      "Center": {
+        "X": 836522,
+        "Y": 454935
+      },
+      "Boundary": [
+        {
+          "X": 787798,
+          "Y": 493869
+        },
+        {
+          "X": 795913,
+          "Y": 384354
+        },
+        {
+          "X": 806590,
+          "Y": 374333
+        },
+        {
+          "X": 891863,
+          "Y": 397867
+        },
+        {
+          "X": 878889,
+          "Y": 494098
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.050",
+      "DisplayName": "Region 050",
+      "SystemId": "system.generated.026",
+      "Center": {
+        "X": 930115,
+        "Y": 467553
+      },
+      "Boundary": [
+        {
+          "X": 878889,
+          "Y": 494098
+        },
+        {
+          "X": 891863,
+          "Y": 397867
+        },
+        {
+          "X": 915904,
+          "Y": 388633
+        },
+        {
+          "X": 1000000,
+          "Y": 406886
+        },
+        {
+          "X": 1000000,
+          "Y": 526783
+        },
+        {
+          "X": 897201,
+          "Y": 520321
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.051",
+      "DisplayName": "Region 051",
+      "SystemId": "system.generated.027",
+      "Center": {
+        "X": 38078,
+        "Y": 579188
+      },
+      "Boundary": [
+        {
+          "X": 0,
+          "Y": 495487
+        },
+        {
+          "X": 53720,
+          "Y": 500688
+        },
+        {
+          "X": 111841,
+          "Y": 600000
+        },
+        {
+          "X": 0,
+          "Y": 600000
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.052",
+      "DisplayName": "Region 052",
+      "SystemId": null,
+      "Center": {
+        "X": 129822,
+        "Y": 525496
+      },
+      "Boundary": [
+        {
+          "X": 53720,
+          "Y": 500688
+        },
+        {
+          "X": 107879,
+          "Y": 461228
+        },
+        {
+          "X": 194060,
+          "Y": 523166
+        },
+        {
+          "X": 178690,
+          "Y": 600000
+        },
+        {
+          "X": 111841,
+          "Y": 600000
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.053",
+      "DisplayName": "Region 053",
+      "SystemId": "system.generated.028",
+      "Center": {
+        "X": 252459,
+        "Y": 550029
+      },
+      "Boundary": [
+        {
+          "X": 178690,
+          "Y": 600000
+        },
+        {
+          "X": 194060,
+          "Y": 523166
+        },
+        {
+          "X": 222719,
+          "Y": 498337
+        },
+        {
+          "X": 290736,
+          "Y": 491641
+        },
+        {
+          "X": 308076,
+          "Y": 502666
+        },
+        {
+          "X": 294827,
+          "Y": 600000
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.054",
+      "DisplayName": "Region 054",
+      "SystemId": null,
+      "Center": {
+        "X": 349010,
+        "Y": 563172
+      },
+      "Boundary": [
+        {
+          "X": 294827,
+          "Y": 600000
+        },
+        {
+          "X": 308076,
+          "Y": 502666
+        },
+        {
+          "X": 378151,
+          "Y": 491089
+        },
+        {
+          "X": 415151,
+          "Y": 510424
+        },
+        {
+          "X": 413480,
+          "Y": 600000
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.055",
+      "DisplayName": "Region 055",
+      "SystemId": null,
+      "Center": {
+        "X": 479279,
+        "Y": 565602
+      },
+      "Boundary": [
+        {
+          "X": 413480,
+          "Y": 600000
+        },
+        {
+          "X": 415151,
+          "Y": 510424
+        },
+        {
+          "X": 463687,
+          "Y": 490053
+        },
+        {
+          "X": 528526,
+          "Y": 533908
+        },
+        {
+          "X": 523228,
+          "Y": 600000
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.056",
+      "DisplayName": "Region 056",
+      "SystemId": null,
+      "Center": {
+        "X": 572095,
+        "Y": 573042
+      },
+      "Boundary": [
+        {
+          "X": 523228,
+          "Y": 600000
+        },
+        {
+          "X": 528526,
+          "Y": 533908
+        },
+        {
+          "X": 608515,
+          "Y": 507021
+        },
+        {
+          "X": 616847,
+          "Y": 510446
+        },
+        {
+          "X": 614408,
+          "Y": 600000
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.057",
+      "DisplayName": "Region 057",
+      "SystemId": null,
+      "Center": {
+        "X": 658126,
+        "Y": 575385
+      },
+      "Boundary": [
+        {
+          "X": 614408,
+          "Y": 600000
+        },
+        {
+          "X": 616847,
+          "Y": 510446
+        },
+        {
+          "X": 680605,
+          "Y": 497294
+        },
+        {
+          "X": 684251,
+          "Y": 499794
+        },
+        {
+          "X": 698469,
+          "Y": 600000
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.058",
+      "DisplayName": "Region 058",
+      "SystemId": "system.generated.029",
+      "Center": {
+        "X": 730373,
+        "Y": 565134
+      },
+      "Boundary": [
+        {
+          "X": 684251,
+          "Y": 499794
+        },
+        {
+          "X": 771815,
+          "Y": 511003
+        },
+        {
+          "X": 798766,
+          "Y": 600000
+        },
+        {
+          "X": 698469,
+          "Y": 600000
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.059",
+      "DisplayName": "Region 059",
+      "SystemId": null,
+      "Center": {
+        "X": 836326,
+        "Y": 533048
+      },
+      "Boundary": [
+        {
+          "X": 771815,
+          "Y": 511003
+        },
+        {
+          "X": 787798,
+          "Y": 493869
+        },
+        {
+          "X": 878889,
+          "Y": 494098
+        },
+        {
+          "X": 897201,
+          "Y": 520321
+        },
+        {
+          "X": 857099,
+          "Y": 600000
+        },
+        {
+          "X": 798766,
+          "Y": 600000
+        }
+      ]
+    },
+    {
+      "NodeId": "nav.generated.060",
+      "DisplayName": "Region 060",
+      "SystemId": "system.generated.030",
+      "Center": {
+        "X": 923248,
+        "Y": 576795
+      },
+      "Boundary": [
+        {
+          "X": 857099,
+          "Y": 600000
+        },
+        {
+          "X": 897201,
+          "Y": 520321
+        },
+        {
+          "X": 1000000,
+          "Y": 526783
+        },
+        {
+          "X": 1000000,
+          "Y": 600000
+        }
+      ]
+    }
+  ],
+  "Systems": [
+    {
+      "SystemId": "system.generated.001",
+      "DisplayName": "System 001",
+      "NodeId": "nav.generated.002"
+    },
+    {
+      "SystemId": "system.generated.002",
+      "DisplayName": "System 002",
+      "NodeId": "nav.generated.003"
+    },
+    {
+      "SystemId": "system.generated.003",
+      "DisplayName": "System 003",
+      "NodeId": "nav.generated.004"
+    },
+    {
+      "SystemId": "system.generated.004",
+      "DisplayName": "System 004",
+      "NodeId": "nav.generated.007"
+    },
+    {
+      "SystemId": "system.generated.005",
+      "DisplayName": "System 005",
+      "NodeId": "nav.generated.008"
+    },
+    {
+      "SystemId": "system.generated.006",
+      "DisplayName": "System 006",
+      "NodeId": "nav.generated.009"
+    },
+    {
+      "SystemId": "system.generated.007",
+      "DisplayName": "System 007",
+      "NodeId": "nav.generated.010"
+    },
+    {
+      "SystemId": "system.generated.008",
+      "DisplayName": "System 008",
+      "NodeId": "nav.generated.011"
+    },
+    {
+      "SystemId": "system.generated.009",
+      "DisplayName": "System 009",
+      "NodeId": "nav.generated.012"
+    },
+    {
+      "SystemId": "system.generated.010",
+      "DisplayName": "System 010",
+      "NodeId": "nav.generated.013"
+    },
+    {
+      "SystemId": "system.generated.011",
+      "DisplayName": "System 011",
+      "NodeId": "nav.generated.015"
+    },
+    {
+      "SystemId": "system.generated.012",
+      "DisplayName": "System 012",
+      "NodeId": "nav.generated.017"
+    },
+    {
+      "SystemId": "system.generated.013",
+      "DisplayName": "System 013",
+      "NodeId": "nav.generated.020"
+    },
+    {
+      "SystemId": "system.generated.014",
+      "DisplayName": "System 014",
+      "NodeId": "nav.generated.021"
+    },
+    {
+      "SystemId": "system.generated.015",
+      "DisplayName": "System 015",
+      "NodeId": "nav.generated.024"
+    },
+    {
+      "SystemId": "system.generated.016",
+      "DisplayName": "System 016",
+      "NodeId": "nav.generated.026"
+    },
+    {
+      "SystemId": "system.generated.017",
+      "DisplayName": "System 017",
+      "NodeId": "nav.generated.031"
+    },
+    {
+      "SystemId": "system.generated.018",
+      "DisplayName": "System 018",
+      "NodeId": "nav.generated.033"
+    },
+    {
+      "SystemId": "system.generated.019",
+      "DisplayName": "System 019",
+      "NodeId": "nav.generated.034"
+    },
+    {
+      "SystemId": "system.generated.020",
+      "DisplayName": "System 020",
+      "NodeId": "nav.generated.037"
+    },
+    {
+      "SystemId": "system.generated.021",
+      "DisplayName": "System 021",
+      "NodeId": "nav.generated.041"
+    },
+    {
+      "SystemId": "system.generated.022",
+      "DisplayName": "System 022",
+      "NodeId": "nav.generated.043"
+    },
+    {
+      "SystemId": "system.generated.023",
+      "DisplayName": "System 023",
+      "NodeId": "nav.generated.044"
+    },
+    {
+      "SystemId": "system.generated.024",
+      "DisplayName": "System 024",
+      "NodeId": "nav.generated.047"
+    },
+    {
+      "SystemId": "system.generated.025",
+      "DisplayName": "System 025",
+      "NodeId": "nav.generated.048"
+    },
+    {
+      "SystemId": "system.generated.026",
+      "DisplayName": "System 026",
+      "NodeId": "nav.generated.050"
+    },
+    {
+      "SystemId": "system.generated.027",
+      "DisplayName": "System 027",
+      "NodeId": "nav.generated.051"
+    },
+    {
+      "SystemId": "system.generated.028",
+      "DisplayName": "System 028",
+      "NodeId": "nav.generated.053"
+    },
+    {
+      "SystemId": "system.generated.029",
+      "DisplayName": "System 029",
+      "NodeId": "nav.generated.058"
+    },
+    {
+      "SystemId": "system.generated.030",
+      "DisplayName": "System 030",
+      "NodeId": "nav.generated.060"
+    }
+  ],
+  "Connections": [
+    {
+      "ConnectionId": "connection.generated.001",
+      "EndpointA": "nav.generated.001",
+      "EndpointB": "nav.generated.002",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.002",
+      "EndpointA": "nav.generated.001",
+      "EndpointB": "nav.generated.011",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.003",
+      "EndpointA": "nav.generated.002",
+      "EndpointB": "nav.generated.003",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.004",
+      "EndpointA": "nav.generated.002",
+      "EndpointB": "nav.generated.011",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.005",
+      "EndpointA": "nav.generated.002",
+      "EndpointB": "nav.generated.012",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.006",
+      "EndpointA": "nav.generated.002",
+      "EndpointB": "nav.generated.013",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.007",
+      "EndpointA": "nav.generated.003",
+      "EndpointB": "nav.generated.004",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.008",
+      "EndpointA": "nav.generated.003",
+      "EndpointB": "nav.generated.013",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.009",
+      "EndpointA": "nav.generated.003",
+      "EndpointB": "nav.generated.014",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.010",
+      "EndpointA": "nav.generated.004",
+      "EndpointB": "nav.generated.005",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.011",
+      "EndpointA": "nav.generated.004",
+      "EndpointB": "nav.generated.014",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.012",
+      "EndpointA": "nav.generated.004",
+      "EndpointB": "nav.generated.015",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.013",
+      "EndpointA": "nav.generated.005",
+      "EndpointB": "nav.generated.006",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.014",
+      "EndpointA": "nav.generated.005",
+      "EndpointB": "nav.generated.015",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.015",
+      "EndpointA": "nav.generated.005",
+      "EndpointB": "nav.generated.016",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.016",
+      "EndpointA": "nav.generated.006",
+      "EndpointB": "nav.generated.007",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.017",
+      "EndpointA": "nav.generated.006",
+      "EndpointB": "nav.generated.016",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.018",
+      "EndpointA": "nav.generated.006",
+      "EndpointB": "nav.generated.017",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.019",
+      "EndpointA": "nav.generated.007",
+      "EndpointB": "nav.generated.008",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.020",
+      "EndpointA": "nav.generated.007",
+      "EndpointB": "nav.generated.017",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.021",
+      "EndpointA": "nav.generated.008",
+      "EndpointB": "nav.generated.009",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.022",
+      "EndpointA": "nav.generated.008",
+      "EndpointB": "nav.generated.017",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.023",
+      "EndpointA": "nav.generated.008",
+      "EndpointB": "nav.generated.018",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.024",
+      "EndpointA": "nav.generated.008",
+      "EndpointB": "nav.generated.019",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.025",
+      "EndpointA": "nav.generated.009",
+      "EndpointB": "nav.generated.010",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.026",
+      "EndpointA": "nav.generated.009",
+      "EndpointB": "nav.generated.019",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.027",
+      "EndpointA": "nav.generated.010",
+      "EndpointB": "nav.generated.019",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.028",
+      "EndpointA": "nav.generated.010",
+      "EndpointB": "nav.generated.020",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.029",
+      "EndpointA": "nav.generated.011",
+      "EndpointB": "nav.generated.012",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.030",
+      "EndpointA": "nav.generated.011",
+      "EndpointB": "nav.generated.021",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.031",
+      "EndpointA": "nav.generated.011",
+      "EndpointB": "nav.generated.022",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.032",
+      "EndpointA": "nav.generated.012",
+      "EndpointB": "nav.generated.013",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.033",
+      "EndpointA": "nav.generated.012",
+      "EndpointB": "nav.generated.022",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.034",
+      "EndpointA": "nav.generated.013",
+      "EndpointB": "nav.generated.014",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.035",
+      "EndpointA": "nav.generated.013",
+      "EndpointB": "nav.generated.022",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.036",
+      "EndpointA": "nav.generated.013",
+      "EndpointB": "nav.generated.023",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.037",
+      "EndpointA": "nav.generated.014",
+      "EndpointB": "nav.generated.015",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.038",
+      "EndpointA": "nav.generated.014",
+      "EndpointB": "nav.generated.023",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.039",
+      "EndpointA": "nav.generated.014",
+      "EndpointB": "nav.generated.024",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.040",
+      "EndpointA": "nav.generated.014",
+      "EndpointB": "nav.generated.025",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.041",
+      "EndpointA": "nav.generated.015",
+      "EndpointB": "nav.generated.016",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.042",
+      "EndpointA": "nav.generated.015",
+      "EndpointB": "nav.generated.025",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.043",
+      "EndpointA": "nav.generated.016",
+      "EndpointB": "nav.generated.017",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.044",
+      "EndpointA": "nav.generated.016",
+      "EndpointB": "nav.generated.025",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.045",
+      "EndpointA": "nav.generated.016",
+      "EndpointB": "nav.generated.026",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.046",
+      "EndpointA": "nav.generated.016",
+      "EndpointB": "nav.generated.027",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.047",
+      "EndpointA": "nav.generated.017",
+      "EndpointB": "nav.generated.018",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.048",
+      "EndpointA": "nav.generated.017",
+      "EndpointB": "nav.generated.027",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.049",
+      "EndpointA": "nav.generated.017",
+      "EndpointB": "nav.generated.028",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.050",
+      "EndpointA": "nav.generated.018",
+      "EndpointB": "nav.generated.019",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.051",
+      "EndpointA": "nav.generated.018",
+      "EndpointB": "nav.generated.028",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.052",
+      "EndpointA": "nav.generated.018",
+      "EndpointB": "nav.generated.029",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.053",
+      "EndpointA": "nav.generated.019",
+      "EndpointB": "nav.generated.020",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.054",
+      "EndpointA": "nav.generated.019",
+      "EndpointB": "nav.generated.029",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.055",
+      "EndpointA": "nav.generated.020",
+      "EndpointB": "nav.generated.029",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.056",
+      "EndpointA": "nav.generated.020",
+      "EndpointB": "nav.generated.030",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.057",
+      "EndpointA": "nav.generated.021",
+      "EndpointB": "nav.generated.022",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.058",
+      "EndpointA": "nav.generated.021",
+      "EndpointB": "nav.generated.031",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.059",
+      "EndpointA": "nav.generated.022",
+      "EndpointB": "nav.generated.023",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.060",
+      "EndpointA": "nav.generated.022",
+      "EndpointB": "nav.generated.031",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.061",
+      "EndpointA": "nav.generated.022",
+      "EndpointB": "nav.generated.032",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.062",
+      "EndpointA": "nav.generated.022",
+      "EndpointB": "nav.generated.033",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.063",
+      "EndpointA": "nav.generated.023",
+      "EndpointB": "nav.generated.024",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.064",
+      "EndpointA": "nav.generated.023",
+      "EndpointB": "nav.generated.033",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.065",
+      "EndpointA": "nav.generated.024",
+      "EndpointB": "nav.generated.025",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.066",
+      "EndpointA": "nav.generated.024",
+      "EndpointB": "nav.generated.033",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.067",
+      "EndpointA": "nav.generated.024",
+      "EndpointB": "nav.generated.034",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.068",
+      "EndpointA": "nav.generated.024",
+      "EndpointB": "nav.generated.035",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.069",
+      "EndpointA": "nav.generated.025",
+      "EndpointB": "nav.generated.026",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.070",
+      "EndpointA": "nav.generated.025",
+      "EndpointB": "nav.generated.035",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.071",
+      "EndpointA": "nav.generated.026",
+      "EndpointB": "nav.generated.027",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.072",
+      "EndpointA": "nav.generated.026",
+      "EndpointB": "nav.generated.035",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.073",
+      "EndpointA": "nav.generated.026",
+      "EndpointB": "nav.generated.036",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.074",
+      "EndpointA": "nav.generated.026",
+      "EndpointB": "nav.generated.037",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.075",
+      "EndpointA": "nav.generated.027",
+      "EndpointB": "nav.generated.028",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.076",
+      "EndpointA": "nav.generated.027",
+      "EndpointB": "nav.generated.037",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.077",
+      "EndpointA": "nav.generated.028",
+      "EndpointB": "nav.generated.029",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.078",
+      "EndpointA": "nav.generated.028",
+      "EndpointB": "nav.generated.037",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.079",
+      "EndpointA": "nav.generated.028",
+      "EndpointB": "nav.generated.038",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.080",
+      "EndpointA": "nav.generated.029",
+      "EndpointB": "nav.generated.030",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.081",
+      "EndpointA": "nav.generated.029",
+      "EndpointB": "nav.generated.038",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.082",
+      "EndpointA": "nav.generated.029",
+      "EndpointB": "nav.generated.039",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.083",
+      "EndpointA": "nav.generated.030",
+      "EndpointB": "nav.generated.039",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.084",
+      "EndpointA": "nav.generated.030",
+      "EndpointB": "nav.generated.040",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.085",
+      "EndpointA": "nav.generated.031",
+      "EndpointB": "nav.generated.032",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.086",
+      "EndpointA": "nav.generated.031",
+      "EndpointB": "nav.generated.041",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.087",
+      "EndpointA": "nav.generated.032",
+      "EndpointB": "nav.generated.033",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.088",
+      "EndpointA": "nav.generated.032",
+      "EndpointB": "nav.generated.041",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.089",
+      "EndpointA": "nav.generated.032",
+      "EndpointB": "nav.generated.042",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.090",
+      "EndpointA": "nav.generated.032",
+      "EndpointB": "nav.generated.043",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.091",
+      "EndpointA": "nav.generated.033",
+      "EndpointB": "nav.generated.034",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.092",
+      "EndpointA": "nav.generated.033",
+      "EndpointB": "nav.generated.043",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.093",
+      "EndpointA": "nav.generated.033",
+      "EndpointB": "nav.generated.044",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.094",
+      "EndpointA": "nav.generated.034",
+      "EndpointB": "nav.generated.035",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.095",
+      "EndpointA": "nav.generated.034",
+      "EndpointB": "nav.generated.044",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.096",
+      "EndpointA": "nav.generated.034",
+      "EndpointB": "nav.generated.045",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.097",
+      "EndpointA": "nav.generated.035",
+      "EndpointB": "nav.generated.036",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.098",
+      "EndpointA": "nav.generated.035",
+      "EndpointB": "nav.generated.045",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.099",
+      "EndpointA": "nav.generated.035",
+      "EndpointB": "nav.generated.046",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.100",
+      "EndpointA": "nav.generated.036",
+      "EndpointB": "nav.generated.037",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.101",
+      "EndpointA": "nav.generated.036",
+      "EndpointB": "nav.generated.046",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.102",
+      "EndpointA": "nav.generated.036",
+      "EndpointB": "nav.generated.047",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.103",
+      "EndpointA": "nav.generated.037",
+      "EndpointB": "nav.generated.038",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.104",
+      "EndpointA": "nav.generated.037",
+      "EndpointB": "nav.generated.047",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.105",
+      "EndpointA": "nav.generated.038",
+      "EndpointB": "nav.generated.039",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.106",
+      "EndpointA": "nav.generated.038",
+      "EndpointB": "nav.generated.047",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.107",
+      "EndpointA": "nav.generated.038",
+      "EndpointB": "nav.generated.048",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.108",
+      "EndpointA": "nav.generated.038",
+      "EndpointB": "nav.generated.049",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.109",
+      "EndpointA": "nav.generated.039",
+      "EndpointB": "nav.generated.040",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.110",
+      "EndpointA": "nav.generated.039",
+      "EndpointB": "nav.generated.049",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.111",
+      "EndpointA": "nav.generated.039",
+      "EndpointB": "nav.generated.050",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.112",
+      "EndpointA": "nav.generated.040",
+      "EndpointB": "nav.generated.050",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.113",
+      "EndpointA": "nav.generated.041",
+      "EndpointB": "nav.generated.042",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.114",
+      "EndpointA": "nav.generated.041",
+      "EndpointB": "nav.generated.051",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.115",
+      "EndpointA": "nav.generated.041",
+      "EndpointB": "nav.generated.052",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.116",
+      "EndpointA": "nav.generated.042",
+      "EndpointB": "nav.generated.043",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.117",
+      "EndpointA": "nav.generated.042",
+      "EndpointB": "nav.generated.052",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.118",
+      "EndpointA": "nav.generated.042",
+      "EndpointB": "nav.generated.053",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.119",
+      "EndpointA": "nav.generated.043",
+      "EndpointB": "nav.generated.044",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.120",
+      "EndpointA": "nav.generated.043",
+      "EndpointB": "nav.generated.053",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.121",
+      "EndpointA": "nav.generated.044",
+      "EndpointB": "nav.generated.045",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.122",
+      "EndpointA": "nav.generated.044",
+      "EndpointB": "nav.generated.053",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.123",
+      "EndpointA": "nav.generated.044",
+      "EndpointB": "nav.generated.054",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.124",
+      "EndpointA": "nav.generated.045",
+      "EndpointB": "nav.generated.046",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.125",
+      "EndpointA": "nav.generated.045",
+      "EndpointB": "nav.generated.054",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.126",
+      "EndpointA": "nav.generated.045",
+      "EndpointB": "nav.generated.055",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.127",
+      "EndpointA": "nav.generated.046",
+      "EndpointB": "nav.generated.047",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.128",
+      "EndpointA": "nav.generated.046",
+      "EndpointB": "nav.generated.055",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.129",
+      "EndpointA": "nav.generated.046",
+      "EndpointB": "nav.generated.056",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.130",
+      "EndpointA": "nav.generated.047",
+      "EndpointB": "nav.generated.048",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.131",
+      "EndpointA": "nav.generated.047",
+      "EndpointB": "nav.generated.056",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.132",
+      "EndpointA": "nav.generated.047",
+      "EndpointB": "nav.generated.057",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.133",
+      "EndpointA": "nav.generated.048",
+      "EndpointB": "nav.generated.049",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.134",
+      "EndpointA": "nav.generated.048",
+      "EndpointB": "nav.generated.057",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.135",
+      "EndpointA": "nav.generated.048",
+      "EndpointB": "nav.generated.058",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.136",
+      "EndpointA": "nav.generated.048",
+      "EndpointB": "nav.generated.059",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.137",
+      "EndpointA": "nav.generated.049",
+      "EndpointB": "nav.generated.050",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.138",
+      "EndpointA": "nav.generated.049",
+      "EndpointB": "nav.generated.059",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.139",
+      "EndpointA": "nav.generated.050",
+      "EndpointB": "nav.generated.059",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.140",
+      "EndpointA": "nav.generated.050",
+      "EndpointB": "nav.generated.060",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.141",
+      "EndpointA": "nav.generated.051",
+      "EndpointB": "nav.generated.052",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.142",
+      "EndpointA": "nav.generated.052",
+      "EndpointB": "nav.generated.053",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.143",
+      "EndpointA": "nav.generated.053",
+      "EndpointB": "nav.generated.054",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.144",
+      "EndpointA": "nav.generated.054",
+      "EndpointB": "nav.generated.055",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.145",
+      "EndpointA": "nav.generated.055",
+      "EndpointB": "nav.generated.056",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.146",
+      "EndpointA": "nav.generated.056",
+      "EndpointB": "nav.generated.057",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.147",
+      "EndpointA": "nav.generated.057",
+      "EndpointB": "nav.generated.058",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.148",
+      "EndpointA": "nav.generated.058",
+      "EndpointB": "nav.generated.059",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    },
+    {
+      "ConnectionId": "connection.generated.149",
+      "EndpointA": "nav.generated.059",
+      "EndpointB": "nav.generated.060",
+      "Kind": 1,
+      "BaseTraversalCost": 1
+    }
+  ],
+  "HomeCandidates": [
+    {
+      "CivilizationDefinitionId": "civilization.cardassian",
+      "SystemId": "system.generated.007",
+      "NodeId": "nav.generated.010"
+    },
+    {
+      "CivilizationDefinitionId": "civilization.federation",
+      "SystemId": "system.generated.027",
+      "NodeId": "nav.generated.051"
+    }
+  ]
+}

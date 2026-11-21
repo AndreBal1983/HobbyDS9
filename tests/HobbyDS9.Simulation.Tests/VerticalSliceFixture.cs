@@ -7,11 +7,20 @@ namespace HobbyDS9.Simulation.Tests;
 
 internal static class VerticalSliceFixture
 {
-    internal static ScenarioDto Scenario(bool humans = true, bool weighted = false)
+    internal static ScenarioDto Scenario(bool humans = true, bool weighted = false, bool fullEngineeringTree = false)
     {
         var bytes = File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "scenarios", "ds9-slice", "scenario.json"));
         var scenario = JsonSerializer.Deserialize<ScenarioDto>(bytes)!;
         scenario.ContentHash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        // Historical mechanics fixtures retain their original one-project catalogue.
+        // Full-tree acceptance uses the actual authored content without this reduction.
+        if (!fullEngineeringTree)
+        {
+            scenario.Definitions.EngineeringApplications!.RemoveAll(a => a.DefinitionId != "engineering.advanced-starship-engineering");
+            scenario.Definitions.ShipDesignCatalogue!.Components!.RemoveAll(c => c.VersionNumber > 1);
+            scenario.Definitions.ShipDesignCatalogue.Hulls!.RemoveAll(h => h.VersionNumber > 1);
+            scenario.Definitions.ShipDesignVersionAccess!.RemoveAll(g => g.RequiredEngineeringApplicationDefinitionIds!.Count > 0);
+        }
         if (!weighted)
         {
             foreach(var civilization in scenario.InitialState.Civilizations!) { civilization.ScienceAllocationUnits=0; }
@@ -28,6 +37,14 @@ internal static class VerticalSliceFixture
             foreach (var c in scenario.InitialState.Civilizations!) c.ControllerKind = ControllerKind.Human;
         }
         return scenario;
+    }
+    // Content additions change the envelope identity. Normalize ONLY that identity to
+    // compare every gameplay byte with the previously accepted 25-turn golden.
+    internal static string LegacyGameplayHash(SaveEnvelopeDto save)
+    {
+        var copy = JsonSerializer.Deserialize<SaveEnvelopeDto>(JsonSerializer.Serialize(save))!;
+        copy.ContentHash = "3b80eb970c5d832550fc947344e860777910d80208af0fc2f474a98ae04e0b59";
+        return Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(copy))).ToLowerInvariant();
     }
     internal static SaveCompatibility Compatibility(ScenarioDto s) => new(s.ScenarioId, s.RulesVersion, s.ContentHash);
     internal static SaveEnvelopeDto Save(ScenarioDto s) => new() { SaveFormatVersion = FoundationVersions.SaveFormatVersion,

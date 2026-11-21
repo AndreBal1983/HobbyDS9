@@ -1,0 +1,15 @@
+# Campaign designer art workbench UI candidate
+
+24 October 2026. Source/CPU candidate receiving the original art director handoff at `E:/HobbyDS9/artifacts/art/ship-designer-ux-20261024/DESIGN-HANDOFF.md`, including its corrected power-error contract. Actual Unity layout/input/render acceptance remains a separate gate.
+
+The persistent hull viewer sits beside the actual-catalogue inspector across system pages. The dedicated art receiver owns rotation, views and truthful missing-art labels. A model/socket never grants installation permission. The browser study's 28 proposed choices and illustrative formulas are not imported as campaign content.
+
+Selecting Add, Replace, quantity or removal creates a detached candidate. `designer-fit-package` accepts it into the local draft; `designer-cancel-fit` leaves every installed/profile value unchanged. Publication is blocked while a candidate is pending. Invalid fits remain local editable studies, with authoritative Application errors; they cannot bypass publication validation. `designer-undo` restores one whole prior edit, including every profile and installation identity. New packages begin at zero power; replacements retain explicit allocations (summed when replacing into the existing UI stack). Nothing automatically rebalances or clamps invalid values.
+
+Profile controls retain Cruise/Combat/Survey independently. Every backend issue is retained individually with exact source path, profile and compatible installation identity; the UI exposes per-profile error counts, current request/allocation/full/minimum values and routes validation actions to the relevant profile and exact power field. `designer-release-unused-power` only reduces active-profile allocations above nonnegative requests. It never fills shortfalls, changes other profiles or runs during a candidate preview; one Undo restores it exactly. Candidate power rows are read-only until Fit/Cancel.
+
+Costs, capacity, powered outputs, comparisons and errors come from the real Application preview. The performance explanation lists actual installed-system contributions. Availability comes from the actor's campaign catalogue. The existing one-stack-per-component-version editor boundary is unchanged: separately authored installations of the same version remain outside this editor's edit-copy admission, rather than being silently merged.
+
+Class publication/history, stamped authority, save versions and unsupported custom-class construction are unchanged. No new portable support metadata, unlocks, production admission, balance, campaign commands or save conversion is included. The protected d60 package is untouched.
+
+CPU acceptance covers candidate isolation/Cancel, Fit/Undo, replacement identity and retained invalid power, existing-stack explicit allocation sums, profile-isolated release/shortfalls/Undo, exact backend issue projection and pending exit protection. Reference compilation and the Root-owned actual Unity receiving case are reported separately; compiled Editor tests are not claimed executed without an engine run.

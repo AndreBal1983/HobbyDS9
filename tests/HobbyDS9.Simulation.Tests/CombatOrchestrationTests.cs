@@ -197,7 +197,7 @@ public sealed class CombatOrchestrationTests
         }
         Assert.Equal(26, client.Snapshot.Campaign.TurnNumber); Assert.NotEmpty(client.RecentReports);
         Assert.Equal("fb2b75f18c8c5423f3a0850f38f6e53ee8249d3d08385978b5b2532041cc6089",
-            Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(client.ExportSave()))).ToLowerInvariant());
+            VerticalSliceFixture.LegacyGameplayHash(client.ExportSave()));
     }
 
     public class SessionProxy : DispatchProxy
