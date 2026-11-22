@@ -92,6 +92,20 @@ public sealed class CompatibilityTests : IDisposable
         Assert.Equal(RepositoryError.Corrupt, Assert.Throws<RepositoryException>(() => repo.ImportJson(source)).Error);
         Assert.Equal("corrupted", File.ReadAllText(backup)); Assert.NotNull(repo.ReadCheckpoint(receipt.CheckpointId!));
     }
+    [Fact] public void ExpiredInactiveHeadCannotBecomeRetentionRootAndPruneLastAvailableRecovery()
+    {
+        using var repo = Open();
+        var a = repo.CommitCheckpoint(new("a", "main", 0, null, Image(1), new("auto-a", 0, SaveReferenceKind.Auto, "A")));
+        repo.ForkBranch("fork-b", "b", a.CheckpointId!);
+        var b = repo.CommitCheckpoint(new("b", "b", 0, a.CheckpointId, Image(2), new("auto-b", 0, SaveReferenceKind.Auto, "B")));
+        repo.ApplyRetention("prune-a", repo.GetBranch("b"), softAutoBytes: 1);
+        Assert.Equal(RepositoryError.Unavailable, Assert.Throws<RepositoryException>(() => repo.ReadCheckpoint(a.CheckpointId!)).Error);
+        var before = repo.ListReferences(); var bytes = repo.LogicalPayloadBytes;
+        Assert.Equal(RepositoryError.Unavailable, Assert.Throws<RepositoryException>(() => repo.ApplyRetention("bad-root", repo.GetBranch("main"), softAutoBytes: 1)).Error);
+        Assert.Null(repo.FindOperation("bad-root")); Assert.Equal(bytes, repo.LogicalPayloadBytes);
+        Assert.Equal(before.Select(r => r.Id), repo.ListReferences().Select(r => r.Id));
+        Assert.Equal(Image(2).ReadPayload(), repo.ReadCheckpoint(b.CheckpointId!).ReadPayload());
+    }
     public void Dispose() { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     sealed class FixtureValidator : ICheckpointValidator
     {

@@ -5,6 +5,15 @@ using Microsoft.Data.Sqlite;
 
 // Test fixture codec only; never presented as gameplay/edition validation.
 var path = args[0]; var mode = args[1];
+SqliteProviderBootstrap.EnsureInitialized();
+if (File.Exists(Path.Combine(AppContext.BaseDirectory, "hobbyds9-native-recipe.txt")))
+{
+    using var verifyNative = new SqliteConnection("Data Source=:memory:;Pooling=False"); verifyNative.Open();
+    using var version = verifyNative.CreateCommand(); version.CommandText = "SELECT sqlite_version()";
+    if ((string?)version.ExecuteScalar() != "3.54.1") throw new InvalidOperationException("R2 native fallback detected.");
+    var module = System.Diagnostics.Process.GetCurrentProcess().Modules.Cast<System.Diagnostics.ProcessModule>().Single(m => m.ModuleName.Equals("e_sqlite3.dll", StringComparison.OrdinalIgnoreCase));
+    if (Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(module.FileName))).ToLowerInvariant() != "4b59d3cded9dc1608544160f3b4b10ac974c6ac0d6ffc23064e5f4c8dbd05aea") throw new InvalidOperationException("Loaded R2 native hash mismatch.");
+}
 if (mode == "info" || mode == "smoke")
 {
     SqliteProviderBootstrap.EnsureInitialized();
