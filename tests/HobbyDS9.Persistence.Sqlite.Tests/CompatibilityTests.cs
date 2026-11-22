@@ -8,7 +8,7 @@ namespace HobbyDS9.Persistence.Sqlite.Tests;
 
 public sealed class CompatibilityTests : IDisposable
 {
-    readonly string directory = Path.Combine(Path.GetTempPath(), "hobbyds9-import-" + Guid.NewGuid().ToString("N"));
+    readonly string directory = Path.Combine(PersistenceTestPaths.TemporaryRoot(), "hobbyds9-import-" + Guid.NewGuid().ToString("N"));
     readonly FixtureValidator validator = new();
     SqliteCampaignRepository Open(Action<RepositoryWriteStage>? fault = null) => new(Path.Combine(directory, "repository"), "campaign", "fixture-not-game", validator, fault);
     static CheckpointImage Image(int turn) => new(Encoding.UTF8.GetBytes("{\"turn\":" + turn + "}"), "fixture-not-game", turn, 0, "Planning");
