@@ -135,24 +135,28 @@ PRAGMA application_id=1213416497; PRAGMA user_version=2;", tx);
             Id(checkpointId);
             lock (gate)
             {
-                Alive(); return ReadCheckpoint(checkpointId, null);
+                Alive();
+                var stored = ReadStoredCheckpoint(checkpointId, null);
+                var image = Validate(stored.ReadPayload());
+                if (image.Turn != stored.Turn || image.Revision != stored.Revision || image.Phase != stored.Phase || image.PayloadHash != stored.PayloadHash) throw Error(RepositoryError.Corrupt);
+                return image;
             }
         }
-        private CheckpointImage ReadCheckpoint(string checkpointId, SqliteTransaction? transaction)
+        // Storage checks only; no host/game callback inside a SQL transaction.
+        private CheckpointImage ReadStoredCheckpoint(string checkpointId, SqliteTransaction? transaction)
         {
-                byte[] bytes; int turn; long revision; string phase; string hash;
-                using (var c = Command("SELECT Turn,Revision," + Field("Phase", 64) + "," + Field("PayloadHash", 64) + ",PayloadLength,CASE WHEN typeof(Payload)='blob' AND length(Payload)<=67108864 THEN Payload ELSE NULL END,Available,length(Payload) FROM Checkpoint WHERE Id=$id", transaction, ("$id", checkpointId)))
-                using (var r = c.ExecuteReader())
-                {
-                    if (!r.Read()) throw Error(RepositoryError.NotFound);
-                    if (r.GetInt32(6) == 0) throw Error(RepositoryError.Unavailable);
-                    if (r.IsDBNull(5) || r.GetInt64(4) < 1 || r.GetInt64(4) > CheckpointImage.MaximumPayloadBytes || r.GetInt64(7) != r.GetInt64(4)) throw Error(RepositoryError.Corrupt);
-                    turn = r.GetInt32(0); revision = r.GetInt64(1); phase = ReadText(r, 2, 64); hash = ReadText(r, 3, 64); bytes = (byte[])r.GetValue(5);
-                }
-                if (CheckpointImage.Hash(bytes) != hash) throw Error(RepositoryError.Corrupt);
-                var image = Validate(bytes);
-                if (image.Turn != turn || image.Revision != revision || image.Phase != phase || image.PayloadHash != hash) throw Error(RepositoryError.Corrupt);
-                return image;
+            byte[] bytes; int turn; long revision; string phase; string hash;
+            using (var c = Command("SELECT Turn,Revision," + Field("Phase", 64) + "," + Field("PayloadHash", 64) + ",PayloadLength,CASE WHEN typeof(Payload)='blob' AND length(Payload)<=67108864 THEN Payload ELSE NULL END,Available,length(Payload) FROM Checkpoint WHERE Id=$id", transaction, ("$id", checkpointId)))
+            using (var r = c.ExecuteReader())
+            {
+                if (!r.Read()) throw Error(RepositoryError.NotFound);
+                if (r.GetInt32(6) == 0) throw Error(RepositoryError.Unavailable);
+                if (r.IsDBNull(5) || r.GetInt64(4) < 1 || r.GetInt64(4) > CheckpointImage.MaximumPayloadBytes || r.GetInt64(7) != r.GetInt64(4)) throw Error(RepositoryError.Corrupt);
+                turn = r.GetInt32(0); revision = r.GetInt64(1); phase = ReadText(r, 2, 64); hash = ReadText(r, 3, 64); bytes = (byte[])r.GetValue(5);
+            }
+            if (CheckpointImage.Hash(bytes) != hash) throw Error(RepositoryError.Corrupt);
+            try { return new CheckpointImage(bytes, editionIdentity, turn, revision, phase); }
+            catch (ArgumentException e) { throw Error(RepositoryError.Corrupt, null, e); }
         }
         private CheckpointImage Validate(byte[] bytes)
         {
