@@ -126,7 +126,7 @@ public sealed class RepositoryTests : IDisposable
         }
         using var child = Child("lease"); await Ready(child);
         Error(RepositoryError.WriterInUse, () => Open().Dispose());
-        child.Kill(true); await child.WaitForExitAsync(); using var recovered = Open(); Assert.Null(recovered.FindOperation("never-written"));
+        child.Kill(true); await child.WaitForExitAsync(); using var recovered = ReopenAfterKilledProcess(); Assert.Null(recovered.FindOperation("never-written"));
     }
     [Theory] [InlineData("before", false)] [InlineData("after", true)]
     public async Task KilledWriterBeforeOrAfterCommitRecoversExactlyOneCompleteCheckpoint(string stage, bool committed)
@@ -151,7 +151,8 @@ public sealed class RepositoryTests : IDisposable
     Process Child(string mode)
     {
         var root = FindRoot(); var dll = Path.Combine(root, "tools/HobbyDS9.Persistence.CrashProbe/bin/Release/net10.0/HobbyDS9.Persistence.CrashProbe.dll");
-        var start = new ProcessStartInfo(Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "C:/HobbyDS9/artifacts/tools/dotnet/dotnet.exe") { RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
+        var host = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? Path.GetFullPath(Path.Combine(System.Runtime.InteropServices.RuntimeEnvironment.GetRuntimeDirectory(), "..", "..", "..", OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet"));
+        var start = new ProcessStartInfo(host) { RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
         start.ArgumentList.Add(dll); start.ArgumentList.Add(directory); start.ArgumentList.Add(mode);
         return Process.Start(start)!;
     }
