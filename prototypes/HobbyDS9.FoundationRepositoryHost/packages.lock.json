@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETStandard,Version=v2.1": {
+      "Newtonsoft.Json": {
+        "type": "Direct",
+        "requested": "[13.0.3, 13.0.3]",
+        "resolved": "13.0.3",
+        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+      },
+      "hobbyds9.application": {
+        "type": "Project",
+        "dependencies": {
+          "HobbyDS9.Contracts": "[1.0.0, )",
+          "HobbyDS9.Simulation": "[1.0.0, )"
+        }
+      },
+      "hobbyds9.contracts": {
+        "type": "Project"
+      },
+      "hobbyds9.persistence": {
+        "type": "Project"
+      },
+      "hobbyds9.simulation": {
+        "type": "Project",
+        "dependencies": {
+          "HobbyDS9.Contracts": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}
