@@ -55,9 +55,10 @@ namespace HobbyDS9.Persistence
         public string UpdatedUtc { get; }
         // Metadata only, not proof of successful current game validation.
         public bool PayloadAvailable { get; }
+        public string CheckpointBranchId { get; }
         public SaveReference(string id, string checkpointId, long generation, SaveReferenceKind kind, string name, string notes,
-            int turn, long revision, string phase, long storageSequence, string updatedUtc, bool payloadAvailable)
-        { Id = id; CheckpointId = checkpointId; Generation = generation; Kind = kind; Name = name; Notes = notes; Turn = turn; Revision = revision; Phase = phase; StorageSequence = storageSequence; UpdatedUtc = updatedUtc; PayloadAvailable = payloadAvailable; }
+            int turn, long revision, string phase, long storageSequence, string updatedUtc, bool payloadAvailable, string checkpointBranchId = "")
+        { Id = id; CheckpointId = checkpointId; Generation = generation; Kind = kind; Name = name; Notes = notes; Turn = turn; Revision = revision; Phase = phase; StorageSequence = storageSequence; UpdatedUtc = updatedUtc; PayloadAvailable = payloadAvailable; CheckpointBranchId = checkpointBranchId; }
     }
     public sealed class RepositoryUsage
     {
@@ -93,6 +94,7 @@ namespace HobbyDS9.Persistence
         DurableReceipt? FindOperation(string operationId);
         BranchInfo GetBranch(string branchId);
         IReadOnlyList<SaveReference> ListReferences(string afterId = "", int limit = 50);
+        ReferencePage QueryReferences(ReferenceQuery query);
         CheckpointImage ReadCheckpoint(string checkpointId);
         DurableReceipt ImportJson(string absoluteSourceFile);
         string ExportJson(string checkpointId, string exportId, bool overwrite = false);
