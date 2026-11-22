@@ -34,7 +34,7 @@ namespace HobbyDS9.StateRepositoryProbe.Editor
             if(Directory.Exists(output))throw new IOException("Probe output already exists; choose a new generated project, preserve earlier evidence.");
             var target=NamedBuildTarget.Standalone;var api=PlayerSettings.GetApiCompatibilityLevel(target);
             var backend=PlayerSettings.GetScriptingBackend(target);var stripping=PlayerSettings.GetManagedStrippingLevel(target);
-            var product=PlayerSettings.productName;var company=PlayerSettings.companyName;var width=PlayerSettings.defaultScreenWidth;var height=PlayerSettings.defaultScreenHeight;
+            var product=PlayerSettings.productName;var company=PlayerSettings.companyName;var width=PlayerSettings.defaultScreenWidth;var height=PlayerSettings.defaultScreenHeight;var background=PlayerSettings.runInBackground;
             var scene=EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,NewSceneMode.Single);
             Directory.CreateDirectory(Path.Combine(Application.dataPath,"ProbeGenerated"));
             const string scenePath="Assets/ProbeGenerated/StateRepositoryProbe.unity";
@@ -46,6 +46,7 @@ namespace HobbyDS9.StateRepositoryProbe.Editor
                 PlayerSettings.SetScriptingBackend(target,ScriptingImplementation.IL2CPP);
                 PlayerSettings.SetManagedStrippingLevel(target,ManagedStrippingLevel.High);
                 PlayerSettings.defaultScreenWidth=1920;PlayerSettings.defaultScreenHeight=1080;
+                PlayerSettings.runInBackground=true;
                 var report=BuildPipeline.BuildPlayer(new BuildPlayerOptions{scenes=new[]{scenePath},locationPathName=Path.Combine(output,"StateRepositoryProbe.exe"),
                     target=BuildTarget.StandaloneWindows64,options=BuildOptions.StrictMode,extraScriptingDefines=new[]{"HOBBYDS9_STATE_REPOSITORY_PROBE"}});
                 if(report.summary.result!=BuildResult.Succeeded)throw new InvalidOperationException("Native probe build failed; keep its output and logs.");
@@ -64,6 +65,7 @@ namespace HobbyDS9.StateRepositoryProbe.Editor
             {
                 PlayerSettings.SetApiCompatibilityLevel(target,api);PlayerSettings.SetScriptingBackend(target,backend);PlayerSettings.SetManagedStrippingLevel(target,stripping);
                 PlayerSettings.productName=product;PlayerSettings.companyName=company;PlayerSettings.defaultScreenWidth=width;PlayerSettings.defaultScreenHeight=height;
+                PlayerSettings.runInBackground=background;
             }
         }
         private static string Hash(string path)
