@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HobbyDS9.Persistence
 {
-    public enum RepositoryError { InvalidRequest, WriterInUse, IncompatibleSchema, IncompatibleEdition, Conflict, OperationIdConflict, NotFound, Unavailable, Corrupt, ValidationFailed, WriteFailed, OutcomeUnknown }
+    public enum RepositoryError { InvalidRequest, WriterInUse, IncompatibleSchema, IncompatibleEdition, Conflict, OperationIdConflict, NotFound, Unavailable, Corrupt, ValidationFailed, WriteFailed, OutcomeUnknown, StorageFull, ReadOnly, Busy }
     public sealed class RepositoryException : Exception
     {
         public RepositoryError Error { get; }
@@ -48,8 +48,28 @@ namespace HobbyDS9.Persistence
         public SaveReferenceKind Kind { get; }
         public string Name { get; }
         public string Notes { get; }
-        public SaveReference(string id, string checkpointId, long generation, SaveReferenceKind kind, string name, string notes)
-        { Id = id; CheckpointId = checkpointId; Generation = generation; Kind = kind; Name = name; Notes = notes; }
+        public int Turn { get; }
+        public long Revision { get; }
+        public string Phase { get; }
+        public long StorageSequence { get; }
+        public string UpdatedUtc { get; }
+        // Metadata only, not proof of successful current game validation.
+        public bool PayloadAvailable { get; }
+        public SaveReference(string id, string checkpointId, long generation, SaveReferenceKind kind, string name, string notes,
+            int turn, long revision, string phase, long storageSequence, string updatedUtc, bool payloadAvailable)
+        { Id = id; CheckpointId = checkpointId; Generation = generation; Kind = kind; Name = name; Notes = notes; Turn = turn; Revision = revision; Phase = phase; StorageSequence = storageSequence; UpdatedUtc = updatedUtc; PayloadAvailable = payloadAvailable; }
+    }
+    public sealed class RepositoryUsage
+    {
+        public long LogicalPayloadBytes { get; }
+        public long AutomaticPayloadBytes { get; }
+        public long ProtectedPayloadBytes { get; }
+        public long PhysicalDatabaseBytes { get; }
+        public long WalBytes { get; }
+        public long SoftAutomaticBudgetBytes { get; }
+        public bool AutomaticBudgetExceeded => AutomaticPayloadBytes > SoftAutomaticBudgetBytes;
+        public RepositoryUsage(long logical, long automatic, long protectedBytes, long physical, long wal, long softBudget)
+        { LogicalPayloadBytes = logical; AutomaticPayloadBytes = automatic; ProtectedPayloadBytes = protectedBytes; PhysicalDatabaseBytes = physical; WalBytes = wal; SoftAutomaticBudgetBytes = softBudget; }
     }
     public sealed class DurableReceipt
     {
@@ -78,5 +98,6 @@ namespace HobbyDS9.Persistence
         string ExportJson(string checkpointId, string exportId, bool overwrite = false);
         string Backup(string backupId);
         DurableReceipt ApplyRetention(string operationId, BranchInfo activeBranch, int rolling = 10, int milestones = 3, long softAutoBytes = 512L * 1024 * 1024);
+        RepositoryUsage GetStorageUsage(BranchInfo activeBranch, long softAutoBytes = 512L * 1024 * 1024);
     }
 }
