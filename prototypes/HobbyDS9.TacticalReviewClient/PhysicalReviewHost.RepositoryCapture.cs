@@ -47,6 +47,7 @@ namespace HobbyDS9.TacticalReviewClient
         private int settled;
         public CampaignRepositoryError Error {get;}
         public CampaignRepositoryImage? Image {get;}
+        public CampaignRepositoryStamp? PublishedStamp {get;internal set;}
         public bool Settled=>Volatile.Read(ref settled)!=0;
         internal CampaignRepositoryRestoreResult(CampaignRepositoryError error,CampaignRepositoryImage? image=null,ICampaignColonisationCycleSession? candidate=null)
         {Error=error;Image=image;Candidate=candidate;}
@@ -63,9 +64,10 @@ namespace HobbyDS9.TacticalReviewClient
     public sealed partial class PhysicalReviewHost
     {
         private bool RepositoryBusy=>streamedInteraction!=null||colonisationInteraction!=null||engineeringRefinementInteraction!=null||beltBodyInteraction!=null;
-        private string RepositoryCombatBoundary(string actor)
-            =>string.Join("|",session.GetEncounters(actor).OrderBy(x=>x,StringComparer.Ordinal).Select(x=>{
-                var b=session.Observe(x,actor);
+        private string RepositoryCombatBoundary(string actor)=>RepositoryCombatBoundary(session,actor);
+        private static string RepositoryCombatBoundary(ICampaignTacticalTravelSession source,string actor)
+            =>string.Join("|",source.GetEncounters(actor).OrderBy(x=>x,StringComparer.Ordinal).Select(x=>{
+                var b=source.Observe(x,actor);
                 return x.Length.ToString(CultureInfo.InvariantCulture)+":"+x+":"+b.Round.ToString(CultureInfo.InvariantCulture)+":"+b.BoundaryRevision.ToString(CultureInfo.InvariantCulture);
             }));
         private CampaignRepositoryStamp RepositoryStamp(ReviewFrame frame)
@@ -98,6 +100,15 @@ namespace HobbyDS9.TacticalReviewClient
                 if(RepositoryBusy||!IsRepositorySessionCurrent(source))return false;
                 var s=session.CaptureStatus();
                 return source.Turn==s.Turn&&source.Revision==s.CampaignRevision&&source.Phase==s.Phase&&source.CombatBoundary==RepositoryCombatBoundary(source.Actor);
+            }
+        }
+        public CampaignRepositoryError CaptureRepositoryBoundary(ReviewFrame observed,out CampaignRepositoryStamp? stamp)
+        {
+            stamp=null;if(observed==null)throw new ArgumentNullException(nameof(observed));
+            lock(gate)
+            {
+                var error=RepositoryFrameError(observed);if(error!=CampaignRepositoryError.None)return error;
+                stamp=RepositoryStamp(observed);return CampaignRepositoryError.None;
             }
         }
         public CampaignRepositoryCapturePreparation PrepareRepositoryCheckpoint(ReviewFrame observed,ICampaignRepositoryCodec codec)
@@ -144,6 +155,31 @@ namespace HobbyDS9.TacticalReviewClient
                 return new CampaignRepositoryRestorePreparation(CampaignRepositoryError.None,work);
             }
         }
+        public CampaignRepositoryRestorePreparation PrepareRepositoryRestore(ReviewFrame observed,Func<CampaignRepositoryStoredPayload> readPayload,ICampaignRepositoryCodec codec)
+        {
+            if(observed==null||readPayload==null||codec==null)throw new ArgumentNullException();
+            lock(gate)
+            {
+                var error=RepositoryFrameError(observed);if(error!=CampaignRepositoryError.None)return new CampaignRepositoryRestorePreparation(error);
+                var stamp=RepositoryStamp(observed);var adapter=new CycleCampaignRepositoryAdapter(colonisationCyclePackage!,colonisationCycleCodec!,codec);
+                CampaignRepositoryRestoreWork? work=null;
+                work=new CampaignRepositoryRestoreWork(stamp,cancelled=>{
+                    if(cancelled())return new CampaignRepositoryRestoreResult(CampaignRepositoryError.Cancelled){Work=work};
+                    try
+                    {
+                        var stored=readPayload();
+                        if(cancelled())return new CampaignRepositoryRestoreResult(CampaignRepositoryError.Cancelled){Work=work};
+                        var result=adapter.Load(stored.ReadPayload(),stored.EditionIdentity,out var candidate);
+                        if(!result.Succeeded)return new CampaignRepositoryRestoreResult(result.Error){Work=work};
+                        if(!stored.Matches(result.Image!))return new CampaignRepositoryRestoreResult(CampaignRepositoryError.InvalidPayload){Work=work};
+                        return cancelled()?new CampaignRepositoryRestoreResult(CampaignRepositoryError.Cancelled){Work=work}
+                            :new CampaignRepositoryRestoreResult(CampaignRepositoryError.None,result.Image,candidate){Work=work};
+                    }
+                    catch(Exception){return new CampaignRepositoryRestoreResult(CampaignRepositoryError.InvalidPayload){Work=work};}
+                });
+                return new CampaignRepositoryRestorePreparation(CampaignRepositoryError.None,work);
+            }
+        }
         public CampaignRepositoryError CompleteRepositoryRestore(CampaignRepositoryRestoreWork work,CampaignRepositoryRestoreResult result,out ReviewFrame? frame)
         {
             frame=null;if(work==null||result==null)throw new ArgumentNullException();
@@ -160,7 +196,10 @@ namespace HobbyDS9.TacticalReviewClient
                     var epoch=checked(generation+1);
                     var next=Capture(candidate,work.Source.Actor,null,epoch);
                     CaptureColonisationCandidate(candidate,next);
+                    var status=candidate.CaptureStatus();
+                    var published=new CampaignRepositoryStamp(id,epoch,status.Turn,status.CampaignRevision,status.Phase,next.Actor,RepositoryCombatBoundary(candidate,next.Actor));
                     session=candidate;generation=epoch;frame=next;
+                    result.PublishedStamp=published;
                     return CampaignRepositoryError.None;
                 }
                 catch(Exception){return CampaignRepositoryError.InvalidPayload;}
