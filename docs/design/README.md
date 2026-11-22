@@ -17,10 +17,13 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 | [Time, movement and mobilisation](time-movement-mobilisation.md) | Weekly clock, sector travel, expediting, buyout, sensor warning and response | Direction agreed; speeds, prices and detailed timing proposed |
 | [Fleet interception and tactical combat](tactical-combat.md) | Fleet posture, detection/tracking/interception, command hierarchy, abstract maneuver, battle orders, targeting and combat objectives | Direction agreed; formulas and balance proposed/open |
 | [Colonisation and planetary conquest](colonisation-and-conquest.md) | Planetary ownership, settlement, supplies, invasion, bombardment, occupation, rebellion and liberation | First-pass gameplay framework agreed; detailed rules and tuning open |
-| [Offline state repository and saves](state-repository-savegame-adr.md) | Host persistence, named slots, autosave/recovery, SQLite feasibility, compatibility and future authority seams | Architecture review dispatched 22 November; design proposed, isolated probes only; no production activation |
+| [Offline state repository and saves](state-repository-savegame-adr.md) | Host persistence, named slots, autosave/recovery, SQLite feasibility, compatibility and future authority seams | Direction/defaults agreed; phased A2/B1/B2/C1/C2/D1 implementation [authorized 22 November](state-repository-implementation-authorization-20261122.md); evidence gates retained, D2 default rollout separate; not an implemented replacement |
 
 ## Decisions adopted
 
+The repository work follows its [implementation contract](state-repository-implementation-contract.md) for source ownership, trial dependencies and evidence gates.
+
+- Implement the agreed offline per-campaign SQLite save repository in authorized phases, starting with immutable complete existing-root checkpoints and protected JSON originals. Accepted defaults are 10 rolling autosaves, 3 milestones, a 512 MiB soft automatic budget, truthful continued play after autosave failure and independent branches/manual pins. Native/provider/performance gates remain open; chunks, engine delta/copy refactors, Quick Save and multiplayer remain deferred. The [authorization](state-repository-implementation-authorization-20261122.md) governs scope and resource controls; approval does not establish implementation or default rollout.
 - Keep faction abilities, personality and difficulty independent; canonical factions are editable presets.
 - Give AI persistent victory goals and milestones. Turn utility scoring executes the plan.
 - Provide five difficulties through better planning/search rather than resources, rule exceptions or hidden information.

@@ -1,12 +1,13 @@
 # Architecture assignment — State repository, persistent saves and autosave redesign
 
-**Status:** Proposed architecture assignment for lead architect review; **not approved, dispatched, implemented or merged**.  
+**Status:** Architecture review completed; direction/defaults and scoped phased implementation **approved on 22 November 2026**. Approval does not establish implementation, acceptance or merge; default rollout remains separately gated.
+
 **Prepared:** 2026-11-21  
 **Project:** HobbyDS9  
 **Scope:** Persistent campaign state, local embedded storage, save-slot management, autosave/recovery, performance and future multiplayer seams.  
 **Non-goal:** Implementing full multiplayer or changing gameplay rules in this assignment.
 
-**Dispatch update — 22 November 2026:** the owner authorized this architecture/design review through Product Desk. The [proposed ADR and measured evidence](../design/state-repository-savegame-adr.md) respond to it. The original preparation status above is historical; production persistence replacement and multiplayer activation remain unapproved.
+**Authorization update — 22 November 2026:** after the architecture review, the owner approved [Architecture's recommendations and phased implementation](../design/state-repository-implementation-authorization-20261122.md). The [reviewed ADR and measured evidence](../design/state-repository-savegame-adr.md) supply the current direction and gates. A2, B1/B2, C1/C2 and D1 are authorized; independent specifications/scaffolding may proceed while dependent activation waits for tested prerequisites. D2 default production rollout remains a separate decision. B3 chunking, E1 engine delta/copy refactors, E2 multiplayer, main merge, sealed-player rewrites and destructive cleanup are not authorized. Preserve owner saves and the authorization's usage restriction. The original assignment below remains the requirements/history record; its architecture-only hold is superseded only within that explicit scope.
 
 ## 1. Executive request to the lead architect
 
@@ -16,7 +17,7 @@ Evaluate **embedded SQLite as the preferred local persistence candidate** (inclu
 
 Treat singleplayer as the default and future optional LAN/hosted multiplayer as an architectural constraint. The server/host must own the authoritative game state; a database must not become a directly shared multiplayer mutation surface.
 
-**First deliverable:** a reviewed architecture proposal/ADR, cost and risk assessment, implementation milestones and a small instrumented proof of concept if justified. **Do not immediately replace the live persistence path or activate multiplayer.**
+**First deliverable:** the reviewed ADR, cost/risk assessment, implementation milestones and bounded measurements are now recorded in the linked design documents. Continue through the authorized phases and their evidence gates. **Do not switch the production default or activate multiplayer under this approval.**
 
 ## 2. Inspect the current implementation before proposing changes
 
@@ -177,6 +178,8 @@ Mark every decision **agreed**, **proposed** or **open**; identify risks and evi
 
 ## 11. Phased delivery proposal
 
+The broad original phases below describe the assignment. Execution uses the ADR's finer-grained authorization: A2, B1/B2, C1/C2 and D1 only. In particular, the broad Phase B does not authorize B3 chunks, and Phase E does not authorize engine delta/copy refactors or multiplayer. Proceed without re-requesting approval for already authorized work; retain separate D2 rollout review.
+
 **Phase A — architecture & baseline:** document the existing paths/assumptions, benchmark deep-copy/validation and save/load, ADR/options, failure semantics, acceptance criteria and a minimal SQLite feasibility probe.
 
 **Phase B — isolated host persistence prototype:** test typed storage seams, transaction/checkpoint strategy, journal replay, dynamic slots and legacy JSON import in headless .NET; no production Unity activation.
@@ -202,10 +205,10 @@ Deliver:
 - Implementation backlog split into small PRs with dependencies, risks, tests, Unity/IL2CPP packaging and acceptance gates.
 - Unresolved questions, including storage layout, snapshot cadence, whether state deltas are granular enough to avoid full-state copying, and future multiplayer command conflicts.
 
-**Definition of done for this assignment:** the lead architect can approve or reject a concrete, evidence-backed plan that guarantees offline singleplayer, scalable slots and recoverable autosave **without claiming any implementation has already shipped**. Preserve all accepted gameplay, save and determinism contracts until an explicitly approved implementation migration is complete.
+**Architecture handoff:** the reviewed plan and bounded evidence supported the owner's scoped implementation approval. That approval is not a claim that the save system has shipped. Each authorized implementation phase must satisfy its own dependency, compatibility and acceptance gates, preserving all gameplay, save and determinism contracts; D2 default rollout remains a separate final decision.
 
 ---
 
 ## Copy/paste prompt for the lead architect
 
-> Review `docs/prompts/state-repository-savegame-redesign.md` against fresh HobbyDS9 main, `AGENTS.md`, architecture, contracts, Unity save paths and tactical-review prototype isolation. Produce an evidence-backed redesign proposal for an **offline-first embedded state repository and savegame subsystem**: scalable named manual slots, autosave/recovery, SQLite feasibility, incremental durable writes, versioned migration of existing JSON saves, no mandatory cloud/server, unchanged deterministic engine authority, and later optional host-authoritative multiplayer. Benchmark current full-state copying, validation and JSON I/O before choosing optimizations. Specify transaction/journal/replay semantics, schema, portable APIs, retention, native Unity IL2CPP packaging, fault-injection tests, performance targets and phased PRs. Clearly distinguish agreed/proposed/open choices. **Architecture and review only unless subsequent implementation authorization is given.**
+> Use `docs/prompts/state-repository-savegame-redesign.md`, the reviewed ADR and `docs/design/state-repository-implementation-authorization-20261122.md` to implement the approved **offline-first embedded state repository and savegame subsystem** in phases A2, B1/B2, C1/C2 and D1. Preserve existing JSON saves, exact edition identities, deterministic engine authority, bounded memory, operation receipts and lawful projections. Start with complete immutable root checkpoints and the accepted autosave/branch/failure defaults. Keep provider/native/reliability/performance gates and the usage restriction; proceed on authorized work as dependencies pass. Do not infer implementation from approval. D2 default rollout remains a separate decision; B3 chunks, E1 delta/copy refactors, Quick Save and E2 multiplayer remain deferred and unapproved.
