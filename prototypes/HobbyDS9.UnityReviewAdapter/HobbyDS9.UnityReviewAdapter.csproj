@@ -20,4 +20,5 @@
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewIcon.cs" /></ItemGroup>
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewSystemBelts.cs" /></ItemGroup>
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/SaveLibraryPanel.cs" /></ItemGroup>
+  <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/FactionThemeSample.cs" /></ItemGroup>
 </Project>
