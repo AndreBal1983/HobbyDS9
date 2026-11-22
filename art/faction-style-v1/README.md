@@ -1,0 +1,11 @@
+# Faction style reference packet v1
+
+Start with the [consolidated guide](../../docs/art/faction-style-guide.md), [comparison board](index.html) or [full silent samples](samples.html). New palettes/shape studies/media briefs are proposals. This packet activates no theme, audio, new faction, database mode or gameplay rule.
+
+Contents: exact [catalogue audit](catalogue-audit.json), [frozen schema](SCHEMA.md)/[tokens](theme-tokens.json), [matrix](comparison-matrix.md), [art/audio directions](art-audio-directions.json), [existing media provenance](media-inventory.json), [static contrast measurements](contrast-checks.json) and [scoped backlog / morning decisions](backlog.json). `previews/` contains eight1920×1080 headless-browser samples; `silhouettes/` contains six small original SVG grammar studies, not production classes. `comparison-board.png` is a contact sheet, not a small-font native acceptance test.
+
+Inventory is deliberately bounded: three runtime civilization definitions, five documented theme-family names, two independent minor identities and neutral fallback. Species/music filenames/reference-only actors do not register factions. Local UI preference is separate from observed ship/faction identity; only lawful exact mappings may reveal other actors' art. Federation LCARS is one family, not a universal recolor.
+
+Generator: `tools/art/build_faction_style_guide_v1.py`, standard Python library. It requires exact local Git objects `2fc0dbca46073121379dd9491c859a02a6f22dcd` (current-player audit) and `b3496b6b1da31634d9beb8a7357b2480f37a9a72` (historical proposal). It fails rather than substitute an unpinned current checkout. Default run writes original reference data/HTML/SVG and inventories source bytes without copying media; `--schema-only` writes only the schema/audit layer. Local headless Chrome renders the HTML at1920×1080, with no media playback/network hosting/native Unity interaction. No Python packages or services were installed.
+
+Static schema/catalogue/ID coverage, source hashes/GUIDs, SVG/JSON/links, exact PNG dimensions, token contrast and complete diff are verified. Native UI Toolkit equivalence, rendered focus/contrast, actual resources and human audio audition remain separate receiving gates. Existing rights/local-review limitations stay attached to their media; no new public-release clearance is claimed.

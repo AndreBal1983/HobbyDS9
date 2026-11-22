@@ -1,0 +1,2248 @@
+{
+  "schemaVersion": 1,
+  "status": "static sRGB token-pair measurements only, not whole-app WCAG certification",
+  "formulaSource": "https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html",
+  "nonTextSource": "https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html",
+  "checks": [
+    {
+      "profile": "federation",
+      "foreground": "textPrimary",
+      "background": "background",
+      "ratio": 17.494,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "textSecondary",
+      "background": "background",
+      "ratio": 11.487,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.available",
+      "background": "background",
+      "ratio": 10.347,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.active",
+      "background": "background",
+      "ratio": 10.356,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.completed",
+      "background": "background",
+      "ratio": 9.369,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.warning",
+      "background": "background",
+      "ratio": 12.031,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.error",
+      "background": "background",
+      "ratio": 9.12,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.information",
+      "background": "background",
+      "ratio": 10.911,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.unknown",
+      "background": "background",
+      "ratio": 11.487,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.unavailable",
+      "background": "background",
+      "ratio": 11.487,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "controlBorder",
+      "background": "background",
+      "ratio": 6.206,
+      "minimum": 3
+    },
+    {
+      "profile": "federation",
+      "foreground": "focus",
+      "background": "background",
+      "ratio": 15.7,
+      "minimum": 3
+    },
+    {
+      "profile": "federation",
+      "foreground": "textPrimary",
+      "background": "surface",
+      "ratio": 15.585,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 10.234,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.available",
+      "background": "surface",
+      "ratio": 9.219,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.active",
+      "background": "surface",
+      "ratio": 9.226,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.completed",
+      "background": "surface",
+      "ratio": 8.347,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.warning",
+      "background": "surface",
+      "ratio": 10.718,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.error",
+      "background": "surface",
+      "ratio": 8.125,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.information",
+      "background": "surface",
+      "ratio": 9.721,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.unknown",
+      "background": "surface",
+      "ratio": 10.234,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.unavailable",
+      "background": "surface",
+      "ratio": 10.234,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "controlBorder",
+      "background": "surface",
+      "ratio": 5.529,
+      "minimum": 3
+    },
+    {
+      "profile": "federation",
+      "foreground": "focus",
+      "background": "surface",
+      "ratio": 13.987,
+      "minimum": 3
+    },
+    {
+      "profile": "federation",
+      "foreground": "textPrimary",
+      "background": "raised",
+      "ratio": 13.594,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "textSecondary",
+      "background": "raised",
+      "ratio": 8.927,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.available",
+      "background": "raised",
+      "ratio": 8.041,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.active",
+      "background": "raised",
+      "ratio": 8.048,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.completed",
+      "background": "raised",
+      "ratio": 7.281,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.warning",
+      "background": "raised",
+      "ratio": 9.349,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.error",
+      "background": "raised",
+      "ratio": 7.087,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.information",
+      "background": "raised",
+      "ratio": 8.479,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.unknown",
+      "background": "raised",
+      "ratio": 8.927,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "state.unavailable",
+      "background": "raised",
+      "ratio": 8.927,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "controlBorder",
+      "background": "raised",
+      "ratio": 4.823,
+      "minimum": 3
+    },
+    {
+      "profile": "federation",
+      "foreground": "focus",
+      "background": "raised",
+      "ratio": 12.201,
+      "minimum": 3
+    },
+    {
+      "profile": "federation",
+      "foreground": "brandPrimary",
+      "background": "surface",
+      "ratio": 9.226,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "ink",
+      "background": "brandPrimary",
+      "ratio": 10.356,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "brandSecondary",
+      "background": "surface",
+      "ratio": 8.347,
+      "minimum": 4.5
+    },
+    {
+      "profile": "federation",
+      "foreground": "ink",
+      "background": "brandSecondary",
+      "ratio": 9.369,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "textPrimary",
+      "background": "background",
+      "ratio": 17.445,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "textSecondary",
+      "background": "background",
+      "ratio": 11.455,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.available",
+      "background": "background",
+      "ratio": 10.319,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.active",
+      "background": "background",
+      "ratio": 10.327,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.completed",
+      "background": "background",
+      "ratio": 9.343,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.warning",
+      "background": "background",
+      "ratio": 11.998,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.error",
+      "background": "background",
+      "ratio": 9.095,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.information",
+      "background": "background",
+      "ratio": 10.881,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.unknown",
+      "background": "background",
+      "ratio": 11.455,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.unavailable",
+      "background": "background",
+      "ratio": 11.455,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "controlBorder",
+      "background": "background",
+      "ratio": 6.189,
+      "minimum": 3
+    },
+    {
+      "profile": "klingon",
+      "foreground": "focus",
+      "background": "background",
+      "ratio": 15.656,
+      "minimum": 3
+    },
+    {
+      "profile": "klingon",
+      "foreground": "textPrimary",
+      "background": "surface",
+      "ratio": 15.621,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 10.257,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.available",
+      "background": "surface",
+      "ratio": 9.24,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.active",
+      "background": "surface",
+      "ratio": 9.247,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.completed",
+      "background": "surface",
+      "ratio": 8.366,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.warning",
+      "background": "surface",
+      "ratio": 10.743,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.error",
+      "background": "surface",
+      "ratio": 8.144,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.information",
+      "background": "surface",
+      "ratio": 9.743,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.unknown",
+      "background": "surface",
+      "ratio": 10.257,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.unavailable",
+      "background": "surface",
+      "ratio": 10.257,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "controlBorder",
+      "background": "surface",
+      "ratio": 5.542,
+      "minimum": 3
+    },
+    {
+      "profile": "klingon",
+      "foreground": "focus",
+      "background": "surface",
+      "ratio": 14.019,
+      "minimum": 3
+    },
+    {
+      "profile": "klingon",
+      "foreground": "textPrimary",
+      "background": "raised",
+      "ratio": 13.775,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "textSecondary",
+      "background": "raised",
+      "ratio": 9.045,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.available",
+      "background": "raised",
+      "ratio": 8.148,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.active",
+      "background": "raised",
+      "ratio": 8.155,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.completed",
+      "background": "raised",
+      "ratio": 7.377,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.warning",
+      "background": "raised",
+      "ratio": 9.474,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.error",
+      "background": "raised",
+      "ratio": 7.182,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.information",
+      "background": "raised",
+      "ratio": 8.592,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.unknown",
+      "background": "raised",
+      "ratio": 9.045,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "state.unavailable",
+      "background": "raised",
+      "ratio": 9.045,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "controlBorder",
+      "background": "raised",
+      "ratio": 4.887,
+      "minimum": 3
+    },
+    {
+      "profile": "klingon",
+      "foreground": "focus",
+      "background": "raised",
+      "ratio": 12.363,
+      "minimum": 3
+    },
+    {
+      "profile": "klingon",
+      "foreground": "brandPrimary",
+      "background": "surface",
+      "ratio": 8.356,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "ink",
+      "background": "brandPrimary",
+      "ratio": 9.358,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "brandSecondary",
+      "background": "surface",
+      "ratio": 9.921,
+      "minimum": 4.5
+    },
+    {
+      "profile": "klingon",
+      "foreground": "ink",
+      "background": "brandSecondary",
+      "ratio": 11.11,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "textPrimary",
+      "background": "background",
+      "ratio": 17.423,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "textSecondary",
+      "background": "background",
+      "ratio": 11.441,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.available",
+      "background": "background",
+      "ratio": 10.306,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.active",
+      "background": "background",
+      "ratio": 10.314,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.completed",
+      "background": "background",
+      "ratio": 9.331,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.warning",
+      "background": "background",
+      "ratio": 11.982,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.error",
+      "background": "background",
+      "ratio": 9.083,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.information",
+      "background": "background",
+      "ratio": 10.867,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.unknown",
+      "background": "background",
+      "ratio": 11.441,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.unavailable",
+      "background": "background",
+      "ratio": 11.441,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "controlBorder",
+      "background": "background",
+      "ratio": 6.181,
+      "minimum": 3
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "focus",
+      "background": "background",
+      "ratio": 15.637,
+      "minimum": 3
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "textPrimary",
+      "background": "surface",
+      "ratio": 14.891,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 9.778,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.available",
+      "background": "surface",
+      "ratio": 8.808,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.active",
+      "background": "surface",
+      "ratio": 8.815,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.completed",
+      "background": "surface",
+      "ratio": 7.975,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.warning",
+      "background": "surface",
+      "ratio": 10.241,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.error",
+      "background": "surface",
+      "ratio": 7.763,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.information",
+      "background": "surface",
+      "ratio": 9.288,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.unknown",
+      "background": "surface",
+      "ratio": 9.778,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.unavailable",
+      "background": "surface",
+      "ratio": 9.778,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "controlBorder",
+      "background": "surface",
+      "ratio": 5.283,
+      "minimum": 3
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "focus",
+      "background": "surface",
+      "ratio": 13.364,
+      "minimum": 3
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "textPrimary",
+      "background": "raised",
+      "ratio": 12.929,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "textSecondary",
+      "background": "raised",
+      "ratio": 8.49,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.available",
+      "background": "raised",
+      "ratio": 7.647,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.active",
+      "background": "raised",
+      "ratio": 7.654,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.completed",
+      "background": "raised",
+      "ratio": 6.924,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.warning",
+      "background": "raised",
+      "ratio": 8.891,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.error",
+      "background": "raised",
+      "ratio": 6.74,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.information",
+      "background": "raised",
+      "ratio": 8.064,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.unknown",
+      "background": "raised",
+      "ratio": 8.49,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "state.unavailable",
+      "background": "raised",
+      "ratio": 8.49,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "controlBorder",
+      "background": "raised",
+      "ratio": 4.587,
+      "minimum": 3
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "focus",
+      "background": "raised",
+      "ratio": 11.603,
+      "minimum": 3
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "brandPrimary",
+      "background": "surface",
+      "ratio": 8.182,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "ink",
+      "background": "brandPrimary",
+      "ratio": 9.612,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "brandSecondary",
+      "background": "surface",
+      "ratio": 9.27,
+      "minimum": 4.5
+    },
+    {
+      "profile": "cardassian",
+      "foreground": "ink",
+      "background": "brandSecondary",
+      "ratio": 10.891,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "textPrimary",
+      "background": "background",
+      "ratio": 17.3,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "textSecondary",
+      "background": "background",
+      "ratio": 11.36,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.available",
+      "background": "background",
+      "ratio": 10.233,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.active",
+      "background": "background",
+      "ratio": 10.242,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.completed",
+      "background": "background",
+      "ratio": 9.265,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.warning",
+      "background": "background",
+      "ratio": 11.898,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.error",
+      "background": "background",
+      "ratio": 9.019,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.information",
+      "background": "background",
+      "ratio": 10.79,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.unknown",
+      "background": "background",
+      "ratio": 11.36,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.unavailable",
+      "background": "background",
+      "ratio": 11.36,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "controlBorder",
+      "background": "background",
+      "ratio": 6.138,
+      "minimum": 3
+    },
+    {
+      "profile": "romulan",
+      "foreground": "focus",
+      "background": "background",
+      "ratio": 15.527,
+      "minimum": 3
+    },
+    {
+      "profile": "romulan",
+      "foreground": "textPrimary",
+      "background": "surface",
+      "ratio": 14.382,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 9.444,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.available",
+      "background": "surface",
+      "ratio": 8.507,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.active",
+      "background": "surface",
+      "ratio": 8.514,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.completed",
+      "background": "surface",
+      "ratio": 7.703,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.warning",
+      "background": "surface",
+      "ratio": 9.891,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.error",
+      "background": "surface",
+      "ratio": 7.498,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.information",
+      "background": "surface",
+      "ratio": 8.97,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.unknown",
+      "background": "surface",
+      "ratio": 9.444,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.unavailable",
+      "background": "surface",
+      "ratio": 9.444,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "controlBorder",
+      "background": "surface",
+      "ratio": 5.102,
+      "minimum": 3
+    },
+    {
+      "profile": "romulan",
+      "foreground": "focus",
+      "background": "surface",
+      "ratio": 12.908,
+      "minimum": 3
+    },
+    {
+      "profile": "romulan",
+      "foreground": "textPrimary",
+      "background": "raised",
+      "ratio": 12.295,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "textSecondary",
+      "background": "raised",
+      "ratio": 8.073,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.available",
+      "background": "raised",
+      "ratio": 7.272,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.active",
+      "background": "raised",
+      "ratio": 7.278,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.completed",
+      "background": "raised",
+      "ratio": 6.585,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.warning",
+      "background": "raised",
+      "ratio": 8.456,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.error",
+      "background": "raised",
+      "ratio": 6.41,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.information",
+      "background": "raised",
+      "ratio": 7.668,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.unknown",
+      "background": "raised",
+      "ratio": 8.073,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "state.unavailable",
+      "background": "raised",
+      "ratio": 8.073,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "controlBorder",
+      "background": "raised",
+      "ratio": 4.362,
+      "minimum": 3
+    },
+    {
+      "profile": "romulan",
+      "foreground": "focus",
+      "background": "raised",
+      "ratio": 11.034,
+      "minimum": 3
+    },
+    {
+      "profile": "romulan",
+      "foreground": "brandPrimary",
+      "background": "surface",
+      "ratio": 9.748,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "ink",
+      "background": "brandPrimary",
+      "ratio": 11.857,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "brandSecondary",
+      "background": "surface",
+      "ratio": 9.202,
+      "minimum": 4.5
+    },
+    {
+      "profile": "romulan",
+      "foreground": "ink",
+      "background": "brandSecondary",
+      "ratio": 11.193,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "textPrimary",
+      "background": "background",
+      "ratio": 17.626,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "textSecondary",
+      "background": "background",
+      "ratio": 11.574,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.available",
+      "background": "background",
+      "ratio": 10.426,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.active",
+      "background": "background",
+      "ratio": 10.434,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.completed",
+      "background": "background",
+      "ratio": 9.44,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.warning",
+      "background": "background",
+      "ratio": 12.122,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.error",
+      "background": "background",
+      "ratio": 9.189,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.information",
+      "background": "background",
+      "ratio": 10.993,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.unknown",
+      "background": "background",
+      "ratio": 11.574,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.unavailable",
+      "background": "background",
+      "ratio": 11.574,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "controlBorder",
+      "background": "background",
+      "ratio": 6.253,
+      "minimum": 3
+    },
+    {
+      "profile": "dominion",
+      "foreground": "focus",
+      "background": "background",
+      "ratio": 15.819,
+      "minimum": 3
+    },
+    {
+      "profile": "dominion",
+      "foreground": "textPrimary",
+      "background": "surface",
+      "ratio": 15.674,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 10.292,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.available",
+      "background": "surface",
+      "ratio": 9.271,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.active",
+      "background": "surface",
+      "ratio": 9.279,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.completed",
+      "background": "surface",
+      "ratio": 8.394,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.warning",
+      "background": "surface",
+      "ratio": 10.78,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.error",
+      "background": "surface",
+      "ratio": 8.172,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.information",
+      "background": "surface",
+      "ratio": 9.776,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.unknown",
+      "background": "surface",
+      "ratio": 10.292,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.unavailable",
+      "background": "surface",
+      "ratio": 10.292,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "controlBorder",
+      "background": "surface",
+      "ratio": 5.561,
+      "minimum": 3
+    },
+    {
+      "profile": "dominion",
+      "foreground": "focus",
+      "background": "surface",
+      "ratio": 14.067,
+      "minimum": 3
+    },
+    {
+      "profile": "dominion",
+      "foreground": "textPrimary",
+      "background": "raised",
+      "ratio": 13.876,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "textSecondary",
+      "background": "raised",
+      "ratio": 9.112,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.available",
+      "background": "raised",
+      "ratio": 8.208,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.active",
+      "background": "raised",
+      "ratio": 8.214,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.completed",
+      "background": "raised",
+      "ratio": 7.431,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.warning",
+      "background": "raised",
+      "ratio": 9.543,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.error",
+      "background": "raised",
+      "ratio": 7.234,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.information",
+      "background": "raised",
+      "ratio": 8.654,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.unknown",
+      "background": "raised",
+      "ratio": 9.112,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "state.unavailable",
+      "background": "raised",
+      "ratio": 9.112,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "controlBorder",
+      "background": "raised",
+      "ratio": 4.923,
+      "minimum": 3
+    },
+    {
+      "profile": "dominion",
+      "foreground": "focus",
+      "background": "raised",
+      "ratio": 12.453,
+      "minimum": 3
+    },
+    {
+      "profile": "dominion",
+      "foreground": "brandPrimary",
+      "background": "surface",
+      "ratio": 9.021,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "ink",
+      "background": "brandPrimary",
+      "ratio": 10.069,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "brandSecondary",
+      "background": "surface",
+      "ratio": 9.984,
+      "minimum": 4.5
+    },
+    {
+      "profile": "dominion",
+      "foreground": "ink",
+      "background": "brandSecondary",
+      "ratio": 11.143,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "textPrimary",
+      "background": "background",
+      "ratio": 17.137,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "textSecondary",
+      "background": "background",
+      "ratio": 11.253,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.available",
+      "background": "background",
+      "ratio": 10.136,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.active",
+      "background": "background",
+      "ratio": 10.145,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.completed",
+      "background": "background",
+      "ratio": 9.178,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.warning",
+      "background": "background",
+      "ratio": 11.785,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.error",
+      "background": "background",
+      "ratio": 8.934,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.information",
+      "background": "background",
+      "ratio": 10.688,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.unknown",
+      "background": "background",
+      "ratio": 11.253,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.unavailable",
+      "background": "background",
+      "ratio": 11.253,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "controlBorder",
+      "background": "background",
+      "ratio": 6.08,
+      "minimum": 3
+    },
+    {
+      "profile": "ilex",
+      "foreground": "focus",
+      "background": "background",
+      "ratio": 15.38,
+      "minimum": 3
+    },
+    {
+      "profile": "ilex",
+      "foreground": "textPrimary",
+      "background": "surface",
+      "ratio": 14.078,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 9.245,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.available",
+      "background": "surface",
+      "ratio": 8.327,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.active",
+      "background": "surface",
+      "ratio": 8.334,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.completed",
+      "background": "surface",
+      "ratio": 7.54,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.warning",
+      "background": "surface",
+      "ratio": 9.682,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.error",
+      "background": "surface",
+      "ratio": 7.34,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.information",
+      "background": "surface",
+      "ratio": 8.781,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.unknown",
+      "background": "surface",
+      "ratio": 9.245,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.unavailable",
+      "background": "surface",
+      "ratio": 9.245,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "controlBorder",
+      "background": "surface",
+      "ratio": 4.995,
+      "minimum": 3
+    },
+    {
+      "profile": "ilex",
+      "foreground": "focus",
+      "background": "surface",
+      "ratio": 12.635,
+      "minimum": 3
+    },
+    {
+      "profile": "ilex",
+      "foreground": "textPrimary",
+      "background": "raised",
+      "ratio": 12.105,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "textSecondary",
+      "background": "raised",
+      "ratio": 7.949,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.available",
+      "background": "raised",
+      "ratio": 7.16,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.active",
+      "background": "raised",
+      "ratio": 7.166,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.completed",
+      "background": "raised",
+      "ratio": 6.483,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.warning",
+      "background": "raised",
+      "ratio": 8.325,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.error",
+      "background": "raised",
+      "ratio": 6.311,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.information",
+      "background": "raised",
+      "ratio": 7.55,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.unknown",
+      "background": "raised",
+      "ratio": 7.949,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "state.unavailable",
+      "background": "raised",
+      "ratio": 7.949,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "controlBorder",
+      "background": "raised",
+      "ratio": 4.295,
+      "minimum": 3
+    },
+    {
+      "profile": "ilex",
+      "foreground": "focus",
+      "background": "raised",
+      "ratio": 10.864,
+      "minimum": 3
+    },
+    {
+      "profile": "ilex",
+      "foreground": "brandPrimary",
+      "background": "surface",
+      "ratio": 9.484,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "ink",
+      "background": "brandPrimary",
+      "ratio": 11.785,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "brandSecondary",
+      "background": "surface",
+      "ratio": 9.995,
+      "minimum": 4.5
+    },
+    {
+      "profile": "ilex",
+      "foreground": "ink",
+      "background": "brandSecondary",
+      "ratio": 12.419,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "textPrimary",
+      "background": "background",
+      "ratio": 17.117,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "textSecondary",
+      "background": "background",
+      "ratio": 11.24,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.available",
+      "background": "background",
+      "ratio": 10.124,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.active",
+      "background": "background",
+      "ratio": 10.133,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.completed",
+      "background": "background",
+      "ratio": 9.167,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.warning",
+      "background": "background",
+      "ratio": 11.772,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.error",
+      "background": "background",
+      "ratio": 8.924,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.information",
+      "background": "background",
+      "ratio": 10.676,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.unknown",
+      "background": "background",
+      "ratio": 11.24,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.unavailable",
+      "background": "background",
+      "ratio": 11.24,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "controlBorder",
+      "background": "background",
+      "ratio": 6.072,
+      "minimum": 3
+    },
+    {
+      "profile": "namar",
+      "foreground": "focus",
+      "background": "background",
+      "ratio": 15.362,
+      "minimum": 3
+    },
+    {
+      "profile": "namar",
+      "foreground": "textPrimary",
+      "background": "surface",
+      "ratio": 14.029,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 9.212,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.available",
+      "background": "surface",
+      "ratio": 8.298,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.active",
+      "background": "surface",
+      "ratio": 8.305,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.completed",
+      "background": "surface",
+      "ratio": 7.514,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.warning",
+      "background": "surface",
+      "ratio": 9.648,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.error",
+      "background": "surface",
+      "ratio": 7.314,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.information",
+      "background": "surface",
+      "ratio": 8.75,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.unknown",
+      "background": "surface",
+      "ratio": 9.212,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.unavailable",
+      "background": "surface",
+      "ratio": 9.212,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "controlBorder",
+      "background": "surface",
+      "ratio": 4.977,
+      "minimum": 3
+    },
+    {
+      "profile": "namar",
+      "foreground": "focus",
+      "background": "surface",
+      "ratio": 12.591,
+      "minimum": 3
+    },
+    {
+      "profile": "namar",
+      "foreground": "textPrimary",
+      "background": "raised",
+      "ratio": 11.99,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "textSecondary",
+      "background": "raised",
+      "ratio": 7.873,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.available",
+      "background": "raised",
+      "ratio": 7.092,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.active",
+      "background": "raised",
+      "ratio": 7.098,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.completed",
+      "background": "raised",
+      "ratio": 6.421,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.warning",
+      "background": "raised",
+      "ratio": 8.246,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.error",
+      "background": "raised",
+      "ratio": 6.251,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.information",
+      "background": "raised",
+      "ratio": 7.478,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.unknown",
+      "background": "raised",
+      "ratio": 7.873,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "state.unavailable",
+      "background": "raised",
+      "ratio": 7.873,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "controlBorder",
+      "background": "raised",
+      "ratio": 4.254,
+      "minimum": 3
+    },
+    {
+      "profile": "namar",
+      "foreground": "focus",
+      "background": "raised",
+      "ratio": 10.76,
+      "minimum": 3
+    },
+    {
+      "profile": "namar",
+      "foreground": "brandPrimary",
+      "background": "surface",
+      "ratio": 9.001,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "ink",
+      "background": "brandPrimary",
+      "ratio": 11.224,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "brandSecondary",
+      "background": "surface",
+      "ratio": 9.155,
+      "minimum": 4.5
+    },
+    {
+      "profile": "namar",
+      "foreground": "ink",
+      "background": "brandSecondary",
+      "ratio": 11.416,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "textPrimary",
+      "background": "background",
+      "ratio": 17.152,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "textSecondary",
+      "background": "background",
+      "ratio": 11.263,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.available",
+      "background": "background",
+      "ratio": 10.145,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.active",
+      "background": "background",
+      "ratio": 10.154,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.completed",
+      "background": "background",
+      "ratio": 9.186,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.warning",
+      "background": "background",
+      "ratio": 11.796,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.error",
+      "background": "background",
+      "ratio": 8.942,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.information",
+      "background": "background",
+      "ratio": 10.698,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.unknown",
+      "background": "background",
+      "ratio": 11.263,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.unavailable",
+      "background": "background",
+      "ratio": 11.263,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "controlBorder",
+      "background": "background",
+      "ratio": 6.085,
+      "minimum": 3
+    },
+    {
+      "profile": "neutral",
+      "foreground": "focus",
+      "background": "background",
+      "ratio": 15.393,
+      "minimum": 3
+    },
+    {
+      "profile": "neutral",
+      "foreground": "textPrimary",
+      "background": "surface",
+      "ratio": 14.428,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "textSecondary",
+      "background": "surface",
+      "ratio": 9.474,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.available",
+      "background": "surface",
+      "ratio": 8.534,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.active",
+      "background": "surface",
+      "ratio": 8.541,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.completed",
+      "background": "surface",
+      "ratio": 7.727,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.warning",
+      "background": "surface",
+      "ratio": 9.923,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.error",
+      "background": "surface",
+      "ratio": 7.522,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.information",
+      "background": "surface",
+      "ratio": 8.999,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.unknown",
+      "background": "surface",
+      "ratio": 9.474,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.unavailable",
+      "background": "surface",
+      "ratio": 9.474,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "controlBorder",
+      "background": "surface",
+      "ratio": 5.119,
+      "minimum": 3
+    },
+    {
+      "profile": "neutral",
+      "foreground": "focus",
+      "background": "surface",
+      "ratio": 12.949,
+      "minimum": 3
+    },
+    {
+      "profile": "neutral",
+      "foreground": "textPrimary",
+      "background": "raised",
+      "ratio": 11.862,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "textSecondary",
+      "background": "raised",
+      "ratio": 7.789,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.available",
+      "background": "raised",
+      "ratio": 7.017,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.active",
+      "background": "raised",
+      "ratio": 7.022,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.completed",
+      "background": "raised",
+      "ratio": 6.353,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.warning",
+      "background": "raised",
+      "ratio": 8.158,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.error",
+      "background": "raised",
+      "ratio": 6.184,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.information",
+      "background": "raised",
+      "ratio": 7.399,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.unknown",
+      "background": "raised",
+      "ratio": 7.789,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "state.unavailable",
+      "background": "raised",
+      "ratio": 7.789,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "controlBorder",
+      "background": "raised",
+      "ratio": 4.208,
+      "minimum": 3
+    },
+    {
+      "profile": "neutral",
+      "foreground": "focus",
+      "background": "raised",
+      "ratio": 10.646,
+      "minimum": 3
+    },
+    {
+      "profile": "neutral",
+      "foreground": "brandPrimary",
+      "background": "surface",
+      "ratio": 9.422,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "ink",
+      "background": "brandPrimary",
+      "ratio": 11.423,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "brandSecondary",
+      "background": "surface",
+      "ratio": 8.773,
+      "minimum": 4.5
+    },
+    {
+      "profile": "neutral",
+      "foreground": "ink",
+      "background": "brandSecondary",
+      "ratio": 10.637,
+      "minimum": 4.5
+    }
+  ]
+}

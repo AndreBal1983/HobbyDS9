@@ -1,6 +1,7 @@
 # Scenario identity hashes exact file bytes; preserve them across host platforms.
 art/faction-style-v1/** -text
 tools/art/build_faction_style_guide_v1.py text eol=lf
+docs/art/faction-style-guide.md text eol=lf
 scenarios/**/*.json text eol=lf
 # Preserve the original demo pack's manifest-pinned asset bytes. Git policy
 # belongs outside Unity Assets, where every real asset requires metadata.

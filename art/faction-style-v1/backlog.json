@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "status": "scoped proposals; no new production activation",
+  "items": [
+    {
+      "priority": "P0",
+      "title": "Theme sample binding",
+      "owner": "GUI",
+      "acceptance": "Exact IDs, neutral fallback, shared states and no private-data/gameplay dependency; add-only opt-in sample. Storage remains first priority."
+    },
+    {
+      "priority": "P0",
+      "title": "Source and rights receipts",
+      "owner": "Art / owner morning record",
+      "acceptance": "Complete unreceived faction/music references and Defiant/owner-folder provenance. Preserve Galaxy CC BY-NC-SA3.0 and current notices; no new redistribution assurance."
+    },
+    {
+      "priority": "P0",
+      "title": "Palette / semantic accessibility",
+      "owner": "Art / GUI / QA",
+      "acceptance": "Measured palette pairs, label+shape meaning, keyboard focus, disabled/unknown/stale, reduced motion and mute; default1920review. Static checks do not prove full native accessibility."
+    },
+    {
+      "priority": "P1",
+      "title": "Five family component sheets",
+      "owner": "Art / GUI",
+      "acceptance": "Shared hierarchy with genuinely different chrome; no Federation elbow rails copied onto every family. Inspect current accepted Federation before opt-in refinements."
+    },
+    {
+      "priority": "P1",
+      "title": "Non-Federation shape/material studies",
+      "owner": "Art",
+      "acceptance": "One original gray-form study per missing major family, only after scope/rights review; then LOD/material/lighting receive gates. Do not label these guide SVGs production ships."
+    },
+    {
+      "priority": "P1",
+      "title": "Semantic UI cue briefs",
+      "owner": "Art / Audio",
+      "acceptance": "Six short original cue roles per needed family, consistent meaning, bounded levels and no copied franchise themes/voices. Existing recordings stay prototype; no bulk generation tonight."
+    },
+    {
+      "priority": "P1",
+      "title": "Music curation and audition",
+      "owner": "Art / QA",
+      "acceptance": "Existing nine cues, role/category/provenance review and bounded transitions before a new faction-context policy. Names do not activate switching; no seamless-loop assumption."
+    },
+    {
+      "priority": "P2",
+      "title": "Minor society detail",
+      "owner": "Art / Architecture",
+      "acceptance": "Ilex/Namar neutral-family presentation, lawful public identity and generic craft until actual bindings exist. No capability inference from name or visual style."
+    },
+    {
+      "priority": "P2",
+      "title": "Custom content / theme validation",
+      "owner": "GUI / Architecture",
+      "acceptance": "Bounded versioned local presentation packs, explicit mapping and neutral fallback; no untrusted script/URL/font dependency or rules change."
+    },
+    {
+      "priority": "P2",
+      "title": "Native family review",
+      "owner": "QA",
+      "acceptance": "Default1920with real world/fleet/Engineering/production/outcome screens, own/unknown contacts, state/focus/mute/motion consistency. No global rollout before review."
+    }
+  ],
+  "morningDecisions": [
+    "Confirm any intended faction expansion beyond the audited five theme families and two minors; no extra civilization IDs invented.",
+    "Supply missing detailed faction/music reference files if still desired; current proposals are explicitly marked.",
+    "Confirm future original cue/ship-study commissioning and usable rights records before public distribution or generation spending.",
+    "Approve any future opt-in theme rollout separately from storage D2; this guide does not activate either."
+  ]
+}

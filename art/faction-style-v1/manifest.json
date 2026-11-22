@@ -1,0 +1,155 @@
+{
+  "schemaVersion": 1,
+  "version": "faction-style-guide-v1-review-candidate",
+  "status": "proposed art/reference, no default activation or runtime media",
+  "catalogueAuditPin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+  "files": [
+    {
+      "path": "art-audio-directions.json",
+      "bytes": 5985,
+      "sha256": "2d3bf291f466ea802cd48f82801c91b46bb8da99c1db4157f09fa8607a127085"
+    },
+    {
+      "path": "backlog.json",
+      "bytes": 3644,
+      "sha256": "33beac9ddc4e0aabb593f10b53c6d52dd8d562e957ef7e74b67cbe48510a0880"
+    },
+    {
+      "path": "catalogue-audit.json",
+      "bytes": 5965,
+      "sha256": "847221b117fc548940318db2ba78cd0ad60d4f2d40f78df8efe81712792b2cbc"
+    },
+    {
+      "path": "comparison-board.png",
+      "bytes": 349136,
+      "sha256": "ba3711f67a2eebdb75ce3de9e2252099f7177000f51d56765adc30158a4e24a3"
+    },
+    {
+      "path": "comparison-matrix.md",
+      "bytes": 5161,
+      "sha256": "8e686550ad5ba65138b4b327ef9ce8337132a63f73bc85aac3ab77840925a4a2"
+    },
+    {
+      "path": "contrast-checks.json",
+      "bytes": 49136,
+      "sha256": "f72d501f770e064caf84b9aa32247926e2e15407661a7bdd8d49dd9f3da84f52"
+    },
+    {
+      "path": "index.html",
+      "bytes": 5019,
+      "sha256": "44f19d53d3d109038ffb08d27cfdad7f5cce397e5e1844bc805f9cd9914c0c65"
+    },
+    {
+      "path": "media-inventory.json",
+      "bytes": 14274,
+      "sha256": "3d2799bc9edb7bddb1fec5360b53f88dd619c2530b6ecfff457b539c62e54c26"
+    },
+    {
+      "path": "previews/cardassian-1920.png",
+      "bytes": 149073,
+      "sha256": "73f865408a7d69032e225657209dd4c7bd33548ddbf9f1402c5d6bfa0069d530"
+    },
+    {
+      "path": "previews/dominion-1920.png",
+      "bytes": 135780,
+      "sha256": "53e26242de7419a89204673c6c7c850455a53e6cdb6235536d690489651e59d9"
+    },
+    {
+      "path": "previews/federation-1920.png",
+      "bytes": 147073,
+      "sha256": "28d1a09685ee9a7de8faa38f469d0d5b7de5c658fcdd9d789e0d008aa170eb55"
+    },
+    {
+      "path": "previews/ilex-1920.png",
+      "bytes": 131332,
+      "sha256": "ea6e289d67da5e8c5ee39214123c5c028d64f0e3f22d8de8834d2dc9c35e068c"
+    },
+    {
+      "path": "previews/klingon-1920.png",
+      "bytes": 135004,
+      "sha256": "47cc5df1e1c5c7b71f2fdeb517600767c24aee006d35067d697bfdd1b63a5c1e"
+    },
+    {
+      "path": "previews/namar-1920.png",
+      "bytes": 130078,
+      "sha256": "5beb203593a53e2cc8354192468b5eb23895cc4b89dcbf5e273956099760e443"
+    },
+    {
+      "path": "previews/neutral-1920.png",
+      "bytes": 128128,
+      "sha256": "a430abe1611aa560f58c046144ec0753a64215b077498016d9bcc70c7050b4e7"
+    },
+    {
+      "path": "previews/romulan-1920.png",
+      "bytes": 137942,
+      "sha256": "c3d25478fd5cc191abd5d6e98f1a610e6b5618d5dc70878b55178b39608cec05"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2364,
+      "sha256": "e852bfabc7f35d7125831743846d795e43261b4ef93abf9d4cd718007730c2c3"
+    },
+    {
+      "path": "samples.html",
+      "bytes": 23428,
+      "sha256": "9ee36fe18b1f9931c1b61907e55a2b42d971051c85aabe7a288c3789ca01c41b"
+    },
+    {
+      "path": "SCHEMA.md",
+      "bytes": 1760,
+      "sha256": "6636d35e64b7bc5ffb610b99369b3ce91ba14301ef33422ed092c916481ec868"
+    },
+    {
+      "path": "silhouettes/cardassian.svg",
+      "bytes": 316,
+      "sha256": "1378b8158df89810298d2e061a6db7295a4632c5e44c8a7719430f266fd39cd7"
+    },
+    {
+      "path": "silhouettes/dominion.svg",
+      "bytes": 314,
+      "sha256": "5422643f1f66b79b81927284b1c3f45c336c80ee0c12782ac51379ea59c19aa1"
+    },
+    {
+      "path": "silhouettes/federation.svg",
+      "bytes": 455,
+      "sha256": "4d64819a73f6166a00840628e08eef88ee5a595a25e00daba9c6860580feb30e"
+    },
+    {
+      "path": "silhouettes/klingon.svg",
+      "bytes": 306,
+      "sha256": "b2b8894e0185cbcc71f5639630a0d1c927302db37abf933c75e760852a2840b3"
+    },
+    {
+      "path": "silhouettes/neutral.svg",
+      "bytes": 262,
+      "sha256": "0fd2ecfadff9b83cc8fdaa5a2314d81ad3da829579f1bff5c6551feda5107208"
+    },
+    {
+      "path": "silhouettes/romulan.svg",
+      "bytes": 326,
+      "sha256": "100008fcfe5e164f08b97c311387989015cc597d44ee7144924bb510904ed192"
+    },
+    {
+      "path": "theme-tokens.json",
+      "bytes": 9962,
+      "sha256": "ad5fd2149e21b52df2b806786a9441ae03b3f2796ac9c5d2ec407231e048ec58"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 675,
+      "sha256": "2a69f2825608331218db4520dc57c58e8905d609d7773387e3b84b61ac59a462"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "tools/art/build_faction_style_guide_v1.py",
+      "sha256": "126bba25eea825e0faead37ebee1ab16bcc384a00bbd0f88bdf55ffc5c975271",
+      "lineEndings": "LF"
+    },
+    {
+      "path": "docs/art/faction-style-guide.md",
+      "sha256": "e28824b674af239d2cb29ddacb869787632e4c59f8d8060016ff73e0ffb53ed7",
+      "lineEndings": "LF"
+    }
+  ]
+}
