@@ -55,19 +55,20 @@ namespace HobbyDS9.UnityReview
             Text(this, "C1 proposal · disconnected presentation", "save-library-proposal", 14, Lavender);
             var status = Flow(this, "save-library-session");
             Metric(status, "Campaign / active branch", view.ContextCaption);
-            Metric(status, "In memory", view.Current.Caption);
-            Metric(status, "Last durable acknowledgement", view.LastDurable.Caption);
-            Metric(status, "Session", view.Durability == SaveLibraryDurability.Unsaved ? "Unsaved progress" : view.Durability == SaveLibraryDurability.Clean ? "Durable acknowledgement matches session" : "Durability not reported");
+            Metric(status, "Current progress", view.Current.Caption);
+            Metric(status, "Last confirmed save", view.LastDurable.Caption + " · " + view.LastSavedTimeCaption);
+            Metric(status, "Session", view.Durability == SaveLibraryDurability.Unsaved ? "Unsaved progress" : view.Durability == SaveLibraryDurability.Clean ? "Current progress saved" : "Save status not reported");
             RenderOperation(captured);
             var viewport = new ScrollView { name = "save-library-workspace-scroll" };
             viewport.style.flexGrow = 1; viewport.style.minHeight = 0; Add(viewport); workspace = viewport;
+            RenderNewManual(captured);
             RenderFilters(captured);
             var content = Flow(workspace, "save-library-content"); content.style.alignItems = Align.Stretch;
             var list = Box(content, "save-library-list"); list.style.flexGrow = 2; list.style.flexBasis = 650; list.style.minWidth = 300;
             Text(list, "SAVED CHECKPOINTS", "save-library-list-title", 20, Lavender);
             Text(list, view.PageCaption, "save-library-page-caption", 16);
             if (view.PageState != SaveLibraryPageState.Ready)
-                Text(list, view.PageState == SaveLibraryPageState.Loading ? "Loading library metadata…" : "Library metadata unavailable · saved checkpoint health is unchanged", "save-library-page-state", 18, Amber);
+                Text(list, view.PageState == SaveLibraryPageState.Loading ? "Loading save list…" : "Save list unavailable · existing save status is unchanged", "save-library-page-state", 18, Amber);
             var scroll = new ScrollView { name = "save-library-rows" }; scroll.style.maxHeight = 460; scroll.style.minHeight = 150; list.Add(scroll);
             if (view.Rows.Count == 0 && view.PageState == SaveLibraryPageState.Ready) Text(scroll, "No saves match this query.", "save-library-empty", 18);
             foreach (var row in view.Rows)
@@ -77,8 +78,8 @@ namespace HobbyDS9.UnityReview
                 var select = Button(item, row.Name, "save-library-select", () => { selectedReferenceId = row.ReferenceId; Render(); }, captured);
                 select.style.unityTextAlign = TextAnchor.MiddleLeft; select.style.whiteSpace = WhiteSpace.Normal;
                 if (row.ReferenceId == selectedReferenceId) { select.style.borderLeftColor = Amber; select.style.borderLeftWidth = 4; }
-                Text(item, row.Campaign + " · " + row.Branch, "save-library-row-context", 14, Lavender);
-                Text(item, row.Kind + "  |  " + row.Progress.Caption + "  |  " + row.Health, "save-library-row-status", 16);
+                Text(item, row.Campaign + " · Created on branch " + row.Branch, "save-library-row-context", 14, Lavender);
+                Text(item, row.Kind + "  |  " + row.Progress.Caption + "  |  " + HealthCaption(row.Health), "save-library-row-status", 16);
                 Text(item, row.CheckpointCaption, "save-library-row-checkpoint", 14);
             }
             var pages = Flow(list, "save-library-pagination");
@@ -90,21 +91,40 @@ namespace HobbyDS9.UnityReview
             RenderInspector(inspector, captured);
             RenderRecovery(captured);
             confirmation = Box(workspace, "save-library-confirmation"); confirmation.style.display = DisplayStyle.None;
-            Text(workspace, "Accepted policy · 10 rolling + 3 milestones · 512 MiB soft automatic-data budget · manual saves protected · older continuations branch · Quick Save deferred", "save-library-policy", 14, Lavender);
+            Text(workspace, "Automatic saves · 10 rolling + 3 milestones · 512 MiB soft budget · manual saves protected · older continuations branch", "save-library-policy", 14, Lavender);
+            RenderDiagnostics(workspace);
+        }
+
+        private void RenderNewManual(SaveLibraryBoundary captured)
+        {
+            var area = Flow(workspace, "save-library-create");
+            var draft = new TextField("Name for new save") { name = "save-library-create-name" }; draft.style.flexGrow = 1; draft.style.minWidth = 260; area.Add(draft);
+            var create = Button(area, "Save current game…", "save-library-action-CreateManual", () => Prepare(SaveLibraryAction.CreateManual, null, draft.value, captured), captured);
+            create.SetEnabled(false);
+            draft.RegisterValueChangedCallback(e => { if (Live(captured)) create.SetEnabled(presentation.Can(SaveLibraryAction.CreateManual) && !string.IsNullOrWhiteSpace(e.newValue)); });
+        }
+
+        private void RenderDiagnostics(VisualElement parent)
+        {
+            var view = presentation.View; var row = view.Rows.FirstOrDefault(r => r.ReferenceId == selectedReferenceId);
+            var details = new Foldout { name = "save-library-diagnostics", text = "Diagnostics", value = false }; parent.Add(details);
+            Text(details, "Session epoch · " + view.SourceEpoch + "\nCatalogue generation · " + view.CatalogueGeneration + "\nActive branch · " + view.ActiveBranchId + " · generation " + view.ActiveBranchGeneration + "\nCurrent · " + view.Current.DiagnosticCaption + "\nLast durable · " + view.LastDurable.DiagnosticCaption, "save-library-diagnostic-session", 14);
+            if (row != null) Text(details, "Reference · " + row.ReferenceId + " · generation " + row.ReferenceGeneration + "\nCheckpoint · " + row.CheckpointId + "\nCreation branch · " + row.BranchId + " · generation " + (row.BranchGeneration?.ToString() ?? "Not reported") + "\n" + row.Progress.DiagnosticCaption, "save-library-diagnostic-target", 14);
+            Text(details, "Operation phase · " + view.Operation.Phase + "\nExisting operation · " + (view.Operation.ExistingOperationId ?? "Not supplied") + "\nWaiting request · " + (view.Operation.PendingRequestId ?? "Not supplied"), "save-library-diagnostic-operation", 14);
         }
 
         private void RenderFilters(SaveLibraryBoundary captured)
         {
             var query = presentation.View.Query; var filters = Flow(workspace, "save-library-filters");
-            var search = new TextField("Search entire library") { name = "save-library-search", value = query.Search }; search.style.flexGrow = 1; search.style.minWidth = 260; filters.Add(search);
+            var search = new TextField("Search names (case sensitive)") { name = "save-library-search", value = query.Search }; search.style.flexGrow = 1; search.style.minWidth = 260; filters.Add(search);
             SaveLibraryKind? kind = query.Kind; SaveLibraryHealth? health = query.Health; bool branch = query.ActiveBranchOnly;
             // Local query draft only. Apply creates one host query, never filters the currently visible page.
             var kindButton = new Button { name = "save-library-kind", text = "Kind: " + (kind?.ToString() ?? "All") }; filters.Add(kindButton);
             kindButton.clicked += () => { if (!Live(captured)) return; kind = !kind.HasValue ? SaveLibraryKind.Manual : kind == SaveLibraryKind.Manual ? SaveLibraryKind.Auto : kind == SaveLibraryKind.Auto ? SaveLibraryKind.Milestone : (SaveLibraryKind?)null; kindButton.text = "Kind: " + (kind?.ToString() ?? "All"); };
-            var healthButton = new Button { name = "save-library-health", text = "Health: " + (health?.ToString() ?? "All") }; filters.Add(healthButton);
-            healthButton.clicked += () => { if (!Live(captured)) return; health = !health.HasValue ? SaveLibraryHealth.Unknown : health == SaveLibraryHealth.Expired ? (SaveLibraryHealth?)null : (SaveLibraryHealth)((int)health.Value + 1); healthButton.text = "Health: " + (health?.ToString() ?? "All"); };
-            var branchButton = new Button { name = "save-library-branch", text = branch ? "Branch: Active" : "Branch: All" }; filters.Add(branchButton);
-            branchButton.clicked += () => { if (!Live(captured)) return; branch = !branch; branchButton.text = branch ? "Branch: Active" : "Branch: All"; };
+            var healthButton = new Button { name = "save-library-health", text = "Health: " + (health.HasValue ? HealthCaption(health.Value) : "All") }; filters.Add(healthButton);
+            healthButton.clicked += () => { if (!Live(captured)) return; health = !health.HasValue ? SaveLibraryHealth.Unknown : health == SaveLibraryHealth.Expired ? (SaveLibraryHealth?)null : (SaveLibraryHealth)((int)health.Value + 1); healthButton.text = "Health: " + (health.HasValue ? HealthCaption(health.Value) : "All"); };
+            var branchButton = new Button { name = "save-library-branch", text = branch ? "Created on active branch" : "Created on any branch" }; filters.Add(branchButton);
+            branchButton.clicked += () => { if (!Live(captured)) return; branch = !branch; branchButton.text = branch ? "Created on active branch" : "Created on any branch"; };
             Button(filters, "Apply search / filters", "save-library-apply", () => Query(new SaveLibraryQuery(search.value, kind, health, branch, query.PageSize), captured), captured);
         }
 
@@ -113,7 +133,7 @@ namespace HobbyDS9.UnityReview
             if (!Live(captured) || !presentation.TryQuery(captured, query, out var intent) || intent == null) return;
             boundary = intent.Boundary;
             // Old rows/confirmation are frozen until an explicit host result (including an error page) arrives.
-            this.Q<Label>("save-library-page-caption").text = "Requesting library metadata…";
+            this.Q<Label>("save-library-page-caption").text = "Loading save list…";
             SetEnabled(false); requestPage(intent);
         }
 
@@ -123,10 +143,11 @@ namespace HobbyDS9.UnityReview
             Text(inspector, "SELECTED SAVE", "save-library-inspector-title", 20, Lavender);
             if (row == null) { Text(inspector, "Select a checkpoint to review its branch and actions.", "save-library-no-selection", 18); return; }
             Text(inspector, row.Name, "save-library-selected-name", 22, Amber);
-            Text(inspector, "Campaign · " + row.Campaign + "\nBranch · " + row.Branch + "\nCheckpoint · " + row.CheckpointCaption + "\n" + row.Progress.Caption + "\nHealth · " + row.Health, "save-library-selected-detail", 18);
-            Text(inspector, row.Health == SaveLibraryHealth.Validated ? "Validated checkpoint · save contents checked again before load" : "Load unavailable until a complete compatible checkpoint is validated", "save-library-load-health", 16, Lavender);
+            Text(inspector, "Campaign · " + row.Campaign + "\nCreated on branch · " + row.Branch + "\nSaved · " + row.CheckpointCaption + "\n" + row.Progress.Caption + "\nHealth · " + HealthCaption(row.Health), "save-library-selected-detail", 18);
+            Text(inspector, LoadHealthCaption(row.Health), "save-library-load-health", 16, Lavender);
             if (row.OlderContinuation) Text(inspector, "Older continuation creates a branch on accepted mutation or explicit branch. Later history remains.", "save-library-branch-warning", 16, Amber);
             var actions = Flow(inspector, "save-library-actions");
+            ActionButton(actions, "Check save", SaveLibraryAction.Validate, row, captured);
             ActionButton(actions, "Load", SaveLibraryAction.Load, row, captured);
             ActionButton(actions, "Export", SaveLibraryAction.Export, row, captured);
             var nameDraft = new TextField("Name for rename / duplicate") { name = "save-library-name-draft", value = row.Name }; inspector.Add(nameDraft);
@@ -144,12 +165,13 @@ namespace HobbyDS9.UnityReview
             var area = Box(this, "save-library-operation"); area.style.borderLeftColor = op.Warning ? Amber : Lavender; area.style.borderLeftWidth = 6;
             Text(area, op.Heading, "save-library-operation-heading", 21, op.Warning ? Amber : Lavender);
             Text(area, op.Detail, "save-library-operation-detail", 17);
-            if (op.Phase == SaveLibraryOperationPhase.OutcomeUnknown) Text(area, "The write may have committed. Check its outcome before another write.", "save-library-unknown-warning", 17, Amber);
-            if (op.Reason == SaveLibraryOperationReason.SaveAndQuit && op.Warning) Text(area, "Session retained · no automatic exit or rollback", "save-library-session-retained", 17, Amber);
-            if (op.Warning) Text(area, "In memory · " + presentation.View.Current.Caption + "  |  Last durable acknowledgement · " + presentation.View.LastDurable.Caption, "save-library-warning-progress", 16);
+            if (op.Phase == SaveLibraryOperationPhase.OutcomeUnknown) Text(area, "This save may have completed. Check its status before saving again.", "save-library-unknown-warning", 17, Amber);
+            if (op.Reason == SaveLibraryOperationReason.SaveAndQuit && op.Warning) Text(area, "Your game remains open.", "save-library-session-retained", 17, Amber);
+            if (op.Warning) Text(area, "Current · " + presentation.View.Current.Caption + "  |  Last confirmed save · " + presentation.View.LastDurable.Caption + " · " + presentation.View.LastSavedTimeCaption, "save-library-warning-progress", 16);
             var actions = Flow(area, "save-library-operation-actions");
-            OperationButton(actions, "Check outcome", SaveLibraryAction.CheckOutcome, captured);
-            OperationButton(actions, "Retry same operation", SaveLibraryAction.RetryExistingOperation, captured);
+            OperationButton(actions, "Cancel waiting save", SaveLibraryAction.CancelWaitingRequest, captured);
+            OperationButton(actions, "Check save status", SaveLibraryAction.CheckOutcome, captured);
+            OperationButton(actions, "Retry save", SaveLibraryAction.RetryExistingOperation, captured);
             OperationButton(actions, "Continue singleplayer", SaveLibraryAction.ContinueSingleplayer, captured);
             OperationButton(actions, "Return to session", SaveLibraryAction.ReturnToSession, captured);
             OperationButton(actions, "Export session…", SaveLibraryAction.ExportSession, captured);
@@ -185,14 +207,16 @@ namespace HobbyDS9.UnityReview
             if (!intent.RequiresConfirmation) { requestAction(intent); return; }
             var thisConfirmation = ++confirmationToken;
             confirmation.Clear(); confirmation.style.display = DisplayStyle.Flex;
-            Text(confirmation, "CONFIRM " + action.ToString().ToUpperInvariant(), "save-library-confirm-title", 20, Amber);
-            Text(confirmation, intent.Target == null ? "Quit without saving keeps only previously durable progress.\nIn memory · " + presentation.View.Current.Caption + "\nLast durable acknowledgement · " + presentation.View.LastDurable.Caption : intent.Target.Name + " · " + intent.Target.Campaign + " · " + intent.Target.Branch + "\n" + intent.Target.Progress.Caption + " · " + intent.Target.CheckpointCaption, "save-library-confirm-target", 18);
-            if (action == SaveLibraryAction.Rename || action == SaveLibraryAction.Duplicate) Text(confirmation, "Proposed name · " + intent.ProposedName, "save-library-confirm-name", 18);
+            Text(confirmation, "CONFIRM " + ActionCaption(action).ToUpperInvariant(), "save-library-confirm-title", 20, Amber);
+            var sessionReview = "Current · " + intent.ReviewedCurrent.Caption + "\nLast confirmed save · " + intent.ReviewedLastDurable.Caption + " · " + presentation.View.LastSavedTimeCaption;
+            Text(confirmation, action == SaveLibraryAction.CreateManual ? "New manual save · " + presentation.View.ContextCaption + "\n" + sessionReview : intent.Target == null ? "Quit without saving keeps only previously saved progress.\n" + sessionReview : intent.Target.Name + " · " + intent.Target.Campaign + " · " + intent.Target.Branch + "\n" + intent.Target.Progress.Caption + " · " + intent.Target.CheckpointCaption, "save-library-confirm-target", 18);
+            if (action == SaveLibraryAction.CreateManual || action == SaveLibraryAction.Rename || action == SaveLibraryAction.Duplicate) Text(confirmation, "Name · " + intent.ProposedName, "save-library-confirm-name", 18);
+            if (action == SaveLibraryAction.CreateManual) Text(confirmation, "The game stays open. If saving must wait, the state captured later will be checked before saving.", "save-library-create-warning", 16);
             if (action == SaveLibraryAction.Recover) Text(confirmation, "Loss window · " + intent.RecoveryLossWindow, "save-library-confirm-loss", 18, Amber);
             if (action == SaveLibraryAction.Overwrite) Text(confirmation, "This checkpoint and the state captured for replacement will be checked again before saving.", "save-library-overwrite-warning", 16);
             Text(confirmation, "This exact target is reviewed. If it changes, review again.", "save-library-confirm-generation", 14, Lavender);
             var actions = Flow(confirmation, "save-library-confirm-actions");
-            Button(actions, "Confirm " + action, "save-library-confirm", () =>
+            Button(actions, "Confirm " + ActionCaption(action), "save-library-confirm", () =>
             {
                 if (thisConfirmation != confirmationToken || !presentation.TryConfirm(intent)) return;
                 ++confirmationToken;
@@ -200,6 +224,37 @@ namespace HobbyDS9.UnityReview
             }, captured);
             Button(actions, "Cancel", "save-library-cancel", () => { ++confirmationToken; confirmation.Clear(); confirmation.style.display = DisplayStyle.None; }, captured);
         }
+
+        private static string ActionCaption(SaveLibraryAction action) => action switch
+        {
+            SaveLibraryAction.CreateManual => "new save",
+            SaveLibraryAction.QuitWithoutSaving => "quit without saving",
+            SaveLibraryAction.Recover => "recovery",
+            SaveLibraryAction.Rename => "rename",
+            SaveLibraryAction.Duplicate => "duplicate",
+            SaveLibraryAction.Overwrite => "overwrite",
+            SaveLibraryAction.Delete => "delete",
+            _ => "save action"
+        };
+        private static string HealthCaption(SaveLibraryHealth health) => health switch
+        {
+            SaveLibraryHealth.Unknown => "Not checked",
+            SaveLibraryHealth.Checking => "Checking",
+            SaveLibraryHealth.Validated => "Checked",
+            SaveLibraryHealth.Corrupt => "Damaged",
+            SaveLibraryHealth.Incompatible => "Incompatible",
+            SaveLibraryHealth.Expired => "Unavailable",
+            _ => "Not reported"
+        };
+        private static string LoadHealthCaption(SaveLibraryHealth health) => health switch
+        {
+            SaveLibraryHealth.Validated => "Checked · save contents checked again before load",
+            SaveLibraryHealth.Checking => "Checking this save. Loading is available after it passes.",
+            SaveLibraryHealth.Corrupt => "This save is damaged. Choose another checked save or review recovery.",
+            SaveLibraryHealth.Incompatible => "This save cannot be loaded with this version.",
+            SaveLibraryHealth.Expired => "This save is no longer available.",
+            _ => "Check this save before loading. Listing a save does not check its contents."
+        };
 
         private Button Button(VisualElement parent, string caption, string elementName, Action action, SaveLibraryBoundary captured)
         {

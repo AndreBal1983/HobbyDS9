@@ -75,7 +75,7 @@ public sealed class SaveLibraryPresentationTests
     {
         var op = new SaveLibraryOperation(SaveLibraryOperationPhase.OutcomeUnknown, SaveLibraryOperationReason.SaveAndQuit, "same.operation.日本語", "Receipt lookup pending", true);
         var model = new SaveLibraryPresentation(View(operation: op)); var boundary = model.BeginRender();
-        Assert.Equal("Save outcome unknown", op.Heading);
+        Assert.Equal("Save status needs checking", op.Heading);
         Assert.False(model.Can(SaveLibraryAction.RetryExistingOperation)); Assert.False(model.Can(SaveLibraryAction.QuitWithoutSaving));
         Assert.False(model.TryPrepare(boundary, SaveLibraryAction.Overwrite, "ref.1", "", out _));
         Assert.True(model.TryPrepare(boundary, SaveLibraryAction.CheckOutcome, null, "", out var check));
@@ -107,14 +107,15 @@ public sealed class SaveLibraryPresentationTests
     }
 
     [Theory]
-    [InlineData(SaveLibraryOperationPhase.WaitingForAdmission, "Save waiting for admission")]
-    [InlineData(SaveLibraryOperationPhase.Saving, "Saving captured state")]
-    [InlineData(SaveLibraryOperationPhase.Committed, "Save committed")]
+    [InlineData(SaveLibraryOperationPhase.WaitingForAdmission, "Waiting to save")]
+    [InlineData(SaveLibraryOperationPhase.Saving, "Saving")]
+    [InlineData(SaveLibraryOperationPhase.Committed, "Saved")]
+    [InlineData(SaveLibraryOperationPhase.ConfirmedNotCommitted, "Save failed")]
     public void OperationProgressIsDistinctFromDurability(SaveLibraryOperationPhase phase, string heading)
     {
         var model = new SaveLibraryPresentation(View(operation: new(phase, SaveLibraryOperationReason.Manual, "op", "", true)));
         Assert.Equal(heading, model.View.Operation.Heading); Assert.Equal(SaveLibraryDurability.Unsaved, model.View.Durability);
-        Assert.False(model.Can(SaveLibraryAction.RetryExistingOperation));
+        Assert.Equal(phase == SaveLibraryOperationPhase.ConfirmedNotCommitted, model.Can(SaveLibraryAction.RetryExistingOperation));
     }
 
     [Fact] public void RecoveryNeedsValidatedCandidateAndExplicitLossWindowAndPreservesDamagedLatest()
@@ -136,6 +137,80 @@ public sealed class SaveLibraryPresentationTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new SaveLibraryQuery(pageSize: 348));
         var model = new SaveLibraryPresentation(View(new[] { Row(health: SaveLibraryHealth.Unknown) }));
         Assert.False(model.TryPrepare(model.BeginRender(), SaveLibraryAction.Load, "ref.1", "", out _));
-        Assert.Equal("Not reported", new SaveLibraryProgress(null, null).Caption);
+        Assert.Equal("Turn not reported", new SaveLibraryProgress(null, null).Caption);
+    }
+
+    [Fact] public void EmptyLibraryCanReviewNamedManualSaveWithoutReusingAnOldReceipt()
+    {
+        var model = new SaveLibraryPresentation(View(Array.Empty<SaveLibraryRow>(), operation: new(SaveLibraryOperationPhase.Committed, SaveLibraryOperationReason.Manual, "old.receipt", "", true)));
+        var boundary = model.BeginRender();
+        Assert.False(model.TryPrepare(boundary, SaveLibraryAction.CreateManual, null, "  ", out _));
+        Assert.True(model.TryPrepare(boundary, SaveLibraryAction.CreateManual, "ignored.ref", "新しい帰還 🚀", out var intent));
+        Assert.Null(intent!.Target); Assert.Null(intent.ExistingOperationId); Assert.Null(intent.PendingRequestId);
+        Assert.Equal("新しい帰還 🚀", intent.ProposedName); Assert.Equal("session.a", intent.Boundary.SourceEpoch);
+        Assert.Equal("branch.a", intent.ActiveBranchId); Assert.Equal(9, intent.ExpectedActiveBranchGeneration);
+        Assert.Equal(148, intent.ReviewedCurrent.Turn); Assert.Equal(6, intent.ReviewedCurrent.Revision); Assert.Equal(146, intent.ReviewedLastDurable.Turn);
+        Assert.True(intent.RequiresConfirmation); Assert.True(model.TryConfirm(intent));
+        Assert.True(model.TryPublish(boundary, View(Array.Empty<SaveLibraryRow>(), generation: 11)));
+        Assert.False(model.TryConfirm(intent));
+    }
+
+    [Theory]
+    [InlineData(SaveLibraryOperationPhase.WaitingForAdmission)]
+    [InlineData(SaveLibraryOperationPhase.Saving)]
+    [InlineData(SaveLibraryOperationPhase.OutcomeUnknown)]
+    public void NewManualSaveCannotReplaceAnUnresolvedOrAdmittedOperation(SaveLibraryOperationPhase phase)
+    {
+        var model = new SaveLibraryPresentation(View(Array.Empty<SaveLibraryRow>(), operation: new(phase, SaveLibraryOperationReason.Manual, "op", "", true)));
+        Assert.False(model.TryPrepare(model.BeginRender(), SaveLibraryAction.CreateManual, null, "Name", out _));
+    }
+
+    [Fact] public void ValidationIsAnExplicitSingleTargetRequestAndOnlyHostResultCanEnableLoad()
+    {
+        var model = new SaveLibraryPresentation(View(new[] { Row(health: SaveLibraryHealth.Unknown) })); var boundary = model.BeginRender();
+        Assert.True(model.TryPrepare(boundary, SaveLibraryAction.Validate, "ref.1", "", out var check));
+        Assert.Equal("ref.1", check!.Target!.ReferenceId); Assert.Equal(3, check.Target.ReferenceGeneration);
+        Assert.Equal(SaveLibraryHealth.Unknown, model.View.Rows[0].Health); Assert.False(model.Can(SaveLibraryAction.Load, model.View.Rows[0]));
+        Assert.True(model.TryPublish(boundary, View(new[] { Row(health: SaveLibraryHealth.Checking) })));
+        Assert.False(model.TryPrepare(boundary, SaveLibraryAction.Validate, "ref.1", "", out _));
+        var checking = model.BeginRender(); Assert.False(model.Can(SaveLibraryAction.Validate, model.View.Rows[0])); Assert.False(model.Can(SaveLibraryAction.Load, model.View.Rows[0]));
+        Assert.True(model.TryPublish(checking, View())); var validated = model.BeginRender();
+        Assert.True(model.TryPrepare(validated, SaveLibraryAction.Load, "ref.1", "", out _));
+        model.Retire(); Assert.False(model.TryPrepare(validated, SaveLibraryAction.Validate, "ref.1", "", out _));
+    }
+
+    [Fact] public void WaitingCancellationUsesAdmissionIdentityAndNeverACapturedCommitReceipt()
+    {
+        var waiting = new SaveLibraryOperation(SaveLibraryOperationPhase.WaitingForAdmission, SaveLibraryOperationReason.Manual, "previous.receipt", "", true, pendingRequestId: "pending.opaque:日本語");
+        var model = new SaveLibraryPresentation(View(operation: waiting)); var boundary = model.BeginRender();
+        Assert.True(model.TryPrepare(boundary, SaveLibraryAction.CancelWaitingRequest, "ignored", "", out var cancel));
+        Assert.Equal("pending.opaque:日本語", cancel!.PendingRequestId); Assert.Null(cancel.ExistingOperationId); Assert.Null(cancel.Target);
+        Assert.False(cancel.RequiresConfirmation); Assert.Equal("Waiting to save", waiting.Heading);
+        Assert.True(model.TryPublish(boundary, View(operation: new(SaveLibraryOperationPhase.Saving, SaveLibraryOperationReason.Manual, "admitted.receipt", "", true, pendingRequestId: "pending.opaque:日本語"))));
+        Assert.False(model.TryPrepare(boundary, SaveLibraryAction.CancelWaitingRequest, null, "", out _));
+        Assert.False(model.TryPrepare(model.BeginRender(), SaveLibraryAction.CancelWaitingRequest, null, "", out _));
+        var noAdmissionId = new SaveLibraryPresentation(View(operation: new(SaveLibraryOperationPhase.WaitingForAdmission, SaveLibraryOperationReason.Manual, "receipt.is.not.pending.id", "", true)));
+        Assert.False(noAdmissionId.Can(SaveLibraryAction.CancelWaitingRequest));
+    }
+
+    [Fact] public void UnknownOutcomeOnlyShowsCheckingWhenHostReportsLookupStarted()
+    {
+        var op = new SaveLibraryOperation(SaveLibraryOperationPhase.OutcomeUnknown, SaveLibraryOperationReason.Manual, "receipt", "", true, outcomeLookupInProgress: true);
+        var model = new SaveLibraryPresentation(View(operation: op));
+        Assert.Equal("Checking save status…", op.Heading); Assert.False(model.Can(SaveLibraryAction.CheckOutcome));
+        Assert.False(model.Can(SaveLibraryAction.CancelWaitingRequest)); Assert.False(model.Can(SaveLibraryAction.RetryExistingOperation));
+        Assert.Equal("Turn 148", model.View.Current.Caption); Assert.Contains("revision 6", model.View.Current.DiagnosticCaption);
+        Assert.Equal("Time not reported", model.View.LastSavedTimeCaption);
+    }
+
+    [Fact] public void MissingCreationBranchGenerationStaysUnknownWhileReferenceAndActiveHeadRemainStamped()
+    {
+        var row = new SaveLibraryRow("ref", "campaign.a", "creation.branch", "checkpoint", 4, null, "Name", "Federation", "Original branch", "Date not reported", new(146, 2), SaveLibraryKind.Manual, SaveLibraryHealth.Validated);
+        var model = new SaveLibraryPresentation(View(new[] { row }));
+        Assert.True(model.TryPrepare(model.BeginRender(), SaveLibraryAction.Delete, "ref", "", out var delete));
+        Assert.Null(delete!.Target!.BranchGeneration); Assert.Equal(4, delete.Target.ReferenceGeneration);
+        Assert.Equal("creation.branch", delete.Target.BranchId); Assert.Equal("branch.a", delete.ActiveBranchId); Assert.Equal(9, delete.ExpectedActiveBranchGeneration);
+        Assert.True(model.TryConfirm(delete));
+        model.Retire(); Assert.False(model.TryConfirm(delete));
     }
 }
