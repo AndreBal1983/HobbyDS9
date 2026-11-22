@@ -53,6 +53,24 @@ namespace HobbyDS9.Persistence.Sqlite
         {
             get { lock (gate) { Alive(); return Number("SELECT COALESCE(SUM(PayloadLength),0) FROM Checkpoint WHERE Available=1"); } }
         }
+        public RepositoryUsage GetStorageUsage(BranchInfo activeBranch, long softAutoBytes = 512L * 1024 * 1024)
+        {
+            if (activeBranch == null || softAutoBytes < 1) throw Error(RepositoryError.InvalidRequest);
+            Id(activeBranch.Id);
+            lock (gate)
+            {
+                Alive(); var branch = Branch(activeBranch.Id);
+                if (branch == null || branch.Head != activeBranch.Head || branch.Generation != activeBranch.Generation) throw Error(RepositoryError.Conflict);
+                if (branch.Head == null) throw Error(RepositoryError.Unavailable);
+                if (Number("SELECT COUNT(*) FROM Checkpoint WHERE Id=$head AND Available=1", null, ("$head", branch.Head)) != 1) throw Error(RepositoryError.Unavailable);
+                const string manual = "EXISTS(SELECT 1 FROM SaveReference r WHERE r.Deleted=0 AND r.Kind=1 AND r.CheckpointId=c.Id)";
+                const string automatic = "EXISTS(SELECT 1 FROM SaveReference r WHERE r.Deleted=0 AND r.Kind IN(2,3) AND r.CheckpointId=c.Id)";
+                var protectedBytes = Number("SELECT COALESCE(SUM(PayloadLength),0) FROM Checkpoint c WHERE Available=1 AND (c.Id=$head OR " + manual + ")", null, ("$head", branch.Head));
+                var automaticBytes = Number("SELECT COALESCE(SUM(PayloadLength),0) FROM Checkpoint c WHERE Available=1 AND NOT " + manual + " AND (c.Id=$head OR " + automatic + ")", null, ("$head", branch.Head));
+                var db = new System.IO.FileInfo(SafeFile("campaign.sqlite")); var wal = new System.IO.FileInfo(SafeFile("campaign.sqlite-wal"));
+                return new RepositoryUsage(LogicalPayloadBytes, automaticBytes, protectedBytes, db.Exists ? db.Length : 0, wal.Exists ? wal.Length : 0, softAutoBytes);
+            }
+        }
         public void CheckpointWal()
         {
             lock (gate) { Alive(); Exec("PRAGMA wal_checkpoint(PASSIVE)"); }

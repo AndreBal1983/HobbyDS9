@@ -42,6 +42,12 @@ namespace HobbyDS9.Persistence.Sqlite
                     // this operation before retrying with the same ID and exact request.
                     if (committing) throw Error(RepositoryError.OutcomeUnknown, operationId, e);
                     if (e is RepositoryException) throw;
+                    if (e is SqliteException sqlite)
+                    {
+                        var error = sqlite.SqliteErrorCode == 13 ? RepositoryError.StorageFull : sqlite.SqliteErrorCode == 8 ? RepositoryError.ReadOnly
+                            : sqlite.SqliteErrorCode == 5 || sqlite.SqliteErrorCode == 6 ? RepositoryError.Busy : RepositoryError.WriteFailed;
+                        throw Error(error, operationId, e);
+                    }
                     throw Error(RepositoryError.WriteFailed, operationId, e);
                 }
             }
@@ -138,11 +144,11 @@ namespace HobbyDS9.Persistence.Sqlite
             if (count == 0)
             {
                 if (r.ExpectedGeneration != 0) throw Error(RepositoryError.Conflict);
-                Exec("INSERT INTO SaveReference VALUES($id,$cp,1,$kind,$name,$notes,0)", tx,
-                    ("$id", r.Id), ("$cp", checkpoint), ("$kind", (int)r.Kind), ("$name", r.Name), ("$notes", r.Notes)); return 1;
+                Exec("INSERT INTO SaveReference VALUES($id,$cp,1,$kind,$name,$notes,0,$utc)", tx,
+                    ("$id", r.Id), ("$cp", checkpoint), ("$kind", (int)r.Kind), ("$name", r.Name), ("$notes", r.Notes), ("$utc", DateTime.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture))); return 1;
             }
-            using var command = Command("UPDATE SaveReference SET CheckpointId=$cp,Generation=Generation+1,Name=$name,Notes=$notes WHERE Id=$id AND Generation=$gen AND Deleted=0 AND Kind=$kind", tx,
-                ("$cp", checkpoint), ("$name", r.Name), ("$notes", r.Notes), ("$id", r.Id), ("$gen", r.ExpectedGeneration), ("$kind", (int)r.Kind));
+            using var command = Command("UPDATE SaveReference SET CheckpointId=$cp,Generation=Generation+1,Name=$name,Notes=$notes,UpdatedUtc=$utc WHERE Id=$id AND Generation=$gen AND Deleted=0 AND Kind=$kind", tx,
+                ("$cp", checkpoint), ("$name", r.Name), ("$notes", r.Notes), ("$id", r.Id), ("$gen", r.ExpectedGeneration), ("$kind", (int)r.Kind), ("$utc", DateTime.UtcNow.ToString("O", System.Globalization.CultureInfo.InvariantCulture)));
             if (command.ExecuteNonQuery() != 1) throw Error(RepositoryError.Conflict);
             return r.ExpectedGeneration + 1;
         }
