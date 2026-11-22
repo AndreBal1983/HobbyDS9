@@ -22,18 +22,33 @@
 
 Source ownership is not a request for another owner approval. The named implementers coordinate routine file handoffs directly; Architecture resolves conflicting edits. New provider-free contracts can be consumed by host adapters and UI, but Simulation/Contracts/Application must not acquire SQLite, filesystem or Unity dependencies.
 
-## A2/B1 provider trial freeze
+## A2/B1 provider trial freeze and Windows R2 revision
 
-Use one explicit package family for the initial trial:
+The original R1 trial used this explicit package family. The managed pins remain unchanged; **Windows R2 below supersedes the R1 native payload before the native build**.
 
 | Package | Exact trial version | Purpose |
 | --- | --- | --- |
 | `Microsoft.Data.Sqlite.Core` | `10.0.14` | ADO.NET facade, use its compatible .NET Standard asset. |
 | `SQLitePCLRaw.core` | `2.1.13` | Managed interop core. |
 | `SQLitePCLRaw.provider.e_sqlite3` | `2.1.13` | Static `e_sqlite3` import provider. |
-| `SQLitePCLRaw.lib.e_sqlite3` | `2.1.13` | Bundled native engine; select intended Windows x64 artifact. |
+| `SQLitePCLRaw.lib.e_sqlite3` | `2.1.13` | Historical R1 native package; not the Windows R2 shipping candidate. |
 
-This graph is a **trial pin, not native/provider acceptance**. The [facade package](https://www.nuget.org/packages/Microsoft.Data.Sqlite.Core/10.0.14) declares a .NET Standard asset and a compatible Raw lower bound. The [Raw provider](https://www.nuget.org/packages/SQLitePCLRaw.provider.e_sqlite3/2.1.13), [core](https://www.nuget.org/packages/SQLitePCLRaw.core/2.1.13) and [native package](https://www.nuget.org/packages/SQLitePCLRaw.lib.e_sqlite3/2.1.13) must resolve together. Do not combine this recipe with a bundle initializer, Raw3.x, SourceGear3.x packaging advice or an operating-system SQLite DLL. The previous [provider survey](../evidence/state-repository-20261122/storage-feasibility.md) remains historical research, not a competing package selection.
+This graph is a **trial pin, not native/provider acceptance**. The [facade package](https://www.nuget.org/packages/Microsoft.Data.Sqlite.Core/10.0.14) declares a .NET Standard asset and a compatible Raw lower bound. The [Raw provider](https://www.nuget.org/packages/SQLitePCLRaw.provider.e_sqlite3/2.1.13), [core](https://www.nuget.org/packages/SQLitePCLRaw.core/2.1.13) and historical [native package](https://www.nuget.org/packages/SQLitePCLRaw.lib.e_sqlite3/2.1.13) formed the R1 proof. Do not combine either recipe with a bundle initializer, Raw3.x, SourceGear3.x packaging advice or an operating-system SQLite DLL. The previous [provider survey](../evidence/state-repository-20261122/storage-feasibility.md) remains historical research, not a competing package selection.
+
+The R1 Windows binary audit matched SQLite3.53.3, preceding fixes for malicious-schema recursion and malformed-WAL disclosure. The exact gameplay exposure has not been established; generated trusted-fixture R1 evidence remains useful but cannot clear D1 distribution/untrusted-database acceptance. [SQLite advisory table](https://www.sqlite.org/cves.html)
+
+**Architecture selects R2:** retain the three managed pins and stage the official [SQLite3.54.1 Windows x64 binary](https://sqlite.org/2026/sqlite-dll-win-x64-3540100.zip), with its `sqlite3.dll` bytes renamed to `e_sqlite3.dll` for the existing static import. This is a native binary replacement, not a managed-provider upgrade or source build. The [release notes](https://sqlite.org/releaselog/3_54_1.html) include fixes beyond3.54.0. Package2.1.14 offers3.54.0, but the official3.54.1 binary avoids retaining that known patch gap.
+
+| R2 identity | Required value |
+| --- | --- |
+| ZIP SHA3-256, checked against official download page | `c2d09c8babb9399277055c057c97a53f1ffd7c5f11d0c1f2118ffdfa39f2daa4` |
+| DLL SHA256 | `4b59d3cded9dc1608544160f3b4b10ac974c6ac0d6ffc23064e5f4c8dbd05aea` |
+| Runtime version | `3.54.1` |
+| Source ID | `2026-10-16 14:45:20 555e07ef33f69a0957d24d8e555b702464a131d6f1607f4c3c1e4551e8e6ca76` |
+
+Static inspection found an AMD64 PE with379exports including required metadata/origin, binding, prepare, backup and Win32 APIs. Embedded option strings include column metadata and thread safety; actual runtime options remain a test gate. Data and GUI must exercise identical R2 DLL bytes, pin exact managed assets, and explicitly exclude the older native package from overwriting or replacing R2 during build/load. Do not alter the global NuGet cache. Fail on a missing/mismatched native library; no fallback. Other-platform headless R1 evidence remains labelled separately and grants no native distribution acceptance. R2 uses SQLite's public-domain notice alongside the existing managed-wrapper licenses. Official [download provenance](https://sqlite.org/download.html), [SQLite notice](https://sqlite.org/copyright.html).
+
+A separate Data regression found a process crash on `GetBytes`/`GetStream` for computed SQL blob expressions. The bounded reader uses SQL type/length guards followed by `GetValue` instead. SQLite's [column-metadata API](https://sqlite.org/c3ref/table_column_metadata.html) does not permit a null table name; this is a plausible origin-related path, not a confirmed diagnosis or match to the advisory above. R2 does not excuse regression coverage of bounded reads and exact Unity-target assets.
 
 Data locks and reports the complete transitive graph; GUI imports the same managed/native artifacts. Record NuGet content hashes, actual assembly names/versions/framework assets, native SHA256, `sqlite_version()`, `sqlite_source_id()` and compile options. Inspect exact artifact notices and relevant published advisories before accepting distribution. No dependency is fetched at game runtime.
 
@@ -91,4 +106,4 @@ For crash tests, kill only a purpose-launched child identified by its exact proc
 
 ## Handoff and current state
 
-At this contract's initial issue, source ownership and the trial graph are frozen and implementation is dispatched. No B1, A2 native or D1 result is asserted. Each owner supplies exact commit/base, changed paths, dependencies, test commands/results, untouched-save evidence, known limits and next gate. Architecture records gate decisions from that evidence, sends meaningful milestones to Product Desk and continues authorized dependent phases when they pass. Do not replace unpassed gates with another design-only review or repeat permission requests to begin approved implementation.
+At this contract's initial issue, source ownership and the R1 trial graph were frozen and implementation dispatched. The R2 revision above supersedes only the Windows native payload after actual artifact/advisory review. Data's initial coherent B1/B2 source `a55493583bef45f6d3601e874955a5e7cd7d898f` reports26fixture/disk/process tests and an exact-netstandard-asset smoke; independent code review and typed-game/native gates remain pending. No B1, A2 native or D1 acceptance is asserted by this status note. Each owner supplies exact commit/base, changed paths, dependencies, test commands/results, untouched-save evidence, known limits and next gate. Architecture records gate decisions from that evidence, sends meaningful milestones to Product Desk and continues authorized dependent phases when they pass. Do not replace unpassed gates with another design-only review or repeat permission requests to begin approved implementation.
