@@ -8,7 +8,7 @@ namespace HobbyDS9.Persistence.Sqlite.Tests;
 
 public sealed class BoundaryTests : IDisposable
 {
-    readonly string path = Path.Combine(Path.GetTempPath(), "hobbyds9-boundary-" + Guid.NewGuid().ToString("N"));
+    readonly string path = Path.Combine(PersistenceTestPaths.TemporaryRoot(), "hobbyds9-boundary-" + Guid.NewGuid().ToString("N"));
     readonly Validator validator = new();
     SqliteCampaignRepository Open() => new(path, "campaign", "edition", validator);
     static CheckpointImage Image() => new(new byte[] { 49 }, "edition", 1, 0, "Planning");

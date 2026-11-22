@@ -9,12 +9,16 @@ namespace HobbyDS9.Persistence.Sqlite.Tests;
 
 public sealed class RepositoryTests : IDisposable
 {
-    readonly string directory = Path.Combine(Path.GetTempPath(), "hobbyds9-repository-" + Guid.NewGuid().ToString("N"));
+    readonly string directory = Path.Combine(PersistenceTestPaths.TemporaryRoot(), "hobbyds9-repository-" + Guid.NewGuid().ToString("N"));
     static readonly ICheckpointValidator Validator = new TestValidator();
     static CheckpointImage Image(int turn = 1) => new(Encoding.UTF8.GetBytes(turn.ToString(System.Globalization.CultureInfo.InvariantCulture)), "test-edition-v1", turn, 0, "Planning");
     SqliteCampaignRepository Open(Action<RepositoryWriteStage>? fault = null) => new(directory, "campaign", "test-edition-v1", Validator, fault);
     static CheckpointCommit First(string op = "first", ReferenceUpdate? reference = null) => new(op, "main", 0, null, Image(), reference, "epoch-1");
-    static void Error(RepositoryError expected, Action action) => Assert.Equal(expected, Assert.Throws<RepositoryException>(action).Error);
+    static void Error(RepositoryError expected, Action action)
+    {
+        var error = Assert.Throws<RepositoryException>(action);
+        Assert.True(error.Error == expected, "Expected " + expected + ", received " + error);
+    }
 
     [Fact] public void ExactBytesDetachedImagesAndDurableReceiptSurviveReopen()
     {
@@ -127,6 +131,18 @@ public sealed class RepositoryTests : IDisposable
         using var child = Child("lease"); await Ready(child);
         Error(RepositoryError.WriterInUse, () => Open().Dispose());
         child.Kill(true); await child.WaitForExitAsync(); using var recovered = ReopenAfterKilledProcess(); Assert.Null(recovered.FindOperation("never-written"));
+    }
+    [Fact] public void FailedOpenAndRepeatedDisposeCannotReleaseAnotherWriterLease()
+    {
+        var first = Open(); first.CommitCheckpoint(First()); first.Dispose();
+        Error(RepositoryError.IncompatibleEdition, () => new SqliteCampaignRepository(directory, "campaign", "other-edition", Validator).Dispose());
+        using (var second = Open())
+        {
+            first.Dispose();
+            Error(RepositoryError.WriterInUse, () => Open().Dispose());
+            Assert.NotNull(second.ReadCheckpoint(second.GetBranch("main").Head!));
+        }
+        using var third = Open(); Assert.NotNull(third.ReadCheckpoint(third.GetBranch("main").Head!));
     }
     [Theory] [InlineData("before", false)] [InlineData("after", true)]
     public async Task KilledWriterBeforeOrAfterCommitRecoversExactlyOneCompleteCheckpoint(string stage, bool committed)

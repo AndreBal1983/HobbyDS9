@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Data.Sqlite;
 
@@ -31,7 +32,16 @@ namespace HobbyDS9.Persistence.Sqlite
             Directory.CreateDirectory(directory); CheckAncestors(directory);
             var lockPath = SafeFile("writer.lock");
             try { lease = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
-            catch (IOException e) { throw Error((e.HResult & 0xffff) == 32 || (e.HResult & 0xffff) == 33 ? RepositoryError.WriterInUse : RepositoryError.WriteFailed, null, e); }
+            catch (IOException e)
+            {
+                // Unix FileStream's nonblocking flock reports raw EWOULDBLOCK,
+                // whereas Windows reports sharing/lock violation error numbers.
+                var code = e.HResult & 0xffff;
+                var inUse = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (code == 32 || code == 33)
+                    || RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && code == 11
+                    || RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && code == 35;
+                throw Error(inUse ? RepositoryError.WriterInUse : RepositoryError.WriteFailed, null, e);
+            }
             catch (UnauthorizedAccessException e) { throw Error(RepositoryError.ReadOnly, null, e); }
             try
             {

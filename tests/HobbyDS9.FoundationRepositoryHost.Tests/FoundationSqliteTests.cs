@@ -14,7 +14,7 @@ public sealed partial class FoundationCheckpointTests
 {
     private sealed class TestDirectory : IDisposable
     {
-        private static readonly string Parent = Path.GetFullPath(Path.Combine(Path.GetTempPath(), "HobbyDS9.FoundationRepositoryHost.Tests"));
+        private static readonly string Parent = Path.GetFullPath(Path.Combine(PersistenceTestPaths.TemporaryRoot(), "HobbyDS9.FoundationRepositoryHost.Tests"));
         internal string Root { get; } = Path.Combine(Parent, Guid.NewGuid().ToString("N"));
         internal TestDirectory() { Directory.CreateDirectory(Root); }
         public void Dispose()
