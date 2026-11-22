@@ -62,3 +62,7 @@ For Science/Engineering concepts not migrated here, read the legacy document alo
 3. Report conflicts between intended design and current contracts before changing those contracts.
 4. Make narrow, deterministic implementation increments; update acceptance and versioning separately.
 5. Keep design decisions in Git; avoid competing edits to migrated sections in the Google Doc.
+
+## Presentation references
+
+[Faction frontend, ship and audio style guide](../art/faction-style-guide.md) — proposed presentation families with audited runtime/minor identities and documented theme coverage; no default skin or gameplay activation.
