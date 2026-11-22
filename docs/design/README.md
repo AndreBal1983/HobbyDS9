@@ -17,6 +17,7 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 | [Time, movement and mobilisation](time-movement-mobilisation.md) | Weekly clock, sector travel, expediting, buyout, sensor warning and response | Direction agreed; speeds, prices and detailed timing proposed |
 | [Fleet interception and tactical combat](tactical-combat.md) | Fleet posture, detection/tracking/interception, command hierarchy, abstract maneuver, battle orders, targeting and combat objectives | Direction agreed; formulas and balance proposed/open |
 | [Colonisation and planetary conquest](colonisation-and-conquest.md) | Planetary ownership, settlement, supplies, invasion, bombardment, occupation, rebellion and liberation | First-pass gameplay framework agreed; detailed rules and tuning open |
+| [Offline state repository and saves](state-repository-savegame-adr.md) | Host persistence, named slots, autosave/recovery, SQLite feasibility, compatibility and future authority seams | Architecture review dispatched 22 November; design proposed, isolated probes only; no production activation |
 
 ## Decisions adopted
 
