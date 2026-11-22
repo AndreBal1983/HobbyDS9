@@ -117,7 +117,8 @@ def main():
         if not meta.exists():
             meta.write_text("fileFormatVersion: 2\nguid: "+uuid.uuid5(uuid.NAMESPACE_URL,"hobbyds9-state-probe/"+directory.relative_to(project).as_posix()).hex+"\nfolderAsset: yes\n",encoding="utf-8")
     settings = project / "ProjectSettings"; settings.mkdir()
-    (settings / "ProjectVersion.txt").write_text("m_EditorVersion: 6000.6.9f1\n", encoding="utf-8")
+    # Match the installed editor's full import-stable version file before pinning it.
+    (settings / "ProjectVersion.txt").write_bytes(b"m_EditorVersion: 6000.6.9f1\nm_EditorVersionWithRevision: 6000.6.9f1 (8c45277fb9c5)\n")
     packages = project / "Packages"; packages.mkdir()
     (packages / "manifest.json").write_text(json.dumps({"dependencies":{"com.unity.modules.jsonserialize":"1.0.0"}},indent=2)+"\n",encoding="utf-8")
     shutil.copytree(base / "ThirdPartyNotices", project / "ThirdPartyNotices")
