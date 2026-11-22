@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../HobbyDS9.Persistence/HobbyDS9.Persistence.csproj" />
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="[10.0.14]" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="[2.1.13]" />
+    <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="[2.1.13]" />
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="[2.1.13]" />
+  </ItemGroup>
+</Project>
