@@ -228,6 +228,7 @@ namespace HobbyDS9.UnityReview
 
         private static string ActionCaption(SaveLibraryAction action) => action switch
         {
+            SaveLibraryAction.Load => "load",
             SaveLibraryAction.CreateManual => "new save",
             SaveLibraryAction.QuitWithoutSaving => "quit without saving",
             SaveLibraryAction.Recover => "recovery",
