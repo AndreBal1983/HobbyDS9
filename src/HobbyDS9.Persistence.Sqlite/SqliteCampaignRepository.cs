@@ -11,7 +11,7 @@ namespace HobbyDS9.Persistence.Sqlite
     // Per-campaign, cooperative local writer. No game or Unity dependency.
     public sealed partial class SqliteCampaignRepository : ICampaignRepository
     {
-        public const int StorageSchemaVersion = 1;
+        public const int StorageSchemaVersion = 2;
         private const int ApplicationId = 1213416497; // HDS1
         private readonly object gate = new object();
         private readonly string directory;
@@ -22,7 +22,7 @@ namespace HobbyDS9.Persistence.Sqlite
         private readonly SqliteConnection connection;
         private bool disposed;
 
-        public SqliteCampaignRepository(string campaignDirectory, string campaignId, string editionIdentity, ICheckpointValidator validator, Action<RepositoryWriteStage>? fault = null)
+        public SqliteCampaignRepository(string campaignDirectory, string campaignId, string editionIdentity, ICheckpointValidator validator, Action<RepositoryWriteStage>? fault = null, bool allowStorageUpgrade = false)
         {
             Id(campaignId); Text(editionIdentity, 16384, false);
             this.validator = validator ?? throw new ArgumentNullException(nameof(validator));
@@ -44,9 +44,11 @@ namespace HobbyDS9.Persistence.Sqlite
                     connection.Open();
                     if (exists)
                     {
-                        if (Number("PRAGMA application_id") != ApplicationId || Number("PRAGMA user_version") != StorageSchemaVersion) throw Error(RepositoryError.IncompatibleSchema);
+                        var schema = Number("PRAGMA user_version");
+                        if (Number("PRAGMA application_id") != ApplicationId || schema != StorageSchemaVersion && !(schema == 1 && allowStorageUpgrade)) throw Error(RepositoryError.IncompatibleSchema);
                         if (TextScalar("CampaignId", 96) != campaignId) throw Error(RepositoryError.Conflict);
                         if (TextScalar("EditionIdentity", 16384) != editionIdentity) throw Error(RepositoryError.IncompatibleEdition);
+                        if (schema == 1) UpgradeSchema1();
                     }
                     Exec("PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA busy_timeout=1000; PRAGMA wal_autocheckpoint=1000;");
                     if (!exists) Initialize(campaignId);
@@ -63,10 +65,10 @@ namespace HobbyDS9.Persistence.Sqlite
             Exec(@"CREATE TABLE RepositoryMeta(Singleton INTEGER PRIMARY KEY CHECK(Singleton=1),CampaignId TEXT NOT NULL CHECK(typeof(CampaignId)='text' AND length(CAST(CampaignId AS BLOB))<=96),EditionIdentity TEXT NOT NULL CHECK(typeof(EditionIdentity)='text' AND length(CAST(EditionIdentity AS BLOB))<=65536),NextSequence INTEGER NOT NULL CHECK(NextSequence>0));
 CREATE TABLE Branch(Id TEXT PRIMARY KEY,Origin TEXT NULL,Head TEXT NULL,Generation INTEGER NOT NULL CHECK(Generation>=0));
 CREATE TABLE Checkpoint(Id TEXT PRIMARY KEY,BranchId TEXT NOT NULL REFERENCES Branch(Id),Parent TEXT NULL,Sequence INTEGER NOT NULL UNIQUE,Turn INTEGER NOT NULL CHECK(Turn>0),Revision INTEGER NOT NULL CHECK(Revision>=0),Phase TEXT NOT NULL,Payload BLOB NULL,PayloadHash TEXT NOT NULL,PayloadLength INTEGER NOT NULL CHECK(PayloadLength>0 AND PayloadLength<=67108864),Available INTEGER NOT NULL DEFAULT 1 CHECK(Available IN(0,1)),CHECK((Available=0 AND Payload IS NULL) OR (Available=1 AND typeof(Payload)='blob' AND length(Payload)=PayloadLength)));
-CREATE TABLE SaveReference(Id TEXT PRIMARY KEY CHECK(typeof(Id)='text' AND length(CAST(Id AS BLOB))<=96),CheckpointId TEXT NOT NULL REFERENCES Checkpoint(Id),Generation INTEGER NOT NULL CHECK(Generation>0),Kind INTEGER NOT NULL CHECK(Kind IN(1,2,3)),Name TEXT NOT NULL CHECK(typeof(Name)='text' AND length(Name)<=120 AND length(CAST(Name AS BLOB))<=480),Notes TEXT NOT NULL CHECK(typeof(Notes)='text' AND length(Notes)<=1000 AND length(CAST(Notes AS BLOB))<=4000),Deleted INTEGER NOT NULL DEFAULT 0 CHECK(Deleted IN(0,1)));
+CREATE TABLE SaveReference(Id TEXT PRIMARY KEY CHECK(typeof(Id)='text' AND length(CAST(Id AS BLOB))<=96),CheckpointId TEXT NOT NULL REFERENCES Checkpoint(Id),Generation INTEGER NOT NULL CHECK(Generation>0),Kind INTEGER NOT NULL CHECK(Kind IN(1,2,3)),Name TEXT NOT NULL CHECK(typeof(Name)='text' AND length(Name)<=120 AND length(CAST(Name AS BLOB))<=480),Notes TEXT NOT NULL CHECK(typeof(Notes)='text' AND length(Notes)<=1000 AND length(CAST(Notes AS BLOB))<=4000),Deleted INTEGER NOT NULL DEFAULT 0 CHECK(Deleted IN(0,1)),UpdatedUtc TEXT NOT NULL CHECK(typeof(UpdatedUtc)='text' AND length(CAST(UpdatedUtc AS BLOB))<=64));
 CREATE TABLE PersistenceOperation(Id TEXT PRIMARY KEY,Fingerprint TEXT NOT NULL,Sequence INTEGER NOT NULL UNIQUE,CheckpointId TEXT NULL,BranchGeneration INTEGER NOT NULL,ReferenceGeneration INTEGER NOT NULL,SourceEpoch TEXT NOT NULL,CommittedUtc TEXT NOT NULL);
 CREATE INDEX ReferenceListing ON SaveReference(Deleted,Id);
-PRAGMA application_id=1213416497; PRAGMA user_version=1;", tx);
+PRAGMA application_id=1213416497; PRAGMA user_version=2;", tx);
             Exec("INSERT INTO RepositoryMeta VALUES(1,$id,$edition,1)", tx, ("$id", campaignId), ("$edition", editionIdentity));
             tx.Commit();
         }
@@ -105,13 +107,14 @@ PRAGMA application_id=1213416497; PRAGMA user_version=1;", tx);
             lock (gate)
             {
                 Alive(); var result = new List<SaveReference>();
-                using var c = Command("SELECT " + Field("Id", 96) + "," + Field("CheckpointId", 96) + ",Generation,Kind," + Field("Name", 120) + "," + Field("Notes", 1000) + " FROM SaveReference WHERE Deleted=0 AND Id>$after ORDER BY Id COLLATE BINARY LIMIT $limit", null, ("$after", afterId), ("$limit", limit));
+                using var c = Command("SELECT " + Field("r.Id", 96) + "," + Field("r.CheckpointId", 96) + ",r.Generation,r.Kind," + Field("r.Name", 120) + "," + Field("r.Notes", 1000) + ",c.Turn,c.Revision," + Field("c.Phase", 64) + ",c.Sequence," + Field("r.UpdatedUtc", 64) + ",c.Available FROM SaveReference r JOIN Checkpoint c ON c.Id=r.CheckpointId WHERE r.Deleted=0 AND r.Id>$after ORDER BY r.Id COLLATE BINARY LIMIT $limit", null, ("$after", afterId), ("$limit", limit));
                 using var r = c.ExecuteReader();
                 while (r.Read())
                 {
                     var kind = (SaveReferenceKind)r.GetInt32(3);
                     if (r.GetInt64(2) < 1 || !Enum.IsDefined(typeof(SaveReferenceKind), kind)) throw Error(RepositoryError.Corrupt);
-                    result.Add(new SaveReference(ReadText(r, 0, 96), ReadText(r, 1, 96), r.GetInt64(2), kind, ReadText(r, 4, 120), ReadText(r, 5, 1000)));
+                    if (r.GetInt32(6) < 1 || r.GetInt64(7) < 0 || r.GetInt64(9) < 1 || r.GetInt32(11) < 0 || r.GetInt32(11) > 1) throw Error(RepositoryError.Corrupt);
+                    result.Add(new SaveReference(ReadText(r, 0, 96), ReadText(r, 1, 96), r.GetInt64(2), kind, ReadText(r, 4, 120), ReadText(r, 5, 1000), r.GetInt32(6), r.GetInt64(7), ReadText(r, 8, 64), r.GetInt64(9), ReadText(r, 10, 64), r.GetInt32(11) == 1));
                 }
                 return result.AsReadOnly();
             }
@@ -156,6 +159,9 @@ PRAGMA application_id=1213416497; PRAGMA user_version=1;", tx);
         private long Number(string sql, SqliteTransaction? tx = null, params (string Name, object? Value)[] values) => Convert.ToInt64(Scalar(sql, tx, values), CultureInfo.InvariantCulture);
         private void Exec(string sql, SqliteTransaction? tx = null, params (string Name, object? Value)[] values) { using var c = Command(sql, tx, values); c.ExecuteNonQuery(); }
         private void Alive() { if (disposed) throw new ObjectDisposedException(nameof(SqliteCampaignRepository)); CheckAncestors(directory); CheckSidecars(); }
+        // Deliberate engine fault injection on generated test databases only. No
+        // arbitrary SQL/configuration surface is exposed by the public repository API.
+        internal void ConfigureConnectionForTests(Action<SqliteConnection> configure) { lock (gate) { Alive(); configure(connection); } }
         public void Dispose() { lock (gate) { if (disposed) return; disposed = true; try { connection.Dispose(); } finally { lease.Dispose(); } } }
         private static RepositoryException Error(RepositoryError error, string? op = null, Exception? e = null) => new RepositoryException(error, op, e);
         private static void Id(string id)
