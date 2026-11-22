@@ -6,6 +6,8 @@
 **Scope:** Persistent campaign state, local embedded storage, save-slot management, autosave/recovery, performance and future multiplayer seams.  
 **Non-goal:** Implementing full multiplayer or changing gameplay rules in this assignment.
 
+**Dispatch update — 22 November 2026:** the owner authorized this architecture/design review through Product Desk. The [proposed ADR and measured evidence](../design/state-repository-savegame-adr.md) respond to it. The original preparation status above is historical; production persistence replacement and multiplayer activation remain unapproved.
+
 ## 1. Executive request to the lead architect
 
 Design a replacement for the current fixed three-slot JSON save-file mechanism and a scalable state-persistence architecture for HobbyDS9. The solution must be **offline-first**, shipped inside the installed game, require **no account, cloud connection, always-online service or separately installed database server**, and scale to many named manual save slots and automatically managed recovery points.

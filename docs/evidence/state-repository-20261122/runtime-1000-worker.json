@@ -1,0 +1,231 @@
+{
+  "environment": {
+    "runtimePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+    "source": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-runtime-probe",
+    "systemCount": 1000,
+    "seed": "42",
+    "mode": "worker",
+    "runtime": ".NET 10.0.12",
+    "os": "Microsoft Windows 10.0.26200",
+    "arch": "X64",
+    "ProcessorCount": 16,
+    "serverGc": false,
+    "latencyMode": "Interactive",
+    "configuration": "Release",
+    "memoryAvailableBytes": 16541487104,
+    "utc": "2026-11-22T18:44:36.8915424+00:00",
+    "note": "Serial single-writer probe; no forced GC. Small-n nearest-rank p95/p99 are maxima, not credible population tail estimates. Working/peak process memory includes setup and JIT. No native UI, combat, growing population or concurrent producer benchmark."
+  },
+  "world": {
+    "packageHash": "2e1753666e957db7d85f0f16faa865014d0dc80b64542aeb47d009b9ae12994e",
+    "FormatVersion": 18,
+    "ProfileId": "generated-belt-bodies-v1",
+    "systems": 1000,
+    "planets": 4465,
+    "colonies": 3,
+    "fleets": 2,
+    "ships": 2,
+    "belts": 755,
+    "journal": 0,
+    "TurnNumber": 1,
+    "StateRevision": 0,
+    "encodedBytes": 12368562,
+    "payloadSha256": "0c38c999dd43d6030d43405f62aff609694d107f76b617374299bb5578aa7168",
+    "settings": {
+      "Map": {
+        "Seed": "42",
+        "SystemCount": 1000,
+        "EmptyRegionCount": 1000,
+        "Width": 5000000,
+        "Height": 4000000,
+        "QuietEmptyAreaTargetPermille": 2000,
+        "BlackHolesPerBaselineArea": 2,
+        "NebulaePerBaselineArea": 3,
+        "HomeCivilizationDefinitionIds": [
+          "civilization.federation",
+          "civilization.cardassian"
+        ],
+        "StellarInfluenceEnabled": true,
+        "BlackHoleInfluenceEnabled": true,
+        "NebulaInfluenceEnabled": true
+      },
+      "IsolatedStarSharePermille": 100,
+      "AssociationSpreadPermille": 1000
+    }
+  },
+  "elapsedMs": 78752.0932,
+  "peakWorkingSetBytes": 1179086848,
+  "workingSetBytes": 340160512,
+  "privateBytes": 285384704,
+  "failure": null,
+  "measurements": [
+    {
+      "name": "start_campaign_including_generation",
+      "n": 1,
+      "warmup": 0,
+      "medianMs": 16791.2671,
+      "p95Ms": 16791.2671,
+      "p99Ms": 16791.2671,
+      "minMs": 16791.2671,
+      "maxMs": 16791.2671,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 16791.2671,
+          "allocatedBytes": 14997931544,
+          "gcCollections": [
+            1794,
+            35,
+            17
+          ],
+          "gcPauseMs": 1229.637,
+          "processCpuMs": 17921.875
+        }
+      ]
+    },
+    {
+      "name": "host_save_prepare_full_export",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 79.8073,
+      "p95Ms": 118.2913,
+      "p99Ms": 118.2913,
+      "minMs": 74.0277,
+      "maxMs": 118.2913,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 118.2913,
+          "allocatedBytes": 21774952,
+          "gcCollections": [
+            4,
+            3,
+            1
+          ],
+          "gcPauseMs": 35.198,
+          "processCpuMs": 140.625
+        },
+        {
+          "index": 1,
+          "ms": 78.5564,
+          "allocatedBytes": 21778504,
+          "gcCollections": [
+            2,
+            1,
+            0
+          ],
+          "gcPauseMs": 19.58,
+          "processCpuMs": 125
+        },
+        {
+          "index": 2,
+          "ms": 81.5051,
+          "allocatedBytes": 21746608,
+          "gcCollections": [
+            3,
+            1,
+            0
+          ],
+          "gcPauseMs": 27.375,
+          "processCpuMs": 78.125
+        },
+        {
+          "index": 3,
+          "ms": 74.0277,
+          "allocatedBytes": 21746168,
+          "gcCollections": [
+            2,
+            1,
+            0
+          ],
+          "gcPauseMs": 22.583,
+          "processCpuMs": 140.625
+        },
+        {
+          "index": 4,
+          "ms": 79.8073,
+          "allocatedBytes": 21746608,
+          "gcCollections": [
+            3,
+            1,
+            0
+          ],
+          "gcPauseMs": 26.301,
+          "processCpuMs": 109.375
+        }
+      ]
+    },
+    {
+      "name": "host_save_worker_copy_verify_no_disk",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 7187.7557,
+      "p95Ms": 7749.1844,
+      "p99Ms": 7749.1844,
+      "minMs": 6746.7323,
+      "maxMs": 7749.1844,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 6918.3104,
+          "allocatedBytes": 1497750536,
+          "gcCollections": [
+            164,
+            87,
+            3
+          ],
+          "gcPauseMs": 1507.038,
+          "processCpuMs": 7140.625
+        },
+        {
+          "index": 1,
+          "ms": 6746.7323,
+          "allocatedBytes": 1497749968,
+          "gcCollections": [
+            163,
+            89,
+            2
+          ],
+          "gcPauseMs": 1983.912,
+          "processCpuMs": 6765.625
+        },
+        {
+          "index": 2,
+          "ms": 7187.7557,
+          "allocatedBytes": 1497745272,
+          "gcCollections": [
+            164,
+            87,
+            3
+          ],
+          "gcPauseMs": 1550.048,
+          "processCpuMs": 7625
+        },
+        {
+          "index": 3,
+          "ms": 7429.0941,
+          "allocatedBytes": 1497784704,
+          "gcCollections": [
+            165,
+            86,
+            5
+          ],
+          "gcPauseMs": 1978.289,
+          "processCpuMs": 7750
+        },
+        {
+          "index": 4,
+          "ms": 7749.1844,
+          "allocatedBytes": 1497810944,
+          "gcCollections": [
+            169,
+            94,
+            10
+          ],
+          "gcPauseMs": 1755.643,
+          "processCpuMs": 7703.125
+        }
+      ]
+    }
+  ]
+}
