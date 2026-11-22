@@ -1,0 +1,3 @@
+* text eol=lf
+# Preserve the independent tested receipt's exact bytes/hash.
+evidence/*.json -text
