@@ -12,4 +12,5 @@
     <Reference Include="SQLitePCLRaw.provider.e_sqlite3"><HintPath>$(ProviderPackageRoot)/sqlitepclraw.provider.e_sqlite3/2.1.13/lib/netstandard2.0/SQLitePCLRaw.provider.e_sqlite3.dll</HintPath></Reference>
     <None Include="$(ProviderPackageRoot)/sqlitepclraw.lib.e_sqlite3/2.1.13/runtimes/$(NETCoreSdkRuntimeIdentifier)/native/*" CopyToOutputDirectory="PreserveNewest" Link="%(Filename)%(Extension)" />
   </ItemGroup>
+  <Import Project="../../src/HobbyDS9.Persistence.Sqlite/PersistenceNativeTrial.targets" />
 </Project>
