@@ -9,6 +9,8 @@ client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBel
 client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/SystemBodyArt/AsteroidBeltV1/*.meta text eol=lf
 tools/art/build_asteroid_belt_v1.py text eol=lf
 tools/art/verify_asteroid_belt_v1.py text eol=lf
+art/faction-style-v1/** -text
+tools/art/build_faction_style_guide_v1.py text eol=lf
 scenarios/**/*.json text eol=lf
 client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/CombatPlaytestV1/*.json text eol=lf
 # Preserve the original demo pack's manifest-pinned asset bytes. Git policy

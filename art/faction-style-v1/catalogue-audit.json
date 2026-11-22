@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 1,
+  "auditPin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+  "workOrderPin": "2584f276df325f9f1c750daf8ea6dad599932cb9",
+  "historicalReferencePin": "b3496b6b1da31634d9beb8a7357b2480f37a9a72",
+  "scope": "Union of actual civilization/minor catalogue and explicitly documented theme families; species/media labels are not civilizations.",
+  "civilizations": [
+    {
+      "id": "civilization.federation",
+      "displayName": "Federation"
+    },
+    {
+      "id": "civilization.cardassian",
+      "displayName": "Cardassian Union"
+    },
+    {
+      "id": "civilization.dominion",
+      "displayName": "Dominion"
+    }
+  ],
+  "minorSocieties": [
+    {
+      "id": "minor.ilex.v1",
+      "displayName": "Ilex Survey Commune"
+    },
+    {
+      "id": "minor.namar.v1",
+      "displayName": "Namar Local Council"
+    }
+  ],
+  "documentedThemeFamilies": [
+    "Federation",
+    "Klingon",
+    "Cardassian",
+    "Romulan",
+    "Dominion"
+  ],
+  "sourceEvidence": [
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "scenarios/ds9-slice/scenario.json",
+      "sha256": "a9d631c84ab8689718c9f5199877694fa4b027ac774e3ee0f1a6b9bb31fa692f"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "scenarios/activities-v1/activities.json",
+      "sha256": "0a8df4fd704a3fef4cb795392b4ec5566fdcb42f7cf24aed48a696cc3abba920"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.GeneratedCampaign.cs",
+      "claim": "Current home civilization IDs Federation and Cardassian."
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewEntry.CampaignMenus.cs",
+      "claim": "Current generated setup says Federation / Two empires."
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "docs/art/wireframes/combat-interface.html",
+      "claim": "Five named theme families; illustrative selector."
+    },
+    {
+      "pin": "b3496b6b1da31634d9beb8a7357b2480f37a9a72",
+      "path": "docs/art/coherent-interface/design-handoff.md",
+      "claim": "Four supplemental framing comparisons are proposals."
+    }
+  ],
+  "speciesOnly": [
+    "Human",
+    "Vulcan",
+    "Andorian",
+    "Klingon",
+    "Cardassian",
+    "Bajoran",
+    "Ferengi",
+    "Founder",
+    "Ilex",
+    "Namar"
+  ],
+  "referenceOnlyNotRegistered": [
+    "Borg-like actors mentioned by exploration design; not a catalogue/theme-selector faction."
+  ],
+  "notFoundAsCatalogueOrTheme": [
+    "Breen"
+  ],
+  "missingReferences": [
+    "E:/HobbyDS9/docs/art/faction-interfaces.md",
+    "E:/HobbyDS9/docs/art/music-direction.md"
+  ],
+  "profiles": [
+    {
+      "id": "federation",
+      "displayName": "Federation",
+      "family": "federation",
+      "catalogueStatus": "runtime-civilization/current-generated-player",
+      "civilizationDefinitionIds": [
+        "civilization.federation"
+      ],
+      "minorDefinitionIds": [],
+      "sourceStatus": "Federation LCARS family is source-backed; token refinements and this sample remain proposed."
+    },
+    {
+      "id": "klingon",
+      "displayName": "Klingon",
+      "family": "klingon",
+      "catalogueStatus": "documented-proposed-console/no-civilization-definition",
+      "civilizationDefinitionIds": [],
+      "minorDefinitionIds": [],
+      "sourceStatus": "Historical stepped/angular framing proposal recovered; new palette/ships/audio remain proposals."
+    },
+    {
+      "id": "cardassian",
+      "displayName": "Cardassian Union",
+      "family": "cardassian",
+      "catalogueStatus": "runtime-civilization/current-generated-opponent",
+      "civilizationDefinitionIds": [
+        "civilization.cardassian"
+      ],
+      "minorDefinitionIds": [],
+      "sourceStatus": "Existing original ship/material evidence and curved/bronze UI proposal; final faction skin/audio not accepted."
+    },
+    {
+      "id": "romulan",
+      "displayName": "Romulan",
+      "family": "romulan",
+      "catalogueStatus": "documented-proposed-console/no-civilization-definition",
+      "civilizationDefinitionIds": [],
+      "minorDefinitionIds": [],
+      "sourceStatus": "Historical swept/open framing proposal recovered; new palette/ships/audio remain proposals."
+    },
+    {
+      "id": "dominion",
+      "displayName": "Dominion",
+      "family": "dominion",
+      "catalogueStatus": "runtime-civilization/authored-scenarios-not-current-two-empire-selection",
+      "civilizationDefinitionIds": [
+        "civilization.dominion"
+      ],
+      "minorDefinitionIds": [],
+      "sourceStatus": "Runtime civilization exists; historical interlocked-rib console proposal; new ship/material/audio direction proposed."
+    },
+    {
+      "id": "ilex",
+      "displayName": "Ilex Survey Commune",
+      "family": "neutral",
+      "catalogueStatus": "catalogued-independent-minor/not-empire-definition",
+      "civilizationDefinitionIds": [],
+      "minorDefinitionIds": [
+        "minor.ilex.v1"
+      ],
+      "sourceStatus": "Actual minor identity; neutral-family styling and all media direction proposed."
+    },
+    {
+      "id": "namar",
+      "displayName": "Namar Local Council",
+      "family": "neutral",
+      "catalogueStatus": "catalogued-independent-minor/not-empire-definition",
+      "civilizationDefinitionIds": [],
+      "minorDefinitionIds": [
+        "minor.namar.v1"
+      ],
+      "sourceStatus": "Actual minor identity; neutral-family styling and all media direction proposed."
+    },
+    {
+      "id": "neutral",
+      "displayName": "Neutral / unknown / custom",
+      "family": "neutral",
+      "catalogueStatus": "presentation-fallback/not-a-new-civilization",
+      "civilizationDefinitionIds": [],
+      "minorDefinitionIds": [],
+      "sourceStatus": "Required safe design fallback; not a gameplay faction."
+    }
+  ],
+  "newGameplayRegistrations": 0
+}
