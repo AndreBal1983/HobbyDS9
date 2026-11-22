@@ -49,6 +49,21 @@ public sealed class BoundaryTests : IDisposable
         Assert.Equal(new byte[] { 49 }, repo.ReadCheckpoint(first.CheckpointId!).ReadPayload());
         repo.Dispose(); Assert.Throws<ObjectDisposedException>(() => repo.FindOperation("one"));
     }
+    [Fact] public void OrphanReferenceCannotSilentlyDisappearFromLibraryOnReopen()
+    {
+        using (var repo = Open()) repo.CommitCheckpoint(new("one", "main", 0, null, Image(), new("manual", 0, SaveReferenceKind.Manual, "Original")));
+        using (var sql = new SqliteConnection("Data Source=" + Path.Combine(path, "campaign.sqlite") + ";Pooling=False"))
+        {
+            sql.Open(); using var c = sql.CreateCommand(); c.CommandText = "PRAGMA foreign_keys=OFF; UPDATE SaveReference SET CheckpointId='missing'"; c.ExecuteNonQuery();
+        }
+        Assert.Equal(RepositoryError.Corrupt, Assert.Throws<RepositoryException>(() => Open().Dispose()).Error);
+    }
+    [Fact] public void NonDatabaseFileRejectsAsCorruptWithoutReplacingBytes()
+    {
+        Directory.CreateDirectory(path); var db = Path.Combine(path, "campaign.sqlite"); var bytes = Encoding.UTF8.GetBytes("not a database"); File.WriteAllBytes(db, bytes);
+        Assert.Equal(RepositoryError.Corrupt, Assert.Throws<RepositoryException>(() => Open().Dispose()).Error);
+        Assert.Equal(bytes, File.ReadAllBytes(db));
+    }
     public void Dispose() { if (Directory.Exists(path)) Directory.Delete(path, true); }
     sealed class Validator : ICheckpointValidator
     {

@@ -31,7 +31,8 @@ namespace HobbyDS9.Persistence.Sqlite
             Directory.CreateDirectory(directory); CheckAncestors(directory);
             var lockPath = SafeFile("writer.lock");
             try { lease = new FileStream(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
-            catch (IOException e) { throw Error(RepositoryError.WriterInUse, null, e); }
+            catch (IOException e) { throw Error((e.HResult & 0xffff) == 32 || (e.HResult & 0xffff) == 33 ? RepositoryError.WriterInUse : RepositoryError.WriteFailed, null, e); }
+            catch (UnauthorizedAccessException e) { throw Error(RepositoryError.ReadOnly, null, e); }
             try
             {
                 SqliteProviderBootstrap.EnsureInitialized();
@@ -48,12 +49,14 @@ namespace HobbyDS9.Persistence.Sqlite
                         if (Number("PRAGMA application_id") != ApplicationId || schema != StorageSchemaVersion && !(schema == 1 && allowStorageUpgrade)) throw Error(RepositoryError.IncompatibleSchema);
                         if (TextScalar("CampaignId", 96) != campaignId) throw Error(RepositoryError.Conflict);
                         if (TextScalar("EditionIdentity", 16384) != editionIdentity) throw Error(RepositoryError.IncompatibleEdition);
+                        CheckDatabaseIntegrity();
                         if (schema == 1) UpgradeSchema1();
                     }
                     Exec("PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA busy_timeout=1000; PRAGMA wal_autocheckpoint=1000;");
                     if (!exists) Initialize(campaignId);
-                    if ((string?)Scalar("PRAGMA quick_check") != "ok") throw Error(RepositoryError.Corrupt);
+                    CheckDatabaseIntegrity();
                 }
+                catch (SqliteException e) { connection.Dispose(); throw Error(e.SqliteErrorCode == 8 ? RepositoryError.ReadOnly : e.SqliteErrorCode == 5 || e.SqliteErrorCode == 6 ? RepositoryError.Busy : exists ? RepositoryError.Corrupt : RepositoryError.WriteFailed, null, e); }
                 catch { connection.Dispose(); throw; }
             }
             catch { lease.Dispose(); throw; }
@@ -71,6 +74,12 @@ CREATE INDEX ReferenceListing ON SaveReference(Deleted,Id);
 PRAGMA application_id=1213416497; PRAGMA user_version=2;", tx);
             Exec("INSERT INTO RepositoryMeta VALUES(1,$id,$edition,1)", tx, ("$id", campaignId), ("$edition", editionIdentity));
             tx.Commit();
+        }
+        private void CheckDatabaseIntegrity()
+        {
+            if ((string?)Scalar("PRAGMA quick_check") != "ok") throw Error(RepositoryError.Corrupt);
+            using var c = Command("PRAGMA foreign_key_check"); using var r = c.ExecuteReader();
+            if (r.Read()) throw Error(RepositoryError.Corrupt);
         }
 
         public BranchInfo GetBranch(string branchId)
@@ -107,17 +116,19 @@ PRAGMA application_id=1213416497; PRAGMA user_version=2;", tx);
             lock (gate)
             {
                 Alive(); var result = new List<SaveReference>();
-                using var c = Command("SELECT " + Field("r.Id", 96) + "," + Field("r.CheckpointId", 96) + ",r.Generation,r.Kind," + Field("r.Name", 120) + "," + Field("r.Notes", 1000) + ",c.Turn,c.Revision," + Field("c.Phase", 64) + ",c.Sequence," + Field("r.UpdatedUtc", 64) + ",c.Available FROM SaveReference r JOIN Checkpoint c ON c.Id=r.CheckpointId WHERE r.Deleted=0 AND r.Id>$after ORDER BY r.Id COLLATE BINARY LIMIT $limit", null, ("$after", afterId), ("$limit", limit));
+                using var c = Command("SELECT " + ReferenceColumns + " FROM SaveReference r JOIN Checkpoint c ON c.Id=r.CheckpointId WHERE r.Deleted=0 AND r.Id>$after ORDER BY r.Id COLLATE BINARY LIMIT $limit", null, ("$after", afterId), ("$limit", limit));
                 using var r = c.ExecuteReader();
-                while (r.Read())
-                {
-                    var kind = (SaveReferenceKind)r.GetInt32(3);
-                    if (r.GetInt64(2) < 1 || !Enum.IsDefined(typeof(SaveReferenceKind), kind)) throw Error(RepositoryError.Corrupt);
-                    if (r.GetInt32(6) < 1 || r.GetInt64(7) < 0 || r.GetInt64(9) < 1 || r.GetInt32(11) < 0 || r.GetInt32(11) > 1) throw Error(RepositoryError.Corrupt);
-                    result.Add(new SaveReference(ReadText(r, 0, 96), ReadText(r, 1, 96), r.GetInt64(2), kind, ReadText(r, 4, 120), ReadText(r, 5, 1000), r.GetInt32(6), r.GetInt64(7), ReadText(r, 8, 64), r.GetInt64(9), ReadText(r, 10, 64), r.GetInt32(11) == 1));
-                }
+                while (r.Read()) result.Add(ReadReference(r));
                 return result.AsReadOnly();
             }
+        }
+        private static string ReferenceColumns => Field("r.Id", 96) + "," + Field("r.CheckpointId", 96) + ",r.Generation,r.Kind," + Field("r.Name", 120) + "," + Field("r.Notes", 1000) + ",c.Turn,c.Revision," + Field("c.Phase", 64) + ",c.Sequence," + Field("r.UpdatedUtc", 64) + ",c.Available," + Field("c.BranchId", 96);
+        private static SaveReference ReadReference(SqliteDataReader r)
+        {
+            var kind = (SaveReferenceKind)r.GetInt32(3);
+            if (r.GetInt64(2) < 1 || !Enum.IsDefined(typeof(SaveReferenceKind), kind)) throw Error(RepositoryError.Corrupt);
+            if (r.GetInt32(6) < 1 || r.GetInt64(7) < 0 || r.GetInt64(9) < 1 || r.GetInt32(11) < 0 || r.GetInt32(11) > 1) throw Error(RepositoryError.Corrupt);
+            return new SaveReference(ReadText(r, 0, 96), ReadText(r, 1, 96), r.GetInt64(2), kind, ReadText(r, 4, 120), ReadText(r, 5, 1000), r.GetInt32(6), r.GetInt64(7), ReadText(r, 8, 64), r.GetInt64(9), ReadText(r, 10, 64), r.GetInt32(11) == 1, ReadText(r, 12, 96));
         }
         public CheckpointImage ReadCheckpoint(string checkpointId)
         {
