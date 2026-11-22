@@ -6,6 +6,12 @@ on:
     paths:
       - 'src/HobbyDS9.Persistence/**'
       - 'src/HobbyDS9.Persistence.Sqlite/**'
+      - 'src/HobbyDS9.Application/**'
+      - 'src/HobbyDS9.Contracts/**'
+      - 'src/HobbyDS9.Simulation/**'
+      - 'scenarios/ds9-slice/scenario.json'
+      - 'prototypes/HobbyDS9.FoundationRepositoryHost/**'
+      - 'tests/HobbyDS9.FoundationRepositoryHost.Tests/**'
       - 'tests/HobbyDS9.Persistence.Sqlite.Tests/**'
       - 'tools/HobbyDS9.Persistence.CrashProbe/**'
       - 'tools/HobbyDS9.Persistence.NetStandardSmoke/**'
@@ -15,6 +21,12 @@ on:
     paths:
       - 'src/HobbyDS9.Persistence/**'
       - 'src/HobbyDS9.Persistence.Sqlite/**'
+      - 'src/HobbyDS9.Application/**'
+      - 'src/HobbyDS9.Contracts/**'
+      - 'src/HobbyDS9.Simulation/**'
+      - 'scenarios/ds9-slice/scenario.json'
+      - 'prototypes/HobbyDS9.FoundationRepositoryHost/**'
+      - 'tests/HobbyDS9.FoundationRepositoryHost.Tests/**'
       - 'tests/HobbyDS9.Persistence.Sqlite.Tests/**'
       - 'tools/HobbyDS9.Persistence.CrashProbe/**'
       - 'tools/HobbyDS9.Persistence.NetStandardSmoke/**'
@@ -89,6 +101,14 @@ jobs:
         run: |
           dotnet test tests/HobbyDS9.Persistence.Sqlite.Tests/HobbyDS9.Persistence.Sqlite.Tests.csproj --configuration Release --no-build --no-restore --logger 'trx;LogFileName=repository.trx' --results-directory "$env:PERSISTENCE_EVIDENCE/tests" --blame-hang-timeout 3m
           if ($LASTEXITCODE -ne 0) { throw 'Repository acceptance failed.' }
+      - name: Restore and test actual foundational carrier adapter
+        run: |
+          dotnet restore tests/HobbyDS9.FoundationRepositoryHost.Tests/HobbyDS9.FoundationRepositoryHost.Tests.csproj --locked-mode -warnaserror
+          if ($LASTEXITCODE -ne 0) { throw 'Locked foundation adapter restore failed.' }
+          $nativeArgs = @()
+          if ($env:RUNNER_OS -eq 'Windows') { $nativeArgs = @("-p:NativeSqliteOverride=$env:PERSISTENCE_NATIVE") }
+          dotnet test tests/HobbyDS9.FoundationRepositoryHost.Tests/HobbyDS9.FoundationRepositoryHost.Tests.csproj --configuration Release --no-restore -warnaserror @nativeArgs --logger 'trx;LogFileName=foundation.trx' --results-directory "$env:PERSISTENCE_EVIDENCE/foundation-tests" --blame-hang-timeout 3m
+          if ($LASTEXITCODE -ne 0) { throw 'Foundation adapter acceptance failed.' }
       - name: Build exact-netstandard managed harness (Windows R2 only)
         if: runner.os == 'Windows'
         run: |
