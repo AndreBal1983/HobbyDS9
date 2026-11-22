@@ -7,7 +7,7 @@ namespace HobbyDS9.Persistence.Sqlite.Tests;
 
 public sealed class RecoverySafetyTests : IDisposable
 {
-    readonly string directory = Path.Combine(Path.GetTempPath(), "hobbyds9-recovery-" + Guid.NewGuid().ToString("N"));
+    readonly string directory = Path.Combine(PersistenceTestPaths.TemporaryRoot(), "hobbyds9-recovery-" + Guid.NewGuid().ToString("N"));
     static CheckpointImage Image(int turn) => new(Encoding.UTF8.GetBytes(turn.ToString()), "recovery-fixture", turn, 0, "Planning");
     SqliteCampaignRepository Open() => new(Path.Combine(directory, "repository"), "campaign", "recovery-fixture", new Validator());
     static void Error(RepositoryError expected, Action action) => Assert.Equal(expected, Assert.Throws<RepositoryException>(action).Error);

@@ -8,7 +8,7 @@ namespace HobbyDS9.Persistence.Sqlite.Tests;
 
 public sealed class MetadataTests : IDisposable
 {
-    readonly string directory = Path.Combine(Path.GetTempPath(), "hobbyds9-metadata-" + Guid.NewGuid().ToString("N"));
+    readonly string directory = Path.Combine(PersistenceTestPaths.TemporaryRoot(), "hobbyds9-metadata-" + Guid.NewGuid().ToString("N"));
     readonly CountingValidator validator = new();
     SqliteCampaignRepository Open(Action<RepositoryWriteStage>? fault = null, bool upgrade = false) => new(directory, "campaign", "fixture", validator, fault, upgrade);
     static CheckpointImage Image(int turn) => new(Encoding.UTF8.GetBytes(turn.ToString(System.Globalization.CultureInfo.InvariantCulture)), "fixture", turn, turn - 1, turn == 1 ? "Planning" : "AwaitingCombat");
