@@ -18,7 +18,9 @@ namespace HobbyDS9.Persistence.Sqlite
                 var current = Branch(activeBranch.Id, tx);
                 if (current == null || current.Head != activeBranch.Head || current.Generation != activeBranch.Generation) throw Error(RepositoryError.Conflict);
                 if (current.Head == null) throw Error(RepositoryError.Unavailable);
-                RequireCheckpoint(current.Head, tx);
+                // Validate the replacement from the same locked SQL snapshot before
+                // deleting any fallback. Available alone is not proof of recovery.
+                ReadCheckpoint(current.Head, tx);
                 var refs = new List<(string Id, string Checkpoint, int Kind, long Sequence)>();
                 using (var cmd = Command("SELECT " + Field("r.Id", 96) + "," + Field("r.CheckpointId", 96) + ",r.Kind,c.Sequence FROM SaveReference r JOIN Checkpoint c ON c.Id=r.CheckpointId WHERE r.Deleted=0 ORDER BY c.Sequence DESC,r.Id COLLATE BINARY", tx))
                 using (var r = cmd.ExecuteReader()) while (r.Read()) refs.Add((ReadText(r, 0, 96), ReadText(r, 1, 96), r.GetInt32(2), r.GetInt64(3)));

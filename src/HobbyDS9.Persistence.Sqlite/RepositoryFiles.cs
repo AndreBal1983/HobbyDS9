@@ -35,7 +35,14 @@ namespace HobbyDS9.Persistence.Sqlite
                     if (new FileInfo(backup).Length != bytes.Length || CheckpointImage.Hash(File.ReadAllBytes(backup)) != image.PayloadHash) throw Error(RepositoryError.Corrupt);
                 }
                 else AtomicWrite(backup, bytes, false);
-                return CommitCheckpoint(new CheckpointCommit(id, id, 0, null, image, new ReferenceUpdate(id, 0, SaveReferenceKind.Manual, "Imported save"), "json-import-v1"));
+                var receipt = CommitCheckpoint(new CheckpointCommit(id, id, 0, null, image, new ReferenceUpdate(id, 0, SaveReferenceKind.Manual, "Imported save"), "json-import-v1"));
+                // A historical receipt proves the original transaction, not that a
+                // user-deleted import is still protected or its payload still exists.
+                // Do not silently resurrect a deletion or report a usable import.
+                if (receipt.CheckpointId == null || Number("SELECT COUNT(*) FROM SaveReference WHERE Id=$id AND CheckpointId=$cp AND Kind=1 AND Deleted=0", null, ("$id", id), ("$cp", receipt.CheckpointId)) != 1)
+                    throw Error(RepositoryError.Unavailable, id);
+                ReadCheckpoint(receipt.CheckpointId);
+                return receipt;
             }
         }
         public string ExportJson(string checkpointId, string exportId, bool overwrite = false)
