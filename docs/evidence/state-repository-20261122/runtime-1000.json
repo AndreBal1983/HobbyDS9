@@ -1,0 +1,1562 @@
+{
+  "environment": {
+    "runtimePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+    "source": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-runtime-probe",
+    "systemCount": 1000,
+    "seed": "42",
+    "runtime": ".NET 10.0.12",
+    "os": "Microsoft Windows 10.0.26200",
+    "arch": "X64",
+    "ProcessorCount": 16,
+    "serverGc": false,
+    "latencyMode": "Interactive",
+    "configuration": "Release",
+    "memoryAvailableBytes": 16541487104,
+    "utc": "2026-11-22T18:42:29.2160731+00:00",
+    "note": "Serial single-writer probe; no forced GC. Small-n nearest-rank p95/p99 are maxima, not credible population tail estimates. Working/peak process memory includes setup and JIT. No native UI, combat, growing population or concurrent producer benchmark."
+  },
+  "world": {
+    "packageHash": "2e1753666e957db7d85f0f16faa865014d0dc80b64542aeb47d009b9ae12994e",
+    "FormatVersion": 18,
+    "ProfileId": "generated-belt-bodies-v1",
+    "systems": 1000,
+    "planets": 4465,
+    "colonies": 3,
+    "fleets": 2,
+    "ships": 2,
+    "belts": 755,
+    "journal": 0,
+    "TurnNumber": 1,
+    "StateRevision": 0,
+    "encodedBytes": 12368562,
+    "payloadSha256": "0c38c999dd43d6030d43405f62aff609694d107f76b617374299bb5578aa7168",
+    "settings": {
+      "Map": {
+        "Seed": "42",
+        "SystemCount": 1000,
+        "EmptyRegionCount": 1000,
+        "Width": 5000000,
+        "Height": 4000000,
+        "QuietEmptyAreaTargetPermille": 2000,
+        "BlackHolesPerBaselineArea": 2,
+        "NebulaePerBaselineArea": 3,
+        "HomeCivilizationDefinitionIds": [
+          "civilization.federation",
+          "civilization.cardassian"
+        ],
+        "StellarInfluenceEnabled": true,
+        "BlackHoleInfluenceEnabled": true,
+        "NebulaInfluenceEnabled": true
+      },
+      "IsolatedStarSharePermille": 100,
+      "AssociationSpreadPermille": 1000
+    }
+  },
+  "elapsedMs": 87285.0836,
+  "peakWorkingSetBytes": 1115709440,
+  "workingSetBytes": 284557312,
+  "privateBytes": 225071104,
+  "failure": "System.Exception: UnsupportedSource\r\n   at Program.\u003C\u003Ec__DisplayClass0_3.\u003C\u003CMain\u003E$\u003Eb__21() in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-design\\prototypes\\StateRepositoryProbe\\runtime\\Program.cs:line 94\r\n   at Program.\u003C\u003Ec__DisplayClass0_0.\u003C\u003CMain\u003E$\u003Eg__Measure|1(String name, Action action, Int32 n, Int32 warmup, Action prepare) in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-design\\prototypes\\StateRepositoryProbe\\runtime\\Program.cs:line 32\r\n   at Program.\u003CMain\u003E$(String[] args) in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-design\\prototypes\\StateRepositoryProbe\\runtime\\Program.cs:line 94",
+  "measurements": [
+    {
+      "name": "start_campaign_including_generation",
+      "n": 1,
+      "warmup": 0,
+      "medianMs": 16618.1726,
+      "p95Ms": 16618.1726,
+      "p99Ms": 16618.1726,
+      "minMs": 16618.1726,
+      "maxMs": 16618.1726,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 16618.1726,
+          "allocatedBytes": 14997946024,
+          "gcCollections": [
+            1793,
+            32,
+            16
+          ],
+          "gcPauseMs": 1204.042,
+          "processCpuMs": 17734.375
+        }
+      ]
+    },
+    {
+      "name": "capture_status",
+      "n": 20,
+      "warmup": 2,
+      "medianMs": 0.0002,
+      "p95Ms": 0.0006,
+      "p99Ms": 0.0007,
+      "minMs": 0.0001,
+      "maxMs": 0.0007,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 0.0006,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 1,
+          "ms": 0.0004,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 2,
+          "ms": 0.0002,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 3,
+          "ms": 0.0007,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 4,
+          "ms": 0.0002,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 5,
+          "ms": 0.0002,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 6,
+          "ms": 0.0002,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 7,
+          "ms": 0.0002,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 8,
+          "ms": 0.0001,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 9,
+          "ms": 0.0002,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 10,
+          "ms": 0.0002,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 11,
+          "ms": 0.0003,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 12,
+          "ms": 0.0001,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 13,
+          "ms": 0.0002,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 14,
+          "ms": 0.0001,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 15,
+          "ms": 0.0002,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 16,
+          "ms": 0.0002,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 17,
+          "ms": 0.0002,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 18,
+          "ms": 0.0001,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 19,
+          "ms": 0.0005,
+          "allocatedBytes": 56,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        }
+      ]
+    },
+    {
+      "name": "capture_colonisation_actor",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 4.6285,
+      "p95Ms": 12.0294,
+      "p99Ms": 12.0294,
+      "minMs": 4.1009,
+      "maxMs": 12.0294,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 5.708,
+          "allocatedBytes": 1016152,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 1,
+          "ms": 4.1638,
+          "allocatedBytes": 1016152,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 15.625
+        },
+        {
+          "index": 2,
+          "ms": 4.1009,
+          "allocatedBytes": 1016152,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 3,
+          "ms": 4.6285,
+          "allocatedBytes": 1016152,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 4,
+          "ms": 12.0294,
+          "allocatedBytes": 1017352,
+          "gcCollections": [
+            1,
+            1,
+            0
+          ],
+          "gcPauseMs": 5.905,
+          "processCpuMs": 15.625
+        }
+      ]
+    },
+    {
+      "name": "capture_belts_actor",
+      "n": 20,
+      "warmup": 2,
+      "medianMs": 1.7413500000000002,
+      "p95Ms": 3.3077,
+      "p99Ms": 7.9096,
+      "minMs": 1.4979,
+      "maxMs": 7.9096,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 1.7268,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 1,
+          "ms": 1.8282,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 2,
+          "ms": 1.4979,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 15.625
+        },
+        {
+          "index": 3,
+          "ms": 1.5206,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 4,
+          "ms": 1.7559,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 5,
+          "ms": 1.6442,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 6,
+          "ms": 3.3077,
+          "allocatedBytes": 886784,
+          "gcCollections": [
+            1,
+            0,
+            0
+          ],
+          "gcPauseMs": 1.473,
+          "processCpuMs": 0
+        },
+        {
+          "index": 7,
+          "ms": 1.747,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 8,
+          "ms": 1.8883,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 9,
+          "ms": 1.8432,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 10,
+          "ms": 1.7357,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 15.625
+        },
+        {
+          "index": 11,
+          "ms": 1.5299,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 12,
+          "ms": 1.6965,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 13,
+          "ms": 1.762,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 14,
+          "ms": 1.9272,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 15,
+          "ms": 1.6652,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 16,
+          "ms": 7.9096,
+          "allocatedBytes": 886784,
+          "gcCollections": [
+            1,
+            1,
+            0
+          ],
+          "gcPauseMs": 5.803,
+          "processCpuMs": 15.625
+        },
+        {
+          "index": 17,
+          "ms": 1.6766,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 18,
+          "ms": 1.6918,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 19,
+          "ms": 1.7911,
+          "allocatedBytes": 883888,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        }
+      ]
+    },
+    {
+      "name": "capture_refinement_actor",
+      "n": 20,
+      "warmup": 2,
+      "medianMs": 0.0095,
+      "p95Ms": 0.0122,
+      "p99Ms": 0.0125,
+      "minMs": 0.0087,
+      "maxMs": 0.0125,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 0.0125,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 1,
+          "ms": 0.0122,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 2,
+          "ms": 0.0099,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 3,
+          "ms": 0.0096,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 4,
+          "ms": 0.0095,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 5,
+          "ms": 0.0096,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 6,
+          "ms": 0.0102,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 7,
+          "ms": 0.0093,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 8,
+          "ms": 0.0092,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 9,
+          "ms": 0.0095,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 10,
+          "ms": 0.0091,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 11,
+          "ms": 0.0095,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 12,
+          "ms": 0.0094,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 13,
+          "ms": 0.0087,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 14,
+          "ms": 0.0087,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 15,
+          "ms": 0.0087,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 16,
+          "ms": 0.0093,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 17,
+          "ms": 0.0089,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 18,
+          "ms": 0.0096,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 19,
+          "ms": 0.0096,
+          "allocatedBytes": 9512,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        }
+      ]
+    },
+    {
+      "name": "inner_GameState_CopyState_reflection",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 5.2991,
+      "p95Ms": 10.3229,
+      "p99Ms": 10.3229,
+      "minMs": 4.3349,
+      "maxMs": 10.3229,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 5.2991,
+          "allocatedBytes": 4149696,
+          "gcCollections": [
+            1,
+            0,
+            0
+          ],
+          "gcPauseMs": 0.602,
+          "processCpuMs": 0
+        },
+        {
+          "index": 1,
+          "ms": 4.9365,
+          "allocatedBytes": 4147936,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 2,
+          "ms": 5.8123,
+          "allocatedBytes": 4147936,
+          "gcCollections": [
+            1,
+            1,
+            0
+          ],
+          "gcPauseMs": 0.689,
+          "processCpuMs": 15.625
+        },
+        {
+          "index": 3,
+          "ms": 4.3349,
+          "allocatedBytes": 4147936,
+          "gcCollections": [
+            0,
+            0,
+            0
+          ],
+          "gcPauseMs": 0,
+          "processCpuMs": 0
+        },
+        {
+          "index": 4,
+          "ms": 10.3229,
+          "allocatedBytes": 4147936,
+          "gcCollections": [
+            1,
+            0,
+            0
+          ],
+          "gcPauseMs": 4.106,
+          "processCpuMs": 15.625
+        }
+      ]
+    },
+    {
+      "name": "inner_ValidateSave_reflection",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 84.1613,
+      "p95Ms": 129.8171,
+      "p99Ms": 129.8171,
+      "minMs": 75.3274,
+      "maxMs": 129.8171,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 77.1143,
+          "allocatedBytes": 32584400,
+          "gcCollections": [
+            3,
+            1,
+            0
+          ],
+          "gcPauseMs": 10.001,
+          "processCpuMs": 93.75
+        },
+        {
+          "index": 1,
+          "ms": 107.2115,
+          "allocatedBytes": 32605488,
+          "gcCollections": [
+            5,
+            2,
+            1
+          ],
+          "gcPauseMs": 10.532,
+          "processCpuMs": 187.5
+        },
+        {
+          "index": 2,
+          "ms": 129.8171,
+          "allocatedBytes": 32625776,
+          "gcCollections": [
+            3,
+            1,
+            0
+          ],
+          "gcPauseMs": 8.159,
+          "processCpuMs": 281.25
+        },
+        {
+          "index": 3,
+          "ms": 84.1613,
+          "allocatedBytes": 32628072,
+          "gcCollections": [
+            4,
+            2,
+            0
+          ],
+          "gcPauseMs": 12.402,
+          "processCpuMs": 140.625
+        },
+        {
+          "index": 4,
+          "ms": 75.3274,
+          "allocatedBytes": 32447176,
+          "gcCollections": [
+            3,
+            1,
+            0
+          ],
+          "gcPauseMs": 8.75,
+          "processCpuMs": 140.625
+        }
+      ]
+    },
+    {
+      "name": "export_full_Format18",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 67.003,
+      "p95Ms": 90.7689,
+      "p99Ms": 90.7689,
+      "minMs": 59.5779,
+      "maxMs": 90.7689,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 59.5779,
+          "allocatedBytes": 21769952,
+          "gcCollections": [
+            2,
+            0,
+            0
+          ],
+          "gcPauseMs": 10.023,
+          "processCpuMs": 78.125
+        },
+        {
+          "index": 1,
+          "ms": 90.7689,
+          "allocatedBytes": 21770416,
+          "gcCollections": [
+            4,
+            3,
+            1
+          ],
+          "gcPauseMs": 19.904,
+          "processCpuMs": 156.25
+        },
+        {
+          "index": 2,
+          "ms": 60.7431,
+          "allocatedBytes": 21778160,
+          "gcCollections": [
+            2,
+            2,
+            0
+          ],
+          "gcPauseMs": 10.163,
+          "processCpuMs": 109.375
+        },
+        {
+          "index": 3,
+          "ms": 79.8559,
+          "allocatedBytes": 21770392,
+          "gcCollections": [
+            3,
+            1,
+            0
+          ],
+          "gcPauseMs": 29.085,
+          "processCpuMs": 140.625
+        },
+        {
+          "index": 4,
+          "ms": 67.003,
+          "allocatedBytes": 21769952,
+          "gcCollections": [
+            2,
+            1,
+            0
+          ],
+          "gcPauseMs": 12.831,
+          "processCpuMs": 93.75
+        }
+      ]
+    },
+    {
+      "name": "encode_full_Format18_Newtonsoft",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 530.7531,
+      "p95Ms": 557.9835,
+      "p99Ms": 557.9835,
+      "minMs": 116.7105,
+      "maxMs": 557.9835,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 553.5504,
+          "allocatedBytes": 68304304,
+          "gcCollections": [
+            4,
+            2,
+            0
+          ],
+          "gcPauseMs": 5.662,
+          "processCpuMs": 1156.25
+        },
+        {
+          "index": 1,
+          "ms": 557.9835,
+          "allocatedBytes": 68309024,
+          "gcCollections": [
+            5,
+            4,
+            1
+          ],
+          "gcPauseMs": 11.75,
+          "processCpuMs": 953.125
+        },
+        {
+          "index": 2,
+          "ms": 530.7531,
+          "allocatedBytes": 68301216,
+          "gcCollections": [
+            3,
+            3,
+            0
+          ],
+          "gcPauseMs": 17.124,
+          "processCpuMs": 937.5
+        },
+        {
+          "index": 3,
+          "ms": 135.1846,
+          "allocatedBytes": 68300992,
+          "gcCollections": [
+            5,
+            3,
+            1
+          ],
+          "gcPauseMs": 6.31,
+          "processCpuMs": 203.125
+        },
+        {
+          "index": 4,
+          "ms": 116.7105,
+          "allocatedBytes": 68304728,
+          "gcCollections": [
+            6,
+            5,
+            2
+          ],
+          "gcPauseMs": 9.737,
+          "processCpuMs": 140.625
+        }
+      ]
+    },
+    {
+      "name": "decode_full_Format18_Newtonsoft_strict",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 2402.0462,
+      "p95Ms": 2823.4653,
+      "p99Ms": 2823.4653,
+      "minMs": 2263.7672,
+      "maxMs": 2823.4653,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 2823.4653,
+          "allocatedBytes": 786585552,
+          "gcCollections": [
+            89,
+            67,
+            3
+          ],
+          "gcPauseMs": 1401.034,
+          "processCpuMs": 2921.875
+        },
+        {
+          "index": 1,
+          "ms": 2657.5207,
+          "allocatedBytes": 786585592,
+          "gcCollections": [
+            89,
+            66,
+            3
+          ],
+          "gcPauseMs": 1252.332,
+          "processCpuMs": 2687.5
+        },
+        {
+          "index": 2,
+          "ms": 2402.0462,
+          "allocatedBytes": 786585616,
+          "gcCollections": [
+            89,
+            66,
+            3
+          ],
+          "gcPauseMs": 1149.014,
+          "processCpuMs": 2406.25
+        },
+        {
+          "index": 3,
+          "ms": 2323.2601,
+          "allocatedBytes": 786585600,
+          "gcCollections": [
+            90,
+            68,
+            4
+          ],
+          "gcPauseMs": 1070.535,
+          "processCpuMs": 2468.75
+        },
+        {
+          "index": 4,
+          "ms": 2263.7672,
+          "allocatedBytes": 786591192,
+          "gcCollections": [
+            88,
+            66,
+            2
+          ],
+          "gcPauseMs": 1107.466,
+          "processCpuMs": 2250
+        }
+      ]
+    },
+    {
+      "name": "codec_CopyCycleSave_encode_decode",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 2607.4084,
+      "p95Ms": 2699.4411,
+      "p99Ms": 2699.4411,
+      "minMs": 2518.614,
+      "maxMs": 2699.4411,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 2699.4411,
+          "allocatedBytes": 854886104,
+          "gcCollections": [
+            92,
+            71,
+            2
+          ],
+          "gcPauseMs": 1214.39,
+          "processCpuMs": 2671.875
+        },
+        {
+          "index": 1,
+          "ms": 2607.4084,
+          "allocatedBytes": 854886440,
+          "gcCollections": [
+            92,
+            69,
+            2
+          ],
+          "gcPauseMs": 1267.423,
+          "processCpuMs": 2562.5
+        },
+        {
+          "index": 2,
+          "ms": 2518.614,
+          "allocatedBytes": 854888512,
+          "gcCollections": [
+            92,
+            69,
+            2
+          ],
+          "gcPauseMs": 1171.22,
+          "processCpuMs": 2515.625
+        },
+        {
+          "index": 3,
+          "ms": 2560.9903,
+          "allocatedBytes": 854887832,
+          "gcCollections": [
+            92,
+            70,
+            2
+          ],
+          "gcPauseMs": 1233.768,
+          "processCpuMs": 2500
+        },
+        {
+          "index": 4,
+          "ms": 2670.509,
+          "allocatedBytes": 854891128,
+          "gcCollections": [
+            91,
+            67,
+            2
+          ],
+          "gcPauseMs": 1254.482,
+          "processCpuMs": 2734.375
+        }
+      ]
+    },
+    {
+      "name": "load_replay_from_detached_root",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 3425.7378,
+      "p95Ms": 3865.271,
+      "p99Ms": 3865.271,
+      "minMs": 3254.3068,
+      "maxMs": 3865.271,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 3604.7282,
+          "allocatedBytes": 643689960,
+          "gcCollections": [
+            71,
+            17,
+            0
+          ],
+          "gcPauseMs": 260.829,
+          "processCpuMs": 4046.875
+        },
+        {
+          "index": 1,
+          "ms": 3359.3748,
+          "allocatedBytes": 643035680,
+          "gcCollections": [
+            71,
+            17,
+            0
+          ],
+          "gcPauseMs": 249.699,
+          "processCpuMs": 3531.25
+        },
+        {
+          "index": 2,
+          "ms": 3425.7378,
+          "allocatedBytes": 643036128,
+          "gcCollections": [
+            71,
+            20,
+            0
+          ],
+          "gcPauseMs": 300.089,
+          "processCpuMs": 3500
+        },
+        {
+          "index": 3,
+          "ms": 3865.271,
+          "allocatedBytes": 643091288,
+          "gcCollections": [
+            74,
+            20,
+            3
+          ],
+          "gcPauseMs": 422.127,
+          "processCpuMs": 4703.125
+        },
+        {
+          "index": 4,
+          "ms": 3254.3068,
+          "allocatedBytes": 643109688,
+          "gcCollections": [
+            72,
+            20,
+            2
+          ],
+          "gcPauseMs": 270.044,
+          "processCpuMs": 3421.875
+        }
+      ]
+    },
+    {
+      "name": "rejected_stale_command_real_path",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 219.4858,
+      "p95Ms": 224.6483,
+      "p99Ms": 224.6483,
+      "minMs": 180.0316,
+      "maxMs": 224.6483,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 184.7316,
+          "allocatedBytes": 104927224,
+          "gcCollections": [
+            12,
+            4,
+            0
+          ],
+          "gcPauseMs": 68.423,
+          "processCpuMs": 218.75
+        },
+        {
+          "index": 1,
+          "ms": 219.6219,
+          "allocatedBytes": 104943840,
+          "gcCollections": [
+            13,
+            6,
+            1
+          ],
+          "gcPauseMs": 75.513,
+          "processCpuMs": 234.375
+        },
+        {
+          "index": 2,
+          "ms": 219.4858,
+          "allocatedBytes": 104943424,
+          "gcCollections": [
+            12,
+            5,
+            1
+          ],
+          "gcPauseMs": 76.909,
+          "processCpuMs": 234.375
+        },
+        {
+          "index": 3,
+          "ms": 180.0316,
+          "allocatedBytes": 104927600,
+          "gcCollections": [
+            12,
+            4,
+            0
+          ],
+          "gcPauseMs": 77.459,
+          "processCpuMs": 187.5
+        },
+        {
+          "index": 4,
+          "ms": 224.6483,
+          "allocatedBytes": 104945176,
+          "gcCollections": [
+            13,
+            6,
+            1
+          ],
+          "gcPauseMs": 72.692,
+          "processCpuMs": 218.75
+        }
+      ]
+    },
+    {
+      "name": "accepted_research_command_real_path",
+      "n": 5,
+      "warmup": 1,
+      "medianMs": 522.662,
+      "p95Ms": 572.2642,
+      "p99Ms": 572.2642,
+      "minMs": 509.9515,
+      "maxMs": 572.2642,
+      "samples": [
+        {
+          "index": 0,
+          "ms": 572.2642,
+          "allocatedBytes": 295154440,
+          "gcCollections": [
+            35,
+            15,
+            2
+          ],
+          "gcPauseMs": 167.495,
+          "processCpuMs": 656.25
+        },
+        {
+          "index": 1,
+          "ms": 509.9515,
+          "allocatedBytes": 295137904,
+          "gcCollections": [
+            33,
+            12,
+            1
+          ],
+          "gcPauseMs": 156.382,
+          "processCpuMs": 562.5
+        },
+        {
+          "index": 2,
+          "ms": 517.5576,
+          "allocatedBytes": 295141360,
+          "gcCollections": [
+            34,
+            13,
+            1
+          ],
+          "gcPauseMs": 161.866,
+          "processCpuMs": 562.5
+        },
+        {
+          "index": 3,
+          "ms": 522.662,
+          "allocatedBytes": 295167832,
+          "gcCollections": [
+            35,
+            15,
+            2
+          ],
+          "gcPauseMs": 156.929,
+          "processCpuMs": 515.625
+        },
+        {
+          "index": 4,
+          "ms": 556.2684,
+          "allocatedBytes": 295169592,
+          "gcCollections": [
+            35,
+            13,
+            2
+          ],
+          "gcPauseMs": 167.068,
+          "processCpuMs": 671.875
+        }
+      ]
+    }
+  ]
+}
