@@ -135,8 +135,13 @@ PRAGMA application_id=1213416497; PRAGMA user_version=2;", tx);
             Id(checkpointId);
             lock (gate)
             {
-                Alive(); byte[] bytes; int turn; long revision; string phase; string hash;
-                using (var c = Command("SELECT Turn,Revision," + Field("Phase", 64) + "," + Field("PayloadHash", 64) + ",PayloadLength,CASE WHEN typeof(Payload)='blob' AND length(Payload)<=67108864 THEN Payload ELSE NULL END,Available,length(Payload) FROM Checkpoint WHERE Id=$id", null, ("$id", checkpointId)))
+                Alive(); return ReadCheckpoint(checkpointId, null);
+            }
+        }
+        private CheckpointImage ReadCheckpoint(string checkpointId, SqliteTransaction? transaction)
+        {
+                byte[] bytes; int turn; long revision; string phase; string hash;
+                using (var c = Command("SELECT Turn,Revision," + Field("Phase", 64) + "," + Field("PayloadHash", 64) + ",PayloadLength,CASE WHEN typeof(Payload)='blob' AND length(Payload)<=67108864 THEN Payload ELSE NULL END,Available,length(Payload) FROM Checkpoint WHERE Id=$id", transaction, ("$id", checkpointId)))
                 using (var r = c.ExecuteReader())
                 {
                     if (!r.Read()) throw Error(RepositoryError.NotFound);
@@ -148,7 +153,6 @@ PRAGMA application_id=1213416497; PRAGMA user_version=2;", tx);
                 var image = Validate(bytes);
                 if (image.Turn != turn || image.Revision != revision || image.Phase != phase || image.PayloadHash != hash) throw Error(RepositoryError.Corrupt);
                 return image;
-            }
         }
         private CheckpointImage Validate(byte[] bytes)
         {
