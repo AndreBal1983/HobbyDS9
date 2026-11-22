@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "status": "source/reference validation, not native/audio acceptance",
+  "catalogueAuditPin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+  "civilizations": 3,
+  "minorSocieties": 2,
+  "documentedThemeFamilies": 5,
+  "profilesIncludingNeutral": 8,
+  "frozenJSONSchemaUnchanged": true,
+  "palettePairChecks": 320,
+  "minimumMeasuredPairRatio": 4.208,
+  "existingMusicInventory": 9,
+  "existingFederationPrototypeSfx": 6,
+  "originalSVGSilhouetteStudies": 6,
+  "PNG1920ViewsIncludingBoard": 9,
+  "JSON_SVG_links_scriptSyntax": "pass",
+  "mainOnlyPushAndPRWorkflowsRetained": 11,
+  "nativeOrAudioAudition": false,
+  "newRuntimeMediaOrGameplay": false
+}

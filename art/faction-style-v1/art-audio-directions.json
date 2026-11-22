@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "status": "Original proposals with source-status boundary; no runtime asset claim",
+  "profiles": [
+    {
+      "id": "federation",
+      "displayName": "Federation",
+      "ship": "Separated primary/secondary volumes and clear nacelle spacing; compact escort exceptions remain valid. Pearl/slate hull, restrained bronze systems, red/blue localized luminous roles. Preserve exact received class geometry and livery.",
+      "livery": "Restrained registry/stripe zones and dark recesses; never flatten every material into amber.",
+      "audio": "Soft rounded electronic press; short resolving accepted pair; restrained orchestral/horn/string exploration bed. Existing Federation prototype cue set is evidence, not a cleared universal sound library.",
+      "sourceStatus": "Federation LCARS family is source-backed; token refinements and this sample remain proposed."
+    },
+    {
+      "id": "klingon",
+      "displayName": "Klingon",
+      "ship": "Proposed broad swept planes, compact central mass and forward emphasis; readable negative spaces instead of a generic Federation saucer. Gunmetal/olive panels with controlled warm-red identification accents.",
+      "livery": "Large restrained panel/mask zones; edge wear subordinate to silhouette and readable inspection lighting.",
+      "audio": "Proposed dry tactile attack with a short resonant tail; low brass and sparse measured percussion as a background brief. No sampled war cries or copied film theme. Existing named Klingon track is not an auto-switch rule.",
+      "sourceStatus": "Historical stepped/angular framing proposal recovered; new palette/ships/audio remain proposals."
+    },
+    {
+      "id": "cardassian",
+      "displayName": "Cardassian Union",
+      "ship": "Source-backed original cruiser prototype has broad shoulders and a long spine. Preserve ochre/plate gold/inset/red-brown material roles; new classes can use layered curved armor without pretending the prototype is final owner art.",
+      "livery": "Ochre primary plates, darker articulated insets, selective plate-gold edges and restrained amber drive/ice windows.",
+      "audio": "Proposed low rounded pulse and compact downward rejection; low strings, bass clarinet/bassoon and sparse texture for nonintrusive strategic music. Existing courtyard/Cardassia tracks are candidates, not runtime faction triggers.",
+      "sourceStatus": "Existing original ship/material evidence and curved/bronze UI proposal; final faction skin/audio not accepted."
+    },
+    {
+      "id": "romulan",
+      "displayName": "Romulan",
+      "ship": "Proposed swept/open wing geometry with deliberate central voids and clean layered hull planes. Muted jade/graphite alloys and localized pale-green/gold light; no green wash that hides the form.",
+      "livery": "Sparse long sweep masks and low-contrast panel subdivisions; registry stays readable in neutral inspection light.",
+      "audio": "Proposed clear plucked/damped glass-like electronic cue, short and quiet; sustained strings, restrained woodwind and space between phrases. Avoid whispering voices or covert-event cues that imply hidden information.",
+      "sourceStatus": "Historical swept/open framing proposal recovered; new palette/ships/audio remain proposals."
+    },
+    {
+      "id": "dominion",
+      "displayName": "Dominion",
+      "ship": "Proposed compact faceted central volumes with paired swept elements and a strong repeated structural rhythm; graphite/violet/bronze roles. No reviewed runtime ship-family binding was found, so this is not a delivered fleet.",
+      "livery": "Repeated modular plate zones, small violet identification masks and readable pale edges; emission remains localized.",
+      "audio": "Proposed tightly grouped synthetic notes with a soft subharmonic body; low strings and restrained repeating textures. No continuous alarm/drone or dramatic cue on mere selection.",
+      "sourceStatus": "Runtime civilization exists; historical interlocked-rib console proposal; new ship/material/audio direction proposed."
+    },
+    {
+      "id": "ilex",
+      "displayName": "Ilex Survey Commune",
+      "ship": "No exact ship binding found. Proposed compact utility geometry with protected central volumes and clear component separation; no appearance-derived study/warp capability.",
+      "livery": "Neutral slate with sparse aqua identifiers; no speculative faction emblem or technology tier from color.",
+      "audio": "Proposed quiet short two-tone acknowledgment and airy, sparse acoustic/electronic background. No existing Ilex-specific sound/music asset binding.",
+      "sourceStatus": "Actual minor identity; neutral-family styling and all media direction proposed."
+    },
+    {
+      "id": "namar",
+      "displayName": "Namar Local Council",
+      "ship": "No exact ship binding found. Use a generic lawful marker until actual authored craft exist; future craft may use simple coherent segmented utility volumes. Do not infer technological limits from visual rusticity.",
+      "livery": "Muted mineral/slate and small warm identifiers; no invented government insignia.",
+      "audio": "Proposed dry warm acknowledgment and sparse acoustic texture; no existing Namar-specific binding. Clear semantic labels remain primary.",
+      "sourceStatus": "Actual minor identity; neutral-family styling and all media direction proposed."
+    },
+    {
+      "id": "neutral",
+      "displayName": "Neutral / unknown / custom",
+      "ship": "Explicit generic marker unless a lawful exact asset mapping exists. No class/faction/equipment inference from silhouette, names or private roots.",
+      "livery": "Neutral form/labels with no faction-mark revelation.",
+      "audio": "No new binding. Keep current runtime behavior or explicitly configured shared neutral cue; never call a Federation recording a delivered authentic custom-faction set.",
+      "sourceStatus": "Required safe design fallback; not a gameplay faction."
+    }
+  ]
+}

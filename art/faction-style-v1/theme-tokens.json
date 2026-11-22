@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "artifactStatus": "proposed-design-no-default-activation",
+  "catalogueAuditPin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+  "presentationOnly": true,
+  "shared": {
+    "colors": {
+      "textPrimary": "#EFF3FA",
+      "textSecondary": "#BCC8D8",
+      "ink": "#080D15",
+      "controlBorder": "#8093AD",
+      "focus": "#F5E6BD"
+    },
+    "states": {
+      "available": {
+        "color": "#91C9AD",
+        "label": "Available",
+        "shape": "check"
+      },
+      "active": {
+        "color": "#EFB16B",
+        "label": "Active",
+        "shape": "clock"
+      },
+      "completed": {
+        "color": "#B9ACE6",
+        "label": "Completed",
+        "shape": "double-check"
+      },
+      "warning": {
+        "color": "#F3C478",
+        "label": "Warning",
+        "shape": "triangle"
+      },
+      "error": {
+        "color": "#FF91A4",
+        "label": "Rejected",
+        "shape": "cross"
+      },
+      "information": {
+        "color": "#91C9EC",
+        "label": "Information",
+        "shape": "info"
+      },
+      "unknown": {
+        "color": "#BCC8D8",
+        "label": "Not reported",
+        "shape": "dash"
+      },
+      "unavailable": {
+        "color": "#BCC8D8",
+        "label": "Unavailable",
+        "shape": "bar"
+      }
+    },
+    "typography": {
+      "family": "project-default-sans",
+      "bodyPx": 18,
+      "secondaryPx": 16,
+      "numericPx": 22,
+      "headingPx": 28,
+      "lineHeightPx": 24,
+      "tabularNumerals": true
+    },
+    "layout": {
+      "defaultReviewWidth": 1920,
+      "defaultReviewHeight": 1080,
+      "minimumControlPx": 44,
+      "compactRowPx": 48,
+      "navigationWidthPx": 176,
+      "spacingPx": [
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ]
+    },
+    "motion": {
+      "transitionMs": 120,
+      "reducedMotionTransitionMs": 0,
+      "reducedMotionAutoRotation": false,
+      "flashing": false
+    },
+    "audio": {
+      "roles": [
+        "press",
+        "accepted",
+        "rejected",
+        "processing",
+        "navigation",
+        "search",
+        "alert",
+        "music"
+      ],
+      "newRuntimeBindings": false,
+      "previewAudioEnabled": false
+    }
+  },
+  "families": {
+    "federation": {
+      "frame": "asymmetric-elbow-rail",
+      "cornerRadius": 24,
+      "cutSize": 0,
+      "sectionMotif": "segmented-rounded-rail",
+      "headingWeight": 700
+    },
+    "klingon": {
+      "frame": "stepped-angular-brackets",
+      "cornerRadius": 2,
+      "cutSize": 14,
+      "sectionMotif": "stepped-tabs",
+      "headingWeight": 700
+    },
+    "cardassian": {
+      "frame": "layered-curved-junctions",
+      "cornerRadius": 32,
+      "cutSize": 0,
+      "sectionMotif": "nested-lens-edges",
+      "headingWeight": 600
+    },
+    "romulan": {
+      "frame": "swept-open-junctions",
+      "cornerRadius": 8,
+      "cutSize": 10,
+      "sectionMotif": "paired-open-spines",
+      "headingWeight": 600
+    },
+    "dominion": {
+      "frame": "interlocked-ribs",
+      "cornerRadius": 4,
+      "cutSize": 12,
+      "sectionMotif": "symmetric-faceted-ribs",
+      "headingWeight": 700
+    },
+    "neutral": {
+      "frame": "plain-rectilinear",
+      "cornerRadius": 4,
+      "cutSize": 0,
+      "sectionMotif": "simple-rules",
+      "headingWeight": 600
+    }
+  },
+  "profiles": [
+    {
+      "id": "federation",
+      "displayName": "Federation",
+      "family": "federation",
+      "catalogueStatus": "runtime-civilization/current-generated-player",
+      "civilizationDefinitionIds": [
+        "civilization.federation"
+      ],
+      "minorDefinitionIds": [],
+      "colors": {
+        "background": "#080D15",
+        "surface": "#101B29",
+        "raised": "#182739",
+        "brandPrimary": "#EFB16B",
+        "brandSecondary": "#B9ACE6"
+      },
+      "sourceStatus": "Federation LCARS family is source-backed; token refinements and this sample remain proposed.",
+      "audio": {
+        "semanticRoleSet": "ui-semantic-v1",
+        "cueFamily": "federation",
+        "bindingStatus": "proposal-no-new-runtime-binding"
+      }
+    },
+    {
+      "id": "klingon",
+      "displayName": "Klingon",
+      "family": "klingon",
+      "catalogueStatus": "documented-proposed-console/no-civilization-definition",
+      "civilizationDefinitionIds": [],
+      "minorDefinitionIds": [],
+      "colors": {
+        "background": "#110C0C",
+        "surface": "#231719",
+        "raised": "#302125",
+        "brandPrimary": "#EAA294",
+        "brandSecondary": "#D6C291"
+      },
+      "sourceStatus": "Historical stepped/angular framing proposal recovered; new palette/ships/audio remain proposals.",
+      "audio": {
+        "semanticRoleSet": "ui-semantic-v1",
+        "cueFamily": "klingon",
+        "bindingStatus": "proposal-no-new-runtime-binding"
+      }
+    },
+    {
+      "id": "cardassian",
+      "displayName": "Cardassian Union",
+      "family": "cardassian",
+      "catalogueStatus": "runtime-civilization/current-generated-opponent",
+      "civilizationDefinitionIds": [
+        "civilization.cardassian"
+      ],
+      "minorDefinitionIds": [],
+      "colors": {
+        "background": "#100D08",
+        "surface": "#231E14",
+        "raised": "#30291C",
+        "brandPrimary": "#D6B16D",
+        "brandSecondary": "#B7C7A8"
+      },
+      "sourceStatus": "Existing original ship/material evidence and curved/bronze UI proposal; final faction skin/audio not accepted.",
+      "audio": {
+        "semanticRoleSet": "ui-semantic-v1",
+        "cueFamily": "cardassian",
+        "bindingStatus": "proposal-no-new-runtime-binding"
+      }
+    },
+    {
+      "id": "romulan",
+      "displayName": "Romulan",
+      "family": "romulan",
+      "catalogueStatus": "documented-proposed-console/no-civilization-definition",
+      "civilizationDefinitionIds": [],
+      "minorDefinitionIds": [],
+      "colors": {
+        "background": "#08100E",
+        "surface": "#13251F",
+        "raised": "#1B3229",
+        "brandPrimary": "#A6D5B3",
+        "brandSecondary": "#D6C391"
+      },
+      "sourceStatus": "Historical swept/open framing proposal recovered; new palette/ships/audio remain proposals.",
+      "audio": {
+        "semanticRoleSet": "ui-semantic-v1",
+        "cueFamily": "romulan",
+        "bindingStatus": "proposal-no-new-runtime-binding"
+      }
+    },
+    {
+      "id": "dominion",
+      "displayName": "Dominion",
+      "family": "dominion",
+      "catalogueStatus": "runtime-civilization/authored-scenarios-not-current-two-empire-selection",
+      "civilizationDefinitionIds": [
+        "civilization.dominion"
+      ],
+      "minorDefinitionIds": [],
+      "colors": {
+        "background": "#0D0A14",
+        "surface": "#1C1729",
+        "raised": "#292039",
+        "brandPrimary": "#C7B0ED",
+        "brandSecondary": "#B4C6D9"
+      },
+      "sourceStatus": "Runtime civilization exists; historical interlocked-rib console proposal; new ship/material/audio direction proposed.",
+      "audio": {
+        "semanticRoleSet": "ui-semantic-v1",
+        "cueFamily": "dominion",
+        "bindingStatus": "proposal-no-new-runtime-binding"
+      }
+    },
+    {
+      "id": "ilex",
+      "displayName": "Ilex Survey Commune",
+      "family": "neutral",
+      "catalogueStatus": "catalogued-independent-minor/not-empire-definition",
+      "civilizationDefinitionIds": [],
+      "minorDefinitionIds": [
+        "minor.ilex.v1"
+      ],
+      "colors": {
+        "background": "#091113",
+        "surface": "#14262A",
+        "raised": "#1C3236",
+        "brandPrimary": "#9CD3D7",
+        "brandSecondary": "#CAD2B5"
+      },
+      "sourceStatus": "Actual minor identity; neutral-family styling and all media direction proposed.",
+      "audio": {
+        "semanticRoleSet": "ui-semantic-v1",
+        "cueFamily": "ilex",
+        "bindingStatus": "proposal-no-new-runtime-binding"
+      }
+    },
+    {
+      "id": "namar",
+      "displayName": "Namar Local Council",
+      "family": "neutral",
+      "catalogueStatus": "catalogued-independent-minor/not-empire-definition",
+      "civilizationDefinitionIds": [],
+      "minorDefinitionIds": [
+        "minor.namar.v1"
+      ],
+      "colors": {
+        "background": "#10100E",
+        "surface": "#24241D",
+        "raised": "#303024",
+        "brandPrimary": "#D1C49F",
+        "brandSecondary": "#B6C9D6"
+      },
+      "sourceStatus": "Actual minor identity; neutral-family styling and all media direction proposed.",
+      "audio": {
+        "semanticRoleSet": "ui-semantic-v1",
+        "cueFamily": "namar",
+        "bindingStatus": "proposal-no-new-runtime-binding"
+      }
+    },
+    {
+      "id": "neutral",
+      "displayName": "Neutral / unknown / custom",
+      "family": "neutral",
+      "catalogueStatus": "presentation-fallback/not-a-new-civilization",
+      "civilizationDefinitionIds": [],
+      "minorDefinitionIds": [],
+      "colors": {
+        "background": "#0A1018",
+        "surface": "#172230",
+        "raised": "#223144",
+        "brandPrimary": "#B8C8DB",
+        "brandSecondary": "#C2BDCF"
+      },
+      "sourceStatus": "Required safe design fallback; not a gameplay faction.",
+      "audio": {
+        "semanticRoleSet": "ui-semantic-v1",
+        "cueFamily": "neutral",
+        "bindingStatus": "proposal-no-new-runtime-binding"
+      }
+    }
+  ],
+  "bindingPolicy": {
+    "lookup": "Explicit presentation theme/profile ID; exact lawful catalogue ID mapping only where listed. No inferred or newly registered civilization IDs.",
+    "unknown": "neutral",
+    "application": "Opt-in sample/provider only; preserve accepted default skin. No gameplay, AI, permission, networking, save-carrier or database-activation behavior.",
+    "visibility": "Own selected presentation or lawfully disclosed public identity only. No private root, hidden faction tint/music/thumbnail or unknown-opponent inference.",
+    "custom": "Unrecognized IDs use neutral; explicit validated authored mapping required for a new theme."
+  }
+}
