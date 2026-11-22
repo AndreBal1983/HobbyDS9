@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile></PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/HobbyDS9.Persistence/HobbyDS9.Persistence.csproj" />
+    <ProjectReference Include="../../src/HobbyDS9.Application/HobbyDS9.Application.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="[13.0.3]" />
+  </ItemGroup>
+</Project>

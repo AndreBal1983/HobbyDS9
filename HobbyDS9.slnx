@@ -1,16 +1,24 @@
 <Solution>
   <Folder Name="/prototypes/">
     <Project Path="prototypes/HobbyDS9.CampaignTacticalV2.Prototypes/HobbyDS9.CampaignTacticalV2.Prototypes.csproj" />
+    <Project Path="prototypes/HobbyDS9.FoundationRepositoryHost/HobbyDS9.FoundationRepositoryHost.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/HobbyDS9.Application/HobbyDS9.Application.csproj" />
     <Project Path="src/HobbyDS9.Contracts/HobbyDS9.Contracts.csproj" />
     <Project Path="src/HobbyDS9.Headless/HobbyDS9.Headless.csproj" />
+    <Project Path="src/HobbyDS9.Persistence.Sqlite/HobbyDS9.Persistence.Sqlite.csproj" />
+    <Project Path="src/HobbyDS9.Persistence/HobbyDS9.Persistence.csproj" />
     <Project Path="src/HobbyDS9.Scenarios/HobbyDS9.Scenarios.csproj" />
     <Project Path="src/HobbyDS9.Simulation/HobbyDS9.Simulation.csproj" />
     <Project Path="src/HobbyDS9.TacticalPlayground/HobbyDS9.TacticalPlayground.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/HobbyDS9.FoundationRepositoryHost.Tests/HobbyDS9.FoundationRepositoryHost.Tests.csproj" />
+    <Project Path="tests/HobbyDS9.Persistence.Sqlite.Tests/HobbyDS9.Persistence.Sqlite.Tests.csproj" />
     <Project Path="tests/HobbyDS9.Simulation.Tests/HobbyDS9.Simulation.Tests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/HobbyDS9.Persistence.CrashProbe/HobbyDS9.Persistence.CrashProbe.csproj" />
   </Folder>
 </Solution>
