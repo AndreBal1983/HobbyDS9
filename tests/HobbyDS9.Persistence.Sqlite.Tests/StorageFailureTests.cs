@@ -52,6 +52,21 @@ public sealed class StorageFailureTests : IDisposable
         Assert.Equal(bytes, File.ReadAllBytes(Assert.Single(Directory.GetFiles(Path.Combine(directory, "repository/migration-backups")))));
         Assert.Empty(repo.ListReferences()); Assert.Equal(cp, repo.GetBranch("main").Head); Assert.NotNull(repo.ReadCheckpoint(cp));
     }
+    [Fact] public void ConfirmedPrecommitBusyIsDistinctAndSameRequestCanRetryAfterWriterReleases()
+    {
+        using var repo = Open(); var cp = repo.CommitCheckpoint(new("one", "main", 0, null, Image(1))).CheckpointId!;
+        var request = new CheckpointCommit("busy", "main", 1, cp, Image(2));
+        // Deliberate engine contention, not a second cooperating host lease.
+        using (var other = new SqliteConnection("Data Source=" + Path.Combine(directory, "repository/campaign.sqlite") + ";Pooling=False"))
+        {
+            other.Open(); using var held = other.BeginTransaction(deferred: false);
+            var failure = Assert.Throws<RepositoryException>(() => repo.CommitCheckpoint(request));
+            Assert.Equal(RepositoryError.Busy, failure.Error); Assert.Contains(Assert.IsType<SqliteException>(failure.InnerException).SqliteErrorCode, new[] { 5, 6 });
+            Assert.Null(repo.FindOperation("busy")); Assert.Equal(cp, repo.GetBranch("main").Head);
+        }
+        var committed = repo.CommitCheckpoint(request); Assert.Equal(2, committed.StorageSequence);
+        Assert.Equal(committed.CheckpointId, repo.CommitCheckpoint(request).CheckpointId);
+    }
     public void Dispose() { if (Directory.Exists(directory)) Directory.Delete(directory, true); }
     sealed class Validator : ICheckpointValidator
     {
