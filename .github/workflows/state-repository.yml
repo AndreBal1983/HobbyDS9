@@ -70,8 +70,13 @@ jobs:
           $null = New-Item -ItemType Directory -Path $evidence
           "PERSISTENCE_EVIDENCE=$evidence" >> $env:GITHUB_ENV
           $scope = if ($env:RUNNER_OS -eq 'Windows') { 'Verified SQLite 3.54.1 R2, Windows x64 managed host' } else { 'Frozen NuGet SQLitePCLRaw 2.1.13 baseline; trusted generated fixtures only; not R2 evidence' }
-          @{ scope = $scope; nativePlayerAcceptance = $false; unityExecution = $false; productionActivation = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'scope.json')
-          if ((dotnet --version) -ne '10.0.401') { throw 'Expected the pinned .NET SDK 10.0.401.' }
+          $sdkPolicy = (Get-Content -LiteralPath global.json -Raw | ConvertFrom-Json).sdk
+          $sdkText = (dotnet --version).Trim()
+          if ($LASTEXITCODE -ne 0) { throw 'Could not resolve the configured .NET SDK.' }
+          $actualSdk = [Version]$sdkText
+          $minimumSdk = [Version]$sdkPolicy.version
+          if ($sdkPolicy.rollForward -ne 'latestPatch' -or $actualSdk -lt $minimumSdk -or $actualSdk.Major -ne $minimumSdk.Major -or $actualSdk.Minor -ne $minimumSdk.Minor -or [Math]::Floor($actualSdk.Build / 100) -ne [Math]::Floor($minimumSdk.Build / 100)) { throw 'SDK does not satisfy the repository latestPatch policy.' }
+          @{ scope = $scope; sdk = $sdkText; configuredSdk = $sdkPolicy.version; sdkRollForward = $sdkPolicy.rollForward; nativePlayerAcceptance = $false; unityExecution = $false; productionActivation = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'scope.json')
       - name: Verify and stage the official Windows R2 artifact
         if: runner.os == 'Windows'
         run: |
