@@ -1,0 +1,161 @@
+{
+  "trial": true,
+  "managedTarget": "netstandard2.0 consumed by Unity netstandard2.1",
+  "dataSource": "supplied and checked at staging",
+  "files": [
+    {
+      "file": "Microsoft.Data.Sqlite.dll",
+      "length": 175968,
+      "sha256": "6a851c2c3767c96319ef50a5c1ce80dfd17270d27125a74ca0b7e911256fa064",
+      "machine": "I386",
+      "managed": true,
+      "name": "Microsoft.Data.Sqlite",
+      "version": "10.0.14.0",
+      "references": [
+        "netstandard, Version=2.0.0.0",
+        "SQLitePCLRaw.core, Version=2.1.13.3146",
+        "System.Memory, Version=4.0.1.1"
+      ],
+      "imports": [],
+      "package": "Microsoft.Data.Sqlite.Core",
+      "packageVersion": "10.0.14",
+      "asset": "lib/netstandard2.0/Microsoft.Data.Sqlite.dll",
+      "nugetContentHash": "1p9rO3Q2X/L/9YrYog3vaDzi8u+WZfJCOkDYoHqmofqYP0DLPLPyZcS2Rnh/79JXAodgbs1AgsaNwLpIvC3Xew==",
+      "archiveSha256": "df0828e3861a1e0240c9a3ec1891cdc1942cdc47b61c8d2fb36ce2542f02b092",
+      "corFlags": "ILOnly, StrongNameSigned"
+    },
+    {
+      "file": "SQLitePCLRaw.core.dll",
+      "length": 51200,
+      "sha256": "50c999a1ab2afeacc93bce5ac2948d3bb630d99d23efc3cfcbd8bc11d3426eb7",
+      "machine": "I386",
+      "managed": true,
+      "name": "SQLitePCLRaw.core",
+      "version": "2.1.13.3146",
+      "references": [
+        "netstandard, Version=2.0.0.0",
+        "System.Memory, Version=4.0.1.1"
+      ],
+      "imports": [],
+      "package": "SQLitePCLRaw.core",
+      "packageVersion": "2.1.13",
+      "asset": "lib/netstandard2.0/SQLitePCLRaw.core.dll",
+      "nugetContentHash": "2joofoinuHBFs0nMX3nKuXgxpXryRkCOdM2Ua6HBqQLLy6IW+5f28ZI+HAvMyF8vG7XfNz/lwfBfE6V4juru8Q==",
+      "archiveSha256": "d93d5f7ab3f864c47722a2d90048c31a1aac743e153d87b9f4a07589ee2f9daf",
+      "corFlags": "ILOnly, StrongNameSigned"
+    },
+    {
+      "file": "SQLitePCLRaw.provider.e_sqlite3.dll",
+      "length": 40448,
+      "sha256": "e9acf8fcd48769891a67890359de341ece1065066cc9b58fc6196c3da3a41fde",
+      "machine": "I386",
+      "managed": true,
+      "name": "SQLitePCLRaw.provider.e_sqlite3",
+      "version": "2.1.13.3146",
+      "references": [
+        "netstandard, Version=2.0.0.0",
+        "SQLitePCLRaw.core, Version=2.1.13.3146",
+        "System.Memory, Version=4.0.1.1"
+      ],
+      "imports": [
+        "e_sqlite3"
+      ],
+      "package": "SQLitePCLRaw.provider.e_sqlite3",
+      "packageVersion": "2.1.13",
+      "asset": "lib/netstandard2.0/SQLitePCLRaw.provider.e_sqlite3.dll",
+      "nugetContentHash": "ZU60dSqoSNRe49KcQDUmOVgdRtjITOssVXFtiISs+zJXDI4D2Sndwpn2NOtzDQNPu0ZAvpoLPQ+GLKv6iEZn8Q==",
+      "archiveSha256": "513ef2ba5d01c14d1e8032d9d2ca2c8985df7ec7d351f0e40917476114ac1f9c",
+      "corFlags": "ILOnly, StrongNameSigned"
+    },
+    {
+      "file": "e_sqlite3.dll",
+      "length": 1978880,
+      "sha256": "b7385d722c83fb52142a00477a726723745916d22a555711ee89834c1111fb2e",
+      "machine": "Amd64",
+      "managed": false,
+      "name": null,
+      "version": null,
+      "references": [],
+      "imports": [
+        "KERNEL32.dll"
+      ],
+      "package": "SQLitePCLRaw.lib.e_sqlite3",
+      "packageVersion": "2.1.13",
+      "asset": "runtimes/win-x64/native/e_sqlite3.dll",
+      "nugetContentHash": "D2UAuiGxFYBqeRXjjjGgvJ5UQifzn6wefmSqeKU7XcNGKLbJRP6X7kcPZ6opOBJGdCIlgbSxTvDpBbLvsN594A==",
+      "archiveSha256": "d07d13b4779123cfa56b3348b504d57a2ab6fc10c764fb6e2c9d787987e39201",
+      "corFlags": null
+    }
+  ],
+  "noImportedBcl": [
+    "System.Memory",
+    "System.Buffers",
+    "System.Numerics.Vectors",
+    "System.Runtime.CompilerServices.Unsafe"
+  ],
+  "licenses": [
+    {
+      "file": "Apache-2.0.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30"
+    },
+    {
+      "file": "Microsoft-MIT.txt",
+      "sha256": "ae48df11a335dc1a615f4f938b69cba73bcf4485c4f97af49b38efb0f216353b"
+    },
+    {
+      "file": "NOTICE.txt",
+      "sha256": "2fd5da464618e782ea0525ae012d2c6fa614a0685aeaffaf643d9d631298187c"
+    }
+  ],
+  "engineStaticSourceId": "2026-06-26 20:14:12 d4c0e51e4aeb96955b99185ab9cde75c339e2c29c3f3f12428d364a10d782c62",
+  "engineVersionFromOfficialSourceId": "3.53.3",
+  "runtimeVersionConfirmation": "required in headless and native receipts",
+  "distributionAccepted": false,
+  "scope": "Trusted generated probe data only; later3.54.0 fixes require separate native recipe review before D1/untrusted database use.",
+  "engineAdvisories": "https://www.sqlite.org/cves.html",
+  "unityBclAudit": {
+    "editor": "6000.6.9f1",
+    "files": [
+      {
+        "file": "System.Memory.dll",
+        "length": 14712,
+        "sha256": "34abf197fbf191fb83e983571a6f3a6fc460fa80f32038c94d54e96966678f88",
+        "machine": "I386",
+        "managed": true,
+        "name": "System.Memory",
+        "version": "4.0.2.0",
+        "references": [
+          "netstandard, Version=2.1.0.0"
+        ],
+        "imports": []
+      },
+      {
+        "file": "netstandard.dll",
+        "length": 1556344,
+        "sha256": "79a49049c360a3ff282e747c311fcd567834efde564a96689872564164756e84",
+        "machine": "I386",
+        "managed": true,
+        "name": "netstandard",
+        "version": "2.1.0.0",
+        "references": [],
+        "imports": []
+      },
+      {
+        "file": "System.Runtime.CompilerServices.Unsafe.dll",
+        "length": 19256,
+        "sha256": "fd67abc4c4af10affbcd42fd68a2a7bc361b26714afe6965d4d0d139459d8297",
+        "machine": "I386",
+        "managed": true,
+        "name": "System.Runtime.CompilerServices.Unsafe",
+        "version": "6.0.0.0",
+        "references": [
+          "netstandard, Version=2.0.0.0"
+        ],
+        "imports": []
+      }
+    ],
+    "decision": "Use installed Unity profile/shims; do not import NuGet System.* assemblies. Native IL2CPP verification pending."
+  },
+  "status": "Historical R1 only; superseded before nativebuild by reviewed R2.",
+  "noticeSnapshotRoot": "history/R1-ThirdPartyNotices"
+}

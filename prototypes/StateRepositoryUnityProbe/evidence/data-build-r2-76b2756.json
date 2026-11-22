@@ -1,0 +1,100 @@
+{
+  "source": "76b275632a2d34281b0f37911107ec8b7d96095e",
+  "worktree": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-data-20261122",
+  "providerRuntime": "3.54.1 2026-10-16 14:45:20 555e07ef33f69a0957d24d8e555b702464a131d6f1607f4c3c1e4551e8e6ca76",
+  "compileOptions": [
+    "ATOMIC_INTRINSICS=0",
+    "COMPILER=msvc-1951",
+    "DEFAULT_AUTOVACUUM",
+    "DEFAULT_CACHE_SIZE=-2000",
+    "DEFAULT_FILE_FORMAT=4",
+    "DEFAULT_JOURNAL_SIZE_LIMIT=-1",
+    "DEFAULT_MMAP_SIZE=0",
+    "DEFAULT_PAGE_SIZE=4096",
+    "DEFAULT_PCACHE_INITSZ=20",
+    "DEFAULT_RECURSIVE_TRIGGERS",
+    "DEFAULT_SECTOR_SIZE=4096",
+    "DEFAULT_SYNCHRONOUS=2",
+    "DEFAULT_WAL_AUTOCHECKPOINT=1000",
+    "DEFAULT_WAL_SYNCHRONOUS=2",
+    "DEFAULT_WORKER_THREADS=0",
+    "DIRECT_OVERFLOW_READ",
+    "ENABLE_BYTECODE_VTAB",
+    "ENABLE_CARRAY",
+    "ENABLE_COLUMN_METADATA",
+    "ENABLE_DBPAGE_VTAB",
+    "ENABLE_DBSTAT_VTAB",
+    "ENABLE_FTS3",
+    "ENABLE_FTS5",
+    "ENABLE_GEOPOLY",
+    "ENABLE_MATH_FUNCTIONS",
+    "ENABLE_PERCENTILE",
+    "ENABLE_PREUPDATE_HOOK",
+    "ENABLE_RBU",
+    "ENABLE_RTREE",
+    "ENABLE_SESSION",
+    "ENABLE_STMTVTAB",
+    "MALLOC_SOFT_LIMIT=1024",
+    "MAX_ATTACHED=10",
+    "MAX_COLUMN=2000",
+    "MAX_COMPOUND_SELECT=500",
+    "MAX_DEFAULT_PAGE_SIZE=8192",
+    "MAX_EXPR_DEPTH=1000",
+    "MAX_FUNCTION_ARG=1000",
+    "MAX_LENGTH=1000000000",
+    "MAX_LIKE_PATTERN_LENGTH=50000",
+    "MAX_MMAP_SIZE=0x7fff0000",
+    "MAX_PAGE_COUNT=0xfffffffe",
+    "MAX_PAGE_SIZE=65536",
+    "MAX_SCHEMA=10000000",
+    "MAX_SQL_LENGTH=1000000000",
+    "MAX_TRIGGER_DEPTH=100",
+    "MAX_VARIABLE_NUMBER=32766",
+    "MAX_VDBE_OP=250000000",
+    "MAX_WORKER_THREADS=8",
+    "MUTEX_W32",
+    "SYSTEM_MALLOC",
+    "TEMP_STORE=1",
+    "THREADSAFE=1"
+  ],
+  "assemblies": [
+    {
+      "FullName": "HobbyDS9.Persistence.Sqlite, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "Location": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-data-20261122\\tools\\HobbyDS9.Persistence.NetStandardSmoke\\bin\\Release\\net10.0\\HobbyDS9.Persistence.Sqlite.dll",
+      "Framework": ".NETStandard,Version=v2.1",
+      "Sha256": "5dd4950b030b4d7a98e023ee6a4a83f5080df90b3327a920877f0cc4090c792a"
+    },
+    {
+      "FullName": "HobbyDS9.Persistence, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "Location": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-data-20261122\\tools\\HobbyDS9.Persistence.NetStandardSmoke\\bin\\Release\\net10.0\\HobbyDS9.Persistence.dll",
+      "Framework": ".NETStandard,Version=v2.1",
+      "Sha256": "7911b069c125149aa2a8444075cd90f3a7d0cc4f7552fcb0a661abf1fcf88ff9"
+    },
+    {
+      "FullName": "Microsoft.Data.Sqlite, Version=10.0.14.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+      "Location": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-data-20261122\\tools\\HobbyDS9.Persistence.NetStandardSmoke\\bin\\Release\\net10.0\\Microsoft.Data.Sqlite.dll",
+      "Framework": ".NETStandard,Version=v2.0",
+      "Sha256": "6a851c2c3767c96319ef50a5c1ce80dfd17270d27125a74ca0b7e911256fa064"
+    },
+    {
+      "FullName": "SQLitePCLRaw.core, Version=2.1.13.3146, Culture=neutral, PublicKeyToken=1488e028ca7ab535",
+      "Location": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-data-20261122\\tools\\HobbyDS9.Persistence.NetStandardSmoke\\bin\\Release\\net10.0\\SQLitePCLRaw.core.dll",
+      "Framework": ".NETStandard,Version=v2.0",
+      "Sha256": "50c999a1ab2afeacc93bce5ac2948d3bb630d99d23efc3cfcbd8bc11d3426eb7"
+    },
+    {
+      "FullName": "SQLitePCLRaw.provider.e_sqlite3, Version=2.1.13.3146, Culture=neutral, PublicKeyToken=9c301db686d0bd12",
+      "Location": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-data-20261122\\tools\\HobbyDS9.Persistence.NetStandardSmoke\\bin\\Release\\net10.0\\SQLitePCLRaw.provider.e_sqlite3.dll",
+      "Framework": ".NETStandard,Version=v2.0",
+      "Sha256": "e9acf8fcd48769891a67890359de341ece1065066cc9b58fc6196c3da3a41fde"
+    }
+  ],
+  "native": {
+    "sha256": "4b59d3cded9dc1608544160f3b4b10ac974c6ac0d6ffc23064e5f4c8dbd05aea",
+    "path": "C:/HobbyDS9/artifacts/tools/sqlite/3.54.1-win-x64/e_sqlite3.dll"
+  },
+  "tests": "28 passed, zero failed/skipped",
+  "smoke": "exact-netstandard2.0 provider; create/commit/fork/ref/onlinebackup/reopen passed",
+  "gameRestore": "Backend true-carrier proof pending",
+  "nativeAcceptance": "QA gate, not run by Data"
+}

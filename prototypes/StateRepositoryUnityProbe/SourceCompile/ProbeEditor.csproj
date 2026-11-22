@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><ProbeUnityReferences>true</ProbeUnityReferences><DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences><NoStdLib>true</NoStdLib><AssemblyName>HobbyDS9.StateRepositoryProbe.Editor</AssemblyName></PropertyGroup>
+  <Import Project="References.props" />
+  <ItemGroup>
+    <Reference Include="$(UnityManagedDir)/UnityEngine/UnityEditor*.dll"><Private>false</Private></Reference>
+    <Compile Include="$(ProbeRepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/StateRepositoryProbe/Editor/*.cs" />
+  </ItemGroup>
+</Project>

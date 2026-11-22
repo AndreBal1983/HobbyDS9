@@ -1,0 +1,11 @@
+{
+  "name": "HobbyDS9.StateRepositoryProbe",
+  "rootNamespace": "HobbyDS9.StateRepositoryProbe",
+  "references": [],
+  "includePlatforms": ["Editor", "WindowsStandalone64"],
+  "overrideReferences": true,
+  "precompiledReferences": ["Microsoft.Data.Sqlite.dll", "SQLitePCLRaw.core.dll", "SQLitePCLRaw.provider.e_sqlite3.dll", "HobbyDS9.Persistence.dll", "HobbyDS9.Persistence.Sqlite.dll"],
+  "autoReferenced": false,
+  "defineConstraints": ["HOBBYDS9_STATE_REPOSITORY_PROBE"],
+  "noEngineReferences": false
+}

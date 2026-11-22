@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><TargetFramework>net10.0</TargetFramework><OutputType>Exe</OutputType><ProbeManagedReferences>true</ProbeManagedReferences><ProbeDataReferences>true</ProbeDataReferences></PropertyGroup>
+  <Import Project="../SourceCompile/References.props" />
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+    <Compile Include="$(ProbeRepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/StateRepositoryProbe/Runtime/SqliteNativeProbe.cs" />
+    <Content Include="$(ProbeNativeRoot)/e_sqlite3.dll" Link="e_sqlite3.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="RequireR2Native" BeforeTargets="Build"><Error Condition="!Exists('$(ProbeNativeRoot)/e_sqlite3.dll')" Text="Supply explicit R2 native directory; no NuGet/OS-native fallback." /></Target>
+</Project>

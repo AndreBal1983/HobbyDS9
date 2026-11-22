@@ -1,0 +1,10 @@
+{
+  "name": "HobbyDS9.StateRepositoryProbe.Editor",
+  "rootNamespace": "HobbyDS9.StateRepositoryProbe.Editor",
+  "references": [],
+  "includePlatforms": ["Editor"],
+  "overrideReferences": true,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "noEngineReferences": false
+}
