@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework><LangVersion>10.0</LangVersion><ImplicitUsings>enable</ImplicitUsings>
+    <IsTestProject>true</IsTestProject><IsPackable>false</IsPackable><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../prototypes/HobbyDS9.CampaignRepositoryHost/HobbyDS9.CampaignRepositoryHost.csproj" />
+    <ProjectReference Include="../../prototypes/HobbyDS9.UnityReviewAdapter/HobbyDS9.UnityReviewAdapter.csproj" />
+    <ProjectReference Include="../../src/HobbyDS9.Persistence.Sqlite/HobbyDS9.Persistence.Sqlite.csproj" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.1"><PrivateAssets>all</PrivateAssets></PackageReference>
+    <None Include="../../scenarios/playable-fleet-v1/*.json" Link="scenarios/playable-fleet-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../scenarios/sol-eight-planets-v1/scenario.json" Link="scenarios/sol-eight-planets-v1/scenario.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../scenarios/activities-v1/*.json" Link="scenarios/activities-v1/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationV1/*.json" Link="scenarios/colonisation-v1/%(Filename)%(Extension)" CopyToOutputDirectory="Always" />
+    <None Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ColonisationRosterV2/roster.json" Link="scenarios/colonisation-roster-v2/roster.json" CopyToOutputDirectory="Always" />
+    <None Include="../../scenarios/colonisation-expansion-v1/planner.json" Link="scenarios/colonisation-expansion-v1/planner.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../scenarios/colonisation-cycle-v1/cycle-policy.json" Link="scenarios/colonisation-cycle-v1/cycle-policy.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Import Project="../../src/HobbyDS9.Persistence.Sqlite/PersistenceNativeTrial.targets" />
+</Project>

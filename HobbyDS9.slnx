@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/prototypes/">
+    <Project Path="prototypes/HobbyDS9.CampaignRepositoryHost/HobbyDS9.CampaignRepositoryHost.csproj" />
     <Project Path="prototypes/HobbyDS9.CampaignTacticalV2.Prototypes/HobbyDS9.CampaignTacticalV2.Prototypes.csproj" />
     <Project Path="prototypes/HobbyDS9.FoundationRepositoryHost/HobbyDS9.FoundationRepositoryHost.csproj" />
   </Folder>
@@ -14,6 +15,7 @@
     <Project Path="src/HobbyDS9.TacticalPlayground/HobbyDS9.TacticalPlayground.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/HobbyDS9.CampaignRepositoryHost.Tests/HobbyDS9.CampaignRepositoryHost.Tests.csproj" />
     <Project Path="tests/HobbyDS9.FoundationRepositoryHost.Tests/HobbyDS9.FoundationRepositoryHost.Tests.csproj" />
     <Project Path="tests/HobbyDS9.Persistence.Sqlite.Tests/HobbyDS9.Persistence.Sqlite.Tests.csproj" />
     <Project Path="tests/HobbyDS9.Simulation.Tests/HobbyDS9.Simulation.Tests.csproj" />

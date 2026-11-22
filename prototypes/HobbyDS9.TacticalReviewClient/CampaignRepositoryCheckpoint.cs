@@ -25,6 +25,8 @@ namespace HobbyDS9.TacticalReviewClient
             foreach(var row in rows)
             {
                 if(string.IsNullOrEmpty(row.Key)||string.IsNullOrEmpty(row.Value))throw new ArgumentException("Complete edition identity required.");
+                if(row.Key.IndexOf('\0')>=0||row.Value.IndexOf('\0')>=0)throw new ArgumentException("Invalid edition text.");
+                var utf8=new UTF8Encoding(false,true);utf8.GetByteCount(row.Key);utf8.GetByteCount(row.Value);
                 text.Append(row.Key.Length.ToString(CultureInfo.InvariantCulture)).Append(':').Append(row.Key);
                 text.Append(row.Value.Length.ToString(CultureInfo.InvariantCulture)).Append(':').Append(row.Value);
                 if(text.Length>MaximumIdentityCharacters)throw new ArgumentException("Edition identity is too large.");
@@ -62,6 +64,8 @@ namespace HobbyDS9.TacticalReviewClient
         public SessionPhase Phase { get; }
         internal string Actor {get;}
         internal string CombatBoundary {get;}
+        public bool SameState(CampaignRepositoryStamp? other)=>other!=null&&HostId==other.HostId&&SessionEpoch==other.SessionEpoch
+            &&Turn==other.Turn&&Revision==other.Revision&&Phase==other.Phase&&Actor==other.Actor&&CombatBoundary==other.CombatBoundary;
         internal CampaignRepositoryStamp(Guid host,long epoch,int turn,long revision,SessionPhase phase,string actor,string combatBoundary)
         {HostId=host;SessionEpoch=epoch;Turn=turn;Revision=revision;Phase=phase;Actor=actor;CombatBoundary=combatBoundary;}
     }
@@ -95,5 +99,27 @@ namespace HobbyDS9.TacticalReviewClient
         public bool Succeeded=>Error==CampaignRepositoryError.None;
         public CampaignRepositoryImage? Image {get;}
         internal CampaignRepositoryImageResult(CampaignRepositoryError error,CampaignRepositoryImage? image=null){Error=error;Image=image;}
+    }
+    // A storage adapter supplies owned complete bytes and its indexed metadata.
+    // The host independently validates every field before making a replacement.
+    public sealed class CampaignRepositoryStoredPayload
+    {
+        private readonly byte[] payload;
+        public string EditionIdentity {get;}
+        public int Turn {get;}
+        public long Revision {get;}
+        public string Phase {get;}
+        public string PayloadHash {get;}
+        public int Length=>payload.Length;
+        public CampaignRepositoryStoredPayload(byte[] payload,string editionIdentity,int turn,long revision,string phase,string payloadHash)
+        {
+            if(payload==null||payload.Length==0||payload.Length>CampaignRepositoryImage.MaximumBytes)throw new ArgumentException("Bounded payload required.");
+            if(string.IsNullOrEmpty(editionIdentity)||editionIdentity.Length>CampaignRepositoryEdition.MaximumIdentityCharacters||turn<1||revision<0
+                ||string.IsNullOrEmpty(phase)||phase.Length>64||string.IsNullOrEmpty(payloadHash)||payloadHash.Length!=64)throw new ArgumentException("Complete storage metadata required.");
+            this.payload=(byte[])payload.Clone();EditionIdentity=editionIdentity;Turn=turn;Revision=revision;Phase=phase;PayloadHash=payloadHash;
+        }
+        public byte[] ReadPayload()=>(byte[])payload.Clone();
+        internal bool Matches(CampaignRepositoryImage image)=>EditionIdentity==image.Edition.Identity&&Turn==image.Turn&&Revision==image.Revision
+            &&Phase==image.Phase.ToString()&&PayloadHash==image.PayloadHash&&Length==image.Length;
     }
 }
