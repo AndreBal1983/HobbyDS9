@@ -34,6 +34,16 @@ namespace HobbyDS9.UnityReview.Tests
             Assert.That(intents.Single().Target!.ReferenceGeneration, Is.EqualTo(10));
         }
 
+        [Test] public void CheckedLoadReviewsUnsavedProgressAndCannotReuseARetiredConfirmation()
+        {
+            var intents = new List<SaveLibraryIntent>(); using var panel = new SaveLibraryPanel(View(), _ => { }, intents.Add, () => true);
+            InvokeRetained(panel.Q<Button>("save-library-select"));
+            InvokeRetained(panel.Q<Button>("save-library-action-Load")); Assert.That(intents.Count, Is.Zero);
+            Assert.That(panel.Q<Label>("save-library-load-warning").text, Does.Contain("Turn 148").And.Contain("Turn 146").And.Contain("Unsaved progress"));
+            var retired = panel.Q<Button>("save-library-confirm");
+            Assert.That(panel.TryPublish(panel.CurrentBoundary, View(11)), Is.True);
+            InvokeRetained(retired); Assert.That(intents.Count, Is.Zero);
+        }
         [Test] public void UnknownOutcomeShowsCheckOnlyForWritesAndKeepsSessionWarning()
         {
             var intents = new List<SaveLibraryIntent>(); using var panel = new SaveLibraryPanel(View(phase: SaveLibraryOperationPhase.OutcomeUnknown, reason: SaveLibraryOperationReason.SaveAndQuit), _ => { }, intents.Add, () => true);

@@ -214,6 +214,7 @@ namespace HobbyDS9.UnityReview
             if (action == SaveLibraryAction.CreateManual) Text(confirmation, "The game stays open. If saving must wait, the state captured later will be checked before saving.", "save-library-create-warning", 16);
             if (action == SaveLibraryAction.Recover) Text(confirmation, "Loss window · " + intent.RecoveryLossWindow, "save-library-confirm-loss", 18, Amber);
             if (action == SaveLibraryAction.Overwrite) Text(confirmation, "This checkpoint and the state captured for replacement will be checked again before saving.", "save-library-overwrite-warning", 16);
+            if (action == SaveLibraryAction.Load) Text(confirmation, "Loading replaces the running game. Unsaved progress will be lost.\n" + sessionReview, "save-library-load-warning", 16);
             Text(confirmation, "This exact target is reviewed. If it changes, review again.", "save-library-confirm-generation", 14, Lavender);
             var actions = Flow(confirmation, "save-library-confirm-actions");
             Button(actions, "Confirm " + ActionCaption(action), "save-library-confirm", () =>

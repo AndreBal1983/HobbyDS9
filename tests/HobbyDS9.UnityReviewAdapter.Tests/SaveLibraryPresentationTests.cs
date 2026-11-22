@@ -12,6 +12,15 @@ public sealed class SaveLibraryPresentationTests
             new(), rows ?? new[] { Row() }, null, "opaque:%2F日本語\0next", "1–25 of 348", SaveLibraryPageState.Ready,
             operation ?? new(SaveLibraryOperationPhase.None, SaveLibraryOperationReason.Auto, null, "", true), recovery);
 
+    [Fact] public void LoadingReviewsTheExactTargetAndCurrentProgressBeforeReplacingTheSession()
+    {
+        var model = new SaveLibraryPresentation(View()); var boundary = model.BeginRender();
+        Assert.True(model.TryPrepare(boundary, SaveLibraryAction.Load, "ref.1", "", out var load));
+        Assert.True(load!.RequiresConfirmation); Assert.Equal(148, load.ReviewedCurrent.Turn);
+        Assert.Equal(146, load.ReviewedLastDurable.Turn); Assert.Equal("ref.1", load.Target!.ReferenceId);
+        Assert.True(model.TryConfirm(load)); Assert.True(model.TryPublish(boundary, View(generation: 11)));
+        Assert.False(model.TryConfirm(load));
+    }
     [Fact] public void DuplicateUnicodeNamesSelectOnlyStableIdentityAndCopyThePage()
     {
         var input = new List<SaveLibraryRow> { Row("ref.1"), Row("ref.2") }; var model = new SaveLibraryPresentation(View(input));

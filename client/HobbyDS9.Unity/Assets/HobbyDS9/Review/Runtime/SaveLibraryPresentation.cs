@@ -167,7 +167,7 @@ namespace HobbyDS9.UnityReview
         public string RecoveryLossWindow { get; }
         public SaveLibraryProgress ReviewedCurrent { get; }
         public SaveLibraryProgress ReviewedLastDurable { get; }
-        public bool RequiresConfirmation => Action == SaveLibraryAction.CreateManual || Action == SaveLibraryAction.Rename || Action == SaveLibraryAction.Duplicate || Action == SaveLibraryAction.Overwrite || Action == SaveLibraryAction.Delete || Action == SaveLibraryAction.QuitWithoutSaving || Action == SaveLibraryAction.Recover;
+        public bool RequiresConfirmation => Action == SaveLibraryAction.Load || Action == SaveLibraryAction.CreateManual || Action == SaveLibraryAction.Rename || Action == SaveLibraryAction.Duplicate || Action == SaveLibraryAction.Overwrite || Action == SaveLibraryAction.Delete || Action == SaveLibraryAction.QuitWithoutSaving || Action == SaveLibraryAction.Recover;
         internal SaveLibraryIntent(SaveLibraryBoundary boundary, SaveLibraryAction action, SaveLibraryRow? target, SaveLibraryView view, string proposedName)
         {
             Boundary = boundary; Action = action; Target = target; ActiveBranchId = view.ActiveBranchId; ExpectedActiveBranchGeneration = view.ActiveBranchGeneration;
