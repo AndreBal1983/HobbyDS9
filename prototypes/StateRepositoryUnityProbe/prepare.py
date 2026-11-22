@@ -89,9 +89,9 @@ def main():
         if digest(path) != pin["sha256"] or digest(archive) != pin["archiveSha256"]:
             raise SystemExit("Provider/native package pin differs: " + pin["file"])
         selected.append((path, not pin["managed"]))
-    native = manifest["native"]
+    native_pin = manifest["native"]
     native_path = pathlib.Path(args.native_root).resolve() / "e_sqlite3.dll"
-    if digest(native_path) != native["sha256"]:
+    if digest(native_path) != native_pin["sha256"]:
         raise SystemExit("R2 native hash differs; no old-package/OS fallback.")
     selected.append((native_path, True))
     for name in ("HobbyDS9.Persistence", "HobbyDS9.Persistence.Sqlite"):
@@ -107,11 +107,11 @@ def main():
     assets = project / "Assets/StateRepositoryProbe"
     assets.parent.mkdir(parents=True)
     shutil.copytree(root / "client/HobbyDS9.Unity/Assets/HobbyDS9/StateRepositoryProbe", assets)
-    for path, native in selected:
-        dest = project / "Assets/Plugins/StateRepositoryProbe" / ("x86_64" if native else "Managed") / path.name
+    for path, is_native in selected:
+        dest = project / "Assets/Plugins/StateRepositoryProbe" / ("x86_64" if is_native else "Managed") / path.name
         dest.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(path, dest)
-        dest.with_suffix(dest.suffix + ".meta").write_text(importer(path.name, native), encoding="utf-8")
+        dest.with_suffix(dest.suffix + ".meta").write_text(importer(path.name, is_native), encoding="utf-8")
     for directory in sorted((p for p in (project/"Assets").rglob("*") if p.is_dir())):
         meta = directory.with_suffix(directory.suffix+".meta")
         if not meta.exists():
@@ -123,7 +123,7 @@ def main():
     shutil.copytree(base / "ThirdPartyNotices", project / "ThirdPartyNotices")
     shutil.copyfile(base / "provider-manifest.json", project / "provider-manifest.json")
     files = [{"Path":p.relative_to(project).as_posix(),"Sha256":digest(p)} for p in sorted(project.rglob("*")) if p.is_file()]
-    recipe = {"Source":source,"DataSource":args.data_source,"NativeSha256":native["sha256"],"Files":files}
+    recipe = {"Source":source,"DataSource":args.data_source,"NativeSha256":native_pin["sha256"],"Files":files}
     (project / "state-repository-probe-project.json").write_text(json.dumps(recipe,indent=2)+"\n",encoding="utf-8")
     print("Staged isolated probe; Unity/native execution remains QA-owned: " + str(project))
 
