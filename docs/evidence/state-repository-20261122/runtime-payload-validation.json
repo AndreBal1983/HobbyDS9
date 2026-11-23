@@ -1,0 +1,77 @@
+{
+  "environment": {
+    "runtimePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+    "observedRuntimePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+    "trackedSourceClean": true,
+    "source": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-runtime-probe",
+    "systemCount": 30,
+    "seed": "42",
+    "mode": "validate",
+    "runtime": ".NET 10.0.12",
+    "os": "Microsoft Windows 10.0.26200",
+    "arch": "X64",
+    "ProcessorCount": 16,
+    "serverGc": false,
+    "latencyMode": "Interactive",
+    "configuration": "Release",
+    "memoryAvailableBytes": 16541487104,
+    "utc": "2026-11-22T18:49:21.6952968+00:00",
+    "note": "Serial single-writer probe; no forced GC. Small-n nearest-rank p95/p99 are maxima, not credible population tail estimates. Working/peak process memory includes setup and JIT. No native UI, combat, growing population or concurrent producer benchmark."
+  },
+  "world": null,
+  "elapsedMs": 9910.1691,
+  "peakWorkingSetBytes": 235454464,
+  "workingSetBytes": 235454464,
+  "privateBytes": 184860672,
+  "failure": null,
+  "measurements": [
+    {
+      "name": "validate_payload",
+      "file": "runtime-30-baseline.json",
+      "bytes": 765755,
+      "inputSha256": "ee01fd5b5a93ea516dbacd03e34e32088c04719c15b5686dc8a3bd08c8c66620",
+      "reexportSha256": "ee01fd5b5a93ea516dbacd03e34e32088c04719c15b5686dc8a3bd08c8c66620",
+      "strictDecodeSucceeded": true,
+      "typedLoadReplaySucceeded": true,
+      "identicalReexport": true,
+      "turn": 1,
+      "revision": 0
+    },
+    {
+      "name": "validate_payload",
+      "file": "runtime-30-successor.json",
+      "bytes": 773021,
+      "inputSha256": "820c9ae0e31f1734e492411379855e5ba7fa6c9353732fdd0d6778005df7f260",
+      "reexportSha256": "820c9ae0e31f1734e492411379855e5ba7fa6c9353732fdd0d6778005df7f260",
+      "strictDecodeSucceeded": true,
+      "typedLoadReplaySucceeded": true,
+      "identicalReexport": true,
+      "turn": 1,
+      "revision": 6
+    },
+    {
+      "name": "validate_payload",
+      "file": "runtime-100-baseline.json",
+      "bytes": 1627231,
+      "inputSha256": "f5b8e27197d26ebc2f56071a141fbbc4312f9494756040e5e06ba969ee9c4b32",
+      "reexportSha256": "f5b8e27197d26ebc2f56071a141fbbc4312f9494756040e5e06ba969ee9c4b32",
+      "strictDecodeSucceeded": true,
+      "typedLoadReplaySucceeded": true,
+      "identicalReexport": true,
+      "turn": 1,
+      "revision": 0
+    },
+    {
+      "name": "validate_payload",
+      "file": "runtime-100-successor.json",
+      "bytes": 1634497,
+      "inputSha256": "ff4cc5c6c14bf8ae94ca2d8befa0421e6f4e76ca7d0a43737ca52078abe557ab",
+      "reexportSha256": "ff4cc5c6c14bf8ae94ca2d8befa0421e6f4e76ca7d0a43737ca52078abe557ab",
+      "strictDecodeSucceeded": true,
+      "typedLoadReplaySucceeded": true,
+      "identicalReexport": true,
+      "turn": 1,
+      "revision": 6
+    }
+  ]
+}

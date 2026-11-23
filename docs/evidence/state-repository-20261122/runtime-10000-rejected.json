@@ -1,0 +1,28 @@
+{
+  "environment": {
+    "runtimePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+    "observedRuntimePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+    "trackedSourceClean": true,
+    "source": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-runtime-probe",
+    "systemCount": 10000,
+    "seed": "42",
+    "mode": "full",
+    "runtime": ".NET 10.0.12",
+    "os": "Microsoft Windows 10.0.26200",
+    "arch": "X64",
+    "ProcessorCount": 16,
+    "serverGc": false,
+    "latencyMode": "Interactive",
+    "configuration": "Release",
+    "memoryAvailableBytes": 16541487104,
+    "utc": "2026-11-22T18:46:11.5029915+00:00",
+    "note": "Serial single-writer probe; no forced GC. Small-n nearest-rank p95/p99 are maxima, not credible population tail estimates. Working/peak process memory includes setup and JIT. No native UI, combat, growing population or concurrent producer benchmark."
+  },
+  "world": null,
+  "elapsedMs": 1414.9632,
+  "peakWorkingSetBytes": 70561792,
+  "workingSetBytes": 70561792,
+  "privateBytes": 35880960,
+  "failure": "System.ArgumentException: Scaled-map counts exceed supported bounds.\r\n   at HobbyDS9.Simulation.ScaledGalaxyData.Require(Boolean condition, String message) in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-runtime-probe\\src\\HobbyDS9.Simulation\\ScaledGalaxyData.cs:line 15\r\n   at HobbyDS9.Simulation.ScaledGalaxyData.SettingsCore(ScaledGalaxySettingsDto s, IEnumerable\u00601 catalog, Boolean naturalQuietTargets) in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-runtime-probe\\src\\HobbyDS9.Simulation\\ScaledGalaxyData.cs:line 30\r\n   at HobbyDS9.Simulation.ScaledGalaxyData.NaturalMapSettings(ScaledGalaxySettingsDto s, IEnumerable\u00601 catalog) in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-runtime-probe\\src\\HobbyDS9.Simulation\\ScaledGalaxyData.cs:line 22\r\n   at HobbyDS9.Simulation.NaturalGalaxyData.Settings(NaturalGalaxySettingsDto s, IEnumerable\u00601 catalog) in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-runtime-probe\\src\\HobbyDS9.Simulation\\NaturalGalaxyData.cs:line 18\r\n   at HobbyDS9.Simulation.NaturalGalaxyGenerator.Generate(NaturalGalaxySettingsDto input, IEnumerable\u00601 catalog) in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-runtime-probe\\src\\HobbyDS9.Simulation\\NaturalGalaxyGenerator.cs:line 22\r\n   at HobbyDS9.Simulation.CampaignTacticalReviewSession.StartCycleGame(CampaignColonisationCyclePackageDto p, NaturalGalaxySettingsDto settings) in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-runtime-probe\\src\\HobbyDS9.Simulation\\CampaignTacticalReviewSession.ColonisationCycle.cs:line 21\r\n   at Program.\u003C\u003Ec__DisplayClass0_3.\u003C\u003CMain\u003E$\u003Eb__7() in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-design\\prototypes\\StateRepositoryProbe\\runtime\\Program.cs:line 74\r\n   at Program.\u003C\u003Ec__DisplayClass0_0.\u003C\u003CMain\u003E$\u003Eg__Measure|2(String name, Action action, Int32 n, Int32 warmup, Action prepare) in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-design\\prototypes\\StateRepositoryProbe\\runtime\\Program.cs:line 48\r\n   at Program.\u003CMain\u003E$(String[] args) in C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-design\\prototypes\\StateRepositoryProbe\\runtime\\Program.cs:line 74",
+  "measurements": []
+}

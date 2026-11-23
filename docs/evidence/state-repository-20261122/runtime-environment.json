@@ -1,0 +1,86 @@
+{
+  "observedUtc": "2026-11-22T19:50:43.424349+01:00",
+  "runtimeSource": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-runtime-probe",
+  "observedRuntimePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+  "trackedSourceStatus": "",
+  "observedDesignPin": "f5ebc86772f38e9c55aad9ec9e35dc368906de03",
+  "cpu": {
+    "Name": "AMD Ryzen 7 5800HS with Radeon Graphics         ",
+    "NumberOfCores": 8,
+    "NumberOfLogicalProcessors": 16
+  },
+  "operatingSystem": {
+    "Caption": "Microsoft Windows 11 Home",
+    "Version": "10.0.26200",
+    "OSArchitecture": "64 bits"
+  },
+  "physicalMemoryBytes": 16541487104,
+  "dotnetInfo": ".NET SDK:\r\n Version:           10.0.401\r\n Commit:            e34a38d2ae\r\n Workload version:  10.0.400-manifests.63b36e85\r\n MSBuild version:   18.9.11+e34a38d2a\r\n\r\nRuntime Environment:\r\n OS Name:     Windows\r\n OS Version:  10.0.26200\r\n OS Platform: Windows\r\n RID:         win-x64\r\n Base Path:   C:\\HobbyDS9\\artifacts\\tools\\dotnet\\sdk\\10.0.401\\\r\n\r\n.NET workloads installed:\r\nThere are no installed workloads to display.\r\nConfigured to use workload sets when installing new manifests.\r\nNo workload sets are installed. Run \"dotnet workload restore\" to install a workload set.\r\n\r\nHost:\r\n  Version:      10.0.12\r\n  Architecture: x64\r\n  Commit:       95017c711e\r\n\r\n.NET SDKs installed:\r\n  10.0.401 [C:\\HobbyDS9\\artifacts\\tools\\dotnet\\sdk]\r\n\r\n.NET runtimes installed:\r\n  Microsoft.AspNetCore.App 10.0.12 [C:\\HobbyDS9\\artifacts\\tools\\dotnet\\shared\\Microsoft.AspNetCore.App]\r\n  Microsoft.NETCore.App 10.0.12 [C:\\HobbyDS9\\artifacts\\tools\\dotnet\\shared\\Microsoft.NETCore.App]\r\n  Microsoft.WindowsDesktop.App 10.0.12 [C:\\HobbyDS9\\artifacts\\tools\\dotnet\\shared\\Microsoft.WindowsDesktop.App]\r\n\r\nOther architectures found:\r\n  x86   [C:\\Program Files (x86)\\dotnet]\r\n    registered at [HKLM\\SOFTWARE\\dotnet\\Setup\\InstalledVersions\\x86\\InstallLocation]\r\n\r\nEnvironment variables:\r\n  Not set\r\n\r\nglobal.json file:\r\n  C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-design\\global.json\r\n\r\nLearn more:\r\n  https://aka.ms/dotnet/info\r\n\r\nDownload .NET:\r\n  https://aka.ms/dotnet/download\r\n",
+  "dotnetEnvironmentOverrides": [],
+  "finalProbeFiles": [
+    {
+      "name": "RuntimeProbe.csproj",
+      "sha256": "1c32944f384d91eb9086cfb827fcdacbab4595a3b242b17bb0e56bdbdcf0a732"
+    },
+    {
+      "name": "Program.cs",
+      "sha256": "ceefcc25416ac15342fd1f52ba4a6c6b1929072ef4f40610964dd26ecf73cb2d"
+    },
+    {
+      "name": "README.md",
+      "sha256": "87cceaf184c73523ba5ff9a19198ccc3a2a3ae8af5d36f5eb58ddaa24cf4f6ce"
+    },
+    {
+      "name": "Summarize.ps1",
+      "sha256": "14eae578781df10812c4b813c92bca0ff2201054e8d28afb71bf90caef13855b"
+    },
+    {
+      "name": ".gitignore",
+      "sha256": "4c0bd0ded1d8c0477d0de4cc71a929205029b84ff41efdd1628ba6c195b1ef7b"
+    }
+  ],
+  "reportFiles": [
+    {
+      "name": "runtime-100.json",
+      "bytes": 37492,
+      "sha256": "57516a6dc42b91c8937cadbd3dc75c7cb30b21848d2cb5c2528dca5d09923002"
+    },
+    {
+      "name": "runtime-1000-worker.json",
+      "bytes": 5729,
+      "sha256": "b50b58cab60f42b86c885eed183eb113e47ccb0e70e404d954d6398c56d2b2e7"
+    },
+    {
+      "name": "runtime-1000.json",
+      "bytes": 33875,
+      "sha256": "3b8e5b2b9a424a1a7dea08cc118c1ea65e1756526b282755fea2d9c437e4254b"
+    },
+    {
+      "name": "runtime-10000-rejected.json",
+      "bytes": 3422,
+      "sha256": "5c5066aab72008c2d155028ad11b7f919574148a63f4d3c58e1023feca39886e"
+    },
+    {
+      "name": "runtime-30.json",
+      "bytes": 37368,
+      "sha256": "7cba5a77fe05910603c20d0f10fda17866a788705b8927d778a49f5736c6a2b4"
+    },
+    {
+      "name": "runtime-baseline.md",
+      "bytes": 11613,
+      "sha256": "2edf932300055f7228cdeabced99ccc164741cfe4ccebfef59e57de8f255e423"
+    },
+    {
+      "name": "runtime-payload-validation.json",
+      "bytes": 2857,
+      "sha256": "1d1497462ea7b2d92316b63b3ca25e5a49d0c0bab853307f801ca02ad40ac37e"
+    },
+    {
+      "name": "runtime-summary.csv",
+      "bytes": 8311,
+      "sha256": "a54d7674424137d68b7d26e23ceb5b083635053435589c19759874d4e7b6b744"
+    }
+  ],
+  "note": "Original measurement series preceded final identity guard and explicit rejection-code assertion. Existing source identity independently checked before/after; no timing series rerun. Final guarded payload-validation mode confirms clean pin and all exact payload roundtrips.",
+  "evidenceTextEncoding": "UTF-8 without BOM; LF line endings pinned by scoped .gitattributes; hashes are final published bytes."
+}
