@@ -1,4 +1,7 @@
 using System.Security.Cryptography;
+using HobbyDS9.Application;
+using HobbyDS9.Contracts;
+using HobbyDS9.RepositoryTestFixtures;
 using HobbyDS9.Persistence;
 using HobbyDS9.Persistence.Sqlite;
 using HobbyDS9.TacticalReviewClient;
@@ -33,6 +36,136 @@ public sealed class BridgeIntegrationTests
         }
         Assert.Equal(originalHash,SHA256.HashData(File.ReadAllBytes(legacy)));Assert.Equal(before,File.ReadAllBytes(legacy));
     }
+    [Fact]
+    public void Format18CombatCheckpointRecoversPendingRoundsAndFinalizedCampaign()
+    {
+        using var f = new RepositoryFixture();
+        var uninterrupted = f.Host();
+        var session = Session(uninterrupted);
+        CycleRepositoryTestCombat.ReachAwaitingCombat(uninterrupted, session, useFormat18Itinerary: true);
+
+        var restored = ColdRestore("awaiting");
+        var encounter = Assert.Single(session.GetEncounters(Human));
+        Assert.NotEmpty(Physical(session).Requests);
+        Assert.Empty(Assert.Single(Physical(session).Core.Battles).ResolvedRounds);
+        Assert.False(Session(restored).Observe(encounter, Human).Complete);
+
+        for (var rounds = 0; rounds < 32 && !session.Observe(encounter, Human).Complete; ++rounds)
+        {
+            foreach (var host in new[] { uninterrupted, restored })
+            {
+                var current = Session(host);
+                var battle = current.Observe(encounter, Human);
+                Assert.True(current.CommitRound(new()
+                {
+                    ActorId = Human, EncounterId = encounter,
+                    CommandId = $"command.repository.cold.round.{battle.Round}",
+                    ExpectedTurn = battle.Turn, ExpectedRound = battle.Round,
+                    ExpectedBoundaryRevision = battle.BoundaryRevision, Replacements = new()
+                }).Accepted);
+            }
+            Assert.Equal(f.Bytes(uninterrupted), f.Bytes(restored));
+        }
+        Assert.True(session.Observe(encounter, Human).Complete);
+        Assert.Equal(SessionPhase.AwaitingCombat, session.CaptureStatus().Phase);
+        Assert.NotEmpty(Assert.Single(Physical(session).Core.Battles).ResolvedRounds);
+
+        restored = ColdRestore("resolved");
+        Assert.True(Session(restored).Observe(encounter, Human).Complete);
+        foreach (var host in new[] { uninterrupted, restored })
+        {
+            var current = Session(host);
+            var stamp = current.CaptureStatus();
+            Assert.True(current.FinalizeBatch(stamp.Turn, stamp.CampaignRevision).Accepted);
+            Assert.Equal(SessionPhase.Planning, current.CaptureStatus().Phase);
+            Assert.Empty(current.GetEncounters(Human));
+        }
+        Assert.Equal(f.Bytes(uninterrupted), f.Bytes(restored));
+        restored = ColdRestore("finalized");
+        Advance(uninterrupted);
+        Advance(restored);
+        Assert.Equal(f.Bytes(uninterrupted), f.Bytes(restored));
+
+        PhysicalReviewHost ColdRestore(string boundary)
+        {
+            var image = f.Image(uninterrupted);
+            string checkpoint;
+            using (var repository = f.Repository(image))
+            {
+                var branch = boundary == "awaiting" ? new BranchInfo("main", null, 0) : repository.GetBranch("main");
+                var receipt = repository.CommitCheckpoint(new("save-" + boundary, branch.Id, branch.Generation,
+                    branch.Head, CycleCheckpointValidator.Map(image), Manual(boundary)));
+                checkpoint = receipt.CheckpointId!;
+            }
+            var restarted = f.Host();
+            using var reopened = f.Repository(image);
+            var currentBranch = reopened.GetBranch("main");
+            var queue = new RepositorySaveQueue(restarted, restarted.Read(Human), reopened, currentBranch, f.Wire);
+            var work = Assert.IsType<RepositoryPayloadWork>(queue.PreparePayloadRead(restarted.Read(Human), checkpoint).Work);
+            var result = work.Execute();
+            Assert.Equal(CampaignRepositoryError.None, result.Error);
+            Assert.Equal(image.PayloadHash, result.Summary!.PayloadHash);
+            Assert.Equal(CampaignRepositoryError.None, queue.CompletePayloadRestore(work, out var frame));
+            Assert.True(queue.Rebind(restarted, frame!, reopened, currentBranch));
+            Assert.True(queue.ConfirmRestoredCheckpoint(result.Loaded!));
+            Assert.Equal(image.ReadPayload(), f.Bytes(restarted));
+            return restarted;
+        }
+
+        static CampaignTacticalTravelSaveDto Physical(ICampaignColonisationCycleSession current) =>
+            current.ExportCycleSave().BaseCampaign!.Campaign!.Integrated!.Physical!;
+    }
+
+    [Fact]
+    public void ProgressedFormat18ColdRestorePreservesPaidMineAndPendingRefinement()
+    {
+        using var f = new RepositoryFixture();
+        var uninterrupted = f.Host();
+        CycleRepositoryTestProgress.MineAndRefine(Session(uninterrupted), Human);
+        var image = f.Image(uninterrupted);
+        var pending = CycleRepositoryTestProgress.AssertMineAndRefinement(
+            Assert.IsType<CampaignBeltBodiesSaveDto>(f.Codec.DecodeCycleRoot(image.ReadPayload())));
+
+        string checkpoint;
+        using (var repository = f.Repository(image))
+        {
+            var queue = new RepositorySaveQueue(uninterrupted, uninterrupted.Read(Human), repository, new BranchInfo("main", null, 0), f.Wire);
+            Assert.Equal(SaveRequestStatus.Queued, queue.RequestManual(uninterrupted.Read(Human), Manual(), out _));
+            var committed = Run(queue, uninterrupted);
+            Assert.Equal(SaveOutcome.Committed, committed.Outcome);
+            checkpoint = committed.Receipt!.CheckpointId!;
+            Assert.True(queue.Snapshot.CanQuitAfterManualSave);
+        }
+
+        var restarted = f.Host();
+        using var reopened = f.Repository(image);
+        var branch = reopened.GetBranch("main");
+        var cold = new RepositorySaveQueue(restarted, restarted.Read(Human), reopened, branch, f.Wire);
+        var work = Assert.IsType<RepositoryPayloadWork>(cold.PreparePayloadRead(restarted.Read(Human), checkpoint).Work);
+        var candidate = work.Execute();
+        Assert.Equal(CampaignRepositoryError.None, candidate.Error);
+        Assert.Equal(image.PayloadHash, candidate.Summary!.PayloadHash);
+        Assert.Equal(CampaignRepositoryError.None, cold.CompletePayloadRestore(work, out var restoredFrame));
+        Assert.True(cold.Rebind(restarted, restoredFrame!, reopened, branch));
+        Assert.True(cold.ConfirmRestoredCheckpoint(candidate.Loaded!));
+        Assert.Equal(f.Bytes(uninterrupted), f.Bytes(restarted));
+
+        foreach (var host in new[] { uninterrupted, restarted })
+        {
+            var session = Session(host);
+            var stamp = session.CaptureStatus();
+            var refinement = (ICampaignEngineeringRefinementSession)session;
+            Assert.True(refinement.SubmitEngineeringRefinement(new()
+            {
+                ActorId = Human, CommandId = "command.repository.cold.discard",
+                ExpectedTurn = stamp.Turn, ExpectedRevision = stamp.CampaignRevision,
+                Action = EngineeringRefinementAction.Discard, ProjectId = pending
+            }).Accepted);
+            Advance(host);
+        }
+        Assert.Equal(f.Bytes(uninterrupted), f.Bytes(restarted));
+    }
+
     [Fact] public void OlderContinuationKeepsBothIndependentFuturesAndManualPins()
     {
         using var f=new RepositoryFixture();var host=f.Host();var first=f.Image(host);using var repo=f.Repository(first);

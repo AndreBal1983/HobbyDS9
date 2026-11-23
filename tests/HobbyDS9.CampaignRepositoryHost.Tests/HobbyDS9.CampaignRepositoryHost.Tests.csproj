@@ -8,6 +8,10 @@
     <NuGetLockFilePath>obj/repository-trial.packages.lock.json</NuGetLockFilePath>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="../Shared/CycleRepositoryTestCombat.cs" Link="Fixtures/CycleRepositoryTestCombat.cs" />
+    <Compile Include="../Shared/CycleRepositoryTestProgress.cs" Link="Fixtures/CycleRepositoryTestProgress.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../../prototypes/HobbyDS9.CampaignRepositoryHost/HobbyDS9.CampaignRepositoryHost.csproj" />
     <ProjectReference Include="../../prototypes/HobbyDS9.UnityReviewAdapter/HobbyDS9.UnityReviewAdapter.csproj" />
     <ProjectReference Include="../../src/HobbyDS9.Persistence.Sqlite/HobbyDS9.Persistence.Sqlite.csproj" />
