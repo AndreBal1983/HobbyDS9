@@ -1,0 +1,78 @@
+{
+  "packet": "three-hull-runtime-v1-20261025-1",
+  "status": "CPU geometry/material payload validated; Unity receiving pending",
+  "scope": "Local activity hull presentation; no gameplay stats inferred",
+  "bindings": [
+    {
+      "hullVersionId": "hull.constitution-explorer.v1",
+      "classId": "class.constitution-explorer.v1",
+      "blueprintId": "blueprint.ready.constitution-explorer",
+      "revision": 1,
+      "role": "Explorer",
+      "visualKey": "activity.constitution-explorer.v1",
+      "fbxLODs": [
+        "Constitution/Models/ConstitutionExplorer_LOD0.fbx",
+        "Constitution/Models/ConstitutionExplorer_LOD1.fbx"
+      ],
+      "triangles": [
+        6592,
+        2500
+      ],
+      "assetContract": "Constitution/asset-contract.json"
+    },
+    {
+      "hullVersionId": "hull.galaxy-cruiser.v1",
+      "classId": "class.galaxy-cruiser.v1",
+      "blueprintId": "blueprint.ready.galaxy-cruiser",
+      "revision": 1,
+      "role": "Cruiser",
+      "visualKey": "activity.galaxy-cruiser.v1",
+      "existingPack": "E:/HobbyDS9/artifacts/art/galaxy-unity-receiving-20261024-1",
+      "assembly": "Hull + classic port/starboard nacelles + WarpCore + Blue deflector; socket transforms per existing contract exactly once",
+      "triangles": [
+        82860,
+        20617
+      ],
+      "assetContract": "E:/HobbyDS9/artifacts/art/galaxy-unity-receiving-20261024-1/asset-contract.json",
+      "assetContractSha256": "94773e84f4da03f36e80b1da39222b2e7d060d6b54c42f65e0e5c8e806383539"
+    },
+    {
+      "hullVersionId": "hull.defiant-combat.v1",
+      "classId": "class.defiant-combat.v1",
+      "blueprintId": "blueprint.ready.defiant-combat",
+      "revision": 1,
+      "role": "Combat",
+      "visualKey": "activity.defiant-combat.v1",
+      "fbxLODs": [
+        "Defiant-v3/Models/Defiant_LOD0.fbx",
+        "Defiant-v3/Models/Defiant_LOD1.fbx"
+      ],
+      "triangles": [
+        29998,
+        7998
+      ],
+      "assetContract": "Defiant-v3/asset-contract.json"
+    }
+  ],
+  "selectedNewPrimaryModelCount": 4,
+  "selectedNewTextureCount": 3,
+  "maxTextureDimensions": [
+    2048,
+    2048
+  ],
+  "newLOD0CombinedTriangles": 36590,
+  "newLOD1CombinedTriangles": 10498,
+  "newTextureRoles": {
+    "baseColor": "Defiant-v3/Textures/Defiant_Image_0.jpg",
+    "metallicRoughness": "Defiant-v3/Textures/Defiant_Image_1.jpg",
+    "normal": "Defiant-v3/Textures/Defiant_Image_2.jpg"
+  },
+  "warnings": [
+    "Defiant rights not supplied; local-only derivative, no redistribution clearance",
+    "Blender packed-image shutdown warnings retained; independent decoded/embedded texture payload validated",
+    "FBX normals validated in binary, Unity import and actual image quality pending"
+  ],
+  "protectedOwnerGUI": 18048,
+  "renderInvoked": false,
+  "nativeUnityInvoked": false
+}

@@ -4,10 +4,31 @@ using UnityEngine.Profiling;
 
 namespace HobbyDS9.UnityClient
 {
+    // Opt-in log markers only; no lifecycle/resource ownership and no teardown exception handling.
+    internal static class ClientShutdownLifecycle
+    {
+        private static readonly bool enabled=ReadEnabled();
+        private static long next;
+        internal static long NextId()=>System.Threading.Interlocked.Increment(ref next);
+        internal static bool HasFlag(string[] args)
+        {foreach(var arg in args)if(string.Equals(arg,"--hobbyds9-shutdown-lifecycle",System.StringComparison.Ordinal))return true;return false;}
+        private static bool ReadEnabled()
+        {try{return HasFlag(System.Environment.GetCommandLineArgs());}catch{return false;}}
+        internal static void Mark(string component,long instance,string stage)
+        {
+            if(!enabled)return;
+            try{UnityEngine.Debug.Log("HOBBYDS9_SHUTDOWN component="+component+" instance="+instance.ToString(System.Globalization.CultureInfo.InvariantCulture)+
+                " stage="+stage+" thread="+System.Threading.Thread.CurrentThread.ManagedThreadId.ToString(System.Globalization.CultureInfo.InvariantCulture)+
+                " ticks="+System.Diagnostics.Stopwatch.GetTimestamp().ToString(System.Globalization.CultureInfo.InvariantCulture));}
+            catch{ /* Logging must never change the original teardown path. */ }
+        }
+    }
+
     // Explicit operator evidence only. No campaign, input, scene-light or timing changes.
     // Frame intervals include VSync/OS scheduling; these are not GPU execution timings.
     public sealed class NativeAcceptanceProbe : MonoBehaviour
     {
+        private readonly long shutdownLabel=ClientShutdownLifecycle.NextId();
         private const int Capacity = 8192;
         private const double WarmupSeconds = 5;
         private const double ReportSeconds = 15;
@@ -56,8 +77,8 @@ namespace HobbyDS9.UnityClient
             if (!focused && count > 0) Emit("focus-lost");
         }
 
-        private void OnApplicationQuit() { quitting = true; Emit("quit"); }
-        private void OnDestroy() { installed = false; if (!quitting && count > 0) Emit("disposed"); }
+        private void OnApplicationQuit() { ClientShutdownLifecycle.Mark("NativeAcceptanceProbe",shutdownLabel,"quit.enter");quitting = true; ClientShutdownLifecycle.Mark("NativeAcceptanceProbe",shutdownLabel,"quit.emit.begin");Emit("quit"); ClientShutdownLifecycle.Mark("NativeAcceptanceProbe",shutdownLabel,"quit.emit.return");ClientShutdownLifecycle.Mark("NativeAcceptanceProbe",shutdownLabel,"quit.return"); }
+        private void OnDestroy() { ClientShutdownLifecycle.Mark("NativeAcceptanceProbe",shutdownLabel,"destroy.enter");installed = false; if (!quitting && count > 0) Emit("disposed"); ClientShutdownLifecycle.Mark("NativeAcceptanceProbe",shutdownLabel,"destroy.return"); }
 
         private void Emit(string reason)
         {

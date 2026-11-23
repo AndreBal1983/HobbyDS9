@@ -8,7 +8,7 @@ namespace HobbyDS9.Contracts
         public int IntervalStartLevel { get; set; }
         public int RequiredBreakthroughOrdinal { get; set; }
     }
-    public enum EngineeringProjectKind { NewCapability = 1, Refinement = 2, CivilApplication = 3 }
+    public enum EngineeringProjectKind { NewCapability = 1, Refinement = 2, CivilApplication = 3, TargetedRefinement = 4, ManagedRelease = 5 }
     public sealed class EngineeringParameterChangeDto { public string ParameterDefinitionId { get; set; } = string.Empty; public long Value { get; set; } }
     public sealed class EngineeringApplicationDefinitionDto
     {

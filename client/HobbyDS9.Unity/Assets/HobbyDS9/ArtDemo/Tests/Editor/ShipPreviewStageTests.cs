@@ -14,6 +14,33 @@ namespace HobbyDS9.ArtDemo.Tests
         private static ShipPreviewSelection Cruiser(ShipPreviewDisclosure disclosure = ShipPreviewDisclosure.Owned) =>
             new ShipPreviewSelection("civilization.federation", "ship-design.source-cruiser", disclosure);
 
+        [TestCase(5f,1f,1.6f)]
+        [TestCase(1f,5f,1.6f)]
+        [TestCase(5f,1f,.5f)]
+        [TestCase(1f,5f,3f)]
+        [TestCase(0f,0f,1.6f)]
+        public void IllustrativeProjectedCornersFitWithModestMargin(float halfWidth,float halfHeight,float aspect)
+        {
+            var size=ShipPreviewStage.ReferenceFrameSize(new Vector2(halfWidth,halfHeight),aspect);
+            foreach(var x in new[]{-halfWidth,halfWidth})
+            foreach(var y in new[]{-halfHeight,halfHeight})
+            {
+                Assert.That(Math.Abs(x)/(size*aspect),Is.LessThanOrEqualTo(1/1.12f+1e-6f));
+                Assert.That(Math.Abs(y)/size,Is.LessThanOrEqualTo(1/1.12f+1e-6f));
+            }
+            if(halfWidth>0 || halfHeight>0)
+                Assert.That(Math.Max(halfWidth/(size*aspect),halfHeight/size),Is.EqualTo(1/1.12f).Within(1e-6));
+        }
+        [TestCase(float.NaN,1f,1.6f)]
+        [TestCase(1f,float.PositiveInfinity,1.6f)]
+        [TestCase(-1f,1f,1.6f)]
+        [TestCase(1f,1f,0f)]
+        [TestCase(1f,1f,float.NaN)]
+        public void IllustrativeFrameRejectsInvalidBoundsOrAspect(float halfWidth,float halfHeight,float aspect)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(()=>ShipPreviewStage.ReferenceFrameSize(new Vector2(halfWidth,halfHeight),aspect));
+        }
+
         [TestCase("civilization.federation", "ship-design.source-cruiser", ShipPreviewDisclosure.Owned, ShipVisualCatalog.ExplorationCruiser)]
         [TestCase("civilization.federation", "ship-design.source-cruiser", ShipPreviewDisclosure.LawfullyVisible, ShipVisualCatalog.ExplorationCruiser)]
         [TestCase("civilization.federation", "ship-design.source-cruiser", ShipPreviewDisclosure.None, null)]

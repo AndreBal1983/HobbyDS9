@@ -10,6 +10,50 @@ namespace HobbyDS9.UnityClient.Tests
     public sealed class ClientTests
     {
         private static CampaignHost Start() => new CampaignHost(Resources.Load<TextAsset>("ds9-slice").bytes);
+        [UnityEngine.TestTools.UnityTest]
+        public System.Collections.IEnumerator CompactEngineeringViewportKeepsClearReachableAndAllProjectsScrollable()
+        {
+            var host = Start(); var before = host.SaveJson();
+            var window = ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();
+            try
+            {
+                window.position = new Rect(50, 50, 360, 340); window.Show();
+                var outer = new ScrollView(ScrollViewMode.Vertical); outer.style.height = 320; outer.style.flexShrink = 0;
+                window.rootVisualElement.Add(outer);
+                var view = ResearchView(host); outer.Add(view);
+                yield return null; yield return null;
+                var projects = view.Q<ScrollView>("engineering-projects");
+                Assert.That(projects.layout.height, Is.InRange(180f, 220f));
+                Assert.That(projects.Query<Button>().ToList().Count, Is.EqualTo(20));
+                var clear = view.Q<Button>("clear-engineering-target");
+                outer.ScrollTo(clear); yield return null; yield return null;
+                Assert.That(outer.contentViewport.worldBound.Contains(clear.worldBound.center), Is.True);
+                Assert.That(projects.verticalScroller.highValue, Is.GreaterThan(0));
+                Assert.That(host.SaveJson(), Is.EqualTo(before));
+            }
+            finally { window.Close(); }
+        }
+        [Test]
+        public void EngineeringTreeShowsAllTwentyProjectsWithoutChangingCampaignState()
+        {
+            var host = Start(); var before = host.SaveJson();
+            var view = new ResearchPanelView();
+            view.Present(host.Snapshot, host.Client, operation => operation());
+            var projects = view.Q<ScrollView>("engineering-projects");
+            Assert.That(projects, Is.Not.Null);
+            var actor = host.Snapshot.Campaign.Civilizations.Single(c => c.ControllerKind == ControllerKind.Human);
+            var cards = ResearchOverviewSnapshot.For(host.Snapshot, actor.CivilizationId).Engineering;
+            Assert.That(cards.Count, Is.EqualTo(20));
+            foreach (var card in cards)
+            {
+                var button = projects.Q<Button>("target-" + card.Definition.DefinitionId.Value);
+                Assert.That(button, Is.Not.Null);
+                Assert.That(button.enabledSelf, Is.EqualTo(card.CanTarget));
+            }
+            Assert.That(view.Q<Button>("clear-engineering-target"), Is.Not.Null);
+            Assert.That(projects.Q<Button>("clear-engineering-target"), Is.Null);
+            Assert.That(host.SaveJson(), Is.EqualTo(before));
+        }
         private static CampaignHost BlueprintCampaign(bool complete)
         {
             var host = Start();
@@ -118,7 +162,7 @@ namespace HobbyDS9.UnityClient.Tests
             var application=view.Q<VisualElement>("engineering-engineering.advanced-starship-engineering");
             Assert.That(application,Is.Not.Null);Assert.That(application.Query<Label>().ToList().Any(l=>l.text.Contains("Propulsion interval 1→2, breakthrough 2")),Is.True);
             Assert.That(view.Q<Button>("target-engineering.advanced-starship-engineering").enabledSelf,Is.False);
-            Assert.That(view.Query<ProgressBar>().ToList().Count,Is.EqualTo(7));Assert.That(host.SaveJson(),Is.EqualTo(before));
+            Assert.That(view.Query<ProgressBar>().ToList().Count,Is.EqualTo(26));Assert.That(host.SaveJson(),Is.EqualTo(before));
         }
         [Test]
         public void ResearchSplitPreviewIsLocalAndSubmissionUsesRealStampedBoundary()
@@ -154,9 +198,9 @@ namespace HobbyDS9.UnityClient.Tests
             host.LoadJson(Newtonsoft.Json.JsonConvert.SerializeObject(save));var actor=new HobbyDS9.Contracts.EntityId("civ.federation");var app=new DefinitionId("engineering.advanced-starship-engineering");
             Assert.That(ResearchView(host).Q<Button>("target-"+app.Value).enabledSelf,Is.True);
             Assert.That(host.Client.Engineering(host.Snapshot,actor,app).Accepted,Is.True);Assert.That(host.EndTurn().Status,Is.EqualTo(TurnStatus.Completed));
-            var progress=ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single();Assert.That(progress.Band,Is.EqualTo(EngineeringMaturityBand.Operational));
+            var progress=ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single(e => e.Definition.DefinitionId.Value == "engineering.advanced-starship-engineering");Assert.That(progress.Band,Is.EqualTo(EngineeringMaturityBand.Operational));
             Assert.That(host.Client.Engineering(host.Snapshot,actor,null).Accepted,Is.True);var json=host.SaveJson();host.LoadJson(json);
-            Assert.That(ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single().Progress,Is.EqualTo(progress.Progress));
+            Assert.That(ResearchOverviewSnapshot.For(host.Snapshot,actor).Engineering.Single(e => e.Definition.DefinitionId.Value == "engineering.advanced-starship-engineering").Progress,Is.EqualTo(progress.Progress));
             Assert.That(host.Client.Engineering(host.Snapshot,actor,app).Accepted,Is.True);for(int i=0;i<30;i++)
             {
                 var turn=host.EndTurn();Assert.That(turn.Status,Is.Not.EqualTo(TurnStatus.Rejected));
@@ -166,7 +210,7 @@ namespace HobbyDS9.UnityClient.Tests
                     Assert.That(host.FinalizeCombats().Status,Is.EqualTo(TurnStatus.Completed));
                 }
             }
-            var mature=ResearchOverviewSnapshot.For(host.Snapshot,actor);Assert.That(mature.Engineering.Single().MaturityPercent,Is.EqualTo(100));Assert.That(mature.Target,Is.Null);
+            var mature=ResearchOverviewSnapshot.For(host.Snapshot,actor);Assert.That(mature.Engineering.Single(e => e.Definition.DefinitionId.Value == "engineering.advanced-starship-engineering").MaturityPercent,Is.EqualTo(100));Assert.That(mature.Target,Is.Null);
             var before=host.SaveJson();Assert.That(ResearchView(host).Q<Button>("target-"+app.Value).enabledSelf,Is.False);Assert.That(host.SaveJson(),Is.EqualTo(before));
         }
         [Test]

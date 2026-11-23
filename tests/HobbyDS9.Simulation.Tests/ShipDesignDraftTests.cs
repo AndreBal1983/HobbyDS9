@@ -97,13 +97,75 @@ public sealed class ShipDesignDraftTests
         Assert.Contains(Evaluate(draft).Issues,i=>i.Code==DesignIssueCode.InvalidPowerAllocation);
     }
     [Fact]
-    public void ReplacementPreservesInstallationIdentityButStartsUnauthoredPowerAtZero()
+    public void ReplacementPreservesInstallationIdentityAndExplicitProfilePowerForValidation()
     {
-        var draft=Start(); draft.Replace("component.labs.v1","component.energy-bank.v1");
+        var draft=Start();var before=draft.Current; draft.Replace("component.labs.v1","component.energy-bank.v1");
         Assert.Equal("fit.labs",draft.Current.ToDto().Installations!.Single(i=>i.ComponentVersionId=="component.energy-bank.v1").InstallationId);
-        foreach(var profile in Enum.GetValues<DesignerProfile>()) Assert.Equal(0,draft.Current.Power("component.energy-bank.v1",profile).AllocatedPower);
+        foreach(var profile in Enum.GetValues<DesignerProfile>()) {Assert.Equal(before.Power("component.labs.v1",profile).AllocatedPower,draft.Current.Power("component.energy-bank.v1",profile).AllocatedPower);Assert.Equal(before.Power("component.labs.v1",profile).RequestedPower,draft.Current.Power("component.energy-bank.v1",profile).RequestedPower);}
         draft.Add("component.labs.v1");
         var ids=draft.Current.ToDto().Installations!.Select(i=>i.InstallationId).ToList(); Assert.Equal(ids.Count,ids.Distinct().Count());
+    }
+    [Fact]
+    public void PendingPackageIsDetachedCancelExactAndFitUndoRestoresAllProfiles()
+    {
+        var draft=Start();var original=JsonSerializer.Serialize(draft.Current.ToDto());var performance=JsonSerializer.Serialize(Evaluate(draft));
+        draft.PreviewAdd("component.energy-bank.v1");Assert.True(draft.HasPendingFit);Assert.False(draft.Modified);
+        Assert.Equal(original,JsonSerializer.Serialize(draft.Current.ToDto()));Assert.Equal(performance,JsonSerializer.Serialize(Evaluate(draft)));
+        Assert.Contains("component.energy-bank.v1",draft.PendingFit!.Installed.Keys);Assert.NotEmpty(draft.PreviewProposed().Issues);
+        Assert.Throws<InvalidOperationException>(()=>draft.SetCrew(999));
+        draft.CancelFit();Assert.False(draft.HasPendingFit);Assert.Equal(original,JsonSerializer.Serialize(draft.Current.ToDto()));
+        draft.PreviewAdd("component.energy-bank.v1");draft.FitProposed();Assert.True(draft.Modified);Assert.True(draft.CanUndo);
+        draft.Undo();Assert.False(draft.CanUndo);Assert.Equal(original,JsonSerializer.Serialize(draft.Current.ToDto()));
+    }
+    [Fact]
+    public void ReleaseIsExplicitActiveProfileOnlyDoesNotFillShortfallsAndUndoIsExact()
+    {
+        var draft=Start();draft.SelectProfile(DesignerProfile.Combat);draft.SetPower("component.labs.v1",0,7);
+        draft.SetPower("component.command.v1",4,1);draft.SelectProfile(DesignerProfile.Survey);draft.SetPower("component.labs.v1",5,9);
+        var survey=JsonSerializer.Serialize(draft.Current.ToDto().Profiles!.Single(p=>p.Kind==OperatingProfileKind.Survey));
+        draft.SelectProfile(DesignerProfile.Combat);var before=JsonSerializer.Serialize(draft.Current.ToDto());Assert.True(draft.CanReleaseUnusedPower);
+        draft.ReleaseUnusedPower();Assert.Equal(0,draft.Current.Power("component.labs.v1",DesignerProfile.Combat).AllocatedPower);
+        Assert.Equal(1,draft.Current.Power("component.command.v1",DesignerProfile.Combat).AllocatedPower);
+        Assert.Equal(survey,JsonSerializer.Serialize(draft.Current.ToDto().Profiles!.Single(p=>p.Kind==OperatingProfileKind.Survey)));
+        Assert.Contains(draft.Preview().Issues,i=>i.Profile==DesignerProfile.Combat && i.SystemId=="component.command.v1" && i.Severity==DesignerStatus.HardError);
+        draft.Undo();Assert.Equal(before,JsonSerializer.Serialize(draft.Current.ToDto()));
+    }
+    [Fact]
+    public void ReplacementPreviewDoesNotChangeOriginalAndRetainsInvalidPowerAfterFit()
+    {
+        var draft=Start();draft.SelectProfile(DesignerProfile.Survey);draft.SetPower("component.labs.v1",24,999);var original=JsonSerializer.Serialize(draft.Current.ToDto());
+        draft.PreviewReplace("component.labs.v1","component.energy-bank.v1");Assert.Equal(original,JsonSerializer.Serialize(draft.Current.ToDto()));
+        Assert.Equal(999,draft.PendingFit!.Power("component.energy-bank.v1",DesignerProfile.Survey).AllocatedPower);
+        draft.FitProposed();Assert.Contains(Evaluate(draft).Issues,i=>i.Code==DesignIssueCode.InvalidPowerAllocation);
+        draft.Undo();Assert.Equal(original,JsonSerializer.Serialize(draft.Current.ToDto()));
+    }
+    [Fact]
+    public void ReplacingIntoExistingStackRetainsSummedExplicitAllocationsAndCanUndo()
+    {
+        var draft=Start();draft.Add("component.energy-bank.v1");draft.SelectProfile(DesignerProfile.Survey);draft.SetPower("component.energy-bank.v1",3,2);
+        var original=draft.Current;var dto=JsonSerializer.Serialize(original.ToDto());draft.PreviewReplace("component.labs.v1","component.energy-bank.v1");draft.FitProposed();
+        foreach(var profile in Enum.GetValues<DesignerProfile>()){var power=draft.Current.Power("component.energy-bank.v1",profile);
+            Assert.Equal(original.Power("component.labs.v1",profile).RequestedPower+original.Power("component.energy-bank.v1",profile).RequestedPower,power.RequestedPower);
+            Assert.Equal(original.Power("component.labs.v1",profile).AllocatedPower+original.Power("component.energy-bank.v1",profile).AllocatedPower,power.AllocatedPower);}
+        draft.Undo();Assert.Equal(dto,JsonSerializer.Serialize(draft.Current.ToDto()));
+    }
+    [Fact]
+    public void RealBackendIssuesKeepExactProfileInstallationPathAndIndividualCount()
+    {
+        var draft=Start();draft.SelectProfile(DesignerProfile.Combat);draft.SetPower("component.command.v1",4,1);draft.SetPower("component.labs.v1",0,5);
+        draft.SelectProfile(DesignerProfile.Survey);draft.SetPower("component.labs.v1",24,999);
+        var actual=Evaluate(draft);var projected=draft.Preview();Assert.Equal(actual.Issues.Count,projected.Issues.Count);
+        foreach(var issue in actual.Issues)Assert.Contains(projected.Issues,i=>i.SourcePath==issue.Path && i.Explanation.StartsWith(issue.Message,StringComparison.Ordinal));
+        Assert.Contains(projected.Issues,i=>i.Profile==DesignerProfile.Combat && i.SystemId=="component.labs.v1" && i.Field=="allocated" && i.Explanation.Contains("allocated 5"));
+        Assert.Contains(projected.Issues,i=>i.Profile==DesignerProfile.Survey && i.SystemId=="component.labs.v1" && i.Explanation.Contains("allocated 999"));
+    }
+    [Fact]
+    public void PendingFitProtectsPowerAndExitWhileNegativeRequestsStayInvalid()
+    {
+        var draft=Start();draft.SelectProfile(DesignerProfile.Survey);draft.SetPower("component.labs.v1",-1,8);var before=JsonSerializer.Serialize(draft.Current.ToDto());
+        draft.ReleaseUnusedPower();Assert.Equal(before,JsonSerializer.Serialize(draft.Current.ToDto()));
+        draft.PreviewAdd("component.energy-bank.v1");Assert.False(draft.CanReleaseUnusedPower);var exits=0;draft.RequestDiscard(()=>exits++);Assert.True(draft.ConfirmationPending);
+        draft.CancelDiscard();Assert.True(draft.HasPendingFit);Assert.Equal(0,exits);draft.CancelFit();Assert.Equal(before,JsonSerializer.Serialize(draft.Current.ToDto()));
     }
     [Fact]
     public void ResetDiscardAndCancelledTemplateChangeRestoreCompleteStartingStateExactlyOnce()

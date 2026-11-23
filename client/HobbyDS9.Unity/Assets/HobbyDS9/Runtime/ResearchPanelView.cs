@@ -67,10 +67,33 @@ namespace HobbyDS9.UnityClient
                 increases[discipline.Discipline] = Button("+ 5%", "increase-science-" + discipline.Discipline, () => { draft.SetWeight(discipline.Discipline, Math.Min(ResearchUnits.Scale, draft.Weight(discipline.Discipline) + ResearchUnits.Scale / 20)); RefreshDraft(); }, planning, "Local allocation preview", card);
             }
             RefreshDraft();
-            Add(new LcarsSectionHeader("Engineering"));
+            Add(new LcarsSectionHeader("Engineering development tree"));
+            Line($"{observed.Engineering.Count} projects • one active target • prerequisites shown below");
+            var projects = new ScrollView(ScrollViewMode.Vertical) { name = "engineering-projects" };
+            projects.style.maxHeight = 460; projects.style.minHeight = 180;
+            projects.style.height = 180;
+            projects.style.flexShrink = 0; Add(projects);
+            // The compact shell's details viewport is much shorter than the wide
+            // shell's. Keep the inner list usable alongside Clear and receipts.
+            VisualElement? viewport = null;
+            void SizeProjects()
+            {
+                if (viewport != null && viewport.layout.height > 0)
+                    projects.style.height = Math.Max(180f, Math.Min(460f, viewport.layout.height - 140f));
+            }
+            EventCallback<GeometryChangedEvent> resizeProjects = _ => SizeProjects();
+            projects.RegisterCallback<AttachToPanelEvent>(_ =>
+            {
+                viewport = GetFirstAncestorOfType<ScrollView>()?.contentViewport;
+                viewport?.RegisterCallback(resizeProjects); SizeProjects();
+            });
+            projects.RegisterCallback<DetachFromPanelEvent>(_ =>
+            {
+                viewport?.UnregisterCallback(resizeProjects); viewport = null;
+            });
             foreach (var application in observed.Engineering)
             {
-                var definition = application.Definition; var card = new VisualElement { name = "engineering-" + definition.DefinitionId.Value }; card.AddToClassList("research-card"); Add(card);
+                var definition = application.Definition; var card = new VisualElement { name = "engineering-" + definition.DefinitionId.Value }; card.AddToClassList("research-card"); projects.Add(card);
                 var state = application.Band == EngineeringMaturityBand.Mature ? "Completed" : application.IsTarget ? "Current" : application.ScienceSatisfied.All(s => s) && application.PrerequisitesSatisfied.All(s => s) ? "Available" : "Locked";
                 Line(definition.DisplayName + " • " + KindLabel(definition.Kind) + " • " + state, card);
                 card.Add(new ProgressBar { value = application.MaturityPercent, title = $"{application.MaturityPercent}% • {(state == "Completed" ? state : application.Band.ToString())}" });

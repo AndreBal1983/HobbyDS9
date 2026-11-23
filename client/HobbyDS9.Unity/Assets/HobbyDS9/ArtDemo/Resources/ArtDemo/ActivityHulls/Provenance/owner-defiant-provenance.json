@@ -1,0 +1,15 @@
+{
+  "assetId": "defiant-class.meshy.owner-provided",
+  "status": "Owner-provided textured Blender source; stored, not runtime integrated",
+  "receivedDate": "2026-10-24",
+  "sourceFile": "C:/Users/ambal/Downloads/Meshy_AI_Defiant_Starship_Sche_1024184005_texture.blend",
+  "projectFile": "assets/art/defiant-class-meshy/defiant-class-textured.blend",
+  "bytes": 78395035,
+  "sha256": "15526c4097f98ddf147f9fa6c28c44f4ceecb54ae8843076a5d61df9f4008f82",
+  "provider": "Meshy, based on owner-provided filename; task identity not supplied",
+  "originalDownloadPreserved": true,
+  "contentsExecuted": false,
+  "sceneInspected": false,
+  "licenseStatus": "Not supplied with this file; retain source attribution and verify before redistribution",
+  "runtimeAcceptance": "Not evaluated; no gameplay, import or save changes"
+}

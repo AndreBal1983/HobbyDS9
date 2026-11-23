@@ -1,0 +1,208 @@
+{
+  "schema": 1,
+  "version": "playtest-status-icons-v1",
+  "status": "original proposed receiving strokes; not runtime imports",
+  "canvas": [
+    30,
+    30
+  ],
+  "strokeWidth": 2,
+  "strokeColor": "inherit",
+  "fill": "none",
+  "receiving": "Use existing ReviewIcon/Painter2D Line pattern. Each array is x,y pairs; every polyline is separately stroked. Do not add an SVG package.",
+  "icons": {
+    "ship": {
+      "polylines": [
+        [
+          3,
+          19,
+          7,
+          13,
+          11,
+          13,
+          11,
+          7,
+          15,
+          4,
+          19,
+          7,
+          19,
+          13,
+          23,
+          13,
+          27,
+          19,
+          21,
+          21,
+          9,
+          21,
+          3,
+          19
+        ],
+        [
+          7,
+          13,
+          7,
+          6
+        ],
+        [
+          23,
+          13,
+          23,
+          6
+        ],
+        [
+          12,
+          24,
+          18,
+          24
+        ]
+      ],
+      "meaning": "Generic vessel only; exact disclosed hull thumbnail takes priority"
+    },
+    "supply": {
+      "polylines": [
+        [
+          6,
+          11,
+          24,
+          11,
+          24,
+          26,
+          6,
+          26,
+          6,
+          11
+        ],
+        [
+          10,
+          11,
+          10,
+          6,
+          20,
+          6,
+          20,
+          11
+        ],
+        [
+          6,
+          17,
+          24,
+          17
+        ],
+        [
+          15,
+          11,
+          15,
+          26
+        ]
+      ],
+      "meaning": "Actual general supply field only; not torpedo ammunition"
+    },
+    "shield": {
+      "polylines": [
+        [
+          15,
+          3,
+          25,
+          7,
+          24,
+          18,
+          21,
+          23,
+          15,
+          27,
+          9,
+          23,
+          6,
+          18,
+          5,
+          7,
+          15,
+          3
+        ]
+      ],
+      "meaning": "Reported shield state; preserve sectors"
+    },
+    "mission": {
+      "polylines": [
+        [
+          5,
+          23,
+          11,
+          23,
+          11,
+          15,
+          20,
+          15,
+          20,
+          7,
+          26,
+          7
+        ],
+        [
+          22,
+          3,
+          26,
+          7,
+          22,
+          11
+        ],
+        [
+          3,
+          20,
+          7,
+          20,
+          7,
+          26,
+          3,
+          26,
+          3,
+          20
+        ]
+      ],
+      "meaning": "Accepted order/activity; not an unsent draft"
+    },
+    "survey": {
+      "polylines": [
+        [
+          5,
+          25,
+          5,
+          5,
+          10,
+          6,
+          15,
+          9,
+          20,
+          14,
+          24,
+          20,
+          25,
+          25,
+          5,
+          25
+        ],
+        [
+          5,
+          25,
+          18,
+          12
+        ],
+        [
+          5,
+          14,
+          9,
+          15,
+          12,
+          18,
+          14,
+          22,
+          14,
+          25
+        ]
+      ],
+      "meaning": "Reported exploration/survey capability only"
+    }
+  }
+}

@@ -9,16 +9,20 @@ using UnityEngine.UIElements;
 namespace HobbyDS9.UnityReview
 {
     // Live player panels: all facts, prices/progress/eligibility from the scoped session.
-    public sealed class ReviewPlayerView
+    public sealed partial class ReviewPlayerView
     {
         private readonly ReviewUiModel model;private readonly ReviewWorkspace workspace;
         private readonly Func<VisualElement,string,Action,Button> button;
+        private readonly Action<Button,Action> bindButton;
         private readonly Action<Action> perform;private readonly Action<string,Action> confirm;
+        private readonly Action<string,string,string,Action>? confirmConsequence;
+        private readonly Action<ReviewEngineeringDialog>? showEngineering;
+        private readonly Action<Action>? performResearch;
         private readonly Action<ReviewWorkspacePage> navigate;private readonly Action<string,string?,string?> selectFleet;
         private string? colony {get=>workspace.SelectedColony;set=>workspace.SelectedColony=value;}
         private KnownRouteOffer? route {get=>workspace.RoutePreview;set=>workspace.RoutePreview=value;}
-        public ReviewPlayerView(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate,Action<string,string?,string?> selectFleet)
-        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;this.selectFleet=selectFleet;}
+        public ReviewPlayerView(ReviewUiModel model,ReviewWorkspace workspace,Func<VisualElement,string,Action,Button> button,Action<Action> perform,Action<string,Action> confirm,Action<ReviewWorkspacePage> navigate,Action<string,string?,string?> selectFleet,Action<Button,Action> bindButton,Action<string,string,string,Action>? confirmConsequence=null,Action<ReviewEngineeringDialog>? showEngineering=null,Action<Action>? performResearch=null)
+        {this.model=model;this.workspace=workspace;this.button=button;this.perform=perform;this.confirm=confirm;this.navigate=navigate;this.selectFleet=selectFleet;this.bindButton=bindButton;this.confirmConsequence=confirmConsequence;this.showEngineering=showEngineering;this.performResearch=performResearch;}
         private bool Editable=>model.Current.Frame.Status.Phase==SessionPhase.Planning&&(model.Current.Frame.Demo==null||model.Current.Frame.Demo.Outcome==CampaignDemoOutcome.Active)&&!model.Current.HasPendingWork&&!model.Current.RefreshRequired&&!model.Current.Dirty&&!model.Busy&&!model.Closed;
         private static Label Text(VisualElement p,string text,string cls="console-copy",string? id=null)
         {var l=new Label(text){name=id??""};l.AddToClassList(cls);p.Add(l);return l;}
@@ -31,70 +35,78 @@ namespace HobbyDS9.UnityReview
         {
             root.Clear();var facts=model.Current.Frame.Strategy!;var columns=Row(root,"console-columns");
             if(page==ReviewWorkspacePage.Research)Research(columns,facts);
-            else if(page==ReviewWorkspacePage.Worlds)Worlds(columns,facts);
+            else if((page==ReviewWorkspacePage.Empire||page==ReviewWorkspacePage.Worlds)&&model.PlayableFleet&&!workspace.WorldDetailsOpen)new ReviewWorldLedger(model,workspace,button,perform,navigate,confirm).Render(columns);
+            else if(page==ReviewWorkspacePage.Worlds)
+            {workspace.PendingWorldInspection=null;workspace.PendingWorldDetails=false;Worlds(columns,facts);}
             else if(page==ReviewWorkspacePage.Production)Production(columns,facts);
             else if(page==ReviewWorkspacePage.FleetOrders)Fleets(columns,facts);
             else Map(columns,facts);
         }
         private void Research(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
+            if(workspace.ResearchTab=="engineering"){Engineering(root,facts);return;}
             var main=Panel(root,"Science & Engineering");var aside=Panel(root,"R&D direction","console-aside");
             var tabs=Row(main,"console-tabs");
             foreach(var tab in new[]{"science","engineering"}){var b=Btn(tabs,tab=="science"?"Science":"Engineering","research-tab-"+tab,()=>perform(()=>workspace.ResearchTab=tab));b.EnableInClassList("selected-tab",workspace.ResearchTab==tab);}
             var r=facts.Research;var d=model.ResearchInputs()!;bool edit=Editable&&d.Current(model.Current.Frame);
+            var frame=model.Current.Frame;
+            var bars=new System.Collections.Generic.Dictionary<ScienceDiscipline,ReviewAllocationBar>();
+            var labels=new System.Collections.Generic.Dictionary<ScienceDiscipline,Label>();
+            void Preview(ReviewResearchDraft values)
+            {foreach(var pair in bars)pair.Value.SetUnits(values.Weight(pair.Key));foreach(var pair in labels)pair.Value.text=values.PercentLabel(pair.Key);}
+            void CommitScience(Action editPlan)
+            {
+                if(!Editable||!d.Current(model.Current.Frame)||!ReferenceEquals(frame,model.Current.Frame))return;
+                editPlan();Preview(d);
+                if(model.QueueScienceAllocation(d))ScheduleResearchCommit(root);
+            }
+
             if(workspace.ResearchTab=="science")
             {
-                if(!workspace.Compact)Text(main,"Invest in discovery","console-intro");
-                var grid=Row(main,"science-grid");grid.name="six-science-cards";
+                Text(main,"Science allocation · TOTAL 100%","console-intro","science-allocation-total");
+                var grid=new VisualElement{name="six-science-cards"};grid.AddToClassList("science-allocation-bank");main.Add(grid);
+                var colours=new[]{new Color(.94f,.69f,.42f),new Color(.73f,.67f,.90f),new Color(.62f,.85f,.98f),new Color(.94f,.69f,.42f),new Color(.73f,.60f,.80f),new Color(.52f,.72f,.83f)};
                 foreach(var card in r.Science)
                 {
-                    var c=new VisualElement{name="science-card-"+card.Discipline};c.AddToClassList("science-card");grid.Add(c);
-                    if(workspace.Compact)
-                    {
-                        c.AddToClassList("science-compact-row");var name=new VisualElement();name.style.width=145;c.Add(name);Text(name,card.Discipline.ToString(),"console-section");Text(name,"Level "+card.Level+" · "+card.ProgressPercent.ToString("0.##")+"%");
-                        var share=Text(c,(100m*d.Weight(card.Discipline)/600).ToString("0.##")+"%","console-metric");share.style.width=75;
-                        Btn(c,"−","science-minus-"+card.Discipline,()=>perform(()=>d.Adjust(card.Discipline,-30)),edit&&d.Weight(card.Discipline)>0);Btn(c,"+","science-plus-"+card.Discipline,()=>perform(()=>d.Adjust(card.Discipline,30)),edit&&d.Weight(card.Discipline)<600);
-                        Btn(c,"Details","science-details-"+card.Discipline,()=>perform(()=>workspace.ScienceDetails=workspace.ScienceDetails==card.Discipline?null:card.Discipline));
-                        continue;
-                    }
-                    Text(c,card.Discipline.ToString(),"console-section");Text(c,"Level "+card.Level+" / "+card.MaxLevel);
-                    c.Add(new ProgressBar{value=(float)card.ProgressPercent});
-                    Text(c,card.ProgressPercent.ToString("0.##")+"% to next level");
-                    Text(c,(100m*d.Weight(card.Discipline)/ResearchUnits.Scale).ToString("0.##")+"% Science share","console-metric");
-                    var controls=Row(c);
-                    Btn(controls,"− 5%","science-minus-"+card.Discipline,()=>perform(()=>d.Adjust(card.Discipline,-30)),edit&&d.Weight(card.Discipline)>0);
-                    Btn(controls,"+ 5%","science-plus-"+card.Discipline,()=>perform(()=>d.Adjust(card.Discipline,30)),edit&&d.Weight(card.Discipline)<600);
-                    var details=new Foldout{text="Breakthrough details",value=false};c.Add(details);
-                    foreach(var point in card.Breakpoints)Text(details,(point.Achieved?"✓ ":"○ ")+"Breakthrough "+point.Ordinal+" · threshold "+Units(point.Threshold));
-                    if(card.AllocatedWhileMaxed)Text(details,"This share stays in reserve at maximum level. Reallocate explicitly to use it elsewhere.");
+                    var discipline=card.Discipline;var canAdjust=edit&&d.CanAdjust(discipline);
+                    var c=Row(grid,"science-allocation-row");c.name="science-card-"+discipline;
+                    var label=new VisualElement();label.AddToClassList("science-allocation-label");c.Add(label);
+                    Btn(label,discipline.ToString(),"science-details-"+discipline,()=>perform(()=>workspace.ScienceDetails=workspace.ScienceDetails==discipline?null:discipline));
+                    Text(label,"Level "+card.Level+" · "+card.ProgressPercent.ToString("0.##")+"%","science-allocation-level");
+                    var bar=new ReviewAllocationBar("science-bar-"+discipline,d.Weight(discipline),colours[(int)discipline-1],
+                        value=>CommitScience(()=>d.SetWeight(discipline,value)),value=>{
+                            if(!d.Current(model.Current.Frame))return;
+                            var preview=d.PreserveUnsubmittedEdits(frame);preview.SetWeight(discipline,value);Preview(preview);
+                        });bar.SetEnabled(canAdjust);c.Add(bar);bars.Add(discipline,bar);
+                    var exact=new VisualElement();exact.AddToClassList("science-allocation-exact");c.Add(exact);
+                    labels.Add(discipline,Text(exact,d.PercentLabel(discipline),"science-allocation-percent"));
+                    var locked=d.IsLocked(discipline);var actionLabel=(locked?"Unlock allocation":"Lock allocation")+" · "+discipline;
+                    var lockToggle=new Toggle(actionLabel){name="science-lock-"+discipline,value=locked,tooltip=actionLabel+(locked?" · share locked":" · share unlocked")};
+                    lockToggle.AddToClassList("science-allocation-lock");lockToggle.EnableInClassList("allocation-is-locked",locked);lockToggle.labelElement.style.display=DisplayStyle.None;
+                    var check=lockToggle.Q(className:"unity-toggle__checkmark");if(check!=null)check.style.display=DisplayStyle.None;
+                    var icon=new ReviewIcon(locked?ReviewIconKind.LockClosed:ReviewIconKind.LockOpen,actionLabel);icon.style.position=Position.Absolute;icon.style.left=6;icon.style.top=5;
+                    icon.style.color=locked?new Color(.94f,.69f,.42f):new Color(.73f,.67f,.9f);lockToggle.Add(icon);lockToggle.SetEnabled(edit);c.Add(lockToggle);
+                    lockToggle.RegisterValueChangedCallback(e=>{if(Editable&&d.Current(model.Current.Frame))perform(()=>d.SetLocked(discipline,e.newValue));});
+                    var steps=new VisualElement();steps.AddToClassList("science-allocation-steps");c.Add(steps);
+                    Btn(steps,"−","science-minus-"+discipline,()=>CommitScience(()=>d.Adjust(discipline,-30)),canAdjust&&d.Weight(discipline)>0);
+                    Btn(steps,"+","science-plus-"+discipline,()=>CommitScience(()=>d.Adjust(discipline,30)),canAdjust&&d.Weight(discipline)<600);
                 }
-                Btn(main,"Equalize Science","integrated-equalize-science",()=>perform(()=>d.Equalize()),edit);
-                var receipts=new Foldout{text="Latest-turn research",value=false};main.Add(receipts);
-                foreach(var receipt in r.Receipts)Text(receipts,receipt.Category+" · "+Units(receipt.Amount)+(receipt.Discipline.HasValue?" · "+receipt.Discipline:""));
-            }
-            else
-            {
-                Text(main,"Develop capabilities","console-intro");
-                foreach(var project in r.Engineering)
+                Text(main,"Release a slider or use the keyboard to apply. Total 100%; locked shares stay fixed while unlocked shares rebalance proportionally.","console-copy");
+                if(!r.Science.Any(c=>d.CanAdjust(c.Discipline)))Text(main,"Unlock at least two disciplines to redistribute Science.","console-copy","science-lock-reason");
+                var scienceActions=Row(main);
+                Btn(scienceActions,"Equalize unlocked","integrated-equalize-science",()=>CommitScience(d.Equalize),edit&&r.Science.Any(c=>d.CanAdjust(c.Discipline)));
+                var receipts=new Foldout{text="Latest-turn Science",value=false};main.Add(receipts);
+                var recorded=false;
+                foreach(var receipt in r.Receipts)
                 {
-                    var card=new VisualElement{name="engineering-project-"+project.Definition.DefinitionId};card.AddToClassList("console-queue");main.Add(card);
-                    var demo=model.Current.Frame.Demo!=null;
-                    Text(card,project.Definition.DisplayName,"console-section","engineering-project-heading");
-                    if(demo)
-                    {
-                        var designs=string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct());
-                        Text(card,"Demo construction: "+(designs.Length==0?"no ship designs offered":designs+" only")+". Other class unlocks are unavailable here.",id:"engineering-demo-construction");
-                    }
-                    Text(card,project.Band==EngineeringMaturityBand.Mature?"Completed":project.IsTarget?"Current project":Reason(project.UnavailableReason),id:"engineering-project-state");
-                    card.Add(new ProgressBar{value=project.MaturityPercent});Text(card,project.MaturityPercent+"% · "+project.Band,"console-metric");
-                    Text(card,"Project cost: "+Units(project.Cost)+(demo?" Engineering points":" research points"),id:"engineering-project-cost");
-                    if(!demo){Text(card,project.Definition.EffectSummary);Text(card,"Construction in this preview supports "+string.Join(", ",facts.Construction.Select(o=>ShipName(o.Design)).Distinct())+". Additional class unlocks are not available here yet.");}
-                    var requirements=new Foldout{name="engineering-project-details",text=demo?"Details — authored effect & requirements":"Requirements & progress",value=false};card.Add(requirements);
-                    if(demo){Text(requirements,"Authored effect; the demo construction limits above still apply.",id:"engineering-effect-qualifier");Text(requirements,project.Definition.EffectSummary,id:"engineering-authored-effect");}
-                    for(int i=0;i<project.Definition.ScienceRequirements.Count;i++){var q=project.Definition.ScienceRequirements[i];Text(requirements,(project.ScienceSatisfied[i]?"✓ ":"○ ")+q.Discipline+" interval "+q.IntervalStartLevel+" breakthrough "+q.BreakthroughOrdinal);}
-                    Btn(card,"Develop project","integrated-develop-"+project.Definition.DefinitionId,()=>confirm("Develop "+project.Definition.DisplayName+"? Earned progress is retained when you change targets. Work progresses on End turn.",()=>perform(()=>model.Engineering(project.Definition.DefinitionId.Value,ReviewUiModel.NewCommandId()))),edit&&project.CanTarget,true);
+                    var discipline=receipt.Discipline?.ToString()??"Science";string? label=null;
+                    if(receipt.Category=="science-allocated")label="Points allocated to Science: "+Units(receipt.Amount);
+                    else if(receipt.Category=="science-spent")label=discipline+" · points spent: "+Units(receipt.Amount);
+                    else if(receipt.Category=="science-level")label=discipline+" reached level "+receipt.Amount;
+                    else if(receipt.Category=="science-breakthrough")label=discipline+" · discovery "+receipt.BreakthroughOrdinal+" · level "+receipt.IntervalStartLevel+" → "+(receipt.IntervalStartLevel+1);
+                    if(label!=null){Text(receipts,label);recorded=true;}
                 }
-                Btn(main,"Clear Engineering target","integrated-clear-engineering",()=>confirm("Clear the current Engineering target? Earned progress will remain.",()=>perform(()=>model.Engineering(null,ReviewUiModel.NewCommandId()))),edit&&r.Target.HasValue);
+                if(!recorded)Text(receipts,"No Science activity recorded for the latest turn.");
             }
             if(workspace.ScienceDetails.HasValue&&workspace.ResearchTab=="science")
             {
@@ -103,16 +115,80 @@ namespace HobbyDS9.UnityReview
                 foreach(var point in detail.Breakpoints)Text(aside,(point.Achieved?"✓ ":"○ ")+"Breakthrough "+point.Ordinal+" · threshold "+Units(point.Threshold));
                 Btn(aside,"Close details","science-close-details",()=>perform(()=>workspace.ScienceDetails=null));
             }
+            ResearchDirection(aside,r,d,edit);
+        }
+        private void ResearchDirection(VisualElement aside,ResearchOverviewSnapshot r,ReviewResearchDraft d,bool edit)
+        {
             Text(aside,"R&D capacity","console-copy");Text(aside,r.ResearchOutput.ToString(),"console-metric");
             Text(aside,"Science / Engineering");
             var split=new SliderInt(0,20){name="integrated-research-split",value=d.ScienceUnits/30};split.SetEnabled(edit);aside.Add(split);
-            Text(aside,(100m*d.ScienceUnits/600).ToString("0.##")+"% / "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"%","console-metric");
-            split.RegisterValueChangedCallback(e=>perform(()=>d.ScienceUnits=e.newValue*30));
-            Btn(aside,"Apply R&D split","integrated-apply-split",()=>confirm("Apply "+(100m*d.ScienceUnits/600).ToString("0.##")+"% Science and "+(100m*(600-d.ScienceUnits)/600).ToString("0.##")+"% Engineering? Other Science-share edits remain unsent.",()=>perform(()=>model.AllocateResearch(d.ScienceUnits,ReviewUiModel.NewCommandId()))),edit&&d.SplitChanged);
+            var splitLabel=Text(aside,"","console-metric");
+            void ShowSplit(int units)=>splitLabel.text=(100m*units/600).ToString("0.##")+"% / "+(100m*(600-units)/600).ToString("0.##")+"%";
+            ShowSplit(d.ScienceUnits);int pointer=-1,start=split.value;
+            void CommitSplit(int value)
+            {
+                if(!Editable||!d.Current(model.Current.Frame))return;
+                d.ScienceUnits=value*30;ShowSplit(d.ScienceUnits);
+                if(model.QueueResearchSplit(d))ScheduleResearchCommit(aside);
+            }
+            split.RegisterCallback<PointerDownEvent>(e=>{if(e.button==0&&edit){pointer=e.pointerId;start=split.value;}},TrickleDown.TrickleDown);
+            split.RegisterValueChangedCallback(e=>{ShowSplit(e.newValue*30);if(pointer<0)CommitSplit(e.newValue);});
+            split.RegisterCallback<PointerUpEvent>(e=>{if(pointer!=e.pointerId)return;pointer=-1;CommitSplit(split.value);},TrickleDown.TrickleDown);
+            void CancelSplit(){if(pointer<0)return;pointer=-1;split.SetValueWithoutNotify(start);ShowSplit(d.ScienceUnits);}
+            split.RegisterCallback<PointerCancelEvent>(_=>CancelSplit(),TrickleDown.TrickleDown);
+            split.RegisterCallback<PointerCaptureOutEvent>(_=>CancelSplit());
+            split.RegisterCallback<KeyDownEvent>(e=>{if(e.keyCode==KeyCode.Escape&&pointer>=0){CancelSplit();e.StopImmediatePropagation();}},TrickleDown.TrickleDown);
+            Text(aside,"Release to apply the split. Keyboard changes apply directly.");
+            Text(aside,model.ResearchCommitNotice,id:"research-allocation-status");
             Text(aside,"Science reserve: "+r.ScienceReserveConceptual);Text(aside,"Engineering reserve: "+r.EngineeringReserveConceptual+(model.Current.Frame.Demo!=null?" Engineering points":""),id:"engineering-reserve");
             Text(aside,"One Engineering project at a time. Progress and eligibility are checked by the campaign.");
-            Btn(aside,workspace.ResearchTab=="science"?"Open Engineering":"Open Science","open-other-research",()=>perform(()=>workspace.ResearchTab=workspace.ResearchTab=="science"?"engineering":"science"));
             if(!edit)Text(aside,model.Current.Frame.Demo!=null&&model.Current.Frame.Demo.Outcome!=CampaignDemoOutcome.Active?"Campaign complete. Research is available for inspection; further changes are unavailable.":"Research changes are unavailable at this boundary. Finish pending combat, refresh stale authority, or submit/discard unsent orders before editing.",id:"research-readonly-reason");
+        }
+        private bool researchFlushScheduled;
+        private void ScheduleResearchCommit(VisualElement source)
+        {
+            var status=source.panel?.visualTree.Q<Label>("research-allocation-status");if(status!=null)status.text=model.ResearchCommitNotice;
+            var tree=source.panel?.visualTree;
+            if(tree==null||researchFlushScheduled)return;
+            researchFlushScheduled=true;
+            tree.schedule.Execute(()=>{
+                researchFlushScheduled=false;
+                if(model.Closed)return;
+                var focus=(tree.panel?.focusController.focusedElement as VisualElement)?.name;
+                (performResearch??perform)(()=>model.FlushResearchAllocations());
+                if(tree.Q("review-one-use-confirmation")==null&&!string.IsNullOrEmpty(focus))
+                {var target=tree.Q<VisualElement>(focus);if(target!=null&&target.enabledInHierarchy&&target.focusable)target.Focus();}
+            }).StartingIn(20);
+        }
+        private static void EngineeringTurnReport(VisualElement parent,ResearchOverviewSnapshot research)
+        {
+            var report=new VisualElement{name="engineering-turn-report"};
+            report.AddToClassList("console-queue");parent.Add(report);
+            Text(report,"Latest turn: Engineering","console-section");
+            var hasActivity=false;
+            foreach(var receipt in research.Receipts)
+            {
+                string line;
+                switch(receipt.Category)
+                {
+                    case "engineering-allocated":
+                        line="Points added to reserve: "+Units(receipt.Amount);
+                        break;
+                    case "engineering-spent":
+                    case "engineering-mature":
+                        var project=research.Engineering.FirstOrDefault(p=>p.Definition.DefinitionId==receipt.ApplicationDefinitionId)?.Definition.DisplayName
+                            ?? "Engineering project";
+                        line=receipt.Category=="engineering-spent"
+                            ? project+" — points spent: "+Units(receipt.Amount)
+                            : project+" — completed";
+                        break;
+                    default:
+                        continue;
+                }
+                Text(report,line);
+                hasActivity=true;
+            }
+            if(!hasActivity)Text(report,"No Engineering activity recorded for the latest turn.");
         }
         private static string ShipName(ShipDesignSnapshot d)=>d.DefinitionId.Value=="ship-design.source-cruiser"?"Cruiser":d.DisplayName;
         private static string Resource(string id)=>id=="resource.dilithium"?"Dilithium":id.Substring(id.LastIndexOf('.')+1).Replace('-',' ');
@@ -151,7 +227,12 @@ namespace HobbyDS9.UnityReview
         }
         private void Map(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
+            if(model.PlayableFleet){new ReviewPlayableMap(model,workspace,button,perform,confirm,navigate,bindButton,confirmConsequence).Render(root);return;}
+            if(model.FrontierPreview){new ReviewFrontierMap(model,workspace,button,perform,confirm,navigate).Render(root);return;}
             var main=Panel(root,"Strategic operations");var aside=Panel(root,"Selection / context","console-aside");
+            // Let the existing flexible map use surplus viewport height while its
+            // minimum still permits ordinary scrolling on short windows.
+            main.contentContainer.style.flexGrow=1;
             var ordinaryColor=new Color(.61f,.76f,.87f);var wormholeColor=new Color(.72f,.64f,.9f);
             var legend=Row(main);legend.name="map-link-legend";
             foreach(var wormhole in new[]{false,true})
@@ -182,7 +263,7 @@ namespace HobbyDS9.UnityReview
                 var marker=Btn(map,node.DisplayName,"map-node-"+node.NodeId,()=>perform(()=>workspace.SelectedNode=node.NodeId.Value));marker.style.position=Position.Absolute;marker.style.width=178;marker.style.fontSize=16;marker.style.whiteSpace=WhiteSpace.Normal;
                 map.RegisterCallback<GeometryChangedEvent>(_=>{var p=Point(node.NodeId.Value);marker.style.left=p.x-89;marker.style.top=p.y-22;map.MarkDirtyRepaint();});
             }
-            Text(main,"Known navigation · arrangement is schematic. Select your fleet, then a destination to preview its route.");
+            Text(main,"Known navigation · arrangement is schematic. Select your fleet, then a destination to preview its route.",id:"integrated-map-caption");
             Text(aside,"Your fleets","console-section","map-own-fleets-heading");
             foreach(var fleet in facts.Fleets){var b=Btn(aside,"Your fleet · "+fleet.ShipIds.Count+" ship(s)\n"+NodeName(facts,fleet.LocationNodeId.Value),"map-fleet-orders-"+fleet.FleetId,()=>{workspace.SelectedFleet=fleet.FleetId.Value;selectFleet(fleet.FleetId.Value,workspace.SelectedNode,null);});b.style.whiteSpace=WhiteSpace.Normal;}
             var selected=nodes.FirstOrDefault(n=>n.NodeId.Value==workspace.SelectedNode);Text(aside,selected==null?"Your worlds — no sector selected":"Selected sector: "+selected.DisplayName,"console-intro","map-worlds-scope");
@@ -192,6 +273,7 @@ namespace HobbyDS9.UnityReview
         }
         private void Fleets(VisualElement root,CampaignIntegratedStrategySnapshot facts)
         {
+            if(model.PlayableFleet){new ReviewFleetRoster(model,workspace,button,perform,confirm,navigate).Render(root);return;}
             var main=Panel(root,"Your fleets & ships");var aside=Panel(root,"Plot a course","console-aside");
             if(workspace.SelectedFleet==null||!facts.Fleets.Any(f=>f.FleetId.Value==workspace.SelectedFleet))workspace.SelectedFleet=facts.Fleets.FirstOrDefault()?.FleetId.Value;
             foreach(var f in facts.Fleets)Btn(main,"Fleet · "+NodeName(facts,f.LocationNodeId.Value)+" · "+f.ShipIds.Count+" ships"+(f.FleetId.Value==workspace.SelectedFleet?" · selected":""),"fleet-select-"+f.FleetId,()=>perform(()=>{workspace.SelectedFleet=f.FleetId.Value;route=null;}));

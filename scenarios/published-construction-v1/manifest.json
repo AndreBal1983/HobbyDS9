@@ -1,0 +1,11 @@
+{
+  "ContentId": "published-construction-provisional-playtest-v1",
+  "CatalogueId": "support.playtest.utility-escort.v1",
+  "Revision": 1,
+  "BalanceStatus": "owner-approved-provisional-playtest-not-final-balance",
+  "SupportFile": "support.json",
+  "SupportSha256": "05417b3bf41f2b134077f6130f0c71dd2ffc27d3ec1f40593b8dfac4a2da45b3",
+  "ReplayOperationLimit": 65536,
+  "RetainedRecordBudget": 512,
+  "DefaultActivationAllowed": false
+}

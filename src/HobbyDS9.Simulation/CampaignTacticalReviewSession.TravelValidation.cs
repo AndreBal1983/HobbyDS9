@@ -25,8 +25,20 @@ namespace HobbyDS9.Simulation
         }
         private void ValidateContactRows(GameStateDto game,IReadOnlyList<CampaignContactKnowledgeDto> rows)
         {
+            if(generatedMap!=null)
+            {
+                // Generated ingress is accepted only through whole-history replay, not this structural check alone.
+                var generatedGraph=physicalNavigation!;
+                Require(rows.Select(k=>k.ActorId+"|"+k.FleetId).Distinct(StringComparer.Ordinal).Count()==rows.Count
+                    &&rows.All(k=>controllers.ContainsKey(k.ActorId)&&KnownFleetOwner(k.FleetId) is string owner
+                        &&CampaignPhysicalMovement.Hostile(declaredHostilities!,k.ActorId,owner)
+                        &&k.LastSeenTurn>=initialTurn&&k.LastSeenTurn<=game.TurnNumber
+                        &&generatedGraph.KnownNode(game,k.ActorId,k.LastSeenNodeId)
+                        &&k.TrackingNodeIds.Count==1&&k.TrackingNodeIds[0]==k.LastSeenNodeId),"Invalid generated observed contact row.");
+                return;
+            }
             Require(rows.Count==authoredContactGrids!.Count&&rows.Select(k=>k.ActorId+"|"+k.FleetId).Distinct(StringComparer.Ordinal).Count()==rows.Count,"Missing/duplicate lawful contact grid.");
-            var graph=new WeightedNavigationGraph(definitions);
+            var graph=physicalNavigation!;
             foreach(var k in rows)
             {
                 var source=authoredContactGrids.SingleOrDefault(p=>p.ActorId==k.ActorId&&p.FleetId==k.FleetId);
@@ -78,7 +90,7 @@ namespace HobbyDS9.Simulation
                     &&BigInteger.GreatestCommonDivisor(n,d)==1,"Invalid exact movement receipt.");
                 if(r.StoppedByEncounter)Require(r.TransitTotalCost==0&&r.TransitProgress==0&&r.TransitDestinationId==null&&r.EncounterId!=null,"Invalid participant movement stop.");
                 var current=game.Fleets.SingleOrDefault(f=>f.FleetId==r.FleetId);
-                Require(current==null?s.Phase==SessionPhase.Planning&&r.StoppedByEncounter:
+                Require(current==null?s.Phase==SessionPhase.Planning&&(r.StoppedByEncounter || playableHash!=null&&playableRetiredFleets.Contains(r.FleetId)):
                     current.LocationNodeId==r.EndNodeId&&current.TransitTotalCost==r.TransitTotalCost&&current.TransitProgress==r.TransitProgress
                     &&(current.TransitTotalCost==0?r.TransitDestinationId==null:current.RouteNodeIds!.FirstOrDefault()==r.TransitDestinationId),
                     "Campaign location differs from authoritative physical receipt.");
@@ -89,7 +101,8 @@ namespace HobbyDS9.Simulation
             else
             {
                 var proof=s.MovementProof;
-                FoundationValidator.ValidateGameState(proof.Start,definitions).ThrowIfInvalid(nameof(proof));
+                if(colonisation==null)FoundationValidator.ValidateGameState(proof.Start,definitions).ThrowIfInvalid(nameof(proof));
+                else FoundationValidator.ValidatePlanetaryGameState(proof.Start,definitions,MovementOwner(proof.Start)).ThrowIfInvalid(nameof(proof));
                 Require((long)proof.Start.TurnNumber+(s.Phase==SessionPhase.Planning?1:0)==game.TurnNumber,
                     "Movement proof belongs to a different strategic turn.");
                 ValidateContactRows(proof.Start,proof.Contacts);
@@ -97,18 +110,21 @@ namespace HobbyDS9.Simulation
                     &&proof.Orders.All(o=>ValidTravelOrder(proof.Start,o,proof.Contacts,allowStale:true)
                         &&o.RouteNodeIds.SequenceEqual(proof.Start.Fleets.Single(f=>f.FleetId==o.FleetId).RouteNodeIds!)),"Invalid movement input provenance.");
                 var replay=SimulationSession.CopyState(proof.Start);
-                var motion=CampaignPhysicalMovement.Execute(replay,definitions,proof.Orders,proof.Contacts,declaredHostilities!,contactFreshness);
+                var motion=CampaignPhysicalMovement.Execute(replay,definitions,proof.Orders,proof.Contacts,declaredHostilities!,contactFreshness,physicalNavigation!);
                 var expectedRequests=FreezePhysical(replay,motion);
                 var expectedContacts=proof.Contacts.Select(CampaignTacticalTravelData.Copy).ToList();
                 RefreshPhysicalContacts(expectedRequests,proof.Start.TurnNumber,expectedContacts);
-                Require(ContactKeys(expectedContacts).SequenceEqual(ContactKeys(s.Contacts)),"Forged contact freshness/location.");
+                // Format7 contact provenance is re-derived by complete accepted-operation replay on load.
+                // Legacy profiles retain the exact fixed-grid proof check.
+                if(generatedMap==null)Require(ContactKeys(expectedContacts).SequenceEqual(ContactKeys(s.Contacts)),"Forged contact freshness/location.");
                 Require(motion.Receipts.Select(ReceiptKey).SequenceEqual(s.LastMovement.Select(ReceiptKey)),"Forged movement/stop receipts.");
                 if(s.Phase==SessionPhase.AwaitingCombat)
                 {
                     Require(expectedRequests.Count==s.Requests.Count&&expectedRequests.Zip(s.Requests.OrderBy(r=>r.EncounterId,StringComparer.Ordinal),SameRequest).All(v=>v),
                         "Unlawful/forged physical encounter batch.");
                     var adjusted=SimulationSession.CopyState(game);adjusted.StateRevision=replay.StateRevision;
-                    SimulationSession.RequirePhaseChanges(replay,adjusted,allowEconomy:false);
+                    if(colonisation==null)SimulationSession.RequirePhaseChanges(replay,adjusted,allowEconomy:false);
+                    else SimulationSession.RequirePlanetaryPhaseChanges(replay,adjusted,definitions,MovementOwner(proof.Start).CopyForState(replay),MovementOwner(proof.Start).CopyForState(adjusted),false);
                 }
             }
         }

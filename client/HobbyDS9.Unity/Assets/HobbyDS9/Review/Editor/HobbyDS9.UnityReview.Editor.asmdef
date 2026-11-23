@@ -3,6 +3,6 @@
   "references": ["HobbyDS9.UnityReview"],
   "includePlatforms": ["Editor"],
   "overrideReferences": true,
-  "precompiledReferences": [],
+  "precompiledReferences": ["HobbyDS9.Contracts.dll"],
   "autoReferenced": false
 }

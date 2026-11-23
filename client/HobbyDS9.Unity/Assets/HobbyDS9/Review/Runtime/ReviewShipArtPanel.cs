@@ -9,11 +9,12 @@ namespace HobbyDS9.UnityReview
     {
         private ShipPreviewStage? stage;
         private readonly Image image;
-        public ReviewShipArtPanel(string civilizationDefinition,string shipDesignDefinition)
+        public ReviewShipArtPanel(string civilizationDefinition,string shipDesignDefinition,bool fillViewport=false)
         {
             name="owned-ship-art";stage=new ShipPreviewStage(512,320);
             stage.Show(new ShipPreviewSelection(civilizationDefinition,shipDesignDefinition,ShipPreviewDisclosure.Owned));
-            image=new Image{name="owned-ship-model",image=stage.Texture,scaleMode=UnityEngine.ScaleMode.ScaleToFit};image.style.height=180;Add(image);
+            image=new Image{name="owned-ship-model",image=stage.Texture,scaleMode=UnityEngine.ScaleMode.ScaleToFit,pickingMode=PickingMode.Ignore};image.style.height=220;Add(image);
+            if(fillViewport){style.flexGrow=1;style.minHeight=0;image.style.height=StyleKeyword.Auto;image.style.flexGrow=1;image.style.flexBasis=0;image.style.minHeight=180;}
             var label=new Label(stage.Label){name="owned-ship-art-label"};label.style.whiteSpace=WhiteSpace.Normal;Add(label);
             RegisterCallback<DetachFromPanelEvent>(_=>{image.image=null;stage?.Dispose();stage=null;});
         }

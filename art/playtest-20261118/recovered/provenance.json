@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "references": [
+    {
+      "path": "recovered/owner-fleet.png",
+      "source": "C:/HobbyDS9/artifacts/coordination/GUI-REFRESH-01/references/supplementary/owner-fleet.png",
+      "sha256": "7e645644e4528878a74fb1835fd2f2207025485b3f8ff8a0528f7addab24de18",
+      "status": "recovered owner-directed proposed/reference layout; not native acceptance"
+    },
+    {
+      "path": "recovered/production-reference-comparison.png",
+      "source": "C:/HobbyDS9/artifacts/coordination/PROD-VIS-01/production-reference-comparison.png",
+      "sha256": "9cfd81cbf6e834762dfeaa8a4b41a7dbef7b1447bfbcd05675d0da4bc5ac0acc",
+      "status": "recovered owner-directed proposed/reference layout; not native acceptance"
+    }
+  ]
+}

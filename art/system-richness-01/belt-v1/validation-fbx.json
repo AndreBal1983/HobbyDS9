@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "status": "Blender FBX reimport only; Unity/native pending",
+  "assets": [
+    {
+      "path": "Models/Belt_Rock_0_LOD0.fbx",
+      "meshes": 1,
+      "triangles": 80,
+      "materialSlots": 1,
+      "finiteVertices": true,
+      "unitNormals": true,
+      "worldBoundsCenter": [
+        -0.02891439199447632,
+        0.0,
+        0.0
+      ],
+      "uvLayers": 1,
+      "colorLayers": 1
+    },
+    {
+      "path": "Models/Belt_Rock_1_LOD0.fbx",
+      "meshes": 1,
+      "triangles": 80,
+      "materialSlots": 1,
+      "finiteVertices": true,
+      "unitNormals": true,
+      "worldBoundsCenter": [
+        -0.0003229975700378418,
+        0.0,
+        0.0
+      ],
+      "uvLayers": 1,
+      "colorLayers": 1
+    },
+    {
+      "path": "Models/Belt_Rock_2_LOD0.fbx",
+      "meshes": 1,
+      "triangles": 80,
+      "materialSlots": 1,
+      "finiteVertices": true,
+      "unitNormals": true,
+      "worldBoundsCenter": [
+        0.023905575275421143,
+        0.0,
+        0.0
+      ],
+      "uvLayers": 1,
+      "colorLayers": 1
+    },
+    {
+      "path": "Models/Belt_Rock_3_LOD0.fbx",
+      "meshes": 1,
+      "triangles": 80,
+      "materialSlots": 1,
+      "finiteVertices": true,
+      "unitNormals": true,
+      "worldBoundsCenter": [
+        0.0009376704692840576,
+        0.0,
+        -0.0010392069816589355
+      ],
+      "uvLayers": 1,
+      "colorLayers": 1
+    },
+    {
+      "path": "Models/Belt_Rock_0_LOD1.fbx",
+      "meshes": 1,
+      "triangles": 20,
+      "materialSlots": 1,
+      "finiteVertices": true,
+      "unitNormals": true,
+      "worldBoundsCenter": [
+        -0.11171147227287292,
+        -0.00047156214714050293,
+        0.0
+      ],
+      "uvLayers": 1,
+      "colorLayers": 1
+    },
+    {
+      "path": "Models/Belt_Rock_1_LOD1.fbx",
+      "meshes": 1,
+      "triangles": 20,
+      "materialSlots": 1,
+      "finiteVertices": true,
+      "unitNormals": true,
+      "worldBoundsCenter": [
+        0.015350282192230225,
+        -0.0006427466869354248,
+        0.0
+      ],
+      "uvLayers": 1,
+      "colorLayers": 1
+    },
+    {
+      "path": "Models/Belt_Rock_2_LOD1.fbx",
+      "meshes": 1,
+      "triangles": 20,
+      "materialSlots": 1,
+      "finiteVertices": true,
+      "unitNormals": true,
+      "worldBoundsCenter": [
+        0.10753566026687622,
+        0.0007292032241821289,
+        0.0
+      ],
+      "uvLayers": 1,
+      "colorLayers": 1
+    },
+    {
+      "path": "Models/Belt_Rock_3_LOD1.fbx",
+      "meshes": 1,
+      "triangles": 20,
+      "materialSlots": 1,
+      "finiteVertices": true,
+      "unitNormals": true,
+      "worldBoundsCenter": [
+        -0.045751869678497314,
+        -0.0010464787483215332,
+        0.0
+      ],
+      "uvLayers": 1,
+      "colorLayers": 1
+    },
+    {
+      "path": "Models/Belt_Example_LOD0.fbx",
+      "meshes": 1,
+      "triangles": 25600,
+      "materialSlots": 1,
+      "finiteVertices": true,
+      "unitNormals": true,
+      "worldBoundsCenter": [
+        -0.02315610647201538,
+        -0.012633085250854492,
+        0.0010095210745930672
+      ],
+      "uvLayers": 0,
+      "colorLayers": 1
+    },
+    {
+      "path": "Models/Belt_Example_LOD1.fbx",
+      "meshes": 1,
+      "triangles": 2400,
+      "materialSlots": 1,
+      "finiteVertices": true,
+      "unitNormals": true,
+      "worldBoundsCenter": [
+        -0.007788956165313721,
+        -0.007922589778900146,
+        0.0010358849540352821
+      ],
+      "uvLayers": 0,
+      "colorLayers": 1
+    },
+    {
+      "path": "Models/Belt_SoftAnnulus.fbx",
+      "meshes": 1,
+      "triangles": 384,
+      "materialSlots": 1,
+      "finiteVertices": true,
+      "unitNormals": true,
+      "worldBoundsCenter": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "uvLayers": 1,
+      "colorLayers": 0,
+      "restoredBlenderXYPlane": true
+    }
+  ]
+}

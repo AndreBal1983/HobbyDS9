@@ -1,0 +1,55 @@
+Galaxy designer receiving pack, 24 October 2026
+
+Use Models/ and Textures/ with asset-contract.json. Native Unity import and
+presentation binding remain the receiver's acceptance step. Nothing here
+changes hull availability, gameplay legality, saves, or component statistics.
+
+There are 10 independent parts, each with LOD0 and LOD1:
+GalaxyHull; GalaxyHullCutaway; GalaxyNacelle_Port / Starboard;
+SovereignNacelle_Port / Starboard; WarpCore; Deflector_Amber_oval;
+Deflector_Blue_concentric; Deflector_Segmented_survey.
+
+Base hull includes pylons but excludes fixed nacelles, core and deflector.
+Faces using source deflector materials were removed before hull LOD generation;
+the exact removal counts are in fixedHullSeparation in asset-contract.json.
+Use GalaxyHull OR GalaxyHullCutaway, never both simultaneously. Cutaway retains
+the starboard half shell so the actual internal core can be displayed; complete
+interior decks/bulkheads are not modelled.
+
+COORDINATES / ATTACHMENT
+Units: metres. Unity convention +Z bow, +Y up, +X starboard.
+Hull origin is the retained source-model origin. Component mesh geometry is
+relative to its named socket, with identity rotation and unit scale. Apply its
+socket translation exactly ONCE. Do not offset both the module and its parent.
+Port nacelle: (-125.6418, -49.131, -214.65)
+Starboard nacelle: (125.4987, -49.131, -214.65)
+Core: (0, -56.286, -64.395)
+Deflector: (0, -64.395, 75.366)
+No negative-scale mirroring is needed; both nacelles are independently exported.
+FBX uses the earlier tested Federation export axes (-Z forward, Y up) from a
+Blender -Y-bow/Z-up metre working scene. Its FBX reimport was assembled and
+rendered successfully. OBJ fallback explicitly writes Unity-coordinate vertices
+and normals (+Z bow / +Y up) and references GalaxyMaterials.mtl.
+Receiver must confirm native Unity axis/unit interpretation before binding.
+
+DETAIL AND MATERIALS
+Classic assembled fit: 82,860 triangles LOD0 / 20,617 LOD1.
+Sovereign assembled fit: 75,534 triangles LOD0 / 19,041 LOD1.
+Twelve shared presentation material roles. Four portable 2K PNG albedo maps
+(sRGB), preserving the already-baked subdued source panel colours; no lighting
+is baked into the maps. Shader factors are explicit in asset-contract.json.
+Metallic/roughness are scalar values. No normal-map texture is supplied.
+Emission uses dedicated material submeshes and explicit linear RGB/strength;
+no emission texture mask is supplied. Do not drop these material assignments
+when converting to the receiving URP shader. Source material consolidation is
+recorded as materialSourceMapping. Read smoothness as 1 - roughness.
+
+VALIDATION
+Proofs contains classic, Sovereign LOD0/LOD1, core cutaway and actual FBX
+reimport assembly renders. The receiving-pack source is in Sources/. The
+original high-detail study remains untouched at its original path.
+Superseded-material-assignment-v1 is failed QA evidence, not a delivery source.
+Only paths in delivery-manifest.json are selected for delivery.
+CPU only, four threads, no Unity/GPU/native build/import. No Meshy spend.
+See ATTRIBUTION.txt and SOURCE-LICENSE.html for the original Chris Kuhn /
+Kuhn Industries CC BY-NC-SA 3.0 source and derivative trail.

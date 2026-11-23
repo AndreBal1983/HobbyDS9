@@ -102,18 +102,28 @@ namespace HobbyDS9.UnityClient
             if(result.Cost!=null)
             {
                 costs.Add(M("Construction",$"{result.Cost.Credits} credits / {result.Cost.Industry} industry"));
+                costs.Add(M("Credit policy","Compiled valuation; actual legacy/static and published orders retain credit charges. Normal streamed Cycle construction uses Industry/materials without a credit debit."));
                 costs.Add(M("Maintenance (informational)",result.Cost.Maintenance));
                 foreach(var resource in result.Cost.Resources) costs.Add(M(resource.ResourceDefinitionId,resource.Amount));
             }
             var dto=fit.ToDto();
-            var issues=result.Issues.Select(i=>new DesignerIssue(
-                dto.Installations!.FirstOrDefault(x=>i.Path.Contains(x.InstallationId))?.ComponentVersionId ?? "",
-                i.Severity==DesignIssueSeverity.Error?DesignerStatus.HardError:DesignerStatus.Warning,
-                i.Message,IssueProfile(i.Path)));
+            var issues=result.Issues.Select(i=>{
+                var installed=dto.Installations!.FirstOrDefault(x=>i.Path.Contains("["+x.InstallationId+"]"));
+                var issueProfile=IssueProfile(i.Path);var field="";var explanation=i.Message;
+                if(installed!=null && issueProfile.HasValue)
+                {
+                    var entry=result.Profiles.SingleOrDefault(x=>x.Kind==DesignerFit.Kind(issueProfile.Value))?.Installations.SingleOrDefault(x=>x.InstallationId==installed.InstallationId);
+                    if(entry!=null){field=entry.RequestedPower>entry.FullPower || entry.RequestedPower<0?"requested":"allocated";
+                        var title=Catalogue.Single(c=>c.Id==installed.ComponentVersionId).Name;
+                        explanation+=" "+title+": requested "+entry.RequestedPower+", allocated "+entry.AllocatedPower+", full "+entry.FullPower+", powered minimum "+entry.MinimumPower+". Review this system's "+field+" power.";}
+                }
+                return new DesignerIssue(installed?.ComponentVersionId??"",i.Severity==DesignIssueSeverity.Error?DesignerStatus.HardError:DesignerStatus.Warning,
+                    explanation,issueProfile,field,i.Path);
+            });
             return new DesignerPreview(!result.IsValid?DesignerStatus.HardError:result.Issues.Count>0?DesignerStatus.Warning:DesignerStatus.Valid,
                 "Portable backend preview • all profiles validated • no campaign order", result.CapacityUsed,result.CapacityLimit,
                 result.CapacityLimit.HasValue && result.CapacityUsed.HasValue ? result.CapacityLimit-result.CapacityUsed : null,
-                power,capabilities,costs,issues,selected?.Installations.Select(i=>new DesignerPowerRange(dto.Installations!.Single(x=>x.InstallationId==i.InstallationId).ComponentVersionId,i.FullPower,i.MinimumPower)));
+                power,capabilities,costs,issues,selected?.Installations.Select(i=>new DesignerPowerRange(dto.Installations!.Single(x=>x.InstallationId==i.InstallationId).ComponentVersionId,i.FullPower,i.MinimumPower)),result);
         }
     }
 }

@@ -28,14 +28,14 @@ namespace HobbyDS9.Simulation
                 Require(Actor(actor) == CampaignTacticalError.None, "Only a controlled human actor can inspect fleet settings.");
                 return state.Campaign.GameState.Fleets!.Where(f => f.OwnerCivilizationId == actor).Select(f =>
                     new CampaignTacticalFleetCloakSetting(f.FleetId,state.FleetSettings.Single(s => s.FleetId == f.FleetId).ApproachCloak,
-                        CurrentPhase == SessionPhase.Planning, f.ShipIds!.Where(id => cloak.Single(c => c.FitId == Fit(id).DefinitionId).Capable == true)))
+                        CurrentPhase == SessionPhase.Planning, f.ShipIds!.Where(id => Equipment(id).CloakCapable)))
                     .OrderBy(f => f.FleetId,StringComparer.Ordinal).ToList().AsReadOnly();
             }
         }
         private CampaignTacticalCondition Condition(string fleet, TacticalShipV2Dto ship)
         {
-            var design = Provision(ship.ShipId).ShipDesignDefinitionId;
-            return new CampaignTacticalCondition(ship.ShipId, fleet, definitions.ShipDesigns!.Single(d => d.DefinitionId == design).DisplayName,
+            var source = Equipment(ship.ShipId);
+            return new CampaignTacticalCondition(ship.ShipId, fleet, source.DisplayName,
                 ship.Hull, ship.MaxHull, ship.Shields.OrderBy(q => q.Sector).Select(q => q.Current));
         }
         public IReadOnlyList<CampaignTacticalOwnShip> InspectOwnShips(string actor)
@@ -45,8 +45,8 @@ namespace HobbyDS9.Simulation
                 Require(Actor(actor) == CampaignTacticalError.None, "Only a controlled human actor can inspect own ships.");
                 return state.Campaign.GameState.Ships!.Where(s => s.OwnerCivilizationId == actor).Select(s => {
                     var pool = state.Pools.Single(p => p.ShipId == s.ShipId); var compiled = Compile(s, Fit(s.ShipId), pool);
-                    var fit = Fit(s.ShipId); var cl = cloak.Single(c => c.FitId == fit.DefinitionId);
-                    return new CampaignTacticalOwnShip(Condition(s.FleetId, compiled), pool, false, compiled, fit, cl.Capable!.Value, cl.ConcurrentPowerRequired!.Value,
+                    var fit = Fit(s.ShipId); var source = Equipment(s.ShipId);
+                    return new CampaignTacticalOwnShip(Condition(s.FleetId, compiled), pool, false, compiled, fit, source.CloakCapable, source.CloakPower,
                         TacticalWeaponOwnConstraints.Project(compiled,null));
                 }).OrderBy(s => s.Condition.ShipId, StringComparer.Ordinal).ToList().AsReadOnly();
             }
@@ -59,9 +59,9 @@ namespace HobbyDS9.Simulation
                 var b = state.Battles.SingleOrDefault(p => p.State.EncounterId == encounter);
                 Require(b != null && b.State.Formations.Any(f => f.SideId == actor), "Actor does not own an encounter participant.");
                 var own = b.State.Formations.Where(f => f.SideId == actor).SelectMany(f => f.Ships.Select(s => {
-                    var fit = Fit(s.ShipId); var cl = cloak.Single(c => c.FitId == fit.DefinitionId);
+                    var fit = Fit(s.ShipId); var source = Equipment(s.ShipId);
                     return new CampaignTacticalOwnShip(Condition(f.FormationId,s),state.Pools.Single(p => p.ShipId == s.ShipId),
-                        b.HiddenShipIds.Contains(s.ShipId,StringComparer.Ordinal),s,fit,cl.Capable!.Value,cl.ConcurrentPowerRequired!.Value,
+                        b.HiddenShipIds.Contains(s.ShipId,StringComparer.Ordinal),s,fit,source.CloakCapable,source.CloakPower,
                         TacticalWeaponOwnConstraints.Project(s,b.State.NextRound,f.Status,b.State.Completion!=TacticalCompletion.None));
                 })).ToList();
                 var visible = b.State.Formations.Where(f => f.SideId != actor).SelectMany(f => f.Ships.Where(s => s.Hull > 0

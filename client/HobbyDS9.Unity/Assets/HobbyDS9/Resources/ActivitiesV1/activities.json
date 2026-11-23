@@ -1,0 +1,373 @@
+{
+  "ContentId": "content.activities.playtest.v1",
+  "Revision": 1,
+  "Structures": [
+    {
+      "DefinitionId": "infrastructure.fabrication-annex.v1",
+      "DisplayName": "Fabrication annex",
+      "Cost": {
+        "Credits": 60,
+        "Industry": 80,
+        "Maintenance": 0,
+        "Resources": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 2
+          }
+        ]
+      },
+      "Industry": 6,
+      "Research": 0,
+      "FoodOutput": 0,
+      "PowerDemand": 2
+    },
+    {
+      "DefinitionId": "infrastructure.research-laboratory.v1",
+      "DisplayName": "Research laboratory",
+      "Cost": {
+        "Credits": 45,
+        "Industry": 60,
+        "Maintenance": 0,
+        "Resources": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 1
+          }
+        ]
+      },
+      "Industry": 0,
+      "Research": 15,
+      "FoodOutput": 0,
+      "PowerDemand": 2
+    },
+    {
+      "DefinitionId": "infrastructure.hydroponic-extension.v1",
+      "DisplayName": "Hydroponic extension",
+      "Cost": {
+        "Credits": 35,
+        "Industry": 40,
+        "Maintenance": 0,
+        "Resources": [
+          {
+            "ResourceDefinitionId": "resource.dilithium",
+            "Amount": 1
+          }
+        ]
+      },
+      "Industry": 0,
+      "Research": 0,
+      "FoodOutput": 6,
+      "PowerDemand": 1
+    }
+  ],
+  "Sites": [
+    {
+      "DefinitionId": "activity.pulsar.v1",
+      "Title": "The clock in the dark",
+      "DiscoveryText": "A narrow radio pulse repeats with extraordinary regularity. Its changing spectrum could help our scientists distinguish the star\u0027s rotation from the surrounding plasma.",
+      "Choices": [
+        {
+          "ChoiceId": "choice.pulsar.baseline",
+          "FindingId": "finding.pulsar.spectrum",
+          "Caption": "Record a baseline",
+          "Report": "The pulse is now a useful reference in our scientific records. It is a modest result, but a sound one.",
+          "RequiredStudy": 1,
+          "RequiredContact": 0,
+          "Work": 0,
+          "Deadline": 0,
+          "Credits": 0,
+          "Discipline": 4,
+          "Insight": 20,
+          "HullRiskBps": 0,
+          "HullDamage": 0,
+          "ContactOutcome": "",
+          "RequiredRelation": null,
+          "AcceptedRelation": null,
+          "RefusedRelation": null,
+          "ConsentChanceBps": 10000
+        },
+        {
+          "ChoiceId": "choice.pulsar.detailed",
+          "FindingId": "finding.pulsar.spectrum",
+          "Caption": "Commit a detailed study",
+          "Report": "Separating the repeating signal from its environment revealed how energy moves through the surrounding plasma. Our scientists have filed the finite findings for further research.",
+          "RequiredStudy": 3,
+          "RequiredContact": 0,
+          "Work": 6,
+          "Deadline": 3,
+          "Credits": 10,
+          "Discipline": 4,
+          "Insight": 60,
+          "HullRiskBps": 0,
+          "HullDamage": 0,
+          "ContactOutcome": "",
+          "RequiredRelation": null,
+          "AcceptedRelation": null,
+          "RefusedRelation": null,
+          "ConsentChanceBps": 10000
+        }
+      ]
+    },
+    {
+      "DefinitionId": "activity.spectrum.v1",
+      "Title": "A broken spectrum",
+      "DiscoveryText": "A faint emission contains a repeating gap. Ordinary interference does not explain the pattern. More observations are needed before we can call it artificial.",
+      "Choices": [
+        {
+          "ChoiceId": "choice.spectrum.investigate",
+          "FindingId": "finding.spectrum.pattern",
+          "Caption": "Investigate the pattern",
+          "Report": "The apparent message was a physical pattern, not a sender. Resolving it supplied useful Computing insight and removed an uncertainty from the chart.",
+          "RequiredStudy": 3,
+          "RequiredContact": 0,
+          "Work": 6,
+          "Deadline": 3,
+          "Credits": 0,
+          "Discipline": 2,
+          "Insight": 60,
+          "HullRiskBps": 0,
+          "HullDamage": 0,
+          "ContactOutcome": "",
+          "RequiredRelation": null,
+          "AcceptedRelation": null,
+          "RefusedRelation": null,
+          "ConsentChanceBps": 10000
+        }
+      ]
+    },
+    {
+      "DefinitionId": "activity.archive.v1",
+      "Title": "The silent archive",
+      "DiscoveryText": "Scans show manufactured structures beneath accumulated debris. Their builders are absent. A careful remote reconstruction may recover useful engineering data.",
+      "Choices": [
+        {
+          "ChoiceId": "choice.archive.expedition",
+          "FindingId": "finding.archive.structure",
+          "Caption": "Fund an archive expedition",
+          "Report": "The expedition reconstructed part of the archive\u0027s structural design. The surviving information supplied Construction insight; it did not create a deployable technology or transfer ownership of the site.",
+          "RequiredStudy": 4,
+          "RequiredContact": 0,
+          "Work": 8,
+          "Deadline": 3,
+          "Credits": 20,
+          "Discipline": 3,
+          "Insight": 60,
+          "HullRiskBps": 0,
+          "HullDamage": 0,
+          "ContactOutcome": "",
+          "RequiredRelation": null,
+          "AcceptedRelation": null,
+          "RefusedRelation": null,
+          "ConsentChanceBps": 10000
+        }
+      ]
+    },
+    {
+      "DefinitionId": "activity.derelict.v1",
+      "Title": "Last transmission",
+      "DiscoveryText": "An abandoned vessel is broadcasting a damaged diagnostic record. Its structure is unstable. Remote scans and a close investigation offer different amounts of information.",
+      "Choices": [
+        {
+          "ChoiceId": "choice.derelict.remote",
+          "FindingId": "finding.derelict.record",
+          "Caption": "Scan from a safe distance",
+          "Report": "We recovered enough of the diagnostic record to learn from the vessel\u0027s failure. The finding has been recorded once for our civilization.",
+          "RequiredStudy": 1,
+          "RequiredContact": 0,
+          "Work": 0,
+          "Deadline": 0,
+          "Credits": 0,
+          "Discipline": 3,
+          "Insight": 20,
+          "HullRiskBps": 0,
+          "HullDamage": 0,
+          "ContactOutcome": "",
+          "RequiredRelation": null,
+          "AcceptedRelation": null,
+          "RefusedRelation": null,
+          "ConsentChanceBps": 10000
+        },
+        {
+          "ChoiceId": "choice.derelict.close",
+          "FindingId": "finding.derelict.record",
+          "Caption": "Approach for a closer investigation",
+          "Report": "Close observations recovered additional engineering details. Construction insight was recorded; no physical salvage or cargo was recovered.",
+          "RequiredStudy": 3,
+          "RequiredContact": 0,
+          "Work": 6,
+          "Deadline": 3,
+          "Credits": 0,
+          "Discipline": 3,
+          "Insight": 60,
+          "HullRiskBps": 2500,
+          "HullDamage": 3,
+          "ContactOutcome": "",
+          "RequiredRelation": null,
+          "AcceptedRelation": null,
+          "RefusedRelation": null,
+          "ConsentChanceBps": 10000
+        }
+      ]
+    }
+  ],
+  "Minors": [
+    {
+      "DefinitionId": "minor.ilex.v1",
+      "DisplayName": "Ilex Survey Commune",
+      "SpeciesName": "Ilex",
+      "SpeciesId": "species.ilex.v1",
+      "WarpCapable": true,
+      "Encounter": {
+        "DefinitionId": "activity.ilex.v1",
+        "Title": "The Ilex Survey Commune",
+        "DiscoveryText": "An inhabited world maintains astronomical observatories and orbital communications. The signals show an organized scientific exchange. Observation does not establish permission to approach.",
+        "Choices": [
+          {
+            "ChoiceId": "choice.ilex.observe",
+            "FindingId": "finding.ilex.broadcasts",
+            "Caption": "Observe their scientific broadcasts",
+            "Report": "The expedition recorded openly detectable scientific broadcasts without claiming a relationship.",
+            "RequiredStudy": 1,
+            "RequiredContact": 0,
+            "Work": 0,
+            "Deadline": 0,
+            "Credits": 0,
+            "Discipline": 2,
+            "Insight": 20,
+            "HullRiskBps": 0,
+            "HullDamage": 0,
+            "ContactOutcome": "",
+            "RequiredRelation": null,
+            "AcceptedRelation": null,
+            "RefusedRelation": null,
+            "ConsentChanceBps": 10000
+          },
+          {
+            "ChoiceId": "choice.ilex.channel",
+            "FindingId": "finding.ilex.introduction",
+            "Caption": "Open a channel",
+            "Report": "Their representatives considered the introduction. The resulting consent or refusal is recorded; no alliance or ownership was granted.",
+            "RequiredStudy": 0,
+            "RequiredContact": 1,
+            "Work": 1,
+            "Deadline": 3,
+            "Credits": 0,
+            "Discipline": 2,
+            "Insight": 0,
+            "HullRiskBps": 0,
+            "HullDamage": 0,
+            "ContactOutcome": "contact-request",
+            "RequiredRelation": 1,
+            "AcceptedRelation": 2,
+            "RefusedRelation": 3,
+            "ConsentChanceBps": 8000
+          },
+          {
+            "ChoiceId": "choice.ilex.exchange",
+            "FindingId": "finding.ilex.exchange",
+            "Caption": "Accept the scientific exchange",
+            "Report": "Both expeditions compared their observations and completed the agreed finite study. The commune remains independent.",
+            "RequiredStudy": 4,
+            "RequiredContact": 3,
+            "Work": 8,
+            "Deadline": 3,
+            "Credits": 15,
+            "Discipline": 2,
+            "Insight": 60,
+            "HullRiskBps": 0,
+            "HullDamage": 0,
+            "ContactOutcome": "scientific-cooperation",
+            "RequiredRelation": 2,
+            "AcceptedRelation": 4,
+            "RefusedRelation": null,
+            "ConsentChanceBps": 10000
+          }
+        ]
+      }
+    },
+    {
+      "DefinitionId": "minor.namar.v1",
+      "DisplayName": "Namar Local Council",
+      "SpeciesName": "Namar",
+      "SpeciesId": "species.namar.v1",
+      "WarpCapable": false,
+      "Encounter": {
+        "DefinitionId": "activity.namar.v1",
+        "Title": "The Namar Local Council",
+        "DiscoveryText": "Surveys identify settlements and planet-bound communications. There is no detected evidence of interstellar travel. Overt contact could change a society that has not yet met an off-world visitor.",
+        "Choices": [
+          {
+            "ChoiceId": "choice.namar.observe",
+            "FindingId": "finding.namar.observations",
+            "Caption": "Continue distant study",
+            "Report": "The expedition completed its permitted observations without overt contact. The council has not granted diplomatic access.",
+            "RequiredStudy": 3,
+            "RequiredContact": 0,
+            "Work": 6,
+            "Deadline": 3,
+            "Credits": 0,
+            "Discipline": 2,
+            "Insight": 20,
+            "HullRiskBps": 0,
+            "HullDamage": 0,
+            "ContactOutcome": "",
+            "RequiredRelation": null,
+            "AcceptedRelation": null,
+            "RefusedRelation": null,
+            "ConsentChanceBps": 10000
+          },
+          {
+            "ChoiceId": "choice.namar.channel",
+            "FindingId": "finding.namar.consent",
+            "Caption": "Request consent for a local programme",
+            "Report": "The council considered the request for overt involvement. Its consent or refusal is recorded; no programme or transfer of goods has been claimed.",
+            "RequiredStudy": 0,
+            "RequiredContact": 1,
+            "Work": 1,
+            "Deadline": 3,
+            "Credits": 0,
+            "Discipline": 2,
+            "Insight": 0,
+            "HullRiskBps": 0,
+            "HullDamage": 0,
+            "ContactOutcome": "overt-contact-request",
+            "RequiredRelation": 1,
+            "AcceptedRelation": 2,
+            "RefusedRelation": 3,
+            "ConsentChanceBps": 6000
+          },
+          {
+            "ChoiceId": "choice.namar.aid",
+            "FindingId": "finding.namar.programme",
+            "Caption": "Fund the accepted local programme",
+            "Report": "The council accepted the limited credits-funded local programme. Their government retains control; no cargo, infrastructure or allegiance was transferred.",
+            "RequiredStudy": 0,
+            "RequiredContact": 1,
+            "Work": 1,
+            "Deadline": 3,
+            "Credits": 30,
+            "Discipline": 2,
+            "Insight": 0,
+            "HullRiskBps": 0,
+            "HullDamage": 0,
+            "ContactOutcome": "overt-funded-programme",
+            "RequiredRelation": 2,
+            "AcceptedRelation": 5,
+            "RefusedRelation": null,
+            "ConsentChanceBps": 10000
+          }
+        ]
+      }
+    }
+  ],
+  "Species": [
+    {
+      "SpeciesId": "species.ilex.v1",
+      "DisplayName": "Ilex"
+    },
+    {
+      "SpeciesId": "species.namar.v1",
+      "DisplayName": "Namar"
+    }
+  ]
+}

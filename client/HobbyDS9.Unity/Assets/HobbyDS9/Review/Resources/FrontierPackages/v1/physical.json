@@ -1,0 +1,29 @@
+{
+  "FormatVersion": 2,
+  "ProfileId": "campaign-tactical-v2-physical-review-1",
+  "PolicyStatus": "proposed",
+  "DefaultActivationAllowed": false,
+  "BoundaryPolicy": "arrivals-contact-departures-v1",
+  "SharedStartPolicy": "departure-first-start-v1",
+  "LaterArrivalPolicy": "join-connected-before-allocation-v1",
+  "ContactFreshnessTurns": 20,
+  "Hostilities": [
+    {
+      "CivilizationA": "civ.federation",
+      "CivilizationB": "civ.cardassian"
+    }
+  ],
+  "InitialContacts": [],
+  "InitialOrders": [
+    {
+      "FleetId": "fleet.federation-scout",
+      "Intent": 0,
+      "RouteNodeIds": []
+    },
+    {
+      "FleetId": "fleet.cardassian-scout",
+      "Intent": 0,
+      "RouteNodeIds": []
+    }
+  ]
+}

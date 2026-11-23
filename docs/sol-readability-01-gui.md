@@ -1,0 +1,15 @@
+# Sol readability correction
+
+15 November 2026. Owner-approved source correction supersedes the true-radius default in [SOL-08](sol-08-gui.md). Native receiving remains QA-owned and pending.
+
+Default named Sol orbits use equal schematic radial steps, in Mercury–Neptune order. The caption says **Schematic spacing**; actual mean-distance AU readouts still come from the existing disclosed-only astronomy join. Nothing rewrites campaign or orbital data. The existing 24° plane, smooth analytic tracks, directional planet lighting, zoom, inner-system and explicit selected focus remain. Selecting a body no longer rotates the scene implicitly; explicit Focus selected retains shortest-path animation and reduced motion.
+
+The plot reserves side rails for all eight names/AU labels, with leader lines and separate globe hit areas. Labels no longer disappear on inner-body overlap. Default circle framing reserves those rails and margins. Portable projection cases exercise 520/640/1200/1900-wide viewports through 73 yaw positions each, checking glyph separation, fit, ordered radii and every label's bounds/non-overlap. Native cases check real shader/marker/layout paths, not only formulas.
+
+Source diagnosis of the missing Sun: a fixed .75-unit star became tiny at true outer-planet overview scale while planet glyphs expanded with camera size and covered the central cluster. Camera/culling/layer/near/far/depth code was inspected. The star now has its existing source texture, explicit unlit emission, reserved separation and a bounded readable glyph. A graphics fixture asserts actual central render pixels and near/far volume; this is authored/compiled until QA runs it.
+
+Public reference appearance is admitted only for exact canonical IDs in the observed-Sol join. The six unsurveyed Sol worlds use existing Solar System Scope/INOVE maps; their visual profiles keep Unknown kind, no inferred atmosphere/cloud/mission attributes, and UNSURVEYED labels. Selector and survey/environment/resource/settlement gates remain. Default `PlanetVisualProfile.From` stays neutral for unsurveyed worlds; random bodies named Jupiter or Earth receive no map. The stage reads no hidden catalogue and creates no planets from the texture table. Existing credits/provenance remain.
+
+Saturn's existing validated ring mesh, original alpha texture and shader attach to the actual disclosed Saturn globe, with a stage-owned material/copy and borrowed source resources. This is not a system asteroid belt. The central star is not a new gameplay body. Camera/targets/meshes/materials retain stage disposal and bounded rendering.
+
+18 focused portable checks passed. Review runtime/test source reference compilation passes with zero errors and the inherited nullable warning; no graphics/native acceptance is inferred. QA must verify Sun/emission, six maps, ring import/winding, all eight real IDs/readouts, actual globe/label picking, full/inner/focus/rotation/zoom, physical double-click/keyboard, 1280/1920/ultrawide framing and resource lifetime. Save/profile/content identities remain unchanged by this correction.

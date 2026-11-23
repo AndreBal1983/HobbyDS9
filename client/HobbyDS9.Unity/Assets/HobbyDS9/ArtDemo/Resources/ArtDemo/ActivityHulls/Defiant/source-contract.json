@@ -1,0 +1,143 @@
+{
+  "source": "Owner provided Defiant Meshy blend; see preserved provenance",
+  "sourceSha256": "15526c4097f98ddf147f9fa6c28c44f4ceecb54ae8843076a5d61df9f4008f82",
+  "license": "Not supplied; local review derivative only; no redistribution clearance claimed",
+  "axes": "FBX intended +Z bow,+Y up,metres; OBJ explicit Unity coordinates",
+  "nominalArtLengthMetres": 170,
+  "orientation": "Source -X bow established by CPU silhouette review (narrow nose vs rear engines), rotated to author -Y",
+  "images": [
+    {
+      "name": "Image_0",
+      "file": "Defiant-v3\\Textures\\Defiant_Image_0.jpg",
+      "colorSpace": "sRGB",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "sha256": "1215f1d31321234593a6f2bbbe2cab1e32129d4c313fb8d89a48108945fd2bb4"
+    },
+    {
+      "name": "Image_1",
+      "file": "Defiant-v3\\Textures\\Defiant_Image_1.jpg",
+      "colorSpace": "Non-Color",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "sha256": "5b1bec88be3f0117115cbc211bde1ed764f1f3124918f42d4879b4595bb1d66f"
+    },
+    {
+      "name": "Image_2",
+      "file": "Defiant-v3\\Textures\\Defiant_Image_2.jpg",
+      "colorSpace": "Non-Color",
+      "dimensions": [
+        2048,
+        2048
+      ],
+      "sha256": "1fef96e2881a7a24640f23f850433bf52c2f81baa4202bb455995f26badfbcfc"
+    }
+  ],
+  "materialLinks": [
+    {
+      "fromNode": "Principled BSDF",
+      "fromSocket": "BSDF",
+      "toNode": "Material Output",
+      "toSocket": "Surface",
+      "image": null
+    },
+    {
+      "fromNode": "Image Texture",
+      "fromSocket": "Color",
+      "toNode": "Principled BSDF",
+      "toSocket": "Base Color",
+      "image": "Image_0"
+    },
+    {
+      "fromNode": "Separate Color",
+      "fromSocket": "Blue",
+      "toNode": "Principled BSDF",
+      "toSocket": "Metallic",
+      "image": null
+    },
+    {
+      "fromNode": "Separate Color",
+      "fromSocket": "Green",
+      "toNode": "Principled BSDF",
+      "toSocket": "Roughness",
+      "image": null
+    },
+    {
+      "fromNode": "Image Texture.001",
+      "fromSocket": "Color",
+      "toNode": "Separate Color",
+      "toSocket": "Color",
+      "image": "Image_1"
+    },
+    {
+      "fromNode": "Normal Map",
+      "fromSocket": "Normal",
+      "toNode": "Principled BSDF",
+      "toSocket": "Normal",
+      "image": null
+    },
+    {
+      "fromNode": "Image Texture.002",
+      "fromSocket": "Color",
+      "toNode": "Normal Map",
+      "toSocket": "Color",
+      "image": "Image_2"
+    }
+  ],
+  "lods": [
+    {
+      "lod": 0,
+      "triangles": 29998,
+      "vertices": 14906,
+      "boundsBlender": [
+        [
+          -64.19636535644531,
+          64.01022338867188
+        ],
+        [
+          -84.93016815185547,
+          85.01908111572266
+        ],
+        [
+          -12.368951797485352,
+          13.648845672607422
+        ]
+      ],
+      "meshValidationRepaired": true,
+      "meshUV": 1,
+      "materials": [
+        "Material_0"
+      ]
+    },
+    {
+      "lod": 1,
+      "triangles": 7998,
+      "vertices": 3906,
+      "boundsBlender": [
+        [
+          -64.08647155761719,
+          63.906898498535156
+        ],
+        [
+          -84.87007904052734,
+          84.97162628173828
+        ],
+        [
+          -12.299664497375488,
+          13.672131538391113
+        ]
+      ],
+      "meshValidationRepaired": true,
+      "meshUV": 1,
+      "materials": [
+        "Material_0"
+      ]
+    }
+  ],
+  "elapsedSeconds": 14.28914929999155,
+  "renderInvoked": false
+}

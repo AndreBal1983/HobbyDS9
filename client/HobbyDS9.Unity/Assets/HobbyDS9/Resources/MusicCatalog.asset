@@ -53,3 +53,35 @@ MonoBehaviour:
     order: 1
     crossfadeSeconds: 6
     quietTailSeconds: 0
+  - id: music.bajor-1
+    displayName: Bajor 1
+    clip: {fileID: 8300000, guid: b39896a633474a0e8f8b8c7c0da3d4ee, type: 3}
+    category: 0
+    loopPolicy: 0
+    order: 3
+    crossfadeSeconds: 6
+    quietTailSeconds: 0
+  - id: music.bajor-2
+    displayName: Bajor 2
+    clip: {fileID: 8300000, guid: a0bf04b50a914f0abaf04f71d63c7511, type: 3}
+    category: 0
+    loopPolicy: 0
+    order: 4
+    crossfadeSeconds: 6
+    quietTailSeconds: 0
+  - id: music.cardassia-1
+    displayName: Cardassia 1
+    clip: {fileID: 8300000, guid: 80aa827480e641afa42d50f10911a3ec, type: 3}
+    category: 0
+    loopPolicy: 0
+    order: 5
+    crossfadeSeconds: 6
+    quietTailSeconds: 0
+  - id: music.klingon-1
+    displayName: Klingon 1 - no' wIqaw
+    clip: {fileID: 8300000, guid: 6960498649274c9a9d53145459f570fe, type: 3}
+    category: 0
+    loopPolicy: 0
+    order: 6
+    crossfadeSeconds: 6
+    quietTailSeconds: 0

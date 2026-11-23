@@ -1,0 +1,325 @@
+{
+  "status": "CPU-verified receiving pack; native Unity acceptance pending",
+  "files": [
+    {
+      "path": "Models/Deflector_Amber_oval_LOD0.fbx",
+      "bytes": 135212,
+      "sha256": "4880d804b18f9c0336ec3fb25fea22df60080eaec8b161bba8b4f0ff552bb4c8"
+    },
+    {
+      "path": "Models/Deflector_Amber_oval_LOD0.obj",
+      "bytes": 981183,
+      "sha256": "dc23e719dfebc9cc35cf6b37a2c96464a37dc18ac3178e0b464d76da0c75cf52"
+    },
+    {
+      "path": "Models/Deflector_Amber_oval_LOD1.fbx",
+      "bytes": 58700,
+      "sha256": "0cf859a77693d1dccac219eb5d9e3d1f6b4f3dc60bdc77f360d88ad3b75ce771"
+    },
+    {
+      "path": "Models/Deflector_Amber_oval_LOD1.obj",
+      "bytes": 245759,
+      "sha256": "a79acdabcd97add05528b6a023e8f44ae39f711d9a33d46a0449aaf8bec0b259"
+    },
+    {
+      "path": "Models/Deflector_Blue_concentric_LOD0.fbx",
+      "bytes": 135516,
+      "sha256": "8b6fc3d73e21e46222120f8eea7c88a86144e191a6ce9233386fe4c8c21d392f"
+    },
+    {
+      "path": "Models/Deflector_Blue_concentric_LOD0.obj",
+      "bytes": 981244,
+      "sha256": "18f9d96e8328335656b092857932c2a179fbcf255a9d0bbfb5b699695a8ab562"
+    },
+    {
+      "path": "Models/Deflector_Blue_concentric_LOD1.fbx",
+      "bytes": 56940,
+      "sha256": "5b4f2df0e558d35de8d1530302bcb576c763aaebfa2404393b86b8f86ec0c630"
+    },
+    {
+      "path": "Models/Deflector_Blue_concentric_LOD1.obj",
+      "bytes": 245843,
+      "sha256": "0355bf18a31ec8e0e5a1b15e97cc82f142b0ff404ae8f1177153dc1e4dec781a"
+    },
+    {
+      "path": "Models/Deflector_Segmented_survey_LOD0.fbx",
+      "bytes": 137804,
+      "sha256": "c25b6083c57b55f276d709fdd89843d3e784bd9d9e7df3b3a0b429ea08c77faf"
+    },
+    {
+      "path": "Models/Deflector_Segmented_survey_LOD0.obj",
+      "bytes": 987408,
+      "sha256": "82a434066b1973b5838b39139adfdcde09df66f09b74773afa3969815bae2d49"
+    },
+    {
+      "path": "Models/Deflector_Segmented_survey_LOD1.fbx",
+      "bytes": 59468,
+      "sha256": "a79aefbfbb736fac3fc6acfee1935f7b0001516d29522c30fdf64a6c958695d0"
+    },
+    {
+      "path": "Models/Deflector_Segmented_survey_LOD1.obj",
+      "bytes": 248379,
+      "sha256": "bf422d7e6d70df0dd6695a01fb20d1802891eb407f5e6f68a851282277c68e3a"
+    },
+    {
+      "path": "Models/GalaxyHullCutaway_LOD0.fbx",
+      "bytes": 2281756,
+      "sha256": "b43d4211ef42c907712c35114e669c3d2bdf432c82ff65e602980c10fede5b87"
+    },
+    {
+      "path": "Models/GalaxyHullCutaway_LOD0.obj",
+      "bytes": 10194958,
+      "sha256": "e124c089ee1e8068bb06eef9f58ddd28c4d637f0a01109540864d207962fee01"
+    },
+    {
+      "path": "Models/GalaxyHullCutaway_LOD1.fbx",
+      "bytes": 735132,
+      "sha256": "68101638a2a38fca614a1ba867abf7aec83b954e825abf95975dff9f35fbd3ed"
+    },
+    {
+      "path": "Models/GalaxyHullCutaway_LOD1.obj",
+      "bytes": 2870538,
+      "sha256": "0f7afb25ba122fa1161c24924cfaaada4b878c69badc4b8847baefb2c42d3ce7"
+    },
+    {
+      "path": "Models/GalaxyHull_LOD0.fbx",
+      "bytes": 3860140,
+      "sha256": "393a51b209e85247dca105333d1d5b9666718b566376867f8f1cdb8f5b4c734b"
+    },
+    {
+      "path": "Models/GalaxyHull_LOD0.obj",
+      "bytes": 17523905,
+      "sha256": "38e278c239ceed7c3505377a38485c5908f171e731017fa9608ff9459231688e"
+    },
+    {
+      "path": "Models/GalaxyHull_LOD1.fbx",
+      "bytes": 1193196,
+      "sha256": "2679b6e122cf35cfba6071a8b0681c9502cb9ebf86d30dade3889a2ecdf3c891"
+    },
+    {
+      "path": "Models/GalaxyHull_LOD1.obj",
+      "bytes": 4819890,
+      "sha256": "4da7946905136f6837a61df7610592ae9b005d2afc5ff49e96f62ae5256fa966"
+    },
+    {
+      "path": "Models/GalaxyMaterials.mtl",
+      "bytes": 1063,
+      "sha256": "2a79eb15f9fa2870a22d6d8fb4d155ea1d889cfc3c5cef53670115f781fc6667"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Port_LOD0.fbx",
+      "bytes": 456892,
+      "sha256": "f54bf699991078b2c566640c2b081883f216c3234519a28f1e91a1cbc5cbc870"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Port_LOD0.obj",
+      "bytes": 2362074,
+      "sha256": "7b33eaa921489341a5f82f010ed5dfe1cbbc881b1cf02f7fd9207fc2cc4626fc"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Port_LOD1.fbx",
+      "bytes": 154924,
+      "sha256": "39994611c644b7b35e2cc0238cfb4fe66fefcea2a87a3681c844a8597457864d"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Port_LOD1.obj",
+      "bytes": 632308,
+      "sha256": "13ebb3a2d48ddb6948ce2aa9f732542f4c1069c8d72f3acab28a19182804bba7"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Starboard_LOD0.fbx",
+      "bytes": 457340,
+      "sha256": "018422990e7bfe1cd7f819bdeebfe2dec35036502bc5aaf316f4923f79361697"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Starboard_LOD0.obj",
+      "bytes": 2361914,
+      "sha256": "e39702686b9489eec202b67d0d4be9db7d163855a0746bb701c1d27bf3093da0"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Starboard_LOD1.fbx",
+      "bytes": 155420,
+      "sha256": "702deb937c162ce5d530cef5b94fa5adbcf29d3f9249c2b3e5a4c0da9c5ff3f4"
+    },
+    {
+      "path": "Models/GalaxyNacelle_Starboard_LOD1.obj",
+      "bytes": 632650,
+      "sha256": "596a815157173607795dc194b5d35ff5cd60c7f225f106668e8374d2b3e7a735"
+    },
+    {
+      "path": "Models/SovereignNacelle_Port_LOD0.fbx",
+      "bytes": 140636,
+      "sha256": "31c0965c00cce1f5d2487df8dc44b7bbc3ba8e6198d0e14ab4fe1de5f2cdce32"
+    },
+    {
+      "path": "Models/SovereignNacelle_Port_LOD0.obj",
+      "bytes": 1246144,
+      "sha256": "225f504c2170bf93c64b361029ab6651dbea7a8c2737123ec70813a41b180ddb"
+    },
+    {
+      "path": "Models/SovereignNacelle_Port_LOD1.fbx",
+      "bytes": 63532,
+      "sha256": "259b457364e5abdfe0aa2463445a69c019fdc378f65eb2bdcce6914aa2440cf0"
+    },
+    {
+      "path": "Models/SovereignNacelle_Port_LOD1.obj",
+      "bytes": 357614,
+      "sha256": "88a58557e9cfcce31b4925764a1cd2831bba34b6208a6ddc3f9abe2ece056d83"
+    },
+    {
+      "path": "Models/SovereignNacelle_Starboard_LOD0.fbx",
+      "bytes": 140508,
+      "sha256": "df2c4a4ac9a488ea7964081f532e4547bc4f31c41f575bf9d8398619ff25c980"
+    },
+    {
+      "path": "Models/SovereignNacelle_Starboard_LOD0.obj",
+      "bytes": 1246145,
+      "sha256": "56211afb1d32db9f9eae40e206b1073f57350e7542050074b52d08c6904d7403"
+    },
+    {
+      "path": "Models/SovereignNacelle_Starboard_LOD1.fbx",
+      "bytes": 63628,
+      "sha256": "15581e5423b204f13097fbb659749db72c993cea5712fa858ab7098b96121f07"
+    },
+    {
+      "path": "Models/SovereignNacelle_Starboard_LOD1.obj",
+      "bytes": 357263,
+      "sha256": "b2c270598d5d8f95fba1e917b889adaea7aa42accb974282d4da07ae461d08db"
+    },
+    {
+      "path": "Models/WarpCore_LOD0.fbx",
+      "bytes": 111116,
+      "sha256": "c3ee0eccfd2e34cb72ccf99597ef77275f5213e8e039b09473ba171a7c2079ad"
+    },
+    {
+      "path": "Models/WarpCore_LOD0.obj",
+      "bytes": 1006553,
+      "sha256": "a3b1a5607eb6a3b3a291193789ba4dd4c613d76a109a73aeaafe304c76b6614e"
+    },
+    {
+      "path": "Models/WarpCore_LOD1.fbx",
+      "bytes": 47516,
+      "sha256": "4369f6fe9dfea1b414bbb5fbe03bf99a57d638b004565114fc9676a31254c7b1"
+    },
+    {
+      "path": "Models/WarpCore_LOD1.obj",
+      "bytes": 258165,
+      "sha256": "b540822180c053f949d6b6e1cbee6eadade825fa07ac851f495bc1e91e558cdd"
+    },
+    {
+      "path": "Textures/Galaxy_Ceramic_Albedo.png",
+      "bytes": 97911,
+      "sha256": "da56b123c5b01c517ab63f8c29634934d5a7bdbc202b0754e3aacad988401ccc"
+    },
+    {
+      "path": "Textures/Galaxy_Engineering_Albedo.png",
+      "bytes": 485472,
+      "sha256": "0275d91c6e9ee2c909c0b220fde57909e09e4996c03223e8c6f3012a6eb9fd82"
+    },
+    {
+      "path": "Textures/Galaxy_SaucerLower_Albedo.png",
+      "bytes": 713652,
+      "sha256": "b6899aa241b0c055b84baa728566a25e2086797516dce9e6e4bbce6a5e5cdaf7"
+    },
+    {
+      "path": "Textures/Galaxy_SaucerUpper_Albedo.png",
+      "bytes": 804311,
+      "sha256": "8e4b042989a4c53b7b2ed3e7f94b7a988cb97a012ffc17ae3aa68e94faff0bb8"
+    },
+    {
+      "path": "Proofs/classic-lod0.png",
+      "bytes": 1095085,
+      "sha256": "e4e3adc29df391a94f03c7a1e997525acd92fb7d1c8df67b9c483205e785ee4e"
+    },
+    {
+      "path": "Proofs/core-cutaway-lod0.png",
+      "bytes": 1143119,
+      "sha256": "5a066b2d2e51416330be7e54c43c5b20257b3690c1435bfd0f4ea2334ca8a883"
+    },
+    {
+      "path": "Proofs/fbx-roundtrip-sovereign-lod0.png",
+      "bytes": 1102472,
+      "sha256": "658a53349272bfc3b8427d256bf364c11c713f815c471e87857f1ed001d036a4"
+    },
+    {
+      "path": "Proofs/sovereign-fit-lod0.png",
+      "bytes": 1102857,
+      "sha256": "e51d7368ed8a8cd56f95551e38fe6a64f129a7a384de5f51359f033e2a282703"
+    },
+    {
+      "path": "Proofs/sovereign-fit-lod1.png",
+      "bytes": 1100957,
+      "sha256": "6e80b30f7ded171b381306fecfbea45e532077fd655a6ab23a5d02e8c4366c1d"
+    },
+    {
+      "path": "Sources/galaxy-unity-receiving.blend",
+      "bytes": 70082267,
+      "sha256": "61e2ba914c3690825b96c21313d0610a3b433b87a153dea182637bc0a2900306"
+    },
+    {
+      "path": "Sources/galaxy-unity-receiving.blend1",
+      "bytes": 65050845,
+      "sha256": "2cda98714e658a96f110f0a9a8eb1e8ff348f5c03cde1738d2aae7922561592b"
+    },
+    {
+      "path": "asset-contract.json",
+      "bytes": 28257,
+      "sha256": "94773e84f4da03f36e80b1da39222b2e7d060d6b54c42f65e0e5c8e806383539"
+    },
+    {
+      "path": "fbx-roundtrip.json",
+      "bytes": 439,
+      "sha256": "32a42f435b0c631da34b87c9e5af12289f1cc880c4b092040684001b5c9e691b"
+    },
+    {
+      "path": "completion.json",
+      "bytes": 245,
+      "sha256": "7069fc89547b5092d4f05961e223395371eae4caf99c18b019579c463832af49"
+    },
+    {
+      "path": "process.json",
+      "bytes": 614,
+      "sha256": "15680fec5e8716c20a384ccd3380eb184bfbd4abb05970a9b5885e7ac3b90dd4"
+    },
+    {
+      "path": "SOURCE-LICENSE.html",
+      "bytes": 3902,
+      "sha256": "13ceb88d210f769a2f01f24ced0156c8f24e0e94e4041184f9df6c9edcb455ce"
+    },
+    {
+      "path": "ATTRIBUTION.txt",
+      "bytes": 644,
+      "sha256": "b7d6e96de2235ea208ce1896f55d0e33aa4ae246937d33480957a05ad4e1a5a0"
+    },
+    {
+      "path": "RECEIVING.txt",
+      "bytes": 3210,
+      "sha256": "227cc1af6dd2db8c7685d0fb5625ce8e21fe5ce667358445ec9bd10985edeabe"
+    },
+    {
+      "path": "build_receiving_pack.py",
+      "bytes": 17144,
+      "sha256": "71927963217f7d99f1dc12061ea2651ced96b12b7a7fe63b0fd586dd531efb9b"
+    },
+    {
+      "path": "run_bounded.py",
+      "bytes": 1059,
+      "sha256": "d5f59dc1b7360db5841bdaebd461cefa28823f987e0f47a5551ea439483c02c6"
+    }
+  ],
+  "sourceUnchanged": true,
+  "assembledTriangles": {
+    "classic": [
+      82860,
+      20617
+    ],
+    "sovereignFit": [
+      75534,
+      19041
+    ]
+  },
+  "materials": 12,
+  "textureBytes": 2101346,
+  "processClosed": true,
+  "nativeUnityVerified": false
+}
