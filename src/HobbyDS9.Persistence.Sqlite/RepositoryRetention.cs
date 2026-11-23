@@ -23,6 +23,7 @@ namespace HobbyDS9.Persistence.Sqlite
                     if (known.Fingerprint != fingerprint) throw Error(RepositoryError.OperationIdConflict, operationId);
                     return known;
                 }
+                if (pendingQuarantine.Count != 0) throw Error(RepositoryError.WriteFailed);
                 var before = Branch(activeBranch.Id);
                 if (before == null || before.Head != activeBranch.Head || before.Generation != activeBranch.Generation) throw Error(RepositoryError.Conflict);
                 if (before.Head == null) throw Error(RepositoryError.Unavailable);
@@ -42,11 +43,12 @@ namespace HobbyDS9.Persistence.Sqlite
                     using (var cmd = Command("SELECT " + Field("r.Id", 96) + "," + Field("r.CheckpointId", 96) + ",r.Kind,c.Sequence FROM SaveReference r JOIN Checkpoint c ON c.Id=r.CheckpointId WHERE r.Deleted=0 ORDER BY c.Sequence DESC,r.Id COLLATE BINARY", tx))
                     using (var r = cmd.ExecuteReader()) while (r.Read()) refs.Add((ReadText(r, 0, 96), ReadText(r, 1, 96), r.GetInt32(2), r.GetInt64(3)));
                     var sizes = new Dictionary<string, long>(StringComparer.Ordinal);
-                    using (var cmd = Command("SELECT " + Field("Id", 96) + ",PayloadLength FROM Checkpoint WHERE Available=1", tx))
+                    using (var cmd = Command("SELECT " + Field("c.Id", 96) + ",PayloadLength FROM Checkpoint c WHERE Available=1 AND NOT " + IsQuarantinedSql, tx))
                     using (var r = cmd.ExecuteReader()) while (r.Read()) sizes.Add(ReadText(r, 0, 96), r.GetInt64(1));
                     var manual = refs.Where(r => r.Kind == 1).Select(r => r.Checkpoint).ToHashSet(StringComparer.Ordinal);
                     var keep = refs.Where(r => r.Kind == 1).Select(r => r.Id).ToHashSet(StringComparer.Ordinal);
-                    foreach (var r in refs.Where(r => r.Kind == 2).Take(rolling).Concat(refs.Where(r => r.Kind == 3).Take(milestones))) keep.Add(r.Id);
+                    var viableAutomatic = refs.Where(r => sizes.ContainsKey(r.Checkpoint));
+                    foreach (var r in viableAutomatic.Where(r => r.Kind == 2).Take(rolling).Concat(viableAutomatic.Where(r => r.Kind == 3).Take(milestones))) keep.Add(r.Id);
                     long AutomaticBytes()
                     {
                         var ids = refs.Where(r => r.Kind != 1 && keep.Contains(r.Id)).Select(r => r.Checkpoint).ToHashSet(StringComparer.Ordinal);
@@ -71,7 +73,14 @@ namespace HobbyDS9.Persistence.Sqlite
         }
         public long LogicalPayloadBytes
         {
-            get { lock (gate) { Alive(); return Number("SELECT COALESCE(SUM(PayloadLength),0) FROM Checkpoint WHERE Available=1"); } }
+            get
+            {
+                lock (gate)
+                {
+                    Alive();
+                    return Number("SELECT COALESCE(SUM(COALESCE(q.ObservedPayloadBytes,c.PayloadLength)),0) FROM Checkpoint c LEFT JOIN CheckpointQuarantine q ON q.CheckpointId=c.Id WHERE c.Available=1");
+                }
+            }
         }
         public RepositoryUsage GetStorageUsage(BranchInfo activeBranch, long softAutoBytes = 512L * 1024 * 1024)
         {
@@ -85,10 +94,11 @@ namespace HobbyDS9.Persistence.Sqlite
                 if (Number("SELECT COUNT(*) FROM Checkpoint WHERE Id=$head AND Available=1", null, ("$head", branch.Head)) != 1) throw Error(RepositoryError.Unavailable);
                 const string manual = "EXISTS(SELECT 1 FROM SaveReference r WHERE r.Deleted=0 AND r.Kind=1 AND r.CheckpointId=c.Id)";
                 const string automatic = "EXISTS(SELECT 1 FROM SaveReference r WHERE r.Deleted=0 AND r.Kind IN(2,3) AND r.CheckpointId=c.Id)";
-                var protectedBytes = Number("SELECT COALESCE(SUM(PayloadLength),0) FROM Checkpoint c WHERE Available=1 AND (c.Id=$head OR " + manual + ")", null, ("$head", branch.Head));
-                var automaticBytes = Number("SELECT COALESCE(SUM(PayloadLength),0) FROM Checkpoint c WHERE Available=1 AND NOT " + manual + " AND (c.Id=$head OR " + automatic + ")", null, ("$head", branch.Head));
+                var quarantineBytes = Number("SELECT COALESCE(SUM(ObservedPayloadBytes),0) FROM CheckpointQuarantine");
+                var protectedBytes = quarantineBytes + Number("SELECT COALESCE(SUM(PayloadLength),0) FROM Checkpoint c WHERE Available=1 AND NOT " + IsQuarantinedSql + " AND (c.Id=$head OR " + manual + ")", null, ("$head", branch.Head));
+                var automaticBytes = Number("SELECT COALESCE(SUM(PayloadLength),0) FROM Checkpoint c WHERE Available=1 AND NOT " + IsQuarantinedSql + " AND NOT " + manual + " AND (c.Id=$head OR " + automatic + ")", null, ("$head", branch.Head));
                 var db = new System.IO.FileInfo(SafeFile("campaign.sqlite")); var wal = new System.IO.FileInfo(SafeFile("campaign.sqlite-wal"));
-                return new RepositoryUsage(LogicalPayloadBytes, automaticBytes, protectedBytes, db.Exists ? db.Length : 0, wal.Exists ? wal.Length : 0, softAutoBytes);
+                return new RepositoryUsage(LogicalPayloadBytes, automaticBytes, protectedBytes, db.Exists ? db.Length : 0, wal.Exists ? wal.Length : 0, softAutoBytes, quarantineBytes);
             }
         }
         public void CheckpointWal()

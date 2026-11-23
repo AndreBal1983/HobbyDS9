@@ -55,7 +55,9 @@ namespace HobbyDS9.Persistence.Sqlite
                 AtomicWrite(path, bytes, overwrite); return path;
             }
         }
-        public string Backup(string backupId)
+        public string Backup(string backupId) => BackupVerified(backupId, hasQuarantine: true);
+
+        private string BackupVerified(string backupId, bool hasQuarantine)
         {
             Id(backupId);
             lock (gate)
@@ -67,12 +69,26 @@ namespace HobbyDS9.Persistence.Sqlite
                 try
                 {
                     using (var target = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = temporary, Pooling = false }.ToString()))
-                    { target.Open(); connection.BackupDatabase(target); }
+                    {
+                        target.Open();
+                        connection.BackupDatabase(target);
+                        // Publish a standalone database, including when the source
+                        // header was in WAL mode and the verification opens read-only.
+                        using var journal = target.CreateCommand();
+                        journal.CommandText = "PRAGMA journal_mode=DELETE";
+                        if (!string.Equals((string?)journal.ExecuteScalar(), "delete", StringComparison.OrdinalIgnoreCase))
+                            throw Error(RepositoryError.WriteFailed);
+                    }
                     using (var verify = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = temporary, Pooling = false, Mode = SqliteOpenMode.ReadOnly }.ToString()))
                     {
                         verify.Open(); using var check = verify.CreateCommand(); check.CommandText = "PRAGMA quick_check";
                         if ((string?)check.ExecuteScalar() != "ok") throw Error(RepositoryError.Corrupt);
-                        check.CommandText = "SELECT Turn,Revision," + Field("Phase", 64) + "," + Field("PayloadHash", 64) + ",PayloadLength,CASE WHEN typeof(Payload)='blob' AND length(Payload)<=67108864 THEN Payload ELSE NULL END,length(Payload) FROM Checkpoint WHERE Available=1";
+                        check.CommandText = "PRAGMA foreign_key_check";
+                        using (var failures = check.ExecuteReader())
+                            if (failures.Read()) throw Error(RepositoryError.Corrupt);
+                        if (hasQuarantine) VerifyBackupEvidence(check);
+                        check.CommandText = "SELECT Turn,Revision," + Field("Phase", 64) + "," + Field("PayloadHash", 64) + ",PayloadLength," + BoundedPayloadSql + ",length(Payload) FROM Checkpoint c WHERE Available=1"
+                            + (hasQuarantine ? " AND NOT " + IsQuarantinedSql : "");
                         using var rows = check.ExecuteReader();
                         while (rows.Read())
                         {
@@ -86,6 +102,22 @@ namespace HobbyDS9.Persistence.Sqlite
                     File.Move(temporary, destination); return destination;
                 }
                 finally { if (File.Exists(temporary)) File.Delete(temporary); }
+            }
+        }
+        private static void VerifyBackupEvidence(SqliteCommand check)
+        {
+            check.CommandText = "SELECT c.Available,CASE WHEN typeof(Payload)='blob' THEN length(Payload) ELSE 0 END,q.ObservedPayloadBytes,"
+                + Field("q.ObservedPayloadHash", 64) + ",q.ObservedPayloadHash IS NULL," + BoundedPayloadSql
+                + " FROM CheckpointQuarantine q JOIN Checkpoint c ON c.Id=q.CheckpointId";
+            using var evidence = check.ExecuteReader();
+            while (evidence.Read())
+            {
+                if (evidence.GetInt32(0) != 1 || evidence.GetInt64(1) != evidence.GetInt64(2))
+                    throw Error(RepositoryError.Corrupt);
+                var hash = evidence.GetInt32(4) == 1 ? null : ReadText(evidence, 3, 64);
+                if (hash == null ? !evidence.IsDBNull(5) :
+                    evidence.IsDBNull(5) || CheckpointImage.Hash((byte[])evidence.GetValue(5)) != hash)
+                    throw Error(RepositoryError.Corrupt);
             }
         }
         private string SubDirectory(string name)

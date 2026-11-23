@@ -43,7 +43,7 @@ public sealed class MetadataTests : IDisposable
             var row = Assert.Single(upgraded.ListReferences()); Assert.Equal("", row.UpdatedUtc); Assert.Equal(1, row.Generation);
         }
         var backup = Assert.Single(Directory.GetFiles(Path.Combine(directory, "backups"), "*.sqlite"));
-        Assert.Equal(1, Schema(backup)); Assert.Equal(2, Schema(Path.Combine(directory, "campaign.sqlite")));
+        Assert.Equal(1, Schema(backup)); Assert.Equal(3, Schema(Path.Combine(directory, "campaign.sqlite")));
         using var reopened = Open(); Assert.NotNull(reopened.FindOperation("first"));
     }
     [Fact] public void FailedStorageUpgradeRollsBackVersionAndRetainsVerifiedRecoveryBackup()
@@ -62,7 +62,7 @@ public sealed class MetadataTests : IDisposable
         using (var repo = Open()) repo.CommitCheckpoint(new("first", "main", 0, null, Image(1)));
         SimulateSchema1();
         Assert.Equal(RepositoryError.OutcomeUnknown, Assert.Throws<RepositoryException>(() => Open(stage => { if (stage == RepositoryWriteStage.AfterCommit) throw new IOException("upgrade acknowledgment lost"); }, true).Dispose()).Error);
-        Assert.Equal(2, Schema(Path.Combine(directory, "campaign.sqlite")));
+        Assert.Equal(3, Schema(Path.Combine(directory, "campaign.sqlite")));
         using var recovered = Open(); Assert.NotNull(recovered.FindOperation("first"));
         Assert.Single(Directory.GetFiles(Path.Combine(directory, "backups"), "*.sqlite"));
     }
@@ -86,7 +86,7 @@ public sealed class MetadataTests : IDisposable
     void SimulateSchema1()
     {
         using var sql = new SqliteConnection("Data Source=" + Path.Combine(directory, "campaign.sqlite") + ";Pooling=False"); sql.Open();
-        using var c = sql.CreateCommand(); c.CommandText = "ALTER TABLE SaveReference DROP COLUMN UpdatedUtc; PRAGMA user_version=1"; c.ExecuteNonQuery();
+        using var c = sql.CreateCommand(); c.CommandText = "DROP TABLE CheckpointQuarantine; ALTER TABLE SaveReference DROP COLUMN UpdatedUtc; PRAGMA user_version=1"; c.ExecuteNonQuery();
     }
     static long Schema(string path)
     {
