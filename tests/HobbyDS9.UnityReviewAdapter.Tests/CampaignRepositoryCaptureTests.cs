@@ -2,6 +2,7 @@ using System.Reflection;
 using System.Text;
 using HobbyDS9.Application;
 using HobbyDS9.Contracts;
+using HobbyDS9.RepositoryTestFixtures;
 using HobbyDS9.TacticalReviewClient;
 using HobbyDS9.UnityReview;
 using Newtonsoft.Json.Linq;
@@ -130,62 +131,31 @@ public sealed class CampaignRepositoryCaptureTests
     }
     [Fact] public void ProgressedRefinementSurveyPaidMineAndNextRngAllocatorConsequencesSurviveWholeRestore()
     {
-        var host=Host();var s=Session(host);var refinement=(ICampaignEngineeringRefinementSession)s;var belts=(ICampaignBeltBodiesSession)s;
-        var status=s.CaptureStatus();Assert.True(refinement.SubmitEngineeringRefinement(new(){ActorId=Human,CommandId="command.repository.refinement",ExpectedTurn=status.Turn,ExpectedRevision=status.CampaignRevision,
-            Action=EngineeringRefinementAction.Start,ParentVersionId="component.reactor.v1",Goal=EngineeringRefinementGoal.ReduceCapacity}).Accepted);
-        Assert.True(s.SubmitStrategicCommand(Allocation(s)).Accepted);
-        var body=belts.CaptureBeltBodies(Human)!.Bodies.Single(b=>b.FeatureId==CampaignAuthoredSolIdentity.FeatureId);
-        status=s.CaptureStatus();Assert.True(belts.SubmitBeltCommand(new(){ActorId=Human,CommandId="command.repository.survey",ExpectedTurn=status.Turn,ExpectedRevision=status.CampaignRevision,
-            Action=BeltBodyAction.StartSurvey,BodyId=body.BodyId,ShipId=body.SurveyShipIds.First()}).Accepted);
-        Advance(host);Advance(host);status=s.CaptureStatus();Assert.True(belts.SubmitBeltCommand(new(){ActorId=Human,CommandId="command.repository.mine",ExpectedTurn=status.Turn,ExpectedRevision=status.CampaignRevision,
-            Action=BeltBodyAction.EnqueueMine,BodyId=body.BodyId,ColonyId="colony.sol"}).Accepted);
-        for(var i=0;i<64&&s.ExportCycleSave() is CampaignBeltBodiesSaveDto r&&r.BeltBodies!.Mines!.Single().Stage==BeltMineStage.Queued;i++)Advance(host);
-        Advance(host);var image=Image(host);var root=Assert.IsType<CampaignBeltBodiesSaveDto>(codec.DecodeCycleRoot(image.ReadPayload()));
-        Assert.True(root.BeltBodies!.Mines!.Single().TotalExtracted>0);Assert.NotEmpty(root.BeltBodies.LastShipments!);
-        Assert.Equal(EngineeringRefinementStage.Pending,root.Refinement!.Projects!.Single().Stage);
-        Assert.NotEmpty(root.Refinement.Operations!);Assert.NotEmpty(root.BeltBodies.Operations!);Assert.NotEmpty(root.BaseCampaign!.Journal!);
+        var host=Host();
+        CycleRepositoryTestProgress.MineAndRefine(Session(host),Human);
+        var image=Image(host);
+        var root=Assert.IsType<CampaignBeltBodiesSaveDto>(codec.DecodeCycleRoot(image.ReadPayload()));
+        var pending=CycleRepositoryTestProgress.AssertMineAndRefinement(root);
         var restored=Restore(image);Assert.Equal(Bytes(host),Bytes(restored));
         foreach(var current in new[]{host,restored})
         {
             var application=(ICampaignEngineeringRefinementSession)Session(current);var stamp=Session(current).CaptureStatus();
             Assert.True(application.SubmitEngineeringRefinement(new(){ActorId=Human,CommandId="command.repository.discard",ExpectedTurn=stamp.Turn,ExpectedRevision=stamp.CampaignRevision,
-                Action=EngineeringRefinementAction.Discard,ProjectId=root.Refinement.Projects!.Single().ProjectId}).Accepted);
+                Action=EngineeringRefinementAction.Discard,ProjectId=pending}).Accepted);
             Advance(current);
         }
         Assert.Equal(Bytes(host),Bytes(restored));
     }
 
-    [Fact] public void RealCombatRequestsRoundsResolvedHistoryAndAftermathRemainEquivalent()
+    [Theory][InlineData(14)][InlineData(18)]
+    public void RealCombatRequestsRoundsResolvedHistoryAndAftermathRemainEquivalent(int format)
     {
         // Match the established human/AI combat fixture and choose orders
         // from public contact observations.
-        var package=Package(14,originalScenario:true);var host=PhysicalReviewHost.StartColonisationCycle(package,Settings(),codec);
-        var s=Session(host);var frame=host.Read(Human);
-        var fleet=Assert.Single(frame.OwnStrategicFleets).FleetId.Value;
-        var stamp=s.CaptureStatus();Assert.True(s.SubmitActivity(new(){ActorId=Human,CommandId="command.repository.combat.build",ExpectedTurn=stamp.Turn,ExpectedRevision=stamp.CampaignRevision,
-            Kind=CampaignActivityCommandKind.EnqueueShip,TargetId="colony.sol",DefinitionId="blueprint.ready.defiant-combat",BlueprintRevision=1}).Accepted);
-        var advances=0;
-        while(!s.CaptureColonisation(Human).OwnShipSources.Any(b=>b.BlueprintId=="blueprint.ready.defiant-combat"&&b.Revision==1)&&advances<80)
-        {
-            frame=host.Read(Human);
-            Assert.True(host.SubmitTravelOrder(new(){ActorId=Human,CommandId="command.repository.combat.prepare."+advances,ExpectedTurn=frame.Status.Turn,ExpectedRevision=frame.Status.CampaignRevision,
-                Order=new(){FleetId=fleet,Intent=CampaignTravelIntent.StayEngage,RouteNodeIds=new()}}).Accepted);
-            Advance(host);advances++;
-        }
-        var built=Assert.Single(s.CaptureColonisation(Human).OwnShipSources,b=>b.BlueprintId=="blueprint.ready.defiant-combat"&&b.Revision==1);
-        Assert.Contains(host.Read(Human).OwnStrategicFleets.Single(f=>f.FleetId.Value==fleet).ShipIds,ship=>ship.Value==built.ShipId);
-        Assert.Equal(SessionPhase.Planning,s.CaptureStatus().Phase);
-        while(s.CaptureStatus().Phase==SessionPhase.Planning&&advances<80)
-        {
-            frame=host.Read(Human);
-            var contact=frame.Travel!.KnownContacts.Where(c=>c.Fresh).OrderBy(c=>c.FleetId,StringComparer.Ordinal)
-                .FirstOrDefault(c=>host.FindKnownRoute(frame,fleet,c.LastSeenNodeId,false).Route.Success);
-            var route=contact==null?new List<string>():host.FindKnownRoute(frame,fleet,contact.LastSeenNodeId,false).Route.Steps.ToList();
-            Assert.True(host.SubmitTravelOrder(new(){ActorId=Human,CommandId="command.repository.combat.reach."+advances,ExpectedTurn=frame.Status.Turn,ExpectedRevision=frame.Status.CampaignRevision,
-                Order=new(){FleetId=fleet,Intent=contact==null?CampaignTravelIntent.StayEngage:CampaignTravelIntent.Follow,ContactFleetId=contact?.FleetId,ExpectedContactSeenTurn=contact?.LastSeenTurn,RouteNodeIds=route}}).Accepted);
-            Advance(host);advances++;
-        }
-        Assert.Equal(SessionPhase.AwaitingCombat,s.CaptureStatus().Phase);var waiting=Image(host);var restored=Restore(waiting,package);
+        var package=Package(format,originalScenario:format==14);var host=PhysicalReviewHost.StartColonisationCycle(package,Settings(),codec);
+        var s=Session(host);
+        CycleRepositoryTestCombat.ReachAwaitingCombat(host,s,format==18);
+        var waiting=Image(host);var restored=Restore(waiting,package);
         Assert.Equal(Bytes(host),Bytes(restored));Assert.NotEmpty(codec.DecodeCycleRoot(waiting.ReadPayload()).BaseCampaign!.Campaign!.Integrated!.Physical!.Requests);
         var capture=host.PrepareRepositoryCheckpoint(host.Read(Human),WireCodec).Work!;
         foreach(var encounter in s.GetEncounters(Human))
@@ -203,7 +173,7 @@ public sealed class CampaignRepositoryCaptureTests
             }
             Assert.True(s.Observe(encounter,Human).Complete);
         }
-        foreach(var current in new[]{host,restored}){stamp=Session(current).CaptureStatus();Assert.True(Session(current).FinalizeBatch(stamp.Turn,stamp.CampaignRevision).Accepted);}
+        foreach(var current in new[]{host,restored}){var stamp=Session(current).CaptureStatus();Assert.True(Session(current).FinalizeBatch(stamp.Turn,stamp.CampaignRevision).Accepted);}
         Assert.Equal(Bytes(host),Bytes(restored));Assert.Equal(Bytes(host),Bytes(Restore(Image(host),package)));
     }
 }
