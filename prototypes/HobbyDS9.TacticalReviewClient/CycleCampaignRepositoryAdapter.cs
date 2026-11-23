@@ -36,6 +36,15 @@ namespace HobbyDS9.TacticalReviewClient
                 return new CampaignRepositoryImageResult(CampaignRepositoryError.Incompatible);
             try
             {
+                var game=root.BaseCampaign?.Campaign?.Integrated?.Physical?.Core?.Campaign?.GameState;
+                if(game!=null&&(game.TurnNumber<=0||game.StateRevision<0))
+                {
+                    // FoundationValidator rejects these absolute counter values.
+                    // A failed or ambiguous decode/replay cannot provide this proof.
+                    var exactEdition=expectedEditionIdentity!=null&&
+                        string.Equals(expectedEditionIdentity,Describe(root).Identity,StringComparison.Ordinal);
+                    return new CampaignRepositoryImageResult(CampaignRepositoryError.InvalidPayload,definiteCorruption:exactEdition);
+                }
                 var loaded=CampaignColonisationCycleApplication.LoadCycleSave(package,root);
                 // Equality of the entire edition carrier, including all histories
                 // and private sidecars, not just the visible GameState or its hash.

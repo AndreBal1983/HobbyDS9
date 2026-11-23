@@ -98,7 +98,11 @@ namespace HobbyDS9.TacticalReviewClient
         public CampaignRepositoryError Error {get;}
         public bool Succeeded=>Error==CampaignRepositoryError.None;
         public CampaignRepositoryImage? Image {get;}
-        internal CampaignRepositoryImageResult(CampaignRepositoryError error,CampaignRepositoryImage? image=null){Error=error;Image=image;}
+        // A bounded proof about the decoded payload in the expected edition.
+        // A generic InvalidPayload result does not carry this guarantee.
+        public bool DefiniteCorruption {get;}
+        internal CampaignRepositoryImageResult(CampaignRepositoryError error,CampaignRepositoryImage? image=null,bool definiteCorruption=false)
+        {Error=error;Image=image;DefiniteCorruption=definiteCorruption;}
     }
     // A storage adapter supplies owned complete bytes and its indexed metadata.
     // The host independently validates every field before making a replacement.
