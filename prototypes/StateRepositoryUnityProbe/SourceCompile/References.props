@@ -1,0 +1,28 @@
+<Project>
+  <PropertyGroup>
+    <ProbeRepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../../..'))</ProbeRepoRoot>
+    <ProbePackageRoot Condition="'$(ProbePackageRoot)' == ''">$(NUGET_PACKAGES)</ProbePackageRoot>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(ProbeManagedReferences)' == 'true'">
+    <Reference Include="Microsoft.Data.Sqlite"><HintPath>$(ProbePackageRoot)/microsoft.data.sqlite.core/10.0.14/lib/netstandard2.0/Microsoft.Data.Sqlite.dll</HintPath></Reference>
+    <Reference Include="SQLitePCLRaw.core"><HintPath>$(ProbePackageRoot)/sqlitepclraw.core/2.1.13/lib/netstandard2.0/SQLitePCLRaw.core.dll</HintPath></Reference>
+    <Reference Include="SQLitePCLRaw.provider.e_sqlite3"><HintPath>$(ProbePackageRoot)/sqlitepclraw.provider.e_sqlite3/2.1.13/lib/netstandard2.0/SQLitePCLRaw.provider.e_sqlite3.dll</HintPath></Reference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(ProbeDataReferences)' == 'true'">
+    <Reference Include="HobbyDS9.Persistence"><HintPath>$(ProbeDataRoot)/src/HobbyDS9.Persistence/bin/Release/netstandard2.1/HobbyDS9.Persistence.dll</HintPath></Reference>
+    <Reference Include="HobbyDS9.Persistence.Sqlite"><HintPath>$(ProbeDataRoot)/src/HobbyDS9.Persistence.Sqlite/bin/Release/netstandard2.1/HobbyDS9.Persistence.Sqlite.dll</HintPath></Reference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(ProbeUnityReferences)' == 'true'">
+    <!-- Compile with the installed Unity profile, not the SDK's substitute BCL. -->
+    <Reference Include="$(UnityManagedDir)/../NetStandard/ref/2.1.0/*.dll"><Private>false</Private></Reference>
+    <Reference Include="$(UnityManagedDir)/../NetStandard/compat/2.1.0/shims/netstandard/*.dll"><Private>false</Private></Reference>
+    <Reference Include="$(UnityManagedDir)/../BCLExtensions/TargetingPacks/netstandard2.1/ref/*.dll"><Private>false</Private></Reference>
+    <Reference Include="$(UnityManagedDir)/UnityEngine/UnityEngine*.dll"><Private>false</Private></Reference>
+  </ItemGroup>
+  <Target Name="RequireProbePins" BeforeTargets="ResolveReferences">
+    <Error Condition="'$(ProbeManagedReferences)' == 'true' And !Exists('$(ProbePackageRoot)/microsoft.data.sqlite.core/10.0.14/lib/netstandard2.0/Microsoft.Data.Sqlite.dll')" Text="Restore the frozen ProviderGraph and supply ProbePackageRoot; no runtime asset fallback." />
+    <Error Condition="'$(ProbeDataReferences)' == 'true' And !Exists('$(ProbeDataRoot)/src/HobbyDS9.Persistence.Sqlite/bin/Release/netstandard2.1/HobbyDS9.Persistence.Sqlite.dll')" Text="Supply the actual tested Data source/binary root." />
+    <Error Condition="'$(ProbeUnityReferences)' == 'true' And !Exists('$(UnityManagedDir)/UnityEngine/UnityEngine.CoreModule.dll')" Text="Supply actual6000.6.9f1 Managed references; this does not execute Unity." />
+  </Target>
+</Project>

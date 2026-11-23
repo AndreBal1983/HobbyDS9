@@ -1,0 +1,12 @@
+{
+  "Source": "76b275632a2d34281b0f37911107ec8b7d96095e",
+  "Assemblies": {
+    "HobbyDS9.Persistence.Sqlite.dll": "5dd4950b030b4d7a98e023ee6a4a83f5080df90b3327a920877f0cc4090c792a",
+    "HobbyDS9.Persistence.dll": "7911b069c125149aa2a8444075cd90f3a7d0cc4f7552fcb0a661abf1fcf88ff9"
+  },
+  "NativeRecipe": "R2",
+  "DataReceiptSha256": "c7a609c100c1fd28979484b5676af1c986a5a4b34b87c59bd2829289997ea24a",
+  "DataEvidence": "evidence/data-build-r2-76b2756.json",
+  "Limitations": "Generated Data repository fixture and exact netstandard smoke; not Unity/native or gameplay restore acceptance.",
+  "ArtifactSourceWorktree": "C:/HobbyDS9/artifacts/worktrees/STATE-REPOSITORY-A2-data-pin"
+}

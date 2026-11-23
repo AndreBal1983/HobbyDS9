@@ -137,6 +137,9 @@ namespace HobbyDS9.UnityReview
         }
         private string PlayerMessage()
         {
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+            var repositoryWarning=RepositoryWarning();if(repositoryWarning!=null)return repositoryWarning;
+#endif
             if(model!.ResearchCommitPending)return "Applying allocation. End turn is available after the campaign accepts it.";
             if(model!.HasPlanningEdits)return model.Current.RefreshRequired?"Unsent changes kept · refresh your view before applying. Saving committed state keeps these edits locally.":"Unsent changes · apply or discard them before ending the turn. Navigation keeps your edits.";
             if(model.LocalDesignDirty)return "Unpublished design kept in this session; it does not block End turn. Campaign saves exclude this draft. Publish explicitly after refreshing validation.";

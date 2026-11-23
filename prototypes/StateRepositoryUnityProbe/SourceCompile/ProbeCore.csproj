@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><ProbeManagedReferences>true</ProbeManagedReferences><AssemblyName>HobbyDS9.StateRepositoryProbe.Core</AssemblyName></PropertyGroup>
+  <Import Project="References.props" />
+  <ItemGroup><Compile Include="$(ProbeRepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/StateRepositoryProbe/Runtime/SqliteNativeProbe.cs" /></ItemGroup>
+</Project>

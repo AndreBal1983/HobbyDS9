@@ -1,0 +1,146 @@
+name: State repository (isolated managed hosts)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/HobbyDS9.Persistence/**'
+      - 'src/HobbyDS9.Persistence.Sqlite/**'
+      - 'src/HobbyDS9.Application/**'
+      - 'src/HobbyDS9.Contracts/**'
+      - 'src/HobbyDS9.Simulation/**'
+      - 'scenarios/ds9-slice/scenario.json'
+      - 'prototypes/HobbyDS9.FoundationRepositoryHost/**'
+      - 'tests/HobbyDS9.FoundationRepositoryHost.Tests/**'
+      - 'tests/HobbyDS9.Persistence.Sqlite.Tests/**'
+      - 'tools/HobbyDS9.Persistence.CrashProbe/**'
+      - 'tools/HobbyDS9.Persistence.NetStandardSmoke/**'
+      - 'scripts/prepare-persistence-native.ps1'
+      - '.github/workflows/state-repository.yml'
+  pull_request:
+    paths:
+      - 'src/HobbyDS9.Persistence/**'
+      - 'src/HobbyDS9.Persistence.Sqlite/**'
+      - 'src/HobbyDS9.Application/**'
+      - 'src/HobbyDS9.Contracts/**'
+      - 'src/HobbyDS9.Simulation/**'
+      - 'scenarios/ds9-slice/scenario.json'
+      - 'prototypes/HobbyDS9.FoundationRepositoryHost/**'
+      - 'tests/HobbyDS9.FoundationRepositoryHost.Tests/**'
+      - 'tests/HobbyDS9.Persistence.Sqlite.Tests/**'
+      - 'tools/HobbyDS9.Persistence.CrashProbe/**'
+      - 'tools/HobbyDS9.Persistence.NetStandardSmoke/**'
+      - 'scripts/prepare-persistence-native.ps1'
+      - '.github/workflows/state-repository.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: state-repository-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  persistence:
+    name: Repository (${{ matrix.os }}, managed-host evidence)
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - uses: actions/setup-python@v6
+        if: runner.os == 'Windows'
+        with:
+          python-version: '3.13'
+      - name: Create isolated evidence directory and record scope
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $evidence = Join-Path $env:RUNNER_TEMP ('state-repository-' + [Guid]::NewGuid().ToString('N'))
+          $null = New-Item -ItemType Directory -Path $evidence
+          "PERSISTENCE_EVIDENCE=$evidence" >> $env:GITHUB_ENV
+          $scope = if ($env:RUNNER_OS -eq 'Windows') { 'Verified SQLite 3.54.1 R2, Windows x64 managed host' } else { 'Frozen NuGet SQLitePCLRaw 2.1.13 baseline; trusted generated fixtures only; not R2 evidence' }
+          @{ scope = $scope; nativePlayerAcceptance = $false; unityExecution = $false; productionActivation = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'scope.json')
+          if ((dotnet --version) -ne '10.0.401') { throw 'Expected the pinned .NET SDK 10.0.401.' }
+      - name: Verify and stage the official Windows R2 artifact
+        if: runner.os == 'Windows'
+        run: |
+          $receipt = & ./scripts/prepare-persistence-native.ps1 -ArtifactDirectory (Join-Path $env:PERSISTENCE_EVIDENCE 'native-r2')
+          $receipt | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $env:PERSISTENCE_EVIDENCE 'native-receipt.json')
+          "PERSISTENCE_NATIVE=$($receipt.NativeSqliteOverride)" >> $env:GITHUB_ENV
+      - name: Restore locked repository and crash-probe dependencies
+        run: |
+          dotnet restore tests/HobbyDS9.Persistence.Sqlite.Tests/HobbyDS9.Persistence.Sqlite.Tests.csproj --locked-mode -warnaserror
+          if ($LASTEXITCODE -ne 0) { throw 'Locked repository restore failed.' }
+      - name: Build repository tests and crash probe (Release)
+        run: |
+          $nativeArgs = @()
+          if ($env:RUNNER_OS -eq 'Windows') { $nativeArgs = @("-p:NativeSqliteOverride=$env:PERSISTENCE_NATIVE") }
+          dotnet build tests/HobbyDS9.Persistence.Sqlite.Tests/HobbyDS9.Persistence.Sqlite.Tests.csproj --configuration Release --no-restore -warnaserror @nativeArgs "-bl:$env:PERSISTENCE_EVIDENCE/repository-build.binlog" "-flp:logfile=$env:PERSISTENCE_EVIDENCE/repository-build.log;verbosity=normal"
+          if ($LASTEXITCODE -ne 0) { throw 'Repository build failed.' }
+          if ($env:RUNNER_OS -eq 'Windows') {
+            foreach ($output in @('tests/HobbyDS9.Persistence.Sqlite.Tests', 'tools/HobbyDS9.Persistence.CrashProbe')) {
+              $directory = Join-Path $env:GITHUB_WORKSPACE "$output/bin/Release/net10.0"
+              if (-not (Test-Path -LiteralPath (Join-Path $directory 'hobbyds9-native-recipe.txt'))) { throw 'Missing R2 recipe marker.' }
+              foreach ($relative in @('e_sqlite3.dll', 'runtimes/win-x64/native/e_sqlite3.dll')) {
+                if ((Get-FileHash -LiteralPath (Join-Path $directory $relative) -Algorithm SHA256).Hash -ne '4b59d3cded9dc1608544160f3b4b10ac974c6ac0d6ffc23064e5f4c8dbd05aea') { throw 'R2 output copy mismatch.' }
+              }
+            }
+          }
+      - name: Run focused generated-data repository and crash acceptance
+        run: |
+          dotnet test tests/HobbyDS9.Persistence.Sqlite.Tests/HobbyDS9.Persistence.Sqlite.Tests.csproj --configuration Release --no-build --no-restore --logger 'trx;LogFileName=repository.trx' --results-directory "$env:PERSISTENCE_EVIDENCE/tests" --blame-hang-timeout 3m
+          if ($LASTEXITCODE -ne 0) { throw 'Repository acceptance failed.' }
+      - name: Restore and test actual foundational carrier adapter
+        run: |
+          dotnet restore tests/HobbyDS9.FoundationRepositoryHost.Tests/HobbyDS9.FoundationRepositoryHost.Tests.csproj --locked-mode -warnaserror
+          if ($LASTEXITCODE -ne 0) { throw 'Locked foundation adapter restore failed.' }
+          $nativeArgs = @()
+          if ($env:RUNNER_OS -eq 'Windows') { $nativeArgs = @("-p:NativeSqliteOverride=$env:PERSISTENCE_NATIVE") }
+          dotnet test tests/HobbyDS9.FoundationRepositoryHost.Tests/HobbyDS9.FoundationRepositoryHost.Tests.csproj --configuration Release --no-restore -warnaserror @nativeArgs --logger 'trx;LogFileName=foundation.trx' --results-directory "$env:PERSISTENCE_EVIDENCE/foundation-tests" --blame-hang-timeout 3m
+          if ($LASTEXITCODE -ne 0) { throw 'Foundation adapter acceptance failed.' }
+      - name: Build exact-netstandard managed harness (Windows R2 only)
+        if: runner.os == 'Windows'
+        run: |
+          dotnet restore tools/HobbyDS9.Persistence.NetStandardSmoke/HobbyDS9.Persistence.NetStandardSmoke.csproj --locked-mode -warnaserror
+          if ($LASTEXITCODE -ne 0) { throw 'Harness restore failed.' }
+          $packageCache = (dotnet nuget locals global-packages --list --force-english-output) -replace '^global-packages:\s*', ''
+          if ($LASTEXITCODE -ne 0 -or -not [IO.Path]::IsPathFullyQualified($packageCache)) { throw 'Could not resolve the global package cache.' }
+          dotnet build tools/HobbyDS9.Persistence.NetStandardSmoke/HobbyDS9.Persistence.NetStandardSmoke.csproj --configuration Release --no-restore -warnaserror "-p:ProviderPackageRoot=$packageCache" "-p:NativeSqliteOverride=$env:PERSISTENCE_NATIVE" "-bl:$env:PERSISTENCE_EVIDENCE/netstandard-build.binlog" "-flp:logfile=$env:PERSISTENCE_EVIDENCE/netstandard-build.log;verbosity=normal"
+          if ($LASTEXITCODE -ne 0) { throw 'Exact-netstandard harness build failed.' }
+      - name: Run exact-netstandard create, backup and reopen smoke (Windows R2 only)
+        if: runner.os == 'Windows'
+        run: |
+          $smokeDirectory = Join-Path $env:PERSISTENCE_EVIDENCE ('smoke-' + [Guid]::NewGuid().ToString('N'))
+          if (Test-Path -LiteralPath $smokeDirectory) { throw 'Smoke database directory must be new.' }
+          $result = & dotnet tools/HobbyDS9.Persistence.NetStandardSmoke/bin/Release/net10.0/HobbyDS9.Persistence.NetStandardSmoke.dll $smokeDirectory smoke
+          if ($LASTEXITCODE -ne 0) { throw 'Exact-netstandard smoke failed.' }
+          $result | Set-Content -LiteralPath (Join-Path $env:PERSISTENCE_EVIDENCE 'netstandard-smoke.json')
+          $proof = ($result -join "`n") | ConvertFrom-Json
+          if (-not $proof.succeeded -or $proof.mode -ne 'smoke' -or $proof.runtime -notlike '3.54.1 *' -or $proof.assemblies.Count -ne 5) { throw 'Unexpected smoke/runtime evidence.' }
+          foreach ($assembly in $proof.assemblies) {
+            $expected = if ($assembly.FullName -like 'HobbyDS9.Persistence,*' -or $assembly.FullName -like 'HobbyDS9.Persistence.Sqlite,*') { '.NETStandard,Version=v2.1' } else { '.NETStandard,Version=v2.0' }
+            if ($assembly.Framework -ne $expected) { throw "Wrong assembly framework: $($assembly.FullName)" }
+          }
+      - name: Upload separate managed-host evidence (no native redistribution)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: state-repository-${{ matrix.os }}
+          retention-days: 14
+          path: |
+            ${{ env.PERSISTENCE_EVIDENCE }}/**/*.trx
+            ${{ env.PERSISTENCE_EVIDENCE }}/**/*.log
+            ${{ env.PERSISTENCE_EVIDENCE }}/**/*.binlog
+            ${{ env.PERSISTENCE_EVIDENCE }}/*.json
+          if-no-files-found: warn

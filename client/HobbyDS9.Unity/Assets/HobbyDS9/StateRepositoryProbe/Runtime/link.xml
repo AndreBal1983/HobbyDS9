@@ -1,0 +1,8 @@
+<linker>
+  <!-- Deliberately broad for this isolated AOT feasibility trial, not production policy. -->
+  <assembly fullname="HobbyDS9.StateRepositoryProbe" preserve="all" ignoreIfMissing="1" />
+  <assembly fullname="HobbyDS9.Persistence.Sqlite" preserve="all" ignoreIfMissing="1" ignoreIfUnreferenced="1" />
+  <assembly fullname="Microsoft.Data.Sqlite" preserve="all" ignoreIfMissing="1" ignoreIfUnreferenced="1" />
+  <assembly fullname="SQLitePCLRaw.core" preserve="all" ignoreIfMissing="1" ignoreIfUnreferenced="1" />
+  <assembly fullname="SQLitePCLRaw.provider.e_sqlite3" preserve="all" ignoreIfMissing="1" ignoreIfUnreferenced="1" />
+</linker>

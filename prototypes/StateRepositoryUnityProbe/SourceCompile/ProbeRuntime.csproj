@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><ProbeManagedReferences>true</ProbeManagedReferences><ProbeDataReferences>true</ProbeDataReferences><ProbeUnityReferences>true</ProbeUnityReferences><DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences><NoStdLib>true</NoStdLib><AssemblyName>HobbyDS9.StateRepositoryProbe</AssemblyName></PropertyGroup>
+  <Import Project="References.props" />
+  <ItemGroup><Compile Include="$(ProbeRepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/StateRepositoryProbe/Runtime/*.cs" /></ItemGroup>
+</Project>
