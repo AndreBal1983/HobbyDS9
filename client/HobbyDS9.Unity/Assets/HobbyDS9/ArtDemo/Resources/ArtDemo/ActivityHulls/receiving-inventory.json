@@ -1,0 +1,200 @@
+{
+  "status": "source-only; Unity import pending",
+  "models": 4,
+  "textures": 3,
+  "materialContract": "explicit runtime private materials, source submesh slot order",
+  "galaxyFixedAssemblyTriangles": 70377,
+  "galaxyExplanation": "existing hull/core/blue deflector LOD0 plus already imported Classic nacelle pair LOD1",
+  "files": [
+    {
+      "path": "Constitution/Models/ConstitutionExplorer_LOD0.fbx",
+      "bytes": 156908,
+      "sha256": "d483e1d88421085e82b3bd23a62a21631a3aa7f9d948362fd089575bd61cde4d"
+    },
+    {
+      "path": "Constitution/Models/ConstitutionExplorer_LOD0.fbx.meta",
+      "bytes": 3055,
+      "sha256": "36e5c389d8eba9838183a142e7fbfa12af14442d3e0eef64d0bcf56f01eb52a1"
+    },
+    {
+      "path": "Constitution/Models/ConstitutionExplorer_LOD1.fbx",
+      "bytes": 73564,
+      "sha256": "6c8cc1a937b14d9e609708c414af054d10d7044dc46e203c8918a92cfd1fcc8a"
+    },
+    {
+      "path": "Constitution/Models/ConstitutionExplorer_LOD1.fbx.meta",
+      "bytes": 3055,
+      "sha256": "453ad441953dc7a4890866ab80243ffec7f565c1e980d241c1495bea8aa46ed3"
+    },
+    {
+      "path": "Constitution/Models.meta",
+      "bytes": 116,
+      "sha256": "ff975264da01680a799e63942f1693703a0fee5c4f92d152624e4bf9f4240adc"
+    },
+    {
+      "path": "Constitution/source-contract.json",
+      "bytes": 4356,
+      "sha256": "a90d611be06c603eb1e400f7ac9f13c3aaeb3357387dd0ec682d3c9ae0e2de5a"
+    },
+    {
+      "path": "Constitution/source-contract.json.meta",
+      "bytes": 99,
+      "sha256": "d90d8e2c84cf00b69f9f1322302736e8302037555e31c5e67e1a885a5e743238"
+    },
+    {
+      "path": "Constitution.meta",
+      "bytes": 116,
+      "sha256": "3f50b5722d869e42fc2a65eea30d00d33e088a4c28419966fa931f69a2f8a140"
+    },
+    {
+      "path": "CREDITS.txt",
+      "bytes": 693,
+      "sha256": "f187485e2bca4ce26ff6c212d46212cc2afdd609a8998f7e9d31bf1ff0561e52"
+    },
+    {
+      "path": "CREDITS.txt.meta",
+      "bytes": 99,
+      "sha256": "db391d0f7c474f050b73b61764cd53f26715a288e30d9cfdda88682ac361d0b4"
+    },
+    {
+      "path": "Defiant/Models/Defiant_LOD0.fbx",
+      "bytes": 2361868,
+      "sha256": "d735ba683facd47101ce09b82ed684fbf241db83a40cfa5c53c1861337c22b0d"
+    },
+    {
+      "path": "Defiant/Models/Defiant_LOD0.fbx.meta",
+      "bytes": 3055,
+      "sha256": "b4cb8906638a10e6d37a8b7954360d3cc9fdb344204797f96f0bd40ccc2ff4c3"
+    },
+    {
+      "path": "Defiant/Models/Defiant_LOD1.fbx",
+      "bytes": 724700,
+      "sha256": "cc04abb256b5a19d2e0f4caa90a7f8fa0d9429ed3e327681839d0f885ba8fb52"
+    },
+    {
+      "path": "Defiant/Models/Defiant_LOD1.fbx.meta",
+      "bytes": 3055,
+      "sha256": "12f4cd2dc5e570dcc543f8e0dca53c7e575cc4cc4b8a3f78226f1b165454f8f0"
+    },
+    {
+      "path": "Defiant/Models.meta",
+      "bytes": 116,
+      "sha256": "81281fee9a976678a1f6a9c414ae49e80b606d5d9f73539e99b2a2fb3b232ed8"
+    },
+    {
+      "path": "Defiant/source-contract.json",
+      "bytes": 3630,
+      "sha256": "b59a11a996d96002ffa13d2295206ede4191fb9a15cb9588de5a5264cba864d3"
+    },
+    {
+      "path": "Defiant/source-contract.json.meta",
+      "bytes": 99,
+      "sha256": "f89492d46c5bb8b251ec427335a25af07350e25d63ff9aacee99c7a0cbc0499a"
+    },
+    {
+      "path": "Defiant/Textures/Defiant_Image_0.jpg",
+      "bytes": 3390271,
+      "sha256": "1215f1d31321234593a6f2bbbe2cab1e32129d4c313fb8d89a48108945fd2bb4"
+    },
+    {
+      "path": "Defiant/Textures/Defiant_Image_0.jpg.meta",
+      "bytes": 405,
+      "sha256": "0470fcb1a54345747cb739ebe03e24b4e87d13605097ee03f9c4bf9e6949729e"
+    },
+    {
+      "path": "Defiant/Textures/Defiant_Image_1.jpg",
+      "bytes": 2143978,
+      "sha256": "5b1bec88be3f0117115cbc211bde1ed764f1f3124918f42d4879b4595bb1d66f"
+    },
+    {
+      "path": "Defiant/Textures/Defiant_Image_1.jpg.meta",
+      "bytes": 405,
+      "sha256": "e86ea9113bea69a358712b2b77e9219de531a2866ce15ede81749a0c7828aa7f"
+    },
+    {
+      "path": "Defiant/Textures/Defiant_Image_2.jpg",
+      "bytes": 2535269,
+      "sha256": "1fef96e2881a7a24640f23f850433bf52c2f81baa4202bb455995f26badfbcfc"
+    },
+    {
+      "path": "Defiant/Textures/Defiant_Image_2.jpg.meta",
+      "bytes": 405,
+      "sha256": "2572bd3e92f6da523ead7a00f812bfb3f56e7b4a55be8280a546ace8f604b271"
+    },
+    {
+      "path": "Defiant/Textures.meta",
+      "bytes": 116,
+      "sha256": "a2833720ebe080881adf35049a4d9e23a0e745925b0e81d1e335180a0e419270"
+    },
+    {
+      "path": "Defiant.meta",
+      "bytes": 116,
+      "sha256": "5e4242e5204752cc1c36f490e1dd849a8ce1a355e9cb4e3d65f3f32a953e0134"
+    },
+    {
+      "path": "INTEGRATION.md",
+      "bytes": 3257,
+      "sha256": "29f578b2df539d19469d914dea1e0bcf6c37b5c6eec13b36216a425bfe5ed178"
+    },
+    {
+      "path": "INTEGRATION.md.meta",
+      "bytes": 99,
+      "sha256": "31a2e0d5f922b9229126fc917550c1179d3c7582575e9c02b9b334e59f23fd8d"
+    },
+    {
+      "path": "Provenance/cpu-validation.json",
+      "bytes": 12620,
+      "sha256": "1b2930dc7b324e7664cc2f487f0baf8b0714ca5ecb271b2332a69095720b912c"
+    },
+    {
+      "path": "Provenance/cpu-validation.json.meta",
+      "bytes": 99,
+      "sha256": "5325ee0cbb5a5aeab824551c653c00ac5b1025554165ba4c7961d0756fc2000c"
+    },
+    {
+      "path": "Provenance/delivery-contract.json",
+      "bytes": 2881,
+      "sha256": "15dacca14c40e843057693df7c14c1fa25b7eae794533f4b522b61bd49cff6fb"
+    },
+    {
+      "path": "Provenance/delivery-contract.json.meta",
+      "bytes": 99,
+      "sha256": "1ae3c57dad4b21a296a65d6ef932f86fe095c1e1e79664379a6203c949b1bcd2"
+    },
+    {
+      "path": "Provenance/fbx-normal-validation.json",
+      "bytes": 4340,
+      "sha256": "7d819d4ab1366cb0bbfcb281cddd591a9e7f283325c5c38204cb32494c8ca348"
+    },
+    {
+      "path": "Provenance/fbx-normal-validation.json.meta",
+      "bytes": 99,
+      "sha256": "0a459dc1cc9f72eef53079d3f40cae472bbbe1dfa904cc4800608cba780d7861"
+    },
+    {
+      "path": "Provenance/owner-defiant-provenance.json",
+      "bytes": 833,
+      "sha256": "d00841e72d4777839d241d712b9f4d02487e3d9f15a4d3a5bedbc57a6e352c88"
+    },
+    {
+      "path": "Provenance/owner-defiant-provenance.json.meta",
+      "bytes": 99,
+      "sha256": "ecdd2f2257e3e09f0771c6e33d5cd1a1ded88660cafd990034bef9c4b7761fe9"
+    },
+    {
+      "path": "Provenance/RECEIVING.md",
+      "bytes": 5722,
+      "sha256": "5bd3235ab44d192e9954682250f1e81090b60a91044b49a0da960c24eaad2458"
+    },
+    {
+      "path": "Provenance/RECEIVING.md.meta",
+      "bytes": 99,
+      "sha256": "5d12c1b494059cd0bebadf866cfccc766d6c90c71e84a679701b007a467eba14"
+    },
+    {
+      "path": "Provenance.meta",
+      "bytes": 116,
+      "sha256": "66ef1b0d820f26ebbedc88caeb697202e558ba25d17a1f964c3a6c136e3ba1e4"
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 # Gameplay design decisions
 
+Current UI acceptance follows the [display policy](../display-policy.md): 1280×720 is no longer required (owner decision, 19 November 2026).
+
 Decision date: 12 October 2026.
 Colonisation and conquest decisions added: 16 October 2026.
 
@@ -15,9 +17,16 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 | [Time, movement and mobilisation](time-movement-mobilisation.md) | Weekly clock, sector travel, expediting, buyout, sensor warning and response | Direction agreed; speeds, prices and detailed timing proposed |
 | [Fleet interception and tactical combat](tactical-combat.md) | Fleet posture, detection/tracking/interception, command hierarchy, abstract maneuver, battle orders, targeting and combat objectives | Direction agreed; formulas and balance proposed/open |
 | [Colonisation and planetary conquest](colonisation-and-conquest.md) | Planetary ownership, settlement, supplies, invasion, bombardment, occupation, rebellion and liberation | First-pass gameplay framework agreed; detailed rules and tuning open |
+| [Offline state repository and saves](state-repository-savegame-adr.md) | Host persistence, named slots, autosave/recovery, SQLite feasibility, compatibility and future authority seams | Direction/defaults agreed; phased A2/B1/B2/C1/C2/D1 implementation [authorized 22 November](state-repository-implementation-authorization-20261122.md); evidence gates retained, D2 default rollout separate; not an implemented replacement |
+| [Internet multiplayer](internet-multiplayer.md) | Host authority, authenticated commands, lawful replication, lobby/reconnect, turn/combat commitments, persistence and deployment alternatives | Internet multiplayer added to intended scope by the owner on 22 November; offline singleplayer remains complete. Technical plan proposed, deployment/security/product decisions open; no live service or multiplayer activation |
 
 ## Decisions adopted
 
+The repository work follows its [implementation contract](state-repository-implementation-contract.md) for source ownership, trial dependencies and evidence gates.
+
+- Support internet multiplayer as an intended project capability while preserving complete offline singleplayer. The [overnight authorization](../overnight-20261122.md) permits scope/design and bounded offline protocol/seam tests after storage priorities; it does not authorize a public service, port exposure, paid service or multiplayer default activation. See the [proposed multiplayer plan](internet-multiplayer.md).
+
+- Implement the agreed offline per-campaign SQLite save repository in authorized phases, starting with immutable complete existing-root checkpoints and protected JSON originals. Accepted defaults are 10 rolling autosaves, 3 milestones, a 512 MiB soft automatic budget, truthful continued play after autosave failure and independent branches/manual pins. Native/provider/performance gates remain open; chunks, engine delta/copy refactors, Quick Save and multiplayer remain deferred. The [authorization](state-repository-implementation-authorization-20261122.md) governs scope and resource controls; approval does not establish implementation or default rollout.
 - Keep faction abilities, personality and difficulty independent; canonical factions are editable presets.
 - Give AI persistent victory goals and milestones. Turn utility scoring executes the plan.
 - Provide five difficulties through better planning/search rather than resources, rule exceptions or hidden information.
@@ -25,6 +34,7 @@ Markdown in Git is the authoritative source for the migrated decisions below. [T
 - Spend existing Engineering capacity to develop and refine hull/component versions; preserve diminishing returns and scientific prerequisites.
 - Integrate the ship designer with the strategic planner: build for mission, timing, affordability and logistics.
 - Use one week per strategic turn; express movement in sector crossings, separately from warp factors.
+- Treat the full generated campaign map as the entire galaxy; tune traversal through propulsion and travel pace. Fixed lore quadrant geography is not required, and empire placement is procedural. See the [23 October galaxy visual integration scope](../unity-galaxy-visual-integration-2026-10-23.md). Exact speed bands remain proposed.
 - Allow credits to expedite eligible work and ship construction while respecting physical and social constraints.
 - Treat sensor infrastructure as an investment in warning time; balance warning, travel and mobilisation together.
 - Use no hard fleet-size cap; additional ships always add baseline capability, while command hierarchy and technology add positive coordination bonuses.
@@ -48,6 +58,8 @@ Colonisation/conquest decisions are recorded in [colonisation-and-conquest.md](c
 
 ## Design versus implementation
 
+The [art-direction workspace](../art/README.md) records the owner's requested Unity 3D galaxy map, modular ship presentation and evolving nacelle appearance. Its visual and asset-pipeline recommendations are proposed; it does not change gameplay rules or implementation status.
+
 These chapters describe intended gameplay. [Architecture](../architecture.md) and milestone/acceptance documents describe current implementation. Do not relabel a proposal as implemented merely because it is documented.
 
 The current Science & Engineering foundation deliberately has one Engineering target, maturity capped at 100%, fixed ship designs and simple AI. The proposed concurrent Engineering portfolio, overmaturity, modular classes and hierarchical AI require future scoped implementation and acceptance. Preserve current behavior until that work is explicitly undertaken.
@@ -61,3 +73,7 @@ For Science/Engineering concepts not migrated here, read the legacy document alo
 3. Report conflicts between intended design and current contracts before changing those contracts.
 4. Make narrow, deterministic implementation increments; update acceptance and versioning separately.
 5. Keep design decisions in Git; avoid competing edits to migrated sections in the Google Doc.
+
+## Presentation references
+
+[Faction frontend, ship and audio style guide](../art/faction-style-guide.md) — proposed presentation families with audited runtime/minor identities and documented theme coverage; no default skin or gameplay activation.

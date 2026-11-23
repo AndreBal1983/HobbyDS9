@@ -1,0 +1,49 @@
+<div id="capacity-preview" class="viz-dotted-background">
+  <section class="capacity-console" aria-label="LCARS capacity component preview">
+    <header><span>ENGINEERING / CAPACITY</span><small>Component preview</small></header>
+    <section aria-label="Illustrative usable power budget">
+      <h2>Usable power · Cruise</h2>
+      <p>Illustrative reactor 60 · distribution 60 · usable 60</p>
+      <label for="capacity-allocation">Allocated <output id="capacity-number">10 / 60</output></label>
+      <input id="capacity-allocation" aria-label="Illustrative allocated power" type="range" min="0" max="60" step="1" value="10">
+      <div class="capacity-strip" id="capacity-power" role="img" aria-label="60 positions, 10 allocated, 50 unused"></div>
+      <p id="capacity-unused" aria-live="polite">10 allocated · 50 unused · 1 block = 1 power unit</p>
+    </section>
+    <section aria-label="Authored Compact Life Support comparison">
+      <h2>Compact Life Support · v1 → v2</h2>
+      <div class="capacity-exact">Module hull space <strong>12 → 9</strong></div>
+      <div class="capacity-strip" id="capacity-space" role="img" aria-label="12 reference positions, 9 current, 3 freed"></div>
+      <p>9 filled · 3 hollow / freed · 1 block = 1 space unit</p>
+      <dl><dt>Crew required</dt><dd>1 → 1</dd><dt>Full-powered crew support</dt><dd>40 → 40</dd><dt>Cruise full / minimum power</dt><dd>6 / 6 → 6 / 6</dd><dt>Industry</dt><dd>3 → 6 · trade-off</dd><dt>Catalogue credits</dt><dd>2 → 4</dd></dl>
+      <p>Actual order charges remain profile-specific. Normal streamed Cycle: no credit debit. Legacy/static and published orders retain their credit charges.</p>
+    </section>
+  </section>
+  <style>
+    #capacity-preview .capacity-console{background:#101725;color:#e1e9f4;font:16px/1.5 Arial,sans-serif;border-radius:24px 8px 8px 8px;padding:20px;box-sizing:border-box;width:100%}
+    #capacity-preview header{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;border-left:12px solid #efb06b;border-bottom:5px solid #efb06b;padding:4px 8px 12px;margin-bottom:20px;color:#efb06b}
+    #capacity-preview header small{font-size:14px}
+    #capacity-preview section section+section{margin-top:28px}
+    #capacity-preview h2{font:500 19px/1.5 Arial,sans-serif;color:#c2b5dd;margin:0 0 6px}
+    #capacity-preview p{font-size:14px;color:#c4cfdf;margin:6px 0 12px}
+    #capacity-preview label,#capacity-preview .capacity-exact{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    #capacity-preview input{width:100%;min-height:44px;accent-color:#efb06b}
+    #capacity-preview .capacity-strip{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+    #capacity-preview .capacity-ten{display:flex;gap:3px}
+    #capacity-preview .capacity-cell{width:9px;height:15px;box-sizing:border-box;border:1px solid #576b80}
+    #capacity-preview .capacity-filled{background:#efb06b}
+    #capacity-preview #capacity-space .capacity-filled{background:#5cc287}
+    #capacity-preview dl{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 16px;margin:18px 0}
+    #capacity-preview dt,#capacity-preview dd{margin:0;overflow-wrap:anywhere}
+    #capacity-preview dd{text-align:right;font-variant-numeric:tabular-nums}
+    @media(max-width:420px){#capacity-preview .capacity-console{padding:16px}#capacity-preview dl{grid-template-columns:1fr}#capacity-preview dd{text-align:left;margin-bottom:6px}}
+  </style>
+  <script>
+    (()=>{
+      const root=document.getElementById('capacity-preview');
+      const input=root.querySelector('#capacity-allocation'),number=root.querySelector('#capacity-number'),unused=root.querySelector('#capacity-unused'),power=root.querySelector('#capacity-power');
+      function blocks(target,count,filled){target.replaceChildren();for(let i=0;i<count;i+=10){const group=document.createElement('div');group.className='capacity-ten';for(let j=i;j<Math.min(i+10,count);j++){const cell=document.createElement('span');cell.className='capacity-cell'+(j<filled?' capacity-filled':'');cell.setAttribute('aria-hidden','true');group.append(cell);}target.append(group);}}
+      function render(){const value=Number(input.value);number.textContent=value+' / 60';unused.textContent=value+' allocated · '+(60-value)+' unused · 1 block = 1 power unit';blocks(power,60,value);power.setAttribute('aria-label','60 positions, '+value+' allocated, '+(60-value)+' unused');}
+      input.addEventListener('input',render);blocks(root.querySelector('#capacity-space'),12,9);render();
+    })();
+  </script>
+</div>

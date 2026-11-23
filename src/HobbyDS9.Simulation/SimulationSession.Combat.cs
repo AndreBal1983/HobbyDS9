@@ -41,7 +41,7 @@ namespace HobbyDS9.Simulation
                     var checkpoint = CombatEncounterScaffold.RecordResult(CampaignCombatState.ToCheckpoint(state), result);
                     if (result.Status == CombatResolutionStatus.Deferred) return new CombatSubmissionResult(result.EncounterId, CombatSubmissionStatus.Deferred, CombatSubmissionError.None, state.TurnNumber, state.StateRevision);
                     var staging = CopyState(state); CampaignCombatState.SetCheckpoint(staging, checkpoint);
-                    FoundationValidator.ValidateSave(ToSave(staging), definitions, compatibility).ThrowIfInvalid(nameof(staging));
+                    ValidateOwnedSave(ToSave(staging)).ThrowIfInvalid(nameof(staging));
                     state = CopyState(staging);
                     return new CombatSubmissionResult(result.EncounterId, CombatSubmissionStatus.Buffered, CombatSubmissionError.None, state.TurnNumber, state.StateRevision);
                 }
@@ -75,7 +75,7 @@ namespace HobbyDS9.Simulation
                         if (combatApplicationProbe != null)
                         {
                             var beforeProbe = CopyState(staging); combatApplicationProbe(index, staging);
-                            RequirePhaseChanges(beforeProbe, CopyState(staging), allowEconomy: false);
+                            RequireOwnedPhaseChanges(beforeProbe, CopyState(staging), allowEconomy: false);
                         }
                     }
                     CampaignCombatConsequences.RequireOnlyConsequences(state, CopyState(staging));
@@ -85,10 +85,10 @@ namespace HobbyDS9.Simulation
                     if (combatFinalizationProbe != null)
                     {
                         var beforeProbe = CopyState(staging); combatFinalizationProbe(staging);
-                        FoundationValidator.ValidateSave(ToSave(staging), definitions, compatibility).ThrowIfInvalid(nameof(staging));
-                        RequirePhaseChanges(beforeProbe, CopyState(staging), allowEconomy: false);
+                        ValidateOwnedSave(ToSave(staging)).ThrowIfInvalid(nameof(staging));
+                        RequireOwnedPhaseChanges(beforeProbe, CopyState(staging), allowEconomy: false);
                     }
-                    FoundationValidator.ValidateSave(ToSave(staging), definitions, compatibility).ThrowIfInvalid(nameof(staging));
+                    ValidateOwnedSave(ToSave(staging)).ThrowIfInvalid(nameof(staging));
                     state = CopyState(staging);
                     return new TurnResult(TurnStatus.Completed, TurnErrorCode.None, completedTurn, state.TurnNumber, state.StateRevision, state.Phase!.Value, Array.Empty<StrategicEvent>(), Array.Empty<CommandResult>());
                 }

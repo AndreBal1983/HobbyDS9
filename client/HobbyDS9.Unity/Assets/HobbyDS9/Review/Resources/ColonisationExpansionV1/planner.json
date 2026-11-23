@@ -1,0 +1,15 @@
+{
+  "Algorithm": "colonisation-ai-first-expedition-v1",
+  "ActiveGoals": 1,
+  "MaximumAttempts": 8,
+  "MaximumAccepted": 4,
+  "BodyCandidates": 16,
+  "RouteCandidates": 8,
+  "FailedTargets": 8,
+  "BfsTraversals": 2,
+  "KnownNodes": 2048,
+  "KnownEdges": 8192,
+  "HomeDeficitWeeks": 2,
+  "ContingencyWeeks": 2,
+  "DisputedWeeks": 2
+}

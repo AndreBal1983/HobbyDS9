@@ -25,7 +25,8 @@ for prefab in (PACK / 'Resources').rglob('*.prefab'):
     for guid in re.findall(r'guid: (\w+)', prefab.read_text(encoding='utf-8')):
         assert guid in guids, (prefab, guid)
         assert 'ArtDemo' in guids[guid].parts, (prefab, guids[guid])
-assert len(list((PACK / 'Resources').rglob('*.fbx'))) == 9
-assert len(list((PACK / 'Resources').rglob('*.prefab'))) == 3
-assert len(list((PACK / 'Resources').rglob('*.mat'))) == 9
+original_pack = PACK / 'Resources/ArtDemo/Federation'
+assert len(list(original_pack.rglob('*.fbx'))) == 9
+assert len(list(original_pack.rglob('*.prefab'))) == 3
+assert len(list(original_pack.rglob('*.mat'))) == 9
 print(f"Verified {len(manifest['files'])} runtime files, hashes, prefab GUID references and pack counts.")

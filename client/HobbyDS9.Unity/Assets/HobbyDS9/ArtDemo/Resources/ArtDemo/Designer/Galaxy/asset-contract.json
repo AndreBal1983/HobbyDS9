@@ -1,0 +1,1218 @@
+{
+  "version": 1,
+  "status": "presentation receiving candidate; requires native Unity import acceptance",
+  "axesUnity": "+Z bow, +Y up, +X starboard",
+  "units": "metres",
+  "rootOrigin": "retained source hull origin; component geometry relative to its socket",
+  "rootScale": [
+    1,
+    1,
+    1
+  ],
+  "sourceToMetres": 47.7,
+  "socketPoses": {
+    "Nacelle_Port": {
+      "position": [
+        -125.6418,
+        -49.131,
+        -214.65
+      ],
+      "rotationEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "Nacelle_Starboard": {
+      "position": [
+        125.4987,
+        -49.131,
+        -214.65
+      ],
+      "rotationEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "Warp_Core": {
+      "position": [
+        0.0,
+        -56.286,
+        -64.395
+      ],
+      "rotationEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "Deflector": {
+      "position": [
+        0.0,
+        -64.395,
+        75.366
+      ],
+      "rotationEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    },
+    "Forward_Equipment": {
+      "position": [
+        -0.06678,
+        0.954,
+        304.326
+      ],
+      "rotationEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "scale": [
+        1,
+        1,
+        1
+      ]
+    }
+  },
+  "assets": {
+    "GalaxyHull": {
+      "attachTo": null,
+      "sourceAnchor": [
+        0,
+        0,
+        0
+      ],
+      "localRotationUnityEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "localScale": [
+        1,
+        1,
+        1
+      ],
+      "lods": [
+        {
+          "fbx": "Models/GalaxyHull_LOD0.fbx",
+          "obj": "Models/GalaxyHull_LOD0.obj",
+          "triangles": 58409,
+          "vertices": 68350,
+          "materials": [
+            "Galaxy_SaucerUpper",
+            "Galaxy_Graphite",
+            "Galaxy_AmberMetal",
+            "Galaxy_Ceramic",
+            "Galaxy_SaucerLower",
+            "Galaxy_WindowLight",
+            "Galaxy_RedEnergy",
+            "Galaxy_BlueEnergy",
+            "Galaxy_Engineering"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "fbx": "Models/GalaxyHull_LOD1.fbx",
+          "obj": "Models/GalaxyHull_LOD1.obj",
+          "triangles": 14340,
+          "vertices": 30950,
+          "materials": [
+            "Galaxy_SaucerUpper",
+            "Galaxy_Graphite",
+            "Galaxy_AmberMetal",
+            "Galaxy_Ceramic",
+            "Galaxy_SaucerLower",
+            "Galaxy_WindowLight",
+            "Galaxy_RedEnergy",
+            "Galaxy_BlueEnergy",
+            "Galaxy_Engineering"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "GalaxyHullCutaway": {
+      "attachTo": null,
+      "sourceAnchor": [
+        0,
+        0,
+        0
+      ],
+      "localRotationUnityEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "localScale": [
+        1,
+        1,
+        1
+      ],
+      "lods": [
+        {
+          "fbx": "Models/GalaxyHullCutaway_LOD0.fbx",
+          "obj": "Models/GalaxyHullCutaway_LOD0.obj",
+          "triangles": 34650,
+          "vertices": 39178,
+          "materials": [
+            "Galaxy_SaucerUpper",
+            "Galaxy_Graphite",
+            "Galaxy_AmberMetal",
+            "Galaxy_Ceramic",
+            "Galaxy_SaucerLower",
+            "Galaxy_WindowLight",
+            "Galaxy_RedEnergy",
+            "Galaxy_BlueEnergy",
+            "Galaxy_Engineering"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "fbx": "Models/GalaxyHullCutaway_LOD1.fbx",
+          "obj": "Models/GalaxyHullCutaway_LOD1.obj",
+          "triangles": 8904,
+          "vertices": 16979,
+          "materials": [
+            "Galaxy_SaucerUpper",
+            "Galaxy_Graphite",
+            "Galaxy_AmberMetal",
+            "Galaxy_Ceramic",
+            "Galaxy_SaucerLower",
+            "Galaxy_WindowLight",
+            "Galaxy_RedEnergy",
+            "Galaxy_BlueEnergy",
+            "Galaxy_Engineering"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "GalaxyNacelle_Port": {
+      "attachTo": "Nacelle_Port",
+      "sourceAnchor": [
+        -4.5,
+        -2.634,
+        -1.03
+      ],
+      "localRotationUnityEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "localScale": [
+        1,
+        1,
+        1
+      ],
+      "lods": [
+        {
+          "fbx": "Models/GalaxyNacelle_Port_LOD0.fbx",
+          "obj": "Models/GalaxyNacelle_Port_LOD0.obj",
+          "triangles": 8415,
+          "vertices": 7693,
+          "materials": [
+            "Galaxy_SaucerUpper",
+            "Galaxy_Ceramic",
+            "Galaxy_WindowLight",
+            "Galaxy_RedEnergy",
+            "Galaxy_AmberMetal",
+            "Galaxy_BlueEnergy",
+            "Galaxy_Engineering",
+            "Galaxy_Graphite"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "fbx": "Models/GalaxyNacelle_Port_LOD1.fbx",
+          "obj": "Models/GalaxyNacelle_Port_LOD1.obj",
+          "triangles": 2173,
+          "vertices": 2810,
+          "materials": [
+            "Galaxy_SaucerUpper",
+            "Galaxy_Ceramic",
+            "Galaxy_WindowLight",
+            "Galaxy_RedEnergy",
+            "Galaxy_AmberMetal",
+            "Galaxy_BlueEnergy",
+            "Galaxy_Engineering",
+            "Galaxy_Graphite"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "SovereignNacelle_Port": {
+      "attachTo": "Nacelle_Port",
+      "sourceAnchor": [
+        -4.5,
+        -2.634,
+        -1.03
+      ],
+      "localRotationUnityEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "localScale": [
+        1,
+        1,
+        1
+      ],
+      "lods": [
+        {
+          "fbx": "Models/SovereignNacelle_Port_LOD0.fbx",
+          "obj": "Models/SovereignNacelle_Port_LOD0.obj",
+          "triangles": 4752,
+          "vertices": 2470,
+          "materials": [
+            "Galaxy_BlueEnergy",
+            "Galaxy_RedEnergy",
+            "Galaxy_Titanium",
+            "Galaxy_Ceramic"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "fbx": "Models/SovereignNacelle_Port_LOD1.fbx",
+          "obj": "Models/SovereignNacelle_Port_LOD1.obj",
+          "triangles": 1386,
+          "vertices": 741,
+          "materials": [
+            "Galaxy_BlueEnergy",
+            "Galaxy_RedEnergy",
+            "Galaxy_Titanium",
+            "Galaxy_Ceramic"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "GalaxyNacelle_Starboard": {
+      "attachTo": "Nacelle_Starboard",
+      "sourceAnchor": [
+        -4.5,
+        2.631,
+        -1.03
+      ],
+      "localRotationUnityEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "localScale": [
+        1,
+        1,
+        1
+      ],
+      "lods": [
+        {
+          "fbx": "Models/GalaxyNacelle_Starboard_LOD0.fbx",
+          "obj": "Models/GalaxyNacelle_Starboard_LOD0.obj",
+          "triangles": 8415,
+          "vertices": 7692,
+          "materials": [
+            "Galaxy_SaucerUpper",
+            "Galaxy_Ceramic",
+            "Galaxy_WindowLight",
+            "Galaxy_RedEnergy",
+            "Galaxy_AmberMetal",
+            "Galaxy_BlueEnergy",
+            "Galaxy_Engineering",
+            "Galaxy_Graphite"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "fbx": "Models/GalaxyNacelle_Starboard_LOD1.fbx",
+          "obj": "Models/GalaxyNacelle_Starboard_LOD1.obj",
+          "triangles": 2174,
+          "vertices": 2815,
+          "materials": [
+            "Galaxy_SaucerUpper",
+            "Galaxy_Ceramic",
+            "Galaxy_WindowLight",
+            "Galaxy_RedEnergy",
+            "Galaxy_AmberMetal",
+            "Galaxy_BlueEnergy",
+            "Galaxy_Engineering",
+            "Galaxy_Graphite"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "SovereignNacelle_Starboard": {
+      "attachTo": "Nacelle_Starboard",
+      "sourceAnchor": [
+        -4.5,
+        2.631,
+        -1.03
+      ],
+      "localRotationUnityEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "localScale": [
+        1,
+        1,
+        1
+      ],
+      "lods": [
+        {
+          "fbx": "Models/SovereignNacelle_Starboard_LOD0.fbx",
+          "obj": "Models/SovereignNacelle_Starboard_LOD0.obj",
+          "triangles": 4752,
+          "vertices": 2470,
+          "materials": [
+            "Galaxy_BlueEnergy",
+            "Galaxy_RedEnergy",
+            "Galaxy_Titanium",
+            "Galaxy_Ceramic"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "fbx": "Models/SovereignNacelle_Starboard_LOD1.fbx",
+          "obj": "Models/SovereignNacelle_Starboard_LOD1.obj",
+          "triangles": 1385,
+          "vertices": 740,
+          "materials": [
+            "Galaxy_BlueEnergy",
+            "Galaxy_RedEnergy",
+            "Galaxy_Titanium",
+            "Galaxy_Ceramic"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "WarpCore": {
+      "attachTo": "Warp_Core",
+      "sourceAnchor": [
+        -1.35,
+        0,
+        -1.18
+      ],
+      "localRotationUnityEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "localScale": [
+        1,
+        1,
+        1
+      ],
+      "lods": [
+        {
+          "fbx": "Models/WarpCore_LOD0.fbx",
+          "obj": "Models/WarpCore_LOD0.obj",
+          "triangles": 3860,
+          "vertices": 2096,
+          "materials": [
+            "Galaxy_Graphite",
+            "Galaxy_ReactorEnergy",
+            "Galaxy_Titanium",
+            "Galaxy_PlasmaAmber"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "fbx": "Models/WarpCore_LOD1.fbx",
+          "obj": "Models/WarpCore_LOD1.obj",
+          "triangles": 990,
+          "vertices": 649,
+          "materials": [
+            "Galaxy_Graphite",
+            "Galaxy_ReactorEnergy",
+            "Galaxy_Titanium",
+            "Galaxy_PlasmaAmber"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "Deflector_Amber_oval": {
+      "attachTo": "Deflector",
+      "sourceAnchor": [
+        1.58,
+        0,
+        -1.35
+      ],
+      "localRotationUnityEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "localScale": [
+        1,
+        1,
+        1
+      ],
+      "lods": [
+        {
+          "fbx": "Models/Deflector_Amber_oval_LOD0.fbx",
+          "obj": "Models/Deflector_Amber_oval_LOD0.obj",
+          "triangles": 3761,
+          "vertices": 2054,
+          "materials": [
+            "Galaxy_PlasmaAmber",
+            "Galaxy_BlueEnergy",
+            "Galaxy_Ceramic",
+            "Galaxy_AmberMetal",
+            "Galaxy_Titanium",
+            "Galaxy_Graphite"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "fbx": "Models/Deflector_Amber_oval_LOD1.fbx",
+          "obj": "Models/Deflector_Amber_oval_LOD1.obj",
+          "triangles": 940,
+          "vertices": 627,
+          "materials": [
+            "Galaxy_PlasmaAmber",
+            "Galaxy_BlueEnergy",
+            "Galaxy_Ceramic",
+            "Galaxy_AmberMetal",
+            "Galaxy_Titanium",
+            "Galaxy_Graphite"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "Deflector_Blue_concentric": {
+      "attachTo": "Deflector",
+      "sourceAnchor": [
+        1.58,
+        0,
+        -1.35
+      ],
+      "localRotationUnityEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "localScale": [
+        1,
+        1,
+        1
+      ],
+      "lods": [
+        {
+          "fbx": "Models/Deflector_Blue_concentric_LOD0.fbx",
+          "obj": "Models/Deflector_Blue_concentric_LOD0.obj",
+          "triangles": 3761,
+          "vertices": 2059,
+          "materials": [
+            "Galaxy_BlueEnergy",
+            "Galaxy_Ceramic",
+            "Galaxy_Titanium",
+            "Galaxy_Graphite"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "fbx": "Models/Deflector_Blue_concentric_LOD1.fbx",
+          "obj": "Models/Deflector_Blue_concentric_LOD1.obj",
+          "triangles": 940,
+          "vertices": 633,
+          "materials": [
+            "Galaxy_BlueEnergy",
+            "Galaxy_Ceramic",
+            "Galaxy_Titanium",
+            "Galaxy_Graphite"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    },
+    "Deflector_Segmented_survey": {
+      "attachTo": "Deflector",
+      "sourceAnchor": [
+        1.58,
+        0,
+        -1.35
+      ],
+      "localRotationUnityEulerDegrees": [
+        0,
+        0,
+        0
+      ],
+      "localScale": [
+        1,
+        1,
+        1
+      ],
+      "lods": [
+        {
+          "fbx": "Models/Deflector_Segmented_survey_LOD0.fbx",
+          "obj": "Models/Deflector_Segmented_survey_LOD0.obj",
+          "triangles": 3762,
+          "vertices": 2177,
+          "materials": [
+            "Galaxy_BlueEnergy",
+            "Galaxy_Ceramic",
+            "Galaxy_Titanium",
+            "Galaxy_Graphite",
+            "Galaxy_PlasmaAmber"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "fbx": "Models/Deflector_Segmented_survey_LOD1.fbx",
+          "obj": "Models/Deflector_Segmented_survey_LOD1.obj",
+          "triangles": 940,
+          "vertices": 672,
+          "materials": [
+            "Galaxy_BlueEnergy",
+            "Galaxy_Ceramic",
+            "Galaxy_Titanium",
+            "Galaxy_Graphite",
+            "Galaxy_PlasmaAmber"
+          ],
+          "rootLocalPosition": [
+            0,
+            0,
+            0
+          ],
+          "rootLocalScale": [
+            1,
+            1,
+            1
+          ]
+        }
+      ]
+    }
+  },
+  "assembledTriangles": {
+    "classic": [
+      82860,
+      20617
+    ],
+    "sovereignFit": [
+      75534,
+      19041
+    ]
+  },
+  "paletteMaterials": 12,
+  "materials": {
+    "Galaxy_Engineering": {
+      "baseColorLinear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0.18,
+      "roughness": 0.46,
+      "smoothness": 0.54,
+      "emissionLinear": [
+        0,
+        0,
+        0
+      ],
+      "emissionStrength": 0,
+      "baseColorTexture": "Textures/Galaxy_Engineering_Albedo.png",
+      "normalTexture": null,
+      "emissionTexture": null
+    },
+    "Galaxy_SaucerUpper": {
+      "baseColorLinear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0.18,
+      "roughness": 0.46,
+      "smoothness": 0.54,
+      "emissionLinear": [
+        0,
+        0,
+        0
+      ],
+      "emissionStrength": 0,
+      "baseColorTexture": "Textures/Galaxy_SaucerUpper_Albedo.png",
+      "normalTexture": null,
+      "emissionTexture": null
+    },
+    "Galaxy_SaucerLower": {
+      "baseColorLinear": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "metallic": 0.18,
+      "roughness": 0.46,
+      "smoothness": 0.54,
+      "emissionLinear": [
+        0,
+        0,
+        0
+      ],
+      "emissionStrength": 0,
+      "baseColorTexture": "Textures/Galaxy_SaucerLower_Albedo.png",
+      "normalTexture": null,
+      "emissionTexture": null
+    },
+    "Galaxy_Ceramic": {
+      "baseColorLinear": [
+        0.63,
+        0.69,
+        0.76,
+        1
+      ],
+      "metallic": 0.18,
+      "roughness": 0.48,
+      "smoothness": 0.52,
+      "emissionLinear": [
+        0,
+        0,
+        0
+      ],
+      "emissionStrength": 0,
+      "baseColorTexture": "Textures/Galaxy_Ceramic_Albedo.png",
+      "normalTexture": null,
+      "emissionTexture": null
+    },
+    "Galaxy_Graphite": {
+      "baseColorLinear": [
+        0.045,
+        0.06,
+        0.078,
+        1
+      ],
+      "metallic": 0.35,
+      "roughness": 0.46,
+      "smoothness": 0.54,
+      "emissionLinear": [
+        0,
+        0,
+        0
+      ],
+      "emissionStrength": 0,
+      "baseColorTexture": null,
+      "normalTexture": null,
+      "emissionTexture": null
+    },
+    "Galaxy_Titanium": {
+      "baseColorLinear": [
+        0.24,
+        0.3,
+        0.37,
+        1
+      ],
+      "metallic": 0.72,
+      "roughness": 0.38,
+      "smoothness": 0.62,
+      "emissionLinear": [
+        0,
+        0,
+        0
+      ],
+      "emissionStrength": 0,
+      "baseColorTexture": null,
+      "normalTexture": null,
+      "emissionTexture": null
+    },
+    "Galaxy_AmberMetal": {
+      "baseColorLinear": [
+        0.38,
+        0.26,
+        0.12,
+        1
+      ],
+      "metallic": 0.45,
+      "roughness": 0.48,
+      "smoothness": 0.52,
+      "emissionLinear": [
+        0,
+        0,
+        0
+      ],
+      "emissionStrength": 0,
+      "baseColorTexture": null,
+      "normalTexture": null,
+      "emissionTexture": null
+    },
+    "Galaxy_BlueEnergy": {
+      "baseColorLinear": [
+        0.015,
+        0.2,
+        0.65,
+        1
+      ],
+      "metallic": 0.15,
+      "roughness": 0.3,
+      "smoothness": 0.7,
+      "emissionLinear": [
+        0.015,
+        0.28,
+        1
+      ],
+      "emissionStrength": 3,
+      "baseColorTexture": null,
+      "normalTexture": null,
+      "emissionTexture": null
+    },
+    "Galaxy_RedEnergy": {
+      "baseColorLinear": [
+        0.55,
+        0.025,
+        0.012,
+        1
+      ],
+      "metallic": 0.15,
+      "roughness": 0.3,
+      "smoothness": 0.7,
+      "emissionLinear": [
+        0.8,
+        0.018,
+        0.007
+      ],
+      "emissionStrength": 2,
+      "baseColorTexture": null,
+      "normalTexture": null,
+      "emissionTexture": null
+    },
+    "Galaxy_ReactorEnergy": {
+      "baseColorLinear": [
+        0.26,
+        0.65,
+        1,
+        1
+      ],
+      "metallic": 0.15,
+      "roughness": 0.28,
+      "smoothness": 0.72,
+      "emissionLinear": [
+        0.26,
+        0.65,
+        1
+      ],
+      "emissionStrength": 4,
+      "baseColorTexture": null,
+      "normalTexture": null,
+      "emissionTexture": null
+    },
+    "Galaxy_PlasmaAmber": {
+      "baseColorLinear": [
+        0.8,
+        0.18,
+        0.015,
+        1
+      ],
+      "metallic": 0.2,
+      "roughness": 0.3,
+      "smoothness": 0.7,
+      "emissionLinear": [
+        1,
+        0.28,
+        0.015
+      ],
+      "emissionStrength": 2,
+      "baseColorTexture": null,
+      "normalTexture": null,
+      "emissionTexture": null
+    },
+    "Galaxy_WindowLight": {
+      "baseColorLinear": [
+        0.28,
+        0.33,
+        0.38,
+        1
+      ],
+      "metallic": 0.1,
+      "roughness": 0.5,
+      "smoothness": 0.5,
+      "emissionLinear": [
+        0.55,
+        0.68,
+        0.8
+      ],
+      "emissionStrength": 0.55,
+      "baseColorTexture": null,
+      "normalTexture": null,
+      "emissionTexture": null
+    }
+  },
+  "materialSourceMapping": {
+    "Hull_Mat_Upper_Saucer": "Galaxy_SaucerUpper",
+    "Phaser_Saucer_Top": "Galaxy_Graphite",
+    "Lifeboats": "Galaxy_AmberMetal",
+    "Transporter_Emitter_Pads": "Galaxy_Ceramic",
+    "Phaser_Casing": "Galaxy_Graphite",
+    "Hull_Mat_Lower_Saucer": "Galaxy_SaucerLower",
+    "Phaser_Saucer_Bottom": "Galaxy_Graphite",
+    "yellow_run_light": "Galaxy_Ceramic",
+    "Window_Glass": "Galaxy_WindowLight",
+    "Grey_Highlights": "Galaxy_Ceramic",
+    "Interior_Lighting": "Galaxy_WindowLight",
+    "Interior_Deck_Material": "Galaxy_Ceramic",
+    "RCS": "Galaxy_Ceramic",
+    "Red_Decal_Modeled": "Galaxy_RedEnergy",
+    "Bussard_Scoop_Glass": "Galaxy_RedEnergy",
+    "Bussard_Light_Type_1": "Galaxy_RedEnergy",
+    "Nacelle_Gold_Metal": "Galaxy_AmberMetal",
+    "Bussard_Light_Type_2": "Galaxy_RedEnergy",
+    "Deflector_Gold_Metal": "Galaxy_AmberMetal",
+    "Deflector_Emission": "Galaxy_BlueEnergy",
+    "Deflector_Front_Metal": "Galaxy_Ceramic",
+    "Deflector_Glass": "Galaxy_Ceramic",
+    "Impulse_Red_Emit": "Galaxy_RedEnergy",
+    "warp_vent_blue": "Galaxy_BlueEnergy",
+    "Hull_Mat_E_Section": "Galaxy_Engineering",
+    "Phaser_E_Section": "Galaxy_Graphite",
+    "Red Bussard collector": "Galaxy_RedEnergy",
+    "Titanium supports": "Galaxy_Titanium",
+    "Pearl grey panel hull": "Galaxy_Ceramic",
+    "Blue warp field emission": "Galaxy_BlueEnergy",
+    "Graphite mechanical recess": "Galaxy_Graphite",
+    "Blue white reactor energy": "Galaxy_ReactorEnergy",
+    "Plasma conduit orange": "Galaxy_PlasmaAmber",
+    "Amber emitter light": "Galaxy_PlasmaAmber",
+    "Amber copper emitter": "Galaxy_AmberMetal"
+  },
+  "textures": [
+    {
+      "path": "Textures/Galaxy_Engineering_Albedo.png",
+      "usage": "baseColor",
+      "colorSpace": "sRGB",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 485472
+    },
+    {
+      "path": "Textures/Galaxy_SaucerUpper_Albedo.png",
+      "usage": "baseColor",
+      "colorSpace": "sRGB",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 804311
+    },
+    {
+      "path": "Textures/Galaxy_SaucerLower_Albedo.png",
+      "usage": "baseColor",
+      "colorSpace": "sRGB",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 713652
+    },
+    {
+      "path": "Textures/Galaxy_Ceramic_Albedo.png",
+      "usage": "baseColor",
+      "colorSpace": "sRGB",
+      "width": 2048,
+      "height": 2048,
+      "bytes": 97911
+    }
+  ],
+  "normalMaps": "none authored for receiving pack; geometry carries large surface relief",
+  "emissionMaps": "no texture masks; dedicated emissive material submeshes with explicit RGB/strength",
+  "cutaway": "starboard half shell, port half removed; displays actual internal core. Full interior room/bulkheads not modelled.",
+  "fixedHullSeparation": [
+    {
+      "sourceObject": "Hull_Saucer_Section",
+      "removedDeflectorFaces": 0,
+      "cutaway": false
+    },
+    {
+      "sourceObject": "Hull_Running_Lights",
+      "removedDeflectorFaces": 0,
+      "cutaway": false
+    },
+    {
+      "sourceObject": "Hull_Mirrored_Parts",
+      "removedDeflectorFaces": 12514,
+      "cutaway": false
+    },
+    {
+      "sourceObject": "Hull_Glowing_Parts",
+      "removedDeflectorFaces": 240,
+      "cutaway": false
+    },
+    {
+      "sourceObject": "Hull_Engineering_Section",
+      "removedDeflectorFaces": 0,
+      "cutaway": false
+    },
+    {
+      "sourceObject": "Hull_Saucer_Section",
+      "removedDeflectorFaces": 0,
+      "cutaway": false
+    },
+    {
+      "sourceObject": "Hull_Running_Lights",
+      "removedDeflectorFaces": 0,
+      "cutaway": false
+    },
+    {
+      "sourceObject": "Hull_Mirrored_Parts",
+      "removedDeflectorFaces": 12514,
+      "cutaway": false
+    },
+    {
+      "sourceObject": "Hull_Glowing_Parts",
+      "removedDeflectorFaces": 240,
+      "cutaway": false
+    },
+    {
+      "sourceObject": "Hull_Engineering_Section",
+      "removedDeflectorFaces": 0,
+      "cutaway": false
+    },
+    {
+      "sourceObject": "Hull_Saucer_Section",
+      "removedDeflectorFaces": 0,
+      "cutaway": true
+    },
+    {
+      "sourceObject": "Hull_Running_Lights",
+      "removedDeflectorFaces": 0,
+      "cutaway": true
+    },
+    {
+      "sourceObject": "Hull_Mirrored_Parts",
+      "removedDeflectorFaces": 12514,
+      "cutaway": true
+    },
+    {
+      "sourceObject": "Hull_Glowing_Parts",
+      "removedDeflectorFaces": 240,
+      "cutaway": true
+    },
+    {
+      "sourceObject": "Hull_Engineering_Section",
+      "removedDeflectorFaces": 0,
+      "cutaway": true
+    },
+    {
+      "sourceObject": "Hull_Saucer_Section",
+      "removedDeflectorFaces": 0,
+      "cutaway": true
+    },
+    {
+      "sourceObject": "Hull_Running_Lights",
+      "removedDeflectorFaces": 0,
+      "cutaway": true
+    },
+    {
+      "sourceObject": "Hull_Mirrored_Parts",
+      "removedDeflectorFaces": 12514,
+      "cutaway": true
+    },
+    {
+      "sourceObject": "Hull_Glowing_Parts",
+      "removedDeflectorFaces": 240,
+      "cutaway": true
+    },
+    {
+      "sourceObject": "Hull_Engineering_Section",
+      "removedDeflectorFaces": 0,
+      "cutaway": true
+    }
+  ],
+  "gameplay": "visual sockets do not grant compatibility or unlock a hull",
+  "sourceFile": "E:\\HobbyDS9\\artifacts\\art\\galaxy-texture-study-20261024\\galaxy-precision-fit-study.blend",
+  "sourceSHA256": "79f6b045f7f8109cec68829f1da48991f0ebf717b76613261a6a24330f7bca13",
+  "cpuThreads": 4,
+  "elapsedSeconds": 30.3
+}

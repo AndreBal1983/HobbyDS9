@@ -86,6 +86,71 @@ namespace HobbyDS9.Simulation
                 }
             }
         }
+        // Explicit finite-discovery policy for the activity profile only. Ordinary
+        // research still banks terminal-level shares through SpendScience unchanged.
+        // This is progression arithmetic, not permission to claim a finding: the
+        // activity transaction must validate ownership, funding and deduplication.
+        public static (long LearnedInternalUnits, long UnlearnableInternalUnits) GrantActivityInsight(
+            ScienceEngineeringStateDto research, int pace, string civilizationId,
+            ScienceDiscipline discipline, long conceptualAmount, List<ResearchReceiptDto> receipts)
+        {
+            if (research == null || receipts == null || !ValidDiscipline(discipline)
+                || conceptualAmount < 0 || Validate(research, pace).Count != 0)
+                throw new ArgumentException("Invalid activity insight input.");
+            _ = new EntityId(civilizationId);
+            long offered = InternalUnits(conceptualAmount);
+            if (offered == 0) return (0, 0);
+
+            // Spend ONLY the offered budget in detached progression state. Never
+            // temporarily redirect the live allocation or spend its existing bank.
+            var staged = new ScienceEngineeringStateDto
+            {
+                ResearchDiscoverySeed = research.ResearchDiscoverySeed,
+                ScienceReserve = offered,
+                ScienceAllocations = Enum.GetValues(typeof(ScienceDiscipline)).Cast<ScienceDiscipline>()
+                    .Select(d => new ScienceAllocationDto { Discipline = d, Weight = d == discipline ? ResearchUnits.Scale : 0 }).ToList(),
+                Disciplines = research.Disciplines!.Select(d => new ScienceDisciplineStateDto
+                {
+                    Discipline = d.Discipline, Level = d.Level,
+                    ProgressTowardNextLevel = d.ProgressTowardNextLevel, TotalSpent = d.TotalSpent
+                }).ToList(),
+                Statistics = ScienceData.Copy(research.Statistics!)
+            };
+            var progressionReceipts = new List<ResearchReceiptDto>();
+            SpendScience(staged, pace, civilizationId, progressionReceipts);
+            long learned = offered - staged.ScienceReserve;
+            long unlearnable = staged.ScienceReserve;
+            // Unlearnable observations are recorded by the caller but produce no
+            // research income and cannot turn a maxed field into a general bank.
+            checked
+            {
+                staged.Statistics!.TotalResearchGenerated += learned;
+                staged.Statistics.TotalScienceAllocated += learned;
+            }
+            var target = research.Disciplines.Single(d => d.Discipline == discipline);
+            var replacement = staged.Disciplines.Single(d => d.Discipline == discipline);
+            var additions = new List<ResearchReceiptDto>();
+            if (learned > 0) additions.Add(new ResearchReceiptDto
+            {
+                CivilizationId = civilizationId, Category = "activity-insight",
+                Discipline = discipline, IntervalStartLevel = target.Level, Amount = learned
+            });
+            additions.AddRange(progressionReceipts);
+            if (unlearnable > 0) additions.Add(new ResearchReceiptDto
+            {
+                CivilizationId = civilizationId, Category = "activity-insight-unlearnable",
+                Discipline = discipline, IntervalStartLevel = replacement.Level, Amount = unlearnable
+            });
+
+            // All validation, progression and checked arithmetic precede mutation.
+            // The caller's bank, allocations, Engineering and seed stay untouched.
+            receipts.AddRange(additions);
+            target.Level = replacement.Level;
+            target.ProgressTowardNextLevel = replacement.ProgressTowardNextLevel;
+            target.TotalSpent = replacement.TotalSpent;
+            research.Statistics = staged.Statistics;
+            return (learned, unlearnable);
+        }
         public static IReadOnlyList<string> Validate(ScienceEngineeringStateDto? state,int pace)
         {
             var errors=new List<string>();if(state==null){errors.Add("MissingResearch");return errors.AsReadOnly();}

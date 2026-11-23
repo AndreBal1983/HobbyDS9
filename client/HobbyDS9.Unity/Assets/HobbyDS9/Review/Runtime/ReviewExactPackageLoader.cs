@@ -37,6 +37,13 @@ namespace HobbyDS9.UnityReview
             package.PackageHash=Hash(Encoding.ASCII.GetBytes("campaign-singleplayer-demo-package-v4\n"+Hash(demo)+"\n"+package.Integrated.PackageHash+"\n"));
             return package;
         }
+        public static CampaignPlayableFleetPackageDto LoadPlayableFleet(byte[] playable,byte[] integrated,byte[] physical,byte[] core,byte[] scenario,ReviewNewtonsoftCodec codec)
+        {
+            var package=codec.DecodePlayableFleetProfile(playable);
+            package.Integrated=LoadIntegrated(integrated,physical,core,scenario,codec);
+            package.PackageHash=Hash(Encoding.ASCII.GetBytes("campaign-playable-fleet-package-v6\n"+Hash(playable)+"\n"+package.Integrated.PackageHash+"\n"));
+            return package;
+        }
         public static CampaignFrontierPackageDto LoadFrontier(byte[] frontier,byte[] integrated,byte[] physical,byte[] core,byte[] scenario,ReviewNewtonsoftCodec codec)
         {
             var package=codec.DecodeFrontierProfile(frontier);

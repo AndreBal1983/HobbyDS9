@@ -30,8 +30,11 @@ namespace HobbyDS9.Simulation
     }
     internal static class WorldEconomy
     {
-        internal static PlanetDefinitionDto Planet(ColonyStateDto colony, GameStateDto state, DefinitionCatalogDto definitions) =>
-            definitions.Planets!.Single(p => p.DefinitionId == state.Planets!.Single(p => p.PlanetId == colony.PlanetId).DefinitionId);
+        internal static PlanetDefinitionDto Planet(ColonyStateDto colony, GameStateDto state, DefinitionCatalogDto definitions)
+        {
+            PlanetStateDto? selected = null;
+            return definitions.Planets!.Single(p => p.DefinitionId == (selected ??= state.Planets!.Single(s => s.PlanetId == colony.PlanetId)).DefinitionId);
+        }
         internal static IEnumerable<(InfrastructureDefinitionDto definition, int count)> Infrastructure(ColonyStateDto c, DefinitionCatalogDto d) =>
             c.Infrastructure!.OrderBy(i => i.DefinitionId, StringComparer.Ordinal).Select(i => (d.Infrastructure!.Single(x => x.DefinitionId == i.DefinitionId), i.Count));
         internal static long Installed(ColonyStateDto c, DefinitionCatalogDto d, Func<InfrastructureDefinitionDto, long> quantity) =>
@@ -43,8 +46,9 @@ namespace HobbyDS9.Simulation
                 && planet.Radiation <= species.MaximumRadiation && species.Atmospheres!.Contains(planet.Atmosphere, StringComparer.Ordinal);
             return compatible ? species.Suitabilities!.Single(s => s.Kind == kind).SuitabilityBps : 0;
         }
-        internal static WorldEconomySnapshot Project(ColonyStateDto colony, GameStateDto state, DefinitionCatalogDto definitions)
+        internal static WorldEconomySnapshot Project(ColonyStateDto colony, GameStateDto state, DefinitionCatalogDto definitions,PlanetaryOwnershipContext? ownership=null)
         {
+            ownership?.RequireOwner(definitions,state);
             var planet = Planet(colony, state, definitions);
             var installed = Infrastructure(colony, definitions).ToList();
             var accessible = installed.SelectMany(i => i.definition.AccessibleHabitats!).ToHashSet();
@@ -85,9 +89,10 @@ namespace HobbyDS9.Simulation
             var legal = colony.Cohorts.Aggregate(BigInteger.Zero, (sum, c) => sum + (BigInteger)c.Population * LegalPenalty(c.LegalStatus));
             var target = population == 0 ? colony.Stability : PopulationRules.Rating((long)(weighted / population / 10) - (long)(legal / population)
                 + (colony.Prosperity - 5000) / 10 - (colony.FoodShortageTurns > 0 ? 1000 : 0));
+            var empty=ownership!=null&&population==0;
             return new WorldEconomySnapshot(population, PopulationRules.Sum(planet.Habitats.Select(h => h.NaturalCapacity)), effective,
-                PopulationRules.Sum(remaining.Values), average, target, industry, credits, research, Installed(colony, definitions, i => i.FoodOutput), foodDemand,
-                PopulationRules.ScaleBy(Installed(colony, definitions, i => i.LogisticsCapacity), politics.LogisticsFactor), installed.Any(i => i.definition.Shipbuilding), allocations, politics);
+                PopulationRules.Sum(remaining.Values), average, target, empty?0:industry, empty?0:credits, empty?0:research, empty?0:Installed(colony, definitions, i => i.FoodOutput), foodDemand,
+                empty?0:PopulationRules.ScaleBy(Installed(colony, definitions, i => i.LogisticsCapacity), politics.LogisticsFactor), !empty&&installed.Any(i => i.definition.Shipbuilding), allocations, politics);
         }
         internal static int LegalPenalty(LegalStatus status) => status == LegalStatus.Occupied ? 1500 : status == LegalStatus.Subject ? 1000 : status == LegalStatus.Refugee ? 500 : 0;
     }

@@ -9,6 +9,7 @@ Read [the design index](README.md), [ship design](ship-design.md), [exploration 
 ## Agreed decisions
 
 - One strategic turn represents **one week** of empire time.
+- Owner decision, 23 October 2026: the full generated campaign map represents the entire galaxy. Tune travel pace and propulsion progression to achieve suitable traversal times; fixed lore quadrants are not required and empires are placed procedurally. The [pacing proposal](../galaxy-pacing-proposal-2026-10-23.md) supplies unapproved numerical examples, not installed speed rules. A whole-galaxy visual background is permitted atop current generation without relocating existing nodes or changing saved geometry.
 - Weekly turns are the common clock for travel, missions, Industry, economy, political action and diplomacy. Orders can be immediate; their physical or social consequences have explicit resolution timing. Short activities may resolve within a turn.
 - Ships have a strategic movement rating in ordinary sector crossings per week. This is **not** a warp factor. DS9-era starts use mature propulsion, not warp-one technology.
 - Fleets should visibly progress through intermediate navigation regions. Do not leave a moving fleet displayed as stationary at its origin for the whole journey.
@@ -72,6 +73,31 @@ Episode dialogue/reference estimates do not provide one consistent normal Sol–
 **Proposed game anchor:** seven ordinary Sol–Bajor/DS9 crossings, movement 3, three weekly turns. Three weeks is our pacing choice, not a verified canonical value. Faster classes can take two weeks. Treat DS9's local station/Bajor travel separately if exposed; do not imply the station is the planet. Establish the map's physical scale only as needed, using broad consistency rather than a universal light-years-per-sector constant.
 
 ## Expedited work and construction buyout
+
+### Normal production and material supply — agreed 25 October 2026
+
+The owner clarified that normal construction is a streaming resource queue. Industry
+and required materials are consumed as construction progresses; a normal order does
+not charge credits up front. Credits serve separately supported purposes such as
+construction buyouts, diplomacy and black-market trade. This agreement does not
+claim those other systems or a buyout formula are already implemented.
+
+Materials such as dilithium must actually be available through a trade network able
+to supply the construction location before work can begin. They are consumed
+gradually, not purchased or deducted in full when the order is queued. Delivery
+interruptions pause construction while retaining completed work; supply restoration
+allows it to resume. Availability elsewhere in the empire is insufficient without
+a usable supply connection and actual delivery. Existing stock, delivery capacity
+and blockade rules must remain authoritative rather than inventing an empire-wide
+warehouse or silently importing resources during Planning.
+
+**Implementation status:** the separate [Format10 streamed activities campaign](../campaign-activities-streamed-v1.md)
+implements this rule with cumulative integer material consumption, actual local
+stocks/deliveries and a shared ship/infrastructure queue. Its documented acceptance
+records distinguish portable, engine and executable evidence. Earlier campaigns
+and saves retain their versioned upfront-payment rules; they are not silently
+converted. Full freight transport and production buyout remain outside this
+implemented slice.
 
 Credits fund additional shifts, contractors, procurement, transport, housing or security effort where the relevant system supports it. Every eligible project defines normal work, available acceleration, incremental cost, constraints and earliest completion.
 

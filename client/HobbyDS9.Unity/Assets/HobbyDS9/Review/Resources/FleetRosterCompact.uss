@@ -1,0 +1,26 @@
+.fleet-compact-roster { min-width: 0; }
+.fleet-compact-roster.fleet-roster-aside { width: 310px; max-width: 38%; min-width: 240px; }
+.fleet-compact-roster .console-section { font-size: 21px; margin-bottom: 5px; }
+.fleet-compact-roster #fleet-roster-filters { flex-wrap: wrap; align-items: flex-end; margin-bottom: 5px; }
+.fleet-compact-roster #fleet-roster-filters .lcars-selector { width: 160px; min-width: 100px; margin-right: 6px; }
+.fleet-compact-roster #fleet-roster-search { min-width: 180px; flex-basis: 220px; }
+.fleet-compact-roster .fleet-roster-key { font-size: 14px; color: #b6c8d6; margin-bottom: 4px; white-space: normal; }
+.fleet-compact-roster .review-field-row .review-action { font-size: 14px; min-height: 40px; margin-bottom: 4px; }
+.fleet-compact-roster #fleet-roster-visible-count { font-size: 14px; color: #b6c8d6; margin: 3px 0; }
+.fleet-compact-roster #fleet-roster-list { min-height: 120px; flex-grow: 1; }
+.fleet-compact-roster .fleet-roster-table { min-width: 720px; flex-shrink: 0; }
+.fleet-compact-roster .fleet-roster-group { min-width: 0; margin-bottom: 6px; flex-shrink: 0; }
+.fleet-compact-roster #fleet-selected-ship-cards { padding-left: 0; border-left-width: 0; }
+.fleet-compact-roster .fleet-roster-group-title { margin: 2px 0; padding: 4px 8px; min-height: 40px; font-size: 16px; -unity-text-align: middle-left; }
+.fleet-compact-roster .fleet-roster-ship-row { flex-direction: row; align-items: center; min-height: 64px; min-width: 0; flex-shrink: 0; padding: 3px 6px 3px 12px; border-bottom-width: 1px; border-bottom-color: #344759; }
+.fleet-compact-roster .fleet-roster-ship-selected { background-color: #192633; border-left-width: 3px; border-left-color: #efb16b; }
+.fleet-compact-roster .fleet-roster-ship-icon { width: 60px; height: 48px; flex-shrink: 0; margin-right: 6px; -unity-text-align: middle-center; }
+.fleet-compact-roster .fleet-roster-ship-icon Label { font-size: 14px; }
+.fleet-compact-roster .fleet-roster-identity { flex-basis: 220px; min-width: 190px; flex-grow: 1; flex-shrink: 0; padding-right: 6px; }
+.fleet-compact-roster .fleet-ship-title { font-size: 16px; min-height: 40px; margin: 0; padding: 2px 6px; color: #ffe0b9; white-space: normal; -unity-text-align: middle-left; }
+.fleet-compact-roster .fleet-roster-class { font-size: 14px; white-space: normal; color: #c1ccdc; margin: 2px 0 0 6px; }
+.fleet-compact-roster .fleet-roster-status { width: 125px; min-width: 0; flex-shrink: 0; padding: 2px 6px; }
+.fleet-compact-roster .fleet-roster-status-title { font-size: 13px; color: #a7bad0; margin-bottom: 2px; }
+.fleet-compact-roster .fleet-roster-status-value { font-size: 14px; white-space: normal; }
+.fleet-compact-roster .fleet-roster-member-toggle { width: 65px; min-height: 44px; flex-shrink: 0; font-size: 13px; }
+.fleet-compact-roster #fleet-organization-foldout { max-height: 280px; flex-shrink: 0; margin-top: 8px; }

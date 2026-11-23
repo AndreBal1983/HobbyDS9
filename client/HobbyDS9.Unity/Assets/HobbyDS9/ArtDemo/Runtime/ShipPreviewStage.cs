@@ -6,10 +6,31 @@ using UnityEngine.Rendering.Universal;
 
 namespace HobbyDS9.ArtDemo
 {
+    // Opt-in log markers only; no lifecycle/resource ownership and no teardown exception handling.
+    internal static class ArtShutdownLifecycle
+    {
+        private static readonly bool enabled=ReadEnabled();
+        private static long next;
+        internal static long NextId()=>System.Threading.Interlocked.Increment(ref next);
+        internal static bool HasFlag(string[] args)
+        {foreach(var arg in args)if(string.Equals(arg,"--hobbyds9-shutdown-lifecycle",System.StringComparison.Ordinal))return true;return false;}
+        private static bool ReadEnabled()
+        {try{return HasFlag(System.Environment.GetCommandLineArgs());}catch{return false;}}
+        internal static void Mark(string component,long instance,string stage)
+        {
+            if(!enabled)return;
+            try{UnityEngine.Debug.Log("HOBBYDS9_SHUTDOWN component="+component+" instance="+instance.ToString(System.Globalization.CultureInfo.InvariantCulture)+
+                " stage="+stage+" thread="+System.Threading.Thread.CurrentThread.ManagedThreadId.ToString(System.Globalization.CultureInfo.InvariantCulture)+
+                " ticks="+System.Diagnostics.Stopwatch.GetTimestamp().ToString(System.Globalization.CultureInfo.InvariantCulture));}
+            catch{ /* Logging must never change the original teardown path. */ }
+        }
+    }
+
     // Caller owns this instance and must Dispose when its panel is removed.
     // Manual render only: no Update, animation, listener, simulation or input.
-    public sealed class ShipPreviewStage : IDisposable
+    public sealed partial class ShipPreviewStage : IDisposable
     {
+        private readonly long shutdownLabel=ArtShutdownLifecycle.NextId();
         private const int PreviewLayer = 31;
         private static readonly HashSet<int> Slots = new HashSet<int>();
         private readonly int slot;
@@ -19,6 +40,7 @@ namespace HobbyDS9.ArtDemo
         private Mesh fallbackMesh;
         private Material fallbackMaterial;
         private readonly List<Material> previewMaterials = new List<Material>();
+        private readonly Dictionary<Material,Material> studioMaterialCache = new Dictionary<Material,Material>();
         private static readonly Color Background = new Color(.018f, .028f, .045f, 1);
         private bool disposed;
         public RenderTexture Texture { get; private set; }
@@ -73,6 +95,22 @@ namespace HobbyDS9.ArtDemo
             EnsureAlive();
             Clear();
             if (selection == null || (selection.Disclosure != ShipPreviewDisclosure.Owned && selection.Disclosure != ShipPreviewDisclosure.LawfullyVisible)) return;
+            ShowDefinition(ShipVisualCatalog.Resolve(selection), false);
+        }
+
+        // An explicitly requested art-library reference is not a ship selection
+        // and grants no ownership, equipment, hull or gameplay identity.
+        public void ShowArtReference(string visualKey)
+        {
+            EnsureAlive();
+            Clear();
+            var definition = ShipVisualCatalog.Find(visualKey);
+            if (definition == null) { Label = "No illustrative hull reference available"; return; }
+            ShowDefinition(definition, true);
+        }
+
+        private void ShowDefinition(ShipVisualDefinition definition, bool illustrative)
+        {
             var studio = Resources.Load<Shader>("ArtDemo/PreviewStudio");
             if (studio == null || !studio.isSupported)
             {
@@ -80,7 +118,6 @@ namespace HobbyDS9.ArtDemo
                 Availability = ShipPreviewAvailability.RenderingUnavailable;
                 return;
             }
-            var definition = ShipVisualCatalog.Resolve(selection);
             var prefab = definition?.LoadPrefab();
             if (prefab != null)
             {
@@ -89,7 +126,7 @@ namespace HobbyDS9.ArtDemo
                 ApplyStudioMaterials();
                 model.transform.localScale = Vector3.one * (10 / definition.NominalArtLengthMetres);
                 VisualKey = definition.VisualKey;
-                Label = definition.Label;
+                Label = illustrative ? "Illustrative hull reference · equipment shown schematically" : definition.Label;
                 Availability = ShipPreviewAvailability.Model;
             }
             else
@@ -115,19 +152,60 @@ namespace HobbyDS9.ArtDemo
             // Bounding sphere fits both axes even for narrow textures.
             camera.aspect = (float)Texture.width / Texture.height;
             camera.orthographicSize = Mathf.Max(.5f, bounds.extents.magnitude * 1.15f / Mathf.Min(1, camera.aspect));
+            if (illustrative)
+            {
+                var right = camera.transform.right;
+                var up = camera.transform.up;
+                float minX = float.PositiveInfinity, maxX = float.NegativeInfinity;
+                float minY = float.PositiveInfinity, maxY = float.NegativeInfinity;
+                foreach (var filter in filters)
+                {
+                    var b = filter.sharedMesh.bounds;
+                    for (int x = -1; x <= 1; x += 2)
+                    for (int y = -1; y <= 1; y += 2)
+                    for (int z = -1; z <= 1; z += 2)
+                    {
+                        var point = filter.transform.TransformPoint(b.center + Vector3.Scale(b.extents, new Vector3(x,y,z))) - centre;
+                        var px = Vector3.Dot(point,right); var py = Vector3.Dot(point,up);
+                        minX = Mathf.Min(minX,px); maxX = Mathf.Max(maxX,px);
+                        minY = Mathf.Min(minY,py); maxY = Mathf.Max(maxY,py);
+                    }
+                }
+                var halfExtents = new Vector2((maxX-minX)*.5f,(maxY-minY)*.5f);
+                var size = ReferenceFrameSize(halfExtents,camera.aspect);
+                // Translate in the existing image basis; LookAt again would
+                // rotate that basis and invalidate the projected fit.
+                camera.transform.position += right*((minX+maxX)*.5f) + up*((minY+maxY)*.5f);
+                camera.orthographicSize = size;
+            }
             Render();
+        }
+
+        // Pure geometric fit for the illustrative stage, not actual ship views.
+        public static float ReferenceFrameSize(Vector2 projectedHalfExtents, float aspect)
+        {
+            if (float.IsNaN(aspect) || float.IsInfinity(aspect) || aspect<=0
+                || float.IsNaN(projectedHalfExtents.x) || float.IsInfinity(projectedHalfExtents.x) || projectedHalfExtents.x<0
+                || float.IsNaN(projectedHalfExtents.y) || float.IsInfinity(projectedHalfExtents.y) || projectedHalfExtents.y<0)
+                throw new ArgumentOutOfRangeException(nameof(projectedHalfExtents),"Reference bounds and aspect must be finite and nonnegative, with positive aspect.");
+            var size = Math.Max(.5,Math.Max(projectedHalfExtents.y,projectedHalfExtents.x/aspect)*1.12);
+            if (double.IsInfinity(size) || size>float.MaxValue)throw new ArgumentOutOfRangeException(nameof(projectedHalfExtents));
+            return (float)size;
         }
 
         public void Clear()
         {
             EnsureAlive();
+            ResetDesignerReference();
             // Deferred destruction in play mode must not leave old visible mesh
             // during a same-frame replacement render.
+            if(activityModel!=null){activityModel.Dispose();activityModel=null;model=null;}
             if (model != null) { model.SetActive(false); Destroy(model); model = null; }
             Destroy(fallbackMesh); fallbackMesh = null;
             Destroy(fallbackMaterial); fallbackMaterial = null;
             foreach (var material in previewMaterials) Destroy(material);
             previewMaterials.Clear();
+            studioMaterialCache.Clear();
             VisualKey = null;
             Label = "No visible ship selected";
             Availability = ShipPreviewAvailability.Empty;
@@ -164,25 +242,31 @@ namespace HobbyDS9.ArtDemo
             model.AddComponent<MeshRenderer>().sharedMaterial = fallbackMaterial;
         }
 
-        private void ApplyStudioMaterials()
+        private void ApplyStudioMaterials(GameObject selected=null)
         {
             // Fixed normal-based studio shading ignores unrelated scene lighting,
             // ambient probes, fog and volumes. Never alter shared URP materials.
             var shader = Resources.Load<Shader>("ArtDemo/PreviewStudio");
-            var cache = new Dictionary<Material, Material>();
-            foreach (var renderer in model.GetComponentsInChildren<Renderer>(true))
+            var cache = studioMaterialCache;
+            foreach (var renderer in (selected??model).GetComponentsInChildren<Renderer>(true))
             {
                 var materials = renderer.sharedMaterials;
                 for (int i = 0; i < materials.Length; ++i)
                 {
                     var source = materials[i];
+                    if(previewMaterials.Contains(source))continue;
                     if (!cache.TryGetValue(source, out var target))
                     {
                         target = new Material(shader) { name = source.name + " preview", hideFlags = HideFlags.DontSave };
-                        target.SetColor("_BaseColor", source.GetColor("_BaseColor"));
-                        target.SetColor("_EmissionColor", source.GetColor("_EmissionColor"));
-                        target.SetFloat("_Metallic", source.GetFloat("_Metallic"));
-                        target.SetFloat("_Smoothness", source.GetFloat("_Smoothness"));
+                        target.SetColor("_BaseColor", source.HasProperty("_BaseColor")?source.GetColor("_BaseColor"):source.HasProperty("_Color")?source.GetColor("_Color"):Color.white);
+                        target.SetColor("_EmissionColor", source.HasProperty("_EmissionColor")?source.GetColor("_EmissionColor"):Color.black);
+                        target.SetFloat("_Metallic", source.HasProperty("_Metallic")?source.GetFloat("_Metallic"):.2f);
+                        target.SetFloat("_Smoothness", source.HasProperty("_Smoothness")?source.GetFloat("_Smoothness"):.35f);
+                        CopyTexture(source,target,source.HasProperty("_BaseMap")?"_BaseMap":"_MainTex","_BaseMap");
+                        CopyTexture(source,target,"_BumpMap","_BumpMap");
+                        CopyTexture(source,target,"_EmissionMap","_EmissionMap");
+                        target.SetFloat("_BumpScale",source.HasProperty("_BumpScale")?source.GetFloat("_BumpScale"):1);
+                        target.SetFloat("_UseNormalMap",source.HasProperty("_BumpMap") && source.GetTexture("_BumpMap")!=null?1:0);
                         cache.Add(source, target);
                         previewMaterials.Add(target);
                     }
@@ -190,6 +274,13 @@ namespace HobbyDS9.ArtDemo
                 }
                 renderer.sharedMaterials = materials;
             }
+        }
+
+        private static void CopyTexture(Material source,Material target,string from,string to)
+        {
+            if(!source.HasProperty(from) || source.GetTexture(from)==null)return;
+            target.SetTexture(to,source.GetTexture(from));
+            target.SetTextureScale(to,source.GetTextureScale(from));target.SetTextureOffset(to,source.GetTextureOffset(from));
         }
 
         private void ClearTexture()
@@ -208,16 +299,20 @@ namespace HobbyDS9.ArtDemo
 
         public void Dispose()
         {
-            if (disposed) return;
+            ArtShutdownLifecycle.Mark("ShipPreviewStage",shutdownLabel,"dispose.enter");
+            if (disposed) { ArtShutdownLifecycle.Mark("ShipPreviewStage",shutdownLabel,"dispose.already-return"); return; }
             Clear();
             disposed = true;
             if (camera != null) camera.targetTexture = null;
             if (root != null) root.SetActive(false);
             Destroy(root);
+            ArtShutdownLifecycle.Mark("ShipPreviewStage",shutdownLabel,"dispose.rt-release.begin");
             Texture.Release();
+            ArtShutdownLifecycle.Mark("ShipPreviewStage",shutdownLabel,"dispose.rt-release.return");
             Destroy(Texture);
             Texture = null;
             Slots.Remove(slot);
+            ArtShutdownLifecycle.Mark("ShipPreviewStage",shutdownLabel,"dispose.return");
         }
     }
 }

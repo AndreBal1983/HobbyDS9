@@ -8,11 +8,11 @@ namespace HobbyDS9.TacticalReviewClient
     {
         private TravelEdit? travelDraft;
         public TravelEdit? TravelDraft => travelDraft;
-        public KnownRouteOffer? FindKnownRoute(string fleet,string destination)
+        public KnownRouteOffer? FindKnownRoute(string fleet,string destination,bool append=false)
         {
             if(pending != null || Mode != ReviewMode.Planning || !(host is PhysicalReviewHost physical)
                 || !Frame.OwnStrategicFleets.Any(f=>f.FleetId.Value == fleet)) return null;
-            return physical.FindKnownRoute(Frame,fleet,destination);
+            return physical.FindKnownRoute(Frame,fleet,destination,append);
         }
         public bool EditTravel(string fleet,CampaignTravelIntent intent,KnownRouteOffer? offer = null,string? contact = null)
         {

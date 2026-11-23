@@ -80,7 +80,7 @@ Fleet speed and range aggregation must be explicitly consistent with Chapter 7 l
 
 6. Save a named draft. Ordinary combinations of available, compatible components can be released without a mandatory Engineering tax. Novel interfaces or exotic combinations require an explicit integration project only when content defines one.
 
-7. Publish an immutable class revision and queue construction at eligible yards. Show credit cost, local Industry workload, named resource deliveries and recurring upkeep.
+7. Publish an immutable class revision and queue construction at eligible yards. Show local Industry workload, gradually consumed delivered materials and recurring upkeep. Normal construction does not charge credits up front; distinguish any compiled credit valuation from an actual charge. See [normal production and material supply](time-movement-mobilisation.md#normal-production-and-material-supply--agreed-25-october-2026) for the agreed rule and versioned implementation status.
 
 8. Review field results. Decide whether the best next investment is more ships, a component refinement, a hull revision, a refit or a new scientific direction.
 

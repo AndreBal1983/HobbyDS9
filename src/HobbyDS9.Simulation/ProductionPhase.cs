@@ -17,8 +17,17 @@ namespace HobbyDS9.Simulation
                 var remaining = head.RequiredIndustry - head.CompletedIndustry;
                 if (industry < remaining) { head.CompletedIndustry += industry; continue; }
                 var design = CampaignShipDesignResolver.Queue(state, definitions, head);
+                Spawn(state,definitions,colony,head.ShipDesignDefinitionId,head.Blueprint,design);
+                state.PopulationStatistics!.ResourceConsumed = checked(state.PopulationStatistics.ResourceConsumed + PopulationRules.Sum(head.PaidResources!.Select(r => r.Amount)));
+                state.PopulationStatistics!.ProductionCompleted = checked(state.PopulationStatistics.ProductionCompleted + 1);
+                colony.ProductionQueue.RemoveAt(0); state.EntityIdentities.RemoveAll(e => e.EntityId == head.QueueItemId);
+            }
+        }
+        // Shared physical effect only: no queue admission, payment, material accounting or completion receipt.
+        internal static ShipStateDto Spawn(GameStateDto state,DefinitionCatalogDto definitions,ColonyStateDto colony,string staticId,BlueprintReferenceDto? blueprint,ShipDesignDefinitionDto design)
+        {
                 // Ship first, then fleet (only if none stationary); one global sequence.
-                var shipId = CampaignAllocation.Allocate(state, "ship", head.Blueprint == null ? design.DefinitionId : null);
+                var shipId = CampaignAllocation.Allocate(state, "ship", blueprint == null ? design.DefinitionId : null);
                 var location=new WeightedNavigationGraph(definitions).NodeForSystem(colony.SystemId)!;
                 var fleet = state.Fleets!.Where(f => f.OwnerCivilizationId == colony.OwnerCivilizationId && f.LocationNodeId == location && f.TransitTotalCost==0 && f.RouteNodeIds!.Count == 0)
                     .OrderBy(f => f.FleetId, StringComparer.Ordinal).FirstOrDefault();
@@ -35,19 +44,16 @@ namespace HobbyDS9.Simulation
                     state.Fleets!.Add(fleet);
                 }
                 fleet.ShipIds!.Add(shipId);
-                state.Ships!.Add(new ShipStateDto
+                var ship=new ShipStateDto
                 {
                     ShipId = shipId,
-                    ShipDesignDefinitionId = head.ShipDesignDefinitionId,
-                    Blueprint = head.Blueprint == null ? null : BlueprintCopies.Copy(head.Blueprint),
+                    ShipDesignDefinitionId = staticId,
+                    Blueprint = blueprint == null ? null : BlueprintCopies.Copy(blueprint),
                     OwnerCivilizationId = colony.OwnerCivilizationId!,
                     FleetId = fleet.FleetId,
                     CurrentHull = design.MaxHull
-                });
-                state.PopulationStatistics!.ResourceConsumed = checked(state.PopulationStatistics.ResourceConsumed + PopulationRules.Sum(head.PaidResources!.Select(r => r.Amount)));
-                state.PopulationStatistics!.ProductionCompleted = checked(state.PopulationStatistics.ProductionCompleted + 1);
-                colony.ProductionQueue.RemoveAt(0); state.EntityIdentities.RemoveAll(e => e.EntityId == head.QueueItemId);
-            }
+                };
+                state.Ships!.Add(ship);return ship;
         }
     }
 }

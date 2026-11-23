@@ -58,8 +58,10 @@ class BindingTests(unittest.TestCase):
         self.assertTrue(any("disjoint" in x for x in checker.check(self.root)))
 
     def test_bypassed_portable_modal_permission_rejected(self):
-        path = self.assets / "Review/Runtime/ReviewEntry.cs"
-        path.write_text(path.read_text().replace('"Confirm",callbacks.Confirm', '"Confirm",action'))
+        path = self.assets / "Review/Runtime/ReviewEntry.CampaignMenus.cs"
+        source = path.read_text()
+        self.assertIn('callbacks.Confirm();', source)
+        path.write_text(source.replace('callbacks.Confirm();', 'captured.Run();'))
         self.assertTrue(any("Modal buttons" in x for x in checker.check(self.root)))
 
     def test_duplicate_keyboard_submit_exclusion_cannot_be_removed(self):
@@ -99,7 +101,7 @@ class BindingTests(unittest.TestCase):
 
     def test_demo_rebuild_cannot_replace_the_dispatch_panel(self):
         path = self.assets / "Review/Runtime/ReviewEntry.cs"
-        path.write_text(path.read_text().replace("if(model?.SingleplayerDemo!=true||panel==null||doc.panelSettings!=panel)", "if(true)"))
+        path.write_text(path.read_text().replace("if(!PlayerProfile||panel==null||doc.panelSettings!=panel)", "if(true)"))
         self.assertTrue(any("original panel" in x for x in checker.check(self.root)))
 
     def test_retired_origin_cannot_remain_actionable(self):
@@ -134,8 +136,34 @@ class BindingTests(unittest.TestCase):
 
     def test_shared_origin_cannot_be_removed_while_second_key_is_held(self):
         path = self.assets / "Review/Runtime/ReviewEntry.Keyboard.cs"
-        path.write_text(path.read_text().replace("if(returnHeld&&ReferenceEquals(origin,returnOrigin)||spaceHeld&&ReferenceEquals(origin,spaceOrigin))return;", ""))
+        guard = "if(returnHeld&&ReferenceEquals(origin,returnOrigin)||spaceHeld&&ReferenceEquals(origin,spaceOrigin)||noticeEscapeHeld&&ReferenceEquals(origin,noticeEscapeOrigin))return;"
+        source = path.read_text()
+        self.assertIn(guard, source)
+        path.write_text(source.replace(guard, ""))
         self.assertTrue(any("another held key" in x for x in checker.check(self.root)))
+
+    def test_player_keyboard_gate_cannot_enable_legacy_profiles(self):
+        path = self.assets / "Review/Runtime/ReviewEntry.Frontier.cs"
+        original = "model?.PlayableFleet==true||model?.SingleplayerDemo==true||model?.FrontierPreview==true"
+        source = path.read_text()
+        self.assertIn(original, source, "The mutation must actually remove the current profile gate")
+        path.write_text(source.replace(original, "true"))
+        self.assertTrue(any("explicit playable/demo/frontier" in x for x in checker.check(self.root)))
+
+    def test_frontier_map_cannot_ignore_observation_actor(self):
+        path = self.assets / "Review/Runtime/ReviewFrontierMap.cs"
+        path.write_text(path.read_text().replace("known==null||known.ActorId!=frame.Actor", "known==null"))
+        self.assertTrue(any("selected actor discovery" in x for x in checker.check(self.root)))
+
+    def test_frontier_map_cannot_fall_back_to_unrestricted_navigation(self):
+        path = self.assets / "Review/Runtime/ReviewFrontierMap.cs"
+        path.write_text(path.read_text()+"\n// facts.Navigation fallback\n")
+        self.assertTrue(any("unrestricted navigation" in x for x in checker.check(self.root)))
+
+    def test_frontier_slots_cannot_alias_bajor_directory(self):
+        path = self.assets / "Review/Runtime/FrontierPreviewOptions.cs"
+        path.write_text(path.read_text().replace("HobbyDS9FrontierPreviewOnly-v5", "HobbyDS9SingleplayerDemoOnly-v4"))
+        self.assertTrue(any("disjoint wrapper5" in x for x in checker.check(self.root)))
 
 
 if __name__ == "__main__":

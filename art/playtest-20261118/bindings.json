@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "baseline": "af0273c2ab89ff199e8e7dfb57d8a69dfbb896c8",
+  "existing2DBindings": [
+    {
+      "identity": "hull.constitution-explorer.v1",
+      "resource": "ConstructionCardArt/constitution",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/constitution.png",
+      "bytes": 69038,
+      "sha256": "9edffdc0bf4bcf25bf33654972e124dd918d5fae6846bc7d155c7386a94c6073",
+      "guid": "7c9ee1eaaa7f4673a8cd8bd6261ffef1",
+      "metaSha256": "4234ac94494b5f6c04f876680ef490d9e99ae33ff18c8c117226d3751ca87769",
+      "note": "existing local-review image; preserve original attribution/import, no new licence claim"
+    },
+    {
+      "identity": "hull.galaxy-cruiser.v1",
+      "resource": "ConstructionCardArt/galaxy",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/galaxy.jpg",
+      "bytes": 4569,
+      "sha256": "93cc2645e09554beae3d4d1901267f1f50b80d70c9c99cbaba8fca68acf5a2d8",
+      "guid": "12b671c3ca384d679633e32dc97b309d",
+      "metaSha256": "76a95cfa4cdf0cec3823f77f51943846d4e95d2b8066ba0783f716757128675f",
+      "note": "existing local-review image; preserve original attribution/import, no new licence claim"
+    },
+    {
+      "identity": "hull.defiant-combat.v1",
+      "resource": "ConstructionCardArt/defiant",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/defiant.png",
+      "bytes": 230359,
+      "sha256": "0f973bbf74d5d241948eb6a447081ce4994589dd1aa80ebf6ffbdb8336ad3263",
+      "guid": "828f28dbaacb4dbc9367a68d81e4b080",
+      "metaSha256": "c1686e31b452f20694063ed091d15162da3e18978e509863eeb982fb3eccbe36",
+      "note": "existing local-review image; preserve original attribution/import, no new licence claim"
+    },
+    {
+      "identity": "infrastructure.fabrication-annex.v1",
+      "resource": "ConstructionCardArt/fusion",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/fusion.png",
+      "bytes": 28303,
+      "sha256": "f86c178824676203020881ce528566e55ac163fc9b456e2da2ec43d0025635ce",
+      "guid": "32d685d3f1c84060b2a544a3c9f7fdbc",
+      "metaSha256": "15153df5d9d4d4180c5b393e4407abc217c588807afd7912e8c3f5bc83821318",
+      "note": "existing local-review image; preserve original attribution/import, no new licence claim"
+    },
+    {
+      "identity": "infrastructure.research-laboratory.v1",
+      "resource": "ConstructionCardArt/research",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/research.png",
+      "bytes": 30488,
+      "sha256": "679d90f24ad36852497c9e50bc9552e8b5e7e971c15534e3d81246550d64c390",
+      "guid": "d2da978d50c944438fbeabc5917fed8f",
+      "metaSha256": "4428deaa0216e938591506b4c953d717bd9280387a08895d6955818f50b109ce",
+      "note": "existing local-review image; preserve original attribution/import, no new licence claim"
+    },
+    {
+      "identity": "infrastructure.hydroponic-extension.v1",
+      "resource": "ConstructionCardArt/hydroponics",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/hydroponics.png",
+      "bytes": 28249,
+      "sha256": "97f00aed9117836c03ab941647352e3dadde028c5d62eeea0a3ce9892da94632",
+      "guid": "5388324fa11c4ae3bbe5000b14da6a42",
+      "metaSha256": "ccad03ca9c5259f3369d9ccb02dce451fc60bdec2a2667e1c53356d35e988455",
+      "note": "existing local-review image; preserve original attribution/import, no new licence claim"
+    },
+    {
+      "identity": "infrastructure.frontier-mine.v1",
+      "resource": "ConstructionCardArt/mine",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/mine.png",
+      "bytes": 23929,
+      "sha256": "8ddddd02fb9c4066d591230d04e38600e2b51727322de1504c711e115cd667ec",
+      "guid": "15c05457316841d58733f309b0b47904",
+      "metaSha256": "24f9e19240327059e2e61e8399488aac289ca0710bb627e3abcefe77e2ed527c",
+      "note": "existing local-review image; preserve original attribution/import, no new licence claim"
+    },
+    {
+      "identity": "existing-settlement-kit",
+      "resource": "ConstructionCardArt/kit",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ConstructionCardArt/kit.png",
+      "bytes": 23920,
+      "sha256": "16e5b31b7d572a6d1dd45f094cc9849d645ec2fcdb58719c29320bf8cf29197f",
+      "guid": "d26345e4f7d04f818bf03b3bd9529251",
+      "metaSha256": "b84f5238ba649cfbbc19073d5ca6ed1a0622ec0f4447802d25ddce9f31b7eeaa",
+      "note": "existing local-review image; preserve original attribution/import, no new licence claim"
+    }
+  ],
+  "newStatusGlyphs": "icon-strokes.json",
+  "runtimeEdit": "none",
+  "meshOrTextureGeneration": "none"
+}

@@ -1,0 +1,189 @@
+{
+  "method": "Independent binary FBX normal array decoding; Unity import pending",
+  "results": [
+    {
+      "file": "Constitution\\Models\\ConstitutionExplorer_LOD0.fbx",
+      "fbxVersion": 7400,
+      "normalArrays": [
+        {
+          "normalCount": 2871,
+          "lengthMin": 0.9999998692285946,
+          "lengthMax": 1.0000001066113344,
+          "distinctRoundedDirections": 2172
+        }
+      ],
+      "layerMappings": [
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ],
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ],
+        [
+          "MappingInformationType",
+          "ByPolygon"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ]
+      ]
+    },
+    {
+      "file": "Constitution\\Models\\ConstitutionExplorer_LOD1.fbx",
+      "fbxVersion": 7400,
+      "normalArrays": [
+        {
+          "normalCount": 1098,
+          "lengthMin": 0.9999998972873283,
+          "lengthMax": 1.0000001030074874,
+          "distinctRoundedDirections": 822
+        }
+      ],
+      "layerMappings": [
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ],
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ],
+        [
+          "MappingInformationType",
+          "ByPolygon"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ]
+      ]
+    },
+    {
+      "file": "Defiant-v3\\Models\\Defiant_LOD0.fbx",
+      "fbxVersion": 7400,
+      "normalArrays": [
+        {
+          "normalCount": 14930,
+          "lengthMin": 0.9999998082121235,
+          "lengthMax": 1.000000191009899,
+          "distinctRoundedDirections": 14930
+        }
+      ],
+      "layerMappings": [
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ],
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "Direct"
+        ],
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "Direct"
+        ],
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ],
+        [
+          "MappingInformationType",
+          "AllSame"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ]
+      ]
+    },
+    {
+      "file": "Defiant-v3\\Models\\Defiant_LOD1.fbx",
+      "fbxVersion": 7400,
+      "normalArrays": [
+        {
+          "normalCount": 3930,
+          "lengthMin": 0.9999998207715283,
+          "lengthMax": 1.000000167837036,
+          "distinctRoundedDirections": 3930
+        }
+      ],
+      "layerMappings": [
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ],
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "Direct"
+        ],
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "Direct"
+        ],
+        [
+          "MappingInformationType",
+          "ByPolygonVertex"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ],
+        [
+          "MappingInformationType",
+          "AllSame"
+        ],
+        [
+          "ReferenceInformationType",
+          "IndexToDirect"
+        ]
+      ]
+    }
+  ]
+}

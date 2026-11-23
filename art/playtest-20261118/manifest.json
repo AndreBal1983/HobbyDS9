@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "version": "playtest-reference-v1-20261118",
+  "status": "original reference/glyph candidate; Unity receiving pending",
+  "base": "af0273c2ab89ff199e8e7dfb57d8a69dfbb896c8",
+  "newRuntimeTextures": 0,
+  "newRuntimeModels": 0,
+  "newOriginalVectorGlyphs": 5,
+  "files": [
+    {
+      "path": "bindings.json",
+      "bytes": 4737,
+      "sha256": "61d8d1a122064ca3f6309f1958613d941e5486fb889b5ae9a7ac5aac5741a4cb"
+    },
+    {
+      "path": "compact-reference.html",
+      "bytes": 21335,
+      "sha256": "5d48cbd984e812440d1fbe7ab36037b4c21ed26659fa2f66b6f95d7ab9be492b"
+    },
+    {
+      "path": "fleet-1280.png",
+      "bytes": 125689,
+      "sha256": "14a60a2303e51ed9450c39f0798408096a16ae7512d5533df2ffd6627cd0c190"
+    },
+    {
+      "path": "fleet-1920.png",
+      "bytes": 132443,
+      "sha256": "1d16671d52385937c6f05d21a9333dfbef62c7c47386e02b1e2f791d8fd86da4"
+    },
+    {
+      "path": "icon-strokes.json",
+      "bytes": 3200,
+      "sha256": "a4ce0b8aeee8039e67a6fdbae1c62c7ea6f2f85bc2e8fe1dc76e10e547be3429"
+    },
+    {
+      "path": "icons/mission.svg",
+      "bytes": 341,
+      "sha256": "b86b1e756d219817ea925c6cd52d96c7eab84c474c23b98bd55f9563395bf151"
+    },
+    {
+      "path": "icons/shield.svg",
+      "bytes": 274,
+      "sha256": "886fcb3fba6e8a3b9ccd204497ada1b094192c79d64dbd289cdd88325264bf9e"
+    },
+    {
+      "path": "icons/ship.svg",
+      "bytes": 384,
+      "sha256": "aaf16874b416e2377d7b60a21c0f0fe2093ea1741d29c0dde0aace651d84182a"
+    },
+    {
+      "path": "icons/supply.svg",
+      "bytes": 359,
+      "sha256": "b9ea7d65291f6b4a06d953f0981d108b430132e7a56d2a093b66af4ec93a670a"
+    },
+    {
+      "path": "icons/survey.svg",
+      "bytes": 348,
+      "sha256": "17b47d867b14ed77dec37c706ed6d4dca1413c03498e3581506118b8831bde6a"
+    },
+    {
+      "path": "production-1280.png",
+      "bytes": 123674,
+      "sha256": "55f65e609f0cb3a32601885333f2dd83501d0b39f7501097e0dbe16e91868ba4"
+    },
+    {
+      "path": "production-1920.png",
+      "bytes": 136045,
+      "sha256": "7d0c51bf46e661c639f57dce8d6e43b3f27c9ebc8ae61dcaa6ebaa762fc33849"
+    },
+    {
+      "path": "README.md",
+      "bytes": 10035,
+      "sha256": "9d48b491efe2b039be7ed2c371d539efa96a03414dc665a430600041f2bafefa"
+    },
+    {
+      "path": "recovered/owner-fleet.png",
+      "bytes": 681306,
+      "sha256": "7e645644e4528878a74fb1835fd2f2207025485b3f8ff8a0528f7addab24de18"
+    },
+    {
+      "path": "recovered/production-reference-comparison.png",
+      "bytes": 526523,
+      "sha256": "9cfd81cbf6e834762dfeaa8a4b41a7dbef7b1447bfbcd05675d0da4bc5ac0acc"
+    },
+    {
+      "path": "recovered/provenance.json",
+      "bytes": 736,
+      "sha256": "6c1fb826321a3062d7077a580d02d7bec3ff5e17a13be18f08c45388c9c4cbea"
+    },
+    {
+      "path": "verification.json",
+      "bytes": 602,
+      "sha256": "c8acbd91c785741930c30f21deb264949560e7be41f5b1bf0442af10221bc104"
+    }
+  ]
+}

@@ -1,0 +1,297 @@
+{
+  "visualKey": "card.cruiser-prototype.v1",
+  "status": "Original Cardassian-style prototype; no native import/owner final-art acceptance",
+  "provenance": "Fresh authored procedural geometry; owner reference images inform silhouette only, no third-party mesh/texture",
+  "axes": "metres; +Y up; +Z forward; root origin identity",
+  "artScaleIsNotGameplay": true,
+  "materials": [
+    {
+      "name": "CARD_Ochre",
+      "color": [
+        0.52,
+        0.34,
+        0.16
+      ],
+      "metallic": 0.3,
+      "roughness": 0.55
+    },
+    {
+      "name": "CARD_Plate_Gold",
+      "color": [
+        0.73,
+        0.55,
+        0.29
+      ],
+      "metallic": 0.25,
+      "roughness": 0.48
+    },
+    {
+      "name": "CARD_Inset",
+      "color": [
+        0.16,
+        0.115,
+        0.065
+      ],
+      "metallic": 0.2,
+      "roughness": 0.7
+    },
+    {
+      "name": "CARD_RedBrown",
+      "color": [
+        0.34,
+        0.105,
+        0.065
+      ],
+      "metallic": 0.2,
+      "roughness": 0.55
+    },
+    {
+      "name": "CARD_Drive_Amber",
+      "color": [
+        1,
+        0.26,
+        0.035
+      ],
+      "metallic": 0,
+      "roughness": 0.3,
+      "emission": [
+        1,
+        0.16,
+        0.015
+      ]
+    },
+    {
+      "name": "CARD_Windows",
+      "color": [
+        0.58,
+        0.73,
+        0.8
+      ],
+      "metallic": 0,
+      "roughness": 0.4,
+      "emission": [
+        0.22,
+        0.32,
+        0.4
+      ]
+    }
+  ],
+  "anchors": [
+    {
+      "name": "Axis_Bow",
+      "position": [
+        0,
+        0,
+        240
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "Axis_Up",
+      "position": [
+        0,
+        70,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "Effect_Beam_Fore",
+      "position": [
+        0,
+        6,
+        220.5
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "Effect_Ordnance_Fore",
+      "position": [
+        0,
+        -6,
+        218
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "Effect_Drive_Port",
+      "position": [
+        -22,
+        0,
+        -252
+      ],
+      "rotation": [
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "Effect_Drive_Starboard",
+      "position": [
+        22,
+        0,
+        -252
+      ],
+      "rotation": [
+        0,
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "Impact_Center",
+      "position": [
+        0,
+        12,
+        60
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "Camera_Focus",
+      "position": [
+        0,
+        7,
+        0
+      ],
+      "rotation": [
+        0,
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "lods": [
+    {
+      "level": 0,
+      "triangles": 3320,
+      "boundsXYZ": [
+        [
+          -180,
+          -28.5,
+          -260.0
+        ],
+        [
+          180,
+          46.5,
+          220.95
+        ]
+      ],
+      "obj": "cardassian-cruiser_LOD0.obj",
+      "glb": "cardassian-cruiser_LOD0.glb"
+    },
+    {
+      "level": 1,
+      "triangles": 1496,
+      "boundsXYZ": [
+        [
+          -180,
+          -28.5,
+          -260.0
+        ],
+        [
+          180,
+          46.5,
+          220.95
+        ]
+      ],
+      "obj": "cardassian-cruiser_LOD1.obj",
+      "glb": "cardassian-cruiser_LOD1.glb"
+    },
+    {
+      "level": 2,
+      "triangles": 512,
+      "boundsXYZ": [
+        [
+          -180,
+          -28.5,
+          -260.0
+        ],
+        [
+          180,
+          44.0,
+          220.95
+        ]
+      ],
+      "obj": "cardassian-cruiser_LOD2.obj",
+      "glb": "cardassian-cruiser_LOD2.glb"
+    }
+  ],
+  "validation": "CPU finite positions, unit normals, nondegenerate triangles and decreasing LOD counts; independent export check follows",
+  "files": [
+    {
+      "file": "cardassian-cruiser.mtl",
+      "bytes": 418,
+      "sha256": "7311011aba25eb5d2eb0fc1fc6c88a38e6daa799986dcb6d83075cb20801bd8b"
+    },
+    {
+      "file": "cardassian-cruiser_LOD0.glb",
+      "bytes": 371580,
+      "sha256": "8c91d7da8d7b593ae7e86c030aa8ac65839772297b868960cf27b3071cd8268e"
+    },
+    {
+      "file": "cardassian-cruiser_LOD0.obj",
+      "bytes": 1121631,
+      "sha256": "92f64a9a2ac983417825b84acfc12603627f6be500923d191c607e17bde4ccc4"
+    },
+    {
+      "file": "cardassian-cruiser_LOD1.glb",
+      "bytes": 174576,
+      "sha256": "4aaf1af631b54ae69b78b30e83c34512474dd66e3380cf799b92617b0214f708"
+    },
+    {
+      "file": "cardassian-cruiser_LOD1.obj",
+      "bytes": 505291,
+      "sha256": "7cf4e5d8d7fc92d34dbda70bca9c82886a4b10d4b98cd8dbb147df07245e0657"
+    },
+    {
+      "file": "cardassian-cruiser_LOD2.glb",
+      "bytes": 66236,
+      "sha256": "e99fbaaa7b2cfaed01c32fca4e03d076203348d5a74e53647c2605dc49ee2c64"
+    },
+    {
+      "file": "cardassian-cruiser_LOD2.obj",
+      "bytes": 171252,
+      "sha256": "8c0abf57142a5a614faf919e59f00dfc6acf3a999ef75b234b80ad492f1bfa7b"
+    },
+    {
+      "file": "three-quarter.png",
+      "bytes": 131288,
+      "sha256": "d87becd7fe579172859878dc353e9f6d90e844330fe0fec3a53195ef4a3bc8e3"
+    },
+    {
+      "file": "top.png",
+      "bytes": 82984,
+      "sha256": "093b17546953ab29218e03b91acfcf190c01a8628f124655e7423bbfcd5d396a"
+    }
+  ]
+}
