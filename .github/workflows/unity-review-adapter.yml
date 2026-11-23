@@ -10,11 +10,18 @@ permissions:
 
 jobs:
   adapter:
-    name: Actual Unity codec and slot source (${{ matrix.os }})
+    name: ${{ matrix.suite.name }} (${{ matrix.os }})
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        suite:
+          - name: Actual Unity codec and slot source
+            artifact: unity-review-adapter
+            long_colonies: false
+          - name: Long colony continuation scenarios
+            artifact: unity-review-colonies
+            long_colonies: true
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
@@ -24,32 +31,52 @@ jobs:
           global-json-file: global.json
       - name: Compile portable actual source and execute backend-linked tests
         shell: pwsh
+        env:
+          LONG_COLONIES: ${{ matrix.suite.long_colonies }}
         run: |
           $project = 'tests/HobbyDS9.UnityReviewAdapter.Tests/HobbyDS9.UnityReviewAdapter.Tests.csproj'
           dotnet restore $project --locked-mode -warnaserror
           if ($LASTEXITCODE -ne 0) { throw 'Locked restore failed' }
           dotnet build $project -c Release --no-restore -warnaserror
           if ($LASTEXITCODE -ne 0) { throw 'Portable actual-source build failed' }
-          dotnet test $project -c Release --no-build --no-restore --blame-hang --blame-hang-timeout 5m --logger 'trx;LogFileName=unity-adapter.trx' --results-directory artifacts/unity-review-adapter
+          # Each of these 250-system scenarios can run for over five minutes between test results.
+          $longCases = @(
+            'HobbyDS9.UnityReviewAdapter.Tests.ColonisationCycleIntegrationTests.ActualHost250TwoEstablishedCyclesAndThirdCommitSaveContinueWhole14'
+            'HobbyDS9.UnityReviewAdapter.Tests.ColonisationRepeatIntegrationTests.Actual250BothAssignmentsSupplyAndSecondColonySurviveEveryTypedPersistenceStage'
+          )
+          if ($env:LONG_COLONIES -eq 'true') {
+            $filter = ($longCases | ForEach-Object { "FullyQualifiedName=$_" }) -join '|'
+            $inactivityLimit = '20m'
+            $minimumCases = $longCases.Count
+          } else {
+            $filter = ($longCases | ForEach-Object { "FullyQualifiedName!=$_" }) -join '&'
+            $inactivityLimit = '5m'
+            $minimumCases = 873
+          }
+          dotnet test $project -c Release --no-build --no-restore --filter $filter --blame-hang --blame-hang-timeout $inactivityLimit --logger 'trx;LogFileName=unity-adapter.trx' --results-directory artifacts/unity-review-adapter
           if ($LASTEXITCODE -ne 0) { throw 'Actual-source tests failed' }
           [xml]$trx = Get-Content -LiteralPath 'artifacts/unity-review-adapter/unity-adapter.trx'
           $c = $trx.TestRun.ResultSummary.Counters
-          if ([int]$c.total -lt 180 -or [int]$c.passed -ne [int]$c.total -or [int]$c.failed -ne 0 -or [int]$c.notExecuted -ne 0) { throw 'Missing or unexecuted adapter cases' }
+          if ([int]$c.total -lt $minimumCases -or [int]$c.passed -ne [int]$c.total -or [int]$c.failed -ne 0 -or [int]$c.notExecuted -ne 0) { throw 'Missing or unexecuted adapter cases' }
           Write-Host "Actual-source portable cases: $($c.passed) passed; Editor/AOT/native not executed"
       - uses: actions/setup-python@v6
+        if: ${{ !matrix.suite.long_colonies }}
         with:
           python-version: '3.12'
       - name: Binding configuration and adversarial source checks only
+        if: ${{ !matrix.suite.long_colonies }}
         run: |
           python scripts/check-content-resource-bytes.py --checkout-matrix
           python scripts/check-unity-review-binding.py
           python -B -m unittest discover -s tests/UnityReviewBinding.Static -p "test_*.py" -v
       - name: Prepare and check additive integrated opt-in resources and source boundaries
+        if: ${{ !matrix.suite.long_colonies }}
         run: |
           dotnet msbuild scripts/PrepareUnityIntegrated.proj -t:Prepare
           python scripts/check-unity-integrated.py
           python -B -m unittest discover -s tests/UnityIntegrated.Static -p "test_*.py" -v
       - name: Prepare separate complete format-4 demo resources and verify exact bytes
+        if: ${{ !matrix.suite.long_colonies }}
         shell: pwsh
         run: |
           dotnet msbuild scripts/PrepareUnityDemo.proj -t:Prepare
@@ -62,6 +89,8 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: unity-review-adapter-${{ matrix.os }}
-          path: artifacts/unity-review-adapter/*.trx
+          name: ${{ matrix.suite.artifact }}-${{ matrix.os }}
+          path: |
+            artifacts/unity-review-adapter/*.trx
+            artifacts/unity-review-adapter/**/Sequence_*.xml
           if-no-files-found: error
