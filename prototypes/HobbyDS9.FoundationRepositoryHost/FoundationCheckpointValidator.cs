@@ -29,10 +29,14 @@ namespace HobbyDS9.FoundationRepositoryHost
         }
 
         public byte[] ReadScenarioBytes() => (byte[])scenarioBytes.Clone();
-        public CheckpointImage Validate(byte[] ownedPayload)
+        public CheckpointImage Validate(byte[] ownedPayload) => Validate(ownedPayload, classifyMalformedSyntax: false);
+
+        CheckpointImage ICheckpointValidator.Validate(byte[] ownedPayload) => Validate(ownedPayload, classifyMalformedSyntax: true);
+
+        private CheckpointImage Validate(byte[] ownedPayload, bool classifyMalformedSyntax)
         {
             var bytes = Own(ownedPayload);
-            var session = Load(bytes);
+            var session = Load(bytes, classifyMalformedSyntax);
             var state = session.ExportSave().GameState;
             return new CheckpointImage(bytes, EditionIdentity, state.TurnNumber,
                 state.StateRevision, state.Phase!.Value.ToString());
@@ -42,9 +46,9 @@ namespace HobbyDS9.FoundationRepositoryHost
         // Each successful call returns a fresh, independently owned session.
         public ICampaignSession Restore(byte[] payload) => Load(Own(payload));
 
-        private ICampaignSession Load(byte[] bytes)
+        private ICampaignSession Load(byte[] bytes, bool classifyMalformedSyntax = false)
         {
-            var save = StrictFoundationJson.Decode<SaveEnvelopeDto>(bytes);
+            var save = StrictFoundationJson.Decode<SaveEnvelopeDto>(bytes, classifyMalformedSyntax);
             var session = CampaignApplication.LoadSave(scenario, save);
             // Prove the complete deserialized root survives the actual loader, including
             // ledgers, pending requests, buffered results, RNG and allocation state.
