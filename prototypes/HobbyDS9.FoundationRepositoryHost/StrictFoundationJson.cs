@@ -5,6 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using HobbyDS9.Contracts;
+using HobbyDS9.Persistence;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -21,12 +22,11 @@ namespace HobbyDS9.FoundationRepositoryHost
             ContractResolver = new AuthoritativeContractResolver()
         });
 
-        internal static T Decode<T>(byte[] bytes) where T : class
+        internal static T Decode<T>(byte[] bytes, bool classifyMalformedSyntax = false) where T : class
         {
             try
             {
-                var text = Utf8.GetString(bytes);
-                new JsonGrammar(text).Validate();
+                var text = ReadDocumentText(bytes, classifyMalformedSyntax);
                 using var input = new StringReader(text);
                 using var reader = new JsonTextReader(input) { MaxDepth = 128, DateParseHandling = DateParseHandling.None };
                 var token = JToken.Load(reader, new JsonLoadSettings { DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error });
@@ -39,6 +39,22 @@ namespace HobbyDS9.FoundationRepositoryHost
             }
             catch (Exception e) when (e is JsonException || e is DecoderFallbackException || e is EncoderFallbackException || e is OverflowException)
             { throw new ArgumentException("Invalid foundation JSON.", nameof(bytes), e); }
+        }
+
+        private static string ReadDocumentText(byte[] bytes, bool classifyMalformedSyntax)
+        {
+            try
+            {
+                var text = Utf8.GetString(bytes);
+                new JsonGrammar(text).Validate();
+                return text;
+            }
+            catch (ArgumentException error) when (classifyMalformedSyntax)
+            {
+                // These two operations examine only the bytes and JSON grammar.
+                // DTO compatibility, edition resolution and replay occur later.
+                throw new InvalidCheckpointPayloadException("The stored Foundation JSON has invalid UTF-8 or syntax.", error);
+            }
         }
 
         private static void Wire(JToken token, Type declared, JsonSerializer serializer, bool completeMembers)
