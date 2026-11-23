@@ -3,6 +3,10 @@
     <TargetFramework>net10.0</TargetFramework><LangVersion>10.0</LangVersion><ImplicitUsings>enable</ImplicitUsings>
     <IsTestProject>true</IsTestProject><IsPackable>false</IsPackable><RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(StateRepositoryTrial)' == 'true'">
+    <DefineConstants>$(DefineConstants);HOBBYDS9_STATE_REPOSITORY_TRIAL</DefineConstants>
+    <NuGetLockFilePath>obj/repository-trial.packages.lock.json</NuGetLockFilePath>
+  </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../../prototypes/HobbyDS9.CampaignRepositoryHost/HobbyDS9.CampaignRepositoryHost.csproj" />
     <ProjectReference Include="../../prototypes/HobbyDS9.UnityReviewAdapter/HobbyDS9.UnityReviewAdapter.csproj" />

@@ -120,6 +120,9 @@ namespace HobbyDS9.UnityReview
         }
         private void OnDisable()
         {
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+            RetireRepositoryTrial();
+#endif
             model?.CancelResearchAllocations();
             CancelCampaignArchiveScan();
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"disable.enter");

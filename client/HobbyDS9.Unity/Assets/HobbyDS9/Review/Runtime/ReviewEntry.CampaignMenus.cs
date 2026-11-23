@@ -150,8 +150,11 @@ namespace HobbyDS9.UnityReview
         private ReviewUiModel? campaignSavedOwner;
         private long campaignSavedRevision;
         private int campaignSavedTurn;
-        private bool CampaignNeedsSave=>demoStarted&&(!ReferenceEquals(model,campaignSavedOwner)
-            ||model!.Current.Frame.Status.CampaignRevision!=campaignSavedRevision);
+        private bool CampaignNeedsSave=>demoStarted&&(
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+            ActiveRepository?.Queue.Snapshot.HasUnsavedProgress ??
+#endif
+            (!ReferenceEquals(model,campaignSavedOwner)||model!.Current.Frame.Status.CampaignRevision!=campaignSavedRevision));
         private void MarkCampaignSaved(ReviewUiModel owner)
         {
             campaignSavedOwner=owner;campaignSavedRevision=owner.Current.Frame.Status.CampaignRevision;
@@ -175,6 +178,9 @@ namespace HobbyDS9.UnityReview
         }
         private void RequestCampaignDeparture(string title,string verb,Action proceed,string? protectedSlot=null,string? destination=null)
         {
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+            if(!RepositoryMayDepart())return;
+#endif
             if(!demoStarted||!CampaignNeedsSave&&!model!.HasLocalEdits){proceed();return;}
             var detail=CampaignNeedsSave?"Accepted campaign changes have not been saved in this menu session.":"Your accepted campaign is saved, but you have unsubmitted edits.";
             if(model!.HasLocalEdits)detail+=" Unsubmitted edits are not included in a campaign save and will be discarded if you continue.";
@@ -192,8 +198,14 @@ namespace HobbyDS9.UnityReview
         }
         private void QuitCampaignPlayer()
         {
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+            if(!RepositoryMayDepart())return;
+#endif
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"close.begin");
             if(!model!.Close(true)){campaignMenuNotice="The campaign cannot close while an operation is pending.";Draw();return;}
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+            RetireRepositoryTrial();
+#endif
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"close.return.true");
             ReviewShutdownLifecycle.Mark("ReviewEntry",shutdownLabel,"quit.call");
             UnityEngine.Application.Quit();
@@ -220,7 +232,13 @@ namespace HobbyDS9.UnityReview
                 summary.Add(Readout(OwnerName(frame.Actor)+" · Week "+frame.Status.Turn));
                 if(model.CombatPlaytest)summary.Add(Readout("Combat playtest · Authored Bajor fixture · Separate test saves"));
                 summary.Add(Readout(frame.Strategy!.Colonies.Count+" owned colonies · "+frame.Strategy.Ships.Count+" owned ships"));
-                summary.Add(Readout(CampaignNeedsSave?"Accepted progress has not been saved since the last successful menu save/load.":"Accepted campaign saved at week "+campaignSavedTurn+"."));
+                var savedTurn=campaignSavedTurn;
+                var unsavedText="Accepted progress has not been saved since the last successful menu save/load.";
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+                savedTurn=ActiveRepository?.Queue.Snapshot.LastDurable?.Turn??savedTurn;
+                if(ActiveRepository!=null)unsavedText="The current campaign has unsaved progress.";
+#endif
+                summary.Add(Readout(CampaignNeedsSave?unsavedText:"Accepted campaign saved at week "+savedTurn+"."));
                 if(model.HasLocalEdits)summary.Add(Readout("Unsubmitted edits are held in memory. Saving does not include them."));
             }
             else
@@ -259,6 +277,9 @@ namespace HobbyDS9.UnityReview
             }
             if(paused)AddButton(commands,"Save game",()=>OpenCampaignArchive(true)).name="campaign-menu-save";
             AddButton(commands,"Load game",()=>OpenCampaignArchive(false)).name="campaign-menu-load";
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+            if(paused)AddRepositoryTrialButton(commands);
+#endif
             AddButton(commands,"Settings",()=>{campaignSettingsMenuOrigin=campaignMenuPage;ShowCampaignMenuPage(CampaignMenuPage.Settings);}).name="campaign-menu-settings";
             if(paused)AddButton(commands,"Main menu",()=>ShowCampaignMenuPage(CampaignMenuPage.Start)).name="campaign-menu-main";
             AddButton(commands,"Quit to desktop",()=>RequestCampaignDeparture("Quit to desktop?","Quit",QuitCampaignPlayer)).name="campaign-menu-quit";
@@ -498,6 +519,9 @@ namespace HobbyDS9.UnityReview
         }
         private void DrawCampaignArchive()
         {
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+            if(DrawRepositoryLibrary())return;
+#endif
             EnsureCampaignArchive();
             var panel=PagePanel(campaignArchiveSaving?"Save game":"Load game");panel.AddToClassList("campaign-menu");
             panel.Add(Readout("Archive: "+(CampaignArchiveProfile()=="combat"?"Combat playtest":CampaignArchiveProfile()=="cycle"?CycleArchiveDisplayName:CampaignArchiveProfile()=="demo"?"Bajor demo":"Separate campaign profile")));

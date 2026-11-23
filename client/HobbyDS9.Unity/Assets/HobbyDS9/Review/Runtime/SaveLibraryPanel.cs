@@ -52,16 +52,16 @@ namespace HobbyDS9.UnityReview
         {
             ++confirmationToken; Clear(); SetEnabled(true); boundary = presentation.BeginRender(); var captured = boundary; var view = presentation.View;
             Text(this, "SAVE LIBRARY", "save-library-heading", 28, Amber);
-            Text(this, "C1 proposal · disconnected presentation", "save-library-proposal", 14, Lavender);
             var status = Flow(this, "save-library-session");
             Metric(status, "Campaign / active branch", view.ContextCaption);
             Metric(status, "Current progress", view.Current.Caption);
             Metric(status, "Last confirmed save", view.LastDurable.Caption + " · " + view.LastSavedTimeCaption);
             Metric(status, "Session", view.Durability == SaveLibraryDurability.Unsaved ? "Unsaved progress" : view.Durability == SaveLibraryDurability.Clean ? "Current progress saved" : "Save status not reported");
+            if (view.StorageWarning != null) Text(this, view.StorageWarning, "save-library-storage-warning", 17, Amber);
             RenderOperation(captured);
             var viewport = new ScrollView { name = "save-library-workspace-scroll" };
             viewport.style.flexGrow = 1; viewport.style.minHeight = 0; Add(viewport); workspace = viewport;
-            RenderNewManual(captured);
+            if (view.Supports(SaveLibraryAction.CreateManual)) RenderNewManual(captured);
             RenderFilters(captured);
             var content = Flow(workspace, "save-library-content"); content.style.alignItems = Align.Stretch;
             var list = Box(content, "save-library-list"); list.style.flexGrow = 2; list.style.flexBasis = 650; list.style.minWidth = 300;
@@ -98,7 +98,7 @@ namespace HobbyDS9.UnityReview
         private void RenderNewManual(SaveLibraryBoundary captured)
         {
             var area = Flow(workspace, "save-library-create");
-            var draft = new TextField("Name for new save") { name = "save-library-create-name" }; draft.style.flexGrow = 1; draft.style.minWidth = 260; area.Add(draft);
+            var draft = new TextField("Name for new save") { name = "save-library-create-name", maxLength = 120 }; draft.style.flexGrow = 1; draft.style.minWidth = 260; area.Add(draft);
             var create = Button(area, "Save current game…", "save-library-action-CreateManual", () => Prepare(SaveLibraryAction.CreateManual, null, draft.value, captured), captured);
             create.SetEnabled(false);
             draft.RegisterValueChangedCallback(e => { if (Live(captured)) create.SetEnabled(presentation.Can(SaveLibraryAction.CreateManual) && !string.IsNullOrWhiteSpace(e.newValue)); });
@@ -121,8 +121,11 @@ namespace HobbyDS9.UnityReview
             // Local query draft only. Apply creates one host query, never filters the currently visible page.
             var kindButton = new Button { name = "save-library-kind", text = "Kind: " + (kind?.ToString() ?? "All") }; filters.Add(kindButton);
             kindButton.clicked += () => { if (!Live(captured)) return; kind = !kind.HasValue ? SaveLibraryKind.Manual : kind == SaveLibraryKind.Manual ? SaveLibraryKind.Auto : kind == SaveLibraryKind.Auto ? SaveLibraryKind.Milestone : (SaveLibraryKind?)null; kindButton.text = "Kind: " + (kind?.ToString() ?? "All"); };
-            var healthButton = new Button { name = "save-library-health", text = "Health: " + (health.HasValue ? HealthCaption(health.Value) : "All") }; filters.Add(healthButton);
-            healthButton.clicked += () => { if (!Live(captured)) return; health = !health.HasValue ? SaveLibraryHealth.Unknown : health == SaveLibraryHealth.Expired ? (SaveLibraryHealth?)null : (SaveLibraryHealth)((int)health.Value + 1); healthButton.text = "Health: " + (health.HasValue ? HealthCaption(health.Value) : "All"); };
+            if (presentation.View.HealthFilterEnabled)
+            {
+                var healthButton = new Button { name = "save-library-health", text = "Health: " + (health.HasValue ? HealthCaption(health.Value) : "All") }; filters.Add(healthButton);
+                healthButton.clicked += () => { if (!Live(captured)) return; health = !health.HasValue ? SaveLibraryHealth.Unknown : health == SaveLibraryHealth.Expired ? (SaveLibraryHealth?)null : (SaveLibraryHealth)((int)health.Value + 1); healthButton.text = "Health: " + (health.HasValue ? HealthCaption(health.Value) : "All"); };
+            }
             var branchButton = new Button { name = "save-library-branch", text = branch ? "Created on active branch" : "Created on any branch" }; filters.Add(branchButton);
             branchButton.clicked += () => { if (!Live(captured)) return; branch = !branch; branchButton.text = branch ? "Created on active branch" : "Created on any branch"; };
             Button(filters, "Apply search / filters", "save-library-apply", () => Query(new SaveLibraryQuery(search.value, kind, health, branch, query.PageSize), captured), captured);
@@ -145,12 +148,13 @@ namespace HobbyDS9.UnityReview
             Text(inspector, row.Name, "save-library-selected-name", 22, Amber);
             Text(inspector, "Campaign · " + row.Campaign + "\nCreated on branch · " + row.Branch + "\nSaved · " + row.CheckpointCaption + "\n" + row.Progress.Caption + "\nHealth · " + HealthCaption(row.Health), "save-library-selected-detail", 18);
             Text(inspector, LoadHealthCaption(row.Health), "save-library-load-health", 16, Lavender);
-            if (row.OlderContinuation) Text(inspector, "Older continuation creates a branch on accepted mutation or explicit branch. Later history remains.", "save-library-branch-warning", 16, Amber);
+            if (row.OlderContinuation) Text(inspector, "Loading this checkpoint opens a new branch. Other saved history remains available.", "save-library-branch-warning", 16, Amber);
             var actions = Flow(inspector, "save-library-actions");
             ActionButton(actions, "Check save", SaveLibraryAction.Validate, row, captured);
             ActionButton(actions, "Load", SaveLibraryAction.Load, row, captured);
             ActionButton(actions, "Export", SaveLibraryAction.Export, row, captured);
-            var nameDraft = new TextField("Name for rename / duplicate") { name = "save-library-name-draft", value = row.Name }; inspector.Add(nameDraft);
+            var nameDraft = new TextField("Name for rename / duplicate") { name = "save-library-name-draft", value = row.Name, maxLength = 120 };
+            if (presentation.View.Supports(SaveLibraryAction.Rename) || presentation.View.Supports(SaveLibraryAction.Duplicate)) inspector.Add(nameDraft);
             var changes = Flow(inspector, "save-library-changes");
             ActionButton(changes, "Rename…", SaveLibraryAction.Rename, row, captured, () => nameDraft.value);
             ActionButton(changes, "Duplicate…", SaveLibraryAction.Duplicate, row, captured, () => nameDraft.value);
@@ -177,7 +181,7 @@ namespace HobbyDS9.UnityReview
             OperationButton(actions, "Export session…", SaveLibraryAction.ExportSession, captured);
             OperationButton(actions, "Storage help…", SaveLibraryAction.StorageHelp, captured);
             OperationButton(actions, "Quit without saving…", SaveLibraryAction.QuitWithoutSaving, captured);
-            if (op.Warning) Text(area, "Export can preserve a separate copy. Its completion is reported separately from this save.", "save-library-export-guidance", 14, Lavender);
+            if (op.Warning && presentation.View.Supports(SaveLibraryAction.ExportSession)) Text(area, "Export can preserve a separate copy. Its completion is reported separately from this save.", "save-library-export-guidance", 14, Lavender);
         }
 
         private void RenderRecovery(SaveLibraryBoundary captured)
@@ -198,6 +202,7 @@ namespace HobbyDS9.UnityReview
         { if (presentation.Can(action)) ActionButton(area, caption, action, null, captured); }
         private void ActionButton(VisualElement area, string caption, SaveLibraryAction action, SaveLibraryRow? row, SaveLibraryBoundary captured, Func<string>? draft = null)
         {
+            if (!presentation.View.Supports(action)) return;
             var button = Button(area, caption, "save-library-action-" + action, () => Prepare(action, row?.ReferenceId, draft?.Invoke() ?? "", captured), captured);
             button.SetEnabled(presentation.Can(action, row));
         }

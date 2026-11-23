@@ -8,7 +8,7 @@ namespace HobbyDS9.CampaignRepositoryHost.Tests;
 
 public sealed class SaveQueueTests
 {
-    private sealed class Faults : ICampaignRepository
+    internal sealed class Faults : ICampaignRepository
     {
         private readonly ICampaignRepository storage;
         public Faults(ICampaignRepository storage) => this.storage = storage;

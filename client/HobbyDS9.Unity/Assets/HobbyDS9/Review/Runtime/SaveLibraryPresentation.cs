@@ -79,9 +79,10 @@ namespace HobbyDS9.UnityReview
         public bool OutcomeLookupInProgress { get; }
         public string Detail { get; }
         public bool Singleplayer { get; }
+        public bool CanQueueManual { get; }
         public SaveLibraryOperation(SaveLibraryOperationPhase phase, SaveLibraryOperationReason reason, string? existingOperationId, string detail, bool singleplayer,
-            string? pendingRequestId = null, bool outcomeLookupInProgress = false)
-        { Phase = phase; Reason = reason; ExistingOperationId = existingOperationId; Detail = detail ?? ""; Singleplayer = singleplayer; PendingRequestId = pendingRequestId; OutcomeLookupInProgress = outcomeLookupInProgress; }
+            string? pendingRequestId = null, bool outcomeLookupInProgress = false, bool canQueueManual = false)
+        { Phase = phase; Reason = reason; ExistingOperationId = existingOperationId; Detail = detail ?? ""; Singleplayer = singleplayer; PendingRequestId = pendingRequestId; OutcomeLookupInProgress = outcomeLookupInProgress; CanQueueManual = canQueueManual; }
         public string Heading => Phase switch
         {
             SaveLibraryOperationPhase.WaitingForAdmission => "Waiting to save",
@@ -127,10 +128,15 @@ namespace HobbyDS9.UnityReview
         public SaveLibraryPageState PageState { get; }
         public SaveLibraryOperation Operation { get; }
         public SaveLibraryRecovery? Recovery { get; }
+        private readonly IReadOnlyList<SaveLibraryAction>? actions;
+        public bool HealthFilterEnabled { get; }
+        public string? StorageWarning { get; }
+        public bool Supports(SaveLibraryAction action) => actions == null || actions.Contains(action);
         public SaveLibraryView(string sourceEpoch, long catalogueGeneration, string activeBranchId, long activeBranchGeneration,
             string contextCaption, SaveLibraryProgress current, SaveLibraryProgress lastDurable, SaveLibraryDurability durability,
             SaveLibraryQuery query, IEnumerable<SaveLibraryRow> rows, string? previousCursor, string? nextCursor,
-            string pageCaption, SaveLibraryPageState pageState, SaveLibraryOperation operation, SaveLibraryRecovery? recovery = null, string? lastSavedTimeCaption = null)
+            string pageCaption, SaveLibraryPageState pageState, SaveLibraryOperation operation, SaveLibraryRecovery? recovery = null,
+            string? lastSavedTimeCaption = null, IEnumerable<SaveLibraryAction>? supportedActions = null, bool healthFilterEnabled = true, string? storageWarning = null)
         {
             SourceEpoch = SaveLibraryRow.Required(sourceEpoch); CatalogueGeneration = catalogueGeneration;
             ActiveBranchId = SaveLibraryRow.Required(activeBranchId); ActiveBranchGeneration = activeBranchGeneration;
@@ -142,6 +148,7 @@ namespace HobbyDS9.UnityReview
                 throw new ArgumentException("A metadata page must be bounded and contain unique stable reference IDs.");
             Rows = new ReadOnlyCollection<SaveLibraryRow>(copy); PreviousCursor = previousCursor; NextCursor = nextCursor;
             PageCaption = pageCaption ?? ""; PageState = pageState; Operation = operation ?? throw new ArgumentNullException(nameof(operation)); Recovery = recovery;
+            actions = supportedActions?.ToList().AsReadOnly(); HealthFilterEnabled = healthFilterEnabled; StorageWarning = storageWarning;
         }
     }
 
@@ -210,7 +217,7 @@ namespace HobbyDS9.UnityReview
         }
         public bool Can(SaveLibraryAction action, SaveLibraryRow? row = null)
         {
-            if (retired) return false;
+            if (retired || !View.Supports(action)) return false;
             var op = View.Operation;
             // An unresolved/saving operation cannot be replaced by a new overwrite intent.
             var inFlight = op.Phase == SaveLibraryOperationPhase.OutcomeUnknown || op.Phase == SaveLibraryOperationPhase.Saving || op.Phase == SaveLibraryOperationPhase.WaitingForAdmission;
@@ -218,7 +225,7 @@ namespace HobbyDS9.UnityReview
             {
                 case SaveLibraryAction.CheckOutcome: return op.Phase == SaveLibraryOperationPhase.OutcomeUnknown && !op.OutcomeLookupInProgress && !string.IsNullOrWhiteSpace(op.ExistingOperationId);
                 case SaveLibraryAction.CancelWaitingRequest: return op.Phase == SaveLibraryOperationPhase.WaitingForAdmission && !string.IsNullOrWhiteSpace(op.PendingRequestId);
-                case SaveLibraryAction.CreateManual: return !inFlight;
+                case SaveLibraryAction.CreateManual: return !inFlight || op.CanQueueManual;
                 case SaveLibraryAction.Validate: return View.PageState == SaveLibraryPageState.Ready && row?.Health == SaveLibraryHealth.Unknown;
                 case SaveLibraryAction.RetryExistingOperation: return op.Phase == SaveLibraryOperationPhase.ConfirmedNotCommitted && !string.IsNullOrEmpty(op.ExistingOperationId);
                 case SaveLibraryAction.ContinueSingleplayer: return op.Singleplayer && op.Reason == SaveLibraryOperationReason.Auto && op.Warning;
@@ -229,7 +236,7 @@ namespace HobbyDS9.UnityReview
                 case SaveLibraryAction.Recover: return !inFlight && View.Recovery?.CanReview == true;
                 case SaveLibraryAction.Load: return !inFlight && View.PageState == SaveLibraryPageState.Ready && row?.Health == SaveLibraryHealth.Validated;
                 case SaveLibraryAction.Export: return row != null && row.Health == SaveLibraryHealth.Validated;
-                case SaveLibraryAction.Overwrite: return !inFlight && row != null && row.Kind == SaveLibraryKind.Manual && View.PageState == SaveLibraryPageState.Ready;
+                case SaveLibraryAction.Overwrite: return (!inFlight || op.CanQueueManual) && row != null && row.Kind == SaveLibraryKind.Manual && View.PageState == SaveLibraryPageState.Ready;
                 default: return !inFlight && row != null && View.PageState == SaveLibraryPageState.Ready;
             }
         }
