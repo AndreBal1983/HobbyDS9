@@ -140,8 +140,21 @@ PRAGMA application_id=1213416497;", tx);
         {
             var kind = (SaveReferenceKind)r.GetInt32(3);
             if (r.GetInt64(2) < 1 || !Enum.IsDefined(typeof(SaveReferenceKind), kind)) throw Error(RepositoryError.Corrupt);
-            if (r.GetInt32(6) < 1 || r.GetInt64(7) < 0 || r.GetInt64(9) < 1 || r.GetInt32(11) < 0 || r.GetInt32(11) > 1) throw Error(RepositoryError.Corrupt);
-            return new SaveReference(ReadText(r, 0, 96), ReadText(r, 1, 96), r.GetInt64(2), kind, ReadText(r, 4, 120), ReadText(r, 5, 1000), r.GetInt32(6), r.GetInt64(7), ReadText(r, 8, 64), r.GetInt64(9), ReadText(r, 10, 64), r.GetInt32(11) == 1, ReadText(r, 12, 96), r.GetInt32(13) == 1);
+            var quarantined = r.GetInt32(13) == 1;
+            var turn = r.GetInt64(6);
+            var revision = r.GetInt64(7);
+            if (r.GetInt64(9) < 1 || r.GetInt32(11) < 0 || r.GetInt32(11) > 1) throw Error(RepositoryError.Corrupt);
+            if (turn < 1 || turn > int.MaxValue || revision < 0)
+            {
+                if (!quarantined) throw Error(RepositoryError.Corrupt);
+                turn = 0;
+                revision = 0;
+            }
+            string phase;
+            try { phase = ReadText(r, 8, 64); }
+            catch (RepositoryException error) when (quarantined && error.Error == RepositoryError.Corrupt)
+            { phase = ""; }
+            return new SaveReference(ReadText(r, 0, 96), ReadText(r, 1, 96), r.GetInt64(2), kind, ReadText(r, 4, 120), ReadText(r, 5, 1000), (int)turn, revision, phase, r.GetInt64(9), ReadText(r, 10, 64), r.GetInt32(11) == 1, ReadText(r, 12, 96), quarantined);
         }
         public CheckpointImage ReadCheckpoint(string checkpointId)
         {

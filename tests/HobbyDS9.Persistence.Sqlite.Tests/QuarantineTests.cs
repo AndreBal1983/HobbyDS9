@@ -140,6 +140,30 @@ public sealed class QuarantineTests : IDisposable
         Assert.False(Directory.Exists(Path.Combine(directory, "quarantine-exports")));
     }
 
+    [Fact]
+    public void QuarantinedMalformedSourceStampDoesNotBlockBrowsingOtherSaves()
+    {
+        using var repository = Open();
+        repository.CommitCheckpoint(new("good", "good", 0, null, Image("1"),
+            new("good-ref", 0, SaveReferenceKind.Manual, "Good")));
+        var damaged = repository.CommitCheckpoint(new("bad", "bad", 0, null, Image("2"),
+            new("bad-ref", 0, SaveReferenceKind.Auto, "Damaged"))).CheckpointId!;
+        repository.ConfigureConnectionForTests(connection =>
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "UPDATE Checkpoint SET Phase=$phase WHERE Id=$id";
+            command.Parameters.AddWithValue("$phase", new string('P', 65));
+            command.Parameters.AddWithValue("$id", damaged);
+            Assert.Equal(1, command.ExecuteNonQuery());
+        });
+        Error(RepositoryError.Corrupt, () => repository.ReadCheckpoint(damaged));
+        var rows = repository.QueryReferences(new()).Rows;
+        Assert.Equal(2, rows.Count);
+        Assert.True(rows.Single(row => row.Id == "bad-ref").Quarantined);
+        Assert.Equal("", rows.Single(row => row.Id == "bad-ref").Phase);
+        Assert.Equal("Planning", rows.Single(row => row.Id == "good-ref").Phase);
+    }
+
     [Theory]
     [InlineData(RepositoryWriteStage.BeforeCommit, RepositoryError.WriteFailed, false)]
     [InlineData(RepositoryWriteStage.AfterCommit, RepositoryError.OutcomeUnknown, true)]
@@ -164,6 +188,77 @@ public sealed class QuarantineTests : IDisposable
         reopened.ApplyRetention("prune", reopened.GetBranch("good"), softAutoBytes: 1);
         Assert.Equal("X", File.ReadAllText(reopened.ExportQuarantinedPayload(damage, "retained")));
         Assert.Equal("2", Encoding.UTF8.GetString(reopened.ReadCheckpoint(good).ReadPayload()));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void RetentionRediscoversUnrecordedCorruptionAfterRestartWithoutCallerReread(bool failAgain)
+    {
+        string good, damaged;
+        using (var repository = Open())
+        {
+            good = repository.CommitCheckpoint(new("first", "main", 0, null, Image("1"))).CheckpointId!;
+            damaged = repository.CommitCheckpoint(new("second", "main", 1, good, Image("2"),
+                new("auto", 0, SaveReferenceKind.Auto, "Damaged"))).CheckpointId!;
+        }
+        Damage(damaged, "X");
+        using (var failed = Open(at => { if (at == RepositoryWriteStage.BeforeCommit) throw new IOException("pin did not commit"); }))
+        {
+            Error(RepositoryError.WriteFailed, () => failed.ReadCheckpoint(damaged));
+            Assert.Empty(failed.ListQuarantinedCheckpoints());
+        }
+
+        using (var repository = Open())
+        {
+            Assert.Equal("1", Encoding.UTF8.GetString(repository.ReadCheckpoint(good).ReadPayload()));
+            repository.ForkBranch("recover", "recovery", good);
+            repository.CommitCheckpoint(new("advance", "recovery", 0, good, Image("3")));
+        }
+        if (failAgain)
+        {
+            using var failed = Open(at => { if (at == RepositoryWriteStage.BeforeCommit) throw new IOException("pin still cannot commit"); });
+            Error(RepositoryError.WriteFailed, () => failed.ApplyRetention("prune", failed.GetBranch("recovery"), rolling: 1, softAutoBytes: 1));
+            Assert.Null(failed.FindOperation("prune"));
+            Assert.Empty(failed.ListQuarantinedCheckpoints());
+            Assert.Equal(3, failed.LogicalPayloadBytes);
+            Assert.Single(failed.ListReferences());
+        }
+
+        using (var repository = Open())
+        {
+            repository.ApplyRetention("prune", repository.GetBranch("recovery"), rolling: 1, softAutoBytes: 1);
+            Assert.Empty(repository.ListReferences());
+        }
+        using var reopened = Open();
+        Assert.Equal(damaged, Assert.Single(reopened.ListQuarantinedCheckpoints()).CheckpointId);
+        Assert.Equal("X", File.ReadAllText(reopened.ExportQuarantinedPayload(damaged, "retried")));
+    }
+
+    [Fact]
+    public void UnclassifiedDeletionCandidateAbortsRetentionAndHostCheckRunsOutsideWriteTransaction()
+    {
+        using var repository = Open();
+        var first = repository.CommitCheckpoint(new("first", "main", 0, null, Image("1")));
+        repository.CommitCheckpoint(new("second", "main", 1, first.CheckpointId, Image("2")));
+        var checkedOutsideTransaction = false;
+        validator.BeforeValidate = bytes =>
+        {
+            if (Encoding.UTF8.GetString(bytes) != "1") return;
+            repository.ConfigureConnectionForTests(connection =>
+            {
+                using var transaction = connection.BeginTransaction();
+                transaction.Rollback();
+                checkedOutsideTransaction = true;
+            });
+            throw new IOException("temporary validation failure");
+        };
+        Error(RepositoryError.ValidationFailed, () => repository.ApplyRetention("prune", repository.GetBranch("main"), softAutoBytes: 1));
+        Assert.True(checkedOutsideTransaction);
+        Assert.Null(repository.FindOperation("prune"));
+        Assert.Empty(repository.ListQuarantinedCheckpoints());
+        validator.BeforeValidate = null;
+        Assert.Equal("1", Encoding.UTF8.GetString(repository.ReadCheckpoint(first.CheckpointId!).ReadPayload()));
     }
 
     [Fact]
@@ -218,8 +313,10 @@ public sealed class QuarantineTests : IDisposable
     private sealed class Validator : ICheckpointValidator
     {
         public string? Failure;
+        public Action<byte[]>? BeforeValidate;
         public CheckpointImage Validate(byte[] bytes)
         {
+            BeforeValidate?.Invoke(bytes);
             switch (Failure)
             {
                 case "invalid": throw new InvalidCheckpointPayloadException("Fixture attests definite invalidity.");
