@@ -1,0 +1,297 @@
+{
+  "schemaVersion": 1,
+  "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+  "music": [
+    {
+      "id": "music.deep-station",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Deep Station.mp3",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "guid": "8d51603d85fd4b21b81e3ed1da688f09",
+      "bytes": 4251486,
+      "sha256": "94bd236d2f1c1e6916cae87a240e4d3987bec0bae0f9857a8c502f6b7454a512",
+      "category": 0,
+      "crossfadeSeconds": 6.0,
+      "quietTailSeconds": 1.65,
+      "originRecord": "Owner-supplied Suno-origin record",
+      "rightsStatus": "Existing source record only; terms not re-audited or expanded by this guide",
+      "automaticFactionAssignment": false,
+      "newPlaybackOrLoopClaim": false
+    },
+    {
+      "id": "music.deep-station-1",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Deep Station track 1.mp3",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "guid": "fc4a7baa40c14d5483afe97435c9090e",
+      "bytes": 4662365,
+      "sha256": "91c3e99e255c6dc5590000e204747ac16de55b342c84fbd2542e9b78d51ce91a",
+      "category": 0,
+      "crossfadeSeconds": 6.0,
+      "quietTailSeconds": 0.45,
+      "originRecord": "Owner-supplied Suno-origin record",
+      "rightsStatus": "Existing source record only; terms not re-audited or expanded by this guide",
+      "automaticFactionAssignment": false,
+      "newPlaybackOrLoopClaim": false
+    },
+    {
+      "id": "music.quiet-frontier",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Quiet Frontier.mp3",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "guid": "c0e242ee197e4d9d9e2072837dc3186c",
+      "bytes": 4338322,
+      "sha256": "11f41a38b16b4a59b7e6c9c2919bd31a9d04384c22f79b4a62523c49cc9153ad",
+      "category": 0,
+      "crossfadeSeconds": 6.0,
+      "quietTailSeconds": 0.0,
+      "originRecord": "Original ElevenLabs generation record in docs/audio-sources.md",
+      "rightsStatus": "Existing source record only; terms not re-audited or expanded by this guide",
+      "automaticFactionAssignment": false,
+      "newPlaybackOrLoopClaim": false
+    },
+    {
+      "id": "music.across-the-stars",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Across the Stars.mp3",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "guid": "22b9873a967243259ce547af180f0da1",
+      "bytes": 8658322,
+      "sha256": "8449a257fe7322f959e5a24ebb4f1b42a05fa95ac38a7b6d1f4a0cad39d1b32a",
+      "category": 3,
+      "crossfadeSeconds": 6.0,
+      "quietTailSeconds": 0.0,
+      "originRecord": "Original ElevenLabs generation record in docs/audio-sources.md",
+      "rightsStatus": "Existing source record only; terms not re-audited or expanded by this guide",
+      "automaticFactionAssignment": false,
+      "newPlaybackOrLoopClaim": false
+    },
+    {
+      "id": "music.secrets-in-the-courtyard",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Secrets in the Courtyard.mp3",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "guid": "106b49eb6ae14ac1af9aa7cfc8b4c852",
+      "bytes": 1938706,
+      "sha256": "c6b4ed4cfd02a527fa8f49c2cf759cd7d3052ce9188a0552a3f86487bbec2128",
+      "category": 3,
+      "crossfadeSeconds": 6.0,
+      "quietTailSeconds": 0.0,
+      "originRecord": "Original ElevenLabs generation record in docs/audio-sources.md",
+      "rightsStatus": "Existing source record only; terms not re-audited or expanded by this guide",
+      "automaticFactionAssignment": false,
+      "newPlaybackOrLoopClaim": false
+    },
+    {
+      "id": "music.bajor-1",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Bajor 1.mp3",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "guid": "b39896a633474a0e8f8b8c7c0da3d4ee",
+      "bytes": 4118134,
+      "sha256": "23ebb2d7f52496f455b569557b25eb204021757d830aad543cc98751a9fcfcc5",
+      "category": 0,
+      "crossfadeSeconds": 6.0,
+      "quietTailSeconds": 0.0,
+      "originRecord": "Owner-folder addition; creator/rights details unsupplied",
+      "rightsStatus": "Existing source record only; terms not re-audited or expanded by this guide",
+      "automaticFactionAssignment": false,
+      "newPlaybackOrLoopClaim": false
+    },
+    {
+      "id": "music.bajor-2",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Bajor 2.mp3",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "guid": "a0bf04b50a914f0abaf04f71d63c7511",
+      "bytes": 4185972,
+      "sha256": "1efdecdd7ca669286a9172acd939ffd08a13ae3352a2056522368ad7cfb0eb6a",
+      "category": 0,
+      "crossfadeSeconds": 6.0,
+      "quietTailSeconds": 0.0,
+      "originRecord": "Owner-folder addition; creator/rights details unsupplied",
+      "rightsStatus": "Existing source record only; terms not re-audited or expanded by this guide",
+      "automaticFactionAssignment": false,
+      "newPlaybackOrLoopClaim": false
+    },
+    {
+      "id": "music.cardassia-1",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Cardassia 1.mp3",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "guid": "80aa827480e641afa42d50f10911a3ec",
+      "bytes": 4451842,
+      "sha256": "1011fdaf46f77d871e19fac804e656de40865b44d4a2aa847dea3bc1fad40c85",
+      "category": 0,
+      "crossfadeSeconds": 6.0,
+      "quietTailSeconds": 0.0,
+      "originRecord": "Owner-folder addition; creator/rights details unsupplied",
+      "rightsStatus": "Existing source record only; terms not re-audited or expanded by this guide",
+      "automaticFactionAssignment": false,
+      "newPlaybackOrLoopClaim": false
+    },
+    {
+      "id": "music.klingon-1",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/Music/Klingon 1 - no' wIqaw.mp3",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "guid": "6960498649274c9a9d53145459f570fe",
+      "bytes": 5080989,
+      "sha256": "ebec1cb813a4d637079143a03698d419a4a76933bedf1a510e55b5d11e4fcd4b",
+      "category": 0,
+      "crossfadeSeconds": 6.0,
+      "quietTailSeconds": 0.0,
+      "originRecord": "Owner-folder addition; creator/rights details unsupplied",
+      "rightsStatus": "Existing source record only; terms not re-audited or expanded by this guide",
+      "automaticFactionAssignment": false,
+      "newPlaybackOrLoopClaim": false
+    }
+  ],
+  "federationPrototypeSfx": [
+    {
+      "semanticRole": "press",
+      "existingCatalogField": "buttonPress",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-key-beep-1.wav",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "bytes": 3162,
+      "sha256": "2a1dedbe17e3d2a51ca33e7e3f90c4ff0eed62fdb4d4a9563cb4ff874b564bb6",
+      "guid": "f8f39b975871d5f4791a3ddae38e1749",
+      "family": "Federation prototype",
+      "rightsStatus": "User-supplied franchise recordings; intended source access failed403, direct retrieval unverified, redistribution unclear. No new clearance."
+    },
+    {
+      "semanticRole": "accepted",
+      "existingCatalogField": "success",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-input-successful-1.wav",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "bytes": 14072,
+      "sha256": "1663cb5681034096ca2bed9a51e4fe834d40677a150406f519a915dd3873f77e",
+      "guid": "44543b2598d02584c8b5f13c6338818c",
+      "family": "Federation prototype",
+      "rightsStatus": "User-supplied franchise recordings; intended source access failed403, direct retrieval unverified, redistribution unclear. No new clearance."
+    },
+    {
+      "semanticRole": "rejected",
+      "existingCatalogField": "error",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-access-denied.wav",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "bytes": 9562,
+      "sha256": "95d8d7468eeff8937318308bb8a09b9afa7367cbc492898c9d4637f382ddcddb",
+      "guid": "8281f0792b8d35a4b8c8f491fd04b88a",
+      "family": "Federation prototype",
+      "rightsStatus": "User-supplied franchise recordings; intended source access failed403, direct retrieval unverified, redistribution unclear. No new clearance."
+    },
+    {
+      "semanticRole": "processing",
+      "existingCatalogField": "processing",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-processing-1.wav",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "bytes": 45520,
+      "sha256": "8608639986663f2d33e27b58e39de809ab0199cc284cc2b645a55577131d7c51",
+      "guid": "0e12a5899704e334e847dba22c13b931",
+      "family": "Federation prototype",
+      "rightsStatus": "User-supplied franchise recordings; intended source access failed403, direct retrieval unverified, redistribution unclear. No new clearance."
+    },
+    {
+      "semanticRole": "navigation",
+      "existingCatalogField": "screenOpen",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-screen-display-1.wav",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "bytes": 7420,
+      "sha256": "0f09b73814439ba383a15c5831a1a5a7d65f1a31a418c7fd8969ae207d98c5f8",
+      "guid": "0fd11300a9d8765499f70dda31dc922f",
+      "family": "Federation prototype",
+      "rightsStatus": "User-supplied franchise recordings; intended source access failed403, direct retrieval unverified, redistribution unclear. No new clearance."
+    },
+    {
+      "semanticRole": "search",
+      "existingCatalogField": "search",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Audio/SFX/LCARS/federation-lcars-search.wav",
+      "sourcePin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "bytes": 134594,
+      "sha256": "538dd9a507f6a278d37b8cc0d9ef013d4039288e9f43a4a332b1fc4ec4584331",
+      "guid": "907b6948776a01b42937501dd68b2796",
+      "family": "Federation prototype",
+      "rightsStatus": "User-supplied franchise recordings; intended source access failed403, direct retrieval unverified, redistribution unclear. No new clearance."
+    }
+  ],
+  "newMediaFiles": 0,
+  "newAudioBinding": false,
+  "listeningOrNativeAcceptance": false,
+  "sourceRecords": [
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "docs/audio-sources.md",
+      "sha256": "f9e4b919ef565ffe6351c688c7213882f0bb4c8b07a5012e249982a706f96f7c"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "docs/lcars-sfx-foundation.md",
+      "sha256": "af337cc198f2885e5354f49971a820e311dbf93bb38558082585fbabb91c90f7"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "docs/art/combat-interface.md",
+      "sha256": "682fdbac5776d8796b9f18741a0f134a8067634140af728ceec9796f7519fa9b"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "docs/art/playable-battle-art-handoff-2026-10-20.md",
+      "sha256": "78ad5057b47ae823bd44ab259b68b8c953ba50762bed3722d74fe8ea71972891"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "docs/demo-art-runtime-contract.md",
+      "sha256": "50d8f8adeada0027fa8d07b8efb8d2251066a3ce3f35d5ff2d8593507e8b6a42"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Runtime/ShipVisualCatalog.cs",
+      "sha256": "635f5494b05557074e5e4907accf2fa21dd531ea3a056b0de2c725ee8e5ac5a8"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Runtime/ActivityHullPresentation.cs",
+      "sha256": "09f7e7411dc60d3177e0f0390e56c4dff3f3c16540cf614126c0ad38255a731a"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/ActivityHulls/CREDITS.txt",
+      "sha256": "f187485e2bca4ce26ff6c212d46212cc2afdd609a8998f7e9d31bf1ff0561e52"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/ArtDemo/Resources/ArtDemo/Designer/Galaxy/ATTRIBUTION.txt",
+      "sha256": "b7d6e96de2235ea208ce1896f55d0e33aa4ae246937d33480957a05ad4e1a5a0"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "art/ships/cardassian-cruiser-v1/manifest.json",
+      "sha256": "d54dce83f79c0d08b988c77e77f2e7f2a94f1c341f5be7225e949989c14da50e"
+    },
+    {
+      "pin": "2fc0dbca46073121379dd9491c859a02a6f22dcd",
+      "path": "client/HobbyDS9.Unity/Assets/HobbyDS9/Resources/MusicCatalog.asset",
+      "sha256": "e9dfd603b98b5b7aa97de78f79352d019fe89b961f89ed669a7266dfaee3b983"
+    }
+  ],
+  "shipCoverage": [
+    {
+      "family": "Federation",
+      "mapping": "civilization.federation + ship-design.source-cruiser -> ArtDemo/Federation/Prefabs/exploration-cruiser",
+      "status": "Exact received binding; lawful identity required"
+    },
+    {
+      "family": "Federation",
+      "mapping": "hull.constitution-explorer.v1 / hull.galaxy-cruiser.v1 / hull.defiant-combat.v1 -> current ActivityHullCatalog inspector",
+      "status": "Original Constitution-style; Galaxy CC BY-NC-SA3.0; Defiant owner-provided local review with unreceived source licence/task details. Preserve exact notices."
+    },
+    {
+      "family": "Cardassian",
+      "mapping": "civilization.cardassian + ship-design.travel-target -> current ReviewBattleStage exact binding",
+      "status": "Original Cardassian-style cruiser prototype; final owner art/native acceptance unestablished"
+    },
+    {
+      "family": "Klingon/Romulan/Dominion/Ilex/Namar",
+      "mapping": null,
+      "status": "No reviewed exact ship-family runtime asset binding recovered; new shape/material direction is proposed only"
+    }
+  ],
+  "missingOriginalReferences": [
+    "E:/HobbyDS9/docs/art/faction-interfaces.md",
+    "E:/HobbyDS9/docs/art/music-direction.md"
+  ],
+  "shipMaterialNote": "Serialized material tuples are source values, not UI hex swatches or measured screen colors. No palette/emission replacement is made.",
+  "generationBoundary": "No purchases, audio/image generation, old service reinstalls, Suno automation, media downloads, re-encoding or runtime default changes."
+}
