@@ -101,6 +101,22 @@ namespace HobbyDS9.UnityReview.Tests
         [Test] public void EmptyLibraryCreatesNamedManualSaveOnlyAfterReviewAndRejectsStaleReview()
         {
             var intents = new List<SaveLibraryIntent>(); using var panel = new SaveLibraryPanel(View(empty: true), _ => { }, intents.Add, () => true);
+            var window = UnityEngine.ScriptableObject.CreateInstance<UnityEditor.EditorWindow>();
+            try
+            {
+                window.Show();
+                window.rootVisualElement.Add(panel);
+                Assert.That(panel.panel, Is.Not.Null);
+                VerifyNamedManualSave(panel, intents);
+            }
+            finally
+            {
+                window.Close();
+            }
+        }
+
+        private static void VerifyNamedManualSave(SaveLibraryPanel panel, List<SaveLibraryIntent> intents)
+        {
             var create = panel.Q<Button>("save-library-action-CreateManual"); Assert.That(create.enabledSelf, Is.False);
             panel.Q<TextField>("save-library-create-name").value = "初めての帰還 🚀"; Assert.That(create.enabledSelf, Is.True);
             InvokeRetained(create); Assert.That(intents.Count, Is.Zero);
