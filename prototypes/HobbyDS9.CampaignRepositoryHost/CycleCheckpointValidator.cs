@@ -20,6 +20,8 @@ namespace HobbyDS9.CampaignRepositoryHost
         public CheckpointImage Validate(byte[] ownedPayload)
         {
             var result=adapter.Validate(ownedPayload,EditionIdentity);
+            if(result.DefiniteCorruption)
+                throw new InvalidCheckpointPayloadException("Decoded Cycle payload has impossible turn or revision counters for this edition.");
             if(!result.Succeeded)throw new RepositoryException(result.Error==CampaignRepositoryError.Incompatible?RepositoryError.IncompatibleEdition:RepositoryError.ValidationFailed);
             return Map(result.Image!);
         }
