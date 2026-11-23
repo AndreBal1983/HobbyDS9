@@ -10,9 +10,9 @@ namespace HobbyDS9.Persistence.Sqlite
 {
     public enum RepositoryWriteStage { AfterPayload, BeforeCommit, AfterCommit }
     // Per-campaign, cooperative local writer. No game or Unity dependency.
-    public sealed partial class SqliteCampaignRepository : ICampaignRepository
+    public sealed partial class SqliteCampaignRepository : ICampaignRepository, IQuarantinedCheckpointRepository
     {
-        public const int StorageSchemaVersion = 2;
+        public const int StorageSchemaVersion = 3;
         private const int ApplicationId = 1213416497; // HDS1
         private readonly object gate = new object();
         private readonly string directory;
@@ -56,11 +56,13 @@ namespace HobbyDS9.Persistence.Sqlite
                     if (exists)
                     {
                         var schema = Number("PRAGMA user_version");
-                        if (Number("PRAGMA application_id") != ApplicationId || schema != StorageSchemaVersion && !(schema == 1 && allowStorageUpgrade)) throw Error(RepositoryError.IncompatibleSchema);
+                        if (Number("PRAGMA application_id") != ApplicationId ||
+                            schema != StorageSchemaVersion && !(allowStorageUpgrade && (schema == 1 || schema == 2)))
+                            throw Error(RepositoryError.IncompatibleSchema);
                         if (TextScalar("CampaignId", 96) != campaignId) throw Error(RepositoryError.Conflict);
                         if (TextScalar("EditionIdentity", 16384) != editionIdentity) throw Error(RepositoryError.IncompatibleEdition);
                         CheckDatabaseIntegrity();
-                        if (schema == 1) UpgradeSchema1();
+                        if (schema != StorageSchemaVersion) UpgradeStorage(schema);
                     }
                     Exec("PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA busy_timeout=1000; PRAGMA wal_autocheckpoint=1000;");
                     if (!exists) Initialize(campaignId);
@@ -81,7 +83,8 @@ CREATE TABLE Checkpoint(Id TEXT PRIMARY KEY,BranchId TEXT NOT NULL REFERENCES Br
 CREATE TABLE SaveReference(Id TEXT PRIMARY KEY CHECK(typeof(Id)='text' AND length(CAST(Id AS BLOB))<=96),CheckpointId TEXT NOT NULL REFERENCES Checkpoint(Id),Generation INTEGER NOT NULL CHECK(Generation>0),Kind INTEGER NOT NULL CHECK(Kind IN(1,2,3)),Name TEXT NOT NULL CHECK(typeof(Name)='text' AND length(Name)<=120 AND length(CAST(Name AS BLOB))<=480),Notes TEXT NOT NULL CHECK(typeof(Notes)='text' AND length(Notes)<=1000 AND length(CAST(Notes AS BLOB))<=4000),Deleted INTEGER NOT NULL DEFAULT 0 CHECK(Deleted IN(0,1)),UpdatedUtc TEXT NOT NULL CHECK(typeof(UpdatedUtc)='text' AND length(CAST(UpdatedUtc AS BLOB))<=64));
 CREATE TABLE PersistenceOperation(Id TEXT PRIMARY KEY,Fingerprint TEXT NOT NULL,Sequence INTEGER NOT NULL UNIQUE,CheckpointId TEXT NULL,BranchGeneration INTEGER NOT NULL,ReferenceGeneration INTEGER NOT NULL,SourceEpoch TEXT NOT NULL,CommittedUtc TEXT NOT NULL);
 CREATE INDEX ReferenceListing ON SaveReference(Deleted,Id);
-PRAGMA application_id=1213416497; PRAGMA user_version=2;", tx);
+PRAGMA application_id=1213416497;", tx);
+            CreateQuarantineTable(tx);
             Exec("INSERT INTO RepositoryMeta VALUES(1,$id,$edition,1)", tx, ("$id", campaignId), ("$edition", editionIdentity));
             tx.Commit();
         }
@@ -132,13 +135,13 @@ PRAGMA application_id=1213416497; PRAGMA user_version=2;", tx);
                 return result.AsReadOnly();
             }
         }
-        private static string ReferenceColumns => Field("r.Id", 96) + "," + Field("r.CheckpointId", 96) + ",r.Generation,r.Kind," + Field("r.Name", 120) + "," + Field("r.Notes", 1000) + ",c.Turn,c.Revision," + Field("c.Phase", 64) + ",c.Sequence," + Field("r.UpdatedUtc", 64) + ",c.Available," + Field("c.BranchId", 96);
+        private static string ReferenceColumns => Field("r.Id", 96) + "," + Field("r.CheckpointId", 96) + ",r.Generation,r.Kind," + Field("r.Name", 120) + "," + Field("r.Notes", 1000) + ",c.Turn,c.Revision," + Field("c.Phase", 64) + ",c.Sequence," + Field("r.UpdatedUtc", 64) + ",c.Available," + Field("c.BranchId", 96) + "," + IsQuarantinedSql;
         private static SaveReference ReadReference(SqliteDataReader r)
         {
             var kind = (SaveReferenceKind)r.GetInt32(3);
             if (r.GetInt64(2) < 1 || !Enum.IsDefined(typeof(SaveReferenceKind), kind)) throw Error(RepositoryError.Corrupt);
             if (r.GetInt32(6) < 1 || r.GetInt64(7) < 0 || r.GetInt64(9) < 1 || r.GetInt32(11) < 0 || r.GetInt32(11) > 1) throw Error(RepositoryError.Corrupt);
-            return new SaveReference(ReadText(r, 0, 96), ReadText(r, 1, 96), r.GetInt64(2), kind, ReadText(r, 4, 120), ReadText(r, 5, 1000), r.GetInt32(6), r.GetInt64(7), ReadText(r, 8, 64), r.GetInt64(9), ReadText(r, 10, 64), r.GetInt32(11) == 1, ReadText(r, 12, 96));
+            return new SaveReference(ReadText(r, 0, 96), ReadText(r, 1, 96), r.GetInt64(2), kind, ReadText(r, 4, 120), ReadText(r, 5, 1000), r.GetInt32(6), r.GetInt64(7), ReadText(r, 8, 64), r.GetInt64(9), ReadText(r, 10, 64), r.GetInt32(11) == 1, ReadText(r, 12, 96), r.GetInt32(13) == 1);
         }
         public CheckpointImage ReadCheckpoint(string checkpointId)
         {
@@ -146,9 +149,31 @@ PRAGMA application_id=1213416497; PRAGMA user_version=2;", tx);
             lock (gate)
             {
                 Alive();
-                var stored = ReadStoredCheckpoint(checkpointId, null);
-                var image = Validate(stored.ReadPayload());
-                if (image.Turn != stored.Turn || image.Revision != stored.Revision || image.Phase != stored.Phase || image.PayloadHash != stored.PayloadHash) throw Error(RepositoryError.Corrupt);
+                if (ReadQuarantine(checkpointId) != null)
+                {
+                    pendingQuarantine.Remove(checkpointId);
+                    throw Error(RepositoryError.Corrupt);
+                }
+                var dataVersion = Number("PRAGMA data_version");
+                CheckpointImage stored;
+                try { stored = ReadStoredCheckpoint(checkpointId, null); }
+                catch (RepositoryException error) when (error.Error == RepositoryError.Corrupt)
+                {
+                    ProtectCorruption(checkpointId, CheckpointCorruptionKind.StoredIntegrity, dataVersion);
+                    throw;
+                }
+                CheckpointImage image;
+                try { image = Validate(stored.ReadPayload()); }
+                catch (RepositoryException error) when (error.Error == RepositoryError.ValidationFailed && error.InnerException is InvalidCheckpointPayloadException)
+                {
+                    ProtectCorruption(checkpointId, CheckpointCorruptionKind.InvalidPayload, dataVersion, stored);
+                    throw Error(RepositoryError.Corrupt, null, error.InnerException);
+                }
+                if (image.Turn != stored.Turn || image.Revision != stored.Revision || image.Phase != stored.Phase)
+                {
+                    ProtectCorruption(checkpointId, CheckpointCorruptionKind.MetadataMismatch, dataVersion, stored);
+                    throw Error(RepositoryError.Corrupt);
+                }
                 return image;
             }
         }
@@ -156,12 +181,14 @@ PRAGMA application_id=1213416497; PRAGMA user_version=2;", tx);
         private CheckpointImage ReadStoredCheckpoint(string checkpointId, SqliteTransaction? transaction)
         {
             byte[] bytes; int turn; long revision; string phase; string hash;
-            using (var c = Command("SELECT Turn,Revision," + Field("Phase", 64) + "," + Field("PayloadHash", 64) + ",PayloadLength,CASE WHEN typeof(Payload)='blob' AND length(Payload)<=67108864 THEN Payload ELSE NULL END,Available,length(Payload) FROM Checkpoint WHERE Id=$id", transaction, ("$id", checkpointId)))
+            using (var c = Command("SELECT Turn,Revision," + Field("Phase", 64) + "," + Field("PayloadHash", 64) + ",PayloadLength," + BoundedPayloadSql + ",Available,length(Payload),"
+                + "typeof(Turn)='integer' AND Turn BETWEEN 1 AND 2147483647 AND typeof(Revision)='integer' AND Revision>=0 FROM Checkpoint WHERE Id=$id",
+                transaction, ("$id", checkpointId)))
             using (var r = c.ExecuteReader())
             {
                 if (!r.Read()) throw Error(RepositoryError.NotFound);
                 if (r.GetInt32(6) == 0) throw Error(RepositoryError.Unavailable);
-                if (r.IsDBNull(5) || r.GetInt64(4) < 1 || r.GetInt64(4) > CheckpointImage.MaximumPayloadBytes || r.GetInt64(7) != r.GetInt64(4)) throw Error(RepositoryError.Corrupt);
+                if (r.GetInt32(6) != 1 || r.GetInt32(8) != 1 || r.IsDBNull(5) || r.GetInt64(4) < 1 || r.GetInt64(4) > CheckpointImage.MaximumPayloadBytes || r.GetInt64(7) != r.GetInt64(4)) throw Error(RepositoryError.Corrupt);
                 turn = r.GetInt32(0); revision = r.GetInt64(1); phase = ReadText(r, 2, 64); hash = ReadText(r, 3, 64); bytes = (byte[])r.GetValue(5);
             }
             if (CheckpointImage.Hash(bytes) != hash) throw Error(RepositoryError.Corrupt);
@@ -173,6 +200,8 @@ PRAGMA application_id=1213416497; PRAGMA user_version=2;", tx);
             var hash = CheckpointImage.Hash(bytes);
             CheckpointImage image;
             try { image = validator.Validate((byte[])bytes.Clone()); }
+            catch (OperationCanceledException) { throw; }
+            catch (RepositoryException e) when (e.Error == RepositoryError.IncompatibleEdition || e.Error == RepositoryError.Busy || e.Error == RepositoryError.Unavailable) { throw; }
             catch (Exception e) { throw Error(RepositoryError.ValidationFailed, null, e); }
             if (image == null || image.PayloadHash != hash || image.PayloadLength != bytes.Length) throw Error(RepositoryError.ValidationFailed);
             if (image.EditionIdentity != editionIdentity) throw Error(RepositoryError.IncompatibleEdition);

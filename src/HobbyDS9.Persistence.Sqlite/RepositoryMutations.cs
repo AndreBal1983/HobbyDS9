@@ -42,14 +42,20 @@ namespace HobbyDS9.Persistence.Sqlite
                     // this operation before retrying with the same ID and exact request.
                     if (committing) throw Error(RepositoryError.OutcomeUnknown, operationId, e);
                     if (e is RepositoryException) throw;
-                    if (e is SqliteException sqlite)
-                    {
-                        var error = sqlite.SqliteErrorCode == 13 ? RepositoryError.StorageFull : sqlite.SqliteErrorCode == 8 ? RepositoryError.ReadOnly
-                            : sqlite.SqliteErrorCode == 5 || sqlite.SqliteErrorCode == 6 ? RepositoryError.Busy : RepositoryError.WriteFailed;
-                        throw Error(error, operationId, e);
-                    }
-                    throw Error(RepositoryError.WriteFailed, operationId, e);
+                    throw Error(ClassifyWriteError(e), operationId, e);
                 }
+            }
+        }
+        private static RepositoryError ClassifyWriteError(Exception error)
+        {
+            if (!(error is SqliteException sqlite)) return RepositoryError.WriteFailed;
+            switch (sqlite.SqliteErrorCode)
+            {
+                case 5:
+                case 6: return RepositoryError.Busy;
+                case 8: return RepositoryError.ReadOnly;
+                case 13: return RepositoryError.StorageFull;
+                default: return RepositoryError.WriteFailed;
             }
         }
         public DurableReceipt CommitCheckpoint(CheckpointCommit request)
@@ -137,7 +143,10 @@ namespace HobbyDS9.Persistence.Sqlite
             Id(r.Id); Text(r.Name, 120, false); Text(r.Notes, 1000);
         }
         private void RequireCheckpoint(string checkpoint, SqliteTransaction tx)
-        { if (Number("SELECT COUNT(*) FROM Checkpoint WHERE Id=$id AND Available=1", tx, ("$id", checkpoint)) != 1) throw Error(RepositoryError.Unavailable); }
+        {
+            if (ReadQuarantine(checkpoint, tx) != null) throw Error(RepositoryError.Corrupt);
+            if (Number("SELECT COUNT(*) FROM Checkpoint WHERE Id=$id AND Available=1", tx, ("$id", checkpoint)) != 1) throw Error(RepositoryError.Unavailable);
+        }
         private long ApplyReference(ReferenceUpdate r, string checkpoint, SqliteTransaction tx)
         {
             var count = Number("SELECT COUNT(*) FROM SaveReference WHERE Id=$id", tx, ("$id", r.Id));

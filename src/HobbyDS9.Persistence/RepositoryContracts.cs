@@ -56,21 +56,28 @@ namespace HobbyDS9.Persistence
         // Metadata only, not proof of successful current game validation.
         public bool PayloadAvailable { get; }
         public string CheckpointBranchId { get; }
+        public bool Quarantined { get; }
         public SaveReference(string id, string checkpointId, long generation, SaveReferenceKind kind, string name, string notes,
             int turn, long revision, string phase, long storageSequence, string updatedUtc, bool payloadAvailable, string checkpointBranchId = "")
-        { Id = id; CheckpointId = checkpointId; Generation = generation; Kind = kind; Name = name; Notes = notes; Turn = turn; Revision = revision; Phase = phase; StorageSequence = storageSequence; UpdatedUtc = updatedUtc; PayloadAvailable = payloadAvailable; CheckpointBranchId = checkpointBranchId; }
+            : this(id, checkpointId, generation, kind, name, notes, turn, revision, phase, storageSequence, updatedUtc, payloadAvailable, checkpointBranchId, false) { }
+        public SaveReference(string id, string checkpointId, long generation, SaveReferenceKind kind, string name, string notes,
+            int turn, long revision, string phase, long storageSequence, string updatedUtc, bool payloadAvailable, string checkpointBranchId, bool quarantined)
+        { Id = id; CheckpointId = checkpointId; Generation = generation; Kind = kind; Name = name; Notes = notes; Turn = turn; Revision = revision; Phase = phase; StorageSequence = storageSequence; UpdatedUtc = updatedUtc; PayloadAvailable = payloadAvailable; CheckpointBranchId = checkpointBranchId; Quarantined = quarantined; }
     }
     public sealed class RepositoryUsage
     {
         public long LogicalPayloadBytes { get; }
         public long AutomaticPayloadBytes { get; }
         public long ProtectedPayloadBytes { get; }
+        public long QuarantinedPayloadBytes { get; }
         public long PhysicalDatabaseBytes { get; }
         public long WalBytes { get; }
         public long SoftAutomaticBudgetBytes { get; }
         public bool AutomaticBudgetExceeded => AutomaticPayloadBytes > SoftAutomaticBudgetBytes;
         public RepositoryUsage(long logical, long automatic, long protectedBytes, long physical, long wal, long softBudget)
-        { LogicalPayloadBytes = logical; AutomaticPayloadBytes = automatic; ProtectedPayloadBytes = protectedBytes; PhysicalDatabaseBytes = physical; WalBytes = wal; SoftAutomaticBudgetBytes = softBudget; }
+            : this(logical, automatic, protectedBytes, physical, wal, softBudget, 0) { }
+        public RepositoryUsage(long logical, long automatic, long protectedBytes, long physical, long wal, long softBudget, long quarantined)
+        { LogicalPayloadBytes = logical; AutomaticPayloadBytes = automatic; ProtectedPayloadBytes = protectedBytes; PhysicalDatabaseBytes = physical; WalBytes = wal; SoftAutomaticBudgetBytes = softBudget; QuarantinedPayloadBytes = quarantined; }
     }
     public sealed class DurableReceipt
     {
