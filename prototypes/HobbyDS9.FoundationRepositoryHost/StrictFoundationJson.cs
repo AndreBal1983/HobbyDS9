@@ -39,6 +39,8 @@ namespace HobbyDS9.FoundationRepositoryHost
             }
             catch (Exception e) when (e is JsonException || e is DecoderFallbackException || e is EncoderFallbackException || e is OverflowException)
             { throw new ArgumentException("Invalid foundation JSON.", nameof(bytes), e); }
+            catch (JsonGrammar.DepthLimitException e)
+            { throw new ArgumentException("The Foundation JSON exceeds the reader depth limit.", nameof(bytes), e); }
         }
 
         private static string ReadDocumentText(byte[] bytes, bool classifyMalformedSyntax)

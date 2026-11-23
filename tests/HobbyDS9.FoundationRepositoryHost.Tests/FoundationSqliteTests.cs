@@ -124,6 +124,7 @@ public sealed partial class FoundationCheckpointTests
     [InlineData("utf8", true)]
     [InlineData("scenario", false)]
     [InlineData("version", false)]
+    [InlineData("future-deep", false)]
     public void StoredFoundationRejectionOnlyQuarantinesProvenMalformedSyntax(string damage, bool definite)
     {
         using var files = new TestDirectory();
@@ -143,6 +144,11 @@ public sealed partial class FoundationCheckpointTests
         var bytes = later.ReadPayload();
         if (damage == "syntax") bytes[0] = (byte)']';
         else if (damage == "utf8") bytes[0] = 0xff;
+        else if (damage == "future-deep")
+        {
+            var nested = new string('[', 130) + "0" + new string(']', 130);
+            bytes = Bytes("{\"SaveFormatVersion\":999,\"FutureState\":" + nested + "}");
+        }
         else
         {
             var root = JObject.Parse(Json(session));
