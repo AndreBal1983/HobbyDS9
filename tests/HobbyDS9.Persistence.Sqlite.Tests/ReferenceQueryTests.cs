@@ -7,7 +7,7 @@ namespace HobbyDS9.Persistence.Sqlite.Tests;
 
 public sealed class ReferenceQueryTests : IDisposable
 {
-    readonly string directory = Path.Combine(Path.GetTempPath(), "hobbyds9-query-" + Guid.NewGuid().ToString("N"));
+    readonly string directory = Path.Combine(PersistenceTestPaths.TemporaryRoot(), "hobbyds9-query-" + Guid.NewGuid().ToString("N"));
     readonly Validator validator = new();
     SqliteCampaignRepository Open() => new(directory, "campaign", "fixture", validator);
     static CheckpointImage Image(int turn) => new(Encoding.UTF8.GetBytes(turn.ToString(System.Globalization.CultureInfo.InvariantCulture)), "fixture", turn, 0, "Planning");

@@ -8,7 +8,7 @@ namespace HobbyDS9.Persistence.Sqlite.Tests;
 
 public sealed class StorageFailureTests : IDisposable
 {
-    readonly string directory = Path.Combine(Path.GetTempPath(), "hobbyds9-storage-failure-" + Guid.NewGuid().ToString("N"));
+    readonly string directory = Path.Combine(PersistenceTestPaths.TemporaryRoot(), "hobbyds9-storage-failure-" + Guid.NewGuid().ToString("N"));
     static readonly Validator CarrierValidator = new();
     SqliteCampaignRepository Open() => new(Path.Combine(directory, "repository"), "campaign", "fixture", CarrierValidator);
     static CheckpointImage Image(int turn, int padding = 0) => new(Encoding.UTF8.GetBytes(turn.ToString(System.Globalization.CultureInfo.InvariantCulture) + new string(' ', padding)), "fixture", turn, 0, "Planning");
