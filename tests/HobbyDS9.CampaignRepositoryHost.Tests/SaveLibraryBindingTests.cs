@@ -3,6 +3,7 @@ using HobbyDS9.Persistence;
 using HobbyDS9.Persistence.Sqlite;
 using HobbyDS9.TacticalReviewClient;
 using HobbyDS9.UnityReview;
+using Microsoft.Data.Sqlite;
 using Xunit;
 
 namespace HobbyDS9.CampaignRepositoryHost.Tests;
@@ -74,6 +75,32 @@ public sealed class SaveLibraryBindingTests
         Assert.Same(frame, trial.Owner.Current.Frame);
         Assert.Null(ReviewRepositoryTrial.ValidationHealth(CampaignRepositoryError.InvalidPayload, RepositoryError.Unavailable));
         Assert.Null(ReviewRepositoryTrial.ValidationHealth(CampaignRepositoryError.InvalidPayload, RepositoryError.ValidationFailed));
+    }
+
+    [Fact]
+    public void RefreshedDurableQuarantineOverridesPriorValidationAndDisablesLoad()
+    {
+        using var fixture = new RepositoryFixture();
+        using var trial = Open(fixture, "main");
+        var checkpoint = Save(trial, "Previously checked");
+        Assert.Equal(SaveLibraryHealth.Validated, Check(trial, checkpoint).Health);
+        var database = Path.Combine(fixture.DirectoryPath, "campaign", "campaign.sqlite");
+        using (var sql = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = database, Pooling = false }.ToString()))
+        {
+            sql.Open();
+            using var command = sql.CreateCommand();
+            command.CommandText = "UPDATE Checkpoint SET Payload=zeroblob(PayloadLength) WHERE Id=$id";
+            command.Parameters.AddWithValue("$id", checkpoint);
+            Assert.Equal(1, command.ExecuteNonQuery());
+        }
+        Assert.Equal(RepositoryError.Corrupt, Assert.Throws<RepositoryException>(() => trial.Store.ReadCheckpoint(checkpoint)).Error);
+        Page(trial);
+        var view = trial.View();
+        var row = Assert.Single(view.Rows);
+        Assert.Equal(SaveLibraryHealth.Corrupt, row.Health);
+        var presentation = new SaveLibraryPresentation(view);
+        var token = presentation.BeginRender();
+        Assert.False(presentation.TryPrepare(token, SaveLibraryAction.Load, row.ReferenceId, "", out _));
     }
 
     [Fact]

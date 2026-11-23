@@ -290,12 +290,14 @@ namespace HobbyDS9.UnityReview
             var origin = row.CheckpointBranchId == Branch.Id ? Branch
                 : validatedBranches.TryGetValue(row.CheckpointBranchId, out var known) ? known : null;
             var older = origin != null && row.CheckpointId != origin.Head && row.CheckpointId != Branch.Head;
+            var progress = row.Turn > 0 ? new SaveLibraryProgress(row.Turn, row.Revision) : new SaveLibraryProgress(null, null);
             return new SaveLibraryRow(row.Id, Id, row.CheckpointBranchId, row.CheckpointId, row.Generation, origin?.Generation,
                 row.Name, "Belt mining trial", BranchCaption(row.CheckpointBranchId), TimeCaption(row.UpdatedUtc),
-                new SaveLibraryProgress(row.Turn, row.Revision), ToViewKind(row.Kind), Health(row), older);
+                progress, ToViewKind(row.Kind), Health(row), older);
         }
 
-        private SaveLibraryHealth Health(SaveReference row) => !row.PayloadAvailable ? SaveLibraryHealth.Expired
+        private SaveLibraryHealth Health(SaveReference row) => row.Quarantined ? SaveLibraryHealth.Corrupt
+            : !row.PayloadAvailable ? SaveLibraryHealth.Expired
             : health.TryGetValue(row.CheckpointId, out var checkedHealth) ? checkedHealth : SaveLibraryHealth.Unknown;
 
         private static string BranchCaption(string id) => "Branch " + id.Substring(Math.Max(0, id.Length - 8));
@@ -312,7 +314,7 @@ namespace HobbyDS9.UnityReview
             RepositoryError.ReadOnly => "The trial storage is read-only.",
             RepositoryError.WriterInUse => "Another player has the trial storage open.",
             RepositoryError.IncompatibleEdition => "This trial storage belongs to a different campaign edition.",
-            RepositoryError.IncompatibleSchema => "This trial storage uses a different repository schema.",
+            RepositoryError.IncompatibleSchema => "Use the build that created this trial storage, or start a new trial ID.",
             RepositoryError.Busy => "The trial storage is busy. Try again after the current operation.",
             RepositoryError.Conflict => "The save list or branch changed. Review the current state again.",
             _ => "The save was not confirmed. Your game is still open."
