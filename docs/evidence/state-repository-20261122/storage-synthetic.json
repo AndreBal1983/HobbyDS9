@@ -1,0 +1,194 @@
+{
+  "label": "synthetic",
+  "atUtc": "2026-11-22T18:41:22.471Z",
+  "node": "v24.22.3",
+  "sqliteVersion": "3.54.1",
+  "platform": "win32 10.0.26200 x64",
+  "cpu": "AMD Ryzen 7 5800HS with Radeon Graphics         ",
+  "logicalCpus": 16,
+  "totalMemoryBytes": 16541487104,
+  "storagePath": "C:\\HobbyDS9\\artifacts\\worktrees\\STATE-REPOSITORY-20261122-design\\prototypes\\StateRepositoryProbe\\storage\\.local\\run-0w9Y9N",
+  "chunkSizeBytes": 65536,
+  "inputs": [
+    {
+      "bytes": 992074,
+      "sha256": "e13f8f9ff37a52c3a0f95144c8ec9428c4c7480f6d7125e3d7bef6112014eaee"
+    },
+    {
+      "bytes": 992074,
+      "sha256": "8a22ee66d52ebc14ba83b83412780c07b09fdcec56dae3b19f9e47069a0dcc5c"
+    }
+  ],
+  "samples": 12,
+  "settings": {
+    "journal": "WAL",
+    "synchronous": "FULL",
+    "foreignKeys": true,
+    "autoCheckpoint": 0,
+    "controlledCheckpointAfterEachPair": true
+  },
+  "metrics": {
+    "json": {
+      "samples": 12,
+      "firstMs": {
+        "median": 68.566,
+        "p95": 91.952,
+        "p99": 91.952
+      },
+      "successorMs": {
+        "median": 65.733,
+        "p95": 83.235,
+        "p99": 83.235
+      },
+      "firstSampleSizes": {
+        "submittedPayloadBytes": 1984148,
+        "finalFileBytes": 992074,
+        "retainedSnapshots": 1
+      }
+    },
+    "jsonCatalog": {
+      "samples": 12,
+      "firstMs": {
+        "median": 80.034,
+        "p95": 148.421,
+        "p99": 148.421
+      },
+      "successorMs": {
+        "median": 82.596,
+        "p95": 127.827,
+        "p99": 127.827
+      },
+      "firstSampleSizes": {
+        "submittedPayloadBytes": 1984148,
+        "finalFileBytes": 1984370,
+        "retainedSnapshots": 2
+      }
+    },
+    "full": {
+      "samples": 12,
+      "firstMs": {
+        "median": 81.418,
+        "p95": 156.894,
+        "p99": 156.894
+      },
+      "successorMs": {
+        "median": 77.625,
+        "p95": 113.002,
+        "p99": 113.002
+      },
+      "restoreMs": {
+        "median": 1.427,
+        "p95": 5.247,
+        "p99": 5.247
+      },
+      "checkpointMs": {
+        "median": 137.245,
+        "p95": 236.481,
+        "p99": 236.481
+      },
+      "firstSampleSizes": {
+        "firstNewPayloadBytes": 992074,
+        "successorNewPayloadBytes": 992074,
+        "firstWalGrowthBytes": 1021792,
+        "successorWalGrowthBytes": 1021760,
+        "beforeCheckpoint": {
+          "mainFileBytes": 45056,
+          "walFileBytes": 2043552,
+          "shmFileBytes": 32768,
+          "logicalDatabaseBytes": 2027520,
+          "freePages": 0,
+          "storedPayloadBytes": 1984148,
+          "snapshotCount": 2,
+          "chunkCount": 0
+        },
+        "afterCheckpoint": {
+          "mainFileBytes": 2027520,
+          "walFileBytes": 0,
+          "shmFileBytes": 32768,
+          "logicalDatabaseBytes": 2027520,
+          "freePages": 0,
+          "storedPayloadBytes": 1984148,
+          "snapshotCount": 2,
+          "chunkCount": 0
+        },
+        "retainedSnapshots": 2
+      }
+    },
+    "chunks": {
+      "samples": 12,
+      "firstMs": {
+        "median": 88.117,
+        "p95": 109.53,
+        "p99": 109.53
+      },
+      "successorMs": {
+        "median": 15.071,
+        "p95": 35.46,
+        "p99": 35.46
+      },
+      "restoreMs": {
+        "median": 3.13,
+        "p95": 14.614,
+        "p99": 14.614
+      },
+      "checkpointMs": {
+        "median": 82.765,
+        "p95": 92.831,
+        "p99": 92.831
+      },
+      "firstSampleSizes": {
+        "firstNewPayloadBytes": 992074,
+        "successorNewPayloadBytes": 131072,
+        "firstWalGrowthBytes": 1050632,
+        "successorWalGrowthBytes": 173040,
+        "beforeCheckpoint": {
+          "mainFileBytes": 45056,
+          "walFileBytes": 1223672,
+          "shmFileBytes": 32768,
+          "logicalDatabaseBytes": 1179648,
+          "freePages": 0,
+          "storedPayloadBytes": 1123146,
+          "snapshotCount": 2,
+          "chunkCount": 18
+        },
+        "afterCheckpoint": {
+          "mainFileBytes": 1179648,
+          "walFileBytes": 0,
+          "shmFileBytes": 32768,
+          "logicalDatabaseBytes": 1179648,
+          "freePages": 0,
+          "storedPayloadBytes": 1123146,
+          "snapshotCount": 2,
+          "chunkCount": 18
+        },
+        "retainedSnapshots": 2
+      }
+    }
+  },
+  "proofs": {
+    "staleCasRollsBackPayload": true,
+    "immutableSnapshotUpdateRejected": true,
+    "branchHeadsIndependent": true,
+    "manualRefSurvivesAutoRetention": true,
+    "secondWriterBlocked": true,
+    "backupRestoreEqual": true,
+    "killedBeforeCommitRecoveryEqual": true,
+    "integrity": "ok",
+    "crash": {
+      "staged": true,
+      "exitCode": null,
+      "signal": "SIGKILL",
+      "walBytesBeforeKill": 2105352
+    },
+    "limitations": "Branch continuations reuse opaque input bytes; not distinct gameplay simulations. Retention removes refs only, not snapshots/chunk garbage collection. Process kill is not power-loss testing."
+  },
+  "limitations": [
+    "Node storage-engine proof only; not Microsoft.Data.Sqlite, SQLitePCLRaw, Unity, IL2CPP or native-plugin packaging evidence.",
+    "Pre-exported opaque bytes; includes hash/chunk preparation in SQLite commit timing but excludes game staging, validation, export and JSON serialization.",
+    "JSON timing covers file write+fsync+same-directory rename and retains only latest; jsonCatalog keeps both roots plus a replacement catalog, comparable retention to SQLite. Neither JSON path implements complete slot/branch/CAS manager semantics.",
+    "No physical-device write/flush counters, disk utilization, GC pause or cold-cache control. WAL growth/file sizes are not actual device bytes written.",
+    "Sequential methods, fresh files, repeated identical A/B pair. With 12 samples p95/p99 both equal maximum; no reliable tail-latency or general speed conclusion.",
+    "Chunk manifests reconstruct exact bytes with length/root/chunk hashes; hashes are integrity checks, not authentication. Fixed boundaries may lose dedup after insertions.",
+    "No production activation; no complete schema migration, disk-full/read-only, corruption injection, chunk GC, power-loss or gameplay replay proof."
+  ]
+}
