@@ -118,4 +118,81 @@ public sealed partial class FoundationCheckpointTests
         using (var reopened = Repository(database, validator)) Assert.Empty(reopened.ListReferences());
         Assert.Equal(original, File.ReadAllBytes(source)); Assert.Equal(hash, CheckpointImage.Hash(File.ReadAllBytes(source)));
     }
+
+    [Theory]
+    [InlineData("syntax", true)]
+    [InlineData("utf8", true)]
+    [InlineData("scenario", false)]
+    [InlineData("version", false)]
+    [InlineData("future-deep", false)]
+    public void StoredFoundationRejectionOnlyQuarantinesProvenMalformedSyntax(string damage, bool definite)
+    {
+        using var files = new TestDirectory();
+        var (validator, session) = Fixture();
+        var database = Path.Combine(files.Root, "repository");
+        var good = validator.Validate(Encode(session.ExportSave()));
+        Complete(session);
+        var later = validator.Validate(Encode(session.ExportSave()));
+        string earlierId, damagedId;
+        using (var repository = Repository(database, validator))
+        {
+            earlierId = repository.CommitCheckpoint(new("first", "main", 0, null, good)).CheckpointId!;
+            damagedId = repository.CommitCheckpoint(new("second", "main", 1, earlierId, later,
+                new("auto", 0, SaveReferenceKind.Auto, "Latest"))).CheckpointId!;
+        }
+
+        var bytes = later.ReadPayload();
+        if (damage == "syntax") bytes[0] = (byte)']';
+        else if (damage == "utf8") bytes[0] = 0xff;
+        else if (damage == "future-deep")
+        {
+            var nested = new string('[', 130) + "0" + new string(']', 130);
+            bytes = Bytes("{\"SaveFormatVersion\":999,\"FutureState\":" + nested + "}");
+        }
+        else
+        {
+            var root = JObject.Parse(Json(session));
+            if (damage == "scenario") root["ScenarioId"] = "other.scenario";
+            else root["SaveFormatVersion"] = 999;
+            bytes = Bytes(root.ToString(Formatting.None));
+        }
+
+        using (var connection = new SqliteConnection(new SqliteConnectionStringBuilder
+        {
+            DataSource = Path.Combine(database, "campaign.sqlite"),
+            Pooling = false
+        }.ToString()))
+        {
+            connection.Open();
+            using var replace = connection.CreateCommand();
+            replace.CommandText = "UPDATE Checkpoint SET Payload=$bytes,PayloadHash=$hash,PayloadLength=$length WHERE Id=$id";
+            replace.Parameters.AddWithValue("$bytes", bytes);
+            replace.Parameters.AddWithValue("$hash", CheckpointImage.Hash(bytes));
+            replace.Parameters.AddWithValue("$length", bytes.Length);
+            replace.Parameters.AddWithValue("$id", damagedId);
+            Assert.Equal(1, replace.ExecuteNonQuery());
+        }
+
+        using (var repository = Repository(database, validator))
+        {
+            Assert.Equal(definite ? RepositoryError.Corrupt : RepositoryError.ValidationFailed,
+                Assert.Throws<RepositoryException>(() => repository.ReadCheckpoint(damagedId)).Error);
+            Assert.Equal(good.ReadPayload(), repository.ReadCheckpoint(earlierId).ReadPayload());
+            if (definite)
+            {
+                Assert.Equal(CheckpointCorruptionKind.InvalidPayload, Assert.Single(repository.ListQuarantinedCheckpoints()).Kind);
+                repository.ForkBranch("recover", "recovery", earlierId);
+                repository.CommitCheckpoint(new("advance", "recovery", 0, earlierId, later));
+                repository.ApplyRetention("prune", repository.GetBranch("recovery"), rolling: 1, softAutoBytes: 1);
+            }
+            else Assert.Empty(repository.ListQuarantinedCheckpoints());
+        }
+
+        if (definite)
+        {
+            using var reopened = Repository(database, validator);
+            Assert.DoesNotContain(reopened.ListReferences(), row => row.CheckpointId == damagedId);
+            Assert.Equal(bytes, File.ReadAllBytes(reopened.ExportQuarantinedPayload(damagedId, "raw-evidence")));
+        }
+    }
 }

@@ -51,6 +51,14 @@ Explicit nulls remain subject to the actual matching loader's validity rules;
 omission cannot silently supply null, an empty list or another DTO initializer.
 There are no payload omissions, upgrades or guessed defaults.
 
+For a stored checkpoint read through `ICheckpointValidator`, the repository
+can quarantine a definitive UTF-8 or JSON grammar failure even if the stored
+checksum matches. The typed corruption exception covers only strict text
+decoding and syntax. Exceeding the reader's depth limit leaves validity
+unconfirmed. Well-formed data with an unrecognized edition or content and later
+DTO or loader failures follow existing validation behavior. Direct
+`Validate` and `Restore` callers keep their existing argument-error contract.
+
 The descriptor is a concatenation of `decimalUtf8ByteLength:value` fields in this
 fixed order: descriptor schema `foundation-repository-descriptor-v1`, carrier
 `foundationSaveEnvelope`, core save format, content format, scenario ID, exact
