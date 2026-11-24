@@ -6,6 +6,8 @@ namespace HobbyDS9.FoundationRepositoryHost
     // constructors. Validate RFC 8259 syntax first so none reach the DTO loader.
     internal sealed class JsonGrammar
     {
+        internal sealed class DepthLimitException : Exception { }
+
         private readonly string text;
         private int position;
         internal JsonGrammar(string text) { this.text = text; }
@@ -17,7 +19,8 @@ namespace HobbyDS9.FoundationRepositoryHost
         private void Need(char c) { if (!Take(c)) Fail(); }
         private void Value(int depth)
         {
-            Space(); if (position == text.Length || depth > 128) Fail();
+            if (depth > 128) throw new DepthLimitException();
+            Space(); if (position == text.Length) Fail();
             var c = text[position];
             if (c == '{')
             {

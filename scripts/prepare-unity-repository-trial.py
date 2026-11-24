@@ -1,4 +1,4 @@
-"""Stage the reviewed schema-2 provider in a fresh, isolated QA worktree."""
+"""Stage the reviewed schema 3 provider in a fresh, isolated QA worktree."""
 
 import argparse
 import hashlib
@@ -8,11 +8,12 @@ import subprocess
 import uuid
 
 
-DATA_SOURCE = "13921910824f1d27ac65a339e17497bf22fbe089"
+DATA_SOURCE = "072aaadfef28a64c1b9587c8595b2bd362e30784"
+STORAGE_SCHEMA = 3
 DEFINE = "HOBBYDS9_STATE_REPOSITORY_TRIAL"
 PROVIDER_FILES = {
-    "HobbyDS9.Persistence.Sqlite.dll": "640967ee1368e92c537923a02f3cbe1751fbf5f0400648a46683e14fa8c8dd1c",
-    "HobbyDS9.Persistence.dll": "c919f8e830c146e252db86c2304c27ef976399529524c00a97e4364ea5082404",
+    "HobbyDS9.Persistence.Sqlite.dll": "3a405d8acebcce8b192ea94dd198dc05c682162b1f5c3bd7533d341e89f38f1b",
+    "HobbyDS9.Persistence.dll": "77d6d462ffaeb694680d8a6bfed74273d558572bcb4e9a01878479b8fa2e1ae4",
     "Microsoft.Data.Sqlite.dll": "6a851c2c3767c96319ef50a5c1ce80dfd17270d27125a74ca0b7e911256fa064",
     "SQLitePCLRaw.core.dll": "50c999a1ab2afeacc93bce5ac2948d3bb630d99d23efc3cfcbd8bc11d3426eb7",
     "SQLitePCLRaw.provider.e_sqlite3.dll": "e9acf8fcd48769891a67890359de341ece1065066cc9b58fc6196c3da3a41fde",
@@ -106,7 +107,7 @@ def main():
     pins = {str(path.relative_to(project)).replace("\\", "/"): sha(data) for path, data in {**files, **changes}.items()}
     receipt.parent.mkdir(parents=True, exist_ok=True)
     with receipt.open("x", encoding="utf-8") as stream:
-        json.dump({"source": args.source, "dataSource": DATA_SOURCE, "schema": 2, "nativeAcceptance": "pending", "pins": pins}, stream, indent=2)
+        json.dump({"source": args.source, "dataSource": DATA_SOURCE, "schema": STORAGE_SCHEMA, "nativeAcceptance": "pending", "pins": pins}, stream, indent=2)
         stream.write("\n")
     print(receipt)
 
