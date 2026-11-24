@@ -8,11 +8,11 @@ import subprocess
 import uuid
 
 
-DATA_SOURCE = "43846f42bd61bf9eeb04006dc440cd3d550d1657"
+DATA_SOURCE = "13921910824f1d27ac65a339e17497bf22fbe089"
 DEFINE = "HOBBYDS9_STATE_REPOSITORY_TRIAL"
 PROVIDER_FILES = {
-    "HobbyDS9.Persistence.Sqlite.dll": "054385282a97e8eb37ff6d3dcb7c979ea4b68502569d53af7fcac18e185c9de6",
-    "HobbyDS9.Persistence.dll": "aa7f1f6b51c923067d8c7e5275dab4198395c43f9b09524d1b96158c74903e96",
+    "HobbyDS9.Persistence.Sqlite.dll": "640967ee1368e92c537923a02f3cbe1751fbf5f0400648a46683e14fa8c8dd1c",
+    "HobbyDS9.Persistence.dll": "c919f8e830c146e252db86c2304c27ef976399529524c00a97e4364ea5082404",
     "Microsoft.Data.Sqlite.dll": "6a851c2c3767c96319ef50a5c1ce80dfd17270d27125a74ca0b7e911256fa064",
     "SQLitePCLRaw.core.dll": "50c999a1ab2afeacc93bce5ac2948d3bb630d99d23efc3cfcbd8bc11d3426eb7",
     "SQLitePCLRaw.provider.e_sqlite3.dll": "e9acf8fcd48769891a67890359de341ece1065066cc9b58fc6196c3da3a41fde",

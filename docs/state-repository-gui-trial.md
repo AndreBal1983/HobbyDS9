@@ -8,10 +8,10 @@ Use a fresh linked QA worktree at the clean receiving source. Run `dotnet msbuil
 
 ```powershell
 $source = git rev-parse HEAD
-python scripts/prepare-unity-repository-trial.py --source $source --data-bin <sealed-Data438-delivery-directory> --probe-project <A2-project-v4>
+python scripts/prepare-unity-repository-trial.py --source $source --data-bin <sealed-Data1392191-delivery-directory> --probe-project <A2-project-v4>
 ```
 
-The script checks the Data438 source subtree and all six delivered provider files against their SHA-256 pins. It copies the tested A2 import policy and supplies the runtime assembly references, stripping configuration and standalone define in the receiving worktree. Recheck the file pins in `artifacts/repository-trial-stage.json` before the first import. The staging changes are local to the receiving worktree. The provider license notices are included under StreamingAssets.
+The script checks the storage sources against Data commit `1392191` and all six delivered provider files against their SHA-256 pins. It copies the tested A2 import policy and supplies the runtime assembly references, stripping configuration and standalone define in the receiving worktree. Recheck the file pins in `artifacts/repository-trial-stage.json` before the first import. The staging changes are local to the receiving worktree. The provider license notices are included under StreamingAssets.
 
 Set `HOBBYDS9_BUILD_SOURCE_SHA` to the receiving commit. QA uses Unity 6000.6.9f1 on Windows with `--hobbyds9-evaluate-editor-patch` and executes `HobbyDS9.UnityReview.Editor.GeneratedStaticAstronomyCampaignBuild.BuildWindowsStateRepositoryTrial`. This requests Windows x64 IL2CPP, the .NET Standard API and High managed stripping. The builder verifies that the output contains the one approved R2 SQLite DLL. The build identity remains pending until a separate native receipt exists.
 
