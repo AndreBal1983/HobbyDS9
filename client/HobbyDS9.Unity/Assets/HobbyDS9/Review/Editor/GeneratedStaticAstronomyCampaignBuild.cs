@@ -420,7 +420,18 @@ freighter, treaty, cargo or colonization feature is included.
 
         // Separate receiving entry: historical builders keep their exact Editor gate.
         public static void BuildWindowsPB20261113()
+            => BuildPlayableCandidate(false);
+
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+        public static void BuildWindowsStateRepositoryTrial()
+            => BuildPlayableCandidate(true);
+#endif
+
+        private static void BuildPlayableCandidate(bool repositoryTrial)
         {
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+            if(!repositoryTrial)throw new InvalidOperationException("Use the isolated State Repository trial build entry from this prepared checkout.");
+#endif
             var sha=Environment.GetEnvironmentVariable("HOBBYDS9_BUILD_SOURCE_SHA")??"";
             if(sha.Length!=40||!System.Text.RegularExpressions.Regex.IsMatch(sha,"\\A[0-9a-f]{40}\\z"))
                 throw new InvalidOperationException("Set HOBBYDS9_BUILD_SOURCE_SHA to the verified clean receiving source SHA.");
@@ -437,11 +448,15 @@ freighter, treaty, cargo or colonization feature is included.
             var solBodies=engineering.InitialState.Planets.Where(p=>p.SystemId=="system.sol").Select(p=>p.PlanetId).OrderBy(id=>id,StringComparer.Ordinal);
             if(!solBodies.SequenceEqual(new[]{"planet.jupiter","planet.mars","planet.mercury","planet.neptune","planet.saturn","planet.sol","planet.uranus","planet.venus"}))
                 throw new InvalidOperationException("PB requires the authored eight-planet Sol edition.");
-            BuildWindows("Windows-PB-20261113-"+sha.Substring(0,12)+"-"+UnityEngine.Application.unityVersion,false,true);
+            var prefix=repositoryTrial?"Windows-StateRepositoryTrial-":"Windows-PB-20261113-";
+            BuildWindows(prefix+sha.Substring(0,12)+"-"+UnityEngine.Application.unityVersion,false,true,repositoryTrial);
         }
 
-        private static void BuildWindows(string stageName,bool checkpointDiagnostics=false,bool playableBuild=false)
+        private static void BuildWindows(string stageName,bool checkpointDiagnostics=false,bool playableBuild=false,bool repositoryTrial=false)
         {
+#if HOBBYDS9_STATE_REPOSITORY_TRIAL
+            if(!repositoryTrial)throw new InvalidOperationException("State Repository assets belong only to the isolated trial build.");
+#endif
             var patchEvaluation=playableBuild&&UnityEngine.Application.unityVersion=="6000.6.9f1"
                 &&Array.IndexOf(Environment.GetCommandLineArgs(),"--hobbyds9-evaluate-editor-patch")>=0;
             if (UnityEngine.Application.unityVersion != "6000.6.5f1"&&!patchEvaluation)
@@ -469,8 +484,15 @@ freighter, treaty, cargo or colonization feature is included.
             var mode = PlayerSettings.fullScreenMode;
             var resizable = PlayerSettings.resizableWindow;
             var version = PlayerSettings.bundleVersion;
+            var productName = PlayerSettings.productName;
+            var stripping = PlayerSettings.GetManagedStrippingLevel(target);
             try
             {
+                if(repositoryTrial)
+                {
+                    PlayerSettings.productName="HobbyDS9.StateRepositoryTrial";
+                    PlayerSettings.SetManagedStrippingLevel(target,ManagedStrippingLevel.High);
+                }
                 if(playableBuild)PlayerSettings.bundleVersion="PB-20261113+"+Environment.GetEnvironmentVariable("HOBBYDS9_BUILD_SOURCE_SHA")!.Substring(0,12);
                 PlayerSettings.SetApiCompatibilityLevel(target, ApiCompatibilityLevel.NET_Standard);
                 PlayerSettings.SetScriptingBackend(target, ScriptingImplementation.IL2CPP);
@@ -485,7 +507,9 @@ freighter, treaty, cargo or colonization feature is included.
                     locationPathName = Path.Combine(stage, "HobbyDS9GeneratedCampaign.exe"),
                     target = BuildTarget.StandaloneWindows64,
                     options = BuildOptions.StrictMode,
-                    extraScriptingDefines = playableBuild
+                    extraScriptingDefines = repositoryTrial
+                        ? new[] { "HOBBYDS9_SINGLEPLAYER_DEMO", "HOBBYDS9_PB_20261113", "HOBBYDS9_STATE_REPOSITORY_TRIAL" }
+                        : playableBuild
                         ? new[] { "HOBBYDS9_SINGLEPLAYER_DEMO", "HOBBYDS9_PB_20261113" }
                         : checkpointDiagnostics
                         ? new[] { "HOBBYDS9_SINGLEPLAYER_DEMO", "HOBBYDS9_CHECKPOINT_DIAGNOSTICS" }
@@ -494,11 +518,27 @@ freighter, treaty, cargo or colonization feature is included.
                 if (report.summary.result != BuildResult.Succeeded)
                     throw new InvalidOperationException("Generated campaign build failed; preserve the failed stage and build report.");
 
-                File.WriteAllText(Path.Combine(stage, "Start-Generated-Campaign.cmd"),
+                if(!repositoryTrial)File.WriteAllText(Path.Combine(stage, "Start-Generated-Campaign.cmd"),
                     "@echo off\r\n\"%~dp0HobbyDS9GeneratedCampaign.exe\"\r\n");
                 File.WriteAllText(Path.Combine(stage, "README.txt"), Readme);
                 File.WriteAllText(Path.Combine(stage, "PLAY-GENERATED-CAMPAIGN.txt"), Walkthrough);
-                if(playableBuild)
+                if(repositoryTrial)
+                {
+                    var native=Directory.GetFiles(stage,"e_sqlite3.dll",SearchOption.AllDirectories);
+                    using var sha=System.Security.Cryptography.SHA256.Create();
+                    if(native.Length!=1||BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(native[0]))).Replace("-","").ToLowerInvariant()
+                        !="4b59d3cded9dc1608544160f3b4b10ac974c6ac0d6ffc23064e5f4c8dbd05aea")
+                        throw new InvalidOperationException("The isolated trial package must contain exactly the approved SQLite native binary.");
+                    File.WriteAllText(Path.Combine(stage,"Start-Repository-Trial.cmd"),
+                        "@echo off\r\nif \"%~1\"==\"\" exit /b 2\r\n\"%~dp0HobbyDS9GeneratedCampaign.exe\" --hobbyds9-singleplayer-demo --hobbyds9-repository-trial \"%~1\" -screen-fullscreen 0\r\n");
+                    File.WriteAllText(Path.Combine(stage,"README.txt"),
+                        "Isolated Windows State Repository trial. Native acceptance is pending.\r\n"+
+                        "Use Start-Repository-Trial.cmd with a dedicated 32-digit test GUID. Start a new belt mining campaign, open its campaign menu, and choose Open isolated Save Library. Run the same test GUID for a cold reopen.\r\n"+
+                        "This executable uses its own data directory for both JSON slots and SQLite. Use generated test campaigns.\r\n");
+                    File.WriteAllText(Path.Combine(stage,"BUILD-IDENTITY.json"),"{\n  \"task\": \"State Repository isolated trial\",\n  \"sourceSha\": \""+
+                        Environment.GetEnvironmentVariable("HOBBYDS9_BUILD_SOURCE_SHA")+"\",\n  \"editor\": \""+UnityEngine.Application.unityVersion+"\",\n  \"nativeAcceptance\": \"pending\"\n}\n");
+                }
+                else if(playableBuild)
                 {
                     File.WriteAllText(Path.Combine(stage,"Start-PB-20261113.cmd"),
                         "@echo off\r\n\"%~dp0HobbyDS9GeneratedCampaign.exe\" --hobbyds9-singleplayer-demo -screen-fullscreen 0\r\n");
@@ -511,6 +551,11 @@ freighter, treaty, cargo or colonization feature is included.
             finally
             {
                 PlayerSettings.bundleVersion=version;
+                if(repositoryTrial)
+                {
+                    PlayerSettings.productName=productName;
+                    PlayerSettings.SetManagedStrippingLevel(target,stripping);
+                }
                 PlayerSettings.SetApiCompatibilityLevel(target, api);
                 PlayerSettings.SetScriptingBackend(target, backend);
                 PlayerSettings.defaultScreenWidth = width;

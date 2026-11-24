@@ -10,4 +10,11 @@
     <Reference Include="Unity.InputSystem"><HintPath>$(UnityInputSystemPath)</HintPath><Private>false</Private></Reference>
     <Compile Include="$(RepoRoot)/client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/*.cs" Link="ActualUnitySource/%(Filename)%(Extension)" />
   </ItemGroup>
+  <ItemGroup Condition="'$(StateRepositoryTrial)' == 'true'">
+    <ProjectReference Include="$(RepoRoot)/prototypes/HobbyDS9.CampaignRepositoryHost/HobbyDS9.CampaignRepositoryHost.csproj" />
+    <Reference Include="HobbyDS9.Persistence.Sqlite"><HintPath>$(StateRepositorySqlitePath)</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <Target Name="RequireTrialProviderReference" BeforeTargets="ResolveReferences" Condition="'$(StateRepositoryTrial)' == 'true'">
+    <Error Condition="!Exists('$(StateRepositorySqlitePath)')" Text="Supply the sealed repository adapter DLL in StateRepositorySqlitePath." />
+  </Target>
 </Project>

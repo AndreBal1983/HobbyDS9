@@ -2,6 +2,14 @@
   <PropertyGroup>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(StateRepositoryTrial)' == 'true'">
+    <DefineConstants>$(DefineConstants);HOBBYDS9_STATE_REPOSITORY_TRIAL</DefineConstants>
+    <NuGetLockFilePath>obj/repository-trial.packages.lock.json</NuGetLockFilePath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(StateRepositoryTrial)' == 'true'">
+    <ProjectReference Include="../HobbyDS9.CampaignRepositoryHost/HobbyDS9.CampaignRepositoryHost.csproj" />
+    <InternalsVisibleTo Include="HobbyDS9.CampaignRepositoryHost.Tests" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Resources/ShipNames/starfleet-v1.json" LogicalName="HobbyDS9.ShipNames.starfleet-v1.json" />
     <ProjectReference Include="../HobbyDS9.TacticalReviewClient/HobbyDS9.TacticalReviewClient.csproj" />
@@ -19,4 +27,6 @@
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewLcarsSelector.cs" /></ItemGroup>
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewIcon.cs" /></ItemGroup>
   <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/ReviewSystemBelts.cs" /></ItemGroup>
+  <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/SaveLibraryPanel.cs" /></ItemGroup>
+  <ItemGroup><Compile Remove="../../client/HobbyDS9.Unity/Assets/HobbyDS9/Review/Runtime/FactionThemeSample.cs" /></ItemGroup>
 </Project>

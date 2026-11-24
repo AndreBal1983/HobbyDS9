@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <AssemblyName>HobbyDS9.StateRepository.ProviderGraph</AssemblyName>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Architecture's A2/B1 trial recipe; no ORM/bundle or alternate native engine. -->
+    <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="[10.0.14]" />
+    <PackageReference Include="SQLitePCLRaw.core" Version="[2.1.13]" />
+    <PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="[2.1.13]" />
+    <!-- R2 native asset is the separately hash-pinned official SQLite DLL. -->
+  </ItemGroup>
+</Project>

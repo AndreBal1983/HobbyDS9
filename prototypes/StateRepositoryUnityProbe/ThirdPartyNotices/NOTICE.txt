@@ -1,0 +1,6 @@
+A2R2 isolated provider trial; unmodified assets.
+
+Microsoft.Data.Sqlite.Core10.0.14: copyright Microsoft Corporation; .NET Foundation and Contributors. MIT, see Microsoft-MIT.txt.
+SQLitePCLRaw.core and SQLitePCLRaw.provider.e_sqlite3 2.1.13: Copyright2014-2024 SourceGear, LLC. Apache-2.0, see Apache-2.0.txt. No additional NOTICE file was present in the selected NuGet archives.
+Nativeengine: officialSQLite3.54.1, originalsqlite3.dll renamedwithoutbytechangesas e_sqlite3.dll. SQLiteengine publicdomain: https://www.sqlite.org/copyright.html . OldSQLitePCLRaw.lib.e_sqlite3 native is NOT redistributed inR2.
+NuGetBCL dependencies remain locked forrestoreaudit but are NOT imported over Unity platform assemblies. No dependency fetch occurs atgameruntime. ExactData host-librarysource/binarypins are separate.

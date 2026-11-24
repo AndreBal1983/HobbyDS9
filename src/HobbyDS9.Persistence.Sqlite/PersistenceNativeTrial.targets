@@ -1,0 +1,13 @@
+<Project>
+  <!-- Isolated test/probe override only; never rewrites a package cache or Unity. -->
+  <Target Name="StagePersistenceNativeTrial" AfterTargets="CopyFilesToOutputDirectory" Condition="'$(NativeSqliteOverride)' != ''">
+    <Error Condition="'$(OS)' != 'Windows_NT'" Text="The approved R2 binary is Windows x64 only." />
+    <Error Condition="!Exists('$(NativeSqliteOverride)')" Text="Explicit verified SQLite R2 file is required; no old-native fallback." />
+    <GetFileHash Files="$(NativeSqliteOverride)" Algorithm="SHA256"><Output TaskParameter="Items" ItemName="PersistenceNativeHash" /></GetFileHash>
+    <Error Condition="'%(PersistenceNativeHash.FileHash)' != '4B59D3CDED9DC1608544160F3B4B10AC974C6AC0D6FFC23064E5F4C8DBD05AEA'" Text="SQLite R2 native SHA256 mismatch." />
+    <MakeDir Directories="$(TargetDir)runtimes/win-x64/native" />
+    <Copy SourceFiles="$(NativeSqliteOverride)" DestinationFiles="$(TargetDir)e_sqlite3.dll" />
+    <Copy SourceFiles="$(NativeSqliteOverride)" DestinationFiles="$(TargetDir)runtimes/win-x64/native/e_sqlite3.dll" />
+    <WriteLinesToFile File="$(TargetDir)hobbyds9-native-recipe.txt" Lines="SQLite3.54.1;4b59d3cded9dc1608544160f3b4b10ac974c6ac0d6ffc23064e5f4c8dbd05aea" Overwrite="true" />
+  </Target>
+</Project>
